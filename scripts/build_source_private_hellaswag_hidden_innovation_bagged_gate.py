@@ -128,7 +128,7 @@ def _write_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
         return
     keys = list(rows[0].keys())
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=keys)
+        writer = csv.DictWriter(handle, fieldnames=keys, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 

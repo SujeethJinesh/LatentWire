@@ -18320,3 +18320,30 @@ diagnostic to a headline-candidate hard benchmark. The next exact gate is full
 validation or a predeclared multi-slice validation stress; native NVIDIA
 systems rows remain required before claiming serving latency, throughput, or
 memory superiority over C2C/KVComm/QJL/TurboQuant-style baselines.
+
+HellaSwag hidden-innovation multi-slice stress follow-up: added
+`scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py`,
+test
+`tests/test_build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py`,
+memo
+`paper/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501.md`,
+references
+`references/591_hellaswag_hidden_innovation_multi_slice_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_3072/`.
+Outcome: this aggregates the original validation-first1024 bagged gate plus
+two frozen heldout slices (`1024:2048` and `2048:3072`) under one predeclared
+contiguous-slice rule. The gate passes on all `3/3` slices and `3072` total
+HellaSwag validation rows. Weighted selected accuracy is `0.482096` versus
+best label-copy `0.441081`, score-only bagged `0.434896`, and zero-hidden
+`0.434896`. The minimum slice delta versus best label-copy is `+0.034180`
+with minimum paired CI95 low `+0.011719`; minimum delta versus score-only
+bagging and zero-hidden are both at least `+0.044922`. Wrong-example and
+candidate-roll hidden controls stay below label-copy, all slice-level
+jackknife audits pass, and the packet remains `2B` raw / `5B` framed with no
+source text, source KV, raw hidden vector, or raw source-score exposure.
+Interpretation: promote HellaSwag from a single-heldout-slice
+headline-candidate to a stronger multi-slice headline-candidate. The next
+exact gate is remaining-slice/full-validation stress plus one strict
+cross-family falsification pair; native NVIDIA/vLLM/SGLang systems rows remain
+required before any serving-performance claim.

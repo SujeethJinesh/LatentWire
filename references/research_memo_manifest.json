@@ -1636,5 +1636,12 @@
       "path": "references/590_hellaswag_hidden_innovation_eval_slice_refs_20260501.md",
       "status": "local_memo",
       "reason": "Primary-source memo for the HellaSwag hidden-innovation heldout evaluation-slice stress, covering the frozen validation[1024:2048] pass, prefix-token/soft-prompt distinction, source-private fixed-byte packet boundary, and novelty boundaries against SAE/common-basis, C2C/KVComm, QJL, and TurboQuant work."
+    },
+    {
+      "num": 591,
+      "slug": "hellaswag_hidden_innovation_multi_slice_refs_20260501",
+      "path": "references/591_hellaswag_hidden_innovation_multi_slice_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag hidden-innovation multi-slice stress, covering the contiguous validation[0:3072] pass, prefix-token/soft-prompt distinction, source-private fixed-byte packet boundary, SAE/common-basis next branch, and systems boundaries against C2C, KVCOMM, QJL, and TurboQuant."
     }
 ]

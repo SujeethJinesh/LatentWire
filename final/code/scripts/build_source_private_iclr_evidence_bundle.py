@@ -90,6 +90,8 @@ REPRODUCTION_COMMANDS = [
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_train_sample_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_bagged_gate.py --output-dir results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048 --eval-slice-start 1024 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072 --eval-slice-start 2048 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_3072 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_repair_systems_acceptance_card.py --output-dir results/source_private_hellaswag_repair_systems_acceptance_card_20260501 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_mac_packet_ring_transport_microbench.py --output-dir results/source_private_mac_packet_ring_transport_microbench_20260501 --target-bytes 33554432 --repeats 5 --min-iterations 128",
     "./venv_arm64/bin/python scripts/build_source_private_serving_slo_envelope.py --output-dir results/source_private_serving_slo_envelope_20260501",
@@ -190,6 +192,8 @@ REQUIRED_ARTIFACTS = {
     "hellaswag_hidden_innovation_train_sample_stress": "results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_train_sample_stress.json",
     "hellaswag_hidden_innovation_bagged_gate": "results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json",
     "hellaswag_hidden_innovation_eval_slice_stress": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "hellaswag_hidden_innovation_eval_slice_stress_2048_3072": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "hellaswag_hidden_innovation_multi_slice_stress": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_3072/hellaswag_hidden_innovation_multi_slice_stress.json",
     "hellaswag_repair_systems_acceptance": "results/source_private_hellaswag_repair_systems_acceptance_card_20260501/hellaswag_repair_systems_acceptance_card.json",
     "mac_packet_ring_transport": "results/source_private_mac_packet_ring_transport_microbench_20260501/packet_ring_transport_microbench.json",
     "serving_slo_envelope": "results/source_private_serving_slo_envelope_20260501/serving_slo_envelope.json",
@@ -460,6 +464,8 @@ def _contribution_rows(
     hellaswag_hidden_innovation_train_sample_stress: dict[str, Any],
     hellaswag_hidden_innovation_bagged_gate: dict[str, Any],
     hellaswag_hidden_innovation_eval_slice_stress: dict[str, Any],
+    hellaswag_hidden_innovation_eval_slice_stress_2048_3072: dict[str, Any],
+    hellaswag_hidden_innovation_multi_slice_stress: dict[str, Any],
     hellaswag_repair_systems_acceptance: dict[str, Any],
     mac_packet_ring: dict[str, Any],
     cross_benchmark_systems: dict[str, Any],
@@ -901,6 +907,45 @@ def _contribution_rows(
                 "packet and directly reduces slice-overfit risk. It upgrades HellaSwag to a headline-candidate "
                 "hard benchmark, but the comfortable ICLR gate is still full validation or predeclared multi-slice "
                 "stress plus native systems rows."
+            ),
+        },
+        {
+            "contribution": "HellaSwag multi-slice hidden-innovation stress",
+            "status": "new positive 3-slice gate / stronger HellaSwag headline-candidate",
+            "headline_evidence": (
+                f"slices="
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['pass_slice_count']}/"
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['slice_count']} contiguous; "
+                f"rows="
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['total_eval_rows']}; "
+                f"weighted selected/best-label/score-only="
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['weighted_selected_eval_accuracy']:.3f}/"
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['weighted_best_label_copy_eval_accuracy']:.3f}/"
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['weighted_score_only_bagged_control_accuracy']:.3f}; "
+                f"new heldout slice="
+                f"{hellaswag_hidden_innovation_eval_slice_stress_2048_3072['headline']['eval_slice_start']}:"
+                f"{hellaswag_hidden_innovation_eval_slice_stress_2048_3072['headline']['eval_slice_end_exclusive']}"
+            ),
+            "main_metric": (
+                f"min delta vs best label-copy="
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['min_delta_vs_best_label_copy']:.3f}; "
+                f"min CI95 low="
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['min_ci95_low_vs_best_label_copy']:.3f}; "
+                f"min delta vs score-only/zero-hidden="
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['min_delta_vs_score_only_bagged']:.3f}/"
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['min_delta_vs_zero_hidden']:.3f}; "
+                f"wrong/roll max="
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['max_wrong_example_hidden_control_accuracy']:.3f}/"
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['max_candidate_roll_hidden_control_accuracy']:.3f}; "
+                f"record bytes="
+                f"{hellaswag_hidden_innovation_multi_slice_stress['headline']['framed_record_bytes']}B"
+            ),
+            "remaining_gap": (
+                "This is the strongest Mac-local HellaSwag evidence so far: the same 2B raw / 5B framed "
+                "source-private hidden-innovation packet clears validation rows 0:3072 under label-copy, "
+                "score-only, zero-hidden, corrupted-hidden, and jackknife checks. It still does not replace "
+                "the remaining validation slices, a strict cross-family falsification pair, or native NVIDIA "
+                "systems rows."
             ),
         },
         {
@@ -1587,6 +1632,8 @@ def _pass_checks(
     hellaswag_hidden_innovation_train_sample_stress: dict[str, Any],
     hellaswag_hidden_innovation_bagged_gate: dict[str, Any],
     hellaswag_hidden_innovation_eval_slice_stress: dict[str, Any],
+    hellaswag_hidden_innovation_eval_slice_stress_2048_3072: dict[str, Any],
+    hellaswag_hidden_innovation_multi_slice_stress: dict[str, Any],
     hellaswag_repair_systems_acceptance: dict[str, Any],
     mac_packet_ring: dict[str, Any],
     serving_slo: dict[str, Any],
@@ -2150,6 +2197,47 @@ def _pass_checks(
             is False
             and hellaswag_hidden_innovation_eval_slice_stress["packet_contract"]["raw_scores_transmitted"] is False,
         ),
+        (
+            "hellaswag_hidden_innovation_multi_slice_stress_passes",
+            bool(hellaswag_hidden_innovation_multi_slice_stress["pass_gate"]),
+        ),
+        (
+            "hellaswag_hidden_innovation_multi_slice_stress_has_3_contiguous_slices",
+            hellaswag_hidden_innovation_multi_slice_stress["headline"]["slice_count"] >= 3
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["pass_slice_count"]
+            == hellaswag_hidden_innovation_multi_slice_stress["headline"]["slice_count"]
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["total_eval_rows"] >= 3072
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["contiguous_validation_prefix"]
+            is True
+            and hellaswag_hidden_innovation_eval_slice_stress_2048_3072["headline"]["eval_slice_start"]
+            == 2048,
+        ),
+        (
+            "hellaswag_hidden_innovation_multi_slice_stress_beats_label_score_zero",
+            hellaswag_hidden_innovation_multi_slice_stress["headline"]["min_delta_vs_best_label_copy"] >= 0.02
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["min_ci95_low_vs_best_label_copy"]
+            > 0.0
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["min_delta_vs_score_only_bagged"]
+            >= 0.02
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["min_ci95_low_vs_score_only_bagged"]
+            > 0.0
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["min_delta_vs_zero_hidden"] >= 0.02,
+        ),
+        (
+            "hellaswag_hidden_innovation_multi_slice_stress_controls_and_jackknife",
+            hellaswag_hidden_innovation_multi_slice_stress["headline"][
+                "corrupted_hidden_controls_below_label_copy"
+            ]
+            is True
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["jackknife_slice_pass_count"]
+            == hellaswag_hidden_innovation_multi_slice_stress["headline"]["slice_count"],
+        ),
+        (
+            "hellaswag_hidden_innovation_multi_slice_stress_source_private_packet",
+            hellaswag_hidden_innovation_multi_slice_stress["headline"]["source_private_packet"] is True
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["raw_payload_bytes"] == 2
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"]["framed_record_bytes"] == 5,
+        ),
         ("hellaswag_repair_systems_acceptance_card_passes", bool(hellaswag_repair_systems_acceptance["pass_gate"])),
         (
             "hellaswag_repair_systems_acceptance_method_promoted",
@@ -2552,6 +2640,12 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     hellaswag_hidden_innovation_eval_slice_stress = _read_json(
         ROOT / REQUIRED_ARTIFACTS["hellaswag_hidden_innovation_eval_slice_stress"]
     )
+    hellaswag_hidden_innovation_eval_slice_stress_2048_3072 = _read_json(
+        ROOT / REQUIRED_ARTIFACTS["hellaswag_hidden_innovation_eval_slice_stress_2048_3072"]
+    )
+    hellaswag_hidden_innovation_multi_slice_stress = _read_json(
+        ROOT / REQUIRED_ARTIFACTS["hellaswag_hidden_innovation_multi_slice_stress"]
+    )
     hellaswag_repair_systems_acceptance = _read_json(
         ROOT / REQUIRED_ARTIFACTS["hellaswag_repair_systems_acceptance"]
     )
@@ -2636,6 +2730,8 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         hellaswag_hidden_innovation_train_sample_stress=hellaswag_hidden_innovation_train_sample_stress,
         hellaswag_hidden_innovation_bagged_gate=hellaswag_hidden_innovation_bagged_gate,
         hellaswag_hidden_innovation_eval_slice_stress=hellaswag_hidden_innovation_eval_slice_stress,
+        hellaswag_hidden_innovation_eval_slice_stress_2048_3072=hellaswag_hidden_innovation_eval_slice_stress_2048_3072,
+        hellaswag_hidden_innovation_multi_slice_stress=hellaswag_hidden_innovation_multi_slice_stress,
         hellaswag_repair_systems_acceptance=hellaswag_repair_systems_acceptance,
         mac_packet_ring=mac_packet_ring,
         cross_benchmark_systems=cross_benchmark_systems,
@@ -2708,6 +2804,8 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         hellaswag_hidden_innovation_train_sample_stress=hellaswag_hidden_innovation_train_sample_stress,
         hellaswag_hidden_innovation_bagged_gate=hellaswag_hidden_innovation_bagged_gate,
         hellaswag_hidden_innovation_eval_slice_stress=hellaswag_hidden_innovation_eval_slice_stress,
+        hellaswag_hidden_innovation_eval_slice_stress_2048_3072=hellaswag_hidden_innovation_eval_slice_stress_2048_3072,
+        hellaswag_hidden_innovation_multi_slice_stress=hellaswag_hidden_innovation_multi_slice_stress,
         hellaswag_repair_systems_acceptance=hellaswag_repair_systems_acceptance,
         mac_packet_ring=mac_packet_ring,
         serving_slo=serving_slo,
@@ -2719,7 +2817,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     payload = {
         "gate": "source_private_iclr_evidence_bundle",
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "readiness": "train-donor positive-method paper branch plus seed-stable ARC-Challenge and OpenBookQA public-basis endpoints; cross-benchmark source-state byte-floor systems comparator and native vLLM/SGLang benchmark plan now strengthen the systems story; HellaSwag single-denoiser hidden innovation fails fresh train-row-sample stress, but the predeclared bagged hidden-innovation packet now passes three-train-sample, 2-of-3 jackknife, and frozen heldout validation-slice stress as a live ICLR headline-candidate pending full-validation or predeclared multi-slice stress and native systems rows",
+        "readiness": "train-donor positive-method paper branch plus seed-stable ARC-Challenge and OpenBookQA public-basis endpoints; cross-benchmark source-state byte-floor systems comparator and native vLLM/SGLang benchmark plan now strengthen the systems story; HellaSwag single-denoiser hidden innovation fails fresh train-row-sample stress, but the predeclared bagged hidden-innovation packet now passes three-train-sample, 2-of-3 jackknife, frozen heldout validation-slice stress, and a three-contiguous-slice validation[0:3072] stress as a live ICLR headline-candidate pending remaining-slice/full-validation stress, strict cross-family falsification, and native systems rows",
         "pass_gate": all(check["pass"] for check in pass_checks),
         "pass_checks": pass_checks,
         "artifact_status": artifacts,
@@ -2874,6 +2972,21 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "slice_path": hellaswag_hidden_innovation_eval_slice_stress["slice_metadata"]["slice_path"],
             "total_wall_time_sec": hellaswag_hidden_innovation_eval_slice_stress["timing"]["total_seconds"],
         },
+        "hellaswag_hidden_innovation_eval_slice_stress_2048_3072_headline": {
+            **hellaswag_hidden_innovation_eval_slice_stress_2048_3072["headline"],
+            "pass_gate": hellaswag_hidden_innovation_eval_slice_stress_2048_3072["pass_gate"],
+            "slice_path": hellaswag_hidden_innovation_eval_slice_stress_2048_3072["slice_metadata"][
+                "slice_path"
+            ],
+            "total_wall_time_sec": hellaswag_hidden_innovation_eval_slice_stress_2048_3072["timing"][
+                "total_seconds"
+            ],
+        },
+        "hellaswag_hidden_innovation_multi_slice_stress_headline": {
+            **hellaswag_hidden_innovation_multi_slice_stress["headline"],
+            "pass_gate": hellaswag_hidden_innovation_multi_slice_stress["pass_gate"],
+            "slice_artifacts": hellaswag_hidden_innovation_multi_slice_stress["slice_artifacts"],
+        },
         "hellaswag_repair_systems_acceptance_headline": hellaswag_repair_systems_acceptance["headline"],
         "mac_packet_ring_transport_headline": mac_packet_ring["headline"],
         "serving_slo_envelope_headline": serving_slo["headline"],
@@ -2885,7 +2998,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         "remaining_iclr_risks": [
             "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
             "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
-            "HellaSwag anchored hidden-innovation repair passes cached split stability but fails the fresh 2027 train-row-sample stress; the new bagged gate now rescues the three-sample stress, passes 2-of-3 jackknife subbags, and clears a frozen validation[1024:2048] slice. It still needs full-validation or a predeclared multi-slice stress before comfortable headline promotion.",
+            "HellaSwag anchored hidden-innovation repair passes cached split stability but fails the fresh 2027 train-row-sample stress; the new bagged gate now rescues the three-sample stress, passes 2-of-3 jackknife subbags, clears frozen validation[1024:2048] and validation[2048:3072] heldout slices, and passes a contiguous validation[0:3072] multi-slice stress. It still needs remaining-slice/full-validation stress before comfortable headline promotion.",
             "HellaSwag source top-2 oracle headroom is still large after the hidden-innovation repair, so reviewers will expect ablations explaining why the repair recovers only part of the headroom.",
             "The train-only public receiver HellaSwag repair probe also fails below source-label copy, so the next repair gate needs train-split source scores or hidden source summaries rather than public lexical features alone.",
             "The 512-row train-source-score HellaSwag repair probe also fails below source-label copy, so score-shape repair is weakened unless a substantially richer train-source feature family is introduced.",

@@ -146,6 +146,15 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert "delta vs score-only bagged" in contribution_rows[
         "HellaSwag heldout-slice hidden-innovation stress"
     ]["main_metric"]
+    assert contribution_rows["HellaSwag multi-slice hidden-innovation stress"]["status"] == (
+        "new positive 3-slice gate / stronger HellaSwag headline-candidate"
+    )
+    assert "slices=3/3 contiguous" in contribution_rows[
+        "HellaSwag multi-slice hidden-innovation stress"
+    ]["headline_evidence"]
+    assert "min delta vs score-only/zero-hidden" in contribution_rows[
+        "HellaSwag multi-slice hidden-innovation stress"
+    ]["main_metric"]
     assert contribution_rows["HellaSwag repair systems acceptance card"]["status"] == (
         "new acceptance gate / hidden-innovation method row promoted"
     )
@@ -449,6 +458,20 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert eval_slice_headline["jackknife_pass_count"] == eval_slice_headline["jackknife_row_count"]
     assert eval_slice_headline["raw_payload_bytes"] == 2
     assert eval_slice_headline["framed_record_bytes"] == 5
+    eval_slice_2048_headline = payload["hellaswag_hidden_innovation_eval_slice_stress_2048_3072_headline"]
+    assert eval_slice_2048_headline["pass_gate"] is True
+    assert eval_slice_2048_headline["eval_slice_start"] == 2048
+    assert eval_slice_2048_headline["eval_slice_end_exclusive"] == 3072
+    assert eval_slice_2048_headline["selected_minus_best_label_copy"] >= 0.02
+    multi_slice_headline = payload["hellaswag_hidden_innovation_multi_slice_stress_headline"]
+    assert multi_slice_headline["pass_gate"] is True
+    assert multi_slice_headline["slice_count"] == 3
+    assert multi_slice_headline["pass_slice_count"] == 3
+    assert multi_slice_headline["total_eval_rows"] == 3072
+    assert multi_slice_headline["contiguous_validation_prefix"] is True
+    assert multi_slice_headline["min_delta_vs_best_label_copy"] >= 0.02
+    assert multi_slice_headline["min_delta_vs_score_only_bagged"] >= 0.02
+    assert multi_slice_headline["source_private_packet"] is True
     acceptance_headline = payload["hellaswag_repair_systems_acceptance_headline"]
     assert acceptance_headline["pass_gate"] is True
     assert acceptance_headline["rows"] == 7
@@ -543,6 +566,30 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     )
     assert any(
         check["check"] == "hellaswag_hidden_innovation_eval_slice_stress_controls_and_jackknife"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_passes" and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_has_3_contiguous_slices"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_beats_label_score_zero"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_controls_and_jackknife"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "hellaswag_hidden_innovation_multi_slice_stress_source_private_packet"
         and check["pass"]
         for check in payload["pass_checks"]
     )

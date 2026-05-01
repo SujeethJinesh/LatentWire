@@ -122,6 +122,14 @@
   the frozen 2-byte source-private packet remains positive on rows `1024:2048`
   with label-copy, score-only, zero-hidden, wrong-example, candidate-roll, and
   jackknife controls.
+- HellaSwag second heldout validation-slice hidden-innovation stress artifacts
+  showing the frozen 2-byte source-private packet remains positive on rows
+  `2048:3072` under the same label-copy, score-only, zero-hidden,
+  wrong-example, candidate-roll, and jackknife controls.
+- HellaSwag multi-slice hidden-innovation stress artifacts showing the same
+  2-byte raw / 5-byte framed source-private packet passes all three contiguous
+  validation slices `0:3072`, with weighted selected accuracy `0.482096`
+  versus best label-copy `0.441081` and score-only/zero-hidden `0.434896`.
 - Learned/calibrated synonym-dictionary packet script, tests, memo, and native
   plus synonym-stress `n=256` artifacts showing 4-byte bidirectional
   cross-family pass under strict controls, with public-calibration caveats.

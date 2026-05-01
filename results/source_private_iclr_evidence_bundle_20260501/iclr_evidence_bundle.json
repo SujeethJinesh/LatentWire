@@ -1,0 +1,3066 @@
+{
+  "arc_challenge_anchor_id_shuffle_test_headline": {
+    "all_seeds_pass": false,
+    "candidate_derangement_accuracy_max": 0.26535836177474403,
+    "matched_accuracy_max": 0.2619453924914676,
+    "matched_accuracy_mean": 0.248122866894198,
+    "matched_accuracy_min": 0.23976109215017063,
+    "matched_minus_best_destructive_min": -0.02815699658703069,
+    "matched_minus_same_byte_text_min": -0.07081911262798637,
+    "matched_minus_target_mean": -0.017235494880546078,
+    "matched_minus_target_min": -0.0255972696245734,
+    "paired_ci95_low_vs_target_min": -0.06143344709897611,
+    "pass_count": 0,
+    "same_byte_structured_text_accuracy": 0.310580204778157,
+    "seed_count": 5,
+    "target_accuracy": 0.26535836177474403
+  },
+  "arc_challenge_anchor_id_shuffle_validation_headline": {
+    "all_seeds_pass": false,
+    "candidate_derangement_accuracy_max": 0.26755852842809363,
+    "matched_accuracy_max": 0.26421404682274247,
+    "matched_accuracy_mean": 0.24949832775919734,
+    "matched_accuracy_min": 0.23745819397993312,
+    "matched_minus_best_destructive_min": -0.05685618729096992,
+    "matched_minus_same_byte_text_min": -0.11036789297658861,
+    "matched_minus_target_mean": 0.005351170568561869,
+    "matched_minus_target_min": -0.006688963210702337,
+    "paired_ci95_low_vs_target_min": -0.07533444816053511,
+    "pass_count": 0,
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "seed_count": 5,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_anchor_relative_seed_test_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.2150170648464164,
+    "matched_accuracy_max": 0.3447098976109215,
+    "matched_accuracy_mean": 0.3441979522184301,
+    "matched_accuracy_min": 0.3438566552901024,
+    "matched_minus_best_destructive_min": 0.06655290102389083,
+    "matched_minus_same_byte_text_min": 0.03327645051194539,
+    "matched_minus_target_mean": 0.07883959044368602,
+    "matched_minus_target_min": 0.07849829351535836,
+    "paired_ci95_low_vs_target_min": 0.03880119453924915,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.310580204778157,
+    "seed_count": 5,
+    "target_accuracy": 0.26535836177474403
+  },
+  "arc_challenge_anchor_relative_seed_validation_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.20066889632107024,
+    "matched_accuracy_max": 0.3879598662207358,
+    "matched_accuracy_mean": 0.3859531772575251,
+    "matched_accuracy_min": 0.38127090301003347,
+    "matched_minus_best_destructive_min": 0.1270903010033445,
+    "matched_minus_same_byte_text_min": 0.03344481605351174,
+    "matched_minus_target_mean": 0.14180602006688964,
+    "matched_minus_target_min": 0.137123745819398,
+    "paired_ci95_low_vs_target_min": 0.06513377926421406,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "seed_count": 5,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_anchor_value_shuffle_test_headline": {
+    "all_seeds_pass": false,
+    "candidate_derangement_accuracy_max": 0.2593856655290102,
+    "matched_accuracy_max": 0.2568259385665529,
+    "matched_accuracy_mean": 0.2464163822525597,
+    "matched_accuracy_min": 0.23464163822525597,
+    "matched_minus_best_destructive_min": -0.030716723549488067,
+    "matched_minus_same_byte_text_min": -0.07593856655290104,
+    "matched_minus_target_mean": -0.01894197952218431,
+    "matched_minus_target_min": -0.030716723549488067,
+    "paired_ci95_low_vs_target_min": -0.06399317406143344,
+    "pass_count": 0,
+    "same_byte_structured_text_accuracy": 0.310580204778157,
+    "seed_count": 5,
+    "target_accuracy": 0.26535836177474403
+  },
+  "arc_challenge_anchor_value_shuffle_validation_headline": {
+    "all_seeds_pass": false,
+    "candidate_derangement_accuracy_max": 0.27759197324414714,
+    "matched_accuracy_max": 0.2709030100334448,
+    "matched_accuracy_mean": 0.2414715719063545,
+    "matched_accuracy_min": 0.21739130434782608,
+    "matched_minus_best_destructive_min": -0.06688963210702345,
+    "matched_minus_same_byte_text_min": -0.13043478260869565,
+    "matched_minus_target_mean": -0.002675585284280946,
+    "matched_minus_target_min": -0.026755852842809374,
+    "paired_ci95_low_vs_target_min": -0.0903010033444816,
+    "pass_count": 0,
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "seed_count": 5,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_bridge_contract_headline": {
+    "local_checks": {
+      "combined_smoke_covers_validation_and_eval": true,
+      "local_validation_eval_disjoint": true,
+      "official_counts_match_expected": true,
+      "official_splits_disjoint": true,
+      "official_splits_materialized": true,
+      "source_answer_fields_forbidden": true
+    },
+    "official_rows": {
+      "test": 1172,
+      "train": 1119,
+      "validation": 299
+    },
+    "pass_gate": true,
+    "public_benchmark_result_ready": false
+  },
+  "arc_challenge_common_basis_seed_test_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.2158703071672355,
+    "matched_accuracy_max": 0.3438566552901024,
+    "matched_accuracy_mean": 0.3436860068259386,
+    "matched_accuracy_min": 0.3430034129692833,
+    "matched_minus_best_destructive_min": 0.06484641638225258,
+    "matched_minus_same_byte_text_min": 0.03242320819112626,
+    "matched_minus_target_mean": 0.07832764505119454,
+    "matched_minus_target_min": 0.07764505119453924,
+    "paired_ci95_low_vs_target_min": 0.03835324232081912,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.310580204778157,
+    "seed_count": 5,
+    "target_accuracy": 0.26535836177474403
+  },
+  "arc_challenge_common_basis_seed_validation_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.19732441471571907,
+    "matched_accuracy_max": 0.3879598662207358,
+    "matched_accuracy_mean": 0.3879598662207358,
+    "matched_accuracy_min": 0.3879598662207358,
+    "matched_minus_best_destructive_min": 0.10033444816053516,
+    "matched_minus_same_byte_text_min": 0.040133779264214076,
+    "matched_minus_target_mean": 0.14381270903010035,
+    "matched_minus_target_min": 0.14381270903010035,
+    "paired_ci95_low_vs_target_min": 0.07023411371237458,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "seed_count": 5,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_common_basis_test_headline": {
+    "best_destructive_control": "zero_source",
+    "best_destructive_control_accuracy": 0.26535836177474403,
+    "matched_accuracy": 0.3438566552901024,
+    "matched_minus_best_destructive": 0.07849829351535836,
+    "matched_minus_same_byte_text": 0.03327645051194539,
+    "matched_minus_target": 0.07849829351535836,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.12075511945392489,
+      "ci95_low": 0.035793515358361776,
+      "mean": 0.07849829351535836
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.11608361774744023,
+      "ci95_low": 0.04436860068259386,
+      "mean": 0.07849829351535836
+    },
+    "same_byte_structured_text_accuracy": 0.310580204778157,
+    "target_accuracy": 0.26535836177474403
+  },
+  "arc_challenge_common_basis_validation_headline": {
+    "best_destructive_control": "shuffled_source_packet",
+    "best_destructive_control_accuracy": 0.2508361204013378,
+    "matched_accuracy": 0.3879598662207358,
+    "matched_minus_best_destructive": 0.137123745819398,
+    "matched_minus_same_byte_text": 0.040133779264214076,
+    "matched_minus_target": 0.14381270903010035,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.2040133779264214,
+      "ci95_low": 0.06354515050167224,
+      "mean": 0.13712374581939799
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.2158026755852842,
+      "ci95_low": 0.07023411371237458,
+      "mean": 0.14381270903010032
+    },
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_fixed_packet_test_headline": {
+    "best_destructive_control": "zero_source",
+    "best_destructive_control_accuracy": 0.26535836177474403,
+    "matched_accuracy": 0.3455631399317406,
+    "matched_minus_best_destructive": 0.08020477815699656,
+    "matched_minus_same_byte_text": 0.03498293515358358,
+    "matched_minus_target": 0.08020477815699656,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.12246160409556311,
+      "ci95_low": 0.037500000000000006,
+      "mean": 0.08020477815699659
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.11734215017064845,
+      "ci95_low": 0.04562713310580205,
+      "mean": 0.08020477815699659
+    },
+    "same_byte_structured_text_accuracy": 0.310580204778157,
+    "target_accuracy": 0.26535836177474403
+  },
+  "arc_challenge_fixed_packet_validation_headline": {
+    "best_destructive_control": "shuffled_source_packet",
+    "best_destructive_control_accuracy": 0.27424749163879597,
+    "matched_accuracy": 0.38461538461538464,
+    "matched_minus_best_destructive": 0.11036789297658867,
+    "matched_minus_same_byte_text": 0.03678929765886291,
+    "matched_minus_target": 0.14046822742474918,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.1823578595317725,
+      "ci95_low": 0.04013377926421405,
+      "mean": 0.11036789297658862
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.20735785953177258,
+      "ci95_low": 0.06688963210702341,
+      "mean": 0.14046822742474915
+    },
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_random_anchors_test_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.2150170648464164,
+    "matched_accuracy_max": 0.3438566552901024,
+    "matched_accuracy_mean": 0.3438566552901024,
+    "matched_accuracy_min": 0.3438566552901024,
+    "matched_minus_best_destructive_min": 0.062286689419795205,
+    "matched_minus_same_byte_text_min": 0.03327645051194539,
+    "matched_minus_target_mean": 0.07849829351535836,
+    "matched_minus_target_min": 0.07849829351535836,
+    "paired_ci95_low_vs_target_min": 0.03835324232081912,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.310580204778157,
+    "seed_count": 5,
+    "target_accuracy": 0.26535836177474403
+  },
+  "arc_challenge_random_anchors_validation_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.19732441471571907,
+    "matched_accuracy_max": 0.3879598662207358,
+    "matched_accuracy_mean": 0.3879598662207358,
+    "matched_accuracy_min": 0.3879598662207358,
+    "matched_minus_best_destructive_min": 0.11036789297658867,
+    "matched_minus_same_byte_text_min": 0.040133779264214076,
+    "matched_minus_target_mean": 0.14381270903010035,
+    "matched_minus_target_min": 0.14381270903010035,
+    "paired_ci95_low_vs_target_min": 0.07023411371237458,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "seed_count": 5,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_seed_stability_test_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.2158703071672355,
+    "matched_accuracy_max": 0.3455631399317406,
+    "matched_accuracy_mean": 0.3436860068259386,
+    "matched_accuracy_min": 0.3412969283276451,
+    "matched_minus_best_destructive_min": 0.07593856655290104,
+    "matched_minus_same_byte_text_min": 0.030716723549488067,
+    "matched_minus_target_mean": 0.07832764505119454,
+    "matched_minus_target_min": 0.07593856655290104,
+    "paired_ci95_low_vs_target_min": 0.03754266211604096,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.310580204778157,
+    "seed_count": 5,
+    "target_accuracy": 0.26535836177474403
+  },
+  "arc_challenge_seed_stability_validation_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.19732441471571907,
+    "matched_accuracy_max": 0.38461538461538464,
+    "matched_accuracy_mean": 0.3839464882943144,
+    "matched_accuracy_min": 0.38127090301003347,
+    "matched_minus_best_destructive_min": 0.10033444816053516,
+    "matched_minus_same_byte_text_min": 0.03344481605351174,
+    "matched_minus_target_mean": 0.13979933110367895,
+    "matched_minus_target_min": 0.137123745819398,
+    "paired_ci95_low_vs_target_min": 0.06513377926421406,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "seed_count": 5,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_source_latent_endpoint_validation_headline": {
+    "best_destructive_control": "candidate_derangement",
+    "best_destructive_control_accuracy": 0.25418060200668896,
+    "candidate_derangement_accuracy": 0.25418060200668896,
+    "matched_accuracy": 0.2809364548494983,
+    "matched_minus_best_destructive": 0.026755852842809347,
+    "matched_minus_same_byte_text": -0.06688963210702342,
+    "matched_minus_target": 0.03678929765886285,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.10877926421404674,
+      "ci95_low": -0.05526755852842809,
+      "mean": 0.026755852842809364
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.10702341137123746,
+      "ci95_low": -0.03520066889632106,
+      "mean": 0.03678929765886288
+    },
+    "same_byte_structured_text_accuracy": 0.34782608695652173,
+    "source_feature_permutation_accuracy": 0.22073578595317725,
+    "target_accuracy": 0.24414715719063546
+  },
+  "arc_challenge_systems_trace_headline": {
+    "batch64_cacheline_bytes_per_request": 15.0,
+    "batch64_dma_bytes_per_request": 16.0,
+    "colm_systems_trace_ready": true,
+    "iclr_native_systems_complete": false,
+    "mac_measured_rows": 2,
+    "payload_bytes": 12.0,
+    "pending_native_rows": 5,
+    "record_bytes": 15.0,
+    "single_request_cacheline_bytes": 64.0,
+    "single_request_dma_bytes": 128.0,
+    "test_candidate_feature_cache_mib_float32_floor": 6.86572265625,
+    "test_candidate_feature_cache_mib_float64": 13.7314453125,
+    "test_candidate_pairs": 4687,
+    "test_ci95_low_vs_target": 0.04436860068259386,
+    "test_matched_accuracy": 0.3438566552901024,
+    "test_pass_gate": true,
+    "test_peak_rss_mib": 7261.28125,
+    "test_receiver_decode_p50_us": 31.729490729048848,
+    "test_receiver_decode_p95_us": 104.33304123580456,
+    "test_same_byte_text_accuracy": 0.310580204778157,
+    "test_seed_pass_count": 5,
+    "test_source_scoring_ms_per_question": 251.02686614760455,
+    "test_target_accuracy": 0.26535836177474403,
+    "validation_pass_gate": true,
+    "validation_seed_pass_count": 5
+  },
+  "artifact_status": {
+    "arc_challenge_anchor_id_shuffle_test": {
+      "bytes": 23098,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_id_shuffle_test/arc_challenge_seed_stability.json",
+      "sha256": "ff4193a41fc4c4b1122ddd9b4e8ab2418c005b6e56e5b4e71f9765f01f47edcc"
+    },
+    "arc_challenge_anchor_id_shuffle_validation": {
+      "bytes": 23043,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_id_shuffle_validation/arc_challenge_seed_stability.json",
+      "sha256": "91e6a3835e22c356173160701d3934c744e95496d9782e939449b4fb746326bf"
+    },
+    "arc_challenge_anchor_relative_seed_test": {
+      "bytes": 22419,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_relative_test/arc_challenge_seed_stability.json",
+      "sha256": "f7765761f8809624aa3064f4a0a8a4dd9d37767f1f0d2edcd9f7b3181da242cf"
+    },
+    "arc_challenge_anchor_relative_seed_validation": {
+      "bytes": 22400,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_relative_validation/arc_challenge_seed_stability.json",
+      "sha256": "3fafb56642d5acd60835426459a8b7c0917359672959e6f5c7f16a8eb7c9f691"
+    },
+    "arc_challenge_anchor_value_shuffle_test": {
+      "bytes": 22963,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_value_shuffle_test/arc_challenge_seed_stability.json",
+      "sha256": "74babf8ed32ec748c969f7071c41e87691861d425b3780abb1bfa5a36b449993"
+    },
+    "arc_challenge_anchor_value_shuffle_validation": {
+      "bytes": 22900,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_value_shuffle_validation/arc_challenge_seed_stability.json",
+      "sha256": "8bacc03b9d089a831176f1adc7fbe65de17966c7c24e9a6b23b36d3db8dc81ba"
+    },
+    "arc_challenge_bridge_contract": {
+      "bytes": 9252,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_bridge_contract_20260501/arc_challenge_bridge_contract.json",
+      "sha256": "98af0e89b9013461fc349f7df530389fc32a40e9a16bf36b53c70cf7798e2324"
+    },
+    "arc_challenge_common_basis_seed_test": {
+      "bytes": 22108,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/arc_challenge_seed_stability.json",
+      "sha256": "c9ede426c34a465e02b6d6795ace3388123bc9453eeafcf2f8229bf1f845861d"
+    },
+    "arc_challenge_common_basis_seed_validation": {
+      "bytes": 22127,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/arc_challenge_seed_stability.json",
+      "sha256": "5afa803d249121cceab2f2d5080fb532ae8c5bf17f674c7b78d74c156c91d3b8"
+    },
+    "arc_challenge_common_basis_test": {
+      "bytes": 7412,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/arc_challenge_fixed_packet_gate.json",
+      "sha256": "cb1eedd3898e274ff118d2af740a8167489435b1a4658701b9aaf1fefe16ae87"
+    },
+    "arc_challenge_common_basis_validation": {
+      "bytes": 7415,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_validation/arc_challenge_fixed_packet_gate.json",
+      "sha256": "d49f1ee8b04e745ab148eeea9f90b6bec07b4308e30659cb6bd2ba32e5f5c52b"
+    },
+    "arc_challenge_fixed_packet_test": {
+      "bytes": 6041,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_test/arc_challenge_fixed_packet_gate.json",
+      "sha256": "dea079cdd8ab2ab84d1839e6ef527128d98c2d811e1baa81abdd9e389d45f253"
+    },
+    "arc_challenge_fixed_packet_validation": {
+      "bytes": 6044,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_validation/arc_challenge_fixed_packet_gate.json",
+      "sha256": "2f745b7f6ab9b6dfa8b34c67e6791f28cd052108401edac354d8a01ded9bbf43"
+    },
+    "arc_challenge_random_anchors_test": {
+      "bytes": 22928,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_random_anchors_test/arc_challenge_seed_stability.json",
+      "sha256": "1d05615859988e3cbf58c36085ec7bed682f3900423aaa9809dc43718bf38556"
+    },
+    "arc_challenge_random_anchors_validation": {
+      "bytes": 22939,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_random_anchors_validation/arc_challenge_seed_stability.json",
+      "sha256": "505b4905957143aea61a5e8f4c89f72bc63b255781f5b24800d6e35021510977"
+    },
+    "arc_challenge_seed_stability_test": {
+      "bytes": 22257,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_bge_test/arc_challenge_seed_stability.json",
+      "sha256": "10bf07ab7a806060afa97450fb6917d90922f12bde8979bc11a6550871a2bd29"
+    },
+    "arc_challenge_seed_stability_validation": {
+      "bytes": 22277,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_bge_validation/arc_challenge_seed_stability.json",
+      "sha256": "2380dcdf4cbf580d982939a6e6fc05057b29025607b07ed060519806c13d3fb0"
+    },
+    "arc_challenge_source_latent_endpoint_validation": {
+      "bytes": 7624,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_source_latent_endpoint_gate_20260501_qwen05_bge_validation/source_latent_endpoint_gate.json",
+      "sha256": "792c1fa8d0733d7891b7bdb55f6ae2e7ad4f81d3eac71d82d426fd2f07adcc06"
+    },
+    "arc_challenge_systems_trace": {
+      "bytes": 12809,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_systems_trace_20260501/arc_challenge_systems_trace.json",
+      "sha256": "59a266d90a48d91c5a756b348b9c34a44c12a3b30e8828a6494890885ef435ce"
+    },
+    "candidate_conditioned_packet_builder_seed47": {
+      "bytes": 4180,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_smoke_20260501/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "11759a123931f5ecabdfdd9510e27f4f808210cdc3838bc45f1cb4ea704dc503"
+    },
+    "candidate_conditioned_packet_builder_seed53": {
+      "bytes": 4215,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_smoke_20260501_seed53/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "6fcabaff53eed4972a948d60fab4862c35b4fb48ad973ea53cab8de7ea422bd1"
+    },
+    "candidate_conditioned_packet_builder_seed59": {
+      "bytes": 4239,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_smoke_20260501_seed59/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "5c76fb926b6c6ddb3a31a831b8353ca30673acca19021fd96dea2ecd85599b16"
+    },
+    "candidate_local_competitor_basis": {
+      "bytes": 24491,
+      "exists": true,
+      "path": "results/source_private_candidate_local_competitor_basis_table_20260430/candidate_local_competitor_basis_table.json",
+      "sha256": "b45200ba5e725b9ebe0b4c29f92abde87bd8b868dcc29253084496809a173c41"
+    },
+    "candidate_local_cross_family": {
+      "bytes": 24347,
+      "exists": true,
+      "path": "results/source_private_candidate_local_cross_family_gate_20260430/candidate_local_cross_family_gate.json",
+      "sha256": "a7672036fa5025fb61f9610dcbe742456899980f26d6e8d9065b3b56e237e62c"
+    },
+    "candidate_local_margin_atlas": {
+      "bytes": 113777387,
+      "exists": true,
+      "path": "results/source_private_candidate_local_margin_atlas_20260501/margin_atlas.json",
+      "sha256": "ae6b378ddb23e611ff0d816f188355a7c5bcfea1bc0fd35f9441cb439769ff97"
+    },
+    "candidate_local_systems_boundary": {
+      "bytes": 32422,
+      "exists": true,
+      "path": "results/source_private_candidate_local_systems_boundary_trace_20260430/candidate_local_systems_boundary_trace.json",
+      "sha256": "e451468cbf70b45335f62b37515a5a63858b39180ed0a3991f40b81f3827b007"
+    },
+    "candidate_local_threshold_frontier": {
+      "bytes": 230887,
+      "exists": true,
+      "path": "results/source_private_candidate_local_threshold_frontier_20260501/candidate_local_threshold_frontier.json",
+      "sha256": "98d9ccd0db0aae48d1d71bac7e86d99e7f2a66f3783d709f621273cefc2ea3cd"
+    },
+    "coded_label_risk": {
+      "bytes": 439485,
+      "exists": true,
+      "path": "results/source_private_coded_label_risk_gate_20260429/summary.json",
+      "sha256": "d29b2ba829b8fc09cbe0204f80d34f9ec298b71d3fb71e7a0c7b6902eecd8240"
+    },
+    "commonsenseqa_bridge_contract": {
+      "bytes": 5710,
+      "exists": true,
+      "path": "results/source_private_commonsenseqa_bridge_contract_20260501/commonsenseqa_bridge_contract.json",
+      "sha256": "886816f16e5ebebecc94ee55b47c1ae63aebd37b34c92cf0d9591b8377ad491d"
+    },
+    "commonsenseqa_fixed_packet_validation_12b": {
+      "bytes": 7447,
+      "exists": true,
+      "path": "results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/arc_challenge_fixed_packet_gate.json",
+      "sha256": "fc94ae02d5cccc0527eaa538df6bfe0efbfb207d5ed192e2127d3fbb9411ede9"
+    },
+    "commonsenseqa_seed_validation_2b_gap001": {
+      "bytes": 22250,
+      "exists": true,
+      "path": "results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b_gap001/arc_challenge_seed_stability.json",
+      "sha256": "6d853c596ef7c190ad57b1a8a4d8f760048aa919d13370598349160a22cebbd8"
+    },
+    "commonsenseqa_seed_validation_2b_strict": {
+      "bytes": 22257,
+      "exists": true,
+      "path": "results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b/arc_challenge_seed_stability.json",
+      "sha256": "ff7642fb1e36df3df49033b29cea5c8282a10964f451e7f23ee9377b7874517c"
+    },
+    "cross_benchmark_systems_comparator": {
+      "bytes": 13441,
+      "exists": true,
+      "path": "results/source_private_cross_benchmark_systems_comparator_20260501/cross_benchmark_systems_comparator.json",
+      "sha256": "ca10a9ea567d57853d697beecc47f17903297040afafa266ad5ae7c1890fb8a7"
+    },
+    "endpoint_uncertainty_core": {
+      "bytes": 7998,
+      "exists": true,
+      "path": "results/source_private_endpoint_uncertainty_20260429/core_label_strict_n160/summary.json",
+      "sha256": "a868bc1961c969b17c98e0363c389b19561e1414fe93170cb4e364cbaaa82646"
+    },
+    "endpoint_uncertainty_holdout": {
+      "bytes": 15231,
+      "exists": true,
+      "path": "results/source_private_endpoint_uncertainty_20260429/label_strict_n160/summary.json",
+      "sha256": "1baec769e5dea93975b36972b0e2ce9b240997a5befbf5a467c24574f7c57511"
+    },
+    "final_manifest": {
+      "bytes": 859641,
+      "exists": true,
+      "path": "final/MANIFEST.sha256",
+      "sha256": "63720995f21b97b2a5a48d7569710b0dba17e9d7170d109c12a3f4961ea802ce"
+    },
+    "final_table_doc": {
+      "bytes": 11779,
+      "exists": true,
+      "path": "paper/source_private_tool_trace_final_table_20260429.md",
+      "sha256": "3b0fc244aa97119e47e845e95aa3eb65f56e5d3aeb327e9450f8df96ef851eea"
+    },
+    "hellaswag_bridge_contract": {
+      "bytes": 6093,
+      "exists": true,
+      "path": "results/source_private_hellaswag_bridge_contract_20260501/hellaswag_bridge_contract.json",
+      "sha256": "3e230543182b25b1f76877f7f82c1fad322747a78892b6ff3b73ffe440eab70f"
+    },
+    "hellaswag_control_suite": {
+      "bytes": 3112,
+      "exists": true,
+      "path": "results/source_private_hellaswag_control_suite_20260501/hellaswag_control_suite.json",
+      "sha256": "6528c8ff02e00b6b3f3da854f1e95d1420b2d1827afc49f38dd59700cb10a168"
+    },
+    "hellaswag_fixed_packet_validation1024_2b": {
+      "bytes": 7313,
+      "exists": true,
+      "path": "results/source_private_hellaswag_fixed_packet_gate_20260501_qwen05_hashed_validation1024_2b/arc_challenge_fixed_packet_gate.json",
+      "sha256": "7e22bee9ae7060b7cd084b7d3c0af84128daaa0ad207da1b36610d6a156e219b"
+    },
+    "hellaswag_hidden_innovation_bagged_gate": {
+      "bytes": 37474,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json",
+      "sha256": "dde286891d1858ea35e207ea308a96632bd015b8964e5f8ea9978c1dbafec899"
+    },
+    "hellaswag_hidden_innovation_eval_slice_stress": {
+      "bytes": 64753,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "f73d712c6813ba85cff6bcae8903ec15fa5681efeb3806c497914f75789c769a"
+    },
+    "hellaswag_hidden_innovation_eval_slice_stress_2048_3072": {
+      "bytes": 64685,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "131f06101fe7989657c618482b59882265890dde44bae4d3c4fb53c58c6d5d9e"
+    },
+    "hellaswag_hidden_innovation_multi_slice_stress": {
+      "bytes": 7578,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_3072/hellaswag_hidden_innovation_multi_slice_stress.json",
+      "sha256": "da467369f14c7a7c41d67fafd2e0c29501688ad1013ee1f08b7fffc54fcab9e0"
+    },
+    "hellaswag_hidden_innovation_repair": {
+      "bytes": 40928,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_innovation_repair_probe_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_repair_probe.json",
+      "sha256": "6a948485aabf937af8d3432b1599b94eac6b23afa7bb1d879bc817dde2da706b"
+    },
+    "hellaswag_hidden_innovation_stability": {
+      "bytes": 46934,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_innovation_stability_gate_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_stability_gate.json",
+      "sha256": "9fa9c6392b3ecb016d5f1326157bbe7cb1c91eb167a0fc492f1b571d73ac10cc"
+    },
+    "hellaswag_hidden_innovation_train_sample_stress": {
+      "bytes": 32308,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_train_sample_stress.json",
+      "sha256": "b9c360463c77b3c6f88e607f9fac2faaa3fc427f354dc1bbd76cc03206cbffd5"
+    },
+    "hellaswag_hidden_summary_repair": {
+      "bytes": 44493,
+      "exists": true,
+      "path": "results/source_private_hellaswag_hidden_summary_repair_probe_20260501_qwen05_train512_validation1024/hellaswag_hidden_summary_repair_probe.json",
+      "sha256": "748439de9878086056dc8234a7c64082b29d4d63ca838057a53a5d14d94fc07f"
+    },
+    "hellaswag_public_receiver_repair": {
+      "bytes": 4102,
+      "exists": true,
+      "path": "results/source_private_hellaswag_public_receiver_repair_probe_20260501_qwen05_validation1024/hellaswag_public_receiver_repair_probe.json",
+      "sha256": "a4a4ce7506ace4a65f0a2078c873410ba7563127b370cca3460644f5e1995202"
+    },
+    "hellaswag_repair_systems_acceptance": {
+      "bytes": 19084,
+      "exists": true,
+      "path": "results/source_private_hellaswag_repair_systems_acceptance_card_20260501/hellaswag_repair_systems_acceptance_card.json",
+      "sha256": "b933d8ff936a3ec871b851d4e5bf5879997afae2997ba8b995738475156c936d"
+    },
+    "hellaswag_score_packet_headroom": {
+      "bytes": 6208,
+      "exists": true,
+      "path": "results/source_private_hellaswag_score_packet_headroom_20260501_qwen05_validation1024/hellaswag_score_packet_headroom.json",
+      "sha256": "da6309dff7b8db4745e3c8a3bcf3f19316abff8b40d2253f890f388c3e5bdf70"
+    },
+    "hellaswag_seed_validation1024_2b_5seed": {
+      "bytes": 21185,
+      "exists": true,
+      "path": "results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/arc_challenge_seed_stability.json",
+      "sha256": "37f0fca016e6c5b17c6a23d9d5b09e17154921cf51d85bed67a9c8f300d548bd"
+    },
+    "hellaswag_top2_contrastive_repair": {
+      "bytes": 41132,
+      "exists": true,
+      "path": "results/source_private_hellaswag_top2_contrastive_repair_probe_20260501_qwen05_train512_validation1024/hellaswag_top2_contrastive_repair_probe.json",
+      "sha256": "00b19238e672c7902f85d190edce950d6bf8a55cacc54c665d5f13655ebb62df"
+    },
+    "hellaswag_train_source_score_repair": {
+      "bytes": 27853,
+      "exists": true,
+      "path": "results/source_private_hellaswag_train_source_score_repair_probe_20260501_qwen05_train512_validation1024/hellaswag_train_source_score_repair_probe.json",
+      "sha256": "431f3a9a1eb3f7ae71e98986303f65847efd790f96f93d87a3a0c8f26dd750d3"
+    },
+    "kv_cache_baseline": {
+      "bytes": 15104,
+      "exists": true,
+      "path": "results/source_private_kv_cache_baseline_table_20260429/kv_cache_baseline_table.json",
+      "sha256": "c2dd1ec937267cabb15cf47f320b6e94e85e5e8b87245d137d56b8abffa339c5"
+    },
+    "mac_packet_ring_transport": {
+      "bytes": 24375,
+      "exists": true,
+      "path": "results/source_private_mac_packet_ring_transport_microbench_20260501/packet_ring_transport_microbench.json",
+      "sha256": "3359c8817e49d5d558824f476ae5e026a285adc51eb2363c0408966d8403897f"
+    },
+    "native_readiness_ledger": {
+      "bytes": 17016,
+      "exists": true,
+      "path": "results/source_private_native_readiness_ledger_20260501/native_readiness_ledger.json",
+      "sha256": "309f4b222aae7df5db62a6f73ddc3bfe4b993f9bc7da19abd851424ad9ba8dda"
+    },
+    "native_systems_benchmark_plan": {
+      "bytes": 17958,
+      "exists": true,
+      "path": "results/source_private_native_systems_benchmark_plan_20260501/native_systems_benchmark_plan.json",
+      "sha256": "abb64451bd2421f6e379883f7305fccbe900a7ad5c35cfaa5222171c5d8013cb"
+    },
+    "openbookqa_bridge_contract": {
+      "bytes": 5946,
+      "exists": true,
+      "path": "results/source_private_openbookqa_bridge_contract_20260501/openbookqa_bridge_contract.json",
+      "sha256": "7a3fe9056a0ede361ccc96d649d4141d2dce7beec0a4cb7315506a14e5446187"
+    },
+    "openbookqa_fixed_packet_test_4b": {
+      "bytes": 7139,
+      "exists": true,
+      "path": "results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/arc_challenge_fixed_packet_gate.json",
+      "sha256": "dc42af65944c8a3912ff8f125ac41d97dab5f4f710947233f74d165799258b3f"
+    },
+    "openbookqa_fixed_packet_validation": {
+      "bytes": 7179,
+      "exists": true,
+      "path": "results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_validation/arc_challenge_fixed_packet_gate.json",
+      "sha256": "378ede40f11a6edc0de9b35a5020952bb50492cfbfb9bcf120a40fa7e861224a"
+    },
+    "openbookqa_seed_stability_test_3b": {
+      "bytes": 20542,
+      "exists": true,
+      "path": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/arc_challenge_seed_stability.json",
+      "sha256": "999fefa6cebb762eebbb78957969fc2832781ec79734aefdaa1746227dceaec6"
+    },
+    "openbookqa_seed_stability_validation_3b": {
+      "bytes": 20577,
+      "exists": true,
+      "path": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_validation_3b/arc_challenge_seed_stability.json",
+      "sha256": "c619efe2393e9e418526dd0e7b32f9b588f77c3a66014293f7b24bb1197d33f3"
+    },
+    "pass_fail_ledger": {
+      "bytes": 116447,
+      "exists": true,
+      "path": "results/source_private_pass_fail_ledger_20260429/pass_fail_ledger.json",
+      "sha256": "19b0f6440a2ffa59dfa5d4fdd0c4912ef1da61f3becb0430ce71956ab7423320"
+    },
+    "rate_frontier": {
+      "bytes": 36356,
+      "exists": true,
+      "path": "results/source_private_rate_frontier_20260429/rate_frontier.json",
+      "sha256": "7321e1dc53e677630c66c5847af845b1a27c9e2f5f70d313e8994f26e6fac229"
+    },
+    "readiness_doc": {
+      "bytes": 215188,
+      "exists": true,
+      "path": "paper/repo_readiness_review_20260426.md",
+      "sha256": "6721f85eb29b254a810e688747b019161d1ae13f02fddf4d97be6ecfae09783f"
+    },
+    "sciq_bridge_contract": {
+      "bytes": 6386,
+      "exists": true,
+      "path": "results/source_private_sciq_bridge_contract_20260501/sciq_bridge_contract.json",
+      "sha256": "c5de332f794ac4a7f1942dfb26c956ff90da0ce06c9d665132ba45e2fe7b10ef"
+    },
+    "sciq_fixed_packet_validation": {
+      "bytes": 7146,
+      "exists": true,
+      "path": "results/source_private_sciq_fixed_packet_gate_20260501_qwen05_hashed_validation/arc_challenge_fixed_packet_gate.json",
+      "sha256": "30d4fe0576b90e2aef3504a40fbb91d7dc38937c17938658d3f60ac4e33ce820"
+    },
+    "serving_slo_envelope": {
+      "bytes": 14074,
+      "exists": true,
+      "path": "results/source_private_serving_slo_envelope_20260501/serving_slo_envelope.json",
+      "sha256": "8b7c49e78b103dd70fa8606ea3e2270efe3309215b26d1dfbf6d38bfdeb008c4"
+    },
+    "source_prioritized_packet_builder_loo_seed47": {
+      "bytes": 4303,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "c8faee85f065048b25dbdfa2dcc0d27a83ffeb68bf4af8d2c167c2a61c372d3a"
+    },
+    "source_prioritized_packet_builder_loo_seed53": {
+      "bytes": 4307,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501_seed53/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "b487c311d42b845d5d175bc573f582d21860df7111d36f7c221fd2accb1f9c5d"
+    },
+    "source_prioritized_packet_builder_loo_seed59": {
+      "bytes": 4329,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501_seed59_serial/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "b4fe49992be7dd3f46f06b055e253e1814b98395225e773db17d1639c8e78e1e"
+    },
+    "systems_rate_assumption_frontier": {
+      "bytes": 38387,
+      "exists": true,
+      "path": "results/source_private_systems_rate_assumption_frontier_20260501/systems_rate_assumption_frontier.json",
+      "sha256": "109250e4f1797f6c94dff34bd102dfd86b6faf4fcb6fe5d3c75f90ee508a7fcd"
+    },
+    "systems_summary": {
+      "bytes": 8223,
+      "exists": true,
+      "path": "results/source_private_systems_summary_20260428/systems_summary.json",
+      "sha256": "85aae1304598f8e94eeeb61e221d468e68e48307d68b2c75f4283ed402acac74"
+    },
+    "train_donor_antishuffle_seed47_n128": {
+      "bytes": 4550,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_seed47_n128_budget14/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "ee14a5682af34f4776b34e86529e44ffd60b7faedcd8f0994eefcf9d14e90c93"
+    },
+    "train_donor_antishuffle_seed47_n512": {
+      "bytes": 4573,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_seed47_n512_budget14/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "764259eca04ccd3582dc383d87bbc7b4b259e5eff4a1ed7111dad6f8609958f4"
+    },
+    "train_donor_antishuffle_seed47_n512_budget12": {
+      "bytes": 3776,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_seed47_n512_budget12_cross/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "26c31b628e30f10f3634022eff55f8c46d83add864042a00175ce872e26cc017"
+    },
+    "train_donor_antishuffle_seed53_n128": {
+      "bytes": 4549,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_seed53_n128_budget12/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "59900485a7ca7255de8cf520216c147c88bc964b41200d73bc4d13554ea22aa5"
+    },
+    "train_donor_antishuffle_seed53_n512": {
+      "bytes": 6805,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_seed53_n512_budget12_14/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "98c4a3602b0c2a9286b3dbab6e8583921d67b041192d9c408cc9ea9471bd9650"
+    },
+    "train_donor_antishuffle_seed59_n128": {
+      "bytes": 4516,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_seed59_n128_budget12/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "5f89d50dc253a924b72702cc45a65c7584c375a73d2acf08a8275b2e0ac7dd64"
+    },
+    "train_donor_antishuffle_seed59_n512": {
+      "bytes": 6799,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_seed59_n512_budget12_14/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "beb0318f0bf8b4a385e532ff1c48acb9ebded663be43ab1a2a70a5e2e3db2750"
+    },
+    "train_donor_fixed12_eval_audit": {
+      "bytes": 5220,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_fixed12b_eval_audit_20260501/fixed_budget_eval_audit.json",
+      "sha256": "2ee3749ab4ef68ee725c350308f75f19e2151f41dff1a19f6ff2b3e985160384"
+    },
+    "train_donor_locked_rate_frontier": {
+      "bytes": 22135,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_locked_rate_frontier_20260501/train_donor_locked_rate_frontier.json",
+      "sha256": "c51c4487ee83b269017f3d76dc7b50f6e8342aedb4d2be99e0720aec8fc17a49"
+    },
+    "train_donor_stable_gap_selector": {
+      "bytes": 27921,
+      "exists": true,
+      "path": "results/source_private_train_donor_antishuffle_stable_gap_seed47_53_59_20260501/train_donor_locked_rate_frontier.json",
+      "sha256": "ed6b23f15d84468ff76993d2d5b0aa652064352b059114221ebb7604c5fb080e"
+    },
+    "train_receiver_permuted_null_gap_seed47": {
+      "bytes": 4841,
+      "exists": true,
+      "path": "results/source_private_train_only_receiver_permuted_null_gap_20260501_seed47_n512/learned_synonym_dictionary_packet_gate.json",
+      "sha256": "3f4ca3da06742bdfb1d54b61da94e42e1ddb5a80bd43b2d9123e2e7136e261d9"
+    },
+    "train_receiver_permuted_null_gap_seed53": {
+      "bytes": 4849,
+      "exists": true,
+      "path": "results/source_private_train_only_receiver_permuted_null_gap_20260501_seed53_n512/learned_synonym_dictionary_packet_gate.json",
+      "sha256": "f69e8e3246503028f22fd97660c014b405f70a730c55d6041e57f23bee3d5522"
+    },
+    "train_receiver_permuted_null_gap_seed59": {
+      "bytes": 4827,
+      "exists": true,
+      "path": "results/source_private_train_only_receiver_permuted_null_gap_20260501_seed59_n512/learned_synonym_dictionary_packet_gate.json",
+      "sha256": "db10e1db233596fdd4b171db44f39399d53933eefd86171aa212ff062aaa361b"
+    },
+    "train_sender_packet_builder_rate": {
+      "bytes": 10765,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_rate_20260501/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "988827d6a89bc83a83221d89a498913a1eb868861826ece6efd78e6fb09f3bca"
+    },
+    "train_sender_packet_builder_seed47": {
+      "bytes": 4312,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "490661a5e5561e07e6aba9b6e18f911ca59b16ad1617d6db3c98136fe70c897c"
+    },
+    "train_sender_packet_builder_seed53": {
+      "bytes": 4343,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501_seed53/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "34359ac4c6487073094eb03ed11bb7d962b31c1de72c57181fe4c0cd6d79bf7b"
+    },
+    "train_sender_packet_builder_seed59": {
+      "bytes": 4345,
+      "exists": true,
+      "path": "results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501_seed59/candidate_conditioned_packet_builder_smoke.json",
+      "sha256": "d22c98034181f48c376cda6da259b3a6318b2f25c423e38e005b46d88a1090bc"
+    }
+  },
+  "candidate_conditioned_packet_builder_headline": {
+    "all_seed_cross_family_pass": true,
+    "max_base_accuracy": 0.625,
+    "max_best_control_accuracy": 0.2578125,
+    "max_candidate_accuracy": 0.875,
+    "max_target_accuracy": 0.25,
+    "min_base_accuracy": 0.5,
+    "min_candidate_accuracy": 0.875,
+    "min_candidate_minus_base": 0.25,
+    "min_passing_ci95_low_vs_base": 0.2109375,
+    "pass_rows": 9,
+    "row_count": 9,
+    "seed_count": 3
+  },
+  "commonsenseqa_bridge_contract_headline": {
+    "labeled_rows": {
+      "train": 9741,
+      "validation": 1221
+    },
+    "local_checks": {
+      "duplicate_choice_row_count": 146,
+      "duplicate_content_id_count": 0,
+      "labeled_counts_match_expected": true,
+      "labeled_schema_valid": true,
+      "labeled_splits_disjoint": true,
+      "labeled_splits_materialized": true,
+      "question_concept_forbidden_for_this_gate": true,
+      "source_answer_fields_forbidden": true,
+      "test_labels_unavailable_in_hf_mirror": true
+    },
+    "pass_gate": true
+  },
+  "commonsenseqa_fixed_packet_validation_12b_headline": {
+    "best_destructive_control": "shuffled_source_packet",
+    "best_destructive_control_accuracy": 0.20966420966420968,
+    "matched_accuracy": 0.4398034398034398,
+    "matched_minus_best_destructive": 0.2301392301392301,
+    "matched_minus_same_byte_text": 0.0,
+    "matched_minus_target": 0.2342342342342342,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.26337018837018833,
+      "ci95_low": 0.1941031941031941,
+      "mean": 0.23013923013923013
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.266994266994267,
+      "ci95_low": 0.19858722358722358,
+      "mean": 0.23423423423423423
+    },
+    "same_byte_structured_text_accuracy": 0.4398034398034398,
+    "target_accuracy": 0.20556920556920558
+  },
+  "commonsenseqa_seed_stability_validation_2b_gap001_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.13513513513513514,
+    "matched_accuracy_max": 0.438984438984439,
+    "matched_accuracy_mean": 0.43832923832923837,
+    "matched_accuracy_min": 0.43734643734643736,
+    "matched_minus_best_destructive_min": 0.21867321867321868,
+    "matched_minus_same_byte_text_min": 0.013104013104013101,
+    "matched_minus_target_mean": 0.23276003276003276,
+    "matched_minus_target_min": 0.23177723177723178,
+    "paired_ci95_low_vs_target_min": 0.19492219492219492,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.42424242424242425,
+    "seed_count": 5,
+    "target_accuracy": 0.20556920556920558
+  },
+  "commonsenseqa_seed_stability_validation_2b_strict_headline": {
+    "all_seeds_pass": false,
+    "candidate_derangement_accuracy_max": 0.13513513513513514,
+    "matched_accuracy_max": 0.438984438984439,
+    "matched_accuracy_mean": 0.43832923832923837,
+    "matched_accuracy_min": 0.43734643734643736,
+    "matched_minus_best_destructive_min": 0.21867321867321868,
+    "matched_minus_same_byte_text_min": 0.013104013104013101,
+    "matched_minus_target_mean": 0.23276003276003276,
+    "matched_minus_target_min": 0.23177723177723178,
+    "paired_ci95_low_vs_target_min": 0.19492219492219492,
+    "pass_count": 0,
+    "same_byte_structured_text_accuracy": 0.42424242424242425,
+    "seed_count": 5,
+    "target_accuracy": 0.20556920556920558
+  },
+  "contribution_rows": [
+    {
+      "contribution": "OpenBookQA 3B shared-basis second public benchmark",
+      "headline_evidence": "validation seed stability=5/5 with matched/target/text mean=0.356/0.252/0.326; test seed stability=5/5 with matched/target/text mean=0.378/0.276/0.350",
+      "main_metric": "3B payload; test min lift over target=0.102; min lift over same-byte text=0.028; min lift over best destructive=0.100; min CI95 low vs target=0.038",
+      "remaining_gap": "This promotes OpenBookQA as a second public benchmark beyond ARC and shows the public-basis packet still beats target-only, same-byte text, and destructive controls at 3B. The source decision is still a Qwen choice-loglikelihood cache, so the next ICLR gate is a more native latent/source endpoint and GPU systems measurement.",
+      "status": "new second public-benchmark positive gate and stronger rate point"
+    },
+    {
+      "contribution": "SciQ text-saturation diagnostic",
+      "headline_evidence": "official SciQ splits materialized 11679/1000/1000 train/validation/test; validation matched/target/text=0.712/0.246/0.706",
+      "main_metric": "matched-source minus same-byte text=0.006; matched-source minus target=0.466; CI95 low vs target=0.425",
+      "remaining_gap": "SciQ confirms the source signal is strong, but short answer strings let the matched-byte text control nearly catch up, so using it as a headline benchmark would weaken the fairness story. Keep it as a reviewer-facing limitation and benchmark-selection rationale.",
+      "status": "documented benchmark limitation, not a promoted headline benchmark"
+    },
+    {
+      "contribution": "CommonsenseQA non-science validation probe",
+      "headline_evidence": "labeled train/validation materialized as 9741/1221 with no overlap; 12B validation matched/target/text=0.440/0.206/0.440; 2B relaxed-margin seed stability=5/5",
+      "main_metric": "2B min lift over target=0.232; min lift over same-byte text=0.013; strict 0.02 text-margin pass count=0/5",
+      "remaining_gap": "CommonsenseQA confirms the source signal is not science-only, but same-byte text is too close to the packet under the strict 0.02 margin and Hugging Face test labels are unavailable. Use this as the next live method-improvement target, not as an ICLR headline row yet.",
+      "status": "live non-science diagnostic, not a strict headline benchmark yet"
+    },
+    {
+      "contribution": "HellaSwag 2B non-science adversarial continuation gate",
+      "headline_evidence": "labeled train/validation materialized as 39905/10042 with no overlap; 1024-row fixed run matched/target/text=0.460/0.233/0.386; 5-seed stability=5/5; source-label copy=0.462",
+      "main_metric": "2B payload; 5B framed record; min lift over target=0.227; min lift over same-byte text=0.074; matched minus source-label copy=-0.002; min lift over best destructive=0.188; min CI95 low vs target=0.186",
+      "remaining_gap": "The packet clears target-only, destructive controls, and same-byte choice-prefix text, but it does not beat the stronger one-byte top-label-copy control. Treat HellaSwag as a method-improvement surface until a packet carries more than the source top choice and then widen to full validation.",
+      "status": "strong non-science slice, weakened by top-label-copy control"
+    },
+    {
+      "contribution": "HellaSwag label-copy and score-packet headroom diagnostic",
+      "headline_evidence": "metadata controls clean=True; matched/source-label-copy=0.460/0.462; best rank-bin heldout/source-label heldout=0.465/0.465",
+      "main_metric": "matched minus best metadata/activity control=0.215; matched minus source-label copy=-0.002; top-2 oracle heldout=0.734; score packet delta=0.002",
+      "remaining_gap": "The source top-2 contains substantial headroom, but confidence margin alone does not recover it. Next method branch should learn or calibrate a second-choice repair signal rather than simply quantizing the top-vs-runner-up margin.",
+      "status": "new reviewer-risk diagnostic / branch weakened"
+    },
+    {
+      "contribution": "HellaSwag train-only public receiver repair falsification",
+      "headline_evidence": "train-only public receiver dev accuracy=0.309; source-label/public-only/top2-rerank/gated=0.462/0.260/0.364/0.413",
+      "main_metric": "best repair condition=public_if_in_source_top2; best repair minus source-label copy=-0.049; source top-2 oracle=0.716; public prediction in source top-2 rate=0.485",
+      "remaining_gap": "A public train-only receiver scorer cannot recover the HellaSwag top-2 headroom. This prunes the eval-only/public-feature repair branch and makes the next valid gate train-split source-score calibration or a true source hidden-summary repair packet.",
+      "status": "new negative method gate / branch pruned"
+    },
+    {
+      "contribution": "HellaSwag train-source-score repair falsification",
+      "headline_evidence": "scored train rows=512; selected policy=top2_margin_8bin; dev/eval=0.461/0.447; source-label/trained-label=0.462/0.459",
+      "main_metric": "selected minus best label-copy=-0.015; source top-2/top-4 oracle=0.716/1.000; train source scoring latency=412.72s; record bytes=5B",
+      "remaining_gap": "Train-source score shape does not beat source-label copy, despite large oracle headroom. This weakens score-only HellaSwag repair and makes source hidden-summary or residual-code repair the next live branch.",
+      "status": "new negative source-score method gate / branch weakened"
+    },
+    {
+      "contribution": "HellaSwag source-hidden summary repair falsification",
+      "headline_evidence": "scored/hidden train rows=512; selected layer/ridge=-1/100.0; hidden-label/source-label eval=0.414/0.462; hidden-packet eval=0.413",
+      "main_metric": "hidden packet minus source-label copy=-0.049; hidden packet minus same-byte text=0.055; CI95 vs source-label=-0.086/-0.013; source top-2 oracle=0.716; hidden train/eval forward=257.7/332.3s; record bytes=5B",
+      "remaining_gap": "A last-layer train-only source-hidden ridge scorer overfits train and underperforms raw source-label copy on frozen validation, even though the packet still beats same-byte text and destructive controls. This prunes simple hidden-label/hidden-residual repair; any revived hidden branch must use a different common-basis learner, layer sweep, denoising/OT objective, or cross-model supervision.",
+      "status": "new negative hidden-summary method gate / branch weakened"
+    },
+    {
+      "contribution": "HellaSwag source-hidden innovation repair",
+      "headline_evidence": "scored/hidden train rows=512; selected view/ridge=score_hidden_residual/1000.0; dev/eval=0.492/0.499; best label-copy=0.462",
+      "main_metric": "selected minus best label-copy=0.037; CI95 low/high=0.010/0.061; zero/wrong/roll hidden controls=0.462/0.396/0.360; record bytes=5B",
+      "remaining_gap": "This is the first HellaSwag repair row that beats source-label copy with positive paired uncertainty while preserving the fixed-byte source-private packet boundary. A separate anchored split-stability gate now tests whether the score+hidden-residual method survives multiple train/dev splits; this row remains the single-split method discovery artifact.",
+      "status": "new positive hard-surface method gate feeding anchored stability"
+    },
+    {
+      "contribution": "HellaSwag anchored hidden-innovation split stability",
+      "headline_evidence": "anchored split seeds pass=5/5; eval mean/min/max=0.503/0.494/0.528; unrestricted diagnostic pass=3/5",
+      "main_metric": "min delta vs best label-copy=0.032; min CI95 low=0.007; min zero-hidden delta=0.032; wrong/candidate-roll max=0.400/0.377; record bytes=5B",
+      "remaining_gap": "This upgrades HellaSwag from a single split to a cached split-stable anchored method, but a new train-row-sample stress now shows the branch is not yet robust enough for headline promotion.",
+      "status": "positive cached split gate, weakened by train-sample stress"
+    },
+    {
+      "contribution": "HellaSwag hidden-innovation train-sample stress",
+      "headline_evidence": "train sample pass map={'1729': True, '2027': False}; split rows pass=5/6; new sample pass count=0",
+      "main_metric": "mean/min delta vs best label-copy=0.021/-0.045; min CI95 low=-0.072; min zero-hidden delta=-0.045; record bytes=5B",
+      "remaining_gap": "The original train sample remains positive, but the fresh 2027 train sample fails one split row. This weakens the current dense hidden-residual denoiser and points to either stronger train-sample aggregation, a stability-selected ridge policy, or a new SAE/common-basis packet.",
+      "status": "new negative robustness gate / HellaSwag branch demoted from headline"
+    },
+    {
+      "contribution": "HellaSwag bagged hidden-innovation packet",
+      "headline_evidence": "aggregation=mean_zscore; component models=9; train samples=3 with new samples=2; eval/source-label/best-label=0.513/0.462/0.464; jackknife subbags pass=3/3",
+      "main_metric": "delta vs best label-copy=0.049; CI95 low/high=0.028/0.071; delta vs score-only bagged=0.051; zero/wrong/roll controls=0.462/0.438/0.390; jackknife min delta/CI low=0.032/0.010; record bytes=5B",
+      "remaining_gap": "This directly addresses the fresh train-sample failure by bagging over train-row samples and split seeds without increasing packet bytes. The third train sample and 2-of-3 jackknife subbags now pass, so the next ICLR gate is a frozen larger/full-validation slice plus native systems rows.",
+      "status": "new positive third-sample robustness gate / live ICLR method candidate"
+    },
+    {
+      "contribution": "HellaSwag heldout-slice hidden-innovation stress",
+      "headline_evidence": "slice=1024:2048; eval/source-label/best-label=0.454/0.409/0.414; train samples=3; jackknife subbags pass=3/3",
+      "main_metric": "delta vs best label-copy=0.040; CI95 low/high=0.020/0.058; delta vs score-only bagged=0.045; zero/wrong/roll controls=0.409/0.387/0.372; record bytes=5B",
+      "remaining_gap": "This is the first frozen post-first1024 validation-slice pass for the bagged hidden-innovation packet and directly reduces slice-overfit risk. It upgrades HellaSwag to a headline-candidate hard benchmark, but the comfortable ICLR gate is still full validation or predeclared multi-slice stress plus native systems rows.",
+      "status": "new positive frozen heldout-slice gate / HellaSwag headline-candidate"
+    },
+    {
+      "contribution": "HellaSwag multi-slice hidden-innovation stress",
+      "headline_evidence": "slices=3/3 contiguous; rows=3072; weighted selected/best-label/score-only=0.482/0.441/0.435; new heldout slice=2048:3072",
+      "main_metric": "min delta vs best label-copy=0.034; min CI95 low=0.012; min delta vs score-only/zero-hidden=0.045/0.045; wrong/roll max=0.438/0.390; record bytes=5B",
+      "remaining_gap": "This is the strongest Mac-local HellaSwag evidence so far: the same 2B raw / 5B framed source-private hidden-innovation packet clears validation rows 0:3072 under label-copy, score-only, zero-hidden, corrupted-hidden, and jackknife checks. It still does not replace the remaining validation slices, a strict cross-family falsification pair, or native NVIDIA systems rows.",
+      "status": "new positive 3-slice gate / stronger HellaSwag headline-candidate"
+    },
+    {
+      "contribution": "HellaSwag repair systems acceptance card",
+      "headline_evidence": "7 HellaSwag repair rows audited; systems audit=True; method gate=True; native queue allowed=False",
+      "main_metric": "best repair=hidden_innovation_repair with delta vs source-label copy=0.037; strict required delta=0.02; max oracle gap remaining=0.303",
+      "remaining_gap": "This promotes the hidden-innovation HellaSwag branch past the local method margin, while still blocking native queue promotion until NVIDIA/vLLM/SGLang systems rows exist. Treat this as a live positive branch, not a final headline, until seed/fold stability confirms it.",
+      "status": "new acceptance gate / hidden-innovation method row promoted"
+    },
+    {
+      "contribution": "ARC-Challenge public anchor-relative coordinate ablation",
+      "headline_evidence": "validation seed stability=5/5 with matched mean/min=0.386/0.381; test seed stability=5/5 with matched mean/min=0.344/0.344",
+      "main_metric": "test min lift over target=0.078; min lift over best destructive=0.067; min lift over same-byte text=0.033; min CI95 low vs target=0.039",
+      "remaining_gap": "This strengthens the common-basis story by replacing direct hashed coordinates with public train-anchor-relative similarities while preserving the ARC pass. It does not beat the direct hashed basis by enough to claim anchor-relative superiority; anchor-identity/value-shuffle and random-anchor controls are still needed. The source decision is still a Qwen choice cache; a second public benchmark or stronger learned hidden-state endpoint remains needed for ICLR.",
+      "status": "positive common-basis robustness evidence, not a hashed-basis superiority claim"
+    },
+    {
+      "contribution": "ARC-Challenge anchor-coordinate falsification controls",
+      "headline_evidence": "ID-shuffle validation/test pass counts=0/5 and 0/5; value-shuffle validation/test pass counts=0/5 and 0/5; random shared anchors validation/test=5/5 and 5/5",
+      "main_metric": "test matched mean ID/value/random=0.248/0.246/0.344; target/text=0.265/0.311",
+      "remaining_gap": "ID/value mismatch collapse shows sender and receiver need the same coordinate chart. Random shared anchors passing shows semantic train anchors are not necessary, so the safe claim is public common-basis packet communication rather than semantic-anchor superiority.",
+      "status": "new reviewer-facing control surface"
+    },
+    {
+      "contribution": "ARC-Challenge shared-basis source-computable endpoint",
+      "headline_evidence": "validation matched/target/text=0.388/0.244/0.348; test matched/target/text=0.344/0.265/0.311; seed stability validation/test=5/5 and 5/5",
+      "main_metric": "test lift over target=0.078; lift over best destructive=0.078; lift over same-byte text=0.033; seed-stability min CI95 low vs target=0.038",
+      "remaining_gap": "This removes the receiver-BGE packet-construction caveat by using an agreed public hashed basis, but the source decision is still Qwen choice log-likelihood rather than a learned hidden-state communication endpoint; native systems rows remain pending.",
+      "status": "new strongest public benchmark endpoint"
+    },
+    {
+      "contribution": "ARC-Challenge shared-basis systems trace",
+      "headline_evidence": "test source scoring=251.0 ms/question; receiver decode p50/p95=31.7/104.3 us; peak RSS=7261.3 MiB",
+      "main_metric": "12B payload / 15B framed record; single-request cacheline/DMA=64/128B; batch64 line/DMA per request=15.0/16.0B",
+      "remaining_gap": "This closes a Mac-local phase/RSS/byte trace gap for ARC, but native NVIDIA/vLLM TTFT/TPOT/goodput/HBM rows and source-KV baselines remain pending.",
+      "status": "new Mac-local systems trace for the public endpoint"
+    },
+    {
+      "contribution": "Qwen-hidden to BGE source-latent endpoint diagnostic",
+      "headline_evidence": "validation matched/target/text=0.281/0.244/0.348; source accuracy before packet=0.388",
+      "main_metric": "matched-source-latent minus same-byte text=-0.067; CI95 low vs target=-0.035; train alignment cosine mean=0.475",
+      "remaining_gap": "Direct ridge alignment from Qwen hidden summaries to BGE residuals is not strong enough; future latent endpoints need better common-basis learning, denoising receivers, or OT/Procrustes-style regularization before promotion.",
+      "status": "negative diagnostic / branch weakened"
+    },
+    {
+      "contribution": "ARC-Challenge projection-seed stability",
+      "headline_evidence": "validation 5/5 seeds pass; test 5/5 seeds pass",
+      "main_metric": "test mean/min matched=0.344/0.341; min lift over target=0.076; min lift over same-byte text=0.031; min CI95 low vs target=0.038",
+      "remaining_gap": "This closes the random-projection luck objection for ARC, but it still reuses the Qwen source-choice cache and does not replace the need for a cleaner model-to-model endpoint or a second public task.",
+      "status": "new public-benchmark robustness gate"
+    },
+    {
+      "contribution": "ARC-Challenge fixed-12B public benchmark transfer",
+      "headline_evidence": "validation matched/target/text=0.385/0.244/0.348; test matched/target/text=0.346/0.265/0.311",
+      "main_metric": "test lift over target=0.080; lift over best destructive=0.080; CI95 low vs target=0.046; candidate derangement=0.213",
+      "remaining_gap": "This is the first positive public ARC row, but the source scorer is a local Qwen log-likelihood oracle over candidate text rather than the original train-donor synthetic source; ICLR still needs a cleaner cross-model source/target story and native serving measurements.",
+      "status": "new positive public-benchmark gate"
+    },
+    {
+      "contribution": "ARC-Challenge public bridge contract",
+      "headline_evidence": "official ARC-Challenge splits materialized 1119/299/1172 train/validation/test; local smoke validation/eval overlap=0",
+      "main_metric": "fixed 12B contract; 10 required controls; public result ready=False",
+      "remaining_gap": "This freezes the public benchmark and leakage controls, but it is deliberately not a positive ARC result until the fixed-12B packet beats target-only and destructive controls.",
+      "status": "new public-benchmark readiness gate"
+    },
+    {
+      "contribution": "Global stable-gap validation selector",
+      "headline_evidence": "6/6 selected n512 rows pass after global validation-selected budget {'47': 12, '53': 12, '59': 12}",
+      "main_metric": "selected accuracy min=0.652; max best control=0.275; min CI95 lower bound vs base=0.098",
+      "remaining_gap": "This gives a global pre-eval 12B selector, but it uses source-private gap validation and reports visible structured text as a separate access-model comparator; public benchmark and native systems evidence remain pending.",
+      "status": "new strongest model-selection audit"
+    },
+    {
+      "contribution": "Global fixed-12B train-donor eval frontier",
+      "headline_evidence": "6/6 n512 cross-family rows pass at one fixed 12B rate across seeds [47, 53, 59]",
+      "main_metric": "min accuracy=0.652; max best control=0.275; min CI95 lower bound vs base=0.098",
+      "remaining_gap": "This removes the need for per-seed eval budgets, but it is an eval-only audit; ICLR still needs a train-only validation rule or predeclared operating-point argument for choosing 12B.",
+      "status": "new strongest eval-surface result"
+    },
+    {
+      "contribution": "Validation-locked train-donor rate frontier",
+      "headline_evidence": "6/6 selected n512 rows pass after validation-selected budgets {'47': 14, '53': 12, '59': 12}",
+      "main_metric": "selected accuracy min=0.652; max best control=0.273; min CI95 lower bound vs base=0.098",
+      "remaining_gap": "This removes the worst hand-picked-budget concern for the current seed-repeat surface, but the global fixed-budget policy still does not pass; final ICLR needs a larger train-only validation split or a method adjustment that makes one budget clear every seed.",
+      "status": "new reviewer-facing model-selection audit"
+    },
+    {
+      "contribution": "Unified train-only train-donor anti-shuffle packet method",
+      "headline_evidence": "6/6 n128 cross-family seed-repeat rows pass; 3/3 n512 seeds pass under the 12-14B frontier",
+      "main_metric": "12-14B accuracy 0.648-0.750 vs base 0.500-0.625; n512 min CI95 lower bound vs base=0.096",
+      "remaining_gap": "This removes the eval-donor caveat for the unified train-only stack and clears n512 seed repeats, but still needs a locked validation-based byte-selection rule, public benchmark transfer, and native NVIDIA/vLLM systems measurements.",
+      "status": "strongest live ICLR method branch"
+    },
+    {
+      "contribution": "Train-only receiver permuted-null gap decoder",
+      "headline_evidence": "6/6 n512 cross-family seed-repeat rows pass; 3/3 seeds cross-family pass",
+      "main_metric": "12B train-only receiver accuracy 0.500-0.625 vs target 0.250; max best control=0.260; min CI95 lower bound vs target=0.213",
+      "remaining_gap": "This clears the cross-family train-only receiver gate for the source-atom packet, but same-family is still limited by a structured-text control; use it as the receiver component inside the new train-donor anti-shuffle stack.",
+      "status": "new live receiver-basis method candidate"
+    },
+    {
+      "contribution": "Train-only sender source-prioritized packet builder",
+      "headline_evidence": "9/9 n512 seed-repeat rows pass; 3/3 seeds cross-family pass",
+      "main_metric": "12B accuracy 0.625-0.750 vs live base 0.500-0.500; min lift over base=0.125; rate pass rows=8/12",
+      "remaining_gap": "The sender packet builder is train-only, but the receiver dictionary still uses public eval-disjoint calibration; keep as a separate sender contribution now that train-donor anti-shuffle is the unified branch.",
+      "status": "strongest current generalization-facing method"
+    },
+    {
+      "contribution": "Source-prioritized innovation packet builder",
+      "headline_evidence": "9/9 n512 seed-repeat rows pass; 3/3 seeds cross-family pass",
+      "main_metric": "12B accuracy 0.625-0.625 vs live base 0.500-0.500; min lift over base=0.125",
+      "remaining_gap": "Packet builder excludes the eval family from builder calibration, but the candidate dictionary is still public eval-disjoint; true train-only cross-family generalization and real benchmarks remain ICLR gates.",
+      "status": "new strict held-out-family positive method"
+    },
+    {
+      "contribution": "Public-disjoint source-to-candidate packet builder",
+      "headline_evidence": "9/9 n512 seed-repeat rows pass; 3/3 seeds cross-family pass",
+      "main_metric": "8B accuracy 0.875-0.875 vs live base 0.500-0.625; min lift over base=0.250",
+      "remaining_gap": "This is stronger in accuracy but weaker in generalization than leave-one-family-out; use as adaptation evidence, not the headline ICLR generalization claim.",
+      "status": "high-accuracy adaptation row"
+    },
+    {
+      "contribution": "Source-private candidate-local residual packet",
+      "headline_evidence": "9/9 n512 rows pass strict controls",
+      "main_metric": "8.0B payload / 11.0B record; accuracy 0.500-0.625",
+      "remaining_gap": "Still benchmark-specific; needs broader tasks and native systems rows for comfortable ICLR.",
+      "status": "current live positive method"
+    },
+    {
+      "contribution": "Same-family versus cross-family separation gate",
+      "headline_evidence": "live cross-family rows pass 6/6 and same-family rows pass 3/3",
+      "main_metric": "cross-family min matched=0.500; max best control=0.260",
+      "remaining_gap": "This is strict within the current synthetic family split, not yet unrelated real LLM families.",
+      "status": "reviewer-facing generalization evidence"
+    },
+    {
+      "contribution": "Candidate-local threshold frontier",
+      "headline_evidence": "live clean threshold range 0.45-0.48; RR/sign clean threshold exists=False/False",
+      "main_metric": "threshold 0.48 clean rows=9/9",
+      "remaining_gap": "Explains the live row; does not create a new learned packet interface.",
+      "status": "mechanistic robustness diagnostic"
+    },
+    {
+      "contribution": "Candidate-local margin atlas",
+      "headline_evidence": "live matched positive-margin rate=0.750; best destructive control=0.375; Procrustes matched/control=0.750/0.750",
+      "main_metric": "live matched p50 margin=0.243; best-control condition=permuted_teacher_receiver",
+      "remaining_gap": "Diagnostic evidence only; the next method branch should use this margin surface to train or prune residual codes.",
+      "status": "reviewer-facing confidence and failure-mode diagnostic"
+    },
+    {
+      "contribution": "Candidate-local systems boundary trace",
+      "headline_evidence": "no source text/KV exposure; min KV proxy/live-record ratio 4887.3x",
+      "main_metric": "resident sparse decode p50=5.232 us/request; packet-ring batch64 p95=0.674 ns/request",
+      "remaining_gap": "Native NVIDIA/vLLM C2C/KVComm/TurboQuant rows remain pending.",
+      "status": "strong Mac-local systems positioning"
+    },
+    {
+      "contribution": "Cross-benchmark source-state byte-floor systems comparator",
+      "headline_evidence": "2 headline public benchmarks and 1 diagnostic benchmark; framed packets=5-15B; native systems complete=False",
+      "main_metric": "min one-token QJL 1-bit KV floor=51.2x framed packet; min 30%-layer QJL floor=15.4x; min 30%-layer fp16 KVComm floor=245.8x",
+      "remaining_gap": "This makes the source-state exposure cost explicit across ARC, OpenBookQA, and HellaSwag while marking HellaSwag as diagnostic due to label-copy. It is still a byte-floor/accounting comparator, not a native C2C/KVComm/QJL/TurboQuant/vLLM win.",
+      "status": "new cross-benchmark systems/accounting contribution"
+    },
+    {
+      "contribution": "Native-readiness systems ledger",
+      "headline_evidence": "3 Mac-local measured rows; 5 pending native rows",
+      "main_metric": "native ready=False; source-private local rows=3",
+      "remaining_gap": "Strengthens systems framing by defining exactly what to measure next, but it is not a native throughput result and should not be counted as closing the NVIDIA/vLLM gate.",
+      "status": "new systems non-claim/readiness table"
+    },
+    {
+      "contribution": "Native vLLM/SGLang systems benchmark plan",
+      "headline_evidence": "11 required rows across vLLM/SGLang; headline benchmarks=ARC-Challenge,OpenBookQA; native systems complete=False",
+      "main_metric": "44 required metrics including TTFT, TPOT, goodput, peak GPU memory, HBM/PCIe-or-NVLink traffic, payload bytes, and source-exposure flags",
+      "remaining_gap": "This converts the systems blocker into a reproducible GPU measurement table, but it is still a plan artifact until NVIDIA/vLLM/SGLang rows are executed and ingested.",
+      "status": "new native systems runbook and acceptance schema"
+    },
+    {
+      "contribution": "Source-private evidence-packet benchmark and controls",
+      "headline_evidence": "160 examples x 3 seeds x 5 label/code/order stress transforms pass",
+      "main_metric": "matched=1.000, target=0.250, worst_control=0.263",
+      "remaining_gap": "Still a protocol/candidate-decoder task; frame as source-private evidence communication, not universal semantics.",
+      "status": "strong scoped contribution"
+    },
+    {
+      "contribution": "Extreme-rate candidate-syndrome packet method",
+      "headline_evidence": "packet oracle bytes max=2.0; matched-byte text accuracy max=0.250",
+      "main_metric": "packet vs query-aware text >= 7.0x; packet vs full log >= 183.2x",
+      "remaining_gap": "Text becomes oracle at higher bytes, so claim only the far-left rate frontier.",
+      "status": "headline method for scoped paper"
+    },
+    {
+      "contribution": "Systems byte/KV-cache accounting frontier",
+      "headline_evidence": "minimum QJL-style 1-bit cache payload is 10752.0x packet",
+      "main_metric": "minimum KIVI-style 2-bit cache payload is 21504.0x packet",
+      "remaining_gap": "Derived byte accounting only; no production GPU serving throughput yet.",
+      "status": "systems contribution with clear caveat"
+    },
+    {
+      "contribution": "Endpoint paired uncertainty and local target-decoder evidence",
+      "headline_evidence": "endpoint paired rows pass with min packet-vs-target CI lows 0.350/0.350",
+      "main_metric": "paper-ready rows in ledger=3; total audited rows=104",
+      "remaining_gap": "Mac-local proxy, not server TTFT/TPOT/throughput.",
+      "status": "paper-ready evidence rows exist, but systems scope is local"
+    },
+    {
+      "contribution": "Learned receiver / latent-method diagnostics",
+      "headline_evidence": "ledger records 4 positive learned-receiver rows and explicit failed/pruned rows",
+      "main_metric": "same-distribution positives exist; simple cross-family masked innovation failed",
+      "remaining_gap": "Need shared-dictionary/crosscoder-style method with feature knockout before claiming cross-family latent communication.",
+      "status": "bounded diagnostic contribution, not headline cross-family claim"
+    }
+  ],
+  "created_utc": "2026-05-01T18:14:03.862703+00:00",
+  "cross_benchmark_systems_comparator_headline": {
+    "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
+    "diagnostic_benchmarks": 1,
+    "headline_eligible_benchmarks": 2,
+    "max_framed_packet_bytes": 15.0,
+    "min_framed_packet_bytes": 5.0,
+    "min_kvcomm30_fp16_ratio_vs_framed": 245.75999999999996,
+    "min_qjl_1bit_ratio_vs_framed": 51.2,
+    "min_qjl_30pct_ratio_vs_framed": 15.359999999999998,
+    "min_turboquant_3p5bit_ratio_vs_framed": 179.2,
+    "native_systems_complete": false,
+    "pass_gate": true
+  },
+  "gate": "source_private_iclr_evidence_bundle",
+  "hellaswag_bridge_contract_headline": {
+    "labeled_rows": {
+      "train": 39905,
+      "validation": 10042
+    },
+    "local_checks": {
+      "duplicate_choice_row_count": 0,
+      "duplicate_content_id_count": 0,
+      "labeled_counts_match_expected": true,
+      "labeled_schema_valid": true,
+      "labeled_splits_disjoint": true,
+      "labeled_splits_materialized": true,
+      "metadata_fields_forbidden": true,
+      "official_test_labels_public": false,
+      "source_answer_fields_forbidden": true
+    },
+    "pass_gate": true
+  },
+  "hellaswag_control_suite_headline": {
+    "best_metadata_or_activity_control": "same_activity_shuffled_source_packet",
+    "best_metadata_or_activity_control_accuracy": 0.2451171875,
+    "label_copy_threat_present": true,
+    "matched_accuracy": 0.4599609375,
+    "matched_minus_best_metadata_or_activity_control": 0.21484375,
+    "matched_minus_source_label_text_copy": -0.001953125,
+    "metadata_controls_clean": true,
+    "paired_ci95_vs_best_metadata_or_activity_control": {
+      "ci95_high": 0.2529296875,
+      "ci95_low": 0.1752685546875,
+      "mean": 0.21484375
+    },
+    "paired_ci95_vs_source_label_text_copy": {
+      "ci95_high": 0.0,
+      "ci95_low": -0.0048828125,
+      "mean": -0.001953125
+    },
+    "same_activity_fallback_count": 27,
+    "same_split_type_fallback_count": 0,
+    "source_label_text_copy_accuracy": 0.4619140625
+  },
+  "hellaswag_fixed_packet_validation1024_2b_headline": {
+    "best_destructive_control": "random_same_byte_packet",
+    "best_destructive_control_accuracy": 0.2568359375,
+    "matched_accuracy": 0.4599609375,
+    "matched_minus_best_destructive": 0.203125,
+    "matched_minus_same_byte_text": 0.07421875,
+    "matched_minus_target": 0.2265625,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.2412109375,
+      "ci95_low": 0.1625732421875,
+      "mean": 0.203125
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.2685546875,
+      "ci95_low": 0.189453125,
+      "mean": 0.2265625
+    },
+    "same_byte_structured_text_accuracy": 0.3857421875,
+    "target_accuracy": 0.2333984375
+  },
+  "hellaswag_hidden_innovation_bagged_gate_headline": {
+    "aggregation_policy": "mean_zscore",
+    "best_label_copy_eval_accuracy": 0.4638671875,
+    "candidate_roll_hidden_control_accuracy": 0.3896484375,
+    "component_model_count": 9,
+    "jackknife_summary": {
+      "all_pass": true,
+      "candidate_roll_hidden_control_accuracy_max": 0.3974609375,
+      "paired_ci95_low_vs_best_label_copy_min": 0.010229492187500001,
+      "paired_ci95_low_vs_score_only_bagged_min": 0.0146484375,
+      "pass_count": 3,
+      "row_count": 3,
+      "selected_minus_best_label_copy_min": 0.0322265625,
+      "selected_minus_score_only_bagged_control_min": 0.033203125,
+      "selected_minus_zero_hidden_control_min": 0.033203125,
+      "wrong_example_hidden_control_accuracy_max": 0.4306640625
+    },
+    "new_train_sample_seed_count": 2,
+    "paired_ci95_high_vs_best_label_copy": 0.07082519531249998,
+    "paired_ci95_high_vs_score_only_bagged": 0.068359375,
+    "paired_ci95_low_vs_best_label_copy": 0.0283203125,
+    "paired_ci95_low_vs_score_only_bagged": 0.0326904296875,
+    "pass_gate": true,
+    "score_only_bagged_control_accuracy": 0.4619140625,
+    "score_only_component_model_count": 9,
+    "selected_eval_accuracy": 0.5126953125,
+    "selected_minus_best_label_copy": 0.048828125,
+    "selected_minus_candidate_roll_hidden_control": 0.123046875,
+    "selected_minus_score_only_bagged_control": 0.05078125,
+    "selected_minus_source_label_copy": 0.05078125,
+    "selected_minus_trained_choice_bias_label_copy": 0.048828125,
+    "selected_minus_wrong_example_hidden_control": 0.0751953125,
+    "selected_minus_zero_hidden_control": 0.05078125,
+    "selected_packet_framed_bytes": 5,
+    "selected_packet_raw_bytes": 2,
+    "selected_ridge_counts": {
+      "1000.0": 4,
+      "10000.0": 4,
+      "100000.0": 1
+    },
+    "source_label_copy_eval_accuracy": 0.4619140625,
+    "source_top2_oracle_accuracy": 0.7158203125,
+    "source_top4_oracle_accuracy": 1.0,
+    "split_seed_count": 3,
+    "strict_delta_required": 0.02,
+    "total_wall_time_sec": 6.2999243340455,
+    "train_sample_seed_count": 3,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.4638671875,
+    "vote_eval_accuracy": 0.5146484375,
+    "wrong_example_hidden_control_accuracy": 0.4375,
+    "zero_hidden_control_accuracy": 0.4619140625
+  },
+  "hellaswag_hidden_innovation_eval_slice_stress_2048_3072_headline": {
+    "best_label_copy_eval_accuracy": 0.4453125,
+    "candidate_roll_hidden_control_accuracy": 0.380859375,
+    "component_model_count": 9,
+    "eval_rows": 1024,
+    "eval_slice_end_exclusive": 3072,
+    "eval_slice_start": 2048,
+    "framed_record_bytes": 5,
+    "jackknife_min_ci95_low_vs_best_label_copy": 0.007299804687500001,
+    "jackknife_min_delta_vs_best_label_copy": 0.0283203125,
+    "jackknife_pass_count": 3,
+    "jackknife_row_count": 3,
+    "paired_ci95_high_vs_best_label_copy": 0.056640625,
+    "paired_ci95_low_vs_best_label_copy": 0.01171875,
+    "paired_ci95_low_vs_score_only_bagged": 0.029296875,
+    "pass_gate": true,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.43359375,
+    "selected_eval_accuracy": 0.4794921875,
+    "selected_minus_best_label_copy": 0.0341796875,
+    "selected_minus_score_only_bagged_control": 0.0458984375,
+    "selected_minus_zero_hidden_control": 0.0458984375,
+    "slice_path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_validation_rows_2048_3072.jsonl",
+    "source_label_copy_eval_accuracy": 0.43359375,
+    "strict_delta_required": 0.02,
+    "total_wall_time_sec": 844.3405192079954,
+    "train_sample_seed_count": 3,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.4453125,
+    "wrong_example_hidden_control_accuracy": 0.416015625,
+    "zero_hidden_control_accuracy": 0.43359375
+  },
+  "hellaswag_hidden_innovation_eval_slice_stress_headline": {
+    "best_label_copy_eval_accuracy": 0.4140625,
+    "candidate_roll_hidden_control_accuracy": 0.3720703125,
+    "component_model_count": 9,
+    "eval_rows": 1024,
+    "eval_slice_end_exclusive": 2048,
+    "eval_slice_start": 1024,
+    "framed_record_bytes": 5,
+    "jackknife_min_ci95_low_vs_best_label_copy": 0.011206054687500001,
+    "jackknife_min_delta_vs_best_label_copy": 0.0322265625,
+    "jackknife_pass_count": 3,
+    "jackknife_row_count": 3,
+    "paired_ci95_high_vs_best_label_copy": 0.05812988281249998,
+    "paired_ci95_low_vs_best_label_copy": 0.01953125,
+    "paired_ci95_low_vs_score_only_bagged": 0.02734375,
+    "pass_gate": true,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.4091796875,
+    "selected_eval_accuracy": 0.4541015625,
+    "selected_minus_best_label_copy": 0.0400390625,
+    "selected_minus_score_only_bagged_control": 0.044921875,
+    "selected_minus_zero_hidden_control": 0.044921875,
+    "slice_path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_validation_rows_1024_2048.jsonl",
+    "source_label_copy_eval_accuracy": 0.4091796875,
+    "strict_delta_required": 0.02,
+    "total_wall_time_sec": 836.94259791699,
+    "train_sample_seed_count": 3,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.4140625,
+    "wrong_example_hidden_control_accuracy": 0.38671875,
+    "zero_hidden_control_accuracy": 0.4091796875
+  },
+  "hellaswag_hidden_innovation_multi_slice_stress_headline": {
+    "contiguous_validation_prefix": true,
+    "corrupted_hidden_controls_below_label_copy": true,
+    "framed_record_bytes": 5,
+    "jackknife_slice_pass_count": 3,
+    "max_candidate_roll_hidden_control_accuracy": 0.3896484375,
+    "max_wrong_example_hidden_control_accuracy": 0.4375,
+    "min_ci95_low_vs_best_label_copy": 0.01171875,
+    "min_ci95_low_vs_score_only_bagged": 0.02734375,
+    "min_delta_vs_best_label_copy": 0.0341796875,
+    "min_delta_vs_score_only_bagged": 0.044921875,
+    "min_delta_vs_zero_hidden": 0.044921875,
+    "pass_gate": true,
+    "pass_slice_count": 3,
+    "raw_payload_bytes": 2,
+    "slice_artifacts": [
+      "results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json",
+      "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json"
+    ],
+    "slice_count": 3,
+    "source_private_packet": true,
+    "strict_delta_required": 0.02,
+    "total_eval_rows": 3072,
+    "weighted_best_label_copy_eval_accuracy": 0.4410807291666667,
+    "weighted_score_only_bagged_control_accuracy": 0.4348958333333333,
+    "weighted_selected_eval_accuracy": 0.4820963541666667,
+    "weighted_source_label_copy_eval_accuracy": 0.4348958333333333,
+    "weighted_trained_choice_bias_label_copy_eval_accuracy": 0.4410807291666667,
+    "weighted_zero_hidden_control_accuracy": 0.4348958333333333
+  },
+  "hellaswag_hidden_innovation_repair_headline": {
+    "best_label_copy_eval_accuracy": 0.4619140625,
+    "candidate_roll_hidden_control_accuracy": 0.3603515625,
+    "paired_ci95_selected_vs_best_label_copy": {
+      "ci95_high": 0.06105957031249998,
+      "ci95_low": 0.009765625,
+      "mean": 0.037109375
+    },
+    "paired_ci95_selected_vs_score_only_control": {
+      "ci95_high": 0.06496582031249998,
+      "ci95_low": 0.009765625,
+      "mean": 0.037109375
+    },
+    "pass_gate": true,
+    "score_only_control_accuracy": 0.4619140625,
+    "selected_eval_accuracy": 0.4990234375,
+    "selected_feature_dim": 912,
+    "selected_fit_accuracy": 0.7864583333333334,
+    "selected_internal_dev_accuracy": 0.4921875,
+    "selected_minus_best_label_copy": 0.037109375,
+    "selected_minus_candidate_roll_hidden_control": 0.138671875,
+    "selected_minus_score_only_control": 0.037109375,
+    "selected_minus_source_label_copy": 0.037109375,
+    "selected_minus_trained_choice_bias_label_copy": 0.0400390625,
+    "selected_minus_wrong_example_hidden_control": 0.103515625,
+    "selected_minus_zero_hidden_control": 0.037109375,
+    "selected_packet_framed_bytes": 5,
+    "selected_packet_raw_bytes": 2,
+    "selected_ridge": 1000.0,
+    "selected_view": "score_hidden_residual",
+    "source_label_copy_eval_accuracy": 0.4619140625,
+    "source_top2_oracle_accuracy": 0.7158203125,
+    "source_top4_oracle_accuracy": 1.0,
+    "total_wall_time_sec": 7.952695375017356,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.458984375,
+    "wrong_example_hidden_control_accuracy": 0.3955078125,
+    "zero_hidden_control_accuracy": 0.4619140625
+  },
+  "hellaswag_hidden_innovation_stability_headline": {
+    "all_split_seeds_pass": true,
+    "candidate_roll_hidden_control_accuracy_max": 0.376953125,
+    "delta_vs_best_label_copy_mean": 0.0408203125,
+    "delta_vs_best_label_copy_min": 0.0322265625,
+    "paired_ci95_low_vs_best_label_copy_min": 0.0068359375,
+    "pass_count": 5,
+    "pass_gate": true,
+    "selected_eval_accuracy_max": 0.5283203125,
+    "selected_eval_accuracy_mean": 0.5029296875,
+    "selected_eval_accuracy_min": 0.494140625,
+    "selected_minus_zero_hidden_control_min": 0.0322265625,
+    "selected_packet_framed_bytes": 5,
+    "selected_packet_raw_bytes": 2,
+    "selected_ridge_counts": {
+      "1000.0": 4,
+      "10000.0": 1
+    },
+    "selected_view_counts": {
+      "score_hidden_residual": 5
+    },
+    "split_seed_count": 5,
+    "strict_delta_required": 0.02,
+    "total_wall_time_sec": 43.44700958300382,
+    "unrestricted_diagnostic": {
+      "all_split_seeds_pass": false,
+      "candidate_roll_hidden_control_accuracy_max": 0.4560546875,
+      "delta_vs_best_label_copy_mean": 0.0076171875,
+      "delta_vs_best_label_copy_min": -0.0908203125,
+      "paired_ci95_low_vs_best_label_copy_min": -0.133837890625,
+      "pass_count": 3,
+      "selected_eval_accuracy_max": 0.5283203125,
+      "selected_eval_accuracy_mean": 0.4697265625,
+      "selected_eval_accuracy_min": 0.37109375,
+      "selected_minus_zero_hidden_control_min": 0.0,
+      "selected_ridge_counts": {
+        "10.0": 2,
+        "1000.0": 2,
+        "10000.0": 1
+      },
+      "selected_view_counts": {
+        "hidden_residual_only": 1,
+        "score_hidden_residual": 3,
+        "score_only": 1
+      },
+      "split_seed_count": 5,
+      "strict_delta_required": 0.02,
+      "wrong_example_hidden_control_accuracy_max": 0.4560546875
+    },
+    "wrong_example_hidden_control_accuracy_max": 0.400390625
+  },
+  "hellaswag_hidden_innovation_train_sample_stress_headline": {
+    "all_split_rows_pass": false,
+    "candidate_roll_hidden_control_accuracy_max": 0.376953125,
+    "delta_vs_best_label_copy_mean": 0.021484375,
+    "delta_vs_best_label_copy_min": -0.044921875,
+    "new_sample_pass_count": 0,
+    "new_train_sample_seed_count": 1,
+    "paired_ci95_low_vs_best_label_copy_min": -0.0718017578125,
+    "pass_count": 5,
+    "pass_gate": false,
+    "sample_pass": {
+      "1729": true,
+      "2027": false
+    },
+    "selected_eval_accuracy_max": 0.5,
+    "selected_eval_accuracy_mean": 0.4835611979166667,
+    "selected_eval_accuracy_min": 0.4169921875,
+    "selected_minus_zero_hidden_control_min": -0.044921875,
+    "selected_packet_framed_bytes": 5,
+    "selected_packet_raw_bytes": 2,
+    "selected_ridge_counts": {
+      "100.0": 1,
+      "1000.0": 3,
+      "10000.0": 2
+    },
+    "selected_view_counts": {
+      "score_hidden_residual": 6
+    },
+    "split_rows": 6,
+    "strict_delta_required": 0.02,
+    "total_wall_time_sec": 678.7882091670181,
+    "train_sample_seed_count": 2,
+    "wrong_example_hidden_control_accuracy_max": 0.4072265625
+  },
+  "hellaswag_hidden_summary_repair_headline": {
+    "best_destructive_control": "zero_source",
+    "best_destructive_control_accuracy": 0.251953125,
+    "hidden_label_copy_eval_accuracy": 0.4140625,
+    "hidden_label_copy_fit_accuracy": 0.8489583333333334,
+    "hidden_label_copy_internal_dev_accuracy": 0.421875,
+    "hidden_label_copy_minus_source_label_copy_eval": -0.0478515625,
+    "hidden_label_copy_train_accuracy": 0.7421875,
+    "hidden_packet_eval_accuracy": 0.4130859375,
+    "hidden_packet_minus_best_destructive": 0.1611328125,
+    "hidden_packet_minus_hidden_label_copy": -0.0009765625,
+    "hidden_packet_minus_same_byte_text": 0.0546875,
+    "hidden_packet_minus_source_label_copy": -0.048828125,
+    "hidden_prediction_in_source_top2_rate": 0.6103515625,
+    "paired_ci95_hidden_label_vs_source_label_copy": {
+      "ci95_high": -0.008276367187500022,
+      "ci95_low": -0.086962890625,
+      "mean": -0.0478515625
+    },
+    "paired_ci95_hidden_packet_vs_best_destructive": {
+      "ci95_high": 0.20703125,
+      "ci95_low": 0.1235107421875,
+      "mean": 0.1611328125
+    },
+    "paired_ci95_hidden_packet_vs_same_byte_text": {
+      "ci95_high": 0.0771484375,
+      "ci95_low": 0.0322265625,
+      "mean": 0.0546875
+    },
+    "paired_ci95_hidden_packet_vs_source_label_copy": {
+      "ci95_high": -0.0126953125,
+      "ci95_low": -0.08649902343749999,
+      "mean": -0.048828125
+    },
+    "pass_gate": false,
+    "same_byte_text_accuracy": 0.3583984375,
+    "selected_budget_bytes": 2,
+    "selected_layer": -1,
+    "selected_packet_framed_bytes": 5,
+    "selected_packet_raw_bytes": 2,
+    "selected_ridge_alpha": 100.0,
+    "source_label_copy_eval_accuracy": 0.4619140625,
+    "source_label_copy_fit_accuracy": 0.4921875,
+    "source_label_copy_internal_dev_accuracy": 0.4609375,
+    "source_label_copy_train_accuracy": 0.484375,
+    "source_top2_oracle_accuracy": 0.7158203125,
+    "source_top4_oracle_accuracy": 1.0,
+    "total_wall_time_sec": 598.2871720829862
+  },
+  "hellaswag_public_receiver_repair_headline": {
+    "best_repair_accuracy": 0.4130859375,
+    "best_repair_condition": "public_if_in_source_top2",
+    "best_repair_minus_public_target_only": 0.1533203125,
+    "best_repair_minus_source_label_copy": -0.048828125,
+    "public_if_in_source_top2_accuracy": 0.4130859375,
+    "public_prediction_in_source_top2_rate": 0.4853515625,
+    "public_target_only_accuracy": 0.259765625,
+    "source_label_copy_accuracy": 0.4619140625,
+    "source_top2_oracle_accuracy": 0.7158203125,
+    "top2_public_rerank_accuracy": 0.3642578125
+  },
+  "hellaswag_repair_systems_acceptance_headline": {
+    "best_accuracy": 0.4990234375,
+    "best_delta_vs_source_label_copy": 0.037109375,
+    "best_delta_vs_trained_label_copy": 0.0400390625,
+    "best_repair_row_id": "hidden_innovation_repair",
+    "best_source_label_copy_accuracy": 0.4619140625,
+    "cross_benchmark_min_qjl_1bit_ratio_vs_framed": 51.2,
+    "max_oracle_gap_remaining": 0.302734375,
+    "method_gate_pass": true,
+    "native_queue_allowed": false,
+    "native_ready": false,
+    "pass_gate": true,
+    "pending_native_rows": 5,
+    "rows": 7,
+    "serving_slo_pass_gate": true,
+    "strict_delta_required": 0.02,
+    "systems_audit_pass": true,
+    "trained_label_copy_control_rows": 3
+  },
+  "hellaswag_score_packet_headroom_headline": {
+    "best_rank_bin_packet": "top2_margin_4bin",
+    "best_rank_bin_packet_heldout_accuracy": 0.46484375,
+    "best_rank_bin_packet_minus_source_label_text_heldout": 0.0,
+    "calibration_switch_rate": 0.00390625,
+    "heldout_switch_rate": 0.005859375,
+    "margin_p10": 0.07169198989868164,
+    "margin_p50": 0.41406071186065674,
+    "margin_p90": 1.1155712008476257,
+    "score_packet_calibration_accuracy": 0.4609375,
+    "score_packet_heldout_accuracy": 0.466796875,
+    "score_packet_minus_source_label_text_heldout": 0.001953125,
+    "selected_margin_threshold": 0.0023741722106933594,
+    "source_label_text_accuracy": 0.4619140625,
+    "source_label_text_heldout_accuracy": 0.46484375,
+    "top2_oracle_accuracy": 0.7158203125,
+    "top2_oracle_heldout_accuracy": 0.734375
+  },
+  "hellaswag_seed_stability_validation1024_2b_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.1748046875,
+    "matched_accuracy_max": 0.4619140625,
+    "matched_accuracy_mean": 0.4611328125,
+    "matched_accuracy_min": 0.4599609375,
+    "matched_minus_best_destructive_min": 0.1884765625,
+    "matched_minus_same_byte_text_min": 0.07421875,
+    "matched_minus_target_mean": 0.227734375,
+    "matched_minus_target_min": 0.2265625,
+    "paired_ci95_low_vs_target_min": 0.185546875,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.3857421875,
+    "seed_count": 5,
+    "target_accuracy": 0.2333984375
+  },
+  "hellaswag_train_source_score_repair_headline": {
+    "best_label_copy_eval_accuracy": 0.4619140625,
+    "selected_eval_accuracy": 0.447265625,
+    "selected_internal_dev_accuracy": 0.4609375,
+    "selected_minus_best_label_copy": -0.0146484375,
+    "selected_minus_source_label_copy": -0.0146484375,
+    "selected_minus_trained_choice_bias_label_copy": -0.01171875,
+    "selected_policy": "top2_margin_8bin",
+    "selected_policy_payload_bytes": 2,
+    "source_label_copy_eval_accuracy": 0.4619140625,
+    "source_top2_oracle_accuracy": 0.7158203125,
+    "source_top4_oracle_accuracy": 1.0,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.458984375
+  },
+  "mac_packet_ring_transport_headline": {
+    "all_packet_p95_under_1us": true,
+    "batch64_packet_cv_under_15pct": true,
+    "full_log_batch64_p50_ratio_vs_packet": 9.256443191061773,
+    "kv_floor_batch64_p50_ratio_vs_packet": 644.8789625101679,
+    "packet_batch64_cv": 0.00763049,
+    "packet_batch64_dma_bytes_per_request": 6.0,
+    "packet_batch64_line_bytes_per_request": 5.0,
+    "packet_batch64_p50_ns_per_request": 0.668768,
+    "packet_batch64_p95_ns_per_request": 0.673983,
+    "packet_batch64_record_bytes": 5,
+    "packet_max_cv": 0.09918887,
+    "pass_gate": true,
+    "pq_packet_batch64_cv": 0.04135843,
+    "pq_packet_batch64_dma_bytes_per_request": 8.0,
+    "pq_packet_batch64_line_bytes_per_request": 7.0,
+    "pq_packet_batch64_p50_ns_per_request": 0.697198,
+    "pq_packet_batch64_p95_ns_per_request": 0.708046,
+    "pq_packet_batch64_record_bytes": 7,
+    "query_text_batch64_p95_ratio_vs_packet": 1.1204941370924786,
+    "query_text_batch64_p95_ratio_vs_pq_packet": 1.0665888939419192,
+    "repeats": 5,
+    "target_bytes_per_repeat": 33554432
+  },
+  "native_readiness_ledger_headline": {
+    "claim_allowed": "Mac-local source-private packet accuracy/byte-boundary/transport proxy evidence.",
+    "claim_forbidden_count": 8,
+    "local_measured_rows": 3,
+    "native_blocker": "NVIDIA/vLLM/SGLang run is still required for systems claims.",
+    "native_ready": false,
+    "pass_gate": false,
+    "pending_native_rows": 5,
+    "source_private_local_rows": 3
+  },
+  "native_systems_benchmark_plan_headline": {
+    "acceptance_rule": "Native systems complete only when all required rows report quality, TTFT, TPOT, ITL, goodput, tokens/s, peak GPU memory, HBM read/write, PCIe/NVLink transfer, payload bytes, and source-exposure flags.",
+    "diagnostic_benchmarks": [
+      "HellaSwag"
+    ],
+    "headline_benchmarks": [
+      "ARC-Challenge",
+      "OpenBookQA"
+    ],
+    "native_systems_complete": false,
+    "pass_gate": true,
+    "profiler_stack": [
+      "serving JSON",
+      "Nsight Systems",
+      "Nsight Compute or CUPTI",
+      "NVML"
+    ],
+    "required_baseline_count": 11,
+    "required_metric_count": 44,
+    "serving_substrates": [
+      "vLLM",
+      "SGLang"
+    ]
+  },
+  "novelty_matrix": [
+    {
+      "communicated_object": "rate-capped private evidence packet decoded with target candidate side information",
+      "comparison": "LatentWire source-private packet",
+      "extreme_byte_rate": true,
+      "paper_role": "headline method",
+      "requires_model_internals": false,
+      "source": "this work",
+      "source_destroying_controls": true,
+      "source_private": true,
+      "systems_axis": "bytes, local latency, candidate accuracy, controls"
+    },
+    {
+      "communicated_object": "projected/fused source KV cache",
+      "comparison": "C2C cache-to-cache communication",
+      "extreme_byte_rate": false,
+      "paper_role": "closest high-rate internal-state baseline/framing",
+      "requires_model_internals": true,
+      "source": "https://arxiv.org/abs/2510.03215",
+      "source_destroying_controls": "not same threat model",
+      "source_private": "partly",
+      "systems_axis": "cache transfer accuracy and latency"
+    },
+    {
+      "communicated_object": "selected KV pairs/layers",
+      "comparison": "KVComm selective KV sharing",
+      "extreme_byte_rate": false,
+      "paper_role": "high-rate KV communication baseline/framing",
+      "requires_model_internals": true,
+      "source": "https://openreview.net/forum?id=F7rUng23nw",
+      "source_destroying_controls": "not same threat model",
+      "source_private": "partly",
+      "systems_axis": "fraction of KV cache transmitted"
+    },
+    {
+      "communicated_object": "quantized vectors or KV/cache states",
+      "comparison": "TurboQuant / vector-KV quantization",
+      "extreme_byte_rate": false,
+      "paper_role": "systems byte-floor comparator and future vector-packet ablation",
+      "requires_model_internals": true,
+      "source": "https://arxiv.org/abs/2504.19874",
+      "source_destroying_controls": false,
+      "source_private": false,
+      "systems_axis": "bits per vector/cache element"
+    },
+    {
+      "communicated_object": "JL-projected sign sketches for inner products/KV",
+      "comparison": "QJL 1-bit sign sketch",
+      "extreme_byte_rate": "low-bit but high-dimensional",
+      "paper_role": "matched-byte vector sketch baseline if latent branch is promoted",
+      "requires_model_internals": true,
+      "source": "https://arxiv.org/abs/2406.03482",
+      "source_destroying_controls": false,
+      "source_private": false,
+      "systems_axis": "1-bit cache/vector compression"
+    },
+    {
+      "communicated_object": "learned hard/soft prompt or prefix state inserted into the target context/model",
+      "comparison": "Prefix / prompt tuning",
+      "extreme_byte_rate": false,
+      "paper_role": "conditioning contrast; the source-private packet is a per-example discrete boundary record, not a token, soft prompt, or prefix cache",
+      "requires_model_internals": "soft/prefix variants require learned continuous state or prefix KV-like state",
+      "source": "https://arxiv.org/abs/2101.00190; https://arxiv.org/abs/2104.08691; https://arxiv.org/abs/2110.07602",
+      "source_destroying_controls": false,
+      "source_private": false,
+      "systems_axis": "extra prompt/prefix tokens or vectors, target context/KV growth, tuning storage"
+    },
+    {
+      "communicated_object": "compressed visible prompt/context tokens",
+      "comparison": "Prompt/text compression such as LLMLingua-family methods",
+      "extreme_byte_rate": "token-level",
+      "paper_role": "structured text/compression framing; query-aware text relay is the local control",
+      "requires_model_internals": false,
+      "source": "https://arxiv.org/abs/2310.05736",
+      "source_destroying_controls": false,
+      "source_private": false,
+      "systems_axis": "prompt tokens, quality, latency"
+    },
+    {
+      "communicated_object": "syndrome/source code with decoder side information",
+      "comparison": "Slepian-Wolf / Wyner-Ziv source coding",
+      "extreme_byte_rate": true,
+      "paper_role": "theory framing, not empirical LLM baseline",
+      "requires_model_internals": false,
+      "source": "https://www.itsoc.org/publications/papers/noiseless-coding-of-correlated-information-sources",
+      "source_destroying_controls": "theory, not benchmark controls",
+      "source_private": true,
+      "systems_axis": "rate-distortion/coding limit"
+    },
+    {
+      "communicated_object": "predicted latent/representation state",
+      "comparison": "JEPA / diffusion-transformer latent prediction",
+      "extreme_byte_rate": false,
+      "paper_role": "inspiration for future learned receiver; not current claim",
+      "requires_model_internals": true,
+      "source": "https://openaccess.thecvf.com/content/CVPR2023/papers/Assran_Self-Supervised_Learning_From_Images_With_a_Joint-Embedding_Predictive_Architecture_CVPR_2023_paper.pdf",
+      "source_destroying_controls": false,
+      "source_private": "not primary",
+      "systems_axis": "latent prediction quality"
+    }
+  ],
+  "openbookqa_bridge_contract_headline": {
+    "local_checks": {
+      "duplicate_choice_row_count": 3,
+      "duplicate_content_id_count": 5,
+      "official_counts_match_expected": true,
+      "official_schema_valid": true,
+      "official_splits_disjoint": true,
+      "official_splits_materialized": true,
+      "openbook_fact_forbidden_for_this_gate": true,
+      "source_answer_fields_forbidden": true
+    },
+    "official_rows": {
+      "test": 500,
+      "train": 4957,
+      "validation": 500
+    },
+    "pass_gate": true
+  },
+  "openbookqa_fixed_packet_test_4b_headline": {
+    "best_destructive_control": "zero_source",
+    "best_destructive_control_accuracy": 0.276,
+    "matched_accuracy": 0.378,
+    "matched_minus_best_destructive": 0.10199999999999998,
+    "matched_minus_same_byte_text": 0.018000000000000016,
+    "matched_minus_target": 0.10199999999999998,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.156,
+      "ci95_low": 0.05,
+      "mean": 0.102
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.16104999999999997,
+      "ci95_low": 0.046,
+      "mean": 0.102
+    },
+    "same_byte_structured_text_accuracy": 0.36,
+    "target_accuracy": 0.276
+  },
+  "openbookqa_fixed_packet_validation_headline": {
+    "best_destructive_control": "zero_source",
+    "best_destructive_control_accuracy": 0.252,
+    "matched_accuracy": 0.356,
+    "matched_minus_best_destructive": 0.10399999999999998,
+    "matched_minus_same_byte_text": 0.01200000000000001,
+    "matched_minus_target": 0.10399999999999998,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.15704999999999997,
+      "ci95_low": 0.054950000000000006,
+      "mean": 0.104
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.164,
+      "ci95_low": 0.048,
+      "mean": 0.104
+    },
+    "same_byte_structured_text_accuracy": 0.344,
+    "target_accuracy": 0.252
+  },
+  "openbookqa_seed_stability_test_3b_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.212,
+    "matched_accuracy_max": 0.38,
+    "matched_accuracy_mean": 0.37839999999999996,
+    "matched_accuracy_min": 0.378,
+    "matched_minus_best_destructive_min": 0.09999999999999998,
+    "matched_minus_same_byte_text_min": 0.028000000000000025,
+    "matched_minus_target_mean": 0.10239999999999998,
+    "matched_minus_target_min": 0.10199999999999998,
+    "paired_ci95_low_vs_target_min": 0.038,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.35,
+    "seed_count": 5,
+    "target_accuracy": 0.276
+  },
+  "openbookqa_seed_stability_validation_3b_headline": {
+    "all_seeds_pass": true,
+    "candidate_derangement_accuracy_max": 0.226,
+    "matched_accuracy_max": 0.358,
+    "matched_accuracy_mean": 0.356,
+    "matched_accuracy_min": 0.354,
+    "matched_minus_best_destructive_min": 0.07799999999999996,
+    "matched_minus_same_byte_text_min": 0.02799999999999997,
+    "matched_minus_target_mean": 0.10399999999999998,
+    "matched_minus_target_min": 0.10199999999999998,
+    "paired_ci95_low_vs_target_min": 0.044950000000000004,
+    "pass_count": 5,
+    "same_byte_structured_text_accuracy": 0.326,
+    "seed_count": 5,
+    "target_accuracy": 0.252
+  },
+  "pass_checks": [
+    {
+      "check": "required_artifacts_exist",
+      "pass": true
+    },
+    {
+      "check": "train_donor_antishuffle_3_seed_cross_family_pass",
+      "pass": true
+    },
+    {
+      "check": "train_donor_antishuffle_6_of_6_cross_rows_pass",
+      "pass": true
+    },
+    {
+      "check": "train_donor_antishuffle_controls_clean",
+      "pass": true
+    },
+    {
+      "check": "train_donor_antishuffle_seed47_n512_cross_family_pass",
+      "pass": true
+    },
+    {
+      "check": "train_donor_antishuffle_3_seed_n512_cross_family_pass",
+      "pass": true
+    },
+    {
+      "check": "train_donor_antishuffle_seed47_n512_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "train_donor_locked_rate_frontier_passes",
+      "pass": true
+    },
+    {
+      "check": "train_donor_locked_rate_frontier_6_of_6_selected_eval_rows",
+      "pass": true
+    },
+    {
+      "check": "train_donor_locked_rate_frontier_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "train_donor_stable_gap_selector_passes",
+      "pass": true
+    },
+    {
+      "check": "train_donor_stable_gap_selector_selects_global_12b",
+      "pass": true
+    },
+    {
+      "check": "train_donor_stable_gap_selector_6_of_6_selected_eval_rows",
+      "pass": true
+    },
+    {
+      "check": "train_donor_fixed12_eval_audit_passes",
+      "pass": true
+    },
+    {
+      "check": "train_donor_fixed12_eval_6_of_6_cross_rows_pass",
+      "pass": true
+    },
+    {
+      "check": "train_donor_fixed12_eval_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_bridge_contract_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_bridge_has_official_splits",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_public_result_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fixed_packet_validation_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fixed_packet_test_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fixed_packet_test_beats_target",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fixed_packet_test_beats_same_byte_text",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fixed_packet_test_derangement_collapses",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_seed_stability_validation_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_seed_stability_test_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_seed_stability_test_5_of_5",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_seed_stability_test_lift_stable",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_seed_stability_test_beats_same_byte_text",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_seed_stability_test_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_common_basis_validation_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_common_basis_test_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_common_basis_test_beats_target",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_common_basis_test_beats_same_byte_text",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_common_basis_seed_validation_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_common_basis_seed_test_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_common_basis_seed_test_5_of_5",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_common_basis_seed_test_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_relative_seed_validation_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_relative_seed_test_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_relative_seed_test_5_of_5",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_relative_seed_test_beats_same_byte_text",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_relative_seed_test_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_id_shuffle_validation_collapses",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_id_shuffle_test_collapses",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_value_shuffle_validation_collapses",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_anchor_value_shuffle_test_collapses",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_random_anchors_validation_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_random_anchors_test_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_random_anchors_test_beats_same_byte_text",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_source_latent_endpoint_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_systems_trace_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_systems_trace_scopes_native_blocker",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_systems_trace_source_private_boundary",
+      "pass": true
+    },
+    {
+      "check": "sciq_bridge_contract_passes",
+      "pass": true
+    },
+    {
+      "check": "sciq_validation_text_saturation_documented",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_bridge_contract_passes",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_bridge_has_official_splits",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_fixed_validation_source_cache_positive",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_fixed_test_4b_source_cache_positive",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_seed_validation_3b_passes",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_seed_test_3b_passes",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_seed_test_3b_5_of_5",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_seed_test_3b_beats_same_byte_text",
+      "pass": true
+    },
+    {
+      "check": "openbookqa_seed_test_3b_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "commonsenseqa_bridge_contract_passes",
+      "pass": true
+    },
+    {
+      "check": "commonsenseqa_labeled_splits_disjoint",
+      "pass": true
+    },
+    {
+      "check": "commonsenseqa_12b_source_signal_beats_target_and_controls",
+      "pass": true
+    },
+    {
+      "check": "commonsenseqa_text_saturation_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "commonsenseqa_2b_relaxed_margin_seed_stable",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_bridge_contract_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_bridge_has_labeled_splits",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_fixed_validation1024_2b_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_fixed_validation1024_2b_beats_same_byte_text",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_fixed_validation1024_2b_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_seed_validation1024_2b_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_seed_validation1024_2b_5_of_5",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_seed_validation1024_2b_beats_same_byte_text",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_seed_validation1024_2b_controls_clean",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_seed_validation1024_2b_record_is_5b",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_control_suite_metadata_controls_clean",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_control_suite_label_copy_threat_documented",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_score_packet_headroom_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_score_packet_top2_oracle_has_method_headroom",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_public_receiver_repair_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_public_receiver_repair_top2_headroom_persists",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_train_source_score_repair_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_train_source_score_repair_top2_headroom_persists",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_summary_repair_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_summary_repair_top2_headroom_persists",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_repair_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_repair_beats_label_copy",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_repair_controls_collapse",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_repair_source_private_packet",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_stability_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_stability_5_of_5_cached_splits",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_stability_controls_collapse",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_stability_unrestricted_selector_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_stability_source_private_packet",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_train_sample_stress_not_overclaimed",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_train_sample_stress_records_fresh_sample",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_train_sample_stress_source_private_packet",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_bagged_gate_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_bagged_gate_beats_label_and_score_only",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_bagged_gate_controls_collapse",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_bagged_gate_uses_fresh_train_sample",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_bagged_gate_jackknife_3_of_3",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_bagged_gate_source_private_packet",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_eval_slice_stress_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_eval_slice_stress_is_heldout_1024_rows",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_eval_slice_stress_beats_label_and_score_only",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_eval_slice_stress_controls_and_jackknife",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_eval_slice_stress_source_private_packet",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_multi_slice_stress_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_multi_slice_stress_has_3_contiguous_slices",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_multi_slice_stress_beats_label_score_zero",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_multi_slice_stress_controls_and_jackknife",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_hidden_innovation_multi_slice_stress_source_private_packet",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_repair_systems_acceptance_card_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_repair_systems_acceptance_method_promoted",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_repair_systems_acceptance_trained_label_control_clears",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_repair_systems_acceptance_audit_passes",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_repair_systems_acceptance_native_queue_blocked",
+      "pass": true
+    },
+    {
+      "check": "hellaswag_repair_systems_acceptance_has_byte_latency_exposure_fields",
+      "pass": true
+    },
+    {
+      "check": "mac_packet_ring_transport_passes",
+      "pass": true
+    },
+    {
+      "check": "serving_slo_envelope_passes",
+      "pass": true
+    },
+    {
+      "check": "systems_rate_assumption_frontier_passes",
+      "pass": true
+    },
+    {
+      "check": "cross_benchmark_systems_comparator_passes",
+      "pass": true
+    },
+    {
+      "check": "cross_benchmark_systems_two_headline_rows",
+      "pass": true
+    },
+    {
+      "check": "cross_benchmark_systems_qjl_floor_above_50x",
+      "pass": true
+    },
+    {
+      "check": "cross_benchmark_systems_native_nonclaim",
+      "pass": true
+    },
+    {
+      "check": "native_readiness_ledger_scopes_native_blocker",
+      "pass": true
+    },
+    {
+      "check": "native_systems_benchmark_plan_passes",
+      "pass": true
+    },
+    {
+      "check": "native_systems_benchmark_plan_nonclaim",
+      "pass": true
+    },
+    {
+      "check": "native_systems_benchmark_plan_has_required_baselines",
+      "pass": true
+    },
+    {
+      "check": "native_systems_benchmark_plan_has_hardware_metrics",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_live_rows_9_of_9",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_cross_family_6_of_6",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_no_source_text_or_kv",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_systems_boundary_passes",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_kv_proxy_ratio_above_1000x",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_threshold_0_48_clean_9_of_9",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_rr_has_no_all_row_clean_threshold",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_random_sign_has_no_all_row_clean_threshold",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_margin_atlas_passes",
+      "pass": true
+    },
+    {
+      "check": "candidate_local_margin_beats_best_control_by_2x",
+      "pass": true
+    },
+    {
+      "check": "train_receiver_permuted_null_gap_3_seed_cross_family_pass",
+      "pass": true
+    },
+    {
+      "check": "train_receiver_permuted_null_gap_6_of_6_cross_rows_pass",
+      "pass": true
+    },
+    {
+      "check": "train_receiver_permuted_null_gap_controls_clean",
+      "pass": true
+    },
+    {
+      "check": "train_receiver_permuted_null_gap_ci_positive",
+      "pass": true
+    },
+    {
+      "check": "procrustes_margin_control_matches_matched",
+      "pass": true
+    },
+    {
+      "check": "train_sender_packet_builder_3_seed_cross_family_pass",
+      "pass": true
+    },
+    {
+      "check": "train_sender_packet_builder_9_of_9_rows_pass",
+      "pass": true
+    },
+    {
+      "check": "train_sender_packet_builder_beats_live_base",
+      "pass": true
+    },
+    {
+      "check": "train_sender_packet_builder_controls_clean",
+      "pass": true
+    },
+    {
+      "check": "train_sender_packet_builder_rate_has_cross_family_pass",
+      "pass": true
+    },
+    {
+      "check": "train_sender_packet_builder_rate_has_multiple_pass_rows",
+      "pass": true
+    },
+    {
+      "check": "source_prioritized_packet_builder_loo_3_seed_cross_family_pass",
+      "pass": true
+    },
+    {
+      "check": "source_prioritized_packet_builder_loo_9_of_9_rows_pass",
+      "pass": true
+    },
+    {
+      "check": "source_prioritized_packet_builder_loo_beats_live_base",
+      "pass": true
+    },
+    {
+      "check": "source_prioritized_packet_builder_loo_controls_clean",
+      "pass": true
+    },
+    {
+      "check": "public_packet_builder_3_seed_cross_family_pass",
+      "pass": true
+    },
+    {
+      "check": "public_packet_builder_9_of_9_rows_pass",
+      "pass": true
+    },
+    {
+      "check": "public_packet_builder_beats_live_base",
+      "pass": true
+    },
+    {
+      "check": "public_packet_builder_controls_clean",
+      "pass": true
+    },
+    {
+      "check": "rate_frontier_passes",
+      "pass": true
+    },
+    {
+      "check": "matched_byte_text_stays_at_target",
+      "pass": true
+    },
+    {
+      "check": "packet_beats_query_aware_text_by_7x",
+      "pass": true
+    },
+    {
+      "check": "kv_cache_qjl_lower_bound_above_1000x",
+      "pass": true
+    },
+    {
+      "check": "coded_label_risk_passes",
+      "pass": true
+    },
+    {
+      "check": "composed_label_code_order_stress_passes",
+      "pass": true
+    },
+    {
+      "check": "endpoint_core_uncertainty_passes",
+      "pass": true
+    },
+    {
+      "check": "endpoint_holdout_uncertainty_passes",
+      "pass": true
+    },
+    {
+      "check": "ledger_has_paper_ready_rows",
+      "pass": true
+    }
+  ],
+  "pass_gate": true,
+  "readiness": "train-donor positive-method paper branch plus seed-stable ARC-Challenge and OpenBookQA public-basis endpoints; cross-benchmark source-state byte-floor systems comparator and native vLLM/SGLang benchmark plan now strengthen the systems story; HellaSwag single-denoiser hidden innovation fails fresh train-row-sample stress, but the predeclared bagged hidden-innovation packet now passes three-train-sample, 2-of-3 jackknife, frozen heldout validation-slice stress, and a three-contiguous-slice validation[0:3072] stress as a live ICLR headline-candidate pending remaining-slice/full-validation stress, strict cross-family falsification, and native systems rows",
+  "remaining_iclr_risks": [
+    "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
+    "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
+    "HellaSwag anchored hidden-innovation repair passes cached split stability but fails the fresh 2027 train-row-sample stress; the new bagged gate now rescues the three-sample stress, passes 2-of-3 jackknife subbags, clears frozen validation[1024:2048] and validation[2048:3072] heldout slices, and passes a contiguous validation[0:3072] multi-slice stress. It still needs remaining-slice/full-validation stress before comfortable headline promotion.",
+    "HellaSwag source top-2 oracle headroom is still large after the hidden-innovation repair, so reviewers will expect ablations explaining why the repair recovers only part of the headroom.",
+    "The train-only public receiver HellaSwag repair probe also fails below source-label copy, so the next repair gate needs train-split source scores or hidden source summaries rather than public lexical features alone.",
+    "The 512-row train-source-score HellaSwag repair probe also fails below source-label copy, so score-shape repair is weakened unless a substantially richer train-source feature family is introduced.",
+    "The 512-row train-source-hidden HellaSwag label-copy repair fails below source-label copy, while hidden-innovation residual denoising succeeds; the paper must explain this distinction clearly.",
+    "The HellaSwag repair acceptance card now promotes only the hidden-innovation row locally and still blocks native-queue promotion until native systems evidence exists.",
+    "SciQ is documented as a benchmark-selection limitation because same-byte answer-text saturates despite strong source signal.",
+    "CommonsenseQA confirms non-science source signal, but same-byte text is still too close under the strict text-margin gate.",
+    "Anchor-coordinate controls show ID/value mismatch collapse, but random shared anchors pass; do not claim semantic train-anchor superiority.",
+    "The direct Qwen-hidden to BGE residual endpoint failed validation, so deeper latent endpoints need better common-basis learning before promotion.",
+    "The top live method is candidate-local and thresholded; the paper must show the threshold frontier and controls clearly.",
+    "Same-family structured-text controls remain unpromoted and should be framed as a limitation or cut from headline claims.",
+    "The headline method is protocol/candidate-side-information communication, not universal semantic latent transfer.",
+    "Simple learned cross-family masked-innovation receivers failed; a future shared-dictionary/crosscoder method needs feature knockout before promotion.",
+    "The final paper must show text relay catches up at higher byte budgets to avoid unfair-baseline criticism."
+  ],
+  "reproduction_commands": [
+    "./venv_arm64/bin/python scripts/build_source_private_candidate_local_competitor_basis_table.py --output-dir results/source_private_candidate_local_competitor_basis_table_20260430",
+    "./venv_arm64/bin/python scripts/build_source_private_candidate_local_cross_family_gate.py --output-dir results/source_private_candidate_local_cross_family_gate_20260430",
+    "./venv_arm64/bin/python scripts/build_source_private_candidate_local_systems_boundary_trace.py --output-dir results/source_private_candidate_local_systems_boundary_trace_20260430",
+    "./venv_arm64/bin/python scripts/build_source_private_candidate_local_threshold_frontier.py --output-dir results/source_private_candidate_local_threshold_frontier_20260501",
+    "./venv_arm64/bin/python scripts/build_source_private_candidate_local_margin_atlas.py --output-dir results/source_private_candidate_local_margin_atlas_20260501",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_smoke_20260501 --budgets 8 --train-examples 1024 --eval-examples 512 --seed 47 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration all_public_eval_disjoint --packet-builder-calibration all_public_eval_disjoint --calibration-examples 1024 --packet-builder-examples 1024 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode hf_last_mean --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_residual_norm --min-decision-score 0.48",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_smoke_20260501_seed53 --budgets 8 --train-examples 1024 --eval-examples 512 --seed 53 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration all_public_eval_disjoint --packet-builder-calibration all_public_eval_disjoint --calibration-examples 1024 --packet-builder-examples 1024 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode hf_last_mean --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_residual_norm --min-decision-score 0.48",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_smoke_20260501_seed59 --budgets 8 --train-examples 1024 --eval-examples 512 --seed 59 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration all_public_eval_disjoint --packet-builder-calibration all_public_eval_disjoint --calibration-examples 1024 --packet-builder-examples 1024 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode hf_last_mean --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_residual_norm --min-decision-score 0.48",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501 --budgets 12 --seed 47 --packet-builder-calibration leave_one_family_out_public --packet-builder-composition add_source --source-identity-weight 0.75 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501_seed53 --budgets 12 --seed 53 --packet-builder-calibration leave_one_family_out_public --packet-builder-composition add_source --source-identity-weight 0.75 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501_seed59_serial --budgets 12 --seed 59 --packet-builder-calibration leave_one_family_out_public --packet-builder-composition add_source --source-identity-weight 0.75 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501 --budgets 12 --seed 47 --candidate-calibration all_public_eval_disjoint --packet-builder-calibration train_only --packet-builder-composition add_source --source-identity-weight 0.75 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501_seed53 --budgets 12 --seed 53 --candidate-calibration all_public_eval_disjoint --packet-builder-calibration train_only --packet-builder-composition add_source --source-identity-weight 0.75 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501_seed59 --budgets 12 --seed 59 --candidate-calibration all_public_eval_disjoint --packet-builder-calibration train_only --packet-builder-composition add_source --source-identity-weight 0.75 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_rate_20260501 --budgets 8 10 12 16 --seed 47 --candidate-calibration all_public_eval_disjoint --packet-builder-calibration train_only --packet-builder-composition add_source --source-identity-weight 0.75 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_learned_synonym_dictionary_packet_gate.py --output-dir results/source_private_train_only_receiver_permuted_null_gap_20260501_seed47_n512 --budgets 12 --train-examples 768 --eval-examples 512 --seed 47 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --calibration-examples 768 --feature-dim 384 --ridge 0.05 --top-k 8 --min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_learned_synonym_dictionary_packet_gate.py --output-dir results/source_private_train_only_receiver_permuted_null_gap_20260501_seed53_n512 --budgets 12 --train-examples 768 --eval-examples 512 --seed 53 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --calibration-examples 768 --feature-dim 384 --ridge 0.05 --top-k 8 --min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_learned_synonym_dictionary_packet_gate.py --output-dir results/source_private_train_only_receiver_permuted_null_gap_20260501_seed59_n512 --budgets 12 --train-examples 768 --eval-examples 512 --seed 59 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --calibration-examples 768 --feature-dim 384 --ridge 0.05 --top-k 8 --min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed47_n128_budget14 --budgets 14 --train-examples 256 --eval-examples 128 --seed 47 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 256 --packet-builder-examples 256 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed53_n128_budget12 --budgets 12 --train-examples 256 --eval-examples 128 --seed 53 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 256 --packet-builder-examples 256 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed59_n128_budget12 --budgets 12 --train-examples 256 --eval-examples 128 --seed 59 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 256 --packet-builder-examples 256 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed47_n512_budget14 --budgets 14 --train-examples 1024 --eval-examples 512 --seed 47 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 1024 --packet-builder-examples 1024 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed47_n512_budget12_cross --budgets 12 --directions core_to_holdout holdout_to_core --train-examples 1024 --eval-examples 512 --seed 47 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 1024 --packet-builder-examples 1024 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed53_n512_budget12_14 --budgets 12 14 --train-examples 1024 --eval-examples 512 --seed 53 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 1024 --packet-builder-examples 1024 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed59_n512_budget12_14 --budgets 12 14 --train-examples 1024 --eval-examples 512 --seed 59 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 1024 --packet-builder-examples 1024 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_locked_frontier_seed47_n128 --budgets 10 12 14 16 --directions core_to_holdout holdout_to_core --train-examples 256 --eval-examples 128 --seed 47 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 256 --packet-builder-examples 256 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed53_n128_budget10 --budgets 10 --directions core_to_holdout holdout_to_core --train-examples 256 --eval-examples 128 --seed 53 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 256 --packet-builder-examples 256 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py --output-dir results/source_private_train_donor_antishuffle_seed59_n128_budget10 --budgets 10 --directions core_to_holdout holdout_to_core --train-examples 256 --eval-examples 128 --seed 59 --candidate-atom-view heldout_synonym --calibration-atom-view synonym_stress --candidate-calibration train_only --packet-builder-calibration train_only --calibration-examples 256 --packet-builder-examples 256 --feature-dim 384 --ridge 0.05 --packet-builder-ridge 0.1 --top-k 8 --min-score 0.0 --packet-min-score 0.0 --text-feature-mode semantic_anchor --adapter-target-mode semantic_anchor_teacher --decoder-score-mode candidate_local_permuted_null_gap_residual_norm --permuted-null-weight 0.75 --packet-builder-target-mode answer_minus_candidate_mean --packet-builder-composition train_donor_antishuffle_innovation --source-identity-weight 0.75 --antishuffle-train-donors 12 --antishuffle-donor-weight 0.50 --antishuffle-null-weight 0.75 --antishuffle-generic-weight 0.10 --antishuffle-carrier-mode sum --min-decision-score 0.30 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_train_donor_locked_rate_frontier.py --output-dir results/source_private_train_donor_antishuffle_locked_rate_frontier_20260501 --selection-scope per_seed",
+    "./venv_arm64/bin/python scripts/build_source_private_train_donor_locked_rate_frontier.py --output-dir results/source_private_train_donor_antishuffle_stable_gap_seed47_53_59_20260501 --selection-scope global --validation-control-scope source_private_gap --validation-selector stable_interior --validation-run results/source_private_train_donor_antishuffle_train_family_disjoint_seed47_n128 --validation-run results/source_private_train_donor_antishuffle_train_family_disjoint_seed53_n128_train256 --validation-run results/source_private_train_donor_antishuffle_train_family_disjoint_seed59_n128_train256 --eval-run results/source_private_train_donor_antishuffle_seed47_n512_budget12_cross --eval-run results/source_private_train_donor_antishuffle_seed53_n512_budget12_14 --eval-run results/source_private_train_donor_antishuffle_seed59_n512_budget12_14",
+    "./venv_arm64/bin/python scripts/build_source_private_train_donor_fixed_budget_eval_audit.py --output-dir results/source_private_train_donor_antishuffle_fixed12b_eval_audit_20260501",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_arc_challenge_bridge_contract.py --output-dir results/source_private_arc_challenge_bridge_contract_20260501 --materialize-official --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_validation --feature-mode hf_last_mean --feature-model /Users/sujeethjinesh/.cache/huggingface/hub/models--BAAI--bge-small-en/snapshots/2275a7bdee235e9b4f01fa73aa60d3311983cfea --feature-device auto --feature-dtype float32 --feature-max-length 128 --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_test --eval-path results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl --feature-mode hf_last_mean --feature-model /Users/sujeethjinesh/.cache/huggingface/hub/models--BAAI--bge-small-en/snapshots/2275a7bdee235e9b4f01fa73aa60d3311983cfea --feature-device auto --feature-dtype float32 --feature-max-length 128 --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_validation --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test --eval-path results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_bge_validation --split-name validation --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_validation/predictions.jsonl --feature-mode hf_last_mean --feature-model /Users/sujeethjinesh/.cache/huggingface/hub/models--BAAI--bge-small-en/snapshots/2275a7bdee235e9b4f01fa73aa60d3311983cfea --feature-device auto --feature-dtype float32 --feature-max-length 128 --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_bge_test --split-name test --eval-path results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_test/predictions.jsonl --feature-mode hf_last_mean --feature-model /Users/sujeethjinesh/.cache/huggingface/hub/models--BAAI--bge-small-en/snapshots/2275a7bdee235e9b4f01fa73aa60d3311983cfea --feature-device auto --feature-dtype float32 --feature-max-length 128 --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation --split-name validation_hashed_common_basis --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_validation/predictions.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test --split-name test_hashed_common_basis --eval-path results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/predictions.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_relative_validation --split-name validation_anchor_relative_common_basis --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_validation/predictions.jsonl --feature-mode anchor_relative_hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_relative_test --split-name test_anchor_relative_common_basis --eval-path results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/predictions.jsonl --feature-mode anchor_relative_hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_id_shuffle_validation --split-name validation_anchor_id_shuffle --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_validation/predictions.jsonl --feature-mode anchor_relative_hashed --anchor-control anchor_id_shuffle --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_id_shuffle_test --split-name test_anchor_id_shuffle --eval-path results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/predictions.jsonl --feature-mode anchor_relative_hashed --anchor-control anchor_id_shuffle --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_value_shuffle_validation --split-name validation_anchor_value_shuffle --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_validation/predictions.jsonl --feature-mode anchor_relative_hashed --anchor-control anchor_value_shuffle --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_value_shuffle_test --split-name test_anchor_value_shuffle --eval-path results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/predictions.jsonl --feature-mode anchor_relative_hashed --anchor-control anchor_value_shuffle --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_random_anchors_validation --split-name validation_random_anchors_same_count --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_validation/predictions.jsonl --feature-mode anchor_relative_hashed --anchor-control random_anchors_same_count --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_arc_challenge_seed_stability_20260501_qwen05_random_anchors_test --split-name test_random_anchors_same_count --eval-path results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl --anchor-predictions results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/predictions.jsonl --feature-mode anchor_relative_hashed --anchor-control random_anchors_same_count --feature-dim 384 --code-dim 96 --budget-bytes 12 --seeds 47,53,59,61,67 --bootstrap-samples 500",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_source_latent_endpoint_gate.py --output-dir results/source_private_arc_challenge_source_latent_endpoint_gate_20260501_qwen05_bge_validation --target-feature-mode hf_last_mean --target-feature-model /Users/sujeethjinesh/.cache/huggingface/hub/models--BAAI--bge-small-en/snapshots/2275a7bdee235e9b4f01fa73aa60d3311983cfea --target-feature-device auto --target-feature-dtype float32 --target-feature-max-length 128 --target-feature-dim 384 --code-dim 96 --budget-bytes 12 --source-feature-mode lm_hidden_last_mean --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-hidden-layer -1 --source-score-mode lm_choice_loglikelihood --alignment-ridge 10.0 --seed 47 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_systems_trace.py --output-dir results/source_private_arc_challenge_systems_trace_20260501",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_sciq_bridge_contract.py --output-dir results/source_private_sciq_bridge_contract_20260501 --materialize-official --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_sciq_fixed_packet_gate_20260501_qwen05_hashed_validation --train-path results/source_private_sciq_bridge_contract_20260501/official_splits/sciq_train.jsonl --eval-path results/source_private_sciq_bridge_contract_20260501/official_splits/sciq_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_openbookqa_bridge_contract.py --output-dir results/source_private_openbookqa_bridge_contract_20260501 --materialize-official --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_validation --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 4 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_validation_3b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_validation.jsonl --anchor-predictions results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_validation/predictions.jsonl --split-name openbookqa_validation_hashed_3b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 3 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl --anchor-predictions results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/predictions.jsonl --split-name openbookqa_test_hashed_3b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 3 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b_gap001 --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b_gap001 --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_hellaswag_bridge_contract.py --output-dir results/source_private_hellaswag_bridge_contract_20260501 --hf-cache-dir .debug/hf_datasets --validation-slice-rows 1024 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_hellaswag_fixed_packet_gate_20260501_qwen05_hashed_validation1024_2b --train-path results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_train.jsonl --eval-path results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_validation_first1024.jsonl --budget-bytes 2 --feature-dim 384 --code-dim 96 --feature-mode hashed --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-lm-prompt-mode continuation --bootstrap-samples 500 --min-lift-over-target 0.03 --min-gap-over-control 0.03 --min-gap-over-text 0.02",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed --train-path results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_train.jsonl --eval-path results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_validation_first1024.jsonl --anchor-predictions results/source_private_hellaswag_fixed_packet_gate_20260501_qwen05_hashed_validation1024_2b/predictions.jsonl --split-name hellaswag_validation_first1024_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-lift-over-target 0.03 --min-gap-over-control 0.03 --min-gap-over-text 0.02",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_hellaswag_control_suite.py --output-dir results/source_private_hellaswag_control_suite_20260501 --hf-cache-dir .debug/hf_datasets --bootstrap-samples 500 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_score_packet_headroom.py --output-dir results/source_private_hellaswag_score_packet_headroom_20260501_qwen05_validation1024 --eval-path results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_validation_first1024.jsonl --score-cache results/source_private_hellaswag_score_packet_headroom_20260501_qwen05_validation1024/source_score_cache.json --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-lm-prompt-mode continuation --local-files-only --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_public_receiver_repair_probe.py --output-dir results/source_private_hellaswag_public_receiver_repair_probe_20260501_qwen05_validation1024 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_train_source_score_repair_probe.py --output-dir results/source_private_hellaswag_train_source_score_repair_probe_20260501_qwen05_train512_validation1024 --train-score-rows 512 --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-lm-prompt-mode continuation --local-files-only --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_summary_repair_probe.py --output-dir results/source_private_hellaswag_hidden_summary_repair_probe_20260501_qwen05_train512_validation1024 --train-hidden-rows 512 --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-lm-prompt-mode continuation --local-files-only --bootstrap-samples 500 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_top2_contrastive_repair_probe.py --output-dir results/source_private_hellaswag_top2_contrastive_repair_probe_20260501_qwen05_train512_validation1024 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_repair_probe.py --output-dir results/source_private_hellaswag_hidden_innovation_repair_probe_20260501_qwen05_train512_validation1024 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_stability_gate.py --output-dir results/source_private_hellaswag_hidden_innovation_stability_gate_20260501_qwen05_train512_validation1024 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_train_sample_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_bagged_gate.py --output-dir results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048 --eval-slice-start 1024 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072 --eval-slice-start 2048 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_3072 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_repair_systems_acceptance_card.py --output-dir results/source_private_hellaswag_repair_systems_acceptance_card_20260501 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_mac_packet_ring_transport_microbench.py --output-dir results/source_private_mac_packet_ring_transport_microbench_20260501 --target-bytes 33554432 --repeats 5 --min-iterations 128",
+    "./venv_arm64/bin/python scripts/build_source_private_serving_slo_envelope.py --output-dir results/source_private_serving_slo_envelope_20260501",
+    "./venv_arm64/bin/python scripts/build_source_private_systems_rate_assumption_frontier.py --output-dir results/source_private_systems_rate_assumption_frontier_20260501",
+    "./venv_arm64/bin/python scripts/build_source_private_cross_benchmark_systems_comparator.py --output-dir results/source_private_cross_benchmark_systems_comparator_20260501",
+    "./venv_arm64/bin/python scripts/build_source_private_native_readiness_ledger.py --output-dir results/source_private_native_readiness_ledger_20260501",
+    "./venv_arm64/bin/python scripts/build_source_private_native_systems_benchmark_plan.py --output-dir results/source_private_native_systems_benchmark_plan_20260501 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_rate_frontier.py --output-dir results/source_private_rate_frontier_20260429",
+    "./venv_arm64/bin/python scripts/build_source_private_kv_cache_baseline_table.py --output-dir results/source_private_kv_cache_baseline_table_20260429",
+    "./venv_arm64/bin/python scripts/run_source_private_coded_label_risk_gate.py --examples 160 --candidates 4 --family-set all --seeds 29,31,37 --budget 2 --output-dir results/source_private_coded_label_risk_gate_20260429",
+    "./venv_arm64/bin/python scripts/build_source_private_pass_fail_ledger.py --output-dir results/source_private_pass_fail_ledger_20260429",
+    "find final -type f ! -name MANIFEST.sha256 -print0 | sort -z | xargs -0 shasum -a 256 > final/MANIFEST.sha256",
+    "shasum -a 256 -c final/MANIFEST.sha256",
+    "./venv_arm64/bin/python -m pytest tests/test_build_source_private_rate_frontier.py tests/test_build_source_private_kv_cache_baseline_table.py tests/test_run_source_private_coded_label_risk_gate.py tests/test_build_source_private_pass_fail_ledger.py -q"
+  ],
+  "sciq_bridge_contract_headline": {
+    "local_checks": {
+      "duplicate_choice_row_count": 44,
+      "official_counts_match_expected": true,
+      "official_no_duplicate_content": true,
+      "official_schema_valid": true,
+      "official_splits_disjoint": true,
+      "official_splits_materialized": true,
+      "source_answer_fields_forbidden": true,
+      "support_context_forbidden_for_this_gate": true
+    },
+    "official_rows": {
+      "test": 1000,
+      "train": 11679,
+      "validation": 1000
+    },
+    "pass_gate": true
+  },
+  "sciq_fixed_packet_validation_headline": {
+    "best_destructive_control": "zero_source",
+    "best_destructive_control_accuracy": 0.246,
+    "matched_accuracy": 0.712,
+    "matched_minus_best_destructive": 0.46599999999999997,
+    "matched_minus_same_byte_text": 0.006000000000000005,
+    "matched_minus_target": 0.46599999999999997,
+    "paired_ci95_vs_best_destructive": {
+      "ci95_high": 0.501,
+      "ci95_low": 0.424475,
+      "mean": 0.466
+    },
+    "paired_ci95_vs_target": {
+      "ci95_high": 0.502525,
+      "ci95_low": 0.42495,
+      "mean": 0.466
+    },
+    "same_byte_structured_text_accuracy": 0.706,
+    "target_accuracy": 0.246
+  },
+  "serving_slo_envelope_headline": {
+    "endpoint_packet_rows": 2,
+    "goodput_claim_allowed_rows": 0,
+    "gpu_counter_required_rows": 10,
+    "native_serving_gap": "GPU TPOT/goodput and accelerator counters remain unmeasured",
+    "packet_min_batch64_dma_bytes": 6.0,
+    "packet_min_batch64_line_bytes": 5.0,
+    "packet_min_raw_bytes": 2.0,
+    "packet_min_ttft_slo_1000_margin_ms": 452.78950000647455,
+    "packet_min_ttft_slo_500_margin_ms": -47.210499993525445,
+    "packet_min_ttft_slo_750_margin_ms": 202.78950000647455,
+    "pass_gate": true,
+    "rows": 10,
+    "source_exposure_rows": 6,
+    "ttft_measured_rows": 4
+  },
+  "source_prioritized_packet_builder_loo_headline": {
+    "all_seed_cross_family_pass": true,
+    "max_base_accuracy": 0.5,
+    "max_best_control_accuracy": 0.2578125,
+    "max_candidate_accuracy": 0.625,
+    "max_target_accuracy": 0.25,
+    "min_base_accuracy": 0.5,
+    "min_candidate_accuracy": 0.625,
+    "min_candidate_minus_base": 0.125,
+    "min_passing_ci95_low_vs_base": 0.091796875,
+    "pass_rows": 9,
+    "row_count": 9,
+    "seed_count": 3
+  },
+  "systems_rate_assumption_frontier_headline": {
+    "contract_failure_packet_accuracy": 0.25,
+    "endpoint_packet_rows": 2,
+    "endpoint_packet_rows_passing": 2,
+    "external_reference_rows": 6,
+    "full_log_bytes_vs_packet_min": 183.225,
+    "min_endpoint_packet_delta_vs_target": 0.42500000000000004,
+    "min_full_log_ttft_delta_vs_packet_ms": 164.27308350102976,
+    "min_kv_byte_floor_vs_packet": 10752.0,
+    "min_semantic_packet_delta_vs_target": 0.5,
+    "packet_payload_bytes_min": 2.0,
+    "query_aware_text_bytes_vs_packet": 7.0,
+    "query_aware_text_oracle_bytes_min": 14.0,
+    "same_byte_text_accuracy_max": 0.25,
+    "semantic_medium_pass_rows": 18,
+    "semantic_medium_total_rows": 18,
+    "semantic_packet_budget_bytes": [
+      4,
+      8
+    ]
+  },
+  "train_donor_antishuffle_headline": {
+    "all_seed_cross_family_pass": true,
+    "cross_family_pass_seed_count": 3,
+    "max_base_accuracy": 0.625,
+    "max_best_control_accuracy": 0.2734375,
+    "max_candidate_accuracy": 0.75,
+    "max_passing_best_control_accuracy": 0.2734375,
+    "max_target_accuracy": 0.25,
+    "min_base_accuracy": 0.5,
+    "min_candidate_accuracy": 0.6484375,
+    "min_candidate_minus_base": 0.125,
+    "min_passing_ci95_low_vs_base": 0.0625,
+    "pass_rows": 6,
+    "row_count": 6,
+    "seed_count": 3
+  },
+  "train_donor_antishuffle_n512_headline": {
+    "all_seed_cross_family_pass": true,
+    "cross_family_pass_seed_count": 3,
+    "max_base_accuracy": 0.625,
+    "max_best_control_accuracy": 0.287109375,
+    "max_candidate_accuracy": 0.75,
+    "max_passing_best_control_accuracy": 0.2734375,
+    "max_target_accuracy": 0.25,
+    "min_base_accuracy": 0.5,
+    "min_candidate_accuracy": 0.65234375,
+    "min_candidate_minus_base": 0.125,
+    "min_passing_ci95_low_vs_base": 0.095703125,
+    "pass_rows": 9,
+    "row_count": 10,
+    "seed_count": 3
+  },
+  "train_donor_fixed12_eval_headline": {
+    "budget_bytes": 12,
+    "directions": [
+      "core_to_holdout",
+      "holdout_to_core"
+    ],
+    "expected_rows": 6,
+    "max_best_control_accuracy": 0.275390625,
+    "min_candidate_accuracy": 0.65234375,
+    "min_candidate_minus_base": 0.125,
+    "min_paired_ci95_low_vs_base": 0.09765625,
+    "pass_gate": true,
+    "pass_rows": 6,
+    "rows": 6,
+    "seeds": [
+      47,
+      53,
+      59
+    ]
+  },
+  "train_donor_locked_rate_frontier_headline": {
+    "global": {
+      "max_selected_best_control_accuracy": null,
+      "min_selected_candidate_accuracy": null,
+      "min_selected_candidate_minus_base": null,
+      "min_selected_ci95_low_vs_base": null,
+      "pass_gate": false,
+      "pass_rows": 0,
+      "policy": "global",
+      "present_eval_rows": 0,
+      "row_count": 6,
+      "selected_budget_by_seed": {
+        "47": null,
+        "53": null,
+        "59": null
+      }
+    },
+    "per_seed": {
+      "max_selected_best_control_accuracy": 0.2734375,
+      "min_selected_candidate_accuracy": 0.65234375,
+      "min_selected_candidate_minus_base": 0.125,
+      "min_selected_ci95_low_vs_base": 0.09765625,
+      "pass_gate": true,
+      "pass_rows": 6,
+      "policy": "per_seed",
+      "present_eval_rows": 6,
+      "row_count": 6,
+      "selected_budget_by_seed": {
+        "47": 14,
+        "53": 12,
+        "59": 12
+      }
+    }
+  },
+  "train_donor_stable_gap_selector_headline": {
+    "global": {
+      "max_selected_best_control_accuracy": 0.275390625,
+      "min_selected_candidate_accuracy": 0.65234375,
+      "min_selected_candidate_minus_base": 0.125,
+      "min_selected_ci95_low_vs_base": 0.09765625,
+      "pass_gate": true,
+      "pass_rows": 6,
+      "policy": "global",
+      "present_eval_rows": 6,
+      "row_count": 6,
+      "selected_budget_by_seed": {
+        "47": 12,
+        "53": 12,
+        "59": 12
+      }
+    },
+    "per_seed": {
+      "max_selected_best_control_accuracy": 0.275390625,
+      "min_selected_candidate_accuracy": 0.65234375,
+      "min_selected_candidate_minus_base": 0.125,
+      "min_selected_ci95_low_vs_base": 0.09765625,
+      "pass_gate": true,
+      "pass_rows": 6,
+      "policy": "per_seed",
+      "present_eval_rows": 6,
+      "row_count": 6,
+      "selected_budget_by_seed": {
+        "47": 12,
+        "53": 12,
+        "59": 12
+      }
+    }
+  },
+  "train_receiver_permuted_null_gap_headline": {
+    "all_seed_cross_family_pass": true,
+    "cross_pass_rows": 6,
+    "cross_row_count": 6,
+    "max_cross_accuracy": 0.625,
+    "max_cross_best_control_accuracy": 0.259765625,
+    "max_cross_target_accuracy": 0.25,
+    "min_cross_accuracy": 0.5,
+    "min_cross_minus_best_control": 0.240234375,
+    "min_passing_cross_ci95_low_vs_target": 0.212890625,
+    "pass_rows": 6,
+    "row_count": 9,
+    "same_family_pass_rows": 0,
+    "seed_count": 3
+  },
+  "train_sender_packet_builder_headline": {
+    "all_seed_cross_family_pass": true,
+    "max_base_accuracy": 0.5,
+    "max_best_control_accuracy": 0.2578125,
+    "max_candidate_accuracy": 0.75,
+    "max_target_accuracy": 0.25,
+    "min_base_accuracy": 0.5,
+    "min_candidate_accuracy": 0.625,
+    "min_candidate_minus_base": 0.125,
+    "min_passing_ci95_low_vs_base": 0.091796875,
+    "pass_rows": 9,
+    "row_count": 9,
+    "seed_count": 3
+  },
+  "train_sender_packet_builder_rate_headline": {
+    "all_seed_cross_family_pass": true,
+    "max_base_accuracy": 0.625,
+    "max_best_control_accuracy": 0.259765625,
+    "max_candidate_accuracy": 0.8125,
+    "max_target_accuracy": 0.25,
+    "min_base_accuracy": 0.5,
+    "min_candidate_accuracy": 0.5,
+    "min_candidate_minus_base": 0.0,
+    "min_passing_ci95_low_vs_base": 0.091796875,
+    "pass_rows": 8,
+    "row_count": 12,
+    "seed_count": 1
+  }
+}
