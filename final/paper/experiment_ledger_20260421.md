@@ -16861,3 +16861,1462 @@ strong for a scoped positive-method plus systems-positioning paper. Comfortable
 ICLR still requires same-slice Relative Representation / linear translation /
 matched-byte text / C2C-KV proxy baselines, broader or n500 validation, and
 NVIDIA/vLLM counters before production systems claims.
+
+Update `2026-04-30`: the same-slice candidate-local common-basis panel and
+competitor gap table now include a true Relative Representations-style
+anchor-coordinate baseline. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`scripts/build_source_private_candidate_local_common_basis_falsification.py`
+and
+`scripts/build_source_private_candidate_local_competitor_basis_table.py`;
+tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`tests/test_build_source_private_candidate_local_common_basis_falsification.py`
+and
+`tests/test_build_source_private_candidate_local_competitor_basis_table.py`;
+memos:
+`paper/source_private_candidate_local_common_basis_falsification_20260430.md`
+and
+`paper/source_private_candidate_local_competitor_basis_table_20260430.md`;
+references:
+`references/549_candidate_local_common_basis_falsification_refs_20260430.md`
+and
+`references/550_candidate_local_competitor_basis_table_refs_20260430.md`;
+artifacts:
+`results/source_private_candidate_local_common_basis_falsification_20260430/`
+and
+`results/source_private_candidate_local_competitor_basis_table_20260430/`.
+Outcome: the live normalized candidate-local residual receiver remains `9/9`
+on n512 rows; the global public-anchor dot-product common-basis ablation is
+`0/9` because destructive controls leak despite matched accuracy up to
+`0.875`; the true RR anchor-coordinate baseline is a partial clean competitor
+with `6/9` pass rows, max matched `1.000`, max best-control `0.264`, and all
+holdout-to-core rows at the target floor; and the candidate-local residual
+chart without row/payload normalization is only `3/9`, so normalization is part
+of the method rather than cosmetic cleanup. The naive RR-anchor plus local
+residual-normalization stack is pruned at `0/9` because controls rise again.
+The measured competitor table now has `9` same-slice rows and keeps `5`
+ICLR-required rows explicitly pending:
+CCA/Procrustes, OT/LSTIRP/Gromov-Wasserstein, C2C, KVComm/Q-KVComm, and
+TurboQuant/KIVI/KVQuant/CacheGen byte floors. Interpretation: this is a stronger
+and more honest COLM-facing ablation/limitation table, but it weakens any claim
+that common-basis methods are defeated. Next exact gate: run CCA/Procrustes on
+the same n512 seeds or build a guarded RR selector that preserves the clean RR
+controls; in parallel, build the packet-ISA receiver trace v3 for systems
+byte-floor rows.
+
+Update `2026-04-30`: the same-slice common-basis panel now also includes a
+public-calibration orthogonal Procrustes packet receiver. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`scripts/build_source_private_candidate_local_common_basis_falsification.py`
+and
+`scripts/build_source_private_candidate_local_competitor_basis_table.py`;
+tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`tests/test_build_source_private_candidate_local_common_basis_falsification.py`
+and
+`tests/test_build_source_private_candidate_local_competitor_basis_table.py`;
+memos:
+`paper/source_private_candidate_local_common_basis_falsification_20260430.md`
+and
+`paper/source_private_candidate_local_competitor_basis_table_20260430.md`;
+references:
+`references/549_candidate_local_common_basis_falsification_refs_20260430.md`
+and
+`references/550_candidate_local_competitor_basis_table_refs_20260430.md`;
+artifacts:
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_procrustes_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_procrustes_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_procrustes_dot_evaldisjoint/`,
+`results/source_private_candidate_local_common_basis_falsification_20260430/`
+and
+`results/source_private_candidate_local_competitor_basis_table_20260430/`.
+Outcome: Procrustes is a high-accuracy but unsafe common-basis baseline. Across
+the frozen n512 seeds/directions it passes `0/9` rows, reaches matched accuracy
+up to `0.875`, and leaks controls on `9/9` rows; the permuted-teacher receiver
+ties the matched row in every direction (`0.875`, `0.500`, `0.6875` by
+direction). The measured competitor table now has `10` same-slice rows and
+keeps `5` ICLR-required rows pending: ridge CCA/SVCCA, OT/LSTIRP/GW, C2C,
+KVComm/Q-KVComm, and TurboQuant/KIVI/KVQuant/CacheGen byte floors.
+Interpretation: orthogonal public alignment alone is not a valid
+source-private explanation for the live row, but the common-basis objection is
+not closed because RR is a partial clean competitor and CCA/SVCCA remains
+unrun. Next exact gate: implement a ridge CCA/SVCCA decoder on the same frozen
+n512 surface, then build the packet-ISA boundary trace table for systems
+byte-floor positioning.
+
+Update `2026-04-30`: the same-slice common-basis panel now includes
+ridge CCA/SVCCA-style canonical-coordinate rows and the stronger
+CCA-plus-local-residual stack. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`scripts/build_source_private_candidate_local_common_basis_falsification.py`
+and
+`scripts/build_source_private_candidate_local_competitor_basis_table.py`;
+tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`tests/test_build_source_private_candidate_local_common_basis_falsification.py`
+and
+`tests/test_build_source_private_candidate_local_competitor_basis_table.py`;
+memos:
+`paper/source_private_candidate_local_common_basis_falsification_20260430.md`
+and
+`paper/source_private_candidate_local_competitor_basis_table_20260430.md`;
+references:
+`references/549_candidate_local_common_basis_falsification_refs_20260430.md`
+and
+`references/550_candidate_local_competitor_basis_table_refs_20260430.md`;
+artifacts:
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_ridge_cca_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_ridge_cca_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_ridge_cca_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_ridge_cca_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_ridge_cca_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_ridge_cca_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_common_basis_falsification_20260430/`
+and
+`results/source_private_candidate_local_competitor_basis_table_20260430/`.
+Outcome: plain ridge CCA/SVCCA-style canonical-coordinate scoring passes `0/9`
+n512 rows. It reaches matched accuracy `0.750` in core-to-holdout and `0.500`
+in same-family, but the permuted-teacher receiver ties those rows; all
+holdout-to-core rows collapse to target (`0.250`). The stronger ridge CCA plus
+candidate-local residual-normalization stack also passes `0/9`: it recovers
+holdout-to-core matched accuracy to `0.500`, but the permuted-teacher control
+ties every row (`0.750`, `0.500`, `0.5625` by direction). The measured
+competitor table now has `12` same-slice rows and `4` remaining ICLR-required
+rows: LSTIRP/OT/Gromov-Wasserstein, C2C, KVComm/Q-KVComm, and
+TurboQuant/KIVI/KVQuant/CacheGen byte floors. Interpretation: CCA-style global
+correlated bases do not explain the live row under destructive controls, and
+adding local residual normalization to CCA is still unsafe. The highest
+remaining mathematical uniqueness risk is now RR/LSTIRP-lite rather than
+Procrustes or CCA. Next exact gate: implement an LSTIRP-lite / inverse-relative
+baseline on the same frozen n512 surface, then build the packet-ISA boundary
+trace table for systems positioning.
+
+Update `2026-04-30`: the same-slice common-basis panel now includes an
+LSTIRP-lite inverse-relative packet receiver and an inverse-relative
+local-residual stack. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`scripts/build_source_private_candidate_local_common_basis_falsification.py`
+and
+`scripts/build_source_private_candidate_local_competitor_basis_table.py`;
+tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`tests/test_build_source_private_candidate_local_common_basis_falsification.py`
+and
+`tests/test_build_source_private_candidate_local_competitor_basis_table.py`;
+memos:
+`paper/source_private_candidate_local_common_basis_falsification_20260430.md`
+and
+`paper/source_private_candidate_local_competitor_basis_table_20260430.md`;
+references:
+`references/549_candidate_local_common_basis_falsification_refs_20260430.md`
+and
+`references/550_candidate_local_competitor_basis_table_refs_20260430.md`;
+artifacts:
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_inverse_relative_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_inverse_relative_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_inverse_relative_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_inverse_relative_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_inverse_relative_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_inverse_relative_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_common_basis_falsification_20260430/`
+and
+`results/source_private_candidate_local_competitor_basis_table_20260430/`.
+Outcome: LSTIRP-lite inverse-relative scoring passes `0/9` n512 rows. It
+reaches matched accuracy `0.500` in core-to-holdout, `0.375` in same-family,
+and target-floor `0.250` in holdout-to-core; the permuted-teacher control ties
+the improved core-to-holdout and same-family rows (`6/9` control-leak rows).
+The inverse-relative local-residual stack also passes `0/9`: it lifts
+same-family matched accuracy to `0.4375`, but the permuted-teacher control ties
+that gain as well. The measured competitor table now has `14` same-slice rows
+and `4` remaining ICLR-required rows: OT/Gromov-Wasserstein, C2C,
+KVComm/Q-KVComm, and TurboQuant/KIVI/KVQuant/CacheGen byte floors.
+Interpretation: inverse-relative public translation is pruned as an unsafe
+headline method on the current packet surface, while clean RR anchor coordinates
+remain the strongest live mathematical competitor. Next exact gate: run a small
+OT/Gromov-Wasserstein transport row or pivot to the packet-ISA boundary trace
+table if the priority is systems positioning.
+
+Update `2026-04-30`: the live candidate-local residual receiver now has a
+reviewer-facing systems boundary trace-card. Code:
+`scripts/build_source_private_candidate_local_systems_boundary_trace.py`; test:
+`tests/test_build_source_private_candidate_local_systems_boundary_trace.py`;
+memo:
+`paper/source_private_candidate_local_systems_boundary_trace_20260430.md`;
+references:
+`references/551_candidate_local_systems_boundary_trace_refs_20260430.md`;
+artifact:
+`results/source_private_candidate_local_systems_boundary_trace_20260430/`.
+Outcome: the trace-card passes its local gate and reports the live row as
+`9/9` n512 same-slice measured, accuracy range `0.500-0.625`, source-private
+`8B` payload / `11B` record, batch-64 line bytes/request `11.00`, resident
+sparse decode p50 `5.231934 us/request`, and no source text/KV exposure. It
+also records matched-byte text, random same-byte packet, query-aware text,
+full-log text, QJL and KIVI/KVQuant byte-floor accounting rows, plus pending
+native systems rows for C2C, KVComm/KVCOMM, Q-KVComm, TurboQuant, CacheGen, and
+vLLM/PagedAttention. Interpretation: this is a COLM-ready systems boundary
+artifact, not an ICLR-complete systems win. It strengthens the paper by making
+source exposure and native-kernel requirements explicit, while preserving the
+non-claim that C2C/KVComm/TurboQuant/CacheGen are not defeated until run on
+their native KV/cache surfaces. Next exact gate: implement the same-slice
+OT/Gromov-Wasserstein transport baseline or prepare the NVIDIA/vLLM systems
+runbook for TTFT/TPOT/goodput/HBM counters.
+
+Update `2026-04-30`: the same-slice common-basis panel now includes explicit
+Sinkhorn OT and Gromov-Wasserstein public-calibration transport rows, each with
+dot-product and local-residual-normalized scoring. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`scripts/build_source_private_candidate_local_common_basis_falsification.py`
+and
+`scripts/build_source_private_candidate_local_competitor_basis_table.py`;
+tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`tests/test_build_source_private_candidate_local_common_basis_falsification.py`
+and
+`tests/test_build_source_private_candidate_local_competitor_basis_table.py`;
+memos:
+`paper/source_private_candidate_local_common_basis_falsification_20260430.md`
+and
+`paper/source_private_candidate_local_competitor_basis_table_20260430.md`;
+references:
+`references/549_candidate_local_common_basis_falsification_refs_20260430.md`
+and
+`references/550_candidate_local_competitor_basis_table_refs_20260430.md`;
+artifacts:
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_sinkhorn_ot_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_sinkhorn_ot_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_sinkhorn_ot_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_sinkhorn_ot_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_sinkhorn_ot_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_sinkhorn_ot_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_gromov_wasserstein_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_gromov_wasserstein_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_gromov_wasserstein_dot_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed47_n512_gromov_wasserstein_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed53_n512_gromov_wasserstein_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260430_seed59_n512_gromov_wasserstein_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_common_basis_falsification_20260430/`
+and
+`results/source_private_candidate_local_competitor_basis_table_20260430/`.
+Outcome: all transport variants pass `0/9` n512 rows. Sinkhorn OT dot reaches
+matched accuracy up to `1.000`, but the permuted-teacher receiver also reaches
+`1.000`; its residual stack reaches at most `0.625`, again tied by the
+permuted-teacher control. Gromov-Wasserstein has the same control failure:
+dot reaches `1.000`, residual reaches `0.625`, and all `18` GW rows fail
+controls. The measured competitor table now has `18` same-slice rows and `3`
+remaining ICLR-required rows: C2C, KVComm/Q-KVComm, and
+TurboQuant/KIVI/KVQuant/CacheGen byte floors. Interpretation: public
+feature-cost and relational-geometry transport do not explain the live
+source-private row under destructive controls; RR anchor coordinates remain the
+only serious clean mathematical competitor. Next exact gate: resolve or frame
+the RR holdout-to-core gap, then run one strict cross-family falsification pair
+and native/proxy cache systems rows.
+
+Update `2026-05-01`: the live candidate-local residual receiver now has an
+explicit same-family vs cross-family separation artifact. Code:
+`scripts/build_source_private_candidate_local_cross_family_gate.py`; test:
+`tests/test_build_source_private_candidate_local_cross_family_gate.py`; memo:
+`paper/source_private_candidate_local_cross_family_gate_20260430.md`;
+references:
+`references/552_candidate_local_cross_family_gate_refs_20260430.md`; artifact:
+`results/source_private_candidate_local_cross_family_gate_20260430/`.
+Outcome: the cross-family gate passes. The live candidate-local residual row
+passes `6/6` cross-family rows and `3/3` same-family rows at n512 with clean
+controls; cross-family matched accuracy is at least `0.500`, and the best
+cross-family control reaches only `0.260`. RR anchor coordinates remain the
+clean partial competitor: `3/6` cross-family rows pass, with `3/3`
+core-to-holdout, `0/3` holdout-to-core, and `3/3` same-family rows. The
+artifact promotes the safe claim that the live row is not same-family-only on
+this packet surface, while preserving the non-claim that this is not transfer
+across unrelated real LLM families. Next exact gate: implement one guarded RR
+holdout-to-core repair or decide to frame RR as a clean one-way competitor, and
+add native/proxy C2C/KVComm/TurboQuant systems rows when hardware is available.
+
+Update `2026-05-01`: tested and pruned two guarded RR holdout-to-core repair
+probes on the frozen n512 seed gate. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`scripts/build_source_private_candidate_local_common_basis_falsification.py`,
+`scripts/build_source_private_candidate_local_competitor_basis_table.py`, and
+`scripts/build_source_private_candidate_local_cross_family_gate.py`; tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`tests/test_build_source_private_candidate_local_common_basis_falsification.py`,
+`tests/test_build_source_private_candidate_local_competitor_basis_table.py`,
+and `tests/test_build_source_private_candidate_local_cross_family_gate.py`;
+memos:
+`paper/source_private_candidate_local_common_basis_falsification_20260430.md`,
+`paper/source_private_candidate_local_competitor_basis_table_20260430.md`, and
+`paper/source_private_candidate_local_cross_family_gate_20260430.md`;
+references:
+`references/549_candidate_local_common_basis_falsification_refs_20260430.md`,
+`references/550_candidate_local_competitor_basis_table_refs_20260430.md`, and
+`references/552_candidate_local_cross_family_gate_refs_20260430.md`; artifacts:
+`results/source_private_candidate_local_residual_ablation_20260501_seed47_n512_relative_anchor_innovation_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260501_seed53_n512_relative_anchor_innovation_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260501_seed59_n512_relative_anchor_innovation_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260501_seed47_n512_relative_anchor_rank_innovation_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260501_seed53_n512_relative_anchor_rank_innovation_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_residual_ablation_20260501_seed59_n512_relative_anchor_rank_innovation_residual_norm_evaldisjoint/`,
+`results/source_private_candidate_local_common_basis_falsification_20260430/`,
+`results/source_private_candidate_local_competitor_basis_table_20260430/`, and
+`results/source_private_candidate_local_cross_family_gate_20260430/`.
+Outcome: raw RR anchor-prior innovation passes only `3/9` rows, all in
+core-to-holdout; holdout-to-core remains at target (`0.250`) and destructive
+controls leak in `6/9` rows. Rank-normalized RR anchor-prior innovation passes
+`0/9` rows; holdout-to-core falls below target (`0.125`) and core-to-holdout
+still leaks the permuted-teacher receiver. The updated common-basis artifact
+now reports `9/9` live rows, `6/9` clean RR anchor-coordinate rows, `3/9` raw
+RR innovation rows, and `0/9` ranked RR innovation rows. The measured
+competitor table increases to `20` same-slice rows with `3` pending
+ICLR-required rows. Interpretation: simple RR residual repair is saturated.
+The next exact gate is not another minor RR scoring tweak; either formulate a
+new explanation for the RR holdout-to-core asymmetry or frame RR as a clean
+one-way competitor while moving to native/proxy C2C, KVComm, and KV-compression
+systems rows.
+
+Update `2026-05-01`: extended the systems boundary trace with deterministic
+Mac-side KV native-proxy byte floors for C2C, KVComm/Q-KVComm, TurboQuant, and
+CacheGen. Code:
+`scripts/build_source_private_candidate_local_systems_boundary_trace.py`; test:
+`tests/test_build_source_private_candidate_local_systems_boundary_trace.py`;
+memo:
+`paper/source_private_candidate_local_systems_boundary_trace_20260430.md`;
+references:
+`references/551_candidate_local_systems_boundary_trace_refs_20260430.md`;
+artifact:
+`results/source_private_candidate_local_systems_boundary_trace_20260430/`.
+Outcome: the systems boundary trace still passes. The live packet remains `9/9`
+n512 with `8B` payload / `11B` record, batch-64 line bytes/request `11.00`,
+resident sparse decode p50 `5.231934 us/request`, and no source text/KV
+exposure. The new KV proxy rows are explicitly `mac_proxy_byte_floor_only` and
+source-KV-exposed: C2C fp16 source-KV floor `344064B`, KVComm 30%-layer fp16
+floor `103219.2B`, Q-KVComm 6x compressed floor `57344B`, TurboQuant 3.5-bit
+floor `75264B`, TurboQuant 2.5-bit aggressive floor `53760B`, and CacheGen
+4.3x floor `80014.9B`. The minimum proxy/live-record ratio is `4887.3x`.
+Interpretation: this is a stronger systems boundary artifact for COLM and a
+better ICLR rebuttal to “just use KV/cache compression,” but it is still not a
+native NVIDIA/vLLM systems win. Next exact gate: either run native C2C/KVComm/
+TurboQuant rows when hardware is available, or run the Mac-bounded
+TurboQuant-style randomized candidate-local innovation packet suggested by the
+method scout.
+
+Update `2026-05-01`: implemented and smoke-tested Mac-bounded randomized
+candidate-local sign-sketch probes inspired by rotation/JL quantization. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`; tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`;
+references:
+`references/553_randomized_innovation_sign_packet_refs_20260501.md`;
+artifacts:
+`results/source_private_candidate_local_random_rotation_sign_20260501_seed47_n128_evaldisjoint/`,
+`results/source_private_candidate_local_random_rotation_rank_sign_20260501_seed47_n128_evaldisjoint/`,
+`results/source_private_candidate_local_random_rotation_sign_20260501_seed47_n128_evaldisjoint_tau0/`,
+`results/source_private_candidate_local_random_rotation_sign_20260501_seed47_n128_evaldisjoint_tau0.10/`,
+`results/source_private_candidate_local_random_rotation_sign_20260501_seed47_n128_evaldisjoint_tau0.20/`,
+and
+`results/source_private_candidate_local_random_rotation_sign_20260501_seed47_n128_evaldisjoint_tau0.30/`.
+Outcome: at the live `0.48` decision threshold, public orthogonal sign and
+rank-sign variants pass only `2/3` n128 smoke directions: core-to-holdout
+matched `0.625` versus best control `0.250`, holdout-to-core matched `0.250`
+versus best control `0.250`, and same-family matched `0.4375` versus best
+control `0.250`. Lower thresholds recover matched signal but also leak
+destructive controls: at `tau=0.0`, matched reaches `0.875/0.625/0.750`, while
+best controls reach `0.500/0.500/0.4375`. Thresholds `0.10`, `0.20`, and
+`0.30` do not find a clean operating point; margin-gating replay also fails to
+separate matched packets from destructive controls. Interpretation: generic
+public random measurement is weakened as a positive-method branch. It exposes
+real source signal but is not source-private enough under controls, so it
+should not consume n512 cycles without a new control-blocking mechanism. Next
+exact gate: either design a true candidate-conditioned residual code with
+control regularization, or move effort to native systems evidence for the live
+candidate-local residual row.
+
+Update `2026-05-01`: added a candidate-local threshold frontier diagnostic that
+replays stored per-candidate scores across receiver thresholds without rerunning
+model inference. Code:
+`scripts/build_source_private_candidate_local_threshold_frontier.py`; test:
+`tests/test_build_source_private_candidate_local_threshold_frontier.py`; memo:
+`paper/source_private_candidate_local_threshold_frontier_20260501.md`;
+references:
+`references/554_candidate_local_threshold_frontier_refs_20260501.md`; artifact:
+`results/source_private_candidate_local_threshold_frontier_20260501/`.
+Outcome: the live candidate-local residual receiver has a clean all-row
+threshold band from `0.45` to `0.48`. At `0.48`, it has `9/9` clean replay rows,
+minimum matched accuracy `0.500`, maximum best destructive-control accuracy
+`0.260`, and minimum matched-control gap `0.240`. At low thresholds, matched
+accuracy increases but controls also rise; at high thresholds, the hard rows
+fall back to target. RR anchor-coordinate dot product has no all-row clean
+threshold, and public random-rotation sign has no all-row clean threshold.
+Interpretation: the live row is not just threshold luck; it has a narrow but
+real source-private operating band that the RR and public-random-basis branches
+lack. Next exact gate: update the stale top-level ICLR evidence bundle to ingest
+this threshold frontier plus the latest cross-family and systems-boundary
+artifacts, then decide whether to implement a true candidate-conditioned
+residual code with control regularization.
+
+Update `2026-05-01`: refreshed the top-level ICLR evidence bundle so it ingests
+the latest candidate-local artifacts. Code:
+`scripts/build_source_private_iclr_evidence_bundle.py`; test:
+`tests/test_build_source_private_iclr_evidence_bundle.py`; memo:
+`paper/source_private_iclr_evidence_bundle_20260501.md`; artifact:
+`results/source_private_iclr_evidence_bundle_20260501/`. Outcome: the bundle
+passes and now reports the current live story: candidate-local residual `9/9`
+n512 rows, cross-family `6/6` plus same-family `3/3`, no source text/KV
+exposure, systems boundary ratio `4887.3x`, and threshold frontier `9/9` clean
+at `0.48` with RR/sign having no all-row clean threshold. Interpretation: this
+turns the stale 20260429 evidence bundle into the current reviewer-facing
+entry point. Next exact gate: add the candidate margin atlas figure/table or
+start the learned candidate-conditioned residual-code smoke with destructive
+controls in the calibration objective.
+
+Update `2026-05-01`: added a candidate-local margin atlas and folded it into
+the top-level ICLR evidence bundle. Code:
+`scripts/build_source_private_candidate_local_margin_atlas.py` and
+`scripts/build_source_private_iclr_evidence_bundle.py`; tests:
+`tests/test_build_source_private_candidate_local_margin_atlas.py` and
+`tests/test_build_source_private_iclr_evidence_bundle.py`; memo:
+`paper/source_private_candidate_local_margin_atlas_20260501.md`; references:
+`references/555_candidate_local_margin_atlas_refs_20260501.md`; artifacts:
+`results/source_private_candidate_local_margin_atlas_20260501/` and
+`results/source_private_iclr_evidence_bundle_20260501/`.
+Outcome: the atlas passes. The live candidate-local residual packet has matched
+positive-margin rate `0.750`, best strict destructive-control positive-margin
+rate `0.375`, p50 matched margin `0.243`, and oracle positive-margin rate
+`0.875`. Procrustes common-basis transfer has matched/control positive-margin
+rates `0.750/0.750`, so it is useful as a common-basis falsification row but
+not as a source-private substitute. The refreshed evidence bundle now has `10`
+contribution rows and all margin checks pass. Interpretation: the live method
+is promoted, generic public random-basis and Procrustes-style common-basis
+claims are weakened, and the exact next method gate is a learned
+candidate-conditioned residual code trained or selected against this margin
+surface and the strict destructive controls. Native NVIDIA/vLLM systems rows
+remain the main hardware blocker for a comfortable ICLR full paper.
+
+Update `2026-05-01`: implemented and pruned a learned
+candidate-conditioned residual-code calibration smoke. Code:
+`scripts/run_source_private_candidate_conditioned_residual_code_smoke.py`;
+test:
+`tests/test_run_source_private_candidate_conditioned_residual_code_smoke.py`;
+memo:
+`paper/source_private_candidate_conditioned_residual_code_smoke_20260501.md`;
+references:
+`references/556_candidate_conditioned_residual_code_smoke_refs_20260501.md`;
+artifact:
+`results/source_private_candidate_conditioned_residual_code_smoke_20260501/`.
+Outcome: the gate fails. The learned receiver-side calibration keeps strict
+destructive controls near target, but collapses matched accuracy below the base
+residual receiver: core-to-holdout `0.625` learned versus `0.875` base,
+holdout-to-core `0.250` learned versus `0.750` base, and same-family-all
+`0.500` learned versus `0.812` base. A small `.debug/` control-weight sweep
+showed the tradeoff directly: low control weight recovers some matched signal
+but leaks same-family controls; higher control weights preserve controls but
+fall back to the prior. Interpretation: a learned calibration layer over the
+fixed live score surface is pruned. The next exact method gate must change the
+packet construction itself: a candidate-conditioned syndrome/codebook packet
+trained to improve matched margins while preserving strict controls.
+
+Update `2026-05-01`: implemented and promoted a learned sender-side
+source-to-candidate packet-builder smoke. Code:
+`scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+test:
+`tests/test_run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+memo:
+`paper/source_private_candidate_conditioned_packet_builder_smoke_20260501.md`;
+references:
+`references/557_candidate_conditioned_packet_builder_refs_20260501.md`;
+artifacts:
+`results/source_private_candidate_conditioned_packet_builder_smoke_20260501/`,
+`results/source_private_candidate_conditioned_packet_builder_smoke_20260501_seed53/`,
+and
+`results/source_private_candidate_conditioned_packet_builder_smoke_20260501_seed59/`.
+Outcome: the public eval-disjoint learned packet builder passes all `9/9` n512
+rows across three seeds. Learned packet accuracy is `0.875` in every direction,
+beating the live source-atom packet (`0.500/0.625/0.5625`) with strict
+destructive controls at or near target (`max best control=0.258`). The top-level
+ICLR evidence bundle now includes this as the strongest positive-method row and
+passes new checks for three-seed cross-family pass, `9/9` row pass, live-base
+improvement, and clean controls. Interpretation: sender-side packet
+construction is promoted; receiver-side calibration remains pruned. Important
+caveat: a `.debug/` train-only packet-builder run failed cross-family, so the
+safe claim is public eval-disjoint calibration, not true unseen-family
+packet-builder generalization. Next exact gate: leave-one-family-out or stricter
+train-only packet-builder generalization while preserving the public-disjoint
+row, plus native NVIDIA/vLLM systems evidence.
+
+Update `2026-05-01`: promoted a source-prioritized
+leave-one-family-out packet-builder hybrid. Code:
+`scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+test:
+`tests/test_run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+memo:
+`paper/source_private_candidate_conditioned_packet_builder_loo_hybrid_20260501.md`;
+references:
+`references/558_candidate_conditioned_packet_builder_loo_hybrid_refs_20260501.md`;
+artifacts:
+`results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501/`,
+`results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501_seed53/`,
+and
+`results/source_private_candidate_conditioned_packet_builder_loo_hybrid_w075_20260501_seed59_serial/`.
+Outcome: the strict LOO hybrid passes all `9/9` n512 seed-repeat rows across
+three seeds. The method uses `leave_one_family_out_public` packet-builder
+calibration and a 12B packet vector
+`mapped_source_to_candidate + 0.75 * source_atoms`. Candidate packet accuracy
+is `0.625` in every row, live source packet accuracy is `0.500`, target is
+`0.250`, and max best destructive control is `0.258`; min paired CI95 lower
+bound versus the live source packet is `0.092`. Interpretation: the previous
+public-disjoint packet builder remains the high-accuracy adaptation row, while
+this source-prioritized hybrid is now the stricter generalization-facing
+positive method. Family analysis shows the residual source term preserves
+`sum_all_values` while still fixing `missing_key_default` and
+`nested_key_default`, avoiding the semantic drift seen in pure mapped and
+0.5-weight hybrids. Remaining caveat: the candidate dictionary still uses
+public eval-disjoint calibration, so true train-only cross-family
+generalization and native NVIDIA/vLLM systems evidence remain the next ICLR
+gates.
+
+Update `2026-05-01`: promoted a train-only sender source-prioritized packet
+builder and added its rate curve. Code:
+`scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+test:
+`tests/test_run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+memo:
+`paper/source_private_train_only_sender_packet_builder_20260501.md`;
+references:
+`references/559_train_only_sender_packet_builder_refs_20260501.md`;
+artifacts:
+`results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501/`,
+`results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501_seed53/`,
+`results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_20260501_seed59/`,
+and
+`results/source_private_candidate_conditioned_packet_builder_train_builder_hybrid_w075_rate_20260501/`.
+Outcome: the sender-side packet builder now uses `train_only` calibration and
+passes all `9/9` n512 seed-repeat rows across three seeds when paired with the
+public eval-disjoint receiver dictionary. Cross-family packet accuracy is
+`0.625` versus live source packet `0.500`; same-family accuracy is `0.750`
+versus `0.500`; target remains `0.250`; max best destructive control is
+`0.258`; min paired CI95 lower bound versus the live source packet is `0.092`.
+The one-seed 8/10/12/16B rate curve passes `8/12` rows and identifies 12B as
+the clean bidirectional cross-family operating point. Cheap n128 calibration
+probes show full train-only receiver+sender and train-only receiver with LOO
+builder still fail cross-family, while public receiver dictionary plus
+train-only sender builder passes at n512. Interpretation: sender construction
+no longer needs public eval-family packet-builder calibration; the remaining
+ICLR method blocker is a train-only receiver/candidate dictionary or
+candidate-side innovation basis. Native NVIDIA/vLLM systems evidence remains
+the hardware blocker.
+
+Update `2026-05-01`: implemented and pruned a train-only receiver-basis probe.
+Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`; test:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`;
+memo:
+`paper/source_private_train_only_receiver_basis_probe_20260501.md`;
+references:
+`references/560_train_only_receiver_basis_probe_refs_20260501.md`; artifacts:
+`.debug/trainonly_receiver_existing_semantic_anchor_gate_20260501/`,
+`.debug/trainonly_receiver_existing_semantic_anchor_packet_builder_20260501/`,
+and
+`.debug/trainonly_receiver_candidate_local_innovation_packet_builder_20260501/`.
+Outcome: the existing semantic-anchor train-only receiver failed the strict
+gate: core-to-holdout matched `0.625` vs target `0.250`, but
+`permuted_teacher_receiver` reached `0.375`; holdout-to-core passed at matched
+`0.500` vs best control `0.258`; same-family matched `0.750` but
+`permuted_teacher_receiver` reached `0.3125`. Train-only sender plus the same
+semantic-anchor receiver also failed cross-family because the candidate packet
+tied the base source packet (`0.625/0.625` and `0.500/0.500`) and only passed
+same-family (`0.9375` vs base `0.750`). The new
+`candidate_local_innovation_residual_norm` scorer subtracts the candidate-pool
+mean from both candidate vectors and payload, but its train-only
+sender+receiver gate also failed cross-family: candidate/base `0.375/0.375`
+in both cross-family directions and same-family `0.8125` vs base `0.375`.
+Interpretation: simple semantic-anchor and payload-centering receiver repairs
+are weakened. They expose same-family or partial source signal, but they do not
+clear the stricter cross-family source-specific gate. Next exact method gate:
+design a train-only receiver basis with an explicit control-blocking mechanism
+that first beats candidate-only/permuted-teacher controls on n128 before any
+n512 seed-repeat widening.
+
+Update `2026-05-01`: implemented and promoted a train-only receiver
+permuted-null gap decoder for the cross-family gate. Code:
+`scripts/run_source_private_learned_synonym_dictionary_packet_gate.py`;
+`scripts/build_source_private_iclr_evidence_bundle.py`; tests:
+`tests/test_run_source_private_learned_synonym_dictionary_packet_gate.py`,
+`tests/test_run_source_private_candidate_conditioned_packet_builder_smoke.py`,
+and `tests/test_build_source_private_iclr_evidence_bundle.py`; memo:
+`paper/source_private_train_only_receiver_permuted_null_gap_20260501.md`;
+references:
+`references/561_train_only_receiver_permuted_null_gap_refs_20260501.md`;
+artifacts:
+`results/source_private_train_only_receiver_permuted_null_gap_20260501_seed47_n512/`,
+`results/source_private_train_only_receiver_permuted_null_gap_20260501_seed53_n512/`,
+`results/source_private_train_only_receiver_permuted_null_gap_20260501_seed59_n512/`,
+and refreshed
+`results/source_private_iclr_evidence_bundle_20260501/`. Outcome: fixed
+hyperparameters (`12B`, train-only receiver calibration, semantic-anchor
+features, `candidate_local_permuted_null_gap_residual_norm`,
+`permuted_null_weight=0.75`, threshold `0.30`) pass all `6/6` n512 cross-family
+seed-repeat rows. Core-to-holdout matched accuracy is `0.625` across seeds;
+holdout-to-core is `0.500`; target is `0.250`; max cross-family best control is
+`0.260`; min passing CI95 lower bound vs target is `0.213`. Same-family remains
+unpromoted because `structured_text_matched` reaches `0.3125` while target is
+`0.250`, despite matched accuracy `0.8125`. Interpretation: the receiver-basis
+blocker is partially cleared for the source-atom packet, and the ICLR story is
+stronger: we now have separate train-only receiver and train-only sender
+positive rows. The remaining method gate is the full train-only sender+receiver
+stack, which must beat the base source packet cross-family under the same
+controls before being claimed as the unified headline method. Native NVIDIA/
+vLLM systems evidence remains the hardware blocker.
+
+Follow-up stack smoke: the full train-only sender+receiver stack with the
+permuted-null gap decoder is not promoted. Artifact:
+`.debug/trainonly_sender_receiver_permuted_null_gap_20260501_seed47_n128/`
+plus threshold variants at `tau=0.35/0.40/0.45`. At `tau=0.30`,
+core-to-holdout passes (`candidate=0.750`, base source packet `0.625`, best
+control `0.266`), but holdout-to-core fails because candidate and base tie at
+`0.500` and `shuffled_source` also reaches `0.500`; same-family fails due
+`structured_text_matched=0.3125` despite candidate `1.000`. Thresholds
+`0.35-0.45` preserve only the core-to-holdout pass and reduce holdout-to-core
+candidate/base to `0.375/0.375`. Interpretation: keep the permuted-null gap as
+a train-only receiver contribution, but do not claim a unified train-only
+sender+receiver method until the sender packet is trained or selected to break
+the shuffled-source equivalence in holdout-to-core.
+
+Update `2026-05-01`: implemented and pruned additional full train-only
+sender+receiver packet-builder branches. Code:
+`scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+test:
+`tests/test_run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+memo:
+`paper/source_private_full_train_only_sender_receiver_gates_20260501.md`;
+references:
+`references/562_full_train_only_sender_receiver_gates_refs_20260501.md`;
+artifacts:
+`.debug/iclr_20260501_trainonly_sender_receiver_project_add_source_w075_n128/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_innovation_mean_add_source_w075_n128/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_innovation_prior_add_source_w075_n128/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_innovation_mean_add_source_w0p25_n128/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_innovation_mean_add_source_w0p5_n128/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_innovation_mean_add_source_w1p0_n128/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_answer_candidate_centered_add_source_w075_n128/`,
+and
+`.debug/iclr_20260501_trainonly_sender_receiver_answer_minus_candidate_mean_centered_add_source_w075_n128/`.
+Outcome: candidate-basis projection passed only core-to-holdout at 12B
+(`0.750` vs base `0.625`) and worsened the hard holdout-to-core shuffled
+control (`0.625`). Answer-minus-candidate-mean innovation reduced hard
+shuffled leakage to `0.375` and gave clean positives in core-to-holdout and
+same-family, but holdout-to-core still tied the base packet at `0.625/0.625`.
+Answer-minus-prior and train-mean centered packets did not clear the same hard
+gate. Interpretation: projection, simple innovation, and mean-centering are
+weakened as final ICLR methods, but they sharpen the next branch: an
+anti-shuffle innovation sender objective that selects packet atoms by matched
+receiver gain minus shuffled/null receiver gain. Do not widen to n512 until
+that branch clears seed-47 n128 in both cross-family directions with
+shuffled-source inside the target-only band.
+
+Update `2026-05-01`: implemented an anti-shuffle innovation sender and found
+the first unified train-only sender+receiver cross-family pass, with an
+important caveat. Code:
+`scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+test:
+`tests/test_run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+memo:
+`paper/source_private_antishuffle_innovation_sender_20260501.md`;
+references:
+`references/563_antishuffle_innovation_sender_refs_20260501.md`; artifacts:
+`.debug/iclr_20260501_trainonly_sender_receiver_antishuffle_innovation_seed47_n128/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_antishuffle_innovation_seed53_n128_budget12/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_antishuffle_innovation_seed59_n128_budget12/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_antishuffle_innovation_seed47_n512_budget12/`,
+`.debug/iclr_20260501_trainonly_sender_receiver_trainmean_antishuffle_seed47_n128_budget12/`,
+and
+`.debug/iclr_20260501_trainonly_sender_receiver_trainmean_antishuffle_seed47_n128_budget12_w1p0/`.
+Outcome: the eval-donor anti-shuffle variant passes all three n128 seed-repeat
+cross-family gates at 12B. It also passes the larger seed-47 n512 gate:
+core-to-holdout candidate/base/target/best-control is
+`0.750/0.625/0.250/0.271`, and holdout-to-core is
+`0.625/0.500/0.250/0.256`, with paired CI95 lower bound versus base `0.100`
+and `0.072`. Same-family remains unpromoted because
+`structured_text_matched=0.3125` while target is `0.250`. The stricter
+train-mean contrast variant fails: at source weight `0.75`, holdout-to-core
+ties base at `0.500/0.500`; at source weight `1.0`, controls leak again.
+Interpretation: anti-shuffle innovation is now the live branch and strongest
+unified train-only diagnostic, but it is not yet a clean final ICLR headline
+because the passing variant subtracts eval nonoverlap donors. Next exact gate:
+implement sampled train-donor anti-shuffle, using 8-16 train nonoverlap donors
+per example, and require it to preserve the holdout-to-core improvement without
+eval-donor contrast.
+
+Update `2026-05-01`: promoted sampled train-donor anti-shuffle as the live
+unified train-only sender+receiver branch. Code:
+`scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+test:
+`tests/test_run_source_private_candidate_conditioned_packet_builder_smoke.py`;
+memo:
+`paper/source_private_train_donor_antishuffle_sender_20260501.md`;
+references:
+`references/564_train_donor_antishuffle_refs_20260501.md`; artifacts:
+`.debug/iclr_20260501_train_donor_antishuffle_seed47_n128_dw0p50_gw0p10_budget14/`,
+`.debug/iclr_20260501_train_donor_antishuffle_seed53_n128_sum_budget12/`,
+`.debug/iclr_20260501_train_donor_antishuffle_seed59_n128_sum_budget12/`,
+`.debug/iclr_20260501_train_donor_antishuffle_seed47_n512_budget14/`,
+`.debug/iclr_20260501_mac_packet_ring_transport_microbench/`,
+`.debug/iclr_20260501_serving_slo_envelope/`, and
+`.debug/iclr_20260501_systems_rate_assumption_frontier/`. Outcome: the
+train-donor sender removes the eval-donor caveat and passes the n128
+cross-family seed-repeat frontier at 12-14B. Seed-47 n512 also passes:
+core-to-holdout candidate/base/target/best-control is
+`0.750/0.625/0.250/0.273`, and holdout-to-core is
+`0.652/0.500/0.250/0.254`, with paired CI95 lower bound versus base `0.100`
+and `0.123`. Same-family remains unpromoted because
+`structured_text_matched=0.3125` while target is `0.250`. Systems artifacts
+pass as Mac-local byte/transport/accounting evidence: packet-ring batch-64 p95
+is `0.674 ns/request`, line bytes/request is `5.0`, DMA bytes/request is
+`6.0`, and the rate frontier remains an explicit non-claim for native
+GPU/vLLM throughput. Interpretation: this is now the strongest ICLR method
+branch. Next exact gates: n512 seed repeats, public benchmark bridge, and
+NVIDIA/vLLM systems measurements.
+
+Follow-up n512 seed-repeat result: train-donor anti-shuffle passes seeds `53`
+and `59` under the same 12-14B frontier. Artifacts:
+`.debug/iclr_20260501_train_donor_antishuffle_seed53_n512_budget12_14/` and
+`.debug/iclr_20260501_train_donor_antishuffle_seed59_n512_budget12_14/`;
+tracked copies:
+`results/source_private_train_donor_antishuffle_seed53_n512_budget12_14/` and
+`results/source_private_train_donor_antishuffle_seed59_n512_budget12_14/`.
+Seed 53: 12B passes both cross-family directions
+(`0.750/0.625/0.250/0.260` core-to-holdout and
+`0.652/0.500/0.250/0.256` holdout-to-core); 14B also passes
+holdout-to-core but fails core-to-holdout because private-random reaches
+`0.287`. Seed 59: both 12B and 14B pass both cross-family directions; the
+largest passing best control is `0.268`. Interpretation: the method is now
+n512 seed-repeat positive across seeds `47/53/59`, but should be written as a
+12-14B rate-frontier method with a locked train-validation budget rule, not as
+a single fixed-budget result. Next gate: run `{10,12,14,16}` with predeclared
+train-only byte selection, then public benchmark transfer.
+
+Locked-frontier follow-up: added the validation-selected readout. Code:
+`scripts/build_source_private_train_donor_locked_rate_frontier.py`; tests:
+`tests/test_build_source_private_train_donor_locked_rate_frontier.py` and
+`tests/test_build_source_private_iclr_evidence_bundle.py`; memo:
+`paper/source_private_train_donor_locked_rate_frontier_20260501.md`; artifacts:
+`results/source_private_train_donor_antishuffle_locked_rate_frontier_20260501/`,
+`results/source_private_train_donor_antishuffle_locked_frontier_seed47_n128/`,
+`results/source_private_train_donor_antishuffle_seed53_n128_budget10/`,
+`results/source_private_train_donor_antishuffle_seed59_n128_budget10/`, and
+the refreshed `results/source_private_iclr_evidence_bundle_20260501/`.
+Outcome: the per-seed locked validation policy selects `14B` for seed `47` and
+`12B` for seeds `53/59`; all `6/6` selected n512 cross-family rows pass, with
+minimum selected CI95 lower bound versus base `0.098` and maximum selected best
+control `0.273`. Interpretation: this is a reviewer-facing audit that weakens
+the hand-picked-budget criticism, but it does not yet solve the global
+fixed-budget concern because the global policy does not select a passing budget
+across all validation rows. Next exact gate: larger train-only validation with
+either one global budget or an example-level diagnostic rule for choosing 12B
+versus 14B without eval labels.
+
+Train-family disjoint validation follow-up: added a stricter validation mode
+to `scripts/run_source_private_candidate_conditioned_packet_builder_smoke.py`
+using `--family-mode train_family_disjoint_validation`; memo:
+`paper/source_private_train_family_disjoint_validation_selector_20260501.md`;
+artifact:
+`results/source_private_train_donor_antishuffle_train_family_disjoint_seed47_n128/`.
+Outcome: seed-47 source-family validation has zero train/eval exact-ID overlap
+after switching validation `start_index` to `1024`. Core-family validation
+passes budgets `10/12/14` and fails `16` due control leakage. Holdout-family
+validation fails all budgets because `structured_text_matched` reaches `0.375`
+while target-only is `0.250`, even though the candidate packet is `1.000` and
+source-private controls remain near target. Interpretation: a strict
+same-family all-controls validation selector is ruled out for the current
+method. The next viable selector must either be source-private-controls-only
+with structured text reported separately as a different access model, or the
+method must be changed so matched-byte text no longer wins same-family.
+
+Source-private validation selector follow-up: copied the seed-47 n512 10B
+cross-family run to
+`results/source_private_train_donor_antishuffle_seed47_n512_budget10_cross/`
+and built
+`results/source_private_train_donor_antishuffle_source_private_validation_seed47_budget10_20260501/`.
+Outcome: source-private-controls-only train-family validation selects `10B`,
+but the selected n512 cross-family eval passes only `1/2` rows. Core-to-holdout
+passes (`0.750/0.625/0.250` candidate/base/target, best control `0.260`,
+CI95 low vs base `0.094`); holdout-to-core fails because the base margin is too
+small (`0.652/0.625/0.250`, best control `0.252`, CI95 low vs base `0.014`).
+Interpretation: this rules out the smallest-clean-budget selector. The live
+ICLR branch should now be framed as a conservative `12-14B` rate-frontier method
+unless a margin-aware validation rule can select the same frontier without
+final-eval inspection.
+
+Native-readiness systems follow-up: added
+`scripts/build_source_private_native_readiness_ledger.py`, test
+`tests/test_build_source_private_native_readiness_ledger.py`, memo
+`paper/source_private_native_readiness_ledger_20260501.md`, references
+`references/566_native_readiness_systems_refs_20260501.md`, and artifact
+`results/source_private_native_readiness_ledger_20260501/`. Outcome: the ledger
+has `3` Mac-local measured source-private rows and `5` pending native rows
+(C2C, KVComm/KVCOMM, TurboQuant, QJL, vLLM/PagedAttention). It explicitly
+allows only Mac-local packet accuracy/byte-boundary/transport proxy claims and
+forbids native GPU throughput, HBM, TPOT/goodput, or native-baseline win claims
+until NVIDIA/vLLM or SGLang measurements exist. Interpretation: this strengthens
+the systems section by making the current systems contribution precise, but it
+does not close the ICLR native systems gate.
+
+Fixed-12B eval audit follow-up: ran seed `47` at n512 budget `12B` and copied
+the artifact to
+`results/source_private_train_donor_antishuffle_seed47_n512_budget12_cross/`.
+Added `scripts/build_source_private_train_donor_fixed_budget_eval_audit.py`,
+test `tests/test_build_source_private_train_donor_fixed_budget_eval_audit.py`,
+memo `paper/source_private_train_donor_fixed12b_eval_audit_20260501.md`, and
+artifact
+`results/source_private_train_donor_antishuffle_fixed12b_eval_audit_20260501/`.
+Outcome: a global fixed `12B` rate passes all `6/6` n512 cross-family rows
+across seeds `47/53/59`; minimum candidate accuracy is `0.652`, maximum
+best-control accuracy is `0.275`, and minimum paired CI95 low versus base is
+`0.098`. Interpretation: this is a stronger eval story than the per-seed
+`12-14B` frontier, but it remains an eval-only audit until a validation rule
+selects or justifies `12B` before final eval.
+
+Stable-gap validation selector follow-up: added `stable_interior` and
+`source_private_gap` selector support to
+`scripts/build_source_private_train_donor_locked_rate_frontier.py` plus tests
+in `tests/test_build_source_private_train_donor_locked_rate_frontier.py`. The
+oversized seed-53/59 `1024`-train disjoint validation jobs were stopped after
+roughly 20 minutes without artifacts; cheaper `256`-train disjoint validation
+runs completed and were copied to
+`results/source_private_train_donor_antishuffle_train_family_disjoint_seed53_n128_train256/`
+and
+`results/source_private_train_donor_antishuffle_train_family_disjoint_seed59_n128_train256/`.
+Memo: `paper/source_private_train_donor_stable_gap_selector_20260501.md`;
+artifact:
+`results/source_private_train_donor_antishuffle_stable_gap_seed47_53_59_20260501/`.
+Outcome: the global stable-interior source-private-gap selector picks `12B` for
+seeds `47/53/59`, and all `6/6` selected n512 cross-family rows pass strict
+all-controls eval. Minimum selected candidate accuracy is `0.652`, maximum
+selected best control is `0.275`, and minimum paired CI95 low versus base is
+`0.098`. Interpretation: this substantially reduces the hand-picked-budget
+objection, but the paper must be explicit that visible structured text is a
+separate access model and that seeds `53/59` used the cheaper Mac-feasible
+validation surface.
+
+ARC-Challenge bridge-contract follow-up: added
+`scripts/build_source_private_arc_challenge_bridge_contract.py`, test
+`tests/test_build_source_private_arc_challenge_bridge_contract.py`, memo
+`paper/source_private_arc_challenge_bridge_contract_20260501.md`, references
+`references/567_arc_challenge_bridge_contract_refs_20260501.md`, and artifact
+`results/source_private_arc_challenge_bridge_contract_20260501/`. Outcome: the
+local `15/35` ARC smoke validation/eval split has zero content overlap, the
+combined `50` row file exactly covers those smoke rows, and official
+ARC-Challenge splits were materialized as train/validation/test
+`1119/299/1172` with no cross-split content overlap. The audit records one
+within-train duplicate content hash as a warning. The ICLR bundle now includes
+this as a public-benchmark readiness gate, not a positive benchmark result.
+Next exact gate: implement/run the fixed `12B` source-private packet on
+official ARC-Challenge validation/test with label permutation, shuffled-source,
+same-byte text, target-derived, random, and candidate-derangement controls,
+without consuming `answerKey` when building the source packet.
+
+ARC-Challenge fixed-packet public transfer follow-up: added
+`scripts/run_source_private_arc_challenge_fixed_packet_gate.py`, test
+`tests/test_run_source_private_arc_challenge_fixed_packet_gate.py`, memo
+`paper/source_private_arc_challenge_fixed_packet_gate_20260501.md`, references
+`references/568_arc_challenge_fixed_packet_gate_refs_20260501.md`, and
+artifacts
+`results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_validation/`
+and
+`results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_test/`.
+Outcome: the weak hashed/BGE ridge source selector did not pass
+(`0.271/0.244` hashed matched/target and `0.281/0.244` BGE matched/target,
+with CIs crossing zero), which diagnosed source weakness rather than packet
+decode failure. Replacing the source scorer with local Qwen2.5-0.5B
+choice-text log-likelihood while keeping the fixed `12B` BGE residual packet
+passes official ARC validation and test. Validation matched/target/same-byte
+text is `0.385/0.244/0.348`; test is `0.346/0.265/0.311`, with test CI95
+lower bound versus target `0.046`, best destructive control `0.265`, shuffled
+source `0.247`, and candidate derangement `0.213`. Interpretation: this
+partially clears the public benchmark blocker, but the source-model caveat
+remains. The result is a positive public fixed-packet transfer gate, not yet a
+native cross-model latent endpoint or systems win. Next exact gate: run a
+second public benchmark or true source/target endpoint variant, and collect
+native NVIDIA/vLLM TTFT/TPOT/goodput/HBM rows.
+
+ARC-Challenge projection-seed stability follow-up: added
+`scripts/build_source_private_arc_challenge_seed_stability.py`, test
+`tests/test_build_source_private_arc_challenge_seed_stability.py`, memo
+`paper/source_private_arc_challenge_seed_stability_20260501.md`, references
+`references/569_arc_challenge_seed_stability_refs_20260501.md`, and artifacts
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_bge_validation/`
+and
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_bge_test/`.
+Outcome: holding the answer-key-forbidden Qwen source-choice cache fixed and
+varying only projection/random-control seeds `47/53/59/61/67`, official ARC
+validation passes `5/5` seeds and official ARC test passes `5/5` seeds.
+Validation matched accuracy mean/min/max is `0.384/0.381/0.385`; test is
+`0.344/0.341/0.346`. On test, the minimum lift over target is `0.076`, the
+minimum lift over same-byte structured text is `0.031`, the maximum candidate
+derangement accuracy is `0.216`, and the minimum paired CI95 lower bound versus
+target is `0.038`. Interpretation: this rules out the single-random-projection
+luck objection for the public ARC row, but does not remove the remaining Qwen
+source bridge caveat or the native NVIDIA/vLLM systems blocker.
+
+ARC-Challenge shared-basis endpoint follow-up: added
+`scripts/run_source_private_arc_challenge_source_latent_endpoint_gate.py`, test
+`tests/test_run_source_private_arc_challenge_source_latent_endpoint_gate.py`,
+memo `paper/source_private_arc_challenge_common_basis_endpoint_20260501.md`,
+references `references/570_arc_challenge_common_basis_endpoint_refs_20260501.md`,
+and artifacts
+`results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_validation/`,
+`results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/`,
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/`,
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/`,
+and
+`results/source_private_arc_challenge_source_latent_endpoint_gate_20260501_qwen05_bge_validation/`.
+Outcome: using a source-computable public hashed basis instead of the
+receiver-only BGE packet basis passes official ARC validation and test.
+Validation matched/target/same-byte text is `0.388/0.244/0.348`; test is
+`0.344/0.265/0.311`, with test CI95 lower bound versus target `0.044`.
+Projection-seed stability passes `5/5` validation seeds and `5/5` test seeds;
+the test minimum lift over target is `0.078`, minimum lift over same-byte text
+is `0.032`, and minimum CI95 lower bound versus target is `0.038`.
+The stricter direct Qwen-hidden to BGE residual endpoint does not pass
+validation (`0.281/0.244/0.348`, CI95 low versus target `-0.035`), which
+weakens naive hidden-state alignment and promotes the shared-public-basis
+branch as the cleaner Mac-feasible endpoint. Interpretation: the common-basis
+problem is now a technical contribution rather than only a caveat, but ICLR
+still needs a second public benchmark or deeper hidden-state endpoint plus
+native systems rows.
+
+ARC-Challenge systems trace follow-up: updated
+`scripts/run_source_private_arc_challenge_fixed_packet_gate.py` so regenerated
+ARC artifacts include Mac-local phase timing, peak process RSS, candidate-cache
+footprint, payload bytes, framed-record bytes, and cacheline/DMA accounting.
+Added `scripts/build_source_private_arc_challenge_systems_trace.py`, test
+`tests/test_build_source_private_arc_challenge_systems_trace.py`, memo
+`paper/source_private_arc_challenge_systems_trace_20260501.md`, references
+`references/571_arc_challenge_systems_trace_refs_20260501.md`, and artifact
+`results/source_private_arc_challenge_systems_trace_20260501/`. Outcome: the
+official ARC test positive remains matched/target/text `0.344/0.265/0.311`
+with CI95 low versus target `0.044`, and the systems trace records source
+scoring `251.0 ms/question`, receiver sparse decode p50/p95 `31.7/104.3 us`,
+payload/framed record `12B/15B`, single-request cacheline/DMA `64B/128B`,
+batch-64 line/DMA `15.0B/16.0B`, test feature-cache `13.73 MiB` float64
+(`6.87 MiB` fp32 floor), and peak process RSS `7261.3 MiB`. Interpretation:
+this strengthens the Mac-local systems contribution and COLM systems table, but
+native NVIDIA/vLLM TTFT/TPOT/goodput/HBM rows remain the ICLR systems blocker.
+
+ARC-Challenge anchor-relative public-basis follow-up: extended the fixed-packet
+feature path with `anchor_relative_hashed` and taught the seed-stability builder
+to reuse the train-split question/candidate strings as a deterministic public
+anchor basis. Added memo
+`paper/source_private_arc_challenge_anchor_relative_basis_20260501.md`,
+references
+`references/572_arc_challenge_anchor_relative_basis_refs_20260501.md`, and
+artifacts
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_relative_validation/`
+and
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_relative_test/`.
+Outcome: holding the answer-key-forbidden Qwen source-choice cache fixed and
+varying only projection/random-control seeds `47/53/59/61/67`, official ARC
+validation passes `5/5` seeds and official ARC test passes `5/5` seeds.
+Validation matched accuracy mean/min/max is `0.386/0.381/0.388`; test is
+`0.344/0.344/0.345`. On test, the minimum lift over target is `0.078`, the
+minimum lift over best destructive control is `0.067`, the minimum lift over
+same-byte structured text is `0.033`, and the minimum paired CI95 lower bound
+versus target is `0.039`. Interpretation: this strengthens public
+anchor-relative coordinates as common-basis robustness evidence and weakens the
+criticism that the shared-basis endpoint depends only on direct hashed
+coordinates. It should not be claimed as superior to the direct hashed basis,
+which remains at least as strong on these rows. Next exact gate: run
+anchor-identity shuffle, anchor-value shuffle, and random-anchor controls, then
+compare paired against the hashed basis. The source-choice cache and native
+NVIDIA systems rows remain the ICLR blockers.
+
+ARC-Challenge anchor-control follow-up: added source/receiver basis-mismatch
+support to `scripts/run_source_private_arc_challenge_fixed_packet_gate.py` and
+anchor controls to
+`scripts/build_source_private_arc_challenge_seed_stability.py`. Added memo
+`paper/source_private_arc_challenge_anchor_controls_20260501.md`, references
+`references/573_arc_challenge_anchor_controls_refs_20260501.md`, and artifacts
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_id_shuffle_validation/`,
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_id_shuffle_test/`,
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_value_shuffle_validation/`,
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_anchor_value_shuffle_test/`,
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_random_anchors_validation/`,
+and
+`results/source_private_arc_challenge_seed_stability_20260501_qwen05_random_anchors_test/`.
+Outcome: anchor-ID shuffle fails `0/5` validation seeds and `0/5` test seeds;
+test matched mean is `0.248` versus target/text `0.265/0.311`. Anchor-value
+shuffle also fails `0/5` validation seeds and `0/5` test seeds; test matched
+mean is `0.246`. Shared random anchors pass `5/5` validation seeds and `5/5`
+test seeds; test matched mean is `0.344`. Interpretation: shared coordinate
+agreement is necessary, but semantic train-anchor values are not necessary on
+ARC. Promote the public common-basis packet communication claim; do not claim
+semantic train-anchor superiority.
+
+OpenBookQA/SciQ second-benchmark follow-up: added
+`scripts/build_source_private_sciq_bridge_contract.py`,
+`scripts/build_source_private_openbookqa_bridge_contract.py`, tests
+`tests/test_build_source_private_sciq_bridge_contract.py` and
+`tests/test_build_source_private_openbookqa_bridge_contract.py`, memo
+`paper/source_private_openbookqa_second_benchmark_20260501.md`, references
+`references/574_second_benchmark_openbookqa_sciq_refs_20260501.md`, and
+artifacts `results/source_private_sciq_bridge_contract_20260501/`,
+`results/source_private_sciq_fixed_packet_gate_20260501_qwen05_hashed_validation/`,
+`results/source_private_openbookqa_bridge_contract_20260501/`,
+`results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_validation/`,
+`results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/`,
+`results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_validation_3b/`,
+and `results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/`.
+Outcome: SciQ validation passes target/control gates at `12B`
+(`0.712/0.246` matched/target), but same-byte text nearly saturates the source
+signal (`0.706`), so it is a limitation/control rather than the promoted
+second benchmark. OpenBookQA `main` materializes as `4957/500/500`
+train/validation/test with no cross-split overlap. The `3B` hashed
+common-basis packet passes `5/5` validation seeds and `5/5` test seeds.
+Validation matched/target/text is `0.356/0.252/0.326`; test is
+`0.378/0.276/0.350`. The OpenBookQA test minimum lift over same-byte text is
+`0.028`, and the minimum paired CI95 lower bound versus target is `0.038`.
+Interpretation: this promotes a second public benchmark and a stronger systems
+rate point (`3B` payload / `6B` framed record), while preserving the caveat
+that the source is still a Qwen choice-loglikelihood cache rather than a native
+hidden-state endpoint.
+
+CommonsenseQA non-science follow-up: added
+`scripts/build_source_private_commonsenseqa_bridge_contract.py`, test
+`tests/test_build_source_private_commonsenseqa_bridge_contract.py`, memo
+`paper/source_private_commonsenseqa_non_science_probe_20260501.md`, references
+`references/575_commonsenseqa_non_science_probe_refs_20260501.md`, and
+artifacts `results/source_private_commonsenseqa_bridge_contract_20260501/`,
+`results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/`,
+`results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b/`,
+and
+`results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b_gap001/`.
+Outcome: CommonsenseQA labeled train/validation splits materialize as
+`9741/1221` rows with no cross-split overlap, and `question_concept` is
+forbidden from source packet construction. The `12B` validation probe shows a
+strong non-science source signal (`0.440/0.206` matched/target) but same-byte
+text catches it exactly (`0.440`), so the row is not promoted. At `2B`, seed
+stability passes `5/5` seeds under a relaxed `0.01` text-margin gate with
+matched/target/text `0.438/0.206/0.424`, minimum text lift `0.013`, and minimum
+CI95 lower bound versus target `0.195`; it fails the stricter `0.02`
+same-byte-text gate (`0/5`). Interpretation: source signal generalizes beyond
+science, but the non-science benchmark remains a method-improvement target
+rather than a headline ICLR result.
+
+ICLR evidence bundle follow-up: updated
+`scripts/build_source_private_iclr_evidence_bundle.py` and
+`tests/test_build_source_private_iclr_evidence_bundle.py` so the canonical
+bundle now ingests OpenBookQA, SciQ, and CommonsenseQA artifacts. Rebuilt
+`results/source_private_iclr_evidence_bundle_20260501/`; the bundle pass gate
+is `true` with no failed checks. Interpretation: the bundle now separates the
+promoted second benchmark (OpenBookQA) from text-saturation diagnostics
+(SciQ/CommonsenseQA) and keeps the ICLR blocker explicit: native systems plus a
+cleaner hidden-state or strict non-science endpoint.
+
+CommonsenseQA score-packet/fusion follow-up: added
+`scripts/build_source_private_commonsenseqa_score_packet_headroom.py`,
+`scripts/build_source_private_commonsenseqa_score_fusion_packet_probe.py`,
+tests
+`tests/test_build_source_private_commonsenseqa_score_packet_headroom.py` and
+`tests/test_build_source_private_commonsenseqa_score_fusion_packet_probe.py`,
+memo `paper/source_private_commonsenseqa_score_packet_fusion_probe_20260501.md`,
+references `references/576_commonsenseqa_score_packet_fusion_refs_20260501.md`,
+and artifacts
+`results/source_private_commonsenseqa_score_packet_headroom_20260501_qwen05_validation/`,
+`results/source_private_commonsenseqa_score_packet_headroom_20260501_qwen05_validation_rankbin/`,
+and
+`results/source_private_commonsenseqa_score_fusion_packet_probe_20260501_qwen05_qwen3_validation/`.
+Outcome: the rank-bin score packet does not promote: source-label text heldout
+accuracy is `0.438`, the best rank-bin packet is `0.438`, and the simple top-2
+threshold packet reaches only `0.441` (`+0.003`). The top-2 oracle is still
+large at `0.672`, so the headroom is real but not captured by source margin.
+The `3B` quantized source-score distribution fused with Qwen3-0.6B receiver
+scores also fails: receiver-label heldout accuracy is `0.325`, calibration
+selects source-only fusion weight `1.0`, fusion heldout accuracy is `0.430`,
+and the source/receiver top-2 union oracle is `0.728`. A cached
+margin-conditioned DFS reaches at most `+0.002` over source-label text with
+full-precision `2x2` bins and degrades with finer bins. Interpretation:
+CommonsenseQA remains a useful saturation diagnostic, not a headline ICLR
+non-science result. The next exact gate is HellaSwag validation with the fixed
+source-private packet controls, because its longer answer endings should make
+same-byte text a stricter copy baseline.
+
+HellaSwag non-science gate follow-up: added
+`scripts/build_source_private_hellaswag_bridge_contract.py`, test
+`tests/test_build_source_private_hellaswag_bridge_contract.py`, memo
+`paper/source_private_hellaswag_non_science_gate_20260501.md`, references
+`references/577_hellaswag_non_science_gate_refs_20260501.md`, updated
+`scripts/run_source_private_arc_challenge_fixed_packet_gate.py` with a
+continuation source-LM prompt mode, and updated the ICLR evidence bundle to
+track HellaSwag as a public benchmark contribution. Artifacts:
+`results/source_private_hellaswag_bridge_contract_20260501/`,
+`results/source_private_hellaswag_fixed_packet_gate_20260501_qwen05_hashed_validation512_12b/`,
+`results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation512_2b/`,
+`results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation512_3b/`,
+`results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation512_4b/`,
+`results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation512_6b/`,
+`results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation512_2b_5seed/`,
+`results/source_private_hellaswag_fixed_packet_gate_20260501_qwen05_hashed_validation1024_2b/`,
+and
+`results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/`.
+Outcome: HellaSwag train/validation materialize as `39905/10042` labeled rows
+with no overlap, and public test labels are unavailable/empty. A `12B`
+first-512 smoke shows strong source signal (`0.482/0.252` matched/target) but
+fails because same-byte text reaches `0.475`. The rate frontier promotes `2B`:
+on first-512 it passes `5/5` seeds with matched mean `0.482`, same-byte text
+`0.385`, and minimum text lift `0.096`. On first-1024, the `2B` fixed run
+passes with matched/target/text `0.460/0.233/0.386`, lift over best destructive
+`0.203`, and CI95 low versus target `0.189`; the `2B` five-seed run passes
+`5/5` seeds with matched mean/min/max `0.461/0.460/0.462`, minimum same-byte
+text lift `0.074`, minimum best-destructive lift `0.188`, and minimum CI95 low
+versus target `0.186`. Systems accounting records `2B` raw payload and `5B`
+framed record with no source text or KV exposed. Interpretation: HellaSwag is
+now the strongest non-science positive slice and a better ICLR story than
+CommonsenseQA, but it still must be widened to full validation and
+HellaSwag-specific activity/context/ending controls before final headline
+promotion.
+
+HellaSwag label-copy control follow-up: added
+`scripts/build_source_private_hellaswag_control_suite.py`,
+`scripts/build_source_private_hellaswag_score_packet_headroom.py`, tests
+`tests/test_build_source_private_hellaswag_control_suite.py` and
+`tests/test_build_source_private_hellaswag_score_packet_headroom.py`, memo
+`paper/source_private_hellaswag_control_suite_20260501.md`, references
+`references/578_hellaswag_label_copy_controls_refs_20260501.md`, and artifacts
+`results/source_private_hellaswag_control_suite_20260501/` and
+`results/source_private_hellaswag_score_packet_headroom_20260501_qwen05_validation1024/`.
+Outcome: metadata/activity controls are clean, with matched accuracy `0.460`
+versus best metadata/activity control `0.245`, but the stronger source-label
+text-copy control reaches `0.462`, so strict non-label-copy pass is `false`.
+The score/margin packet probe also does not promote: heldout source-label text
+is `0.465`, the simple margin threshold packet is `0.467`, and the best
+rank-bin packet is `0.465`. The important positive diagnostic is that the
+source top-2 oracle is `0.734` heldout, so there is real HellaSwag repair
+headroom, but top-vs-runner-up margin alone does not identify the source's
+mistakes. A scratch shared linear repair selector using top-2 score features
+plus public context/choice lexical features also fails to promote (`0.467`
+heldout versus `0.465` source-label heldout). Interpretation: downgrade
+HellaSwag from headline positive to live method-improvement surface until a
+calibrated repair packet beats source-label copy by at least `0.02`; do not
+spend more Mac cycles on margin-only HellaSwag packets today.
+
+HellaSwag train-only public receiver repair follow-up: added
+`scripts/build_source_private_hellaswag_public_receiver_repair_probe.py`, test
+`tests/test_build_source_private_hellaswag_public_receiver_repair_probe.py`,
+memo
+`paper/source_private_hellaswag_public_receiver_repair_probe_20260501.md`,
+references
+`references/579_hellaswag_public_receiver_repair_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_public_receiver_repair_probe_20260501_qwen05_validation1024/`.
+Outcome: the train-only hashed lexical public receiver scorer selected epoch
+`4` with internal dev accuracy `0.309`, then failed the frozen validation
+repair gate. On HellaSwag first-1024, source-label copy remained `0.462`
+(`473/1024`), public target-only reached only `0.260` (`266/1024`), top-2
+public rerank reached `0.364` (`373/1024`), and the best public-if-in-source
+top-2 gate reached `0.413` (`423/1024`), for a `-0.049` delta versus
+source-label copy. The source top-2 oracle is still high at `0.716`, so the
+repair headroom remains real, but public lexical train-only features are not
+enough to decide when the source top answer is wrong. Interpretation: prune
+the public-feature-only HellaSwag repair branch and make the next exact gate a
+train-split source-score or source-hidden-summary repair packet that beats
+source-label copy by at least `0.02` on frozen validation.
+
+HellaSwag train-source-score repair follow-up: added
+`scripts/build_source_private_hellaswag_train_source_score_repair_probe.py`,
+test
+`tests/test_build_source_private_hellaswag_train_source_score_repair_probe.py`,
+memo
+`paper/source_private_hellaswag_train_source_score_repair_probe_20260501.md`,
+references
+`references/580_hellaswag_train_source_score_repair_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_train_source_score_repair_probe_20260501_qwen05_train512_validation1024/`.
+Outcome: scoring `512` deterministic HellaSwag train rows on Mac CPU took
+`412.72s`; the repair-policy selection used only an internal `384/128`
+train/dev split and selected `top2_margin_8bin`. On frozen HellaSwag
+first-1024 validation, source-label copy stayed at `0.462` (`473/1024`),
+trained choice-bias label-copy was `0.459` (`470/1024`), and the selected
+train-source-score repair reached only `0.447` (`458/1024`), for `-0.015`
+versus the best label-copy control. Source top-2 oracle remains `0.716` and
+top-4 oracle is `1.000`, so the headroom exists but train-source score shape
+does not recover it at this scale. Interpretation: prune margin/entropy/rank
+score-shape repair as an ICLR-positive HellaSwag route; the next live branch
+must use a richer source hidden-summary or residual code, or HellaSwag should
+remain a diagnostic while ARC/OpenBookQA and train-donor systems rows carry
+the paper.
+
+HellaSwag source-hidden summary repair follow-up: added
+`scripts/build_source_private_hellaswag_hidden_summary_repair_probe.py`, test
+`tests/test_build_source_private_hellaswag_hidden_summary_repair_probe.py`,
+memo
+`paper/source_private_hellaswag_hidden_summary_repair_probe_20260501.md`,
+references
+`references/581_hellaswag_hidden_summary_repair_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_hidden_summary_repair_probe_20260501_qwen05_train512_validation1024/`.
+Outcome: extracting Qwen2.5-0.5B last-layer choice-span hidden summaries on
+Mac CPU took `257.74s` for `512` train rows and `332.30s` for the frozen
+`1024` validation rows. Train/dev selection used only a `384/128` official
+train split and selected layer `-1`, ridge `100.0`, and a `2B` raw (`5B`
+framed) public residual packet. On frozen HellaSwag first-1024, source-label
+copy remained `0.462` (`473/1024`), hidden-label copy fell to `0.414`
+(`424/1024`), and the hidden-summary packet reached `0.413` (`423/1024`), for
+`-0.049` versus source-label copy with paired CI95 `[-0.086, -0.013]`. The
+packet still beats same-byte text by `+0.055` and destructive controls
+collapse, but the strict source-label-copy gate fails decisively. The source
+top-2 oracle remains `0.716`, so repair headroom persists, but simple
+last-layer hidden ridge repair does not identify it. Interpretation: prune
+simple hidden-label / hidden-residual HellaSwag repair; any revived hidden
+branch must use a qualitatively different common-basis learner, layer sweep,
+denoising/OT objective, or cross-model supervision.
+
+Cross-benchmark systems comparator follow-up: added
+`scripts/build_source_private_cross_benchmark_systems_comparator.py`, test
+`tests/test_build_source_private_cross_benchmark_systems_comparator.py`,
+references
+`references/582_cross_benchmark_systems_comparator_refs_20260501.md`, and
+artifact
+`results/source_private_cross_benchmark_systems_comparator_20260501/`.
+Outcome: the comparator unifies ARC-Challenge, OpenBookQA, and HellaSwag
+packet rows under one state-exposure byte-floor formula from the local
+Qwen2.5-0.5B config. ARC-Challenge and OpenBookQA remain the two
+headline-eligible public benchmarks; HellaSwag is explicitly demoted to a
+diagnostic because the source-label-copy control beats the packet. Across the
+three rows, framed packet records are `5-15B`; even a conservative one-token
+QJL-style 1-bit source-KV floor is at least `51.2x` larger than the framed
+packet, a 30%-layer QJL-style floor is at least `15.36x` larger, a 30%-layer
+fp16 KVComm-style floor is at least `245.76x` larger, and a TurboQuant-style
+3.5-bit floor is at least `179.2x` larger. Interpretation: promote this as a
+systems/accounting contribution, not a native-baseline win. The next systems
+gate is still NVIDIA/vLLM/SGLang TTFT, TPOT, goodput, peak memory, HBM
+traffic, and native C2C/KVComm/QJL/TurboQuant rows.
+
+HellaSwag repair systems acceptance-card follow-up: added
+`scripts/build_source_private_hellaswag_repair_systems_acceptance_card.py`,
+test
+`tests/test_build_source_private_hellaswag_repair_systems_acceptance_card.py`,
+memo
+`paper/source_private_hellaswag_repair_systems_acceptance_card_20260501.md`,
+references
+`references/583_hellaswag_repair_systems_acceptance_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_repair_systems_acceptance_card_20260501/`.
+Outcome: the card audits five HellaSwag repair rows: fixed packet,
+score-margin packet, public receiver top-2 repair, train-source-score repair,
+and hidden-summary repair. The systems audit passes for all rows: byte
+accounting is present, framed records are `5B`, batch-64 packet-ring transfer
+is `5B` line / `6B` DMA per request, and no row exposes source text, source
+KV, raw hidden vectors, or raw score vectors. The strict method gate fails:
+the best repair is the score-margin packet at `0.466797` versus held-out
+source-label-copy `0.464844`, only `+0.001953`, below the required `+0.02`
+margin; all other repairs are negative versus source-label-copy. The card also
+records the train-source-score row's trained choice-bias label-copy control
+(`0.458984`) and blocks promotion unless future repairs beat that trained
+label-bias control by `+0.02` when available; the current trained-score repair
+is `-0.011719` versus that control. The card therefore blocks HellaSwag method
+promotion and native-queue priority while preserving it as a diagnostic systems
+row with persistent top-2 oracle headroom. Interpretation: stop spending
+Mac/NVIDIA systems effort on HellaSwag repairs until a qualitatively different
+common-basis, denoising, OT, or quantization-inspired residual method beats
+source-label-copy and trained label-bias copy controls with paired uncertainty.
+
+HellaSwag top-2 contrastive source-error repair follow-up: added
+`scripts/build_source_private_hellaswag_top2_contrastive_repair_probe.py`,
+test
+`tests/test_build_source_private_hellaswag_top2_contrastive_repair_probe.py`,
+memo
+`paper/source_private_hellaswag_top2_contrastive_repair_probe_20260501.md`,
+references
+`references/584_hellaswag_top2_contrastive_repair_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_top2_contrastive_repair_probe_20260501_qwen05_train512_validation1024/`.
+Outcome: this Mac-feasible probe reuses the cached Qwen2.5-0.5B train/eval
+score and hidden tensors and trains only on the official train split. It asks
+the source to send a `2B` raw (`5B` framed) top-2 switch packet: keep the
+source top continuation or switch to its runner-up. The selected
+train/dev-only view is `hidden_score_contrast` with internal dev accuracy
+`0.523`, but frozen validation accuracy is only `0.449219` versus
+source-label-copy `0.461914` and trained choice-bias label-copy `0.458984`,
+for `-0.012695` versus the best label-copy control. The best zero-hidden
+control is `0.442383`, so hidden evidence adds only `+0.006836`, below the
+promotion bar; wrong-example packet accuracy is `0.388672` and pair-swap
+accuracy is `0.266602`, so the packet is not winning through an obvious
+receiver-only shortcut. The source top-2 oracle remains `0.715820`.
+Interpretation: prune the simple top-2 hidden/score ridge switcher. The next
+HellaSwag branch must change the representation learner itself, likely via a
+public common-basis layer sweep, denoising/OT objective, or quantized residual
+code, rather than tuning thresholded last-layer contrasts.
+
+Native vLLM/SGLang systems benchmark-plan follow-up: added
+`scripts/build_source_private_native_systems_benchmark_plan.py`, test
+`tests/test_build_source_private_native_systems_benchmark_plan.py`, memo
+`paper/source_private_native_systems_benchmark_plan_20260501.md`, references
+`references/585_native_systems_benchmark_plan_refs_20260501.md`, and artifact
+`results/source_private_native_systems_benchmark_plan_20260501/`. Outcome:
+this Mac-feasible gate does not pretend to measure native GPU speed; it turns
+the native systems blocker into an exact acceptance schema. The plan requires
+11 rows: cached and end-to-end LatentWire packet rows, target-only vLLM,
+target-only SGLang, same-byte text, source-label/trained-label copy controls,
+C2C, KVComm, KVCOMM, QJL, and TurboQuant. It requires 44 fields per row,
+including benchmark/split/model-pair identity, implementation and commit
+hash, GPU/driver/CUDA metadata, serving engine, load shape, accuracy, paired
+uncertainty, TTFT, TPOT, inter-token latency, goodput, generated tokens/s,
+prefill/decode latency, peak GPU memory, HBM read/write bytes,
+PCIe-or-NVLink bytes, payload/framed/source-state bytes, source
+text/KV/hidden exposure flags, token lengths, and wall time.
+ARC-Challenge and OpenBookQA are the headline native rows; HellaSwag remains
+diagnostic until a repair clears the source-label and trained-label-copy gate.
+Interpretation: the systems story is now concrete and reviewer-auditable, but
+ICLR still needs the actual NVIDIA/vLLM/SGLang measurement table before we can
+claim native throughput, latency, memory, or competitor superiority.
+
+HellaSwag hidden-innovation repair follow-up: added
+`scripts/build_source_private_hellaswag_hidden_innovation_repair_probe.py`,
+test
+`tests/test_build_source_private_hellaswag_hidden_innovation_repair_probe.py`,
+memo
+`paper/source_private_hellaswag_hidden_innovation_repair_probe_20260501.md`,
+references
+`references/586_hellaswag_hidden_innovation_repair_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_hidden_innovation_repair_probe_20260501_qwen05_train512_validation1024/`.
+Outcome: this revives HellaSwag from a purely negative repair surface into a
+live positive branch on the frozen validation-first1024 slice. The selected
+train/dev-only candidate denoiser uses `score_hidden_residual` source-side
+features, ridge `1000.0`, and sends only a `2B` raw / `5B` framed
+candidate/confidence packet. Frozen validation accuracy is `0.499023` versus
+best source/trained label-copy controls `0.461914` / `0.458984`, a
+`+0.037109` gain over best label-copy with paired CI95
+`[+0.009766, +0.061060]`. Controls separate the source hidden innovation
+from shortcuts: zero-hidden falls to label-copy (`0.461914`), wrong-example
+hidden is `0.395508`, and candidate-roll hidden is `0.360352`. The acceptance
+card now audits seven HellaSwag repair rows, promotes
+`hidden_innovation_repair` locally, and still blocks native queue promotion
+because native vLLM/SGLang systems rows are not measured. Interpretation:
+HellaSwag is no longer killed, but it is not ICLR-headline-ready. The next
+gate is seed/fold stability plus a strict source-private falsification pair;
+if that fails, keep HellaSwag as a diagnostic and return ICLR focus to
+ARC/OpenBookQA plus native systems.
+
+HellaSwag anchored hidden-innovation split-stability follow-up: added
+`scripts/build_source_private_hellaswag_hidden_innovation_stability_gate.py`,
+test
+`tests/test_build_source_private_hellaswag_hidden_innovation_stability_gate.py`,
+memo
+`paper/source_private_hellaswag_hidden_innovation_stability_gate_20260501.md`,
+references
+`references/587_hellaswag_hidden_innovation_stability_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_hidden_innovation_stability_gate_20260501_qwen05_train512_validation1024/`.
+Outcome: the unrestricted hidden/score selector is unstable and passes only
+`3/5` cached train/dev split seeds; it can drift into `score_only` or
+`hidden_residual_only` shortcut views, with min delta versus best label-copy
+`-0.090820`. The promoted anchored method restricts selection to the
+scientifically motivated `score_hidden_residual` view, where all `5/5` cached
+split seeds pass. Frozen validation-first1024 accuracy mean/min/max is
+`0.502930` / `0.494141` / `0.528320`; mean/min delta versus best label-copy
+is `+0.040820` / `+0.032227`; min paired CI95 low is `+0.006836`; min
+zero-hidden delta is `+0.032227`; wrong-example and candidate-roll controls
+remain below label-copy (`max 0.400391` and `0.376953`). The ICLR evidence
+bundle now records this as a positive hard-surface stability gate while
+keeping the remaining blocker explicit: this reuses the same cached 512
+train-hidden rows and 1024 validation slice. Interpretation: promote
+HellaSwag from single-split live branch to cached split-stable method branch,
+but require new train-row samples or full-validation stress plus native
+systems rows before ICLR headline promotion.
+
+HellaSwag hidden-innovation train-sample stress follow-up: added
+`scripts/build_source_private_hellaswag_hidden_innovation_train_sample_stress.py`,
+test
+`tests/test_build_source_private_hellaswag_hidden_innovation_train_sample_stress.py`,
+memo
+`paper/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501.md`,
+references
+`references/588_hellaswag_hidden_innovation_train_sample_stress_refs_20260501.md`,
+and artifact
+`results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024/`.
+Outcome: this was the required next gate after cached split stability. The
+original cached train sample seed `1729` remains stable, but a fresh 512-row
+train-hidden sample seed `2027` fails one of three internal split rows. The
+default ridge grid passes only `5/6` split rows with train-sample pass map
+`{'1729': True, '2027': False}`, mean/min delta versus best label-copy
+`+0.021484` / `-0.044922`, min paired CI95 low `-0.071802`, and min
+zero-hidden delta `-0.044922`. A stable-ridge diagnostic restricted to
+`{1000, 10000, 100000}` also fails `5/6`; it improves the failing row but
+still has mean/min delta `+0.026855` / `-0.012695` and min CI95 low
+`-0.035156`. Interpretation: HellaSwag hidden innovation is real but not yet
+robust enough for headline ICLR promotion. Demote the dense
+score+hidden-residual denoiser to a live diagnostic branch and move the next
+method gate toward multi-sample aggregation, stability-selected regularization,
+or a sparse/common-basis packet inspired by SAE/relative-representation work.
+
+HellaSwag hidden-innovation bagged gate follow-up: added
+`scripts/build_source_private_hellaswag_hidden_innovation_bagged_gate.py`,
+test
+`tests/test_build_source_private_hellaswag_hidden_innovation_bagged_gate.py`,
+memo
+`paper/source_private_hellaswag_hidden_innovation_bagged_gate_20260501.md`,
+references
+`references/589_hellaswag_hidden_innovation_bagged_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_hidden_innovation_bagged_gate_20260501_qwen05_train512_validation1024/`.
+Outcome: this directly tests the next branch suggested by the failed
+train-sample stress. Instead of selecting a single ridge denoiser, it trains a
+predeclared six-model bank over train samples `{1729, 2027}` and split seeds
+`{1729, 1731, 1733}`, selects each component's ridge by internal dev only from
+the stable family `{1000, 10000, 100000}`, and averages per-row normalized
+candidate scores. The receiver still receives only a `2B` raw / `5B` framed
+candidate/confidence packet. The gate passes: frozen validation-first1024
+accuracy is `0.495117` versus best source/trained label-copy `0.462891`, for
+`+0.032227` with paired CI95 `[+0.011719, +0.054224]`. The score-only bagged
+control is `0.461914`, zero-hidden is `0.461914`, wrong-example hidden is
+`0.420898`, and candidate-roll hidden is `0.397461`, so the gain requires
+real source hidden innovation rather than score shape or corrupted hidden
+mass. Interpretation: promote bagged hidden innovation as the live HellaSwag
+method candidate and demote the single-denoiser branch to a diagnostic. The
+next exact gate is third-train-sample or full-validation stress, followed by a
+sparse/common-basis version if bagging remains positive.
+
+HellaSwag hidden-innovation third-sample jackknife follow-up: strengthened the
+bagged gate in `scripts/build_source_private_hellaswag_hidden_innovation_bagged_gate.py`
+and regenerated
+`results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024/`.
+Outcome: the predeclared mean-zscore bag now uses train samples
+`{1729, 2027, 2039}` and split seeds `{1729, 1731, 1733}`, for nine
+score+hidden-residual component models, while still emitting only a `2B` raw /
+`5B` framed candidate/confidence packet. The full bag passes with frozen
+validation-first1024 accuracy `0.512695` versus best source/trained label-copy
+`0.463867`, a `+0.048828` gain with paired CI95
+`[+0.028320, +0.070825]`. The score-only bagged control is `0.461914`,
+zero-hidden is `0.461914`, wrong-example hidden is `0.437500`, and
+candidate-roll hidden is `0.389648`. The new jackknife audit leaves out each
+train sample in turn; all `3/3` two-sample subbags pass, with min delta versus
+best label-copy `+0.032227`, min CI95 low `+0.010229`, min delta versus
+score-only bagged `+0.033203`, and min score-only CI95 low `+0.014648`.
+Interpretation: this promotes bagged hidden innovation from a two-sample rescue
+to a stronger live HellaSwag ICLR method candidate. The next exact gate is a
+frozen larger/full-validation slice. If that fails, HellaSwag remains a
+diagnostic and the next method branch should be sparse/common-basis packet
+features inspired by SAE, relative-representation, and crosscoder work.
+
+HellaSwag hidden-innovation heldout eval-slice stress follow-up: added
+`scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py`,
+test
+`tests/test_build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py`,
+memo
+`paper/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501.md`,
+references
+`references/590_hellaswag_hidden_innovation_eval_slice_refs_20260501.md`, and
+artifact
+`results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/`.
+Outcome: this freezes the three-train-sample bagged hidden-innovation method
+and moves evaluation from the repeatedly inspected validation-first1024 slice
+to HellaSwag validation rows `1024:2048`. The heldout slice passes with
+accuracy `0.454102` versus source-label copy `0.409180` and best
+source/trained label-copy `0.414062`, a `+0.040039` gain with paired CI95
+`[+0.019531, +0.058130]`. The score-only bagged control is `0.409180`,
+zero-hidden is `0.409180`, wrong-example hidden is `0.386719`, and
+candidate-roll hidden is `0.372070`. All `3/3` two-sample jackknife subbags
+still pass, with min delta versus best label-copy `+0.032227` and min CI95
+low `+0.011206`. Interpretation: this upgrades HellaSwag from a live
+diagnostic to a headline-candidate hard benchmark. The next exact gate is full
+validation or a predeclared multi-slice validation stress; native NVIDIA
+systems rows remain required before claiming serving latency, throughput, or
+memory superiority over C2C/KVComm/QJL/TurboQuant-style baselines.

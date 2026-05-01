@@ -1342,5 +1342,299 @@
     "path": "references/548_candidate_local_residual_systems_refs_20260430.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the candidate-local residual systems waterfall, covering C2C/KVComm/KVCOMM, vLLM/PagedAttention metrics, DistServe, FlashAttention IO accounting, TurboQuant/QJL, byte/exposure boundaries, and NVIDIA/vLLM non-claims."
-  }
+  },
+    {
+      "num": 549,
+      "slug": "candidate_local_common_basis_falsification_refs_20260430",
+      "path": "references/549_candidate_local_common_basis_falsification_refs_20260430.md",
+      "status": "local_memo",
+        "reason": "Primary-source memo for the common-basis falsification table attached to the candidate-local residual receiver, covering measured Procrustes, ridge CCA/SVCCA-style, LSTIRP-lite inverse-relative, Sinkhorn OT, Gromov-Wasserstein, RR anchor-coordinate, and pruned RR innovation repair rows, plus CKA, C2C/KVComm/KVCOMM, KIVI/KVQuant/QJL/TurboQuant, and novelty/non-claim boundaries."
+    },
+    {
+      "num": 550,
+      "slug": "candidate_local_competitor_basis_table_refs_20260430",
+      "path": "references/550_candidate_local_competitor_basis_table_refs_20260430.md",
+      "status": "local_memo",
+        "reason": "Primary-source memo for the candidate-local competitor/basis table, covering measured common-basis controls including Procrustes, ridge CCA/SVCCA-style, LSTIRP-lite inverse-relative, Sinkhorn OT, Gromov-Wasserstein, Relative Representations, and pruned RR innovation repair rows, plus CKA, Wasserstein Procrustes, C2C, KVComm/Q-KVComm, TurboQuant, KIVI, KVQuant, CacheGen, and explicit ICLR non-claim boundaries."
+    },
+    {
+      "num": 551,
+      "slug": "candidate_local_systems_boundary_trace_refs_20260430",
+      "path": "references/551_candidate_local_systems_boundary_trace_refs_20260430.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the candidate-local systems boundary trace, covering C2C, KVComm/KVCOMM/Q-KVComm, TurboQuant, KIVI, KVQuant, CacheGen, vLLM/PagedAttention, DistServe, source text/KV exposure boundaries, deterministic Mac KV byte-floor proxy formulas, and NVIDIA/vLLM non-claims."
+    },
+    {
+      "num": 552,
+      "slug": "candidate_local_cross_family_gate_refs_20260430",
+      "path": "references/552_candidate_local_cross_family_gate_refs_20260430.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the candidate-local same-family vs cross-family gate, covering live 6/6 cross-family pass rows, RR direction asymmetry, pruned RR innovation repair probes, Relative Representations, LSTIRP, product/geodesic invariance references, C2C, KVComm, TurboQuant, and safe novelty boundaries."
+    },
+    {
+      "num": 553,
+      "slug": "randomized_innovation_sign_packet_refs_20260501",
+      "path": "references/553_randomized_innovation_sign_packet_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the Mac-bounded randomized candidate-local sign-sketch probe, covering TurboQuant, QJL, QuaRot, SpinQuant, random hyperplane sketching, Relative Representations, C2C, local smoke outcomes, leakage boundaries, and why the branch is weakened rather than promoted."
+    },
+    {
+      "num": 554,
+      "slug": "candidate_local_threshold_frontier_refs_20260501",
+      "path": "references/554_candidate_local_threshold_frontier_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the candidate-local threshold frontier diagnostic, covering C2C, KVComm, TurboQuant, QJL, Relative Representations, DiT/consistency/REPA/BLIP-2 inspiration, and the local finding that the live residual receiver has a clean threshold band while RR and public random sign sketches do not."
+    },
+    {
+      "num": 555,
+      "slug": "candidate_local_margin_atlas_refs_20260501",
+      "path": "references/555_candidate_local_margin_atlas_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the candidate-local margin atlas, covering margin distributions, calibration, selective classification, model stitching/common-basis baselines, latent communication, C2C, KVComm, TurboQuant, QJL, VQ codebooks, and the local finding that live packet margins separate from destructive controls while Procrustes margins do not."
+    },
+    {
+      "num": 556,
+      "slug": "candidate_conditioned_residual_code_smoke_refs_20260501",
+      "path": "references/556_candidate_conditioned_residual_code_smoke_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the learned candidate-conditioned residual-code smoke, covering PQ/additive quantization/RVQ, QJL, TurboQuant, QuIP/QuIP#, RaBitQ, diffusion posterior refinement, consistency models, Slepian-Wolf/Wyner-Ziv/DISCUS side-information coding, and the local finding that receiver-side calibration over the fixed packet is pruned."
+    },
+    {
+      "num": 557,
+      "slug": "candidate_conditioned_packet_builder_refs_20260501",
+      "path": "references/557_candidate_conditioned_packet_builder_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the learned source-to-candidate packet-builder smoke, covering C2C, KVComm, Relative Representations, ECOC, learned code decoding, Slepian-Wolf/Wyner-Ziv/DISCUS, BLIP-2/Q-Former, TurboQuant, QJL, vLLM/PagedAttention, local 3-seed pass rows, and novelty boundaries."
+    },
+    {
+      "num": 558,
+      "slug": "candidate_conditioned_packet_builder_loo_hybrid_refs_20260501",
+      "path": "references/558_candidate_conditioned_packet_builder_loo_hybrid_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the source-prioritized leave-one-family-out packet-builder hybrid, covering side-information coding, ECOC, domain generalization, C2C/KVComm/KVCOMM, TurboQuant/KIVI/KVQuant/QJL, local 9/9 n512 seed-repeat pass rows, and novelty/non-claim boundaries."
+    },
+    {
+      "num": 559,
+      "slug": "train_only_sender_packet_builder_refs_20260501",
+      "path": "references/559_train_only_sender_packet_builder_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the train-only sender source-prioritized packet builder, covering C2C/KV communication, DroidSpeak, vector translation, stitching, prompt tuning, ECOC/Wyner-Ziv framing, TurboQuant/QJL/QuIP inspiration, mandatory controls, and the remaining receiver-basis blocker."
+    },
+    {
+      "num": 560,
+      "slug": "train_only_receiver_basis_probe_refs_20260501",
+      "path": "references/560_train_only_receiver_basis_probe_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the train-only receiver-basis probes, covering C2C, LatentMAS, Interlat, Slepian-Wolf side-information coding, ECOC, Relative Representations, QJL, TurboQuant, and the local finding that semantic-anchor and payload-innovation receiver variants do not yet clear strict cross-family controls."
+    },
+    {
+      "num": 561,
+      "slug": "train_only_receiver_permuted_null_gap_refs_20260501",
+      "path": "references/561_train_only_receiver_permuted_null_gap_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the train-only receiver permuted-null gap decoder, covering C2C, LatentMAS, Interlat, Relative Representations, Slepian-Wolf/ECOC framing, QJL/TurboQuant systems inspiration, vLLM/MLPerf systems boundaries, and the local 6/6 n512 cross-family seed-repeat pass."
+    },
+    {
+      "num": 562,
+      "slug": "full_train_only_sender_receiver_gates_refs_20260501",
+      "path": "references/562_full_train_only_sender_receiver_gates_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the full train-only sender+receiver gates, covering side-information coding, QJL/TurboQuant-inspired residual selection, C2C/KVComm novelty boundaries, ARC-Challenge as the next public benchmark bridge, and the local finding that projection, simple innovation, and mean-centering still fail the hard shuffled-source gate."
+    },
+    {
+      "num": 563,
+      "slug": "antishuffle_innovation_sender_refs_20260501",
+      "path": "references/563_antishuffle_innovation_sender_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the anti-shuffle innovation sender, covering Slepian-Wolf/Wyner-Ziv/DISCUS, ECOC, QJL, TurboQuant, Relative Representations, C2C/KVComm/KVCOMM, ARC-Challenge, the n128/n512 eval-donor pass, and the stricter train-mean contrast caveat."
+    },
+    {
+      "num": 564,
+      "slug": "train_donor_antishuffle_refs_20260501",
+      "path": "references/564_train_donor_antishuffle_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the promoted train-donor anti-shuffle sender, covering side-information coding, representation alignment, C2C/KVComm/KVCOMM, TurboQuant/QJL/KIVI/KVQuant, vLLM/PagedAttention, ARC-Challenge, Mac-local systems accounting, and the safe novelty/non-claim boundary."
+    },
+    {
+      "num": 565,
+      "slug": "locked_rate_frontier_validation_refs_20260501",
+      "path": "references/565_locked_rate_frontier_validation_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the locked train-donor rate-frontier validation artifact, covering validation/test model-selection norms, minimum-validation bias, domain-generalization validation, selective/risk-controlled selectors, rate-distortion/rate-control reporting, KIVI/KVQuant rate-point comparisons, and the boundary between a defensible validation-selected frontier and an unsafe test-selected byte budget."
+    },
+    {
+      "num": 566,
+      "slug": "native_readiness_systems_refs_20260501",
+      "path": "references/566_native_readiness_systems_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the native-readiness systems ledger, covering C2C, KVComm/KVCOMM, TurboQuant, QJL, vLLM/PagedAttention, and the boundary between Mac-local source-private packet evidence and pending native NVIDIA/vLLM systems claims."
+    },
+    {
+      "num": 567,
+      "slug": "arc_challenge_bridge_contract_refs_20260501",
+      "path": "references/567_arc_challenge_bridge_contract_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the ARC-Challenge public bridge contract, covering official ARC split counts, local slice hashes, MCQ/leakage caveats, label-blind packet requirements, and the boundary between a reproducible public benchmark gate and an actual positive ARC result."
+    },
+    {
+      "num": 568,
+      "slug": "arc_challenge_fixed_packet_gate_refs_20260501",
+      "path": "references/568_arc_challenge_fixed_packet_gate_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the positive ARC-Challenge fixed-12B validation/test gate, covering ARC, C2C, vLLM metrics, TurboQuant, and the boundary between a public fixed-packet transfer result and pending native cross-model systems claims."
+    },
+    {
+      "num": 569,
+      "slug": "arc_challenge_seed_stability_refs_20260501",
+      "path": "references/569_arc_challenge_seed_stability_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the ARC-Challenge projection-seed stability gate, covering ARC, C2C, vLLM serving metrics, TurboQuant, and the boundary between a robust public fixed-packet ARC result and pending native endpoint/systems claims."
+    },
+    {
+      "num": 570,
+      "slug": "arc_challenge_common_basis_endpoint_refs_20260501",
+      "path": "references/570_arc_challenge_common_basis_endpoint_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the ARC-Challenge shared-basis source-computable endpoint, covering the positive hashed-basis result, failed Qwen-hidden-to-BGE endpoint diagnostic, common-basis related work, C2C/KV/activation communication boundaries, QJL/TurboQuant systems inspiration, and diffusion/LaDiR denoising endpoint inspiration."
+    },
+    {
+      "num": 571,
+      "slug": "arc_challenge_systems_trace_refs_20260501",
+      "path": "references/571_arc_challenge_systems_trace_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the ARC-Challenge shared-basis systems trace, covering Mac-local phase/RSS/byte accounting, vLLM-style pending native metrics, C2C/KVComm/TurboQuant/QJL comparison boundaries, and the safe non-claim line."
+    },
+    {
+      "num": 572,
+      "slug": "arc_challenge_anchor_relative_basis_refs_20260501",
+      "path": "references/572_arc_challenge_anchor_relative_basis_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the ARC-Challenge anchor-relative public-basis endpoint, covering Relative Representations, QJL/TurboQuant common-basis compression inspiration, C2C/KVComm boundaries, diffusion/LaDiR future denoising receiver motivation, and the local 5/5 validation/test seed-stability pass."
+    },
+    {
+      "num": 573,
+      "slug": "arc_challenge_anchor_controls_refs_20260501",
+      "path": "references/573_arc_challenge_anchor_controls_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the ARC-Challenge anchor-coordinate controls, covering anchor-ID/value mismatch collapse, random shared-anchor pass, and the safe boundary that the contribution is public common-basis packet communication rather than semantic train-anchor superiority."
+    },
+    {
+      "num": 574,
+      "slug": "second_benchmark_openbookqa_sciq_refs_20260501",
+      "path": "references/574_second_benchmark_openbookqa_sciq_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the OpenBookQA second-benchmark gate and SciQ diagnostic, covering the 3B OpenBookQA validation/test seed-stable pass, the SciQ same-byte-text saturation limitation, and the safe boundary for benchmark-general common-basis packet transfer."
+    },
+    {
+      "num": 575,
+      "slug": "commonsenseqa_non_science_probe_refs_20260501",
+      "path": "references/575_commonsenseqa_non_science_probe_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the CommonsenseQA non-science validation probe, covering the strong non-science source signal, same-byte-text saturation, relaxed 2B seed-stable result, and the boundary that this is not yet a strict ICLR headline benchmark."
+    },
+    {
+      "num": 576,
+      "slug": "commonsenseqa_score_packet_fusion_refs_20260501",
+      "path": "references/576_commonsenseqa_score_packet_fusion_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the CommonsenseQA score-packet and score-fusion probes, covering rank-bin and quantized source-score distribution failures, the top-label-copy threat model, HellaSwag as the next non-science gate, and the QJL/TurboQuant systems inspiration boundary."
+    },
+    {
+      "num": 577,
+      "slug": "hellaswag_non_science_gate_refs_20260501",
+      "path": "references/577_hellaswag_non_science_gate_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag non-science fixed-packet gate, covering the 2B frozen-1024 positive slice, same-byte-text separation, HellaSwag-specific next controls, C2C/KVComm/QJL/TurboQuant/vLLM comparison boundaries, and the safe non-claim line."
+    },
+    {
+      "num": 578,
+      "slug": "hellaswag_label_copy_controls_refs_20260501",
+      "path": "references/578_hellaswag_label_copy_controls_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag label-copy and score-packet control suite, covering the metadata-control pass, source-label-copy threat, failed top-2 margin repair packet, remaining top-2 oracle headroom, and comparison boundaries against C2C/KVComm/KVCOMM/QJL/TurboQuant/vLLM and prompt compression."
+    },
+    {
+      "num": 579,
+      "slug": "hellaswag_public_receiver_repair_refs_20260501",
+      "path": "references/579_hellaswag_public_receiver_repair_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag train-only public receiver repair falsification, covering the failed public lexical top-2 repair probe, selective/rank/calibration related work, and the next valid source-score calibration gate."
+    },
+    {
+      "num": 580,
+      "slug": "hellaswag_train_source_score_repair_refs_20260501",
+      "path": "references/580_hellaswag_train_source_score_repair_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag train-source-score repair falsification, covering the 512-row scored-train gate, failed score-shape repair, MCQ calibration related work, and the boundary to C2C/KVComm/KVCOMM/TurboQuant."
+    },
+    {
+      "num": 581,
+      "slug": "hellaswag_hidden_summary_repair_refs_20260501",
+      "path": "references/581_hellaswag_hidden_summary_repair_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag source-hidden summary repair falsification, covering the failed last-layer hidden-ridge repair packet, latent/hidden-state communication boundaries, QJL/TurboQuant systems inspiration, and the safe non-claim line."
+    },
+    {
+      "num": 582,
+      "slug": "cross_benchmark_systems_comparator_refs_20260501",
+      "path": "references/582_cross_benchmark_systems_comparator_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the cross-benchmark systems comparator, covering C2C, KVComm/KVCOMM, QJL, TurboQuant, vLLM/PagedAttention, the conservative one-source-token byte-floor formulas, and the native-systems non-claim boundary."
+    },
+    {
+      "num": 583,
+      "slug": "hellaswag_repair_systems_acceptance_refs_20260501",
+      "path": "references/583_hellaswag_repair_systems_acceptance_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag repair systems acceptance card, covering the strict source-label-copy promotion gate, systems audit fields, native-queue block, MCQ calibration controls, and C2C/KVComm/QJL/TurboQuant/vLLM comparison boundaries."
+    },
+    {
+      "num": 584,
+      "slug": "hellaswag_top2_contrastive_repair_refs_20260501",
+      "path": "references/584_hellaswag_top2_contrastive_repair_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag top-2 contrastive source-error repair probe, covering the failed hidden/score switch packet, label-copy controls, common-basis motivation, and C2C/KVComm/QJL/TurboQuant comparison boundaries."
+    },
+    {
+      "num": 585,
+      "slug": "native_systems_benchmark_plan_refs_20260501",
+      "path": "references/585_native_systems_benchmark_plan_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the native vLLM/SGLang systems benchmark plan, covering required TTFT/TPOT/goodput/memory/traffic/exposure metrics, C2C/KVComm/KVCOMM/QJL/TurboQuant comparison rows, and the native-systems non-claim boundary."
+    },
+    {
+      "num": 586,
+      "slug": "hellaswag_hidden_innovation_repair_refs_20260501",
+      "path": "references/586_hellaswag_hidden_innovation_repair_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag hidden-innovation repair gate, covering the positive source-hidden residual denoiser result, label-copy controls, C2C/KVComm comparison boundary, and QJL/TurboQuant/DDPM/DiT inspiration boundary."
+    },
+    {
+      "num": 587,
+      "slug": "hellaswag_hidden_innovation_stability_refs_20260501",
+      "path": "references/587_hellaswag_hidden_innovation_stability_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag anchored hidden-innovation stability gate, covering the 5/5 cached split-seed pass, unrestricted selector failure diagnostic, SAE/common-basis next branch, and uniqueness boundaries against activation communication, representation alignment, C2C/KVComm, QJL/TurboQuant, and diffusion-latent work."
+    },
+    {
+      "num": 588,
+      "slug": "hellaswag_hidden_innovation_train_sample_stress_refs_20260501",
+      "path": "references/588_hellaswag_hidden_innovation_train_sample_stress_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag hidden-innovation train-sample stress, covering the fresh 2027 train-row sample failure, stable-ridge diagnostic, demotion boundary, and updated comparisons against ICLR 2026 C2C, KVCOMM/Q-KVComm, QJL/TurboQuant/TurboESM, SAE/common-basis, and diffusion-latent work."
+    },
+    {
+      "num": 589,
+      "slug": "hellaswag_hidden_innovation_bagged_refs_20260501",
+      "path": "references/589_hellaswag_hidden_innovation_bagged_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag hidden-innovation bagged gate, covering the support-sampled three-train-sample plus jackknife rescue, source-private fixed-byte packet boundary, controls versus label-copy and score-only bagging, and novelty boundaries against SAE/common-basis, C2C/KVComm, QJL, and TurboQuant work."
+    },
+    {
+      "num": 590,
+      "slug": "hellaswag_hidden_innovation_eval_slice_refs_20260501",
+      "path": "references/590_hellaswag_hidden_innovation_eval_slice_refs_20260501.md",
+      "status": "local_memo",
+      "reason": "Primary-source memo for the HellaSwag hidden-innovation heldout evaluation-slice stress, covering the frozen validation[1024:2048] pass, prefix-token/soft-prompt distinction, source-private fixed-byte packet boundary, and novelty boundaries against SAE/common-basis, C2C/KVComm, QJL, and TurboQuant work."
+    }
 ]

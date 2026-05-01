@@ -113,3 +113,7 @@ into paper-writing mode until the evidence is strong enough.
 # Debug folder
 
 Create and use a .debug folder that you will not check in but should be used for your own experimentation. This is a scratch space for you to test our reproductions of bugs or issues so that way you can better fix problems in our production codebase.
+
+# Commit and push often
+
+You should commit and push your code at the end of your turn.

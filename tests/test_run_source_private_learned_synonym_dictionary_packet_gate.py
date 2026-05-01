@@ -409,6 +409,875 @@ def test_candidate_local_residual_scoring_ignores_common_candidate_component() -
     assert shifted_meta["candidate_local_payload_l2"] == baseline_meta["candidate_local_payload_l2"]
 
 
+def test_candidate_local_innovation_residual_centers_payload_on_candidate_pool() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=30, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    local_mean_payload = {gate.ATOM_ORDER[idx]: 0.25 for idx in range(4)}
+    centered_scores, centered_meta = gate._score_candidates(
+        example=example,
+        payload_atoms=local_mean_payload,
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="candidate_local_innovation_residual_norm",
+    )
+    answer_scores, answer_meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="candidate_local_innovation_residual_norm",
+    )
+
+    assert np.allclose(centered_scores, 0.0)
+    assert centered_meta["candidate_local_payload_transform"] == "subtract_candidate_pool_mean"
+    assert centered_meta["candidate_local_payload_l2"] == 0.0
+    assert answer_meta["candidate_local_raw_payload_l2"] == 1.0
+    assert answer_scores[0] == max(answer_scores)
+
+
+def test_permuted_null_gap_decoder_subtracts_null_receiver_scores() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=31, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+
+    class ActiveDictionary:
+        receiver_mode = "atom_ridge"
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    class NullDictionary:
+        receiver_mode = "atom_ridge"
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return np.zeros(dim, dtype=np.float64)
+
+    payload = gate._encode_atoms({gate.ATOM_ORDER[0]: 1.0}, budget_bytes=4)
+    prediction, meta = gate._predict_from_payload(
+        example=example,
+        payload=payload,
+        budget_bytes=4,
+        dictionary=ActiveDictionary(),  # type: ignore[arg-type]
+        null_dictionary=NullDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="candidate_local_permuted_null_gap_residual_norm",
+        min_decision_score=0.0,
+        permuted_null_weight=0.75,
+    )
+
+    assert prediction == example.candidates[0].label
+    assert meta["decoder_score_mode"] == "candidate_local_permuted_null_gap_residual_norm"
+    assert meta["decoder_score_base_mode"] == "candidate_local_residual_norm"
+    assert meta["permuted_null_weight"] == 0.75
+    assert meta["permuted_null_scores"] == [0.0, 0.0, 0.0, 0.0]
+    assert meta["scores"] == meta["active_scores"]
+
+
+def test_candidate_local_random_rotation_sign_sketch_is_deterministic_and_local() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=31, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+
+        def __init__(self, common: np.ndarray) -> None:
+            self.common = common
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text] + self.common
+
+    for mode, quantization in {
+        "candidate_local_random_rotation_sign_residual_norm": "sign",
+        "candidate_local_random_rotation_rank_sign_residual_norm": "rank_sign",
+    }.items():
+        kwargs = {
+            "example": example,
+            "payload_atoms": {gate.ATOM_ORDER[0]: 1.0},
+            "candidate_atom_view": "native",
+            "decoder_score_mode": mode,
+        }
+        baseline_scores, baseline_meta = gate._score_candidates(
+            dictionary=DummyDictionary(np.zeros(dim, dtype=np.float64)),  # type: ignore[arg-type]
+            **kwargs,
+        )
+        repeat_scores, repeat_meta = gate._score_candidates(
+            dictionary=DummyDictionary(np.zeros(dim, dtype=np.float64)),  # type: ignore[arg-type]
+            **kwargs,
+        )
+        shifted_scores, shifted_meta = gate._score_candidates(
+            dictionary=DummyDictionary(np.ones(dim, dtype=np.float64) * 5.0),  # type: ignore[arg-type]
+            **kwargs,
+        )
+
+        assert np.allclose(baseline_scores, repeat_scores)
+        assert np.allclose(baseline_scores, shifted_scores)
+        assert baseline_meta["decoder_score_mode"] == mode
+        assert baseline_meta["candidate_local_transform"] == "public_orthogonal_sign_sketch"
+        assert baseline_meta["candidate_local_quantization"] == quantization
+        assert baseline_meta["candidate_local_sketch_bits"] == dim
+        assert repeat_meta["candidate_local_transform_namespace"] == baseline_meta["candidate_local_transform_namespace"]
+        assert shifted_meta["candidate_local_payload_l2"] == baseline_meta["candidate_local_payload_l2"]
+
+
+def test_relative_anchor_dot_scores_in_anchor_coordinates() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=32, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+        relative_anchor_vectors = np.eye(dim, dtype=np.float64)
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    scores, meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="relative_anchor_dot",
+    )
+
+    assert meta["decoder_score_mode"] == "relative_anchor_dot"
+    assert meta["relative_anchor_count"] == dim
+    assert scores[0] == max(scores)
+
+
+def test_relative_anchor_innovation_residual_records_local_prior() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=33, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+        relative_anchor_vectors = np.eye(dim, dtype=np.float64)
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    scores, meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="relative_anchor_innovation_residual_norm",
+    )
+
+    assert meta["decoder_score_mode"] == "relative_anchor_innovation_residual_norm"
+    assert meta["relative_anchor_count"] == dim
+    assert meta["relative_anchor_local_mean_l2"] > 0
+    assert scores[0] == max(scores)
+
+
+def test_rank_normalized_rows_preserves_anchor_order() -> None:
+    ranked = gate._rank_normalized_rows(np.array([[0.2, 0.5, 0.2], [3.0, 1.0, 2.0]], dtype=np.float64))
+
+    assert ranked.shape == (2, 3)
+    assert ranked[0, 1] == 1.0
+    assert ranked[0, 0] < ranked[0, 2]
+    assert np.allclose(ranked[1], np.array([1.0, -1.0, 0.0]))
+    assert np.allclose(gate._rank_normalized_rows(np.ones((2, 1), dtype=np.float64)), 0.0)
+
+
+def test_relative_anchor_rank_innovation_records_rank_prior() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=33, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+        relative_anchor_vectors = np.eye(dim, dtype=np.float64)
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    scores, meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="relative_anchor_rank_innovation_residual_norm",
+    )
+
+    assert len(scores) == len(example.candidates)
+    assert meta["decoder_score_mode"] == "relative_anchor_rank_innovation_residual_norm"
+    assert meta["relative_anchor_rank_normalized"] is True
+    assert meta["relative_anchor_count"] == dim
+    assert meta["relative_anchor_local_mean_l2"] > 0
+
+
+def test_relative_anchor_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_relative_anchor",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=33,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="relative_anchor_dot",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_relative_anchor" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_relative_anchor" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["decoder_score_mode"] == "relative_anchor_dot"
+    assert direction["decoder_score_mode"] == "relative_anchor_dot"
+    assert prediction["metadata"]["decoder_score_mode"] == "relative_anchor_dot"
+    assert prediction["metadata"]["relative_anchor_count"] > 0
+
+
+def test_random_rotation_sign_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_random_rotation_sign",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=34,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="candidate_local_random_rotation_sign_residual_norm",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (
+            tmp_path
+            / "learned_synonym_dictionary_random_rotation_sign"
+            / "core_to_holdout"
+            / "summary.json"
+        ).read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path
+            / "learned_synonym_dictionary_random_rotation_sign"
+            / "core_to_holdout"
+            / "predictions_budget4.jsonl"
+        )
+        .read_text()
+        .splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+
+    assert payload["decoder_score_mode"] == "candidate_local_random_rotation_sign_residual_norm"
+    assert direction["decoder_score_mode"] == "candidate_local_random_rotation_sign_residual_norm"
+    assert prediction["metadata"]["decoder_score_mode"] == "candidate_local_random_rotation_sign_residual_norm"
+    assert prediction["metadata"]["candidate_local_transform"] == "public_orthogonal_sign_sketch"
+
+
+def test_permuted_null_gap_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_permuted_null_gap",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=35,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="train_only",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="candidate_local_permuted_null_gap_residual_norm",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+        permuted_null_weight=0.75,
+    )
+
+    direction = json.loads(
+        (
+            tmp_path
+            / "learned_synonym_dictionary_permuted_null_gap"
+            / "core_to_holdout"
+            / "summary.json"
+        ).read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path
+            / "learned_synonym_dictionary_permuted_null_gap"
+            / "core_to_holdout"
+            / "predictions_budget4.jsonl"
+        )
+        .read_text()
+        .splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+
+    assert payload["decoder_score_mode"] == "candidate_local_permuted_null_gap_residual_norm"
+    assert payload["permuted_null_weight"] == 0.75
+    assert direction["decoder_score_mode"] == "candidate_local_permuted_null_gap_residual_norm"
+    assert direction["permuted_null_weight"] == 0.75
+    assert prediction["metadata"]["decoder_score_mode"] == "candidate_local_permuted_null_gap_residual_norm"
+    assert prediction["metadata"]["decoder_score_base_mode"] == "candidate_local_residual_norm"
+    assert "permuted_null_scores" in prediction["metadata"]
+
+
+def test_procrustes_dot_maps_payload_with_public_rotation() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=34, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+    procrustes_matrix = np.eye(dim, dtype=np.float64)
+    procrustes_matrix[0, :] = 0.0
+    procrustes_matrix[:, 1] = 0.0
+    procrustes_matrix[0, 1] = 1.0
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+
+        def __init__(self, matrix: np.ndarray) -> None:
+            self.procrustes_matrix = matrix
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    scores, meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(procrustes_matrix),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="procrustes_dot",
+    )
+
+    assert meta["decoder_score_mode"] == "procrustes_dot"
+    assert meta["procrustes_payload_l2"] == 1.0
+    assert scores[1] == max(scores)
+
+
+def test_procrustes_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_procrustes",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=35,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="procrustes_dot",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_procrustes" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_procrustes" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["decoder_score_mode"] == "procrustes_dot"
+    assert direction["decoder_score_mode"] == "procrustes_dot"
+    assert prediction["metadata"]["decoder_score_mode"] == "procrustes_dot"
+    assert prediction["metadata"]["procrustes_payload_l2"] > 0
+
+
+def test_ridge_cca_dot_scores_in_canonical_coordinates() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=36, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+    source_projection = np.zeros((dim, 1), dtype=np.float64)
+    target_projection = np.zeros((dim, 1), dtype=np.float64)
+    source_projection[0, 0] = 1.0
+    target_projection[1, 0] = 1.0
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+        cca_rank = 1
+        cca_source_mean = np.zeros(dim, dtype=np.float64)
+        cca_target_mean = np.zeros(dim, dtype=np.float64)
+        cca_source_projection = source_projection
+        cca_target_projection = target_projection
+        cca_correlations = np.ones(1, dtype=np.float64)
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    scores, meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="ridge_cca_dot",
+    )
+
+    assert meta["decoder_score_mode"] == "ridge_cca_dot"
+    assert meta["cca_rank"] == 1
+    assert meta["cca_payload_l2"] == 1.0
+    assert scores[1] == max(scores)
+
+
+def test_ridge_cca_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_ridge_cca",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=37,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="ridge_cca_dot",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_ridge_cca" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_ridge_cca" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["decoder_score_mode"] == "ridge_cca_dot"
+    assert direction["decoder_score_mode"] == "ridge_cca_dot"
+    assert prediction["metadata"]["decoder_score_mode"] == "ridge_cca_dot"
+    assert prediction["metadata"]["cca_rank"] > 0
+
+
+def test_ridge_cca_residual_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_ridge_cca_residual",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=38,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="ridge_cca_residual_norm",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_ridge_cca_residual" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path
+            / "learned_synonym_dictionary_ridge_cca_residual"
+            / "core_to_holdout"
+            / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["decoder_score_mode"] == "ridge_cca_residual_norm"
+    assert direction["decoder_score_mode"] == "ridge_cca_residual_norm"
+    assert prediction["metadata"]["decoder_score_mode"] == "ridge_cca_residual_norm"
+    assert prediction["metadata"]["cca_rank"] > 0
+
+
+def test_lstirp_relative_dot_translates_between_relative_bases() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=39, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+    translation = np.zeros((dim, dim), dtype=np.float64)
+    translation[0, 1] = 1.0
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+        lstirp_source_anchor_vectors = np.eye(dim, dtype=np.float64)
+        lstirp_target_anchor_vectors = np.eye(dim, dtype=np.float64)
+        lstirp_source_relative_mean = np.zeros(dim, dtype=np.float64)
+        lstirp_target_relative_mean = np.zeros(dim, dtype=np.float64)
+        lstirp_translation = translation
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    scores, meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="lstirp_relative_dot",
+    )
+
+    assert meta["decoder_score_mode"] == "lstirp_relative_dot"
+    assert meta["lstirp_source_anchor_count"] == dim
+    assert meta["lstirp_target_anchor_count"] == dim
+    assert scores[1] == max(scores)
+
+
+def test_lstirp_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_lstirp",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=40,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="lstirp_relative_dot",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_lstirp" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_lstirp" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["decoder_score_mode"] == "lstirp_relative_dot"
+    assert direction["decoder_score_mode"] == "lstirp_relative_dot"
+    assert prediction["metadata"]["decoder_score_mode"] == "lstirp_relative_dot"
+    assert prediction["metadata"]["lstirp_source_anchor_count"] > 0
+    assert prediction["metadata"]["lstirp_target_anchor_count"] > 0
+
+
+def test_lstirp_residual_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_lstirp_residual",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=41,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="lstirp_relative_residual_norm",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_lstirp_residual" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_lstirp_residual" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["decoder_score_mode"] == "lstirp_relative_residual_norm"
+    assert direction["decoder_score_mode"] == "lstirp_relative_residual_norm"
+    assert prediction["metadata"]["decoder_score_mode"] == "lstirp_relative_residual_norm"
+    assert prediction["metadata"]["lstirp_source_anchor_count"] > 0
+
+
+def test_inverse_relative_dot_maps_payload_through_inverse_projection() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=42, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+    inverse_map = np.zeros((dim, dim), dtype=np.float64)
+    inverse_map[0, 1] = 1.0
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+        inverse_relative_source_mean = np.zeros(dim, dtype=np.float64)
+        inverse_relative_target_mean = np.zeros(dim, dtype=np.float64)
+        inverse_relative_map = inverse_map
+        inverse_relative_anchor_count = dim
+        inverse_relative_condition_number = 1.0
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    scores, meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="inverse_relative_dot",
+    )
+
+    assert meta["decoder_score_mode"] == "inverse_relative_dot"
+    assert meta["inverse_relative_anchor_count"] == dim
+    assert scores[1] == max(scores)
+
+
+def test_inverse_relative_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_inverse_relative",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=43,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="inverse_relative_dot",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_inverse_relative" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_inverse_relative" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["decoder_score_mode"] == "inverse_relative_dot"
+    assert direction["decoder_score_mode"] == "inverse_relative_dot"
+    assert prediction["metadata"]["decoder_score_mode"] == "inverse_relative_dot"
+    assert prediction["metadata"]["inverse_relative_anchor_count"] > 0
+
+
+def test_ot_gw_dot_maps_payload_through_transport_plan() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=44, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+    transport = np.zeros((dim, dim), dtype=np.float64)
+    transport[0, 1] = 1.0
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+        ot_gw_transport_map = transport
+        ot_gw_iterations = 3
+        ot_gw_entropy = 0.08
+        ot_gw_fused_weight = 0.35
+        ot_gw_coupling_l1 = 1.0
+        ot_gw_objective = 0.5
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    scores, meta = gate._score_candidates(
+        example=example,
+        payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+        dictionary=DummyDictionary(),  # type: ignore[arg-type]
+        candidate_atom_view="native",
+        decoder_score_mode="ot_gw_dot",
+    )
+
+    assert meta["decoder_score_mode"] == "ot_gw_dot"
+    assert meta["ot_gw_iterations"] == 3
+    assert meta["ot_gw_payload_l2"] == 1.0
+    assert scores[1] == max(scores)
+
+
+def test_explicit_transport_modes_map_payload_through_transport_plan() -> None:
+    example = gate.make_benchmark(examples=1, candidates=4, seed=45, family_set="core")[0]
+    dim = len(gate.ATOM_ORDER)
+    rows = {}
+    for idx, candidate in enumerate(example.candidates):
+        row = np.zeros(dim, dtype=np.float64)
+        row[idx] = 1.0
+        rows[candidate.patch_intent] = row
+    transport = np.zeros((dim, dim), dtype=np.float64)
+    transport[0, 1] = 1.0
+
+    class DummyDictionary:
+        receiver_mode = "atom_ridge"
+        sinkhorn_ot_transport_map = transport
+        sinkhorn_ot_entropy = 0.08
+        sinkhorn_ot_coupling_l1 = 1.0
+        sinkhorn_ot_objective = 0.4
+        ot_gw_transport_map = transport
+        ot_gw_iterations = 3
+        ot_gw_sinkhorn_iterations = 80
+        ot_gw_entropy = 0.08
+        ot_gw_fused_weight = 0.35
+        ot_gw_coupling_l1 = 1.0
+        ot_gw_objective = 0.5
+
+        def predict_vector(self, text: str, *, apply_top_k: bool = True) -> np.ndarray:
+            return rows[text]
+
+    for mode, prefix, kind in (
+        ("sinkhorn_ot_dot", "sinkhorn_ot", "sinkhorn_ot"),
+        ("gromov_wasserstein_dot", "ot_gw", "fused_gromov_wasserstein"),
+    ):
+        scores, meta = gate._score_candidates(
+            example=example,
+            payload_atoms={gate.ATOM_ORDER[0]: 1.0},
+            dictionary=DummyDictionary(),  # type: ignore[arg-type]
+            candidate_atom_view="native",
+            decoder_score_mode=mode,
+        )
+
+        assert scores[1] == max(scores)
+        assert meta["decoder_score_mode"] == mode
+        assert meta["transport_kind"] == kind
+        assert meta[f"{prefix}_payload_l2"] == 1.0
+
+
+def test_ot_gw_receiver_records_mode(tmp_path) -> None:
+    payload = run_gate(
+        output_dir=tmp_path / "learned_synonym_dictionary_ot_gw",
+        budgets=[4],
+        train_examples=16,
+        eval_examples=6,
+        seed=45,
+        candidate_atom_view="heldout_synonym",
+        calibration_atom_view="synonym_stress",
+        candidate_calibration="all_public",
+        calibration_examples=16,
+        feature_dim=40,
+        text_feature_mode="semantic_anchor",
+        adapter_target_mode="semantic_anchor_teacher",
+        decoder_score_mode="ot_gw_dot",
+        receiver_mode="atom_ridge",
+        ridge=0.5,
+        top_k=6,
+        min_score=0.0,
+        min_decision_score=0.3,
+    )
+
+    direction = json.loads(
+        (tmp_path / "learned_synonym_dictionary_ot_gw" / "core_to_holdout" / "summary.json").read_text()
+    )
+    prediction = next(
+        json.loads(line)
+        for line in (
+            tmp_path / "learned_synonym_dictionary_ot_gw" / "core_to_holdout" / "predictions_budget4.jsonl"
+        ).read_text().splitlines()
+        if json.loads(line)["condition"] == "learned_synonym_dictionary_packet"
+    )
+    assert payload["decoder_score_mode"] == "ot_gw_dot"
+    assert direction["decoder_score_mode"] == "ot_gw_dot"
+    assert prediction["metadata"]["decoder_score_mode"] == "ot_gw_dot"
+    assert prediction["metadata"]["ot_gw_iterations"] > 0
+
+
 def test_learned_synonym_dictionary_contrastive_receiver_records_mode(tmp_path) -> None:
     payload = run_gate(
         output_dir=tmp_path / "learned_synonym_dictionary_contrastive",

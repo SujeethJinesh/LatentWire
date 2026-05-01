@@ -118,6 +118,10 @@
   bidirectional cross-family pass with atom-knockout causality, plus matched
   `n=512` synonym-stress artifacts showing the current sparse packet remains
   ontology-bound rather than robust semantic transfer.
+- HellaSwag heldout validation-slice hidden-innovation stress artifacts showing
+  the frozen 2-byte source-private packet remains positive on rows `1024:2048`
+  with label-copy, score-only, zero-hidden, wrong-example, candidate-roll, and
+  jackknife controls.
 - Learned/calibrated synonym-dictionary packet script, tests, memo, and native
   plus synonym-stress `n=256` artifacts showing 4-byte bidirectional
   cross-family pass under strict controls, with public-calibration caveats.
