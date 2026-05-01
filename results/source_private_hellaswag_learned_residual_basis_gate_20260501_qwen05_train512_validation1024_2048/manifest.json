@@ -1,0 +1,53 @@
+{
+  "created_utc": "2026-05-01T20:56:51.282295+00:00",
+  "files": [
+    {
+      "bytes": 23767,
+      "path": "results/source_private_hellaswag_learned_residual_basis_gate_20260501_qwen05_train512_validation1024_2048/hellaswag_learned_residual_basis_scout.json",
+      "sha256": "6ce347c90b4ff37e7a5ce463d1410a62d3e98b71c9e31c4140c5f882f59c217f"
+    },
+    {
+      "bytes": 859,
+      "path": "results/source_private_hellaswag_learned_residual_basis_gate_20260501_qwen05_train512_validation1024_2048/hellaswag_learned_residual_basis_scout.md",
+      "sha256": "4a62c11e40b5c01ee2fe5bd0845bf7e78a749558c8eedcf9b60e3c33189035b1"
+    },
+    {
+      "bytes": 2153,
+      "path": "results/source_private_hellaswag_learned_residual_basis_gate_20260501_qwen05_train512_validation1024_2048/component_rows.csv",
+      "sha256": "b374b67381a05cd9c05ba95427586e91346a364f0917093a98dbdf66b0eba8cf"
+    },
+    {
+      "bytes": 1048,
+      "path": "results/source_private_hellaswag_learned_residual_basis_gate_20260501_qwen05_train512_validation1024_2048/variant_rows.csv",
+      "sha256": "f5b428dbb2c96f2212fc3b1e8ebcdbb0d822389c8848fa54e1d2879a70ced5ba"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_learned_residual_basis_gate_20260501_qwen05_train512_validation1024_2048/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    },
+    {
+      "bytes": 379904,
+      "path": "results/source_private_hellaswag_learned_residual_basis_gate_20260501_qwen05_train512_validation1024_2048/predictions/pca256_top2_gold.jsonl",
+      "sha256": "6712342ad48088f9ae8a71c989872663eac9fb1102854963a31aadf79c6906b3"
+    }
+  ],
+  "gate": "source_private_hellaswag_learned_residual_basis_scout",
+  "headline": {
+    "best_ci95_high_vs_best_label_copy": 0.0146484375,
+    "best_ci95_low_vs_best_label_copy": -0.017578125,
+    "best_delta_vs_dense_hidden_reference": -0.09003906250000004,
+    "best_label_copy_eval_accuracy": 0.4140625,
+    "best_selected_eval_accuracy": 0.4130859375,
+    "best_selected_minus_best_label_copy": -0.0009765625,
+    "best_selected_minus_score_only_bagged_control": 0.00390625,
+    "best_variant": "pca256_top2_gold",
+    "dense_hidden_reference_accuracy": 0.503125,
+    "eval_rows": 1024,
+    "framed_record_bytes": 5,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.4091796875,
+    "strict_delta_required": 0.02,
+    "variant_count": 1
+  }
+}

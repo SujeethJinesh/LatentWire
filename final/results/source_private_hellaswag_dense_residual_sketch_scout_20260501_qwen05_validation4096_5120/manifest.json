@@ -1,0 +1,73 @@
+{
+  "created_utc": "2026-05-01T20:47:59.793501+00:00",
+  "files": [
+    {
+      "bytes": 28389,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/hellaswag_dense_residual_sketch_scout.json",
+      "sha256": "e02bf3ca734ef49c3f40a4c8b355ebfe363a6fd36822a867cd32c15d41530199"
+    },
+    {
+      "bytes": 868,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/hellaswag_dense_residual_sketch_scout.md",
+      "sha256": "796e417ead1732baee2af5a6ca37c02e561a4fec9ddfc1c8b076ce888000a3c6"
+    },
+    {
+      "bytes": 5905,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/component_rows.csv",
+      "sha256": "b6cdb5433835b99f5f4164677f9c604957745e1b00f807484cb71305449b3266"
+    },
+    {
+      "bytes": 2128,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/variant_rows.csv",
+      "sha256": "33f65eb40fd8e59d93e3e9fe39af75cb73436139681d57423913e189f16b8659"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    },
+    {
+      "bytes": 387646,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/predictions/jl_norm_value64.jsonl",
+      "sha256": "cc7ab948c31684f87756ed4134293e9fc760bf46082225bd336750c72e5d448c"
+    },
+    {
+      "bytes": 387646,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/predictions/jl_value64.jsonl",
+      "sha256": "5d6aabb43d60995e211c9d64fa20240dbc37939324d4f0ce6e2b7d3e84a2d07e"
+    },
+    {
+      "bytes": 387646,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/predictions/qjl_norm_sign128.jsonl",
+      "sha256": "68535d42804137c3a199a4a9235ca6c49072496c42ad462fb21dfa9e1ef5f33c"
+    },
+    {
+      "bytes": 387646,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/predictions/qjl_sign128.jsonl",
+      "sha256": "c6549d53c0f76e1aed859e610ced7887871d4aa82914482c4e2df1bafc1b1f3a"
+    },
+    {
+      "bytes": 387646,
+      "path": "results/source_private_hellaswag_dense_residual_sketch_scout_20260501_qwen05_validation4096_5120/predictions/qjl_sign64.jsonl",
+      "sha256": "af88c4cb6e26f4c6bd33e85629226a82b49c20d0a29321b15f11f1db5cd7caac"
+    }
+  ],
+  "gate": "source_private_hellaswag_dense_residual_sketch_scout",
+  "headline": {
+    "best_ci95_high_vs_best_label_copy": 0.015161132812499978,
+    "best_ci95_low_vs_best_label_copy": -0.01171875,
+    "best_delta_vs_dense_hidden_reference": -0.0011718750000000444,
+    "best_label_copy_eval_accuracy": 0.5,
+    "best_selected_eval_accuracy": 0.501953125,
+    "best_selected_minus_best_label_copy": 0.001953125,
+    "best_selected_minus_score_only_bagged_control": 0.0048828125,
+    "best_variant": "qjl_norm_sign128",
+    "dense_hidden_reference_accuracy": 0.503125,
+    "eval_rows": 1024,
+    "framed_record_bytes": 5,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.4970703125,
+    "strict_delta_required": 0.02,
+    "variant_count": 5
+  }
+}

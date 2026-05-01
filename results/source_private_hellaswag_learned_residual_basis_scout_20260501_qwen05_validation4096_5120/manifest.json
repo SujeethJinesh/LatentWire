@@ -1,0 +1,83 @@
+{
+  "created_utc": "2026-05-01T20:55:21.433136+00:00",
+  "files": [
+    {
+      "bytes": 31047,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/hellaswag_learned_residual_basis_scout.json",
+      "sha256": "00edc5fc9f318244549c5a35fe7d71b05d083580533ae450e84ce353c5af7165"
+    },
+    {
+      "bytes": 856,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/hellaswag_learned_residual_basis_scout.md",
+      "sha256": "9feefb4fc094b73d534ff1c21a43de721850132a238e5b9332e08c3a3192fb63"
+    },
+    {
+      "bytes": 8503,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/component_rows.csv",
+      "sha256": "7e236381013a67c621aab10dd91adb314352ea40126f1ec6912d8860dde6409f"
+    },
+    {
+      "bytes": 2752,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/variant_rows.csv",
+      "sha256": "fa9b2942d2dcce1ba8cbf4aecba2141b59ebe1ee018052c1a6942263266c12cc"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    },
+    {
+      "bytes": 379454,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/predictions/pca128_top2_gold.jsonl",
+      "sha256": "e00a85975dd81d87b939be4c033610d8cfc28080113d7fca2c29d6c099268310"
+    },
+    {
+      "bytes": 379454,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/predictions/pca192_top2_gold.jsonl",
+      "sha256": "5515375505da3ce72dbf38ca074821c08be1a48b4dac4625c93a70c5e1f723f6"
+    },
+    {
+      "bytes": 379454,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/predictions/pca256_top2_gold.jsonl",
+      "sha256": "614595ef1d6d628a0ee6daef40cddc1ed1995cbddc63974333fe24ee942467c5"
+    },
+    {
+      "bytes": 379454,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/predictions/pca32_top2_gold.jsonl",
+      "sha256": "64b2973aac4f1fa89d99164d418268245ba7a54fb8c7bfdcbf464147440081c7"
+    },
+    {
+      "bytes": 379454,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/predictions/pca64_top16_top2_gold.jsonl",
+      "sha256": "6fc9efcef7c126da9455f20b831dcaa3782d55cb1a181a52aff6365259e11a29"
+    },
+    {
+      "bytes": 379454,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/predictions/pca64_top2_gold.jsonl",
+      "sha256": "926baffbf22bdb972335ac330c24bed2b477982c77183b2f90305b1e771586af"
+    },
+    {
+      "bytes": 379454,
+      "path": "results/source_private_hellaswag_learned_residual_basis_scout_20260501_qwen05_validation4096_5120/predictions/pca64_whiten_top2_gold.jsonl",
+      "sha256": "926baffbf22bdb972335ac330c24bed2b477982c77183b2f90305b1e771586af"
+    }
+  ],
+  "gate": "source_private_hellaswag_learned_residual_basis_scout",
+  "headline": {
+    "best_ci95_high_vs_best_label_copy": 0.04543457031249998,
+    "best_ci95_low_vs_best_label_copy": 0.0107421875,
+    "best_delta_vs_dense_hidden_reference": 0.025195312499999956,
+    "best_label_copy_eval_accuracy": 0.5,
+    "best_selected_eval_accuracy": 0.5283203125,
+    "best_selected_minus_best_label_copy": 0.0283203125,
+    "best_selected_minus_score_only_bagged_control": 0.03125,
+    "best_variant": "pca256_top2_gold",
+    "dense_hidden_reference_accuracy": 0.503125,
+    "eval_rows": 1024,
+    "framed_record_bytes": 5,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.4970703125,
+    "strict_delta_required": 0.02,
+    "variant_count": 7
+  }
+}

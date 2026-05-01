@@ -1657,5 +1657,19 @@
     "path": "references/593_hellaswag_anchor_variant_scout_refs_20260501.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the HellaSwag anchor-variant scout, covering the failed local/RBF/spectral/QJL/signed-hash anchor rescue, uniqueness boundaries against relative representations, SAEs, crosscoders, prefix/prompt tuning, QJL, and TurboQuant, and the next dense-residual sign-sketch branch."
+  },
+  {
+    "num": 594,
+    "slug": "hellaswag_dense_residual_sketch_refs_20260501",
+    "path": "references/594_hellaswag_dense_residual_sketch_refs_20260501.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the HellaSwag dense residual sketch scout, covering the failed QJL/JL sign/value sketch rescue and novelty boundaries against QJL, TurboQuant, C2C, KVComm, and prefix tuning."
+  },
+  {
+    "num": 595,
+    "slug": "hellaswag_learned_residual_basis_refs_20260501",
+    "path": "references/595_hellaswag_learned_residual_basis_refs_20260501.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the HellaSwag learned residual basis scout, covering the pca256 single-slice pass, five-slice promotion failure, and novelty boundaries against sparse crosscoders, SAEs, relative representations, C2C, and KVComm."
   }
 ]
