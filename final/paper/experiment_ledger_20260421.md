@@ -18684,3 +18684,42 @@ weakened or ruled out on this HellaSwag slice. Do not spend full-validation
 hidden materialization compute on this shallow family; the next live method
 branch should use a real common-basis/crosscoder objective or move to a less
 packet-saturated benchmark.
+
+HellaSwag anchor-relative hidden-code scout: added
+`scripts/build_source_private_hellaswag_anchor_relative_hidden_code_scout.py`,
+test
+`tests/test_build_source_private_hellaswag_anchor_relative_hidden_code_scout.py`,
+memo
+`paper/source_private_hellaswag_anchor_relative_hidden_code_scout_20260502.md`,
+references
+`references/618_hellaswag_anchor_relative_hidden_code_scout_refs_20260502.md`,
+and artifacts
+`results/source_private_hellaswag_anchor_relative_hidden_code_scout_20260502_tinyllama_validation1024_2048/`,
+`results/source_private_hellaswag_anchor_relative_hidden_code_scout_20260502_seed41_tinyllama_validation1024_2048/`,
+`results/source_private_hellaswag_anchor_relative_hidden_code_scout_20260502_seed59_tinyllama_validation1024_2048/`,
+and
+`results/source_private_hellaswag_anchor_relative_hidden_code_scout_20260502_seed83_tinyllama_validation1024_2048/`.
+Outcome: this shallow anchor/common-basis branch does not promote. The gate
+used the same official-train calibration surface (`1487` rows, split
+`1115/372`) and frozen HellaSwag validation slice `1024:2048` (`1024` rows),
+reusing the TinyLlama hidden cache. It tested one-byte source-hidden codes
+computed from similarity to official-train anchors, with Qwen score and Qwen
+hidden anchor-relative side information at the decoder. The train-dev-selected
+primary row, `anchor64_relpca16_kmeans32` with decoder ridge `10.0`, reaches
+`0.503906` versus packet-only and compact-candidate relative decoder
+`0.501953` (delta `+0.001953`, CI95 low `-0.006836`). The best diagnostic
+primary row, `anchor64_relconf_q16_ridge10`, nearly reaches the scout threshold
+at `0.511719` (delta `+0.009766`, CI95 low `-0.000977`) but does not clear CI
+or the `+0.010` bar. Anchor-seed repeats on the near-miss family collapse:
+seed `41` best delta `+0.001953`, seed `59` best delta `+0.000977`, seed `83`
+best delta `+0.001953`. Controls also weaken the claim: Qwen-side relative
+decoder is `0.464844`, compact-candidate relative decoder ties packet-only at
+`0.501953`, row-shuffled anchor code is `0.506836`, source-relative shuffle is
+`0.498047`, codebook permutation mismatch is `0.265625`, random same-byte code
+is `0.262695`, zero source code is `0.249023`, and label permutation decoder
+is `0.295898`. Interpretation: anchor-relative local coordinates are a better
+motivated basis than raw source-hidden PCA, but shallow train-only anchor code
+packets do not robustly add source information beyond the candidate id on this
+slice. Do not widen this shallow family; the next live method branch should be
+a true joint crosscoder/resampler objective or a benchmark with more headroom
+above packet-only.

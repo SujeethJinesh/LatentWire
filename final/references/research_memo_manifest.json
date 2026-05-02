@@ -1825,5 +1825,12 @@
     "path": "references/617_hellaswag_hidden_code_packet_scout_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed HellaSwag source-hidden byte-code scout, covering PCA/k-means and train-only hidden-reliability code saturation, compact packet-only controls, and novelty boundaries against SAE/crosscoder common bases, prefix/prompt tuning, learned distributed source coding, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, and diffusion-style latent refinement."
+  },
+  {
+    "num": 618,
+    "slug": "hellaswag_anchor_relative_hidden_code_scout_refs_20260502",
+    "path": "references/618_hellaswag_anchor_relative_hidden_code_scout_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed HellaSwag anchor-relative hidden-code scout, covering relative-representation/common-basis prior art, seed-repeat near-miss collapse, compact packet-only and Qwen-side relative controls, and novelty boundaries against SAE/crosscoder dictionaries, prefix/prompt tuning, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, and diffusion-style latent refinement."
   }
 ]
