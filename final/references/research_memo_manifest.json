@@ -1804,5 +1804,12 @@
     "path": "references/614_hellaswag_minimal_packet_compaction_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the HellaSwag minimal packet compaction gate, covering exact one-byte candidate-id equivalence, systems rate-frontier boundaries, and novelty limits against C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, prefix/prompt tuning, learned query connectors, vLLM, and SGLang."
+  },
+  {
+    "num": 615,
+    "slug": "hellaswag_wyner_ziv_residual_packet_refs_20260502",
+    "path": "references/615_hellaswag_wyner_ziv_residual_packet_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed train-only HellaSwag Wyner-Ziv residual-logit packet gate, covering the negative residual-code result, strict packet-only and prior-scout comparison, destructive controls, and novelty boundaries against distributed source coding, prefix/prompt tuning, C2C/KVComm/Q-KVComm, QJL/TurboQuant/KIVI/KVQuant, vLLM, and SGLang."
   }
 ]

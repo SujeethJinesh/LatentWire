@@ -18590,3 +18590,32 @@ should replace the old `2B` raw / `5B` framed HellaSwag packet row in future
 tables. It does not address receiver/common-language progress and does not
 support GPU throughput, HBM traffic, vLLM/SGLang, C2C/KVComm, or
 QJL/TurboQuant/KIVI/KVQuant superiority claims.
+
+HellaSwag Wyner-Ziv residual-logit packet gate: added
+`scripts/build_source_private_hellaswag_wyner_ziv_residual_packet_gate.py`,
+test
+`tests/test_build_source_private_hellaswag_wyner_ziv_residual_packet_gate.py`,
+memo
+`paper/source_private_hellaswag_wyner_ziv_residual_packet_gate_20260502.md`,
+references
+`references/615_hellaswag_wyner_ziv_residual_packet_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_wyner_ziv_residual_packet_gate_20260502/`.
+Outcome: this conditional source-code branch does not promote. The gate used
+the official-train calibration surface (`1487` rows after dropping `5`
+duplicates and `44` out-of-bag overlap rows, split `1115/372`) and evaluated
+once on full HellaSwag validation (`10042` rows). The packet sends a TinyLlama
+candidate id plus four quantized TinyLlama centered score-residual bins under a
+`2B` raw / `5B` framed contract. The dev-selected full decoder reaches
+`0.616013` versus compact TinyLlama packet-only `0.619199` (delta `-0.003187`,
+CI95 low `-0.004979`) and is negative in all `5/5` contiguous blocks. The best
+diagnostic scout only ties packet-only (`0.619199`, delta `0.000000`) and the
+default is below the best prior official-train receiver scout (`0.620594`) by
+`-0.004581`. Destructive controls remain below packet-only; the strongest,
+Qwen-derived score sketch, reaches `0.604860` (delta `-0.014340`).
+Interpretation: residual-logit Wyner-Ziv packets are weakened or ruled out on
+this HellaSwag surface. Together with scalar acceptance, prototype receivers,
+and sparse-query receivers, the current receiver/common-language family is
+saturated. Keep the result as a negative ablation and do not claim learned
+syndrome/source-code communication until a new source-code objective beats
+packet-only under train-only calibration and destructive controls.
