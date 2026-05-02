@@ -2021,5 +2021,12 @@
     "path": "references/645_arc_llama8b_failure_probe_next_connector_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC Llama-8B failure probe and next connector decision, covering query bottlenecks, soft-prefix receiver interfaces, relative/common-basis boundaries, C2C/KVComm competitors, TurboQuant/QJL systems baselines, and vLLM/SGLang native evidence requirements."
+  },
+  {
+    "num": 646,
+    "slug": "arc_hidden_query_mlp_cache_connector_refs_20260502",
+    "path": "references/646_arc_hidden_query_mlp_cache_connector_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the negative ARC hidden/query MLP cache-to-packet connector gate, covering query-bottleneck and soft-prefix boundaries against BLIP-2/Q-Former, Flamingo, Perceiver IO, Prefix-Tuning, C2C, KVComm/KVCOMM, QJL, TurboQuant, and SAE universal feature-space work."
   }
 ]

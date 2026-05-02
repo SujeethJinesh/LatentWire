@@ -14,8 +14,9 @@ Date: 2026-05-02
   common-language connector must beat packet-only under paired uncertainty,
   destructive controls, and at least one strict cross-family or cross-benchmark
   falsification. The Mac-local Phi-3 cross-family source diagnostic and the
-  TinyLlama hidden/query PCA/ridge, transport/common-basis, and nonlinear
-  sparse-query cache-bottleneck connectors now fail this gate. The Llama-8B
+  TinyLlama hidden/query PCA/ridge, transport/common-basis, nonlinear
+  sparse-query cache-bottleneck, and train-only MLP cache-to-packet connectors
+  now fail this gate. The Llama-8B
   true non-Qwen scout now runs locally after the MPS workaround, but also fails
   the strict validation/paired-uncertainty gate. The systems boundary table is
   paper-ready as accounting and the native ingest gate now refuses premature
@@ -293,6 +294,28 @@ can exploit the audit-only source index, but that would amount to transmitting
 the source's answer choice. The next positive method must therefore learn a
 better bottleneck/receiver interface rather than just route source choices.
 
+The ARC hidden/query MLP cache connector tests the remaining Mac-local learned
+connector supported by the current caches:
+
+- artifact:
+  `results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/arc_challenge_hidden_query_mlp_cache_connector_gate.json`
+- pass gate: `False`;
+- selected view/PCA/hidden/weight decay: `query_residual / 16 / 16 / 0.001`;
+- frontier candidates: `36`;
+- validation/test disagreement rows: `144/473`;
+- frozen test matched/Qwen-substituted/cached-Tiny/target/same-byte-text:
+  `0.232/0.317/0.269/0.268/0.258`;
+- matched-minus-Qwen-substituted mean: `-0.085`;
+- matched-minus-cached-Tiny mean: `-0.038`;
+- CI95 lower bound versus Qwen-substituted: `-0.154`;
+- candidate-roll/content-rotation/spectral-permutation controls:
+  `0.261/0.255/0.236`.
+
+Lay explanation: this run tried a small learned translator instead of another
+hand-built geometry map. TinyLlama's cached hidden/query signals were decoded
+into the public ARC packet language, but on new hard rows the learned 12-byte
+hint was worse than Qwen's own packet and worse than the cached Tiny packet.
+
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
 
@@ -327,9 +350,9 @@ same controls.
 
 - Positive learned receiver/common-basis method on at least two public
   benchmarks or one benchmark plus a strict cross-family pair.
-- The highest-value next method is a 16-64 query bottleneck or soft-prefix
-  connector trained against target loss and evaluated first on the frozen ARC
-  disagreement rows.
+- The highest-value next method is a true tokenwise 16-64 query bottleneck or
+  soft-prefix connector trained against target loss. The current mean-cache
+  MLP proxy is negative and should not be widened.
 - Seed repeats, larger frozen slices, paired CIs, and source-destroy controls.
 - Direct competitor comparisons against C2C/KVComm-style KV/cache transfer and
   KV quantization byte floors.
@@ -344,8 +367,8 @@ same controls.
   reasoning.
 - Add one clean figure summarizing the gate tree: ARC/OpenBookQA positive,
   SciQ/CommonsenseQA diagnostic, HellaSwag branch killed for receiver
-  improvement, and TinyLlama hidden/query PCA/ridge, transport, and
-  sparse-query bottleneck ruled out for ARC repair.
+  improvement, and TinyLlama hidden/query PCA/ridge, transport, sparse-query
+  bottleneck, and MLP cache-to-packet connector ruled out for ARC repair.
 
 ## Blockers For User Help
 
@@ -364,13 +387,15 @@ NVIDIA, then fill the native systems schema with matched vLLM/SGLang/C2C/
 KVComm/QJL/TurboQuant rows. Receiver-only scalar routing, source-side scalar
 confidence routing, cached candidate-level packet/score connectors, Mac-local
 Phi-3 source packets, and shallow TinyLlama hidden/query PCA/ridge connectors
-or static transport/Procrustes connectors, and random Fourier sparse-query
-cache bottlenecks are now ruled out for this ARC disagreement surface. The
+or static transport/Procrustes connectors, random Fourier sparse-query cache
+bottlenecks, and train-only MLP mean-cache connectors are now ruled out for
+this ARC disagreement surface. The
 same-family Qwen-1.5B stronger-source diagnostic should be repeated with a true
 stronger cross-family source before making the ICLR claim. The current
 Llama-8B source-choice scout is now scientifically resolved as a strict gate
 failure, although a separately selected Llama prompt/scoring/calibration branch
-could be revived if it first clears validation. The Llama failure probe shows
-the branch's useful signal is codec/receiver loss, so the next exact Mac-local
-work should prototype a learned query/cache or soft-prefix connector and keep
-the native systems schema ready for NVIDIA rows.
+could be revived if it first clears validation. The Llama failure probe and the
+negative MLP cache connector jointly show that useful source signal is being
+lost at the current packet/receiver interface; the next exact method branch
+needs tokenwise target-forward connector infrastructure, while Mac-local work
+should focus on consolidation and the NVIDIA systems/connector runbooks.

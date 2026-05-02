@@ -19443,3 +19443,32 @@ on test, and source-to-Llama-packet loss is `0.186`. Decision: the source
 answer signal exists, but the current packet codec is lossy and shadowed by
 same-byte visible text. Keep Llama source-choice ruled out for ICLR and promote
 a learned query/cache or soft-prefix connector as the next exact branch.
+
+ARC hidden/query MLP cache-to-packet connector gate: added
+`scripts/build_source_private_arc_challenge_hidden_query_mlp_cache_connector_gate.py`,
+test
+`tests/test_build_source_private_arc_challenge_hidden_query_mlp_cache_connector_gate.py`,
+memo
+`paper/source_private_arc_hidden_query_mlp_cache_connector_gate_20260502.md`,
+references
+`references/646_arc_hidden_query_mlp_cache_connector_refs_20260502.md`, and
+artifact
+`results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/`.
+Outcome: this was the bounded Mac-local learned connector that the current
+cached artifacts support, and it is negative. The gate reuses cached
+TinyLlama hidden/query means, trains/selects a train-only PCA plus one-hidden-
+layer MLP on the `144` ARC validation rows where TinyLlama and Qwen-0.5B
+packets disagree, then evaluates once on the frozen `473` ARC
+test-disagreement rows while preserving the same `12B` source-private packet.
+The selected row is `query_residual` with PCA/hidden/weight-decay
+`16/16/0.001`. Frozen test matched/Qwen-substituted/cached-Tiny/target/
+same-byte-text mean accuracy is `0.232/0.317/0.269/0.268/0.258`;
+matched-minus-Qwen is `-0.085`, matched-minus-cached-Tiny is `-0.038`, and
+the paired CI95 lower bounds versus Qwen-substituted and cached Tiny are
+`-0.154` and `-0.104`. Candidate-roll, wrong-row/content-rotation, and
+receiver spectral-permutation controls stay below Qwen but do not rescue the
+method. Decision: rule out the current Mac-local TinyLlama mean hidden/query
+cache connector family for ARC. A true query-bottleneck/soft-prefix branch is
+still alive, but it needs tokenwise target-forward infrastructure, more
+matched activation pairs, and likely NVIDIA; do not spend more Mac cycles on
+shallow TinyLlama mean-cache variants.
