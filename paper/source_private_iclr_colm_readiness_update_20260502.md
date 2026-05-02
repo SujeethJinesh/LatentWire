@@ -546,3 +546,30 @@ story remains scientifically cleaner than raw hidden transfer, but the next
 exact branch should be a source-control-contrastive conditional innovation
 receiver with packet-level candidate-roll controls, not another answer-CE-only
 soft-prefix tweak.
+
+## 2026-05-02 Source-Control Contrastive Follow-Up
+
+Added a matched-only source-control contrastive objective to the ARC/OpenBookQA
+soft-prefix preflight. The receiver now optionally penalizes a matched packet
+when its gold-vs-distractor margin does not beat zero-source, shuffled-source,
+same-norm-noise, and candidate-roll-source packets.
+
+Readout:
+
+- one epoch, weight `0.2`: matched reaches `3/4`, but candidate-roll source
+  also reaches `3/4`; matched-minus-best-control margin is about `-0.043`;
+- three epochs, weight `0.2`: matched collapses to `1/4`, ties target-only by
+  accuracy, and loses the margin gate by about `-0.234`;
+- both pass gates remain `False`;
+- the new `candidate_roll_source` control is the key destructive diagnostic:
+  it preserves same-row packet statistics while changing candidate slot
+  alignment.
+
+Decision: weaken the contrastive soft-prefix branch. Do not widen this exact
+method. For ICLR, the next learned-receiver branch must be
+candidate-alignment-sensitive and must clear candidate-roll/candidate-
+derangement controls before any larger ARC/OpenBookQA slice. For the systems
+contribution, the highest-value Mac-local follow-up is a byte-amplification
+ablation that compares fixed packets with 64B cache-line padding and synthetic
+QJL/TurboQuant/KVQuant source-state byte floors, without claiming NVIDIA
+throughput until native serving rows exist.

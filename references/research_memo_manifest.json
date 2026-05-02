@@ -2070,5 +2070,12 @@
     "path": "references/652_arc_public_innovation_preflight_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the negative ARC public-side-information innovation soft-prefix preflight, covering Slepian-Wolf/Wyner-Ziv conditional coding, C2C/KVComm/KVCOMM/Interlat latent communication boundaries, Prefix/Prompt-Tuning distinctions, BLIP-2/Perceiver query bottlenecks, TurboQuant/QJL residual compression inspiration, and the decision to move next to a source-control-contrastive conditional innovation receiver."
+  },
+  {
+    "num": 653,
+    "slug": "arc_contrastive_innovation_receiver_refs_20260502",
+    "path": "references/653_arc_contrastive_innovation_receiver_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the negative ARC source-control contrastive innovation receiver preflight, covering CPC/InfoNCE, supervised contrastive and ranking losses, hard negatives, Slepian-Wolf/Wyner-Ziv side-information coding, Prefix-Tuning, C2C/KVComm/Interlat, TurboQuant/QJL/KIVI/KVQuant systems byte-floor comparators, and the candidate-roll source control as the next receiver-falsification boundary."
   }
 ]

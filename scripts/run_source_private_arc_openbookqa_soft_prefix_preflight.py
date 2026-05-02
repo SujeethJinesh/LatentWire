@@ -61,6 +61,7 @@ CONTROL_CONDITIONS = (
     "same_norm_noise",
     "train_mean_source",
     "label_shuffled",
+    "candidate_roll_source",
     "candidate_derangement",
     "same_byte_visible_text",
     "source_label_copy_audit_upper_bound",
@@ -69,6 +70,12 @@ PASS_CONTROL_CONDITIONS = tuple(
     condition for condition in CONTROL_CONDITIONS if condition != "source_label_copy_audit_upper_bound"
 )
 REPORT_CONDITIONS = (MATCHED_CONDITION, *CONTROL_CONDITIONS)
+CONTRASTIVE_CONTROL_CHOICES = (
+    "zero_source",
+    "shuffled_source",
+    "same_norm_noise",
+    "candidate_roll_source",
+)
 
 
 @dataclass(frozen=True)
@@ -81,6 +88,10 @@ class SoftPrefixConfig:
     seed: int = 17
     matched_use_target: bool = False
     length_normalize: bool = True
+    contrastive_weight: float = 0.0
+    contrastive_margin: float = 0.05
+    contrastive_loss_cap: float = 0.5
+    contrastive_controls: tuple[str, ...] = ()
 
 
 class SourceSoftPrefixConnector(torch.nn.Module):
@@ -898,6 +909,62 @@ def _choice_scores(
     )
 
 
+def _gold_margin_tensor(scores: torch.Tensor, answer_index: int) -> torch.Tensor:
+    answer_index = int(answer_index)
+    gold = scores[answer_index]
+    if scores.numel() <= 1:
+        return gold
+    mask = torch.ones(scores.shape[0], dtype=torch.bool, device=scores.device)
+    mask[answer_index] = False
+    return gold - scores[mask].max()
+
+
+def _contrastive_margin_penalty(
+    *,
+    matched_scores: torch.Tensor,
+    control_scores: torch.Tensor,
+    answer_index: int,
+    margin: float,
+    loss_cap: float,
+) -> torch.Tensor:
+    matched_margin = _gold_margin_tensor(matched_scores, answer_index)
+    control_margin = _gold_margin_tensor(control_scores, answer_index)
+    penalty = torch.relu(torch.as_tensor(float(margin), device=matched_scores.device) - (matched_margin - control_margin))
+    return penalty.clamp_max(float(loss_cap))
+
+
+def _candidate_roll_source_summary(source: torch.Tensor) -> torch.Tensor | None:
+    if source.numel() == 0 or source.dim() < 2:
+        return None
+    return torch.roll(source, shifts=1, dims=0)
+
+
+def _fit_source_control_variant(
+    source_summary: torch.Tensor,
+    *,
+    fit_indices: Sequence[int],
+    fit_position: int,
+    row_index: int,
+    control: str,
+    seed: int,
+    epoch: int,
+    device: str,
+) -> torch.Tensor | None:
+    base = source_summary[int(row_index)].to(device)
+    if control == "zero_source":
+        return torch.zeros_like(base)
+    if control == "shuffled_source":
+        other = int(fit_indices[(int(fit_position) + 1) % len(fit_indices)])
+        return source_summary[other].to(device)
+    if control == "same_norm_noise":
+        generator = torch.Generator(device="cpu").manual_seed(int(seed) * 2003 + int(row_index) * 101 + int(epoch))
+        noise = torch.randn(tuple(base.shape), generator=generator).to(device=device, dtype=base.dtype)
+        return noise / noise.norm().clamp_min(1e-6) * base.norm().clamp_min(1e-6)
+    if control == "candidate_roll_source":
+        return _candidate_roll_source_summary(base)
+    raise ValueError(f"unknown contrastive control {control!r}")
+
+
 def _fit_connector(
     *,
     connector: torch.nn.Module,
@@ -912,6 +979,7 @@ def _fit_connector(
     config: SoftPrefixConfig,
     device: str,
     label_shuffle: bool,
+    use_contrastive: bool,
 ) -> dict[str, float]:
     connector.to(device)
     optimizer = torch.optim.AdamW(connector.parameters(), lr=config.lr, weight_decay=config.weight_decay)
@@ -924,10 +992,14 @@ def _fit_connector(
     else:
         shifted_answers = {idx: int(answer_indices[idx]) for idx in fit_indices}
     losses: list[float] = []
-    for _ in range(config.epochs):
+    contrastive_losses: list[float] = []
+    for epoch in range(config.epochs):
         total = torch.zeros((), device=device)
-        for idx in fit_indices:
-            prefix = connector(source_summary[idx].to(device), target_summary[idx].to(device))
+        contrastive_total = torch.zeros((), device=device)
+        for fit_position, idx in enumerate(fit_indices):
+            row_source = source_summary[idx].to(device)
+            row_target = target_summary[idx].to(device)
+            prefix = connector(row_source, row_target)
             scores = _choice_scores(
                 target_model=target_model,
                 embed_tokens=embed_tokens,
@@ -938,14 +1010,57 @@ def _fit_connector(
             )
             label = torch.tensor([shifted_answers[idx]], dtype=torch.long, device=device)
             total = total + torch.nn.functional.cross_entropy(scores.unsqueeze(0), label)
+            if use_contrastive and config.contrastive_weight > 0.0 and config.contrastive_controls:
+                row_penalties: list[torch.Tensor] = []
+                for control in config.contrastive_controls:
+                    control_source = _fit_source_control_variant(
+                        source_summary,
+                        fit_indices=fit_indices,
+                        fit_position=fit_position,
+                        row_index=idx,
+                        control=control,
+                        seed=config.seed,
+                        epoch=epoch,
+                        device=device,
+                    )
+                    if control_source is None:
+                        continue
+                    control_prefix = connector(control_source, row_target)
+                    control_scores = _choice_scores(
+                        target_model=target_model,
+                        embed_tokens=embed_tokens,
+                        prefix=control_prefix,
+                        prompt_ids=prompt_ids[idx],
+                        continuation_ids=continuation_ids[idx],
+                        length_normalize=config.length_normalize,
+                    )
+                    penalty = _contrastive_margin_penalty(
+                        matched_scores=scores,
+                        control_scores=control_scores,
+                        answer_index=int(answer_indices[idx]),
+                        margin=config.contrastive_margin,
+                        loss_cap=config.contrastive_loss_cap,
+                    )
+                    row_penalties.append(penalty)
+                if row_penalties:
+                    row_penalty = torch.stack(row_penalties).mean()
+                    contrastive_total = contrastive_total + row_penalty
+                    total = total + float(config.contrastive_weight) * row_penalty
         optimizer.zero_grad(set_to_none=True)
         total.backward()
         optimizer.step()
         losses.append(float(total.detach().cpu()))
+        contrastive_losses.append(float(contrastive_total.detach().cpu()))
     connector.eval()
     return {
         "loss_initial": float(losses[0]) if losses else 0.0,
         "loss_final": float(losses[-1]) if losses else 0.0,
+        "contrastive_penalty_initial": float(contrastive_losses[0]) if contrastive_losses else 0.0,
+        "contrastive_penalty_final": float(contrastive_losses[-1]) if contrastive_losses else 0.0,
+        "contrastive_weight": float(config.contrastive_weight if use_contrastive else 0.0),
+        "contrastive_margin": float(config.contrastive_margin if use_contrastive else 0.0),
+        "contrastive_loss_cap": float(config.contrastive_loss_cap if use_contrastive else 0.0),
+        "contrastive_control_count": int(len(config.contrastive_controls) if use_contrastive else 0),
     }
 
 
@@ -1107,6 +1222,16 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _parse_contrastive_controls(text: str) -> tuple[str, ...]:
+    if not text.strip():
+        return ()
+    controls = tuple(part.strip() for part in text.split(",") if part.strip())
+    unknown = sorted(set(controls) - set(CONTRASTIVE_CONTROL_CHOICES))
+    if unknown:
+        raise ValueError(f"unknown contrastive controls: {unknown}")
+    return controls
+
+
 def run_preflight(
     *,
     output_dir: pathlib.Path,
@@ -1141,6 +1266,10 @@ def run_preflight(
     continuation_mode: str,
     matched_use_target: bool,
     length_normalize: bool,
+    contrastive_weight: float,
+    contrastive_margin: float,
+    contrastive_loss_cap: float,
+    contrastive_controls: Sequence[str],
     same_byte_budget: int,
     min_accuracy_gap: float,
     min_margin_gap: float,
@@ -1229,6 +1358,10 @@ def run_preflight(
         seed=seed,
         matched_use_target=matched_use_target,
         length_normalize=length_normalize,
+        contrastive_weight=contrastive_weight,
+        contrastive_margin=contrastive_margin,
+        contrastive_loss_cap=contrastive_loss_cap,
+        contrastive_controls=tuple(contrastive_controls),
     )
     torch.manual_seed(seed)
     source_summary = source_summary.to(resolved_train_device)
@@ -1295,6 +1428,7 @@ def run_preflight(
             config=config,
             device=resolved_train_device,
             label_shuffle=name == "label_shuffled",
+            use_contrastive=name == MATCHED_CONDITION,
         )
 
     train_mean_source = source_summary[fit_indices].mean(dim=0)
@@ -1307,12 +1441,16 @@ def run_preflight(
             noise_cpu = torch.randn(tuple(source_summary[idx].shape), generator=generator)
             noise = noise_cpu.to(resolved_train_device)
             noise = noise / noise.norm().clamp_min(1e-6) * source_summary[idx].norm().clamp_min(1e-6)
+            candidate_roll_source = _candidate_roll_source_summary(source_summary[idx])
             source_variants = {
                 MATCHED_CONDITION: source_summary[idx],
                 "zero_source": torch.zeros_like(source_summary[idx]),
                 "shuffled_source": source_summary[shuffled_idx],
                 "same_norm_noise": noise,
                 "train_mean_source": train_mean_source,
+                "candidate_roll_source": (
+                    candidate_roll_source if candidate_roll_source is not None else source_summary[idx]
+                ),
                 "target_cache_only_prefix": source_summary[idx],
                 "slots_only_prefix": source_summary[idx],
                 "label_shuffled": source_summary[idx],
@@ -1335,6 +1473,7 @@ def run_preflight(
                 "shuffled_source",
                 "same_norm_noise",
                 "train_mean_source",
+                "candidate_roll_source",
             ):
                 condition_scores[condition] = _score_connector_condition(
                     connector=connectors[MATCHED_CONDITION],
@@ -1454,6 +1593,10 @@ def run_preflight(
             "weight_decay": weight_decay,
             "matched_use_target": matched_use_target,
             "length_normalize": length_normalize,
+            "contrastive_weight": contrastive_weight,
+            "contrastive_margin": contrastive_margin,
+            "contrastive_loss_cap": contrastive_loss_cap,
+            "contrastive_controls": list(contrastive_controls),
             "continuation_mode": continuation_mode,
             "same_byte_budget": same_byte_budget,
             "source_model": source_model,
@@ -1569,6 +1712,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--continuation-mode", choices=("label", "label_and_choice", "choice"), default="label")
     parser.add_argument("--matched-use-target", choices=("true", "false"), default="false")
     parser.add_argument("--length-normalize", choices=("true", "false"), default="true")
+    parser.add_argument("--contrastive-weight", type=float, default=0.0)
+    parser.add_argument("--contrastive-margin", type=float, default=0.05)
+    parser.add_argument("--contrastive-loss-cap", type=float, default=0.5)
+    parser.add_argument(
+        "--contrastive-controls",
+        default="",
+        help=(
+            "Comma-separated source controls for matched-connector margin ranking. "
+            f"Allowed: {','.join(CONTRASTIVE_CONTROL_CHOICES)}"
+        ),
+    )
     parser.add_argument("--same-byte-budget", type=int, default=12)
     parser.add_argument("--min-accuracy-gap", type=float, default=0.0)
     parser.add_argument("--min-margin-gap", type=float, default=0.0)
@@ -1577,6 +1731,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    contrastive_controls = _parse_contrastive_controls(str(args.contrastive_controls))
     payload = run_preflight(
         output_dir=args.output_dir,
         eval_path=args.eval_path,
@@ -1610,6 +1765,10 @@ def main(argv: list[str] | None = None) -> int:
         continuation_mode=str(args.continuation_mode),
         matched_use_target=str(args.matched_use_target).lower() == "true",
         length_normalize=str(args.length_normalize).lower() == "true",
+        contrastive_weight=float(args.contrastive_weight),
+        contrastive_margin=float(args.contrastive_margin),
+        contrastive_loss_cap=float(args.contrastive_loss_cap),
+        contrastive_controls=contrastive_controls,
         same_byte_budget=int(args.same_byte_budget),
         min_accuracy_gap=float(args.min_accuracy_gap),
         min_margin_gap=float(args.min_margin_gap),

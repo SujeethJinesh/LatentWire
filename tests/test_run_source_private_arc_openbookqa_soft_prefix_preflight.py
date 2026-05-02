@@ -98,6 +98,100 @@ def test_query_soft_prefix_connector_shapes() -> None:
     assert connector(source_tokens, target).shape == (4, 7)
 
 
+def test_contrastive_margin_penalty_rewards_matched_over_control() -> None:
+    matched = torch.tensor([0.0, 3.0, 1.0])
+    weak_control = torch.tensor([0.0, 1.0, 2.0])
+    strong_control = torch.tensor([0.0, 2.9, 1.0])
+
+    no_penalty = preflight._contrastive_margin_penalty(
+        matched_scores=matched,
+        control_scores=weak_control,
+        answer_index=1,
+        margin=0.2,
+        loss_cap=0.5,
+    )
+    penalty = preflight._contrastive_margin_penalty(
+        matched_scores=matched,
+        control_scores=strong_control,
+        answer_index=1,
+        margin=0.2,
+        loss_cap=0.5,
+    )
+    capped = preflight._contrastive_margin_penalty(
+        matched_scores=torch.tensor([5.0, 0.0, 4.0]),
+        control_scores=torch.tensor([0.0, 5.0, 1.0]),
+        answer_index=1,
+        margin=1.0,
+        loss_cap=0.5,
+    )
+
+    assert torch.allclose(no_penalty, torch.zeros(()), atol=1e-6)
+    assert penalty.item() > 0.0
+    assert torch.allclose(capped, torch.tensor(0.5), atol=1e-6)
+
+
+def test_fit_source_control_variants_are_destructive() -> None:
+    source = torch.arange(24, dtype=torch.float32).reshape(3, 4, 2)
+
+    zero = preflight._fit_source_control_variant(
+        source,
+        fit_indices=[0, 1, 2],
+        fit_position=0,
+        row_index=0,
+        control="zero_source",
+        seed=7,
+        epoch=0,
+        device="cpu",
+    )
+    shuffled = preflight._fit_source_control_variant(
+        source,
+        fit_indices=[0, 1, 2],
+        fit_position=0,
+        row_index=0,
+        control="shuffled_source",
+        seed=7,
+        epoch=0,
+        device="cpu",
+    )
+    rolled = preflight._fit_source_control_variant(
+        source,
+        fit_indices=[0, 1, 2],
+        fit_position=0,
+        row_index=0,
+        control="candidate_roll_source",
+        seed=7,
+        epoch=0,
+        device="cpu",
+    )
+    noise_a = preflight._fit_source_control_variant(
+        source,
+        fit_indices=[0, 1, 2],
+        fit_position=0,
+        row_index=0,
+        control="same_norm_noise",
+        seed=7,
+        epoch=0,
+        device="cpu",
+    )
+    noise_b = preflight._fit_source_control_variant(
+        source,
+        fit_indices=[0, 1, 2],
+        fit_position=0,
+        row_index=0,
+        control="same_norm_noise",
+        seed=7,
+        epoch=0,
+        device="cpu",
+    )
+
+    assert torch.allclose(zero, torch.zeros_like(source[0]))
+    assert torch.allclose(shuffled, source[1])
+    assert torch.allclose(rolled, torch.roll(source[0], shifts=1, dims=0))
+    assert preflight._candidate_roll_source_summary(torch.arange(4, dtype=torch.float32)) is None
+    assert torch.allclose(noise_a, noise_b)
+    assert torch.allclose(noise_a.norm(), source[0].norm(), atol=1e-5)
+
+
 def test_fixed_token_pool_residualizes_and_resizes() -> None:
     tokens = np.asarray(
         [
@@ -389,6 +483,12 @@ def test_residual_feature_modes_are_cli_options() -> None:
             "hf_choice_hidden_public_innovation_candidate_pool",
             "--innovation-ridge",
             "25",
+            "--contrastive-weight",
+            "0.5",
+            "--contrastive-loss-cap",
+            "0.25",
+            "--contrastive-controls",
+            "zero_source,shuffled_source,candidate_roll_source",
         ]
     )
 
@@ -399,6 +499,18 @@ def test_residual_feature_modes_are_cli_options() -> None:
     assert candidate_pool.source_feature_mode == "hf_choice_hidden_score_candidate_pool_residual"
     assert public_innovation.source_feature_mode == "hf_choice_hidden_public_innovation_candidate_pool"
     assert public_innovation.innovation_ridge == 25.0
+    assert public_innovation.contrastive_weight == 0.5
+    assert public_innovation.contrastive_loss_cap == 0.25
+    assert preflight._parse_contrastive_controls(public_innovation.contrastive_controls) == (
+        "zero_source",
+        "shuffled_source",
+        "candidate_roll_source",
+    )
+
+
+def test_unknown_contrastive_controls_raise() -> None:
+    with pytest.raises(ValueError, match="unknown contrastive controls"):
+        preflight._parse_contrastive_controls("zero_source,bad_control")
 
 
 def test_condition_metrics_adds_paired_controls() -> None:

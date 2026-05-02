@@ -19671,3 +19671,34 @@ Lay explanation: this run tried to send only what the source model knows after
 subtracting what the target can already infer from the question and answer
 choices. The best version helped a little, but it only tied a target-only
 learned prefix, so we still cannot claim real model-to-model communication.
+
+ARC source-control contrastive innovation receiver preflight: extended
+`scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py` with a
+matched-only contrastive/ranking objective and a new packet-level
+`candidate_roll_source` control. Added tests in
+`tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`, memo
+`paper/source_private_arc_contrastive_innovation_receiver_20260502.md`,
+references
+`references/653_arc_contrastive_innovation_receiver_refs_20260502.md`, and
+artifacts:
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_score_public_innovation_candidate_pool_residual_n8_cpu_label_choice_contrastive_w0p2/`
+and
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_score_public_innovation_candidate_pool_residual_n8_cpu_label_choice_contrastive_w0p2_e3/`.
+Outcome: this exact soft-prefix branch is weakened, not promoted. One epoch
+raises matched accuracy to `3/4`, but candidate-roll source also reaches
+`3/4`, and the matched-minus-best-control margin is about `-0.043`. Three
+epochs collapse matched to `1/4`, tie target-only by accuracy, and lose the
+margin gate by about `-0.234`.
+
+Decision: do not widen this contrastive soft-prefix receiver to n32/n64. The
+candidate-roll tie says the receiver still lacks a reliable candidate-alignment
+source-necessity signal. The next method branch should be a
+candidate-alignment-sensitive receiver with the same destructive controls, or
+we should use the Mac-local cycle to strengthen the systems contribution with
+a byte-amplification ablation against QJL/TurboQuant/KV-byte floors.
+
+Lay explanation: this run trained the receiver to prefer the real source clue
+over broken clues. The real clue briefly looked better, but a clue with the
+answer-choice packet slots rolled around looked just as good, so this still
+does not prove that the receiver understands the source model's matched
+reasoning.
