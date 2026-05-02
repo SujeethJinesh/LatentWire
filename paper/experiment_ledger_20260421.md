@@ -18445,3 +18445,26 @@ ruled out as an ICLR-positive receiver method. The next exact gate is a
 train-only relative/dictionary/learned-query receiver that closes part of the
 `0.692947` oracle while preserving the `2B` raw / `5B` framed source-private
 packet boundary and destructive controls.
+
+HellaSwag receiver acceptance gate: added
+`scripts/build_source_private_hellaswag_receiver_acceptance_gate.py`, test
+`tests/test_build_source_private_hellaswag_receiver_acceptance_gate.py`, memo
+`paper/source_private_hellaswag_receiver_acceptance_gate_20260502.md`,
+references
+`references/610_hellaswag_receiver_acceptance_gate_refs_20260502.md`, and
+artifact `results/source_private_hellaswag_receiver_acceptance_gate_20260502/`.
+Outcome: the direct train-only receiver-improvement branch does not promote.
+The predeclared default benefit-ridge receiver with Qwen target-score and
+Qwen hidden-confidence features trains on validation prefix `0:2048` and
+scores the heldout suffix at `0.645234` versus packet-only `0.646110`
+(delta `-0.000876`, CI95 low `-0.001876`). The best frontier row, selected
+diagnostically after reading the table, is benefit-ridge with Qwen hybrid
+score-only features on train prefix `0:4096`; it reaches `0.672217` versus
+packet-only `0.671376`, but the lift is only `+0.000841` with CI95 low
+`-0.001345`, below the `+0.005` receiver-improvement bar. Interpretation:
+simple selective prediction, score/hidden-confidence ridge receivers, and
+nearest-anchor relative-kNN receivers are weakened or ruled out on the current
+HellaSwag decision surface. The next exact gate should change the information
+structure: generate official-train receiver calibration artifacts or implement
+a sparse/crosscoder or learned query-bottleneck receiver with source-destroying
+controls, rather than tuning more confidence thresholds.

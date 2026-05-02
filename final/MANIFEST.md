@@ -140,6 +140,10 @@
   `0.629741` TinyLlama packet-only), while train-only simple confidence
   selectors fail; this promotes the next common-basis receiver gate without
   claiming solved cross-model latent reasoning.
+- HellaSwag receiver acceptance gate artifacts showing train-only
+  benefit-ridge and relative-nearest-anchor selectors fail to beat TinyLlama
+  packet-only with paired uncertainty, ruling out cheap selective prediction
+  as the current receiver/common-language solution.
 - Learned/calibrated synonym-dictionary packet script, tests, memo, and native
   plus synonym-stress `n=256` artifacts showing 4-byte bidirectional
   cross-family pass under strict controls, with public-calibration caveats.

@@ -1769,5 +1769,12 @@
     "path": "references/609_hellaswag_receiver_headroom_decomposition_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the TinyLlama/Qwen HellaSwag receiver-headroom decomposition, covering complementary-error evidence, the failed train-only simple selector, systems byte/exposure boundaries, and novelty boundaries against prefix/prompt tuning, selective prediction, C2C/KVComm, activation communication, SAE/crosscoder/relative representations, BLIP-2/Perceiver connectors, QJL/TurboQuant/KIVI/KVQuant, vLLM, and SGLang."
+  },
+  {
+    "num": 610,
+    "slug": "hellaswag_receiver_acceptance_gate_refs_20260502",
+    "path": "references/610_hellaswag_receiver_acceptance_gate_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the train-only HellaSwag receiver acceptance gate, covering selective-prediction and relative-neighbor receiver failures, the next common-basis/query-bottleneck branch, and novelty boundaries against prefix/prompt tuning, C2C/KVComm, SAE/crosscoder/relative representations, QJL/TurboQuant/KIVI/KVQuant, vLLM, and SGLang."
   }
 ]
