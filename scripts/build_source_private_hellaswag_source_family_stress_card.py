@@ -23,6 +23,10 @@ DEFAULT_TINYLLAMA_SLICE = pathlib.Path(
     "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260502_tinyllama_train512_validation1024_2048/"
     "hellaswag_hidden_innovation_eval_slice_stress.json"
 )
+DEFAULT_TINYLLAMA_FULL = pathlib.Path(
+    "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/"
+    "hellaswag_hidden_innovation_eval_slice_stress.json"
+)
 
 CSV_COLUMNS = (
     "row_id",
@@ -80,6 +84,13 @@ DEFAULT_ARTIFACTS = (
         source_family="TinyLlama",
         artifact_kind="non_qwen_source_family_heldout_slice",
         path=DEFAULT_TINYLLAMA_SLICE,
+        primary_policy="mean_zscore",
+    ),
+    SourceFamilyArtifact(
+        row_id="tinyllama_full_validation",
+        source_family="TinyLlama",
+        artifact_kind="non_qwen_source_family_full_validation",
+        path=DEFAULT_TINYLLAMA_FULL,
         primary_policy="mean_zscore",
     ),
 )
@@ -210,10 +221,54 @@ def _row_from_slice_artifact(spec: SourceFamilyArtifact, payload: dict[str, Any]
     }
 
 
+def _row_from_full_eval_wrapper(spec: SourceFamilyArtifact, payload: dict[str, Any]) -> dict[str, Any]:
+    headline = payload["headline"]
+    bagged_payload = payload["bagged_gate"]
+    bagged_headline = bagged_payload["headline"]
+    jackknife = bagged_payload["jackknife_summary"]
+    return {
+        "row_id": spec.row_id,
+        "source_family": spec.source_family,
+        "source_model_path": _source_model_path(payload),
+        "artifact_kind": spec.artifact_kind,
+        "artifact_path": _display_path(spec.path),
+        "artifact_sha256": _sha256_file(spec.path),
+        "eval_rows": headline["eval_rows"],
+        "eval_slice_start": headline["eval_slice_start"],
+        "eval_slice_end_exclusive": headline["eval_slice_end_exclusive"],
+        "pass_gate": bool(bagged_payload["pass_gate"]),
+        "primary_policy": spec.primary_policy,
+        "selected_accuracy": bagged_headline["selected_eval_accuracy"],
+        "best_label_copy_accuracy": bagged_headline["best_label_copy_eval_accuracy"],
+        "source_label_copy_accuracy": bagged_headline["source_label_copy_eval_accuracy"],
+        "score_only_accuracy": bagged_headline["score_only_bagged_control_accuracy"],
+        "zero_hidden_accuracy": bagged_headline["zero_hidden_control_accuracy"],
+        "wrong_example_hidden_accuracy": bagged_headline["wrong_example_hidden_control_accuracy"],
+        "candidate_roll_hidden_accuracy": bagged_headline["candidate_roll_hidden_control_accuracy"],
+        "selected_minus_best_label_copy": bagged_headline["selected_minus_best_label_copy"],
+        "selected_minus_score_only": bagged_headline["selected_minus_score_only_bagged_control"],
+        "paired_ci95_low_vs_best_label_copy": bagged_headline["paired_ci95_low_vs_best_label_copy"],
+        "paired_ci95_low_vs_score_only": bagged_headline["paired_ci95_low_vs_score_only_bagged"],
+        "jackknife_pass_count": jackknife["pass_count"],
+        "jackknife_row_count": jackknife["row_count"],
+        "slice_pass_count": None,
+        "slice_count": None,
+        "raw_payload_bytes": bagged_payload["packet_contract"]["raw_payload_bytes"],
+        "framed_record_bytes": bagged_payload["packet_contract"]["framed_record_bytes"],
+        "wall_seconds": payload.get("timing", {}).get("total_seconds"),
+        "interpretation": (
+            "non-Qwen source-family full-validation row; still not a true receiver-family transfer "
+            "claim because the frozen receiver/evaluator surface is unchanged"
+        ),
+    }
+
+
 def _artifact_row(spec: SourceFamilyArtifact) -> dict[str, Any]:
     payload = _read_json(spec.path)
     if "policy_rows" in payload:
         return _row_from_global_artifact(spec, payload)
+    if spec.artifact_kind.endswith("full_validation") and "bagged_gate" in payload:
+        return _row_from_full_eval_wrapper(spec, payload)
     return _row_from_slice_artifact(spec, payload)
 
 
@@ -262,17 +317,22 @@ def build_card(
     output_dir: pathlib.Path = DEFAULT_OUTPUT,
     qwen_global: pathlib.Path = DEFAULT_QWEN_GLOBAL,
     tinyllama_slice: pathlib.Path = DEFAULT_TINYLLAMA_SLICE,
+    tinyllama_full: pathlib.Path | None = None,
     run_date: str = "2026-05-02",
 ) -> dict[str, Any]:
-    artifacts = (
+    artifact_list = [
         dataclasses.replace(DEFAULT_ARTIFACTS[0], path=qwen_global),
         dataclasses.replace(DEFAULT_ARTIFACTS[1], path=tinyllama_slice),
-    )
+    ]
+    if tinyllama_full is not None:
+        artifact_list.append(dataclasses.replace(DEFAULT_ARTIFACTS[2], path=tinyllama_full))
+    artifacts = tuple(artifact_list)
     rows = [_artifact_row(spec) for spec in artifacts]
     by_id = {row["row_id"]: row for row in rows}
     tiny = by_id["tinyllama_validation1024_2048"]
+    tiny_full = by_id.get("tinyllama_full_validation")
     qwen = by_id["qwen25_full_validation"]
-    pass_gate = bool(
+    slice_gate = bool(
         qwen["pass_gate"]
         and tiny["pass_gate"]
         and tiny["eval_rows"] >= 1024
@@ -280,10 +340,22 @@ def build_card(
         and tiny["paired_ci95_low_vs_best_label_copy"] > 0.0
         and tiny["jackknife_pass_count"] == tiny["jackknife_row_count"]
     )
+    full_gate = bool(
+        tiny_full
+        and qwen["pass_gate"]
+        and tiny_full["pass_gate"]
+        and tiny_full["eval_rows"] >= 10042
+        and tiny_full["selected_minus_best_label_copy"] >= 0.02
+        and tiny_full["paired_ci95_low_vs_best_label_copy"] > 0.0
+        and tiny_full["jackknife_pass_count"] == tiny_full["jackknife_row_count"]
+    )
+    pass_gate = full_gate if tiny_full else slice_gate
     headline = {
         "source_family_count": len({row["source_family"] for row in rows}),
         "qwen_full_validation_pass": bool(qwen["pass_gate"]),
         "tinyllama_heldout_slice_pass": bool(tiny["pass_gate"]),
+        "tinyllama_full_validation_present": tiny_full is not None,
+        "tinyllama_full_validation_pass": bool(tiny_full["pass_gate"]) if tiny_full else None,
         "tinyllama_accuracy": tiny["selected_accuracy"],
         "tinyllama_best_label_copy_accuracy": tiny["best_label_copy_accuracy"],
         "tinyllama_score_only_accuracy": tiny["score_only_accuracy"],
@@ -292,14 +364,30 @@ def build_card(
         "tinyllama_ci95_low_vs_best_label_copy": tiny["paired_ci95_low_vs_best_label_copy"],
         "tinyllama_jackknife_pass_count": tiny["jackknife_pass_count"],
         "tinyllama_jackknife_row_count": tiny["jackknife_row_count"],
+        "tinyllama_full_accuracy": tiny_full["selected_accuracy"] if tiny_full else None,
+        "tinyllama_full_best_label_copy_accuracy": tiny_full["best_label_copy_accuracy"] if tiny_full else None,
+        "tinyllama_full_score_only_accuracy": tiny_full["score_only_accuracy"] if tiny_full else None,
+        "tinyllama_full_delta_vs_best_label_copy": tiny_full["selected_minus_best_label_copy"] if tiny_full else None,
+        "tinyllama_full_delta_vs_score_only": tiny_full["selected_minus_score_only"] if tiny_full else None,
+        "tinyllama_full_ci95_low_vs_best_label_copy": tiny_full["paired_ci95_low_vs_best_label_copy"] if tiny_full else None,
+        "tinyllama_full_jackknife_pass_count": tiny_full["jackknife_pass_count"] if tiny_full else None,
+        "tinyllama_full_jackknife_row_count": tiny_full["jackknife_row_count"] if tiny_full else None,
         "raw_payload_bytes": tiny["raw_payload_bytes"],
         "framed_record_bytes": tiny["framed_record_bytes"],
         "iclr_ready": False,
-        "remaining_iclr_gaps": [
-            "run TinyLlama or another non-Qwen source over full frozen HellaSwag validation",
-            "test a true source-family-to-receiver-family transfer surface when target-model receiver artifacts exist",
-            "add native NVIDIA systems rows before throughput/HBM claims",
-        ],
+        "remaining_iclr_gaps": (
+            [
+                "test a true source-family-to-receiver-family transfer surface when target-model receiver artifacts exist",
+                "add native NVIDIA systems rows before throughput/HBM claims",
+                "add benchmark diversity beyond HellaSwag before broad ICLR claims",
+            ]
+            if tiny_full
+            else [
+                "run TinyLlama or another non-Qwen source over full frozen HellaSwag validation",
+                "test a true source-family-to-receiver-family transfer surface when target-model receiver artifacts exist",
+                "add native NVIDIA systems rows before throughput/HBM claims",
+            ]
+        ),
     }
     payload = {
         "gate": "source_private_hellaswag_source_family_stress_card",
@@ -307,18 +395,20 @@ def build_card(
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
         "pass_gate": pass_gate,
         "pass_rule": (
-            "Pass if the Qwen full-validation anchor remains positive and a non-Qwen source-family "
-            "heldout slice with at least 1024 rows passes the same hidden-innovation gate by >=0.02 "
+            "Pass if the Qwen full-validation anchor remains positive and the strongest available "
+            "TinyLlama non-Qwen source-family artifact passes the same hidden-innovation gate by >=0.02 "
             "over best label-copy with CI95 low > 0 and all train-sample jackknife subbags passing. "
+            "When a TinyLlama full-validation artifact is supplied, the pass rule requires that full "
+            "artifact rather than the earlier heldout slice. "
             "This is a source-family stress card, not a complete cross-family ICLR claim."
         ),
         "headline": headline,
         "rows": rows,
         "interpretation": (
-            "The TinyLlama heldout-slice pass weakens the concern that the HellaSwag hidden-innovation "
-            "packet only works because of Qwen-specific hidden coordinates. It promotes a full non-Qwen "
-            "validation run and a true receiver-family transfer gate, while preserving the no-overclaim "
-            "boundary that ICLR still needs broader cross-family and native systems evidence."
+            "The TinyLlama evidence weakens the concern that the HellaSwag hidden-innovation packet only "
+            "works because of Qwen-specific hidden coordinates. A full TinyLlama pass, if present, promotes "
+            "the source-family robustness claim; it still preserves the no-overclaim boundary that ICLR "
+            "needs true receiver-family transfer, benchmark diversity, and native systems evidence."
         ),
     }
 
@@ -353,12 +443,14 @@ def main() -> int:
     parser.add_argument("--output-dir", type=pathlib.Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--qwen-global", type=pathlib.Path, default=DEFAULT_QWEN_GLOBAL)
     parser.add_argument("--tinyllama-slice", type=pathlib.Path, default=DEFAULT_TINYLLAMA_SLICE)
+    parser.add_argument("--tinyllama-full", type=pathlib.Path, default=None)
     parser.add_argument("--run-date", default="2026-05-02")
     args = parser.parse_args()
     payload = build_card(
         output_dir=args.output_dir,
         qwen_global=args.qwen_global,
         tinyllama_slice=args.tinyllama_slice,
+        tinyllama_full=args.tinyllama_full,
         run_date=args.run_date,
     )
     print(json.dumps(payload["headline"], indent=2, sort_keys=True))
