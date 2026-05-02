@@ -1762,5 +1762,12 @@
     "path": "references/608_hellaswag_receiver_family_packet_gate_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the TinyLlama-to-Qwen HellaSwag receiver-family packet scout, covering the target-family utility claim, the failed receiver-improvement gate, target-or-packet oracle headroom, and novelty boundaries against prefix/prompt tuning, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, SAE/crosscoder/relative representations, BLIP-2/Perceiver-style connectors, vLLM, and SGLang."
+  },
+  {
+    "num": 609,
+    "slug": "hellaswag_receiver_headroom_decomposition_refs_20260502",
+    "path": "references/609_hellaswag_receiver_headroom_decomposition_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the TinyLlama/Qwen HellaSwag receiver-headroom decomposition, covering complementary-error evidence, the failed train-only simple selector, systems byte/exposure boundaries, and novelty boundaries against prefix/prompt tuning, selective prediction, C2C/KVComm, activation communication, SAE/crosscoder/relative representations, BLIP-2/Perceiver connectors, QJL/TurboQuant/KIVI/KVQuant, vLLM, and SGLang."
   }
 ]
