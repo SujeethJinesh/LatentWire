@@ -2140,5 +2140,12 @@
     "path": "references/662_target_sparse_innovation_connector_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC target-conditioned sparse innovation connector branch, covering SAE feature dictionaries, SAE universality, BLIP-2/Q-Former, gist tokens, QJL, TurboQuant, vLLM, SGLang, required anti-cache controls, and the decision rule for stopping the n32/n64 hidden-query branch."
+  },
+  {
+    "num": 663,
+    "slug": "colm2026_citation_audit_refs_20260502",
+    "path": "references/663_colm2026_citation_audit_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Paper-facing COLM 2026 citation audit for dataset, model-family, representation, connector, systems, quantization, and information-theory citations used in the official-template LatentWire draft, with explicit claim boundaries."
   }
 ]
