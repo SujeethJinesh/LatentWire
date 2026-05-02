@@ -350,9 +350,10 @@ def _lm_choice_loglikelihood_scores(
             prompt = _lm_choice_prompt(row, prompt_mode=prompt_mode)
             prompt_len = tokenizer(prompt, return_tensors="pt").input_ids.shape[1]
             texts = [prompt + " " + choice for choice in row.choices]
+            padding_mode: bool | str = "max_length" if str(resolved_device).startswith("mps") else True
             encoded = tokenizer(
                 texts,
-                padding=True,
+                padding=padding_mode,
                 truncation=True,
                 max_length=max_length,
                 return_tensors="pt",
