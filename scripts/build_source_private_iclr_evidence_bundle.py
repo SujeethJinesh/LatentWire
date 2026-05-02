@@ -107,6 +107,7 @@ REPRODUCTION_COMMANDS = [
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_anchor_relative_hidden_innovation_gate.py --output-dir results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation4096_5120 --eval-path results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation4096_5120/hellaswag_validation_rows_4096_5120.jsonl --eval-score-cache results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation4096_5120/source_eval_score_cache.json --eval-hidden-cache results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation4096_5120/source_eval_hidden_cache.npz --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --anchor-count 128 --bootstrap-samples 500 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_anchor_relative_hidden_innovation_multi_slice_stress.py --output-dir results/source_private_hellaswag_anchor_relative_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_5120 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_repair_systems_acceptance_card.py --output-dir results/source_private_hellaswag_repair_systems_acceptance_card_20260501 --run-date 2026-05-01",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_pq_hidden_innovation_codec_gate.py --output-dir results/source_private_hellaswag_pq_hidden_innovation_codec_gate_20260502_tinyllama_validation1024_2048",
     "./venv_arm64/bin/python scripts/build_source_private_mac_packet_ring_transport_microbench.py --output-dir results/source_private_mac_packet_ring_transport_microbench_20260501 --target-bytes 33554432 --repeats 5 --min-iterations 128",
     "./venv_arm64/bin/python scripts/build_source_private_serving_slo_envelope.py --output-dir results/source_private_serving_slo_envelope_20260501",
     "./venv_arm64/bin/python scripts/build_source_private_systems_rate_assumption_frontier.py --output-dir results/source_private_systems_rate_assumption_frontier_20260501",
@@ -214,6 +215,7 @@ REQUIRED_ARTIFACTS = {
     "hellaswag_hidden_innovation_full_validation_multi_slice": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_10042/hellaswag_hidden_innovation_multi_slice_stress.json",
     "hellaswag_anchor_relative_hidden_innovation_multi_slice": "results/source_private_hellaswag_anchor_relative_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_5120/hellaswag_anchor_relative_hidden_innovation_multi_slice_stress.json",
     "hellaswag_repair_systems_acceptance": "results/source_private_hellaswag_repair_systems_acceptance_card_20260501/hellaswag_repair_systems_acceptance_card.json",
+    "hellaswag_pq_hidden_innovation_codec": "results/source_private_hellaswag_pq_hidden_innovation_codec_gate_20260502_tinyllama_validation1024_2048/hellaswag_pq_hidden_innovation_codec_gate.json",
     "mac_packet_ring_transport": "results/source_private_mac_packet_ring_transport_microbench_20260501/packet_ring_transport_microbench.json",
     "serving_slo_envelope": "results/source_private_serving_slo_envelope_20260501/serving_slo_envelope.json",
     "systems_rate_assumption_frontier": "results/source_private_systems_rate_assumption_frontier_20260501/systems_rate_assumption_frontier.json",
@@ -489,6 +491,7 @@ def _contribution_rows(
     hellaswag_hidden_innovation_full_validation_multi_slice: dict[str, Any],
     hellaswag_anchor_relative_hidden_innovation_multi_slice: dict[str, Any],
     hellaswag_repair_systems_acceptance: dict[str, Any],
+    hellaswag_pq_hidden_innovation_codec: dict[str, Any],
     mac_packet_ring: dict[str, Any],
     cross_benchmark_systems: dict[str, Any],
     native_readiness: dict[str, Any],
@@ -1042,8 +1045,42 @@ def _contribution_rows(
             ),
         },
         {
+            "contribution": "HellaSwag PQ hidden-code branch kill",
+            "status": "new negative hidden-code/codebook gate / HellaSwag receiver-improvement cut",
+            "headline_evidence": (
+                f"eval slice="
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['eval_slice_start']}:"
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['eval_slice_end_exclusive']}; "
+                f"default/packet-only="
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['default_accuracy']:.3f}/"
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['packet_only_accuracy']:.3f}; "
+                f"best scout="
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['best_scout_accuracy']:.3f}; "
+                f"packet="
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['raw_payload_bytes']}B raw/"
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['framed_record_bytes']}B framed"
+            ),
+            "main_metric": (
+                f"default delta vs packet-only="
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['default_delta_vs_packet_only']:.3f}; "
+                f"default CI95 low="
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['default_ci95_low_vs_packet_only']:.3f}; "
+                f"best scout delta/CI95 low="
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['best_scout_delta_vs_packet_only']:.3f}/"
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['best_scout_ci95_low_vs_packet_only']:.3f}; "
+                f"control max delta="
+                f"{hellaswag_pq_hidden_innovation_codec['headline']['control_max_delta_vs_packet_only']:.3f}"
+            ),
+            "remaining_gap": (
+                "This is the newest Mac-local HellaSwag decision. Product-quantized TinyLlama hidden residuals "
+                "are sensitive to destructive controls but do not add stable utility beyond the compact candidate "
+                "packet. Cut HellaSwag receiver-improvement from the headline story; keep the benchmark for "
+                "systems/headroom/negative ablation unless a true learned query/cache connector revives it."
+            ),
+        },
+        {
             "contribution": "HellaSwag repair systems acceptance card",
-            "status": "new acceptance gate / hidden-innovation method row promoted",
+            "status": "superseded local acceptance row / demoted by later HellaSwag branch-kill gates",
             "headline_evidence": (
                 f"{hellaswag_repair_systems_acceptance['headline']['rows']} HellaSwag repair rows audited; "
                 f"systems audit={hellaswag_repair_systems_acceptance['headline']['systems_audit_pass']}; "
@@ -1060,9 +1097,10 @@ def _contribution_rows(
                 f"{hellaswag_repair_systems_acceptance['headline']['max_oracle_gap_remaining']:.3f}"
             ),
             "remaining_gap": (
-                "This promotes the hidden-innovation HellaSwag branch past the local method margin, while still "
-                "blocking native queue promotion until NVIDIA/vLLM/SGLang systems rows exist. Treat this as a "
-                "live positive branch, not a final headline, until seed/fold stability confirms it."
+                "This historical acceptance card explains why the dense hidden-innovation branch was worth "
+                "stress-testing, but it is no longer the current paper headline after terminal-tail, "
+                "anchor-relative common-basis, switch-observability, discrete-query, and PQ hidden-code failures. "
+                "Use it as a diagnostic, not as an ICLR method claim."
             ),
         },
         {
@@ -1731,6 +1769,7 @@ def _pass_checks(
     hellaswag_hidden_innovation_full_validation_multi_slice: dict[str, Any],
     hellaswag_anchor_relative_hidden_innovation_multi_slice: dict[str, Any],
     hellaswag_repair_systems_acceptance: dict[str, Any],
+    hellaswag_pq_hidden_innovation_codec: dict[str, Any],
     mac_packet_ring: dict[str, Any],
     serving_slo: dict[str, Any],
     systems_rate_assumption: dict[str, Any],
@@ -2448,6 +2487,36 @@ def _pass_checks(
             and hellaswag_anchor_relative_hidden_innovation_multi_slice["headline"]["raw_payload_bytes"] == 2
             and hellaswag_anchor_relative_hidden_innovation_multi_slice["headline"]["framed_record_bytes"] == 5,
         ),
+        (
+            "hellaswag_pq_hidden_innovation_codec_not_overclaimed",
+            hellaswag_pq_hidden_innovation_codec["pass_gate"] is False
+            and hellaswag_pq_hidden_innovation_codec["headline"]["default_delta_vs_packet_only"] < 0.0
+            and hellaswag_pq_hidden_innovation_codec["headline"]["best_scout_delta_vs_packet_only"] < 0.010
+            and hellaswag_pq_hidden_innovation_codec["headline"][
+                "best_scout_ci95_low_vs_packet_only"
+            ]
+            <= 0.0,
+        ),
+        (
+            "hellaswag_pq_hidden_innovation_codec_source_private_packet",
+            hellaswag_pq_hidden_innovation_codec["packet_contract"]["raw_payload_bytes"] == 1
+            and hellaswag_pq_hidden_innovation_codec["packet_contract"]["framed_record_bytes"] == 4
+            and hellaswag_pq_hidden_innovation_codec["packet_contract"]["source_text_exposed"] is False
+            and hellaswag_pq_hidden_innovation_codec["packet_contract"]["source_kv_exposed"] is False
+            and hellaswag_pq_hidden_innovation_codec["packet_contract"]["raw_hidden_vector_transmitted"]
+            is False
+            and hellaswag_pq_hidden_innovation_codec["packet_contract"]["raw_scores_transmitted"] is False,
+        ),
+        (
+            "hellaswag_pq_hidden_innovation_codec_controls_collapse",
+            hellaswag_pq_hidden_innovation_codec["headline"]["control_separation_gate"] is False
+            and hellaswag_pq_hidden_innovation_codec["headline"]["control_max_delta_vs_packet_only"] <= 0.0
+            and any(
+                row["name"] == "candidate_only_code"
+                and row["delta_vs_packet_only"] == 0.0
+                for row in hellaswag_pq_hidden_innovation_codec["control_rows"]
+            ),
+        ),
         ("hellaswag_repair_systems_acceptance_card_passes", bool(hellaswag_repair_systems_acceptance["pass_gate"])),
         (
             "hellaswag_repair_systems_acceptance_method_promoted",
@@ -2868,6 +2937,9 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     hellaswag_repair_systems_acceptance = _read_json(
         ROOT / REQUIRED_ARTIFACTS["hellaswag_repair_systems_acceptance"]
     )
+    hellaswag_pq_hidden_innovation_codec = _read_json(
+        ROOT / REQUIRED_ARTIFACTS["hellaswag_pq_hidden_innovation_codec"]
+    )
     mac_packet_ring = _read_json(ROOT / REQUIRED_ARTIFACTS["mac_packet_ring_transport"])
     serving_slo = _read_json(ROOT / REQUIRED_ARTIFACTS["serving_slo_envelope"])
     systems_rate_assumption = _read_json(ROOT / REQUIRED_ARTIFACTS["systems_rate_assumption_frontier"])
@@ -2955,6 +3027,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         hellaswag_hidden_innovation_full_validation_multi_slice=hellaswag_hidden_innovation_full_validation_multi_slice,
         hellaswag_anchor_relative_hidden_innovation_multi_slice=hellaswag_anchor_relative_hidden_innovation_multi_slice,
         hellaswag_repair_systems_acceptance=hellaswag_repair_systems_acceptance,
+        hellaswag_pq_hidden_innovation_codec=hellaswag_pq_hidden_innovation_codec,
         mac_packet_ring=mac_packet_ring,
         cross_benchmark_systems=cross_benchmark_systems,
         native_readiness=native_readiness,
@@ -3032,6 +3105,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         hellaswag_hidden_innovation_full_validation_multi_slice=hellaswag_hidden_innovation_full_validation_multi_slice,
         hellaswag_anchor_relative_hidden_innovation_multi_slice=hellaswag_anchor_relative_hidden_innovation_multi_slice,
         hellaswag_repair_systems_acceptance=hellaswag_repair_systems_acceptance,
+        hellaswag_pq_hidden_innovation_codec=hellaswag_pq_hidden_innovation_codec,
         mac_packet_ring=mac_packet_ring,
         serving_slo=serving_slo,
         systems_rate_assumption=systems_rate_assumption,
@@ -3042,7 +3116,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     payload = {
         "gate": "source_private_iclr_evidence_bundle",
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "readiness": "train-donor positive-method paper branch plus seed-stable ARC-Challenge and OpenBookQA public-basis endpoints; cross-benchmark source-state byte-floor systems comparator and native vLLM/SGLang benchmark plan now strengthen the systems story; HellaSwag single-denoiser hidden innovation fails fresh train-row-sample stress, but the predeclared bagged hidden-innovation packet now passes three-train-sample, 2-of-3 jackknife, frozen heldout validation-slice stress, and a nine-contiguous-slice validation[0:9216] stress as a live ICLR headline-candidate; the terminal validation tail validation[9216:10042] has a positive overall paired margin but fails the strict jackknife gate, so HellaSwag is not a full-validation strict pass; the anchor-relative/common-basis variant is a recorded negative diagnostic, so ICLR still needs a stronger shared-coordinate mechanism, strict cross-family falsification, and native systems rows",
+        "readiness": "COLM remains plausible around the fixed-byte source-private packet, ARC-Challenge/OpenBookQA public-basis endpoints, and byte/exposure systems accounting; ICLR remains blocked by a positive learned receiver/common-language method. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline: the older dense hidden-innovation rows pass several cached/slice gates, but terminal-tail, anchor-relative common-basis, switch-observability, discrete query codec, and the 2026-05-02 PQ hidden-code gate prevent a robust HellaSwag method claim. The next ICLR gate must either run a true learned query/cache connector on NVIDIA or find a new benchmark surface where compact packet-only does not saturate the source signal.",
         "pass_gate": all(check["pass"] for check in pass_checks),
         "pass_checks": pass_checks,
         "artifact_status": artifacts,
@@ -3229,6 +3303,13 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "slice_artifacts": hellaswag_anchor_relative_hidden_innovation_multi_slice["slice_artifacts"],
         },
         "hellaswag_repair_systems_acceptance_headline": hellaswag_repair_systems_acceptance["headline"],
+        "hellaswag_pq_hidden_innovation_codec_headline": {
+            **hellaswag_pq_hidden_innovation_codec["headline"],
+            "pass_gate": hellaswag_pq_hidden_innovation_codec["pass_gate"],
+            "packet_contract": hellaswag_pq_hidden_innovation_codec["packet_contract"],
+            "pass_rule": hellaswag_pq_hidden_innovation_codec["pass_rule"],
+            "systems_packet_sideband": hellaswag_pq_hidden_innovation_codec["systems_packet_sideband"],
+        },
         "mac_packet_ring_transport_headline": mac_packet_ring["headline"],
         "serving_slo_envelope_headline": serving_slo["headline"],
         "systems_rate_assumption_frontier_headline": systems_rate_assumption["headline"],
@@ -3239,8 +3320,9 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         "remaining_iclr_risks": [
             "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
             "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
-            "HellaSwag anchored hidden-innovation repair passes cached split stability but fails the fresh 2027 train-row-sample stress; the new bagged gate now rescues the three-sample stress, passes 2-of-3 jackknife subbags, clears frozen validation[1024:2048], validation[2048:3072], validation[3072:4096], validation[4096:5120], validation[5120:6144], validation[6144:7168], validation[7168:8192], and validation[8192:9216] heldout slices, and passes a contiguous validation[0:9216] multi-slice stress. The final terminal tail validation[9216:10042] has a positive overall margin but soft-fails the strict jackknife gate, so the full-validation aggregate must not be claimed until a predeclared tail-repeat rule or stronger repair packet clears that short slice.",
+            "HellaSwag anchored hidden-innovation repair passes cached split stability but fails the fresh 2027 train-row-sample stress; the bagged gate rescues several cached/slice gates, but the final terminal tail validation[9216:10042] soft-fails the strict jackknife gate and the later PQ hidden-code gate fails versus packet-only. HellaSwag must therefore be framed as diagnostic/headroom plus negative-ablation evidence, not as a current receiver-improvement headline.",
             "The HellaSwag anchor-relative/common-basis hidden-innovation variant preserves only a small weighted lift over label-copy and score-only controls and fails all five strict slices, so the paper cannot yet claim a robust shared-coordinate mechanism.",
+            "The HellaSwag PQ hidden-code gate also fails: the predeclared default is below packet-only and the best diagnostic scout is below the +0.010 promotion bar with CI95 low exactly zero, so Mac-local hidden-code/codebook widening is cut.",
             "HellaSwag source top-2 oracle headroom is still large after the hidden-innovation repair, so reviewers will expect ablations explaining why the repair recovers only part of the headroom.",
             "The train-only public receiver HellaSwag repair probe also fails below source-label copy, so the next repair gate needs train-split source scores or hidden source summaries rather than public lexical features alone.",
             "The 512-row train-source-score HellaSwag repair probe also fails below source-label copy, so score-shape repair is weakened unless a substantially richer train-source feature family is introduced.",

@@ -1888,5 +1888,12 @@
     "path": "references/626_hellaswag_pq_hidden_innovation_codec_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed HellaSwag product-quantized hidden innovation codec gate, covering the negative one-byte source-hidden PQ result, destructive controls, branch-kill decision for Mac-local HellaSwag hidden-code widening, and novelty boundaries against C2C/KVComm/KVCOMM, TurboQuant/QJL/KIVI/KVQuant, product quantization, SAE/crosscoders, learned query bottlenecks, prefix tuning, distributed source coding, vLLM, and SGLang."
+  },
+  {
+    "num": 627,
+    "slug": "iclr_colm_readiness_update_refs_20260502",
+    "path": "references/627_iclr_colm_readiness_update_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ICLR/COLM readiness update after the HellaSwag PQ hidden-code branch kill, covering uniqueness boundaries against C2C, KVComm, TurboQuant/QJL, SAE/crosscoders, prefix/query bottlenecks, and native serving systems baselines."
   }
 ]

@@ -18983,3 +18983,22 @@ Mac-local HellaSwag hidden-code/codebook variants. For ICLR, cut HellaSwag
 receiver-improvement claims unless a true learned query/cache connector on
 NVIDIA or a new benchmark surface produces a positive method under the same
 controls.
+
+ICLR/COLM readiness bundle update: updated
+`scripts/build_source_private_iclr_evidence_bundle.py` and
+`tests/test_build_source_private_iclr_evidence_bundle.py` to ingest the
+HellaSwag PQ hidden innovation codec gate and demote HellaSwag
+receiver-improvement from the current headline story. Added dated artifact
+`results/source_private_iclr_evidence_bundle_20260502/`, memo
+`paper/source_private_iclr_colm_readiness_update_20260502.md`, and references
+`references/627_iclr_colm_readiness_update_refs_20260502.md`. Outcome: bundle
+pass gate remains `True` as a readiness/evidence audit, but the readiness
+string now states that COLM is plausible and ICLR remains blocked by a positive
+learned receiver/common-language method. The new contribution row
+`HellaSwag PQ hidden-code branch kill` records default delta `-0.004883` versus
+packet-only, best diagnostic scout delta `+0.006836` with CI95 low `0.000000`,
+and a `1B` raw / `4B` framed packet. Decision: keep ARC/OpenBookQA plus
+systems/accounting as the core COLM path; keep HellaSwag as
+diagnostic/headroom/negative-ablation evidence; next exact gate is either a
+local benchmark surface where packet-only does not saturate the source signal
+or a true learned query/cache connector on NVIDIA.
