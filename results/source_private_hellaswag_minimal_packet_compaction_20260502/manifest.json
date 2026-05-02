@@ -1,0 +1,44 @@
+{
+  "created_utc": "2026-05-02T05:29:00.130585+00:00",
+  "files": [
+    {
+      "bytes": 10317,
+      "path": "results/source_private_hellaswag_minimal_packet_compaction_20260502/hellaswag_minimal_packet_compaction.json",
+      "sha256": "0687508ce36a0754638081f8ce47b880d2028915ee9e7b5015b18a33ed52c7dd"
+    },
+    {
+      "bytes": 880,
+      "path": "results/source_private_hellaswag_minimal_packet_compaction_20260502/hellaswag_minimal_packet_compaction.md",
+      "sha256": "23f15d4983ca2e1db0e4623d7c920cfe3c473745f9c83be2158cb1778c6a4829"
+    }
+  ],
+  "gate": "source_private_hellaswag_minimal_packet_compaction",
+  "headline": {
+    "all_prediction_equivalent": true,
+    "compact_framed_record_bytes": 4,
+    "compact_raw_payload_bytes": 1,
+    "framed_record_reduction_fraction": 0.2,
+    "native_gpu_claims_allowed": false,
+    "original_framed_record_bytes": 5,
+    "original_raw_payload_bytes": 2,
+    "prediction_equivalent_row_count": 30126,
+    "qwen_hybrid_accuracy": 0.5324636526588329,
+    "qwen_mean_zscore_accuracy": 0.5266879107747461,
+    "raw_payload_reduction_fraction": 0.5,
+    "source_exposure_clear": true,
+    "source_row_count": 3,
+    "theoretical_payload_bits": 2,
+    "tiny_accuracy": 0.6191993626767576,
+    "total_rows_covered": 30126
+  },
+  "inputs": {
+    "qwen_artifact": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/hellaswag_hidden_innovation_global_stability.json",
+    "qwen_artifact_sha256": "9bfd8fd48e20c7c6bf6e7fa7bf43bff16e323545382818c6798b6d53e9ef4696",
+    "qwen_predictions": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/predictions.jsonl",
+    "qwen_predictions_sha256": "199dfcdd94db1d705bf7778a7112520e9caf263c13dab0584e20e93bbc9bc4a1",
+    "tiny_artifact": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "tiny_artifact_sha256": "22300aa517c800c45bdf6a01488a9279a2da966228911c46dbdf43b2bfc4c323",
+    "tiny_predictions": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/bagged_gate/predictions.jsonl",
+    "tiny_predictions_sha256": "f47d435afc728d3ecd10365323322473b598f51c1cc3c29b10cf82db9819a449"
+  }
+}

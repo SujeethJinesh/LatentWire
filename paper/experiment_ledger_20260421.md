@@ -18564,3 +18564,29 @@ joint source/receiver connector rather than tuning receiver selectors harder.
 Systems accounting remains Mac-local only: `2B` raw / `5B` framed packets,
 `20084B` raw or `50210B` framed across full validation, no source text/KV/raw
 hidden/raw score exposure, and no native GPU serving claim.
+
+HellaSwag minimal packet compaction: added
+`scripts/build_source_private_hellaswag_minimal_packet_compaction.py`, test
+`tests/test_build_source_private_hellaswag_minimal_packet_compaction.py`, memo
+`paper/source_private_hellaswag_minimal_packet_compaction_20260502.md`,
+references
+`references/614_hellaswag_minimal_packet_compaction_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_minimal_packet_compaction_20260502/`.
+Outcome: this systems/rate branch promotes. It verifies that the promoted
+HellaSwag decoder only needs the selected candidate id at runtime: a one-byte
+candidate-id packet exactly reproduces all selected predictions for Qwen
+mean-zscore, Qwen hybrid vote-on-score-agreement, and TinyLlama full-validation
+mean-zscore rows. Prediction equivalence is `30126/30126` decoded rows. The
+rate point improves from `2B` raw / `5B` framed to `1B` raw / `4B` framed,
+with theoretical payload `2` bits for four candidates, `50%` logical raw
+payload reduction, `20%` framed-record reduction, and packed batch-64 framed
+bytes dropping from `320B` to `256B`. Accuracies are unchanged: Qwen
+mean-zscore `0.526688`, Qwen hybrid `0.532464`, and TinyLlama `0.619199`, all
+with positive paired CIs versus their best label-copy baselines. No source
+text, source KV, raw hidden vector, or raw score vector is transmitted.
+Interpretation: this strengthens the systems rate-frontier contribution and
+should replace the old `2B` raw / `5B` framed HellaSwag packet row in future
+tables. It does not address receiver/common-language progress and does not
+support GPU throughput, HBM traffic, vLLM/SGLang, C2C/KVComm, or
+QJL/TurboQuant/KIVI/KVQuant superiority claims.

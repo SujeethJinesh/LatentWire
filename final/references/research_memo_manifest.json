@@ -1797,5 +1797,12 @@
     "path": "references/613_hellaswag_sparse_query_receiver_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the train-only HellaSwag sparse-query receiver gate, covering the failed full-hidden low-rank receiver-query branch, control collapse, selector saturation, and novelty boundaries against prefix/prompt tuning, C2C/KVComm/Q-KVComm, SAE/crosscoder/relative representations, BLIP-2/Flamingo/Perceiver-style learned query bottlenecks, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, vLLM, and SGLang."
+  },
+  {
+    "num": 614,
+    "slug": "hellaswag_minimal_packet_compaction_refs_20260502",
+    "path": "references/614_hellaswag_minimal_packet_compaction_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the HellaSwag minimal packet compaction gate, covering exact one-byte candidate-id equivalence, systems rate-frontier boundaries, and novelty limits against C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, prefix/prompt tuning, learned query connectors, vLLM, and SGLang."
   }
 ]

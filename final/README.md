@@ -436,3 +436,14 @@ oracle ceiling is only `0.750`. Hashed+HF variants produce `0` pass rows. This
 strengthens the claim boundary: the next ICLR-grade method should be learned
 public ontology calibration or receiver-conditioned residual codebooks, not
 another fixed embedding basis.
+
+## 2026-05-02 HellaSwag Minimal Packet Update
+
+The HellaSwag minimal packet compaction gate is included. It preserves the
+promoted Qwen mean-zscore, Qwen hybrid, and TinyLlama full-validation packet
+predictions exactly across `30126/30126` decoded rows while reducing the
+runtime HellaSwag packet from `2B` raw / `5B` framed to `1B` raw / `4B`
+framed. Logical raw payload drops by `50%`, framed payload drops by `20%`, and
+packed batch-64 framed bytes drop from `320B` to `256B`. This strengthens the
+systems rate-frontier story, but it does not solve the cross-family
+receiver/common-language blocker or enable native GPU throughput claims.
