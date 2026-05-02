@@ -20011,3 +20011,58 @@ gate.
 Lay explanation: this asked a different model family to make the source
 decision and send the same tiny packet. The packet no longer helped the target;
 on rows where Phi-3 and Qwen disagreed, the Qwen packet was much stronger.
+
+## 2026-05-02 ARC Cross-Family Failure Decomposition
+
+Added a diagnostic decomposition script and artifact:
+
+- script:
+  `scripts/analyze_source_private_arc_cross_family_failure_decomposition.py`;
+- test:
+  `tests/test_analyze_source_private_arc_cross_family_failure_decomposition.py`;
+- artifact:
+  `results/source_private_arc_cross_family_failure_decomposition_20260502/`;
+- memo:
+  `paper/source_private_arc_cross_family_failure_decomposition_20260502.md`.
+
+Outcome: three existing source-family wrappers were decomposed into source
+quality, packet fidelity, and source-family mismatch. The selected next gate is
+`common_feature_connector_with_stronger_source`.
+
+- Phi-3 Mini 4K: primary blocker `source_endpoint_quality`; full test
+  source/packet `0.246/0.244`; packet follows source `0.997`;
+  disagreement matched/Qwen-sub `0.200/0.340`.
+- Qwen2.5-1.5B: primary blocker `mixed_or_unresolved`; full test source/packet
+  `0.445/0.442`; packet follows source `0.996`; disagreement matched/Qwen-sub
+  `0.482/0.184`.
+- TinyLlama-1.1B: primary blocker `source_family_mismatch`; full test
+  source/packet `0.326/0.325`; packet follows source `0.996`;
+  disagreement matched/Qwen-sub `0.269/0.317`.
+
+Decision: do not spend the next branch on isolated 8B packet-codec changes.
+The packet is faithfully carrying weak or mismatched source choices. The next
+highest-value method branch is a target-conditioned sparse innovation or
+protected-subspace common-feature connector using a stronger source, with
+strict source-necessity controls.
+
+Lay explanation: this checked whether the tiny message was garbled. It usually
+was not. The harder problem is choosing or learning a source representation
+that the receiver can trust across model families.
+
+## 2026-05-02 Systems Boundary Refresh to ARC 8B/11B
+
+Regenerated the cross-benchmark systems comparator and systems boundary
+figure/table after promoting the ARC `8B` payload / `11B` framed b2000 row:
+
+- comparator:
+  `results/source_private_cross_benchmark_systems_comparator_20260502/`;
+- boundary table:
+  `results/source_private_systems_boundary_figure_table_20260502/`.
+
+Outcome: the packet framed-byte range is now `4-11B` instead of `4-15B`, and
+the minimum QJL one-token KV/source-state byte floor versus the largest current
+packet is now `69.8x`. Native NVIDIA systems complete remains `False`.
+
+Decision: promote the refreshed systems table as the current paper accounting
+figure, with an explicit Phi-3 footnote. It supports byte/exposure accounting,
+not cross-family generality or native GPU throughput.

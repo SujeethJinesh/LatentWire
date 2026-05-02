@@ -1,19 +1,19 @@
 # Systems Boundary Figure/Table V3
 
 - pass gate: `True`
-- packet framed-byte range: `4-15B`
-- minimum source-state floor vs max packet: `51.2x`
+- packet framed-byte range: `4-11B`
+- minimum source-state floor vs max packet: `69.8x`
 - native NVIDIA systems complete: `False`
 
 ## Rows
 
 | Method | Object | Raw | Framed | Cacheline | Batch64 | Private | Text | KV | Hidden | Native | Claim |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| LatentWire ARC-Challenge test packet | task-level candidate evidence packet | 12B | 15B | 64B | 960B | `true` | `false` | `false` | `false` | `true` | source-private byte/exposure accounting with local benchmark accuracy; not a native GPU serving row |
+| LatentWire ARC-Challenge test packet | task-level candidate evidence packet | 8B | 11B | 64B | 704B | `true` | `false` | `false` | `false` | `true` | source-private byte/exposure accounting with local benchmark accuracy; not a native GPU serving row |
 | LatentWire OpenBookQA test packet | task-level candidate evidence packet | 3B | 6B | 64B | 384B | `true` | `false` | `false` | `false` | `true` | source-private byte/exposure accounting with local benchmark accuracy; not a native GPU serving row |
 | LatentWire HellaSwag validation_first1024 packet | task-level candidate evidence packet | 2B | 5B | 64B | 320B | `true` | `false` | `false` | `false` | `true` | source-private byte/exposure accounting with local benchmark accuracy; not a native GPU serving row |
 | LatentWire HellaSwag validation_full_compaction packet | task-level candidate evidence packet | 1B | 4B | 64B | 256B | `true` | `false` | `false` | `false` | `true` | source-private byte/exposure accounting with local benchmark accuracy; not a native GPU serving row |
-| Same-byte structured text control (ARC) | text-form control with same packet budget | 12B | 15B | 64B | 960B | `false` | `true` | `false` | `false` | `true` | negative/control row only; cannot support source-private claim |
+| Same-byte structured text control (ARC) | text-form control with same packet budget | 8B | 11B | 64B | 704B | `false` | `true` | `false` | `false` | `true` | negative/control row only; cannot support source-private claim |
 | One hidden-vector fp16 relay floor | one source hidden vector, fp16 | 1792B | 1792B | 1792B | 114688B | `false` | `false` | `false` | `true` | `false` | state-exposure lower bound only; not a baseline win |
 | QJL sign-bit KV-state floor | one-token K+V state at 1 bit/element | 768B | 768B | 768B | 49152B | `false` | `false` | `true` | `false` | `false` | mathematical state-size lower bound only |
 | KIVI 2-bit KV floor | one-token K+V state at 2 bits/element | 1536B | 1536B | 1536B | 98304B | `false` | `false` | `true` | `false` | `false` | KV-cache compression comparator only |

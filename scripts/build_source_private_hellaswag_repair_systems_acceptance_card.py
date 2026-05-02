@@ -49,7 +49,7 @@ DEFAULT_ARTIFACTS = {
     "serving_slo": pathlib.Path("results/source_private_serving_slo_envelope_20260501/serving_slo_envelope.json"),
     "native_readiness": pathlib.Path("results/source_private_native_readiness_ledger_20260501/native_readiness_ledger.json"),
     "cross_benchmark_systems": pathlib.Path(
-        "results/source_private_cross_benchmark_systems_comparator_20260501/cross_benchmark_systems_comparator.json"
+        "results/source_private_cross_benchmark_systems_comparator_20260502/cross_benchmark_systems_comparator.json"
     ),
 }
 
@@ -581,7 +581,12 @@ def _pass_checks(rows: list[dict[str, Any]], payloads: dict[str, dict[str, Any]]
 
 def _write_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=CSV_COLUMNS, extrasaction="ignore")
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=CSV_COLUMNS,
+            extrasaction="ignore",
+            lineterminator="\n",
+        )
         writer.writeheader()
         for row in rows:
             writer.writerow({column: _fmt(row.get(column)) for column in CSV_COLUMNS})

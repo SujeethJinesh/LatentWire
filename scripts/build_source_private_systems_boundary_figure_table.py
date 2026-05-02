@@ -237,7 +237,7 @@ def _packet_rows(comparator: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _control_rows(comparator: dict[str, Any], source_config: dict[str, Any]) -> list[dict[str, Any]]:
-    arc = next(row for row in comparator["rows"] if row["row_id"] == "arc_challenge_test_12b")
+    arc = next(row for row in comparator["rows"] if row["dataset"] == "ARC-Challenge")
     hidden_bytes = float(source_config["hidden_size"]) * 2.0
     return [
         _record(

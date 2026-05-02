@@ -1954,10 +1954,10 @@
       "sha256": "ff7642fb1e36df3df49033b29cea5c8282a10964f451e7f23ee9377b7874517c"
     },
     "cross_benchmark_systems_comparator": {
-      "bytes": 13441,
+      "bytes": 17987,
       "exists": true,
-      "path": "results/source_private_cross_benchmark_systems_comparator_20260501/cross_benchmark_systems_comparator.json",
-      "sha256": "ca10a9ea567d57853d697beecc47f17903297040afafa266ad5ae7c1890fb8a7"
+      "path": "results/source_private_cross_benchmark_systems_comparator_20260502/cross_benchmark_systems_comparator.json",
+      "sha256": "0ff44eb14a14a459cc1a9a4a3e00506d82ae18bb312c264c110e4eb8833cdcf5"
     },
     "endpoint_uncertainty_core": {
       "bytes": 7998,
@@ -2092,10 +2092,10 @@
       "sha256": "a4a4ce7506ace4a65f0a2078c873410ba7563127b370cca3460644f5e1995202"
     },
     "hellaswag_repair_systems_acceptance": {
-      "bytes": 19084,
+      "bytes": 19097,
       "exists": true,
       "path": "results/source_private_hellaswag_repair_systems_acceptance_card_20260501/hellaswag_repair_systems_acceptance_card.json",
-      "sha256": "b933d8ff936a3ec871b851d4e5bf5879997afae2997ba8b995738475156c936d"
+      "sha256": "2362c8500ae1316682423d148040e180dafcf1cd74ce6173cec6fd2a2b23d67b"
     },
     "hellaswag_score_packet_headroom": {
       "bytes": 6208,
@@ -2773,8 +2773,8 @@
     },
     {
       "contribution": "Cross-benchmark source-state byte-floor systems comparator",
-      "headline_evidence": "2 headline public benchmarks and 1 diagnostic benchmark; framed packets=5-15B; native systems complete=False",
-      "main_metric": "min one-token QJL 1-bit KV floor=51.2x framed packet; min 30%-layer QJL floor=15.4x; min 30%-layer fp16 KVComm floor=245.8x",
+      "headline_evidence": "2 headline public benchmarks and 2 diagnostic benchmark; framed packets=4-11B; native systems complete=False",
+      "main_metric": "min one-token QJL 1-bit KV floor=69.8x framed packet; min 30%-layer QJL floor=20.9x; min 30%-layer fp16 KVComm floor=335.1x",
       "remaining_gap": "This makes the source-state exposure cost explicit across ARC, OpenBookQA, and HellaSwag while marking HellaSwag as diagnostic due to label-copy. It is still a byte-floor/accounting comparator, not a native C2C/KVComm/QJL/TurboQuant/vLLM win.",
       "status": "new cross-benchmark systems/accounting contribution"
     },
@@ -2828,17 +2828,17 @@
       "status": "bounded diagnostic contribution, not headline cross-family claim"
     }
   ],
-  "created_utc": "2026-05-02T12:18:38.088790+00:00",
+  "created_utc": "2026-05-02T18:44:31.343113+00:00",
   "cross_benchmark_systems_comparator_headline": {
     "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
-    "diagnostic_benchmarks": 1,
+    "diagnostic_benchmarks": 2,
     "headline_eligible_benchmarks": 2,
-    "max_framed_packet_bytes": 15.0,
-    "min_framed_packet_bytes": 5.0,
-    "min_kvcomm30_fp16_ratio_vs_framed": 245.75999999999996,
-    "min_qjl_1bit_ratio_vs_framed": 51.2,
-    "min_qjl_30pct_ratio_vs_framed": 15.359999999999998,
-    "min_turboquant_3p5bit_ratio_vs_framed": 179.2,
+    "max_framed_packet_bytes": 11.0,
+    "min_framed_packet_bytes": 4.0,
+    "min_kvcomm30_fp16_ratio_vs_framed": 335.12727272727267,
+    "min_qjl_1bit_ratio_vs_framed": 69.81818181818181,
+    "min_qjl_30pct_ratio_vs_framed": 20.94545454545454,
+    "min_turboquant_3p5bit_ratio_vs_framed": 244.36363636363637,
     "native_systems_complete": false,
     "pass_gate": true
   },
@@ -3417,7 +3417,7 @@
     "best_delta_vs_trained_label_copy": 0.0400390625,
     "best_repair_row_id": "hidden_innovation_repair",
     "best_source_label_copy_accuracy": 0.4619140625,
-    "cross_benchmark_min_qjl_1bit_ratio_vs_framed": 51.2,
+    "cross_benchmark_min_qjl_1bit_ratio_vs_framed": 69.81818181818181,
     "max_oracle_gap_remaining": 0.302734375,
     "method_gate_pass": true,
     "native_queue_allowed": false,
@@ -4707,7 +4707,7 @@
     "./venv_arm64/bin/python scripts/build_source_private_mac_packet_ring_transport_microbench.py --output-dir results/source_private_mac_packet_ring_transport_microbench_20260501 --target-bytes 33554432 --repeats 5 --min-iterations 128",
     "./venv_arm64/bin/python scripts/build_source_private_serving_slo_envelope.py --output-dir results/source_private_serving_slo_envelope_20260501",
     "./venv_arm64/bin/python scripts/build_source_private_systems_rate_assumption_frontier.py --output-dir results/source_private_systems_rate_assumption_frontier_20260501",
-    "./venv_arm64/bin/python scripts/build_source_private_cross_benchmark_systems_comparator.py --output-dir results/source_private_cross_benchmark_systems_comparator_20260501",
+    "./venv_arm64/bin/python scripts/build_source_private_cross_benchmark_systems_comparator.py --output-dir results/source_private_cross_benchmark_systems_comparator_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_native_readiness_ledger.py --output-dir results/source_private_native_readiness_ledger_20260501",
     "./venv_arm64/bin/python scripts/build_source_private_native_systems_benchmark_plan.py --output-dir results/source_private_native_systems_benchmark_plan_20260501 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_rate_frontier.py --output-dir results/source_private_rate_frontier_20260429",

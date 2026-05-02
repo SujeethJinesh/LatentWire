@@ -20,9 +20,12 @@ Date: 2026-05-02
   sparse-query cache-bottleneck, and train-only MLP cache-to-packet connectors
   also fail this gate. The Llama-8B
   true non-Qwen scout now runs locally after the MPS workaround, but also fails
-  the strict validation/paired-uncertainty gate. The systems boundary table is
-  paper-ready as accounting and the native ingest gate now refuses premature
-  claims, but native NVIDIA serving rows remain incomplete.
+  the strict validation/paired-uncertainty gate. The new cross-family failure
+  decomposition shows the packet usually follows the source choice, so the live
+  blocker is source/common-feature quality rather than 8B packet corruption.
+  The systems boundary table is paper-ready as accounting and the native ingest
+  gate now refuses premature claims, but native NVIDIA serving rows remain
+  incomplete.
 
 ## Contributions To Put Forward
 
@@ -42,6 +45,11 @@ Date: 2026-05-02
    Current support: HellaSwag source-score, receiver-selector, discrete-query,
    anchor-relative common-basis, switch-observability, and PQ hidden-code gates
    are now explicitly recorded as negative or non-headline.
+5. A reviewer-facing failure-decomposition diagnostic for cross-family packet
+   transfer. Current support: Phi-3, Qwen2.5-1.5B, and TinyLlama ARC wrappers
+   separate source endpoint quality, packet fidelity, and common-feature
+   mismatch, selecting a stronger-source/common-feature connector as the next
+   live branch.
 
 ## What Changed
 
@@ -69,6 +77,27 @@ Lay explanation: this repeated the strongest tiny-packet experiment but asked
 Phi-3, a different model family, to be the private source. The packet no longer
 helped, so the current ARC positive row is not yet source-family-general.
 
+The ARC cross-family failure decomposition now explains why the strict
+source-family gates behave differently:
+
+- artifact:
+  `results/source_private_arc_cross_family_failure_decomposition_20260502/`;
+- memo:
+  `paper/source_private_arc_cross_family_failure_decomposition_20260502.md`;
+- wrappers analyzed: `3`;
+- selected next gate: `common_feature_connector_with_stronger_source`;
+- Phi-3 primary blocker: `source_endpoint_quality`;
+- Phi-3 full test source/packet: `0.246/0.244`;
+- Phi-3 packet follows source rate: `0.997`;
+- Qwen2.5-1.5B full test source/packet: `0.445/0.442`;
+- TinyLlama primary blocker: `source_family_mismatch`;
+- TinyLlama packet follows source rate: `0.996`.
+
+Lay explanation: this asked whether the tiny packet was garbling the sender's
+answer. It usually was not. The packet mostly carries the sender's choice; the
+remaining problem is finding a stronger cross-family sender or a shared feature
+interface that tells the receiver when that sender knows something useful.
+
 The systems boundary figure/table V3 is now materialized:
 
 - artifact:
@@ -78,9 +107,9 @@ The systems boundary figure/table V3 is now materialized:
   `systems_boundary_waterfall.svg`, and `manifest.json`;
 - pass gate: `True`;
 - packet rows: `4`;
-- framed packet range: `4-15B`;
+- framed packet range: `4-11B`;
 - minimum source-state floor: `768B`;
-- minimum source-state floor versus largest packet: `51.2x`;
+- minimum source-state floor versus largest packet: `69.8x`;
 - native NVIDIA systems complete: `False`.
 
 Lay explanation: this table compares what crosses the boundary. LatentWire
@@ -409,23 +438,19 @@ same controls.
 
 ## Next Exact Gate
 
-Run a stronger true cross-family source or trainable query/cache connector on
-NVIDIA, then fill the native systems schema with matched vLLM/SGLang/C2C/
-KVComm/QJL/TurboQuant rows. Receiver-only scalar routing, source-side scalar
+Run a target-conditioned sparse innovation/common-feature connector on the
+Phi-3/Qwen ARC disagreement surface, starting with a cheap `n32/n64` smoke and
+`8B/16B/32B` packet rates. Receiver-only scalar routing, source-side scalar
 confidence routing, cached candidate-level packet/score connectors, Mac-local
 Phi-3 source packets, and shallow TinyLlama hidden/query PCA/ridge connectors
 or static transport/Procrustes connectors, random Fourier sparse-query cache
 bottlenecks, and train-only MLP mean-cache connectors are now ruled out for
-this ARC disagreement surface. The
-same-family Qwen-1.5B stronger-source diagnostic should be repeated with a true
-stronger cross-family source before making the ICLR claim. The current
-Llama-8B source-choice scout is now scientifically resolved as a strict gate
-failure, although a separately selected Llama prompt/scoring/calibration branch
-could be revived if it first clears validation. The Llama failure probe and the
-negative MLP cache connector jointly show that useful source signal is being
-lost at the current packet/receiver interface; the next exact method branch
-needs tokenwise target-forward connector infrastructure, while Mac-local work
-should focus on consolidation and the NVIDIA systems/connector runbooks.
+this ARC disagreement surface. The decomposition shows packet fidelity is high,
+so the next method branch should remove target-public candidate features,
+encode source-only sparse innovations, and require zero-source, candidate-roll,
+source-shuffle, same-byte text, and Qwen-substituted controls to fail before
+widening. In parallel, fill the native systems schema with matched
+vLLM/SGLang/C2C/KVComm/QJL/TurboQuant rows on NVIDIA.
 
 ## 2026-05-02 Gate-Tree Consolidation
 

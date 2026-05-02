@@ -38,16 +38,16 @@ Files:
 
 - pass gate: `True`
 - packet rows: `4`
-- packet framed-byte range: `4-15B`
+- packet framed-byte range: `4-11B`
 - minimum source-state floor: `768B`
-- minimum source-state floor versus largest packet: `51.2x`
+- minimum source-state floor versus largest packet: `69.8x`
 - native NVIDIA systems complete: `False`
 
 Key rows:
 
 | Row | Object | Framed bytes | Source text | Source KV | Source hidden | Status |
 |---|---|---:|---:|---:|---:|---|
-| LatentWire ARC-Challenge | task-level candidate evidence packet | `15B` | no | no | no | Mac-local artifact |
+| LatentWire ARC-Challenge | task-level candidate evidence packet | `11B` | no | no | no | Mac-local artifact |
 | LatentWire OpenBookQA | task-level candidate evidence packet | `6B` | no | no | no | Mac-local artifact |
 | LatentWire HellaSwag compact | task-level candidate evidence packet | `4B` | no | no | no | Mac-local artifact |
 | QJL sign-bit KV floor | one-token K+V state | `768B` | no | yes | no | byte floor, not native |
@@ -62,9 +62,13 @@ claim faster serving. It claims that the LatentWire communication object is a
 fixed-byte source-private packet, while direct cache communication and KV
 quantization baselines operate on source-state objects.
 
+The ARC systems row is the same-family Qwen-source positive row. The strict
+Phi-3 source-family test at the same `8B` payload / `11B` framed rate is
+negative, so this table must not be used to imply solved cross-family transfer.
+
 The strongest reviewer-safe sentence is:
 
-> Across the current Mac-local packet rows, LatentWire communicates `4-15B`
+> Across the current Mac-local packet rows, LatentWire communicates `4-11B`
 > framed task packets with no source text, source KV, or source hidden-vector
 > exposure; conservative one-token KV/source-state byte floors start at `768B`,
 > and native serving baselines remain required for latency and goodput claims.

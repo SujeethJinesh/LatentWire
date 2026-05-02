@@ -1,0 +1,40 @@
+{
+  "created_utc": "2026-05-02T18:44:30.773550+00:00",
+  "files": [
+    {
+      "bytes": 19097,
+      "path": "results/source_private_hellaswag_repair_systems_acceptance_card_20260501/hellaswag_repair_systems_acceptance_card.json",
+      "sha256": "2362c8500ae1316682423d148040e180dafcf1cd74ce6173cec6fd2a2b23d67b"
+    },
+    {
+      "bytes": 4375,
+      "path": "results/source_private_hellaswag_repair_systems_acceptance_card_20260501/hellaswag_repair_systems_acceptance_card.csv",
+      "sha256": "2b3b2e0b6a59ecec13071f80637e59e633b4c14c93ef288af4c5f260030b7d14"
+    },
+    {
+      "bytes": 2736,
+      "path": "results/source_private_hellaswag_repair_systems_acceptance_card_20260501/hellaswag_repair_systems_acceptance_card.md",
+      "sha256": "cf745970dac85e5e4addaaf460199c33b551637b8d63461bdab777ba65d09464"
+    }
+  ],
+  "gate": "source_private_hellaswag_repair_systems_acceptance_card",
+  "headline": {
+    "best_accuracy": 0.4990234375,
+    "best_delta_vs_source_label_copy": 0.037109375,
+    "best_delta_vs_trained_label_copy": 0.0400390625,
+    "best_repair_row_id": "hidden_innovation_repair",
+    "best_source_label_copy_accuracy": 0.4619140625,
+    "cross_benchmark_min_qjl_1bit_ratio_vs_framed": 69.81818181818181,
+    "max_oracle_gap_remaining": 0.302734375,
+    "method_gate_pass": true,
+    "native_queue_allowed": false,
+    "native_ready": false,
+    "pass_gate": true,
+    "pending_native_rows": 5,
+    "rows": 7,
+    "serving_slo_pass_gate": true,
+    "strict_delta_required": 0.02,
+    "systems_audit_pass": true,
+    "trained_label_copy_control_rows": 3
+  }
+}

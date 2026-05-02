@@ -19,18 +19,15 @@ DEFAULT_OUTPUT = pathlib.Path("results/source_private_cross_benchmark_systems_co
 
 DEFAULT_BENCHMARKS = (
     {
-        "row_id": "arc_challenge_test_12b",
+        "row_id": "arc_challenge_test_8b",
         "dataset": "ARC-Challenge",
         "split": "test",
         "paper_role": "headline_public_benchmark",
         "seed_artifact": pathlib.Path(
-            "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/"
-            "arc_challenge_seed_stability.json"
+            "results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed_b2000/"
+            "arc_challenge_fourier_anchor_syndrome_gate.json"
         ),
-        "phase_artifact": pathlib.Path(
-            "results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/"
-            "arc_challenge_fixed_packet_gate.json"
-        ),
+        "phase_artifact": None,
         "label_copy_artifact": None,
     },
     {
@@ -304,6 +301,25 @@ def _phase_metrics(phase_artifact: pathlib.Path | None) -> dict[str, Any]:
     }
 
 
+def _seed_view(seed: dict[str, Any], split: str) -> dict[str, Any]:
+    if "aggregate" in seed:
+        return {
+            "aggregate": seed["aggregate"],
+            "budget_bytes": int(seed["budget_bytes"]),
+            "eval_rows": int(seed["eval_rows"]),
+            "pass_gate": bool(seed["pass_gate"]),
+        }
+    if "splits" in seed:
+        split_payload = seed["splits"][split]
+        return {
+            "aggregate": split_payload["headline"]["matched_aggregate"],
+            "budget_bytes": int(seed["budget_bytes"]),
+            "eval_rows": int(seed[f"{split}_rows"]),
+            "pass_gate": bool(seed["pass_gate"] and split_payload["headline"]["pass_gate"]),
+        }
+    raise ValueError("unsupported seed artifact schema")
+
+
 def _benchmark_row(spec: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     if spec.get("compaction_artifact") is not None:
         return _compaction_benchmark_row(spec, config)
@@ -317,8 +333,9 @@ def _benchmark_row(spec: dict[str, Any], config: dict[str, Any]) -> dict[str, An
         label_copy_artifact = pathlib.Path(label_copy_artifact)
 
     seed = _read_json(seed_artifact)
-    aggregate = seed["aggregate"]
-    payload_bytes = float(seed["budget_bytes"])
+    seed_view = _seed_view(seed, str(spec["split"]))
+    aggregate = seed_view["aggregate"]
+    payload_bytes = float(seed_view["budget_bytes"])
     framed_record_bytes = payload_bytes + 3.0
     label_copy_threat = False
     source_label_copy_accuracy = None
@@ -339,7 +356,7 @@ def _benchmark_row(spec: dict[str, Any], config: dict[str, Any]) -> dict[str, An
     phase = _phase_metrics(phase_artifact)
 
     headline_eligible = (
-        bool(seed["pass_gate"])
+        bool(seed_view["pass_gate"])
         and aggregate["all_seeds_pass"] is True
         and aggregate["paired_ci95_low_vs_target_min"] > 0.0
         and aggregate["matched_minus_same_byte_text_min"] > 0.0
@@ -359,10 +376,10 @@ def _benchmark_row(spec: dict[str, Any], config: dict[str, Any]) -> dict[str, An
         "artifact_sha256": _sha256_file(seed_artifact),
         "phase_artifact_path": _rel(phase_artifact),
         "phase_artifact_sha256": _sha256_file(phase_artifact),
-        "pass_gate": bool(seed["pass_gate"]),
+        "pass_gate": bool(seed_view["pass_gate"]),
         "headline_eligible": headline_eligible,
         "label_copy_threat": label_copy_threat,
-        "eval_rows": int(seed["eval_rows"]),
+        "eval_rows": int(seed_view["eval_rows"]),
         "seed_count": int(aggregate["seed_count"]),
         "pass_count": int(aggregate["pass_count"]),
         "payload_bytes": payload_bytes,

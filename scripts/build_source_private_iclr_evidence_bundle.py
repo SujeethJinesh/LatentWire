@@ -120,7 +120,7 @@ REPRODUCTION_COMMANDS = [
     "./venv_arm64/bin/python scripts/build_source_private_mac_packet_ring_transport_microbench.py --output-dir results/source_private_mac_packet_ring_transport_microbench_20260501 --target-bytes 33554432 --repeats 5 --min-iterations 128",
     "./venv_arm64/bin/python scripts/build_source_private_serving_slo_envelope.py --output-dir results/source_private_serving_slo_envelope_20260501",
     "./venv_arm64/bin/python scripts/build_source_private_systems_rate_assumption_frontier.py --output-dir results/source_private_systems_rate_assumption_frontier_20260501",
-    "./venv_arm64/bin/python scripts/build_source_private_cross_benchmark_systems_comparator.py --output-dir results/source_private_cross_benchmark_systems_comparator_20260501",
+    "./venv_arm64/bin/python scripts/build_source_private_cross_benchmark_systems_comparator.py --output-dir results/source_private_cross_benchmark_systems_comparator_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_native_readiness_ledger.py --output-dir results/source_private_native_readiness_ledger_20260501",
     "./venv_arm64/bin/python scripts/build_source_private_native_systems_benchmark_plan.py --output-dir results/source_private_native_systems_benchmark_plan_20260501 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_rate_frontier.py --output-dir results/source_private_rate_frontier_20260429",
@@ -237,7 +237,7 @@ REQUIRED_ARTIFACTS = {
     "mac_packet_ring_transport": "results/source_private_mac_packet_ring_transport_microbench_20260501/packet_ring_transport_microbench.json",
     "serving_slo_envelope": "results/source_private_serving_slo_envelope_20260501/serving_slo_envelope.json",
     "systems_rate_assumption_frontier": "results/source_private_systems_rate_assumption_frontier_20260501/systems_rate_assumption_frontier.json",
-    "cross_benchmark_systems_comparator": "results/source_private_cross_benchmark_systems_comparator_20260501/cross_benchmark_systems_comparator.json",
+    "cross_benchmark_systems_comparator": "results/source_private_cross_benchmark_systems_comparator_20260502/cross_benchmark_systems_comparator.json",
     "native_readiness_ledger": "results/source_private_native_readiness_ledger_20260501/native_readiness_ledger.json",
     "native_systems_benchmark_plan": "results/source_private_native_systems_benchmark_plan_20260501/native_systems_benchmark_plan.json",
 }

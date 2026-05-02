@@ -8,7 +8,7 @@
     {
       "check": "source_state_floor_exceeds_max_packet_by_50x",
       "pass": true,
-      "value": 51.2
+      "value": 69.81818181818181
     },
     {
       "check": "native_nvidia_rows_marked_pending",
@@ -24,10 +24,10 @@
   "gate": "source_private_systems_boundary_figure_table",
   "headline": {
     "claim_scope": "Paper-ready systems boundary artifact: LatentWire rows are fixed-byte source-private task packets; KV/cache rows are byte floors or pending native serving baselines. The artifact supports byte/exposure accounting, not a native C2C/KVComm/TurboQuant/QJL/vLLM/SGLang win.",
-    "max_packet_framed_bytes": 15.0,
+    "max_packet_framed_bytes": 11.0,
     "min_packet_framed_bytes": 4.0,
     "min_source_state_floor_bytes": 768.0,
-    "min_source_state_floor_ratio_vs_max_packet": 51.2,
+    "min_source_state_floor_ratio_vs_max_packet": 69.81818181818181,
     "native_nvidia_complete": false,
     "packet_row_count": 4,
     "pass_gate": true
@@ -77,25 +77,25 @@
   },
   "rows": [
     {
-      "batch64_bytes": 960.0,
+      "batch64_bytes": 704.0,
       "cacheline_bytes": 64.0,
       "claim_allowed": "source-private byte/exposure accounting with local benchmark accuracy; not a native GPU serving row",
       "communicated_object": "task-level candidate evidence packet",
-      "framed_bytes": 15.0,
+      "framed_bytes": 11.0,
       "measurement_status": "mac_local_artifact",
       "method": "LatentWire ARC-Challenge test packet",
       "native_measured": true,
       "notes": "accuracy=0.344; headline_eligible=true",
       "nvidia_vllm_required": false,
       "overclaim_guard": "Use as a packet byte/exposure row only; native GPU serving speed is still unmeasured.",
-      "raw_bytes": 12.0,
+      "raw_bytes": 8.0,
       "row_group": "LatentWire packet",
-      "row_id": "latentwire_arc_challenge_test_12b",
+      "row_id": "latentwire_arc_challenge_test_8b",
       "source_hidden_or_score_vector_exposed": false,
       "source_kv_exposed": false,
       "source_private": true,
       "source_text_exposed": false,
-      "source_url": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/arc_challenge_seed_stability.json"
+      "source_url": "results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed_b2000/arc_challenge_fourier_anchor_syndrome_gate.json"
     },
     {
       "batch64_bytes": 384.0,
@@ -161,25 +161,25 @@
       "source_url": "results/source_private_hellaswag_minimal_packet_compaction_20260502/hellaswag_minimal_packet_compaction.json"
     },
     {
-      "batch64_bytes": 960.0,
+      "batch64_bytes": 704.0,
       "cacheline_bytes": 64.0,
       "claim_allowed": "negative/control row only; cannot support source-private claim",
       "communicated_object": "text-form control with same packet budget",
-      "framed_bytes": 15.0,
+      "framed_bytes": 11.0,
       "measurement_status": "mac_local_control",
       "method": "Same-byte structured text control (ARC)",
       "native_measured": true,
-      "notes": "same-byte text accuracy=0.311",
+      "notes": "same-byte text accuracy=0.300",
       "nvidia_vllm_required": false,
       "overclaim_guard": "This row intentionally exposes source text and is not a source-private method.",
-      "raw_bytes": 12.0,
+      "raw_bytes": 8.0,
       "row_group": "local control",
       "row_id": "same_byte_text_control_arc",
       "source_hidden_or_score_vector_exposed": false,
       "source_kv_exposed": false,
       "source_private": false,
       "source_text_exposed": true,
-      "source_url": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/arc_challenge_seed_stability.json"
+      "source_url": "results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed_b2000/arc_challenge_fourier_anchor_syndrome_gate.json"
     },
     {
       "batch64_bytes": 114688.0,
@@ -415,7 +415,7 @@
   ],
   "source_comparator": {
     "path": "results/source_private_cross_benchmark_systems_comparator_20260502/cross_benchmark_systems_comparator.json",
-    "sha256": "ac0b85e52eb7e4b5178186d3faec0190621843e23ca0df062c7f0cb3c99cb3c4"
+    "sha256": "0ff44eb14a14a459cc1a9a4a3e00506d82ae18bb312c264c110e4eb8833cdcf5"
   },
   "source_model_config": {
     "head_dim": null,

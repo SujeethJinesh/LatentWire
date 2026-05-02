@@ -2126,5 +2126,12 @@
     "path": "references/660_phi3_8b_cross_family_and_uniqueness_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the strict Phi-3 8B/b2000 cross-family falsification and novelty boundary, covering C2C, KVComm/KVCOMM, InterLat, Relative Representations, prefix/gist/LLMLingua, QJL, TurboQuant, vLLM, SGLang, SAE/USAE, DiT, and consistency-model inspiration."
+  },
+  {
+    "num": 661,
+    "slug": "common_feature_connector_and_systems_refs_20260502",
+    "path": "references/661_common_feature_connector_and_systems_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the post-Phi decomposition next branch, covering USAE/SAE/crosscoder common-feature priors, prefix/gist/Perceiver/Q-Former connector baselines, consistency repair inspiration, and QJL/TurboQuant/C2C/KVComm/vLLM/SGLang systems boundaries."
   }
 ]
