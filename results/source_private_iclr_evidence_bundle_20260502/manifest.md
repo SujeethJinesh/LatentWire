@@ -1,7 +1,7 @@
 # Source-Private ICLR Evidence Bundle Manifest
 
 - pass gate: `True`
-- contributions: `47`
+- contributions: `48`
 - novelty comparisons: `9`
 
 ## Artifacts

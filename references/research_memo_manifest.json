@@ -1902,5 +1902,12 @@
     "path": "references/628_benchmark_selection_and_systems_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the benchmark-selection gate and systems comparator update, covering ARC-Challenge, OpenBookQA, CommonsenseQA, HellaSwag, C2C, KVComm, KVCOMM, Q-KVComm, KIVI, KVQuant, QJL, TurboQuant, vLLM/PagedAttention, and SGLang boundaries."
+  },
+  {
+    "num": 629,
+    "slug": "openbookqa_receiver_headroom_refs_20260502",
+    "path": "references/629_openbookqa_receiver_headroom_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the OpenBookQA train-only packet/target receiver-fusion gate, covering the positive held-out receiver row, selective accept/reject framing, common-basis boundaries, and systems/communication comparisons against C2C, KVComm, KIVI, KVQuant, and TurboQuant."
   }
 ]

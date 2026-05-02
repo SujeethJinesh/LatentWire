@@ -19028,3 +19028,33 @@ after a `.debug` Phi feasibility run failed on cached Phi-3 remote-code
 adding Q-KVComm, KIVI, KVQuant, and SGLang/RadixAttention as explicit external
 baseline rows. Native systems claims remain blocked until NVIDIA/vLLM/SGLang
 and C2C/KVComm/KV-quant baselines are run.
+
+OpenBookQA train-only packet/target receiver gate: added
+`scripts/build_source_private_openbookqa_receiver_headroom_gate.py`, test
+`tests/test_build_source_private_openbookqa_receiver_headroom_gate.py`, memo
+`paper/source_private_openbookqa_receiver_headroom_gate_20260502.md`,
+references `references/629_openbookqa_receiver_headroom_refs_20260502.md`,
+and artifact
+`results/source_private_openbookqa_receiver_headroom_gate_20260502/`.
+Outcome: this is the first held-out positive receiver-fusion row after the
+benchmark-selection gate. The receiver trains a public target-side hashed
+pair scorer on OpenBookQA train, selects a packet-vs-target benefit gate on
+OpenBookQA validation only, and evaluates once on OpenBookQA test using the
+promoted `3B` source-private packet. Default seed `47` reaches receiver
+accuracy `0.424` versus packet-only `0.378` and target-public `0.372`, for
+delta `+0.046` over packet-only with paired CI95 low `+0.00795`. The matched
+receiver also beats the default same-byte text receiver control (`0.378`),
+zero-source (`0.372`), shuffled source (`0.364`), random same-rate packet
+(`0.370`), target-derived sidecar (`0.352`), candidate derangement (`0.292`),
+and source-label-copy-without-packet-geometry (`0.372`). Across `5` packet
+projection seeds, every receiver delta over packet-only is positive and the
+row-bootstrap aggregate delta is `+0.0336` with CI95 low `+0.0004`, but strict
+per-seed CI passes only `2/5`. Interpretation: the positive method branch is
+now source-private evidence fusion, not yet universal latent-language transfer.
+The current `3B` packet still behaves like a compact source-selected-candidate
+sketch; label permutation remains index-preserving in this runner and is not a
+destructive MCQ control, so candidate derangement is the meaningful
+candidate-control row. Updated the ICLR evidence bundle to include this row and
+to change the ICLR blocker from “no positive receiver” to robustness, ARC
+replication, stricter control/seed stability, native NVIDIA systems baselines,
+and a less label-copy-like common-basis or learned connector.

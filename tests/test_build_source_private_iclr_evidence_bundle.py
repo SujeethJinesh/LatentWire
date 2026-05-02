@@ -59,6 +59,9 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert contribution_rows["OpenBookQA 3B shared-basis second public benchmark"]["status"] == (
         "new second public-benchmark positive gate and stronger rate point"
     )
+    assert contribution_rows["OpenBookQA train-only packet/target receiver"]["status"] == (
+        "new positive receiver-fusion method gate"
+    )
     assert contribution_rows["SciQ text-saturation diagnostic"]["status"] == (
         "documented benchmark limitation, not a promoted headline benchmark"
     )
@@ -344,6 +347,17 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
         check["check"] == "openbookqa_seed_test_3b_beats_same_byte_text" and check["pass"]
         for check in payload["pass_checks"]
     )
+    assert any(
+        check["check"] == "openbookqa_receiver_headroom_candidate_passes" and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "openbookqa_receiver_default_beats_packet_and_target" and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert payload["openbookqa_receiver_headroom_headline"]["default_seed_matched"]["receiver_accuracy"] > payload[
+        "openbookqa_receiver_headroom_headline"
+    ]["default_seed_matched"]["base_accuracy"]
     assert any(
         check["check"] == "sciq_validation_text_saturation_documented" and check["pass"]
         for check in payload["pass_checks"]

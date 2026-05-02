@@ -72,6 +72,7 @@ REPRODUCTION_COMMANDS = [
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 4 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_validation_3b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_validation.jsonl --anchor-predictions results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_validation/predictions.jsonl --split-name openbookqa_validation_hashed_3b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 3 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl --anchor-predictions results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/predictions.jsonl --split-name openbookqa_test_hashed_3b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 3 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
+    "./venv_arm64/bin/python scripts/build_source_private_openbookqa_receiver_headroom_gate.py --output-dir results/source_private_openbookqa_receiver_headroom_gate_20260502",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
@@ -189,6 +190,7 @@ REQUIRED_ARTIFACTS = {
     "openbookqa_fixed_packet_test_4b": "results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/arc_challenge_fixed_packet_gate.json",
     "openbookqa_seed_stability_validation_3b": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_validation_3b/arc_challenge_seed_stability.json",
     "openbookqa_seed_stability_test_3b": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/arc_challenge_seed_stability.json",
+    "openbookqa_receiver_headroom": "results/source_private_openbookqa_receiver_headroom_gate_20260502/openbookqa_receiver_headroom_gate.json",
     "commonsenseqa_bridge_contract": "results/source_private_commonsenseqa_bridge_contract_20260501/commonsenseqa_bridge_contract.json",
     "commonsenseqa_fixed_packet_validation_12b": "results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/arc_challenge_fixed_packet_gate.json",
     "commonsenseqa_seed_validation_2b_strict": "results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b/arc_challenge_seed_stability.json",
@@ -468,6 +470,7 @@ def _contribution_rows(
     openbookqa_fixed_test_4b: dict[str, Any],
     openbookqa_seed_validation_3b: dict[str, Any],
     openbookqa_seed_test_3b: dict[str, Any],
+    openbookqa_receiver_headroom: dict[str, Any],
     commonsenseqa_contract: dict[str, Any],
     commonsenseqa_fixed_validation_12b: dict[str, Any],
     commonsenseqa_seed_validation_2b_strict: dict[str, Any],
@@ -531,6 +534,39 @@ def _contribution_rows(
                 "packet still beats target-only, same-byte text, and destructive controls at 3B. The source "
                 "decision is still a Qwen choice-loglikelihood cache, so the next ICLR gate is a more native "
                 "latent/source endpoint and GPU systems measurement."
+            ),
+        },
+        {
+            "contribution": "OpenBookQA train-only packet/target receiver",
+            "status": "new positive receiver-fusion method gate",
+            "headline_evidence": (
+                f"default seed receiver={openbookqa_receiver_headroom['headline']['default_seed_matched']['receiver_accuracy']:.3f} "
+                f"vs packet={openbookqa_receiver_headroom['headline']['default_seed_matched']['base_accuracy']:.3f} "
+                f"and target-public="
+                f"{openbookqa_receiver_headroom['headline']['default_seed_matched']['target_public_accuracy']:.3f}; "
+                f"aggregate seed-row delta="
+                f"{openbookqa_receiver_headroom['headline']['aggregate_seed_row_ci_vs_packet']['mean']:.3f} "
+                f"with CI95 low="
+                f"{openbookqa_receiver_headroom['headline']['aggregate_seed_row_ci_vs_packet']['ci95_low']:.4f}"
+            ),
+            "main_metric": (
+                f"{openbookqa_receiver_headroom['budget_bytes']}B source packet; "
+                f"default receiver-packet delta="
+                f"{openbookqa_receiver_headroom['headline']['default_seed_matched']['receiver_minus_base']:.3f}; "
+                f"default receiver-target delta="
+                f"{openbookqa_receiver_headroom['headline']['default_seed_matched']['receiver_minus_target_public']:.3f}; "
+                f"best receiver control="
+                f"{openbookqa_receiver_headroom['headline']['default_best_receiver_control']} at "
+                f"{openbookqa_receiver_headroom['headline']['default_best_receiver_control_accuracy']:.3f}; "
+                f"strict per-seed CI pass count="
+                f"{openbookqa_receiver_headroom['headline']['strict_per_seed_ci_pass_count']}/"
+                f"{openbookqa_receiver_headroom['headline']['seed_count']}"
+            ),
+            "remaining_gap": (
+                "This is the first held-out positive receiver row after benchmark selection: validation selects "
+                "a packet/target fusion rule and test improves over packet-only. The safe framing is "
+                "source-private evidence fusion. For ICLR, we still need stronger seed/control stability, "
+                "an ARC replication, and a less label-copy-like common-basis or learned connector."
             ),
         },
         {
@@ -1746,6 +1782,7 @@ def _pass_checks(
     openbookqa_fixed_test_4b: dict[str, Any],
     openbookqa_seed_validation_3b: dict[str, Any],
     openbookqa_seed_test_3b: dict[str, Any],
+    openbookqa_receiver_headroom: dict[str, Any],
     commonsenseqa_contract: dict[str, Any],
     commonsenseqa_fixed_validation_12b: dict[str, Any],
     commonsenseqa_seed_validation_2b_strict: dict[str, Any],
@@ -2020,6 +2057,24 @@ def _pass_checks(
         (
             "openbookqa_seed_test_3b_ci_positive",
             openbookqa_seed_test_3b["aggregate"]["paired_ci95_low_vs_target_min"] > 0.0,
+        ),
+        ("openbookqa_receiver_headroom_candidate_passes", bool(openbookqa_receiver_headroom["receiver_candidate_pass"])),
+        (
+            "openbookqa_receiver_default_beats_packet_and_target",
+            openbookqa_receiver_headroom["headline"]["default_seed_matched"]["receiver_minus_base"] >= 0.005
+            and openbookqa_receiver_headroom["headline"]["default_seed_matched"][
+                "receiver_minus_target_public"
+            ]
+            >= 0.005
+            and openbookqa_receiver_headroom["headline"]["default_seed_matched"][
+                "paired_ci95_vs_base"
+            ]["ci95_low"]
+            > 0.0,
+        ),
+        (
+            "openbookqa_receiver_aggregate_seed_delta_positive",
+            openbookqa_receiver_headroom["headline"]["all_seed_deltas_positive"] is True
+            and openbookqa_receiver_headroom["headline"]["aggregate_seed_row_ci_vs_packet"]["ci95_low"] > 0.0,
         ),
         ("commonsenseqa_bridge_contract_passes", bool(commonsenseqa_contract["pass_gate"])),
         (
@@ -2878,6 +2933,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         ROOT / REQUIRED_ARTIFACTS["openbookqa_seed_stability_validation_3b"]
     )
     openbookqa_seed_test_3b = _read_json(ROOT / REQUIRED_ARTIFACTS["openbookqa_seed_stability_test_3b"])
+    openbookqa_receiver_headroom = _read_json(ROOT / REQUIRED_ARTIFACTS["openbookqa_receiver_headroom"])
     commonsenseqa_contract = _read_json(ROOT / REQUIRED_ARTIFACTS["commonsenseqa_bridge_contract"])
     commonsenseqa_fixed_validation_12b = _read_json(
         ROOT / REQUIRED_ARTIFACTS["commonsenseqa_fixed_packet_validation_12b"]
@@ -3004,6 +3060,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         openbookqa_fixed_test_4b=openbookqa_fixed_test_4b,
         openbookqa_seed_validation_3b=openbookqa_seed_validation_3b,
         openbookqa_seed_test_3b=openbookqa_seed_test_3b,
+        openbookqa_receiver_headroom=openbookqa_receiver_headroom,
         commonsenseqa_contract=commonsenseqa_contract,
         commonsenseqa_fixed_validation_12b=commonsenseqa_fixed_validation_12b,
         commonsenseqa_seed_validation_2b_strict=commonsenseqa_seed_validation_2b_strict,
@@ -3082,6 +3139,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         openbookqa_fixed_test_4b=openbookqa_fixed_test_4b,
         openbookqa_seed_validation_3b=openbookqa_seed_validation_3b,
         openbookqa_seed_test_3b=openbookqa_seed_test_3b,
+        openbookqa_receiver_headroom=openbookqa_receiver_headroom,
         commonsenseqa_contract=commonsenseqa_contract,
         commonsenseqa_fixed_validation_12b=commonsenseqa_fixed_validation_12b,
         commonsenseqa_seed_validation_2b_strict=commonsenseqa_seed_validation_2b_strict,
@@ -3116,7 +3174,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     payload = {
         "gate": "source_private_iclr_evidence_bundle",
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "readiness": "COLM remains plausible around the fixed-byte source-private packet, ARC-Challenge/OpenBookQA public-basis endpoints, and byte/exposure systems accounting; ICLR remains blocked by a positive learned receiver/common-language method. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline: the older dense hidden-innovation rows pass several cached/slice gates, but terminal-tail, anchor-relative common-basis, switch-observability, discrete query codec, and the 2026-05-02 PQ hidden-code gate prevent a robust HellaSwag method claim. The next ICLR gate must either run a true learned query/cache connector on NVIDIA or find a new benchmark surface where compact packet-only does not saturate the source signal.",
+        "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, and byte/exposure systems accounting. ICLR remains blocked by robustness rather than by total absence of a positive receiver: the OpenBookQA receiver improves over packet-only on held-out test, but strict per-seed CI/control stability, ARC replication, native NVIDIA systems baselines, and a less label-copy-like common-basis or learned connector are still missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
         "pass_gate": all(check["pass"] for check in pass_checks),
         "pass_checks": pass_checks,
         "artifact_status": artifacts,
@@ -3177,6 +3235,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         "openbookqa_fixed_packet_test_4b_headline": openbookqa_fixed_test_4b["headline"],
         "openbookqa_seed_stability_validation_3b_headline": openbookqa_seed_validation_3b["aggregate"],
         "openbookqa_seed_stability_test_3b_headline": openbookqa_seed_test_3b["aggregate"],
+        "openbookqa_receiver_headroom_headline": openbookqa_receiver_headroom["headline"],
         "commonsenseqa_bridge_contract_headline": {
             "pass_gate": commonsenseqa_contract["pass_gate"],
             "local_checks": commonsenseqa_contract["checks"],

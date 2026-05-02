@@ -1,0 +1,18 @@
+{
+  "artifact_sha256": {
+    "openbookqa_receiver_headroom_gate.csv": "c6b1bf266f835508209c7c028199a31569f35860c9865410fc5a2e345f41c2ec",
+    "openbookqa_receiver_headroom_gate.json": "177b9e04bf627eda1138ba3bbe99f494e8cec21ef996d272db5eb50367cbe0cf",
+    "openbookqa_receiver_headroom_gate.md": "f5bfb3462ee39b1c58a216f0c0b9724eae7872f5ca8ab50ff1f4167f4cfb1b85",
+    "receiver_predictions.jsonl": "e46ab64f4ac1bc3d8eece488359d383e6ea9e2e67198761dbbdf78e56efbe0d1"
+  },
+  "artifacts": [
+    "openbookqa_receiver_headroom_gate.json",
+    "openbookqa_receiver_headroom_gate.md",
+    "openbookqa_receiver_headroom_gate.csv",
+    "receiver_predictions.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true,
+  "receiver_candidate_pass": true
+}

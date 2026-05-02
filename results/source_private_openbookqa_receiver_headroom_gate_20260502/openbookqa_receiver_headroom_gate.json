@@ -1,0 +1,1136 @@
+{
+  "bootstrap_samples": 2000,
+  "budget_bytes": 3,
+  "code_dim": 96,
+  "created_utc": "2026-05-02T09:02:46.522116+00:00",
+  "date": "2026-05-02",
+  "gate": "source_private_openbookqa_receiver_headroom_gate",
+  "headline": {
+    "aggregate_seed_row_ci_vs_packet": {
+      "ci95_high": 0.06560999999999995,
+      "ci95_low": 0.00040000000000000034,
+      "mean": 0.033600000000000005
+    },
+    "all_seed_deltas_positive": true,
+    "default_best_receiver_control": "same_byte_structured_text",
+    "default_best_receiver_control_accuracy": 0.378,
+    "default_matched_minus_best_receiver_control": 0.045999999999999985,
+    "default_seed": 47,
+    "default_seed_matched": {
+      "base_accuracy": 0.378,
+      "harm_count": 35,
+      "help_count": 58,
+      "n": 500,
+      "override_count": 140,
+      "override_rate": 0.28,
+      "paired_ci95_vs_base": {
+        "ci95_high": 0.08404999999999974,
+        "ci95_low": 0.007950000000000002,
+        "mean": 0.046
+      },
+      "receiver_accuracy": 0.424,
+      "receiver_minus_base": 0.046,
+      "receiver_minus_target_public": 0.052,
+      "target_public_accuracy": 0.372
+    },
+    "seed_count": 5,
+    "strict_per_seed_ci_pass_count": 2
+  },
+  "interpretation": "OpenBookQA now has a positive receiver-fusion row: the default 3B packet receiver improves over packet-only and over a train-split public target scorer on held-out test, while same-byte text and source-destroy controls stay lower. The result is a useful positive method branch, but it should be framed as source-private evidence fusion rather than universal latent-language transfer; the current packet still behaves like a compact source-selected-candidate sketch, so a stronger common-basis or learned connector remains necessary for a comfortable ICLR full paper.",
+  "method_contract": {
+    "claim_boundary": "This is a packet/target evidence-fusion receiver. It is not a native GPU systems result and does not claim source-label-copy separation because the promoted 3B packet is itself a compact source-selected-candidate sketch.",
+    "forbidden_eval_source_inputs": [
+      "answer",
+      "answerKey",
+      "answer_index",
+      "answer_label",
+      "gold"
+    ],
+    "receiver_inputs_at_test": [
+      "source-private packet decoder scores/prediction",
+      "public question/candidate text through a train-split target scorer"
+    ],
+    "receiver_training": "target public scorer trained on OpenBookQA train; selector selected on validation only; test labels held out until final evaluation",
+    "source_packet_budget_bytes": 3,
+    "source_packet_origin": "answer-key-forbidden Qwen2.5-0.5B source-choice cache from the promoted 3B OpenBookQA packet gate"
+  },
+  "packet_feature_dim": 384,
+  "pass_gate": true,
+  "pass_rule": "Pass requires no train/validation/test content overlap, the default seed receiver to beat packet-only and target-public-only by the configured lift with positive paired CI, the default matched receiver to beat the strongest no-source/same-byte control by the configured gap, every seed's receiver delta to be positive, and the row-bootstrap aggregate across seeds to have positive CI95 lower bound.",
+  "per_seed": [
+    {
+      "condition_metrics": {
+        "candidate_derangement": {
+          "base_accuracy": 0.21,
+          "harm_count": 25,
+          "help_count": 66,
+          "n": 500,
+          "override_count": 145,
+          "override_rate": 0.29,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.12,
+            "ci95_low": 0.045950000000000005,
+            "mean": 0.082
+          },
+          "receiver_accuracy": 0.292,
+          "receiver_minus_base": 0.082,
+          "receiver_minus_target_public": -0.08,
+          "target_public_accuracy": 0.372
+        },
+        "label_permutation": {
+          "base_accuracy": 0.378,
+          "harm_count": 35,
+          "help_count": 58,
+          "n": 500,
+          "override_count": 140,
+          "override_rate": 0.28,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.084,
+            "ci95_low": 0.008,
+            "mean": 0.046
+          },
+          "receiver_accuracy": 0.424,
+          "receiver_minus_base": 0.046,
+          "receiver_minus_target_public": 0.052,
+          "target_public_accuracy": 0.372
+        },
+        "matched_source_private_packet": {
+          "base_accuracy": 0.378,
+          "harm_count": 35,
+          "help_count": 58,
+          "n": 500,
+          "override_count": 140,
+          "override_rate": 0.28,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.08404999999999974,
+            "ci95_low": 0.007950000000000002,
+            "mean": 0.046
+          },
+          "receiver_accuracy": 0.424,
+          "receiver_minus_base": 0.046,
+          "receiver_minus_target_public": 0.052,
+          "target_public_accuracy": 0.372
+        },
+        "random_same_byte_packet": {
+          "base_accuracy": 0.228,
+          "harm_count": 64,
+          "help_count": 135,
+          "n": 500,
+          "override_count": 421,
+          "override_rate": 0.842,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.194,
+            "ci95_low": 0.088,
+            "mean": 0.142
+          },
+          "receiver_accuracy": 0.37,
+          "receiver_minus_base": 0.142,
+          "receiver_minus_target_public": -0.002,
+          "target_public_accuracy": 0.372
+        },
+        "same_byte_structured_text": {
+          "base_accuracy": 0.35,
+          "harm_count": 18,
+          "help_count": 32,
+          "n": 500,
+          "override_count": 98,
+          "override_rate": 0.196,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.056,
+            "ci95_low": 0.0,
+            "mean": 0.028
+          },
+          "receiver_accuracy": 0.378,
+          "receiver_minus_base": 0.028,
+          "receiver_minus_target_public": 0.006,
+          "target_public_accuracy": 0.372
+        },
+        "shuffled_source_packet": {
+          "base_accuracy": 0.25,
+          "harm_count": 70,
+          "help_count": 127,
+          "n": 500,
+          "override_count": 400,
+          "override_rate": 0.8,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.168,
+            "ci95_low": 0.06,
+            "mean": 0.114
+          },
+          "receiver_accuracy": 0.364,
+          "receiver_minus_base": 0.114,
+          "receiver_minus_target_public": -0.008,
+          "target_public_accuracy": 0.372
+        },
+        "source_label_copy": {
+          "base_accuracy": 0.378,
+          "harm_count": 118,
+          "help_count": 115,
+          "n": 500,
+          "override_count": 480,
+          "override_rate": 0.96,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.056,
+            "ci95_low": -0.066,
+            "mean": -0.006
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": -0.006,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "target_derived_sidecar": {
+          "base_accuracy": 0.276,
+          "harm_count": 23,
+          "help_count": 61,
+          "n": 500,
+          "override_count": 156,
+          "override_rate": 0.312,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.112,
+            "ci95_low": 0.04,
+            "mean": 0.076
+          },
+          "receiver_accuracy": 0.352,
+          "receiver_minus_base": 0.076,
+          "receiver_minus_target_public": -0.02,
+          "target_public_accuracy": 0.372
+        },
+        "target_public_ridge": {
+          "base_accuracy": 0.372,
+          "harm_count": 0,
+          "help_count": 0,
+          "n": 500,
+          "override_count": 418,
+          "override_rate": 0.836,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.0,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "zero_source": {
+          "base_accuracy": 0.276,
+          "harm_count": 78,
+          "help_count": 126,
+          "n": 500,
+          "override_count": 475,
+          "override_rate": 0.95,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.152,
+            "ci95_low": 0.04,
+            "mean": 0.096
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.096,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        }
+      },
+      "seed": 47,
+      "selector": {
+        "feature_names": [
+          "bias",
+          "packet_top",
+          "packet_margin",
+          "target_top",
+          "target_margin",
+          "target_minus_packet_margin",
+          "packet_target_agree"
+        ],
+        "ridge": 100.0,
+        "threshold": 0.0179233751654385,
+        "validation_accuracy": 0.41,
+        "validation_base_accuracy": 0.356,
+        "validation_override_count": 138,
+        "validation_target_accuracy": 0.37,
+        "weights": [
+          0.034541126137687006,
+          -0.0036086292342268345,
+          -0.01719286281871666,
+          0.01579333667630261,
+          0.021826679262891578,
+          0.039019542081608315,
+          -0.009815079653018597
+        ]
+      },
+      "strict_receiver_ci_pass": true
+    },
+    {
+      "condition_metrics": {
+        "candidate_derangement": {
+          "base_accuracy": 0.212,
+          "harm_count": 40,
+          "help_count": 107,
+          "n": 500,
+          "override_count": 291,
+          "override_rate": 0.582,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.18,
+            "ci95_low": 0.09,
+            "mean": 0.134
+          },
+          "receiver_accuracy": 0.346,
+          "receiver_minus_base": 0.134,
+          "receiver_minus_target_public": -0.026,
+          "target_public_accuracy": 0.372
+        },
+        "label_permutation": {
+          "base_accuracy": 0.378,
+          "harm_count": 66,
+          "help_count": 86,
+          "n": 500,
+          "override_count": 273,
+          "override_rate": 0.546,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.09,
+            "ci95_low": -0.008,
+            "mean": 0.04
+          },
+          "receiver_accuracy": 0.418,
+          "receiver_minus_base": 0.04,
+          "receiver_minus_target_public": 0.046,
+          "target_public_accuracy": 0.372
+        },
+        "matched_source_private_packet": {
+          "base_accuracy": 0.378,
+          "harm_count": 66,
+          "help_count": 86,
+          "n": 500,
+          "override_count": 273,
+          "override_rate": 0.546,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.086,
+            "ci95_low": -0.008,
+            "mean": 0.04
+          },
+          "receiver_accuracy": 0.418,
+          "receiver_minus_base": 0.04,
+          "receiver_minus_target_public": 0.046,
+          "target_public_accuracy": 0.372
+        },
+        "random_same_byte_packet": {
+          "base_accuracy": 0.234,
+          "harm_count": 52,
+          "help_count": 116,
+          "n": 500,
+          "override_count": 334,
+          "override_rate": 0.668,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.176,
+            "ci95_low": 0.08,
+            "mean": 0.128
+          },
+          "receiver_accuracy": 0.362,
+          "receiver_minus_base": 0.128,
+          "receiver_minus_target_public": -0.01,
+          "target_public_accuracy": 0.372
+        },
+        "same_byte_structured_text": {
+          "base_accuracy": 0.35,
+          "harm_count": 44,
+          "help_count": 84,
+          "n": 500,
+          "override_count": 271,
+          "override_rate": 0.542,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.126,
+            "ci95_low": 0.036,
+            "mean": 0.08
+          },
+          "receiver_accuracy": 0.43,
+          "receiver_minus_base": 0.08,
+          "receiver_minus_target_public": 0.058,
+          "target_public_accuracy": 0.372
+        },
+        "shuffled_source_packet": {
+          "base_accuracy": 0.27,
+          "harm_count": 57,
+          "help_count": 109,
+          "n": 500,
+          "override_count": 323,
+          "override_rate": 0.646,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.152,
+            "ci95_low": 0.052,
+            "mean": 0.104
+          },
+          "receiver_accuracy": 0.374,
+          "receiver_minus_base": 0.104,
+          "receiver_minus_target_public": 0.002,
+          "target_public_accuracy": 0.372
+        },
+        "source_label_copy": {
+          "base_accuracy": 0.378,
+          "harm_count": 75,
+          "help_count": 93,
+          "n": 500,
+          "override_count": 299,
+          "override_rate": 0.598,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.08804999999999973,
+            "ci95_low": -0.014,
+            "mean": 0.036
+          },
+          "receiver_accuracy": 0.414,
+          "receiver_minus_base": 0.036,
+          "receiver_minus_target_public": 0.042,
+          "target_public_accuracy": 0.372
+        },
+        "target_derived_sidecar": {
+          "base_accuracy": 0.274,
+          "harm_count": 46,
+          "help_count": 91,
+          "n": 500,
+          "override_count": 303,
+          "override_rate": 0.606,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.136,
+            "ci95_low": 0.044,
+            "mean": 0.09
+          },
+          "receiver_accuracy": 0.364,
+          "receiver_minus_base": 0.09,
+          "receiver_minus_target_public": -0.008,
+          "target_public_accuracy": 0.372
+        },
+        "target_public_ridge": {
+          "base_accuracy": 0.372,
+          "harm_count": 0,
+          "help_count": 0,
+          "n": 500,
+          "override_count": 34,
+          "override_rate": 0.068,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.0,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "zero_source": {
+          "base_accuracy": 0.276,
+          "harm_count": 53,
+          "help_count": 91,
+          "n": 500,
+          "override_count": 313,
+          "override_rate": 0.626,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.12,
+            "ci95_low": 0.028,
+            "mean": 0.076
+          },
+          "receiver_accuracy": 0.352,
+          "receiver_minus_base": 0.076,
+          "receiver_minus_target_public": -0.02,
+          "target_public_accuracy": 0.372
+        }
+      },
+      "seed": 53,
+      "selector": {
+        "feature_names": [
+          "bias",
+          "packet_top",
+          "packet_margin",
+          "target_top",
+          "target_margin",
+          "target_minus_packet_margin",
+          "packet_target_agree"
+        ],
+        "ridge": 1.0,
+        "threshold": -0.005534047764240502,
+        "validation_accuracy": 0.404,
+        "validation_base_accuracy": 0.358,
+        "validation_override_count": 218,
+        "validation_target_accuracy": 0.37,
+        "weights": [
+          -0.018809579954117042,
+          0.15874579674375838,
+          0.09447013723635309,
+          0.016843181784000256,
+          0.3682813322404496,
+          0.2738111950041053,
+          -0.026389770790621
+        ]
+      },
+      "strict_receiver_ci_pass": false
+    },
+    {
+      "condition_metrics": {
+        "candidate_derangement": {
+          "base_accuracy": 0.21,
+          "harm_count": 14,
+          "help_count": 44,
+          "n": 500,
+          "override_count": 96,
+          "override_rate": 0.192,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.09,
+            "ci95_low": 0.03,
+            "mean": 0.06
+          },
+          "receiver_accuracy": 0.27,
+          "receiver_minus_base": 0.06,
+          "receiver_minus_target_public": -0.102,
+          "target_public_accuracy": 0.372
+        },
+        "label_permutation": {
+          "base_accuracy": 0.378,
+          "harm_count": 21,
+          "help_count": 43,
+          "n": 500,
+          "override_count": 102,
+          "override_rate": 0.204,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.074,
+            "ci95_low": 0.014,
+            "mean": 0.044
+          },
+          "receiver_accuracy": 0.422,
+          "receiver_minus_base": 0.044,
+          "receiver_minus_target_public": 0.05,
+          "target_public_accuracy": 0.372
+        },
+        "matched_source_private_packet": {
+          "base_accuracy": 0.378,
+          "harm_count": 21,
+          "help_count": 43,
+          "n": 500,
+          "override_count": 102,
+          "override_rate": 0.204,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.074,
+            "ci95_low": 0.012,
+            "mean": 0.044
+          },
+          "receiver_accuracy": 0.422,
+          "receiver_minus_base": 0.044,
+          "receiver_minus_target_public": 0.05,
+          "target_public_accuracy": 0.372
+        },
+        "random_same_byte_packet": {
+          "base_accuracy": 0.244,
+          "harm_count": 11,
+          "help_count": 33,
+          "n": 500,
+          "override_count": 78,
+          "override_rate": 0.156,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.07,
+            "ci95_low": 0.018,
+            "mean": 0.044
+          },
+          "receiver_accuracy": 0.288,
+          "receiver_minus_base": 0.044,
+          "receiver_minus_target_public": -0.084,
+          "target_public_accuracy": 0.372
+        },
+        "same_byte_structured_text": {
+          "base_accuracy": 0.35,
+          "harm_count": 105,
+          "help_count": 116,
+          "n": 500,
+          "override_count": 500,
+          "override_rate": 1.0,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.078,
+            "ci95_low": -0.034,
+            "mean": 0.022
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.022,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "shuffled_source_packet": {
+          "base_accuracy": 0.27,
+          "harm_count": 7,
+          "help_count": 30,
+          "n": 500,
+          "override_count": 72,
+          "override_rate": 0.144,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.07,
+            "ci95_low": 0.024,
+            "mean": 0.046
+          },
+          "receiver_accuracy": 0.316,
+          "receiver_minus_base": 0.046,
+          "receiver_minus_target_public": -0.056,
+          "target_public_accuracy": 0.372
+        },
+        "source_label_copy": {
+          "base_accuracy": 0.378,
+          "harm_count": 5,
+          "help_count": 16,
+          "n": 500,
+          "override_count": 35,
+          "override_rate": 0.07,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.04,
+            "ci95_low": 0.004,
+            "mean": 0.022
+          },
+          "receiver_accuracy": 0.4,
+          "receiver_minus_base": 0.022,
+          "receiver_minus_target_public": 0.028,
+          "target_public_accuracy": 0.372
+        },
+        "target_derived_sidecar": {
+          "base_accuracy": 0.276,
+          "harm_count": 16,
+          "help_count": 36,
+          "n": 500,
+          "override_count": 108,
+          "override_rate": 0.216,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.068,
+            "ci95_low": 0.012,
+            "mean": 0.04
+          },
+          "receiver_accuracy": 0.316,
+          "receiver_minus_base": 0.04,
+          "receiver_minus_target_public": -0.056,
+          "target_public_accuracy": 0.372
+        },
+        "target_public_ridge": {
+          "base_accuracy": 0.372,
+          "harm_count": 0,
+          "help_count": 0,
+          "n": 500,
+          "override_count": 0,
+          "override_rate": 0.0,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.0,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "zero_source": {
+          "base_accuracy": 0.276,
+          "harm_count": 3,
+          "help_count": 17,
+          "n": 500,
+          "override_count": 37,
+          "override_rate": 0.074,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.046,
+            "ci95_low": 0.012,
+            "mean": 0.028
+          },
+          "receiver_accuracy": 0.304,
+          "receiver_minus_base": 0.028,
+          "receiver_minus_target_public": -0.068,
+          "target_public_accuracy": 0.372
+        }
+      },
+      "seed": 59,
+      "selector": {
+        "feature_names": [
+          "bias",
+          "packet_top",
+          "packet_margin",
+          "target_top",
+          "target_margin",
+          "target_minus_packet_margin",
+          "packet_target_agree"
+        ],
+        "ridge": 0.01,
+        "threshold": 0.06003561222507855,
+        "validation_accuracy": 0.412,
+        "validation_base_accuracy": 0.356,
+        "validation_override_count": 78,
+        "validation_target_accuracy": 0.37,
+        "weights": [
+          -0.07399492232979075,
+          0.6544060158447426,
+          -0.09367302697730516,
+          0.021166086119817518,
+          0.34310983673117623,
+          0.43678286370958214,
+          -0.0279177179690201
+        ]
+      },
+      "strict_receiver_ci_pass": true
+    },
+    {
+      "condition_metrics": {
+        "candidate_derangement": {
+          "base_accuracy": 0.208,
+          "harm_count": 45,
+          "help_count": 107,
+          "n": 500,
+          "override_count": 317,
+          "override_rate": 0.634,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.17,
+            "ci95_low": 0.078,
+            "mean": 0.124
+          },
+          "receiver_accuracy": 0.332,
+          "receiver_minus_base": 0.124,
+          "receiver_minus_target_public": -0.04,
+          "target_public_accuracy": 0.372
+        },
+        "label_permutation": {
+          "base_accuracy": 0.38,
+          "harm_count": 81,
+          "help_count": 88,
+          "n": 500,
+          "override_count": 308,
+          "override_rate": 0.616,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.066,
+            "ci95_low": -0.038,
+            "mean": 0.014
+          },
+          "receiver_accuracy": 0.394,
+          "receiver_minus_base": 0.014,
+          "receiver_minus_target_public": 0.022,
+          "target_public_accuracy": 0.372
+        },
+        "matched_source_private_packet": {
+          "base_accuracy": 0.38,
+          "harm_count": 81,
+          "help_count": 88,
+          "n": 500,
+          "override_count": 308,
+          "override_rate": 0.616,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.066,
+            "ci95_low": -0.036,
+            "mean": 0.014
+          },
+          "receiver_accuracy": 0.394,
+          "receiver_minus_base": 0.014,
+          "receiver_minus_target_public": 0.022,
+          "target_public_accuracy": 0.372
+        },
+        "random_same_byte_packet": {
+          "base_accuracy": 0.256,
+          "harm_count": 75,
+          "help_count": 132,
+          "n": 500,
+          "override_count": 497,
+          "override_rate": 0.994,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.17,
+            "ci95_low": 0.058,
+            "mean": 0.114
+          },
+          "receiver_accuracy": 0.37,
+          "receiver_minus_base": 0.114,
+          "receiver_minus_target_public": -0.002,
+          "target_public_accuracy": 0.372
+        },
+        "same_byte_structured_text": {
+          "base_accuracy": 0.35,
+          "harm_count": 0,
+          "help_count": 0,
+          "n": 500,
+          "override_count": 0,
+          "override_rate": 0.0,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "receiver_accuracy": 0.35,
+          "receiver_minus_base": 0.0,
+          "receiver_minus_target_public": -0.022,
+          "target_public_accuracy": 0.372
+        },
+        "shuffled_source_packet": {
+          "base_accuracy": 0.264,
+          "harm_count": 81,
+          "help_count": 135,
+          "n": 500,
+          "override_count": 493,
+          "override_rate": 0.986,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.166,
+            "ci95_low": 0.05,
+            "mean": 0.108
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.108,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "source_label_copy": {
+          "base_accuracy": 0.378,
+          "harm_count": 118,
+          "help_count": 115,
+          "n": 500,
+          "override_count": 500,
+          "override_rate": 1.0,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.054,
+            "ci95_low": -0.066,
+            "mean": -0.006
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": -0.006,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "target_derived_sidecar": {
+          "base_accuracy": 0.276,
+          "harm_count": 50,
+          "help_count": 94,
+          "n": 500,
+          "override_count": 308,
+          "override_rate": 0.616,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.134,
+            "ci95_low": 0.042,
+            "mean": 0.088
+          },
+          "receiver_accuracy": 0.364,
+          "receiver_minus_base": 0.088,
+          "receiver_minus_target_public": -0.008,
+          "target_public_accuracy": 0.372
+        },
+        "target_public_ridge": {
+          "base_accuracy": 0.372,
+          "harm_count": 0,
+          "help_count": 0,
+          "n": 500,
+          "override_count": 500,
+          "override_rate": 1.0,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.0,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "zero_source": {
+          "base_accuracy": 0.276,
+          "harm_count": 78,
+          "help_count": 126,
+          "n": 500,
+          "override_count": 500,
+          "override_rate": 1.0,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.1480499999999997,
+            "ci95_low": 0.038,
+            "mean": 0.096
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.096,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        }
+      },
+      "seed": 61,
+      "selector": {
+        "feature_names": [
+          "bias",
+          "packet_top",
+          "packet_margin",
+          "target_top",
+          "target_margin",
+          "target_minus_packet_margin",
+          "packet_target_agree"
+        ],
+        "ridge": 0.01,
+        "threshold": -0.007668529417884572,
+        "validation_accuracy": 0.412,
+        "validation_base_accuracy": 0.356,
+        "validation_override_count": 227,
+        "validation_target_accuracy": 0.37,
+        "weights": [
+          0.3554287974622705,
+          -1.6926153041245349,
+          0.47675736677446495,
+          0.004964261791310692,
+          0.6542658315278084,
+          0.1775084647530299,
+          -0.03461572196302845
+        ]
+      },
+      "strict_receiver_ci_pass": false
+    },
+    {
+      "condition_metrics": {
+        "candidate_derangement": {
+          "base_accuracy": 0.21,
+          "harm_count": 15,
+          "help_count": 34,
+          "n": 500,
+          "override_count": 80,
+          "override_rate": 0.16,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.066,
+            "ci95_low": 0.01,
+            "mean": 0.038
+          },
+          "receiver_accuracy": 0.248,
+          "receiver_minus_base": 0.038,
+          "receiver_minus_target_public": -0.124,
+          "target_public_accuracy": 0.372
+        },
+        "label_permutation": {
+          "base_accuracy": 0.378,
+          "harm_count": 17,
+          "help_count": 29,
+          "n": 500,
+          "override_count": 84,
+          "override_rate": 0.168,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.05,
+            "ci95_low": -0.004,
+            "mean": 0.024
+          },
+          "receiver_accuracy": 0.402,
+          "receiver_minus_base": 0.024,
+          "receiver_minus_target_public": 0.03,
+          "target_public_accuracy": 0.372
+        },
+        "matched_source_private_packet": {
+          "base_accuracy": 0.378,
+          "harm_count": 17,
+          "help_count": 29,
+          "n": 500,
+          "override_count": 84,
+          "override_rate": 0.168,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.05,
+            "ci95_low": -0.004,
+            "mean": 0.024
+          },
+          "receiver_accuracy": 0.402,
+          "receiver_minus_base": 0.024,
+          "receiver_minus_target_public": 0.03,
+          "target_public_accuracy": 0.372
+        },
+        "random_same_byte_packet": {
+          "base_accuracy": 0.25,
+          "harm_count": 0,
+          "help_count": 6,
+          "n": 500,
+          "override_count": 10,
+          "override_rate": 0.02,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.022,
+            "ci95_low": 0.004,
+            "mean": 0.012
+          },
+          "receiver_accuracy": 0.262,
+          "receiver_minus_base": 0.012,
+          "receiver_minus_target_public": -0.11,
+          "target_public_accuracy": 0.372
+        },
+        "same_byte_structured_text": {
+          "base_accuracy": 0.35,
+          "harm_count": 105,
+          "help_count": 116,
+          "n": 500,
+          "override_count": 500,
+          "override_rate": 1.0,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.078,
+            "ci95_low": -0.03604999999999999,
+            "mean": 0.022
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.022,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "shuffled_source_packet": {
+          "base_accuracy": 0.278,
+          "harm_count": 1,
+          "help_count": 8,
+          "n": 500,
+          "override_count": 12,
+          "override_rate": 0.024,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.026,
+            "ci95_low": 0.004,
+            "mean": 0.014
+          },
+          "receiver_accuracy": 0.292,
+          "receiver_minus_base": 0.014,
+          "receiver_minus_target_public": -0.08,
+          "target_public_accuracy": 0.372
+        },
+        "source_label_copy": {
+          "base_accuracy": 0.378,
+          "harm_count": 1,
+          "help_count": 0,
+          "n": 500,
+          "override_count": 3,
+          "override_rate": 0.006,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.0,
+            "ci95_low": -0.006,
+            "mean": -0.002
+          },
+          "receiver_accuracy": 0.376,
+          "receiver_minus_base": -0.002,
+          "receiver_minus_target_public": 0.004,
+          "target_public_accuracy": 0.372
+        },
+        "target_derived_sidecar": {
+          "base_accuracy": 0.274,
+          "harm_count": 7,
+          "help_count": 28,
+          "n": 500,
+          "override_count": 74,
+          "override_rate": 0.148,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.066,
+            "ci95_low": 0.02,
+            "mean": 0.042
+          },
+          "receiver_accuracy": 0.316,
+          "receiver_minus_base": 0.042,
+          "receiver_minus_target_public": -0.056,
+          "target_public_accuracy": 0.372
+        },
+        "target_public_ridge": {
+          "base_accuracy": 0.372,
+          "harm_count": 0,
+          "help_count": 0,
+          "n": 500,
+          "override_count": 0,
+          "override_rate": 0.0,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "receiver_accuracy": 0.372,
+          "receiver_minus_base": 0.0,
+          "receiver_minus_target_public": 0.0,
+          "target_public_accuracy": 0.372
+        },
+        "zero_source": {
+          "base_accuracy": 0.276,
+          "harm_count": 1,
+          "help_count": 1,
+          "n": 500,
+          "override_count": 3,
+          "override_rate": 0.006,
+          "paired_ci95_vs_base": {
+            "ci95_high": 0.006,
+            "ci95_low": -0.006,
+            "mean": 0.0
+          },
+          "receiver_accuracy": 0.276,
+          "receiver_minus_base": 0.0,
+          "receiver_minus_target_public": -0.096,
+          "target_public_accuracy": 0.372
+        }
+      },
+      "seed": 67,
+      "selector": {
+        "feature_names": [
+          "bias",
+          "packet_top",
+          "packet_margin",
+          "target_top",
+          "target_margin",
+          "target_minus_packet_margin",
+          "packet_target_agree"
+        ],
+        "ridge": 0.1,
+        "threshold": 0.07551040280087405,
+        "validation_accuracy": 0.398,
+        "validation_base_accuracy": 0.354,
+        "validation_override_count": 59,
+        "validation_target_accuracy": 0.37,
+        "weights": [
+          -0.255929714197403,
+          1.0389762715629045,
+          0.11385595819594736,
+          0.014389596179089843,
+          0.4709209286549182,
+          0.357064970459075,
+          -0.03493470566772098
+        ]
+      },
+      "strict_receiver_ci_pass": false
+    }
+  ],
+  "receiver_candidate_pass": true,
+  "seeds": [
+    47,
+    53,
+    59,
+    61,
+    67
+  ],
+  "selector_ridges": [
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0
+  ],
+  "target_feature_dim": 1536,
+  "target_public_receiver": {
+    "feature_dim": 1536,
+    "kind": "train_split_public_hashed_pair_ridge",
+    "ridge": 1.0,
+    "test_accuracy": 0.372,
+    "train_pair_rows": 19828,
+    "train_positive_rows": 4957,
+    "validation_accuracy": 0.37
+  },
+  "target_ridge": 1.0,
+  "test_path": "results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl",
+  "test_rows": 500,
+  "test_sha256": "fc5cd8eff2c0984b49d2c1e1d333622109a9289bd97892474a1f0ce6dc4580e0",
+  "test_source_cache": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/source_prediction_cache.jsonl",
+  "test_source_cache_sha256": "cbd3c67f613cd945af307e1039fa04e5a7cd615997c3bb4f10345589f43b1f22",
+  "threshold_percentiles": [
+    0,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60,
+    65,
+    70,
+    75,
+    80,
+    85,
+    90,
+    95,
+    100
+  ],
+  "train_path": "results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl",
+  "train_rows": 4957,
+  "train_sha256": "f84e9d684587e1ed7a52ee8b8a2751149904c1184fd3d3c15489df7eb806d905",
+  "train_validation_test_overlap_count": 0,
+  "train_validation_test_overlap_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "validation_path": "results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_validation.jsonl",
+  "validation_rows": 500,
+  "validation_sha256": "4b96e1ab806522ad7bb9c1482a294e004a3fed0c6eb1c8de499fcb3e1576cd6e",
+  "validation_source_cache": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_validation_3b/source_prediction_cache.jsonl",
+  "validation_source_cache_sha256": "2f345a77156ec57a34c13250468ceadae7f4131b12a67204d79cf01834aa9d27"
+}
