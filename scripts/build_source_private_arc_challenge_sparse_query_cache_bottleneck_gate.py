@@ -126,6 +126,26 @@ def _load_state(npz_path: pathlib.Path, meta_path: pathlib.Path) -> hq_gate.Hidd
     return hq_gate.HiddenQueryState(hidden=hidden, query=query, metadata=metadata)
 
 
+def _hidden_query_cache_contract(hidden_query_dir: pathlib.Path) -> dict[str, Any]:
+    payload_path = hidden_query_dir / "arc_challenge_hidden_query_common_basis_gate.json"
+    if not payload_path.exists():
+        return {}
+    payload = json.loads(payload_path.read_text(encoding="utf-8"))
+    return dict(payload.get("source_cache_contract") or {})
+
+
+def _hidden_query_cache_paths(hidden_query_dir: pathlib.Path, split: str) -> tuple[pathlib.Path, pathlib.Path]:
+    contract = _hidden_query_cache_contract(hidden_query_dir)
+    npz_key = f"{split}_hidden_query_cache_npz"
+    meta_key = f"{split}_hidden_query_cache_meta"
+    if contract.get(npz_key) and contract.get(meta_key):
+        return _resolve(contract[npz_key]), _resolve(contract[meta_key])
+    return (
+        hidden_query_dir / f"tinyllama_{split}_disagreement_hidden_query_cache.npz",
+        hidden_query_dir / f"tinyllama_{split}_disagreement_hidden_query_cache.json",
+    )
+
+
 def _fit_pca(values: np.ndarray, fit_indices: np.ndarray, dim: int) -> dict[str, Any]:
     fit = np.asarray(values[fit_indices], dtype=np.float64)
     mean = np.mean(fit, axis=0)
@@ -284,6 +304,8 @@ def build_gate(
     ridges: tuple[float, ...] = DEFAULT_RIDGES,
     selection_seed: int = 18013,
     dev_fraction: float = 0.25,
+    train_disagreement_limit: int | None = None,
+    test_disagreement_limit: int | None = None,
     budget_bytes: int = 12,
     anchor_count: int = 384,
     spectral_dim: int = 96,
@@ -307,32 +329,29 @@ def build_gate(
         path=qwen_disagreement_path,
         split="validation",
         seed=int(seeds[0]),
-        limit=None,
+        limit=train_disagreement_limit,
     )
     test_ids = hq_gate._load_disagreement_row_ids(
         path=qwen_disagreement_path,
         split="test",
         seed=int(seeds[0]),
-        limit=None,
+        limit=test_disagreement_limit,
     )
     validation_rows = hq_gate._filter_rows_by_ids(validation_full, validation_ids)
     test_rows = hq_gate._filter_rows_by_ids(test_full, test_ids)
     overlap = sorted({row.content_id for row in validation_rows} & {row.content_id for row in test_rows})
-    validation_state = _load_state(
-        hidden_query_dir / "tinyllama_validation_disagreement_hidden_query_cache.npz",
-        hidden_query_dir / "tinyllama_validation_disagreement_hidden_query_cache.json",
-    )
-    test_state = _load_state(
-        hidden_query_dir / "tinyllama_test_disagreement_hidden_query_cache.npz",
-        hidden_query_dir / "tinyllama_test_disagreement_hidden_query_cache.json",
-    )
+    validation_hidden_npz, validation_hidden_meta = _hidden_query_cache_paths(hidden_query_dir, "validation")
+    test_hidden_npz, test_hidden_meta = _hidden_query_cache_paths(hidden_query_dir, "test")
+    validation_state = _load_state(validation_hidden_npz, validation_hidden_meta)
+    test_state = _load_state(test_hidden_npz, test_hidden_meta)
+    source_contract = hq_gate._source_cache_contract(source_family_gate_dir, "auto")
     validation_source_predictions = hq_gate._source_predictions(
         validation_rows,
-        hq_gate._read_source_predictions(source_family_gate_dir / "tinyllama_validation" / "source_prediction_cache.jsonl"),
+        hq_gate._read_source_predictions(pathlib.Path(source_contract["validation_source_cache"])),
     )
     test_source_predictions = hq_gate._source_predictions(
         test_rows,
-        hq_gate._read_source_predictions(source_family_gate_dir / "tinyllama_test" / "source_prediction_cache.jsonl"),
+        hq_gate._read_source_predictions(pathlib.Path(source_contract["test_source_cache"])),
     )
     anchor_texts = arc_gate._choice_pair_texts(train_anchor_rows)
     validation_receiver_features, validation_basis_meta = hq_gate._target_spectra(
@@ -608,13 +627,14 @@ def build_gate(
             "test_basis_metadata": test_basis_meta,
         },
         "method_contract": {
-            "source_model": "TinyLlama-1.1B-Chat-v1.0 cached hidden/query",
+            "source_family": source_contract["source_family"],
+            "source_model": source_contract["source_model"],
             "source_inputs_at_eval": ["question", "choices"],
             "forbidden_eval_source_inputs": list(arc_gate.FORBIDDEN_SOURCE_KEYS),
             "raw_hidden_query_transmitted": False,
             "source_text_transmitted": False,
             "source_kv_transmitted": False,
-            "packet_format": "12-byte sparse signed packet emitted from train-only nonlinear sparse-query hidden/query features",
+            "packet_format": f"{budget_bytes}-byte sparse signed packet emitted from train-only nonlinear sparse-query hidden/query features",
             "native_gpu_claims_allowed": False,
         },
         "input_artifacts": {
@@ -622,16 +642,22 @@ def build_gate(
             "source_family_gate_dir": _display_path(source_family_gate_dir),
             "qwen_disagreement_predictions": _display_path(qwen_disagreement_path),
             "qwen_disagreement_sha256": _sha256_file(qwen_disagreement_path),
+            "validation_hidden_query_cache_npz": _display_path(validation_hidden_npz),
+            "validation_hidden_query_cache_meta": _display_path(validation_hidden_meta),
+            "test_hidden_query_cache_npz": _display_path(test_hidden_npz),
+            "test_hidden_query_cache_meta": _display_path(test_hidden_meta),
+            "validation_source_cache": _display_path(source_contract["validation_source_cache"]),
+            "test_source_cache": _display_path(source_contract["test_source_cache"]),
         },
         "lay_explanation": (
-            "This run gives TinyLlama a small learned nonlinear bottleneck before it sends the same 12-byte "
-            "ARC hint. The bottleneck acts like a set of sparse queries over TinyLlama's hidden/query state, "
+            f"This run gives {source_contract['source_family']} a small learned nonlinear bottleneck before it sends the same {budget_bytes}-byte "
+            "ARC hint. The bottleneck acts like a set of sparse queries over the source model's hidden/query state, "
             "then translates those query activations into the public packet coordinate system. The hidden/query "
             "vectors themselves are not sent."
         ),
         "interpretation": (
             "A pass would revive the ARC hidden/query branch with a real nonlinear source-private connector. "
-            "A failure kills another Mac-local TinyLlama hidden/query connector family and leaves a stronger "
+            "A failure weakens another Mac-local hidden/query connector family and leaves a stronger "
             "true cross-family source or larger learned query/cache connector on NVIDIA as the next live branch."
         ),
     }
@@ -669,13 +695,21 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--train-anchor-path", type=pathlib.Path, default=DEFAULT_TRAIN_ANCHORS)
     parser.add_argument("--validation-path", type=pathlib.Path, default=DEFAULT_VALIDATION)
     parser.add_argument("--test-path", type=pathlib.Path, default=DEFAULT_TEST)
-    parser.add_argument("--seeds", type=_parse_int_tuple, default="47,53,59,61,67")
-    parser.add_argument("--source-views", type=_parse_str_tuple, default=",".join(DEFAULT_VIEWS))
-    parser.add_argument("--pca-dims", type=_parse_int_tuple, default="16,32")
-    parser.add_argument("--rff-components", type=_parse_int_tuple, default="32,64")
-    parser.add_argument("--active-components", type=_parse_int_tuple, default="4,8,16")
-    parser.add_argument("--gammas", type=_parse_float_tuple, default="0.5,1.0")
-    parser.add_argument("--ridges", type=_parse_float_tuple, default="10.0,100.0,1000.0")
+    parser.add_argument("--seeds", type=_parse_int_tuple, default=DEFAULT_SEEDS)
+    parser.add_argument("--source-views", type=_parse_str_tuple, default=DEFAULT_VIEWS)
+    parser.add_argument("--pca-dims", type=_parse_int_tuple, default=DEFAULT_PCA_DIMS)
+    parser.add_argument("--rff-components", type=_parse_int_tuple, default=DEFAULT_RFF_COMPONENTS)
+    parser.add_argument("--active-components", type=_parse_int_tuple, default=DEFAULT_ACTIVE_COMPONENTS)
+    parser.add_argument("--gammas", type=_parse_float_tuple, default=DEFAULT_GAMMAS)
+    parser.add_argument("--ridges", type=_parse_float_tuple, default=DEFAULT_RIDGES)
+    parser.add_argument("--selection-seed", type=int, default=18013)
+    parser.add_argument("--dev-fraction", type=float, default=0.25)
+    parser.add_argument("--train-disagreement-limit", type=int, default=None)
+    parser.add_argument("--test-disagreement-limit", type=int, default=None)
+    parser.add_argument("--budget-bytes", type=int, default=12)
+    parser.add_argument("--anchor-count", type=int, default=384)
+    parser.add_argument("--spectral-dim", type=int, default=96)
+    parser.add_argument("--code-dim", type=int, default=96)
     parser.add_argument("--bootstrap-samples", type=int, default=500)
     return parser.parse_args()
 
@@ -696,6 +730,14 @@ def main() -> None:
         active_components_values=args.active_components,
         gammas=args.gammas,
         ridges=args.ridges,
+        selection_seed=int(args.selection_seed),
+        dev_fraction=float(args.dev_fraction),
+        train_disagreement_limit=args.train_disagreement_limit,
+        test_disagreement_limit=args.test_disagreement_limit,
+        budget_bytes=int(args.budget_bytes),
+        anchor_count=int(args.anchor_count),
+        spectral_dim=int(args.spectral_dim),
+        code_dim=int(args.code_dim),
         bootstrap_samples=args.bootstrap_samples,
     )
     print(

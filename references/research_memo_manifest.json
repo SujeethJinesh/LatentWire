@@ -2133,5 +2133,12 @@
     "path": "references/661_common_feature_connector_and_systems_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the post-Phi decomposition next branch, covering USAE/SAE/crosscoder common-feature priors, prefix/gist/Perceiver/Q-Former connector baselines, consistency repair inspiration, and QJL/TurboQuant/C2C/KVComm/vLLM/SGLang systems boundaries."
+  },
+  {
+    "num": 662,
+    "slug": "target_sparse_innovation_connector_refs_20260502",
+    "path": "references/662_target_sparse_innovation_connector_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC target-conditioned sparse innovation connector branch, covering SAE feature dictionaries, SAE universality, BLIP-2/Q-Former, gist tokens, QJL, TurboQuant, vLLM, SGLang, required anti-cache controls, and the decision rule for stopping the n32/n64 hidden-query branch."
   }
 ]

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 """ARC hidden/query common-basis source-private packet gate.
 
-This gate asks whether TinyLlama hidden/query state can be converted into the
-same public Fourier/anchor receiver coordinates that made the Qwen ARC packet
-work.  It trains only on validation disagreement rows and evaluates once on
-frozen test disagreement rows from the TinyLlama-vs-Qwen source-family
+This gate asks whether an alternate source model's hidden/query state can be
+converted into the same public Fourier/anchor receiver coordinates that made
+the Qwen ARC packet work.  It trains only on validation disagreement rows and
+evaluates once on frozen test disagreement rows from a source-family
 falsification gate.
 """
 
@@ -49,10 +49,7 @@ DEFAULT_TEST = pathlib.Path(
 DEFAULT_SOURCE_FAMILY_GATE_DIR = pathlib.Path(
     "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu"
 )
-DEFAULT_SOURCE_MODEL = (
-    "/Users/sujeethjinesh/.cache/huggingface/hub/"
-    "models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6"
-)
+DEFAULT_SOURCE_MODEL = "auto"
 DEFAULT_SEEDS = (47, 53, 59, 61, 67)
 DEFAULT_PCA_DIMS = (16, 32, 64, 96)
 DEFAULT_RIDGES = (0.1, 1.0, 10.0, 100.0, 1000.0)
@@ -87,6 +84,78 @@ def _sha256_file(path: pathlib.Path | str) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _read_optional_json(path: pathlib.Path | str) -> dict[str, Any]:
+    resolved = _resolve(path)
+    if not resolved.exists():
+        return {}
+    return json.loads(resolved.read_text(encoding="utf-8"))
+
+
+def _slug(value: str) -> str:
+    cleaned = "".join(ch.lower() if ch.isalnum() else "_" for ch in str(value))
+    while "__" in cleaned:
+        cleaned = cleaned.replace("__", "_")
+    return cleaned.strip("_") or "source"
+
+
+def _source_cache_prefix(source_family: str) -> str:
+    slug = _slug(source_family)
+    if slug.startswith("tinyllama"):
+        return "tinyllama"
+    if slug.startswith("phi3"):
+        return "phi3"
+    if slug.startswith("qwen2_5_1_5b"):
+        return "qwen25_15b"
+    return slug
+
+
+def _source_cache_contract(source_family_gate_dir: pathlib.Path, source_model: str) -> dict[str, Any]:
+    """Resolve alternate-source cache/model metadata from a falsification gate."""
+
+    source_family_gate_dir = _resolve(source_family_gate_dir)
+    audit = _read_optional_json(source_family_gate_dir / "source_cache_audit.json")
+    validation_cache = audit.get("alt_validation_cache") or audit.get("alternate_validation_cache")
+    test_cache = audit.get("alt_test_cache") or audit.get("alternate_test_cache")
+    if validation_cache is None:
+        validation_cache = source_family_gate_dir / "tinyllama_validation" / "source_prediction_cache.jsonl"
+    if test_cache is None:
+        test_cache = source_family_gate_dir / "tinyllama_test" / "source_prediction_cache.jsonl"
+    audit_source_model = str(audit.get("alternate_source_model") or "").strip()
+    resolved_source_model = audit_source_model if str(source_model).lower() == "auto" and audit_source_model else str(source_model)
+    if not resolved_source_model or resolved_source_model.lower() == "auto":
+        raise ValueError(
+            f"source model was 'auto' but {source_family_gate_dir / 'source_cache_audit.json'} "
+            "does not declare alternate_source_model"
+        )
+    source_family = str(audit.get("alternate_source_family") or _infer_source_family_from_cache(validation_cache) or "source")
+    return {
+        "source_family": source_family,
+        "source_cache_prefix": _source_cache_prefix(source_family),
+        "source_model": resolved_source_model,
+        "source_model_requested": str(source_model),
+        "validation_source_cache": _resolve(validation_cache),
+        "test_source_cache": _resolve(test_cache),
+        "source_cache_audit": audit,
+        "source_cache_audit_path": source_family_gate_dir / "source_cache_audit.json",
+    }
+
+
+def _infer_source_family_from_cache(path: pathlib.Path | str) -> str | None:
+    resolved = _resolve(path)
+    if not resolved.exists():
+        return None
+    with resolved.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            family = row.get("source_family")
+            if family:
+                return str(family)
+            return None
+    return None
 
 
 def _content_digest(rows: list[arc_gate.ArcRow]) -> str:
@@ -690,10 +759,13 @@ def _summarize_against_external(
     return base | {
         "qwen_substituted_accuracy": float(np.mean(qwen_values)),
         "cached_tiny_packet_accuracy": float(np.mean(cached_values)),
+        "cached_source_packet_accuracy": float(np.mean(cached_values)),
         "matched_minus_qwen_substituted": qwen_ci["mean_delta"],
         "matched_minus_cached_tiny_packet": cached_ci["mean_delta"],
+        "matched_minus_cached_source_packet": cached_ci["mean_delta"],
         "paired_ci95_vs_qwen_substituted": qwen_ci,
         "paired_ci95_vs_cached_tiny_packet": cached_ci,
+        "paired_ci95_vs_cached_source_packet": cached_ci,
     }
 
 
@@ -702,8 +774,10 @@ def _aggregate_external(per_seed: list[dict[str, Any]]) -> dict[str, Any]:
     for key in (
         "qwen_substituted_accuracy",
         "cached_tiny_packet_accuracy",
+        "cached_source_packet_accuracy",
         "matched_minus_qwen_substituted",
         "matched_minus_cached_tiny_packet",
+        "matched_minus_cached_source_packet",
     ):
         values = [float(row[key]) for row in per_seed]
         aggregate[f"{key}_mean"] = float(np.mean(values))
@@ -714,6 +788,9 @@ def _aggregate_external(per_seed: list[dict[str, Any]]) -> dict[str, Any]:
     )
     aggregate["paired_ci95_low_vs_cached_tiny_packet_min"] = float(
         min(row["paired_ci95_vs_cached_tiny_packet"]["ci95_low"] for row in per_seed)
+    )
+    aggregate["paired_ci95_low_vs_cached_source_packet_min"] = float(
+        min(row["paired_ci95_vs_cached_source_packet"]["ci95_low"] for row in per_seed)
     )
     return aggregate
 
@@ -874,7 +951,7 @@ def _write_summary_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None
         f"- test disagreement rows: `{h['test_disagreement_rows']}`",
         f"- test matched mean: `{h['test_matched_accuracy_mean']:.6f}`",
         f"- test Qwen-substituted mean: `{h['test_qwen_substituted_accuracy_mean']:.6f}`",
-        f"- test cached Tiny packet mean: `{h['test_cached_tiny_packet_accuracy_mean']:.6f}`",
+        f"- test cached source packet mean: `{h['test_cached_tiny_packet_accuracy_mean']:.6f}`",
         f"- test delta vs Qwen-sub: `{h['test_matched_minus_qwen_substituted_mean']:.6f}`",
         f"- test min CI95 low vs Qwen-sub: `{h['test_paired_ci95_low_vs_qwen_substituted_min']:.6f}`",
         f"- candidate-roll control mean: `{h['candidate_roll_matched_accuracy_mean']:.6f}`",
@@ -932,8 +1009,15 @@ def build_gate(
     test_path = _resolve(test_path)
     source_family_gate_dir = _resolve(source_family_gate_dir)
     qwen_disagreement_path = source_family_gate_dir / "qwen_disagreement_predictions.jsonl"
-    validation_source_cache = source_family_gate_dir / "tinyllama_validation" / "source_prediction_cache.jsonl"
-    test_source_cache = source_family_gate_dir / "tinyllama_test" / "source_prediction_cache.jsonl"
+    source_contract = _source_cache_contract(source_family_gate_dir, source_model)
+    source_model_resolved = str(source_contract["source_model"])
+    source_cache_prefix = str(source_contract["source_cache_prefix"])
+    validation_source_cache = pathlib.Path(source_contract["validation_source_cache"])
+    test_source_cache = pathlib.Path(source_contract["test_source_cache"])
+    validation_hidden_npz = output_dir / f"{source_cache_prefix}_validation_disagreement_hidden_query_cache.npz"
+    validation_hidden_meta = output_dir / f"{source_cache_prefix}_validation_disagreement_hidden_query_cache.json"
+    test_hidden_npz = output_dir / f"{source_cache_prefix}_test_disagreement_hidden_query_cache.npz"
+    test_hidden_meta = output_dir / f"{source_cache_prefix}_test_disagreement_hidden_query_cache.json"
 
     train_anchor_rows = arc_gate._load_rows(train_anchor_path)
     validation_full = arc_gate._load_rows(validation_path)
@@ -962,9 +1046,9 @@ def build_gate(
 
     validation_state = _hidden_query_state(
         validation_rows,
-        npz_path=output_dir / "tinyllama_validation_disagreement_hidden_query_cache.npz",
-        meta_path=output_dir / "tinyllama_validation_disagreement_hidden_query_cache.json",
-        model_path=source_model,
+        npz_path=validation_hidden_npz,
+        meta_path=validation_hidden_meta,
+        model_path=source_model_resolved,
         device=source_device,
         dtype=source_dtype,
         max_length=source_max_length,
@@ -975,9 +1059,9 @@ def build_gate(
     )
     test_state = _hidden_query_state(
         test_rows,
-        npz_path=output_dir / "tinyllama_test_disagreement_hidden_query_cache.npz",
-        meta_path=output_dir / "tinyllama_test_disagreement_hidden_query_cache.json",
-        model_path=source_model,
+        npz_path=test_hidden_npz,
+        meta_path=test_hidden_meta,
+        model_path=source_model_resolved,
         device=source_device,
         dtype=source_dtype,
         max_length=source_max_length,
@@ -1209,14 +1293,14 @@ def build_gate(
         "source_hidden_query_test_cache_hit": bool(test_state.metadata.get("cache_hit", False)),
     }
     lay_explanation = (
-        "We take only the examples where TinyLlama and Qwen chose different answers.  TinyLlama's internal "
-        "hidden/query vectors are compressed into the same small public coordinate system used by the ARC "
-        "packet method, then the receiver tries to answer from a 12-byte packet.  The key comparison is not "
+        f"We take only the examples where {source_contract['source_family']} and Qwen chose different answers.  "
+        "The source model's internal hidden/query vectors are compressed into the same small public coordinate system used by the ARC "
+        f"packet method, then the receiver tries to answer from a {budget_bytes}-byte packet.  The key comparison is not "
         "against doing nothing; it is against simply using the stronger Qwen packet on those same examples."
     )
     interpretation = (
-        "This is a strict source-family common-basis gate.  A pass would mean TinyLlama hidden/query state "
-        "can be translated into useful fixed-byte public-basis evidence beyond both the cached Tiny packet "
+        "This is a strict source-family common-basis gate.  A pass would mean source hidden/query state "
+        "can be translated into useful fixed-byte public-basis evidence beyond both the cached source packet "
         "and the Qwen-substituted packet.  A failure weakens this ARC branch and says the current mapping is "
         "not yet a real cross-family latent language, even though it may remain useful as a falsification and "
         "systems accounting artifact."
@@ -1228,7 +1312,7 @@ def build_gate(
         "pass_gate": pass_gate,
         "pass_rule": (
             "Pass requires the selected hidden/query common-basis packet to beat Qwen-substituted packets "
-            "and cached TinyLlama packets by at least 0.02 on every seed, with paired CI95 lower bound above "
+            "and cached source packets by at least 0.02 on every seed, with paired CI95 lower bound above "
             "zero vs both baselines. Candidate-roll and receiver-spectral-permutation controls must not exceed "
             "Qwen-substituted accuracy by more than 0.005."
         ),
@@ -1267,13 +1351,15 @@ def build_gate(
             "test_basis_metadata": test_basis_meta,
         },
         "method_contract": {
-            "source_model": source_model,
+            "source_family": source_contract["source_family"],
+            "source_model": source_model_resolved,
+            "source_model_requested": source_contract["source_model_requested"],
             "source_inputs_at_eval": ["question", "choices"],
             "forbidden_eval_source_inputs": list(arc_gate.FORBIDDEN_SOURCE_KEYS),
             "source_hidden_query_raw_transmitted": False,
             "source_text_transmitted": False,
             "source_kv_transmitted": False,
-            "packet_format": "12-byte sparse signed projection packet emitted from train-only mapped source hidden/query features",
+            "packet_format": f"{budget_bytes}-byte sparse signed projection packet emitted from train-only mapped source hidden/query features",
             "native_gpu_claims_allowed": False,
         },
         "source_hidden_query_metadata": {
@@ -1294,6 +1380,19 @@ def build_gate(
             "validation_source_cache_sha256": _sha256_file(validation_source_cache),
             "test_source_cache": _display_path(test_source_cache),
             "test_source_cache_sha256": _sha256_file(test_source_cache),
+            "source_cache_audit": _display_path(source_contract["source_cache_audit_path"]),
+        },
+        "source_cache_contract": {
+            "source_family": source_contract["source_family"],
+            "source_cache_prefix": source_cache_prefix,
+            "source_model": source_model_resolved,
+            "source_model_requested": source_contract["source_model_requested"],
+            "validation_source_cache": _display_path(validation_source_cache),
+            "test_source_cache": _display_path(test_source_cache),
+            "validation_hidden_query_cache_npz": _display_path(validation_hidden_npz),
+            "validation_hidden_query_cache_meta": _display_path(validation_hidden_meta),
+            "test_hidden_query_cache_npz": _display_path(test_hidden_npz),
+            "test_hidden_query_cache_meta": _display_path(test_hidden_meta),
         },
         "systems_packet_sideband": {
             "raw_payload_bytes_per_request": budget_bytes,
@@ -1329,10 +1428,10 @@ def build_gate(
                 md_path,
                 frontier_path,
                 predictions_path,
-                output_dir / "tinyllama_validation_disagreement_hidden_query_cache.npz",
-                output_dir / "tinyllama_validation_disagreement_hidden_query_cache.json",
-                output_dir / "tinyllama_test_disagreement_hidden_query_cache.npz",
-                output_dir / "tinyllama_test_disagreement_hidden_query_cache.json",
+                validation_hidden_npz,
+                validation_hidden_meta,
+                test_hidden_npz,
+                test_hidden_meta,
             )
         ],
         "inputs": payload["inputs"],

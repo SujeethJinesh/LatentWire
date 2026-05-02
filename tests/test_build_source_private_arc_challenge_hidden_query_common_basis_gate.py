@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 
 from scripts import build_source_private_arc_challenge_hidden_query_common_basis_gate as gate
@@ -75,3 +77,31 @@ def test_paired_delta_ci_reports_mean_delta() -> None:
     assert ci["mean_delta"] == 0.5
     assert ci["ci95_low"] == 0.5
     assert ci["ci95_high"] == 0.5
+
+
+def test_source_cache_contract_reads_audit_paths(tmp_path) -> None:
+    val_cache = tmp_path / "qwen15_validation.jsonl"
+    test_cache = tmp_path / "qwen15_test.jsonl"
+    val_cache.write_text(
+        json.dumps({"source_family": "qwen2.5_1.5b", "source_selected_index": 0}) + "\n",
+        encoding="utf-8",
+    )
+    test_cache.write_text(
+        json.dumps({"source_family": "qwen2.5_1.5b", "source_selected_index": 1}) + "\n",
+        encoding="utf-8",
+    )
+    audit = {
+        "alternate_source_family": "qwen2.5_1.5b",
+        "alternate_source_model": "/models/qwen15",
+        "alt_validation_cache": str(val_cache),
+        "alt_test_cache": str(test_cache),
+    }
+    (tmp_path / "source_cache_audit.json").write_text(json.dumps(audit), encoding="utf-8")
+
+    contract = gate._source_cache_contract(tmp_path, "auto")
+
+    assert contract["source_family"] == "qwen2.5_1.5b"
+    assert contract["source_cache_prefix"] == "qwen25_15b"
+    assert contract["source_model"] == "/models/qwen15"
+    assert contract["validation_source_cache"] == val_cache
+    assert contract["test_source_cache"] == test_cache

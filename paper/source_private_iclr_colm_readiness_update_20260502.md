@@ -18,7 +18,10 @@ Date: 2026-05-02
   Mac-local Phi-3 `8B`/10-seed/b2000 cross-family falsification fails. The
   TinyLlama hidden/query PCA/ridge, transport/common-basis, nonlinear
   sparse-query cache-bottleneck, and train-only MLP cache-to-packet connectors
-  also fail this gate. The Llama-8B
+  also fail this gate. The Qwen2.5-1.5B hidden/query common-basis and
+  nonlinear sparse-query n32/n64 connector smokes also fail the strict gate:
+  they slightly improve over Qwen-substituted on one tiny slice but lose to
+  target-only, same-byte text, and cached-source packets. The Llama-8B
   true non-Qwen scout now runs locally after the MPS workaround, but also fails
   the strict validation/paired-uncertainty gate. The new cross-family failure
   decomposition shows the packet usually follows the source choice, so the live
@@ -903,3 +906,45 @@ bounded until a stronger non-Qwen source or common-feature connector survives.
 Lay explanation: changing the source model family broke the tiny-packet win.
 This is useful evidence because it tells us exactly what a reviewer will ask
 for next.
+
+## 2026-05-02 Qwen2.5-1.5B Hidden/Query Connector Smoke
+
+Generalized the ARC hidden/query and sparse-query gates so they read the
+source-family audit instead of assuming TinyLlama cache paths, then tested the
+stronger Qwen2.5-1.5B source on a frozen `32` validation / `64` test
+disagreement slice:
+
+- common-basis artifact:
+  `results/source_private_arc_challenge_hidden_query_common_basis_gate_20260502_qwen15_disagreement_n32_n64_budget8/`;
+- sparse-query artifact:
+  `results/source_private_arc_challenge_sparse_query_cache_bottleneck_gate_20260502_qwen15_disagreement_n32_n64_budget8/`;
+- source family: `qwen2.5_1.5b`;
+- payload/framed bytes: `8B/11B`;
+- common-basis test matched/Qwen-substituted/cached-source/target:
+  `0.234/0.224/0.385/0.328`;
+- common-basis candidate-roll/spectral controls:
+  `0.302/0.286`;
+- sparse-query selected view: `query_residual`;
+- sparse-query selected pca/rff/active/gamma/ridge:
+  `16/32/8/0.5/10`;
+- sparse-query test matched/Qwen-substituted/cached-source/target:
+  `0.266/0.224/0.385/0.328`;
+- sparse-query mean delta versus Qwen-substituted: `+0.042`;
+- sparse-query CI95 low versus Qwen-substituted: `-0.164`;
+- sparse-query same-byte text: `0.281`;
+- sparse-query candidate-roll/content-rotation/spectral controls:
+  `0.255/0.250/0.198`;
+- pass gate: `False` for both.
+
+Decision: do not widen this hidden/query connector yet. The nonlinear
+sparse-query bottleneck is a real improvement over the weaker Qwen-substituted
+row on this small slice, but it is below target-only, below same-byte text, far
+below cached source, and statistically unresolved. The next live method branch
+should be target-loss soft-prefix/query-resampler or source-score rematerialized
+innovation, not another global hidden/query basis sweep.
+
+Lay explanation: the stronger source model often knows more than the smaller
+Qwen receiver, but this experiment asked whether its internal hidden/query
+vectors could be squeezed into an 8-byte hint that the receiver uses. The hint
+helped a little compared with one weak baseline, but simpler baselines were
+better, so this is not paper-positive evidence.

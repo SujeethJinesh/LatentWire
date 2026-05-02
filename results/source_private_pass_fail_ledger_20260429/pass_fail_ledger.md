@@ -62,3 +62,15 @@
 | `protected_residual::remap107::budget4` | protected rotated residual packet ablation | remap 107 | 0.435547 | 0.25 | 0.257812 | source artifact marks row fail/near-miss |
 | `protected_residual::remap107::budget2` | protected rotated residual packet ablation | remap 107 | 0.431641 | 0.25 | 0.255859 | source artifact marks row fail/near-miss |
 | `protected_residual::remap103::budget2` | protected rotated residual packet ablation | remap 103 | 0.4375 | 0.25 | 0.265625 | source artifact marks row fail/near-miss |
+
+## 2026-05-02 Addendum: Qwen2.5-1.5B Hidden/Query Connector Smoke
+
+| Row | Contribution | Surface | Accuracy | Target | Best control | Reason |
+|---|---|---|---:|---:|---:|---|
+| `arc_qwen15_hidden_query_common_basis_n32_n64_budget8` | target-conditioned common-feature connector | ARC Qwen2.5-1.5B vs Qwen0.5 disagreement n32/n64 | 0.234 | 0.328 | 0.385 | loses to cached-source packet, target-only, same-byte text, and destructive controls; CI low vs Qwen-substituted negative |
+| `arc_qwen15_sparse_query_bottleneck_n32_n64_budget8` | target-conditioned sparse innovation connector | ARC Qwen2.5-1.5B vs Qwen0.5 disagreement n32/n64 | 0.266 | 0.328 | 0.385 | improves over Qwen-substituted by +0.042 mean but loses to target-only, same-byte text, and cached-source packet; CI low vs Qwen-substituted negative |
+
+Decision: both rows are `failed_or_pruned` for ICLR-positive evidence. The
+hidden/query branch is not dead forever, but the next gate should switch to a
+target-loss soft-prefix/query-resampler or rematerialized source-score
+innovation rather than widening this exact global hidden/query basis.

@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 
 from scripts import build_source_private_arc_challenge_sparse_query_cache_bottleneck_gate as gate
@@ -52,3 +54,26 @@ def test_sparse_query_map_learns_synthetic_nonlinear_target() -> None:
     assert mapper["sparsity_fraction"] == 1.0
     assert predicted.shape == target.shape
     assert corr > 0.95
+
+
+def test_hidden_query_cache_paths_read_common_basis_contract(tmp_path) -> None:
+    payload = {
+        "source_cache_contract": {
+            "validation_hidden_query_cache_npz": "validation_cache.npz",
+            "validation_hidden_query_cache_meta": "validation_cache.json",
+            "test_hidden_query_cache_npz": "test_cache.npz",
+            "test_hidden_query_cache_meta": "test_cache.json",
+        }
+    }
+    (tmp_path / "arc_challenge_hidden_query_common_basis_gate.json").write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+
+    val_npz, val_meta = gate._hidden_query_cache_paths(tmp_path, "validation")
+    test_npz, test_meta = gate._hidden_query_cache_paths(tmp_path, "test")
+
+    assert val_npz.name == "validation_cache.npz"
+    assert val_meta.name == "validation_cache.json"
+    assert test_npz.name == "test_cache.npz"
+    assert test_meta.name == "test_cache.json"
