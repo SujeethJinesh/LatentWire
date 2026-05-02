@@ -684,3 +684,32 @@ Transformer candidate receiver with explicit accept/abstain and help/harm
 telemetry. If that fails, cut learned ARC candidate receivers and spend the
 next ICLR cycle on the existing positive Fourier/anchor-syndrome packet row,
 strict cross-family validation, and native NVIDIA systems rows.
+
+## 2026-05-02 Equivariant Set-Delta Accept Follow-Up
+
+Added `equivariant_set_delta_accept` to the ARC candidate-alignment receiver.
+This mode keeps target-public scores frozen, learns only a source-dependent
+permutation-equivariant candidate delta, and cross-validates an accept/abstain
+threshold so unsafe repairs fall back to target-public.
+
+Readout:
+
+- sign-16 set-delta accept (`8B`): matched `3/8`,
+  target-public/zero-source `3/8`, zero-source exact match `True`;
+- int8-16 set-delta accept (`66B`): matched `3/8`,
+  target-public/zero-source `3/8`, zero-source exact match `True`;
+- unquantized float-16 set-delta accept (`256B`): matched `3/8`,
+  target-public/zero-source `3/8`, zero-source exact match `True`;
+- all three rows select accept threshold `3.0` and accept `0/8`
+  matched-source rows;
+- candidate-derangement accepts `8/8` and causes `2` helps and `3` harms,
+  showing the delta can move scores but is unsafe under source alignment;
+- all pass gates are `False`.
+
+Decision: cut learned ARC candidate receivers as a current headline branch.
+The latest receiver has the right reviewer-facing hygiene, but its best policy
+is complete abstention. This closes the Mac-local linear ARC receiver loop.
+The highest-priority next work is now to consolidate the positive
+Fourier/anchor-syndrome packet method, run any feasible cross-family/native
+systems validations, and prepare COLM figures/tables that make the positive
+packet contribution and negative learned-receiver ladder explicit.

@@ -19840,3 +19840,41 @@ Lay explanation: this run taught the receiver that real source notes should
 fix answers and broken notes should do nothing. The broken-note checks behaved
 properly, but the real note still did not repair the target's mistake and
 sometimes moved correct target guesses to wrong answers.
+
+ARC equivariant set-delta accept receiver preflight: extended
+`scripts/run_source_private_arc_candidate_alignment_receiver_preflight.py` with
+`equivariant_set_delta_accept`, a frozen-target-public, no-intercept,
+permutation-equivariant source-delta receiver with an accept/abstain threshold.
+Added tests for permutation equivariance, exact zero-source features,
+accept/abstain blocking, and a synthetic matched-source repair case in
+`tests/test_run_source_private_arc_candidate_alignment_receiver_preflight.py`.
+Added memo
+`paper/source_private_arc_equivariant_set_delta_accept_preflight_20260502.md`,
+references
+`references/658_arc_equivariant_set_delta_accept_refs_20260502.md`, and
+artifacts:
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_equivariant_set_delta_accept_hidden_public_innovation_sign16_n16/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_equivariant_set_delta_accept_hidden_public_innovation_int8_n16/`,
+and
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_equivariant_set_delta_accept_hidden_public_innovation_none_n16/`.
+Outcome: the branch is now weak enough to cut as a current headline path.
+All three n16 rows converge to the protected no-op: matched, target-public,
+and zero-source each reach `3/8`, `zero_source` exactly equals
+`target_public_only`, and the selected accept threshold is `3.0` with `0/8`
+matched-source accepts. The candidate-derangement audit accepts `8/8` and
+causes both helps and harms, showing the fitted delta can move scores but the
+matched source is not reliable enough to accept. Because sign-16 (`8B`),
+int8-16 (`66B`), and unquantized float-16 (`256B`) all give the same no-lift
+readout, this is not just a sketch-quantization failure.
+
+Decision: cut learned ARC candidate receivers unless a qualitatively new
+mechanism appears. Keep the implementation as a falsification/baseline tool.
+The next exact ICLR branch should consolidate and strengthen the existing
+positive Fourier/anchor-syndrome packet row, strict cross-family validation,
+and native systems rows. For COLM, frame the learned-receiver ladder as a
+rigorous negative ablation that clarifies the source-private packet boundary.
+
+Lay explanation: this run let the source propose answer-choice corrections,
+but also gave the receiver permission to abstain. The safest learned policy
+was to abstain every time on the real source notes, so this does not show real
+model-to-model communication.

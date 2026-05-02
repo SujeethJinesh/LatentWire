@@ -60,7 +60,13 @@ PASS_CONTROL_CONDITIONS = tuple(
 )
 REPORT_CONDITIONS = (MATCHED_CONDITION, *CONTROL_CONDITIONS)
 DEFAULT_L2_GRID = (0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0)
-RECEIVER_MODES = ("direct", "target_residual", "target_consistency_repair")
+RECEIVER_MODES = (
+    "direct",
+    "target_residual",
+    "target_consistency_repair",
+    "target_set_repair",
+    "equivariant_set_delta_accept",
+)
 RESIDUAL_FIT_POLICIES = ("target_errors", "all")
 CONSISTENCY_REPAIR_CONTROL_CONDITIONS = (
     "shuffled_source",
@@ -69,6 +75,8 @@ CONSISTENCY_REPAIR_CONTROL_CONDITIONS = (
     "target_derived_source",
     "candidate_roll_source",
 )
+SET_REPAIR_CONTROL_CONDITIONS = CONSISTENCY_REPAIR_CONTROL_CONDITIONS
+DEFAULT_ACCEPT_THRESHOLD_GRID = (0.0, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0)
 
 
 def _resolve(path: pathlib.Path | str) -> pathlib.Path:
@@ -344,6 +352,98 @@ def _consistency_repair_feature_rows(
                     src * target_centered,
                     compatibility * target_centered,
                     src * target_gap,
+                ]
+            )
+        )
+    return np.vstack(rows)
+
+
+def _set_repair_feature_rows(
+    *,
+    source_row: np.ndarray,
+    public_row: np.ndarray,
+    target_scores: Sequence[float],
+) -> np.ndarray:
+    source = np.asarray(source_row, dtype=np.float64)
+    public = np.asarray(public_row, dtype=np.float64)
+    target = np.asarray(target_scores, dtype=np.float64)
+    if public.shape[0] != target.shape[0]:
+        raise ValueError("target score count must match candidate count")
+    if source.shape[1] != public.shape[1]:
+        raise ValueError("source/public sketch dimensions must match for set repair")
+    if source.shape[0] < target.shape[0]:
+        raise ValueError("source candidate count must cover target candidates")
+    source = source[: target.shape[0]]
+    public = public[: target.shape[0]]
+
+    sqrt_dim = math.sqrt(float(source.shape[1]))
+    compatibility = source * public
+    signed_compatibility = np.sign(source) * np.sign(public)
+    dots = np.sum(compatibility, axis=1) / sqrt_dim
+    norms = np.linalg.norm(source, axis=1)
+    agreements = np.mean(signed_compatibility, axis=1)
+    target_mean = float(np.mean(target))
+    target_top = float(np.max(target))
+    target_centered = target - target_mean
+    target_gap = target - target_top
+    source_mean = np.mean(source, axis=0)
+    compatibility_mean = np.mean(compatibility, axis=0)
+    signed_compatibility_mean = np.mean(signed_compatibility, axis=0)
+    dot_mean = float(np.mean(dots))
+    norm_mean = float(np.mean(norms))
+    agreement_mean = float(np.mean(agreements))
+    dot_max = float(np.max(dots))
+    norm_max = float(np.max(norms))
+    agreement_max = float(np.max(agreements))
+
+    rows: list[np.ndarray] = []
+    for candidate_index in range(source.shape[0]):
+        src = source[candidate_index]
+        comp = compatibility[candidate_index]
+        signed = signed_compatibility[candidate_index]
+        centered = float(target_centered[candidate_index])
+        gap = float(target_gap[candidate_index])
+        dot = float(dots[candidate_index])
+        norm = float(norms[candidate_index])
+        agreement = float(agreements[candidate_index])
+        local = np.asarray(
+            [
+                dot,
+                norm,
+                norm * norm,
+                agreement,
+                dot - dot_mean,
+                norm - norm_mean,
+                agreement - agreement_mean,
+                dot - dot_max,
+                norm - norm_max,
+                agreement - agreement_max,
+                dot - _max_other(dots, candidate_index),
+                norm - _max_other(norms, candidate_index),
+                agreement - _max_other(agreements, candidate_index),
+                dot * centered,
+                dot * gap,
+                norm * centered,
+                norm * gap,
+                agreement * centered,
+                agreement * gap,
+            ],
+            dtype=np.float64,
+        )
+        rows.append(
+            np.concatenate(
+                [
+                    local,
+                    src,
+                    comp,
+                    signed,
+                    src - source_mean,
+                    comp - compatibility_mean,
+                    signed - signed_compatibility_mean,
+                    src * centered,
+                    comp * centered,
+                    src * gap,
+                    comp * gap,
                 ]
             )
         )
@@ -660,6 +760,138 @@ def _build_consistency_repair_pairwise_design(
     )
 
 
+def _build_set_repair_pairwise_design(
+    rows: Sequence[arc_gate.ArcRow],
+    source_sketch_rows: Sequence[np.ndarray],
+    public_sketch_rows: Sequence[np.ndarray],
+    target_score_rows: dict[int, list[float]],
+    row_indices: Sequence[int],
+    *,
+    label_shuffle: bool,
+    desired_margin: float,
+    mask_rounds: int,
+    mask_keep_prob: float,
+    control_conditions: Sequence[str],
+    matched_weight: float,
+    mask_weight: float,
+    control_weight: float,
+    seed: int,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict[str, Any]]:
+    features: list[np.ndarray] = []
+    labels: list[float] = []
+    weights: list[float] = []
+    matched_pair_count = 0
+    masked_pair_count = 0
+    control_pair_count = 0
+    rng = np.random.default_rng(int(seed))
+    source_controls: dict[str, list[np.ndarray]] = {
+        control: _source_variant_for_control(
+            source_sketch_rows,
+            public_sketch_rows,
+            fit_indices=row_indices,
+            eval_indices=row_indices,
+            control=control,
+            seed=seed + 23 * (position + 1),
+        )
+        for position, control in enumerate(control_conditions)
+    }
+
+    def add_view(
+        *,
+        row_index: int,
+        source_row: np.ndarray,
+        answer: int,
+        residual_target: str,
+        sample_weight: float,
+    ) -> int:
+        row = rows[int(row_index)]
+        target_scores = [float(score) for score in target_score_rows[int(row_index)]]
+        candidate_features = _set_repair_feature_rows(
+            source_row=source_row,
+            public_row=public_sketch_rows[int(row_index)],
+            target_scores=target_scores,
+        )
+        added = 0
+        for candidate_index, feature in enumerate(candidate_features):
+            if candidate_index == answer:
+                continue
+            diff = candidate_features[answer] - feature
+            if residual_target == "gold_margin":
+                target_diff = float(target_scores[answer]) - float(target_scores[candidate_index])
+                label = float(desired_margin) - target_diff
+            elif residual_target == "preserve_target":
+                label = 0.0
+            else:
+                raise ValueError(f"unknown residual_target {residual_target!r}")
+            features.append(diff)
+            labels.append(label)
+            weights.append(float(sample_weight))
+            features.append(-diff)
+            labels.append(-label)
+            weights.append(float(sample_weight))
+            added += 2
+        if added == 0 and len(row.choices) > 1:
+            raise ValueError("set repair failed to add pairwise rows")
+        return added
+
+    for position, row_index in enumerate(row_indices):
+        answer = _label_for_row(
+            rows,
+            row_index=int(row_index),
+            row_position=position,
+            row_indices=row_indices,
+            label_shuffle=label_shuffle,
+        )
+        matched_pair_count += add_view(
+            row_index=int(row_index),
+            source_row=source_sketch_rows[int(row_index)],
+            answer=answer,
+            residual_target="gold_margin",
+            sample_weight=matched_weight,
+        )
+        for _ in range(int(mask_rounds)):
+            mask = (rng.random(source_sketch_rows[int(row_index)].shape[1]) < float(mask_keep_prob)).astype(
+                np.float64
+            )
+            if float(np.sum(mask)) <= 0.0:
+                mask[int(rng.integers(0, mask.shape[0]))] = 1.0
+            masked_pair_count += add_view(
+                row_index=int(row_index),
+                source_row=source_sketch_rows[int(row_index)] * mask[None, :],
+                answer=answer,
+                residual_target="gold_margin",
+                sample_weight=mask_weight,
+            )
+        for control in control_conditions:
+            control_pair_count += add_view(
+                row_index=int(row_index),
+                source_row=source_controls[control][int(row_index)],
+                answer=answer,
+                residual_target="preserve_target",
+                sample_weight=control_weight,
+            )
+    if not features:
+        raise ValueError("no set repair pairwise rows were built")
+    return (
+        np.vstack(features),
+        np.asarray(labels, dtype=np.float64),
+        np.asarray(weights, dtype=np.float64),
+        {
+            "used_fit_rows": int(len(row_indices)),
+            "matched_pair_count": int(matched_pair_count),
+            "masked_pair_count": int(masked_pair_count),
+            "control_pair_count": int(control_pair_count),
+            "control_conditions": list(control_conditions),
+            "desired_margin": float(desired_margin),
+            "mask_rounds": int(mask_rounds),
+            "mask_keep_prob": float(mask_keep_prob),
+            "matched_weight": float(matched_weight),
+            "mask_weight": float(mask_weight),
+            "control_weight": float(control_weight),
+        },
+    )
+
+
 def _fit_ridge(features: np.ndarray, labels: np.ndarray, *, l2: float) -> np.ndarray:
     x = np.concatenate([np.ones((features.shape[0], 1), dtype=np.float64), features], axis=1)
     penalty = float(l2) * np.eye(x.shape[1], dtype=np.float64)
@@ -878,6 +1110,167 @@ def _fit_consistency_repair(
     }
 
 
+def _repair_accept_score(target_scores: Sequence[float], delta_scores: Sequence[float]) -> float:
+    target = np.asarray(target_scores, dtype=np.float64)
+    delta = np.asarray(delta_scores, dtype=np.float64)
+    if target.shape[0] <= 1:
+        return 0.0
+    proposal_scores = target + delta
+    target_prediction = _prediction(target)
+    proposal = _prediction(proposal_scores)
+    if proposal == target_prediction:
+        return 0.0
+    return float(proposal_scores[proposal] - proposal_scores[target_prediction])
+
+
+def _apply_repair_acceptance(
+    target_scores: Sequence[float],
+    delta_scores: Sequence[float],
+    *,
+    threshold: float,
+) -> list[float]:
+    if _repair_accept_score(target_scores, delta_scores) <= float(threshold):
+        return [float(score) for score in target_scores]
+    return [float(base) + float(delta) for base, delta in zip(target_scores, delta_scores, strict=True)]
+
+
+def _fit_set_repair(
+    rows: Sequence[arc_gate.ArcRow],
+    source_sketch_rows: Sequence[np.ndarray],
+    public_sketch_rows: Sequence[np.ndarray],
+    target_score_rows: dict[int, list[float]],
+    fit_indices: Sequence[int],
+    *,
+    label_shuffle: bool,
+    desired_margin: float,
+    mask_rounds: int,
+    mask_keep_prob: float,
+    control_conditions: Sequence[str],
+    matched_weight: float,
+    mask_weight: float,
+    control_weight: float,
+    l2_grid: Sequence[float],
+    accept_threshold_grid: Sequence[float],
+    seed: int,
+) -> dict[str, Any]:
+    features, labels, sample_weights, metadata = _build_set_repair_pairwise_design(
+        rows,
+        source_sketch_rows,
+        public_sketch_rows,
+        target_score_rows,
+        fit_indices,
+        label_shuffle=label_shuffle,
+        desired_margin=desired_margin,
+        mask_rounds=mask_rounds,
+        mask_keep_prob=mask_keep_prob,
+        control_conditions=control_conditions,
+        matched_weight=matched_weight,
+        mask_weight=mask_weight,
+        control_weight=control_weight,
+        seed=seed,
+    )
+    fit_indices = list(fit_indices)
+    cv_rows: list[dict[str, float]] = []
+    selected_l2 = float(l2_grid[len(l2_grid) // 2])
+    selected_threshold = float(accept_threshold_grid[0])
+    if len(fit_indices) >= 2:
+        for l2 in l2_grid:
+            threshold_accs = {float(threshold): [] for threshold in accept_threshold_grid}
+            threshold_accepts = {float(threshold): [] for threshold in accept_threshold_grid}
+            threshold_helps = {float(threshold): [] for threshold in accept_threshold_grid}
+            threshold_harms = {float(threshold): [] for threshold in accept_threshold_grid}
+            for heldout in fit_indices:
+                train_indices = [index for index in fit_indices if index != heldout]
+                train_x, train_y, train_w, _ = _build_set_repair_pairwise_design(
+                    rows,
+                    source_sketch_rows,
+                    public_sketch_rows,
+                    target_score_rows,
+                    train_indices,
+                    label_shuffle=label_shuffle,
+                    desired_margin=desired_margin,
+                    mask_rounds=mask_rounds,
+                    mask_keep_prob=mask_keep_prob,
+                    control_conditions=control_conditions,
+                    matched_weight=matched_weight,
+                    mask_weight=mask_weight,
+                    control_weight=control_weight,
+                    seed=seed + int(heldout) * 1009,
+                )
+                weights = _fit_weighted_ridge_no_intercept(train_x, train_y, train_w, l2=float(l2))
+                delta_scores = _set_repair_delta_scores_by_row(
+                    rows,
+                    {"weights": weights},
+                    source_sketch_rows,
+                    public_sketch_rows,
+                    target_score_rows,
+                    [heldout],
+                )[int(heldout)]
+                target_scores = target_score_rows[int(heldout)]
+                target_correct = _prediction(target_scores) == int(rows[int(heldout)].answer_index)
+                for threshold in accept_threshold_grid:
+                    threshold = float(threshold)
+                    final_scores = _apply_repair_acceptance(
+                        target_scores,
+                        delta_scores,
+                        threshold=threshold,
+                    )
+                    accepted = final_scores != [float(score) for score in target_scores]
+                    final_correct = _prediction(final_scores) == int(rows[int(heldout)].answer_index)
+                    threshold_accs[threshold].append(1.0 if final_correct else 0.0)
+                    threshold_accepts[threshold].append(1.0 if accepted else 0.0)
+                    threshold_helps[threshold].append(1.0 if final_correct and not target_correct else 0.0)
+                    threshold_harms[threshold].append(1.0 if target_correct and not final_correct else 0.0)
+            for threshold in accept_threshold_grid:
+                threshold = float(threshold)
+                cv_rows.append(
+                    {
+                        "l2": float(l2),
+                        "accept_threshold": threshold,
+                        "row_grouped_cv_accuracy": float(statistics.fmean(threshold_accs[threshold])),
+                        "row_grouped_accept_rate": float(statistics.fmean(threshold_accepts[threshold])),
+                        "row_grouped_help_rate": float(statistics.fmean(threshold_helps[threshold])),
+                        "row_grouped_harm_rate": float(statistics.fmean(threshold_harms[threshold])),
+                    }
+                )
+        selected = max(
+            cv_rows,
+            key=lambda row: (
+                row["row_grouped_cv_accuracy"],
+                -row["row_grouped_harm_rate"],
+                row["row_grouped_help_rate"],
+                -row["row_grouped_accept_rate"],
+                row["accept_threshold"],
+                row["l2"],
+            ),
+        )
+        selected_l2 = float(selected["l2"])
+        selected_threshold = float(selected["accept_threshold"])
+    else:
+        cv_rows.append(
+            {
+                "l2": selected_l2,
+                "accept_threshold": selected_threshold,
+                "row_grouped_cv_accuracy": 0.0,
+                "row_grouped_accept_rate": 0.0,
+                "row_grouped_help_rate": 0.0,
+                "row_grouped_harm_rate": 0.0,
+            }
+        )
+    weights = _fit_weighted_ridge_no_intercept(features, labels, sample_weights, l2=selected_l2)
+    return {
+        "weights": weights,
+        "selected_l2": selected_l2,
+        "selected_accept_threshold": selected_threshold,
+        "cv_rows": cv_rows,
+        "feature_dim": int(features.shape[1]),
+        "target_only": False,
+        "label_shuffle": bool(label_shuffle),
+        "training_objective": "set_repair_pairwise_ridge_with_accept",
+        "metadata": metadata,
+    }
+
+
 def _residual_scores_by_row(
     rows: Sequence[arc_gate.ArcRow],
     receiver: dict[str, Any],
@@ -922,6 +1315,55 @@ def _consistency_repair_scores_by_row(
             raise ValueError("consistency repair feature dimension does not match receiver weights")
         by_row[int(row_index)] = [float(score) for score in _score_design(features, weights)]
     return by_row
+
+
+def _set_repair_delta_scores_by_row(
+    rows: Sequence[arc_gate.ArcRow],
+    receiver: dict[str, Any],
+    source_sketch_rows: Sequence[np.ndarray],
+    public_sketch_rows: Sequence[np.ndarray],
+    target_score_rows: dict[int, list[float]],
+    row_indices: Sequence[int],
+) -> dict[int, list[float]]:
+    weights = np.asarray(receiver["weights"], dtype=np.float64)
+    by_row: dict[int, list[float]] = {}
+    for row_index in row_indices:
+        features = _set_repair_feature_rows(
+            source_row=source_sketch_rows[int(row_index)],
+            public_row=public_sketch_rows[int(row_index)],
+            target_scores=target_score_rows[int(row_index)],
+        )
+        if features.shape[1] + 1 != weights.shape[0]:
+            raise ValueError("set repair feature dimension does not match receiver weights")
+        by_row[int(row_index)] = [float(score) for score in _score_design(features, weights)]
+    return by_row
+
+
+def _set_repair_scores_by_row(
+    rows: Sequence[arc_gate.ArcRow],
+    receiver: dict[str, Any],
+    source_sketch_rows: Sequence[np.ndarray],
+    public_sketch_rows: Sequence[np.ndarray],
+    target_score_rows: dict[int, list[float]],
+    row_indices: Sequence[int],
+) -> dict[int, list[float]]:
+    delta_rows = _set_repair_delta_scores_by_row(
+        rows,
+        receiver,
+        source_sketch_rows,
+        public_sketch_rows,
+        target_score_rows,
+        row_indices,
+    )
+    threshold = float(receiver.get("selected_accept_threshold", 0.0))
+    return {
+        int(row_index): _apply_repair_acceptance(
+            target_score_rows[int(row_index)],
+            delta_rows[int(row_index)],
+            threshold=threshold,
+        )
+        for row_index in row_indices
+    }
 
 
 def _add_score_rows(
@@ -1251,6 +1693,40 @@ def _condition_metrics(rows: list[dict[str, Any]], *, seed: int, bootstrap_sampl
     return metrics
 
 
+def _acceptance_metrics(
+    rows: Sequence[arc_gate.ArcRow],
+    score_by_condition: dict[str, dict[int, list[float]]],
+    eval_indices: Sequence[int],
+) -> dict[str, Any]:
+    metrics: dict[str, Any] = {}
+    target_scores_by_row = score_by_condition["target_public_only"]
+    for condition in REPORT_CONDITIONS:
+        accepted = 0
+        helps = 0
+        harms = 0
+        ties = 0
+        for row_index in eval_indices:
+            row = rows[int(row_index)]
+            target_scores = target_scores_by_row[int(row_index)]
+            scores = score_by_condition[condition][int(row_index)]
+            was_accepted = not np.allclose(scores, target_scores, rtol=0.0, atol=1e-9)
+            target_correct = _prediction(target_scores) == int(row.answer_index)
+            final_correct = _prediction(scores) == int(row.answer_index)
+            accepted += int(was_accepted)
+            helps += int((not target_correct) and final_correct)
+            harms += int(target_correct and (not final_correct))
+            ties += int(target_correct == final_correct)
+        n = max(len(eval_indices), 1)
+        metrics[condition] = {
+            "accepted": int(accepted),
+            "accept_rate": float(accepted / n),
+            "helps": int(helps),
+            "harms": int(harms),
+            "ties_vs_target_correctness": int(ties),
+        }
+    return metrics
+
+
 def _write_jsonl(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
     path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
 
@@ -1345,6 +1821,7 @@ def run_preflight(
     repair_matched_weight: float,
     repair_mask_weight: float,
     repair_control_weight: float,
+    accept_threshold_grid: Sequence[float],
     innovation_ridge: float,
     local_files_only: bool,
     seed: int,
@@ -1436,6 +1913,7 @@ def run_preflight(
         eval_indices,
         max_candidate_count=max_candidate_count,
     )
+    candidate_derangement_scores: dict[int, list[float]] | None = None
 
     if receiver_mode == "direct":
         matched_receiver = _fit_receiver(
@@ -1587,6 +2065,21 @@ def run_preflight(
                 control_delta,
                 eval_indices,
             )
+        deranged_source = [np.asarray(row, dtype=np.float64).copy() for row in source_sketch_rows]
+        for row_index in eval_indices:
+            row = deranged_source[int(row_index)]
+            candidate_count = len(rows[int(row_index)].choices)
+            deranged = row.copy()
+            deranged[:candidate_count] = row[:candidate_count][::-1]
+            deranged_source[int(row_index)] = deranged
+        candidate_derangement_scores = _set_repair_scores_by_row(
+            rows,
+            set_receiver,
+            deranged_source,
+            public_sketch_rows,
+            target_scores_all,
+            eval_indices,
+        )
         receiver_logs = {
             "residual_receiver": {
                 "selected_l2": residual_receiver["selected_l2"],
@@ -1705,13 +2198,109 @@ def run_preflight(
                 "metadata": label_shuffled_receiver["metadata"],
             },
         }
+    elif receiver_mode in {"target_set_repair", "equivariant_set_delta_accept"}:
+        set_receiver = _fit_set_repair(
+            rows,
+            source_sketch_rows,
+            public_sketch_rows,
+            target_scores_all,
+            fit_indices,
+            label_shuffle=False,
+            desired_margin=residual_desired_margin,
+            mask_rounds=repair_mask_rounds,
+            mask_keep_prob=repair_mask_keep_prob,
+            control_conditions=SET_REPAIR_CONTROL_CONDITIONS,
+            matched_weight=repair_matched_weight,
+            mask_weight=repair_mask_weight,
+            control_weight=repair_control_weight,
+            l2_grid=l2_grid,
+            accept_threshold_grid=accept_threshold_grid,
+            seed=seed + 809,
+        )
+        label_shuffled_receiver = _fit_set_repair(
+            rows,
+            source_sketch_rows,
+            public_sketch_rows,
+            target_scores_all,
+            fit_indices,
+            label_shuffle=True,
+            desired_margin=residual_desired_margin,
+            mask_rounds=repair_mask_rounds,
+            mask_keep_prob=repair_mask_keep_prob,
+            control_conditions=SET_REPAIR_CONTROL_CONDITIONS,
+            matched_weight=repair_matched_weight,
+            mask_weight=repair_mask_weight,
+            control_weight=repair_control_weight,
+            l2_grid=l2_grid,
+            accept_threshold_grid=accept_threshold_grid,
+            seed=seed + 1013,
+        )
+        score_by_condition[MATCHED_CONDITION] = _set_repair_scores_by_row(
+            rows,
+            set_receiver,
+            source_sketch_rows,
+            public_sketch_rows,
+            target_scores_all,
+            eval_indices,
+        )
+        score_by_condition["label_shuffled"] = _set_repair_scores_by_row(
+            rows,
+            label_shuffled_receiver,
+            source_sketch_rows,
+            public_sketch_rows,
+            target_scores_all,
+            eval_indices,
+        )
+        for control in (
+            "zero_source",
+            "shuffled_source",
+            "same_norm_noise",
+            "train_mean_source",
+            "target_derived_source",
+            "candidate_roll_source",
+        ):
+            variant_source = _source_variant_for_control(
+                source_sketch_rows,
+                public_sketch_rows,
+                fit_indices=fit_indices,
+                eval_indices=eval_indices,
+                control=control,
+                seed=seed,
+            )
+            score_by_condition[control] = _set_repair_scores_by_row(
+                rows,
+                set_receiver,
+                variant_source,
+                public_sketch_rows,
+                target_scores_all,
+                eval_indices,
+            )
+        receiver_logs = {
+            "set_repair_receiver": {
+                "selected_l2": set_receiver["selected_l2"],
+                "selected_accept_threshold": set_receiver["selected_accept_threshold"],
+                "cv_rows": set_receiver["cv_rows"],
+                "feature_dim": set_receiver["feature_dim"],
+                "metadata": set_receiver["metadata"],
+            },
+            "label_shuffled_set_repair_receiver": {
+                "selected_l2": label_shuffled_receiver["selected_l2"],
+                "selected_accept_threshold": label_shuffled_receiver["selected_accept_threshold"],
+                "cv_rows": label_shuffled_receiver["cv_rows"],
+                "feature_dim": label_shuffled_receiver["feature_dim"],
+                "metadata": label_shuffled_receiver["metadata"],
+            },
+        }
     else:
         raise ValueError(f"unknown receiver mode {receiver_mode!r}")
 
-    score_by_condition["candidate_derangement"] = {
-        int(row_index): [float(score) for score in np.roll(score_by_condition[MATCHED_CONDITION][int(row_index)], 1)]
-        for row_index in eval_indices
-    }
+    if candidate_derangement_scores is not None:
+        score_by_condition["candidate_derangement"] = candidate_derangement_scores
+    else:
+        score_by_condition["candidate_derangement"] = {
+            int(row_index): [float(score) for score in np.roll(score_by_condition[MATCHED_CONDITION][int(row_index)], 1)]
+            for row_index in eval_indices
+        }
     score_by_condition["same_byte_visible_text"] = {
         int(row_index): _visible_text_scores(
             rows[int(row_index)],
@@ -1741,7 +2330,12 @@ def run_preflight(
         )
         for row_index in eval_indices
     )
-    zero_source_exact_required = receiver_mode in {"target_residual", "target_consistency_repair"}
+    zero_source_exact_required = receiver_mode in {
+        "target_residual",
+        "target_consistency_repair",
+        "target_set_repair",
+        "equivariant_set_delta_accept",
+    }
     headline = {
         "matched_accuracy": matched["accuracy"],
         "matched_mean_margin": matched["mean_margin"],
@@ -1803,6 +2397,7 @@ def run_preflight(
             "repair_matched_weight": repair_matched_weight,
             "repair_mask_weight": repair_mask_weight,
             "repair_control_weight": repair_control_weight,
+            "accept_threshold_grid": [float(value) for value in accept_threshold_grid],
             "innovation_ridge": innovation_ridge,
             "same_byte_budget": same_byte_budget,
             "seed": seed,
@@ -1836,6 +2431,7 @@ def run_preflight(
             **receiver_logs,
         },
         "headline": headline,
+        "acceptance_metrics": _acceptance_metrics(rows, score_by_condition, eval_indices),
         "pass_control_conditions": list(PASS_CONTROL_CONDITIONS),
         "audit_only_conditions": ["source_label_copy_audit_upper_bound"],
         "condition_metrics": metrics,
@@ -1933,6 +2529,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--repair-matched-weight", type=float, default=2.0)
     parser.add_argument("--repair-mask-weight", type=float, default=1.0)
     parser.add_argument("--repair-control-weight", type=float, default=1.5)
+    parser.add_argument(
+        "--accept-threshold-grid",
+        default=",".join(str(value) for value in DEFAULT_ACCEPT_THRESHOLD_GRID),
+        help="Comma-separated accept thresholds for set-repair modes.",
+    )
     parser.add_argument("--innovation-ridge", type=float, default=10.0)
     parser.add_argument("--local-files-only", choices=("true", "false"), default="true")
     parser.add_argument("--seed", type=int, default=17)
@@ -1976,6 +2577,7 @@ def main(argv: list[str] | None = None) -> int:
         repair_matched_weight=float(args.repair_matched_weight),
         repair_mask_weight=float(args.repair_mask_weight),
         repair_control_weight=float(args.repair_control_weight),
+        accept_threshold_grid=_parse_l2_grid(str(args.accept_threshold_grid)),
         innovation_ridge=float(args.innovation_ridge),
         local_files_only=str(args.local_files_only).lower() == "true",
         seed=int(args.seed),

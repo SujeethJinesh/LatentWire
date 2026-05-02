@@ -138,6 +138,97 @@ def test_consistency_repair_features_have_no_zero_source_signal() -> None:
     assert np.allclose(features, 0.0)
 
 
+def test_set_repair_features_are_permutation_equivariant_and_zero_source_clean() -> None:
+    source = np.asarray([[1.0, -2.0], [3.0, 0.5], [-1.0, 4.0]], dtype=np.float64)
+    public = np.asarray([[0.5, 1.5], [-2.0, 1.0], [1.0, -0.25]], dtype=np.float64)
+    target = np.asarray([0.2, -0.4, 0.9], dtype=np.float64)
+    perm = np.asarray([2, 0, 1])
+
+    features = gate._set_repair_feature_rows(
+        source_row=source,
+        public_row=public,
+        target_scores=target,
+    )
+    permuted_features = gate._set_repair_feature_rows(
+        source_row=source[perm],
+        public_row=public[perm],
+        target_scores=target[perm],
+    )
+    zero_features = gate._set_repair_feature_rows(
+        source_row=np.zeros_like(source),
+        public_row=public,
+        target_scores=target,
+    )
+
+    assert np.allclose(permuted_features, features[perm])
+    assert np.allclose(zero_features, 0.0)
+
+
+def test_set_repair_accept_abstain_threshold_blocks_harmful_delta() -> None:
+    target = [0.0, 1.0, 0.0]
+    weak_delta = [0.5, 0.0, 0.0]
+    strong_delta = [2.0, 0.0, 0.0]
+
+    assert gate._apply_repair_acceptance(target, weak_delta, threshold=0.6) == target
+    assert gate._prediction(gate._apply_repair_acceptance(target, strong_delta, threshold=0.6)) == 0
+
+
+def test_set_repair_receiver_freezes_public_base_and_fixes_matched_error() -> None:
+    rows = _rows()
+    source_rows = _source_rows()
+    public_rows = [np.zeros((3, 2), dtype=np.float64) for _ in rows]
+    target_scores = {index: [0.0, 1.0, 0.0] for index in range(len(rows))}
+    fit_indices = [0, 1, 2]
+    eval_indices = [3]
+    receiver = gate._fit_set_repair(
+        rows,
+        source_rows,
+        public_rows,
+        target_scores,
+        fit_indices,
+        label_shuffle=False,
+        desired_margin=1.0,
+        mask_rounds=0,
+        mask_keep_prob=1.0,
+        control_conditions=("candidate_roll_source",),
+        matched_weight=3.0,
+        mask_weight=1.0,
+        control_weight=0.25,
+        l2_grid=(0.01, 0.1, 1.0),
+        accept_threshold_grid=(0.0, 0.1),
+        seed=7,
+    )
+
+    matched = gate._set_repair_scores_by_row(
+        rows,
+        receiver,
+        source_rows,
+        public_rows,
+        target_scores,
+        eval_indices,
+    )[3]
+    zero_source = gate._source_control_rows(
+        source_rows,
+        fit_indices=fit_indices,
+        eval_indices=eval_indices,
+        control="zero_source",
+        seed=7,
+    )
+    zero = gate._set_repair_scores_by_row(
+        rows,
+        receiver,
+        zero_source,
+        public_rows,
+        target_scores,
+        eval_indices,
+    )[3]
+
+    assert receiver["weights"][0] == 0.0
+    assert gate._prediction(target_scores[3]) == 1
+    assert gate._prediction(matched) == 0
+    assert np.allclose(zero, target_scores[3])
+
+
 def test_consistency_repair_freezes_target_public_for_zero_source() -> None:
     rows = _rows()
     source_rows = _source_rows()
