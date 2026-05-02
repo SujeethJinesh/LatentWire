@@ -76,6 +76,7 @@ def _fixture(tmp_path):
     hellaswag = tmp_path / "hellaswag_seed.json"
     hellaswag_phase = tmp_path / "hellaswag_phase.json"
     hellaswag_label = tmp_path / "hellaswag_label.json"
+    hellaswag_compact = tmp_path / "hellaswag_compact.json"
     _write_json(arc, _seed_payload(budget=12, eval_rows=1172))
     _write_json(arc_phase, _phase_payload(eval_rows=1172))
     _write_json(openbook, _seed_payload(budget=3, eval_rows=500))
@@ -89,6 +90,56 @@ def _fixture(tmp_path):
                 "source_label_text_copy_accuracy": 0.462,
                 "matched_minus_source_label_text_copy": -0.002,
             }
+        },
+    )
+    _write_json(
+        hellaswag_compact,
+        {
+            "pass_gate": True,
+            "headline": {
+                "all_prediction_equivalent": True,
+                "compact_framed_record_bytes": 4,
+                "compact_raw_payload_bytes": 1,
+                "source_exposure_clear": True,
+                "source_row_count": 2,
+                "total_rows_covered": 200,
+            },
+            "source_rows": [
+                {
+                    "baseline_accuracy": 0.45,
+                    "compact_accuracy": 0.50,
+                    "compact_ci95_low_vs_baseline": 0.02,
+                    "compact_delta_vs_baseline": 0.05,
+                    "packet_accounting": {
+                        "batch64_packed_compact_framed_bytes": 256,
+                        "compact_framed_record_bytes_per_request": 4,
+                        "compact_raw_payload_bytes_per_request": 1,
+                    },
+                    "positive_source_gate_passed": True,
+                    "prediction_equivalence": True,
+                    "row_count": 100,
+                    "source_kv_exposed": False,
+                    "source_name": "qwen",
+                    "source_text_exposed": False,
+                },
+                {
+                    "baseline_accuracy": 0.48,
+                    "compact_accuracy": 0.56,
+                    "compact_ci95_low_vs_baseline": 0.03,
+                    "compact_delta_vs_baseline": 0.08,
+                    "packet_accounting": {
+                        "batch64_packed_compact_framed_bytes": 256,
+                        "compact_framed_record_bytes_per_request": 4,
+                        "compact_raw_payload_bytes_per_request": 1,
+                    },
+                    "positive_source_gate_passed": True,
+                    "prediction_equivalence": True,
+                    "row_count": 100,
+                    "source_kv_exposed": False,
+                    "source_name": "tiny",
+                    "source_text_exposed": False,
+                },
+            ],
         },
     )
     benchmarks = (
@@ -119,6 +170,16 @@ def _fixture(tmp_path):
             "phase_artifact": hellaswag_phase,
             "label_copy_artifact": hellaswag_label,
         },
+        {
+            "row_id": "hellaswag_compact_1b",
+            "dataset": "HellaSwag",
+            "split": "validation_full_compaction",
+            "paper_role": "systems_rate_candidate_not_native",
+            "compaction_artifact": hellaswag_compact,
+            "phase_artifact": None,
+            "label_copy_artifact": None,
+            "headline_eligible_override": False,
+        },
     )
     return config, benchmarks
 
@@ -133,7 +194,7 @@ def test_cross_benchmark_comparator_passes_and_writes_outputs(tmp_path) -> None:
 
     assert payload["pass_gate"] is True
     assert payload["headline"]["headline_eligible_benchmarks"] == 2
-    assert payload["headline"]["diagnostic_benchmarks"] == 1
+    assert payload["headline"]["diagnostic_benchmarks"] == 2
     assert payload["headline"]["native_systems_complete"] is False
     assert payload["headline"]["min_qjl_1bit_ratio_vs_framed"] >= 50.0
     assert (tmp_path / "out" / "cross_benchmark_systems_comparator.json").exists()
@@ -149,15 +210,20 @@ def test_hellaswag_is_marked_diagnostic_and_kv_formula_is_conservative(tmp_path)
         source_config=config,
         benchmarks=benchmarks,
     )
-    rows = {row["dataset"]: row for row in payload["rows"]}
+    rows = {row["row_id"]: row for row in payload["rows"]}
 
-    assert rows["HellaSwag"]["label_copy_threat"] is True
-    assert rows["HellaSwag"]["headline_eligible"] is False
-    assert rows["ARC-Challenge"]["one_token_qjl_1bit_bytes"] == 768.0
-    assert abs(rows["ARC-Challenge"]["one_token_kvcomm30_fp16_bytes"] - 3686.4) < 1e-9
-    assert rows["ARC-Challenge"]["source_text_exposed"] is False
-    assert rows["ARC-Challenge"]["source_kv_exposed"] is False
-    assert "No native" in rows["ARC-Challenge"]["claim_forbidden"]
+    assert rows["hellaswag"]["label_copy_threat"] is True
+    assert rows["hellaswag"]["headline_eligible"] is False
+    assert rows["arc"]["one_token_qjl_1bit_bytes"] == 768.0
+    assert abs(rows["arc"]["one_token_kvcomm30_fp16_bytes"] - 3686.4) < 1e-9
+    assert rows["arc"]["source_text_exposed"] is False
+    assert rows["arc"]["source_kv_exposed"] is False
+    assert "No native" in rows["arc"]["claim_forbidden"]
+    compact = next(row for row in payload["rows"] if row["row_id"] == "hellaswag_compact_1b")
+    assert compact["payload_bytes"] == 1.0
+    assert compact["framed_record_bytes"] == 4.0
+    assert compact["headline_eligible"] is False
+    assert compact["pass_gate"] is True
 
 
 def test_written_csv_and_manifest_are_parseable(tmp_path) -> None:
@@ -174,6 +240,6 @@ def test_written_csv_and_manifest_are_parseable(tmp_path) -> None:
         rows = list(csv.DictReader(handle))
     manifest = json.loads((tmp_path / "out" / "manifest.json").read_text(encoding="utf-8"))
 
-    assert len(rows) == 3
+    assert len(rows) == 4
     assert rows[0]["row_id"]
     assert manifest["headline"]["pass_gate"] is True

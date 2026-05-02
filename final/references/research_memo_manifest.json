@@ -1839,5 +1839,19 @@
     "path": "references/619_hellaswag_crosscoder_hidden_code_scout_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed HellaSwag linear crosscoder hidden-code scout, covering CCA/SVCCA/PWCCA/CKA representation-similarity prior art, sparse crosscoder/SAE and Q-former/resampler boundaries, compact packet-only and Qwen-side crosscoder controls, and novelty boundaries against prefix/prompt tuning, C2C/KVComm, QJL/TurboQuant, and KV compression."
+  },
+  {
+    "num": 620,
+    "slug": "cross_benchmark_systems_comparator_v2_refs_20260502",
+    "path": "references/620_cross_benchmark_systems_comparator_v2_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the updated cross-benchmark systems comparator, adding the 1B raw / 4B framed HellaSwag compaction row and clarifying byte-floor/source-exposure boundaries against C2C, KVComm/KVCOMM, QJL, TurboQuant, and vLLM/PagedAttention."
+  },
+  {
+    "num": 621,
+    "slug": "hellaswag_complementarity_headroom_refs_20260502",
+    "path": "references/621_hellaswag_complementarity_headroom_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the HellaSwag complementarity headroom gate, covering the oracle/headroom interpretation and boundaries against C2C, KVComm/KVCOMM, Q-Former/Perceiver-style continuous connectors, and prefix/prompt-token methods."
   }
 ]

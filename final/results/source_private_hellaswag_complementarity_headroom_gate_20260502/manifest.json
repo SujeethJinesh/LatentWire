@@ -1,0 +1,40 @@
+{
+  "created_utc": "2026-05-02T07:00:04.434308+00:00",
+  "files": [
+    {
+      "bytes": 3922,
+      "path": "results/source_private_hellaswag_complementarity_headroom_gate_20260502/hellaswag_complementarity_headroom_gate.json",
+      "sha256": "fed3af0ba638c2aff8c713ad339a3fb44378357839433bd0d25b715109857573"
+    },
+    {
+      "bytes": 649,
+      "path": "results/source_private_hellaswag_complementarity_headroom_gate_20260502/hellaswag_complementarity_headroom_gate.md",
+      "sha256": "1d12ddff179ceb03897e97affbdc3df57fb9a5e31e9b53e69db387d5f411be6c"
+    }
+  ],
+  "gate": "source_private_hellaswag_complementarity_headroom_gate",
+  "headline": {
+    "block_count": 5,
+    "both_correct_count": 4668,
+    "both_wrong_count": 3145,
+    "disagreement_rate": 0.29247161919936265,
+    "eval_rows": 10042,
+    "pass_gate": true,
+    "positive_block_count": 5,
+    "source_correct_target_wrong_count": 1550,
+    "source_correct_target_wrong_rate": 0.15435172276438958,
+    "source_label_accuracy": 0.5587532364070902,
+    "source_packet_accuracy": 0.6191993626767576,
+    "target_correct_source_wrong_count": 679,
+    "target_correct_source_wrong_rate": 0.06761601274646485,
+    "target_or_source_label_oracle_accuracy": 0.6613224457279426,
+    "target_or_source_label_oracle_ci95_high_vs_source_label": 0.10844453296156144,
+    "target_or_source_label_oracle_ci95_low_vs_source_label": 0.0969901414060944,
+    "target_or_source_label_oracle_lift_vs_source_label": 0.10256920932085245,
+    "target_or_source_oracle_accuracy": 0.6868153754232225,
+    "target_or_source_oracle_ci95_high_vs_source": 0.07229635530770763,
+    "target_or_source_oracle_ci95_low_vs_source": 0.06263692491535551,
+    "target_or_source_oracle_lift_vs_source": 0.06761601274646489,
+    "target_side_accuracy": 0.5324636526588329
+  }
+}

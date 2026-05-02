@@ -18763,3 +18763,58 @@ compact candidate packet on this slice. Do not widen this linear family; the
 next live branch should be a nonlinear resampler/cross-attention connector
 with an explicit rate bottleneck or a benchmark headroom gate where packet-only
 does not already absorb most source signal.
+
+Cross-benchmark systems comparator v2: updated
+`scripts/build_source_private_cross_benchmark_systems_comparator.py`, test
+`tests/test_build_source_private_cross_benchmark_systems_comparator.py`, memo
+`paper/source_private_cross_benchmark_systems_comparator_20260502.md`,
+references
+`references/620_cross_benchmark_systems_comparator_v2_refs_20260502.md`, and
+artifact
+`results/source_private_cross_benchmark_systems_comparator_20260502/`.
+Outcome: this Mac-local systems/accounting branch promotes as the current
+source-state exposure comparator. The updated table keeps ARC-Challenge test
+and OpenBookQA test as the two headline public benchmark rows, keeps the legacy
+HellaSwag fixed packet as a label-copy-threat diagnostic row, and adds the new
+HellaSwag compact systems-rate row from
+`results/source_private_hellaswag_minimal_packet_compaction_20260502/`. The
+framed packet range improves from `5-15B` to `4-15B`; the HellaSwag compact
+row is `1B` raw / `4B` framed, covers `3/3` compacted source rows, and reports
+TinyLlama full-validation accuracy `0.619199` with delta `+0.060446` versus
+its best label-copy baseline. Conservative one-source-token source-state/KV
+byte floors remain far larger than framed packets: minimum QJL 1-bit floor
+`51.2x`, minimum 30%-layer QJL floor `15.36x`, minimum KVComm30 fp16 floor
+`245.76x`, and minimum TurboQuant 3.5-bit floor `179.2x`. Interpretation:
+this strengthens the systems side of the paper by adding the newest HellaSwag
+`1B/4B` packet point while explicitly preserving the non-claim boundary: these
+are byte/exposure floors, not native C2C/KVComm/QJL/TurboQuant/vLLM throughput
+or quality wins. The exact remaining systems gate is NVIDIA/vLLM or SGLang
+measurement of TTFT, TPOT, goodput, GPU memory, HBM/PCIe-or-NVLink traffic, and
+native cache/quantization baselines.
+
+HellaSwag complementarity headroom gate: added
+`scripts/build_source_private_hellaswag_complementarity_headroom_gate.py`, test
+`tests/test_build_source_private_hellaswag_complementarity_headroom_gate.py`,
+memo
+`paper/source_private_hellaswag_complementarity_headroom_gate_20260502.md`,
+references
+`references/621_hellaswag_complementarity_headroom_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_complementarity_headroom_gate_20260502/`.
+Outcome: this cache-only oracle/headroom gate passes and revives the
+conditional syndrome/selector branch. It compares TinyLlama's full-validation
+compact hidden-innovation source packet against Qwen's local hybrid
+vote-on-score-agreement prediction on the same `10042` HellaSwag rows. Source
+packet accuracy is `0.619199`; Qwen target-side accuracy is `0.532464`; the
+target-or-source oracle reaches `0.686815`, a `+0.067616` lift over source
+packet with paired CI95 low `+0.062637`. There are `679`
+target-correct/source-wrong rows, `1550` source-correct/target-wrong rows, a
+`0.292472` disagreement rate, and positive oracle lift in `5/5` contiguous
+blocks. Interpretation: global alignment/common-basis byte scouts remain
+negative, but HellaSwag still has stable conditional complementarity that a
+future fixed-byte selector/syndrome packet could exploit. The next exact method
+gate should learn the target-correct/source-wrong override policy without
+giving back source-correct/target-wrong wins, under packet-only, target-only,
+source-label-copy, same-byte text, candidate-id-only, target-derived selector,
+random same-rate selector, row-shuffle, label-permutation, candidate
+derangement, and wrong-example controls.

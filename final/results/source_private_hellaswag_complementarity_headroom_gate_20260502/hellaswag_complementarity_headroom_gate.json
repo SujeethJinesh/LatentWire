@@ -1,0 +1,92 @@
+{
+  "blocks": [
+    {
+      "block": 0,
+      "end": 2008,
+      "oracle_accuracy": 0.6215139442231076,
+      "oracle_lift_vs_source": 0.10956175298804782,
+      "rows": 2008,
+      "source_accuracy": 0.5119521912350598,
+      "start": 0,
+      "target_accuracy": 0.49352589641434264
+    },
+    {
+      "block": 1,
+      "end": 4016,
+      "oracle_accuracy": 0.6429282868525896,
+      "oracle_lift_vs_source": 0.07569721115537842,
+      "rows": 2008,
+      "source_accuracy": 0.5672310756972112,
+      "start": 2008,
+      "target_accuracy": 0.5039840637450199
+    },
+    {
+      "block": 2,
+      "end": 6025,
+      "oracle_accuracy": 0.719761075161772,
+      "oracle_lift_vs_source": 0.0542558486809358,
+      "rows": 2009,
+      "source_accuracy": 0.6655052264808362,
+      "start": 4016,
+      "target_accuracy": 0.5599800895968143
+    },
+    {
+      "block": 3,
+      "end": 8033,
+      "oracle_accuracy": 0.7280876494023905,
+      "oracle_lift_vs_source": 0.05179282868525903,
+      "rows": 2008,
+      "source_accuracy": 0.6762948207171314,
+      "start": 6025,
+      "target_accuracy": 0.5567729083665338
+    },
+    {
+      "block": 4,
+      "end": 10042,
+      "oracle_accuracy": 0.7217521154803385,
+      "oracle_lift_vs_source": 0.04678944748631153,
+      "rows": 2009,
+      "source_accuracy": 0.6749626679940269,
+      "start": 8033,
+      "target_accuracy": 0.5480338476854156
+    }
+  ],
+  "created_utc": "2026-05-02T07:00:04.434308+00:00",
+  "date": "2026-05-02",
+  "gate": "source_private_hellaswag_complementarity_headroom_gate",
+  "headline": {
+    "block_count": 5,
+    "both_correct_count": 4668,
+    "both_wrong_count": 3145,
+    "disagreement_rate": 0.29247161919936265,
+    "eval_rows": 10042,
+    "positive_block_count": 5,
+    "source_correct_target_wrong_count": 1550,
+    "source_correct_target_wrong_rate": 0.15435172276438958,
+    "source_label_accuracy": 0.5587532364070902,
+    "source_packet_accuracy": 0.6191993626767576,
+    "target_correct_source_wrong_count": 679,
+    "target_correct_source_wrong_rate": 0.06761601274646485,
+    "target_or_source_label_oracle_accuracy": 0.6613224457279426,
+    "target_or_source_label_oracle_ci95_high_vs_source_label": 0.10844453296156144,
+    "target_or_source_label_oracle_ci95_low_vs_source_label": 0.0969901414060944,
+    "target_or_source_label_oracle_lift_vs_source_label": 0.10256920932085245,
+    "target_or_source_oracle_accuracy": 0.6868153754232225,
+    "target_or_source_oracle_ci95_high_vs_source": 0.07229635530770763,
+    "target_or_source_oracle_ci95_low_vs_source": 0.06263692491535551,
+    "target_or_source_oracle_lift_vs_source": 0.06761601274646489,
+    "target_side_accuracy": 0.5324636526588329
+  },
+  "inputs": {
+    "source_field": "selected_prediction",
+    "source_label_field": "source_label_prediction",
+    "source_predictions": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/bagged_gate/predictions.jsonl",
+    "source_predictions_sha256": "f47d435afc728d3ecd10365323322473b598f51c1cc3c29b10cf82db9819a449",
+    "target_field": "hybrid_vote_on_score_agreement_prediction",
+    "target_predictions": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/predictions.jsonl",
+    "target_predictions_sha256": "199dfcdd94db1d705bf7778a7112520e9caf263c13dab0584e20e93bbc9bc4a1"
+  },
+  "interpretation": "This cache-only gate measures whether the existing source packet and target-side prediction have complementary errors. It justifies a conditional syndrome/selector method only if the oracle lift is stable; it does not itself transmit new information.",
+  "pass_gate": true,
+  "pass_rule": "Pass if target-or-source oracle lift over source packet is >=0.03, paired CI95 low is >0.01, target-correct/source-wrong rows are >=3%, and all contiguous blocks have positive oracle lift. This is a headroom gate, not a method result."
+}

@@ -15,7 +15,7 @@ DEFAULT_SOURCE_CONFIG = (
     / ".cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/"
     "snapshots/7ae557604adf67be50417f59c2c2f167def9a775/config.json"
 )
-DEFAULT_OUTPUT = pathlib.Path("results/source_private_cross_benchmark_systems_comparator_20260501")
+DEFAULT_OUTPUT = pathlib.Path("results/source_private_cross_benchmark_systems_comparator_20260502")
 
 DEFAULT_BENCHMARKS = (
     {
@@ -61,6 +61,19 @@ DEFAULT_BENCHMARKS = (
         "label_copy_artifact": pathlib.Path(
             "results/source_private_hellaswag_control_suite_20260501/hellaswag_control_suite.json"
         ),
+    },
+    {
+        "row_id": "hellaswag_full_compact_1b",
+        "dataset": "HellaSwag",
+        "split": "validation_full_compaction",
+        "paper_role": "systems_rate_candidate_not_native",
+        "compaction_artifact": pathlib.Path(
+            "results/source_private_hellaswag_minimal_packet_compaction_20260502/"
+            "hellaswag_minimal_packet_compaction.json"
+        ),
+        "phase_artifact": None,
+        "label_copy_artifact": None,
+        "headline_eligible_override": False,
     },
 )
 
@@ -208,6 +221,12 @@ def _fmt(value: Any) -> str:
     return str(value)
 
 
+def _md_float(value: Any, digits: int = 3) -> str:
+    if value is None:
+        return "n/a"
+    return f"{float(value):.{digits}f}"
+
+
 def _ceil_quantum(value: float, quantum: int) -> float:
     n = int(value)
     return float(max(quantum, ((n + quantum - 1) // quantum) * quantum))
@@ -254,6 +273,9 @@ def _phase_metrics(phase_artifact: pathlib.Path | None) -> dict[str, Any]:
 
 
 def _benchmark_row(spec: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
+    if spec.get("compaction_artifact") is not None:
+        return _compaction_benchmark_row(spec, config)
+
     seed_artifact = pathlib.Path(spec["seed_artifact"])
     phase_artifact = spec.get("phase_artifact")
     if phase_artifact is not None:
@@ -291,6 +313,8 @@ def _benchmark_row(spec: dict[str, Any], config: dict[str, Any]) -> dict[str, An
         and aggregate["matched_minus_same_byte_text_min"] > 0.0
         and not label_copy_threat
     )
+    if "headline_eligible_override" in spec:
+        headline_eligible = bool(spec["headline_eligible_override"])
     source_text_exposed = bool(phase["source_text_exposed"])
     source_kv_exposed = bool(phase["source_kv_exposed"])
 
@@ -358,9 +382,108 @@ def _benchmark_row(spec: dict[str, Any], config: dict[str, Any]) -> dict[str, An
     }
 
 
+def _compaction_benchmark_row(spec: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
+    compaction_artifact = pathlib.Path(spec["compaction_artifact"])
+    artifact = _read_json(compaction_artifact)
+    headline = artifact["headline"]
+    source_rows = artifact["source_rows"]
+    if not source_rows:
+        raise ValueError(f"compaction artifact has no source rows: {compaction_artifact}")
+    selected = max(
+        source_rows,
+        key=lambda row: (
+            float(row["compact_delta_vs_baseline"]),
+            float(row["compact_accuracy"]),
+            str(row["source_name"]),
+        ),
+    )
+    accounting = selected["packet_accounting"]
+    payload_bytes = float(accounting["compact_raw_payload_bytes_per_request"])
+    framed_record_bytes = float(accounting["compact_framed_record_bytes_per_request"])
+    elements = _kv_elements_per_token(config)
+    fp16_bytes = _state_bytes(elements, 16.0)
+    kvcomm30_fp16_bytes = _state_bytes(elements, 16.0, layer_fraction=0.30)
+    turboquant_bytes = _state_bytes(elements, 3.5)
+    qjl_bytes = _state_bytes(elements, 1.0)
+    qjl_30pct_bytes = _state_bytes(elements, 1.0, layer_fraction=0.30)
+    pass_gate = bool(
+        artifact["pass_gate"]
+        and headline["all_prediction_equivalent"]
+        and headline["source_exposure_clear"]
+        and all(row["prediction_equivalence"] for row in source_rows)
+        and all(row["positive_source_gate_passed"] for row in source_rows)
+    )
+    headline_eligible = pass_gate and not bool(spec.get("headline_eligible_override") is False)
+    return {
+        "row_id": spec["row_id"],
+        "dataset": spec["dataset"],
+        "split": spec["split"],
+        "paper_role": spec["paper_role"],
+        "artifact_path": _rel(compaction_artifact),
+        "artifact_sha256": _sha256_file(compaction_artifact),
+        "phase_artifact_path": None,
+        "phase_artifact_sha256": None,
+        "pass_gate": pass_gate,
+        "headline_eligible": headline_eligible,
+        "label_copy_threat": False,
+        "eval_rows": int(selected["row_count"]),
+        "seed_count": int(headline["source_row_count"]),
+        "pass_count": int(sum(1 for row in source_rows if row["positive_source_gate_passed"])),
+        "payload_bytes": payload_bytes,
+        "framed_record_bytes": framed_record_bytes,
+        "batch64_cacheline_bytes_per_request": accounting.get("batch64_packed_compact_framed_bytes", 0.0)
+        / 64.0,
+        "batch64_dma_bytes_per_request": None,
+        "matched_accuracy_mean": float(selected["compact_accuracy"]),
+        "matched_accuracy_min": min(float(row["compact_accuracy"]) for row in source_rows),
+        "target_accuracy": float(selected["baseline_accuracy"]),
+        "same_byte_text_accuracy": None,
+        "best_destructive_accuracy": float(selected["baseline_accuracy"]),
+        "matched_minus_target_min": min(float(row["compact_delta_vs_baseline"]) for row in source_rows),
+        "matched_minus_same_byte_text_min": None,
+        "matched_minus_best_destructive_min": min(float(row["compact_delta_vs_baseline"]) for row in source_rows),
+        "paired_ci95_low_vs_target_min": min(float(row["compact_ci95_low_vs_baseline"]) for row in source_rows),
+        "source_label_copy_accuracy": float(selected["baseline_accuracy"]),
+        "matched_minus_source_label_copy": float(selected["compact_delta_vs_baseline"]),
+        "source_text_exposed": any(bool(row["source_text_exposed"]) for row in source_rows),
+        "source_kv_exposed": any(bool(row["source_kv_exposed"]) for row in source_rows),
+        "source_config_model_type": config.get("model_type"),
+        "kv_elements_per_source_token": elements,
+        "one_token_fp16_kv_bytes": fp16_bytes,
+        "one_token_kvcomm30_fp16_bytes": kvcomm30_fp16_bytes,
+        "one_token_turboquant_3p5bit_bytes": turboquant_bytes,
+        "one_token_qjl_1bit_bytes": qjl_bytes,
+        "one_token_qjl_30pct_bytes": qjl_30pct_bytes,
+        "fp16_one_token_ratio_vs_framed": fp16_bytes / framed_record_bytes,
+        "kvcomm30_fp16_ratio_vs_framed": kvcomm30_fp16_bytes / framed_record_bytes,
+        "turboquant_3p5bit_ratio_vs_framed": turboquant_bytes / framed_record_bytes,
+        "qjl_1bit_ratio_vs_framed": qjl_bytes / framed_record_bytes,
+        "qjl_30pct_ratio_vs_framed": qjl_30pct_bytes / framed_record_bytes,
+        "phase_trace_available": False,
+        "source_scoring_ms_per_question": None,
+        "receiver_decode_p50_us": None,
+        "receiver_decode_p95_us": None,
+        "peak_rss_mib": None,
+        "claim_allowed": (
+            "Mac-local packet compaction and source-state byte-floor accounting with exact prediction "
+            "equivalence for the underlying HellaSwag packet rows."
+        ),
+        "claim_forbidden": (
+            "No native C2C/KVComm/TurboQuant/QJL throughput or quality win is claimed; compaction is "
+            "not a serving benchmark and does not close the terminal-tail strict-method gate."
+        ),
+        "next_native_gate": (
+            "Run native vLLM/SGLang and C2C/KVComm/QJL/TurboQuant baselines on the same HellaSwag "
+            "packet row with TTFT, TPOT, goodput, HBM, and source-exposure metrics."
+        ),
+    }
+
+
 def _checks(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     headline_rows = [row for row in rows if row["headline_eligible"]]
     hellaswag_rows = [row for row in rows if row["dataset"] == "HellaSwag"]
+    hellaswag_label_copy_rows = [row for row in hellaswag_rows if row["label_copy_threat"]]
+    compact_rows = [row for row in rows if row["row_id"].endswith("_compact_1b")]
     return [
         {
             "check": "two_public_headline_benchmarks_eligible",
@@ -384,9 +507,28 @@ def _checks(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         },
         {
             "check": "hellaswag_label_copy_threat_marked_not_headline",
-            "pass": bool(hellaswag_rows)
-            and all(row["label_copy_threat"] and not row["headline_eligible"] for row in hellaswag_rows),
-            "value": [(row["row_id"], row["label_copy_threat"], row["headline_eligible"]) for row in hellaswag_rows],
+            "pass": bool(hellaswag_label_copy_rows)
+            and all(row["label_copy_threat"] and not row["headline_eligible"] for row in hellaswag_label_copy_rows),
+            "value": [
+                (row["row_id"], row["label_copy_threat"], row["headline_eligible"])
+                for row in hellaswag_label_copy_rows
+            ],
+        },
+        {
+            "check": "compact_hellaswag_1b_row_recorded_as_systems_not_native",
+            "pass": bool(compact_rows)
+            and all(
+                row["pass_gate"]
+                and row["payload_bytes"] == 1.0
+                and row["framed_record_bytes"] == 4.0
+                and not row["headline_eligible"]
+                and "No native" in row["claim_forbidden"]
+                for row in compact_rows
+            ),
+            "value": [
+                (row["row_id"], row["payload_bytes"], row["framed_record_bytes"], row["headline_eligible"])
+                for row in compact_rows
+            ],
         },
         {
             "check": "native_baseline_non_claims_explicit",
@@ -503,8 +645,8 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
             f"| {row['dataset']} | {row['paper_role']} | "
             f"{row['pass_count']}/{row['seed_count']} | "
             f"{row['payload_bytes']:.0f}B raw / {row['framed_record_bytes']:.0f}B framed | "
-            f"{row['matched_accuracy_mean']:.3f} | {row['target_accuracy']:.3f} | "
-            f"{row['same_byte_text_accuracy']:.3f} | "
+            f"{_md_float(row['matched_accuracy_mean'])} | {_md_float(row['target_accuracy'])} | "
+            f"{_md_float(row['same_byte_text_accuracy'])} | "
             f"{row['qjl_1bit_ratio_vs_framed']:.1f}x | "
             f"`{row['label_copy_threat']}` |"
         )
