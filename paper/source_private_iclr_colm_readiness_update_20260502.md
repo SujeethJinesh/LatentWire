@@ -13,8 +13,8 @@ Date: 2026-05-02
 - Exact gap: one positive source-family repair, learned receiver, or
   common-language connector must beat packet-only under paired uncertainty,
   destructive controls, and at least one strict cross-family or cross-benchmark
-  falsification. The Mac-local Phi-3 cross-family source diagnostic now fails
-  this gate.
+  falsification. The Mac-local Phi-3 cross-family source diagnostic and the
+  TinyLlama hidden/query common-basis connector now both fail this gate.
 
 ## Contributions To Put Forward
 
@@ -130,6 +130,28 @@ answer option using the cached packet and source-score patterns. It still lost
 to Qwen on frozen test rows, so the remaining headroom requires richer hidden
 or query-level information rather than more cached score geometry.
 
+The ARC hidden/query common-basis gate tests the richer Mac-local connector:
+
+- artifact:
+  `results/source_private_arc_challenge_hidden_query_common_basis_gate_20260502_tinyllama_disagreement/arc_challenge_hidden_query_common_basis_gate.json`
+- source family: `TinyLlama-1.1B-Chat-v1.0`;
+- train/select surface: `144` validation TinyLlama-vs-Qwen disagreement rows;
+- frozen test surface: `473` TinyLlama-vs-Qwen disagreement rows;
+- selected view/PCA/ridge: `hidden_residual / 32 / 100.0`;
+- test matched/Qwen-substituted/cached-Tiny mean:
+  `0.230/0.317/0.269`;
+- test matched-minus-Qwen-substituted mean/min: `-0.088/-0.106`;
+- test CI95 lower bound versus Qwen-substituted: `-0.160`;
+- candidate-roll and receiver spectral-permutation controls remain below
+  Qwen-substituted accuracy;
+- pass gate: `False`.
+
+Lay explanation: this run asked whether TinyLlama's internal hidden/query
+vectors could be translated into the successful ARC public packet coordinate
+system. On the hard rows where TinyLlama and Qwen disagree, that translated
+TinyLlama hint was worse than the ordinary TinyLlama packet and much worse
+than the Qwen-substituted packet.
+
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
 
@@ -190,10 +212,11 @@ same controls.
 
 ## Next Exact Gate
 
-Run an ARC source-family repair gate with a learned hidden/query common-basis
-connector or a stronger non-Qwen source on NVIDIA. Receiver-only scalar
-routing, source-side scalar confidence routing, cached candidate-level
-packet/score connectors, and Mac-local Phi-3 source packets are now ruled out
-for this surface. The same-family Qwen-1.5B stronger-source diagnostic should
-be repeated with a true stronger cross-family source before making the ICLR
-claim.
+Build the systems boundary figure/table V3 for COLM/ICLR framing, then run a
+stronger true cross-family source or trainable query/cache connector on NVIDIA.
+Receiver-only scalar routing, source-side scalar confidence routing, cached
+candidate-level packet/score connectors, Mac-local Phi-3 source packets, and
+shallow TinyLlama hidden/query PCA/ridge connectors are now ruled out for this
+ARC disagreement surface. The same-family Qwen-1.5B stronger-source diagnostic
+should be repeated with a true stronger cross-family source before making the
+ICLR claim.

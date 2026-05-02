@@ -1965,5 +1965,12 @@
     "path": "references/637_arc_phi3_cross_family_source_diagnostic_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC Phi-3 cross-family source diagnostic, covering the negative non-Qwen source-family result, source-choice weakness, and boundaries against C2C, KVComm/KVCOMM, latent K-V alignment, activation communication, crosscoders/SAEs, query bottlenecks, KV quantization, and prefix tuning."
+  },
+  {
+    "num": 638,
+    "slug": "arc_hidden_query_common_basis_refs_20260502",
+    "path": "references/638_arc_hidden_query_common_basis_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC TinyLlama hidden/query common-basis gate, covering the negative hidden/query connector result and boundaries against C2C, KVComm/KVCOMM, activation communication, InterLat, latent K-V alignment, crosscoders/SAEs, and TurboQuant-style quantized cache/vector methods."
   }
 ]

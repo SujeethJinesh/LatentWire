@@ -19263,3 +19263,29 @@ cross-family source repair for the current ARC Fourier/anchor-syndrome packet.
 The live next branch is now a stronger non-Qwen source on NVIDIA or a richer
 hidden/query common-basis connector, not cached scalar confidence or
 candidate-score geometry.
+
+ARC-Challenge hidden/query common-basis connector gate: added
+`scripts/build_source_private_arc_challenge_hidden_query_common_basis_gate.py`,
+memo `paper/source_private_arc_hidden_query_common_basis_gate_20260502.md`,
+references
+`references/638_arc_hidden_query_common_basis_refs_20260502.md`, and artifact
+`results/source_private_arc_challenge_hidden_query_common_basis_gate_20260502_tinyllama_disagreement/`.
+Outcome: this is the strict TinyLlama hidden/query repair gate for the ARC
+source-family blocker, and it is negative. The gate trains/selects on the
+`144` validation rows where TinyLlama and Qwen source packets disagree, then
+evaluates on the frozen `473` ARC test-disagreement rows. It extracts
+TinyLlama per-choice hidden means and attention-query projection means from
+answer-key-forbidden prompts, maps row-centered hidden/query residual views
+through train-only PCA/ridge into the public ARC Fourier/anchor receiver basis,
+and emits the same `12B` sparse signed packet. The selected dev view is
+`hidden_residual` with PCA/ridge `32/100.0`; dev delta versus Qwen-substituted
+packets is already negative at `-0.0167`. On frozen test, matched/Qwen-
+substituted/cached-Tiny mean accuracy is `0.230/0.317/0.269`, matched-minus-
+Qwen-substituted mean/min is `-0.088/-0.106`, and the CI95 lower bound versus
+Qwen-substituted is `-0.160`. Candidate-roll and receiver spectral-permutation
+controls stay below Qwen-substituted accuracy, so the failure is not control
+leakage; it is lack of useful translated source signal. Decision: rule out
+shallow Mac-local TinyLlama hidden/query PCA/ridge common-basis connectors for
+ARC. The next exact branch should be a stronger true cross-family source or
+trainable query/cache connector on NVIDIA, while the Mac-local systems work
+should consolidate a paper-ready boundary table.
