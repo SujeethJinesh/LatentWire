@@ -2084,5 +2084,12 @@
     "path": "references/654_byte_amplification_ablation_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the Mac-local source-private byte-amplification ablation, covering Wyner-Ziv side-information framing, QJL/TurboQuant/KIVI/KVQuant KV byte floors, vLLM/PagedAttention, C2C/KVComm/KVCOMM/Interlat boundaries, SAE/relative-representation non-baseline context, and the source-score vector exposure stress row."
+  },
+  {
+    "num": 655,
+    "slug": "arc_candidate_alignment_receiver_refs_20260502",
+    "path": "references/655_arc_candidate_alignment_receiver_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC candidate-alignment receiver preflight, covering relative/common-basis latent communication, DeepSets/Set Transformer permutation-equivariant receiver boundaries, CCA/CKA/Procrustes alignment probes, BLIP-2/Q-Former frozen bottlenecks, C2C cache-communication contrast, and QJL/TurboQuant quantization pressure."
   }
 ]

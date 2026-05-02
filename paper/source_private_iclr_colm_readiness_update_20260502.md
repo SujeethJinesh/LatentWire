@@ -602,3 +602,30 @@ rows are fixed task evidence, while QJL/TurboQuant/KIVI/KVQuant/C2C/KVComm
 rows are compressed or transported state objects. This does not close native
 throughput claims; NVIDIA vLLM/SGLang rows remain a blocker for ICLR systems
 strength.
+
+## 2026-05-02 Candidate-Alignment Receiver Follow-Up
+
+Added an external ARC candidate-alignment receiver:
+`scripts/run_source_private_arc_candidate_alignment_receiver_preflight.py`.
+The gate scores choices outside the target LM using public candidate features,
+source candidate sketches, source/public compatibility terms, and destructive
+controls.
+
+Readout:
+
+- sign-16 hidden-only sketch (`8B`): matched `1/4`, best control `3/4`;
+- unquantized hidden-only pointwise sketch (`256B`): matched `3/4`, but mean
+  margin still loses target-public-only by about `0.012`;
+- sign-64 hidden-only sketch (`32B`): matched `1/4`, best control `2/4`;
+- int8-16 pairwise sketch (`66B`): matched `3/4`, target-public-only also
+  `3/4`;
+- unquantized pointwise n16 probe: matched `1/8`, target-public-only `3/8`;
+- all pass gates are `False`.
+
+Decision: do not widen this linear candidate-alignment receiver. The only
+positive-looking n8 row is uncompressed, margin-negative, and does not survive
+n16. The next method branch should freeze a target-public scorer and train a
+source residual correction only on target errors, with wrong-row,
+candidate-roll, zero-source, and target-only controls. If that fails, the
+right architectural move is a permutation-equivariant DeepSets/Set Transformer
+receiver with source-control contrastive training.

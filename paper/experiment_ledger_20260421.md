@@ -19730,3 +19730,44 @@ Lay explanation: this table asks what would have to cross the system boundary
 to preserve the same cached decision. Our packet is tiny and private. A score
 vector can be tiny too, but it reveals the source model's raw answer scores.
 KV/cache methods move much larger internal state, even when quantized.
+
+ARC candidate-alignment receiver preflight: added
+`scripts/run_source_private_arc_candidate_alignment_receiver_preflight.py` and
+tests in
+`tests/test_run_source_private_arc_candidate_alignment_receiver_preflight.py`.
+Added memo
+`paper/source_private_arc_candidate_alignment_receiver_preflight_20260502.md`,
+references `references/655_arc_candidate_alignment_receiver_refs_20260502.md`,
+and artifacts:
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_hidden_public_innovation_sign16_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_hidden_public_innovation_float16_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_hidden_score_public_innovation_sign16_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_hidden_public_innovation_sign64_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_hidden_public_innovation_int8_pairwise16_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_hidden_public_innovation_none_pairwise16_n8/`,
+and
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_hidden_public_innovation_none_pointwise16_n16/`.
+Outcome: this low-capacity external candidate scorer is weakened, not
+promoted. The sign-16 hidden-only packet is a compact `8B` candidate sketch,
+but matched reaches only `1/4` while zero-source/train-mean reach `3/4`.
+Unquantized hidden-only pointwise scoring briefly shows candidate alignment:
+matched reaches `3/4` and candidate-roll/candidate-derangement both reach
+`0/4`, but the matched margin is still below target-public-only by about
+`0.012`, the diagnostic packet is `256B`, and the same pointwise setup
+collapses on the larger n16 probe to matched `1/8` versus target-public-only
+`3/8`. Pairwise ranking and int8 sketches preserve some accuracy (`3/4`) but
+also let target-public-only reach `3/4`, so source is not necessary.
+
+Decision: do not widen this linear candidate-alignment receiver. The branch
+does provide a useful reviewer-facing falsification and a sharper next move:
+freeze a target-public scorer, train only a residual source correction on the
+target's errors, and require that correction to beat wrong-row,
+candidate-roll, zero-source, and target-only controls. If residual correction
+does not clear n8/n16, move to a true permutation-equivariant DeepSets/Set
+Transformer receiver with source-control contrastive training.
+
+Lay explanation: this run gave every answer choice a tiny source-model hint
+and trained a simple referee to rank the choices. A few uncompressed hints
+looked useful on four evaluation examples, but compressed hints failed, and
+larger or target-only checks erased the advantage. We should not claim this as
+working model-to-model communication.
