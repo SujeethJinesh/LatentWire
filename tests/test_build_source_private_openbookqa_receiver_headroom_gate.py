@@ -74,3 +74,31 @@ def test_openbookqa_receiver_gate_writes_artifacts(tmp_path) -> None:
     assert "target_public_ridge" in payload["per_seed"][0]["condition_metrics"]
     assert (tmp_path / "out" / "openbookqa_receiver_headroom_gate.json").exists()
     assert (tmp_path / "out" / "receiver_predictions.jsonl").exists()
+
+    custom_payload = gate.build_receiver_gate(
+        output_dir=tmp_path / "out_custom",
+        train_path=train_path,
+        validation_path=validation_path,
+        test_path=test_path,
+        validation_source_cache=validation_cache,
+        test_source_cache=test_cache,
+        seeds=[5],
+        budget_bytes=2,
+        packet_feature_dim=16,
+        code_dim=8,
+        target_feature_dim=16,
+        target_ridge=1.0,
+        selector_ridges=[0.1, 1.0],
+        threshold_percentiles=[0, 50, 100],
+        bootstrap_samples=50,
+        min_receiver_lift=0.0,
+        min_control_gap=-1.0,
+        benchmark_name="ARC-Challenge",
+        gate_name="source_private_arc_challenge_receiver_headroom_gate",
+        output_stem="arc_challenge_receiver_headroom_gate",
+    )
+
+    assert custom_payload["gate"] == "source_private_arc_challenge_receiver_headroom_gate"
+    assert custom_payload["benchmark_name"] == "ARC-Challenge"
+    assert (tmp_path / "out_custom" / "arc_challenge_receiver_headroom_gate.json").exists()
+    assert (tmp_path / "out_custom" / "arc_challenge_receiver_headroom_gate.md").exists()

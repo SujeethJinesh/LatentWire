@@ -531,7 +531,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     headline = payload["headline"]
     default = headline["default_seed_matched"]
     lines = [
-        "# Source-Private OpenBookQA Receiver/Headroom Gate",
+        f"# Source-Private {payload['benchmark_name']} Receiver/Headroom Gate",
         "",
         f"- date: `{payload['date']}`",
         f"- pass gate: `{payload['pass_gate']}`",
@@ -598,8 +598,41 @@ def build_receiver_gate(
     bootstrap_samples: int,
     min_receiver_lift: float,
     min_control_gap: float,
+    benchmark_name: str = "OpenBookQA",
+    gate_name: str = "source_private_openbookqa_receiver_headroom_gate",
+    output_stem: str = "openbookqa_receiver_headroom_gate",
+    source_packet_origin: str | None = None,
+    receiver_training: str | None = None,
+    claim_boundary: str | None = None,
+    interpretation: str | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
+    if source_packet_origin is None:
+        source_packet_origin = (
+            f"answer-key-forbidden Qwen2.5-0.5B source-choice cache from the promoted "
+            f"{budget_bytes}B {benchmark_name} packet gate"
+        )
+    if receiver_training is None:
+        receiver_training = (
+            f"target public scorer trained on {benchmark_name} train; selector selected on validation only; "
+            "test labels held out until final evaluation"
+        )
+    if claim_boundary is None:
+        claim_boundary = (
+            "This is a packet/target evidence-fusion receiver. It is not a native GPU systems result and "
+            "does not claim source-label-copy separation because the promoted packet is itself a compact "
+            "source-selected-candidate sketch."
+        )
+    if interpretation is None:
+        interpretation = (
+            f"{benchmark_name} has a positive receiver-fusion row: the default {budget_bytes}B packet receiver "
+            "improves over packet-only and over a train-split public target scorer on held-out test, while "
+            "same-byte text and source-destroy controls stay lower. The result is a useful positive method "
+            "branch, but it should be framed as source-private evidence fusion rather than universal "
+            "latent-language transfer; the current packet still behaves like a compact source-selected-candidate "
+            "sketch, so a stronger common-basis or learned connector remains necessary for a comfortable ICLR "
+            "full paper."
+        )
     train_rows = arc_gate._load_rows(train_path)
     validation_rows = arc_gate._load_rows(validation_path)
     test_rows = arc_gate._load_rows(test_path)
@@ -745,7 +778,8 @@ def build_receiver_gate(
         / len(test_rows)
     )
     payload = {
-        "gate": "source_private_openbookqa_receiver_headroom_gate",
+        "gate": gate_name,
+        "benchmark_name": benchmark_name,
         "date": dt.datetime.now(dt.UTC).date().isoformat(),
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
         "train_path": _display_path(train_path),
@@ -789,18 +823,14 @@ def build_receiver_gate(
         },
         "method_contract": {
             "source_packet_budget_bytes": budget_bytes,
-            "source_packet_origin": "answer-key-forbidden Qwen2.5-0.5B source-choice cache from the promoted 3B OpenBookQA packet gate",
-            "receiver_training": "target public scorer trained on OpenBookQA train; selector selected on validation only; test labels held out until final evaluation",
+            "source_packet_origin": source_packet_origin,
+            "receiver_training": receiver_training,
             "receiver_inputs_at_test": [
                 "source-private packet decoder scores/prediction",
                 "public question/candidate text through a train-split target scorer",
             ],
             "forbidden_eval_source_inputs": list(arc_gate.FORBIDDEN_SOURCE_KEYS),
-            "claim_boundary": (
-                "This is a packet/target evidence-fusion receiver. It is not a native GPU systems result and "
-                "does not claim source-label-copy separation because the promoted 3B packet is itself a compact "
-                "source-selected-candidate sketch."
-            ),
+            "claim_boundary": claim_boundary,
         },
         "per_seed": per_seed,
         "headline": {
@@ -822,27 +852,20 @@ def build_receiver_gate(
             "to beat the strongest no-source/same-byte control by the configured gap, every seed's receiver delta "
             "to be positive, and the row-bootstrap aggregate across seeds to have positive CI95 lower bound."
         ),
-        "interpretation": (
-            "OpenBookQA now has a positive receiver-fusion row: the default 3B packet receiver improves over "
-            "packet-only and over a train-split public target scorer on held-out test, while same-byte text and "
-            "source-destroy controls stay lower. The result is a useful positive method branch, but it should be "
-            "framed as source-private evidence fusion rather than universal latent-language transfer; the current "
-            "packet still behaves like a compact source-selected-candidate sketch, so a stronger common-basis or "
-            "learned connector remains necessary for a comfortable ICLR full paper."
-        ),
+        "interpretation": interpretation,
     }
-    (output_dir / "openbookqa_receiver_headroom_gate.json").write_text(
+    (output_dir / f"{output_stem}.json").write_text(
         json.dumps(payload, indent=2, sort_keys=True),
         encoding="utf-8",
     )
-    _write_metrics_csv(output_dir / "openbookqa_receiver_headroom_gate.csv", per_seed)
+    _write_metrics_csv(output_dir / f"{output_stem}.csv", per_seed)
     _write_jsonl(output_dir / "receiver_predictions.jsonl", all_prediction_rows)
-    _write_markdown(output_dir / "openbookqa_receiver_headroom_gate.md", payload)
+    _write_markdown(output_dir / f"{output_stem}.md", payload)
     manifest = {
         "artifacts": [
-            "openbookqa_receiver_headroom_gate.json",
-            "openbookqa_receiver_headroom_gate.md",
-            "openbookqa_receiver_headroom_gate.csv",
+            f"{output_stem}.json",
+            f"{output_stem}.md",
+            f"{output_stem}.csv",
             "receiver_predictions.jsonl",
             "manifest.json",
             "manifest.md",
@@ -850,9 +873,9 @@ def build_receiver_gate(
         "artifact_sha256": {
             name: _sha256_file(output_dir / name)
             for name in (
-                "openbookqa_receiver_headroom_gate.json",
-                "openbookqa_receiver_headroom_gate.md",
-                "openbookqa_receiver_headroom_gate.csv",
+                f"{output_stem}.json",
+                f"{output_stem}.md",
+                f"{output_stem}.csv",
                 "receiver_predictions.jsonl",
             )
         },
@@ -863,7 +886,7 @@ def build_receiver_gate(
     (output_dir / "manifest.md").write_text(
         "\n".join(
             [
-                "# Source-Private OpenBookQA Receiver/Headroom Gate Manifest",
+                f"# Source-Private {benchmark_name} Receiver/Headroom Gate Manifest",
                 "",
                 f"- pass gate: `{pass_gate}`",
                 f"- receiver candidate pass: `{receiver_candidate_pass}`",

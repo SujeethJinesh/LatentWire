@@ -19058,3 +19058,37 @@ candidate-control row. Updated the ICLR evidence bundle to include this row and
 to change the ICLR blocker from “no positive receiver” to robustness, ARC
 replication, stricter control/seed stability, native NVIDIA systems baselines,
 and a less label-copy-like common-basis or learned connector.
+
+ARC-Challenge receiver/headroom replication gate: generalized
+`scripts/build_source_private_openbookqa_receiver_headroom_gate.py` for reusable
+benchmark naming, added
+`scripts/build_source_private_arc_challenge_receiver_headroom_gate.py`, extended
+tests
+`tests/test_build_source_private_openbookqa_receiver_headroom_gate.py` and
+`tests/test_build_source_private_iclr_evidence_bundle.py`, memo
+`paper/source_private_arc_challenge_receiver_headroom_gate_20260502.md`,
+references `references/630_arc_challenge_receiver_headroom_refs_20260502.md`,
+and artifact
+`results/source_private_arc_challenge_receiver_headroom_gate_20260502/`.
+Outcome: this direct ARC replication falsifies the current OpenBookQA
+validation-selected packet/target receiver as a cross-benchmark method. On ARC
+test, default seed `47` reaches receiver `0.339590` versus packet-only
+`0.343857` and target-public `0.277304`, so the receiver remains above the weak
+target scorer but hurts packet-only by `-0.004266` with paired CI95 low
+`-0.009386`. Across `5` packet projection seeds, strict per-seed CI passes
+`0/5`, every matched receiver delta is negative, and row-bootstrap aggregate
+delta is `-0.014164` with CI95 `[-0.021843, -0.006822]`. Same-byte text
+receiver control is `0.310580`, and the default matched receiver still beats
+the strongest control by `+0.029010`, so the failure is selector
+generalization, not control leakage. A diagnostic oracle over packet-only or
+target-public reaches about `0.524` accuracy (`+0.180` over packet-only), but
+cheap validation-selected confidence rules also fail test (`0.339` vs packet
+`0.344`). Decision: keep OpenBookQA receiver-fusion as a COLM positive row,
+but do not present it as an ICLR cross-benchmark contribution. Next exact gate
+is either an ARC train-source selector with validation-only model/threshold
+selection or, preferably for novelty, the Fourier/anchor-syndrome common-basis
+packet on the frozen ARC decision surface. Updated
+`results/source_private_iclr_evidence_bundle_20260502/` so the readiness string
+explicitly says ARC replication failed and ICLR remains blocked by robustness,
+native systems baselines, and a less label-copy-like common-basis/learned
+connector.

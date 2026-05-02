@@ -1,0 +1,18 @@
+{
+  "artifact_sha256": {
+    "arc_challenge_receiver_headroom_gate.csv": "4f63f656429b64d7b2b8cba87c3821d0005526608c45cafcc10139173e792f04",
+    "arc_challenge_receiver_headroom_gate.json": "19846ae3245adef3d80030d4eef68c5cdc15c0bce8cb46eb6b48c1bc7bde2df2",
+    "arc_challenge_receiver_headroom_gate.md": "8dd2d85dcb8a81a46f0a48fba352f781b55ff3ded8495ca3ed6e55acc2e1d728",
+    "receiver_predictions.jsonl": "c1da441fd6a5e88901394a3e145feae153ef7c93f54d84b6ec083179b5a8d4bc"
+  },
+  "artifacts": [
+    "arc_challenge_receiver_headroom_gate.json",
+    "arc_challenge_receiver_headroom_gate.md",
+    "arc_challenge_receiver_headroom_gate.csv",
+    "receiver_predictions.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false,
+  "receiver_candidate_pass": false
+}

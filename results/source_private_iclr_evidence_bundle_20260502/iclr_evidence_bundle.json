@@ -256,6 +256,37 @@
     "seed_count": 5,
     "target_accuracy": 0.24414715719063546
   },
+  "arc_challenge_receiver_headroom_headline": {
+    "aggregate_seed_row_ci_vs_packet": {
+      "ci95_high": -0.006821672354948829,
+      "ci95_low": -0.021843003412969283,
+      "mean": -0.01416382252559727
+    },
+    "all_seed_deltas_positive": false,
+    "default_best_receiver_control": "same_byte_structured_text",
+    "default_best_receiver_control_accuracy": 0.310580204778157,
+    "default_matched_minus_best_receiver_control": 0.029010238907849817,
+    "default_seed": 47,
+    "default_seed_matched": {
+      "base_accuracy": 0.3438566552901024,
+      "harm_count": 8,
+      "help_count": 3,
+      "n": 1172,
+      "override_count": 156,
+      "override_rate": 0.13310580204778158,
+      "paired_ci95_vs_base": {
+        "ci95_high": 0.0008532423208191126,
+        "ci95_low": -0.00938566552901024,
+        "mean": -0.004266211604095563
+      },
+      "receiver_accuracy": 0.3395904436860068,
+      "receiver_minus_base": -0.004266211604095563,
+      "receiver_minus_target_public": 0.06228668941979522,
+      "target_public_accuracy": 0.2773037542662116
+    },
+    "seed_count": 5,
+    "strict_per_seed_ci_pass_count": 0
+  },
   "arc_challenge_seed_stability_test_headline": {
     "all_seeds_pass": true,
     "candidate_derangement_accuracy_max": 0.2158703071672355,
@@ -427,6 +458,12 @@
       "exists": true,
       "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_random_anchors_validation/arc_challenge_seed_stability.json",
       "sha256": "505b4905957143aea61a5e8f4c89f72bc63b255781f5b24800d6e35021510977"
+    },
+    "arc_challenge_receiver_headroom": {
+      "bytes": 40638,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_receiver_headroom_gate_20260502/arc_challenge_receiver_headroom_gate.json",
+      "sha256": "19846ae3245adef3d80030d4eef68c5cdc15c0bce8cb46eb6b48c1bc7bde2df2"
     },
     "arc_challenge_seed_stability_test": {
       "bytes": 22257,
@@ -1027,6 +1064,13 @@
       "status": "new positive receiver-fusion method gate"
     },
     {
+      "contribution": "ARC-Challenge receiver-fusion replication falsification",
+      "headline_evidence": "default seed receiver=0.340 vs packet=0.344 and target-public=0.277; aggregate seed-row delta=-0.014 with CI95 low=-0.0218",
+      "main_metric": "12B source packet; default receiver-packet delta=-0.004; default receiver-target delta=0.062; strict per-seed CI pass count=0/5; best receiver control=same_byte_structured_text at 0.311",
+      "remaining_gap": "ARC has substantial packet/target oracle headroom, but the OpenBookQA validation-selected receiver does not generalize: it protects against target-only weakness but hurts the stronger packet-only row. This demotes receiver-fusion as a cross-benchmark headline until we add a train-source selector, nested validation, or a less label-copy-like common-basis packet.",
+      "status": "new negative cross-benchmark receiver gate / branch narrowed"
+    },
+    {
       "contribution": "SciQ text-saturation diagnostic",
       "headline_evidence": "official SciQ splits materialized 11679/1000/1000 train/validation/test; validation matched/target/text=0.712/0.246/0.706",
       "main_metric": "matched-source minus same-byte text=0.006; matched-source minus target=0.466; CI95 low vs target=0.425",
@@ -1349,7 +1393,7 @@
       "status": "bounded diagnostic contribution, not headline cross-family claim"
     }
   ],
-  "created_utc": "2026-05-02T09:02:47.214907+00:00",
+  "created_utc": "2026-05-02T09:13:28.811132+00:00",
   "cross_benchmark_systems_comparator_headline": {
     "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
     "diagnostic_benchmarks": 1,
@@ -2553,6 +2597,10 @@
       "pass": true
     },
     {
+      "check": "arc_receiver_replication_falsifies_current_selector",
+      "pass": true
+    },
+    {
       "check": "commonsenseqa_bridge_contract_passes",
       "pass": true
     },
@@ -3046,7 +3094,7 @@
     }
   ],
   "pass_gate": true,
-  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, and byte/exposure systems accounting. ICLR remains blocked by robustness rather than by total absence of a positive receiver: the OpenBookQA receiver improves over packet-only on held-out test, but strict per-seed CI/control stability, ARC replication, native NVIDIA systems baselines, and a less label-copy-like common-basis or learned connector are still missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
+  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, and byte/exposure systems accounting. ICLR remains blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, but the same validation-selected receiver fails ARC replication, strict per-seed CI/control stability is incomplete, native NVIDIA systems baselines are missing, and a less label-copy-like common-basis or learned connector is still needed. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
   "remaining_iclr_risks": [
     "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
     "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
@@ -3127,6 +3175,7 @@
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_validation_3b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_validation.jsonl --anchor-predictions results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_validation/predictions.jsonl --split-name openbookqa_validation_hashed_3b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 3 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl --anchor-predictions results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/predictions.jsonl --split-name openbookqa_test_hashed_3b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 3 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_openbookqa_receiver_headroom_gate.py --output-dir results/source_private_openbookqa_receiver_headroom_gate_20260502",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_receiver_headroom_gate.py --output-dir results/source_private_arc_challenge_receiver_headroom_gate_20260502",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",

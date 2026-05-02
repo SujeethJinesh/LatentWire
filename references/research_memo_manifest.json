@@ -1909,5 +1909,12 @@
     "path": "references/629_openbookqa_receiver_headroom_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the OpenBookQA train-only packet/target receiver-fusion gate, covering the positive held-out receiver row, selective accept/reject framing, common-basis boundaries, and systems/communication comparisons against C2C, KVComm, KIVI, KVQuant, and TurboQuant."
+  },
+  {
+    "num": 630,
+    "slug": "arc_challenge_receiver_headroom_refs_20260502",
+    "path": "references/630_arc_challenge_receiver_headroom_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC-Challenge receiver-fusion replication falsification, covering the failed cross-benchmark selector result, selective routing boundaries, common-basis next methods, and systems/communication comparisons against C2C, KVComm, FNet, relative representations, sparse crosscoders, and TurboQuant."
   }
 ]
