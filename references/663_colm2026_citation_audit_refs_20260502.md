@@ -12,7 +12,7 @@ allowed to support.
 
 - ARC-Challenge: `https://arxiv.org/abs/1803.05457`
   - Supports the benchmark description and citation for ARC-Challenge.
-- OpenBookQA: `https://arxiv.org/abs/1809.02789`
+- OpenBookQA: `https://aclanthology.org/D18-1260/`
   - Supports the benchmark description and citation for OpenBookQA.
 - Qwen2.5 technical report: `https://arxiv.org/abs/2412.15115`
   - Supports the Qwen2.5 same-family model-family citation.
@@ -28,35 +28,48 @@ allowed to support.
   - Supports feature dictionary motivation only.
 - SAE universality: `https://arxiv.org/abs/2410.06981`
   - Supports common-feature plausibility only.
-- SAEBench: `https://arxiv.org/abs/2503.09532`
+  - Verified title and author list in BibTeX: Michael Lan, Philip Torr, Austin Meek, Ashkan Khakzar, David Krueger, Fazl Barez.
+- SAEBench: `https://proceedings.mlr.press/v267/karvonen25a.html`
   - Supports sparse-feature evaluation caution only.
-- Prefix-Tuning: `https://arxiv.org/abs/2101.00190`
+  - Verified full BibTeX author list from the ICML/PMLR 2025 record after audit correction.
+- Prefix-Tuning: `https://aclanthology.org/2021.acl-long.353/`
   - Supports the continuous-prefix baseline family.
-- Gist Tokens: `https://arxiv.org/abs/2304.08467`
+- Gist Tokens: `https://proceedings.neurips.cc/paper_files/paper/2023/hash/3d77c6dcc7f143aa2154e7f4d5e22d68-Abstract-Conference.html`
   - Supports prompt-compression/soft-token baseline framing.
-- BLIP-2 / Q-Former: `https://arxiv.org/abs/2301.12597`
+- BLIP-2 / Q-Former: `https://proceedings.mlr.press/v202/li23q.html`
   - Supports query-bottleneck connector inspiration; not claimed as a completed LatentWire result.
 
 ## Systems and communication competitors
 
-- Cache-to-Cache: `https://arxiv.org/abs/2510.03215`
+- Cache-to-Cache: `https://openreview.net/forum?id=LeatkxrBCi`
   - Supports cache/KV communication competitor framing.
   - Does not support claiming LatentWire beats C2C natively.
-- KVComm: `https://arxiv.org/abs/2510.03346`
+- KVComm: `https://openreview.net/forum?id=F7rUng23nw`
   - Supports selective KV-sharing competitor framing.
   - Does not support claiming LatentWire beats KVComm natively.
 - QJL: `https://arxiv.org/abs/2406.03482`
   - Supports a one-token 1-bit KV-state floor in byte/exposure accounting.
-- KIVI: `https://arxiv.org/abs/2402.02750`
+- KIVI: `https://proceedings.mlr.press/v235/liu24bz.html`
   - Supports a 2-bit KV-cache quantization comparator floor.
-- KVQuant: `https://arxiv.org/abs/2401.18079`
+- KVQuant: `https://proceedings.neurips.cc/paper_files/paper/2024/hash/028fcbcf85435d39a40c4d61b42c99a4-Abstract-Conference.html`
   - Supports sub-4-bit KV-cache quantization comparator framing.
-- TurboQuant: `https://arxiv.org/abs/2504.19874`
+  - Verified author list after audit correction: Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, Michael W. Mahoney, Yakun Sophia Shao, Kurt Keutzer, Amir Gholami.
+- TurboQuant: `https://openreview.net/forum?id=tO3ASKZlok`
   - Supports vector/KV quantization comparator framing.
 - vLLM/PagedAttention: `https://arxiv.org/abs/2309.06180`
   - Supports native serving substrate context and KV-cache memory motivation.
-- SGLang: `https://arxiv.org/abs/2312.07104`
+- SGLang: `https://proceedings.neurips.cc/paper_files/paper/2024/hash/724be4472168f31ba1c9ac630f15dec8-Abstract-Conference.html`
   - Supports structured LLM serving/KV-reuse substrate context.
+
+## Metadata corrections made in this audit pass
+
+- C2C, KVComm, and TurboQuant were updated from preprint-style metadata to their ICLR 2026 OpenReview records.
+- Prefix-Tuning was updated to the ACL-IJCNLP 2021 anthology record, including pages and DOI.
+- Gist Tokens was updated to the NeurIPS 2023 proceedings record.
+- BLIP-2 and KIVI were updated to their PMLR ICML records.
+- KVQuant and SGLang were updated to NeurIPS 2024 proceedings records.
+- OpenBookQA was updated to the EMNLP 2018 ACL Anthology record, including pages and DOI.
+- SAEBench was updated to the ICML/PMLR 2025 record.
 
 ## Information theory
 

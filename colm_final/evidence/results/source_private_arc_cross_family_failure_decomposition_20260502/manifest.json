@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_arc_cross_family_failure_decomposition_20260502/arc_cross_family_failure_decomposition.json",
+      "sha256": "ce9814b893940739d755c0aa17761e5f1688621e9a5414cae3e800cfb34d3f13"
+    },
+    {
+      "path": "results/source_private_arc_cross_family_failure_decomposition_20260502/arc_cross_family_failure_decomposition.md",
+      "sha256": "7c1ad3412ac38610af21bc6a92c4464ae8144d755e021473444d4c4ffa0b0b10"
+    },
+    {
+      "path": "results/source_private_arc_cross_family_failure_decomposition_20260502/family_failure_summary.csv",
+      "sha256": "a0f85314a64cafeba08b7f7c30e7a329794910e9fdaaab7682a01b49a2b72fc2"
+    }
+  ],
+  "gate": "source_private_arc_cross_family_failure_decomposition",
+  "pass_gate": false
+}

@@ -1,0 +1,70 @@
+{
+  "created_utc": "2026-05-02T14:29:29.917594+00:00",
+  "files": [
+    {
+      "bytes": 151160,
+      "path": "results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/arc_challenge_hidden_query_mlp_cache_connector_gate.json",
+      "sha256": "a761d0fc75f7bc1ed3e511f6234dd090c39367f98dbb53ba818391b00fddabde"
+    },
+    {
+      "bytes": 1492,
+      "path": "results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/arc_challenge_hidden_query_mlp_cache_connector_gate.md",
+      "sha256": "a746ffc0c242a293e0aeb1c8b6787a1e8c0f53c80fbbe10e031ab6d77ca8ceec"
+    },
+    {
+      "bytes": 7734,
+      "path": "results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/dev_frontier.csv",
+      "sha256": "5670f4b30a270277aa117cd192dc7fb41618e000a3c8ebc56f54c60f2a37c0a7"
+    },
+    {
+      "bytes": 8220951,
+      "path": "results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/test_predictions.jsonl.gz",
+      "sha256": "2b40f0e43e26001608e3d484b4c22587cd4372d067782eead2003bacc6c4881e"
+    },
+    {
+      "bytes": 278158,
+      "path": "results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/selected_connector_weights.npz",
+      "sha256": "ad0ee375c27befd4ea6605e5c45c33165accd729f2ae0dd0e1af1b34c5717abf"
+    }
+  ],
+  "gate": "source_private_arc_challenge_hidden_query_mlp_cache_connector_gate",
+  "headline": {
+    "candidate_roll_matched_accuracy_mean": 0.2613107822410148,
+    "content_rotation_matched_accuracy_mean": 0.2553911205073996,
+    "final_fit_alignment_cosine_mean": 0.23132363256466176,
+    "final_fit_loss_final": 0.8011206388473511,
+    "frontier_candidate_count": 36,
+    "pass_gate": false,
+    "selected_hidden_dim": 16,
+    "selected_pca_dim": 16,
+    "selected_view": "query_residual",
+    "selected_weight_decay": 0.001,
+    "spectral_permutation_matched_accuracy_mean": 0.23594080338266385,
+    "test_cached_tiny_packet_accuracy_mean": 0.2693446088794926,
+    "test_disagreement_rows": 473,
+    "test_matched_accuracy_mean": 0.2317124735729387,
+    "test_matched_accuracy_min": 0.2219873150105708,
+    "test_matched_minus_cached_tiny_packet_mean": -0.03763213530655391,
+    "test_matched_minus_qwen_substituted_mean": -0.08541226215644819,
+    "test_paired_ci95_low_vs_cached_tiny_packet_min": -0.1036997885835095,
+    "test_paired_ci95_low_vs_qwen_substituted_min": -0.1543340380549683,
+    "test_qwen_substituted_accuracy_mean": 0.3171247357293869,
+    "test_same_byte_structured_text_accuracy": 0.25792811839323465,
+    "test_target_accuracy": 0.26849894291754756,
+    "train_test_content_overlap_count": 0,
+    "validation_disagreement_rows": 144
+  },
+  "inputs": {
+    "hidden_query_dir": "results/source_private_arc_challenge_hidden_query_common_basis_gate_20260502_tinyllama_disagreement",
+    "qwen_disagreement_predictions": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/qwen_disagreement_predictions.jsonl",
+    "qwen_disagreement_predictions_sha256": "ed0c3fa3cad17ae0395a81f4cbfee12aa611f6b21d4d647e6bbcafd939ad92f7",
+    "source_family_gate_dir": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu",
+    "test_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl",
+    "test_sha256": "0bf801a160c95fc40c4818946de790ab13d128ce072523b39b00af375f0f6869",
+    "train_anchor_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_train.jsonl",
+    "train_anchor_sha256": "4f91dd7edee080ac95bf7cc7f21c2c95bb0ab570be3c8075ce98882ead05a879",
+    "validation_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "validation_sha256": "0a5ee608c194ec6a95ca1e9ce7ff33c1b8e908cea086c9734af619294bcefaeb"
+  },
+  "pass_gate": false
+}

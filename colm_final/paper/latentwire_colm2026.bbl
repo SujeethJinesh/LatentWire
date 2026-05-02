@@ -1,0 +1,189 @@
+\begin{thebibliography}{21}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abdin et~al.(2024)Abdin, Aneja, Awadalla, Awadallah, Awan, Bach,
+  Bahree, Bakhtiari, Bao, Behl, et~al.]{Abdin2024Phi3}
+Marah Abdin, Jyoti Aneja, Hany Awadalla, Ahmed Awadallah, Ammar~Ahmad Awan,
+  Nguyen Bach, Amit Bahree, Arash Bakhtiari, Jianmin Bao, Harkirat Behl, et~al.
+\newblock {Phi-3} technical report: A highly capable language model locally on
+  your phone, 2024.
+\newblock URL \url{https://arxiv.org/abs/2404.14219}.
+
+\bibitem[Clark et~al.(2018)Clark, Cowhey, Etzioni, Khot, Sabharwal, Schoenick,
+  and Tafjord]{Clark2018ARC}
+Peter Clark, Isaac Cowhey, Oren Etzioni, Tushar Khot, Ashish Sabharwal, Carissa
+  Schoenick, and Oyvind Tafjord.
+\newblock Think you have solved question answering? try arc, the ai2 reasoning
+  challenge, 2018.
+\newblock URL \url{https://arxiv.org/abs/1803.05457}.
+
+\bibitem[Cunningham et~al.(2023)Cunningham, Ewart, Riggs, Huben, and
+  Sharkey]{Cunningham2023SAE}
+Hoagy Cunningham, Aidan Ewart, Logan Riggs, Robert Huben, and Lee Sharkey.
+\newblock Sparse autoencoders find highly interpretable features in language
+  models, 2023.
+\newblock URL \url{https://arxiv.org/abs/2309.08600}.
+
+\bibitem[Fu et~al.(2026)Fu, Min, Zhang, Yan, Dai, Ouyang, and Wang]{Fu2025C2C}
+Tianyu Fu, Zihan Min, Hanling Zhang, Jichao Yan, Guohao Dai, Wanli Ouyang, and
+  Yu~Wang.
+\newblock Cache-to-cache: Direct semantic communication between large language
+  models.
+\newblock In \emph{International Conference on Learning Representations}, 2026.
+\newblock URL \url{https://openreview.net/forum?id=LeatkxrBCi}.
+
+\bibitem[Hooper et~al.(2024)Hooper, Kim, Mohammadzadeh, Mahoney, Shao, Keutzer,
+  and Gholami]{Hooper2024KVQuant}
+Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, Michael~W. Mahoney,
+  Yakun~Sophia Shao, Kurt Keutzer, and Amir Gholami.
+\newblock {KVQuant}: Towards 10 million context length llm inference with kv
+  cache quantization.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~37, 2024.
+\newblock URL
+  \url{https://proceedings.neurips.cc/paper_files/paper/2024/hash/028fcbcf85435d39a40c4d61b42c99a4-Abstract-Conference.html}.
+
+\bibitem[Karvonen et~al.(2025)Karvonen, Rager, Lin, Tigges, Bloom, Chanin, Lau,
+  Farrell, Mcdougall, Ayonrinde, Till, Wearden, Conmy, Marks, and
+  Nanda]{Karvonen2025SAEBench}
+Adam Karvonen, Can Rager, Johnny Lin, Curt Tigges, Joseph~Isaac Bloom, David
+  Chanin, Yeu-Tong Lau, Eoin Farrell, Callum~Stuart Mcdougall, Kola Ayonrinde,
+  Demian Till, Matthew Wearden, Arthur Conmy, Samuel Marks, and Neel Nanda.
+\newblock {SAEBench}: A comprehensive benchmark for sparse autoencoders in
+  language model interpretability.
+\newblock In \emph{Proceedings of the 42nd International Conference on Machine
+  Learning}, volume 267 of \emph{Proceedings of Machine Learning Research},
+  pp.\  29223--29264. PMLR, 2025.
+\newblock URL \url{https://proceedings.mlr.press/v267/karvonen25a.html}.
+
+\bibitem[Kwon et~al.(2023)Kwon, Li, Zhuang, Sheng, Zheng, Yu, Gonzalez, Zhang,
+  and Stoica]{Kwon2023vLLM}
+Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody~Hao Yu,
+  Joseph~E. Gonzalez, Hao Zhang, and Ion Stoica.
+\newblock Efficient memory management for large language model serving with
+  pagedattention.
+\newblock In \emph{ACM Symposium on Operating Systems Principles}, 2023.
+\newblock URL \url{https://arxiv.org/abs/2309.06180}.
+
+\bibitem[Lan et~al.(2024)Lan, Torr, Meek, Khakzar, Krueger, and
+  Barez]{Engels2024SAEUniversality}
+Michael Lan, Philip Torr, Austin Meek, Ashkan Khakzar, David Krueger, and Fazl
+  Barez.
+\newblock Quantifying feature space universality across large language models
+  via sparse autoencoders, 2024.
+\newblock URL \url{https://arxiv.org/abs/2410.06981}.
+
+\bibitem[Li et~al.(2023)Li, Li, Savarese, and Hoi]{Li2023BLIP2}
+Junnan Li, Dongxu Li, Silvio Savarese, and Steven Hoi.
+\newblock {BLIP-2}: Bootstrapping language-image pre-training with frozen image
+  encoders and large language models.
+\newblock In \emph{Proceedings of the 40th International Conference on Machine
+  Learning}, volume 202 of \emph{Proceedings of Machine Learning Research},
+  pp.\  19730--19742. PMLR, 2023.
+\newblock URL \url{https://proceedings.mlr.press/v202/li23q.html}.
+
+\bibitem[Li \& Liang(2021)Li and Liang]{Li2021Prefix}
+Xiang~Lisa Li and Percy Liang.
+\newblock Prefix-tuning: Optimizing continuous prompts for generation.
+\newblock In \emph{Proceedings of the 59th Annual Meeting of the Association
+  for Computational Linguistics and the 11th International Joint Conference on
+  Natural Language Processing (Volume 1: Long Papers)}, pp.\  4582--4597.
+  Association for Computational Linguistics, 2021.
+\newblock \doi{10.18653/v1/2021.acl-long.353}.
+\newblock URL \url{https://aclanthology.org/2021.acl-long.353/}.
+
+\bibitem[Liu et~al.(2024)Liu, Yuan, Jin, Zhong, Xu, Braverman, Chen, and
+  Hu]{Liu2024KIVI}
+Zirui Liu, Jiayi Yuan, Hongye Jin, Shaochen Zhong, Zhaozhuo Xu, Vladimir
+  Braverman, Beidi Chen, and Xia Hu.
+\newblock {KIVI}: A tuning-free asymmetric 2bit quantization for kv cache.
+\newblock In \emph{Proceedings of the 41st International Conference on Machine
+  Learning}, volume 235 of \emph{Proceedings of Machine Learning Research},
+  pp.\  32332--32344. PMLR, 2024.
+\newblock URL \url{https://proceedings.mlr.press/v235/liu24bz.html}.
+
+\bibitem[Mihaylov et~al.(2018)Mihaylov, Clark, Khot, and
+  Sabharwal]{Mihaylov2018OpenBookQA}
+Todor Mihaylov, Peter Clark, Tushar Khot, and Ashish Sabharwal.
+\newblock Can a suit of armor conduct electricity? a new dataset for open book
+  question answering.
+\newblock In \emph{Proceedings of the 2018 Conference on Empirical Methods in
+  Natural Language Processing}, pp.\  2381--2391. Association for Computational
+  Linguistics, 2018.
+\newblock \doi{10.18653/v1/D18-1260}.
+\newblock URL \url{https://aclanthology.org/D18-1260/}.
+
+\bibitem[Moschella et~al.(2023)Moschella, Maiorca, Fumero, Norelli, Locatello,
+  and Rodol{\`a}]{Moschella2023Relative}
+Luca Moschella, Valentino Maiorca, Marco Fumero, Antonio Norelli, Francesco
+  Locatello, and Emanuele Rodol{\`a}.
+\newblock Relative representations enable zero-shot latent space communication.
+\newblock In \emph{International Conference on Learning Representations}, 2023.
+\newblock URL \url{https://openreview.net/forum?id=SrC-nwieGJ}.
+
+\bibitem[Mu et~al.(2023)Mu, Li, and Goodman]{Mu2023Gist}
+Jesse Mu, Xiang~Lisa Li, and Noah Goodman.
+\newblock Learning to compress prompts with gist tokens.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~36, 2023.
+\newblock URL
+  \url{https://proceedings.neurips.cc/paper_files/paper/2023/hash/3d77c6dcc7f143aa2154e7f4d5e22d68-Abstract-Conference.html}.
+
+\bibitem[Shi et~al.(2026)Shi, Chiesa, Maguire~Jr., and Kostic]{Shi2025KVComm}
+Xiangyu Shi, Marco Chiesa, Gerald~Q. Maguire~Jr., and Dejan Kostic.
+\newblock {KVComm}: Enabling efficient llm communication through selective kv
+  sharing.
+\newblock In \emph{International Conference on Learning Representations}, 2026.
+\newblock URL \url{https://openreview.net/forum?id=F7rUng23nw}.
+
+\bibitem[Slepian \& Wolf(1973)Slepian and Wolf]{Slepian1973Noiseless}
+David Slepian and Jack~K. Wolf.
+\newblock Noiseless coding of correlated information sources.
+\newblock \emph{IEEE Transactions on Information Theory}, 19\penalty0
+  (4):\penalty0 471--480, 1973.
+
+\bibitem[Wyner \& Ziv(1976)Wyner and Ziv]{Wyner1976RateDistortion}
+Aaron~D. Wyner and Jacob Ziv.
+\newblock The rate-distortion function for source coding with side information
+  at the decoder.
+\newblock \emph{IEEE Transactions on Information Theory}, 22\penalty0
+  (1):\penalty0 1--10, 1976.
+
+\bibitem[Yang et~al.(2025)Yang, Yang, Zhang, Hui, Zheng, Yu, Li, Liu, Huang,
+  Wei, et~al.]{Yang2025Qwen25}
+An~Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo~Zheng, Bowen Yu,
+  Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, et~al.
+\newblock {Qwen2.5} technical report, 2025.
+\newblock URL \url{https://arxiv.org/abs/2412.15115}.
+
+\bibitem[Zandieh et~al.(2024)Zandieh, Daliri, and Han]{Zandieh2024QJL}
+Amir Zandieh, Majid Daliri, and Insu Han.
+\newblock {QJL}: 1-bit quantized jl transform for kv cache quantization with
+  zero overhead, 2024.
+\newblock URL \url{https://arxiv.org/abs/2406.03482}.
+
+\bibitem[Zandieh et~al.(2026)Zandieh, Daliri, Hadian, and
+  Mirrokni]{Zandieh2025TurboQuant}
+Amir Zandieh, Majid Daliri, Majid Hadian, and Vahab Mirrokni.
+\newblock {TurboQuant}: Online vector quantization with near-optimal distortion
+  rate.
+\newblock In \emph{International Conference on Learning Representations}, 2026.
+\newblock URL \url{https://openreview.net/forum?id=tO3ASKZlok}.
+
+\bibitem[Zheng et~al.(2024)Zheng, Yin, Xie, Sun, Huang, Yu, Cao, Kozyrakis,
+  Stoica, Gonzalez, Barrett, and Sheng]{Zheng2023SGLang}
+Lianmin Zheng, Liangsheng Yin, Zhiqiang Xie, Chuyue Sun, Jeff Huang, Cody~Hao
+  Yu, Shiyi Cao, Christos Kozyrakis, Ion Stoica, Joseph~E. Gonzalez, Clark
+  Barrett, and Ying Sheng.
+\newblock {SGLang}: Efficient execution of structured language model programs.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~37, 2024.
+\newblock \doi{10.52202/079017-2000}.
+\newblock URL
+  \url{https://proceedings.neurips.cc/paper_files/paper/2024/hash/724be4472168f31ba1c9ac630f15dec8-Abstract-Conference.html}.
+
+\end{thebibliography}

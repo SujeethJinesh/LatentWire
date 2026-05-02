@@ -1,0 +1,32 @@
+# COLM Build Report
+
+Date: 2026-05-02
+
+Build command run from `colm_final/paper`:
+
+```bash
+latexmk -pdf -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
+```
+
+Final output:
+
+```text
+Output written on latentwire_colm2026.pdf (8 pages, 182897 bytes).
+```
+
+Final log scan:
+
+```text
+No LaTeX warnings, natbib warnings, unresolved references, unresolved citations,
+or overfull boxes were found in the final build log.
+```
+
+Remaining final-log typography notes:
+
+```text
+Underfull vbox: 2
+Underfull hbox: 3
+```
+
+These underfull boxes are from bibliography/path wrapping and do not indicate
+unresolved references or submission-breaking build failures.

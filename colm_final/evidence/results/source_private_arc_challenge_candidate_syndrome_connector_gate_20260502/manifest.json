@@ -1,0 +1,14 @@
+{
+  "files": [
+    "candidate_syndrome_connector_gate.json",
+    "candidate_syndrome_connector_gate.md",
+    "candidate_syndrome_connector_rows.csv",
+    "candidate_syndrome_connector_predictions.jsonl"
+  ],
+  "sha256": {
+    "candidate_syndrome_connector_gate.json": "ab36db67f6bbcd31bc5f52d37ccc3be57c008c4454134a5e9cde5844a22d3062",
+    "candidate_syndrome_connector_gate.md": "72ece68b6f42b6c373760231a9d563b0374720e919145d64d6327947020091cb",
+    "candidate_syndrome_connector_predictions.jsonl": "06dd34c45173054ffb5408052e73da7aefc0701d7f3229e852337cdb01a42df9",
+    "candidate_syndrome_connector_rows.csv": "b635bbfa28055d9ee8fe99feae54fa1fcd953369b3698244ff844cfb07181e11"
+  }
+}

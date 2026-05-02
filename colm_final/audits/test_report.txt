@@ -1,0 +1,22 @@
+# COLM Targeted Test Report
+
+Date: 2026-05-02
+
+Command:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  tests/test_build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py \
+  tests/test_build_source_private_arc_challenge_seed_stability.py \
+  tests/test_build_source_private_arc_challenge_source_family_cache_falsification.py \
+  tests/test_analyze_source_private_arc_cross_family_failure_decomposition.py \
+  tests/test_build_source_private_systems_boundary_figure_table.py \
+  tests/test_build_source_private_arc_challenge_candidate_syndrome_connector_gate.py \
+  tests/test_build_source_private_arc_challenge_hidden_query_mlp_cache_connector_gate.py
+```
+
+Result:
+
+```text
+16 passed in 1.09s
+```
