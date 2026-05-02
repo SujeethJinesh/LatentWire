@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="680" viewBox="0 0 1180 680">
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+<path d="M0,0 L10,4 L0,8 z" fill="#374151"/>
+</marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="590.0" y="34.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111827">LatentWire ICLR gate tree: promoted core, ruled-out branches, next gates</text>
+<text x="155.0" y="74.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#111827">Promote / keep</text>
+<text x="482.0" y="74.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#111827">Ruled out on current surface</text>
+<text x="860.0" y="74.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#111827">Alive / blocked gates</text>
+<rect x="40.0" y="100.0" width="230.0" height="115.0" rx="7" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.6"/>
+<text x="155.0" y="125.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">fixed byte packet protocol</text>
+<text x="155.0" y="149.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">Keep as contribution, but do</text>
+<text x="155.0" y="164.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">not call it solved latent</text>
+<text x="155.0" y="179.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">reasoning.</text>
+<rect x="40.0" y="270.0" width="230.0" height="115.0" rx="7" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.6"/>
+<text x="155.0" y="295.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">public basis benchmark gates</text>
+<text x="155.0" y="319.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">Use as benchmark/evaluation</text>
+<text x="155.0" y="334.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">contribution, not as final</text>
+<text x="155.0" y="349.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">cross-family proof.</text>
+<rect x="40.0" y="440.0" width="230.0" height="115.0" rx="7" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.6"/>
+<text x="155.0" y="465.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">systems boundary accounting</text>
+<text x="155.0" y="489.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">Promote as accounting; native</text>
+<text x="155.0" y="504.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">GPU systems win remains</text>
+<text x="155.0" y="519.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">blocked.</text>
+<rect x="360.0" y="100.0" width="245.0" height="115.0" rx="7" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.6"/>
+<text x="482.5" y="125.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">tinyllama mean cache connectors</text>
+<text x="482.5" y="149.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">Cut this family for ARC.</text>
+<rect x="360.0" y="270.0" width="245.0" height="115.0" rx="7" fill="#ffedd5" stroke="#c2410c" stroke-width="1.6"/>
+<text x="482.5" y="295.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">source choice scouts</text>
+<text x="482.5" y="319.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">Cut current Llama/Phi source-</text>
+<text x="482.5" y="334.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">choice senders; only revive</text>
+<text x="482.5" y="349.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">with selected prompt/scoring.</text>
+<rect x="735.0" y="150.0" width="250.0" height="130.0" rx="7" fill="#dcfce7" stroke="#15803d" stroke-width="1.6"/>
+<text x="860.0" y="175.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">tokenwise query connector</text>
+<text x="860.0" y="199.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">This is the next method gate;</text>
+<text x="860.0" y="214.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">mean-cache proxies do not</text>
+<text x="860.0" y="229.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">substitute for it.</text>
+<rect x="735.0" y="380.0" width="250.0" height="130.0" rx="7" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.6"/>
+<text x="860.0" y="405.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#111827">native systems rows</text>
+<text x="860.0" y="429.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">Block native speed/HBM/goodput</text>
+<text x="860.0" y="444.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">claims until measurements</text>
+<text x="860.0" y="459.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="400" fill="#111827">exist.</text>
+<line x1="270.0" y1="157.0" x2="360.0" y2="157.0" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="270.0" y1="327.0" x2="360.0" y2="327.0" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="605.0" y1="157.0" x2="735.0" y2="205.0" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="605.0" y1="327.0" x2="735.0" y2="215.0" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="270.0" y1="497.0" x2="735.0" y2="445.0" stroke="#374151" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="548.0" y="610.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#111827">ICLR blocker: positive tokenwise connector + native systems rows</text>
+</svg>

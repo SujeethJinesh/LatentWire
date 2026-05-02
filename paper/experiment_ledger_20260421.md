@@ -19472,3 +19472,27 @@ cache connector family for ARC. A true query-bottleneck/soft-prefix branch is
 still alive, but it needs tokenwise target-forward infrastructure, more
 matched activation pairs, and likely NVIDIA; do not spend more Mac cycles on
 shallow TinyLlama mean-cache variants.
+
+ICLR gate-tree and connector plan consolidation: added
+`scripts/build_source_private_iclr_gate_tree_and_connector_plan.py`, test
+`tests/test_build_source_private_iclr_gate_tree_and_connector_plan.py`, memo
+`paper/source_private_iclr_gate_tree_and_connector_plan_20260502.md`,
+references `references/647_iclr_gate_tree_connector_plan_refs_20260502.md`,
+and artifact `results/source_private_iclr_gate_tree_and_connector_plan_20260502/`.
+Outcome: this is a decision artifact, not a positive-method result. It
+promotes three evidence-backed contributions for COLM: fixed-byte
+source-private packet protocol, public-basis benchmark gates plus negative
+ladder, and systems byte/exposure accounting. It explicitly cuts TinyLlama
+mean hidden/query connector variants on ARC and blocks native speed/HBM/goodput
+claims until NVIDIA rows are ingested. The next exact gate is now a Mac-local
+ARC n32 target-loss soft-prefix preflight using Qwen source features and a
+frozen target, followed by the OpenBookQA 3B train-only receiver gate if
+controls pass. Required controls include target-only, packet-only,
+target-cache-only, target-derived packets, row-shuffled source packets,
+random same-rate packets, label-permutation decoder, candidate derangement,
+same-byte visible text, and source-label-copy audit upper bound.
+
+Lay explanation: this step made the research map explicit. It says which ideas
+are real enough to write up, which failed, and exactly what the next translator
+experiment has to prove before the paper can claim cross-model latent
+communication rather than just small source-private hints.

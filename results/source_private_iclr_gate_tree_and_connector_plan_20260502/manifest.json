@@ -1,0 +1,37 @@
+{
+  "created_utc": "2026-05-02T14:39:03.466122+00:00",
+  "files": [
+    {
+      "bytes": 11247,
+      "path": "results/source_private_iclr_gate_tree_and_connector_plan_20260502/iclr_gate_tree_and_connector_plan.json",
+      "sha256": "59774602909a6838e10ebc5fe598f061095cc2d0a0f1a8b6239d19cf25c5d31f"
+    },
+    {
+      "bytes": 3498,
+      "path": "results/source_private_iclr_gate_tree_and_connector_plan_20260502/iclr_gate_tree_nodes.csv",
+      "sha256": "944f169bdfd77a0d028df014183d18c47f5ca60e666c43cdfc854c5f2b28b918"
+    },
+    {
+      "bytes": 6300,
+      "path": "results/source_private_iclr_gate_tree_and_connector_plan_20260502/iclr_gate_tree_and_connector_plan.md",
+      "sha256": "05b1cf1bf22ef12ca6fb533ed76cc1f34d4d05f1dac52ce518e21cd48a2b1acb"
+    },
+    {
+      "bytes": 6994,
+      "path": "results/source_private_iclr_gate_tree_and_connector_plan_20260502/iclr_gate_tree.svg",
+      "sha256": "e9ae8078bb31e76991a668f6444d997c04b80c98b18a0c30614d543d3adf439f"
+    },
+    {
+      "bytes": 3085,
+      "path": "results/source_private_iclr_gate_tree_and_connector_plan_20260502/tokenwise_connector_runbook.md",
+      "sha256": "981dfa60bbb4e7e79278c219821dc15203266056c4bf689310b9d872e1733581"
+    }
+  ],
+  "gate": "source_private_iclr_gate_tree_and_connector_plan",
+  "inputs": {
+    "hidden_query_mlp": "results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/arc_challenge_hidden_query_mlp_cache_connector_gate.json",
+    "llama_probe": "results/source_private_arc_llama8b_failure_probe_20260502/arc_llama8b_failure_probe.json",
+    "native_ingest": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_result_ingest_gate.json",
+    "systems_boundary": "results/source_private_systems_boundary_figure_table_20260502/systems_boundary_figure_data.json"
+  }
+}

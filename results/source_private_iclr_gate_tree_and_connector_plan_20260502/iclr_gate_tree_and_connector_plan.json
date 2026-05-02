@@ -1,0 +1,196 @@
+{
+  "checklists": {
+    "blockers_for_user": [
+      "NVIDIA access for target-loss tokenwise connector and native systems rows.",
+      "Decision on COLM framing: workshop evidence package now, or hold for positive connector.",
+      "Any preferred source/target model pair for the first expensive cross-family connector run."
+    ],
+    "colm_workshop": [
+      "Scope as source-private packet protocol plus public benchmark positives.",
+      "Use systems boundary table as accounting, not native speed.",
+      "Include gate-tree figure showing promoted, cut, alive, and blocked branches.",
+      "Cut HellaSwag receiver-improvement and TinyLlama hidden/query connector claims.",
+      "Frame negative ladder as evidence of rigor, not as solved cross-model latent reasoning."
+    ],
+    "iclr_full_paper": [
+      "Positive tokenwise query/soft-prefix or cache-fuser connector on a frozen larger slice.",
+      "OpenBookQA 3B train-only receiver gate over packet-only with source-destroying controls.",
+      "At least one strict true cross-family pair, not just same-family Qwen scaling.",
+      "Seed repeats and paired uncertainty versus target-only, same-byte text, Qwen-substituted, wrong-row, and prompt/prefix controls.",
+      "Direct comparison against C2C/KVComm/KVCOMM and KV quantization byte floors.",
+      "Native NVIDIA rows for TTFT, TPOT, goodput, GPU memory, HBM/PCIe/NVLink traffic, accuracy, bytes, and source exposure.",
+      "Interpretability telemetry: rate-distortion curve, effective rank or gate patterns, and source/help/harm decomposition."
+    ]
+  },
+  "claim_boundary": {
+    "lateral_branches": "DiT/consistency-style iterative refinement and SAE universal feature spaces are inspirations, not current positive evidence.",
+    "not_unique": "Generic soft prompts, static prefix tuning, and KV/cache fusion are prior art and must be baselines.",
+    "unique": "Per-example source-conditioned rate-limited connector under source-destroying controls and explicit source-exposure accounting."
+  },
+  "created_utc": "2026-05-02T14:39:03.466122+00:00",
+  "current_story": "Fixed-byte source-private packets plus public benchmark gates and systems byte/exposure accounting.",
+  "date": "2026-05-02",
+  "exact_gap": "A positive tokenwise learned/common-language connector and matched native systems rows are still missing.",
+  "gate": "source_private_iclr_gate_tree_and_connector_plan",
+  "needs_more_work": [
+    "Tokenwise query/soft-prefix connector trained against target loss.",
+    "Strict true cross-family positive result.",
+    "Native NVIDIA systems measurements."
+  ],
+  "next_exact_gate": "Mac-local ARC n32 target-loss soft-prefix preflight using Qwen source features and a frozen target, followed by the OpenBookQA 3B train-only receiver gate if controls pass.",
+  "nodes": [
+    {
+      "artifact": "paper/source_private_iclr_colm_readiness_update_20260502.md",
+      "claim": "Tiny task packets can be evaluated with source-destroying controls.",
+      "contribution": "C1 fixed-byte source-private packet protocol",
+      "decision": "Keep as contribution, but do not call it solved latent reasoning.",
+      "evidence": "ARC/OpenBookQA public-basis packet rows plus destructive controls remain the positive core.",
+      "next_action": "Tie every method row to target-only, same-byte text, zero-source, wrong-row, and paired CI.",
+      "node_id": "fixed_byte_packet_protocol",
+      "status": "promote_for_colm"
+    },
+    {
+      "artifact": "paper/source_private_iclr_colm_readiness_update_20260502.md",
+      "claim": "ARC/OpenBookQA common-coordinate packets are the strongest benchmark evidence.",
+      "contribution": "C2 public-basis benchmark gate and negative ladder",
+      "decision": "Use as benchmark/evaluation contribution, not as final cross-family proof.",
+      "evidence": "The live branch now separates positives from HellaSwag and TinyLlama hidden/query failures.",
+      "next_action": "Add gate-tree figure and larger frozen slices when a connector clears validation.",
+      "node_id": "public_basis_benchmark_gates",
+      "status": "promote_for_colm"
+    },
+    {
+      "artifact": "results/source_private_systems_boundary_figure_table_20260502/systems_boundary_figure_data.json",
+      "claim": "LatentWire packets are much smaller than source-state/KV transfer floors.",
+      "contribution": "C3 systems byte/exposure accounting",
+      "decision": "Promote as accounting; native GPU systems win remains blocked.",
+      "evidence": "4 packet rows, 4-15B framed bytes, 51.200x floor over largest packet.",
+      "next_action": "Fill native ingest rows for vLLM/SGLang/C2C/KVComm/KVCOMM/QJL/TurboQuant.",
+      "node_id": "systems_boundary_accounting",
+      "status": "promote_for_colm"
+    },
+    {
+      "artifact": "results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement/arc_challenge_hidden_query_mlp_cache_connector_gate.json",
+      "claim": "Mean hidden/query caches are enough for a low-data connector.",
+      "contribution": "negative method ladder",
+      "decision": "Cut this family for ARC.",
+      "evidence": "MLP matched/Qwen/cached=0.232/0.317/0.269, CI low vs Qwen=-0.154; PCA/ridge, transport, and sparse-query variants were also negative.",
+      "next_action": "Do not spend more Mac cycles on mean-cache PCA/RFF/MLP variants.",
+      "node_id": "tinyllama_mean_cache_connectors",
+      "status": "cut"
+    },
+    {
+      "artifact": "results/source_private_arc_llama8b_failure_probe_20260502/arc_llama8b_failure_probe.json",
+      "claim": "A stronger non-Qwen source-choice sender fixes cross-family transfer.",
+      "contribution": "negative source-family ladder",
+      "decision": "Cut current Llama/Phi source-choice senders; only revive with selected prompt/scoring.",
+      "evidence": "Llama source/Qwen oracle=0.613, packet oracle=0.532, same-byte shadow=0.126, source-to-packet loss=0.186.",
+      "next_action": "If revived, select prompt/scoring on validation before frozen test.",
+      "node_id": "source_choice_scouts",
+      "status": "cut_or_reprompt_only"
+    },
+    {
+      "artifact": "tokenwise_connector_runbook.md",
+      "claim": "A per-example source-conditioned tokenwise query/soft-prefix interface can beat packet-only.",
+      "contribution": "candidate C4 positive learned connector",
+      "decision": "This is the next method gate; mean-cache proxies do not substitute for it.",
+      "evidence": "Literature supports learned frozen-backbone connectors, but current LatentWire evidence has not tested tokenwise target loss on ARC.",
+      "next_action": "Train frozen-endpoint 16-64 query connector with target loss and strict source-destroying controls.",
+      "node_id": "tokenwise_query_connector",
+      "status": "alive_next_gate"
+    },
+    {
+      "artifact": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_result_ingest_gate.json",
+      "claim": "LatentWire is faster or more memory-efficient than native KV/cache baselines.",
+      "contribution": "C3 systems native proof",
+      "decision": "Block native speed/HBM/goodput claims until measurements exist.",
+      "evidence": "native_complete=False; paper_native_win_allowed=False; measurements=0; missing_required=11.",
+      "next_action": "Run NVIDIA vLLM/SGLang/C2C/KVComm/KVCOMM/QJL/TurboQuant rows through the validator.",
+      "node_id": "native_systems_rows",
+      "status": "blocked_required"
+    }
+  ],
+  "paper_readiness": "COLM workshop plausible; ICLR full paper blocked.",
+  "primary_sources": {
+    "blip2": "https://arxiv.org/abs/2301.12597",
+    "c2c": "https://openreview.net/forum?id=LeatkxrBCi",
+    "consistency": "https://arxiv.org/abs/2303.01469",
+    "dit": "https://arxiv.org/abs/2212.09748",
+    "flamingo": "https://arxiv.org/abs/2204.14198",
+    "kvcomm": "https://arxiv.org/abs/2510.03346",
+    "kvcomm_cross_context": "https://arxiv.org/abs/2510.12872",
+    "perceiver_io": "https://arxiv.org/abs/2107.14795",
+    "prefix_tuning": "https://arxiv.org/abs/2101.00190",
+    "qjl": "https://arxiv.org/abs/2406.03482",
+    "sae_universal": "https://arxiv.org/abs/2410.06981",
+    "turboquant": "https://arxiv.org/abs/2504.19874"
+  },
+  "required_connector_controls": [
+    "target-only",
+    "packet-only",
+    "target-cache-only",
+    "candidate-only",
+    "target-derived packet",
+    "row-shuffled source packet",
+    "random same-rate packet",
+    "label-permutation decoder",
+    "candidate derangement",
+    "same-byte visible text",
+    "source-label-copy audit upper bound"
+  ],
+  "subagent_synthesis": [
+    {
+      "agent": "Pasteur",
+      "decision": "Implement a new isolated ARC/OpenBookQA soft-prefix preflight instead of editing core bridge modules.",
+      "finding": "Repo already has SVAMP target-loss soft-prefix and tokenwise query diagnostics, but ARC/OpenBookQA lack target-loss connector infrastructure."
+    },
+    {
+      "agent": "Huygens",
+      "decision": "Use Prefix-Tuning, BLIP-2/Flamingo/Perceiver IO, C2C/KVComm, QJL, and TurboQuant as mandatory boundaries.",
+      "finding": "Novelty survives only under per-example fixed-byte source-conditioned messaging, frozen/train-only receivers, and source-destroying controls."
+    }
+  ],
+  "technical_contributions": [
+    "Fixed-byte source-private packet protocol with destructive controls.",
+    "Public-basis benchmark gates plus negative/falsification ladder.",
+    "Systems byte/exposure accounting against KV/cache transfer baselines."
+  ],
+  "tokenwise_connector_runbook": [
+    {
+      "goal": "Verify target-forward soft-prefix training code on 8-16 ARC rows without claiming evidence.",
+      "name": "Mac ARC smoke",
+      "pass_rule": "Training runs, controls are emitted, and no source answer/text/KV is transmitted.",
+      "step": 1
+    },
+    {
+      "goal": "Train/select on ARC validation disagreement rows with frozen source and target endpoints.",
+      "name": "ARC soft-prefix preflight",
+      "pass_rule": "Matched beats target-only, source-free, zero-source, row-shuffled, same-byte text, and Qwen-substituted controls.",
+      "step": 2
+    },
+    {
+      "goal": "Train-only receiver/query connector over the strongest OpenBookQA packet-only rows.",
+      "name": "OpenBookQA 3B receiver gate",
+      "pass_rule": "Packet-plus-receiver beats packet-only by >= +0.005 with positive paired CI95 low and source-destroying controls.",
+      "step": 3
+    },
+    {
+      "goal": "Evaluate once on frozen larger slices after validation selection.",
+      "name": "Frozen ARC/OpenBookQA test gate",
+      "pass_rule": "Mean delta >= 0.02 and CI95 low > 0 versus Qwen-substituted, packet-only, target-only, and same-byte text.",
+      "step": 4
+    },
+    {
+      "goal": "Repeat with one true non-Qwen source-target pair.",
+      "name": "Cross-family falsification",
+      "pass_rule": "Positive paired CI survives; same-family-only result is marked diagnostic.",
+      "step": 5
+    },
+    {
+      "goal": "Fill native validator rows for LatentWire and all KV/cache baselines.",
+      "name": "Systems ingest",
+      "pass_rule": "Validator allows native claims only after complete matched measurements.",
+      "step": 6
+    }
+  ]
+}

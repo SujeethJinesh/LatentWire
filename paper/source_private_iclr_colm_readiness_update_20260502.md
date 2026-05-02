@@ -399,3 +399,22 @@ negative MLP cache connector jointly show that useful source signal is being
 lost at the current packet/receiver interface; the next exact method branch
 needs tokenwise target-forward connector infrastructure, while Mac-local work
 should focus on consolidation and the NVIDIA systems/connector runbooks.
+
+## 2026-05-02 Gate-Tree Consolidation
+
+Added the gate-tree artifact:
+`results/source_private_iclr_gate_tree_and_connector_plan_20260502/`.
+
+This locks the current contribution boundary:
+
+- keep the fixed-byte source-private packet protocol;
+- keep public-basis ARC/OpenBookQA benchmark gates plus the negative ladder;
+- keep systems byte/exposure accounting, but not native speed/HBM claims;
+- cut TinyLlama mean hidden/query connector variants on ARC;
+- make the next live method gate a target-loss tokenwise soft-prefix/query
+  connector.
+
+The next exact Mac-local step is an ARC n32 target-loss soft-prefix preflight
+using Qwen source features and a frozen target. If it passes destructive
+controls, the paper-facing gate becomes the OpenBookQA 3B train-only receiver
+over packet-only with positive paired CI95 lower bound.

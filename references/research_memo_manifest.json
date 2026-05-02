@@ -2028,5 +2028,12 @@
     "path": "references/646_arc_hidden_query_mlp_cache_connector_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the negative ARC hidden/query MLP cache-to-packet connector gate, covering query-bottleneck and soft-prefix boundaries against BLIP-2/Q-Former, Flamingo, Perceiver IO, Prefix-Tuning, C2C, KVComm/KVCOMM, QJL, TurboQuant, and SAE universal feature-space work."
+  },
+  {
+    "num": 647,
+    "slug": "iclr_gate_tree_connector_plan_refs_20260502",
+    "path": "references/647_iclr_gate_tree_connector_plan_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ICLR gate-tree and tokenwise connector runbook, covering BLIP-2/Q-Former, Flamingo, Perceiver IO, Prefix-Tuning, C2C, KVComm/KVCOMM, QJL, TurboQuant, diffusion/consistency inspiration, SAE universality, and relative representations as novelty boundaries."
   }
 ]
