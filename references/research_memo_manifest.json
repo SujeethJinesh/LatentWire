@@ -1881,5 +1881,12 @@
     "path": "references/625_hellaswag_discrete_query_innovation_codec_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed HellaSwag decoder-conditioned discrete query innovation codec gate, covering the negative fixed-query residual-code result, controls, systems byte floors, and novelty boundaries against prefix/prompt tuning, C2C/KVComm/KVCOMM, Q-Former/Perceiver/Flamingo, SAE/crosscoders, QJL, TurboQuant, KIVI, KVQuant, vector quantization, and distributed source coding."
+  },
+  {
+    "num": 626,
+    "slug": "hellaswag_pq_hidden_innovation_codec_refs_20260502",
+    "path": "references/626_hellaswag_pq_hidden_innovation_codec_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed HellaSwag product-quantized hidden innovation codec gate, covering the negative one-byte source-hidden PQ result, destructive controls, branch-kill decision for Mac-local HellaSwag hidden-code widening, and novelty boundaries against C2C/KVComm/KVCOMM, TurboQuant/QJL/KIVI/KVQuant, product quantization, SAE/crosscoders, learned query bottlenecks, prefix tuning, distributed source coding, vLLM, and SGLang."
   }
 ]

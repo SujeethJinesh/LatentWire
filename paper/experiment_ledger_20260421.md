@@ -18948,3 +18948,38 @@ positive branch must use materially stronger source information, likely hidden
 features/PQ or a true connector on NVIDIA; otherwise cut HellaSwag
 receiver-improvement and retain it as systems/headroom/negative-ablation
 evidence.
+
+HellaSwag PQ hidden innovation codec gate: added
+`scripts/build_source_private_hellaswag_pq_hidden_innovation_codec_gate.py`,
+test
+`tests/test_build_source_private_hellaswag_pq_hidden_innovation_codec_gate.py`,
+memo
+`paper/source_private_hellaswag_pq_hidden_innovation_codec_gate_20260502.md`,
+references
+`references/626_hellaswag_pq_hidden_innovation_codec_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_pq_hidden_innovation_codec_gate_20260502_tinyllama_validation1024_2048/`.
+Outcome: this source-hidden product-quantized codebook branch does not
+promote. It used official HellaSwag train calibration (`1487` retained rows,
+split `1115/372`) and the cached TinyLlama hidden-state validation slice
+`1024:2048` (`1024` rows). The packet remains `1B` raw / `4B` framed and
+transmits `subcode * 4 + source_candidate`, where the subcode is a factorized
+PQ code over PCA-projected TinyLlama hidden residual features with optional
+orthogonal rotation. The official-dev-selected default,
+`pq_pca16_m4_k2_identity`, reaches `0.497070` versus packet-only `0.501953`
+(delta `-0.004883`, CI95 low `-0.017578`) and is positive in only `1/5`
+contiguous blocks. The best diagnostic scout, `pq_pca8_m2_k8_orthogonal`,
+reaches `0.508789` (delta `+0.006836`, CI95 low `0.000000`), below the
+`+0.010` promotion bar and below the prior hidden-code near-miss `0.511719`.
+Destructive controls show code sensitivity without useful lift: row-shuffle PQ
+code `-0.217773`, hidden-feature shuffle `-0.192383`, codebook permutation
+`-0.208984`, random same-byte code `-0.218750`, candidate-only `0.000000`,
+zero source code `-0.037109`, and label permutation `-0.241211` versus
+packet-only. Interpretation: product quantization is a stronger hidden-code
+falsification than global PCA/k-means, anchor-relative codes, or linear
+crosscoder coordinates, but it still does not add stable utility beyond the
+compact candidate packet on this HellaSwag slice. Decision: stop widening
+Mac-local HellaSwag hidden-code/codebook variants. For ICLR, cut HellaSwag
+receiver-improvement claims unless a true learned query/cache connector on
+NVIDIA or a new benchmark surface produces a positive method under the same
+controls.
