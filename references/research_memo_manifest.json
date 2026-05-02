@@ -1923,5 +1923,12 @@
     "path": "references/631_arc_challenge_fourier_anchor_syndrome_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC-Challenge Fourier/anchor-syndrome common-basis packet gate, covering the positive low-frequency public-basis packet, anchor/spectral mismatch controls, random shared-anchor diagnostic, and boundaries against relative representations, FNet, C2C, KVComm, QJL, TurboQuant, prefix tuning, SAEs, and crosscoders."
+  },
+  {
+    "num": 632,
+    "slug": "arc_source_family_cache_falsification_refs_20260502",
+    "path": "references/632_arc_source_family_cache_falsification_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC source-family/source-cache falsification gate, covering the stricter alternate-source and Qwen-disagreement decision surface plus novelty boundaries against C2C, KVComm, relative representations, FNet, QJL, TurboQuant, prefix tuning, SAEs, crosscoders, and latent reasoning."
   }
 ]

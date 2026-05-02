@@ -65,6 +65,15 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert "ID/value/spectral mismatch pass counts=0/0/0" in contribution_rows[
         "ARC-Challenge Fourier/anchor-syndrome common-basis packet"
     ]["main_metric"]
+    assert contribution_rows["ARC-Challenge TinyLlama source-family cache falsification"]["status"] == (
+        "new negative source-family/source-cache gate / ICLR blocker sharpened"
+    )
+    assert "Qwen-disagreement test pass=0/5" in contribution_rows[
+        "ARC-Challenge TinyLlama source-family cache falsification"
+    ]["headline_evidence"]
+    assert "min matched-Qwen-sub" in contribution_rows[
+        "ARC-Challenge TinyLlama source-family cache falsification"
+    ]["main_metric"]
     assert contribution_rows["OpenBookQA 3B shared-basis second public benchmark"]["status"] == (
         "new second public-benchmark positive gate and stronger rate point"
     )

@@ -19122,3 +19122,35 @@ technical contribution, alongside fixed-byte source-private packet transfer
 and OpenBookQA receiver-fusion. ICLR still needs strict cross-family
 falsification/generalization and native NVIDIA systems comparisons against
 C2C, KVComm, QJL/TurboQuant/KV-cache quantization, vLLM, and SGLang.
+
+ARC-Challenge TinyLlama source-family/source-cache falsification gate: added
+`scripts/build_source_private_arc_challenge_source_family_cache_falsification.py`,
+test
+`tests/test_build_source_private_arc_challenge_source_family_cache_falsification.py`,
+memo
+`paper/source_private_arc_source_family_cache_falsification_20260502.md`,
+references
+`references/632_arc_source_family_cache_falsification_refs_20260502.md`, and
+artifact
+`results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/`.
+Outcome: this is the strict reviewer-facing source-family gate for the ARC
+Fourier row. TinyLlama CPU source caches were materialized locally for `299`
+ARC validation rows and `1172` ARC test rows under the answer-key-forbidden
+cache contract, then audited to reject forbidden answer payload fields and to
+separate TinyLlama-selected packets from Qwen-substituted packets. The full
+ARC test slice remains positive with `5/5` seeds, matched mean/min
+`0.325/0.323`, target `0.265`, same-byte text `0.298`, min lift over target
+`+0.058`, min lift over text `+0.026`, and min CI95 low `+0.018`. The strict
+Qwen-disagreement slice fails: TinyLlama and Qwen disagree on `473/1172` test
+rows, but TinyLlama-selected matched accuracy is `0.269` while
+Qwen-substituted packet accuracy is `0.317`, with min matched-minus-Qwen-sub
+`-0.051` and CI95 low versus Qwen-sub `-0.118`. Validation is also not
+promotable (`3/5` full-slice seeds and `0/5` disagreement-slice seeds).
+Mac-local feasibility notes: TinyLlama MPS worked on a `40`-row smoke probe
+but failed the full materialization with an Apple MPS matmul shape error;
+GPT-2 and OPT-350M MPS probes were weak; cached Llama-3.2 and Phi-3 failed
+local loader/config compatibility before scoring. Decision: keep the ARC
+Fourier/anchor-syndrome packet as a positive common-basis contribution, but do
+not claim source-family-general ARC communication. The exact next gate is a
+stronger alternate source on NVIDIA or a learned source endpoint/connector
+whose packet signal is not merely the selected candidate index.

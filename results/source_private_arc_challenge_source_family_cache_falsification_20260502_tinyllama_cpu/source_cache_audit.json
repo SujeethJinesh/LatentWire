@@ -1,0 +1,85 @@
+{
+  "alt_test_cache": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/tinyllama_test/source_prediction_cache.jsonl",
+  "alt_validation_cache": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/tinyllama_validation/source_prediction_cache.jsonl",
+  "alternate_source_family": "tinyllama_1.1b",
+  "alternate_source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+  "cache_row_audits": {
+    "alternate_test": {
+      "cache_sha256": "aa9f18206755ee22447a15bee96bedcd97b0728e09177b336db0472d1e7d2172",
+      "expected_rows": 1172,
+      "forbidden_contract_declared": true,
+      "forbidden_payload_keys_absent": true,
+      "label": "alternate_test",
+      "path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/tinyllama_test/source_prediction_cache.jsonl",
+      "rows": 1172,
+      "source_families": [
+        "tinyllama_1.1b"
+      ],
+      "source_models": [
+        "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6"
+      ],
+      "source_score_modes": [
+        "lm_choice_loglikelihood"
+      ]
+    },
+    "alternate_validation": {
+      "cache_sha256": "9c3e57afbdbe36c9afa64e348d84d463231c5b1231d5b45c9309e834a508adf4",
+      "expected_rows": 299,
+      "forbidden_contract_declared": true,
+      "forbidden_payload_keys_absent": true,
+      "label": "alternate_validation",
+      "path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/tinyllama_validation/source_prediction_cache.jsonl",
+      "rows": 299,
+      "source_families": [
+        "tinyllama_1.1b"
+      ],
+      "source_models": [
+        "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6"
+      ],
+      "source_score_modes": [
+        "lm_choice_loglikelihood"
+      ]
+    },
+    "qwen_test": {
+      "cache_sha256": "ca80c37108c1c31d01f2bedc218883420ea4082769dc17c3de2239505d89dc6a",
+      "expected_rows": 1172,
+      "forbidden_contract_declared": true,
+      "forbidden_payload_keys_absent": true,
+      "label": "qwen_test",
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/source_prediction_cache.jsonl",
+      "rows": 1172,
+      "source_families": [],
+      "source_models": [],
+      "source_score_modes": []
+    },
+    "qwen_validation": {
+      "cache_sha256": "868ec5ae7314d7a530acdbdaa0eb84bd53dde4c6bfb0325a7e9876b8274c225b",
+      "expected_rows": 299,
+      "forbidden_contract_declared": true,
+      "forbidden_payload_keys_absent": true,
+      "label": "qwen_validation",
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+      "rows": 299,
+      "source_families": [],
+      "source_models": [],
+      "source_score_modes": []
+    }
+  },
+  "cache_sha256": {
+    "alt_test": "aa9f18206755ee22447a15bee96bedcd97b0728e09177b336db0472d1e7d2172",
+    "alt_validation": "9c3e57afbdbe36c9afa64e348d84d463231c5b1231d5b45c9309e834a508adf4",
+    "qwen_test": "ca80c37108c1c31d01f2bedc218883420ea4082769dc17c3de2239505d89dc6a",
+    "qwen_validation": "868ec5ae7314d7a530acdbdaa0eb84bd53dde4c6bfb0325a7e9876b8274c225b"
+  },
+  "forbidden_source_fields": [
+    "answer",
+    "answerKey",
+    "answer_index",
+    "answer_label",
+    "gold"
+  ],
+  "materialization_requested": false,
+  "materialized_this_run": false,
+  "qwen_test_cache": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/source_prediction_cache.jsonl",
+  "qwen_validation_cache": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl"
+}

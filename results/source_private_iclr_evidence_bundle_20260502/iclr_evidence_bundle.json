@@ -406,6 +406,47 @@
     "seed_count": 5,
     "target_accuracy": 0.24414715719063546
   },
+  "arc_challenge_source_family_cache_falsification_headline": {
+    "test_full_slice": {
+      "all_seeds_pass": true,
+      "candidate_derangement_accuracy_max": 0.21331058020477817,
+      "matched_accuracy_max": 0.3250853242320819,
+      "matched_accuracy_mean": 0.3245733788395905,
+      "matched_accuracy_min": 0.32337883959044367,
+      "matched_minus_best_destructive_min": 0.05119453924914674,
+      "matched_minus_same_byte_text_min": 0.02559726962457337,
+      "matched_minus_target_mean": 0.05921501706484641,
+      "matched_minus_target_min": 0.058020477815699634,
+      "paired_ci95_low_vs_target_min": 0.017918088737201365,
+      "pass_count": 5,
+      "same_byte_structured_text_accuracy": 0.2977815699658703,
+      "seed_count": 5,
+      "target_accuracy": 0.26535836177474403
+    },
+    "test_pass": false,
+    "test_qwen_disagreement_slice": {
+      "all_seeds_pass": false,
+      "matched_accuracy_mean": 0.2693446088794926,
+      "matched_accuracy_min": 0.26849894291754756,
+      "matched_minus_best_destructive_min": -0.0021141649048626032,
+      "matched_minus_qwen_substituted_min": -0.05073995771670192,
+      "matched_minus_same_byte_text_min": 0.010570824524312905,
+      "matched_minus_target_min": 0.0,
+      "n": 473,
+      "paired_ci95_low_vs_qwen_substituted_min": -0.11839323467230443,
+      "paired_ci95_low_vs_target_min": -0.05919661733615222,
+      "pass_count": 0,
+      "qwen_substituted_packet_accuracy_mean": 0.3171247357293869,
+      "same_byte_structured_text_accuracy_mean": 0.25792811839323465,
+      "seed_count": 5,
+      "target_accuracy": 0.26849894291754756
+    },
+    "test_source_cache_agreement": {
+      "agreement_rate": 0.5964163822525598,
+      "disagreement_count": 473
+    },
+    "validation_pass": false
+  },
   "arc_challenge_source_latent_endpoint_validation_headline": {
     "best_destructive_control": "candidate_derangement",
     "best_destructive_control_accuracy": 0.25418060200668896,
@@ -569,6 +610,12 @@
       "exists": true,
       "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_bge_validation/arc_challenge_seed_stability.json",
       "sha256": "2380dcdf4cbf580d982939a6e6fc05057b29025607b07ed060519806c13d3fb0"
+    },
+    "arc_challenge_source_family_cache_falsification": {
+      "bytes": 74001,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_family_cache_falsification.json",
+      "sha256": "47b3eb3f3dd6925134696fb28bf62a12f68a83c9b497dec3e41590d0204c4667"
     },
     "arc_challenge_source_latent_endpoint_validation": {
       "bytes": 7624,
@@ -1304,6 +1351,13 @@
       "status": "new positive common-basis packet gate"
     },
     {
+      "contribution": "ARC-Challenge TinyLlama source-family cache falsification",
+      "headline_evidence": "TinyLlama full-slice test pass=5/5; Qwen-disagreement test pass=0/5; disagreement rows=473; agreement rate=0.596",
+      "main_metric": "full-slice matched/target/text=0.325/0.265/0.298; Qwen-disagreement matched/Qwen-sub/target=0.269/0.317/0.268; min matched-Qwen-sub=-0.051",
+      "remaining_gap": "This is the source-family gate reviewers would ask for: rebuild the source-choice cache with a different local source family and then evaluate rows where Qwen and the alternate source disagree. The full ARC test slice remains positive, but the disagreement slice fails and Qwen-substituted packets are stronger. Therefore the ARC Fourier row remains source-cache specific until a stronger alternate source, learned source endpoint, or NVIDIA-scale connector passes.",
+      "status": "new negative source-family/source-cache gate / ICLR blocker sharpened"
+    },
+    {
       "contribution": "ARC-Challenge shared-basis source-computable endpoint",
       "headline_evidence": "validation matched/target/text=0.388/0.244/0.348; test matched/target/text=0.344/0.265/0.311; seed stability validation/test=5/5 and 5/5",
       "main_metric": "test lift over target=0.078; lift over best destructive=0.078; lift over same-byte text=0.033; seed-stability min CI95 low vs target=0.038",
@@ -1493,7 +1547,7 @@
       "status": "bounded diagnostic contribution, not headline cross-family claim"
     }
   ],
-  "created_utc": "2026-05-02T09:33:39.249326+00:00",
+  "created_utc": "2026-05-02T10:07:40.384344+00:00",
   "cross_benchmark_systems_comparator_headline": {
     "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
     "diagnostic_benchmarks": 1,
@@ -2645,6 +2699,14 @@
       "pass": true
     },
     {
+      "check": "arc_challenge_source_family_cache_falsification_records_full_slice_positive",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_source_family_cache_falsification_scopes_qwen_disagreement_blocker",
+      "pass": true
+    },
+    {
       "check": "arc_challenge_source_latent_endpoint_not_overclaimed",
       "pass": true
     },
@@ -3214,7 +3276,7 @@
     }
   ],
   "pass_gate": true,
-  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the Fourier/anchor-syndrome packet is still built from a Qwen choice cache, strict cross-family/source-cache controls are incomplete, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
+  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the stricter Qwen-disagreement slice, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
   "remaining_iclr_risks": [
     "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
     "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
@@ -3229,6 +3291,7 @@
     "SciQ is documented as a benchmark-selection limitation because same-byte answer-text saturates despite strong source signal.",
     "CommonsenseQA confirms non-science source signal, but same-byte text is still too close under the strict text-margin gate.",
     "The ARC Fourier/anchor-syndrome packet strengthens the shared-coordinate mechanism and spectral mismatch controls, but random shared anchors pass; do not claim semantic train-anchor superiority or universal latent-language transfer.",
+    "The TinyLlama source-family cache falsification preserves the ARC full-slice test lift but fails the Qwen-disagreement slice, where Qwen-substituted packets beat TinyLlama-selected packets; do not claim source-family-general ARC communication yet.",
     "The direct Qwen-hidden to BGE residual endpoint failed validation, so deeper latent endpoints need better common-basis learning before promotion.",
     "The top live method is candidate-local and thresholded; the paper must show the threshold frontier and controls clearly.",
     "Same-family structured-text controls remain unpromoted and should be framed as a limitation or cut from headline claims.",
@@ -3297,6 +3360,7 @@
     "./venv_arm64/bin/python scripts/build_source_private_openbookqa_receiver_headroom_gate.py --output-dir results/source_private_openbookqa_receiver_headroom_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_receiver_headroom_gate.py --output-dir results/source_private_arc_challenge_receiver_headroom_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py --output-dir results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu --force-rematerialize --source-lm-device cpu --source-lm-dtype float32 --source-lm-max-length 192 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
