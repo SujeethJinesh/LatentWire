@@ -1972,5 +1972,12 @@
     "path": "references/638_arc_hidden_query_common_basis_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC TinyLlama hidden/query common-basis gate, covering the negative hidden/query connector result and boundaries against C2C, KVComm/KVCOMM, activation communication, InterLat, latent K-V alignment, crosscoders/SAEs, and TurboQuant-style quantized cache/vector methods."
+  },
+  {
+    "num": 639,
+    "slug": "systems_boundary_figure_table_refs_20260502",
+    "path": "references/639_systems_boundary_figure_table_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the systems boundary figure/table V3, covering LatentWire packet byte/exposure accounting and boundaries against C2C, KVComm/KVCOMM, Q-KVComm, KIVI, KVQuant, QJL, TurboQuant, vLLM/PagedAttention, and SGLang/RadixAttention."
   }
 ]

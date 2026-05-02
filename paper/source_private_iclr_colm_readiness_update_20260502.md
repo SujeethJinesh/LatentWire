@@ -14,7 +14,9 @@ Date: 2026-05-02
   common-language connector must beat packet-only under paired uncertainty,
   destructive controls, and at least one strict cross-family or cross-benchmark
   falsification. The Mac-local Phi-3 cross-family source diagnostic and the
-  TinyLlama hidden/query common-basis connector now both fail this gate.
+  TinyLlama hidden/query common-basis connector now both fail this gate. The
+  systems boundary table is paper-ready as accounting, but native NVIDIA
+  serving rows remain incomplete.
 
 ## Contributions To Put Forward
 
@@ -35,6 +37,25 @@ Date: 2026-05-02
    are now explicitly recorded as negative or non-headline.
 
 ## What Changed
+
+The systems boundary figure/table V3 is now materialized:
+
+- artifact:
+  `results/source_private_systems_boundary_figure_table_20260502/`
+- files: `systems_boundary_figure_data.json`, `.csv`,
+  `systems_boundary_table.md`, `systems_boundary_table.tex`,
+  `systems_boundary_waterfall.svg`, and `manifest.json`;
+- pass gate: `True`;
+- packet rows: `4`;
+- framed packet range: `4-15B`;
+- minimum source-state floor: `768B`;
+- minimum source-state floor versus largest packet: `51.2x`;
+- native NVIDIA systems complete: `False`.
+
+Lay explanation: this table compares what crosses the boundary. LatentWire
+sends a tiny task hint; C2C/KVComm-style systems and KV quantizers move, store,
+or compress internal model memory. The table is a systems accounting win, not a
+GPU speed claim.
 
 The 2026-05-02 evidence bundle now ingests the ARC source-family
 packet-confidence router diagnostic:
@@ -212,11 +233,11 @@ same controls.
 
 ## Next Exact Gate
 
-Build the systems boundary figure/table V3 for COLM/ICLR framing, then run a
-stronger true cross-family source or trainable query/cache connector on NVIDIA.
-Receiver-only scalar routing, source-side scalar confidence routing, cached
-candidate-level packet/score connectors, Mac-local Phi-3 source packets, and
-shallow TinyLlama hidden/query PCA/ridge connectors are now ruled out for this
-ARC disagreement surface. The same-family Qwen-1.5B stronger-source diagnostic
-should be repeated with a true stronger cross-family source before making the
-ICLR claim.
+Run a stronger true cross-family source or trainable query/cache connector on
+NVIDIA, then fill the native systems schema with matched vLLM/SGLang/C2C/
+KVComm/QJL/TurboQuant rows. Receiver-only scalar routing, source-side scalar
+confidence routing, cached candidate-level packet/score connectors, Mac-local
+Phi-3 source packets, and shallow TinyLlama hidden/query PCA/ridge connectors
+are now ruled out for this ARC disagreement surface. The same-family Qwen-1.5B
+stronger-source diagnostic should be repeated with a true stronger cross-family
+source before making the ICLR claim.

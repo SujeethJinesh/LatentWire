@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_systems_boundary_figure_table_20260502/systems_boundary_figure_data.json",
+      "sha256": "eed7ca948d9918c7e92cf93550a778dae083d40d5cf1a848bacf54341a042f54"
+    },
+    {
+      "path": "results/source_private_systems_boundary_figure_table_20260502/systems_boundary_figure_data.csv",
+      "sha256": "fed8518b271732b30613ae28bfb0a692ff7e6b71a39a5b6a9616a116f1b94ea9"
+    },
+    {
+      "path": "results/source_private_systems_boundary_figure_table_20260502/systems_boundary_table.md",
+      "sha256": "21c949764fe8d206736ae5a5ea7f9a85d657e16ef622ce23206b5d71a11d3ba7"
+    },
+    {
+      "path": "results/source_private_systems_boundary_figure_table_20260502/systems_boundary_table.tex",
+      "sha256": "dce5f751e101d882a467fdd2c9ed1169aa0c08d64984b64431c268ae9b8fe31a"
+    },
+    {
+      "path": "results/source_private_systems_boundary_figure_table_20260502/systems_boundary_waterfall.svg",
+      "sha256": "223cf9f6871d7bf4216b08c2afdcc14994b9927e5881f0e80c9800b36c1846ae"
+    }
+  ],
+  "gate": "source_private_systems_boundary_figure_table",
+  "headline": {
+    "claim_scope": "Paper-ready systems boundary artifact: LatentWire rows are fixed-byte source-private task packets; KV/cache rows are byte floors or pending native serving baselines. The artifact supports byte/exposure accounting, not a native C2C/KVComm/TurboQuant/QJL/vLLM/SGLang win.",
+    "max_packet_framed_bytes": 15.0,
+    "min_packet_framed_bytes": 4.0,
+    "min_source_state_floor_bytes": 768.0,
+    "min_source_state_floor_ratio_vs_max_packet": 51.2,
+    "native_nvidia_complete": false,
+    "packet_row_count": 4,
+    "pass_gate": true
+  },
+  "pass_gate": true
+}

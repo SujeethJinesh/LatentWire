@@ -1,0 +1,26 @@
+\begin{table}[t]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llrrrrrrr}
+\toprule
+Method & Object & Raw & Framed & Cacheline & Batch64 & Src text & Src KV & Src hidden \\
+\midrule
+LatentWire ARC-Challenge test packet & task-level candidate evidence packet & 12B & 15B & 64B & 960B & no & no & no \\
+LatentWire OpenBookQA test packet & task-level candidate evidence packet & 3B & 6B & 64B & 384B & no & no & no \\
+LatentWire HellaSwag validation\_first1024 packet & task-level candidate evidence packet & 2B & 5B & 64B & 320B & no & no & no \\
+LatentWire HellaSwag validation\_full\_compaction packet & task-level candidate evidence packet & 1B & 4B & 64B & 256B & no & no & no \\
+QJL sign-bit KV-state floor & one-token K+V state at 1 bit/element & 768B & 768B & 768B & 49152B & no & yes & no \\
+KIVI 2-bit KV floor & one-token K+V state at 2 bits/element & 1536B & 1536B & 1536B & 98304B & no & yes & no \\
+Q-KVComm optimistic 6x floor & compressed source KV cache representation & 2048B & 2048B & 2048B & 131072B & no & yes & no \\
+KVQuant 3-bit proxy floor & one-token K+V state at 3 bits/element & 2304B & 2304B & 2304B & 147456B & no & yes & no \\
+TurboQuant 3.5-bit KV floor & one-token K+V state at 3.5 bits/element & 2688B & 2688B & 2688B & 172032B & no & yes & no \\
+KVComm 30\% fp16 KV floor & selected source KV layers, fp16 & 3686.4B & 3686.4B & 3712B & 235929.6B & no & yes & no \\
+C2C one-token fp16 KV floor & projected/fused source KV cache & 12288B & 12288B & 12288B & 786432B & no & yes & no \\
+KVCOMM cross-context fp16 KV floor & aligned/reused source KV cache & 12288B & 12288B & 12288B & 786432B & no & yes & no \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Systems boundary table. LatentWire rows are source-private task packets; KV/cache rows are source-state byte floors or pending native baselines, not native wins.}
+\label{tab:systems-boundary}
+\end{table}

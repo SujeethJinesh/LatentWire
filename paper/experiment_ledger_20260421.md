@@ -19289,3 +19289,20 @@ shallow Mac-local TinyLlama hidden/query PCA/ridge common-basis connectors for
 ARC. The next exact branch should be a stronger true cross-family source or
 trainable query/cache connector on NVIDIA, while the Mac-local systems work
 should consolidate a paper-ready boundary table.
+
+Systems boundary figure/table V3: added
+`scripts/build_source_private_systems_boundary_figure_table.py`, test
+`tests/test_build_source_private_systems_boundary_figure_table.py`, memo
+`paper/source_private_systems_boundary_figure_table_20260502.md`, references
+`references/639_systems_boundary_figure_table_refs_20260502.md`, and artifact
+`results/source_private_systems_boundary_figure_table_20260502/`. Outcome:
+this is the paper-ready systems accounting table/figure for the current
+Mac-local evidence. The gate passes: `4` LatentWire packet rows remain
+source-private, packet framed bytes are `4-15B`, the minimum source-state floor
+is `768B`, and the minimum source-state floor versus the largest packet is
+`51.2x`. The artifact emits JSON, CSV, Markdown, TeX, and SVG outputs and
+keeps C2C/KVComm/KVCOMM/Q-KVComm/KIVI/KVQuant/QJL/TurboQuant/vLLM/SGLang rows
+explicitly marked as byte floors or pending native NVIDIA baselines. Decision:
+promote this as the COLM/ICLR systems boundary figure/table, but do not claim a
+native latency, goodput, HBM, GPU-memory, or baseline-defeat win until matched
+NVIDIA serving rows exist.
