@@ -1755,5 +1755,12 @@
     "path": "references/607_hellaswag_tinyllama_full_validation_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the TinyLlama full-validation HellaSwag hidden-innovation source-family pass and Mac systems card, covering the safe source-family robustness claim and boundaries against prefix/prompt/adapters, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, SAE/crosscoder/relative representations, vLLM, and SGLang."
+  },
+  {
+    "num": 608,
+    "slug": "hellaswag_receiver_family_packet_gate_refs_20260502",
+    "path": "references/608_hellaswag_receiver_family_packet_gate_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the TinyLlama-to-Qwen HellaSwag receiver-family packet scout, covering the target-family utility claim, the failed receiver-improvement gate, target-or-packet oracle headroom, and novelty boundaries against prefix/prompt tuning, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, SAE/crosscoder/relative representations, BLIP-2/Perceiver-style connectors, vLLM, and SGLang."
   }
 ]

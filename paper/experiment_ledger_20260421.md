@@ -18396,3 +18396,26 @@ the next exact gate is an anchor-relative/common-basis hidden-innovation
 variant or additional remaining-slice/full-validation stress, followed by one
 strict cross-family falsification pair and native NVIDIA/vLLM/SGLang systems
 rows.
+
+HellaSwag receiver-family packet scout: added
+`scripts/build_source_private_hellaswag_receiver_family_packet_gate.py`, test
+`tests/test_build_source_private_hellaswag_receiver_family_packet_gate.py`,
+memo
+`paper/source_private_hellaswag_receiver_family_packet_gate_20260502.md`,
+references
+`references/608_hellaswag_receiver_family_packet_gate_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_receiver_family_packet_gate_20260502/`.
+Outcome: using TinyLlama full-validation hidden-innovation packets as the
+source side and Qwen2.5 full-validation target score caches as the receiver
+side, the selected target-margin accept-packet receiver reaches `0.627190`
+heldout accuracy on validation rows `1024:10042`. This strongly beats
+Qwen target-only scoring (`0.483034`, delta `+0.144156`, CI95 low
+`+0.134509`) and destructive packet controls, but it does not beat TinyLlama
+packet-only (`0.629741`, delta `-0.002550`, CI95 high `-0.000998`). The
+target-or-packet oracle is `0.683744`, so there is real receiver-side headroom.
+Interpretation: this promotes target-family utility as a diagnostic but blocks
+any claim that the receiver has learned a true cross-family latent language.
+The next live method branch should target receiver acceptance/common-basis
+learning that closes the oracle headroom rather than merely trusting the
+source packet.

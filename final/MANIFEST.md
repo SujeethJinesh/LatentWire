@@ -130,6 +130,11 @@
   2-byte raw / 5-byte framed source-private packet passes all three contiguous
   validation slices `0:3072`, with weighted selected accuracy `0.482096`
   versus best label-copy `0.441081` and score-only/zero-hidden `0.434896`.
+- HellaSwag receiver-family packet scout artifacts showing a TinyLlama
+  hidden-innovation packet gives a large heldout lift over a Qwen target-only
+  receiver under destructive packet controls, but does not yet beat
+  packet-only; target-or-packet oracle headroom is recorded for the next
+  receiver/common-basis branch.
 - Learned/calibrated synonym-dictionary packet script, tests, memo, and native
   plus synonym-stress `n=256` artifacts showing 4-byte bidirectional
   cross-family pass under strict controls, with public-calibration caveats.

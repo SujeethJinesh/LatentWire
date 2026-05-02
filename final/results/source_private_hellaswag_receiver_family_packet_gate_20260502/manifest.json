@@ -1,0 +1,51 @@
+{
+  "created_utc": "2026-05-02T03:44:59.931904+00:00",
+  "files": [
+    {
+      "bytes": 9497,
+      "path": "results/source_private_hellaswag_receiver_family_packet_gate_20260502/hellaswag_receiver_family_packet_gate.json",
+      "sha256": "27e15d89eff76e597514953692f1ad65fe1e18b95b1f2d98942bf106de79386b"
+    },
+    {
+      "bytes": 1056,
+      "path": "results/source_private_hellaswag_receiver_family_packet_gate_20260502/hellaswag_receiver_family_packet_gate.md",
+      "sha256": "f02bb3e4b34c5604241803afbae496e57dcaaae27d46aa3cafe0d625f9d13287"
+    }
+  ],
+  "gate": "source_private_hellaswag_receiver_family_packet_gate",
+  "headline": {
+    "eval_rows": 9018,
+    "packet_field": "selected_prediction",
+    "packet_margin_field": "selected_margin",
+    "packet_only_eval_accuracy": 0.6297405189620758,
+    "receiver_ci95_high_vs_packet_only": -0.000998003992015968,
+    "receiver_ci95_high_vs_target_only": 0.15402528276779773,
+    "receiver_ci95_low_vs_packet_only": -0.004102905300510091,
+    "receiver_ci95_low_vs_target_only": 0.13450876025726324,
+    "receiver_eval_accuracy": 0.6271900643158128,
+    "receiver_minus_packet_only": -0.0025504546462630294,
+    "receiver_minus_target_only": 0.14415613218008427,
+    "row_count": 10042,
+    "selected_receiver_kind": "target_margin_accept_packet",
+    "selected_receiver_train_accuracy": 0.5322265625,
+    "source_family": "TinyLlama",
+    "strict_packet_delta_required": 0.005,
+    "strict_target_delta_required": 0.02,
+    "target_family": "Qwen2.5",
+    "target_only_eval_accuracy": 0.48303393213572854,
+    "target_or_packet_oracle_eval_accuracy": 0.6837436238633844,
+    "train_rows": 1024
+  },
+  "inputs": [
+    {
+      "artifact_path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "artifact_sha256": "22300aa517c800c45bdf6a01488a9279a2da966228911c46dbdf43b2bfc4c323",
+      "predictions_jsonl": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/bagged_gate/predictions.jsonl",
+      "predictions_sha256": "f47d435afc728d3ecd10365323322473b598f51c1cc3c29b10cf82db9819a449"
+    },
+    {
+      "artifact_path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/hellaswag_hidden_innovation_global_stability.json",
+      "artifact_sha256": "9bfd8fd48e20c7c6bf6e7fa7bf43bff16e323545382818c6798b6d53e9ef4696"
+    }
+  ]
+}

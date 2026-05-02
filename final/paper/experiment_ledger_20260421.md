@@ -18373,3 +18373,49 @@ fixed-byte source-private per-example hidden-innovation packet plus
 destructive controls, not prefix/prompt tuning, C2C/KVComm-style cache
 communication, QJL/TurboQuant quantization, SAE/crosscoder common bases, or
 relative representations in isolation.
+
+HellaSwag hidden-innovation fifth-slice follow-up: ran the frozen validation
+rows `4096:5120` gate with the same three train samples `{1729, 2027, 2039}`,
+split seeds `{1729, 1731, 1733}`, and `2B` raw / `5B` framed source-private
+candidate/confidence packet, then regenerated the default multi-slice
+aggregate at
+`results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_5120/`.
+Outcome: the fifth slice passes with selected accuracy `0.538086` versus
+best label-copy `0.500000`, score-only bagged `0.497070`, and zero-hidden
+`0.497070`; the paired CI95 low versus best label-copy is `+0.018555`, and
+all `3/3` jackknife subbags pass. The five-slice aggregate now passes on
+`5/5` contiguous HellaSwag validation slices totaling `5120` rows. Weighted
+selected accuracy is `0.503125` versus best label-copy `0.461523`, score-only
+bagged `0.456445`, and zero-hidden `0.456445`; the minimum slice delta versus
+best label-copy remains `+0.034180` with minimum paired CI95 low `+0.011719`.
+Wrong-example and candidate-roll hidden controls stay below label-copy, and
+the packet still exposes no source text, source KV, raw hidden vector, or raw
+source scores. Interpretation: this strengthens HellaSwag as the current
+ICLR headline-candidate positive method. It is not yet submission-complete:
+the next exact gate is an anchor-relative/common-basis hidden-innovation
+variant or additional remaining-slice/full-validation stress, followed by one
+strict cross-family falsification pair and native NVIDIA/vLLM/SGLang systems
+rows.
+
+HellaSwag receiver-family packet scout: added
+`scripts/build_source_private_hellaswag_receiver_family_packet_gate.py`, test
+`tests/test_build_source_private_hellaswag_receiver_family_packet_gate.py`,
+memo
+`paper/source_private_hellaswag_receiver_family_packet_gate_20260502.md`,
+references
+`references/608_hellaswag_receiver_family_packet_gate_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_receiver_family_packet_gate_20260502/`.
+Outcome: using TinyLlama full-validation hidden-innovation packets as the
+source side and Qwen2.5 full-validation target score caches as the receiver
+side, the selected target-margin accept-packet receiver reaches `0.627190`
+heldout accuracy on validation rows `1024:10042`. This strongly beats
+Qwen target-only scoring (`0.483034`, delta `+0.144156`, CI95 low
+`+0.134509`) and destructive packet controls, but it does not beat TinyLlama
+packet-only (`0.629741`, delta `-0.002550`, CI95 high `-0.000998`). The
+target-or-packet oracle is `0.683744`, so there is real receiver-side headroom.
+Interpretation: this promotes target-family utility as a diagnostic but blocks
+any claim that the receiver has learned a true cross-family latent language.
+The next live method branch should target receiver acceptance/common-basis
+learning that closes the oracle headroom rather than merely trusting the
+source packet.
