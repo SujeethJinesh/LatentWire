@@ -1944,5 +1944,19 @@
     "path": "references/634_arc_source_score_router_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC source-score source-family router gate, covering calibrated source-risk routing, semantic uncertainty, relative/common-basis representations, SAE/cross-model feature motivation, and boundaries against prefix tuning, C2C, KVComm/KVCOMM, and TurboQuant."
+  },
+  {
+    "num": 635,
+    "slug": "arc_candidate_syndrome_connector_refs_20260502",
+    "path": "references/635_arc_candidate_syndrome_connector_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC candidate-syndrome learned connector gate, covering the negative cached candidate-level connector result, relative/common-basis representations, query/resampler connectors, SAE/crosscoder feature dictionaries, cache-transfer competitors, TurboQuant/KV quantization, transport-style objectives, and boundaries against prefix/prompt tuning."
+  },
+  {
+    "num": 636,
+    "slug": "arc_qwen15_stronger_source_diagnostic_refs_20260502",
+    "path": "references/636_arc_qwen15_stronger_source_diagnostic_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC Qwen-1.5B stronger-source diagnostic, covering the positive frozen test same-family source-strength result, the validation-gate limitation, and boundaries against C2C, KVComm/KVCOMM, TurboQuant, relative representations, and prefix tuning."
   }
 ]

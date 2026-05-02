@@ -69,6 +69,45 @@ confidence signal before the router chose which packet to trust. The validation
 rule looked promising, but it did not transfer to frozen test rows. That means
 the failure is not just missing a simple source-confidence byte.
 
+The ARC Qwen-1.5B stronger-source diagnostic adds a promising but bounded
+positive result:
+
+- artifact:
+  `results/source_private_arc_challenge_source_family_cache_falsification_20260502_qwen15_cpu/source_family_cache_falsification.json`
+- alternate source family: `qwen2.5_1.5b`;
+- overall pass gate: `False` because validation Qwen-disagreement pass is
+  `0/5`;
+- frozen test full-slice pass: `5/5`, matched/target/text `0.442/0.265/0.401`;
+- frozen test Qwen-disagreement pass: `5/5` on `388` rows;
+- frozen test Qwen-disagreement matched/Qwen-substituted/text/target:
+  `0.482/0.184/0.456/0.296`;
+- frozen test matched-minus-Qwen-substituted min: `+0.294`;
+- frozen test CI95 low versus Qwen-substituted: `+0.216`.
+
+Lay explanation: using a stronger Qwen-1.5B source instead of TinyLlama makes
+the tiny ARC packet very useful on frozen test disagreements with Qwen-0.5B.
+This is encouraging, but it is same-family and validation-gate-incomplete, so
+it should be framed as source-strength evidence rather than the final
+cross-family result.
+
+The ARC candidate-syndrome connector gate now tests the next learned cached
+repair:
+
+- artifact:
+  `results/source_private_arc_challenge_candidate_syndrome_connector_gate_20260502/candidate_syndrome_connector_gate.json`
+- selected primary view: `tiny_score_shape_connector`;
+- frozen test selected-primary/Qwen/oracle: `0.288/0.317/0.586`;
+- frozen test connector-minus-Qwen mean/min: `-0.029/-0.040`;
+- frozen test CI95 low versus Qwen: `-0.091`;
+- paired-family diagnostic test accuracy: `0.316` versus Qwen `0.317`;
+- pass gate: `False`.
+
+Lay explanation: instead of only choosing between the whole TinyLlama hint and
+the whole Qwen hint, this experiment trained a small scorer that could pick any
+answer option using the cached packet and source-score patterns. It still lost
+to Qwen on frozen test rows, so the remaining headroom requires richer hidden
+or query-level information rather than more cached score geometry.
+
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
 
@@ -131,5 +170,7 @@ same controls.
 
 Run an ARC source-family repair gate with a learned common-basis connector or a
 stronger alternate source on the frozen TinyLlama-vs-Qwen disagreement rows.
-Receiver-only scalar routing and source-side scalar confidence routing are now
-both ruled out for this surface.
+Receiver-only scalar routing, source-side scalar confidence routing, and cached
+candidate-level packet/score connectors are now ruled out for this surface.
+The same-family Qwen-1.5B stronger-source diagnostic should be repeated with a
+true cross-family stronger source on NVIDIA before making the ICLR claim.

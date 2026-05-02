@@ -19196,3 +19196,46 @@ CI95 low `+0.010`, but it failed on frozen test: router/Qwen/oracle
 packets. Decision: rule out scalar source-confidence routing as the ARC
 source-family repair; promote a learned common-basis connector or stronger
 alternate source on NVIDIA as the next exact gate.
+
+ARC-Challenge candidate-syndrome learned connector gate: added
+`scripts/build_source_private_arc_challenge_candidate_syndrome_connector_gate.py`,
+test
+`tests/test_build_source_private_arc_challenge_candidate_syndrome_connector_gate.py`,
+memo
+`paper/source_private_arc_candidate_syndrome_connector_gate_20260502.md`,
+references
+`references/635_arc_candidate_syndrome_connector_refs_20260502.md`, and
+artifact
+`results/source_private_arc_challenge_candidate_syndrome_connector_gate_20260502/`.
+Outcome: this tests whether a low-capacity learned candidate scorer can
+recover the strict ARC TinyLlama-vs-Qwen disagreement oracle headroom from
+cached packet and source-score features. The selected primary view is
+`tiny_score_shape_connector`. Frozen test selected-primary/Qwen/oracle is
+`0.288/0.317/0.586`, connector-minus-Qwen mean/min is `-0.029/-0.040`, and
+minimum paired CI95 low versus Qwen is `-0.091`. The Tiny packet-only view is
+weaker (`0.246` test), while the paired-family diagnostic can see both Tiny and
+Qwen cached features but only ties Qwen at `0.316` versus `0.317`, so it is not
+a source-private primary claim. Decision: rule out cached candidate-level
+packet/score-shape connectors; the live ARC source-family repair now requires
+richer hidden-state/query-resampler/common-basis information or a stronger
+alternate source-family run.
+
+ARC-Challenge Qwen-1.5B stronger-source diagnostic: ran the existing
+`scripts/build_source_private_arc_challenge_source_family_cache_falsification.py`
+with alternate source family `qwen2.5_1.5b` and local model
+`Qwen2.5-1.5B-Instruct`, adding memo
+`paper/source_private_arc_qwen15_stronger_source_diagnostic_20260502.md`,
+references
+`references/636_arc_qwen15_stronger_source_diagnostic_refs_20260502.md`, and
+artifact
+`results/source_private_arc_challenge_source_family_cache_falsification_20260502_qwen15_cpu/`.
+Outcome: the overall gate remains `False` because validation
+Qwen-disagreement is `0/5` seeds with CI95 low versus Qwen-substituted packets
+`-0.021` on only `95` disagreement rows. The frozen test signal is strong:
+full-slice pass `5/5`, matched/target/text `0.442/0.265/0.401`; Qwen-
+disagreement pass `5/5` on `388` rows, matched/Qwen-substituted/text/target
+`0.482/0.184/0.456/0.296`, minimum matched-minus-Qwen-substituted `+0.294`,
+and CI95 low versus Qwen-substituted `+0.216`. Decision: promote as a
+same-family stronger-source positive diagnostic that weakens the TinyLlama
+failure, but do not claim cross-family source robustness until a true
+cross-family stronger source or hidden/query connector passes the strict gate.
