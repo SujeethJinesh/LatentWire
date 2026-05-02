@@ -56,6 +56,15 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert contribution_rows["ARC-Challenge shared-basis source-computable endpoint"]["status"] == (
         "new strongest public benchmark endpoint"
     )
+    assert contribution_rows["ARC-Challenge Fourier/anchor-syndrome common-basis packet"]["status"] == (
+        "new positive common-basis packet gate"
+    )
+    assert "mismatch controls collapse=True" in contribution_rows[
+        "ARC-Challenge Fourier/anchor-syndrome common-basis packet"
+    ]["headline_evidence"]
+    assert "ID/value/spectral mismatch pass counts=0/0/0" in contribution_rows[
+        "ARC-Challenge Fourier/anchor-syndrome common-basis packet"
+    ]["main_metric"]
     assert contribution_rows["OpenBookQA 3B shared-basis second public benchmark"]["status"] == (
         "new second public-benchmark positive gate and stronger rate point"
     )
@@ -362,6 +371,18 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
         check["check"] == "arc_receiver_replication_falsifies_current_selector" and check["pass"]
         for check in payload["pass_checks"]
     )
+    assert any(
+        check["check"] == "arc_challenge_fourier_anchor_syndrome_test_5_of_5" and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert any(
+        check["check"] == "arc_challenge_fourier_anchor_syndrome_mismatch_controls_collapse"
+        and check["pass"]
+        for check in payload["pass_checks"]
+    )
+    assert payload["arc_challenge_fourier_anchor_syndrome_headline"]["test_matched_aggregate"][
+        "pass_count"
+    ] == 5
     assert payload["arc_challenge_receiver_headroom_headline"]["strict_per_seed_ci_pass_count"] == 0
     assert payload["openbookqa_receiver_headroom_headline"]["default_seed_matched"]["receiver_accuracy"] > payload[
         "openbookqa_receiver_headroom_headline"

@@ -1916,5 +1916,12 @@
     "path": "references/630_arc_challenge_receiver_headroom_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC-Challenge receiver-fusion replication falsification, covering the failed cross-benchmark selector result, selective routing boundaries, common-basis next methods, and systems/communication comparisons against C2C, KVComm, FNet, relative representations, sparse crosscoders, and TurboQuant."
+  },
+  {
+    "num": 631,
+    "slug": "arc_challenge_fourier_anchor_syndrome_refs_20260502",
+    "path": "references/631_arc_challenge_fourier_anchor_syndrome_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC-Challenge Fourier/anchor-syndrome common-basis packet gate, covering the positive low-frequency public-basis packet, anchor/spectral mismatch controls, random shared-anchor diagnostic, and boundaries against relative representations, FNet, C2C, KVComm, QJL, TurboQuant, prefix tuning, SAEs, and crosscoders."
   }
 ]

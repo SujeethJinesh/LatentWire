@@ -224,6 +224,93 @@
     "same_byte_structured_text_accuracy": 0.34782608695652173,
     "target_accuracy": 0.24414715719063546
   },
+  "arc_challenge_fourier_anchor_syndrome_headline": {
+    "random_shared_anchor_diagnostic": {
+      "all_seeds_pass": true,
+      "candidate_derangement_accuracy_max": 0.2150170648464164,
+      "matched_accuracy_max": 0.3455631399317406,
+      "matched_accuracy_mean": 0.34419795221843,
+      "matched_accuracy_min": 0.3438566552901024,
+      "matched_minus_best_destructive_min": 0.06484641638225253,
+      "matched_minus_same_byte_text_min": 0.03327645051194539,
+      "matched_minus_target_mean": 0.078839590443686,
+      "matched_minus_target_min": 0.07849829351535836,
+      "paired_ci95_low_vs_target_min": 0.03835324232081912,
+      "pass_count": 5,
+      "same_byte_structured_text_accuracy": 0.310580204778157,
+      "seed_count": 5,
+      "target_accuracy": 0.26535836177474403
+    },
+    "test_control_aggregates": {
+      "anchor_id_shuffle": {
+        "all_seeds_pass": false,
+        "candidate_derangement_accuracy_max": 0.2738907849829352,
+        "matched_accuracy_max": 0.2713310580204778,
+        "matched_accuracy_mean": 0.25324232081911263,
+        "matched_accuracy_min": 0.22866894197952217,
+        "matched_minus_best_destructive_min": -0.03754266211604099,
+        "matched_minus_same_byte_text_min": -0.08191126279863484,
+        "matched_minus_target_mean": -0.012116040955631407,
+        "matched_minus_target_min": -0.03668941979522186,
+        "paired_ci95_low_vs_target_min": -0.07081911262798635,
+        "pass_count": 0,
+        "same_byte_structured_text_accuracy": 0.310580204778157,
+        "seed_count": 5,
+        "target_accuracy": 0.26535836177474403
+      },
+      "anchor_value_shuffle": {
+        "all_seeds_pass": false,
+        "candidate_derangement_accuracy_max": 0.2551194539249147,
+        "matched_accuracy_max": 0.27986348122866894,
+        "matched_accuracy_mean": 0.2469283276450512,
+        "matched_accuracy_min": 0.22866894197952217,
+        "matched_minus_best_destructive_min": -0.03754266211604099,
+        "matched_minus_same_byte_text_min": -0.08191126279863484,
+        "matched_minus_target_mean": -0.01843003412969284,
+        "matched_minus_target_min": -0.03668941979522186,
+        "paired_ci95_low_vs_target_min": -0.07167235494880546,
+        "pass_count": 0,
+        "same_byte_structured_text_accuracy": 0.310580204778157,
+        "seed_count": 5,
+        "target_accuracy": 0.26535836177474403
+      },
+      "spectral_bin_permutation": {
+        "all_seeds_pass": false,
+        "candidate_derangement_accuracy_max": 0.2713310580204778,
+        "matched_accuracy_max": 0.2721843003412969,
+        "matched_accuracy_mean": 0.26569965870307166,
+        "matched_accuracy_min": 0.25426621160409557,
+        "matched_minus_best_destructive_min": -0.011945392491467588,
+        "matched_minus_same_byte_text_min": -0.05631399317406144,
+        "matched_minus_target_mean": 0.00034129692832765015,
+        "matched_minus_target_min": -0.011092150170648463,
+        "paired_ci95_low_vs_target_min": -0.05334897610921502,
+        "pass_count": 0,
+        "same_byte_structured_text_accuracy": 0.310580204778157,
+        "seed_count": 5,
+        "target_accuracy": 0.26535836177474403
+      }
+    },
+    "test_matched_aggregate": {
+      "all_seeds_pass": true,
+      "candidate_derangement_accuracy_max": 0.2158703071672355,
+      "matched_accuracy_max": 0.3455631399317406,
+      "matched_accuracy_mean": 0.3438566552901024,
+      "matched_accuracy_min": 0.3430034129692833,
+      "matched_minus_best_destructive_min": 0.06996587030716722,
+      "matched_minus_same_byte_text_min": 0.03242320819112626,
+      "matched_minus_target_mean": 0.07849829351535835,
+      "matched_minus_target_min": 0.07764505119453924,
+      "paired_ci95_low_vs_target_min": 0.03835324232081912,
+      "pass_count": 5,
+      "same_byte_structured_text_accuracy": 0.310580204778157,
+      "seed_count": 5,
+      "target_accuracy": 0.26535836177474403
+    },
+    "test_mismatch_controls_collapse": true,
+    "test_pass": true,
+    "validation_pass": true
+  },
   "arc_challenge_random_anchors_test_headline": {
     "all_seeds_pass": true,
     "candidate_derangement_accuracy_max": 0.2150170648464164,
@@ -446,6 +533,12 @@
       "exists": true,
       "path": "results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_bge_validation/arc_challenge_fixed_packet_gate.json",
       "sha256": "2f745b7f6ab9b6dfa8b34c67e6791f28cd052108401edac354d8a01ded9bbf43"
+    },
+    "arc_challenge_fourier_anchor_syndrome": {
+      "bytes": 271257,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502/arc_challenge_fourier_anchor_syndrome_gate.json",
+      "sha256": "e6ab977777f65210560798c59f97ff3886a7ba5170df674052b789f1dd2be510"
     },
     "arc_challenge_random_anchors_test": {
       "bytes": 22928,
@@ -1204,6 +1297,13 @@
       "status": "new reviewer-facing control surface"
     },
     {
+      "contribution": "ARC-Challenge Fourier/anchor-syndrome common-basis packet",
+      "headline_evidence": "validation/test pass=True/True; test seed stability=5/5; test matched/target/text mean=0.344/0.265/0.311; mismatch controls collapse=True",
+      "main_metric": "12B payload; 384->96 spectral basis; min lift target=0.078; min lift text=0.032; min CI95 low=0.038; ID/value/spectral mismatch pass counts=0/0/0",
+      "remaining_gap": "This promotes a cleaner shared-coordinate mechanism: the source and receiver communicate through public train-anchor relative coordinates compressed by a deterministic low-frequency DCT-II syndrome. Anchor-ID, anchor-value, and spectral-bin mismatch controls collapse, but random shared anchors still pass, so the safe claim is shared public-coordinate agreement rather than semantic anchor superiority. ICLR still needs strict cross-family/source-cache controls and native systems comparisons.",
+      "status": "new positive common-basis packet gate"
+    },
+    {
       "contribution": "ARC-Challenge shared-basis source-computable endpoint",
       "headline_evidence": "validation matched/target/text=0.388/0.244/0.348; test matched/target/text=0.344/0.265/0.311; seed stability validation/test=5/5 and 5/5",
       "main_metric": "test lift over target=0.078; lift over best destructive=0.078; lift over same-byte text=0.033; seed-stability min CI95 low vs target=0.038",
@@ -1393,7 +1493,7 @@
       "status": "bounded diagnostic contribution, not headline cross-family claim"
     }
   ],
-  "created_utc": "2026-05-02T09:13:28.811132+00:00",
+  "created_utc": "2026-05-02T09:33:39.249326+00:00",
   "cross_benchmark_systems_comparator_headline": {
     "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
     "diagnostic_benchmarks": 1,
@@ -2525,6 +2625,26 @@
       "pass": true
     },
     {
+      "check": "arc_challenge_fourier_anchor_syndrome_passes",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fourier_anchor_syndrome_test_5_of_5",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fourier_anchor_syndrome_beats_text_and_target",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fourier_anchor_syndrome_mismatch_controls_collapse",
+      "pass": true
+    },
+    {
+      "check": "arc_challenge_fourier_anchor_syndrome_random_shared_anchor_diagnostic_recorded",
+      "pass": true
+    },
+    {
       "check": "arc_challenge_source_latent_endpoint_not_overclaimed",
       "pass": true
     },
@@ -3094,7 +3214,7 @@
     }
   ],
   "pass_gate": true,
-  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, and byte/exposure systems accounting. ICLR remains blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, but the same validation-selected receiver fails ARC replication, strict per-seed CI/control stability is incomplete, native NVIDIA systems baselines are missing, and a less label-copy-like common-basis or learned connector is still needed. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
+  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the Fourier/anchor-syndrome packet is still built from a Qwen choice cache, strict cross-family/source-cache controls are incomplete, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
   "remaining_iclr_risks": [
     "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
     "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
@@ -3108,7 +3228,7 @@
     "The HellaSwag repair acceptance card now promotes only the hidden-innovation row locally and still blocks native-queue promotion until native systems evidence exists.",
     "SciQ is documented as a benchmark-selection limitation because same-byte answer-text saturates despite strong source signal.",
     "CommonsenseQA confirms non-science source signal, but same-byte text is still too close under the strict text-margin gate.",
-    "Anchor-coordinate controls show ID/value mismatch collapse, but random shared anchors pass; do not claim semantic train-anchor superiority.",
+    "The ARC Fourier/anchor-syndrome packet strengthens the shared-coordinate mechanism and spectral mismatch controls, but random shared anchors pass; do not claim semantic train-anchor superiority or universal latent-language transfer.",
     "The direct Qwen-hidden to BGE residual endpoint failed validation, so deeper latent endpoints need better common-basis learning before promotion.",
     "The top live method is candidate-local and thresholded; the paper must show the threshold frontier and controls clearly.",
     "Same-family structured-text controls remain unpromoted and should be framed as a limitation or cut from headline claims.",
@@ -3176,6 +3296,7 @@
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl --anchor-predictions results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/predictions.jsonl --split-name openbookqa_test_hashed_3b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 3 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_openbookqa_receiver_headroom_gate.py --output-dir results/source_private_openbookqa_receiver_headroom_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_receiver_headroom_gate.py --output-dir results/source_private_arc_challenge_receiver_headroom_gate_20260502",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py --output-dir results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",

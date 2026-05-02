@@ -74,6 +74,7 @@ REPRODUCTION_COMMANDS = [
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b --train-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl --eval-path results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl --anchor-predictions results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/predictions.jsonl --split-name openbookqa_test_hashed_3b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 3 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_openbookqa_receiver_headroom_gate.py --output-dir results/source_private_openbookqa_receiver_headroom_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_receiver_headroom_gate.py --output-dir results/source_private_arc_challenge_receiver_headroom_gate_20260502",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py --output-dir results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
@@ -193,6 +194,7 @@ REQUIRED_ARTIFACTS = {
     "openbookqa_seed_stability_test_3b": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/arc_challenge_seed_stability.json",
     "openbookqa_receiver_headroom": "results/source_private_openbookqa_receiver_headroom_gate_20260502/openbookqa_receiver_headroom_gate.json",
     "arc_challenge_receiver_headroom": "results/source_private_arc_challenge_receiver_headroom_gate_20260502/arc_challenge_receiver_headroom_gate.json",
+    "arc_challenge_fourier_anchor_syndrome": "results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502/arc_challenge_fourier_anchor_syndrome_gate.json",
     "commonsenseqa_bridge_contract": "results/source_private_commonsenseqa_bridge_contract_20260501/commonsenseqa_bridge_contract.json",
     "commonsenseqa_fixed_packet_validation_12b": "results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/arc_challenge_fixed_packet_gate.json",
     "commonsenseqa_seed_validation_2b_strict": "results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b/arc_challenge_seed_stability.json",
@@ -463,6 +465,7 @@ def _contribution_rows(
     arc_anchor_value_shuffle_test: dict[str, Any],
     arc_random_anchors_validation: dict[str, Any],
     arc_random_anchors_test: dict[str, Any],
+    arc_fourier_anchor_syndrome: dict[str, Any],
     arc_source_latent_validation: dict[str, Any],
     arc_systems_trace: dict[str, Any],
     sciq_contract: dict[str, Any],
@@ -1244,6 +1247,46 @@ def _contribution_rows(
             ),
         },
         {
+            "contribution": "ARC-Challenge Fourier/anchor-syndrome common-basis packet",
+            "status": "new positive common-basis packet gate",
+            "headline_evidence": (
+                f"validation/test pass="
+                f"{arc_fourier_anchor_syndrome['headline']['validation_pass']}/"
+                f"{arc_fourier_anchor_syndrome['headline']['test_pass']}; "
+                f"test seed stability="
+                f"{arc_fourier_anchor_syndrome['headline']['test_matched_aggregate']['pass_count']}/"
+                f"{arc_fourier_anchor_syndrome['headline']['test_matched_aggregate']['seed_count']}; "
+                f"test matched/target/text mean="
+                f"{arc_fourier_anchor_syndrome['headline']['test_matched_aggregate']['matched_accuracy_mean']:.3f}/"
+                f"{arc_fourier_anchor_syndrome['headline']['test_matched_aggregate']['target_accuracy']:.3f}/"
+                f"{arc_fourier_anchor_syndrome['headline']['test_matched_aggregate']['same_byte_structured_text_accuracy']:.3f}; "
+                f"mismatch controls collapse="
+                f"{arc_fourier_anchor_syndrome['headline']['test_mismatch_controls_collapse']}"
+            ),
+            "main_metric": (
+                f"{arc_fourier_anchor_syndrome['budget_bytes']}B payload; "
+                f"{arc_fourier_anchor_syndrome['anchor_count']}->{arc_fourier_anchor_syndrome['spectral_dim']} "
+                f"spectral basis; min lift target="
+                f"{arc_fourier_anchor_syndrome['headline']['test_matched_aggregate']['matched_minus_target_min']:.3f}; "
+                f"min lift text="
+                f"{arc_fourier_anchor_syndrome['headline']['test_matched_aggregate']['matched_minus_same_byte_text_min']:.3f}; "
+                f"min CI95 low="
+                f"{arc_fourier_anchor_syndrome['headline']['test_matched_aggregate']['paired_ci95_low_vs_target_min']:.3f}; "
+                f"ID/value/spectral mismatch pass counts="
+                f"{arc_fourier_anchor_syndrome['headline']['test_control_aggregates']['anchor_id_shuffle']['pass_count']}/"
+                f"{arc_fourier_anchor_syndrome['headline']['test_control_aggregates']['anchor_value_shuffle']['pass_count']}/"
+                f"{arc_fourier_anchor_syndrome['headline']['test_control_aggregates']['spectral_bin_permutation']['pass_count']}"
+            ),
+            "remaining_gap": (
+                "This promotes a cleaner shared-coordinate mechanism: the source and receiver communicate through "
+                "public train-anchor relative coordinates compressed by a deterministic low-frequency DCT-II "
+                "syndrome. Anchor-ID, anchor-value, and spectral-bin mismatch controls collapse, but random shared "
+                "anchors still pass, so the safe claim is shared public-coordinate agreement rather than semantic "
+                "anchor superiority. ICLR still needs strict cross-family/source-cache controls and native systems "
+                "comparisons."
+            ),
+        },
+        {
             "contribution": "ARC-Challenge shared-basis source-computable endpoint",
             "status": "new strongest public benchmark endpoint",
             "headline_evidence": (
@@ -1809,6 +1852,7 @@ def _pass_checks(
     arc_anchor_value_shuffle_test: dict[str, Any],
     arc_random_anchors_validation: dict[str, Any],
     arc_random_anchors_test: dict[str, Any],
+    arc_fourier_anchor_syndrome: dict[str, Any],
     arc_source_latent_validation: dict[str, Any],
     arc_systems_trace: dict[str, Any],
     sciq_contract: dict[str, Any],
@@ -2035,6 +2079,40 @@ def _pass_checks(
         (
             "arc_challenge_random_anchors_test_beats_same_byte_text",
             arc_random_anchors_test["aggregate"]["matched_minus_same_byte_text_min"] > 0.0,
+        ),
+        ("arc_challenge_fourier_anchor_syndrome_passes", bool(arc_fourier_anchor_syndrome["pass_gate"])),
+        (
+            "arc_challenge_fourier_anchor_syndrome_test_5_of_5",
+            arc_fourier_anchor_syndrome["headline"]["test_matched_aggregate"]["pass_count"]
+            == arc_fourier_anchor_syndrome["headline"]["test_matched_aggregate"]["seed_count"]
+            == 5,
+        ),
+        (
+            "arc_challenge_fourier_anchor_syndrome_beats_text_and_target",
+            arc_fourier_anchor_syndrome["headline"]["test_matched_aggregate"]["matched_minus_target_min"] >= 0.05
+            and arc_fourier_anchor_syndrome["headline"]["test_matched_aggregate"][
+                "matched_minus_same_byte_text_min"
+            ]
+            >= 0.02
+            and arc_fourier_anchor_syndrome["headline"]["test_matched_aggregate"][
+                "paired_ci95_low_vs_target_min"
+            ]
+            > 0.0,
+        ),
+        (
+            "arc_challenge_fourier_anchor_syndrome_mismatch_controls_collapse",
+            arc_fourier_anchor_syndrome["headline"]["test_mismatch_controls_collapse"] is True
+            and all(
+                row["pass_count"] == 0
+                and row["matched_accuracy_mean"] <= row["target_accuracy"] + 0.03
+                for row in arc_fourier_anchor_syndrome["headline"]["test_control_aggregates"].values()
+            ),
+        ),
+        (
+            "arc_challenge_fourier_anchor_syndrome_random_shared_anchor_diagnostic_recorded",
+            arc_fourier_anchor_syndrome["headline"]["random_shared_anchor_diagnostic"]["pass_count"]
+            == arc_fourier_anchor_syndrome["headline"]["random_shared_anchor_diagnostic"]["seed_count"]
+            == 5,
         ),
         (
             "arc_challenge_source_latent_endpoint_not_overclaimed",
@@ -2979,6 +3057,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     openbookqa_seed_test_3b = _read_json(ROOT / REQUIRED_ARTIFACTS["openbookqa_seed_stability_test_3b"])
     openbookqa_receiver_headroom = _read_json(ROOT / REQUIRED_ARTIFACTS["openbookqa_receiver_headroom"])
     arc_receiver_headroom = _read_json(ROOT / REQUIRED_ARTIFACTS["arc_challenge_receiver_headroom"])
+    arc_fourier_anchor_syndrome = _read_json(ROOT / REQUIRED_ARTIFACTS["arc_challenge_fourier_anchor_syndrome"])
     commonsenseqa_contract = _read_json(ROOT / REQUIRED_ARTIFACTS["commonsenseqa_bridge_contract"])
     commonsenseqa_fixed_validation_12b = _read_json(
         ROOT / REQUIRED_ARTIFACTS["commonsenseqa_fixed_packet_validation_12b"]
@@ -3096,6 +3175,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         arc_anchor_value_shuffle_test=arc_anchor_value_shuffle_test,
         arc_random_anchors_validation=arc_random_anchors_validation,
         arc_random_anchors_test=arc_random_anchors_test,
+        arc_fourier_anchor_syndrome=arc_fourier_anchor_syndrome,
         arc_source_latent_validation=arc_source_latent_validation,
         arc_systems_trace=arc_systems_trace,
         sciq_contract=sciq_contract,
@@ -3176,6 +3256,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         arc_anchor_value_shuffle_test=arc_anchor_value_shuffle_test,
         arc_random_anchors_validation=arc_random_anchors_validation,
         arc_random_anchors_test=arc_random_anchors_test,
+        arc_fourier_anchor_syndrome=arc_fourier_anchor_syndrome,
         arc_source_latent_validation=arc_source_latent_validation,
         arc_systems_trace=arc_systems_trace,
         sciq_contract=sciq_contract,
@@ -3221,7 +3302,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     payload = {
         "gate": "source_private_iclr_evidence_bundle",
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, and byte/exposure systems accounting. ICLR remains blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, but the same validation-selected receiver fails ARC replication, strict per-seed CI/control stability is incomplete, native NVIDIA systems baselines are missing, and a less label-copy-like common-basis or learned connector is still needed. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
+        "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the Fourier/anchor-syndrome packet is still built from a Qwen choice cache, strict cross-family/source-cache controls are incomplete, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
         "pass_gate": all(check["pass"] for check in pass_checks),
         "pass_checks": pass_checks,
         "artifact_status": artifacts,
@@ -3261,6 +3342,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         "arc_challenge_anchor_value_shuffle_test_headline": arc_anchor_value_shuffle_test["aggregate"],
         "arc_challenge_random_anchors_validation_headline": arc_random_anchors_validation["aggregate"],
         "arc_challenge_random_anchors_test_headline": arc_random_anchors_test["aggregate"],
+        "arc_challenge_fourier_anchor_syndrome_headline": arc_fourier_anchor_syndrome["headline"],
         "arc_challenge_source_latent_endpoint_validation_headline": arc_source_latent_validation["headline"],
         "arc_challenge_systems_trace_headline": arc_systems_trace["headline"],
         "sciq_bridge_contract_headline": {
@@ -3437,7 +3519,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "The HellaSwag repair acceptance card now promotes only the hidden-innovation row locally and still blocks native-queue promotion until native systems evidence exists.",
             "SciQ is documented as a benchmark-selection limitation because same-byte answer-text saturates despite strong source signal.",
             "CommonsenseQA confirms non-science source signal, but same-byte text is still too close under the strict text-margin gate.",
-            "Anchor-coordinate controls show ID/value mismatch collapse, but random shared anchors pass; do not claim semantic train-anchor superiority.",
+            "The ARC Fourier/anchor-syndrome packet strengthens the shared-coordinate mechanism and spectral mismatch controls, but random shared anchors pass; do not claim semantic train-anchor superiority or universal latent-language transfer.",
             "The direct Qwen-hidden to BGE residual endpoint failed validation, so deeper latent endpoints need better common-basis learning before promotion.",
             "The top live method is candidate-local and thresholded; the paper must show the threshold frontier and controls clearly.",
             "Same-family structured-text controls remain unpromoted and should be framed as a limitation or cut from headline claims.",

@@ -19092,3 +19092,33 @@ packet on the frozen ARC decision surface. Updated
 explicitly says ARC replication failed and ICLR remains blocked by robustness,
 native systems baselines, and a less label-copy-like common-basis/learned
 connector.
+
+ARC-Challenge Fourier/anchor-syndrome common-basis gate: added
+`scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py`,
+test
+`tests/test_build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py`,
+memo
+`paper/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502.md`,
+references
+`references/631_arc_challenge_fourier_anchor_syndrome_refs_20260502.md`, and
+artifact
+`results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502/`.
+Outcome: this is a positive common-basis contribution on the frozen ARC
+surface. It reuses the answer-key-forbidden Qwen2.5-0.5B source-choice caches,
+but changes the packet basis to public train-anchor relative coordinates
+followed by a deterministic low-frequency DCT-II syndrome (`384` anchors,
+`96` spectral dims, `96` projection dims, `12B` payload). Validation passes
+`5/5` seeds with matched mean/min `0.387/0.385`, target `0.244`, same-byte text
+`0.348`, min lift over target `+0.140`, min lift over text `+0.037`, and min
+CI95 low `+0.067`. Test passes `5/5` seeds with matched mean/min
+`0.344/0.343`, target `0.265`, same-byte text `0.311`, min lift over target
+`+0.078`, min lift over text `+0.032`, and min CI95 low `+0.038`. The crucial
+mismatch controls collapse on test: anchor-ID shuffle `0/5` seeds, matched
+mean `0.253`; anchor-value shuffle `0/5`, matched mean `0.247`; spectral-bin
+permutation `0/5`, matched mean `0.266`. Random shared anchors still pass
+`5/5` with matched mean `0.344`, so the safe claim is shared public-coordinate
+communication, not semantic anchor isomorphism. Decision: promote as the third
+technical contribution, alongside fixed-byte source-private packet transfer
+and OpenBookQA receiver-fusion. ICLR still needs strict cross-family
+falsification/generalization and native NVIDIA systems comparisons against
+C2C, KVComm, QJL/TurboQuant/KV-cache quantization, vLLM, and SGLang.
