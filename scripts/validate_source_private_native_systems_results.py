@@ -239,6 +239,12 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     lines.extend(
         [
             "",
+            "## Claim Boundary Matrix",
+            "",
+            "The companion `native_systems_claim_boundary_matrix.csv` states which claims are allowed "
+            "for each required row. In the current no-measurement state it allows Mac-local byte/exposure "
+            "accounting and forbids throughput, HBM, latency, and native-serving win claims.",
+            "",
             "## Decision",
             "",
             payload["decision"],
@@ -260,6 +266,134 @@ def _write_row_status_csv(path: pathlib.Path, payload: dict[str, Any]) -> None:
         writer.writeheader()
         for row in payload["row_status"]:
             writer.writerow({**row, "errors": "; ".join(invalid_by_row.get(row["row_id"], []))})
+
+
+def _claim_boundary_matrix(
+    *,
+    baselines: list[dict[str, str]],
+    schema: list[dict[str, str]],
+    required_row_ids: list[str],
+    row_status: list[dict[str, Any]],
+    invalid_rows: list[dict[str, Any]],
+    valid_measurements: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    required_metrics = [str(row["metric"]) for row in schema if _metric_required(row)]
+    status_by_id = {str(row["row_id"]): row for row in row_status}
+    invalid_by_id: dict[str, list[str]] = {}
+    for row in invalid_rows:
+        row_id = str(row.get("row_id", ""))
+        invalid_by_id.setdefault(row_id, []).extend(str(error) for error in row.get("errors", ()))
+    valid_by_id = {_row_id(row): row for row in valid_measurements if _row_id(row)}
+    rows: list[dict[str, Any]] = []
+    for baseline in baselines:
+        row_id = str(baseline["row_id"])
+        status = status_by_id.get(
+            row_id,
+            {"required": False, "present_count": 0, "valid_count": 0, "status": "optional_missing"},
+        )
+        measurement = valid_by_id.get(row_id, {})
+        native_required = row_id in set(required_row_ids)
+        present = int(status.get("present_count", 0)) > 0
+        valid = int(status.get("valid_count", 0)) > 0
+        family = str(baseline.get("family", ""))
+        source_text = _parse_bool(measurement.get("source_text_exposed", baseline.get("source_text_exposed", "false")))
+        source_kv = _parse_bool(measurement.get("source_kv_exposed", baseline.get("source_kv_exposed", "false")))
+        raw_source_hidden = measurement.get(
+            "source_hidden_or_score_vector_exposed",
+            baseline.get("source_hidden_or_score_vector_exposed", ""),
+        )
+        source_hidden = _parse_bool(raw_source_hidden)
+        if source_hidden is None:
+            source_hidden = family in {"quantized_projection", "quantized_kv"}
+        payload_bytes = _parse_float(measurement.get("payload_bytes_per_request"))
+        framed_bytes = _parse_float(measurement.get("framed_bytes_per_request"))
+        missing_metrics: list[str]
+        if not present:
+            missing_metrics = required_metrics
+        elif valid:
+            missing_metrics = [
+                metric
+                for metric in required_metrics
+                if metric not in measurement or str(measurement.get(metric, "")).strip() == ""
+            ]
+        else:
+            missing_metrics = invalid_by_id.get(row_id, [])
+        native_evidence = valid and native_required
+        throughput_allowed = native_evidence and _parse_float(measurement.get("goodput_requests_per_s")) is not None
+        latency_allowed = native_evidence and _parse_float(measurement.get("ttft_ms_p50")) is not None
+        traffic_allowed = native_evidence and _parse_float(measurement.get("hbm_read_bytes_per_request")) is not None
+        if family == "this_work":
+            allowed_claim = (
+                "native packet quality/latency/memory row"
+                if native_evidence
+                else "Mac-local packet byte/exposure accounting only"
+            )
+            forbidden_claim = (
+                "throughput, HBM, or native serving win until valid native packet rows exist"
+                if not native_evidence
+                else "source-state or KV-exposure claims"
+            )
+        elif family in {"cache_communication", "kv_communication", "quantized_projection", "quantized_kv"}:
+            allowed_claim = (
+                "native source-state transfer comparator"
+                if native_evidence
+                else "required native source-state comparator not yet measured"
+            )
+            forbidden_claim = "treating source-state/KV transfer as source-private packet communication"
+        elif family == "serving_baseline":
+            allowed_claim = "native target-only serving baseline" if native_evidence else "required native serving baseline missing"
+            forbidden_claim = "packet speedup or memory win without matched LatentWire rows"
+        else:
+            allowed_claim = "control row for privacy/shortcut interpretation" if native_evidence else "required control row missing"
+            forbidden_claim = "positive systems claim from a control row"
+        rows.append(
+            {
+                "row_id": row_id,
+                "evidence_class": family,
+                "measured_on": str(measurement.get("hardware") or measurement.get("gpu_name") or "not_measured"),
+                "native_required": native_required,
+                "present": present,
+                "valid": valid,
+                "missing_native_metrics": len(missing_metrics),
+                "source_text_exposed": bool(source_text),
+                "source_kv_exposed": bool(source_kv),
+                "source_hidden_or_score_vector_exposed": bool(source_hidden),
+                "payload_bytes_available": payload_bytes is not None,
+                "framed_bytes_available": framed_bytes is not None,
+                "throughput_claim_allowed": bool(throughput_allowed),
+                "latency_claim_allowed": bool(latency_allowed),
+                "memory_traffic_claim_allowed": bool(traffic_allowed),
+                "allowed_claim": allowed_claim,
+                "forbidden_claim": forbidden_claim,
+            }
+        )
+    return rows
+
+
+def _write_claim_boundary_matrix_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
+    fields = [
+        "row_id",
+        "evidence_class",
+        "measured_on",
+        "native_required",
+        "present",
+        "valid",
+        "missing_native_metrics",
+        "source_text_exposed",
+        "source_kv_exposed",
+        "source_hidden_or_score_vector_exposed",
+        "payload_bytes_available",
+        "framed_bytes_available",
+        "throughput_claim_allowed",
+        "latency_claim_allowed",
+        "memory_traffic_claim_allowed",
+        "allowed_claim",
+        "forbidden_claim",
+    ]
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def validate_native_systems_results(
@@ -330,6 +464,14 @@ def validate_native_systems_results(
         )
     native_complete = bool(not missing_required and not invalid_rows and len(valid_measurements) >= len(required_row_ids))
     validator_pass = bool(len(required_metrics) >= 40 and len(required_row_ids) >= 10 and all(row.get("row_id") for row in baselines))
+    claim_boundary_matrix = _claim_boundary_matrix(
+        baselines=baselines,
+        schema=schema,
+        required_row_ids=required_row_ids,
+        row_status=row_status,
+        invalid_rows=invalid_rows,
+        valid_measurements=valid_measurements,
+    )
     payload = {
         "gate": "source_private_native_systems_result_ingest_gate",
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
@@ -345,6 +487,7 @@ def validate_native_systems_results(
         "missing_required_row_ids": missing_required,
         "invalid_measurement_rows": invalid_rows,
         "row_status": row_status,
+        "claim_boundary_matrix": claim_boundary_matrix,
         "input_files": {
             "schema": _display_path(schema_path),
             "schema_sha256": _sha256_file(schema_path),
@@ -369,9 +512,11 @@ def validate_native_systems_results(
     json_path = output_dir / "native_systems_result_ingest_gate.json"
     md_path = output_dir / "native_systems_result_ingest_gate.md"
     csv_path = output_dir / "native_systems_row_status.csv"
+    claim_csv_path = output_dir / "native_systems_claim_boundary_matrix.csv"
     json_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _write_markdown(md_path, payload)
     _write_row_status_csv(csv_path, payload)
+    _write_claim_boundary_matrix_csv(claim_csv_path, claim_boundary_matrix)
     manifest = {
         "gate": payload["gate"],
         "validator_pass": validator_pass,
@@ -380,6 +525,7 @@ def validate_native_systems_results(
             {"path": _display_path(json_path), "sha256": _sha256_file(json_path)},
             {"path": _display_path(md_path), "sha256": _sha256_file(md_path)},
             {"path": _display_path(csv_path), "sha256": _sha256_file(csv_path)},
+            {"path": _display_path(claim_csv_path), "sha256": _sha256_file(claim_csv_path)},
         ],
     }
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")

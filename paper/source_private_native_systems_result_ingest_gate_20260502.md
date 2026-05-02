@@ -41,6 +41,8 @@ state bytes, and row IDs tied to the required baseline set.
 - required baseline rows: `11`
 - missing required rows: `11`
 - invalid measurement rows: `0`
+- claim-boundary matrix:
+  `results/source_private_native_systems_result_ingest_gate_20260502/native_systems_claim_boundary_matrix.csv`
 
 Missing rows:
 
@@ -61,6 +63,13 @@ Missing rows:
 Promote this as the systems-side reviewer guardrail. It gives the paper a
 credible systems contribution now: strict boundary accounting plus a native
 ingest gate that refuses premature GPU/HBM/throughput claims.
+
+The new claim-boundary matrix makes the guardrail paper-facing: each required
+row now states whether throughput, latency, and memory-traffic claims are
+allowed. In the current no-measurement state, LatentWire rows are allowed only
+as Mac-local packet byte/exposure accounting; C2C/KVComm/QJL/TurboQuant rows
+are marked as required source-state comparators not yet measured; and every
+native throughput/HBM claim remains forbidden.
 
 Do not claim native systems superiority yet. The gate correctly marks native
 systems incomplete until the required NVIDIA rows are measured and ingested.

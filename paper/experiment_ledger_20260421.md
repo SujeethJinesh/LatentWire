@@ -19878,3 +19878,55 @@ Lay explanation: this run let the source propose answer-choice corrections,
 but also gave the receiver permission to abstain. The safest learned policy
 was to abstain every time on the real source notes, so this does not show real
 model-to-model communication.
+
+Native systems claim-boundary matrix: extended
+`scripts/validate_source_private_native_systems_results.py` so the native
+systems ingest gate now emits
+`results/source_private_native_systems_result_ingest_gate_20260502/native_systems_claim_boundary_matrix.csv`.
+Added tests in
+`tests/test_validate_source_private_native_systems_results.py`.
+
+Outcome: the validator still passes as a guardrail, but correctly keeps
+`native_systems_complete=False` and `paper_native_win_allowed=False` because
+no native measurement rows are ingested. The claim-boundary matrix has one row
+per required native baseline/control. LatentWire rows are allowed only as
+Mac-local packet byte/exposure accounting; target-only vLLM/SGLang rows are
+marked missing; C2C/KVComm/QJL/TurboQuant rows are marked required
+source-state comparators; throughput, latency, and HBM claims are forbidden
+for every row in the current no-measurement state.
+
+Decision: promote the matrix as a systems-side reviewer guardrail, not as a
+native systems win. This strengthens the paper because it makes our strongest
+systems claim precise: fixed-byte/source-exposure accounting is ready, while
+GPU serving superiority remains gated on NVIDIA measurements.
+
+Lay explanation: this adds a strict checklist for what we are allowed to say.
+Right now we can say our packets are tiny and source-private under the local
+accounting rules. We cannot yet say the system is faster or uses less GPU
+memory until the matching GPU rows are measured.
+
+ARC Fourier/anchor-syndrome 8B rate boundary: reran
+`scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py`
+with `--budget-bytes 8`, producing
+`results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8/`
+and memo
+`paper/source_private_arc_fourier_anchor_syndrome_rate_boundary_20260502.md`.
+
+Outcome: the `8B` payload row passes the same validation/test gate as the
+prior `12B` row. Test matched packets pass `5/5` seeds with mean/min accuracy
+`0.344/0.342`, target-only `0.265`, same-byte structured text `0.300`, min
+lift over target `+0.077`, min lift over same-byte text `+0.042`, and min
+paired CI95 low vs target `+0.038`. The anchor-ID shuffle, anchor-value
+shuffle, and spectral-bin permutation controls all fail at `0/5` seeds and
+collapse near target-only. The framed record is `11B` including header/CRC.
+
+Decision: promote `8B` payload / `11B` framed as the current ARC
+Fourier/anchor-syndrome headline rate. This strengthens the systems story
+without changing the scientific claim boundary: shared public coordinate
+agreement matters; semantic anchor names are not proven special because the
+random shared-anchor diagnostic also passes. Exploratory `4B` and `6B` probes
+were interrupted before writing artifacts, so no claim is made below `8B`.
+
+Lay explanation: we squeezed the packet smaller and checked whether the
+receiver still got useful evidence. The `8B` packet still works and the
+scrambled-coordinate controls fail, so this is a cleaner small-packet result.

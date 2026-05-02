@@ -2,15 +2,19 @@
   "files": [
     {
       "path": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_result_ingest_gate.json",
-      "sha256": "a3121ad3e5f506bb2ca30840ced7c76dcc416be322163946cf04baf412cfe6f4"
+      "sha256": "de50ecaa1b5dd12b64921eb3ed1781f6c1b68c17bfd293170a56a39f337b93a6"
     },
     {
       "path": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_result_ingest_gate.md",
-      "sha256": "626bc0b8e60b1fd6c34211498510529102f87e36cfd9e0399431e533d82077af"
+      "sha256": "db8ff3abc89620b9de331ac69166c5ca4c5ca4a6d9729ad913d1acf123f57903"
     },
     {
       "path": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_row_status.csv",
       "sha256": "91bc25267ca7a14cb01cd4187280f69ff45738ae777d19c1d3274e8ed648ab3e"
+    },
+    {
+      "path": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_claim_boundary_matrix.csv",
+      "sha256": "ba9e412ea88fea31e51505e18a3f144226c24c53929499c8b09bde17c43a8c9e"
     }
   ],
   "gate": "source_private_native_systems_result_ingest_gate",

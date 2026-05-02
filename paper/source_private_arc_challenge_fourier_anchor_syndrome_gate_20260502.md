@@ -70,6 +70,15 @@ Promote this as a third technical contribution: a Fourier/anchor-syndrome
 common-basis packet that preserves the frozen ARC packet result while adding
 explicit basis-mismatch controls.
 
+Follow-up rate gate:
+`results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8/`
+reduces the payload from `12B` to `8B` (`11B` framed with header/CRC) and still
+passes validation/test at `5/5` seeds. On ARC test it reaches matched
+mean/min `0.344/0.342`, target `0.265`, same-byte text `0.300`, min CI95 low
+vs target `+0.038`, and all anchor/spectral mismatch controls collapse. The
+safe headline should now use the `8B` payload row while retaining the same
+shared-coordinate, not semantic-anchor, claim boundary.
+
 Do not claim ICLR readiness yet. Next exact gate: run a strict cross-family
 falsification or train-source selector on top of this shared basis, then run
 native NVIDIA systems comparisons against C2C, KVComm, TurboQuant/QJL/KV-cache

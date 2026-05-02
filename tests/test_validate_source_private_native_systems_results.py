@@ -95,3 +95,11 @@ def test_validate_without_measurements_refuses_native_complete(tmp_path) -> None
     assert payload["validator_pass"] is True
     assert payload["native_systems_complete"] is False
     assert len(payload["missing_required_row_ids"]) == 10
+    assert len(payload["claim_boundary_matrix"]) == 10
+    assert (tmp_path / "out" / "native_systems_claim_boundary_matrix.csv").exists()
+    first_row = payload["claim_boundary_matrix"][0]
+    assert first_row["present"] is False
+    assert first_row["throughput_claim_allowed"] is False
+    assert first_row["latency_claim_allowed"] is False
+    assert first_row["memory_traffic_claim_allowed"] is False
+    assert "missing" in first_row["allowed_claim"]

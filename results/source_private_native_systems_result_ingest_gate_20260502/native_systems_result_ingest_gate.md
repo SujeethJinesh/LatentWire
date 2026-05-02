@@ -22,6 +22,10 @@
 - `target_only_vllm`
 - `turboquant_lowbit_source_state`
 
+## Claim Boundary Matrix
+
+The companion `native_systems_claim_boundary_matrix.csv` states which claims are allowed for each required row. In the current no-measurement state it allows Mac-local byte/exposure accounting and forbids throughput, HBM, latency, and native-serving win claims.
+
 ## Decision
 
 Native systems claims remain blocked until every required baseline row is ingested with all quality, latency, memory, traffic, payload-byte, and source-exposure fields. The current run validates the schema and correctly refuses native-systems-complete because required native measurement rows are missing.

@@ -32,9 +32,10 @@ Date: 2026-05-02
    packets survive seed repeats and same-byte text controls; strict
    source-family robustness is still negative.
 3. Systems byte/exposure accounting for packet transfer versus KV/cache
-   transfer. Current support: Mac-local decode/packet-ring traces and
-   cross-benchmark byte-floor comparators; native vLLM/SGLang throughput rows
-   are still pending.
+   transfer. Current support: Mac-local decode/packet-ring traces,
+   cross-benchmark byte-floor comparators, and a native ingest gate with a
+   per-row claim-boundary matrix; native vLLM/SGLang throughput rows are still
+   pending.
 4. A rigorous falsification ladder for latent/hidden-code communication.
    Current support: HellaSwag source-score, receiver-selector, discrete-query,
    anchor-relative common-basis, switch-observability, and PQ hidden-code gates
@@ -713,3 +714,59 @@ The highest-priority next work is now to consolidate the positive
 Fourier/anchor-syndrome packet method, run any feasible cross-family/native
 systems validations, and prepare COLM figures/tables that make the positive
 packet contribution and negative learned-receiver ladder explicit.
+
+## 2026-05-02 Native Systems Claim-Boundary Follow-Up
+
+Extended the native systems ingest validator so it now emits a paper-facing
+claim-boundary matrix:
+
+- artifact:
+  `results/source_private_native_systems_result_ingest_gate_20260502/native_systems_claim_boundary_matrix.csv`;
+- validator pass: `True`;
+- native systems complete: `False`;
+- paper native win allowed: `False`;
+- measurement rows ingested: `0`;
+- required baseline/control rows: `11`;
+- missing required rows: `11`;
+- throughput/latency/HBM claim allowed rows: `0`.
+
+Decision: promote this as a systems contribution guardrail, not a systems
+performance result. It is valuable for reviewers because it explicitly says
+which claims are allowed for LatentWire, vLLM/SGLang, same-byte text,
+label-copy, C2C/KVComm, QJL, and TurboQuant rows. In the current no-native-row
+state, every throughput, latency, and memory-traffic claim remains forbidden.
+
+Lay explanation: this is the paper's traffic light for systems claims. It lets
+us say the current packet accounting is clean, but it blocks us from saying we
+are faster or more memory efficient on GPUs until the matching NVIDIA rows are
+measured.
+
+## 2026-05-02 ARC Fourier/Anchor-Syndrome Rate Follow-Up
+
+Reran the positive ARC Fourier/anchor-syndrome gate with a smaller packet:
+
+- artifact:
+  `results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8/`;
+- memo:
+  `paper/source_private_arc_fourier_anchor_syndrome_rate_boundary_20260502.md`;
+- pass gate: `True`;
+- payload bytes: `8B`;
+- framed bytes with header/CRC: `11B`;
+- test matched seed pass count: `5/5`;
+- test matched mean/min: `0.344/0.342`;
+- test target-only / same-byte text: `0.265/0.300`;
+- min lift over target: `+0.077`;
+- min lift over same-byte text: `+0.042`;
+- min CI95 low vs target: `+0.038`;
+- mismatch controls: anchor-ID shuffle, anchor-value shuffle, and spectral-bin
+  permutation all fail at `0/5` seeds.
+
+Decision: update the current positive ARC headline from `12B` payload to `8B`
+payload (`11B` framed). This is a meaningful systems-side improvement because
+the same source-private packet behavior survives with fewer transmitted bytes.
+It does not solve the ICLR blocker by itself: strict cross-family generality
+and native GPU rows are still missing.
+
+Lay explanation: this was a shrink test. We made the packet smaller and asked
+whether the target could still use it. It could, and the scrambled-packet
+controls still broke, so the packet is doing real work at a lower byte rate.

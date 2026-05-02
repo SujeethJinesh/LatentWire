@@ -2112,5 +2112,12 @@
     "path": "references/658_arc_equivariant_set_delta_accept_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the negative ARC equivariant set-delta accept receiver, covering DeepSets/Set Transformer, selective classification, C2C/KVComm, QJL/TurboQuant systems comparators, prompt/gist compression boundaries, and the decision to cut learned ARC candidate receivers as a current headline branch."
+  },
+  {
+    "num": 659,
+    "slug": "latent_communication_uniqueness_systems_boundary_refs_20260502",
+    "path": "references/659_latent_communication_uniqueness_systems_boundary_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo pinning the current LatentWire novelty boundary against C2C, KVComm, Interlat, Relative Representations, QJL, TurboQuant, gist tokens, LLMLingua, vLLM/PagedAttention, and SGLang."
   }
 ]
