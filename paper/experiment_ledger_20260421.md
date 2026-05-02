@@ -19702,3 +19702,31 @@ over broken clues. The real clue briefly looked better, but a clue with the
 answer-choice packet slots rolled around looked just as good, so this still
 does not prove that the receiver understands the source model's matched
 reasoning.
+
+Source-private byte-amplification ablation: added
+`scripts/build_source_private_byte_amplification_ablation.py` and tests in
+`tests/test_build_source_private_byte_amplification_ablation.py`. Added memo
+`paper/source_private_byte_amplification_ablation_20260502.md`, references
+`references/654_byte_amplification_ablation_refs_20260502.md`, and artifact
+`results/source_private_byte_amplification_ablation_20260502/`.
+Outcome: the Mac-local systems artifact passes its accounting gate. It anchors
+four existing packet rows from the cross-benchmark systems comparator and
+holds cached predictions fixed while varying the communicated object. Packet
+framed bytes remain `4-15B`; worst-case single-request cache-line padding
+amplifies the smallest packet by `16.0x`, but the optimistic one-token QJL KV
+floor is still `768B`, which is `12.0x` a `64B` padded packet and `51.2x` the
+largest framed packet. TurboQuant 3.5-bit and C2C fp16 one-token KV floors are
+`2688B` and `12288B`. The explicit fp16 source-score stress row is `8B`, but
+it exposes raw source scores and is marked non-private.
+
+Decision: promote this as a systems/interface contribution for COLM and the
+eventual ICLR paper, with strict non-claims. It supports byte/exposure regime
+separation, not native TTFT/TPOT/goodput/HBM superiority. The next systems
+gate is native NVIDIA vLLM/SGLang/C2C/KVComm ingestion. The next method gate
+remains a candidate-alignment-sensitive receiver that clears candidate-roll and
+candidate-derangement controls.
+
+Lay explanation: this table asks what would have to cross the system boundary
+to preserve the same cached decision. Our packet is tiny and private. A score
+vector can be tiny too, but it reveals the source model's raw answer scores.
+KV/cache methods move much larger internal state, even when quantized.

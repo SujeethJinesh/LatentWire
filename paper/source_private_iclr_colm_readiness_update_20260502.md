@@ -573,3 +573,32 @@ contribution, the highest-value Mac-local follow-up is a byte-amplification
 ablation that compares fixed packets with 64B cache-line padding and synthetic
 QJL/TurboQuant/KVQuant source-state byte floors, without claiming NVIDIA
 throughput until native serving rows exist.
+
+## 2026-05-02 Byte-Amplification Systems Follow-Up
+
+Added a Mac-local byte-amplification ablation:
+`results/source_private_byte_amplification_ablation_20260502/`.
+
+Readout:
+
+- pass gate: `True`;
+- benchmark rows: `4`;
+- interface rows: `40`;
+- packet framed-byte range: `4-15B`;
+- worst-case single-request cache-line amplification: `16.0x`;
+- worst-case single-request DMA amplification: `32.0x`;
+- minimum one-token KV/source-state floor: QJL 1-bit at `768B`;
+- QJL floor versus largest framed packet: `51.2x`;
+- QJL floor versus `64B` cache-line padded packet: `12.0x`;
+- TurboQuant 3.5-bit one-token KV floor: `2688B`;
+- C2C/fp16 one-token KV floor: `12288B`;
+- fp16 source-score stress row: `8B`, but explicitly marked non-private
+  because it exposes raw source scores.
+
+Decision: promote this artifact into the systems evidence bundle. It answers a
+likely reviewer objection cleanly: byte-small alternatives exist, but bytes are
+not the only axis; source exposure and object scaling matter. LatentWire packet
+rows are fixed task evidence, while QJL/TurboQuant/KIVI/KVQuant/C2C/KVComm
+rows are compressed or transported state objects. This does not close native
+throughput claims; NVIDIA vLLM/SGLang rows remain a blocker for ICLR systems
+strength.

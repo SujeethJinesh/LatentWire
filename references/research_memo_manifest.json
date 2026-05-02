@@ -2077,5 +2077,12 @@
     "path": "references/653_arc_contrastive_innovation_receiver_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the negative ARC source-control contrastive innovation receiver preflight, covering CPC/InfoNCE, supervised contrastive and ranking losses, hard negatives, Slepian-Wolf/Wyner-Ziv side-information coding, Prefix-Tuning, C2C/KVComm/Interlat, TurboQuant/QJL/KIVI/KVQuant systems byte-floor comparators, and the candidate-roll source control as the next receiver-falsification boundary."
+  },
+  {
+    "num": 654,
+    "slug": "byte_amplification_ablation_refs_20260502",
+    "path": "references/654_byte_amplification_ablation_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the Mac-local source-private byte-amplification ablation, covering Wyner-Ziv side-information framing, QJL/TurboQuant/KIVI/KVQuant KV byte floors, vLLM/PagedAttention, C2C/KVComm/KVCOMM/Interlat boundaries, SAE/relative-representation non-baseline context, and the source-score vector exposure stress row."
   }
 ]
