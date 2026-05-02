@@ -74,6 +74,15 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert "min matched-Qwen-sub" in contribution_rows[
         "ARC-Challenge TinyLlama source-family cache falsification"
     ]["main_metric"]
+    assert contribution_rows["ARC-Challenge source-family packet-confidence router diagnostic"]["status"] == (
+        "new negative router diagnostic / source-family repair narrowed"
+    )
+    assert "test router/Qwen-sub/oracle" in contribution_rows[
+        "ARC-Challenge source-family packet-confidence router diagnostic"
+    ]["headline_evidence"]
+    assert "router-minus-Qwen" in contribution_rows[
+        "ARC-Challenge source-family packet-confidence router diagnostic"
+    ]["main_metric"]
     assert contribution_rows["OpenBookQA 3B shared-basis second public benchmark"]["status"] == (
         "new second public-benchmark positive gate and stronger rate point"
     )

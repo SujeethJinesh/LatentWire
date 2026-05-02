@@ -19154,3 +19154,23 @@ Fourier/anchor-syndrome packet as a positive common-basis contribution, but do
 not claim source-family-general ARC communication. The exact next gate is a
 stronger alternate source on NVIDIA or a learned source endpoint/connector
 whose packet signal is not merely the selected candidate index.
+
+ARC-Challenge source-family packet-confidence router diagnostic: added
+`scripts/build_source_private_arc_challenge_source_family_router_diagnostic.py`,
+test
+`tests/test_build_source_private_arc_challenge_source_family_router_diagnostic.py`,
+memo
+`paper/source_private_arc_source_family_router_diagnostic_20260502.md`, and
+artifact
+`results/source_private_arc_challenge_source_family_router_diagnostic_20260502/`.
+Outcome: this cheap repair gate fails on the strict ARC TinyLlama-vs-Qwen
+disagreement surface. The validation-selected receiver-confidence rule chooses
+`best_score` with validation accuracy `0.394` and alt-packet rate `0.039`, but
+test accuracy is `0.315` versus Qwen-substituted packets at `0.317`, with
+mean/min router-minus-Qwen-sub `-0.002/-0.008` and minimum paired CI95 low
+`-0.023`. The failure is not lack of oracle headroom: the packet oracle on the
+same disagreement rows reaches `0.586`, and the source-choice oracle on the
+full ARC test set reaches `0.455`. Decision: rule out receiver-only scalar
+packet-confidence routing as the next ICLR source-family repair; promote
+source-side confidence caches, a learned common-basis connector, or a stronger
+non-Qwen source on NVIDIA.

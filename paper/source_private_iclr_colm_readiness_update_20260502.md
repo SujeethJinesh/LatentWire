@@ -10,9 +10,10 @@ Date: 2026-05-02
   ARC/OpenBookQA endpoints, and byte/exposure systems accounting form the
   defensible core. HellaSwag is no longer a current receiver-improvement
   headline; it is diagnostic/headroom and negative-ablation evidence.
-- Exact gap: one positive learned receiver or common-language connector must
-  beat packet-only under paired uncertainty, destructive controls, and at least
-  one strict cross-family or cross-benchmark falsification.
+- Exact gap: one positive source-family repair, learned receiver, or
+  common-language connector must beat packet-only under paired uncertainty,
+  destructive controls, and at least one strict cross-family or cross-benchmark
+  falsification.
 
 ## Contributions To Put Forward
 
@@ -29,6 +30,23 @@ Date: 2026-05-02
    are now explicitly recorded as negative or non-headline.
 
 ## What Changed
+
+The 2026-05-02 evidence bundle now ingests the ARC source-family
+packet-confidence router diagnostic:
+
+- artifact:
+  `results/source_private_arc_challenge_source_family_router_diagnostic_20260502/source_family_router_diagnostic.json`
+- selected receiver-confidence metric: `best_score`;
+- test router accuracy: `0.315` versus Qwen-substituted packet `0.317`;
+- router minus Qwen-substituted mean/min: `-0.002/-0.008`;
+- minimum paired CI95 low versus Qwen-substituted: `-0.023`;
+- packet oracle on the same disagreement rows: `0.586`;
+- pass gate: `False`.
+
+Lay explanation: TinyLlama and Qwen sometimes send different tiny hints. The
+diagnostic asked whether Qwen could tell which hint to trust by looking at
+simple confidence signals. It could not, even though an oracle could choose the
+better hint much more often.
 
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
@@ -90,9 +108,7 @@ same controls.
 
 ## Next Exact Gate
 
-Run a small, local benchmark-selection gate before more HellaSwag work:
-identify one benchmark where compact packet-only does not already saturate
-source information, then test the current public-basis packet plus packet-only,
-same-byte text, target-only, and source-destroy controls. If no such local
-surface appears, the next method gate should move to a true learned
-query/cache connector on NVIDIA.
+Run an ARC source-family repair gate that uses source-side confidence caches
+or a learned common-basis connector on the frozen TinyLlama-vs-Qwen
+disagreement rows. Receiver-only scalar routing is now ruled out for this
+surface.

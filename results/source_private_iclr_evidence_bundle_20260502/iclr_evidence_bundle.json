@@ -447,6 +447,38 @@
     },
     "validation_pass": false
   },
+  "arc_challenge_source_family_router_diagnostic_headline": {
+    "selected_rule": {
+      "metric": "best_score",
+      "threshold": 0.08043015280622001,
+      "validation_accuracy": 0.39444444444444443,
+      "validation_alt_rate": 0.03888888888888889
+    },
+    "test_aggregate": {
+      "alt_accuracy_mean": 0.2693446088794926,
+      "n": 473,
+      "oracle_accuracy_mean": 0.5856236786469344,
+      "paired_ci95_low_vs_qwen_min": -0.023255813953488372,
+      "qwen_accuracy_mean": 0.3171247357293869,
+      "router_accuracy_mean": 0.31543340380549684,
+      "router_accuracy_min": 0.3086680761099366,
+      "router_alt_rate_mean": 0.03890063424947146,
+      "router_minus_qwen_mean": -0.0016913319238900603,
+      "router_minus_qwen_min": -0.008456659619450302,
+      "seed_count": 5
+    },
+    "test_source_complementarity": {
+      "agreement_count": 699,
+      "alt_source_accuracy": 0.32593856655290104,
+      "disagreement_alt_correct": 128,
+      "disagreement_both_wrong": 194,
+      "disagreement_count": 473,
+      "disagreement_qwen_correct": 151,
+      "n": 1172,
+      "qwen_source_accuracy": 0.3455631399317406,
+      "source_choice_oracle_accuracy": 0.454778156996587
+    }
+  },
   "arc_challenge_source_latent_endpoint_validation_headline": {
     "best_destructive_control": "candidate_derangement",
     "best_destructive_control_accuracy": 0.25418060200668896,
@@ -616,6 +648,12 @@
       "exists": true,
       "path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_family_cache_falsification.json",
       "sha256": "47b3eb3f3dd6925134696fb28bf62a12f68a83c9b497dec3e41590d0204c4667"
+    },
+    "arc_challenge_source_family_router_diagnostic": {
+      "bytes": 41097,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_source_family_router_diagnostic_20260502/source_family_router_diagnostic.json",
+      "sha256": "4283599a625fd35cd8be5235f0732cad9eb06737d236ff8835c63e9a44a8b867"
     },
     "arc_challenge_source_latent_endpoint_validation": {
       "bytes": 7624,
@@ -1358,6 +1396,13 @@
       "status": "new negative source-family/source-cache gate / ICLR blocker sharpened"
     },
     {
+      "contribution": "ARC-Challenge source-family packet-confidence router diagnostic",
+      "headline_evidence": "validation-selected metric=best_score; validation accuracy=0.394; test router/Qwen-sub/oracle=0.315/0.317/0.586; router alt-rate=0.039",
+      "main_metric": "source-choice oracle=0.455; router-minus-Qwen mean/min=-0.002/-0.008; min CI95 low vs Qwen=-0.023; disagreement rows=473",
+      "remaining_gap": "This turns the source-family failure into a decision: there is real oracle headroom, but receiver-side packet confidence cannot select TinyLlama versus Qwen packets reliably on the strict disagreement slice. The next positive branch should use source-side confidence caches, a learned common-basis connector, or a stronger alternate source on NVIDIA rather than more receiver-only scalar routing.",
+      "status": "new negative router diagnostic / source-family repair narrowed"
+    },
+    {
       "contribution": "ARC-Challenge shared-basis source-computable endpoint",
       "headline_evidence": "validation matched/target/text=0.388/0.244/0.348; test matched/target/text=0.344/0.265/0.311; seed stability validation/test=5/5 and 5/5",
       "main_metric": "test lift over target=0.078; lift over best destructive=0.078; lift over same-byte text=0.033; seed-stability min CI95 low vs target=0.038",
@@ -1547,7 +1592,7 @@
       "status": "bounded diagnostic contribution, not headline cross-family claim"
     }
   ],
-  "created_utc": "2026-05-02T10:07:40.384344+00:00",
+  "created_utc": "2026-05-02T10:22:58.564835+00:00",
   "cross_benchmark_systems_comparator_headline": {
     "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
     "diagnostic_benchmarks": 1,
@@ -2707,6 +2752,10 @@
       "pass": true
     },
     {
+      "check": "arc_challenge_source_family_router_diagnostic_records_oracle_but_fails_router",
+      "pass": true
+    },
+    {
       "check": "arc_challenge_source_latent_endpoint_not_overclaimed",
       "pass": true
     },
@@ -3361,6 +3410,7 @@
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_receiver_headroom_gate.py --output-dir results/source_private_arc_challenge_receiver_headroom_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py --output-dir results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu --force-rematerialize --source-lm-device cpu --source-lm-dtype float32 --source-lm-max-length 192 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_router_diagnostic.py --output-dir results/source_private_arc_challenge_source_family_router_diagnostic_20260502 --bootstrap-samples 500",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",

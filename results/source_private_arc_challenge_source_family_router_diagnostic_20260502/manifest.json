@@ -1,0 +1,17 @@
+{
+  "artifact_sha256": {
+    "router_rule_metrics.csv": "fce9d4403717996dd2614a62ed1e8cf6d5d71b50f05ba1d3d9891373b8958464",
+    "selected_router_predictions.jsonl": "05e288337197e0c1953d750f005be146a7c25c41c9c77c7a555d35657c0400b1",
+    "source_family_router_diagnostic.json": "4283599a625fd35cd8be5235f0732cad9eb06737d236ff8835c63e9a44a8b867",
+    "source_family_router_diagnostic.md": "774d61ffa16434d66d25a8f4344aef82dbe181aa36502f492d3bebde29a0b04f"
+  },
+  "artifacts": [
+    "source_family_router_diagnostic.json",
+    "source_family_router_diagnostic.md",
+    "router_rule_metrics.csv",
+    "selected_router_predictions.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

@@ -1,0 +1,1246 @@
+{
+  "created_utc": "2026-05-02T10:20:13.110076+00:00",
+  "date": "2026-05-02",
+  "gate": "source_private_arc_challenge_source_family_router_diagnostic",
+  "input_artifacts": {
+    "qwen_disagreement_predictions": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/qwen_disagreement_predictions.jsonl",
+    "qwen_disagreement_predictions_sha256": "ed0c3fa3cad17ae0395a81f4cbfee12aa611f6b21d4d647e6bbcafd939ad92f7",
+    "source_cache_agreement": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_cache_agreement.csv",
+    "source_cache_agreement_sha256": "eb0b6d2d718e9b1472c041554e1966992c28cd6c5d45bfea097aa54b55996ff3"
+  },
+  "interpretation": "The diagnostic separates source complementarity from routing quality. TinyLlama and Qwen have substantial oracle headroom on disagreement rows, but receiver-side packet confidence alone does not select the better source reliably. This weakens cheap abstention/routing as an ICLR repair and promotes source-side confidence scores or a learned cross-family connector as the next gate.",
+  "parent_gate": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_family_cache_falsification.json",
+  "parent_pass_gate": false,
+  "pass_gate": false,
+  "pass_rule": "Pass requires the validation-selected packet-confidence router to beat the Qwen-substituted packet on every ARC test seed by at least 0.010, with positive paired CI95 low.",
+  "rule_candidates": [
+    {
+      "metric": "best_score",
+      "threshold": 0.08043015280622001,
+      "validation_accuracy": 0.39444444444444443,
+      "validation_alt_rate": 0.03888888888888889
+    },
+    {
+      "metric": "pred_eq_source",
+      "threshold": 2.0,
+      "validation_accuracy": 0.3888888888888889,
+      "validation_alt_rate": 0.0
+    },
+    {
+      "metric": "packet_norm",
+      "threshold": 2.2952654240511965,
+      "validation_accuracy": 0.3888888888888889,
+      "validation_alt_rate": 0.0
+    },
+    {
+      "metric": "neg_entropy",
+      "threshold": 2.0813244151970007,
+      "validation_accuracy": 0.3888888888888889,
+      "validation_alt_rate": 0.0
+    },
+    {
+      "metric": "margin",
+      "threshold": 3.5427902420769364,
+      "validation_accuracy": 0.3888888888888889,
+      "validation_alt_rate": 0.0
+    }
+  ],
+  "selected_rule": {
+    "metric": "best_score",
+    "threshold": 0.08043015280622001,
+    "validation_accuracy": 0.39444444444444443,
+    "validation_alt_rate": 0.03888888888888889
+  },
+  "selected_rule_test_summary": {
+    "aggregate": {
+      "alt_accuracy_mean": 0.2693446088794926,
+      "n": 473,
+      "oracle_accuracy_mean": 0.5856236786469344,
+      "paired_ci95_low_vs_qwen_min": -0.023255813953488372,
+      "qwen_accuracy_mean": 0.3171247357293869,
+      "router_accuracy_mean": 0.31543340380549684,
+      "router_accuracy_min": 0.3086680761099366,
+      "router_alt_rate_mean": 0.03890063424947146,
+      "router_minus_qwen_mean": -0.0016913319238900603,
+      "router_minus_qwen_min": -0.008456659619450302,
+      "seed_count": 5
+    },
+    "per_seed": [
+      {
+        "alt_accuracy": 0.26849894291754756,
+        "n": 473,
+        "oracle_accuracy": 0.5856236786469344,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.008456659619450317,
+          "ci95_low": -0.013794926004228327,
+          "mean": -0.0021141649048625794
+        },
+        "qwen_accuracy": 0.3171247357293869,
+        "router_accuracy": 0.3150105708245243,
+        "router_alt_rate": 0.03171247357293869,
+        "router_minus_alt": 0.04651162790697677,
+        "router_minus_qwen": -0.0021141649048625477,
+        "seed": 47
+      },
+      {
+        "alt_accuracy": 0.26849894291754756,
+        "n": 473,
+        "oracle_accuracy": 0.5856236786469344,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.010570824524312896,
+          "ci95_low": -0.019027484143763214,
+          "mean": -0.004228329809725159
+        },
+        "qwen_accuracy": 0.3192389006342495,
+        "router_accuracy": 0.3150105708245243,
+        "router_alt_rate": 0.04439746300211417,
+        "router_minus_alt": 0.04651162790697677,
+        "router_minus_qwen": -0.004228329809725151,
+        "seed": 53
+      },
+      {
+        "alt_accuracy": 0.27061310782241016,
+        "n": 473,
+        "oracle_accuracy": 0.5856236786469344,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.019027484143763214,
+          "ci95_low": -0.006342494714587738,
+          "mean": 0.006342494714587738
+        },
+        "qwen_accuracy": 0.3150105708245243,
+        "router_accuracy": 0.321353065539112,
+        "router_alt_rate": 0.04439746300211417,
+        "router_minus_alt": 0.05073995771670187,
+        "router_minus_qwen": 0.006342494714587699,
+        "seed": 59
+      },
+      {
+        "alt_accuracy": 0.27061310782241016,
+        "n": 473,
+        "oracle_accuracy": 0.587737843551797,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.012684989429175475,
+          "ci95_low": -0.011680761099365748,
+          "mean": 0.0
+        },
+        "qwen_accuracy": 0.3171247357293869,
+        "router_accuracy": 0.3171247357293869,
+        "router_alt_rate": 0.03805496828752643,
+        "router_minus_alt": 0.046511627906976716,
+        "router_minus_qwen": 0.0,
+        "seed": 61
+      },
+      {
+        "alt_accuracy": 0.26849894291754756,
+        "n": 473,
+        "oracle_accuracy": 0.5835095137420718,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.004228329809725159,
+          "ci95_low": -0.023255813953488372,
+          "mean": -0.008456659619450317
+        },
+        "qwen_accuracy": 0.3171247357293869,
+        "router_accuracy": 0.3086680761099366,
+        "router_alt_rate": 0.035940803382663845,
+        "router_minus_alt": 0.04016913319238902,
+        "router_minus_qwen": -0.008456659619450302,
+        "seed": 67
+      }
+    ]
+  },
+  "selected_rule_validation_summary": {
+    "aggregate": {
+      "alt_accuracy_mean": 0.25,
+      "n": 144,
+      "oracle_accuracy_mean": 0.6319444444444444,
+      "paired_ci95_low_vs_qwen_min": -0.027777777777777776,
+      "qwen_accuracy_mean": 0.3888888888888889,
+      "router_accuracy_mean": 0.3944444444444445,
+      "router_accuracy_min": 0.3819444444444444,
+      "router_alt_rate_mean": 0.03888888888888889,
+      "router_minus_qwen_mean": 0.005555555555555547,
+      "router_minus_qwen_min": -0.006944444444444475,
+      "seed_count": 5
+    },
+    "per_seed": [
+      {
+        "alt_accuracy": 0.25,
+        "n": 144,
+        "oracle_accuracy": 0.6319444444444444,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.05555555555555555,
+          "ci95_low": -0.013888888888888888,
+          "mean": 0.020833333333333332
+        },
+        "qwen_accuracy": 0.3888888888888889,
+        "router_accuracy": 0.4097222222222222,
+        "router_alt_rate": 0.05555555555555555,
+        "router_minus_alt": 0.1597222222222222,
+        "router_minus_qwen": 0.020833333333333315,
+        "seed": 47
+      },
+      {
+        "alt_accuracy": 0.25,
+        "n": 144,
+        "oracle_accuracy": 0.6319444444444444,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.027777777777777776,
+          "ci95_low": -0.027777777777777776,
+          "mean": 0.0
+        },
+        "qwen_accuracy": 0.3888888888888889,
+        "router_accuracy": 0.3888888888888889,
+        "router_alt_rate": 0.034722222222222224,
+        "router_minus_alt": 0.1388888888888889,
+        "router_minus_qwen": 0.0,
+        "seed": 53
+      },
+      {
+        "alt_accuracy": 0.25,
+        "n": 144,
+        "oracle_accuracy": 0.6319444444444444,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.027777777777777776,
+          "ci95_low": -0.027777777777777776,
+          "mean": 0.0
+        },
+        "qwen_accuracy": 0.3888888888888889,
+        "router_accuracy": 0.3888888888888889,
+        "router_alt_rate": 0.027777777777777776,
+        "router_minus_alt": 0.1388888888888889,
+        "router_minus_qwen": 0.0,
+        "seed": 59
+      },
+      {
+        "alt_accuracy": 0.25,
+        "n": 144,
+        "oracle_accuracy": 0.6319444444444444,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.013888888888888888,
+          "ci95_low": -0.027777777777777776,
+          "mean": -0.006944444444444444
+        },
+        "qwen_accuracy": 0.3888888888888889,
+        "router_accuracy": 0.3819444444444444,
+        "router_alt_rate": 0.034722222222222224,
+        "router_minus_alt": 0.13194444444444442,
+        "router_minus_qwen": -0.006944444444444475,
+        "seed": 61
+      },
+      {
+        "alt_accuracy": 0.25,
+        "n": 144,
+        "oracle_accuracy": 0.6319444444444444,
+        "paired_ci95_vs_qwen": {
+          "ci95_high": 0.034722222222222224,
+          "ci95_low": 0.0,
+          "mean": 0.013888888888888888
+        },
+        "qwen_accuracy": 0.3888888888888889,
+        "router_accuracy": 0.4027777777777778,
+        "router_alt_rate": 0.041666666666666664,
+        "router_minus_alt": 0.1527777777777778,
+        "router_minus_qwen": 0.013888888888888895,
+        "seed": 67
+      }
+    ]
+  },
+  "source_choice_complementarity": {
+    "test": {
+      "agreement_count": 699,
+      "alt_source_accuracy": 0.32593856655290104,
+      "disagreement_alt_correct": 128,
+      "disagreement_both_wrong": 194,
+      "disagreement_count": 473,
+      "disagreement_qwen_correct": 151,
+      "n": 1172,
+      "qwen_source_accuracy": 0.3455631399317406,
+      "source_choice_oracle_accuracy": 0.454778156996587
+    },
+    "validation": {
+      "agreement_count": 155,
+      "alt_source_accuracy": 0.3177257525083612,
+      "disagreement_alt_correct": 35,
+      "disagreement_both_wrong": 53,
+      "disagreement_count": 144,
+      "disagreement_qwen_correct": 56,
+      "n": 299,
+      "qwen_source_accuracy": 0.3879598662207358,
+      "source_choice_oracle_accuracy": 0.5050167224080268
+    }
+  },
+  "test_rule_summaries": {
+    "best_score": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.2693446088794926,
+        "n": 473,
+        "oracle_accuracy_mean": 0.5856236786469344,
+        "paired_ci95_low_vs_qwen_min": -0.023255813953488372,
+        "qwen_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_mean": 0.31543340380549684,
+        "router_accuracy_min": 0.3086680761099366,
+        "router_alt_rate_mean": 0.03890063424947146,
+        "router_minus_qwen_mean": -0.0016913319238900603,
+        "router_minus_qwen_min": -0.008456659619450302,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.008456659619450317,
+            "ci95_low": -0.013794926004228327,
+            "mean": -0.0021141649048625794
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3150105708245243,
+          "router_alt_rate": 0.03171247357293869,
+          "router_minus_alt": 0.04651162790697677,
+          "router_minus_qwen": -0.0021141649048625477,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.010570824524312896,
+            "ci95_low": -0.019027484143763214,
+            "mean": -0.004228329809725159
+          },
+          "qwen_accuracy": 0.3192389006342495,
+          "router_accuracy": 0.3150105708245243,
+          "router_alt_rate": 0.04439746300211417,
+          "router_minus_alt": 0.04651162790697677,
+          "router_minus_qwen": -0.004228329809725151,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.019027484143763214,
+            "ci95_low": -0.006342494714587738,
+            "mean": 0.006342494714587738
+          },
+          "qwen_accuracy": 0.3150105708245243,
+          "router_accuracy": 0.321353065539112,
+          "router_alt_rate": 0.04439746300211417,
+          "router_minus_alt": 0.05073995771670187,
+          "router_minus_qwen": 0.006342494714587699,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.587737843551797,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.012684989429175475,
+            "ci95_low": -0.011680761099365748,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.03805496828752643,
+          "router_minus_alt": 0.046511627906976716,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5835095137420718,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.004228329809725159,
+            "ci95_low": -0.023255813953488372,
+            "mean": -0.008456659619450317
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3086680761099366,
+          "router_alt_rate": 0.035940803382663845,
+          "router_minus_alt": 0.04016913319238902,
+          "router_minus_qwen": -0.008456659619450302,
+          "seed": 67
+        }
+      ]
+    },
+    "margin": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.2693446088794926,
+        "n": 473,
+        "oracle_accuracy_mean": 0.5856236786469344,
+        "paired_ci95_low_vs_qwen_min": 0.0,
+        "qwen_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_min": 0.3150105708245243,
+        "router_alt_rate_mean": 0.0,
+        "router_minus_qwen_mean": 0.0,
+        "router_minus_qwen_min": 0.0,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04862579281183932,
+          "router_minus_qwen": 0.0,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3192389006342495,
+          "router_accuracy": 0.3192389006342495,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.05073995771670192,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3150105708245243,
+          "router_accuracy": 0.3150105708245243,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04439746300211417,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.587737843551797,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.046511627906976716,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5835095137420718,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04862579281183932,
+          "router_minus_qwen": 0.0,
+          "seed": 67
+        }
+      ]
+    },
+    "neg_entropy": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.2693446088794926,
+        "n": 473,
+        "oracle_accuracy_mean": 0.5856236786469344,
+        "paired_ci95_low_vs_qwen_min": 0.0,
+        "qwen_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_min": 0.3150105708245243,
+        "router_alt_rate_mean": 0.0,
+        "router_minus_qwen_mean": 0.0,
+        "router_minus_qwen_min": 0.0,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04862579281183932,
+          "router_minus_qwen": 0.0,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3192389006342495,
+          "router_accuracy": 0.3192389006342495,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.05073995771670192,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3150105708245243,
+          "router_accuracy": 0.3150105708245243,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04439746300211417,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.587737843551797,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.046511627906976716,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5835095137420718,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04862579281183932,
+          "router_minus_qwen": 0.0,
+          "seed": 67
+        }
+      ]
+    },
+    "packet_norm": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.2693446088794926,
+        "n": 473,
+        "oracle_accuracy_mean": 0.5856236786469344,
+        "paired_ci95_low_vs_qwen_min": 0.0,
+        "qwen_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_min": 0.3150105708245243,
+        "router_alt_rate_mean": 0.0,
+        "router_minus_qwen_mean": 0.0,
+        "router_minus_qwen_min": 0.0,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04862579281183932,
+          "router_minus_qwen": 0.0,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3192389006342495,
+          "router_accuracy": 0.3192389006342495,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.05073995771670192,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3150105708245243,
+          "router_accuracy": 0.3150105708245243,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04439746300211417,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.587737843551797,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.046511627906976716,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5835095137420718,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04862579281183932,
+          "router_minus_qwen": 0.0,
+          "seed": 67
+        }
+      ]
+    },
+    "pred_eq_source": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.2693446088794926,
+        "n": 473,
+        "oracle_accuracy_mean": 0.5856236786469344,
+        "paired_ci95_low_vs_qwen_min": 0.0,
+        "qwen_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_mean": 0.3171247357293869,
+        "router_accuracy_min": 0.3150105708245243,
+        "router_alt_rate_mean": 0.0,
+        "router_minus_qwen_mean": 0.0,
+        "router_minus_qwen_min": 0.0,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04862579281183932,
+          "router_minus_qwen": 0.0,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3192389006342495,
+          "router_accuracy": 0.3192389006342495,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.05073995771670192,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.5856236786469344,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3150105708245243,
+          "router_accuracy": 0.3150105708245243,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04439746300211417,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.27061310782241016,
+          "n": 473,
+          "oracle_accuracy": 0.587737843551797,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.046511627906976716,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.26849894291754756,
+          "n": 473,
+          "oracle_accuracy": 0.5835095137420718,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3171247357293869,
+          "router_accuracy": 0.3171247357293869,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.04862579281183932,
+          "router_minus_qwen": 0.0,
+          "seed": 67
+        }
+      ]
+    }
+  },
+  "validation_rule_summaries": {
+    "best_score": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.25,
+        "n": 144,
+        "oracle_accuracy_mean": 0.6319444444444444,
+        "paired_ci95_low_vs_qwen_min": -0.027777777777777776,
+        "qwen_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_mean": 0.3944444444444445,
+        "router_accuracy_min": 0.3819444444444444,
+        "router_alt_rate_mean": 0.03888888888888889,
+        "router_minus_qwen_mean": 0.005555555555555547,
+        "router_minus_qwen_min": -0.006944444444444475,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.05555555555555555,
+            "ci95_low": -0.013888888888888888,
+            "mean": 0.020833333333333332
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.4097222222222222,
+          "router_alt_rate": 0.05555555555555555,
+          "router_minus_alt": 0.1597222222222222,
+          "router_minus_qwen": 0.020833333333333315,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.027777777777777776,
+            "ci95_low": -0.027777777777777776,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.034722222222222224,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.027777777777777776,
+            "ci95_low": -0.027777777777777776,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.027777777777777776,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.013888888888888888,
+            "ci95_low": -0.027777777777777776,
+            "mean": -0.006944444444444444
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3819444444444444,
+          "router_alt_rate": 0.034722222222222224,
+          "router_minus_alt": 0.13194444444444442,
+          "router_minus_qwen": -0.006944444444444475,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.034722222222222224,
+            "ci95_low": 0.0,
+            "mean": 0.013888888888888888
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.4027777777777778,
+          "router_alt_rate": 0.041666666666666664,
+          "router_minus_alt": 0.1527777777777778,
+          "router_minus_qwen": 0.013888888888888895,
+          "seed": 67
+        }
+      ]
+    },
+    "margin": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.25,
+        "n": 144,
+        "oracle_accuracy_mean": 0.6319444444444444,
+        "paired_ci95_low_vs_qwen_min": 0.0,
+        "qwen_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_min": 0.3888888888888889,
+        "router_alt_rate_mean": 0.0,
+        "router_minus_qwen_mean": 0.0,
+        "router_minus_qwen_min": 0.0,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 67
+        }
+      ]
+    },
+    "neg_entropy": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.25,
+        "n": 144,
+        "oracle_accuracy_mean": 0.6319444444444444,
+        "paired_ci95_low_vs_qwen_min": 0.0,
+        "qwen_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_min": 0.3888888888888889,
+        "router_alt_rate_mean": 0.0,
+        "router_minus_qwen_mean": 0.0,
+        "router_minus_qwen_min": 0.0,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 67
+        }
+      ]
+    },
+    "packet_norm": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.25,
+        "n": 144,
+        "oracle_accuracy_mean": 0.6319444444444444,
+        "paired_ci95_low_vs_qwen_min": 0.0,
+        "qwen_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_min": 0.3888888888888889,
+        "router_alt_rate_mean": 0.0,
+        "router_minus_qwen_mean": 0.0,
+        "router_minus_qwen_min": 0.0,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 67
+        }
+      ]
+    },
+    "pred_eq_source": {
+      "aggregate": {
+        "alt_accuracy_mean": 0.25,
+        "n": 144,
+        "oracle_accuracy_mean": 0.6319444444444444,
+        "paired_ci95_low_vs_qwen_min": 0.0,
+        "qwen_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_mean": 0.3888888888888889,
+        "router_accuracy_min": 0.3888888888888889,
+        "router_alt_rate_mean": 0.0,
+        "router_minus_qwen_mean": 0.0,
+        "router_minus_qwen_min": 0.0,
+        "seed_count": 5
+      },
+      "per_seed": [
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 47
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 53
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 59
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 61
+        },
+        {
+          "alt_accuracy": 0.25,
+          "n": 144,
+          "oracle_accuracy": 0.6319444444444444,
+          "paired_ci95_vs_qwen": {
+            "ci95_high": 0.0,
+            "ci95_low": 0.0,
+            "mean": 0.0
+          },
+          "qwen_accuracy": 0.3888888888888889,
+          "router_accuracy": 0.3888888888888889,
+          "router_alt_rate": 0.0,
+          "router_minus_alt": 0.1388888888888889,
+          "router_minus_qwen": 0.0,
+          "seed": 67
+        }
+      ]
+    }
+  }
+}
