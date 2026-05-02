@@ -543,9 +543,9 @@ final-paper framing:
   benchmark methodology.
 - `517_`: Serving SLO envelope references for FlashAttention IO-awareness,
   vLLM/PagedAttention, DistServe, Orca, KIVI, TurboQuant, and QJL.
-- `650_` through `655_`: 2026-05-02 ARC receiver and systems sprint memos,
+- `650_` through `656_`: 2026-05-02 ARC receiver and systems sprint memos,
   covering token-pool/query soft-prefix failures, candidate-pool factor
   ablations, public-innovation and contrastive receiver failures,
-  byte-amplification systems accounting, and the latest candidate-alignment
-  receiver falsification with DeepSets/Set Transformer and relative-basis
-  novelty boundaries.
+  byte-amplification systems accounting, candidate-alignment and residual
+  receiver falsifications, and DeepSets/Set Transformer, resonance,
+  quantization, and relative-basis novelty boundaries.

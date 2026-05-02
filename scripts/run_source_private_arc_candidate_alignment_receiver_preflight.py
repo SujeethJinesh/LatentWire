@@ -59,6 +59,8 @@ PASS_CONTROL_CONDITIONS = tuple(
 )
 REPORT_CONDITIONS = (MATCHED_CONDITION, *CONTROL_CONDITIONS)
 DEFAULT_L2_GRID = (0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0)
+RECEIVER_MODES = ("direct", "target_residual")
+RESIDUAL_FIT_POLICIES = ("target_errors", "all")
 
 
 def _resolve(path: pathlib.Path | str) -> pathlib.Path:
@@ -233,6 +235,24 @@ def _candidate_design_vector(
     )
 
 
+def _source_residual_design_vector(
+    *,
+    source_sketch: np.ndarray,
+    public_sketch: np.ndarray,
+) -> np.ndarray:
+    source = np.asarray(source_sketch, dtype=np.float64)
+    public = np.asarray(public_sketch, dtype=np.float64)
+    compatibility = source * public
+    dot = float(source @ public / math.sqrt(float(source.shape[0])))
+    return np.concatenate(
+        [
+            np.asarray([dot, float(np.linalg.norm(source))], dtype=np.float64),
+            source,
+            compatibility,
+        ]
+    )
+
+
 def _label_for_row(
     rows: Sequence[arc_gate.ArcRow],
     *,
@@ -335,6 +355,82 @@ def _build_pairwise_design(
     return np.vstack(features), np.asarray(labels, dtype=np.float64)
 
 
+def _build_residual_pairwise_design(
+    rows: Sequence[arc_gate.ArcRow],
+    source_sketch_rows: Sequence[np.ndarray],
+    public_sketch_rows: Sequence[np.ndarray],
+    target_score_rows: dict[int, list[float]],
+    row_indices: Sequence[int],
+    *,
+    label_shuffle: bool,
+    residual_fit_policy: str,
+    desired_margin: float,
+) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    if residual_fit_policy not in RESIDUAL_FIT_POLICIES:
+        raise ValueError(f"unknown residual fit policy {residual_fit_policy!r}")
+    features: list[np.ndarray] = []
+    labels: list[float] = []
+    used_rows = 0
+    skipped_target_correct = 0
+    for position, row_index in enumerate(row_indices):
+        row = rows[int(row_index)]
+        target_scores = [float(score) for score in target_score_rows[int(row_index)]]
+        target_prediction = _prediction(target_scores)
+        if residual_fit_policy == "target_errors" and target_prediction == int(row.answer_index):
+            skipped_target_correct += 1
+            continue
+        answer = _label_for_row(
+            rows,
+            row_index=int(row_index),
+            row_position=position,
+            row_indices=row_indices,
+            label_shuffle=label_shuffle,
+        )
+        candidate_features = [
+            _source_residual_design_vector(
+                source_sketch=source_sketch_rows[int(row_index)][candidate_index],
+                public_sketch=public_sketch_rows[int(row_index)][candidate_index],
+            )
+            for candidate_index in range(len(row.choices))
+        ]
+        used_rows += 1
+        for candidate_index, feature in enumerate(candidate_features):
+            if candidate_index == answer:
+                continue
+            target_diff = float(target_scores[answer]) - float(target_scores[candidate_index])
+            desired_residual_diff = float(desired_margin) - target_diff
+            diff = candidate_features[answer] - feature
+            features.append(diff)
+            labels.append(desired_residual_diff)
+            features.append(-diff)
+            labels.append(-desired_residual_diff)
+    if not features and residual_fit_policy == "target_errors":
+        return _build_residual_pairwise_design(
+            rows,
+            source_sketch_rows,
+            public_sketch_rows,
+            target_score_rows,
+            row_indices,
+            label_shuffle=label_shuffle,
+            residual_fit_policy="all",
+            desired_margin=desired_margin,
+        )
+    if not features:
+        raise ValueError("no residual pairwise rows were built")
+    return (
+        np.vstack(features),
+        np.asarray(labels, dtype=np.float64),
+        {
+            "used_fit_rows": int(used_rows),
+            "skipped_target_correct_rows": int(skipped_target_correct),
+            "residual_fit_policy": residual_fit_policy,
+            "effective_residual_fit_policy": residual_fit_policy,
+            "desired_margin": float(desired_margin),
+            "pair_count": int(len(features)),
+        },
+    )
+
+
 def _fit_ridge(features: np.ndarray, labels: np.ndarray, *, l2: float) -> np.ndarray:
     x = np.concatenate([np.ones((features.shape[0], 1), dtype=np.float64), features], axis=1)
     penalty = float(l2) * np.eye(x.shape[1], dtype=np.float64)
@@ -342,9 +438,138 @@ def _fit_ridge(features: np.ndarray, labels: np.ndarray, *, l2: float) -> np.nda
     return np.linalg.solve(x.T @ x + penalty, x.T @ labels)
 
 
+def _fit_ridge_no_intercept(features: np.ndarray, labels: np.ndarray, *, l2: float) -> np.ndarray:
+    penalty = float(l2) * np.eye(features.shape[1], dtype=np.float64)
+    weights = np.linalg.solve(features.T @ features + penalty, features.T @ labels)
+    return np.concatenate([np.zeros(1, dtype=np.float64), weights])
+
+
 def _score_design(features: np.ndarray, weights: np.ndarray) -> np.ndarray:
     x = np.concatenate([np.ones((features.shape[0], 1), dtype=np.float64), features], axis=1)
     return x @ weights
+
+
+def _fit_residual_correction(
+    rows: Sequence[arc_gate.ArcRow],
+    source_sketch_rows: Sequence[np.ndarray],
+    public_sketch_rows: Sequence[np.ndarray],
+    target_score_rows: dict[int, list[float]],
+    fit_indices: Sequence[int],
+    *,
+    label_shuffle: bool,
+    residual_fit_policy: str,
+    desired_margin: float,
+    l2_grid: Sequence[float],
+) -> dict[str, Any]:
+    features, labels, metadata = _build_residual_pairwise_design(
+        rows,
+        source_sketch_rows,
+        public_sketch_rows,
+        target_score_rows,
+        fit_indices,
+        label_shuffle=label_shuffle,
+        residual_fit_policy=residual_fit_policy,
+        desired_margin=desired_margin,
+    )
+    cv_rows: list[dict[str, float]] = []
+    selected_l2 = float(l2_grid[len(l2_grid) // 2])
+    fit_indices = list(fit_indices)
+    if len(fit_indices) >= 2:
+        for l2 in l2_grid:
+            fold_accs: list[float] = []
+            for heldout in fit_indices:
+                train_indices = [index for index in fit_indices if index != heldout]
+                train_x, train_y, _ = _build_residual_pairwise_design(
+                    rows,
+                    source_sketch_rows,
+                    public_sketch_rows,
+                    target_score_rows,
+                    train_indices,
+                    label_shuffle=label_shuffle,
+                    residual_fit_policy=residual_fit_policy,
+                    desired_margin=desired_margin,
+                )
+                weights = _fit_ridge_no_intercept(train_x, train_y, l2=float(l2))
+                residual_scores = _residual_scores_by_row(
+                    rows,
+                    {
+                        "weights": weights,
+                        "target_only": False,
+                        "label_shuffle": label_shuffle,
+                    },
+                    source_sketch_rows,
+                    public_sketch_rows,
+                    [heldout],
+                )
+                final_scores = {
+                    int(heldout): [
+                        float(base) + float(delta)
+                        for base, delta in zip(
+                            target_score_rows[int(heldout)],
+                            residual_scores[int(heldout)],
+                            strict=True,
+                        )
+                    ]
+                }
+                fold_accs.append(
+                    1.0
+                    if _prediction(final_scores[int(heldout)]) == int(rows[int(heldout)].answer_index)
+                    else 0.0
+                )
+            cv_rows.append({"l2": float(l2), "row_grouped_cv_accuracy": float(statistics.fmean(fold_accs))})
+        selected = max(cv_rows, key=lambda row: (row["row_grouped_cv_accuracy"], row["l2"]))
+        selected_l2 = float(selected["l2"])
+    else:
+        cv_rows.append({"l2": selected_l2, "row_grouped_cv_accuracy": 0.0})
+    weights = _fit_ridge_no_intercept(features, labels, l2=selected_l2)
+    return {
+        "weights": weights,
+        "selected_l2": selected_l2,
+        "cv_rows": cv_rows,
+        "feature_dim": int(features.shape[1]),
+        "target_only": False,
+        "label_shuffle": bool(label_shuffle),
+        "training_objective": "residual_pairwise_ridge",
+        "metadata": metadata,
+    }
+
+
+def _residual_scores_by_row(
+    rows: Sequence[arc_gate.ArcRow],
+    receiver: dict[str, Any],
+    source_sketch_rows: Sequence[np.ndarray],
+    public_sketch_rows: Sequence[np.ndarray],
+    row_indices: Sequence[int],
+) -> dict[int, list[float]]:
+    weights = np.asarray(receiver["weights"], dtype=np.float64)
+    by_row: dict[int, list[float]] = {}
+    for row_index in row_indices:
+        row = rows[int(row_index)]
+        features = np.vstack(
+            [
+                _source_residual_design_vector(
+                    source_sketch=source_sketch_rows[int(row_index)][candidate_index],
+                    public_sketch=public_sketch_rows[int(row_index)][candidate_index],
+                )
+                for candidate_index in range(len(row.choices))
+            ]
+        )
+        by_row[int(row_index)] = [float(score) for score in _score_design(features, weights)]
+    return by_row
+
+
+def _add_score_rows(
+    base_rows: dict[int, list[float]],
+    delta_rows: dict[int, list[float]],
+    row_indices: Sequence[int],
+) -> dict[int, list[float]]:
+    combined: dict[int, list[float]] = {}
+    for row_index in row_indices:
+        combined[int(row_index)] = [
+            float(base) + float(delta)
+            for base, delta in zip(base_rows[int(row_index)], delta_rows[int(row_index)], strict=True)
+        ]
+    return combined
 
 
 def _accuracy_for_scores(
@@ -724,7 +949,10 @@ def run_preflight(
     target_feature_dim: int,
     sketch_dim: int,
     source_sketch_quantization: str,
+    receiver_mode: str,
     training_objective: str,
+    residual_fit_policy: str,
+    residual_desired_margin: float,
     innovation_ridge: float,
     local_files_only: bool,
     seed: int,
@@ -788,17 +1016,6 @@ def run_preflight(
     )
     public_sketch_rows = [row @ public_projection for row in public_rows]
 
-    matched_receiver = _fit_receiver(
-        rows,
-        source_sketch_rows,
-        public_sketch_rows,
-        fit_indices,
-        max_candidate_count=max_candidate_count,
-        target_only=False,
-        label_shuffle=False,
-        training_objective=training_objective,
-        l2_grid=l2_grid,
-    )
     target_receiver = _fit_receiver(
         rows,
         source_sketch_rows,
@@ -810,25 +1027,13 @@ def run_preflight(
         training_objective=training_objective,
         l2_grid=l2_grid,
     )
-    label_shuffled_receiver = _fit_receiver(
-        rows,
-        source_sketch_rows,
-        public_sketch_rows,
-        fit_indices,
-        max_candidate_count=max_candidate_count,
-        target_only=False,
-        label_shuffle=True,
-        training_objective=training_objective,
-        l2_grid=l2_grid,
-    )
-
     score_by_condition: dict[str, dict[int, list[float]]] = {}
-    score_by_condition[MATCHED_CONDITION] = _scores_by_row(
+    target_scores_all = _scores_by_row(
         rows,
-        matched_receiver,
+        target_receiver,
         source_sketch_rows,
         public_sketch_rows,
-        eval_indices,
+        list(range(len(rows))),
         max_candidate_count=max_candidate_count,
     )
     score_by_condition["target_public_only"] = _scores_by_row(
@@ -839,36 +1044,169 @@ def run_preflight(
         eval_indices,
         max_candidate_count=max_candidate_count,
     )
-    score_by_condition["label_shuffled"] = _scores_by_row(
-        rows,
-        label_shuffled_receiver,
-        source_sketch_rows,
-        public_sketch_rows,
-        eval_indices,
-        max_candidate_count=max_candidate_count,
-    )
-    for control in (
-        "zero_source",
-        "shuffled_source",
-        "same_norm_noise",
-        "train_mean_source",
-        "candidate_roll_source",
-    ):
-        variant_source = _source_control_rows(
+
+    if receiver_mode == "direct":
+        matched_receiver = _fit_receiver(
+            rows,
             source_sketch_rows,
-            fit_indices=fit_indices,
-            eval_indices=eval_indices,
-            control=control,
-            seed=seed,
+            public_sketch_rows,
+            fit_indices,
+            max_candidate_count=max_candidate_count,
+            target_only=False,
+            label_shuffle=False,
+            training_objective=training_objective,
+            l2_grid=l2_grid,
         )
-        score_by_condition[control] = _scores_by_row(
+        label_shuffled_receiver = _fit_receiver(
+            rows,
+            source_sketch_rows,
+            public_sketch_rows,
+            fit_indices,
+            max_candidate_count=max_candidate_count,
+            target_only=False,
+            label_shuffle=True,
+            training_objective=training_objective,
+            l2_grid=l2_grid,
+        )
+        score_by_condition[MATCHED_CONDITION] = _scores_by_row(
             rows,
             matched_receiver,
-            variant_source,
+            source_sketch_rows,
             public_sketch_rows,
             eval_indices,
             max_candidate_count=max_candidate_count,
         )
+        score_by_condition["label_shuffled"] = _scores_by_row(
+            rows,
+            label_shuffled_receiver,
+            source_sketch_rows,
+            public_sketch_rows,
+            eval_indices,
+            max_candidate_count=max_candidate_count,
+        )
+        for control in (
+            "zero_source",
+            "shuffled_source",
+            "same_norm_noise",
+            "train_mean_source",
+            "candidate_roll_source",
+        ):
+            variant_source = _source_control_rows(
+                source_sketch_rows,
+                fit_indices=fit_indices,
+                eval_indices=eval_indices,
+                control=control,
+                seed=seed,
+            )
+            score_by_condition[control] = _scores_by_row(
+                rows,
+                matched_receiver,
+                variant_source,
+                public_sketch_rows,
+                eval_indices,
+                max_candidate_count=max_candidate_count,
+            )
+        receiver_logs = {
+            "matched_receiver": {
+                "selected_l2": matched_receiver["selected_l2"],
+                "cv_rows": matched_receiver["cv_rows"],
+                "feature_dim": matched_receiver["feature_dim"],
+            },
+            "label_shuffled_receiver": {
+                "selected_l2": label_shuffled_receiver["selected_l2"],
+                "cv_rows": label_shuffled_receiver["cv_rows"],
+                "feature_dim": label_shuffled_receiver["feature_dim"],
+            },
+        }
+    elif receiver_mode == "target_residual":
+        residual_receiver = _fit_residual_correction(
+            rows,
+            source_sketch_rows,
+            public_sketch_rows,
+            target_scores_all,
+            fit_indices,
+            label_shuffle=False,
+            residual_fit_policy=residual_fit_policy,
+            desired_margin=residual_desired_margin,
+            l2_grid=l2_grid,
+        )
+        label_shuffled_receiver = _fit_residual_correction(
+            rows,
+            source_sketch_rows,
+            public_sketch_rows,
+            target_scores_all,
+            fit_indices,
+            label_shuffle=True,
+            residual_fit_policy=residual_fit_policy,
+            desired_margin=residual_desired_margin,
+            l2_grid=l2_grid,
+        )
+        matched_delta = _residual_scores_by_row(
+            rows,
+            residual_receiver,
+            source_sketch_rows,
+            public_sketch_rows,
+            eval_indices,
+        )
+        score_by_condition[MATCHED_CONDITION] = _add_score_rows(
+            score_by_condition["target_public_only"],
+            matched_delta,
+            eval_indices,
+        )
+        shuffled_delta = _residual_scores_by_row(
+            rows,
+            label_shuffled_receiver,
+            source_sketch_rows,
+            public_sketch_rows,
+            eval_indices,
+        )
+        score_by_condition["label_shuffled"] = _add_score_rows(
+            score_by_condition["target_public_only"],
+            shuffled_delta,
+            eval_indices,
+        )
+        for control in (
+            "zero_source",
+            "shuffled_source",
+            "same_norm_noise",
+            "train_mean_source",
+            "candidate_roll_source",
+        ):
+            variant_source = _source_control_rows(
+                source_sketch_rows,
+                fit_indices=fit_indices,
+                eval_indices=eval_indices,
+                control=control,
+                seed=seed,
+            )
+            control_delta = _residual_scores_by_row(
+                rows,
+                residual_receiver,
+                variant_source,
+                public_sketch_rows,
+                eval_indices,
+            )
+            score_by_condition[control] = _add_score_rows(
+                score_by_condition["target_public_only"],
+                control_delta,
+                eval_indices,
+            )
+        receiver_logs = {
+            "residual_receiver": {
+                "selected_l2": residual_receiver["selected_l2"],
+                "cv_rows": residual_receiver["cv_rows"],
+                "feature_dim": residual_receiver["feature_dim"],
+                "metadata": residual_receiver["metadata"],
+            },
+            "label_shuffled_residual_receiver": {
+                "selected_l2": label_shuffled_receiver["selected_l2"],
+                "cv_rows": label_shuffled_receiver["cv_rows"],
+                "feature_dim": label_shuffled_receiver["feature_dim"],
+                "metadata": label_shuffled_receiver["metadata"],
+            },
+        }
+    else:
+        raise ValueError(f"unknown receiver mode {receiver_mode!r}")
 
     score_by_condition["candidate_derangement"] = {
         int(row_index): [float(score) for score in np.roll(score_by_condition[MATCHED_CONDITION][int(row_index)], 1)]
@@ -943,7 +1281,10 @@ def run_preflight(
             "target_feature_dim": target_feature_dim,
             "sketch_dim": sketch_dim,
             "source_sketch_quantization": source_sketch_quantization,
+            "receiver_mode": receiver_mode,
             "training_objective": training_objective,
+            "residual_fit_policy": residual_fit_policy,
+            "residual_desired_margin": residual_desired_margin,
             "innovation_ridge": innovation_ridge,
             "same_byte_budget": same_byte_budget,
             "seed": seed,
@@ -969,21 +1310,12 @@ def run_preflight(
             "public_standardizer": public_standardizer,
         },
         "fit_logs": {
-            "matched_receiver": {
-                "selected_l2": matched_receiver["selected_l2"],
-                "cv_rows": matched_receiver["cv_rows"],
-                "feature_dim": matched_receiver["feature_dim"],
-            },
             "target_public_receiver": {
                 "selected_l2": target_receiver["selected_l2"],
                 "cv_rows": target_receiver["cv_rows"],
                 "feature_dim": target_receiver["feature_dim"],
             },
-            "label_shuffled_receiver": {
-                "selected_l2": label_shuffled_receiver["selected_l2"],
-                "cv_rows": label_shuffled_receiver["cv_rows"],
-                "feature_dim": label_shuffled_receiver["feature_dim"],
-            },
+            **receiver_logs,
         },
         "headline": headline,
         "pass_control_conditions": list(PASS_CONTROL_CONDITIONS),
@@ -1070,11 +1402,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--target-feature-dim", type=int, default=64)
     parser.add_argument("--sketch-dim", type=int, default=16)
     parser.add_argument("--source-sketch-quantization", choices=("none", "int8", "sign"), default="sign")
+    parser.add_argument("--receiver-mode", choices=RECEIVER_MODES, default="target_residual")
     parser.add_argument(
         "--training-objective",
         choices=("pointwise_ridge", "pairwise_ridge"),
         default="pairwise_ridge",
     )
+    parser.add_argument("--residual-fit-policy", choices=RESIDUAL_FIT_POLICIES, default="target_errors")
+    parser.add_argument("--residual-desired-margin", type=float, default=1.0)
     parser.add_argument("--innovation-ridge", type=float, default=10.0)
     parser.add_argument("--local-files-only", choices=("true", "false"), default="true")
     parser.add_argument("--seed", type=int, default=17)
@@ -1109,7 +1444,10 @@ def main(argv: list[str] | None = None) -> int:
         target_feature_dim=int(args.target_feature_dim),
         sketch_dim=int(args.sketch_dim),
         source_sketch_quantization=str(args.source_sketch_quantization),
+        receiver_mode=str(args.receiver_mode),
         training_objective=str(args.training_objective),
+        residual_fit_policy=str(args.residual_fit_policy),
+        residual_desired_margin=float(args.residual_desired_margin),
         innovation_ridge=float(args.innovation_ridge),
         local_files_only=str(args.local_files_only).lower() == "true",
         seed=int(args.seed),

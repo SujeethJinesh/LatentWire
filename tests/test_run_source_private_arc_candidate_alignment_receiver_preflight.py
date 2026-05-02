@@ -113,6 +113,67 @@ def test_candidate_alignment_receiver_uses_matched_slots() -> None:
     assert gate._prediction(rolled) != 0
 
 
+def test_source_residual_vector_has_no_public_only_signal() -> None:
+    public = np.asarray([2.0, -3.0, 5.0], dtype=np.float64)
+    zero_source = np.zeros(3, dtype=np.float64)
+
+    residual = gate._source_residual_design_vector(
+        source_sketch=zero_source,
+        public_sketch=public,
+    )
+
+    assert np.allclose(residual, 0.0)
+
+
+def test_residual_receiver_freezes_public_base_and_fixes_matched_error() -> None:
+    rows = _rows()
+    source_rows = _source_rows()
+    public_rows = [np.zeros((3, 2), dtype=np.float64) for _ in rows]
+    target_scores = {index: [0.0, 1.0, 0.0] for index in range(len(rows))}
+    fit_indices = [0, 1, 2]
+    eval_indices = [3]
+    receiver = gate._fit_residual_correction(
+        rows,
+        source_rows,
+        public_rows,
+        target_scores,
+        fit_indices,
+        label_shuffle=False,
+        residual_fit_policy="target_errors",
+        desired_margin=1.0,
+        l2_grid=(0.01, 0.1, 1.0),
+    )
+
+    matched_delta = gate._residual_scores_by_row(
+        rows,
+        receiver,
+        source_rows,
+        public_rows,
+        eval_indices,
+    )
+    matched = gate._add_score_rows(target_scores, matched_delta, eval_indices)[3]
+    zero_source = gate._source_control_rows(
+        source_rows,
+        fit_indices=fit_indices,
+        eval_indices=eval_indices,
+        control="zero_source",
+        seed=7,
+    )
+    zero_delta = gate._residual_scores_by_row(
+        rows,
+        receiver,
+        zero_source,
+        public_rows,
+        eval_indices,
+    )
+    zero = gate._add_score_rows(target_scores, zero_delta, eval_indices)[3]
+
+    assert receiver["metadata"]["used_fit_rows"] == 2
+    assert gate._prediction(target_scores[3]) == 1
+    assert gate._prediction(matched) == 0
+    assert np.allclose(zero, target_scores[3])
+
+
 def test_source_control_rows_are_destructive_and_deterministic() -> None:
     source_rows = _source_rows()
 

@@ -2091,5 +2091,12 @@
     "path": "references/655_arc_candidate_alignment_receiver_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC candidate-alignment receiver preflight, covering relative/common-basis latent communication, DeepSets/Set Transformer permutation-equivariant receiver boundaries, CCA/CKA/Procrustes alignment probes, BLIP-2/Q-Former frozen bottlenecks, C2C cache-communication contrast, and QJL/TurboQuant quantization pressure."
+  },
+  {
+    "num": 656,
+    "slug": "arc_residual_receiver_refs_20260502",
+    "path": "references/656_arc_residual_receiver_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC frozen-target-public residual receiver preflight and resonance framing, covering gist tokens, prefix/prompt tuning controls, distillation/logit-KL and hidden matching, activation steering, TurboQuant/QJL quantization pressure, consistency/DiT repair inspiration, and the decision to move beyond linear residual scoring."
   }
 ]

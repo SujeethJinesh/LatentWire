@@ -19771,3 +19771,36 @@ and trained a simple referee to rank the choices. A few uncompressed hints
 looked useful on four evaluation examples, but compressed hints failed, and
 larger or target-only checks erased the advantage. We should not claim this as
 working model-to-model communication.
+
+ARC residual receiver preflight: extended
+`scripts/run_source_private_arc_candidate_alignment_receiver_preflight.py` with
+a `target_residual` mode and added tests in
+`tests/test_run_source_private_arc_candidate_alignment_receiver_preflight.py`.
+Added memo `paper/source_private_arc_residual_receiver_preflight_20260502.md`,
+references `references/656_arc_residual_receiver_refs_20260502.md`, and
+artifacts:
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_residual_hidden_public_innovation_sign16_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_residual_hidden_public_innovation_int8_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_residual_hidden_public_innovation_none_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_residual_hidden_public_innovation_sign16_all_n8/`,
+and
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_residual_hidden_public_innovation_none_all_n8/`.
+Outcome: the frozen-target-public residual branch is also weakened. The
+implementation now freezes target-public scores before fitting a no-intercept
+source-only correction, so `zero_source` exactly reproduces target-public. The
+compact target-error sign-16 residual reaches `2/4` while target-public and
+zero-source reach `3/4`; int8 and unquantized target-error variants reach only
+`1/4`. The all-fit fallback is more stable, but sign-16 reaches `2/4`, and
+unquantized reaches `3/4` only by tying target-public and losing the margin
+gate by about `0.033`.
+
+Decision: do not widen this linear residual receiver. The clean zero-source
+equivalence strengthens the falsification, but there is still no positive
+matched-source result. The next live method branch should be a
+consistency-style packet repair receiver or a true permutation-equivariant
+DeepSets/Set Transformer receiver with source-control contrastive training.
+
+Lay explanation: this run let the target make its own guess, then allowed the
+source to send a correction. The correction did not reliably fix target
+mistakes, and when it worked it did not beat the target's own frozen public
+scorer. This is not yet real cross-model latent communication.

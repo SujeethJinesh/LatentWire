@@ -629,3 +629,29 @@ source residual correction only on target errors, with wrong-row,
 candidate-roll, zero-source, and target-only controls. If that fails, the
 right architectural move is a permutation-equivariant DeepSets/Set Transformer
 receiver with source-control contrastive training.
+
+## 2026-05-02 Residual Receiver Follow-Up
+
+Added `target_residual` mode to the ARC candidate-alignment receiver. This
+freezes a target-public candidate scorer and trains only a source-dependent
+no-intercept residual correction.
+
+Readout:
+
+- target-error sign-16 residual (`8B`): matched `2/4`, target-public/zero-source
+  `3/4`, margin delta about `-0.173`;
+- target-error int8-16 residual (`66B`): matched `1/4`, target-public/zero-source
+  `3/4`;
+- target-error unquantized residual (`256B`): matched `1/4`,
+  target-public/zero-source `3/4`;
+- all-fit sign-16 residual (`8B`): matched `2/4`, target-public/zero-source
+  `3/4`;
+- all-fit unquantized residual (`256B`): matched `3/4`, but only ties
+  target-public and loses margin by about `0.033`;
+- all pass gates are `False`.
+
+Decision: do not widen the linear residual receiver. The important improvement
+is control hygiene: zero-source now exactly equals target-public, so the
+negative result is cleaner. The next method branch should be a
+consistency-style packet repair receiver or a true permutation-equivariant
+DeepSets/Set Transformer receiver with source-control contrastive training.
