@@ -7,25 +7,27 @@ Date: 2026-05-02
 The plausible COLM outcome is borderline: reviewers who value honest scope,
 reproducible artifacts, and negative results lean weak accept; reviewers who
 expect broad latent communication, formal compression, or systems throughput
-lean weak reject. The modal recommendation is borderline / weak reject unless
-the submission is framed as a narrow fixed-byte source-private packet protocol.
+lean weak reject. A second reviewer simulation after the source-choice audit
+averaged 5.4/10, with the same modal recommendation: borderline unless the
+submission is framed as a narrow fixed-byte source-private candidate-transfer
+protocol.
 
 ## Scores
 
 | Reviewer | Lens | Overall | Clarity | Novelty | Evidence | Reproducibility | Recommendation |
 |---|---|---:|---:|---:|---:|---:|---|
-| A | Systems/serving | 5 | 7 | 6 | 4 | 5 | Borderline reject |
-| B | LLM evaluation | 6 | 8 | 7 | 6 | 5 | Weak accept / borderline |
-| C | Representation/latent transfer | 6 | 7 | 6 | 6 | 6 | Weak accept / borderline |
-| D | Mechanistic interpretability/common features | 5 | 7 | 5 | 5 | 6 | Weak reject |
-| E | Benchmarks/statistics | 6 | 7 | 6 | 6 | 7 | Weak accept / borderline |
-| F | Information theory/compression | 5 | 6 | 7 | 5 | 6 | Weak reject / borderline |
-| G | Multi-agent LLM communication | 5 | 7 | 6 | 5 | 5 | Weak reject |
-| H | Workshop practicality/reproducibility | 7 | 7 | 7 | 6 | 7 | Weak accept |
-| I | Skeptical general ML | 5 | 7 | 5 | 5 | 4 | Weak reject / borderline |
-| J | Friendly rigorous methods | 7 | 8 | 7 | 7 | 5 | Weak accept if scoped honestly |
+| A | Systems/serving | 4 | 7 | 5 | 3 | 5 | Weak reject |
+| B | LLM evaluation | 6 | 8 | 6 | 6 | 6 | Borderline / weak accept |
+| C | Representation/latent transfer | 5 | 7 | 5 | 5 | 6 | Weak reject |
+| D | Reproducibility/artifact | 6 | 7 | 6 | 5 | 7 | Borderline / weak accept |
+| E | Correctness/skeptical ML | 4 | 7 | 4 | 4 | 5 | Reject / weak reject |
+| F | COLM methods | 7 | 8 | 6 | 7 | 6 | Weak accept |
+| G | Information theory/compression | 5 | 6 | 6 | 4 | 6 | Weak reject / borderline |
+| H | Statistics/evaluation | 6 | 7 | 5 | 6 | 6 | Borderline |
+| I | General ML | 5 | 7 | 5 | 5 | 5 | Weak reject / borderline |
+| J | Area chair | 6 | 8 | 6 | 6 | 6 | Borderline / weak accept if scoped |
 
-Average overall score: 5.7 / 10.
+Average overall score: 5.4 / 10.
 
 ## Strongest Positive Feedback
 
@@ -43,8 +45,8 @@ Average overall score: 5.7 / 10.
 
 ## Main Reviewer Risks
 
-1. The packet appears to mostly preserve the source's selected candidate. A
-   reviewer may ask why this is not just source-choice/index transfer.
+1. The packet mostly preserves the source's selected candidate. A reviewer may
+   ask why this is not just source-choice/index transfer.
 2. Cross-family evidence is negative. Phi-3 fails, and TinyLlama/cached
    connector repairs do not close the gap.
 3. The systems contribution is accounting only. It should not be sold as a

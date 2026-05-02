@@ -59,7 +59,7 @@
       "url": "https://arxiv.org/abs/2512.17914"
     },
     "qjl": {
-      "summary": "QJL uses a JL transform and sign-bit quantization for KV-cache compression.",
+      "summary": "QJL uses a JL transform and 1-bit quantization for KV-cache compression.",
       "url": "https://arxiv.org/abs/2406.03482"
     },
     "sglang": {
@@ -209,11 +209,11 @@
       "communicated_object": "one-token K+V state at 1 bit/element",
       "framed_bytes": 768.0,
       "measurement_status": "optimistic_byte_floor_not_native",
-      "method": "QJL sign-bit KV-state floor",
+      "method": "1-bit/KV-element accounting floor",
       "native_measured": false,
-      "notes": "QJL uses a JL transform and sign-bit quantization for KV-cache compression.",
+      "notes": "QJL uses a JL transform and 1-bit quantization for KV-cache compression.",
       "nvidia_vllm_required": true,
-      "overclaim_guard": "QJL is a KV-cache state sketch comparator, not a defeated native baseline.",
+      "overclaim_guard": "This is an internal one-bit-per-KV-element accounting floor; do not treat it as a defeated QJL native baseline.",
       "raw_bytes": 768.0,
       "row_group": "KV/source-state floor",
       "row_id": "qjl_1bit_kv_floor",

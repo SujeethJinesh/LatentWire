@@ -24,8 +24,9 @@ allowed to support.
 - Relative Representations: `https://openreview.net/forum?id=SrC-nwieGJ`
   - Supports the anchor/relative-coordinate prior-art boundary.
   - Does not support claiming LatentWire is zero-shot model stitching.
-- Sparse Autoencoders: `https://arxiv.org/abs/2309.08600`
+- Sparse Autoencoders: `https://openreview.net/forum?id=F76bwRSLeK`
   - Supports feature dictionary motivation only.
+  - Verified against the ICLR 2024 OpenReview record: Robert Huben, Hoagy Cunningham, Logan Riggs Smith, Aidan Ewart, Lee Sharkey.
 - SAE universality: `https://arxiv.org/abs/2410.06981`
   - Supports common-feature plausibility only.
   - Verified title and author list in BibTeX: Michael Lan, Philip Torr, Austin Meek, Ashkan Khakzar, David Krueger, Fazl Barez.
@@ -36,6 +37,7 @@ allowed to support.
   - Supports the continuous-prefix baseline family.
 - Gist Tokens: `https://proceedings.neurips.cc/paper_files/paper/2023/hash/3d77c6dcc7f143aa2154e7f4d5e22d68-Abstract-Conference.html`
   - Supports prompt-compression/soft-token baseline framing.
+  - Verified proceedings author spelling: Jesse Mu, Xiang Li, Noah Goodman.
 - BLIP-2 / Q-Former: `https://proceedings.mlr.press/v202/li23q.html`
   - Supports query-bottleneck connector inspiration; not claimed as a completed LatentWire result.
 
@@ -48,7 +50,8 @@ allowed to support.
   - Supports selective KV-sharing competitor framing.
   - Does not support claiming LatentWire beats KVComm natively.
 - QJL: `https://arxiv.org/abs/2406.03482`
-  - Supports a one-token 1-bit KV-state floor in byte/exposure accounting.
+  - Supports the idea that one-bit KV quantization/sketching is an aggressive KV-state compression neighbor.
+  - In the paper, the 768B row is our internal one-token 1-bit-per-KV-element accounting floor, not a claim about QJL's end-to-end native performance.
 - KIVI: `https://proceedings.mlr.press/v235/liu24bz.html`
   - Supports a 2-bit KV-cache quantization comparator floor.
 - KVQuant: `https://proceedings.neurips.cc/paper_files/paper/2024/hash/028fcbcf85435d39a40c4d61b42c99a4-Abstract-Conference.html`
@@ -56,8 +59,9 @@ allowed to support.
   - Verified author list after audit correction: Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, Michael W. Mahoney, Yakun Sophia Shao, Kurt Keutzer, Amir Gholami.
 - TurboQuant: `https://openreview.net/forum?id=tO3ASKZlok`
   - Supports vector/KV quantization comparator framing.
-- vLLM/PagedAttention: `https://arxiv.org/abs/2309.06180`
+- vLLM/PagedAttention: `https://dl.acm.org/doi/10.1145/3600006.3613165`
   - Supports native serving substrate context and KV-cache memory motivation.
+  - Verified against SOSP 2023 proceedings: pages 611--626 and DOI 10.1145/3600006.3613165.
 - SGLang: `https://proceedings.neurips.cc/paper_files/paper/2024/hash/724be4472168f31ba1c9ac630f15dec8-Abstract-Conference.html`
   - Supports structured LLM serving/KV-reuse substrate context.
 
@@ -70,6 +74,10 @@ allowed to support.
 - KVQuant and SGLang were updated to NeurIPS 2024 proceedings records.
 - OpenBookQA was updated to the EMNLP 2018 ACL Anthology record, including pages and DOI.
 - SAEBench was updated to the ICML/PMLR 2025 record.
+- Sparse Autoencoders was updated to the ICLR 2024 OpenReview record, with author order corrected to Robert Huben, Hoagy Cunningham, Logan Riggs Smith, Aidan Ewart, Lee Sharkey.
+- Gist Tokens author spelling was corrected to Xiang Li in the NeurIPS 2023 proceedings entry.
+- vLLM/PagedAttention was updated to the SOSP 2023 proceedings entry, including pages 611--626 and DOI 10.1145/3600006.3613165.
+- The QJL-related systems row was reworded as an internal 1-bit-per-KV-element accounting floor rather than a QJL-native performance row.
 
 ## Information theory
 

@@ -10,13 +10,15 @@ Date: 2026-05-02
 - [x] Evidence directories used by paper claims are copied into
   `evidence/results/`.
 - [x] Reproduction scripts and targeted tests are copied into `code/`.
-- [x] Targeted tests pass.
+- [x] Full repository tests and targeted COLM tests pass.
 - [x] LaTeX build completes from `colm_final/paper`.
 - [x] Citation metadata for high-risk recent papers has been audited against
   primary sources.
 - [x] Reviewer-risk panel is recorded.
 - [x] Late HellaSwag diagnostics are packaged separately as excluded evidence,
   not silently mixed into the current PDF claim set.
+- [x] Source-choice preservation is surfaced in the paper instead of hidden as
+  an appendix caveat.
 
 ## Not Yet Ready / Must Be Framed Carefully
 

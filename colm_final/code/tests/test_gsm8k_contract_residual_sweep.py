@@ -1,0 +1,883 @@
+from __future__ import annotations
+
+import json
+import pathlib
+
+import pytest
+import torch
+from scripts import run_gsm8k_contract_residual_sweep as sweep
+
+
+def test_checkpoint_path_reuses_existing_rank8() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_module_replace", 8, config)
+    assert str(path).endswith(
+        "checkpoints/bridge_ridge_qk_dynalign_module_replace_20260420/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r4_dynalign_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("tokenbasis_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/tokenbasis_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_tokenbasis_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_seeded_rank_path() -> None:
+    config = sweep.ResidualSweepConfig(seed=7)
+    path = sweep._checkpoint_path("tokenbasis_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/tokenbasis_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_tokenbasis_replace_cal64_chat_seed7.pt"
+    )
+
+
+def test_checkpoint_path_builds_conditioned_rank_path() -> None:
+    config = sweep.ResidualSweepConfig(
+        seed=1,
+        whitening=True,
+        target_whitening=True,
+        whitening_streams="v",
+        target_whitening_streams="v",
+        conditioning_target_layers=(8,),
+    )
+    path = sweep._checkpoint_path("dynalign_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_module_replace_cal64_chat_srcwhitev_tgtwhitev_layers8_seed1.pt"
+    )
+
+
+def test_checkpoint_path_fit_ridge_override_disables_existing_reuse() -> None:
+    config = sweep.ResidualSweepConfig(
+        fit_ridge_override_lambda=1e-2,
+        fit_ridge_override_streams="v",
+        fit_ridge_override_layers=(8,),
+        fit_ridge_protected_rank=2,
+    )
+    path = sweep._checkpoint_path("dynalign_module_replace", 8, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r8_dynalign_module_replace_cal64_chat_fitridgev_layers8_lam0p01_protect2.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_preserve_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_preserve_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_preserve_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_preserve_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_eigenspace_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_eigenspace_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_eigenspace_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_eigenspace_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_saliency_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_saliency_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_saliency_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_saliency_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_saliency_preserve_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_saliency_preserve_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_saliency_preserve_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_saliency_preserve_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_anchor_tail_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_anchor_tail_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_anchor_tail_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_anchor_tail_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_v8_outlier_escrow_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_v8_outlier_escrow_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_v8_outlier_escrow_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_v8_outlier_escrow_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_routed_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_routed_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_routed_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_routed_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_value_routed_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_value_routed_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_value_routed_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_value_routed_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_query_resampler_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_query_resampler_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_query_resampler_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_resampler_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_query_resampler_bridge_bank_path() -> None:
+    config = sweep.ResidualSweepConfig(seed=1, bridge_bank_size=16)
+    path = sweep._checkpoint_path("dynalign_query_resampler_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_query_resampler_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_resampler_replace_cal64_chat_bank16_seed1.pt"
+    )
+
+
+def test_checkpoint_path_builds_query_innovation_resampler_bridge_bank_path() -> None:
+    config = sweep.ResidualSweepConfig(seed=1, bridge_bank_size=16)
+    path = sweep._checkpoint_path("dynalign_query_innovation_resampler_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_query_innovation_resampler_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_query_innovation_resampler_replace_cal64_chat_bank16_seed1.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_value_bank_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_value_bank_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_value_bank_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_value_bank_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_value_query_bank_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_value_query_bank_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_value_query_bank_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_value_query_bank_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_value_routed_bank_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_value_routed_bank_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_value_routed_bank_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_value_routed_bank_module_replace_cal64_chat.pt"
+    )
+
+
+def test_checkpoint_path_builds_new_value_verifier_sidecar_rank_path() -> None:
+    config = sweep.ResidualSweepConfig()
+    path = sweep._checkpoint_path("dynalign_value_verifier_sidecar_module_replace", 16, config)
+    assert str(path).endswith(
+        "checkpoints/gsm8k_contract_residual_sweep_20260421/dynalign_value_verifier_sidecar_module_replace/"
+        "qwen25_to_qwen3_grouped_subspace_transport_w010_r16_dynalign_value_verifier_sidecar_module_replace_cal64_chat.pt"
+    )
+
+
+def test_parse_args_accepts_multiple_ranks_and_bases(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--rank",
+            "4",
+            "--rank",
+            "16",
+            "--base",
+            "dynalign_module_replace",
+            "--base",
+            "tokenbasis_replace",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.ranks == [4, 16]
+    assert args.bases == ["dynalign_module_replace", "tokenbasis_replace"]
+
+
+def test_parse_args_accepts_seed(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--seed",
+            "13",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.seed == 13
+
+
+def test_parse_args_accepts_bridge_bank_size(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--bridge-bank-size",
+            "0",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.bridge_bank_size == 0
+
+
+def test_parse_args_accepts_source_controls(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--run-source-controls",
+            "--source-control-random-salt",
+            "9",
+            "--no-source-control-target-fallback",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.run_source_controls is True
+    assert args.source_control_random_salt == 9
+    assert args.no_source_control_target_fallback is True
+
+
+def test_parse_args_accepts_accept_fallback(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--accept-fallback-score-field",
+            "selector_gap_min",
+            "--accept-fallback-threshold",
+            "0.029237359762191772",
+            "--accept-fallback-max-numeric-len",
+            "9",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.accept_fallback_score_field == "selector_gap_min"
+    assert args.accept_fallback_threshold == 0.029237359762191772
+    assert args.accept_fallback_max_numeric_len == 9
+
+
+def test_accept_fallback_rejects_low_score_and_target_match(tmp_path: pathlib.Path) -> None:
+    config = sweep.ResidualSweepConfig(
+        accept_fallback_score_field="selector_gap_min",
+        accept_fallback_threshold=0.5,
+    )
+    target_records = [
+        {
+            "example_id": "a",
+            "method": "target_alone",
+            "prediction": "answer is 0",
+            "normalized_prediction": "0",
+            "correct": False,
+            "generated_tokens": 2,
+            "latency_sec": 0.1,
+        },
+        {
+            "example_id": "b",
+            "method": "target_alone",
+            "prediction": "answer is 1",
+            "normalized_prediction": "1",
+            "correct": True,
+            "generated_tokens": 3,
+            "latency_sec": 0.2,
+        },
+        {
+            "example_id": "c",
+            "method": "target_alone",
+            "prediction": "answer is 2",
+            "normalized_prediction": "2",
+            "correct": False,
+            "generated_tokens": 4,
+            "latency_sec": 0.3,
+        },
+    ]
+    candidate_records = [
+        {
+            "example_id": "a",
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "answer is 7",
+            "normalized_prediction": "7",
+            "correct": True,
+            "selector_trace": [{"score_gap": 0.7}],
+            "generated_tokens": 5,
+            "latency_sec": 0.4,
+        },
+        {
+            "example_id": "b",
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "answer is 9",
+            "normalized_prediction": "9",
+            "correct": False,
+            "selector_trace": [{"score_gap": 0.2}],
+            "generated_tokens": 6,
+            "latency_sec": 0.5,
+        },
+        {
+            "example_id": "c",
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "answer is 2",
+            "normalized_prediction": "2",
+            "correct": True,
+            "selector_trace": [{"score_gap": 0.8}],
+            "generated_tokens": 7,
+            "latency_sec": 0.6,
+        },
+    ]
+
+    records, summary = sweep._apply_accept_fallback_to_records(
+        records=candidate_records,
+        target_records=target_records,
+        config=config,
+        output_path=tmp_path / "gated.jsonl",
+    )
+
+    assert summary["accepted_ids"] == ["a"]
+    assert summary["rejected_reasons"] == {
+        "score_below_threshold": 1,
+        "candidate_matches_target_numeric": 1,
+    }
+    assert [record["accepted_candidate"] for record in records] == [True, False, False]
+    assert [record["correct"] for record in records] == [True, True, False]
+    assert records[0]["latency_sec"] == 0.5
+    assert records[1]["accept_fallback_reason"] == "score_below_threshold"
+    assert (tmp_path / "gated.jsonl").exists()
+
+
+def test_write_markdown_renders_rows(tmp_path) -> None:
+    payload = {
+        "date": "2026-04-21",
+        "baseline_contract": "/tmp/gsm8k_smoke_contract_20260421.md",
+        "config": {
+            "source_model": "src",
+            "target_model": "tgt",
+            "calibration_file": ".debug/calibration_64.txt",
+            "seed": 7,
+            "slice_size": 32,
+            "eval_file": "data/gsm8k_eval_70.jsonl",
+        },
+        "rows": [
+            {
+                "label": "dynalign_module_replace_residrank16",
+                "base_label": "dynalign_module_replace",
+                "residual_rank": 16,
+                "bridge_bank_size": 8,
+                "accuracy": 0.125,
+                "paired_vs_target": {"win": 3, "loss": 1, "tie": 28},
+                "numeric_extraction_coverage": 32,
+                "empty_predictions": 0,
+                "reused_existing_checkpoint": False,
+                "seed": 7,
+            }
+        ],
+        "checks": {
+            "dynalign_module_replace_residrank16": {
+                "row_count_matches_slice": True,
+                "example_ids_match_target": True,
+                "no_empty_predictions": True,
+                "numeric_extraction_coverage": True,
+                "beats_target": True,
+            }
+        },
+    }
+    path = tmp_path / "out.md"
+    sweep._write_markdown(path, payload)
+    text = path.read_text()
+    assert "- seed: `7`" in text
+    assert "| dynalign_module_replace | 16 | 8 | 0.1250 | 3 | 1 | 28 | 32 | 0 | ok | 0 | - | no | yes |" in text
+    assert "`dynalign_module_replace_residrank16` — row_count_matches_slice=PASS" in text
+
+
+def test_write_markdown_blocks_promotion_when_source_controls_fail(tmp_path) -> None:
+    payload = {
+        "date": "2026-04-23",
+        "baseline_contract": "/tmp/gsm8k_smoke_contract_20260421.md",
+        "config": {
+            "source_model": "src",
+            "target_model": "tgt",
+            "calibration_file": ".debug/calibration_64.txt",
+            "seed": 1,
+            "slice_size": 32,
+            "eval_file": "data/gsm8k_eval_70.jsonl",
+            "run_source_controls": True,
+        },
+        "rows": [
+            {
+                "label": "candidate",
+                "base_label": "dynalign_module_replace",
+                "residual_rank": 16,
+                "bridge_bank_size": 4,
+                "accuracy": 0.125,
+                "paired_vs_target": {"win": 3, "loss": 1, "tie": 28},
+                "numeric_extraction_coverage": 32,
+                "empty_predictions": 0,
+                "reused_existing_checkpoint": False,
+                "seed": 1,
+                "source_control_status": "source_controls_do_not_clear_gate",
+                "source_control_passed": False,
+                "source_controls": {
+                    "status": "source_controls_do_not_clear_gate",
+                    "passed": False,
+                    "readout_json": "/tmp/candidate/source_controls/source_control_readout.json",
+                    "prediction_outputs": {
+                        "zero_source": "/tmp/candidate/source_controls/zero_source.jsonl",
+                        "shuffled_source_salt1": "/tmp/candidate/source_controls/shuffled_source_salt1.jsonl",
+                    },
+                },
+            }
+        ],
+        "checks": {
+            "candidate": {
+                "row_count_matches_slice": True,
+                "example_ids_match_target": True,
+                "no_empty_predictions": True,
+                "numeric_extraction_coverage": True,
+                "beats_target": True,
+            }
+        },
+    }
+    path = tmp_path / "out.md"
+    sweep._write_markdown(path, payload)
+    text = path.read_text()
+
+    assert "| dynalign_module_replace | 16 | 4 | 0.1250 | 3 | 1 | 28 | 32 | 0 | ok | 0 | - | no | no |" in text
+    assert "## Source Controls" in text
+    assert "| `candidate` | source_controls_do_not_clear_gate | no |" in text
+
+
+def test_payload_round_trip_json() -> None:
+    payload = {"rows": [{"label": "foo"}], "checks": {"foo": {"beats_target": False}}}
+    dumped = json.dumps(payload, sort_keys=True)
+    assert json.loads(dumped)["rows"][0]["label"] == "foo"
+
+
+def test_checkpoint_finite_summary_detects_nonfinite(tmp_path: pathlib.Path) -> None:
+    ckpt = tmp_path / "bad.pt"
+    torch.save({"state_dict": {"weight": torch.tensor([1.0, float("nan")], dtype=torch.float32)}}, ckpt)
+    summary = sweep._checkpoint_finite_summary(ckpt)
+    assert summary["nonfinite_numel"] == 1
+    assert summary["first_bad_key"] == "weight"
+    assert summary["nonfinite_keys"] == ["weight"]
+    assert summary["top_abs_tensors"][0]["key"] == "weight"
+
+
+def test_calibrate_checkpoint_rejects_existing_nonfinite_checkpoint(tmp_path: pathlib.Path, monkeypatch) -> None:
+    ckpt = tmp_path / "bad.pt"
+    torch.save({"state_dict": {"weight": torch.tensor([float("inf")], dtype=torch.float32)}}, ckpt)
+    monkeypatch.setattr(sweep, "_run", lambda cmd: (_ for _ in ()).throw(AssertionError("should not recalibrate")))
+    with pytest.raises(ValueError, match="non-finite"):
+        sweep._calibrate_checkpoint(
+            base_label="dynalign_module_replace",
+            rank=16,
+            checkpoint_path=ckpt,
+            config=sweep.ResidualSweepConfig(),
+        )
+
+
+def test_calibrate_checkpoint_quarantines_new_nonfinite_checkpoint(tmp_path: pathlib.Path, monkeypatch) -> None:
+    ckpt = tmp_path / "fresh_bad.pt"
+
+    def _fake_run(cmd: list[str]) -> None:
+        torch.save({"state_dict": {"weight": torch.tensor([1.0, float("nan")], dtype=torch.float32)}}, ckpt)
+
+    monkeypatch.setattr(sweep, "_run", _fake_run)
+
+    with pytest.raises(ValueError, match="health_path="):
+        sweep._calibrate_checkpoint(
+            base_label="dynalign_preserve_module_replace",
+            rank=16,
+            checkpoint_path=ckpt,
+            config=sweep.ResidualSweepConfig(seed=3),
+        )
+
+    quarantined = sweep._quarantined_checkpoint_path(ckpt)
+    health_path = sweep._checkpoint_health_path(ckpt)
+    assert not ckpt.exists()
+    assert quarantined.exists()
+    health = json.loads(health_path.read_text())
+    assert health["freshly_created"] is True
+    assert health["nonfinite_numel"] == 1
+    assert health["quarantined_checkpoint_path"] == str(quarantined)
+
+
+def test_calibrate_checkpoint_passes_whitening_flags(tmp_path: pathlib.Path, monkeypatch) -> None:
+    ckpt = tmp_path / "fresh_good.pt"
+    commands: list[list[str]] = []
+
+    def _fake_run(cmd: list[str]) -> None:
+        commands.append(cmd)
+        torch.save({"state_dict": {"weight": torch.tensor([1.0], dtype=torch.float32)}}, ckpt)
+
+    monkeypatch.setattr(sweep, "_run", _fake_run)
+    summary = sweep._calibrate_checkpoint(
+        base_label="dynalign_module_replace",
+        rank=16,
+        checkpoint_path=ckpt,
+        config=sweep.ResidualSweepConfig(
+            seed=1,
+            whitening=True,
+            target_whitening=True,
+            whitening_streams="v",
+            target_whitening_streams="v",
+            conditioning_target_layers=(8,),
+            bridge_bank_size=16,
+            fit_ridge_override_lambda=1e-2,
+            fit_ridge_override_streams="v",
+            fit_ridge_override_layers=(8,),
+            fit_ridge_protected_rank=2,
+        ),
+    )
+
+    assert summary["nonfinite_numel"] == 0
+    assert pathlib.Path(summary["health_path"]).exists()
+    health = json.loads(pathlib.Path(summary["health_path"]).read_text())
+    assert health["freshly_created"] is True
+    assert health["conditioning"]["bridge_bank_size"] == 16
+    assert any(part == "--whitening" for part in commands[0])
+    assert any(part == "--target-whitening" for part in commands[0])
+    assert "--whitening-streams" in commands[0]
+    assert "--target-whitening-streams" in commands[0]
+    assert "--conditioning-target-layer" in commands[0]
+    assert "--bridge-bank-size" in commands[0]
+    assert "--fit-ridge-override-lambda" in commands[0]
+    assert "--fit-ridge-override-streams" in commands[0]
+    assert "--fit-ridge-override-layer" in commands[0]
+    assert "--fit-ridge-protected-rank" in commands[0]
+    assert "v" in commands[0]
+    assert "8" in commands[0]
+    assert "16" in commands[0]
+    assert "2" in commands[0]
+    assert "0.01" in commands[0]
+
+
+def test_parse_args_accepts_selective_conditioning(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--whitening",
+            "--target-whitening",
+            "--whitening-streams",
+            "v",
+            "--target-whitening-streams",
+            "v",
+            "--conditioning-target-layer",
+            "8",
+            "--conditioning-target-layer",
+            "10",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.whitening is True
+    assert args.target_whitening is True
+    assert args.whitening_streams == "v"
+    assert args.target_whitening_streams == "v"
+    assert args.conditioning_target_layers == [8, 10]
+
+
+def test_parse_args_accepts_fit_ridge_override(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "run_gsm8k_contract_residual_sweep.py",
+            "--fit-ridge-override-lambda",
+            "0.01",
+            "--fit-ridge-override-streams",
+            "v",
+            "--fit-ridge-override-layer",
+            "8",
+            "--fit-ridge-override-layer",
+            "10",
+            "--fit-ridge-protected-rank",
+            "2",
+        ],
+    )
+    args = sweep._parse_args()
+    assert args.fit_ridge_override_lambda == 0.01
+    assert args.fit_ridge_override_streams == "v"
+    assert args.fit_ridge_override_layers == [8, 10]
+    assert args.fit_ridge_protected_rank == 2
+
+
+def test_run_source_controls_for_row_invokes_controls_and_analyzer(
+    tmp_path: pathlib.Path, monkeypatch
+) -> None:
+    commands: list[list[str]] = []
+
+    def _fake_run(cmd: list[str]) -> None:
+        commands.append(cmd)
+        if str(sweep.ROOT / "scripts" / "analyze_gsm8k_source_controls.py") in cmd:
+            output_json = pathlib.Path(cmd[cmd.index("--output-json") + 1])
+            output_md = pathlib.Path(cmd[cmd.index("--output-md") + 1])
+            output_json.parent.mkdir(parents=True, exist_ok=True)
+            output_json.write_text(
+                json.dumps(
+                    {
+                        "gate": {
+                            "status": "source_controls_do_not_clear_gate",
+                            "checks": [],
+                        },
+                        "live_summary": {"correct": 3, "n": 32},
+                        "target_summary": {"correct": 2, "n": 32},
+                        "control_summaries": [],
+                    }
+                )
+                + "\n"
+            )
+            output_md.write_text("# controls\n")
+            return
+        prediction_output = pathlib.Path(cmd[cmd.index("--prediction-output") + 1])
+        prediction_output.parent.mkdir(parents=True, exist_ok=True)
+        prediction_output.write_text("")
+
+    monkeypatch.setattr(sweep, "_run", _fake_run)
+
+    row = {
+        "label": "candidate",
+        "prediction_output": str(tmp_path / "live.jsonl"),
+    }
+    config = sweep.ResidualSweepConfig(
+        baseline_results_dir=str(tmp_path / "baseline"),
+        source_control_random_salt=9,
+    )
+    sweep._run_source_controls_for_row(
+        row=row,
+        checkpoint_path=tmp_path / "translator.pt",
+        config=config,
+        materialized_eval_file=tmp_path / "eval.jsonl",
+        baseline_target_records=[],
+        results_dir=tmp_path / "results",
+    )
+
+    eval_commands = [cmd for cmd in commands if str(sweep.ROOT / "latent_bridge" / "evaluate.py") in cmd]
+    analyzer_commands = [
+        cmd for cmd in commands if str(sweep.ROOT / "scripts" / "analyze_gsm8k_source_controls.py") in cmd
+    ]
+
+    assert len(eval_commands) == 2
+    assert len(analyzer_commands) == 1
+    assert any("--source-kv-control" in cmd and "zero" in cmd for cmd in eval_commands)
+    assert any(
+        "--source-prompt-control" in cmd and "shuffle_examples" in cmd
+        for cmd in eval_commands
+    )
+    assert all(cmd.count("--random-salt") == 1 for cmd in eval_commands)
+    assert all(cmd[cmd.index("--random-salt") + 1] == "9" for cmd in eval_commands)
+
+    analyzer = analyzer_commands[0]
+    assert "--fallback-nonnumeric-controls-to-target" in analyzer
+    assert any(part.startswith("zero_source=") for part in analyzer)
+    assert any(part.startswith("shuffled_source_salt9=") for part in analyzer)
+    assert row["source_control_status"] == "source_controls_do_not_clear_gate"
+    assert row["source_controls"]["prediction_outputs"]["zero_source"].endswith(
+        "candidate/source_controls/zero_source.jsonl"
+    )
+
+
+def test_run_source_controls_for_row_gates_raw_control_outputs(
+    tmp_path: pathlib.Path, monkeypatch
+) -> None:
+    commands: list[list[str]] = []
+    target_records = [
+        {
+            "example_id": "ex",
+            "method": "target_alone",
+            "prediction": "answer is 1",
+            "normalized_prediction": "1",
+            "correct": False,
+        }
+    ]
+
+    def _raw_control_record() -> dict:
+        return {
+            "example_id": "ex",
+            "index": 0,
+            "method": "rotalign_kv_gate_0.10",
+            "prediction": "answer is 2",
+            "normalized_prediction": "2",
+            "correct": True,
+            "selector_trace": [{"score_gap": 0.7}],
+        }
+
+    def _fake_run(cmd: list[str]) -> None:
+        commands.append(cmd)
+        if str(sweep.ROOT / "scripts" / "analyze_gsm8k_source_controls.py") in cmd:
+            output_json = pathlib.Path(cmd[cmd.index("--output-json") + 1])
+            output_md = pathlib.Path(cmd[cmd.index("--output-md") + 1])
+            output_json.parent.mkdir(parents=True, exist_ok=True)
+            output_json.write_text(
+                json.dumps(
+                    {
+                        "gate": {"status": "source_controls_do_not_clear_gate", "checks": []},
+                        "live_summary": {"correct": 1, "n": 1},
+                        "target_summary": {"correct": 0, "n": 1},
+                        "control_summaries": [],
+                    }
+                )
+                + "\n"
+            )
+            output_md.write_text("# controls\n")
+            return
+        prediction_output = pathlib.Path(cmd[cmd.index("--prediction-output") + 1])
+        prediction_output.parent.mkdir(parents=True, exist_ok=True)
+        prediction_output.write_text(json.dumps(_raw_control_record()) + "\n")
+
+    monkeypatch.setattr(sweep, "_run", _fake_run)
+
+    row = {
+        "label": "candidate_accept_selector_gap_min_ge_0p5",
+        "prediction_output": str(tmp_path / "live_gated.jsonl"),
+    }
+    config = sweep.ResidualSweepConfig(
+        baseline_results_dir=str(tmp_path / "baseline"),
+        source_control_random_salt=4,
+        accept_fallback_score_field="selector_gap_min",
+        accept_fallback_threshold=0.5,
+    )
+    sweep._run_source_controls_for_row(
+        row=row,
+        checkpoint_path=tmp_path / "translator.pt",
+        config=config,
+        materialized_eval_file=tmp_path / "eval.jsonl",
+        baseline_target_records=target_records,
+        results_dir=tmp_path / "results",
+    )
+
+    analyzer = next(
+        cmd
+        for cmd in commands
+        if str(sweep.ROOT / "scripts" / "analyze_gsm8k_source_controls.py") in cmd
+    )
+    control_specs = [part for part in analyzer if part.startswith("zero_source=") or part.startswith("shuffled_source_salt4=")]
+    assert all("_accept_selector_gap_min_ge_0p5" in spec for spec in control_specs)
+    assert all("_raw.jsonl" not in spec for spec in control_specs)
+    zero_gated = pathlib.Path(row["source_controls"]["prediction_outputs"]["zero_source"])
+    zero_raw = pathlib.Path(row["source_controls"]["raw_prediction_outputs"]["zero_source"])
+    assert zero_gated.exists()
+    assert zero_raw.exists()
+    assert json.loads(zero_gated.read_text())["accepted_candidate"] is True
+
+
+def test_run_sweep_records_failure_row_instead_of_aborting(tmp_path: pathlib.Path, monkeypatch) -> None:
+    monkeypatch.setattr(sweep.smoke, "_materialize_slice", lambda src, dst, size: pathlib.Path(dst).write_text(""))
+    monkeypatch.setattr(
+        sweep.checkpoint_sweep,
+        "_load_baseline_target_records",
+        lambda results_dir, materialized_eval_file: [{"example_id": "ex1", "correct": 0}],
+    )
+    monkeypatch.setattr(
+        sweep,
+        "_calibrate_checkpoint",
+        lambda **kwargs: (_ for _ in ()).throw(ValueError("Checkpoint contains non-finite values: path=bad.pt")),
+    )
+    monkeypatch.setattr(
+        sweep,
+        "_safe_checkpoint_summary",
+        lambda checkpoint_path: {
+            "checkpoint_exists": False,
+            "nonfinite_numel": 11,
+            "first_bad_key": "quant_proj_K.1",
+            "max_abs": 42.0,
+            "top_abs_tensors": [{"key": "quant_proj_K.1", "max_abs": 42.0, "nonfinite_numel": 11}],
+        },
+    )
+
+    config = sweep.ResidualSweepConfig(
+        eval_file="data/gsm8k_eval_70.jsonl",
+        slice_size=1,
+        materialized_eval_file=str(tmp_path / "eval.jsonl"),
+        baseline_results_dir=str(tmp_path / "baseline"),
+        results_dir=str(tmp_path / "results"),
+        checkpoints_dir=str(tmp_path / "checkpoints"),
+        bases=("dynalign_module_replace",),
+        ranks=(16,),
+    )
+    payload = sweep.run_sweep(config)
+    row = payload["rows"][0]
+    checks = payload["checks"][row["label"]]
+
+    assert row["status"] == "checkpoint_nonfinite"
+    assert row["checkpoint_nonfinite_numel"] == 11
+    assert row["checkpoint_first_bad_key"] == "quant_proj_K.1"
+    assert row["accuracy"] == 0.0
+    assert checks == {
+        "row_count_matches_slice": False,
+        "example_ids_match_target": False,
+        "no_empty_predictions": False,
+        "numeric_extraction_coverage": False,
+        "beats_target": False,
+    }
+
+
+def test_write_markdown_renders_failure_row(tmp_path: pathlib.Path) -> None:
+    payload = {
+        "date": "2026-04-22",
+        "baseline_contract": "/tmp/gsm8k_smoke_contract_20260421.md",
+        "config": {
+            "source_model": "src",
+            "target_model": "tgt",
+            "calibration_file": ".debug/calibration_64.txt",
+            "seed": 1,
+            "slice_size": 70,
+            "eval_file": "data/gsm8k_eval_70.jsonl",
+        },
+        "rows": [
+            {
+                "label": "dynalign_module_replace_residrank16",
+                "base_label": "dynalign_module_replace",
+                "residual_rank": 16,
+                "bridge_bank_size": 4,
+                "accuracy": 0.0,
+                "paired_vs_target": {"win": 0, "loss": 0, "tie": 0},
+                "numeric_extraction_coverage": 0,
+                "empty_predictions": 70,
+                "reused_existing_checkpoint": False,
+                "status": "checkpoint_nonfinite",
+                "checkpoint_nonfinite_numel": 11,
+                "checkpoint_first_bad_key": "quant_proj_K.1",
+                "checkpoint_summary": {
+                    "top_abs_tensors": [
+                        {"key": "quant_proj_K.1", "max_abs": 42.0, "nonfinite_numel": 11}
+                    ]
+                },
+            }
+        ],
+        "checks": {
+            "dynalign_module_replace_residrank16": {
+                "row_count_matches_slice": False,
+                "example_ids_match_target": False,
+                "no_empty_predictions": False,
+                "numeric_extraction_coverage": False,
+                "beats_target": False,
+            }
+        },
+    }
+    path = tmp_path / "out.md"
+    sweep._write_markdown(path, payload)
+    text = path.read_text()
+    assert "| dynalign_module_replace | 16 | 4 | 0.0000 | 0 | 0 | 0 | 0 | 70 | checkpoint_nonfinite | 11 | quant_proj_K.1 | no | no |" in text
+    assert "top_tensor=quant_proj_K.1 (max_abs=42.0000, nonfinite=11)" in text

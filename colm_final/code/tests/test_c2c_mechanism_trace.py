@@ -1,0 +1,182 @@
+from __future__ import annotations
+
+import json
+import pathlib
+
+import torch
+
+from latent_bridge import c2c_eval
+from scripts import analyze_svamp32_c2c_mechanism_syndrome_probe as probe
+from scripts import analyze_svamp32_source_latent_syndrome_probe as source_probe
+from scripts import analyze_svamp32_syndrome_sidecar_probe as syndrome
+
+
+class _Projector:
+    def __init__(self) -> None:
+        self.last_norm_key_scalar = torch.tensor([[[[0.25], [0.75]]]])
+        self.last_norm_value_scalar = torch.tensor([[[[0.5], [1.0]]]])
+        self.last_key_gate_logit = 0.2
+        self.last_value_gate_logit = -0.1
+
+
+class _Model:
+    def __init__(self) -> None:
+        self.projector_list = [_Projector()]
+
+
+def _row(example_id: str, answer: str, pred: str, method: str, correct: bool) -> dict:
+    return {
+        "example_id": example_id,
+        "method": method,
+        "answer": answer,
+        "prediction": f"candidate mentions {answer}; final answer: {pred}",
+        "normalized_prediction": pred,
+        "correct": correct,
+    }
+
+
+def test_summarize_c2c_projector_trace_schema() -> None:
+    features, metadata = c2c_eval.summarize_c2c_projector_trace(_Model())
+
+    assert features.shape == (32,)
+    names = c2c_eval.c2c_trace_feature_names(1)
+    assert names[:12] == [
+        "projector_00.key_scalar.mean",
+        "projector_00.key_scalar.std",
+        "projector_00.key_scalar.min",
+        "projector_00.key_scalar.max",
+        "projector_00.value_scalar.mean",
+        "projector_00.value_scalar.std",
+        "projector_00.value_scalar.min",
+        "projector_00.value_scalar.max",
+        "projector_00.key_gate_logit",
+        "projector_00.value_gate_logit",
+        "projector_00.key_gate_active",
+        "projector_00.value_gate_active",
+    ]
+    assert names[-1] == "projector_00.value_residual.tail_delta_to_target_ratio"
+    assert metadata[0]["has_trace"] is True
+    assert metadata[0]["key_gate_active"] is True
+    assert metadata[0]["value_gate_active"] is False
+
+
+def test_c2c_trace_residual_projection_schema_is_deterministic() -> None:
+    source = torch.zeros(1, 1, 3, 2)
+    target = torch.ones(1, 1, 3, 2)
+    output = torch.arange(6, dtype=torch.float32).view(1, 1, 3, 2)
+
+    first = c2c_eval._trace_tensor_stats(
+        source=source,
+        target=target,
+        output=output,
+        projection_dim=4,
+        projection_salt=7,
+    )
+    second = c2c_eval._trace_tensor_stats(
+        source=source,
+        target=target,
+        output=output,
+        projection_dim=4,
+        projection_salt=7,
+    )
+    features, _ = c2c_eval.summarize_c2c_projector_trace(
+        _Model(),
+        residual_projection_dim=4,
+    )
+    names = c2c_eval.c2c_trace_feature_names(1, residual_projection_dim=4)
+
+    assert first["delta_projection"] == second["delta_projection"]
+    assert len(first["delta_projection"]) == 4
+    assert len(first["tail_delta_projection"]) == 4
+    assert features.shape == (48,)
+    assert len(names) == 48
+    assert names[-1] == "projector_00.value_residual.tail_delta_projection_003"
+
+
+def test_c2c_local_tail_tokens_are_query_probe_compatible() -> None:
+    source = torch.zeros(1, 2, 3, 4)
+    target = torch.ones(1, 2, 3, 4)
+    output = torch.arange(24, dtype=torch.float32).view(1, 2, 3, 4)
+    projector = _Projector()
+    projector.last_latentwire_local_tokens = {
+        "key": c2c_eval._tail_local_tokens(source=source, target=target, output=output),
+        "value": c2c_eval._tail_local_tokens(source=source + 1, target=target, output=output),
+    }
+    model = _Model()
+    model.projector_list = [projector]
+
+    features, metadata = c2c_eval.summarize_c2c_projector_local_tokens(model)
+    tokens = source_probe._feature_summary_tokens(
+        features.unsqueeze(0),
+        [{"feature_token_shape": metadata["feature_token_shape"]}],
+    )
+
+    assert metadata["feature_family"] == "c2c_prefill_token_layer_tail_residual"
+    assert metadata["feature_token_shape"] == [8, 8]
+    assert features.shape == (64,)
+    assert tokens.shape == (1, 8, 8)
+    assert metadata["token_names"][0] == "projector_00.key.source.tail"
+    assert metadata["token_names"][-1] == "projector_00.value.delta.tail"
+
+
+def test_c2c_mechanism_probe_relabels_status(tmp_path: pathlib.Path) -> None:
+    target_path = tmp_path / "target.jsonl"
+    teacher_path = tmp_path / "teacher.jsonl"
+    target_set_path = tmp_path / "target_set.json"
+    target_rows = [
+        _row("a", "1", "0", "target_alone", False),
+        _row("b", "2", "0", "target_alone", False),
+        _row("c", "3", "0", "target_alone", False),
+    ]
+    teacher_rows = [
+        _row("a", "1", "1", "c2c_generate", True),
+        _row("b", "2", "2", "c2c_generate", True),
+        _row("c", "3", "3", "c2c_generate", True),
+    ]
+    target_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in target_rows),
+        encoding="utf-8",
+    )
+    teacher_path.write_text(
+        "".join(json.dumps(row) + "\n" for row in teacher_rows),
+        encoding="utf-8",
+    )
+    target_set_path.write_text(
+        json.dumps(
+            {
+                "ids": {
+                    "teacher_only": ["a", "b", "c"],
+                    "clean_residual_targets": ["a"],
+                    "target_self_repair": [],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    payload = probe.analyze_with_c2c_features(
+        features=torch.eye(3),
+        feature_metadata=[
+            {"example_id": "a", "feature_family": "test"},
+            {"example_id": "b", "feature_family": "test"},
+            {"example_id": "c", "feature_family": "test"},
+        ],
+        c2c_run_config={"source_model": "source", "target_model": "target"},
+        target_spec=syndrome.RowSpec("target_alone", target_path, "target_alone"),
+        teacher_spec=syndrome.RowSpec("c2c", teacher_path, "c2c_generate"),
+        candidate_specs=[],
+        target_set_path=target_set_path,
+        fallback_label="target_alone",
+        config=source_probe.ProbeConfig(
+            moduli=(3,),
+            min_correct=1,
+            min_clean_source_necessary=1,
+        ),
+        min_numeric_coverage=1,
+        run_date="2026-04-26",
+    )
+
+    assert payload["status"].startswith("c2c_mechanism_syndrome_probe_")
+    assert payload["run"]["status"].startswith("c2c_mechanism_syndrome_probe_")
+    assert payload["config"]["feature_family"] == "c2c_prefill_projector_residual_trace"
+    assert "final answers" in payload["interpretation"]

@@ -66,7 +66,7 @@ PRIMARY_SOURCES = {
     },
     "qjl": {
         "url": "https://arxiv.org/abs/2406.03482",
-        "summary": "QJL uses a JL transform and sign-bit quantization for KV-cache compression.",
+        "summary": "QJL uses a JL transform and 1-bit quantization for KV-cache compression.",
     },
     "turboquant": {
         "url": "https://arxiv.org/abs/2504.19874",
@@ -286,14 +286,17 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="qjl_1bit_kv_floor",
             row_group="KV/source-state floor",
-            method="QJL sign-bit KV-state floor",
+            method="1-bit/KV-element accounting floor",
             communicated_object="one-token K+V state at 1 bit/element",
             raw_bytes=qjl1,
             source_kv_exposed=True,
             measurement_status="optimistic_byte_floor_not_native",
             nvidia_vllm_required=True,
             claim_allowed="mathematical state-size lower bound only",
-            overclaim_guard="QJL is a KV-cache state sketch comparator, not a defeated native baseline.",
+            overclaim_guard=(
+                "This is an internal one-bit-per-KV-element accounting floor; "
+                "do not treat it as a defeated QJL native baseline."
+            ),
             source_url=PRIMARY_SOURCES["qjl"]["url"],
             notes=PRIMARY_SOURCES["qjl"]["summary"],
         ),

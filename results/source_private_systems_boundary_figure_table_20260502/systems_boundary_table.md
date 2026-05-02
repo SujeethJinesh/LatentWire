@@ -15,7 +15,7 @@
 | LatentWire HellaSwag validation_full_compaction packet | task-level candidate evidence packet | 1B | 4B | 64B | 256B | `true` | `false` | `false` | `false` | `true` | source-private byte/exposure accounting with local benchmark accuracy; not a native GPU serving row |
 | Same-byte structured text control (ARC) | text-form control with same packet budget | 8B | 11B | 64B | 704B | `false` | `true` | `false` | `false` | `true` | negative/control row only; cannot support source-private claim |
 | One hidden-vector fp16 relay floor | one source hidden vector, fp16 | 1792B | 1792B | 1792B | 114688B | `false` | `false` | `false` | `true` | `false` | state-exposure lower bound only; not a baseline win |
-| QJL sign-bit KV-state floor | one-token K+V state at 1 bit/element | 768B | 768B | 768B | 49152B | `false` | `false` | `true` | `false` | `false` | mathematical state-size lower bound only |
+| 1-bit/KV-element accounting floor | one-token K+V state at 1 bit/element | 768B | 768B | 768B | 49152B | `false` | `false` | `true` | `false` | `false` | mathematical state-size lower bound only |
 | KIVI 2-bit KV floor | one-token K+V state at 2 bits/element | 1536B | 1536B | 1536B | 98304B | `false` | `false` | `true` | `false` | `false` | KV-cache compression comparator only |
 | Q-KVComm optimistic 6x floor | compressed source KV cache representation | 2048B | 2048B | 2048B | 131072B | `false` | `false` | `true` | `false` | `false` | compressed-KV communication boundary only |
 | KVQuant 3-bit proxy floor | one-token K+V state at 3 bits/element | 2304B | 2304B | 2304B | 147456B | `false` | `false` | `true` | `false` | `false` | sub-4-bit KV comparator only |

@@ -21,13 +21,6 @@ Peter Clark, Isaac Cowhey, Oren Etzioni, Tushar Khot, Ashish Sabharwal, Carissa
   challenge, 2018.
 \newblock URL \url{https://arxiv.org/abs/1803.05457}.
 
-\bibitem[Cunningham et~al.(2023)Cunningham, Ewart, Riggs, Huben, and
-  Sharkey]{Cunningham2023SAE}
-Hoagy Cunningham, Aidan Ewart, Logan Riggs, Robert Huben, and Lee Sharkey.
-\newblock Sparse autoencoders find highly interpretable features in language
-  models, 2023.
-\newblock URL \url{https://arxiv.org/abs/2309.08600}.
-
 \bibitem[Fu et~al.(2026)Fu, Min, Zhang, Yan, Dai, Ouyang, and Wang]{Fu2025C2C}
 Tianyu Fu, Zihan Min, Hanling Zhang, Jichao Yan, Guohao Dai, Wanli Ouyang, and
   Yu~Wang.
@@ -46,6 +39,15 @@ Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, Michael~W. Mahoney,
   volume~37, 2024.
 \newblock URL
   \url{https://proceedings.neurips.cc/paper_files/paper/2024/hash/028fcbcf85435d39a40c4d61b42c99a4-Abstract-Conference.html}.
+
+\bibitem[Huben et~al.(2024)Huben, Cunningham, Smith, Ewart, and
+  Sharkey]{Cunningham2023SAE}
+Robert Huben, Hoagy Cunningham, Logan~Riggs Smith, Aidan Ewart, and Lee
+  Sharkey.
+\newblock Sparse autoencoders find highly interpretable features in language
+  models.
+\newblock In \emph{International Conference on Learning Representations}, 2024.
+\newblock URL \url{https://openreview.net/forum?id=F76bwRSLeK}.
 
 \bibitem[Karvonen et~al.(2025)Karvonen, Rager, Lin, Tigges, Bloom, Chanin, Lau,
   Farrell, Mcdougall, Ayonrinde, Till, Wearden, Conmy, Marks, and
@@ -66,8 +68,10 @@ Woosuk Kwon, Zhuohan Li, Siyuan Zhuang, Ying Sheng, Lianmin Zheng, Cody~Hao Yu,
   Joseph~E. Gonzalez, Hao Zhang, and Ion Stoica.
 \newblock Efficient memory management for large language model serving with
   pagedattention.
-\newblock In \emph{ACM Symposium on Operating Systems Principles}, 2023.
-\newblock URL \url{https://arxiv.org/abs/2309.06180}.
+\newblock In \emph{Proceedings of the 29th Symposium on Operating Systems
+  Principles}, pp.\  611--626, 2023.
+\newblock \doi{10.1145/3600006.3613165}.
+\newblock URL \url{https://dl.acm.org/doi/10.1145/3600006.3613165}.
 
 \bibitem[Lan et~al.(2024)Lan, Torr, Meek, Khakzar, Krueger, and
   Barez]{Engels2024SAEUniversality}
@@ -126,7 +130,7 @@ Luca Moschella, Valentino Maiorca, Marco Fumero, Antonio Norelli, Francesco
 \newblock URL \url{https://openreview.net/forum?id=SrC-nwieGJ}.
 
 \bibitem[Mu et~al.(2023)Mu, Li, and Goodman]{Mu2023Gist}
-Jesse Mu, Xiang~Lisa Li, and Noah Goodman.
+Jesse Mu, Xiang Li, and Noah Goodman.
 \newblock Learning to compress prompts with gist tokens.
 \newblock In \emph{Advances in Neural Information Processing Systems},
   volume~36, 2023.

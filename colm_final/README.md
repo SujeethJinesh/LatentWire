@@ -8,15 +8,16 @@ LatentWire draft.
 ## Current Readiness
 
 - COLM workshop: plausible but borderline. The package is buildable,
-  citation-audited, and evidence-audited, but the story must stay narrow.
+  citation-audited, test-audited, and evidence-audited, but the story must stay narrow.
 - ICLR full paper: not ready. The positive method is still same-family and the
   systems result is byte/exposure accounting, not native serving throughput.
-- Current paper story: fixed-byte, source-private packets transfer useful
-  same-family evidence on ARC-Challenge and OpenBookQA; strict cross-family
-  Phi-3 replacement and Mac-local learned connector repairs fail.
-- Exact blocker: reviewers may interpret the packet as compressed source-choice
-  routing rather than broad latent communication. A stronger receiver-family or
-  cross-family positive is still needed for ICLR.
+- Current paper story: fixed-byte, source-private packets transfer the source
+  model's selected candidate under a tight byte budget on ARC-Challenge and
+  OpenBookQA; strict cross-family Phi-3 replacement and cached learned
+  connector repairs fail.
+- Exact blocker: reviewers may interpret the result as source-choice/index
+  transfer. A direct source-choice/index baseline and a stronger
+  receiver-family or cross-family positive are still needed for ICLR.
 
 ## Folder Layout
 
@@ -55,8 +56,8 @@ pdflatex -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
 pdflatex -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
 ```
 
-Expected status is recorded in `audits/test_report.txt` and
-`audits/build_report.txt`.
+Expected status is recorded in `audits/test_report.txt`,
+`audits/build_report.txt`, and `audits/reproducibility_report.md`.
 
 ## Submission Caveats
 
@@ -65,6 +66,8 @@ Expected status is recorded in `audits/test_report.txt` and
 - Treat random-anchor success as evidence for shared public coordinates, not
   semantic anchor names.
 - Treat the systems result as object-size and exposure accounting only.
+- Treat the QJL-related systems row as an internal 1-bit-per-KV-element
+  accounting floor, not a native QJL performance comparison.
 - The next experiment to de-risk reviews is a direct source-choice/index
   baseline plus a receiver-family gate that must beat packet-only and
   target-only with paired confidence intervals.
