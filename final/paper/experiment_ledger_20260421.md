@@ -18818,3 +18818,36 @@ giving back source-correct/target-wrong wins, under packet-only, target-only,
 source-label-copy, same-byte text, candidate-id-only, target-derived selector,
 random same-rate selector, row-shuffle, label-permutation, candidate
 derangement, and wrong-example controls.
+
+HellaSwag conditional selector/syndrome gate: added
+`scripts/build_source_private_hellaswag_conditional_selector_syndrome_gate.py`,
+test
+`tests/test_build_source_private_hellaswag_conditional_selector_syndrome_gate.py`,
+memo
+`paper/source_private_hellaswag_conditional_selector_syndrome_gate_20260502.md`,
+references
+`references/622_hellaswag_conditional_selector_syndrome_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_conditional_selector_syndrome_gate_20260502/`.
+Outcome: this first post-headroom train-only selector/syndrome method does not
+promote. The gate uses official HellaSwag train calibration (`1487` rows after
+dropping `5` duplicates and `44` out-of-bag overlap rows; split `1115/372`)
+and evaluates once on full validation (`10042` rows). The method trains a
+ridge benefit predictor for `alternative_correct - packet_correct` over the
+compact TinyLlama packet, optional source-side quantile syndrome bins, and Qwen
+receiver-side score features; inference transmits only a `1B` raw / `4B`
+framed discrete packet. The official-dev-selected default reaches `0.618901`
+versus packet-only `0.619199` (delta `-0.000299`, CI95 low `-0.000896`, help
+`4`, harm `7`). The best eval-only diagnostic scout reaches `0.621291`
+(delta `+0.002091`, CI95 low `+0.000797`) but captures only `2.56%` of the
+packet-or-Qwen oracle headroom and is below the stricter `+0.020` promotion
+bar. Destructive controls collapse or tie packet-only: row-shuffle source code
+`-0.016531`, Qwen-derived source code `-0.044712`, random same-byte code
+`-0.015535`, random subcode preserving packet `0.000000`, candidate
+derangement `-0.029177`, packet-only candidate code `-0.000199`, and label
+permutation `-0.086537`. Interpretation: the HellaSwag oracle headroom is real
+but is not learnably exposed by scalar/linear benefit prediction over current
+packet and score features. Do not keep tuning linear selectors; the next live
+method branch must change representation class to a nonlinear
+query-bottleneck/resampler or sparse dictionary that still emits a fixed-byte
+source-private syndrome.

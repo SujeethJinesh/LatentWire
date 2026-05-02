@@ -1853,5 +1853,12 @@
     "path": "references/621_hellaswag_complementarity_headroom_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the HellaSwag complementarity headroom gate, covering the oracle/headroom interpretation and boundaries against C2C, KVComm/KVCOMM, Q-Former/Perceiver-style continuous connectors, and prefix/prompt-token methods."
+  },
+  {
+    "num": 622,
+    "slug": "hellaswag_conditional_selector_syndrome_refs_20260502",
+    "path": "references/622_hellaswag_conditional_selector_syndrome_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed HellaSwag conditional selector/syndrome gate, covering the negative linear benefit-predictor result, fixed-byte source-private novelty boundary, systems byte-floor accounting, and boundaries against prefix/prompt tuning, C2C/KVComm/KVCOMM, Q-Former/Perceiver/Flamingo, SAE/crosscoders, QJL, and TurboQuant."
   }
 ]
