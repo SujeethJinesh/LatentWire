@@ -18914,3 +18914,37 @@ diagnostic, and negative ablation suite. The next ICLR-positive branch must be
 a materially different source representation, a true fixed-query connector, or
 a decoder-conditioned innovation codec with native C2C/KVComm/QJL/TurboQuant
 comparisons.
+
+HellaSwag discrete query innovation codec gate: added
+`scripts/build_source_private_hellaswag_discrete_query_innovation_codec_gate.py`,
+test
+`tests/test_build_source_private_hellaswag_discrete_query_innovation_codec_gate.py`,
+memo
+`paper/source_private_hellaswag_discrete_query_innovation_codec_gate_20260502.md`,
+references
+`references/625_hellaswag_discrete_query_innovation_codec_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_discrete_query_innovation_codec_gate_20260502/`.
+Outcome: this decoder-conditioned fixed-query residual-code branch fails
+promotion and weakens source-score-derived innovation codebooks. It keeps the
+`1B` raw / `4B` framed packet contract: calibration trains a source encoder on
+official HellaSwag train rows against Qwen-side residual targets, but
+validation transmits only `cluster_id * 4 + source_candidate`. The
+official-dev-selected default reaches `0.605158` versus packet-only
+`0.619199` (delta `-0.014041`, CI95 low `-0.018124`) and hurts all `5/5`
+validation blocks. The best eval-scout row reaches only `0.619399` (delta
+`+0.000199`, CI95 low `-0.000398`) against a packet-or-Qwen-target oracle
+delta of `+0.058355`. Destructive controls mostly collapse far below
+packet-only: row-shuffle source code `-0.350329`, source-feature shuffle
+`-0.363175`, codebook permutation `-0.117307`, random same-byte code
+`-0.330910`, Qwen-derived code `-0.140609`, and label permutation
+`-0.356602`; compact candidate-only ties packet-only. Cached Mac timing is
+small (`36.21us`/`63.92us` encode/decode p50 at batch 1; `2.62us`/`0.82us` at
+batch 256), and byte floors remain systems-relevant (`3072x` FP16 one-token KV,
+`921.6x` KVComm-30% FP16, `192x` QJL 1-bit, `672x` TurboQuant 3.5-bit versus a
+4B framed packet). Interpretation: the controls are strong enough, but the
+method does not help. Stop HellaSwag source-score codec tuning. The next
+positive branch must use materially stronger source information, likely hidden
+features/PQ or a true connector on NVIDIA; otherwise cut HellaSwag
+receiver-improvement and retain it as systems/headroom/negative-ablation
+evidence.

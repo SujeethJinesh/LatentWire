@@ -1874,5 +1874,12 @@
     "path": "references/624_hellaswag_switch_observability_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the HellaSwag switch-observability gate, covering the weak help-vs-harm AUC result, branch-kill decision for Mac-local selector/source-score tuning, and novelty boundaries against HellaSwag benchmark claims, RFF/kernel diagnostics, prefix/prompt tuning, C2C/KVComm/KVCOMM, Q-Former/Perceiver/Flamingo, SAE/crosscoders, QJL, TurboQuant, and vector quantization."
+  },
+  {
+    "num": 625,
+    "slug": "hellaswag_discrete_query_innovation_codec_refs_20260502",
+    "path": "references/625_hellaswag_discrete_query_innovation_codec_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed HellaSwag decoder-conditioned discrete query innovation codec gate, covering the negative fixed-query residual-code result, controls, systems byte floors, and novelty boundaries against prefix/prompt tuning, C2C/KVComm/KVCOMM, Q-Former/Perceiver/Flamingo, SAE/crosscoders, QJL, TurboQuant, KIVI, KVQuant, vector quantization, and distributed source coding."
   }
 ]
