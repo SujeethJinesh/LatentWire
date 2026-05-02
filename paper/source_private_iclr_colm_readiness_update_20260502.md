@@ -418,3 +418,24 @@ The next exact Mac-local step is an ARC n32 target-loss soft-prefix preflight
 using Qwen source features and a frozen target. If it passes destructive
 controls, the paper-facing gate becomes the OpenBookQA 3B train-only receiver
 over packet-only with positive paired CI95 lower bound.
+
+## 2026-05-02 Soft-Prefix Preflight Scaffold
+
+Added the first isolated target-loss ARC/OpenBookQA soft-prefix scaffold and
+CPU smoke artifact:
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_hidden_n8_cpu_label_choice/`.
+
+Readout:
+
+- implementation path exists and emits reviewer-critical controls;
+- MPS target `inputs_embeds` is blocked by an Apple attention-shape failure;
+- CPU Qwen-source-hidden n8 smoke is negative: matched soft-prefix `0/4`,
+  target-only `1/4`, slots-only/static prefix `2/4`, same-norm noise `2/4`,
+  and source-label-copy audit upper bound `3/4`.
+
+Decision: the current tiny selected-hidden soft-prefix is not a positive
+method. Keep the branch alive only as a larger tokenwise/query connector with
+better source pooling, continuation scoring selected on validation, seed
+repeats, and ideally NVIDIA. This result strengthens the reviewer story by
+showing we now test source necessity directly rather than relying on shallow
+mean-cache proxies.

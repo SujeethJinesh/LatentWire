@@ -19496,3 +19496,36 @@ Lay explanation: this step made the research map explicit. It says which ideas
 are real enough to write up, which failed, and exactly what the next translator
 experiment has to prove before the paper can claim cross-model latent
 communication rather than just small source-private hints.
+
+ARC/OpenBookQA target-loss soft-prefix preflight scaffold: added
+`scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py`, test
+`tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`, memo
+`paper/source_private_arc_openbookqa_soft_prefix_preflight_20260502.md`,
+references `references/648_arc_openbookqa_soft_prefix_preflight_refs_20260502.md`,
+and artifact
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_hidden_n8_cpu_label_choice/`.
+Outcome: implementation gate passed, method gate failed. The script trains
+only a small connector from answer-key-forbidden source summaries to frozen
+target embedding-prefix tokens, then scores MCQ continuations under matched,
+target-only, target-cache-only, slots-only/static prefix, zero-source,
+shuffled-source, same-norm noise, train-mean source, label-shuffled,
+candidate-deranged, same-byte visible text, and source-label-copy audit
+conditions. Apple MPS failed on the target `inputs_embeds` path with an
+attention-shape `mps.matmul` error, so the promoted readout is CPU-only with
+`attn_implementation=eager`.
+
+Qwen-source-hidden ARC n8 CPU smoke with `label_and_choice` continuations:
+fit/eval rows `4/4`, matched soft-prefix accuracy `0.000`, target-only
+`0.250`, slots-only/static prefix `0.500`, same-norm noise `0.500`,
+same-byte visible text `0.250`, source-label-copy audit upper bound `0.750`,
+matched mean margin `-0.931525`, best pass-control margin `-0.180762`, and
+matched-minus-best-control margin `-0.750763`; pass gate `False`. Decision:
+do not claim a positive soft-prefix result from this tiny Mac surface. The
+branch remains alive only as a larger target-loss query/soft-prefix connector
+with better pooling/scoring, seed repeats, and preferably NVIDIA.
+
+Lay explanation: this run taught a tiny translator to prepend Qwen3 with soft
+tokens derived from Qwen2.5's hidden clue. On four held-out smoke rows, those
+soft hints did not help; a static learned prefix and random same-norm source
+noise did better, so the current tiny connector is not yet using the source
+model reliably.

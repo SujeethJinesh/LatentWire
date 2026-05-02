@@ -2035,5 +2035,12 @@
     "path": "references/647_iclr_gate_tree_connector_plan_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ICLR gate-tree and tokenwise connector runbook, covering BLIP-2/Q-Former, Flamingo, Perceiver IO, Prefix-Tuning, C2C, KVComm/KVCOMM, QJL, TurboQuant, diffusion/consistency inspiration, SAE universality, and relative representations as novelty boundaries."
+  },
+  {
+    "num": 648,
+    "slug": "arc_openbookqa_soft_prefix_preflight_refs_20260502",
+    "path": "references/648_arc_openbookqa_soft_prefix_preflight_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the first ARC/OpenBookQA target-loss soft-prefix preflight, covering Prefix-Tuning, BLIP-2/Q-Former, Flamingo/Perceiver-style resampling, C2C/KVComm, QJL, TurboQuant, sparse autoencoders, and consistency/refinement work as novelty and baseline boundaries."
   }
 ]
