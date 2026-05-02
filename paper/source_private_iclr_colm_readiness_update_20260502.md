@@ -14,9 +14,9 @@ Date: 2026-05-02
   common-language connector must beat packet-only under paired uncertainty,
   destructive controls, and at least one strict cross-family or cross-benchmark
   falsification. The Mac-local Phi-3 cross-family source diagnostic and the
-  TinyLlama hidden/query common-basis connector now both fail this gate. The
-  systems boundary table is paper-ready as accounting, but native NVIDIA
-  serving rows remain incomplete.
+  TinyLlama hidden/query common-basis and transport/common-basis connectors now
+  fail this gate. The systems boundary table is paper-ready as accounting, but
+  native NVIDIA serving rows remain incomplete.
 
 ## Contributions To Put Forward
 
@@ -173,6 +173,29 @@ system. On the hard rows where TinyLlama and Qwen disagree, that translated
 TinyLlama hint was worse than the ordinary TinyLlama packet and much worse
 than the Qwen-substituted packet.
 
+The ARC transport/common-basis gate tests the next geometric repair:
+
+- artifact:
+  `results/source_private_arc_challenge_transport_common_basis_gate_20260502_tinyllama_disagreement/arc_challenge_transport_common_basis_gate.json`
+- train/select surface: `144` validation TinyLlama-vs-Qwen disagreement rows;
+- frozen test surface: `473` TinyLlama-vs-Qwen disagreement rows;
+- candidates: nearest-neighbor barycentric transport, QJL-style sign-projected
+  nearest-neighbor transport, and whitened orthogonal Procrustes;
+- selected method/view/parameter: `whitened_procrustes / query_residual /
+  dim=32`;
+- frozen test matched/Qwen-substituted/cached-Tiny mean:
+  `0.228753/0.317125/0.269345`;
+- matched-minus-Qwen-substituted mean: `-0.088372`;
+- matched-minus-cached-Tiny mean: `-0.040592`;
+- CI95 lower bound versus Qwen-substituted: `-0.160677`;
+- candidate-roll and spectral-permutation controls remain below Qwen;
+- pass gate: `False`.
+
+Lay explanation: this run tried three simple ways to translate TinyLlama's
+internal hints into Qwen's public packet coordinate system: copy from nearby
+examples, copy from random sign sketches, or rotate the spaces into alignment.
+None helped on held-out rows.
+
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
 
@@ -221,7 +244,7 @@ same controls.
   reasoning.
 - Add one clean figure summarizing the gate tree: ARC/OpenBookQA positive,
   SciQ/CommonsenseQA diagnostic, HellaSwag branch killed for receiver
-  improvement.
+  improvement, and TinyLlama hidden/query transport ruled out for ARC repair.
 
 ## Blockers For User Help
 
@@ -238,6 +261,7 @@ NVIDIA, then fill the native systems schema with matched vLLM/SGLang/C2C/
 KVComm/QJL/TurboQuant rows. Receiver-only scalar routing, source-side scalar
 confidence routing, cached candidate-level packet/score connectors, Mac-local
 Phi-3 source packets, and shallow TinyLlama hidden/query PCA/ridge connectors
-are now ruled out for this ARC disagreement surface. The same-family Qwen-1.5B
-stronger-source diagnostic should be repeated with a true stronger cross-family
-source before making the ICLR claim.
+or static transport/Procrustes connectors are now ruled out for this ARC
+disagreement surface. The same-family Qwen-1.5B stronger-source diagnostic
+should be repeated with a true stronger cross-family source before making the
+ICLR claim.

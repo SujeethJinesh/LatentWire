@@ -19306,3 +19306,30 @@ explicitly marked as byte floors or pending native NVIDIA baselines. Decision:
 promote this as the COLM/ICLR systems boundary figure/table, but do not claim a
 native latency, goodput, HBM, GPU-memory, or baseline-defeat win until matched
 NVIDIA serving rows exist.
+
+ARC-Challenge transport/common-basis connector gate: added
+`scripts/build_source_private_arc_challenge_transport_common_basis_gate.py`,
+test
+`tests/test_build_source_private_arc_challenge_transport_common_basis_gate.py`,
+memo
+`paper/source_private_arc_transport_common_basis_gate_20260502.md`,
+references
+`references/640_arc_transport_common_basis_refs_20260502.md`, and artifact
+`results/source_private_arc_challenge_transport_common_basis_gate_20260502_tinyllama_disagreement/`.
+Outcome: this is the next shallow geometric repair after the negative
+TinyLlama hidden/query PCA/ridge gate, and it is also negative. The gate
+reuses the cached TinyLlama hidden/query features, trains/selects on the `144`
+ARC validation rows where TinyLlama and Qwen-0.5B source packets disagree, and
+evaluates once on the frozen `473` test disagreement rows. It tests local
+nearest-neighbor barycentric transport, QJL-style sign-projected transport,
+and whitened orthogonal Procrustes while keeping the same `12B` source-private
+packet boundary. The selected validation row is `whitened_procrustes` on
+`query_residual` with `dim=32`, but frozen test matched/Qwen-substituted/
+cached-Tiny mean accuracy is `0.229/0.317/0.269`; matched-minus-Qwen is
+`-0.088`, matched-minus-cached-Tiny is `-0.041`, and the paired CI95 lower
+bound versus Qwen-substituted is `-0.161`. Candidate-roll and
+spectral-permutation controls remain below Qwen-substituted accuracy. Decision:
+rule out static nearest-neighbor, sign-sketch, and orthogonal-Procrustes
+repairs over the current TinyLlama ARC hidden/query caches; promote a learned
+query/cache bottleneck, nonlinear sparse crosscoder, or stronger true
+cross-family source as the next live method branch.

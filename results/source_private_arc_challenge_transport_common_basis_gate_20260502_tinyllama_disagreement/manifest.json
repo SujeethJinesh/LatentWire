@@ -1,0 +1,37 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_arc_challenge_transport_common_basis_gate_20260502_tinyllama_disagreement/arc_challenge_transport_common_basis_gate.json",
+      "sha256": "cc8bf11e1858a8f3f9803975504acf4a7feb2d8e7d1df89faac8f2f1dd297cf1"
+    },
+    {
+      "path": "results/source_private_arc_challenge_transport_common_basis_gate_20260502_tinyllama_disagreement/arc_challenge_transport_common_basis_gate.md",
+      "sha256": "8d3cc57f5a133df41ff30455e982740ae979481ba0aa7b50abc54c732f8ffc33"
+    },
+    {
+      "path": "results/source_private_arc_challenge_transport_common_basis_gate_20260502_tinyllama_disagreement/transport_common_basis_frontier.csv",
+      "sha256": "25170ef9e2363480155f204a210d1863a513c455d865ddff4e7e3a733e9da3b5"
+    }
+  ],
+  "gate": "source_private_arc_challenge_transport_common_basis_gate",
+  "headline": {
+    "candidate_roll_matched_accuracy_mean": 0.25116279069767444,
+    "elapsed_s": 59.68624595901929,
+    "frontier_candidate_count": 48,
+    "pass_gate": false,
+    "selected_method": "whitened_procrustes",
+    "selected_param": "dim=32",
+    "selected_transform": "raw",
+    "selected_view": "query_residual",
+    "spectral_permutation_matched_accuracy_mean": 0.25708245243128963,
+    "test_cached_tiny_packet_accuracy_mean": 0.2693446088794926,
+    "test_disagreement_rows": 473,
+    "test_matched_accuracy_mean": 0.2287526427061311,
+    "test_matched_minus_cached_tiny_packet_mean": -0.04059196617336152,
+    "test_matched_minus_qwen_substituted_mean": -0.08837209302325581,
+    "test_paired_ci95_low_vs_qwen_substituted_min": -0.160676532769556,
+    "test_qwen_substituted_accuracy_mean": 0.3171247357293869,
+    "validation_disagreement_rows": 144
+  },
+  "pass_gate": false
+}

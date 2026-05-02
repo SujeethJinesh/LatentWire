@@ -1979,5 +1979,12 @@
     "path": "references/639_systems_boundary_figure_table_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the systems boundary figure/table V3, covering LatentWire packet byte/exposure accounting and boundaries against C2C, KVComm/KVCOMM, Q-KVComm, KIVI, KVQuant, QJL, TurboQuant, vLLM/PagedAttention, and SGLang/RadixAttention."
+  },
+  {
+    "num": 640,
+    "slug": "arc_transport_common_basis_refs_20260502",
+    "path": "references/640_arc_transport_common_basis_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC transport/common-basis connector gate, covering the negative nearest-neighbor, QJL-sign, and Procrustes result plus boundaries against SVCCA, CKA, relative representations, latent-space translation, Wasserstein Procrustes, QJL, TurboQuant, query bottlenecks, SAEs, and crosscoders."
   }
 ]
