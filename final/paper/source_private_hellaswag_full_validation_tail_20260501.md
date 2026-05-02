@@ -109,6 +109,38 @@ terminal-tail margin, but weakens robustness and does not rescue the full
 validation claim. The next method branch needs a new mechanism rather than a
 larger version of the same dense bagging rule.
 
+## Hybrid Vote-On-Score-Agreement Follow-Up
+
+Follow-up artifacts:
+
+- `results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260502_qwen05_train512_validation9216_10042_hybrid_vote_on_score_agreement/hellaswag_hidden_innovation_eval_slice_stress.json`
+- `results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260502_qwen05_train512_validation9216_10042_4sample_hybrid_vote_on_score_agreement/hellaswag_hidden_innovation_eval_slice_stress.json`
+
+Three-sample hybrid result: `pass_gate=false`.
+
+- selected accuracy: `0.547215`
+- best label-copy: `0.498789`
+- score-only bagged: `0.497579`
+- delta vs best label-copy: `+0.048426`
+- paired CI95 low vs best label-copy: `+0.020581`
+- jackknife: `2/3`
+- jackknife min delta vs best label-copy: `+0.021792`
+- jackknife min CI95 low vs best label-copy: `-0.011531`
+
+Four-sample hybrid result: `pass_gate=false`.
+
+- selected accuracy: `0.535109`
+- delta vs best label-copy: `+0.036320`
+- paired CI95 low vs best label-copy: `+0.009685`
+- jackknife: `2/4`
+- jackknife min delta vs best label-copy: `+0.019370`
+- jackknife min CI95 low vs best label-copy: `-0.003632`
+
+Interpretation: the hybrid hidden-vote fallback is a real aggregate
+improvement over the original three-sample terminal tail, but it still fails the
+strict jackknife gate and the four-sample version weakens. It is useful as a
+method scout and possible ablation, not as a full-validation rescue.
+
 ## Next Gate
 
 The next highest-value branch is one of:

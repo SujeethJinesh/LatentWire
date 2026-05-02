@@ -6,6 +6,16 @@ import json
 from scripts import build_source_private_hellaswag_hidden_innovation_bagged_gate as bagged
 
 
+def test_hybrid_vote_on_score_agreement_uses_vote_only_on_score_collapse() -> None:
+    predictions = bagged._hybrid_vote_on_score_agreement(
+        mean_predictions=[0, 1, 2, 3],
+        vote_predictions=[3, 2, 1, 0],
+        score_mean_predictions=[0, 0, 2, 1],
+    )
+
+    assert predictions == [3, 1, 1, 3]
+
+
 def test_bagged_gate_rescues_fresh_train_sample_stress(tmp_path) -> None:
     payload = bagged.build_gate(
         output_dir=tmp_path / "out",

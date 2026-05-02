@@ -174,6 +174,7 @@ def build_gate(
     train_sample_seeds: tuple[int, ...] = DEFAULT_TRAIN_SAMPLE_SEEDS,
     split_seeds: tuple[int, ...] = DEFAULT_SPLIT_SEEDS,
     bootstrap_samples: int = 500,
+    aggregation_policy: str = "mean_zscore",
     source_lm_model: str = "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775",
     source_lm_device: str = "auto_cpu",
     source_lm_dtype: str = "float32",
@@ -232,6 +233,7 @@ def build_gate(
         train_sample_seeds=train_sample_seeds,
         split_seeds=split_seeds,
         bootstrap_samples=bootstrap_samples,
+        aggregation_policy=aggregation_policy,
         source_lm_model=source_lm_model,
         source_lm_device=source_lm_device,
         source_lm_dtype=source_lm_dtype,
@@ -364,6 +366,11 @@ def main() -> int:
     parser.add_argument("--train-sample-seeds", type=_parse_int_tuple, default=DEFAULT_TRAIN_SAMPLE_SEEDS)
     parser.add_argument("--split-seeds", type=_parse_int_tuple, default=DEFAULT_SPLIT_SEEDS)
     parser.add_argument("--bootstrap-samples", type=int, default=500)
+    parser.add_argument(
+        "--aggregation-policy",
+        choices=("mean_zscore", "vote", "mean_zscore_vote_on_score_agreement"),
+        default="mean_zscore",
+    )
     parser.add_argument("--source-lm-model", default="/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775")
     parser.add_argument("--source-lm-device", default="auto_cpu")
     parser.add_argument("--source-lm-dtype", default="float32")
@@ -385,6 +392,7 @@ def main() -> int:
         train_sample_seeds=args.train_sample_seeds,
         split_seeds=args.split_seeds,
         bootstrap_samples=args.bootstrap_samples,
+        aggregation_policy=args.aggregation_policy,
         source_lm_model=args.source_lm_model,
         source_lm_device=args.source_lm_device,
         source_lm_dtype=args.source_lm_dtype,

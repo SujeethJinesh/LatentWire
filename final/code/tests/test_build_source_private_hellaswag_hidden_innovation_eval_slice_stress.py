@@ -162,6 +162,7 @@ def test_eval_slice_gate_reuses_explicit_eval_caches(tmp_path, monkeypatch) -> N
     def fake_bagged_build_gate(*, output_dir, **kwargs):
         observed["bagged_eval_score_cache"] = kwargs["eval_score_cache"]
         observed["bagged_eval_hidden_cache"] = kwargs["eval_hidden_cache"]
+        observed["bagged_aggregation_policy"] = kwargs["aggregation_policy"]
         output_dir.mkdir(parents=True, exist_ok=True)
         (output_dir / "hellaswag_hidden_innovation_bagged_gate.json").write_text(
             "{}",
@@ -217,6 +218,7 @@ def test_eval_slice_gate_reuses_explicit_eval_caches(tmp_path, monkeypatch) -> N
         eval_slice_rows=1024,
         eval_score_cache=external_score_cache,
         eval_hidden_cache=external_hidden_cache,
+        aggregation_policy="mean_zscore_vote_on_score_agreement",
         bootstrap_samples=10,
     )
 
@@ -226,6 +228,7 @@ def test_eval_slice_gate_reuses_explicit_eval_caches(tmp_path, monkeypatch) -> N
     assert observed["cache_hidden_meta"] == external_hidden_cache.with_suffix(".json")
     assert observed["bagged_eval_score_cache"] == external_score_cache
     assert observed["bagged_eval_hidden_cache"] == external_hidden_cache
+    assert observed["bagged_aggregation_policy"] == "mean_zscore_vote_on_score_agreement"
 
 
 def test_eval_slice_terminal_tail_rule_is_explicit(tmp_path, monkeypatch) -> None:

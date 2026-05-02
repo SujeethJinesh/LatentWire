@@ -64,6 +64,56 @@ def _aggregate_model_scores(
     raise ValueError(f"unsupported aggregation policy: {policy}")
 
 
+def _hybrid_vote_on_score_agreement(
+    *,
+    mean_predictions: list[int],
+    vote_predictions: list[int],
+    score_mean_predictions: list[int],
+) -> list[int]:
+    return [
+        int(vote) if int(mean) == int(score_mean) else int(mean)
+        for mean, vote, score_mean in zip(
+            mean_predictions,
+            vote_predictions,
+            score_mean_predictions,
+            strict=True,
+        )
+    ]
+
+
+def _control_predictions_for_policy(
+    *,
+    features: np.ndarray,
+    models: list[dict[str, Any]],
+    score_mean_predictions: list[int],
+    aggregation_policy: str,
+) -> list[int]:
+    if aggregation_policy in {"mean_zscore", "vote"}:
+        predictions, _ = _aggregate_model_scores(
+            features=features,
+            models=models,
+            policy=aggregation_policy,
+        )
+        return predictions
+    if aggregation_policy == "mean_zscore_vote_on_score_agreement":
+        mean_predictions, _ = _aggregate_model_scores(
+            features=features,
+            models=models,
+            policy="mean_zscore",
+        )
+        vote_predictions, _ = _aggregate_model_scores(
+            features=features,
+            models=models,
+            policy="vote",
+        )
+        return _hybrid_vote_on_score_agreement(
+            mean_predictions=mean_predictions,
+            vote_predictions=vote_predictions,
+            score_mean_predictions=score_mean_predictions,
+        )
+    raise ValueError(f"unsupported aggregation policy: {aggregation_policy}")
+
+
 def _select_component_model(
     *,
     view: str,
@@ -327,35 +377,61 @@ def build_gate(
                     score_models.append(model)
                     score_models_by_sample[sample_seed].append(model)
 
-    selected_predictions, selected_scores = _aggregate_model_scores(
+    score_mean_predictions, _ = _aggregate_model_scores(
+        features=score_eval_features,
+        models=score_models,
+        policy="mean_zscore",
+    )
+    score_vote_predictions, _ = _aggregate_model_scores(
+        features=score_eval_features,
+        models=score_models,
+        policy="vote",
+    )
+    hidden_mean_predictions, hidden_mean_scores = _aggregate_model_scores(
         features=hidden_eval_features,
         models=hidden_models,
-        policy=aggregation_policy,
+        policy="mean_zscore",
     )
-    vote_predictions, _ = _aggregate_model_scores(
+    vote_predictions, hidden_vote_scores = _aggregate_model_scores(
         features=hidden_eval_features,
         models=hidden_models,
         policy="vote",
     )
-    score_only_predictions, _ = _aggregate_model_scores(
-        features=score_eval_features,
-        models=score_models,
-        policy=aggregation_policy,
-    )
-    zero_predictions, _ = _aggregate_model_scores(
+    if aggregation_policy == "mean_zscore":
+        selected_predictions = hidden_mean_predictions
+        selected_scores = hidden_mean_scores
+        score_only_predictions = score_mean_predictions
+    elif aggregation_policy == "vote":
+        selected_predictions = vote_predictions
+        selected_scores = hidden_vote_scores
+        score_only_predictions = score_vote_predictions
+    elif aggregation_policy == "mean_zscore_vote_on_score_agreement":
+        selected_predictions = _hybrid_vote_on_score_agreement(
+            mean_predictions=hidden_mean_predictions,
+            vote_predictions=vote_predictions,
+            score_mean_predictions=score_mean_predictions,
+        )
+        selected_scores = hidden_mean_scores
+        score_only_predictions = score_vote_predictions
+    else:
+        raise ValueError(f"unsupported aggregation policy: {aggregation_policy}")
+    zero_predictions = _control_predictions_for_policy(
         features=zero_eval_features,
         models=hidden_models,
-        policy=aggregation_policy,
+        score_mean_predictions=score_mean_predictions,
+        aggregation_policy=aggregation_policy,
     )
-    wrong_predictions, _ = _aggregate_model_scores(
+    wrong_predictions = _control_predictions_for_policy(
         features=wrong_eval_features,
         models=hidden_models,
-        policy=aggregation_policy,
+        score_mean_predictions=score_mean_predictions,
+        aggregation_policy=aggregation_policy,
     )
-    candidate_roll_predictions, _ = _aggregate_model_scores(
+    candidate_roll_predictions = _control_predictions_for_policy(
         features=candidate_roll_eval_features,
         models=hidden_models,
-        policy=aggregation_policy,
+        score_mean_predictions=score_mean_predictions,
+        aggregation_policy=aggregation_policy,
     )
 
     source_label_predictions = top2._source_label_predictions(eval_scores)
@@ -407,30 +483,58 @@ def build_gate(
             for seed in included_sample_seeds
             for predictions in trained_label_predictions_by_sample[int(seed)]
         ]
-        sub_selected_predictions, _ = _aggregate_model_scores(
-            features=hidden_eval_features,
-            models=sub_hidden_models,
-            policy=aggregation_policy,
-        )
-        sub_score_only_predictions, _ = _aggregate_model_scores(
+        sub_score_mean_predictions, _ = _aggregate_model_scores(
             features=score_eval_features,
             models=sub_score_models,
-            policy=aggregation_policy,
+            policy="mean_zscore",
         )
-        sub_zero_predictions, _ = _aggregate_model_scores(
+        sub_score_vote_predictions, _ = _aggregate_model_scores(
+            features=score_eval_features,
+            models=sub_score_models,
+            policy="vote",
+        )
+        sub_hidden_mean_predictions, _ = _aggregate_model_scores(
+            features=hidden_eval_features,
+            models=sub_hidden_models,
+            policy="mean_zscore",
+        )
+        sub_hidden_vote_predictions, _ = _aggregate_model_scores(
+            features=hidden_eval_features,
+            models=sub_hidden_models,
+            policy="vote",
+        )
+        if aggregation_policy == "mean_zscore":
+            sub_selected_predictions = sub_hidden_mean_predictions
+            sub_score_only_predictions = sub_score_mean_predictions
+        elif aggregation_policy == "vote":
+            sub_selected_predictions = sub_hidden_vote_predictions
+            sub_score_only_predictions = sub_score_vote_predictions
+        elif aggregation_policy == "mean_zscore_vote_on_score_agreement":
+            sub_selected_predictions = _hybrid_vote_on_score_agreement(
+                mean_predictions=sub_hidden_mean_predictions,
+                vote_predictions=sub_hidden_vote_predictions,
+                score_mean_predictions=sub_score_mean_predictions,
+            )
+            sub_score_only_predictions = sub_score_vote_predictions
+        else:
+            raise ValueError(f"unsupported aggregation policy: {aggregation_policy}")
+        sub_zero_predictions = _control_predictions_for_policy(
             features=zero_eval_features,
             models=sub_hidden_models,
-            policy=aggregation_policy,
+            score_mean_predictions=sub_score_mean_predictions,
+            aggregation_policy=aggregation_policy,
         )
-        sub_wrong_predictions, _ = _aggregate_model_scores(
+        sub_wrong_predictions = _control_predictions_for_policy(
             features=wrong_eval_features,
             models=sub_hidden_models,
-            policy=aggregation_policy,
+            score_mean_predictions=sub_score_mean_predictions,
+            aggregation_policy=aggregation_policy,
         )
-        sub_candidate_roll_predictions, _ = _aggregate_model_scores(
+        sub_candidate_roll_predictions = _control_predictions_for_policy(
             features=candidate_roll_eval_features,
             models=sub_hidden_models,
-            policy=aggregation_policy,
+            score_mean_predictions=sub_score_mean_predictions,
+            aggregation_policy=aggregation_policy,
         )
         sub_best_trained_predictions = max(
             sub_trained_predictions,
@@ -612,10 +716,13 @@ def build_gate(
             "row_id": row.row_id,
             "answer_index": row.answer_index,
             "selected_prediction": int(selected),
+            "hidden_mean_prediction": int(hidden_mean),
             "vote_prediction": int(vote),
             "source_label_prediction": int(source),
             "trained_label_prediction": int(trained),
             "score_only_bagged_prediction": int(score_only),
+            "score_mean_prediction": int(score_mean),
+            "score_vote_prediction": int(score_vote),
             "zero_hidden_prediction": int(zero),
             "wrong_example_hidden_prediction": int(wrong),
             "candidate_roll_hidden_prediction": int(candidate_roll),
@@ -624,10 +731,13 @@ def build_gate(
         for index, (
             row,
             selected,
+            hidden_mean,
             vote,
             source,
             trained,
             score_only,
+            score_mean,
+            score_vote,
             zero,
             wrong,
             candidate_roll,
@@ -635,10 +745,13 @@ def build_gate(
             zip(
                 eval_rows,
                 selected_predictions,
+                hidden_mean_predictions,
                 vote_predictions,
                 source_label_predictions,
                 best_trained_predictions,
                 score_only_predictions,
+                score_mean_predictions,
+                score_vote_predictions,
                 zero_predictions,
                 wrong_predictions,
                 candidate_roll_predictions,
@@ -761,7 +874,11 @@ def main() -> int:
     parser.add_argument("--split-seeds", type=_parse_int_tuple, default=DEFAULT_SPLIT_SEEDS)
     parser.add_argument("--ridges", type=_parse_float_tuple, default=DEFAULT_RIDGES)
     parser.add_argument("--bootstrap-samples", type=int, default=500)
-    parser.add_argument("--aggregation-policy", choices=("mean_zscore", "vote"), default="mean_zscore")
+    parser.add_argument(
+        "--aggregation-policy",
+        choices=("mean_zscore", "vote", "mean_zscore_vote_on_score_agreement"),
+        default="mean_zscore",
+    )
     parser.add_argument("--source-lm-model", default="/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775")
     parser.add_argument("--source-lm-device", default="auto_cpu")
     parser.add_argument("--source-lm-dtype", default="float32")

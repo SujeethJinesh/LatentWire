@@ -1720,5 +1720,12 @@
     "path": "references/602_hellaswag_4sample_tail_scout_refs_20260501.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed four-sample HellaSwag terminal-tail stabilization scout, covering the weakened dense-bagging branch and novelty boundaries against selective prediction, prefix/prompt/adapters, SAE/crosscoder/common-basis work, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, and latent reasoning."
+  },
+  {
+    "num": 603,
+    "slug": "hellaswag_hybrid_vote_tail_scout_refs_20260502",
+    "path": "references/603_hellaswag_hybrid_vote_tail_scout_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the hybrid hidden-vote-on-score-agreement HellaSwag tail scout, covering aggregate improvement, strict jackknife failure, and novelty boundaries against selective prediction, prefix/prompt/adapters, SAE/crosscoder/common-basis work, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, latent reasoning, vLLM, and SGLang."
   }
 ]
