@@ -125,6 +125,41 @@ class SourceSoftPrefixConnector(torch.nn.Module):
         return self.net(torch.cat(parts, dim=-1)).view(self.prefix_len, self.target_embed_dim)
 
 
+class SourceQuerySoftPrefixConnector(torch.nn.Module):
+    def __init__(
+        self,
+        *,
+        source_dim: int,
+        target_dim: int,
+        target_embed_dim: int,
+        hidden_dim: int,
+        prefix_len: int,
+        use_target: bool,
+    ) -> None:
+        super().__init__()
+        self.prefix_len = int(prefix_len)
+        self.target_embed_dim = int(target_embed_dim)
+        self.use_target = bool(use_target)
+        self.source_proj = torch.nn.Linear(int(source_dim), int(hidden_dim))
+        self.query = torch.nn.Parameter(torch.randn(prefix_len, int(hidden_dim)) * 0.02)
+        self.target_proj = torch.nn.Linear(int(target_dim), int(hidden_dim)) if self.use_target else None
+        self.out = torch.nn.Sequential(
+            torch.nn.LayerNorm(int(hidden_dim)),
+            torch.nn.Linear(int(hidden_dim), int(target_embed_dim)),
+        )
+
+    def forward(self, source_summary: torch.Tensor, target_summary: torch.Tensor) -> torch.Tensor:
+        if source_summary.dim() != 2:
+            raise ValueError("query-pooling connector expects a [tokens, dim] source summary")
+        tokens = torch.tanh(self.source_proj(source_summary))
+        query = self.query
+        if self.target_proj is not None:
+            query = query + torch.tanh(self.target_proj(target_summary)).unsqueeze(0)
+        attention = torch.softmax((query @ tokens.T) / math.sqrt(float(tokens.shape[-1])), dim=-1)
+        pooled = attention @ tokens
+        return self.out(pooled).view(self.prefix_len, self.target_embed_dim)
+
+
 def _resolve(path: pathlib.Path | str) -> pathlib.Path:
     candidate = pathlib.Path(path)
     return candidate if candidate.is_absolute() else ROOT / candidate
@@ -230,6 +265,10 @@ def _source_choice_texts(rows: list[arc_gate.ArcRow]) -> list[str]:
     return texts
 
 
+def _choice_token_prompt(row: arc_gate.ArcRow) -> str:
+    return f"{_source_prompt(row)}\nCandidate under consideration:"
+
+
 def _continuation_text(row: arc_gate.ArcRow, choice_index: int, *, mode: str) -> str:
     if mode == "label":
         return f" {row.choice_labels[choice_index]}"
@@ -286,6 +325,7 @@ def _selected_choice_features(
     source_dtype: str,
     source_max_length: int,
     source_hidden_layer: int,
+    source_token_pool_size: int,
     local_files_only: bool,
 ) -> tuple[torch.Tensor, dict[str, Any]]:
     residualized = source_feature_mode.endswith("_residual")
@@ -312,6 +352,26 @@ def _selected_choice_features(
             local_files_only=local_files_only,
             hidden_layer=source_hidden_layer,
         )
+    elif base_mode == "hf_choice_token_hidden_pool":
+        pooled, metadata = _hf_choice_token_hidden_pool_features(
+            rows,
+            model_path=source_model,
+            device=source_device,
+            dtype=source_dtype,
+            max_length=source_max_length,
+            local_files_only=local_files_only,
+            hidden_layer=source_hidden_layer,
+            pool_size=source_token_pool_size,
+            residualized=residualized,
+        )
+        metadata = {
+            **metadata,
+            "source_feature_mode": source_feature_mode,
+            "row_centered_selected_residual": False,
+            "row_centered_token_residual": bool(residualized),
+            "uses_source_predictions": False,
+        }
+        return torch.tensor(pooled.astype(np.float32)), metadata
     else:
         raise ValueError(f"unknown source_feature_mode {source_feature_mode!r}")
 
@@ -330,8 +390,30 @@ def _selected_choice_features(
         **metadata,
         "source_feature_mode": source_feature_mode,
         "row_centered_selected_residual": bool(residualized),
+        "uses_source_predictions": True,
     }
     return torch.tensor(np.asarray(chosen, dtype=np.float32)), metadata
+
+
+def _fixed_token_pool(tokens: np.ndarray, *, pool_size: int, residualized: bool) -> np.ndarray:
+    if pool_size < 1:
+        raise ValueError("pool_size must be at least 1")
+    values = np.asarray(tokens, dtype=np.float64)
+    if values.ndim != 2:
+        raise ValueError("tokens must be a [token_count, dim] matrix")
+    if values.shape[0] == 0:
+        values = np.zeros((1, values.shape[1]), dtype=np.float64)
+    if residualized:
+        values = values - values.mean(axis=0, keepdims=True)
+    norms = np.linalg.norm(values, axis=1, keepdims=True)
+    values = np.divide(values, np.maximum(norms, 1e-12), out=np.zeros_like(values), where=norms > 0)
+    if values.shape[0] == pool_size:
+        return values
+    if values.shape[0] > pool_size:
+        positions = np.linspace(0, values.shape[0] - 1, pool_size).round().astype(np.int64)
+        return values[positions]
+    repeats = int(math.ceil(pool_size / values.shape[0]))
+    return np.tile(values, (repeats, 1))[:pool_size]
 
 
 def _hf_choice_hidden_features(
@@ -388,6 +470,96 @@ def _hf_choice_hidden_features(
         "dtype": dtype,
         "max_length": int(max_length),
         "hidden_layer": int(hidden_layer),
+        "latency_s": float(time.perf_counter() - start),
+    }
+
+
+def _hf_choice_token_hidden_pool_features(
+    rows: list[arc_gate.ArcRow],
+    *,
+    model_path: str,
+    device: str,
+    dtype: str,
+    max_length: int,
+    local_files_only: bool,
+    hidden_layer: int,
+    pool_size: int,
+    residualized: bool,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    resolved_device = "cpu" if device == "auto_cpu" else arc_gate.syn._resolve_torch_device(device)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_path,
+        local_files_only=local_files_only,
+        trust_remote_code=True,
+    )
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    model = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        local_files_only=local_files_only,
+        trust_remote_code=True,
+        torch_dtype=_torch_dtype(dtype),
+    ).to(resolved_device)
+    model.eval()
+
+    pooled_rows: list[np.ndarray] = []
+    token_counts: list[int] = []
+    suffix_fallback_rows = 0
+    start = time.perf_counter()
+    with torch.inference_mode():
+        for row in rows:
+            prompt = _choice_token_prompt(row)
+            prompt_len = tokenizer(prompt, return_tensors="pt", add_special_tokens=True).input_ids.shape[1]
+            texts = [
+                f"{prompt} {label}. {choice}"
+                for label, choice in zip(row.choice_labels, row.choices, strict=True)
+            ]
+            encoded = tokenizer(
+                texts,
+                padding=True,
+                truncation=True,
+                max_length=max_length,
+                return_tensors="pt",
+                add_special_tokens=True,
+            )
+            encoded = {key: value.to(resolved_device) for key, value in encoded.items()}
+            output = model(**encoded, output_hidden_states=True, use_cache=False)
+            hidden = output.hidden_states[hidden_layer]
+            attention = encoded["attention_mask"].bool()
+            row_tokens: list[np.ndarray] = []
+            for choice_index in range(len(row.choices)):
+                mask = attention[choice_index].clone()
+                mask[: min(prompt_len, mask.shape[0])] = False
+                if not bool(mask.any()):
+                    suffix_fallback_rows += 1
+                    valid = torch.where(attention[choice_index])[0]
+                    mask = torch.zeros_like(attention[choice_index])
+                    suffix_count = max(1, min(8, int(valid.numel())))
+                    mask[valid[-suffix_count:]] = True
+                values = hidden[choice_index][mask].detach().cpu().numpy().astype(np.float64)
+                row_tokens.extend(values)
+            if not row_tokens:
+                row_tokens = [np.zeros(int(hidden.shape[-1]), dtype=np.float64)]
+            tokens = np.asarray(row_tokens, dtype=np.float64)
+            token_counts.append(int(tokens.shape[0]))
+            pooled_rows.append(
+                _fixed_token_pool(tokens, pool_size=pool_size, residualized=residualized)
+            )
+    return np.asarray(pooled_rows, dtype=np.float64), {
+        "kind": "answer_key_forbidden_hf_choice_token_hidden_pool",
+        "model_path": model_path,
+        "device": resolved_device,
+        "dtype": dtype,
+        "max_length": int(max_length),
+        "hidden_layer": int(hidden_layer),
+        "pool_size": int(pool_size),
+        "row_centered_token_residual": bool(residualized),
+        "token_count_min": int(min(token_counts)) if token_counts else 0,
+        "token_count_max": int(max(token_counts)) if token_counts else 0,
+        "token_count_mean": float(statistics.fmean(token_counts)) if token_counts else 0.0,
+        "suffix_fallback_choice_count": int(suffix_fallback_rows),
         "latency_s": float(time.perf_counter() - start),
     }
 
@@ -455,7 +627,7 @@ def _choice_scores(
 
 def _fit_connector(
     *,
-    connector: SourceSoftPrefixConnector,
+    connector: torch.nn.Module,
     target_model: Any,
     embed_tokens: Any,
     source_summary: torch.Tensor,
@@ -507,7 +679,7 @@ def _fit_connector(
 @torch.no_grad()
 def _score_connector_condition(
     *,
-    connector: SourceSoftPrefixConnector | None,
+    connector: torch.nn.Module | None,
     target_model: Any,
     embed_tokens: Any,
     source_summary: torch.Tensor,
@@ -683,6 +855,7 @@ def run_preflight(
     source_max_length: int,
     target_max_length: int,
     source_hidden_layer: int,
+    source_token_pool_size: int,
     local_files_only: bool,
     prefix_len: int,
     hidden_dim: int,
@@ -716,6 +889,7 @@ def run_preflight(
         source_dtype=dtype,
         source_max_length=source_max_length,
         source_hidden_layer=source_hidden_layer,
+        source_token_pool_size=source_token_pool_size,
         local_files_only=local_files_only,
     )
     target_summary, target_meta = _target_public_features(rows, feature_dim=target_feature_dim)
@@ -786,9 +960,19 @@ def run_preflight(
     source_dim = int(source_summary.shape[-1])
     target_dim = int(target_summary.shape[-1])
     embed_dim = int(embed_tokens.embedding_dim)
+    source_tensor_rank = int(source_summary.dim())
 
-    connectors = {
-        MATCHED_CONDITION: SourceSoftPrefixConnector(
+    def matched_connector() -> torch.nn.Module:
+        if source_tensor_rank == 3:
+            return SourceQuerySoftPrefixConnector(
+                source_dim=source_dim,
+                target_dim=target_dim,
+                target_embed_dim=embed_dim,
+                hidden_dim=hidden_dim,
+                prefix_len=prefix_len,
+                use_target=matched_use_target,
+            )
+        return SourceSoftPrefixConnector(
             source_dim=source_dim,
             target_dim=target_dim,
             target_embed_dim=embed_dim,
@@ -796,7 +980,10 @@ def run_preflight(
             prefix_len=prefix_len,
             use_source=True,
             use_target=matched_use_target,
-        ),
+        )
+
+    connectors = {
+        MATCHED_CONDITION: matched_connector(),
         "target_cache_only_prefix": SourceSoftPrefixConnector(
             source_dim=source_dim,
             target_dim=target_dim,
@@ -815,15 +1002,7 @@ def run_preflight(
             use_source=False,
             use_target=False,
         ),
-        "label_shuffled": SourceSoftPrefixConnector(
-            source_dim=source_dim,
-            target_dim=target_dim,
-            target_embed_dim=embed_dim,
-            hidden_dim=hidden_dim,
-            prefix_len=prefix_len,
-            use_source=True,
-            use_target=matched_use_target,
-        ),
+        "label_shuffled": matched_connector(),
     }
     fit_logs: dict[str, Any] = {}
     for name, connector in connectors.items():
@@ -988,6 +1167,8 @@ def run_preflight(
         "config": {
             "source_feature_mode": source_feature_mode,
             "source_feature_dim": source_feature_dim,
+            "source_token_pool_size": source_token_pool_size,
+            "source_tensor_rank": source_tensor_rank,
             "target_feature_dim": target_feature_dim,
             "prefix_len": prefix_len,
             "hidden_dim": hidden_dim,
@@ -1071,10 +1252,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "hashed_selected_residual",
             "hf_selected_hidden",
             "hf_selected_hidden_residual",
+            "hf_choice_token_hidden_pool",
+            "hf_choice_token_hidden_pool_residual",
         ),
         default="hf_selected_hidden",
     )
     parser.add_argument("--source-feature-dim", type=int, default=128)
+    parser.add_argument("--source-token-pool-size", type=int, default=32)
     parser.add_argument("--target-feature-dim", type=int, default=64)
     parser.add_argument("--source-model", default=DEFAULT_QWEN_SOURCE)
     parser.add_argument("--target-model", default=DEFAULT_QWEN_TARGET)
@@ -1125,6 +1309,7 @@ def main(argv: list[str] | None = None) -> int:
         source_max_length=int(args.source_max_length),
         target_max_length=int(args.target_max_length),
         source_hidden_layer=int(args.source_hidden_layer),
+        source_token_pool_size=int(args.source_token_pool_size),
         local_files_only=str(args.local_files_only).lower() == "true",
         prefix_len=int(args.prefix_len),
         hidden_dim=int(args.hidden_dim),

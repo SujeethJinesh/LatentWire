@@ -19562,3 +19562,35 @@ source model's chosen answer, this run gave the target the difference between
 that chosen answer and the other answer choices. That was less bad, but still
 not enough: a generic learned prefix did better, so the evidence still does not
 prove real model-to-model communication.
+
+ARC token-pool residual query preflight: extended
+`scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py` with
+`hf_choice_token_hidden_pool` and `hf_choice_token_hidden_pool_residual`
+source modes plus a learned query-pooling soft-prefix connector for rank-3
+source token pools. Added tests in
+`tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`,
+memo `paper/source_private_arc_token_pool_query_preflight_20260502.md`,
+references `references/650_arc_token_pool_query_preflight_refs_20260502.md`,
+and artifact
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_token_pool_residual_n8_cpu_label_choice/`.
+Outcome: richer all-candidate token exposure does not clear the source
+necessity gate on the current Mac-local surface. The corrected token extractor
+uses a short suffix fallback when candidate tokens are truncated, then packs a
+fixed-size residual token pool. On the same ARC n8 CPU `label_and_choice`
+smoke surface, matched query soft-prefix accuracy is `0/4`, target-only is
+`1/4`, zero-source is `1/4`, slots-only/static prefix is `1/4`,
+label-shuffled is `2/4`, source-label-copy audit upper bound is `3/4`, and
+matched-minus-best-control margin is about `-0.566`; pass gate `False`.
+
+Decision: rule out this shallow token-pool residual query connector. It is
+worse than the selected residual vector gate and does not separate real source
+communication from zero-source/train-mean/label-shuffled controls. Learned
+query connectors remain alive only as a narrower candidate-level all-choice
+residual pooling branch with explicit source-score-only versus hidden-residual
+versus score+hidden ablations. Do not widen token-pool target-forward loops on
+the Mac without a positive n8 smoke result.
+
+Lay explanation: this run gave the receiver a small pile of hidden-state tokens
+from all answer choices and let it learn which ones to attend to. It still did
+not help; a deliberately wrong-label control did better, so simply sending more
+hidden tokens is not enough.

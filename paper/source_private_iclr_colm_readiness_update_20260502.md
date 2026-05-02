@@ -462,3 +462,30 @@ source candidate states, not another single-vector variant. This is also a
 stronger story for reviewers because it shows the project is actively testing
 whether the source information is necessary rather than assuming hidden-state
 transfer works.
+
+## 2026-05-02 Token-Pool Query Follow-Up
+
+Added token-pool source feature modes and a learned query-pooling soft-prefix
+connector to the ARC/OpenBookQA preflight:
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_token_pool_residual_n8_cpu_label_choice/`.
+
+Readout:
+
+- implementation path works for rank-3 source token pools and preserves the
+  existing target-only/static/zero/shuffle/noise/train-mean/label-shuffled/
+  same-byte/audit controls;
+- corrected token extractor avoids silently pooling the whole prompt when
+  candidate suffix tokens are truncated;
+- matched query soft-prefix accuracy is `0/4` on the n8 CPU smoke surface;
+- target-only, zero-source, train-mean source, and same-byte visible text each
+  reach `1/4`;
+- label-shuffled reaches `2/4`;
+- matched-minus-best-control margin is about `-0.566`;
+- pass gate remains `False`.
+
+Decision: shallow all-candidate token pooling is now ruled out on this Mac
+surface. The negative result weakens the hypothesis that more hidden-state
+exposure alone solves cross-model communication. The next live connector
+branch should be candidate-level residual pooling with explicit
+source-score-only, hidden-residual-only, and score+hidden factor ablations,
+then only widen if the n8 smoke beats label-shuffled and zero-source controls.

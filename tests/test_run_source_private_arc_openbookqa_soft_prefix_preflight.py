@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import torch
 
 from scripts import run_source_private_arc_challenge_fixed_packet_gate as arc_gate
@@ -81,6 +82,39 @@ def test_soft_prefix_connector_shapes() -> None:
     assert slots(source, target).shape == (2, 7)
 
 
+def test_query_soft_prefix_connector_shapes() -> None:
+    source_tokens = torch.randn(5, 6)
+    target = torch.randn(3)
+    connector = preflight.SourceQuerySoftPrefixConnector(
+        source_dim=6,
+        target_dim=3,
+        target_embed_dim=7,
+        hidden_dim=11,
+        prefix_len=4,
+        use_target=True,
+    )
+
+    assert connector(source_tokens, target).shape == (4, 7)
+
+
+def test_fixed_token_pool_residualizes_and_resizes() -> None:
+    tokens = np.asarray(
+        [
+            [1.0, 0.0],
+            [3.0, 0.0],
+            [5.0, 0.0],
+        ],
+        dtype=np.float64,
+    )
+
+    pooled = preflight._fixed_token_pool(tokens, pool_size=5, residualized=True)
+
+    assert pooled.shape == (5, 2)
+    assert np.allclose(pooled[1], [0.0, 0.0], atol=1e-6)
+    assert np.allclose(pooled[4], [0.0, 0.0], atol=1e-6)
+    assert np.allclose(np.linalg.norm(pooled[[0, 2, 3]], axis=1), 1.0, atol=1e-6)
+
+
 def test_selected_choice_residual_features_are_row_centered(monkeypatch) -> None:
     rows = _rows()
 
@@ -108,6 +142,7 @@ def test_selected_choice_residual_features_are_row_centered(monkeypatch) -> None
         source_dtype="float32",
         source_max_length=32,
         source_hidden_layer=-1,
+        source_token_pool_size=4,
         local_files_only=True,
     )
 
@@ -126,6 +161,7 @@ def test_selected_choice_residual_features_are_row_centered(monkeypatch) -> None
         source_dtype="float32",
         source_max_length=32,
         source_hidden_layer=-1,
+        source_token_pool_size=4,
         local_files_only=True,
     )
 
@@ -137,9 +173,19 @@ def test_selected_choice_residual_features_are_row_centered(monkeypatch) -> None
 def test_residual_feature_modes_are_cli_options() -> None:
     hashed = preflight.parse_args(["--source-feature-mode", "hashed_selected_residual"])
     hidden = preflight.parse_args(["--source-feature-mode", "hf_selected_hidden_residual"])
+    token_pool = preflight.parse_args(
+        [
+            "--source-feature-mode",
+            "hf_choice_token_hidden_pool_residual",
+            "--source-token-pool-size",
+            "6",
+        ]
+    )
 
     assert hashed.source_feature_mode == "hashed_selected_residual"
     assert hidden.source_feature_mode == "hf_selected_hidden_residual"
+    assert token_pool.source_feature_mode == "hf_choice_token_hidden_pool_residual"
+    assert token_pool.source_token_pool_size == 6
 
 
 def test_condition_metrics_adds_paired_controls() -> None:

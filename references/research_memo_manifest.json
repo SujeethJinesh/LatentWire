@@ -2049,5 +2049,12 @@
     "path": "references/649_arc_soft_prefix_residual_preflight_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC row-centered residual soft-prefix follow-up, covering Prefix-Tuning, Perceiver IO, Flamingo, BLIP-2/Q-Former, CALM, Relative Representations, CCS, C2C, and KVComm as novelty boundaries and ablation drivers."
+  },
+  {
+    "num": 650,
+    "slug": "arc_token_pool_query_preflight_refs_20260502",
+    "path": "references/650_arc_token_pool_query_preflight_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the negative ARC token-pool query soft-prefix preflight, covering prefix/query-bottleneck prior art, C2C/KVComm systems competitors, TurboQuant/KIVI quantization baselines, DiT iterative-refinement inspiration, SAE/common-basis boundaries, and the decision to move next to candidate-level residual pooling with score/hidden ablations."
   }
 ]
