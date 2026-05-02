@@ -18884,3 +18884,33 @@ tuning selector variants on this feature family; the next ICLR branch must
 change source information, train a true joint connector on NVIDIA hardware, or
 cut the HellaSwag receiver-improvement claim and keep HellaSwag as
 complementarity/headroom plus systems-rate evidence.
+
+HellaSwag switch-observability gate: added
+`scripts/build_source_private_hellaswag_switch_observability_gate.py`, test
+`tests/test_build_source_private_hellaswag_switch_observability_gate.py`,
+memo
+`paper/source_private_hellaswag_switch_observability_gate_20260502.md`,
+references
+`references/624_hellaswag_switch_observability_refs_20260502.md`, and artifact
+`results/source_private_hellaswag_switch_observability_gate_20260502/`.
+Outcome: this diagnostic gate fails promotion and triggers the branch-kill
+rule for Mac-local HellaSwag selector/source-score tuning. It asks whether the
+current packet/Qwen score surface contains enough signal to distinguish helpful
+switches (`Qwen correct, packet wrong`) from harmful switches (`packet correct,
+Qwen wrong`). The predeclared default diagnostic is `source_plus_qwen_rff` on
+Qwen hybrid: validation delta `-0.000398`, CI95 low `-0.001095`, validation
+AUC `0.553985`, and AP `0.345528` on `2229` decisive rows (`679` helps,
+`1550` harms). The best validation AUC row is only `0.561172`
+(`source_plus_qwen_linear`, Qwen mean-zscore) and gives no validation accuracy
+lift. Even the best validation-oracle threshold diagnostic reaches only
+`+0.000199` vs packet-only, capturing `0.24%` of the broader packet-or-any-Qwen
+oracle delta (`+0.081757`). Interpretation: the HellaSwag complementarity
+headroom is real, but the current score/packet surface weakly ranks helpful
+switches and cannot threshold them into a meaningful gain. This explains the
+failed learned source-score code, hidden-code, linear selector, and nonlinear
+selector branches. Decision: stop Mac-local HellaSwag selector/source-score
+tuning; keep HellaSwag as a fixed-byte systems row, complementarity/headroom
+diagnostic, and negative ablation suite. The next ICLR-positive branch must be
+a materially different source representation, a true fixed-query connector, or
+a decoder-conditioned innovation codec with native C2C/KVComm/QJL/TurboQuant
+comparisons.

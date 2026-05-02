@@ -1867,5 +1867,12 @@
     "path": "references/623_hellaswag_nonlinear_selector_syndrome_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed HellaSwag nonlinear selector/syndrome gate, covering the negative RFF-kernel benefit-predictor result, fixed-byte task-syndrome novelty boundary, Mac-local cached selector timing, and boundaries against RFF/kernel methods, prefix/prompt tuning, C2C/KVComm/KVCOMM, Q-Former/Perceiver/Flamingo, SAE/crosscoders, QJL, TurboQuant, and vector quantization."
+  },
+  {
+    "num": 624,
+    "slug": "hellaswag_switch_observability_refs_20260502",
+    "path": "references/624_hellaswag_switch_observability_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the HellaSwag switch-observability gate, covering the weak help-vs-harm AUC result, branch-kill decision for Mac-local selector/source-score tuning, and novelty boundaries against HellaSwag benchmark claims, RFF/kernel diagnostics, prefix/prompt tuning, C2C/KVComm/KVCOMM, Q-Former/Perceiver/Flamingo, SAE/crosscoders, QJL, TurboQuant, and vector quantization."
   }
 ]
