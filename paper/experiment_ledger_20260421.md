@@ -19930,3 +19930,26 @@ were interrupted before writing artifacts, so no claim is made below `8B`.
 Lay explanation: we squeezed the packet smaller and checked whether the
 receiver still got useful evidence. The `8B` packet still works and the
 scrambled-coordinate controls fail, so this is a cleaner small-packet result.
+
+ARC Fourier/anchor-syndrome 8B 10-seed stability gate: reran the promoted
+`8B` payload row with seeds `47,53,59,61,67,71,73,79,83,89`, producing
+`results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed/`.
+
+Outcome: the stronger seed gate passes. Test matched packets pass `10/10`
+seeds with mean/min accuracy `0.344/0.342`, target-only `0.265`, same-byte
+structured text `0.300`, min lift over target `+0.077`, min lift over
+same-byte text `+0.042`, and min paired CI95 low vs target `+0.038`.
+Validation also passes `10/10`. Anchor-ID shuffle, anchor-value shuffle, and
+spectral-bin permutation all fail at `0/10` seeds and collapse near
+target-only. Random shared anchors still pass `10/10`, so the semantic-anchor
+overclaim remains ruled out.
+
+Decision: promote `8B` payload / `11B` framed / `10` seed stability as the
+current ARC Fourier/anchor-syndrome headline. This moves the live branch from
+rate-smoke to a stronger seed-stable positive row. It still does not clear the
+ICLR blocker by itself because the source is same-family/cache-derived and
+native NVIDIA rows remain missing.
+
+Lay explanation: we repeated the small-packet experiment across twice as many
+random packet encodings. It kept working every time, while scrambled packet
+coordinates still failed.

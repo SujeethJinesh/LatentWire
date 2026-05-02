@@ -770,3 +770,30 @@ and native GPU rows are still missing.
 Lay explanation: this was a shrink test. We made the packet smaller and asked
 whether the target could still use it. It could, and the scrambled-packet
 controls still broke, so the packet is doing real work at a lower byte rate.
+
+## 2026-05-02 ARC Fourier/Anchor-Syndrome 10-Seed Follow-Up
+
+Reran the promoted `8B` packet over 10 packet seeds:
+
+- artifact:
+  `results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed/`;
+- pass gate: `True`;
+- payload/framed bytes: `8B/11B`;
+- test matched seed pass count: `10/10`;
+- validation matched seed pass count: `10/10`;
+- test matched mean/min: `0.344/0.342`;
+- test target-only / same-byte text: `0.265/0.300`;
+- min lift over target: `+0.077`;
+- min lift over same-byte text: `+0.042`;
+- min CI95 low vs target: `+0.038`;
+- anchor-ID shuffle, anchor-value shuffle, and spectral-bin permutation all
+  fail at `0/10` seeds.
+
+Decision: promote the current ARC headline to `8B` payload, `11B` framed,
+`10` seed stability. This directly addresses the seed-luck reviewer concern
+for the strongest positive row. It still does not address strict cross-family
+generality or native GPU throughput/HBM claims.
+
+Lay explanation: this asked whether the tiny packet still works if we reroll
+the random encoding ten times instead of five. It did, and the broken-coordinate
+controls still failed.

@@ -62,6 +62,25 @@ systems-facing byte/exposure accounting.
   https://arxiv.org/abs/2312.07104
   SGLang is a required serving baseline for native throughput and latency rows.
 
+## Inspiration Boundaries, Not Current Claims
+
+- Diffusion Transformers:
+  https://arxiv.org/abs/2212.09748
+  DiT motivates transformer-based latent denoising and scalable latent-token
+  processing. For LatentWire this is only future-method inspiration for
+  iterative packet repair or denoising receivers; it is not current evidence.
+- Consistency Models:
+  https://arxiv.org/abs/2303.01469
+  Consistency models motivate one-step/few-step repair from noisy latent states.
+  The current ARC learned repair branches failed, so this should be framed only
+  as a future receiver-design idea.
+- SAE feature-space universality:
+  https://arxiv.org/abs/2410.06981
+  SAE universality supports the hypothesis that feature spaces can align across
+  models under suitable transformations. It does not by itself validate
+  LatentWire; it motivates future common-language probes and feature-space
+  controls.
+
 ## Claim Boundary
 
 Allowed current claim:

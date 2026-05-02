@@ -551,4 +551,5 @@ final-paper framing:
   repair failures, DeepSets/Set Transformer, resonance, quantization,
   selective prediction, relative-basis novelty boundaries, and the primary-source
   systems/uniqueness boundary against C2C, KVComm, Interlat, QJL, TurboQuant,
-  prompt compression, vLLM, and SGLang.
+  prompt compression, vLLM, SGLang, DiT/consistency inspiration, and SAE
+  feature-space universality.

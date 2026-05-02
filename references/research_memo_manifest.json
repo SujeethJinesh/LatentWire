@@ -2118,6 +2118,6 @@
     "slug": "latent_communication_uniqueness_systems_boundary_refs_20260502",
     "path": "references/659_latent_communication_uniqueness_systems_boundary_refs_20260502.md",
     "status": "local_memo",
-    "reason": "Primary-source memo pinning the current LatentWire novelty boundary against C2C, KVComm, Interlat, Relative Representations, QJL, TurboQuant, gist tokens, LLMLingua, vLLM/PagedAttention, and SGLang."
+    "reason": "Primary-source memo pinning the current LatentWire novelty boundary against C2C, KVComm, Interlat, Relative Representations, QJL, TurboQuant, gist tokens, LLMLingua, vLLM/PagedAttention, SGLang, and future-method inspiration boundaries from DiT, consistency models, and SAE feature-space universality."
   }
 ]

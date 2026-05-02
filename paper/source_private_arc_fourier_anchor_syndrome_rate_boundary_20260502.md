@@ -10,7 +10,10 @@
 - exact blocking gap: the row is still same-family/source-cache dependent and
   not yet backed by native GPU serving comparisons.
 
-Artifact:
+Primary artifact:
+`results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed/`
+
+Prior 5-seed artifact:
 `results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8/`
 
 ## What This Gate Does
@@ -26,12 +29,12 @@ source-to-target boundary.
 
 ## Results
 
-ARC-Challenge test:
+ARC-Challenge test, 10 packet seeds:
 
 | Row | Result |
 |---|---:|
 | pass gate | `True` |
-| matched Fourier/anchor-syndrome seed pass count | 5/5 |
+| matched Fourier/anchor-syndrome seed pass count | 10/10 |
 | payload bytes | 8B |
 | framed bytes with header/CRC | 11B |
 | matched mean / min accuracy | 0.344 / 0.342 |
@@ -42,27 +45,28 @@ ARC-Challenge test:
 | min CI95 low vs target | +0.038 |
 | candidate derangement max | 0.217 |
 
-Validation also passes `5/5` seeds. On test, all destructive mismatch controls
+Validation also passes `10/10` seeds. On test, all destructive mismatch controls
 fail the pass gate:
 
-- anchor-ID shuffle: `0/5`, matched mean `0.255`;
-- anchor-value shuffle: `0/5`, matched mean `0.244`;
-- spectral-bin permutation: `0/5`, matched mean `0.268`.
+- anchor-ID shuffle: `0/10`, matched mean `0.252`;
+- anchor-value shuffle: `0/10`, matched mean `0.242`;
+- spectral-bin permutation: `0/10`, matched mean `0.263`.
 
-The random shared-anchor diagnostic still passes `5/5`. That confirms the same
+The random shared-anchor diagnostic still passes `10/10`. That confirms the same
 claim boundary as the 12B row: the packet needs shared public coordinate
 agreement, but the present artifact does not prove semantic anchor names are
 special.
 
 ## Decision
 
-Promote the ARC Fourier/anchor-syndrome headline from `12B` payload to `8B`
-payload (`11B` framed) for the current paper draft and systems accounting.
-This is a stronger positive method row than the earlier 12B artifact because it
-preserves the same gate while improving rate.
+Promote the ARC Fourier/anchor-syndrome headline from `12B` payload / `5`
+seeds to `8B` payload / `10` seeds (`11B` framed) for the current paper draft
+and systems accounting. This is a stronger positive method row than the
+earlier 12B artifact because it preserves the same gate while improving rate
+and seed stability.
 
 Do not claim a lower minimum rate yet. Exploratory `4B` and `6B` probes were
 interrupted after producing no artifacts so the 8B gate could complete on the
-Mac; they are not evidence. The next exact rate gate is either a planned
-overnight `4B/6B/8B/12B` resumable sweep or a 10-seed/2000-bootstrap rerun of
-the promoted `8B` row.
+Mac; they are not evidence. The next exact rate gate is a 10-seed/2000-bootstrap
+rerun of the promoted `8B` row or a planned overnight `4B/6B/8B/12B`
+resumable sweep.
