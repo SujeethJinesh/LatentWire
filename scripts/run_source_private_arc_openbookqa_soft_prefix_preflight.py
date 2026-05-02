@@ -289,12 +289,21 @@ def _encode_ids(tokenizer: Any, text: str, *, device: str, add_special_tokens: b
 
 def _standardize(matrix: torch.Tensor, train_indices: Sequence[int]) -> tuple[torch.Tensor, dict[str, Any]]:
     train = matrix[list(train_indices)]
-    mean = train.mean(dim=0, keepdim=True)
-    std = train.std(dim=0, unbiased=False, keepdim=True).clamp_min(1e-6)
+    if train.dim() <= 2:
+        mean = train.mean(dim=0, keepdim=True)
+        std = train.std(dim=0, unbiased=False, keepdim=True).clamp_min(1e-6)
+    else:
+        flat_train = train.reshape(-1, train.shape[-1])
+        mean = flat_train.mean(dim=0).view(*([1] * (matrix.dim() - 1)), matrix.shape[-1])
+        std = flat_train.std(dim=0, unbiased=False).clamp_min(1e-6).view(
+            *([1] * (matrix.dim() - 1)),
+            matrix.shape[-1],
+        )
     return (matrix - mean) / std, {
         "mean_l2": float(mean.norm().detach().cpu()),
         "std_min": float(std.min().detach().cpu()),
         "std_max": float(std.max().detach().cpu()),
+        "tensor_rank": int(matrix.dim()),
     }
 
 
@@ -372,6 +381,25 @@ def _selected_choice_features(
             "uses_source_predictions": False,
         }
         return torch.tensor(pooled.astype(np.float32)), metadata
+    elif base_mode in {
+        "cached_choice_score_pool",
+        "hf_choice_hidden_candidate_pool",
+        "hf_choice_hidden_score_candidate_pool",
+    }:
+        pooled, metadata = _choice_candidate_pool_features(
+            rows,
+            source_predictions,
+            source_feature_mode=source_feature_mode,
+            feature_dim=feature_dim,
+            source_model=source_model,
+            source_device=source_device,
+            source_dtype=source_dtype,
+            source_max_length=source_max_length,
+            source_hidden_layer=source_hidden_layer,
+            source_token_pool_size=source_token_pool_size,
+            local_files_only=local_files_only,
+        )
+        return torch.tensor(pooled.astype(np.float32)), metadata
     else:
         raise ValueError(f"unknown source_feature_mode {source_feature_mode!r}")
 
@@ -395,18 +423,25 @@ def _selected_choice_features(
     return torch.tensor(np.asarray(chosen, dtype=np.float32)), metadata
 
 
-def _fixed_token_pool(tokens: np.ndarray, *, pool_size: int, residualized: bool) -> np.ndarray:
+def _fixed_feature_pool(
+    features: np.ndarray,
+    *,
+    pool_size: int,
+    residualized: bool,
+    normalize_rows: bool,
+) -> np.ndarray:
     if pool_size < 1:
         raise ValueError("pool_size must be at least 1")
-    values = np.asarray(tokens, dtype=np.float64)
+    values = np.asarray(features, dtype=np.float64)
     if values.ndim != 2:
-        raise ValueError("tokens must be a [token_count, dim] matrix")
+        raise ValueError("features must be a [item_count, dim] matrix")
     if values.shape[0] == 0:
         values = np.zeros((1, values.shape[1]), dtype=np.float64)
     if residualized:
         values = values - values.mean(axis=0, keepdims=True)
-    norms = np.linalg.norm(values, axis=1, keepdims=True)
-    values = np.divide(values, np.maximum(norms, 1e-12), out=np.zeros_like(values), where=norms > 0)
+    if normalize_rows:
+        norms = np.linalg.norm(values, axis=1, keepdims=True)
+        values = np.divide(values, np.maximum(norms, 1e-12), out=np.zeros_like(values), where=norms > 0)
     if values.shape[0] == pool_size:
         return values
     if values.shape[0] > pool_size:
@@ -414,6 +449,110 @@ def _fixed_token_pool(tokens: np.ndarray, *, pool_size: int, residualized: bool)
         return values[positions]
     repeats = int(math.ceil(pool_size / values.shape[0]))
     return np.tile(values, (repeats, 1))[:pool_size]
+
+
+def _fixed_token_pool(tokens: np.ndarray, *, pool_size: int, residualized: bool) -> np.ndarray:
+    return _fixed_feature_pool(
+        tokens,
+        pool_size=pool_size,
+        residualized=residualized,
+        normalize_rows=True,
+    )
+
+
+def _source_selection_score_rows(
+    rows: list[arc_gate.ArcRow],
+    source_predictions: list[int],
+) -> list[np.ndarray]:
+    score_rows: list[np.ndarray] = []
+    for row, selected_index in zip(rows, source_predictions, strict=True):
+        scores = np.zeros((len(row.choices), 1), dtype=np.float64)
+        scores[int(selected_index), 0] = 1.0
+        score_rows.append(scores)
+    return score_rows
+
+
+def _choice_candidate_pool_features(
+    rows: list[arc_gate.ArcRow],
+    source_predictions: list[int],
+    *,
+    source_feature_mode: str,
+    feature_dim: int,
+    source_model: str,
+    source_device: str,
+    source_dtype: str,
+    source_max_length: int,
+    source_hidden_layer: int,
+    source_token_pool_size: int,
+    local_files_only: bool,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    residualized = source_feature_mode.endswith("_residual")
+    base_mode = source_feature_mode.removesuffix("_residual")
+    pool_size = int(source_token_pool_size)
+    if pool_size < 1:
+        raise ValueError("source_token_pool_size must be at least 1")
+
+    score_rows = _source_selection_score_rows(rows, source_predictions)
+    hidden_rows: list[np.ndarray] | None = None
+    hidden_meta: dict[str, Any] = {}
+    normalize_rows = base_mode != "cached_choice_score_pool"
+    if base_mode in {"hf_choice_hidden_candidate_pool", "hf_choice_hidden_score_candidate_pool"}:
+        flat_hidden, hidden_meta = _hf_choice_hidden_features(
+            rows,
+            model_path=source_model,
+            device=source_device,
+            dtype=source_dtype,
+            max_length=source_max_length,
+            local_files_only=local_files_only,
+            hidden_layer=source_hidden_layer,
+        )
+        hidden_rows = []
+        offset = 0
+        for row in rows:
+            hidden_rows.append(np.asarray(flat_hidden[offset : offset + len(row.choices)], dtype=np.float64))
+            offset += len(row.choices)
+
+    pooled_rows: list[np.ndarray] = []
+    feature_kind: str
+    for row_index, score_row in enumerate(score_rows):
+        if base_mode == "cached_choice_score_pool":
+            row_features = score_row
+            feature_kind = "cached_source_selection_score_candidate_pool"
+        elif base_mode == "hf_choice_hidden_candidate_pool":
+            if hidden_rows is None:
+                raise ValueError("hidden rows were not loaded")
+            row_features = hidden_rows[row_index]
+            feature_kind = "hf_choice_hidden_candidate_pool"
+        elif base_mode == "hf_choice_hidden_score_candidate_pool":
+            if hidden_rows is None:
+                raise ValueError("hidden rows were not loaded")
+            row_features = np.concatenate([hidden_rows[row_index], score_row], axis=1)
+            feature_kind = "hf_choice_hidden_score_candidate_pool"
+        else:
+            raise ValueError(f"unknown candidate pool mode {source_feature_mode!r}")
+        pooled_rows.append(
+            _fixed_feature_pool(
+                row_features,
+                pool_size=pool_size,
+                residualized=residualized,
+                normalize_rows=normalize_rows,
+            )
+        )
+
+    choice_counts = [len(row.choices) for row in rows]
+    return np.asarray(pooled_rows, dtype=np.float64), {
+        "kind": feature_kind,
+        "source_feature_mode": source_feature_mode,
+        "pool_size": pool_size,
+        "choice_count_min": int(min(choice_counts)) if choice_counts else 0,
+        "choice_count_max": int(max(choice_counts)) if choice_counts else 0,
+        "choice_count_mean": float(statistics.fmean(choice_counts)) if choice_counts else 0.0,
+        "row_centered_candidate_residual": bool(residualized),
+        "uses_source_predictions": base_mode
+        in {"cached_choice_score_pool", "hf_choice_hidden_score_candidate_pool"},
+        "hidden_metadata": hidden_meta,
+        "feature_dim": int(pooled_rows[0].shape[-1]) if pooled_rows else int(feature_dim),
+    }
 
 
 def _hf_choice_hidden_features(
@@ -1252,6 +1391,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "hashed_selected_residual",
             "hf_selected_hidden",
             "hf_selected_hidden_residual",
+            "cached_choice_score_pool",
+            "cached_choice_score_pool_residual",
+            "hf_choice_hidden_candidate_pool",
+            "hf_choice_hidden_candidate_pool_residual",
+            "hf_choice_hidden_score_candidate_pool",
+            "hf_choice_hidden_score_candidate_pool_residual",
             "hf_choice_token_hidden_pool",
             "hf_choice_token_hidden_pool_residual",
         ),

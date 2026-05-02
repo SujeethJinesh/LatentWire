@@ -489,3 +489,33 @@ exposure alone solves cross-model communication. The next live connector
 branch should be candidate-level residual pooling with explicit
 source-score-only, hidden-residual-only, and score+hidden factor ablations,
 then only widen if the n8 smoke beats label-shuffled and zero-source controls.
+
+## 2026-05-02 Candidate-Pool Factor Follow-Up
+
+Added candidate-level score/hidden factor modes to the ARC/OpenBookQA
+soft-prefix preflight and ran three n8 CPU ablations:
+
+- cached source-choice score residual:
+  `results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_cached_score_pool_residual_n8_cpu_label_choice/`
+- hidden candidate residual:
+  `results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_candidate_pool_residual_n8_cpu_label_choice/`
+- hidden+score candidate residual:
+  `results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_score_candidate_pool_residual_n8_cpu_label_choice/`
+
+Readout:
+
+- score-only matched reaches `1/4`, but zero-source reaches `2/4`;
+- hidden-only matched reaches `1/4`, tying target-only and zero-source, but
+  still loses on margin;
+- hidden+score matched falls to `0/4`, while target-cache-only and same-norm
+  noise reach `2/4`;
+- all three pass gates are `False`;
+- source-label-copy audit remains `3/4`, so the cached source selection has
+  answer-side signal, but the learned connector does not use it safely.
+
+Decision: this rules out shallow candidate-level query soft-prefix pooling on
+the current Mac-local surface. The next live branch should be a conditional
+candidate innovation/syndrome packet: encode source evidence relative to the
+target's own candidate state, then compare hidden-only, score-only, and
+score+hidden factors at matched rate with explicit target-derived and
+shuffled-source packet controls.

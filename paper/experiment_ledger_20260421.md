@@ -19594,3 +19594,40 @@ Lay explanation: this run gave the receiver a small pile of hidden-state tokens
 from all answer choices and let it learn which ones to attend to. It still did
 not help; a deliberately wrong-label control did better, so simply sending more
 hidden tokens is not enough.
+
+ARC candidate-pool score/hidden factor preflight: extended
+`scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py` with
+candidate-level source feature modes:
+`cached_choice_score_pool`, `cached_choice_score_pool_residual`,
+`hf_choice_hidden_candidate_pool`, `hf_choice_hidden_candidate_pool_residual`,
+`hf_choice_hidden_score_candidate_pool`, and
+`hf_choice_hidden_score_candidate_pool_residual`. Added tests in
+`tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`,
+memo `paper/source_private_arc_candidate_pool_factor_preflight_20260502.md`,
+references `references/651_arc_candidate_pool_factor_preflight_refs_20260502.md`,
+and artifacts:
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_cached_score_pool_residual_n8_cpu_label_choice/`,
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_candidate_pool_residual_n8_cpu_label_choice/`,
+and
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_score_candidate_pool_residual_n8_cpu_label_choice/`.
+Outcome: the narrower candidate-level factor ablation is also negative. On
+the same ARC n8 CPU `label_and_choice` smoke surface, cached source-choice
+score residual gets matched `1/4` but loses to zero-source `2/4` with
+matched-minus-best-control margin about `-1.537`; hidden candidate residual
+gets matched `1/4`, ties target-only/zero-source/static at `1/4`, and loses
+on margin by about `-0.184`; hidden+score residual gets matched `0/4` while
+target-cache-only and same-norm noise reach `2/4`, with margin deficit about
+`-1.664`. Source-label-copy audit remains `3/4`.
+
+Decision: rule out shallow candidate-level query soft-prefix pooling on this
+Mac-local gate. Candidate hidden residuals are the least bad but not positive,
+and cached source-choice score features mainly expose label-copy risk rather
+than a usable communication channel. The next live branch should be a
+target-conditional candidate innovation or syndrome packet: encode what the
+source changes relative to the target's own public candidate state, then test
+hidden-only, score-only, and score+hidden at matched rate.
+
+Lay explanation: this run gave the receiver one small clue per answer choice
+instead of a single chosen-answer clue or a pile of raw tokens. That still did
+not beat simple controls, so the current soft-prefix translator is not using
+source candidate information reliably.

@@ -2056,5 +2056,12 @@
     "path": "references/650_arc_token_pool_query_preflight_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the negative ARC token-pool query soft-prefix preflight, covering prefix/query-bottleneck prior art, C2C/KVComm systems competitors, TurboQuant/KIVI quantization baselines, DiT iterative-refinement inspiration, SAE/common-basis boundaries, and the decision to move next to candidate-level residual pooling with score/hidden ablations."
+  },
+  {
+    "num": 651,
+    "slug": "arc_candidate_pool_factor_preflight_refs_20260502",
+    "path": "references/651_arc_candidate_pool_factor_preflight_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the negative ARC candidate-pool score/hidden factor preflight, covering C2C/KVComm, TurboQuant/KVQuant/KIVI, H2O/SnapKV score-selection baselines, Q-Former/Flamingo query bottlenecks, Slepian-Wolf/Wyner-Ziv conditional coding, and the decision to move from shallow soft-prefix pooling to target-conditional candidate innovation packets."
   }
 ]

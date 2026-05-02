@@ -115,6 +115,81 @@ def test_fixed_token_pool_residualizes_and_resizes() -> None:
     assert np.allclose(np.linalg.norm(pooled[[0, 2, 3]], axis=1), 1.0, atol=1e-6)
 
 
+def test_standardize_rank3_uses_all_train_tokens() -> None:
+    matrix = torch.tensor(
+        [
+            [[1.0, 10.0], [3.0, 30.0]],
+            [[5.0, 50.0], [7.0, 70.0]],
+            [[9.0, 90.0], [11.0, 110.0]],
+        ]
+    )
+
+    standardized, metadata = preflight._standardize(matrix, [0, 1])
+
+    assert metadata["tensor_rank"] == 3
+    assert torch.allclose(standardized[:2].reshape(-1, 2).mean(dim=0), torch.zeros(2), atol=1e-6)
+
+
+def test_candidate_score_pool_residual_features_use_cached_selection() -> None:
+    pooled, metadata = preflight._choice_candidate_pool_features(
+        _rows(),
+        [1, 0],
+        source_feature_mode="cached_choice_score_pool_residual",
+        feature_dim=2,
+        source_model="",
+        source_device="auto_cpu",
+        source_dtype="float32",
+        source_max_length=32,
+        source_hidden_layer=-1,
+        source_token_pool_size=3,
+        local_files_only=True,
+    )
+
+    assert metadata["kind"] == "cached_source_selection_score_candidate_pool"
+    assert metadata["uses_source_predictions"] is True
+    assert pooled.shape == (2, 3, 1)
+    assert np.allclose(pooled[0, :, 0], [-1.0 / 3.0, 2.0 / 3.0, -1.0 / 3.0])
+    assert np.allclose(pooled[1, :, 0], [0.5, -0.5, 0.5])
+
+
+def test_candidate_hidden_score_pool_concatenates_features(monkeypatch) -> None:
+    rows = _rows()
+
+    def fake_hidden(*args, **kwargs):
+        del args, kwargs
+        return np.asarray(
+            [
+                [1.0, 0.0],
+                [3.0, 0.0],
+                [5.0, 0.0],
+                [2.0, 2.0],
+                [2.0, 6.0],
+            ],
+            dtype=np.float64,
+        ), {"kind": "fake_hidden"}
+
+    monkeypatch.setattr(preflight, "_hf_choice_hidden_features", fake_hidden)
+
+    pooled, metadata = preflight._choice_candidate_pool_features(
+        rows,
+        [1, 0],
+        source_feature_mode="hf_choice_hidden_score_candidate_pool_residual",
+        feature_dim=2,
+        source_model="",
+        source_device="auto_cpu",
+        source_dtype="float32",
+        source_max_length=32,
+        source_hidden_layer=-1,
+        source_token_pool_size=3,
+        local_files_only=True,
+    )
+
+    assert metadata["kind"] == "hf_choice_hidden_score_candidate_pool"
+    assert metadata["hidden_metadata"]["kind"] == "fake_hidden"
+    assert pooled.shape == (2, 3, 3)
+    assert np.allclose(np.linalg.norm(pooled[0, [0, 2]], axis=1), 1.0, atol=1e-6)
+
+
 def test_selected_choice_residual_features_are_row_centered(monkeypatch) -> None:
     rows = _rows()
 
@@ -181,11 +256,18 @@ def test_residual_feature_modes_are_cli_options() -> None:
             "6",
         ]
     )
+    candidate_pool = preflight.parse_args(
+        [
+            "--source-feature-mode",
+            "hf_choice_hidden_score_candidate_pool_residual",
+        ]
+    )
 
     assert hashed.source_feature_mode == "hashed_selected_residual"
     assert hidden.source_feature_mode == "hf_selected_hidden_residual"
     assert token_pool.source_feature_mode == "hf_choice_token_hidden_pool_residual"
     assert token_pool.source_token_pool_size == 6
+    assert candidate_pool.source_feature_mode == "hf_choice_hidden_score_candidate_pool_residual"
 
 
 def test_condition_metrics_adds_paired_controls() -> None:
