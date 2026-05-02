@@ -1,0 +1,46 @@
+{
+  "created_utc": "2026-05-02T00:31:47.335506+00:00",
+  "files": [
+    {
+      "bytes": 115392,
+      "path": "results/source_private_hellaswag_switch_decomposition_20260502/hellaswag_switch_decomposition.json",
+      "sha256": "22d642e31ead02b27fb15ff4568a644054db45bafb2507a422e4b4544585f168"
+    },
+    {
+      "bytes": 971,
+      "path": "results/source_private_hellaswag_switch_decomposition_20260502/hellaswag_switch_decomposition.md",
+      "sha256": "7237be6e8a5ea63ab65238319109c306a7e295c748ede4e06e784ea70bb092e8"
+    },
+    {
+      "bytes": 12880,
+      "path": "results/source_private_hellaswag_switch_decomposition_20260502/candidate_rows.csv",
+      "sha256": "7c6d93c1ad483a319dad428cf84b5f1d4bf5dd61a87eb8973ae6d47bd5bdfe92"
+    },
+    {
+      "bytes": 1479527,
+      "path": "results/source_private_hellaswag_switch_decomposition_20260502/predictions.jsonl",
+      "sha256": "40e94e49c8357a3edb4941e353c42769970895b2eea531ace04d3afa8c31bdb9"
+    },
+    {
+      "bytes": 6856,
+      "path": "results/source_private_hellaswag_switch_decomposition_20260502/switch_model_readouts.jsonl",
+      "sha256": "46362259d3511d851a8a0a95f0f28b47ae61618ec540709fb58a7c5a009cd608"
+    }
+  ],
+  "gate": "source_private_hellaswag_switch_decomposition",
+  "headline": {
+    "selected_switch_internal_dev_accuracy": 0.5234375,
+    "selected_switch_ridge": 100.0,
+    "selected_switch_view": "hidden_score_switch",
+    "strict_delta_required": 0.02,
+    "switch_branch_pass_gate": false,
+    "terminal_tail_selected_accuracy": 0.4854721549636804,
+    "terminal_tail_selected_minus_best_label_copy": -0.012106537530266304,
+    "terminal_tail_selected_switch_precision": 0.3531746031746032,
+    "terminal_tail_top2_oracle_accuracy": 0.7566585956416465,
+    "validation_first1024_selected_accuracy": 0.44921875,
+    "validation_first1024_selected_minus_best_label_copy": -0.0126953125,
+    "validation_first1024_selected_switch_precision": 0.3333333333333333,
+    "validation_first1024_top2_oracle_accuracy": 0.7158203125
+  }
+}
