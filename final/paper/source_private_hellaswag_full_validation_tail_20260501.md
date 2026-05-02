@@ -87,6 +87,28 @@ positive but insufficiently robust signal.
 Do not claim: LatentWire passes the full HellaSwag validation set under the
 strict jackknife gate.
 
+## Four-Sample Stabilization Follow-Up
+
+Follow-up artifact:
+`results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation9216_10042_4sample_scout/hellaswag_hidden_innovation_eval_slice_stress.json`
+
+Result: `pass_gate=false`.
+
+- train sample seeds: `4`
+- selected accuracy: `0.530266`
+- best label-copy: `0.498789`
+- score-only bagged: `0.497579`
+- delta vs best label-copy: `+0.031477`
+- paired CI95 low vs best label-copy: `+0.002996`
+- jackknife: `2/4`
+- jackknife min delta vs best label-copy: `+0.015738`
+- jackknife min CI95 low vs best label-copy: `-0.006689`
+
+Interpretation: adding a fourth train-sample seed preserves a positive overall
+terminal-tail margin, but weakens robustness and does not rescue the full
+validation claim. The next method branch needs a new mechanism rather than a
+larger version of the same dense bagging rule.
+
 ## Next Gate
 
 The next highest-value branch is one of:

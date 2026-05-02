@@ -1713,5 +1713,12 @@
     "path": "references/601_hellaswag_terminal_tail_refs_20260501.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the dense HellaSwag terminal-tail soft fail, covering the positive-but-insufficient terminal signal, strict no-full-validation-claim boundary, and novelty comparisons against prefix/prompt tuning, SAE/crosscoder/common-basis, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, latent reasoning, and selective prediction."
+  },
+  {
+    "num": 602,
+    "slug": "hellaswag_4sample_tail_scout_refs_20260501",
+    "path": "references/602_hellaswag_4sample_tail_scout_refs_20260501.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed four-sample HellaSwag terminal-tail stabilization scout, covering the weakened dense-bagging branch and novelty boundaries against selective prediction, prefix/prompt/adapters, SAE/crosscoder/common-basis work, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, and latent reasoning."
   }
 ]

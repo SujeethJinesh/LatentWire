@@ -168,6 +168,8 @@ def build_gate(
     eval_full_path: pathlib.Path = DEFAULT_EVAL_FULL,
     eval_slice_start: int = 1024,
     eval_slice_rows: int = 1024,
+    eval_score_cache: pathlib.Path | None = None,
+    eval_hidden_cache: pathlib.Path | None = None,
     train_sample_cache_dir: pathlib.Path = DEFAULT_TRAIN_SAMPLE_CACHE_DIR,
     train_sample_seeds: tuple[int, ...] = DEFAULT_TRAIN_SAMPLE_SEEDS,
     split_seeds: tuple[int, ...] = DEFAULT_SPLIT_SEEDS,
@@ -196,9 +198,17 @@ def build_gate(
         count=eval_slice_rows,
     )
     eval_rows = arc_gate._load_rows(slice_path)
-    score_cache = output_dir / "source_eval_score_cache.json"
-    hidden_npz = output_dir / "source_eval_hidden_cache.npz"
-    hidden_meta = output_dir / "source_eval_hidden_cache.json"
+    score_cache = (
+        _resolve(eval_score_cache)
+        if eval_score_cache is not None
+        else output_dir / "source_eval_score_cache.json"
+    )
+    hidden_npz = (
+        _resolve(eval_hidden_cache)
+        if eval_hidden_cache is not None
+        else output_dir / "source_eval_hidden_cache.npz"
+    )
+    hidden_meta = hidden_npz.with_suffix(".json")
     eval_cache_metadata = _cache_eval_source_state(
         rows=eval_rows,
         score_cache=score_cache,
@@ -348,6 +358,8 @@ def main() -> int:
     parser.add_argument("--eval-full-path", type=pathlib.Path, default=DEFAULT_EVAL_FULL)
     parser.add_argument("--eval-slice-start", type=int, default=1024)
     parser.add_argument("--eval-slice-rows", type=int, default=1024)
+    parser.add_argument("--eval-score-cache", type=pathlib.Path, default=None)
+    parser.add_argument("--eval-hidden-cache", type=pathlib.Path, default=None)
     parser.add_argument("--train-sample-cache-dir", type=pathlib.Path, default=DEFAULT_TRAIN_SAMPLE_CACHE_DIR)
     parser.add_argument("--train-sample-seeds", type=_parse_int_tuple, default=DEFAULT_TRAIN_SAMPLE_SEEDS)
     parser.add_argument("--split-seeds", type=_parse_int_tuple, default=DEFAULT_SPLIT_SEEDS)
@@ -367,6 +379,8 @@ def main() -> int:
         eval_full_path=args.eval_full_path,
         eval_slice_start=args.eval_slice_start,
         eval_slice_rows=args.eval_slice_rows,
+        eval_score_cache=args.eval_score_cache,
+        eval_hidden_cache=args.eval_hidden_cache,
         train_sample_cache_dir=args.train_sample_cache_dir,
         train_sample_seeds=args.train_sample_seeds,
         split_seeds=args.split_seeds,
