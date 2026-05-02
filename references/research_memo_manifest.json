@@ -1832,5 +1832,12 @@
     "path": "references/618_hellaswag_anchor_relative_hidden_code_scout_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed HellaSwag anchor-relative hidden-code scout, covering relative-representation/common-basis prior art, seed-repeat near-miss collapse, compact packet-only and Qwen-side relative controls, and novelty boundaries against SAE/crosscoder dictionaries, prefix/prompt tuning, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, and diffusion-style latent refinement."
+  },
+  {
+    "num": 619,
+    "slug": "hellaswag_crosscoder_hidden_code_scout_refs_20260502",
+    "path": "references/619_hellaswag_crosscoder_hidden_code_scout_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed HellaSwag linear crosscoder hidden-code scout, covering CCA/SVCCA/PWCCA/CKA representation-similarity prior art, sparse crosscoder/SAE and Q-former/resampler boundaries, compact packet-only and Qwen-side crosscoder controls, and novelty boundaries against prefix/prompt tuning, C2C/KVComm, QJL/TurboQuant, and KV compression."
   }
 ]

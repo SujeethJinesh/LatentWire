@@ -18723,3 +18723,43 @@ packets do not robustly add source information beyond the candidate id on this
 slice. Do not widen this shallow family; the next live method branch should be
 a true joint crosscoder/resampler objective or a benchmark with more headroom
 above packet-only.
+
+HellaSwag linear crosscoder hidden-code scout: added
+`scripts/build_source_private_hellaswag_crosscoder_hidden_code_scout.py`, test
+`tests/test_build_source_private_hellaswag_crosscoder_hidden_code_scout.py`,
+memo
+`paper/source_private_hellaswag_crosscoder_hidden_code_scout_20260502.md`,
+references
+`references/619_hellaswag_crosscoder_hidden_code_scout_refs_20260502.md`, and
+artifacts
+`results/source_private_hellaswag_crosscoder_hidden_code_scout_20260502_tinyllama_validation1024_2048/`
+and
+`results/source_private_hellaswag_crosscoder_hidden_code_scout_20260502_seed97_tinyllama_validation1024_2048/`.
+Outcome: this train-only linear common-basis branch does not promote. The gate
+used the same official-train calibration surface (`1487` rows, split
+`1115/372`) and frozen HellaSwag validation slice `1024:2048` (`1024` rows),
+reusing the TinyLlama hidden cache. It fits PCA on TinyLlama and Qwen candidate
+hidden states, then fits CCA/SVD-style paired shared directions on official
+train fit rows only. The source sends a one-byte code made from TinyLlama's
+packet-candidate shared coordinate plus candidate id; the decoder uses Qwen
+scores and Qwen-side shared coordinates. The train-dev-selected row,
+`cca_pca64_d8_relconf_q32_ridge10` with decoder ridge `10.0`, reaches
+`0.503906` versus packet-only and compact-candidate crosscoder decoder
+`0.501953` (delta `+0.001953`, CI95 low `-0.004883`). The best diagnostic row,
+`cca_pca32_d16_relconf_q32_ridge10`, reaches `0.507812` (delta `+0.005859`,
+CI95 low `-0.002930`), below the `+0.010` scout bar. A focused repeat on the
+best family keeps the same weak best row while the train-dev-selected k-means
+row drops to `0.502930` (delta `+0.000977`, CI95 low `-0.005396`). Controls
+separate real code use from degenerate explanations but do not rescue the
+claim: Qwen-side-only crosscoder decoder is `0.464844`, compact-candidate
+crosscoder decoder ties packet-only at `0.501953`, candidate-only code is
+`0.500000`, row-shuffled crosscoder code is `0.276367`, source-shared shuffle
+before encoding is `0.255859`, codebook permutation mismatch is `0.290039`,
+random same-byte code is `0.277344`, zero source code is `0.258789`, and label
+permutation decoder is `0.291016`. Interpretation: linear CCA/shared
+projections are a stronger common-basis diagnostic than raw-hidden PCA, but
+they still do not reveal stable additional source information beyond the
+compact candidate packet on this slice. Do not widen this linear family; the
+next live branch should be a nonlinear resampler/cross-attention connector
+with an explicit rate bottleneck or a benchmark headroom gate where packet-only
+does not already absorb most source signal.
