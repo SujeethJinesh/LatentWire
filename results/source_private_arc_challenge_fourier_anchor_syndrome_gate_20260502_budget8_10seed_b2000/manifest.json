@@ -1,0 +1,17 @@
+{
+  "artifact_sha256": {
+    "arc_challenge_fourier_anchor_syndrome_gate.json": "45b103c9330e4b512c18d6572d2915787a7caeb9c3aa8528e045a06292146f17",
+    "arc_challenge_fourier_anchor_syndrome_gate.md": "52f3be67c4e1bcd873c7872209369e93a1274b3a4e1173ebc64281a2ee5933b7",
+    "matched_predictions.jsonl": "9ab7b9da8a377c59bd206906b02fb26baecce1df433925aa1c34f172ac124c33",
+    "per_variant_seed_metrics.csv": "1316fd11a86920de50d9f26166ff3f0364b52fe8172333432fb15b387a676b58"
+  },
+  "artifacts": [
+    "arc_challenge_fourier_anchor_syndrome_gate.json",
+    "arc_challenge_fourier_anchor_syndrome_gate.md",
+    "per_variant_seed_metrics.csv",
+    "matched_predictions.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

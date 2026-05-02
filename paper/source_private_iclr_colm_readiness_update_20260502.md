@@ -797,3 +797,30 @@ generality or native GPU throughput/HBM claims.
 Lay explanation: this asked whether the tiny packet still works if we reroll
 the random encoding ten times instead of five. It did, and the broken-coordinate
 controls still failed.
+
+## 2026-05-02 ARC Fourier/Anchor-Syndrome b2000 Follow-Up
+
+Reran the promoted `8B` / `10`-seed packet with tighter paired uncertainty:
+
+- artifact:
+  `results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed_b2000/`;
+- pass gate: `True`;
+- bootstrap samples: `2000`;
+- payload/framed bytes: `8B/11B`;
+- test matched seed pass count: `10/10`;
+- validation matched seed pass count: `10/10`;
+- test matched mean/min: `0.344/0.342`;
+- test target-only / same-byte text: `0.265/0.300`;
+- min lift over target: `+0.077`;
+- min lift over same-byte text: `+0.042`;
+- min CI95 low vs target: `+0.0384`;
+- anchor-ID shuffle, anchor-value shuffle, and spectral-bin permutation all
+  fail at `0/10` seeds.
+
+Decision: use this as the current ARC headline artifact. It strengthens
+paired-uncertainty support for the positive row but still leaves ICLR blocked
+on strict cross-family generality and native GPU systems rows.
+
+Lay explanation: this was a more careful uncertainty check. The positive
+interval stayed positive even with more resampling, so the `8B` packet result
+is statistically steadier.

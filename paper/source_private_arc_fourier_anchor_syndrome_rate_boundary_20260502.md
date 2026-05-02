@@ -11,6 +11,9 @@
   not yet backed by native GPU serving comparisons.
 
 Primary artifact:
+`results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed_b2000/`
+
+Prior 10-seed artifact:
 `results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed/`
 
 Prior 5-seed artifact:
@@ -29,12 +32,13 @@ source-to-target boundary.
 
 ## Results
 
-ARC-Challenge test, 10 packet seeds:
+ARC-Challenge test, 10 packet seeds and 2000 paired bootstrap samples:
 
 | Row | Result |
 |---|---:|
 | pass gate | `True` |
 | matched Fourier/anchor-syndrome seed pass count | 10/10 |
+| bootstrap samples | 2000 |
 | payload bytes | 8B |
 | framed bytes with header/CRC | 11B |
 | matched mean / min accuracy | 0.344 / 0.342 |
@@ -67,6 +71,8 @@ and seed stability.
 
 Do not claim a lower minimum rate yet. Exploratory `4B` and `6B` probes were
 interrupted after producing no artifacts so the 8B gate could complete on the
-Mac; they are not evidence. The next exact rate gate is a 10-seed/2000-bootstrap
-rerun of the promoted `8B` row or a planned overnight `4B/6B/8B/12B`
-resumable sweep.
+Mac; they are not evidence. The next exact scientific gate is a strict
+cross-family ARC run with the unchanged `8B` payload / `11B` framed packet,
+the same 10 seeds, and the same 2000-bootstrap paired uncertainty. A planned
+overnight `4B/6B/8B/12B` resumable sweep is useful only after the cross-family
+gate is settled.

@@ -87,6 +87,14 @@ matched mean/min remains `0.344/0.342`, target `0.265`, same-byte text `0.300`,
 min CI95 low vs target `+0.038`, and anchor-ID/value plus spectral-bin mismatch
 controls remain `0/10`. Use this as the current headline artifact.
 
+Uncertainty follow-up:
+`results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed_b2000/`
+reruns the same `8B` packet with `10` seeds and `2000` paired bootstrap
+samples. The pass result is unchanged: ARC test matched mean/min `0.344/0.342`,
+target `0.265`, same-byte text `0.300`, min CI95 low vs target `+0.038`, and
+anchor-ID/value plus spectral-bin mismatch controls remain `0/10`. This is the
+current headline artifact.
+
 Do not claim ICLR readiness yet. Next exact gate: run a strict cross-family
 falsification or train-source selector on top of this shared basis, then run
 native NVIDIA systems comparisons against C2C, KVComm, TurboQuant/QJL/KV-cache

@@ -19953,3 +19953,26 @@ native NVIDIA rows remain missing.
 Lay explanation: we repeated the small-packet experiment across twice as many
 random packet encodings. It kept working every time, while scrambled packet
 coordinates still failed.
+
+ARC Fourier/anchor-syndrome 8B 10-seed b2000 uncertainty gate: reran the
+promoted `8B` payload row with the same 10 packet seeds and
+`--bootstrap-samples 2000`, producing
+`results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed_b2000/`.
+
+Outcome: the tighter paired-bootstrap gate passes. Test matched packets pass
+`10/10` seeds with mean/min accuracy `0.344/0.342`, target-only `0.265`,
+same-byte structured text `0.300`, min lift over target `+0.077`, min lift
+over same-byte text `+0.042`, and min paired CI95 low vs target `+0.0384`.
+Validation also passes `10/10`. Anchor-ID shuffle, anchor-value shuffle, and
+spectral-bin permutation all fail at `0/10` seeds. Random shared anchors still
+pass, so semantic-anchor novelty remains ruled out.
+
+Decision: promote the b2000 artifact as the current ARC headline. This clears
+the immediate paired-uncertainty objection for the same-family public-basis
+packet row. The highest-priority next gate is now strict cross-family ARC with
+the unchanged `8B` payload / `11B` framed protocol, same 10 seeds, same
+2000-bootstrap uncertainty, and the same mismatch controls.
+
+Lay explanation: we repeated the uncertainty calculation with four times as
+many bootstrap resamples. The confidence interval stayed positive, so the
+small-packet result is not just a loose statistical artifact.
