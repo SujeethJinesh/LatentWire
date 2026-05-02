@@ -18419,3 +18419,84 @@ any claim that the receiver has learned a true cross-family latent language.
 The next live method branch should target receiver acceptance/common-basis
 learning that closes the oracle headroom rather than merely trusting the
 source packet.
+
+HellaSwag receiver-headroom decomposition: added
+`scripts/build_source_private_hellaswag_receiver_headroom_decomposition.py`,
+test
+`tests/test_build_source_private_hellaswag_receiver_headroom_decomposition.py`,
+memo
+`paper/source_private_hellaswag_receiver_headroom_decomposition_20260502.md`,
+references
+`references/609_hellaswag_receiver_headroom_decomposition_refs_20260502.md`,
+and artifact
+`results/source_private_hellaswag_receiver_headroom_decomposition_20260502/`.
+Outcome: on the same heldout split `1024:10042`, TinyLlama packet-only remains
+`0.629741`, Qwen target-score is `0.483034`, Qwen mean-zscore packet is
+`0.528277`, and Qwen hybrid packet is `0.534043`. The best Tiny+Qwen oracle is
+TinyLlama packet-or-Qwen hybrid at `0.692947`, a `+0.063207` delta over
+packet-only with CI95 low `+0.058658`; Qwen hybrid is uniquely correct on
+`570` heldout rows where TinyLlama packet-only is wrong. However, the
+train-prefix-selected simple selector falls to `0.608228` (delta
+`-0.021513`, CI95 low `-0.028055`), and the eval-only best simple selector is
+only `+0.000111` above packet-only with CI95 low `0.000000`, so it is marked
+non-promotable. Interpretation: the receiver/common-basis branch is alive
+because complementary signal exists, but simple confidence thresholds are
+ruled out as an ICLR-positive receiver method. The next exact gate is a
+train-only relative/dictionary/learned-query receiver that closes part of the
+`0.692947` oracle while preserving the `2B` raw / `5B` framed source-private
+packet boundary and destructive controls.
+
+HellaSwag receiver acceptance gate: added
+`scripts/build_source_private_hellaswag_receiver_acceptance_gate.py`, test
+`tests/test_build_source_private_hellaswag_receiver_acceptance_gate.py`, memo
+`paper/source_private_hellaswag_receiver_acceptance_gate_20260502.md`,
+references
+`references/610_hellaswag_receiver_acceptance_gate_refs_20260502.md`, and
+artifact `results/source_private_hellaswag_receiver_acceptance_gate_20260502/`.
+Outcome: the direct train-only receiver-improvement branch does not promote.
+The predeclared default benefit-ridge receiver with Qwen target-score and
+Qwen hidden-confidence features trains on validation prefix `0:2048` and
+scores the heldout suffix at `0.645234` versus packet-only `0.646110`
+(delta `-0.000876`, CI95 low `-0.001876`). The best frontier row, selected
+diagnostically after reading the table, is benefit-ridge with Qwen hybrid
+score-only features on train prefix `0:4096`; it reaches `0.672217` versus
+packet-only `0.671376`, but the lift is only `+0.000841` with CI95 low
+`-0.001345`, below the `+0.005` receiver-improvement bar. Interpretation:
+simple selective prediction, score/hidden-confidence ridge receivers, and
+nearest-anchor relative-kNN receivers are weakened or ruled out on the current
+HellaSwag decision surface. The next exact gate should change the information
+structure: generate official-train receiver calibration artifacts or implement
+a sparse/crosscoder or learned query-bottleneck receiver with source-destroying
+controls, rather than tuning more confidence thresholds.
+
+HellaSwag official-train receiver calibration: added
+`scripts/build_source_private_hellaswag_official_train_receiver_calibration.py`,
+test
+`tests/test_build_source_private_hellaswag_official_train_receiver_calibration.py`,
+memo
+`paper/source_private_hellaswag_official_train_receiver_calibration_20260502.md`,
+references
+`references/611_hellaswag_official_train_receiver_calibration_refs_20260502.md`,
+and artifact
+`results/source_private_hellaswag_official_train_receiver_calibration_20260502/`.
+Outcome: the validation-label-free scalar receiver branch does not promote.
+The calibration surface uses aligned official HellaSwag train caches for
+TinyLlama and Qwen seeds `{2027, 2039, 2053}`, emits out-of-bag packet
+predictions, drops `5` duplicate rows and `44` rows that overlap included
+packet-training samples, and trains on `1487` official-train calibration rows
+with an internal `1115/372` fit/dev split. On full validation, the
+predeclared Qwen target-score hidden-confidence benefit-ridge receiver reaches
+`0.618701` versus TinyLlama packet-only `0.619199` (delta `-0.000498`, CI95
+low `-0.001394`). The best diagnostic scout row, relative-kNN benefit over
+Qwen hybrid hidden-confidence features, reaches `0.620594` versus packet-only
+`0.619199` (delta `+0.001394`, CI95 low `-0.000597`), below the `+0.005`
+promotion bar. The full-validation Tiny-or-Qwen-hybrid oracle remains high at
+`0.686815`, so complementary receiver headroom is real but scalar acceptance
+does not capture it. Interpretation: official-train calibration is now
+weakened/ruled out as the missing common-language method. The next exact gate
+should be a train-only disagreement-prototype, sparse/crosscoder, or learned
+query-bottleneck receiver with random-prototype, label-permutation,
+packet-shuffle, and score-row-shuffle controls. The systems boundary is still
+`2B` raw / `5B` framed packets with no source text, source KV, raw hidden
+vectors, or raw score vectors exposed; native NVIDIA rows remain required
+before claiming serving throughput or HBM wins.

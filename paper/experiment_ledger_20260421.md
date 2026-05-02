@@ -18468,3 +18468,35 @@ HellaSwag decision surface. The next exact gate should change the information
 structure: generate official-train receiver calibration artifacts or implement
 a sparse/crosscoder or learned query-bottleneck receiver with source-destroying
 controls, rather than tuning more confidence thresholds.
+
+HellaSwag official-train receiver calibration: added
+`scripts/build_source_private_hellaswag_official_train_receiver_calibration.py`,
+test
+`tests/test_build_source_private_hellaswag_official_train_receiver_calibration.py`,
+memo
+`paper/source_private_hellaswag_official_train_receiver_calibration_20260502.md`,
+references
+`references/611_hellaswag_official_train_receiver_calibration_refs_20260502.md`,
+and artifact
+`results/source_private_hellaswag_official_train_receiver_calibration_20260502/`.
+Outcome: the validation-label-free scalar receiver branch does not promote.
+The calibration surface uses aligned official HellaSwag train caches for
+TinyLlama and Qwen seeds `{2027, 2039, 2053}`, emits out-of-bag packet
+predictions, drops `5` duplicate rows and `44` rows that overlap included
+packet-training samples, and trains on `1487` official-train calibration rows
+with an internal `1115/372` fit/dev split. On full validation, the
+predeclared Qwen target-score hidden-confidence benefit-ridge receiver reaches
+`0.618701` versus TinyLlama packet-only `0.619199` (delta `-0.000498`, CI95
+low `-0.001394`). The best diagnostic scout row, relative-kNN benefit over
+Qwen hybrid hidden-confidence features, reaches `0.620594` versus packet-only
+`0.619199` (delta `+0.001394`, CI95 low `-0.000597`), below the `+0.005`
+promotion bar. The full-validation Tiny-or-Qwen-hybrid oracle remains high at
+`0.686815`, so complementary receiver headroom is real but scalar acceptance
+does not capture it. Interpretation: official-train calibration is now
+weakened/ruled out as the missing common-language method. The next exact gate
+should be a train-only disagreement-prototype, sparse/crosscoder, or learned
+query-bottleneck receiver with random-prototype, label-permutation,
+packet-shuffle, and score-row-shuffle controls. The systems boundary is still
+`2B` raw / `5B` framed packets with no source text, source KV, raw hidden
+vectors, or raw score vectors exposed; native NVIDIA rows remain required
+before claiming serving throughput or HBM wins.
