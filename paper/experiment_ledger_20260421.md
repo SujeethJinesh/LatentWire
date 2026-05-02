@@ -18652,3 +18652,35 @@ ruled out on this HellaSwag surface. The next live branch should either use
 source hidden-state codes with a true learned quantizer/crosscoder objective or
 move to a benchmark where the compact candidate id does not already saturate
 the source-side signal.
+
+HellaSwag hidden-code packet scout: added
+`scripts/build_source_private_hellaswag_hidden_code_packet_scout.py`, test
+`tests/test_build_source_private_hellaswag_hidden_code_packet_scout.py`, memo
+`paper/source_private_hellaswag_hidden_code_packet_scout_20260502.md`,
+references
+`references/617_hellaswag_hidden_code_packet_scout_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_hidden_code_packet_scout_20260502_tinyllama_validation1024_2048/`.
+Outcome: this source-hidden byte-code scout does not promote. The gate used the
+same official-train calibration surface (`1487` rows, split `1115/372`) and a
+frozen HellaSwag validation slice `1024:2048` (`1024` rows), materializing
+TinyLlama final-layer choice-mean hidden states locally on MPS in `112.14s`.
+It tested one-byte source-hidden PCA/k-means codebooks and train-only hidden
+reliability quantile codes, both carrying the compact candidate id in the low
+two bits, decoded with Qwen side information. The train-dev-selected hidden
+code, `hidden_pca4_kmeans64` with `256` symbols and decoder ridge `10.0`,
+reaches `0.500000` versus compact packet-only `0.501953` (delta `-0.001953`,
+CI95 low `-0.007812`). The best diagnostic code, `hidden_pca16_kmeans8`,
+reaches `0.507812` (delta `+0.005859`, CI95 low `-0.001953`), below the
+predeclared `+0.010` scout bar and unstable across contiguous blocks. The best
+supervised hidden-reliability code reaches only `0.502930` (delta
+`+0.000977`). Controls confirm code sensitivity but no useful matched-code
+lift: compact candidate-only decoder and packet-only both tie at `0.501953`,
+while row-shuffled hidden code (`0.291992`), hidden-feature shuffle
+(`0.279297`), codebook permutation mismatch (`0.250977`), random same-byte code
+(`0.274414`), and zero source code (`0.258789`) collapse. Interpretation:
+simple source-hidden PCA/k-means and hidden-reliability byte summaries are
+weakened or ruled out on this HellaSwag slice. Do not spend full-validation
+hidden materialization compute on this shallow family; the next live method
+branch should use a real common-basis/crosscoder objective or move to a less
+packet-saturated benchmark.

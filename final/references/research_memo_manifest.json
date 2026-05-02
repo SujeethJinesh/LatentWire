@@ -1818,5 +1818,12 @@
     "path": "references/616_hellaswag_learned_source_code_packet_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed train-only HellaSwag learned source-code packet gate, covering source-score-derived discrete-code saturation, compact packet-only and Qwen-side controls, and novelty boundaries against Wyner-Ziv/neural DSC, VQ-VAE, prefix/prompt tuning, SAE/crosscoder common bases, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, vLLM, and SGLang."
+  },
+  {
+    "num": 617,
+    "slug": "hellaswag_hidden_code_packet_scout_refs_20260502",
+    "path": "references/617_hellaswag_hidden_code_packet_scout_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed HellaSwag source-hidden byte-code scout, covering PCA/k-means and train-only hidden-reliability code saturation, compact packet-only controls, and novelty boundaries against SAE/crosscoder common bases, prefix/prompt tuning, learned distributed source coding, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, and diffusion-style latent refinement."
   }
 ]
