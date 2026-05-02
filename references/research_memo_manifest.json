@@ -1783,5 +1783,12 @@
     "path": "references/611_hellaswag_official_train_receiver_calibration_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the official-train HellaSwag receiver calibration gate, covering the validation-label-free scalar receiver failure, the next disagreement-prototype/common-basis/query-bottleneck branch, and novelty boundaries against prefix/prompt tuning, C2C/KVComm/Q-KVComm, SAE/crosscoder/relative representations, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, vLLM, and SGLang."
+  },
+  {
+    "num": 612,
+    "slug": "hellaswag_disagreement_prototype_receiver_refs_20260502",
+    "path": "references/612_hellaswag_disagreement_prototype_receiver_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the train-only HellaSwag disagreement-prototype receiver gate, covering the failed local common-basis/prototype branch, destructive controls, the next sparse/crosscoder/query-bottleneck branch, and novelty boundaries against prefix/prompt tuning, C2C/KVComm/Q-KVComm, SAE/crosscoder/relative representations, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, vLLM, and SGLang."
   }
 ]

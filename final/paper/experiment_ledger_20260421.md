@@ -18500,3 +18500,34 @@ packet-shuffle, and score-row-shuffle controls. The systems boundary is still
 `2B` raw / `5B` framed packets with no source text, source KV, raw hidden
 vectors, or raw score vectors exposed; native NVIDIA rows remain required
 before claiming serving throughput or HBM wins.
+
+HellaSwag disagreement-prototype receiver: added
+`scripts/build_source_private_hellaswag_disagreement_prototype_receiver.py`,
+test
+`tests/test_build_source_private_hellaswag_disagreement_prototype_receiver.py`,
+memo
+`paper/source_private_hellaswag_disagreement_prototype_receiver_20260502.md`,
+references
+`references/612_hellaswag_disagreement_prototype_receiver_refs_20260502.md`,
+and artifact
+`results/source_private_hellaswag_disagreement_prototype_receiver_20260502/`.
+Outcome: this train-only local common-basis/prototype receiver does not
+promote. It uses the same official-train calibration surface as the scalar
+receiver (`1487` rows after dropping `5` duplicate rows and `44` out-of-bag
+overlap rows, split `1115/372`) and builds farthest-first prototypes from
+TinyLlama/Qwen disagreement rows. The predeclared default Qwen-hybrid
+score-plus-hidden-confidence receiver reaches `0.618602` versus TinyLlama
+packet-only `0.619199` (delta `-0.000597`, CI95 low `-0.001295`) and fails
+block stability and control separation. The best diagnostic scout row, Qwen
+mean-zscore score-only with `128` prototypes, reaches `0.620693` versus
+packet-only `0.619199` (delta `+0.001494`, CI95 low `+0.000299`), but this is
+below the preregistered `+0.005` receiver-improvement bar. Random prototypes
+are effectively flat (`+0.000100` delta), while label-permutation and
+score-row-shuffle controls are worse than packet-only. Interpretation: local
+prototype/common-basis thresholding is weakened or ruled out on this surface.
+The full-validation Tiny-or-Qwen-hybrid oracle remains `0.686815`, so
+receiver headroom is real, but the next branch should use a richer
+sparse/crosscoder dictionary or learned query-bottleneck receiver rather than
+tuning prototype thresholds. Systems boundary remains `2B` raw / `5B` framed
+packets, no source text, source KV, raw hidden vectors, or raw score vectors,
+and Mac-local selector accounting only.
