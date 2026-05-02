@@ -81,6 +81,67 @@ def test_soft_prefix_connector_shapes() -> None:
     assert slots(source, target).shape == (2, 7)
 
 
+def test_selected_choice_residual_features_are_row_centered(monkeypatch) -> None:
+    rows = _rows()
+
+    def fake_features(*args, **kwargs):
+        del args, kwargs
+        return torch.tensor(
+            [
+                [1.0, 0.0],
+                [3.0, 0.0],
+                [5.0, 0.0],
+                [2.0, 2.0],
+                [2.0, 6.0],
+            ]
+        ).numpy()
+
+    monkeypatch.setattr(preflight.arc_gate, "_features", fake_features)
+
+    selected, metadata = preflight._selected_choice_features(
+        rows,
+        [1, 0],
+        source_feature_mode="hashed_selected_residual",
+        feature_dim=2,
+        source_model="",
+        source_device="auto_cpu",
+        source_dtype="float32",
+        source_max_length=32,
+        source_hidden_layer=-1,
+        local_files_only=True,
+    )
+
+    assert metadata["row_centered_selected_residual"] is True
+    assert selected.shape == (2, 2)
+    assert torch.allclose(selected[0], torch.zeros(2), atol=1e-6)
+    assert torch.allclose(selected[1], torch.tensor([0.0, -1.0]), atol=1e-6)
+
+    absolute, absolute_metadata = preflight._selected_choice_features(
+        rows,
+        [1, 0],
+        source_feature_mode="hashed_selected",
+        feature_dim=2,
+        source_model="",
+        source_device="auto_cpu",
+        source_dtype="float32",
+        source_max_length=32,
+        source_hidden_layer=-1,
+        local_files_only=True,
+    )
+
+    assert absolute_metadata["row_centered_selected_residual"] is False
+    assert torch.allclose(absolute[0], torch.tensor([3.0, 0.0]), atol=1e-6)
+    assert torch.allclose(absolute[1], torch.tensor([2.0, 2.0]), atol=1e-6)
+
+
+def test_residual_feature_modes_are_cli_options() -> None:
+    hashed = preflight.parse_args(["--source-feature-mode", "hashed_selected_residual"])
+    hidden = preflight.parse_args(["--source-feature-mode", "hf_selected_hidden_residual"])
+
+    assert hashed.source_feature_mode == "hashed_selected_residual"
+    assert hidden.source_feature_mode == "hf_selected_hidden_residual"
+
+
 def test_condition_metrics_adds_paired_controls() -> None:
     rows = [
         {

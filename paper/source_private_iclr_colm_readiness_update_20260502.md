@@ -439,3 +439,26 @@ better source pooling, continuation scoring selected on validation, seed
 repeats, and ideally NVIDIA. This result strengthens the reviewer story by
 showing we now test source necessity directly rather than relying on shallow
 mean-cache proxies.
+
+## 2026-05-02 Residual Soft-Prefix Follow-Up
+
+Added row-centered residual feature modes to the soft-prefix preflight and a
+CPU smoke artifact:
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_hidden_residual_n8_cpu_label_choice/`.
+
+Readout:
+
+- residual selected hidden improves over absolute selected hidden on the same
+  n8 smoke surface;
+- matched accuracy moves from `0/4` to `1/4`;
+- matched-minus-best-control margin improves from about `-0.751` to `-0.150`;
+- pass gate remains `False` because slots-only/static prefix reaches `2/4` and
+  label-shuffled margin remains stronger than matched.
+
+Decision: row-centered residuals are a better feature basis than absolute
+selected hidden, but the selected-vector soft-prefix connector is not yet a
+positive method. The next branch should be tokenwise/query pooling over all
+source candidate states, not another single-vector variant. This is also a
+stronger story for reviewers because it shows the project is actively testing
+whether the source information is necessary rather than assuming hidden-state
+transfer works.

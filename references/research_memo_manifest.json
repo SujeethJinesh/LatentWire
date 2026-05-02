@@ -2042,5 +2042,12 @@
     "path": "references/648_arc_openbookqa_soft_prefix_preflight_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the first ARC/OpenBookQA target-loss soft-prefix preflight, covering Prefix-Tuning, BLIP-2/Q-Former, Flamingo/Perceiver-style resampling, C2C/KVComm, QJL, TurboQuant, sparse autoencoders, and consistency/refinement work as novelty and baseline boundaries."
+  },
+  {
+    "num": 649,
+    "slug": "arc_soft_prefix_residual_preflight_refs_20260502",
+    "path": "references/649_arc_soft_prefix_residual_preflight_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC row-centered residual soft-prefix follow-up, covering Prefix-Tuning, Perceiver IO, Flamingo, BLIP-2/Q-Former, CALM, Relative Representations, CCS, C2C, and KVComm as novelty boundaries and ablation drivers."
   }
 ]

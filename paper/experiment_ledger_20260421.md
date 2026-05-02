@@ -19529,3 +19529,36 @@ tokens derived from Qwen2.5's hidden clue. On four held-out smoke rows, those
 soft hints did not help; a static learned prefix and random same-norm source
 noise did better, so the current tiny connector is not yet using the source
 model reliably.
+
+ARC soft-prefix row-centered residual follow-up: extended
+`scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py` with
+`hashed_selected_residual` and `hf_selected_hidden_residual` source feature
+modes, added tests in
+`tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`,
+memo `paper/source_private_arc_soft_prefix_residual_preflight_20260502.md`,
+references `references/649_arc_soft_prefix_residual_preflight_refs_20260502.md`,
+and artifact
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_hidden_residual_n8_cpu_label_choice/`.
+Outcome: row-centering helps but does not clear the source-necessity gate. The
+new residual mode subtracts each row's candidate-feature mean from the
+source-selected candidate feature, then L2-normalizes the result, mirroring the
+candidate residuals used in the fixed-packet gates. On the same ARC n8 CPU
+smoke surface with `label_and_choice` continuations, matched soft-prefix
+accuracy improves from `0/4` absolute hidden to `1/4` residual hidden, and the
+matched-minus-best-control margin improves from about `-0.751` to `-0.150`.
+However, matched still loses to slots-only/static prefix accuracy `2/4` and
+does not beat label-shuffled margin. Pass gate remains `False`.
+
+Decision: weaken but keep alive the source-residual soft-prefix branch. Do not
+widen the selected-vector connector yet. The next exact method branch should
+use tokenwise/query pooling over all source candidate states, with an explicit
+absolute-vs-residual-vs-score-only ablation and the same source-destroying
+controls. CPU runtime was about `245.7s` for only four held-out rows, so
+meaningful n64/three-seed evaluation should wait for NVIDIA or a much cheaper
+cached-token implementation.
+
+Lay explanation: instead of giving the target model a raw clue about the
+source model's chosen answer, this run gave the target the difference between
+that chosen answer and the other answer choices. That was less bad, but still
+not enough: a generic learned prefix did better, so the evidence still does not
+prove real model-to-model communication.

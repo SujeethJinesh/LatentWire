@@ -288,7 +288,9 @@ def _selected_choice_features(
     source_hidden_layer: int,
     local_files_only: bool,
 ) -> tuple[torch.Tensor, dict[str, Any]]:
-    if source_feature_mode == "hashed_selected":
+    residualized = source_feature_mode.endswith("_residual")
+    base_mode = source_feature_mode.removesuffix("_residual")
+    if base_mode == "hashed_selected":
         flat = arc_gate._features(
             arc_gate._choice_pair_texts(rows),
             dim=feature_dim,
@@ -300,7 +302,7 @@ def _selected_choice_features(
             local_files_only=True,
         )
         metadata = {"kind": "hashed_selected_choice", "feature_dim": int(feature_dim)}
-    elif source_feature_mode == "hf_selected_hidden":
+    elif base_mode == "hf_selected_hidden":
         flat, metadata = _hf_choice_hidden_features(
             rows,
             model_path=source_model,
@@ -316,8 +318,19 @@ def _selected_choice_features(
     chosen: list[np.ndarray] = []
     offset = 0
     for row, selected_index in zip(rows, source_predictions, strict=True):
-        chosen.append(flat[offset + int(selected_index)])
+        row_features = flat[offset : offset + len(row.choices)]
+        feature = row_features[int(selected_index)]
+        if residualized:
+            feature = feature - row_features.mean(axis=0)
+            norm = np.linalg.norm(feature)
+            feature = feature / max(norm, 1e-12)
+        chosen.append(feature)
         offset += len(row.choices)
+    metadata = {
+        **metadata,
+        "source_feature_mode": source_feature_mode,
+        "row_centered_selected_residual": bool(residualized),
+    }
     return torch.tensor(np.asarray(chosen, dtype=np.float32)), metadata
 
 
@@ -1051,7 +1064,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source-cache-path", type=pathlib.Path, default=DEFAULT_ARC_SOURCE_CACHE)
     parser.add_argument("--row-limit", type=int, default=8)
     parser.add_argument("--fit-fraction", type=float, default=0.5)
-    parser.add_argument("--source-feature-mode", choices=("hashed_selected", "hf_selected_hidden"), default="hf_selected_hidden")
+    parser.add_argument(
+        "--source-feature-mode",
+        choices=(
+            "hashed_selected",
+            "hashed_selected_residual",
+            "hf_selected_hidden",
+            "hf_selected_hidden_residual",
+        ),
+        default="hf_selected_hidden",
+    )
     parser.add_argument("--source-feature-dim", type=int, default=128)
     parser.add_argument("--target-feature-dim", type=int, default=64)
     parser.add_argument("--source-model", default=DEFAULT_QWEN_SOURCE)

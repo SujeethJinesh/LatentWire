@@ -1,0 +1,31 @@
+{
+  "created_utc": "2026-05-02T15:04:36.295760+00:00",
+  "files": [
+    {
+      "bytes": 7889,
+      "path": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_hidden_residual_n8_cpu_label_choice/arc_openbookqa_soft_prefix_preflight.json",
+      "sha256": "a4b3d455ecfc33b6db3b01be89d20b942c3bda6e733f6d609c943d8faf23ad9f"
+    },
+    {
+      "bytes": 20795,
+      "path": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_hidden_residual_n8_cpu_label_choice/prediction_audit.jsonl",
+      "sha256": "3d2ca4aaef263fb36927f2c04687ccc16a0fa40e2cf74313d16f754ebc9be45f"
+    },
+    {
+      "bytes": 6281,
+      "path": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_hidden_residual_n8_cpu_label_choice/prediction_audit.csv",
+      "sha256": "119e5539f4d76a125e0ce48dbe78b5ed14c475951b350d308e20f8043d79deb6"
+    },
+    {
+      "bytes": 1691,
+      "path": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_qwen_hidden_residual_n8_cpu_label_choice/arc_openbookqa_soft_prefix_preflight.md",
+      "sha256": "fc6a582a70d1e5e07ed27203a3fc0aceec640d9858e5018b4651943f37a4b7b3"
+    }
+  ],
+  "gate": "source_private_arc_openbookqa_soft_prefix_preflight",
+  "inputs": {
+    "eval_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl"
+  },
+  "pass_gate": false
+}
