@@ -272,6 +272,27 @@ same 12-byte ARC hint on the hard rows. It produced a promising frozen-test
 average, but it lost on validation and the uncertainty interval still overlaps
 zero, so it is not a reviewer-safe positive.
 
+The ARC Llama-8B failure probe explains why the source-choice branch should not
+be revived as-is:
+
+- artifact:
+  `results/source_private_arc_llama8b_failure_probe_20260502/arc_llama8b_failure_probe.json`
+- pass gate: `False`;
+- best overall router: `source_matches_llama_prediction`;
+- best overall router deployable without source index: `False`;
+- best deployable router: `packet_margin_ge:0.131799`;
+- validation/test best-deployable-router accuracy: `0.408/0.362`;
+- test source/Qwen oracle accuracy: `0.613`;
+- test Llama/Qwen packet oracle accuracy: `0.532`;
+- test same-byte visible text minus Llama packet: `+0.126`;
+- test source-to-Llama-packet loss: `0.186`.
+
+Lay explanation: Llama often knows useful answers, but the current tiny packet
+does not reliably carry that answer to the receiver. A simple diagnostic rule
+can exploit the audit-only source index, but that would amount to transmitting
+the source's answer choice. The next positive method must therefore learn a
+better bottleneck/receiver interface rather than just route source choices.
+
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
 
@@ -306,6 +327,9 @@ same controls.
 
 - Positive learned receiver/common-basis method on at least two public
   benchmarks or one benchmark plus a strict cross-family pair.
+- The highest-value next method is a 16-64 query bottleneck or soft-prefix
+  connector trained against target loss and evaluated first on the frozen ARC
+  disagreement rows.
 - Seed repeats, larger frozen slices, paired CIs, and source-destroy controls.
 - Direct competitor comparisons against C2C/KVComm-style KV/cache transfer and
   KV quantization byte floors.
@@ -346,4 +370,7 @@ same-family Qwen-1.5B stronger-source diagnostic should be repeated with a true
 stronger cross-family source before making the ICLR claim. The current
 Llama-8B source-choice scout is now scientifically resolved as a strict gate
 failure, although a separately selected Llama prompt/scoring/calibration branch
-could be revived if it first clears validation.
+could be revived if it first clears validation. The Llama failure probe shows
+the branch's useful signal is codec/receiver loss, so the next exact Mac-local
+work should prototype a learned query/cache or soft-prefix connector and keep
+the native systems schema ready for NVIDIA rows.

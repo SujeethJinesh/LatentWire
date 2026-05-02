@@ -19424,3 +19424,22 @@ repair. The Llama branch is only revivable as a distinct prompt/scoring/
 calibration method selected on validation; the top live branch returns to a
 learned query/cache connector or stronger cross-family source on NVIDIA plus
 native systems rows.
+
+ARC Llama-8B failure probe and next-connector decision: added
+`scripts/analyze_source_private_arc_llama8b_failure_probe.py`, test
+`tests/test_analyze_source_private_arc_llama8b_failure_probe.py`, references
+`references/645_arc_llama8b_failure_probe_next_connector_refs_20260502.md`,
+and artifact `results/source_private_arc_llama8b_failure_probe_20260502/`.
+Outcome: the probe clarifies that the failed Llama-8B source-choice branch has
+diagnostic headroom but no reviewer-safe deployable method. The best overall
+validation-selected router is `source_matches_llama_prediction` with
+validation/test accuracy `0.490/0.442`, but it uses the audit-only
+`source_selected_index`, so it is not deployable without transmitting a label
+copy. The best packet-observable router is only a small packet-margin rule:
+validation/test `0.408/0.362` versus Qwen-substituted `0.389/0.317`.
+Meanwhile, source/Qwen oracle accuracy on test is `0.613`, Llama/Qwen packet
+oracle is `0.532`, same-byte visible text beats the Llama packet by `+0.126`
+on test, and source-to-Llama-packet loss is `0.186`. Decision: the source
+answer signal exists, but the current packet codec is lossy and shadowed by
+same-byte visible text. Keep Llama source-choice ruled out for ICLR and promote
+a learned query/cache or soft-prefix connector as the next exact branch.

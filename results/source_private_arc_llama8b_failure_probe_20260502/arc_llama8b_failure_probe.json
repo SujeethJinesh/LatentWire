@@ -1,0 +1,712 @@
+{
+  "claim_policy": {
+    "diagnostic_conditional_headroom_alive": true,
+    "llama_source_choice_branch_alive": false,
+    "paper_positive_allowed": false,
+    "safe_next_gate": "learned query/cache connector or new validation-cleared source scoring branch"
+  },
+  "decision": "The Llama scout contains diagnostic conditional headroom, but no reviewer-safe deployable source-choice method. The best router overall uses the audit-only source-selected index, the best packet-observable router is a small margin rule, and same-byte visible text remains stronger than the Llama packet on test. Treat this as evidence that the source answer signal exists but the current packet codec is lossy; move to a learned query/cache or soft-prefix connector rather than another source-choice sender.",
+  "gate": "source_private_arc_llama8b_failure_probe",
+  "headline": {
+    "best_deployable_router_rule": "packet_margin_ge:0.131799",
+    "selected_router_deployable_without_source_index": false,
+    "selected_router_rule": "source_matches_llama_prediction",
+    "test_best_deployable_router_accuracy": 0.36152219873150104,
+    "test_llama_qwen_oracle_accuracy": 0.5323467230443975,
+    "test_same_byte_text_minus_llama": 0.12642706131078224,
+    "test_selected_router_accuracy": 0.4418604651162791,
+    "test_source_qwen_oracle_accuracy": 0.6131078224101479,
+    "test_source_to_llama_packet_loss": 0.18562367864693446,
+    "validation_best_deployable_router_accuracy": 0.4083333333333333,
+    "validation_selected_router_accuracy": 0.49027777777777776
+  },
+  "inputs": {
+    "llama_predictions": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/predictions.jsonl",
+    "llama_predictions_sha256": "f2471ea78a6d803396b38d6ca877a2ef396addfa30770bb0f5b7e4d70fc875e7",
+    "llama_result": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/llama8b_disagreement_source_scout.json",
+    "llama_result_sha256": "9acd0851beb01b24e87143a8ff6c1e6f1dbf84a4acb2026afd583b7f9e062294",
+    "qwen_disagreement": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/qwen_disagreement_predictions.jsonl",
+    "qwen_disagreement_sha256": "ed0c3fa3cad17ae0395a81f4cbfee12aa611f6b21d4d647e6bbcafd939ad92f7",
+    "test_cache": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/llama8b_test/source_prediction_cache.jsonl",
+    "test_cache_sha256": "571d8eac0b476b923de77f4e93dc767a49a486d814a37ad97c75a2b3115936f0",
+    "validation_cache": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/llama8b_validation/source_prediction_cache.jsonl",
+    "validation_cache_sha256": "4a92a8a9c23e1779059c3d592ab4897e7a7dbffd5cd2d1be5b2299930de8dd61"
+  },
+  "pass_gate": false,
+  "router_rules": [
+    {
+      "deployable_without_source_index": false,
+      "rule": "source_matches_llama_prediction",
+      "test_accuracy": 0.4418604651162791,
+      "test_llama_choice_rate": 0.531923890063425,
+      "test_minus_qwen": 0.1247357293868922,
+      "validation_accuracy": 0.49027777777777776,
+      "validation_llama_choice_rate": 0.5458333333333333,
+      "validation_minus_qwen": 0.10138888888888886
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.131799",
+      "test_accuracy": 0.36152219873150104,
+      "test_llama_choice_rate": 0.28076109936575055,
+      "test_minus_qwen": 0.04439746300211417,
+      "validation_accuracy": 0.4083333333333333,
+      "validation_llama_choice_rate": 0.25555555555555554,
+      "validation_minus_qwen": 0.01944444444444443
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.110764",
+      "test_accuracy": 0.36321353065539114,
+      "test_llama_choice_rate": 0.3513742071881607,
+      "test_minus_qwen": 0.04608879492600426,
+      "validation_accuracy": 0.40555555555555556,
+      "validation_llama_choice_rate": 0.3388888888888889,
+      "validation_minus_qwen": 0.016666666666666663
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.165045",
+      "test_accuracy": 0.35306553911205074,
+      "test_llama_choice_rate": 0.18858350951374206,
+      "test_minus_qwen": 0.035940803382663866,
+      "validation_accuracy": 0.4013888888888889,
+      "validation_llama_choice_rate": 0.1736111111111111,
+      "validation_minus_qwen": 0.012500000000000011
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.0879565",
+      "test_accuracy": 0.3674418604651163,
+      "test_llama_choice_rate": 0.44059196617336155,
+      "test_minus_qwen": 0.05031712473572941,
+      "validation_accuracy": 0.39861111111111114,
+      "validation_llama_choice_rate": 0.42083333333333334,
+      "validation_minus_qwen": 0.009722222222222243
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:1.08342",
+      "test_accuracy": 0.32558139534883723,
+      "test_llama_choice_rate": 0.1463002114164905,
+      "test_minus_qwen": 0.008456659619450357,
+      "validation_accuracy": 0.3972222222222222,
+      "validation_llama_choice_rate": 0.16666666666666666,
+      "validation_minus_qwen": 0.008333333333333304
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.0575288",
+      "test_accuracy": 0.3704016913319239,
+      "test_llama_choice_rate": 0.5906976744186047,
+      "test_minus_qwen": 0.053276955602537035,
+      "validation_accuracy": 0.39305555555555555,
+      "validation_llama_choice_rate": 0.5847222222222223,
+      "validation_minus_qwen": 0.004166666666666652
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:1.1068",
+      "test_accuracy": 0.3221987315010571,
+      "test_llama_choice_rate": 0.08160676532769556,
+      "test_minus_qwen": 0.0050739957716702255,
+      "validation_accuracy": 0.39305555555555555,
+      "validation_llama_choice_rate": 0.08333333333333333,
+      "validation_minus_qwen": 0.004166666666666652
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.0719339",
+      "test_accuracy": 0.3691331923890063,
+      "test_llama_choice_rate": 0.5128964059196617,
+      "test_minus_qwen": 0.05200845665961945,
+      "validation_accuracy": 0.39166666666666666,
+      "validation_llama_choice_rate": 0.5013888888888889,
+      "validation_minus_qwen": 0.002777777777777768
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.376901",
+      "test_accuracy": 0.31839323467230446,
+      "test_llama_choice_rate": 0.013530655391120507,
+      "test_minus_qwen": 0.0012684989429175841,
+      "validation_accuracy": 0.39166666666666666,
+      "validation_llama_choice_rate": 0.011111111111111112,
+      "validation_minus_qwen": 0.002777777777777768
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.20988",
+      "test_accuracy": 0.3391120507399577,
+      "test_llama_choice_rate": 0.11035940803382664,
+      "test_minus_qwen": 0.02198731501057083,
+      "validation_accuracy": 0.3902777777777778,
+      "validation_llama_choice_rate": 0.09305555555555556,
+      "validation_minus_qwen": 0.001388888888888884
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "always_qwen",
+      "test_accuracy": 0.3171247357293869,
+      "test_llama_choice_rate": 0.0,
+      "test_minus_qwen": 0.0,
+      "validation_accuracy": 0.3888888888888889,
+      "validation_llama_choice_rate": 0.0,
+      "validation_minus_qwen": 0.0
+    },
+    {
+      "deployable_without_source_index": false,
+      "rule": "source_index_eq:3",
+      "test_accuracy": 0.3361522198731501,
+      "test_llama_choice_rate": 0.26215644820295986,
+      "test_minus_qwen": 0.019027484143763207,
+      "validation_accuracy": 0.3875,
+      "validation_llama_choice_rate": 0.2222222222222222,
+      "validation_minus_qwen": -0.001388888888888884
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.0360009",
+      "test_accuracy": 0.37293868921775897,
+      "test_llama_choice_rate": 0.7298097251585624,
+      "test_minus_qwen": 0.05581395348837209,
+      "validation_accuracy": 0.3875,
+      "validation_llama_choice_rate": 0.7486111111111111,
+      "validation_minus_qwen": -0.001388888888888884
+    },
+    {
+      "deployable_without_source_index": false,
+      "rule": "source_index_eq:0",
+      "test_accuracy": 0.321353065539112,
+      "test_llama_choice_rate": 0.23255813953488372,
+      "test_minus_qwen": 0.004228329809725151,
+      "validation_accuracy": 0.3861111111111111,
+      "validation_llama_choice_rate": 0.2361111111111111,
+      "validation_minus_qwen": -0.002777777777777768
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:1.06285",
+      "test_accuracy": 0.33403805496828753,
+      "test_llama_choice_rate": 0.22748414376321352,
+      "test_minus_qwen": 0.01691331923890066,
+      "validation_accuracy": 0.3861111111111111,
+      "validation_llama_choice_rate": 0.24861111111111112,
+      "validation_minus_qwen": -0.002777777777777768
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.021196",
+      "test_accuracy": 0.3733615221987315,
+      "test_llama_choice_rate": 0.8439746300211417,
+      "test_minus_qwen": 0.0562367864693446,
+      "validation_accuracy": 0.3819444444444444,
+      "validation_llama_choice_rate": 0.8291666666666667,
+      "validation_minus_qwen": -0.006944444444444475
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.0460166",
+      "test_accuracy": 0.3691331923890063,
+      "test_llama_choice_rate": 0.6625792811839324,
+      "test_minus_qwen": 0.05200845665961945,
+      "validation_accuracy": 0.3819444444444444,
+      "validation_llama_choice_rate": 0.6666666666666666,
+      "validation_minus_qwen": -0.006944444444444475
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.305003",
+      "test_accuracy": 0.33403805496828753,
+      "test_llama_choice_rate": 0.23551797040169134,
+      "test_minus_qwen": 0.01691331923890066,
+      "validation_accuracy": 0.3819444444444444,
+      "validation_llama_choice_rate": 0.24861111111111112,
+      "validation_minus_qwen": -0.006944444444444475
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.318756",
+      "test_accuracy": 0.32558139534883723,
+      "test_llama_choice_rate": 0.15940803382663848,
+      "test_minus_qwen": 0.008456659619450357,
+      "validation_accuracy": 0.3819444444444444,
+      "validation_llama_choice_rate": 0.16527777777777777,
+      "validation_minus_qwen": -0.006944444444444475
+    },
+    {
+      "deployable_without_source_index": false,
+      "rule": "source_index_eq:2",
+      "test_accuracy": 0.32642706131078225,
+      "test_llama_choice_rate": 0.26004228329809725,
+      "test_minus_qwen": 0.009302325581395376,
+      "validation_accuracy": 0.38055555555555554,
+      "validation_llama_choice_rate": 0.2569444444444444,
+      "validation_minus_qwen": -0.00833333333333336
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.345573",
+      "test_accuracy": 0.3217758985200846,
+      "test_llama_choice_rate": 0.07103594080338266,
+      "test_minus_qwen": 0.004651162790697716,
+      "validation_accuracy": 0.38055555555555554,
+      "validation_llama_choice_rate": 0.08194444444444444,
+      "validation_minus_qwen": -0.00833333333333336
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.282806",
+      "test_accuracy": 0.3403805496828753,
+      "test_llama_choice_rate": 0.4054968287526427,
+      "test_minus_qwen": 0.023255813953488413,
+      "validation_accuracy": 0.37916666666666665,
+      "validation_llama_choice_rate": 0.4166666666666667,
+      "validation_minus_qwen": -0.009722222222222243
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:1.04344",
+      "test_accuracy": 0.3412262156448203,
+      "test_llama_choice_rate": 0.33530655391120506,
+      "test_minus_qwen": 0.024101479915433432,
+      "validation_accuracy": 0.37777777777777777,
+      "validation_llama_choice_rate": 0.33194444444444443,
+      "validation_minus_qwen": -0.011111111111111127
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.29165",
+      "test_accuracy": 0.3408033826638478,
+      "test_llama_choice_rate": 0.3285412262156448,
+      "test_minus_qwen": 0.023678646934460923,
+      "validation_accuracy": 0.3736111111111111,
+      "validation_llama_choice_rate": 0.33194444444444443,
+      "validation_minus_qwen": -0.015277777777777779
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.273805",
+      "test_accuracy": 0.34460887949260044,
+      "test_llama_choice_rate": 0.49725158562367866,
+      "test_minus_qwen": 0.027484143763213564,
+      "validation_accuracy": 0.37222222222222223,
+      "validation_llama_choice_rate": 0.5,
+      "validation_minus_qwen": -0.016666666666666663
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0.0120185",
+      "test_accuracy": 0.3687103594080338,
+      "test_llama_choice_rate": 0.9150105708245243,
+      "test_minus_qwen": 0.05158562367864694,
+      "validation_accuracy": 0.37083333333333335,
+      "validation_llama_choice_rate": 0.9125,
+      "validation_minus_qwen": -0.018055555555555547
+    },
+    {
+      "deployable_without_source_index": false,
+      "rule": "source_index_eq:1",
+      "test_accuracy": 0.3357293868921776,
+      "test_llama_choice_rate": 0.2452431289640592,
+      "test_minus_qwen": 0.018604651162790697,
+      "validation_accuracy": 0.3680555555555556,
+      "validation_llama_choice_rate": 0.2847222222222222,
+      "validation_minus_qwen": -0.020833333333333315
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:1.02832",
+      "test_accuracy": 0.3395348837209302,
+      "test_llama_choice_rate": 0.42875264270613106,
+      "test_minus_qwen": 0.02241014799154334,
+      "validation_accuracy": 0.3680555555555556,
+      "validation_llama_choice_rate": 0.4166666666666667,
+      "validation_minus_qwen": -0.020833333333333315
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.265679",
+      "test_accuracy": 0.34460887949260044,
+      "test_llama_choice_rate": 0.5983086680761099,
+      "test_minus_qwen": 0.027484143763213564,
+      "validation_accuracy": 0.36666666666666664,
+      "validation_llama_choice_rate": 0.5819444444444445,
+      "validation_minus_qwen": -0.022222222222222254
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.258882",
+      "test_accuracy": 0.3488372093023256,
+      "test_llama_choice_rate": 0.6596194503171248,
+      "test_minus_qwen": 0.031712473572938715,
+      "validation_accuracy": 0.3638888888888889,
+      "validation_llama_choice_rate": 0.6652777777777777,
+      "validation_minus_qwen": -0.025000000000000022
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:0.98406",
+      "test_accuracy": 0.34545454545454546,
+      "test_llama_choice_rate": 0.6646934460887949,
+      "test_minus_qwen": 0.028329809725158583,
+      "validation_accuracy": 0.3611111111111111,
+      "validation_llama_choice_rate": 0.6666666666666666,
+      "validation_minus_qwen": -0.02777777777777779
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:1.01101",
+      "test_accuracy": 0.3416490486257928,
+      "test_llama_choice_rate": 0.5137420718816068,
+      "test_minus_qwen": 0.024524312896405942,
+      "validation_accuracy": 0.3611111111111111,
+      "validation_llama_choice_rate": 0.4986111111111111,
+      "validation_minus_qwen": -0.02777777777777779
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.231227",
+      "test_accuracy": 0.36617336152219876,
+      "test_llama_choice_rate": 0.9167019027484143,
+      "test_minus_qwen": 0.049048625792811884,
+      "validation_accuracy": 0.3611111111111111,
+      "validation_llama_choice_rate": 0.9166666666666666,
+      "validation_minus_qwen": -0.02777777777777779
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:0.926379",
+      "test_accuracy": 0.36405919661733616,
+      "test_llama_choice_rate": 0.9183932346723045,
+      "test_minus_qwen": 0.04693446088794928,
+      "validation_accuracy": 0.3597222222222222,
+      "validation_llama_choice_rate": 0.9152777777777777,
+      "validation_minus_qwen": -0.029166666666666674
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.241108",
+      "test_accuracy": 0.3627906976744186,
+      "test_llama_choice_rate": 0.8389006342494715,
+      "test_minus_qwen": 0.04566596194503175,
+      "validation_accuracy": 0.3597222222222222,
+      "validation_llama_choice_rate": 0.8319444444444445,
+      "validation_minus_qwen": -0.029166666666666674
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.25088",
+      "test_accuracy": 0.35391120507399576,
+      "test_llama_choice_rate": 0.7437632135306554,
+      "test_minus_qwen": 0.036786469344608885,
+      "validation_accuracy": 0.35833333333333334,
+      "validation_llama_choice_rate": 0.75,
+      "validation_minus_qwen": -0.030555555555555558
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:0.785585",
+      "test_accuracy": 0.3682875264270613,
+      "test_llama_choice_rate": 1.0,
+      "test_minus_qwen": 0.05116279069767443,
+      "validation_accuracy": 0.35694444444444445,
+      "validation_llama_choice_rate": 0.9986111111111111,
+      "validation_minus_qwen": -0.03194444444444444
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:0.998672",
+      "test_accuracy": 0.34291754756871035,
+      "test_llama_choice_rate": 0.5881606765327696,
+      "test_minus_qwen": 0.02579281183932347,
+      "validation_accuracy": 0.35694444444444445,
+      "validation_llama_choice_rate": 0.5819444444444445,
+      "validation_minus_qwen": -0.03194444444444444
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "always_llama",
+      "test_accuracy": 0.3682875264270613,
+      "test_llama_choice_rate": 1.0,
+      "test_minus_qwen": 0.05116279069767443,
+      "validation_accuracy": 0.35555555555555557,
+      "validation_llama_choice_rate": 1.0,
+      "validation_minus_qwen": -0.033333333333333326
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "llama_qwen_disagree",
+      "test_accuracy": 0.3682875264270613,
+      "test_llama_choice_rate": 0.6473572938689218,
+      "test_minus_qwen": 0.05116279069767443,
+      "validation_accuracy": 0.35555555555555557,
+      "validation_llama_choice_rate": 0.6402777777777777,
+      "validation_minus_qwen": -0.033333333333333326
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_margin_ge:0",
+      "test_accuracy": 0.3682875264270613,
+      "test_llama_choice_rate": 1.0,
+      "test_minus_qwen": 0.05116279069767443,
+      "validation_accuracy": 0.35555555555555557,
+      "validation_llama_choice_rate": 1.0,
+      "validation_minus_qwen": -0.033333333333333326
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_scale_ge:0.189848",
+      "test_accuracy": 0.3678646934460888,
+      "test_llama_choice_rate": 0.999154334038055,
+      "test_minus_qwen": 0.05073995771670192,
+      "validation_accuracy": 0.35555555555555557,
+      "validation_llama_choice_rate": 0.9986111111111111,
+      "validation_minus_qwen": -0.033333333333333326
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:0.96993",
+      "test_accuracy": 0.35348837209302325,
+      "test_llama_choice_rate": 0.7374207188160676,
+      "test_minus_qwen": 0.036363636363636376,
+      "validation_accuracy": 0.3541666666666667,
+      "validation_llama_choice_rate": 0.75,
+      "validation_minus_qwen": -0.03472222222222221
+    },
+    {
+      "deployable_without_source_index": true,
+      "rule": "packet_l2_ge:0.952051",
+      "test_accuracy": 0.359830866807611,
+      "test_llama_choice_rate": 0.8232558139534883,
+      "test_minus_qwen": 0.04270613107822413,
+      "validation_accuracy": 0.3527777777777778,
+      "validation_llama_choice_rate": 0.8333333333333334,
+      "validation_minus_qwen": -0.036111111111111094
+    },
+    {
+      "deployable_without_source_index": false,
+      "rule": "source_matches_qwen_prediction",
+      "test_accuracy": 0.240169133192389,
+      "test_llama_choice_rate": 0.4989429175475687,
+      "test_minus_qwen": -0.07695560253699787,
+      "validation_accuracy": 0.26944444444444443,
+      "validation_llama_choice_rate": 0.5138888888888888,
+      "validation_minus_qwen": -0.11944444444444446
+    }
+  ],
+  "splits": {
+    "test": {
+      "cached_tiny_packet_accuracy": 0.2693446088794926,
+      "llama_accuracy_when_source_correct": 0.5396946564885496,
+      "llama_accuracy_when_source_wrong": 0.15545023696682464,
+      "llama_minus_qwen": 0.05116279069767442,
+      "llama_packet_accuracy": 0.3682875264270613,
+      "llama_qwen_oracle_accuracy": 0.5323467230443975,
+      "qwen_accuracy_when_source_correct": 0.46564885496183206,
+      "qwen_accuracy_when_source_wrong": 0.13270142180094788,
+      "qwen_substituted_accuracy": 0.3171247357293869,
+      "row_seed_count": 2365,
+      "same_byte_llama_oracle_accuracy": 0.5915433403805497,
+      "same_byte_text_accuracy": 0.49471458773784355,
+      "same_byte_text_minus_llama": 0.12642706131078224,
+      "source_accuracy": 0.5539112050739958,
+      "source_qwen_oracle_accuracy": 0.6131078224101479,
+      "source_to_llama_packet_loss": 0.18562367864693446,
+      "target_accuracy": 0.26807610993657505,
+      "top_prefix_deltas": [
+        {
+          "llama_minus_qwen": -0.00796812749003984,
+          "prefix": "Mercury",
+          "row_seed_count": 1255,
+          "same_byte_text_minus_llama": 0.13864541832669322,
+          "source_accuracy": 0.5258964143426295
+        },
+        {
+          "llama_minus_qwen": 0.11818181818181818,
+          "prefix": "Mercury_SC",
+          "row_seed_count": 440,
+          "same_byte_text_minus_llama": 0.17045454545454544,
+          "source_accuracy": 0.625
+        },
+        {
+          "llama_minus_qwen": 0.0,
+          "prefix": "MCAS",
+          "row_seed_count": 180,
+          "same_byte_text_minus_llama": 0.05555555555555555,
+          "source_accuracy": 0.5555555555555556
+        },
+        {
+          "llama_minus_qwen": 0.011111111111111112,
+          "prefix": "NYSEDREGENTS",
+          "row_seed_count": 90,
+          "same_byte_text_minus_llama": 0.03333333333333333,
+          "source_accuracy": 0.6666666666666666
+        },
+        {
+          "llama_minus_qwen": 0.2625,
+          "prefix": "TIMSS",
+          "row_seed_count": 80,
+          "same_byte_text_minus_llama": 0.1125,
+          "source_accuracy": 0.5625
+        },
+        {
+          "llama_minus_qwen": 0.125,
+          "prefix": "ACTAAP",
+          "row_seed_count": 40,
+          "same_byte_text_minus_llama": 0.25,
+          "source_accuracy": 0.75
+        },
+        {
+          "llama_minus_qwen": 0.075,
+          "prefix": "MDSA",
+          "row_seed_count": 40,
+          "same_byte_text_minus_llama": 0.05,
+          "source_accuracy": 0.375
+        },
+        {
+          "llama_minus_qwen": 0.14285714285714285,
+          "prefix": "AKDE&ED",
+          "row_seed_count": 35,
+          "same_byte_text_minus_llama": -0.14285714285714285,
+          "source_accuracy": 0.42857142857142855
+        },
+        {
+          "llama_minus_qwen": 0.26666666666666666,
+          "prefix": "MEA",
+          "row_seed_count": 30,
+          "same_byte_text_minus_llama": 0.06666666666666667,
+          "source_accuracy": 0.5
+        },
+        {
+          "llama_minus_qwen": -0.12,
+          "prefix": "TAKS",
+          "row_seed_count": 25,
+          "same_byte_text_minus_llama": 0.52,
+          "source_accuracy": 0.8
+        },
+        {
+          "llama_minus_qwen": 0.36,
+          "prefix": "VASoL",
+          "row_seed_count": 25,
+          "same_byte_text_minus_llama": 0.04,
+          "source_accuracy": 0.8
+        },
+        {
+          "llama_minus_qwen": 0.2,
+          "prefix": "LEAP",
+          "row_seed_count": 20,
+          "same_byte_text_minus_llama": 0.05,
+          "source_accuracy": 0.75
+        }
+      ],
+      "unique_rows": 473
+    },
+    "validation": {
+      "cached_tiny_packet_accuracy": 0.25,
+      "llama_accuracy_when_source_correct": 0.5256410256410257,
+      "llama_accuracy_when_source_wrong": 0.15454545454545454,
+      "llama_minus_qwen": -0.03333333333333333,
+      "llama_packet_accuracy": 0.35555555555555557,
+      "llama_qwen_oracle_accuracy": 0.5791666666666667,
+      "qwen_accuracy_when_source_correct": 0.5384615384615384,
+      "qwen_accuracy_when_source_wrong": 0.21212121212121213,
+      "qwen_substituted_accuracy": 0.3888888888888889,
+      "row_seed_count": 720,
+      "same_byte_llama_oracle_accuracy": 0.5694444444444444,
+      "same_byte_text_accuracy": 0.4583333333333333,
+      "same_byte_text_minus_llama": 0.10277777777777777,
+      "source_accuracy": 0.5416666666666666,
+      "source_qwen_oracle_accuracy": 0.6388888888888888,
+      "source_to_llama_packet_loss": 0.18611111111111112,
+      "target_accuracy": 0.2777777777777778,
+      "top_prefix_deltas": [
+        {
+          "llama_minus_qwen": -0.08181818181818182,
+          "prefix": "Mercury",
+          "row_seed_count": 440,
+          "same_byte_text_minus_llama": 0.1159090909090909,
+          "source_accuracy": 0.5
+        },
+        {
+          "llama_minus_qwen": 0.1,
+          "prefix": "Mercury_SC",
+          "row_seed_count": 100,
+          "same_byte_text_minus_llama": 0.1,
+          "source_accuracy": 0.6
+        },
+        {
+          "llama_minus_qwen": -0.14666666666666667,
+          "prefix": "MCAS",
+          "row_seed_count": 75,
+          "same_byte_text_minus_llama": 0.14666666666666667,
+          "source_accuracy": 0.5333333333333333
+        },
+        {
+          "llama_minus_qwen": 0.35,
+          "prefix": "NYSEDREGENTS",
+          "row_seed_count": 20,
+          "same_byte_text_minus_llama": 0.15,
+          "source_accuracy": 0.75
+        },
+        {
+          "llama_minus_qwen": -0.13333333333333333,
+          "prefix": "MDSA",
+          "row_seed_count": 15,
+          "same_byte_text_minus_llama": -0.2,
+          "source_accuracy": 1.0
+        },
+        {
+          "llama_minus_qwen": 0.1,
+          "prefix": "ACTAAP",
+          "row_seed_count": 10,
+          "same_byte_text_minus_llama": 0.4,
+          "source_accuracy": 0.5
+        },
+        {
+          "llama_minus_qwen": 0.1,
+          "prefix": "LEAP",
+          "row_seed_count": 10,
+          "same_byte_text_minus_llama": -0.1,
+          "source_accuracy": 1.0
+        },
+        {
+          "llama_minus_qwen": -0.9,
+          "prefix": "MEA",
+          "row_seed_count": 10,
+          "same_byte_text_minus_llama": 0.4,
+          "source_accuracy": 0.5
+        },
+        {
+          "llama_minus_qwen": 0.5,
+          "prefix": "NCEOGA",
+          "row_seed_count": 10,
+          "same_byte_text_minus_llama": -0.5,
+          "source_accuracy": 0.5
+        },
+        {
+          "llama_minus_qwen": 0.2,
+          "prefix": "TIMSS",
+          "row_seed_count": 10,
+          "same_byte_text_minus_llama": -0.2,
+          "source_accuracy": 0.0
+        },
+        {
+          "llama_minus_qwen": 0.0,
+          "prefix": "AIMS",
+          "row_seed_count": 5,
+          "same_byte_text_minus_llama": 0.0,
+          "source_accuracy": 0.0
+        },
+        {
+          "llama_minus_qwen": 1.0,
+          "prefix": "MSA",
+          "row_seed_count": 5,
+          "same_byte_text_minus_llama": 0.0,
+          "source_accuracy": 1.0
+        }
+      ],
+      "unique_rows": 144
+    }
+  }
+}

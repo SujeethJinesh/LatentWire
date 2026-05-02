@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_arc_llama8b_failure_probe_20260502/arc_llama8b_failure_probe.json",
+      "sha256": "168bbb9543a0bdb739186355d90528f8cb9d7ec4a761dfb3bc2400bf68d6fe84"
+    },
+    {
+      "path": "results/source_private_arc_llama8b_failure_probe_20260502/arc_llama8b_failure_probe.md",
+      "sha256": "ac3ed310bb96b99f1ae82491d99dcc552f58d70a4a588227be3d409e251cefee"
+    },
+    {
+      "path": "results/source_private_arc_llama8b_failure_probe_20260502/row_summary.csv",
+      "sha256": "3a5aee95248a64645c95a38255c8430db713c4bd4132a28b15f1967b645b5998"
+    },
+    {
+      "path": "results/source_private_arc_llama8b_failure_probe_20260502/router_rules.csv",
+      "sha256": "40eb27e9bd1fbba541e9a3b8335bde8f051d8a7419d7f991ed6114b0d7a8cc4f"
+    }
+  ],
+  "gate": "source_private_arc_llama8b_failure_probe",
+  "pass_gate": false
+}

@@ -2014,5 +2014,12 @@
     "path": "references/644_arc_llama8b_mps_workaround_source_scout_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC Llama-8B true non-Qwen source scout, covering the Apple MPS eager-attention workaround, Llama/GQA source-family boundary, strict gate failure, and novelty boundaries against C2C/KVComm-style cache communication."
+  },
+  {
+    "num": 645,
+    "slug": "arc_llama8b_failure_probe_next_connector_refs_20260502",
+    "path": "references/645_arc_llama8b_failure_probe_next_connector_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC Llama-8B failure probe and next connector decision, covering query bottlenecks, soft-prefix receiver interfaces, relative/common-basis boundaries, C2C/KVComm competitors, TurboQuant/QJL systems baselines, and vLLM/SGLang native evidence requirements."
   }
 ]
