@@ -1930,5 +1930,12 @@
     "path": "references/632_arc_source_family_cache_falsification_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC source-family/source-cache falsification gate, covering the stricter alternate-source and Qwen-disagreement decision surface plus novelty boundaries against C2C, KVComm, relative representations, FNet, QJL, TurboQuant, prefix tuning, SAEs, crosscoders, and latent reasoning."
+  },
+  {
+    "num": 633,
+    "slug": "source_family_disagreement_repair_refs_20260502",
+    "path": "references/633_source_family_disagreement_repair_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the source-family disagreement repair gate, covering selective prediction/confidence calibration, MoE/source routing, distributed source coding with side information, and positioning against C2C, KVComm/KVCOMM, TurboQuant, and prefix tuning."
   }
 ]
