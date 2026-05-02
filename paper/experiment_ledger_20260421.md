@@ -19804,3 +19804,39 @@ Lay explanation: this run let the target make its own guess, then allowed the
 source to send a correction. The correction did not reliably fix target
 mistakes, and when it worked it did not beat the target's own frozen public
 scorer. This is not yet real cross-model latent communication.
+
+ARC consistency repair receiver preflight: extended
+`scripts/run_source_private_arc_candidate_alignment_receiver_preflight.py` with
+`target_consistency_repair`, a no-intercept frozen-target-public repair mode.
+Added tests for source-only repair features, exact zero-source equality, and
+the matched-source synthetic repair case in
+`tests/test_run_source_private_arc_candidate_alignment_receiver_preflight.py`.
+Added memo
+`paper/source_private_arc_consistency_repair_preflight_20260502.md`,
+references `references/657_arc_consistency_repair_refs_20260502.md`, and
+artifacts:
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_consistency_repair_hidden_public_innovation_sign16_n8/`,
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_consistency_repair_hidden_public_innovation_int8_n8/`,
+and
+`results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_consistency_repair_hidden_public_innovation_none_n8/`.
+Outcome: the branch is weakened. The new pass-critical hygiene checks work:
+`zero_source` exactly equals `target_public_only`, and the new
+`target_derived_source` control stays below the target floor (`1/4`) on all
+three rows. However, matched repair reaches only `2/4` while target-public and
+zero-source reach `3/4` for sign-16, int8-16, and unquantized sketches. The
+sign-16 row improves mean margin by about `+0.036`, but still loses accuracy;
+int8 and unquantized diagnostics lose both accuracy and margin.
+
+Decision: do not widen this consistency-style linear repair branch. The
+negative is useful because it rules out public-cache leakage and pure
+quantization loss as the dominant explanations. The next exact learned
+receiver branch should be a true permutation-equivariant DeepSets/Set
+Transformer candidate receiver with an accept/abstain head and help/harm
+telemetry. If that fails, cut learned ARC candidate receivers and return to
+the existing positive Fourier/anchor-syndrome packet row for cross-family and
+native systems validation.
+
+Lay explanation: this run taught the receiver that real source notes should
+fix answers and broken notes should do nothing. The broken-note checks behaved
+properly, but the real note still did not repair the target's mistake and
+sometimes moved correct target guesses to wrong answers.

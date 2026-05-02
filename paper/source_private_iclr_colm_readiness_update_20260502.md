@@ -655,3 +655,32 @@ is control hygiene: zero-source now exactly equals target-public, so the
 negative result is cleaner. The next method branch should be a
 consistency-style packet repair receiver or a true permutation-equivariant
 DeepSets/Set Transformer receiver with source-control contrastive training.
+
+## 2026-05-02 Consistency Repair Follow-Up
+
+Added `target_consistency_repair` to the ARC candidate-alignment receiver.
+This mode keeps target-public scores frozen, learns a no-intercept
+source-dependent repair delta, trains masked matched packets toward the gold
+margin, and trains corrupted packets toward zero residual. It also adds
+`target_derived_source` as a destructive control.
+
+Readout:
+
+- sign-16 repair (`8B`): matched `2/4`, target-public/zero-source `3/4`,
+  zero-source exact match `True`, margin delta about `+0.036`;
+- int8-16 repair (`66B`): matched `2/4`, target-public/zero-source `3/4`,
+  margin delta about `-0.054`;
+- unquantized float-16 repair (`256B`): matched `2/4`,
+  target-public/zero-source `3/4`, margin delta about `-0.056`;
+- `target_derived_source` stays at `1/4`, so the failure is not explained by
+  public-only source substitution;
+- all pass gates are `False`.
+
+Decision: do not widen this consistency-style linear repair branch. The
+receiver now has the right control hygiene, but it still harms target-correct
+rows and fails to repair the one target-public error in the n8 split. The next
+exact learned-receiver gate is a permutation-equivariant DeepSets/Set
+Transformer candidate receiver with explicit accept/abstain and help/harm
+telemetry. If that fails, cut learned ARC candidate receivers and spend the
+next ICLR cycle on the existing positive Fourier/anchor-syndrome packet row,
+strict cross-family validation, and native NVIDIA systems rows.

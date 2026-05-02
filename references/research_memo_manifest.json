@@ -2098,5 +2098,12 @@
     "path": "references/656_arc_residual_receiver_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC frozen-target-public residual receiver preflight and resonance framing, covering gist tokens, prefix/prompt tuning controls, distillation/logit-KL and hidden matching, activation steering, TurboQuant/QJL quantization pressure, consistency/DiT repair inspiration, and the decision to move beyond linear residual scoring."
+  },
+  {
+    "num": 657,
+    "slug": "arc_consistency_repair_refs_20260502",
+    "path": "references/657_arc_consistency_repair_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the negative ARC consistency-style repair receiver, covering consistency/ECC one-step repair, prompt/gist compression, activation steering, C2C/KVComm/KV quantization competitors, source-destroying controls, and the decision to move next to permutation-equivariant candidate receivers or back to the positive Fourier/anchor-syndrome packet row."
   }
 ]

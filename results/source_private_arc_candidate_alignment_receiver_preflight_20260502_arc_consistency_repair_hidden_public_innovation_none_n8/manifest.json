@@ -1,0 +1,33 @@
+{
+  "created_utc": "2026-05-02T16:51:54.780622+00:00",
+  "files": [
+    {
+      "bytes": 13793,
+      "path": "results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_consistency_repair_hidden_public_innovation_none_n8/arc_candidate_alignment_receiver_preflight.json",
+      "sha256": "fda48e6f42be0c1c57707673cdcfe636974ff7a0f74893380db8d8013b06fee0"
+    },
+    {
+      "bytes": 20694,
+      "path": "results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_consistency_repair_hidden_public_innovation_none_n8/prediction_audit.jsonl",
+      "sha256": "3db8dbf5fd599674d632bf63f402ee01bb7c5e6d9b3517023e2674c8a1267b8f"
+    },
+    {
+      "bytes": 6434,
+      "path": "results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_consistency_repair_hidden_public_innovation_none_n8/prediction_audit.csv",
+      "sha256": "686f5c940c33ee1b50378becdcc65d75f7d1255d65da7cc57e8584dd7c0df9ad"
+    },
+    {
+      "bytes": 1893,
+      "path": "results/source_private_arc_candidate_alignment_receiver_preflight_20260502_arc_consistency_repair_hidden_public_innovation_none_n8/arc_candidate_alignment_receiver_preflight.md",
+      "sha256": "2bf108d9d54b70ff65c784cef7f679d46cd494bacdd241a5d1ebecc55b06c697"
+    }
+  ],
+  "gate": "source_private_arc_candidate_alignment_receiver_preflight",
+  "inputs": {
+    "eval_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "eval_path_sha256": "0a5ee608c194ec6a95ca1e9ce7ff33c1b8e908cea086c9734af619294bcefaeb",
+    "source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+    "source_cache_path_sha256": "868ec5ae7314d7a530acdbdaa0eb84bd53dde4c6bfb0325a7e9876b8274c225b"
+  },
+  "pass_gate": false
+}
