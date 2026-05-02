@@ -19239,3 +19239,27 @@ and CI95 low versus Qwen-substituted `+0.216`. Decision: promote as a
 same-family stronger-source positive diagnostic that weakens the TinyLlama
 failure, but do not claim cross-family source robustness until a true
 cross-family stronger source or hidden/query connector passes the strict gate.
+
+ARC-Challenge Phi-3 cross-family source diagnostic: ran the existing
+`scripts/build_source_private_arc_challenge_source_family_cache_falsification.py`
+with alternate source family `phi3_mini_4k` and local cached
+`microsoft/Phi-3-mini-4k-instruct`, after adding a Phi-compatible LM scoring
+path that strips default RoPE scaling for older cached remote code and disables
+generation cache use during scoring. Added memo
+`paper/source_private_arc_phi3_cross_family_source_diagnostic_20260502.md`,
+references
+`references/637_arc_phi3_cross_family_source_diagnostic_refs_20260502.md`, and
+artifact
+`results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/`.
+Outcome: this is a negative non-Qwen source-family gate. Overall pass is
+`False`; validation full/Qwen-disagreement pass is `0/5` and `0/5`, and frozen
+test full/Qwen-disagreement pass is `0/5` and `0/5`. Frozen test full-slice
+matched/target/text is `0.244/0.265/0.241`. On `833` Qwen-disagreement test
+rows, matched/Qwen-substituted/text/target is `0.200/0.340/0.209/0.273`, with
+minimum matched-minus-Qwen-substituted `-0.143` and CI95 low versus Qwen-
+substituted `-0.193`. Phi source-choice accuracy before packets is weak:
+validation `0.274`, test `0.246`. Decision: rule out Mac-local Phi-3 as the
+cross-family source repair for the current ARC Fourier/anchor-syndrome packet.
+The live next branch is now a stronger non-Qwen source on NVIDIA or a richer
+hidden/query common-basis connector, not cached scalar confidence or
+candidate-score geometry.

@@ -83,6 +83,17 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert "test disagreement matched/Qwen-sub" in contribution_rows[
         "ARC-Challenge Qwen-1.5B stronger-source diagnostic"
     ]["main_metric"]
+    assert contribution_rows["ARC-Challenge Phi-3 cross-family source diagnostic"]["status"] in {
+        "new positive cross-family stronger-source diagnostic",
+        "new negative cross-family source diagnostic / non-Qwen source not enough",
+    }
+    assert "alternate source=phi3_mini_4k" in contribution_rows[
+        "ARC-Challenge Phi-3 cross-family source diagnostic"
+    ]["headline_evidence"]
+    assert "test disagreement matched/Qwen-sub" in contribution_rows[
+        "ARC-Challenge Phi-3 cross-family source diagnostic"
+    ]["main_metric"]
+    assert "arc_challenge_phi3_cross_family_source_diagnostic_headline" in payload
     assert contribution_rows["ARC-Challenge source-family packet-confidence router diagnostic"]["status"] == (
         "new negative router diagnostic / source-family repair narrowed"
     )

@@ -1958,5 +1958,12 @@
     "path": "references/636_arc_qwen15_stronger_source_diagnostic_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC Qwen-1.5B stronger-source diagnostic, covering the positive frozen test same-family source-strength result, the validation-gate limitation, and boundaries against C2C, KVComm/KVCOMM, TurboQuant, relative representations, and prefix tuning."
+  },
+  {
+    "num": 637,
+    "slug": "arc_phi3_cross_family_source_diagnostic_refs_20260502",
+    "path": "references/637_arc_phi3_cross_family_source_diagnostic_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC Phi-3 cross-family source diagnostic, covering the negative non-Qwen source-family result, source-choice weakness, and boundaries against C2C, KVComm/KVCOMM, latent K-V alignment, activation communication, crosscoders/SAEs, query bottlenecks, KV quantization, and prefix tuning."
   }
 ]

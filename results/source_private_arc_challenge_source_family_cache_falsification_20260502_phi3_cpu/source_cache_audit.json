@@ -1,0 +1,121 @@
+{
+  "alt_test_cache": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_test/source_prediction_cache.jsonl",
+  "alt_validation_cache": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_validation/source_prediction_cache.jsonl",
+  "alternate_source_family": "phi3_mini_4k",
+  "alternate_source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e",
+  "cache_row_audits": {
+    "alternate_test": {
+      "cache_sha256": "2d2f85067d8a82625a7c9981c665d909ee5f3ca1c78d910bc223edb09b5aaa45",
+      "expected_rows": 1172,
+      "forbidden_contract_declared": true,
+      "forbidden_payload_keys_absent": true,
+      "label": "alternate_test",
+      "path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_test/source_prediction_cache.jsonl",
+      "rows": 1172,
+      "source_families": [
+        "phi3_mini_4k"
+      ],
+      "source_models": [
+        "/Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e"
+      ],
+      "source_score_modes": [
+        "lm_choice_loglikelihood"
+      ]
+    },
+    "alternate_validation": {
+      "cache_sha256": "ec7201c035af75e65ea32c120dca5ba1a50266e4523620fd4f48b0afb4e22447",
+      "expected_rows": 299,
+      "forbidden_contract_declared": true,
+      "forbidden_payload_keys_absent": true,
+      "label": "alternate_validation",
+      "path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_validation/source_prediction_cache.jsonl",
+      "rows": 299,
+      "source_families": [
+        "phi3_mini_4k"
+      ],
+      "source_models": [
+        "/Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e"
+      ],
+      "source_score_modes": [
+        "lm_choice_loglikelihood"
+      ]
+    },
+    "qwen_test": {
+      "cache_sha256": "ca80c37108c1c31d01f2bedc218883420ea4082769dc17c3de2239505d89dc6a",
+      "expected_rows": 1172,
+      "forbidden_contract_declared": true,
+      "forbidden_payload_keys_absent": true,
+      "label": "qwen_test",
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/source_prediction_cache.jsonl",
+      "rows": 1172,
+      "source_families": [],
+      "source_models": [],
+      "source_score_modes": []
+    },
+    "qwen_validation": {
+      "cache_sha256": "868ec5ae7314d7a530acdbdaa0eb84bd53dde4c6bfb0325a7e9876b8274c225b",
+      "expected_rows": 299,
+      "forbidden_contract_declared": true,
+      "forbidden_payload_keys_absent": true,
+      "label": "qwen_validation",
+      "path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+      "rows": 299,
+      "source_families": [],
+      "source_models": [],
+      "source_score_modes": []
+    }
+  },
+  "cache_sha256": {
+    "alt_test": "2d2f85067d8a82625a7c9981c665d909ee5f3ca1c78d910bc223edb09b5aaa45",
+    "alt_validation": "ec7201c035af75e65ea32c120dca5ba1a50266e4523620fd4f48b0afb4e22447",
+    "qwen_test": "ca80c37108c1c31d01f2bedc218883420ea4082769dc17c3de2239505d89dc6a",
+    "qwen_validation": "868ec5ae7314d7a530acdbdaa0eb84bd53dde4c6bfb0325a7e9876b8274c225b"
+  },
+  "forbidden_source_fields": [
+    "answer",
+    "answerKey",
+    "answer_index",
+    "answer_label",
+    "gold"
+  ],
+  "materialization_requested": true,
+  "materialized_this_run": true,
+  "qwen_test_cache": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/source_prediction_cache.jsonl",
+  "qwen_validation_cache": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+  "test_materialization": {
+    "device": "cpu",
+    "dtype": "float32",
+    "kind": "local_causal_lm_choice_loglikelihood",
+    "latency_s": 1831.6277368750307,
+    "max_length": 256,
+    "model_path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e",
+    "normalization": "mean",
+    "prompt_mode": "qa",
+    "rows": 1172,
+    "source_cache": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_test/source_prediction_cache.jsonl",
+    "source_cache_sha256": "2d2f85067d8a82625a7c9981c665d909ee5f3ca1c78d910bc223edb09b5aaa45",
+    "source_eval_accuracy_before_packet": 0.24573378839590443,
+    "source_family": "phi3_mini_4k",
+    "source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e",
+    "source_score_digest": "d7b2c82419889373c3dbb331917186d8bfbcc844f52af9c9f63ac2a33724294e",
+    "source_score_mode": "lm_choice_loglikelihood"
+  },
+  "validation_materialization": {
+    "device": "cpu",
+    "dtype": "float32",
+    "kind": "local_causal_lm_choice_loglikelihood",
+    "latency_s": 460.3465462079621,
+    "max_length": 256,
+    "model_path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e",
+    "normalization": "mean",
+    "prompt_mode": "qa",
+    "rows": 299,
+    "source_cache": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_validation/source_prediction_cache.jsonl",
+    "source_cache_sha256": "ec7201c035af75e65ea32c120dca5ba1a50266e4523620fd4f48b0afb4e22447",
+    "source_eval_accuracy_before_packet": 0.27424749163879597,
+    "source_family": "phi3_mini_4k",
+    "source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e",
+    "source_score_digest": "7677a5dfd442b84395d80669a87263ba32fd8c078d7372e7c3012b9150dad1d7",
+    "source_score_mode": "lm_choice_loglikelihood"
+  }
+}

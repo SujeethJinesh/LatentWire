@@ -77,6 +77,7 @@ REPRODUCTION_COMMANDS = [
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py --output-dir results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu --force-rematerialize --source-lm-device cpu --source-lm-dtype float32 --source-lm-max-length 192 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_qwen15_cpu --alternate-source-family qwen2.5_1.5b --alternate-source-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-1.5B-Instruct/snapshots/989aa7980e4cf806f80c7fef2b1adb7bc71aa306 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu --alternate-source-family phi3_mini_4k --alternate-source-model /Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e --alt-validation-cache results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_validation/source_prediction_cache.jsonl --alt-test-cache results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_test/source_prediction_cache.jsonl --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_router_diagnostic.py --output-dir results/source_private_arc_challenge_source_family_router_diagnostic_20260502 --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_score_router_gate.py --output-dir results/source_private_arc_challenge_source_score_router_gate_20260502 --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_candidate_syndrome_connector_gate.py --output-dir results/source_private_arc_challenge_candidate_syndrome_connector_gate_20260502 --bootstrap-samples 500",
@@ -202,6 +203,7 @@ REQUIRED_ARTIFACTS = {
     "arc_challenge_fourier_anchor_syndrome": "results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502/arc_challenge_fourier_anchor_syndrome_gate.json",
     "arc_challenge_source_family_cache_falsification": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_family_cache_falsification.json",
     "arc_challenge_qwen15_stronger_source_diagnostic": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_qwen15_cpu/source_family_cache_falsification.json",
+    "arc_challenge_phi3_cross_family_source_diagnostic": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/source_family_cache_falsification.json",
     "arc_challenge_source_family_router_diagnostic": "results/source_private_arc_challenge_source_family_router_diagnostic_20260502/source_family_router_diagnostic.json",
     "arc_challenge_source_score_router_gate": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_router_gate.json",
     "arc_challenge_candidate_syndrome_connector": "results/source_private_arc_challenge_candidate_syndrome_connector_gate_20260502/candidate_syndrome_connector_gate.json",
@@ -478,6 +480,7 @@ def _contribution_rows(
     arc_fourier_anchor_syndrome: dict[str, Any],
     arc_source_family_cache_falsification: dict[str, Any],
     arc_qwen15_stronger_source_diagnostic: dict[str, Any],
+    arc_phi3_cross_family_source_diagnostic: dict[str, Any],
     arc_source_family_router_diagnostic: dict[str, Any],
     arc_source_score_router_gate: dict[str, Any],
     arc_candidate_syndrome_connector: dict[str, Any],
@@ -1375,6 +1378,55 @@ def _contribution_rows(
             ),
         },
         {
+            "contribution": "ARC-Challenge Phi-3 cross-family source diagnostic",
+            "status": (
+                "new positive cross-family stronger-source diagnostic"
+                if arc_phi3_cross_family_source_diagnostic["pass_gate"]
+                else "new negative cross-family source diagnostic / non-Qwen source not enough"
+            ),
+            "headline_evidence": (
+                f"alternate source={arc_phi3_cross_family_source_diagnostic['alternate_source_family']}; "
+                f"validation pass={arc_phi3_cross_family_source_diagnostic['headline']['validation_pass']}; "
+                f"test full-slice pass="
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_full_slice']['pass_count']}/"
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_full_slice']['seed_count']}; "
+                f"test Qwen-disagreement pass="
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_qwen_disagreement_slice']['pass_count']}/"
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_qwen_disagreement_slice']['seed_count']}; "
+                f"disagreement rows="
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_source_cache_agreement']['disagreement_count']}"
+            ),
+            "main_metric": (
+                f"test full matched/target/text="
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_full_slice']['matched_accuracy_mean']:.3f}/"
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_full_slice']['target_accuracy']:.3f}/"
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_full_slice']['same_byte_structured_text_accuracy']:.3f}; "
+                f"test disagreement matched/Qwen-sub/text/target="
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_qwen_disagreement_slice']['matched_accuracy_mean']:.3f}/"
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_qwen_disagreement_slice']['qwen_substituted_packet_accuracy_mean']:.3f}/"
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_qwen_disagreement_slice']['same_byte_structured_text_accuracy_mean']:.3f}/"
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_qwen_disagreement_slice']['target_accuracy']:.3f}; "
+                f"min matched-Qwen-sub="
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_qwen_disagreement_slice']['matched_minus_qwen_substituted_min']:.3f}; "
+                f"CI95 low vs Qwen-sub="
+                f"{arc_phi3_cross_family_source_diagnostic['headline']['test_qwen_disagreement_slice']['paired_ci95_low_vs_qwen_substituted_min']:.3f}"
+            ),
+            "remaining_gap": (
+                (
+                    "This is the true non-Qwen source-family diagnostic that the same-family Qwen-1.5B run "
+                    "could not satisfy. It promotes the ARC packet toward an ICLR cross-family source claim, "
+                    "but still needs a second non-Qwen family or benchmark plus native systems baselines."
+                )
+                if arc_phi3_cross_family_source_diagnostic["pass_gate"]
+                else (
+                    "This is the true non-Qwen source-family diagnostic that the same-family Qwen-1.5B run "
+                    "could not satisfy. The negative result narrows the next branch to either a stronger "
+                    "non-Qwen source on NVIDIA or a richer hidden/query common-basis connector rather than "
+                    "more cached candidate-score geometry."
+                )
+            ),
+        },
+        {
             "contribution": "ARC-Challenge source-family packet-confidence router diagnostic",
             "status": "new negative router diagnostic / source-family repair narrowed",
             "headline_evidence": (
@@ -2034,6 +2086,7 @@ def _pass_checks(
     arc_fourier_anchor_syndrome: dict[str, Any],
     arc_source_family_cache_falsification: dict[str, Any],
     arc_qwen15_stronger_source_diagnostic: dict[str, Any],
+    arc_phi3_cross_family_source_diagnostic: dict[str, Any],
     arc_source_family_router_diagnostic: dict[str, Any],
     arc_source_score_router_gate: dict[str, Any],
     arc_candidate_syndrome_connector: dict[str, Any],
@@ -2341,6 +2394,21 @@ def _pass_checks(
                 "paired_ci95_low_vs_qwen_substituted_min"
             ]
             > 0.20,
+        ),
+        (
+            "arc_challenge_phi3_cross_family_source_diagnostic_recorded",
+            arc_phi3_cross_family_source_diagnostic["alternate_source_family"] == "phi3_mini_4k"
+            and arc_phi3_cross_family_source_diagnostic["headline"]["test_source_cache_agreement"][
+                "disagreement_count"
+            ]
+            >= 150
+            and all(
+                audit["forbidden_payload_keys_absent"] is True
+                and audit["forbidden_contract_declared"] is True
+                for audit in arc_phi3_cross_family_source_diagnostic["source_cache_audit"][
+                    "cache_row_audits"
+                ].values()
+            ),
         ),
         (
             "arc_challenge_source_family_router_diagnostic_records_oracle_but_fails_router",
@@ -3350,6 +3418,9 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     arc_qwen15_stronger_source_diagnostic = _read_json(
         ROOT / REQUIRED_ARTIFACTS["arc_challenge_qwen15_stronger_source_diagnostic"]
     )
+    arc_phi3_cross_family_source_diagnostic = _read_json(
+        ROOT / REQUIRED_ARTIFACTS["arc_challenge_phi3_cross_family_source_diagnostic"]
+    )
     arc_source_family_router_diagnostic = _read_json(
         ROOT / REQUIRED_ARTIFACTS["arc_challenge_source_family_router_diagnostic"]
     )
@@ -3479,6 +3550,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         arc_fourier_anchor_syndrome=arc_fourier_anchor_syndrome,
         arc_source_family_cache_falsification=arc_source_family_cache_falsification,
         arc_qwen15_stronger_source_diagnostic=arc_qwen15_stronger_source_diagnostic,
+        arc_phi3_cross_family_source_diagnostic=arc_phi3_cross_family_source_diagnostic,
         arc_source_family_router_diagnostic=arc_source_family_router_diagnostic,
         arc_source_score_router_gate=arc_source_score_router_gate,
         arc_candidate_syndrome_connector=arc_candidate_syndrome_connector,
@@ -3565,6 +3637,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         arc_fourier_anchor_syndrome=arc_fourier_anchor_syndrome,
         arc_source_family_cache_falsification=arc_source_family_cache_falsification,
         arc_qwen15_stronger_source_diagnostic=arc_qwen15_stronger_source_diagnostic,
+        arc_phi3_cross_family_source_diagnostic=arc_phi3_cross_family_source_diagnostic,
         arc_source_family_router_diagnostic=arc_source_family_router_diagnostic,
         arc_source_score_router_gate=arc_source_score_router_gate,
         arc_candidate_syndrome_connector=arc_candidate_syndrome_connector,
@@ -3610,10 +3683,27 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         native_readiness=native_readiness,
         native_systems_plan=native_systems_plan,
     )
+    phi3_readiness_clause = (
+        "the Phi-3 non-Qwen source diagnostic passes the strict cross-family gate"
+        if arc_phi3_cross_family_source_diagnostic["pass_gate"]
+        else "the Phi-3 non-Qwen source diagnostic is recorded but does not clear the strict cross-family gate"
+    )
     payload = {
         "gate": "source_private_iclr_evidence_bundle",
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the stricter Qwen-disagreement slice, a stronger same-family Qwen-1.5B source repairs frozen test but fails the strict validation gate, scalar receiver/source confidence routing and cached candidate-level connectors also fail that disagreement surface, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
+        "readiness": (
+            "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA "
+            "public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC "
+            "Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. "
+            "ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over "
+            "packet-only on held-out test, the same validation-selected receiver fails ARC replication, "
+            "the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the "
+            "stricter Qwen-disagreement slice, a stronger same-family Qwen-1.5B source repairs frozen "
+            f"test but fails the strict validation gate, {phi3_readiness_clause}, scalar receiver/source "
+            "confidence routing and cached candidate-level connectors also fail that disagreement surface, "
+            "and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and "
+            "negative-ablation surface rather than a current receiver-improvement headline."
+        ),
         "pass_gate": all(check["pass"] for check in pass_checks),
         "pass_checks": pass_checks,
         "artifact_status": artifacts,
@@ -3658,6 +3748,9 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "headline"
         ],
         "arc_challenge_qwen15_stronger_source_diagnostic_headline": arc_qwen15_stronger_source_diagnostic[
+            "headline"
+        ],
+        "arc_challenge_phi3_cross_family_source_diagnostic_headline": arc_phi3_cross_family_source_diagnostic[
             "headline"
         ],
         "arc_challenge_source_family_router_diagnostic_headline": {
@@ -3858,6 +3951,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "CommonsenseQA confirms non-science source signal, but same-byte text is still too close under the strict text-margin gate.",
             "The ARC Fourier/anchor-syndrome packet strengthens the shared-coordinate mechanism and spectral mismatch controls, but random shared anchors pass; do not claim semantic train-anchor superiority or universal latent-language transfer.",
             "The TinyLlama source-family cache falsification preserves the ARC full-slice test lift but fails the Qwen-disagreement slice, where Qwen-substituted packets beat TinyLlama-selected packets; do not claim source-family-general ARC communication yet.",
+            "The Phi-3 non-Qwen source diagnostic is now tracked as the strict cross-family source gate; if it fails, the next source-family repair must use a stronger non-Qwen model or richer hidden/query connector rather than cached score-shape features.",
             "The direct Qwen-hidden to BGE residual endpoint failed validation, so deeper latent endpoints need better common-basis learning before promotion.",
             "The top live method is candidate-local and thresholded; the paper must show the threshold frontier and controls clearly.",
             "Same-family structured-text controls remain unpromoted and should be framed as a limitation or cut from headline claims.",

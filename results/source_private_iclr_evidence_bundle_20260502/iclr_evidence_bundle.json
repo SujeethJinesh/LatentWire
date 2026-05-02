@@ -1263,6 +1263,47 @@
     "test_pass": true,
     "validation_pass": true
   },
+  "arc_challenge_phi3_cross_family_source_diagnostic_headline": {
+    "test_full_slice": {
+      "all_seeds_pass": false,
+      "candidate_derangement_accuracy_max": 0.24658703071672355,
+      "matched_accuracy_max": 0.24488054607508533,
+      "matched_accuracy_mean": 0.24402730375426623,
+      "matched_accuracy_min": 0.2431740614334471,
+      "matched_minus_best_destructive_min": -0.029010238907849845,
+      "matched_minus_same_byte_text_min": 0.002559726962457348,
+      "matched_minus_target_mean": -0.02133105802047782,
+      "matched_minus_target_min": -0.022184300341296925,
+      "paired_ci95_low_vs_target_min": -0.058468430034129694,
+      "pass_count": 0,
+      "same_byte_structured_text_accuracy": 0.24061433447098976,
+      "seed_count": 5,
+      "target_accuracy": 0.26535836177474403
+    },
+    "test_pass": false,
+    "test_qwen_disagreement_slice": {
+      "all_seeds_pass": false,
+      "matched_accuracy_mean": 0.2,
+      "matched_accuracy_min": 0.1992797118847539,
+      "matched_minus_best_destructive_min": -0.08523409363745499,
+      "matched_minus_qwen_substituted_min": -0.14285714285714285,
+      "matched_minus_same_byte_text_min": -0.009603841536614643,
+      "matched_minus_target_min": -0.07322929171668668,
+      "n": 833,
+      "paired_ci95_low_vs_qwen_substituted_min": -0.19270708283313326,
+      "paired_ci95_low_vs_target_min": -0.11644657863145258,
+      "pass_count": 0,
+      "qwen_substituted_packet_accuracy_mean": 0.3404561824729892,
+      "same_byte_structured_text_accuracy_mean": 0.20888355342136852,
+      "seed_count": 5,
+      "target_accuracy": 0.2725090036014406
+    },
+    "test_source_cache_agreement": {
+      "agreement_rate": 0.28924914675767915,
+      "disagreement_count": 833
+    },
+    "validation_pass": false
+  },
   "arc_challenge_qwen15_stronger_source_diagnostic_headline": {
     "test_full_slice": {
       "all_seeds_pass": true,
@@ -1761,6 +1802,12 @@
       "exists": true,
       "path": "results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502/arc_challenge_fourier_anchor_syndrome_gate.json",
       "sha256": "e6ab977777f65210560798c59f97ff3886a7ba5170df674052b789f1dd2be510"
+    },
+    "arc_challenge_phi3_cross_family_source_diagnostic": {
+      "bytes": 76462,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/source_family_cache_falsification.json",
+      "sha256": "1eb7fe39a3ecd931b51280f21f348d918c7a37da10c6d56df7a684d1efaad7e8"
     },
     "arc_challenge_qwen15_stronger_source_diagnostic": {
       "bytes": 76321,
@@ -2564,6 +2611,13 @@
       "status": "new positive same-family stronger-source test / not yet cross-family"
     },
     {
+      "contribution": "ARC-Challenge Phi-3 cross-family source diagnostic",
+      "headline_evidence": "alternate source=phi3_mini_4k; validation pass=False; test full-slice pass=0/5; test Qwen-disagreement pass=0/5; disagreement rows=833",
+      "main_metric": "test full matched/target/text=0.244/0.265/0.241; test disagreement matched/Qwen-sub/text/target=0.200/0.340/0.209/0.273; min matched-Qwen-sub=-0.143; CI95 low vs Qwen-sub=-0.193",
+      "remaining_gap": "This is the true non-Qwen source-family diagnostic that the same-family Qwen-1.5B run could not satisfy. The negative result narrows the next branch to either a stronger non-Qwen source on NVIDIA or a richer hidden/query common-basis connector rather than more cached candidate-score geometry.",
+      "status": "new negative cross-family source diagnostic / non-Qwen source not enough"
+    },
+    {
       "contribution": "ARC-Challenge source-family packet-confidence router diagnostic",
       "headline_evidence": "validation-selected metric=best_score; validation accuracy=0.394; test router/Qwen-sub/oracle=0.315/0.317/0.586; router alt-rate=0.039",
       "main_metric": "source-choice oracle=0.455; router-minus-Qwen mean/min=-0.002/-0.008; min CI95 low vs Qwen=-0.023; disagreement rows=473",
@@ -2774,7 +2828,7 @@
       "status": "bounded diagnostic contribution, not headline cross-family claim"
     }
   ],
-  "created_utc": "2026-05-02T11:24:40.626506+00:00",
+  "created_utc": "2026-05-02T12:18:38.088790+00:00",
   "cross_benchmark_systems_comparator_headline": {
     "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
     "diagnostic_benchmarks": 1,
@@ -3938,6 +3992,10 @@
       "pass": true
     },
     {
+      "check": "arc_challenge_phi3_cross_family_source_diagnostic_recorded",
+      "pass": true
+    },
+    {
       "check": "arc_challenge_source_family_router_diagnostic_records_oracle_but_fails_router",
       "pass": true
     },
@@ -4519,7 +4577,7 @@
     }
   ],
   "pass_gate": true,
-  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the stricter Qwen-disagreement slice, a stronger same-family Qwen-1.5B source repairs frozen test but fails the strict validation gate, scalar receiver/source confidence routing and cached candidate-level connectors also fail that disagreement surface, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
+  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the stricter Qwen-disagreement slice, a stronger same-family Qwen-1.5B source repairs frozen test but fails the strict validation gate, the Phi-3 non-Qwen source diagnostic is recorded but does not clear the strict cross-family gate, scalar receiver/source confidence routing and cached candidate-level connectors also fail that disagreement surface, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
   "remaining_iclr_risks": [
     "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
     "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
@@ -4535,6 +4593,7 @@
     "CommonsenseQA confirms non-science source signal, but same-byte text is still too close under the strict text-margin gate.",
     "The ARC Fourier/anchor-syndrome packet strengthens the shared-coordinate mechanism and spectral mismatch controls, but random shared anchors pass; do not claim semantic train-anchor superiority or universal latent-language transfer.",
     "The TinyLlama source-family cache falsification preserves the ARC full-slice test lift but fails the Qwen-disagreement slice, where Qwen-substituted packets beat TinyLlama-selected packets; do not claim source-family-general ARC communication yet.",
+    "The Phi-3 non-Qwen source diagnostic is now tracked as the strict cross-family source gate; if it fails, the next source-family repair must use a stronger non-Qwen model or richer hidden/query connector rather than cached score-shape features.",
     "The direct Qwen-hidden to BGE residual endpoint failed validation, so deeper latent endpoints need better common-basis learning before promotion.",
     "The top live method is candidate-local and thresholded; the paper must show the threshold frontier and controls clearly.",
     "Same-family structured-text controls remain unpromoted and should be framed as a limitation or cut from headline claims.",
@@ -4605,6 +4664,7 @@
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py --output-dir results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu --force-rematerialize --source-lm-device cpu --source-lm-dtype float32 --source-lm-max-length 192 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_qwen15_cpu --alternate-source-family qwen2.5_1.5b --alternate-source-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-1.5B-Instruct/snapshots/989aa7980e4cf806f80c7fef2b1adb7bc71aa306 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu --alternate-source-family phi3_mini_4k --alternate-source-model /Users/sujeethjinesh/.cache/huggingface/hub/models--microsoft--Phi-3-mini-4k-instruct/snapshots/f39ac1d28e925b323eae81227eaba4464caced4e --alt-validation-cache results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_validation/source_prediction_cache.jsonl --alt-test-cache results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/phi3_test/source_prediction_cache.jsonl --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_router_diagnostic.py --output-dir results/source_private_arc_challenge_source_family_router_diagnostic_20260502 --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_score_router_gate.py --output-dir results/source_private_arc_challenge_source_score_router_gate_20260502 --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_candidate_syndrome_connector_gate.py --output-dir results/source_private_arc_challenge_candidate_syndrome_connector_gate_20260502 --bootstrap-samples 500",

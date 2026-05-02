@@ -13,7 +13,8 @@ Date: 2026-05-02
 - Exact gap: one positive source-family repair, learned receiver, or
   common-language connector must beat packet-only under paired uncertainty,
   destructive controls, and at least one strict cross-family or cross-benchmark
-  falsification.
+  falsification. The Mac-local Phi-3 cross-family source diagnostic now fails
+  this gate.
 
 ## Contributions To Put Forward
 
@@ -89,6 +90,27 @@ the tiny ARC packet very useful on frozen test disagreements with Qwen-0.5B.
 This is encouraging, but it is same-family and validation-gate-incomplete, so
 it should be framed as source-strength evidence rather than the final
 cross-family result.
+
+The ARC Phi-3 cross-family source diagnostic tests the strict non-Qwen branch:
+
+- artifact:
+  `results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu/source_family_cache_falsification.json`
+- alternate source family: `phi3_mini_4k`;
+- overall pass gate: `False`;
+- validation full/Qwen-disagreement pass: `0/5` and `0/5`;
+- frozen test full/Qwen-disagreement pass: `0/5` and `0/5`;
+- frozen test full-slice matched/target/text: `0.244/0.265/0.241`;
+- frozen test Qwen-disagreement rows: `833`;
+- frozen test Qwen-disagreement matched/Qwen-substituted/text/target:
+  `0.200/0.340/0.209/0.273`;
+- frozen test matched-minus-Qwen-substituted min: `-0.143`;
+- frozen test CI95 low versus Qwen-substituted: `-0.193`;
+- Phi source-choice accuracy before packet: validation `0.274`, test `0.246`.
+
+Lay explanation: this run asked a different model family, Phi-3, to send the
+same tiny ARC hint. The hint did not help the Qwen receiver; on the rows where
+Phi and Qwen disagreed, the Qwen-substituted packet was much stronger. This
+rules out the available Mac-local Phi-3 source as the cross-family repair.
 
 The ARC candidate-syndrome connector gate now tests the next learned cached
 repair:
@@ -168,9 +190,10 @@ same controls.
 
 ## Next Exact Gate
 
-Run an ARC source-family repair gate with a learned common-basis connector or a
-stronger alternate source on the frozen TinyLlama-vs-Qwen disagreement rows.
-Receiver-only scalar routing, source-side scalar confidence routing, and cached
-candidate-level packet/score connectors are now ruled out for this surface.
-The same-family Qwen-1.5B stronger-source diagnostic should be repeated with a
-true cross-family stronger source on NVIDIA before making the ICLR claim.
+Run an ARC source-family repair gate with a learned hidden/query common-basis
+connector or a stronger non-Qwen source on NVIDIA. Receiver-only scalar
+routing, source-side scalar confidence routing, cached candidate-level
+packet/score connectors, and Mac-local Phi-3 source packets are now ruled out
+for this surface. The same-family Qwen-1.5B stronger-source diagnostic should
+be repeated with a true stronger cross-family source before making the ICLR
+claim.

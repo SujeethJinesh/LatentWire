@@ -322,7 +322,7 @@ def _lm_choice_loglikelihood_scores(
     prompt_mode: str = "qa",
 ) -> tuple[list[list[float]], list[int], dict[str, Any]]:
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
     if normalization not in {"mean", "sum"}:
         raise ValueError(f"unknown LM score normalization {normalization!r}")
@@ -334,8 +334,22 @@ def _lm_choice_loglikelihood_scores(
     )
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
+    config = AutoConfig.from_pretrained(
+        model_path,
+        local_files_only=local_files_only,
+        trust_remote_code=True,
+    )
+    if (
+        isinstance(getattr(config, "rope_scaling", None), dict)
+        and config.rope_scaling.get("rope_type") == "default"
+        and "type" not in config.rope_scaling
+    ):
+        # Older remote model code, notably cached Phi-3, expects no RoPE scaling
+        # for default RoPE while newer Transformers normalizes it to a dict.
+        config.rope_scaling = None
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
+        config=config,
         local_files_only=local_files_only,
         trust_remote_code=True,
         torch_dtype=_torch_dtype(dtype),
@@ -365,7 +379,7 @@ def _lm_choice_loglikelihood_scores(
                 return_tensors="pt",
             )
             encoded = {key: value.to(resolved_device) for key, value in encoded.items()}
-            output = model(**encoded)
+            output = model(**encoded, use_cache=False)
             logits = output.logits[:, :-1, :]
             labels = encoded["input_ids"][:, 1:]
             token_logp = torch.log_softmax(logits, dim=-1).gather(-1, labels.unsqueeze(-1)).squeeze(-1)
