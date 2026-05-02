@@ -1,0 +1,73 @@
+{
+  "created_utc": "2026-05-02T00:51:58.853067+00:00",
+  "files": [
+    {
+      "bytes": 76773,
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/hellaswag_hidden_innovation_global_stability.json",
+      "sha256": "9bfd8fd48e20c7c6bf6e7fa7bf43bff16e323545382818c6798b6d53e9ef4696"
+    },
+    {
+      "bytes": 1029,
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/hellaswag_hidden_innovation_global_stability.md",
+      "sha256": "7f4a34e908ae909dfa2bce6cd0e2c3fb6d1102d1e08ddcb7f938c5f20b965977"
+    },
+    {
+      "bytes": 1753,
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/policy_rows.csv",
+      "sha256": "ca52bb7b39a811c38540c537cbb922572bec7cb5096db30c603dfba923522fa7"
+    },
+    {
+      "bytes": 4431,
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/subbag_rows.csv",
+      "sha256": "0cd20ae9c5743a4c24fada20ba7da453f4b21a24d8c2a9c0459d3aba060aa08f"
+    },
+    {
+      "bytes": 9171,
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/slice_policy_rows.csv",
+      "sha256": "f8bb984bed8bfe0b8f064f8b35ad1779b450eb30e8af0bcc5937fce59087ffd4"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    },
+    {
+      "bytes": 6036,
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/component_rows.jsonl",
+      "sha256": "ab910e59a15c38654eb39ff2acc820aab80d1e9cc23372af5e26e96fb176aba4"
+    },
+    {
+      "bytes": 2558485,
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/predictions.jsonl",
+      "sha256": "199dfcdd94db1d705bf7778a7112520e9caf263c13dab0584e20e93bbc9bc4a1"
+    }
+  ],
+  "gate": "source_private_hellaswag_hidden_innovation_global_stability",
+  "headline": {
+    "best_label_copy_accuracy": 0.48088030272854015,
+    "component_model_count": 9,
+    "eval_rows": 10042,
+    "eval_slice_count": 10,
+    "hybrid_accuracy": 0.5324636526588329,
+    "hybrid_ci95_low_vs_best_label_copy": 0.04555616411073491,
+    "hybrid_failed_slices": [],
+    "hybrid_minus_best_label_copy": 0.05158334993029273,
+    "hybrid_slice_pass_count": 10,
+    "hybrid_subbag_pass_count": 3,
+    "mean_zscore_accuracy": 0.5266879107747461,
+    "mean_zscore_ci95_low_vs_best_label_copy": 0.03963353913563035,
+    "mean_zscore_failed_slices": [],
+    "mean_zscore_minus_best_label_copy": 0.04580760804620593,
+    "mean_zscore_slice_pass_count": 10,
+    "mean_zscore_subbag_pass_count": 3,
+    "score_only_component_model_count": 9,
+    "score_only_mean_accuracy": 0.48088030272854015,
+    "source_private_packet_framed_bytes": 5,
+    "source_private_packet_raw_bytes": 2,
+    "split_seed_count": 3,
+    "strict_delta_required": 0.02,
+    "terminal_tail_hybrid_slice_pass": true,
+    "terminal_tail_mean_zscore_slice_pass": true,
+    "train_sample_seed_count": 3
+  }
+}

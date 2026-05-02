@@ -1734,5 +1734,12 @@
     "path": "references/604_hellaswag_switch_decomposition_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the HellaSwag top-2 switch decomposition, covering the failed trust-or-switch branch, top-2 oracle headroom, candidate-wise hidden-innovation promotion, and novelty boundaries against selective prediction, prefix/prompt/adapters, SAE/crosscoder/common-basis work, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, and latent reasoning."
+  },
+  {
+    "num": 605,
+    "slug": "hellaswag_global_stability_refs_20260502",
+    "path": "references/605_hellaswag_global_stability_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the full-validation HellaSwag hidden-innovation global stability pass, covering the promoted fixed-byte source-private packet contribution and novelty boundaries against prefix/prompt/adapters, selective prediction, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, SAE/crosscoder/relative representations, vLLM, and SGLang."
   }
 ]
