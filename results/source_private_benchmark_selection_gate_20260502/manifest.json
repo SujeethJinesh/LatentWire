@@ -1,0 +1,57 @@
+{
+  "created_utc": "2026-05-02T08:40:58.400556+00:00",
+  "files": [
+    {
+      "bytes": 7760,
+      "path": "results/source_private_benchmark_selection_gate_20260502/benchmark_selection_gate.json",
+      "sha256": "b27a543034f603517f54d362e556e7d86234a230832575b54f59ce3fb98378bb"
+    },
+    {
+      "bytes": 1483,
+      "path": "results/source_private_benchmark_selection_gate_20260502/benchmark_selection_gate.csv",
+      "sha256": "9904c20acd6d72665c3028b3132416c55be07621ee0b7d30b01688b915f494cd"
+    },
+    {
+      "bytes": 1661,
+      "path": "results/source_private_benchmark_selection_gate_20260502/benchmark_selection_gate.md",
+      "sha256": "4aa76ed11ff312650722e833eae2b17906d22a8210996dbd072482bb4b21abfe"
+    }
+  ],
+  "gate": "source_private_benchmark_selection_gate",
+  "headline": {
+    "colm_ready": true,
+    "diagnostic_text_saturated_count": 1,
+    "iclr_blocker": "selected benchmark still needs a train-only receiver that beats packet-only with paired uncertainty",
+    "iclr_ready": false,
+    "receiver_candidate_count": 2,
+    "recommended_next_gate": "train-only receiver/headroom gate on OpenBookQA test using the promoted 3B packet, target-cache-only, candidate-only, target-derived, row-shuffle, random same-rate, label-permutation, candidate-derangement, same-byte text, and source-label-copy controls",
+    "selected_benchmark": "OpenBookQA test",
+    "strict_destructive_delta": 0.05,
+    "strict_oracle_headroom": 0.03,
+    "strict_target_delta": 0.05,
+    "strict_text_delta": 0.02
+  },
+  "inputs": [
+    {
+      "oracle_predictions_jsonl": "results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/predictions.jsonl",
+      "oracle_predictions_sha256": "7d8d823dd2b1a25df2b6f5329183b6409e326177b58a28aa3511c81037b0c7c2",
+      "row_id": "openbookqa_test_3b",
+      "seed_artifact": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/arc_challenge_seed_stability.json",
+      "seed_artifact_sha256": "999fefa6cebb762eebbb78957969fc2832781ec79734aefdaa1746227dceaec6"
+    },
+    {
+      "oracle_predictions_jsonl": "results/source_private_arc_challenge_fixed_packet_gate_20260501_qwen05_hashed_test/predictions.jsonl",
+      "oracle_predictions_sha256": "e9e0a0ac38ddc9535f946e2f26789059fc4b608da84825f3bcef183bf249ebf4",
+      "row_id": "arc_challenge_test_12b",
+      "seed_artifact": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/arc_challenge_seed_stability.json",
+      "seed_artifact_sha256": "c9ede426c34a465e02b6d6795ace3388123bc9453eeafcf2f8229bf1f845861d"
+    },
+    {
+      "oracle_predictions_jsonl": "results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl",
+      "oracle_predictions_sha256": "bae091d5208cbb1b055ae536032450f6ff0bb08eb17e4881231b08b87358e728",
+      "row_id": "commonsenseqa_validation_2b",
+      "seed_artifact": "results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b/arc_challenge_seed_stability.json",
+      "seed_artifact_sha256": "ff7642fb1e36df3df49033b29cea5c8282a10964f451e7f23ee9377b7874517c"
+    }
+  ]
+}

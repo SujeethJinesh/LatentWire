@@ -19002,3 +19002,29 @@ systems/accounting as the core COLM path; keep HellaSwag as
 diagnostic/headroom/negative-ablation evidence; next exact gate is either a
 local benchmark surface where packet-only does not saturate the source signal
 or a true learned query/cache connector on NVIDIA.
+
+Benchmark-selection gate after HellaSwag PQ branch kill: added
+`scripts/build_source_private_benchmark_selection_gate.py`, test
+`tests/test_build_source_private_benchmark_selection_gate.py`, artifact
+`results/source_private_benchmark_selection_gate_20260502/`, memo
+`paper/source_private_benchmark_selection_gate_20260502.md`, and references
+`references/628_benchmark_selection_and_systems_refs_20260502.md`. Outcome:
+the gate selects OpenBookQA test as the next ICLR method surface. OpenBookQA
+has a promoted `3B` packet row with `5/5` seeds, packet accuracy `0.378`
+versus target `0.276`, same-byte text `0.350`, lift `+0.102` over target,
+lift `+0.028` over text, and target-or-packet oracle headroom `+0.164`.
+ARC-Challenge remains a calibration-positive backup with oracle headroom
+`+0.185`; CommonsenseQA remains a text-saturated diagnostic with only `+0.013`
+strict text margin despite strong target lift. Interpretation: stop spending
+Mac-local effort on HellaSwag receiver/hidden-code tuning. The next exact gate
+is a train-only OpenBookQA receiver/headroom gate using target-cache-only,
+candidate-only, target-derived, row-shuffle, random same-rate,
+label-permutation, candidate-derangement, same-byte text, and source-label-copy
+controls. Also generalized the HellaSwag receiver-family wrapper to
+`scripts/build_source_private_hellaswag_nonqwen_receiver_family_packet_gate.py`
+after a `.debug` Phi feasibility run failed on cached Phi-3 remote-code
+`rope_scaling` compatibility before scoring. Regenerated
+`results/source_private_cross_benchmark_systems_comparator_20260502/` after
+adding Q-KVComm, KIVI, KVQuant, and SGLang/RadixAttention as explicit external
+baseline rows. Native systems claims remain blocked until NVIDIA/vLLM/SGLang
+and C2C/KVComm/KV-quant baselines are run.

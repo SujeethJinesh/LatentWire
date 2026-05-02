@@ -81,6 +81,30 @@
       "source": "https://arxiv.org/abs/2510.12872"
     },
     {
+      "claim_boundary": "compressed KV communication baseline; still exposes source-derived KV state",
+      "communicated_object": "adaptive layer-wise quantized source KV cache",
+      "fair_axis": "compressed KV bytes, quality, latency, and source-state exposure",
+      "local_status": "not_run_native",
+      "method": "Q-KVComm adaptive compressed KV communication",
+      "source": "https://arxiv.org/abs/2512.17914"
+    },
+    {
+      "claim_boundary": "long-context KV compression baseline, not source-private communication",
+      "communicated_object": "same-model quantized KV cache",
+      "fair_axis": "KV memory, perplexity/accuracy, and kernel latency",
+      "local_status": "byte_floor_only",
+      "method": "KIVI asymmetric 2-bit KV quantization",
+      "source": "https://arxiv.org/abs/2402.02750"
+    },
+    {
+      "claim_boundary": "state compression baseline; not a packetized cross-model evidence protocol",
+      "communicated_object": "same-model low-bit KV cache",
+      "fair_axis": "bits per KV element, accuracy, memory, and throughput",
+      "local_status": "byte_floor_only",
+      "method": "KVQuant sub-4-bit KV quantization",
+      "source": "https://arxiv.org/abs/2401.18079"
+    },
+    {
       "claim_boundary": "mathematical byte-floor comparator, not a defeated native baseline",
       "communicated_object": "1-bit JL/sign sketch of KV/cache state",
       "fair_axis": "state-sketch bytes and accuracy under source-state exposure",
@@ -103,6 +127,14 @@
       "local_status": "pending_nvidia",
       "method": "vLLM/PagedAttention",
       "source": "https://arxiv.org/abs/2309.06180"
+    },
+    {
+      "claim_boundary": "native serving target; Mac rows cannot close this gate",
+      "communicated_object": "serving runtime with KV reuse and scheduling",
+      "fair_axis": "TTFT, TPOT, goodput, cache reuse, peak GPU memory, and HBM traffic",
+      "local_status": "pending_nvidia",
+      "method": "SGLang/RadixAttention serving",
+      "source": "https://arxiv.org/abs/2312.07104"
     }
   ],
   "gate": "source_private_cross_benchmark_systems_comparator",

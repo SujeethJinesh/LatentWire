@@ -1895,5 +1895,12 @@
     "path": "references/627_iclr_colm_readiness_update_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ICLR/COLM readiness update after the HellaSwag PQ hidden-code branch kill, covering uniqueness boundaries against C2C, KVComm, TurboQuant/QJL, SAE/crosscoders, prefix/query bottlenecks, and native serving systems baselines."
+  },
+  {
+    "num": 628,
+    "slug": "benchmark_selection_and_systems_refs_20260502",
+    "path": "references/628_benchmark_selection_and_systems_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the benchmark-selection gate and systems comparator update, covering ARC-Challenge, OpenBookQA, CommonsenseQA, HellaSwag, C2C, KVComm, KVCOMM, Q-KVComm, KIVI, KVQuant, QJL, TurboQuant, vLLM/PagedAttention, and SGLang boundaries."
   }
 ]

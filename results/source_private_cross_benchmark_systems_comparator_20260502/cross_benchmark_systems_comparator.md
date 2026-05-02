@@ -38,9 +38,13 @@
 | C2C cache-to-cache communication | https://arxiv.org/abs/2510.03215 | projected/fused source KV cache | not_run_native | closest semantic-cache baseline; byte floors are not a native C2C result |
 | KVComm selective KV sharing | https://arxiv.org/abs/2510.03346 | selected source KV layers/pairs | not_run_native | 30% layer fraction is used only as an assumption row unless rerun locally |
 | KVCOMM cross-context KV-cache communication | https://arxiv.org/abs/2510.12872 | aligned/reused KV caches for multi-agent prefill | not_run_native | systems neighbor, not same threat model as source-private public packets |
+| Q-KVComm adaptive compressed KV communication | https://arxiv.org/abs/2512.17914 | adaptive layer-wise quantized source KV cache | not_run_native | compressed KV communication baseline; still exposes source-derived KV state |
+| KIVI asymmetric 2-bit KV quantization | https://arxiv.org/abs/2402.02750 | same-model quantized KV cache | byte_floor_only | long-context KV compression baseline, not source-private communication |
+| KVQuant sub-4-bit KV quantization | https://arxiv.org/abs/2401.18079 | same-model low-bit KV cache | byte_floor_only | state compression baseline; not a packetized cross-model evidence protocol |
 | QJL 1-bit KV sketch | https://arxiv.org/abs/2406.03482 | 1-bit JL/sign sketch of KV/cache state | byte_floor_only | mathematical byte-floor comparator, not a defeated native baseline |
 | TurboQuant online vector quantization | https://arxiv.org/abs/2504.19874 | low-bit vector/KV state | byte_floor_only | quantization inspiration and byte-floor proxy only |
 | vLLM/PagedAttention | https://arxiv.org/abs/2309.06180 | paged KV-cache serving substrate | pending_nvidia | native serving target; Mac rows cannot close this gate |
+| SGLang/RadixAttention serving | https://arxiv.org/abs/2312.07104 | serving runtime with KV reuse and scheduling | pending_nvidia | native serving target; Mac rows cannot close this gate |
 
 ## Claim Boundary
 

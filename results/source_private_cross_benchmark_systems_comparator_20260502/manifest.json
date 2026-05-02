@@ -1,8 +1,8 @@
 {
   "artifact_sha256": {
     "cross_benchmark_systems_comparator.csv": "d14b1ca3441659d13fc30a2101515ef3326e5490f79486afcb6ad587a77da2d8",
-    "cross_benchmark_systems_comparator.json": "2679257b5be7531aeb3fb99ad722a28d6253f80d3a886993c2d764bfb54b9dcf",
-    "cross_benchmark_systems_comparator.md": "c4b44de1b94b35b0cc77d007d98d0cb89e2075f7b3a8f515876947e38bb829e7"
+    "cross_benchmark_systems_comparator.json": "ac0b85e52eb7e4b5178186d3faec0190621843e23ca0df062c7f0cb3c99cb3c4",
+    "cross_benchmark_systems_comparator.md": "5f21b24526f93ca6193562feef46dccdc8b73954ed8231f47f3d6a2dc2a6ce6f"
   },
   "artifacts": [
     "cross_benchmark_systems_comparator.json",
