@@ -18531,3 +18531,36 @@ sparse/crosscoder dictionary or learned query-bottleneck receiver rather than
 tuning prototype thresholds. Systems boundary remains `2B` raw / `5B` framed
 packets, no source text, source KV, raw hidden vectors, or raw score vectors,
 and Mac-local selector accounting only.
+
+HellaSwag sparse-query receiver: added
+`scripts/build_source_private_hellaswag_sparse_query_receiver.py`, test
+`tests/test_build_source_private_hellaswag_sparse_query_receiver.py`, memo
+`paper/source_private_hellaswag_sparse_query_receiver_20260502.md`,
+references `references/613_hellaswag_sparse_query_receiver_refs_20260502.md`,
+and artifact
+`results/source_private_hellaswag_sparse_query_receiver_20260502/`. Outcome:
+this train-only full-hidden low-rank query receiver does not promote. The
+script reuses the official-train calibration surface (`1487` rows after
+dropping `5` duplicate rows and `44` out-of-bag overlap rows, split
+`1115/372`) and builds a `5376`-dimension Qwen hidden-residual design from
+candidate-minus-packet, top1-minus-packet, alternative-minus-top1,
+top1-minus-top2, alternative-minus-mean, and packet-minus-mean contrasts. A
+supervised-plus-randomized-PCA query basis is fitted only on official-train
+fit rows, then benefit-ridge receivers sweep Qwen target-score, mean-zscore,
+and hybrid alternatives using score-only or score-plus-hidden-confidence
+features. The predeclared default Qwen mean-zscore sparse receiver reaches
+`0.617407` versus TinyLlama packet-only `0.619199` (delta `-0.001792`, CI95
+low `-0.003784`) and fails block stability. The best diagnostic scout row
+reaches `0.619797` versus `0.619199` (delta `+0.000597`, CI95 low
+`-0.000996`), far below the `+0.005` receiver-improvement bar. Random-query
+and hidden-row-shuffle controls match the best scout (`+0.000597`), while
+label permutation falls to `-0.016232`. Interpretation: scalar
+confidence/ridge/kNN, local prototypes, and low-rank full-hidden sparse
+queries are now saturated on this HellaSwag calibration surface. The
+Tiny-or-Qwen-hybrid oracle remains `0.686815`, so headroom is real, but the
+next exact positive branch should change the information structure by learning
+a new source packet/code, expanding train-only calibration, or using a true
+joint source/receiver connector rather than tuning receiver selectors harder.
+Systems accounting remains Mac-local only: `2B` raw / `5B` framed packets,
+`20084B` raw or `50210B` framed across full validation, no source text/KV/raw
+hidden/raw score exposure, and no native GPU serving claim.
