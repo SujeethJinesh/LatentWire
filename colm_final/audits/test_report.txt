@@ -13,7 +13,7 @@ PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python -m pytest -p no:cacheprovider 
 Result:
 
 ```text
-1324 passed in 145.02s (0:02:25)
+1328 passed in 146.19s (0:02:26)
 ```
 
 Two brittle toy-test assertions were corrected before this final run:
@@ -56,4 +56,31 @@ Final local recheck after citation and wording cleanup:
 
 ```text
 16 passed in 5.55s
+```
+
+Final targeted suite after source-index audit integration:
+
+```text
+20 passed in 1.12s
+```
+
+Bundle-local final targeted suite after source-index audit integration:
+
+```text
+20 passed in 1.87s
+```
+
+Acceptance baseline audit unit tests:
+
+Command:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python -m pytest -p no:cacheprovider \
+  tests/test_build_colm_acceptance_baseline_audit.py -q
+```
+
+Result:
+
+```text
+4 passed in 0.12s
 ```

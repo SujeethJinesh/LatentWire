@@ -13,10 +13,12 @@ tests, ablations, and frozen result artifacts in `colm_final`.
 |---|---|---|---|
 | ARC-Challenge 8-byte packet reaches 0.344 over 10 seeds on 1172 test examples | `evidence/results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502_budget8_10seed_b2000/arc_challenge_fourier_anchor_syndrome_gate.md` | Supported | Reports packet 0.344, target 0.265, text 0.300, min CI95 lower lift +0.038, pass 10/10. |
 | ARC source-choice accuracy is 0.346 and packet follows source choice at about 0.995 | Same ARC artifact plus `matched_predictions.jsonl` | Supported | This is now stated as a central claim boundary: the current positive mostly transports source-selected candidates. |
+| Explicit ARC source-index baseline reaches 0.346 and is not beaten by the packet | `evidence/results/source_private_colm_acceptance_baselines_20260502/colm_acceptance_baseline_audit.md` | Supported | Packet-source paired CI95 lower bound is -0.008. This is now in the main table, not hidden in limitations. |
 | ARC destructive controls fail in 0/10 seeds | Same ARC artifact and `per_variant_seed_metrics.csv` | Supported | Anchor-ID shuffle, anchor-value shuffle, and spectral-bin permutation all fail 0/10. |
 | Random shared anchors work nearly as well as named anchors | Same ARC artifact | Supported with caveat | The paper correctly frames this as shared-coordinate evidence, not semantic-anchor evidence. |
 | OpenBookQA 3-byte packet reaches 0.378 over 5 seeds on 500 test examples | `evidence/results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/arc_challenge_seed_stability.md` | Supported | Reports 0.378-0.380, target 0.276, text 0.350, min CI95 lower lift +0.038. |
-| OpenBookQA separate source-choice accuracy | Same OpenBookQA artifact | Not claimed in current paper | The frozen artifact supports packet/target/text/control rows but does not expose a separate source-choice accuracy field; the paper now reports `--` for this table cell. |
+| Explicit OpenBookQA source-index baseline reaches 0.378 and is not beaten by the packet | `evidence/results/source_private_colm_acceptance_baselines_20260502/colm_acceptance_baseline_audit.md` | Supported | Packet-source paired CI95 lower bound is -0.006; packet-text mean gap is +0.028 with lower bound +0.000. |
+| Packet payload rate curve over 2/3/4/8 bytes | `evidence/results/source_private_colm_acceptance_baselines_20260502/rate_curve.csv` and `paper/figures/rate_curve.pdf` | Supported | The 1-byte source-index row is reported separately because the packet encoder has a 2-byte payload minimum. |
 | Phi-3 cross-family replacement fails | `evidence/results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu_budget8_10seed_b2000/source_family_cache_falsification.md` | Supported | Reports pass gate false; full test packet 0.244 vs target 0.265. |
 | Failure decomposition shows packet follows source choice at about 0.996-0.997 | `evidence/results/source_private_arc_cross_family_failure_decomposition_20260502/arc_cross_family_failure_decomposition.md` | Supported | This is a major reviewer caveat: packet transfer currently resembles source-choice-preserving candidate evidence. |
 | Cached candidate/hidden-query connector repairs fail | `evidence/results/source_private_arc_challenge_candidate_syndrome_connector_gate_20260502` and `evidence/results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement` | Supported | Paper states these are negative cached-artifact diagnostics, not completed learned connectors. |
@@ -27,17 +29,23 @@ tests, ablations, and frozen result artifacts in `colm_final`.
 The full repository suite and targeted COLM tests passed:
 
 ```text
-1324 passed in 145.02s
+1328 passed in 146.19s
 16 passed in 18.84s
+4 passed in 0.12s
 ```
 
 The full command and output are in `audits/test_report.txt`.
 
 ## Gaps That Remain
 
-- No direct source-choice/index baseline is in the paper yet.
+- The strict positive-beyond-source-index gate fails; the paper now scopes the
+  positive as source-candidate transfer rather than selected-candidate
+  compression.
 - No native GPU serving measurements are claimed or provided.
 - No strict cross-family positive has passed.
+- Calibrated source-score-vector quantization is not available for the headline
+  frozen caches; the packaged audit includes source-index, source-label,
+  source-rank-code, entropy-matched random-index, and same-budget text.
 - The appendix artifact list is useful but compact. Full commands and artifact
   hashes are in `audits/reproducibility_report.md`; model snapshot IDs and a
   normalized JSON rerun-diff mode remain useful additions.

@@ -4,11 +4,16 @@ Date: 2026-05-02
 
 ## Status
 
-- Frozen artifact hash validation: passed, 32/32 manifest entries matched.
-- Repository test suite: passed, `1324 passed in 145.02s`.
+- Frozen artifact hash validation: passed, 40/40 result-manifest entries
+  matched; the separate evidence-input manifest is also packaged.
+- Repository test suite: passed, `1328 passed in 146.19s`.
 - Targeted COLM test subset from repo root: passed, `16 passed in 18.84s`.
+- Acceptance baseline audit unit tests: passed, `4 passed in 0.12s`.
 - Targeted COLM test subset from `colm_final/code`: passed, `16 passed in 5.55s`
   in the final local recheck.
+- Final integrated targeted suite including the acceptance audit: passed,
+  `20 passed in 1.12s` from repo root and `20 passed in 1.87s` from
+  `colm_final/code`.
 - LaTeX build from `colm_final/paper`: passed, 9-page PDF, no unresolved
   references/citations and no overfull boxes.
 
@@ -33,6 +38,13 @@ PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python -m pytest -p no:cacheprovider 
   tests/test_build_source_private_systems_boundary_figure_table.py \
   tests/test_build_source_private_arc_challenge_candidate_syndrome_connector_gate.py \
   tests/test_build_source_private_arc_challenge_hidden_query_mlp_cache_connector_gate.py -q
+```
+
+Acceptance baseline audit tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python -m pytest -p no:cacheprovider \
+  tests/test_build_colm_acceptance_baseline_audit.py -q
 ```
 
 Bundle-local targeted COLM tests:
@@ -159,6 +171,16 @@ PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python \
   --output-dir .debug/repro_decomp
 ```
 
+Source-index/rate-curve acceptance audit:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python \
+  scripts/build_colm_acceptance_baseline_audit.py \
+  --output-dir results/source_private_colm_acceptance_baselines_20260502 \
+  --bootstrap-samples 1000 \
+  --rate-budgets 2,3,4,8
+```
+
 ## Rerun Results This Pass
 
 - OpenBookQA rerun completed: packet mean `0.3784`, target `0.276`, same-budget
@@ -167,6 +189,9 @@ PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python \
   one-token 1-bit-per-KV-element floor `768B`, ratio `69.818x`.
 - Failure decomposition rerun completed: selected next gate
   `common_feature_connector_with_stronger_source`.
+- Source-index/rate-curve audit completed: scoped COLM gate true, strict
+  positive-beyond-source-index gate false, ARC packet-source CI95 low `-0.008`,
+  OpenBookQA packet-source CI95 low `-0.006`.
 - Exact ARC and Phi-3 10-seed/2000-bootstrap reruns were started but stopped
   after more than 30 minutes without output files; frozen artifact hashes are
   therefore the authoritative verification for those rows in this pass.
@@ -175,7 +200,9 @@ PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python \
 
 | Artifact | SHA256 |
 |---|---|
-| `paper/latentwire_colm2026.pdf` | `8e34f4513de4f33eb27cf8a04348661914246f66a422ab95ef1ee90d5de6d7f0` |
+| `paper/latentwire_colm2026.pdf` | `144761c8d2541dc7a85fdc6b22b2a6bc415bd9164c4d626746dc5181fa7bc9f6` |
+| Source-index acceptance audit JSON | `5edb4c560dd4efa0ca0766b92a3432d31c27ab3c6285d8b52d739d85c63bdf72` |
+| Evidence input manifest JSON | `7f863341ad874b7e721ef300fe74fa18465b88ba5fe6f868e86f8073c7a7c208` |
 | ARC headline JSON | `45b103c9330e4b512c18d6572d2915787a7caeb9c3aa8528e045a06292146f17` |
 | ARC matched predictions | `9ab7b9da8a377c59bd206906b02fb26baecce1df433925aa1c34f172ac124c33` |
 | OpenBookQA headline JSON | `999fefa6cebb762eebbb78957969fc2832781ec79734aefdaa1746227dceaec6` |

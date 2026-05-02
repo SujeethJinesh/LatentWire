@@ -9,23 +9,26 @@ audit reports; full reruns still assume the repository root and the local
 
 ## Current Readiness
 
-- COLM workshop: plausible but borderline. The package is buildable,
-  citation-audited, test-audited, and evidence-audited, but the story must stay narrow.
+- COLM workshop: plausible but still borderline. The package is buildable,
+  citation-audited, test-audited, source-index-audited, and evidence-audited,
+  but the story must stay narrow.
 - ICLR full paper: not ready. The positive method is still same-family and the
   systems result is byte/exposure accounting, not native serving throughput.
 - Current paper story: fixed-byte, source-private packets transfer the source
   model's selected candidate under a tight byte budget on ARC-Challenge and
   OpenBookQA; strict cross-family Phi-3 replacement and cached learned
   connector repairs fail.
-- Exact blocker: reviewers may interpret the result as source-choice/index
-  transfer. A direct source-choice/index baseline and a stronger
-  receiver-family or cross-family positive are still needed for ICLR.
+- Exact blocker: the direct source-index/source-rank audit shows the current
+  packet does not beat explicit selected-candidate communication. A stronger
+  receiver-family, calibrated source-score, or cross-family positive is still
+  needed for ICLR.
 
 ## Folder Layout
 
 - `paper/`: submission TeX, BibTeX, compiled PDF, COLM style files, and figures.
 - `paper/template/`: the unzipped COLM 2026 template files kept for style audit.
 - `evidence/results/`: frozen result directories used by the paper.
+- `evidence/inputs/`: small input splits/caches needed for the acceptance audit.
 - `evidence/memos/`: readiness, gate-tree, and connector memos.
 - `evidence/excluded_diagnostics/`: relevant late diagnostics that inform
   reviewer risk but are not claimed in the current PDF.
@@ -46,7 +49,8 @@ From the repository root:
   tests/test_analyze_source_private_arc_cross_family_failure_decomposition.py \
   tests/test_build_source_private_systems_boundary_figure_table.py \
   tests/test_build_source_private_arc_challenge_candidate_syndrome_connector_gate.py \
-  tests/test_build_source_private_arc_challenge_hidden_query_mlp_cache_connector_gate.py
+  tests/test_build_source_private_arc_challenge_hidden_query_mlp_cache_connector_gate.py \
+  tests/test_build_colm_acceptance_baseline_audit.py
 ```
 
 From `colm_final/paper`:
@@ -70,9 +74,9 @@ Expected status is recorded in `audits/test_report.txt`,
 - Treat the systems result as object-size and exposure accounting only.
 - Treat the QJL-related systems row as an internal 1-bit-per-KV-element
   accounting floor, not a native QJL performance comparison.
-- The next experiment to de-risk reviews is a direct source-choice/index
-  baseline plus a receiver-family gate that must beat packet-only and
-  target-only with paired confidence intervals.
+- The next experiment to de-risk reviews is a receiver-family or calibrated
+  source-score gate that must beat source-index/source-rank, same-budget text,
+  target-only, and destructive controls with paired confidence intervals.
 - HellaSwag diagnostics are packaged as excluded diagnostics. They should not be
   cited as current PDF evidence unless the paper is revised to include and audit
   those rows.

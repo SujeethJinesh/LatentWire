@@ -49,9 +49,9 @@ Only after that:
 
 ## Public Comparators To Keep Visible
 
-- [C2C: Scaling Cross-Model Collaboration via Conditional Latent Space Fusion](https://arxiv.org/abs/2510.03215)
+- [C2C: Cache-to-Cache: Direct Semantic Communication Between Large Language Models](https://openreview.net/forum?id=LeatkxrBCi)
   Closest direct external method baseline for cache-to-cache communication.
-- [KVComm: Cache-Efficient Collaborative Inference of Large Language Models](https://arxiv.org/abs/2510.03346)
+- [KVComm: Enabling Efficient LLM Communication through Selective KV Sharing](https://openreview.net/forum?id=F7rUng23nw)
   Strong communication-efficiency comparator for KV-style transport claims.
 - [Latent Space Communication via K-V Cache Alignment](https://arxiv.org/abs/2601.06123)
   Strong public comparator for direct latent-space KV alignment across model

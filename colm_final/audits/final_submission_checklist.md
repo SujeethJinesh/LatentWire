@@ -19,15 +19,20 @@ Date: 2026-05-02
   not silently mixed into the current PDF claim set.
 - [x] Source-choice preservation is surfaced in the paper instead of hidden as
   an appendix caveat.
+- [x] Explicit source-index/source-rank audit is packaged and included in the
+  main PDF table.
+- [x] Packet payload rate curve is packaged and included as a PDF figure.
 
 ## Not Yet Ready / Must Be Framed Carefully
 
 - [ ] No strict cross-family positive is available.
 - [ ] No native systems throughput row is available.
-- [ ] No direct source-choice/index baseline is included.
+- [ ] The strict positive-beyond-source-index gate fails; this is acceptable
+  only under the current scoped COLM framing.
 - [ ] Full command/hash provenance is in `audits/reproducibility_report.md`, but
   the PDF appendix only summarizes it compactly.
-- [ ] Same-byte text is not a complete compression baseline suite.
+- [ ] Calibrated source-score-vector quantization is not available for the
+  headline frozen caches.
 
 ## Submission Decision
 

@@ -1,0 +1,51 @@
+{
+  "created": "2026-05-02",
+  "files": [
+    {
+      "bytes": 646548,
+      "path": "arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl",
+      "sha256": "0bf801a160c95fc40c4818946de790ab13d128ce072523b39b00af375f0f6869"
+    },
+    {
+      "bytes": 609629,
+      "path": "arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_train.jsonl",
+      "sha256": "4f91dd7edee080ac95bf7cc7f21c2c95bb0ab570be3c8075ce98882ead05a879"
+    },
+    {
+      "bytes": 167453,
+      "path": "arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+      "sha256": "0a5ee608c194ec6a95ca1e9ce7ff33c1b8e908cea086c9734af619294bcefaeb"
+    },
+    {
+      "bytes": 449402,
+      "path": "arc_challenge_source_caches_20260501/test_source_prediction_cache.jsonl",
+      "sha256": "ca80c37108c1c31d01f2bedc218883420ea4082769dc17c3de2239505d89dc6a"
+    },
+    {
+      "bytes": 114678,
+      "path": "arc_challenge_source_caches_20260501/validation_source_prediction_cache.jsonl",
+      "sha256": "868ec5ae7314d7a530acdbdaa0eb84bd53dde4c6bfb0325a7e9876b8274c225b"
+    },
+    {
+      "bytes": 4543493,
+      "path": "openbookqa_anchor_predictions_20260501/predictions.jsonl",
+      "sha256": "7d8d823dd2b1a25df2b6f5329183b6409e326177b58a28aa3511c81037b0c7c2"
+    },
+    {
+      "bytes": 204151,
+      "path": "openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl",
+      "sha256": "fc5cd8eff2c0984b49d2c1e1d333622109a9289bd97892474a1f0ce6dc4580e0"
+    },
+    {
+      "bytes": 2019518,
+      "path": "openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl",
+      "sha256": "f84e9d684587e1ed7a52ee8b8a2751149904c1184fd3d3c15489df7eb806d905"
+    },
+    {
+      "bytes": 210820,
+      "path": "openbookqa_bridge_contract_20260501/official_splits/openbookqa_validation.jsonl",
+      "sha256": "4b96e1ab806522ad7bb9c1482a294e004a3fed0c6eb1c8de499fcb3e1576cd6e"
+    }
+  ],
+  "purpose": "Inputs needed to rerun COLM acceptance/source-index audits from the repository workspace."
+}

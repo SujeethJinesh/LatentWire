@@ -6,14 +6,17 @@ Date: 2026-05-02
 
 - Current paper readiness: COLM is close after this draft; ICLR remains blocked by cross-family and native systems evidence.
 - Current story: fixed-byte source-private same-family packets mostly preserve the source-selected candidate and improve ARC-Challenge and OpenBookQA receivers while strict cross-family and learned cached repairs fail.
-- Exact gap: before submission, do one human author pass for emphasis, anonymity, and final venue-specific metadata; the main scientific gap is a direct source-choice/index baseline.
+- Exact gap: before submission, do one human author pass for emphasis,
+  anonymity, and final venue-specific metadata; the main scientific gap is now
+  positive transfer beyond explicit source-index/source-rank communication.
 
 ## Template and build review
 
 - Used the provided COLM 2026 zip template under `colm/2026/`.
 - Draft source: `latentwire_colm2026.tex`.
 - Bibliography: `latentwire_colm2026.bib`.
-- Figures: `figures/protocol_diagram.pdf`, `figures/accuracy_overview.pdf`, `figures/systems_boundary.pdf`.
+- Figures: `figures/protocol_diagram.pdf`, `figures/accuracy_overview.pdf`,
+  `figures/rate_curve.pdf`, `figures/systems_boundary.pdf`.
 - Compiled with `latexmk -pdf -interaction=nonstopmode -halt-on-error`.
 - Recompiled after regenerating figures with opaque white backgrounds to avoid black-page rendering under Ghostscript.
 - Final checked build: `latentwire_colm2026.pdf`, 9 pages including references and appendix.
@@ -26,7 +29,12 @@ Date: 2026-05-02
 Safe main claims:
 
 - ARC-Challenge test: 8B payload / 11B framed packet, 10/10 seeds, matched 0.344, target 0.265, same-budget text 0.300, minimum paired CI95 lower bound vs target +0.038.
-- OpenBookQA test: 3B payload / 6B framed packet, 5/5 seeds, matched 0.378, target 0.276, same-budget text 0.350, minimum paired CI95 lower bound vs target +0.038.
+- OpenBookQA test: 3B payload / 6B framed packet, 5/5 seeds, matched 0.378, target 0.276, same-budget text 0.350, minimum paired CI95 lower bound vs target +0.046 in the acceptance audit.
+- Explicit source-index audit: ARC source-index 0.346 vs packet 0.344
+  with packet-source CI95 lower bound -0.008; OpenBookQA source-index 0.378
+  vs packet 0.378 with packet-source CI95 lower bound -0.006.
+- Packet rate curve: 2/3/4/8B payload rows are included; 1B is reported as
+  the source-index baseline because the packet encoder has a 2B payload minimum.
 - ARC destructive coordinate controls fail on test in 0/10 seeds.
 - Phi-3 strict cross-family replacement fails; Qwen-disagreement packet is 0.200 vs Qwen-substituted packet 0.340.
 - Systems artifact supports byte/exposure accounting only: 6-11 framed packet bytes versus a 768B one-token 1-bit-per-KV-element accounting floor; no native GPU speed claim.
@@ -54,7 +62,10 @@ Primary/official citation pages were checked for the works used in the draft:
 ## Remaining submission risks
 
 - The paper is credible as a conservative COLM submission, but not as an ICLR full-paper claim.
-- Reviewers may ask whether the same-family positive is too narrow or simply source-choice transfer. The answer in the draft is to frame the method as a positive packet protocol plus falsification ladder, not general latent communication.
+- Reviewers may ask whether the same-family positive is too narrow or simply
+  source-choice transfer. The answer in the draft is now explicit: it is
+  source-candidate transfer, and the strict positive-beyond-source-index gate
+  fails.
 - Native systems rows are explicitly pending. A systems-focused reviewer may want NVIDIA serving measurements; this is the largest missing item for a stronger later version.
 - The Qwen2.5-1.5B diagnostic is encouraging but validation-incomplete; it is correctly kept as diagnostic rather than headline.
 

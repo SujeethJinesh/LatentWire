@@ -55,3 +55,5 @@ throughput. The paper text explicitly avoids those claims.
 - Remaining scientific risk is not citation metadata; it is claim scope. The
   paper now explicitly says the packet mostly preserves source choice and does
   not beat explicit source-index communication.
+- A stale internal comparator memo (`references/442_benchmark_pairing_uncertainty_refs.md`)
+  was corrected to use the OpenReview titles for C2C and KVComm.

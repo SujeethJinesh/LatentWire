@@ -30,7 +30,7 @@
 \maketitle
 
 \begin{abstract}
-Multi-model language systems usually communicate by emitting text or by sharing internal state such as KV caches. Text is portable but slow and lossy; cache sharing is information-rich but exposes thousands of bytes of model state per token and requires architecture-specific machinery. We study a narrower question: can a frozen source model send a fixed-byte, source-private candidate packet that improves a frozen receiver on public multiple-choice reasoning tasks, without sending source text, hidden states, KV cache, source logits, or gold labels? We present \method, a public-coordinate packet protocol in which source and receiver agree on an anchor/spectral basis over candidate answers, the source emits a tiny signed packet, and the receiver decodes the packet against its own public side information. On \arc{} test, an 8-byte packet reaches 0.344 accuracy across 10 seeds, above target-only 0.265 and same-budget structured text 0.300, with destructive coordinate controls failing in all 10 seeds; the source-choice accuracy is 0.346, so the positive should be read as compact source-candidate transfer rather than evidence synthesis beyond the source. On \obqa{} test, a 3-byte packet reaches 0.378 across 5 seeds, above target-only 0.276 and same-budget text 0.350. We also report strict negative evidence: a Phi-3 cross-family source fails the same gate, and learned cache/score connectors on available TinyLlama/Qwen cached artifacts do not repair the broader cross-family gap. The contribution is therefore not a universal latent language claim and does not beat explicit source-index communication. It is a reproducible fixed-byte source-private transfer result, a falsification protocol for cross-family claims, and a systems accounting boundary showing that task packets are 69.8x smaller than even a one-token 1-bit-per-KV-element accounting floor.
+Multi-model language systems usually communicate by emitting text or by sharing internal state such as KV caches. Text is portable but slow and lossy; cache sharing is information-rich but exposes thousands of bytes of model state per token and requires architecture-specific machinery. We study a narrower question: can a frozen source model send a fixed-byte, source-private candidate packet that improves a frozen receiver on public multiple-choice reasoning tasks, without sending source text, hidden states, KV cache, source logits, or gold labels? We present \method, a public-coordinate packet protocol in which source and receiver agree on an anchor/spectral basis over candidate answers, the source emits a tiny signed packet, and the receiver decodes the packet against its own public side information. On \arc{} test, an 8-byte packet reaches 0.344 accuracy across 10 seeds, above target-only 0.265 and same-budget structured text 0.300; on \obqa{} test, a 3-byte packet reaches 0.378 across 5 seeds, above target-only 0.276 and same-budget text 0.350. The decisive audit is also negative: explicit source-index communication reaches 0.346 on \arc{} and 0.378 on \obqa{}, with packet-minus-source-index paired lower bounds of -0.008 and -0.006. The positive is therefore compact source-candidate transfer, not evidence synthesis beyond the source or a method that beats source-index communication. We also report that a Phi-3 cross-family source fails the same gate, and learned cache/score connectors on available TinyLlama/Qwen cached artifacts do not repair that cached-artifact gap. The contribution is a reproducible fixed-byte source-private transfer result, a falsification protocol for cross-family claims, and a systems accounting boundary showing that task packets are 69.8x smaller than a one-token 1-bit-per-KV-element accounting floor.
 \end{abstract}
 
 \section{Introduction}
@@ -45,7 +45,8 @@ The contributions are:
 \begin{itemize}
 \item A fixed-byte, source-private packet protocol for multiple-choice candidate transfer with no source text, hidden vector, KV cache, source-logit, or gold-label exposure.
 \item A public-coordinate anchor/spectral implementation that is positive on \arc{} and \obqa{} under seed repeats, paired uncertainty, same-budget text controls, and destructive coordinate mismatch controls.
-\item A source-choice and falsification audit showing that the current positive is mostly source-choice preserving and same-family/source-cache specific: Phi-3 cross-family transfer and cached learned repair connectors fail.
+\item An explicit source-index/source-rank audit showing that the current positive is mostly source-choice preserving and should be framed as source-candidate transfer, not compression beyond a selected-candidate code.
+\item A falsification audit showing that the current positive is same-family/source-cache specific: Phi-3 cross-family transfer and cached learned repair connectors fail.
 \item A systems accounting artifact comparing packet bytes and exposure classes against KV/cache communication and KV quantization floors, while explicitly separating byte accounting from native serving-speed claims.
 \end{itemize}
 
@@ -68,7 +69,7 @@ The receiver predicts
 \]
 where $D_R$ may use public task features and the receiver's own state, but may not access source text, source hidden states, source KV cache, source logits, or answer labels.
 
-We evaluate a packet only if it beats three surfaces: target-only $D_R(x,\emptyset)$, a same-budget structured text control, and destructive controls that preserve superficial packet size but destroy the intended source-receiver relation. We report seed repeats and paired bootstrap lower bounds, and we separately report source-choice accuracy where directly audited. This matters because a packet can be useful while mostly preserving the source's selected candidate; such a result is source-private transfer, not proof of a shared latent language or of reasoning beyond the source endpoint.
+We evaluate a packet only if it beats three surfaces: target-only $D_R(x,\emptyset)$, a same-budget structured text control, and destructive controls that preserve superficial packet size but destroy the intended source-receiver relation. We also audit explicit source-index, source-label-text, source-rank-code, and entropy-matched random-index baselines. We report seed repeats and paired bootstrap lower bounds. This matters because a packet can be useful while mostly preserving the source's selected candidate; such a result is source-private transfer, not proof of a shared latent language, reasoning beyond the source endpoint, or compression beyond a one-byte selected-candidate channel.
 
 \section{Public-coordinate packets}
 
@@ -80,21 +81,21 @@ The design is related to relative representations~\citep{Moschella2023Relative}:
 
 \section{Main results}
 
-Table~\ref{tab:main} and Figure~\ref{fig:accuracy} summarize the current positive evidence. The \arc{} row uses 10 packet/control seeds and 2000 paired bootstrap samples per seed on 1172 test examples. The \obqa{} row uses 5 seeds on the 500-example test slice.
+Table~\ref{tab:main} and Figure~\ref{fig:accuracy} summarize the current positive evidence and the source-index audit. The \arc{} row uses 10 packet/control seeds and 2000 paired bootstrap samples per seed on 1172 test examples. The \obqa{} row uses 5 seeds on the 500-example test slice. The source-index audit is generated by reconstructing the same packet rows and adding explicit source-index, source-label-text, source-rank-code, and entropy-matched random-index baselines.
 
 \begin{table}[t]
   \centering
   \small
   \setlength{\tabcolsep}{3.8pt}
-\begin{tabular}{llrrrrrrr}
+\begin{tabular}{llrrrrrrrr}
     \toprule
-    Benchmark & split & bytes & seeds & source & packet & target & text & CI low \\
+    Benchmark & split & bytes & seeds & src & packet & target & text & pkt-src & pkt-text \\
     \midrule
-    \arc{} & test, 1172 & 8/11 & 10/10 & 0.346 & 0.344 & 0.265 & 0.300 & +0.038 \\
-    \obqa{} & test, 500 & 3/6 & 5/5 & -- & 0.378 & 0.276 & 0.350 & +0.038 \\
+    \arc{} & test, 1172 & 8/11 & 10 & 0.346 & 0.344 & 0.265 & 0.300 & -0.008 & +0.025 \\
+    \obqa{} & test, 500 & 3/6 & 5 & 0.378 & 0.378 & 0.276 & 0.350 & -0.006 & +0.000 \\
     \bottomrule
   \end{tabular}
-  \caption{Main positive rows. ``Bytes'' reports payload/framed bytes. ``Source'' is the directly audited, answer-key-forbidden source-choice accuracy before packet decoding; ``--'' means no separate source-choice row is recorded in the frozen artifact. ``Text'' is the same-budget structured text control. ``CI low'' is the minimum paired-bootstrap 95\% lower bound for packet minus target-only.}
+  \caption{Main audit rows. ``Bytes'' reports payload/framed bytes. ``Src'' is explicit answer-key-forbidden source-index accuracy before packet decoding. ``Text'' is the same-budget structured text control. ``Pkt-src'' and ``pkt-text'' are minimum paired-bootstrap 95\% lower bounds for packet minus source-index and packet minus same-budget text. Packet-minus-target lower bounds are +0.038 on \arc{} and +0.046 on \obqa{}.}
   \label{tab:main}
 \end{table}
 
@@ -105,9 +106,16 @@ Table~\ref{tab:main} and Figure~\ref{fig:accuracy} summarize the current positiv
   \label{fig:accuracy}
 \end{figure}
 
-On \arc{}, the matched Fourier/anchor-syndrome packet reaches 0.344 mean test accuracy with minimum seed accuracy 0.342. The answer-key-forbidden source choice itself reaches 0.346, and packet predictions match the source-selected candidate at 0.995 mean rate across seeds. Anchor-ID shuffle, anchor-value shuffle, and spectral-bin permutation controls all fail in 0/10 seeds and collapse near target-only. The random shared-anchor diagnostic passes, which weakens any claim that named anchors are semantically special, but strengthens the claim that a shared public coordinate chart is the relevant mechanism.
+On \arc{}, the matched Fourier/anchor-syndrome packet reaches 0.344 mean test accuracy with minimum seed accuracy 0.342. The answer-key-forbidden source index itself reaches 0.346, and packet predictions match the source-selected candidate at 0.995 mean rate across seeds. Anchor-ID shuffle, anchor-value shuffle, and spectral-bin permutation controls all fail in 0/10 seeds and collapse near target-only. The random shared-anchor diagnostic passes, which weakens any claim that named anchors are semantically special, but strengthens the claim that a shared public coordinate chart is the relevant mechanism.
 
-On \obqa{}, the 3-byte packet reaches 0.378--0.380 across seeds. The frozen artifact does not record a separate source-choice accuracy row, so this task is used as a second packet/control evidence row rather than as a source-choice audit. The largest candidate-derangement control accuracy is 0.212, and the minimum lift over same-budget structured text is +0.028. This second task matters because it reduces the risk that the result is only an \arc{} artifact, though it is still a same-family packet result rather than a cross-family result.
+On \obqa{}, the 3-byte packet reaches 0.378--0.380 across seeds. The explicit source-index baseline reaches 0.378, and the packet follows the source index at 0.999 mean rate. The largest candidate-derangement control accuracy is 0.212, and the packet beats same-budget structured text in mean by +0.028, with a paired lower bound of +0.000. This second task reduces the risk that the result is only an \arc{} artifact, but it confirms the same boundary: the current method is source-choice preserving and same-family, not cross-family latent reasoning.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.86\linewidth]{figures/rate_curve.pdf}
+  \caption{Payload-rate curve from the source-index audit. Packet payloads below 2 bytes are unsupported by the current sparse signed encoder; the 1-byte source-index baseline is reported separately in Table~\ref{tab:main}.}
+  \label{fig:rate}
+\end{figure}
 
 \section{Falsification and failure decomposition}
 
@@ -131,7 +139,7 @@ The most important negative result is the Phi-3 source-family replacement. We ke
   \label{tab:falsification}
 \end{table}
 
-The failure decomposition separates three causes: source endpoint quality, packet corruption, and common-feature mismatch. For Phi-3, packet predictions follow the Phi-3 source choice at 0.997, but the source itself is below the target. For TinyLlama, packet fidelity is also high, but the source-family mismatch causes the disagreement-slice packet to lose to Qwen-substituted packets. For Qwen2.5-1.5B, the source is stronger and the packet is useful on frozen test, but the validation disagreement gate is incomplete. Across these rows, the packet mostly transports the source-selected candidate through the public coordinate basis. The next research gate is therefore not another scalar packet shuffle; it is either an explicit comparison to source-index/score packets or a richer common-feature connector that can beat packet-only source choice.
+The failure decomposition separates three causes: source endpoint quality, packet corruption, and common-feature mismatch. For Phi-3, packet predictions follow the Phi-3 source choice at 0.997, but the source itself is below the target. For TinyLlama, packet fidelity is also high, but the source-family mismatch causes the disagreement-slice packet to lose to Qwen-substituted packets. For Qwen2.5-1.5B, the source is stronger and the packet is useful on frozen test, but the validation disagreement gate is incomplete. Across these rows, the packet mostly transports the source-selected candidate through the public coordinate basis. The source-index audit in Table~\ref{tab:main} closes one obvious reviewer question: the current packet does not beat a direct selected-candidate code. The next research gate is therefore a richer common-feature connector or calibrated source-score packet that can improve beyond packet-only source choice.
 
 We also tested cached learned repairs on the available local artifacts. A candidate-syndrome connector that sees packet and score-shape features reaches 0.288 versus 0.317 for Qwen-substituted packets on frozen TinyLlama/Qwen disagreement rows. A one-hidden-layer MLP over cached TinyLlama hidden/query summaries reaches 0.232, below Qwen-substituted packets, cached Tiny packets, target-only, and same-budget text. These negatives are useful: simple cached score geometry and mean hidden/query summaries do not explain the remaining oracle headroom.
 
@@ -197,6 +205,7 @@ The next exact gate for an ICLR-strength claim is a frozen-endpoint tokenwise co
 \item Cross-family decomposition: \url{colm_final/evidence/results/source_private_arc_cross_family_failure_decomposition_20260502}.
 \item Systems boundary: \url{colm_final/evidence/results/source_private_systems_boundary_figure_table_20260502}.
 \item \obqa{} headline: \url{colm_final/evidence/results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b}.
+\item Source-index audit: \url{colm_final/evidence/results/source_private_colm_acceptance_baselines_20260502}.
 \end{itemize}
 
 \section{Reproducibility summary}
@@ -213,6 +222,7 @@ Row & script & seeds & key settings \\
 \midrule
 \arc{} & Fourier/anchor syndrome gate & 10 & 8B, 2000 bootstraps \\
 \obqa{} & seed-stability gate & 5 & 3B, hashed features, 500 bootstraps \\
+Source-index audit & acceptance baseline audit & 10/5 & 1000 bootstraps, 2/3/4/8B rate curve \\
 Phi-3 & source-family cache falsification & 10 & 8B, cached Phi-3 source \\
 Systems & systems boundary table & -- & byte/exposure accounting only \\
 \bottomrule

@@ -1,0 +1,1563 @@
+{
+  "benchmarks": {
+    "arc_test": {
+      "aggregate": {
+        "entropy_matched_random_index_accuracy_max": 0.27559726962457337,
+        "entropy_matched_random_index_accuracy_mean": 0.2537542662116041,
+        "entropy_matched_random_index_accuracy_min": 0.23720136518771331,
+        "packet_accuracy_max": 0.3455631399317406,
+        "packet_accuracy_mean": 0.3439419795221843,
+        "packet_accuracy_min": 0.34215017064846415,
+        "packet_beats_source_index_all_seeds": false,
+        "packet_follows_source_index_max": 0.9974402730375427,
+        "packet_follows_source_index_mean": 0.995221843003413,
+        "packet_follows_source_index_min": 0.9897610921501706,
+        "packet_ties_or_loses_source_index": true,
+        "packet_vs_best_destructive_ci95_low_min": 0.03668941979522184,
+        "packet_vs_best_destructive_mean": 0.07849829351535836,
+        "packet_vs_entropy_random_index_ci95_low_min": 0.03581484641638225,
+        "packet_vs_entropy_random_index_mean": 0.0901877133105802,
+        "packet_vs_same_budget_text_ci95_low_min": 0.024744027303754267,
+        "packet_vs_same_budget_text_mean": 0.04360068259385665,
+        "packet_vs_source_choice_text_ci95_low_min": -0.007679180887372013,
+        "packet_vs_source_choice_text_mean": -0.0016211604095563137,
+        "packet_vs_source_index_ci95_low_min": -0.007679180887372013,
+        "packet_vs_source_index_mean": -0.0016211604095563137,
+        "packet_vs_source_rank_code_ci95_low_min": -0.007679180887372013,
+        "packet_vs_source_rank_code_mean": -0.0016211604095563137,
+        "packet_vs_target_ci95_low_min": 0.038374573378839594,
+        "packet_vs_target_mean": 0.07858361774744027,
+        "same_budget_text_accuracy_max": 0.3003412969283277,
+        "same_budget_text_accuracy_mean": 0.3003412969283277,
+        "same_budget_text_accuracy_min": 0.3003412969283277,
+        "seed_count": 10,
+        "source_choice_text_accuracy_max": 0.3455631399317406,
+        "source_choice_text_accuracy_mean": 0.3455631399317406,
+        "source_choice_text_accuracy_min": 0.3455631399317406,
+        "source_index_accuracy_max": 0.3455631399317406,
+        "source_index_accuracy_mean": 0.3455631399317406,
+        "source_index_accuracy_min": 0.3455631399317406,
+        "source_rank_code_accuracy_max": 0.3455631399317406,
+        "source_rank_code_accuracy_mean": 0.3455631399317406,
+        "source_rank_code_accuracy_min": 0.3455631399317406,
+        "target_accuracy_max": 0.26535836177474403,
+        "target_accuracy_mean": 0.26535836177474403,
+        "target_accuracy_min": 0.26535836177474403
+      },
+      "benchmark": "ARC-Challenge",
+      "budget_bytes": 8,
+      "framed_bytes": 11,
+      "seed_rows": [
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.2568259385665529,
+          "n": 1172,
+          "packet_accuracy": 0.34215017064846415,
+          "packet_follows_source_index": 0.9965870307167235,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.11264931740614333,
+              "ci95_low": 0.03839590443686007,
+              "mean": 0.07679180887372014
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.12372013651877133,
+              "ci95_low": 0.04948805460750853,
+              "mean": 0.08532423208191127
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.05804180887372012,
+              "ci95_low": 0.024744027303754267,
+              "mean": 0.041808873720136516
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": -0.0008532423208191126,
+              "ci95_low": -0.006825938566552901,
+              "mean": -0.0034129692832764505
+            },
+            "packet_vs_source_index": {
+              "ci95_high": -0.0008532423208191126,
+              "ci95_low": -0.006825938566552901,
+              "mean": -0.0034129692832764505
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": -0.0008532423208191126,
+              "ci95_low": -0.006825938566552901,
+              "mean": -0.0034129692832764505
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11693686006825935,
+              "ci95_low": 0.040955631399317405,
+              "mean": 0.07679180887372014
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 47,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.24146757679180889,
+          "n": 1172,
+          "packet_accuracy": 0.3455631399317406,
+          "packet_follows_source_index": 0.9948805460750854,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.11860068259385666,
+              "ci95_low": 0.041808873720136516,
+              "mean": 0.08020477815699659
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.1416382252559727,
+              "ci95_low": 0.06569965870307168,
+              "mean": 0.10409556313993173
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.062308020477815675,
+              "ci95_low": 0.02813566552901024,
+              "mean": 0.04522184300341297
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.004266211604095563,
+              "ci95_low": -0.004266211604095563,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0034129692832764505,
+              "ci95_low": -0.004266211604095563,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0034129692832764505,
+              "ci95_low": -0.004266211604095563,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11518771331058021,
+              "ci95_low": 0.041808873720136516,
+              "mean": 0.08020477815699659
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 53,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.25170648464163825,
+          "n": 1172,
+          "packet_accuracy": 0.3430034129692833,
+          "packet_follows_source_index": 0.9897610921501706,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.11433447098976109,
+              "ci95_low": 0.04008105802047782,
+              "mean": 0.07764505119453925
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.12800767918088735,
+              "ci95_low": 0.0537542662116041,
+              "mean": 0.09129692832764505
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.059726962457337884,
+              "ci95_low": 0.026450511945392493,
+              "mean": 0.042662116040955635
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.002559726962457338,
+              "ci95_low": -0.007679180887372013,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.002559726962457338,
+              "ci95_low": -0.007679180887372013,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.002559726962457338,
+              "ci95_low": -0.007679180887372013,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11604095563139932,
+              "ci95_low": 0.038374573378839594,
+              "mean": 0.07764505119453925
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 59,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.2525597269624573,
+          "n": 1172,
+          "packet_accuracy": 0.3447098976109215,
+          "packet_follows_source_index": 0.9965870307167235,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.1169155290102389,
+              "ci95_low": 0.04093430034129693,
+              "mean": 0.07935153583617748
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.128839590443686,
+              "ci95_low": 0.05716723549488054,
+              "mean": 0.09215017064846416
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.06313993174061433,
+              "ci95_low": 0.028156996587030716,
+              "mean": 0.04436860068259386
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0017064846416382253,
+              "ci95_low": -0.0034343003412969273,
+              "mean": -0.0008532423208191126
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0017064846416382253,
+              "ci95_low": -0.0034129692832764505,
+              "mean": -0.0008532423208191126
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0017064846416382253,
+              "ci95_low": -0.0034129692832764505,
+              "mean": -0.0008532423208191126
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11689419795221843,
+              "ci95_low": 0.03924914675767918,
+              "mean": 0.07935153583617748
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 61,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.24488054607508533,
+          "n": 1172,
+          "packet_accuracy": 0.3430034129692833,
+          "packet_follows_source_index": 0.9948805460750854,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.11518771331058021,
+              "ci95_low": 0.03668941979522184,
+              "mean": 0.07764505119453925
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.1356655290102389,
+              "ci95_low": 0.05802047781569966,
+              "mean": 0.09812286689419795
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.059726962457337884,
+              "ci95_low": 0.0255759385665529,
+              "mean": 0.042662116040955635
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0008532423208191126,
+              "ci95_low": -0.006825938566552901,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0008532423208191126,
+              "ci95_low": -0.006825938566552901,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0008532423208191126,
+              "ci95_low": -0.006825938566552901,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11350255972696244,
+              "ci95_low": 0.04008105802047782,
+              "mean": 0.07764505119453925
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 67,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.25597269624573377,
+          "n": 1172,
+          "packet_accuracy": 0.3438566552901024,
+          "packet_follows_source_index": 0.9948805460750854,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.11689419795221843,
+              "ci95_low": 0.04178754266211604,
+              "mean": 0.07849829351535836
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.1220136518771331,
+              "ci95_low": 0.05117320819112628,
+              "mean": 0.0878839590443686
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.06143344709897611,
+              "ci95_low": 0.026450511945392493,
+              "mean": 0.043515358361774746
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0017064846416382253,
+              "ci95_low": -0.005119453924914676,
+              "mean": -0.0017064846416382253
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0017064846416382253,
+              "ci95_low": -0.005119453924914676,
+              "mean": -0.0017064846416382253
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0017064846416382253,
+              "ci95_low": -0.005119453924914676,
+              "mean": -0.0017064846416382253
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11604095563139932,
+              "ci95_low": 0.04264078498293516,
+              "mean": 0.07849829351535836
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 71,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.26535836177474403,
+          "n": 1172,
+          "packet_accuracy": 0.3438566552901024,
+          "packet_follows_source_index": 0.9965870307167235,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.11862201365187712,
+              "ci95_low": 0.04093430034129693,
+              "mean": 0.07849829351535836
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.11520904436860067,
+              "ci95_low": 0.03924914675767918,
+              "mean": 0.07849829351535836
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.059726962457337884,
+              "ci95_low": 0.026450511945392493,
+              "mean": 0.043515358361774746
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0017064846416382253,
+              "ci95_low": -0.005119453924914676,
+              "mean": -0.0017064846416382253
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0017064846416382253,
+              "ci95_low": -0.005119453924914676,
+              "mean": -0.0017064846416382253
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0008745733788395711,
+              "ci95_low": -0.005119453924914676,
+              "mean": -0.0017064846416382253
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11435580204778155,
+              "ci95_low": 0.03839590443686007,
+              "mean": 0.07849829351535836
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 73,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.25597269624573377,
+          "n": 1172,
+          "packet_accuracy": 0.3430034129692833,
+          "packet_follows_source_index": 0.9974402730375427,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.11433447098976109,
+              "ci95_low": 0.03924914675767918,
+              "mean": 0.07764505119453925
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.12286689419795221,
+              "ci95_low": 0.050341296928327645,
+              "mean": 0.08703071672354949
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.059726962457337884,
+              "ci95_low": 0.026450511945392493,
+              "mean": 0.042662116040955635
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.005972696245733789,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.005972696245733789,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.005972696245733789,
+              "mean": -0.002559726962457338
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11860068259385666,
+              "ci95_low": 0.04008105802047782,
+              "mean": 0.07764505119453925
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 79,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.26535836177474403,
+          "entropy_matched_random_index_accuracy": 0.27559726962457337,
+          "n": 1172,
+          "packet_accuracy": 0.3455631399317406,
+          "packet_follows_source_index": 0.9957337883959044,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.11774744027303755,
+              "ci95_low": 0.042662116040955635,
+              "mean": 0.08020477815699659
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.10665529010238908,
+              "ci95_low": 0.03581484641638225,
+              "mean": 0.06996587030716724
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.06399317406143344,
+              "ci95_low": 0.02901023890784983,
+              "mean": 0.04522184300341297
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0034129692832764505,
+              "ci95_low": -0.0034129692832764505,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0034129692832764505,
+              "ci95_low": -0.0034129692832764505,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0034129692832764505,
+              "ci95_low": -0.0034129692832764505,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11945392491467577,
+              "ci95_low": 0.04093430034129693,
+              "mean": 0.08020477815699659
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 83,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        },
+        {
+          "best_destructive_control": "random_same_byte_packet",
+          "best_destructive_control_accuracy": 0.26621160409556316,
+          "entropy_matched_random_index_accuracy": 0.23720136518771331,
+          "n": 1172,
+          "packet_accuracy": 0.3447098976109215,
+          "packet_follows_source_index": 0.9948805460750854,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.1169155290102389,
+              "ci95_low": 0.04436860068259386,
+              "mean": 0.07849829351535836
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.1450725255972696,
+              "ci95_low": 0.06909129692832765,
+              "mean": 0.1075085324232082
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.06060153583617745,
+              "ci95_low": 0.026450511945392493,
+              "mean": 0.04436860068259386
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.002559726962457338,
+              "ci95_low": -0.004266211604095563,
+              "mean": -0.0008532423208191126
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.002559726962457338,
+              "ci95_low": -0.005119453924914676,
+              "mean": -0.0008532423208191126
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0034129692832764505,
+              "ci95_low": -0.00428754266211604,
+              "mean": -0.0008532423208191126
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.11689419795221843,
+              "ci95_low": 0.040955631399317405,
+              "mean": 0.07935153583617748
+            }
+          },
+          "same_budget_text_accuracy": 0.3003412969283277,
+          "seed": 89,
+          "source_choice_text_accuracy": 0.3455631399317406,
+          "source_index_accuracy": 0.3455631399317406,
+          "source_rank_code_accuracy": 0.3455631399317406,
+          "target_accuracy": 0.26535836177474403
+        }
+      ],
+      "split": "test"
+    },
+    "arc_validation": {
+      "aggregate": {
+        "entropy_matched_random_index_accuracy_max": 0.27424749163879597,
+        "entropy_matched_random_index_accuracy_mean": 0.24347826086956523,
+        "entropy_matched_random_index_accuracy_min": 0.1939799331103679,
+        "packet_accuracy_max": 0.3879598662207358,
+        "packet_accuracy_mean": 0.38528428093645484,
+        "packet_accuracy_min": 0.38127090301003347,
+        "packet_beats_source_index_all_seeds": false,
+        "packet_follows_source_index_max": 1.0,
+        "packet_follows_source_index_mean": 0.9969899665551839,
+        "packet_follows_source_index_min": 0.9899665551839465,
+        "packet_ties_or_loses_source_index": true,
+        "packet_vs_best_destructive_ci95_low_min": 0.016722408026755852,
+        "packet_vs_best_destructive_mean": 0.1254180602006689,
+        "packet_vs_entropy_random_index_ci95_low_min": 0.030100334448160536,
+        "packet_vs_entropy_random_index_mean": 0.14180602006688964,
+        "packet_vs_same_budget_text_ci95_low_min": 0.006605351170568567,
+        "packet_vs_same_budget_text_mean": 0.050836120401337795,
+        "packet_vs_source_choice_text_ci95_low_min": -0.016722408026755852,
+        "packet_vs_source_choice_text_mean": -0.0026755852842809363,
+        "packet_vs_source_index_ci95_low_min": -0.016722408026755852,
+        "packet_vs_source_index_mean": -0.0026755852842809363,
+        "packet_vs_source_rank_code_ci95_low_min": -0.016722408026755852,
+        "packet_vs_source_rank_code_mean": -0.0026755852842809363,
+        "packet_vs_target_ci95_low_min": 0.06354515050167224,
+        "packet_vs_target_mean": 0.14113712374581938,
+        "same_budget_text_accuracy_max": 0.33444816053511706,
+        "same_budget_text_accuracy_mean": 0.33444816053511706,
+        "same_budget_text_accuracy_min": 0.33444816053511706,
+        "seed_count": 10,
+        "source_choice_text_accuracy_max": 0.3879598662207358,
+        "source_choice_text_accuracy_mean": 0.3879598662207358,
+        "source_choice_text_accuracy_min": 0.3879598662207358,
+        "source_index_accuracy_max": 0.3879598662207358,
+        "source_index_accuracy_mean": 0.3879598662207358,
+        "source_index_accuracy_min": 0.3879598662207358,
+        "source_rank_code_accuracy_max": 0.3879598662207358,
+        "source_rank_code_accuracy_mean": 0.3879598662207358,
+        "source_rank_code_accuracy_min": 0.3879598662207358,
+        "target_accuracy_max": 0.24414715719063546,
+        "target_accuracy_mean": 0.24414715719063546,
+        "target_accuracy_min": 0.24414715719063546
+      },
+      "benchmark": "ARC-Challenge",
+      "budget_bytes": 8,
+      "framed_bytes": 11,
+      "seed_rows": [
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.24414715719063546,
+          "entropy_matched_random_index_accuracy": 0.24749163879598662,
+          "n": 299,
+          "packet_accuracy": 0.38461538461538464,
+          "packet_follows_source_index": 0.9966555183946488,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.21070234113712374,
+              "ci95_low": 0.07015050167224081,
+              "mean": 0.14046822742474915
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.20075250836120395,
+              "ci95_low": 0.06346153846153847,
+              "mean": 0.13712374581939799
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.0903010033444816,
+              "ci95_low": 0.016722408026755852,
+              "mean": 0.05016722408026756
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.21739130434782608,
+              "ci95_low": 0.06688963210702341,
+              "mean": 0.14046822742474915
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 47,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "target_derived_sidecar",
+          "best_destructive_control_accuracy": 0.2508361204013378,
+          "entropy_matched_random_index_accuracy": 0.2608695652173913,
+          "n": 299,
+          "packet_accuracy": 0.3879598662207358,
+          "packet_follows_source_index": 1.0,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.20735785953177258,
+              "ci95_low": 0.06346153846153847,
+              "mean": 0.13712374581939799
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.20075250836120395,
+              "ci95_low": 0.06354515050167224,
+              "mean": 0.12709030100334448
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.09364548494983277,
+              "ci95_low": 0.016722408026755852,
+              "mean": 0.05351170568561873
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.2140468227424749,
+              "ci95_low": 0.07023411371237458,
+              "mean": 0.14381270903010032
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 53,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "target_derived_sidecar",
+          "best_destructive_control_accuracy": 0.24749163879598662,
+          "entropy_matched_random_index_accuracy": 0.22073578595317725,
+          "n": 299,
+          "packet_accuracy": 0.38461538461538464,
+          "packet_follows_source_index": 0.9966555183946488,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.2040133779264214,
+              "ci95_low": 0.06680602006688964,
+              "mean": 0.13712374581939799
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.23411371237458195,
+              "ci95_low": 0.09364548494983277,
+              "mean": 0.16387959866220736
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.0903010033444816,
+              "ci95_low": 0.010033444816053512,
+              "mean": 0.05016722408026756
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.21070234113712374,
+              "ci95_low": 0.06354515050167224,
+              "mean": 0.14046822742474915
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 59,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "target_derived_sidecar",
+          "best_destructive_control_accuracy": 0.24749163879598662,
+          "entropy_matched_random_index_accuracy": 0.23745819397993312,
+          "n": 299,
+          "packet_accuracy": 0.38461538461538464,
+          "packet_follows_source_index": 0.9966555183946488,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.20735785953177258,
+              "ci95_low": 0.06688963210702341,
+              "mean": 0.13712374581939799
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.2174749163879598,
+              "ci95_low": 0.07023411371237458,
+              "mean": 0.14715719063545152
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.08695652173913043,
+              "ci95_low": 0.010033444816053512,
+              "mean": 0.05016722408026756
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.013377926421404682,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.21070234113712374,
+              "ci95_low": 0.07349498327759199,
+              "mean": 0.14046822742474915
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 61,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "random_same_byte_packet",
+          "best_destructive_control_accuracy": 0.27424749163879597,
+          "entropy_matched_random_index_accuracy": 0.26755852842809363,
+          "n": 299,
+          "packet_accuracy": 0.3879598662207358,
+          "packet_follows_source_index": 1.0,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.1806020066889632,
+              "ci95_low": 0.03678929765886288,
+              "mean": 0.11371237458193979
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.19732441471571907,
+              "ci95_low": 0.046822742474916385,
+              "mean": 0.12040133779264214
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.09364548494983277,
+              "ci95_low": 0.013377926421404682,
+              "mean": 0.05351170568561873
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.2140468227424749,
+              "ci95_low": 0.07357859531772576,
+              "mean": 0.14381270903010032
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 67,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "random_same_byte_packet",
+          "best_destructive_control_accuracy": 0.24749163879598662,
+          "entropy_matched_random_index_accuracy": 0.24414715719063546,
+          "n": 299,
+          "packet_accuracy": 0.38127090301003347,
+          "packet_follows_source_index": 0.9899665551839465,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.20066889632107024,
+              "ci95_low": 0.06688963210702341,
+              "mean": 0.13377926421404682
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.21070234113712374,
+              "ci95_low": 0.07349498327759199,
+              "mean": 0.13712374581939799
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.08695652173913043,
+              "ci95_low": 0.010033444816053512,
+              "mean": 0.046822742474916385
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.016722408026755852,
+              "mean": -0.006688963210702341
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.016722408026755852,
+              "mean": -0.006688963210702341
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.016722408026755852,
+              "mean": -0.006688963210702341
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.21078595317725746,
+              "ci95_low": 0.06354515050167224,
+              "mean": 0.13712374581939799
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 71,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "random_same_byte_packet",
+          "best_destructive_control_accuracy": 0.2608695652173913,
+          "entropy_matched_random_index_accuracy": 0.27424749163879597,
+          "n": 299,
+          "packet_accuracy": 0.38461538461538464,
+          "packet_follows_source_index": 0.9966555183946488,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.1939799331103679,
+              "ci95_low": 0.05677257525083612,
+              "mean": 0.12374581939799331
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.18394648829431437,
+              "ci95_low": 0.030100334448160536,
+              "mean": 0.11036789297658862
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.0903010033444816,
+              "ci95_low": 0.010033444816053512,
+              "mean": 0.05016722408026756
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.010033444816053512,
+              "mean": -0.0033444816053511705
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.21070234113712374,
+              "ci95_low": 0.06688963210702341,
+              "mean": 0.14046822742474915
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 73,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "random_same_byte_packet",
+          "best_destructive_control_accuracy": 0.2608695652173913,
+          "entropy_matched_random_index_accuracy": 0.23745819397993312,
+          "n": 299,
+          "packet_accuracy": 0.3879598662207358,
+          "packet_follows_source_index": 1.0,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.2040133779264214,
+              "ci95_low": 0.056856187290969896,
+              "mean": 0.12709030100334448
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.21739130434782608,
+              "ci95_low": 0.0835284280936455,
+              "mean": 0.1505016722408027
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.09364548494983277,
+              "ci95_low": 0.016638795986622077,
+              "mean": 0.05351170568561873
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.20735785953177258,
+              "ci95_low": 0.07023411371237458,
+              "mean": 0.14381270903010032
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 79,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "random_same_byte_packet",
+          "best_destructive_control_accuracy": 0.2842809364548495,
+          "entropy_matched_random_index_accuracy": 0.2508361204013378,
+          "n": 299,
+          "packet_accuracy": 0.3879598662207358,
+          "packet_follows_source_index": 1.0,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.17725752508361203,
+              "ci95_low": 0.026755852842809364,
+              "mean": 0.10367892976588629
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.2040133779264214,
+              "ci95_low": 0.07023411371237458,
+              "mean": 0.13712374581939799
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.09364548494983277,
+              "ci95_low": 0.013377926421404682,
+              "mean": 0.05351170568561873
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.2140468227424749,
+              "ci95_low": 0.07683946488294316,
+              "mean": 0.14381270903010032
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 83,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        },
+        {
+          "best_destructive_control": "shuffled_source_packet",
+          "best_destructive_control_accuracy": 0.2809364548494983,
+          "entropy_matched_random_index_accuracy": 0.1939799331103679,
+          "n": 299,
+          "packet_accuracy": 0.38127090301003347,
+          "packet_follows_source_index": 0.9933110367892977,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.17725752508361203,
+              "ci95_low": 0.016722408026755852,
+              "mean": 0.10033444816053512
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.25752508361204013,
+              "ci95_low": 0.12040133779264214,
+              "mean": 0.18729096989966554
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.08695652173913043,
+              "ci95_low": 0.006605351170568567,
+              "mean": 0.046822742474916385
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.016722408026755852,
+              "mean": -0.006688963210702341
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.016722408026755852,
+              "mean": -0.006688963210702341
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": -0.016722408026755852,
+              "mean": -0.006688963210702341
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.2074414715719063,
+              "ci95_low": 0.06354515050167224,
+              "mean": 0.13712374581939799
+            }
+          },
+          "same_budget_text_accuracy": 0.33444816053511706,
+          "seed": 89,
+          "source_choice_text_accuracy": 0.3879598662207358,
+          "source_index_accuracy": 0.3879598662207358,
+          "source_rank_code_accuracy": 0.3879598662207358,
+          "target_accuracy": 0.24414715719063546
+        }
+      ],
+      "split": "validation"
+    },
+    "obqa_test": {
+      "aggregate": {
+        "entropy_matched_random_index_accuracy_max": 0.25,
+        "entropy_matched_random_index_accuracy_mean": 0.24,
+        "entropy_matched_random_index_accuracy_min": 0.226,
+        "packet_accuracy_max": 0.38,
+        "packet_accuracy_mean": 0.37839999999999996,
+        "packet_accuracy_min": 0.378,
+        "packet_beats_source_index_all_seeds": false,
+        "packet_follows_source_index_max": 1.0,
+        "packet_follows_source_index_mean": 0.9987999999999999,
+        "packet_follows_source_index_min": 0.996,
+        "packet_ties_or_loses_source_index": true,
+        "packet_vs_best_destructive_ci95_low_min": 0.044,
+        "packet_vs_best_destructive_mean": 0.10200000000000001,
+        "packet_vs_entropy_random_index_ci95_low_min": 0.068,
+        "packet_vs_entropy_random_index_mean": 0.1384,
+        "packet_vs_same_budget_text_ci95_low_min": 0.0,
+        "packet_vs_same_budget_text_mean": 0.0284,
+        "packet_vs_source_choice_text_ci95_low_min": -0.006,
+        "packet_vs_source_choice_text_mean": 0.0004,
+        "packet_vs_source_index_ci95_low_min": -0.006,
+        "packet_vs_source_index_mean": 0.0004,
+        "packet_vs_source_rank_code_ci95_low_min": -0.006,
+        "packet_vs_source_rank_code_mean": 0.0004,
+        "packet_vs_target_ci95_low_min": 0.045950000000000005,
+        "packet_vs_target_mean": 0.1024,
+        "same_budget_text_accuracy_max": 0.35,
+        "same_budget_text_accuracy_mean": 0.35,
+        "same_budget_text_accuracy_min": 0.35,
+        "seed_count": 5,
+        "source_choice_text_accuracy_max": 0.378,
+        "source_choice_text_accuracy_mean": 0.378,
+        "source_choice_text_accuracy_min": 0.378,
+        "source_index_accuracy_max": 0.378,
+        "source_index_accuracy_mean": 0.378,
+        "source_index_accuracy_min": 0.378,
+        "source_rank_code_accuracy_max": 0.378,
+        "source_rank_code_accuracy_mean": 0.378,
+        "source_rank_code_accuracy_min": 0.378,
+        "target_accuracy_max": 0.276,
+        "target_accuracy_mean": 0.276,
+        "target_accuracy_min": 0.276
+      },
+      "benchmark": "OpenBookQA",
+      "budget_bytes": 3,
+      "framed_bytes": 6,
+      "seed_rows": [
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.276,
+          "entropy_matched_random_index_accuracy": 0.25,
+          "n": 500,
+          "packet_accuracy": 0.378,
+          "packet_follows_source_index": 1.0,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.16004999999999997,
+              "ci95_low": 0.048,
+              "mean": 0.102
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.18204999999999996,
+              "ci95_low": 0.068,
+              "mean": 0.128
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.058,
+              "ci95_low": 0.001950000000000003,
+              "mean": 0.028
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.162,
+              "ci95_low": 0.047950000000000007,
+              "mean": 0.102
+            }
+          },
+          "same_budget_text_accuracy": 0.35,
+          "seed": 47,
+          "source_choice_text_accuracy": 0.378,
+          "source_index_accuracy": 0.378,
+          "source_rank_code_accuracy": 0.378,
+          "target_accuracy": 0.276
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.276,
+          "entropy_matched_random_index_accuracy": 0.226,
+          "n": 500,
+          "packet_accuracy": 0.378,
+          "packet_follows_source_index": 0.996,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.162,
+              "ci95_low": 0.046,
+              "mean": 0.102
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.212,
+              "ci95_low": 0.09795000000000001,
+              "mean": 0.152
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.056,
+              "ci95_low": 0.0,
+              "mean": 0.028
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.006,
+              "ci95_low": -0.006,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.006,
+              "ci95_low": -0.006,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.006,
+              "ci95_low": -0.006,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.162,
+              "ci95_low": 0.048,
+              "mean": 0.102
+            }
+          },
+          "same_budget_text_accuracy": 0.35,
+          "seed": 53,
+          "source_choice_text_accuracy": 0.378,
+          "source_index_accuracy": 0.378,
+          "source_rank_code_accuracy": 0.378,
+          "target_accuracy": 0.276
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.276,
+          "entropy_matched_random_index_accuracy": 0.248,
+          "n": 500,
+          "packet_accuracy": 0.378,
+          "packet_follows_source_index": 1.0,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.154,
+              "ci95_low": 0.044,
+              "mean": 0.102
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.18204999999999996,
+              "ci95_low": 0.074,
+              "mean": 0.13
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.056,
+              "ci95_low": 0.0,
+              "mean": 0.028
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.16,
+              "ci95_low": 0.045950000000000005,
+              "mean": 0.102
+            }
+          },
+          "same_budget_text_accuracy": 0.35,
+          "seed": 59,
+          "source_choice_text_accuracy": 0.378,
+          "source_index_accuracy": 0.378,
+          "source_rank_code_accuracy": 0.378,
+          "target_accuracy": 0.276
+        },
+        {
+          "best_destructive_control": "zero_source",
+          "best_destructive_control_accuracy": 0.276,
+          "entropy_matched_random_index_accuracy": 0.24,
+          "n": 500,
+          "packet_accuracy": 0.38,
+          "packet_follows_source_index": 0.998,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.158,
+              "ci95_low": 0.048,
+              "mean": 0.104
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.194,
+              "ci95_low": 0.08195000000000001,
+              "mean": 0.14
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.06,
+              "ci95_low": 0.002,
+              "mean": 0.03
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.006,
+              "ci95_low": 0.0,
+              "mean": 0.002
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.006,
+              "ci95_low": 0.0,
+              "mean": 0.002
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.006,
+              "ci95_low": 0.0,
+              "mean": 0.002
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.162,
+              "ci95_low": 0.045950000000000005,
+              "mean": 0.104
+            }
+          },
+          "same_budget_text_accuracy": 0.35,
+          "seed": 61,
+          "source_choice_text_accuracy": 0.378,
+          "source_index_accuracy": 0.378,
+          "source_rank_code_accuracy": 0.378,
+          "target_accuracy": 0.276
+        },
+        {
+          "best_destructive_control": "shuffled_source_packet",
+          "best_destructive_control_accuracy": 0.278,
+          "entropy_matched_random_index_accuracy": 0.236,
+          "n": 500,
+          "packet_accuracy": 0.378,
+          "packet_follows_source_index": 1.0,
+          "paired_ci": {
+            "packet_vs_best_destructive": {
+              "ci95_high": 0.162,
+              "ci95_low": 0.044,
+              "mean": 0.1
+            },
+            "packet_vs_entropy_random_index": {
+              "ci95_high": 0.196,
+              "ci95_low": 0.086,
+              "mean": 0.142
+            },
+            "packet_vs_same_budget_text": {
+              "ci95_high": 0.056,
+              "ci95_low": 0.002,
+              "mean": 0.028
+            },
+            "packet_vs_source_choice_text": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_index": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_source_rank_code": {
+              "ci95_high": 0.0,
+              "ci95_low": 0.0,
+              "mean": 0.0
+            },
+            "packet_vs_target": {
+              "ci95_high": 0.15404999999999996,
+              "ci95_low": 0.046,
+              "mean": 0.102
+            }
+          },
+          "same_budget_text_accuracy": 0.35,
+          "seed": 67,
+          "source_choice_text_accuracy": 0.378,
+          "source_index_accuracy": 0.378,
+          "source_rank_code_accuracy": 0.378,
+          "target_accuracy": 0.276
+        }
+      ],
+      "split": "test"
+    }
+  },
+  "created_utc": "2026-05-02T22:34:57.191757+00:00",
+  "date": "2026-05-02",
+  "gate": "source_private_colm_acceptance_baseline_audit",
+  "input_artifacts": {
+    "arc_test": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl",
+    "arc_test_source_cache": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/source_prediction_cache.jsonl",
+    "arc_train": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_train.jsonl",
+    "arc_validation": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "arc_validation_source_cache": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+    "obqa_anchor_predictions": "results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/predictions.jsonl",
+    "obqa_test": "results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_test.jsonl",
+    "obqa_train": "results/source_private_openbookqa_bridge_contract_20260501/official_splits/openbookqa_train.jsonl"
+  },
+  "input_hashes": {
+    "arc_test": "0bf801a160c95fc40c4818946de790ab13d128ce072523b39b00af375f0f6869",
+    "arc_test_source_cache": "ca80c37108c1c31d01f2bedc218883420ea4082769dc17c3de2239505d89dc6a",
+    "arc_train": "4f91dd7edee080ac95bf7cc7f21c2c95bb0ab570be3c8075ce98882ead05a879",
+    "arc_validation": "0a5ee608c194ec6a95ca1e9ce7ff33c1b8e908cea086c9734af619294bcefaeb",
+    "arc_validation_source_cache": "868ec5ae7314d7a530acdbdaa0eb84bd53dde4c6bfb0325a7e9876b8274c225b",
+    "obqa_anchor_predictions": "7d8d823dd2b1a25df2b6f5329183b6409e326177b58a28aa3511c81037b0c7c2",
+    "obqa_test": "fc5cd8eff2c0984b49d2c1e1d333622109a9289bd97892474a1f0ce6dc4580e0",
+    "obqa_train": "f84e9d684587e1ed7a52ee8b8a2751149904c1184fd3d3c15489df7eb806d905"
+  },
+  "interpretation": "The packet remains positive versus target-only, same-budget text, entropy-matched random index, and destructive controls. It does not beat explicit source-index/source-rank communication on the current frozen ARC/OBQA surfaces. This resolves the reviewer objection by narrowing the claim: current LatentWire is a fixed-byte source-private candidate-transfer protocol, not a method that compresses beyond the source's selected candidate.",
+  "nonlatent_baselines": {
+    "entropy_matched_random_index": "random 1-byte code sampled from empirical source-index distribution",
+    "same_budget_structured_text": "existing same-budget structured text control from the packet gate",
+    "source_choice_label_text": "selected label text such as A/B/C/D",
+    "source_index_byte": "1-byte explicit selected candidate index; accuracy is source-choice accuracy",
+    "source_rank_code": "top-rank source-choice code; identical to source-index with current cache because raw source score vectors are not frozen for the headline rows"
+  },
+  "pass_gate": true,
+  "pass_rule": "Pass for scoped COLM readiness means the source-index objection is explicitly audited: packet rows must beat target-only with positive paired lower bounds, beat same-budget text in mean with nonnegative paired lower bounds, and if they do not beat explicit source-index communication the paper must scope the claim as source-candidate transfer rather than compression beyond source choice.",
+  "rate_curve": [
+    {
+      "benchmark": "ARC-Challenge",
+      "budget_bytes": 2,
+      "framed_bytes": 5,
+      "packet_accuracy_max": 0.3447098976109215,
+      "packet_accuracy_mean": 0.34215017064846415,
+      "packet_accuracy_min": 0.33532423208191126,
+      "seed_count": 5,
+      "split": "test"
+    },
+    {
+      "benchmark": "ARC-Challenge",
+      "budget_bytes": 3,
+      "framed_bytes": 6,
+      "packet_accuracy_max": 0.3447098976109215,
+      "packet_accuracy_mean": 0.34215017064846415,
+      "packet_accuracy_min": 0.33532423208191126,
+      "seed_count": 5,
+      "split": "test"
+    },
+    {
+      "benchmark": "ARC-Challenge",
+      "budget_bytes": 4,
+      "framed_bytes": 7,
+      "packet_accuracy_max": 0.3464163822525597,
+      "packet_accuracy_mean": 0.34368600682593853,
+      "packet_accuracy_min": 0.34044368600682595,
+      "seed_count": 5,
+      "split": "test"
+    },
+    {
+      "benchmark": "ARC-Challenge",
+      "budget_bytes": 8,
+      "framed_bytes": 11,
+      "packet_accuracy_max": 0.3455631399317406,
+      "packet_accuracy_mean": 0.34368600682593853,
+      "packet_accuracy_min": 0.34215017064846415,
+      "seed_count": 5,
+      "split": "test"
+    },
+    {
+      "benchmark": "OpenBookQA",
+      "budget_bytes": 2,
+      "framed_bytes": 5,
+      "packet_accuracy_max": 0.38,
+      "packet_accuracy_mean": 0.37839999999999996,
+      "packet_accuracy_min": 0.378,
+      "seed_count": 5,
+      "split": "test"
+    },
+    {
+      "benchmark": "OpenBookQA",
+      "budget_bytes": 3,
+      "framed_bytes": 6,
+      "packet_accuracy_max": 0.38,
+      "packet_accuracy_mean": 0.37839999999999996,
+      "packet_accuracy_min": 0.378,
+      "seed_count": 5,
+      "split": "test"
+    },
+    {
+      "benchmark": "OpenBookQA",
+      "budget_bytes": 4,
+      "framed_bytes": 7,
+      "packet_accuracy_max": 0.378,
+      "packet_accuracy_mean": 0.378,
+      "packet_accuracy_min": 0.378,
+      "seed_count": 5,
+      "split": "test"
+    },
+    {
+      "benchmark": "OpenBookQA",
+      "budget_bytes": 8,
+      "framed_bytes": 11,
+      "packet_accuracy_max": 0.378,
+      "packet_accuracy_mean": 0.378,
+      "packet_accuracy_min": 0.378,
+      "seed_count": 5,
+      "split": "test"
+    }
+  ],
+  "reviewer_implication": "This artifact should raise confidence in correctness and scope, but not novelty beyond source-choice transfer. The paper should include these rows and avoid claiming superiority to explicit source-index or source-score communication until a richer receiver-family method beats this audit.",
+  "scoped_colm_gate": true,
+  "strict_gate_interpretation": "The stricter ICLR-style gate, positive transfer beyond an explicit source-index/source-rank channel, is not met. Passing this artifact is therefore a scoped-COLM correctness gate, not a claim that the current method beats source-index communication.",
+  "strict_positive_beyond_source_index_gate": false,
+  "validation_selected_fusion": {
+    "candidate_policies": {
+      "packet_accuracy": 0.38528428093645484,
+      "same_budget_text_accuracy": 0.33444816053511706,
+      "source_index_accuracy": 0.3879598662207358,
+      "target_accuracy": 0.24414715719063546
+    },
+    "interpretation": "Validation selects the strongest available policy among packet, source-index, target-only, and same-budget text. On current ARC this selects source-index, confirming that the packet does not yet beat explicit source-choice communication.",
+    "selected_policy": "source_index_accuracy",
+    "selected_policy_test_mean": 0.3455631399317406,
+    "selected_policy_test_min": 0.3455631399317406
+  }
+}

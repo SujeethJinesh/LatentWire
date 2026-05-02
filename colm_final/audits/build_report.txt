@@ -11,7 +11,8 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
 Final output:
 
 ```text
-Output written on latentwire_colm2026.pdf (9 pages, 233892 bytes).
+Output written on latentwire_colm2026.pdf (9 pages, 248499 bytes).
+SHA256: 144761c8d2541dc7a85fdc6b22b2a6bc415bd9164c4d626746dc5181fa7bc9f6
 ```
 
 Final log scan:

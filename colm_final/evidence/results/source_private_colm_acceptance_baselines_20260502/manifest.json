@@ -1,0 +1,27 @@
+{
+  "artifact_sha256": {
+    "arc_test_predictions.jsonl.gz": "edff678229ffaaf36e7b7867ca8bfbe44e922df7ceae080e70ade625791d8127",
+    "arc_validation_predictions.jsonl.gz": "c62e28cf94919b36590a981b407018a53e299c9c16037b7e0c68723bf48ebe22",
+    "colm_acceptance_baseline_audit.json": "5edb4c560dd4efa0ca0766b92a3432d31c27ab3c6285d8b52d739d85c63bdf72",
+    "colm_acceptance_baseline_audit.md": "499de70487a9864acf5935eb3a5e5710dbc1dc015283134581936d58bfdc4a8f",
+    "openbookqa_source_index_cache.jsonl": "cbd3c67f613cd945af307e1039fa04e5a7cd615997c3bb4f10345589f43b1f22",
+    "openbookqa_test_predictions.jsonl.gz": "01d706b6c1b5e22647b62c72f3b4fa7b2503cb90b2d81f286a472f98225340e3",
+    "per_seed_baseline_metrics.csv": "f62754fabe37fdfd52e9e07496b4e4746c3a10a05df3db87d00463f8100a731b",
+    "rate_curve.csv": "785562695d8d56eea7dfd8428510a191dc5bc2084438ab1f5da284b8e28a119f"
+  },
+  "artifacts": [
+    "colm_acceptance_baseline_audit.json",
+    "colm_acceptance_baseline_audit.md",
+    "per_seed_baseline_metrics.csv",
+    "rate_curve.csv",
+    "arc_validation_predictions.jsonl.gz",
+    "arc_test_predictions.jsonl.gz",
+    "openbookqa_test_predictions.jsonl.gz",
+    "openbookqa_source_index_cache.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true,
+  "scoped_colm_gate": true,
+  "strict_positive_beyond_source_index_gate": false
+}
