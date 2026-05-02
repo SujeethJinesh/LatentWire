@@ -77,6 +77,7 @@ REPRODUCTION_COMMANDS = [
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py --output-dir results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu --force-rematerialize --source-lm-device cpu --source-lm-dtype float32 --source-lm-max-length 192 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_router_diagnostic.py --output-dir results/source_private_arc_challenge_source_family_router_diagnostic_20260502 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_score_router_gate.py --output-dir results/source_private_arc_challenge_source_score_router_gate_20260502 --bootstrap-samples 500",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",
@@ -199,6 +200,7 @@ REQUIRED_ARTIFACTS = {
     "arc_challenge_fourier_anchor_syndrome": "results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502/arc_challenge_fourier_anchor_syndrome_gate.json",
     "arc_challenge_source_family_cache_falsification": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_family_cache_falsification.json",
     "arc_challenge_source_family_router_diagnostic": "results/source_private_arc_challenge_source_family_router_diagnostic_20260502/source_family_router_diagnostic.json",
+    "arc_challenge_source_score_router_gate": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_router_gate.json",
     "commonsenseqa_bridge_contract": "results/source_private_commonsenseqa_bridge_contract_20260501/commonsenseqa_bridge_contract.json",
     "commonsenseqa_fixed_packet_validation_12b": "results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/arc_challenge_fixed_packet_gate.json",
     "commonsenseqa_seed_validation_2b_strict": "results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b/arc_challenge_seed_stability.json",
@@ -472,6 +474,7 @@ def _contribution_rows(
     arc_fourier_anchor_syndrome: dict[str, Any],
     arc_source_family_cache_falsification: dict[str, Any],
     arc_source_family_router_diagnostic: dict[str, Any],
+    arc_source_score_router_gate: dict[str, Any],
     arc_source_latent_validation: dict[str, Any],
     arc_systems_trace: dict[str, Any],
     sciq_contract: dict[str, Any],
@@ -1362,6 +1365,35 @@ def _contribution_rows(
             ),
         },
         {
+            "contribution": "ARC-Challenge source-score source-family router gate",
+            "status": "new negative source-confidence repair gate / source-side scalar routing ruled out",
+            "headline_evidence": (
+                f"selected metric={arc_source_score_router_gate['selected_rule']['metric']}; "
+                f"validation router/Qwen="
+                f"{arc_source_score_router_gate['selected_rule_validation_summary']['aggregate']['router_accuracy_mean']:.3f}/"
+                f"{arc_source_score_router_gate['selected_rule_validation_summary']['aggregate']['qwen_accuracy_mean']:.3f}; "
+                f"test router/Qwen/oracle="
+                f"{arc_source_score_router_gate['selected_rule_test_summary']['aggregate']['router_accuracy_mean']:.3f}/"
+                f"{arc_source_score_router_gate['selected_rule_test_summary']['aggregate']['qwen_accuracy_mean']:.3f}/"
+                f"{arc_source_score_router_gate['selected_rule_test_summary']['aggregate']['oracle_accuracy_mean']:.3f}; "
+                f"source-score sidecar={arc_source_score_router_gate['source_confidence_sidecar_bytes']}B"
+            ),
+            "main_metric": (
+                f"router-minus-Qwen mean/min="
+                f"{arc_source_score_router_gate['selected_rule_test_summary']['aggregate']['router_minus_qwen_mean']:.3f}/"
+                f"{arc_source_score_router_gate['selected_rule_test_summary']['aggregate']['router_minus_qwen_min']:.3f}; "
+                f"min CI95 low vs Qwen="
+                f"{arc_source_score_router_gate['selected_rule_test_summary']['aggregate']['paired_ci95_low_vs_qwen_min']:.3f}; "
+                "best scalar source-confidence row ties/fails; "
+                f"disagreement rows={arc_source_score_router_gate['selected_rule_test_summary']['aggregate']['n']}"
+            ),
+            "remaining_gap": (
+                "Source-side scalar confidence overfits validation and fails frozen test on the strict "
+                "TinyLlama-vs-Qwen disagreement surface. The next branch should be a learned common-basis "
+                "connector or stronger alternate source/NVIDIA run, not another scalar source-score router."
+            ),
+        },
+        {
             "contribution": "ARC-Challenge shared-basis source-computable endpoint",
             "status": "new strongest public benchmark endpoint",
             "headline_evidence": (
@@ -1930,6 +1962,7 @@ def _pass_checks(
     arc_fourier_anchor_syndrome: dict[str, Any],
     arc_source_family_cache_falsification: dict[str, Any],
     arc_source_family_router_diagnostic: dict[str, Any],
+    arc_source_score_router_gate: dict[str, Any],
     arc_source_latent_validation: dict[str, Any],
     arc_systems_trace: dict[str, Any],
     sciq_contract: dict[str, Any],
@@ -2230,6 +2263,27 @@ def _pass_checks(
                 "paired_ci95_low_vs_qwen_min"
             ]
             <= 0.0,
+        ),
+        (
+            "arc_challenge_source_score_router_gate_records_source_confidence_overfit",
+            arc_source_score_router_gate["pass_gate"] is False
+            and arc_source_score_router_gate["selected_rule_validation_summary"]["aggregate"][
+                "router_minus_qwen_mean"
+            ]
+            > 0.05
+            and arc_source_score_router_gate["selected_rule_test_summary"]["aggregate"][
+                "router_minus_qwen_mean"
+            ]
+            <= 0.0
+            and arc_source_score_router_gate["selected_rule_test_summary"]["aggregate"][
+                "paired_ci95_low_vs_qwen_min"
+            ]
+            <= 0.0
+            and all(
+                audit["selected_indices_match_parent_cache"] is True
+                and audit["forbidden_payload_keys_absent"] is True
+                for audit in arc_source_score_router_gate["source_score_cache_audit"].values()
+            ),
         ),
         (
             "arc_challenge_source_latent_endpoint_not_overclaimed",
@@ -3181,6 +3235,9 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     arc_source_family_router_diagnostic = _read_json(
         ROOT / REQUIRED_ARTIFACTS["arc_challenge_source_family_router_diagnostic"]
     )
+    arc_source_score_router_gate = _read_json(
+        ROOT / REQUIRED_ARTIFACTS["arc_challenge_source_score_router_gate"]
+    )
     commonsenseqa_contract = _read_json(ROOT / REQUIRED_ARTIFACTS["commonsenseqa_bridge_contract"])
     commonsenseqa_fixed_validation_12b = _read_json(
         ROOT / REQUIRED_ARTIFACTS["commonsenseqa_fixed_packet_validation_12b"]
@@ -3301,6 +3358,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         arc_fourier_anchor_syndrome=arc_fourier_anchor_syndrome,
         arc_source_family_cache_falsification=arc_source_family_cache_falsification,
         arc_source_family_router_diagnostic=arc_source_family_router_diagnostic,
+        arc_source_score_router_gate=arc_source_score_router_gate,
         arc_source_latent_validation=arc_source_latent_validation,
         arc_systems_trace=arc_systems_trace,
         sciq_contract=sciq_contract,
@@ -3384,6 +3442,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
         arc_fourier_anchor_syndrome=arc_fourier_anchor_syndrome,
         arc_source_family_cache_falsification=arc_source_family_cache_falsification,
         arc_source_family_router_diagnostic=arc_source_family_router_diagnostic,
+        arc_source_score_router_gate=arc_source_score_router_gate,
         arc_source_latent_validation=arc_source_latent_validation,
         arc_systems_trace=arc_systems_trace,
         sciq_contract=sciq_contract,
@@ -3429,7 +3488,7 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
     payload = {
         "gate": "source_private_iclr_evidence_bundle",
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the stricter Qwen-disagreement slice, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
+        "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the stricter Qwen-disagreement slice, scalar receiver/source confidence routing also fails that disagreement surface, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
         "pass_gate": all(check["pass"] for check in pass_checks),
         "pass_checks": pass_checks,
         "artifact_status": artifacts,
@@ -3479,6 +3538,14 @@ def build_bundle(*, output_dir: pathlib.Path) -> dict[str, Any]:
             "test_source_complementarity": arc_source_family_router_diagnostic[
                 "source_choice_complementarity"
             ]["test"],
+        },
+        "arc_challenge_source_score_router_gate_headline": {
+            "selected_rule": arc_source_score_router_gate["selected_rule"],
+            "validation_aggregate": arc_source_score_router_gate["selected_rule_validation_summary"][
+                "aggregate"
+            ],
+            "test_aggregate": arc_source_score_router_gate["selected_rule_test_summary"]["aggregate"],
+            "source_score_cache_audit": arc_source_score_router_gate["source_score_cache_audit"],
         },
         "arc_challenge_source_latent_endpoint_validation_headline": arc_source_latent_validation["headline"],
         "arc_challenge_systems_trace_headline": arc_systems_trace["headline"],

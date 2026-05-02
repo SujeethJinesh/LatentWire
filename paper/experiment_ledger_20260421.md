@@ -19174,3 +19174,25 @@ full ARC test set reaches `0.455`. Decision: rule out receiver-only scalar
 packet-confidence routing as the next ICLR source-family repair; promote
 source-side confidence caches, a learned common-basis connector, or a stronger
 non-Qwen source on NVIDIA.
+
+ARC-Challenge source-score source-family router gate: added
+`scripts/build_source_private_arc_challenge_source_score_router_gate.py`,
+test
+`tests/test_build_source_private_arc_challenge_source_score_router_gate.py`,
+memo
+`paper/source_private_arc_source_score_router_gate_20260502.md`,
+references
+`references/634_arc_source_score_router_refs_20260502.md`, and artifact
+`results/source_private_arc_challenge_source_score_router_gate_20260502/`.
+Outcome: this is the source-side confidence repair gate for the strict ARC
+TinyLlama-vs-Qwen disagreement surface. The script materialized audited
+answer-key-forbidden source score caches for `144` validation and `473` test
+disagreement rows, and the selected-index audit matched the parent source
+caches for both TinyLlama and Qwen. The validation-selected lookup rule looked
+promising on validation, with router/Qwen `0.451/0.389`, delta `+0.063`, and
+CI95 low `+0.010`, but it failed on frozen test: router/Qwen/oracle
+`0.315/0.317/0.586`, router-minus-Qwen mean/min `-0.002/-0.002`, and CI95 low
+`-0.031`. Scalar source-confidence rows also tied or hurt Qwen-substituted
+packets. Decision: rule out scalar source-confidence routing as the ARC
+source-family repair; promote a learned common-basis connector or stronger
+alternate source on NVIDIA as the next exact gate.

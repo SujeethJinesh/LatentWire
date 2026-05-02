@@ -501,6 +501,156 @@
     "source_feature_permutation_accuracy": 0.22073578595317725,
     "target_accuracy": 0.24414715719063546
   },
+  "arc_challenge_source_score_router_gate_headline": {
+    "selected_rule": {
+      "alt_source_index_pairs": [
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "kind": "categorical_lookup",
+      "metric": "source_index_pair_lookup",
+      "min_count": 3,
+      "threshold": null,
+      "validation_accuracy": 0.4513888888888889,
+      "validation_alt_rate": 0.18055555555555555,
+      "validation_groups": {
+        "0->1": {
+          "alt_correct": 10,
+          "n": 60,
+          "qwen_correct": 30
+        },
+        "0->2": {
+          "alt_correct": 5,
+          "n": 40,
+          "qwen_correct": 25
+        },
+        "0->3": {
+          "alt_correct": 10,
+          "n": 45,
+          "qwen_correct": 15
+        },
+        "1->0": {
+          "alt_correct": 15,
+          "n": 55,
+          "qwen_correct": 20
+        },
+        "1->2": {
+          "alt_correct": 15,
+          "n": 65,
+          "qwen_correct": 35
+        },
+        "1->3": {
+          "alt_correct": 10,
+          "n": 70,
+          "qwen_correct": 25
+        },
+        "2->0": {
+          "alt_correct": 20,
+          "n": 70,
+          "qwen_correct": 10
+        },
+        "2->1": {
+          "alt_correct": 15,
+          "n": 60,
+          "qwen_correct": 25
+        },
+        "2->3": {
+          "alt_correct": 15,
+          "n": 75,
+          "qwen_correct": 30
+        },
+        "3->0": {
+          "alt_correct": 40,
+          "n": 60,
+          "qwen_correct": 5
+        },
+        "3->1": {
+          "alt_correct": 10,
+          "n": 55,
+          "qwen_correct": 40
+        },
+        "3->2": {
+          "alt_correct": 15,
+          "n": 65,
+          "qwen_correct": 20
+        }
+      }
+    },
+    "source_score_cache_audit": {
+      "qwen_test": {
+        "forbidden_payload_keys_absent": true,
+        "label": "qwen_test",
+        "rows": 473,
+        "score_lengths_match_choices": true,
+        "selected_indices_match_parent_cache": true,
+        "source_families": [
+          "qwen2.5_0.5b"
+        ]
+      },
+      "qwen_validation": {
+        "forbidden_payload_keys_absent": true,
+        "label": "qwen_validation",
+        "rows": 144,
+        "score_lengths_match_choices": true,
+        "selected_indices_match_parent_cache": true,
+        "source_families": [
+          "qwen2.5_0.5b"
+        ]
+      },
+      "tiny_test": {
+        "forbidden_payload_keys_absent": true,
+        "label": "tiny_test",
+        "rows": 473,
+        "score_lengths_match_choices": true,
+        "selected_indices_match_parent_cache": true,
+        "source_families": [
+          "tinyllama_1.1b"
+        ]
+      },
+      "tiny_validation": {
+        "forbidden_payload_keys_absent": true,
+        "label": "tiny_validation",
+        "rows": 144,
+        "score_lengths_match_choices": true,
+        "selected_indices_match_parent_cache": true,
+        "source_families": [
+          "tinyllama_1.1b"
+        ]
+      }
+    },
+    "test_aggregate": {
+      "alt_accuracy_mean": 0.2693446088794926,
+      "n": 473,
+      "oracle_accuracy_mean": 0.5856236786469344,
+      "paired_ci95_low_vs_qwen_min": -0.03070824524312896,
+      "qwen_accuracy_mean": 0.3171247357293869,
+      "router_accuracy_mean": 0.3150105708245243,
+      "router_accuracy_min": 0.3128964059196617,
+      "router_alt_rate_mean": 0.160676532769556,
+      "router_minus_qwen_mean": -0.00211416490486257,
+      "router_minus_qwen_min": -0.0021141649048626032,
+      "seed_count": 5
+    },
+    "validation_aggregate": {
+      "alt_accuracy_mean": 0.25,
+      "n": 144,
+      "oracle_accuracy_mean": 0.6319444444444444,
+      "paired_ci95_low_vs_qwen_min": 0.010243055555555564,
+      "qwen_accuracy_mean": 0.3888888888888889,
+      "router_accuracy_mean": 0.45138888888888895,
+      "router_accuracy_min": 0.4513888888888889,
+      "router_alt_rate_mean": 0.18055555555555555,
+      "router_minus_qwen_mean": 0.0625,
+      "router_minus_qwen_min": 0.0625,
+      "seed_count": 5
+    }
+  },
   "arc_challenge_systems_trace_headline": {
     "batch64_cacheline_bytes_per_request": 15.0,
     "batch64_dma_bytes_per_request": 16.0,
@@ -660,6 +810,12 @@
       "exists": true,
       "path": "results/source_private_arc_challenge_source_latent_endpoint_gate_20260501_qwen05_bge_validation/source_latent_endpoint_gate.json",
       "sha256": "792c1fa8d0733d7891b7bdb55f6ae2e7ad4f81d3eac71d82d426fd2f07adcc06"
+    },
+    "arc_challenge_source_score_router_gate": {
+      "bytes": 74898,
+      "exists": true,
+      "path": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_router_gate.json",
+      "sha256": "88724b33193adb2f3a9ea3ab241c5da464316227095b35460154d212db6d6c78"
     },
     "arc_challenge_systems_trace": {
       "bytes": 12809,
@@ -1403,6 +1559,13 @@
       "status": "new negative router diagnostic / source-family repair narrowed"
     },
     {
+      "contribution": "ARC-Challenge source-score source-family router gate",
+      "headline_evidence": "selected metric=source_index_pair_lookup; validation router/Qwen=0.451/0.389; test router/Qwen/oracle=0.315/0.317/0.586; source-score sidecar=1B",
+      "main_metric": "router-minus-Qwen mean/min=-0.002/-0.002; min CI95 low vs Qwen=-0.031; best scalar source-confidence row ties/fails; disagreement rows=473",
+      "remaining_gap": "Source-side scalar confidence overfits validation and fails frozen test on the strict TinyLlama-vs-Qwen disagreement surface. The next branch should be a learned common-basis connector or stronger alternate source/NVIDIA run, not another scalar source-score router.",
+      "status": "new negative source-confidence repair gate / source-side scalar routing ruled out"
+    },
+    {
       "contribution": "ARC-Challenge shared-basis source-computable endpoint",
       "headline_evidence": "validation matched/target/text=0.388/0.244/0.348; test matched/target/text=0.344/0.265/0.311; seed stability validation/test=5/5 and 5/5",
       "main_metric": "test lift over target=0.078; lift over best destructive=0.078; lift over same-byte text=0.033; seed-stability min CI95 low vs target=0.038",
@@ -1592,7 +1755,7 @@
       "status": "bounded diagnostic contribution, not headline cross-family claim"
     }
   ],
-  "created_utc": "2026-05-02T10:22:58.564835+00:00",
+  "created_utc": "2026-05-02T10:50:51.256847+00:00",
   "cross_benchmark_systems_comparator_headline": {
     "claim_scope": "Cross-benchmark byte/state-exposure comparator for source-private packets. KV/cache rows are one-source-token byte floors from the local Qwen2.5-0.5B config, not native C2C/KVComm/QJL/TurboQuant quality or throughput measurements.",
     "diagnostic_benchmarks": 1,
@@ -2756,6 +2919,10 @@
       "pass": true
     },
     {
+      "check": "arc_challenge_source_score_router_gate_records_source_confidence_overfit",
+      "pass": true
+    },
+    {
       "check": "arc_challenge_source_latent_endpoint_not_overclaimed",
       "pass": true
     },
@@ -3325,7 +3492,7 @@
     }
   ],
   "pass_gate": true,
-  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the stricter Qwen-disagreement slice, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
+  "readiness": "COLM is now strong around fixed-byte source-private packets, ARC-Challenge/OpenBookQA public-basis endpoints, the OpenBookQA packet/target receiver-fusion row, the ARC Fourier/anchor-syndrome common-basis packet, and byte/exposure systems accounting. ICLR is closer but still blocked by robustness: the OpenBookQA receiver improves over packet-only on held-out test, the same validation-selected receiver fails ARC replication, the TinyLlama source-family cache gate preserves a full-slice ARC test lift but fails the stricter Qwen-disagreement slice, scalar receiver/source confidence routing also fails that disagreement surface, and native NVIDIA systems baselines are missing. HellaSwag is now a diagnostic/headroom and negative-ablation surface rather than a current receiver-improvement headline.",
   "remaining_iclr_risks": [
     "Production serving TTFT/TPOT/throughput on NVIDIA GPUs is still missing; the cross-benchmark systems comparator and native benchmark plan define the table, but they are not native serving results.",
     "ARC-Challenge, OpenBookQA, and HellaSwag now have seed-stable public-basis endpoints, but the source scorer is still a local Qwen log-likelihood bridge rather than a learned hidden-state communication endpoint.",
@@ -3411,6 +3578,7 @@
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_fourier_anchor_syndrome_gate.py --output-dir results/source_private_arc_challenge_fourier_anchor_syndrome_gate_20260502",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_cache_falsification.py --output-dir results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu --force-rematerialize --source-lm-device cpu --source-lm-dtype float32 --source-lm-max-length 192 --source-lm-normalization mean --source-lm-prompt-mode qa --bootstrap-samples 500",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_family_router_diagnostic.py --output-dir results/source_private_arc_challenge_source_family_router_diagnostic_20260502 --bootstrap-samples 500",
+    "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_source_score_router_gate.py --output-dir results/source_private_arc_challenge_source_score_router_gate_20260502 --bootstrap-samples 500",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers ./venv_arm64/bin/python scripts/build_source_private_commonsenseqa_bridge_contract.py --output-dir results/source_private_commonsenseqa_bridge_contract_20260501 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/run_source_private_arc_challenge_fixed_packet_gate.py --output-dir results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 12 --source-score-mode lm_choice_loglikelihood --source-lm-model /Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775 --source-lm-device auto_cpu --source-lm-dtype float32 --source-lm-max-length 256 --source-lm-normalization mean --seed 47 --bootstrap-samples 500 --min-gap-over-text 0.02",
     "./venv_arm64/bin/python scripts/build_source_private_arc_challenge_seed_stability.py --output-dir results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b --train-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_train.jsonl --eval-path results/source_private_commonsenseqa_bridge_contract_20260501/official_splits/commonsenseqa_validation.jsonl --anchor-predictions results/source_private_commonsenseqa_fixed_packet_gate_20260501_qwen05_hashed_validation_12b/predictions.jsonl --split-name commonsenseqa_validation_hashed_2b --feature-mode hashed --feature-dim 384 --code-dim 96 --budget-bytes 2 --seeds 47,53,59,61,67 --bootstrap-samples 500 --min-gap-over-text 0.02",

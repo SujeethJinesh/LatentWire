@@ -1937,5 +1937,12 @@
     "path": "references/633_source_family_disagreement_repair_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the source-family disagreement repair gate, covering selective prediction/confidence calibration, MoE/source routing, distributed source coding with side information, and positioning against C2C, KVComm/KVCOMM, TurboQuant, and prefix tuning."
+  },
+  {
+    "num": 634,
+    "slug": "arc_source_score_router_refs_20260502",
+    "path": "references/634_arc_source_score_router_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC source-score source-family router gate, covering calibrated source-risk routing, semantic uncertainty, relative/common-basis representations, SAE/cross-model feature motivation, and boundaries against prefix tuning, C2C, KVComm/KVCOMM, and TurboQuant."
   }
 ]

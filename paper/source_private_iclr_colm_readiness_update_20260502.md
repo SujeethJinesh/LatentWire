@@ -20,11 +20,15 @@ Date: 2026-05-02
 1. Fixed-byte source-private evidence packets with source-destroying controls.
    Current support: ARC-Challenge and OpenBookQA public-basis rows remain
    positive, and HellaSwag shows strong packet/headroom diagnostics.
-2. Systems byte/exposure accounting for packet transfer versus KV/cache
+2. Public-basis/common-coordinate packet methods for real benchmarks. Current
+   support: ARC Fourier/anchor-syndrome packets and OpenBookQA 3B shared-basis
+   packets survive seed repeats and same-byte text controls; strict
+   source-family robustness is still negative.
+3. Systems byte/exposure accounting for packet transfer versus KV/cache
    transfer. Current support: Mac-local decode/packet-ring traces and
    cross-benchmark byte-floor comparators; native vLLM/SGLang throughput rows
    are still pending.
-3. A rigorous falsification ladder for latent/hidden-code communication.
+4. A rigorous falsification ladder for latent/hidden-code communication.
    Current support: HellaSwag source-score, receiver-selector, discrete-query,
    anchor-relative common-basis, switch-observability, and PQ hidden-code gates
    are now explicitly recorded as negative or non-headline.
@@ -47,6 +51,23 @@ Lay explanation: TinyLlama and Qwen sometimes send different tiny hints. The
 diagnostic asked whether Qwen could tell which hint to trust by looking at
 simple confidence signals. It could not, even though an oracle could choose the
 better hint much more often.
+
+The ARC source-side score router gate now tests the next obvious repair:
+
+- artifact:
+  `results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_router_gate.json`
+- selected validation rule: `source_index_pair_lookup`;
+- validation router/Qwen: `0.451/0.389`, delta `+0.063`, CI95 low `+0.010`;
+- frozen test router/Qwen/oracle: `0.315/0.317/0.586`;
+- frozen test router-minus-Qwen mean/min: `-0.002/-0.002`;
+- frozen test CI95 low versus Qwen: `-0.031`;
+- best scalar source-confidence row ties or hurts Qwen-substituted packets;
+- pass gate: `False`.
+
+Lay explanation: this time the source models themselves attached a tiny
+confidence signal before the router chose which packet to trust. The validation
+rule looked promising, but it did not transfer to frozen test rows. That means
+the failure is not just missing a simple source-confidence byte.
 
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
@@ -108,7 +129,7 @@ same controls.
 
 ## Next Exact Gate
 
-Run an ARC source-family repair gate that uses source-side confidence caches
-or a learned common-basis connector on the frozen TinyLlama-vs-Qwen
-disagreement rows. Receiver-only scalar routing is now ruled out for this
-surface.
+Run an ARC source-family repair gate with a learned common-basis connector or a
+stronger alternate source on the frozen TinyLlama-vs-Qwen disagreement rows.
+Receiver-only scalar routing and source-side scalar confidence routing are now
+both ruled out for this surface.

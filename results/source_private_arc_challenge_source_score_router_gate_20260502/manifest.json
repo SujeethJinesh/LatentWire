@@ -1,0 +1,17 @@
+{
+  "artifact_sha256": {
+    "selected_source_score_router_predictions.jsonl": "fab67ec34014814e4e7be44cd1f1764c224ae40e9c5fc47fc41a5f210c5fc0b2",
+    "source_score_router_gate.json": "88724b33193adb2f3a9ea3ab241c5da464316227095b35460154d212db6d6c78",
+    "source_score_router_gate.md": "32ee9dfb2f1770ff7cb62352469054cd33bbc2ef6b9831616e45f6b1b2abce9c",
+    "source_score_router_rule_metrics.csv": "7a9fbcb5b7b6f1ef79e3d491ba251ddec54715b7c5f8c403d213b3ce26b8288a"
+  },
+  "artifacts": [
+    "source_score_router_gate.json",
+    "source_score_router_gate.md",
+    "source_score_router_rule_metrics.csv",
+    "selected_source_score_router_predictions.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

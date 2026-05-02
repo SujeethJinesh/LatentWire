@@ -83,6 +83,15 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert "router-minus-Qwen" in contribution_rows[
         "ARC-Challenge source-family packet-confidence router diagnostic"
     ]["main_metric"]
+    assert contribution_rows["ARC-Challenge source-score source-family router gate"]["status"] == (
+        "new negative source-confidence repair gate / source-side scalar routing ruled out"
+    )
+    assert "test router/Qwen/oracle" in contribution_rows[
+        "ARC-Challenge source-score source-family router gate"
+    ]["headline_evidence"]
+    assert "router-minus-Qwen" in contribution_rows[
+        "ARC-Challenge source-score source-family router gate"
+    ]["main_metric"]
     assert contribution_rows["OpenBookQA 3B shared-basis second public benchmark"]["status"] == (
         "new second public-benchmark positive gate and stronger rate point"
     )
