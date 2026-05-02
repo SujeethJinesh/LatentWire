@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_result_ingest_gate.json",
+      "sha256": "a3121ad3e5f506bb2ca30840ced7c76dcc416be322163946cf04baf412cfe6f4"
+    },
+    {
+      "path": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_result_ingest_gate.md",
+      "sha256": "626bc0b8e60b1fd6c34211498510529102f87e36cfd9e0399431e533d82077af"
+    },
+    {
+      "path": "results/source_private_native_systems_result_ingest_gate_20260502/native_systems_row_status.csv",
+      "sha256": "91bc25267ca7a14cb01cd4187280f69ff45738ae777d19c1d3274e8ed648ab3e"
+    }
+  ],
+  "gate": "source_private_native_systems_result_ingest_gate",
+  "native_systems_complete": false,
+  "validator_pass": true
+}

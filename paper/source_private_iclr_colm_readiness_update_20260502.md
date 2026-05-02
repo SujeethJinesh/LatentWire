@@ -16,8 +16,8 @@ Date: 2026-05-02
   falsification. The Mac-local Phi-3 cross-family source diagnostic and the
   TinyLlama hidden/query PCA/ridge, transport/common-basis, and nonlinear
   sparse-query cache-bottleneck connectors now fail this gate. The systems
-  boundary table is paper-ready as accounting, but native NVIDIA serving rows
-  remain incomplete.
+  boundary table is paper-ready as accounting and the native ingest gate now
+  refuses premature claims, but native NVIDIA serving rows remain incomplete.
 
 ## Contributions To Put Forward
 
@@ -224,6 +224,42 @@ TinyLlama's internal hidden/query state and converted those answers into the
 public packet basis. On new hard rows, the translated hint was still worse than
 Qwen's own packet.
 
+The native systems result ingest gate turns the runbook into an enforceable
+reviewer guardrail:
+
+- artifact:
+  `results/source_private_native_systems_result_ingest_gate_20260502/native_systems_result_ingest_gate.json`
+- validator pass: `True`;
+- native systems complete: `False`;
+- paper native win allowed: `False`;
+- measurement rows ingested: `0`;
+- required baseline rows: `11`;
+- missing required rows: `11`;
+- invalid measurement rows: `0`;
+- missing rows: LatentWire cached/end-to-end packet rows, target-only
+  vLLM/SGLang, same-byte visible text, source-label-copy, C2C, KVComm, KVCOMM,
+  QJL, and TurboQuant.
+
+Lay explanation: this checker will not let the paper claim a real GPU systems
+win until every required method has the same accuracy, latency, memory,
+traffic, byte, and source-exposure fields.
+
+The ARC Llama-8B frozen-disagreement source scout is scaffolded but hardware
+blocked:
+
+- script:
+  `scripts/build_source_private_arc_challenge_llama8b_disagreement_source_scout.py`
+- intended surface: the frozen TinyLlama-vs-Qwen ARC disagreement rows;
+- source model: locally cached `Meta-Llama-3.1-8B-Instruct`;
+- preflight: model loads on MPS with `float16` and scores two rows;
+- full run blocker: Apple MPS attention-shape failure,
+  `LLVM ERROR: Failed to infer result type(s): "mps.matmul"`;
+- scientific decision: inconclusive, not negative.
+
+Lay explanation: this run would ask whether a much stronger non-Qwen model can
+send the same 12-byte ARC hint on the hard rows, but the local Mac attention
+kernel failed before producing measurements.
+
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
 
@@ -262,7 +298,7 @@ same controls.
 - Direct competitor comparisons against C2C/KVComm-style KV/cache transfer and
   KV quantization byte floors.
 - Native NVIDIA serving rows for TTFT, TPOT, goodput, GPU memory, HBM traffic,
-  payload bytes, and source-exposure flags.
+  payload bytes, and source-exposure flags, ingested through the new validator.
 
 ## COLM Workshop Needs
 
@@ -279,6 +315,8 @@ same controls.
 
 - NVIDIA access for vLLM/SGLang native systems baselines and any true
   continuous query/cache connector.
+- A non-MPS path for the Llama-8B ARC source scout; the current Mac MPS
+  attention path crashes before the frozen-disagreement source gate can run.
 - Confirmation on whether COLM should be framed as a workshop paper with
   negative HellaSwag ablations or held until a positive learned connector
   exists.
@@ -293,4 +331,6 @@ Phi-3 source packets, and shallow TinyLlama hidden/query PCA/ridge connectors
 or static transport/Procrustes connectors, and random Fourier sparse-query
 cache bottlenecks are now ruled out for this ARC disagreement surface. The
 same-family Qwen-1.5B stronger-source diagnostic should be repeated with a true
-stronger cross-family source before making the ICLR claim.
+stronger cross-family source before making the ICLR claim. The Llama-8B source
+scout is the best available true non-Qwen local source branch, but it is
+currently hardware-blocked on MPS rather than scientifically resolved.

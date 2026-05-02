@@ -19363,3 +19363,37 @@ rule out low-data random Fourier sparse-query bottlenecks over the current
 TinyLlama ARC hidden/query caches; the next live method branch needs a stronger
 true non-Qwen source or a larger learned query/cache connector/sparse
 crosscoder with more matched activations, likely on NVIDIA.
+
+Native systems result ingest gate: added
+`scripts/validate_source_private_native_systems_results.py`, test
+`tests/test_validate_source_private_native_systems_results.py`, memo
+`paper/source_private_native_systems_result_ingest_gate_20260502.md`,
+references `references/643_native_systems_result_ingest_refs_20260502.md`,
+and artifact
+`results/source_private_native_systems_result_ingest_gate_20260502/`.
+Outcome: the validator turns the existing native systems benchmark plan into an
+enforceable ingest gate. The current run has `validator_pass=True`,
+`native_systems_complete=False`, `paper_native_win_allowed=False`, `0`
+measurement rows, `11` required baseline rows, and `11` missing required rows:
+LatentWire cached/end-to-end packet rows, target-only vLLM/SGLang, same-byte
+visible text, source-label-copy, C2C, KVComm, KVCOMM, QJL, and TurboQuant. The
+gate type-checks future CSV/JSON/JSONL native rows, checks all required
+quality/latency/memory/traffic/byte/source-exposure metrics, verifies baseline
+source-exposure expectations, and refuses LatentWire native claims if packet
+rows expose raw hidden/score vectors or exceed the configured framed-byte
+ceiling. Decision: promote this as the systems-side reviewer guardrail and
+keep native GPU/HBM/throughput claims blocked until all required native rows
+are ingested.
+
+ARC Llama-8B frozen-disagreement source scout: added
+`scripts/build_source_private_arc_challenge_llama8b_disagreement_source_scout.py`
+and test
+`tests/test_build_source_private_arc_challenge_llama8b_disagreement_source_scout.py`.
+Outcome: this is a bounded scaffold for the next true non-Qwen stronger-source
+branch. A two-row preflight showed the locally cached Meta-Llama-3.1-8B-
+Instruct model can load on MPS with `float16`, but the full
+TinyLlama-vs-Qwen frozen-disagreement run hit an Apple MPS attention-shape
+failure (`LLVM ERROR: Failed to infer result type(s): "mps.matmul"`). Decision:
+record as an environment/hardware blocker, not a scientific negative. Rerun on
+NVIDIA or after fixing the attention path before judging Llama-8B as a source
+family.

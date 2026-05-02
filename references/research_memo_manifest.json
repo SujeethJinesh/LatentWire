@@ -2000,5 +2000,12 @@
     "path": "references/642_next_decision_literature_refs_20260502.md",
     "status": "local_memo",
     "reason": "Targeted primary-source memo for the next LatentWire decision, covering stronger true non-Qwen source novelty, learned query/cache connector novelty, direct competitors C2C/KVComm, cache-packet/reuse systems, sparse crosscoders/SAEs, query bottlenecks, quantization baselines, privacy/source-exposure risks, and the systems-only win allowed without native NVIDIA."
+  },
+  {
+    "num": 643,
+    "slug": "native_systems_result_ingest_refs_20260502",
+    "path": "references/643_native_systems_result_ingest_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the native systems result ingest gate, covering vLLM/PagedAttention, SGLang/RadixAttention, C2C, KVComm/KVCOMM, QJL, TurboQuant, KV Packet, RelayCaching, LMCache, KV-cache prompt leakage, and the claim boundary for source-private byte accounting versus native GPU systems wins."
   }
 ]

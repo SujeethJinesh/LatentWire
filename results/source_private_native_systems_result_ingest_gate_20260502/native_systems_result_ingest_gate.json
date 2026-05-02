@@ -1,0 +1,172 @@
+{
+  "created_utc": "2026-05-02T13:42:26.337325+00:00",
+  "decision": "Native systems claims remain blocked until every required baseline row is ingested with all quality, latency, memory, traffic, payload-byte, and source-exposure fields. The current run validates the schema and correctly refuses native-systems-complete because required native measurement rows are missing.",
+  "gate": "source_private_native_systems_result_ingest_gate",
+  "input_files": {
+    "baseline_rows": "results/source_private_native_systems_benchmark_plan_20260501/native_systems_baseline_rows.csv",
+    "baseline_rows_sha256": "33baad1e8ff24f067d7f45af6f8f8cb7563145510d6d3bd94092ac8e1b3210ea",
+    "measurement_files": [],
+    "schema": "results/source_private_native_systems_benchmark_plan_20260501/native_systems_metric_schema.csv",
+    "schema_sha256": "f0939cef893a183b395a8f6c45934db3020af3de69f4171167c78c49fe8f677d"
+  },
+  "invalid_measurement_rows": [],
+  "lay_explanation": "This checker is a checklist with teeth. It will not let the paper say we have a real GPU systems win until every required method has the same accuracy, latency, memory, traffic, byte, and privacy fields filled in.",
+  "measurement_row_count": 0,
+  "missing_required_row_ids": [
+    "c2c_cache_to_cache",
+    "kvcomm_online_cross_context",
+    "kvcomm_selective_kv",
+    "latentwire_packet_cached_source",
+    "latentwire_packet_end_to_end_source_scoring",
+    "qjl_1bit_source_state",
+    "same_byte_visible_text",
+    "source_label_copy_control",
+    "target_only_sglang",
+    "target_only_vllm",
+    "turboquant_lowbit_source_state"
+  ],
+  "native_systems_complete": false,
+  "paper_native_win_allowed": false,
+  "required_baseline_count": 11,
+  "required_metric_count": 44,
+  "required_metrics": [
+    "benchmark",
+    "split",
+    "model_pair",
+    "method",
+    "implementation",
+    "commit_hash",
+    "gpu_name",
+    "cuda_version",
+    "driver_version",
+    "serving_engine",
+    "batch_size",
+    "concurrency",
+    "context_len",
+    "max_new_tokens",
+    "precision",
+    "num_examples",
+    "accuracy",
+    "paired_delta_vs_target",
+    "paired_ci95_low_vs_target",
+    "ttft_ms_p50",
+    "ttft_ms_p95",
+    "tpot_ms_p50",
+    "tpot_ms_p95",
+    "itl_ms_p50",
+    "goodput_requests_per_s",
+    "generated_tokens_per_s",
+    "prefill_ms_p50",
+    "decode_ms_p50",
+    "peak_gpu_memory_gb",
+    "hbm_read_bytes_per_request",
+    "hbm_write_bytes_per_request",
+    "pcie_or_nvlink_rx_bytes_per_request",
+    "pcie_or_nvlink_tx_bytes_per_request",
+    "payload_bytes_per_request",
+    "framed_bytes_per_request",
+    "transferred_source_state_bytes",
+    "source_text_exposed",
+    "source_kv_exposed",
+    "source_hidden_or_score_vector_exposed",
+    "hardware",
+    "software_commit",
+    "batch_size_or_concurrency",
+    "input_output_token_counts",
+    "wall_time_s"
+  ],
+  "required_row_ids": [
+    "c2c_cache_to_cache",
+    "kvcomm_online_cross_context",
+    "kvcomm_selective_kv",
+    "latentwire_packet_cached_source",
+    "latentwire_packet_end_to_end_source_scoring",
+    "qjl_1bit_source_state",
+    "same_byte_visible_text",
+    "source_label_copy_control",
+    "target_only_sglang",
+    "target_only_vllm",
+    "turboquant_lowbit_source_state"
+  ],
+  "row_status": [
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "c2c_cache_to_cache",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "kvcomm_online_cross_context",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "kvcomm_selective_kv",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "latentwire_packet_cached_source",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "latentwire_packet_end_to_end_source_scoring",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "qjl_1bit_source_state",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "same_byte_visible_text",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "source_label_copy_control",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "target_only_sglang",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "target_only_vllm",
+      "status": "missing",
+      "valid_count": 0
+    },
+    {
+      "present_count": 0,
+      "required": true,
+      "row_id": "turboquant_lowbit_source_state",
+      "status": "missing",
+      "valid_count": 0
+    }
+  ],
+  "valid_measurement_row_count": 0,
+  "validator_pass": true
+}
