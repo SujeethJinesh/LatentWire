@@ -2063,5 +2063,12 @@
     "path": "references/651_arc_candidate_pool_factor_preflight_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the negative ARC candidate-pool score/hidden factor preflight, covering C2C/KVComm, TurboQuant/KVQuant/KIVI, H2O/SnapKV score-selection baselines, Q-Former/Flamingo query bottlenecks, Slepian-Wolf/Wyner-Ziv conditional coding, and the decision to move from shallow soft-prefix pooling to target-conditional candidate innovation packets."
+  },
+  {
+    "num": 652,
+    "slug": "arc_public_innovation_preflight_refs_20260502",
+    "path": "references/652_arc_public_innovation_preflight_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the negative ARC public-side-information innovation soft-prefix preflight, covering Slepian-Wolf/Wyner-Ziv conditional coding, C2C/KVComm/KVCOMM/Interlat latent communication boundaries, Prefix/Prompt-Tuning distinctions, BLIP-2/Perceiver query bottlenecks, TurboQuant/QJL residual compression inspiration, and the decision to move next to a source-control-contrastive conditional innovation receiver."
   }
 ]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 import torch
 
 from scripts import run_source_private_arc_challenge_fixed_packet_gate as arc_gate
@@ -190,6 +191,126 @@ def test_candidate_hidden_score_pool_concatenates_features(monkeypatch) -> None:
     assert np.allclose(np.linalg.norm(pooled[0, [0, 2]], axis=1), 1.0, atol=1e-6)
 
 
+def test_public_candidate_innovation_uses_fit_indices_only() -> None:
+    rows = _rows()
+    source = np.asarray(
+        [
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [10.0, 0.0],
+            [20.0, 0.0],
+        ],
+        dtype=np.float64,
+    )
+    public = np.asarray(
+        [
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [2.0, 0.0],
+        ],
+        dtype=np.float64,
+    )
+
+    innovation, metadata = preflight._public_candidate_innovation_features(
+        source,
+        public,
+        fit_flat_indices=preflight._flat_candidate_indices_for_rows(rows, [0]),
+        ridge=1.0,
+    )
+
+    assert metadata["fit_candidate_count"] == 3
+    assert np.allclose(innovation[:3], 0.0, atol=1e-6)
+    assert innovation[3, 0] > 9.0
+    assert innovation[4, 0] > 19.0
+
+
+def test_candidate_hidden_public_innovation_pool_is_prediction_free(monkeypatch) -> None:
+    rows = _rows()
+
+    def fake_hidden(*args, **kwargs):
+        del args, kwargs
+        return np.asarray(
+            [
+                [1.0, 0.0],
+                [3.0, 0.0],
+                [5.0, 0.0],
+                [2.0, 2.0],
+                [2.0, 6.0],
+            ],
+            dtype=np.float64,
+        ), {"kind": "fake_hidden"}
+
+    def fake_public(*args, **kwargs):
+        del args, kwargs
+        return np.asarray(
+            [
+                [0.0, 1.0],
+                [1.0, 1.0],
+                [2.0, 1.0],
+                [100.0, 0.0],
+                [200.0, 0.0],
+            ],
+            dtype=np.float64,
+        ), {"kind": "fake_public"}
+
+    def fail_score_rows(*args, **kwargs):
+        del args, kwargs
+        raise AssertionError("hidden-only public innovation must not read source predictions")
+
+    monkeypatch.setattr(preflight, "_hf_choice_hidden_features", fake_hidden)
+    monkeypatch.setattr(preflight, "_public_candidate_hashed_features", fake_public)
+    monkeypatch.setattr(preflight, "_source_selection_score_rows", fail_score_rows)
+
+    pooled, metadata = preflight._choice_candidate_pool_features(
+        rows,
+        [1, 0],
+        source_feature_mode="hf_choice_hidden_public_innovation_candidate_pool",
+        feature_dim=2,
+        source_model="",
+        source_device="auto_cpu",
+        source_dtype="float32",
+        source_max_length=32,
+        source_hidden_layer=-1,
+        source_token_pool_size=3,
+        local_files_only=True,
+        fit_indices=[0],
+        innovation_ridge=10.0,
+    )
+
+    assert metadata["kind"] == "hf_choice_hidden_public_innovation_candidate_pool"
+    assert metadata["uses_source_predictions"] is False
+    assert metadata["hidden_metadata"]["kind"] == "fake_hidden"
+    assert metadata["innovation_metadata"]["public_metadata"]["kind"] == "fake_public"
+    assert metadata["innovation_metadata"]["fit_candidate_count"] == 3
+    assert pooled.shape == (2, 3, 2)
+
+
+def test_candidate_hidden_public_innovation_requires_fit_indices(monkeypatch) -> None:
+    def fake_hidden(*args, **kwargs):
+        del args, kwargs
+        return np.zeros((5, 2), dtype=np.float64), {"kind": "fake_hidden"}
+
+    monkeypatch.setattr(preflight, "_hf_choice_hidden_features", fake_hidden)
+
+    with pytest.raises(ValueError, match="requires fit_indices"):
+        preflight._choice_candidate_pool_features(
+            _rows(),
+            [1, 0],
+            source_feature_mode="hf_choice_hidden_public_innovation_candidate_pool",
+            feature_dim=2,
+            source_model="",
+            source_device="auto_cpu",
+            source_dtype="float32",
+            source_max_length=32,
+            source_hidden_layer=-1,
+            source_token_pool_size=3,
+            local_files_only=True,
+        )
+
+
 def test_selected_choice_residual_features_are_row_centered(monkeypatch) -> None:
     rows = _rows()
 
@@ -262,12 +383,22 @@ def test_residual_feature_modes_are_cli_options() -> None:
             "hf_choice_hidden_score_candidate_pool_residual",
         ]
     )
+    public_innovation = preflight.parse_args(
+        [
+            "--source-feature-mode",
+            "hf_choice_hidden_public_innovation_candidate_pool",
+            "--innovation-ridge",
+            "25",
+        ]
+    )
 
     assert hashed.source_feature_mode == "hashed_selected_residual"
     assert hidden.source_feature_mode == "hf_selected_hidden_residual"
     assert token_pool.source_feature_mode == "hf_choice_token_hidden_pool_residual"
     assert token_pool.source_token_pool_size == 6
     assert candidate_pool.source_feature_mode == "hf_choice_hidden_score_candidate_pool_residual"
+    assert public_innovation.source_feature_mode == "hf_choice_hidden_public_innovation_candidate_pool"
+    assert public_innovation.innovation_ridge == 25.0
 
 
 def test_condition_metrics_adds_paired_controls() -> None:

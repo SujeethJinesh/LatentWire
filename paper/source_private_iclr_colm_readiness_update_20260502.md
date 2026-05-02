@@ -519,3 +519,30 @@ candidate innovation/syndrome packet: encode source evidence relative to the
 target's own candidate state, then compare hidden-only, score-only, and
 score+hidden factors at matched rate with explicit target-derived and
 shuffled-source packet controls.
+
+## 2026-05-02 Public-Innovation Soft-Prefix Follow-Up
+
+Added train-only public-side-information innovation modes to the ARC/OpenBookQA
+soft-prefix preflight:
+
+- `hf_choice_hidden_public_innovation_candidate_pool(_residual)`
+- `hf_choice_hidden_score_public_innovation_candidate_pool(_residual)`
+
+Readout:
+
+- hidden public innovation residual is prediction-free but reaches only `1/4`,
+  while shuffled-source reaches `2/4`;
+- hidden+score public innovation residual with ridge `10` reaches `2/4` and
+  has a small positive margin delta (`+0.051`), but only ties the
+  target-cache-only learned prefix at `2/4` and also ties same-norm noise;
+- target-conditioned query worsens to `1/4`;
+- ridge `1000` lowers the fit explained-variance diagnostic from `0.9985` to
+  `0.6295`, but also worsens matched accuracy to `1/4`;
+- all pass gates remain `False`.
+
+Decision: rule out train-only public-ridge innovation as a standalone
+soft-prefix positive method on this Mac-local gate. The conditional-innovation
+story remains scientifically cleaner than raw hidden transfer, but the next
+exact branch should be a source-control-contrastive conditional innovation
+receiver with packet-level candidate-roll controls, not another answer-CE-only
+soft-prefix tweak.

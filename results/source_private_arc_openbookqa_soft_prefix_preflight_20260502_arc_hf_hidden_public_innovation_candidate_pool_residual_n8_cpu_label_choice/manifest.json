@@ -1,0 +1,31 @@
+{
+  "created_utc": "2026-05-02T15:41:02.863829+00:00",
+  "files": [
+    {
+      "bytes": 9078,
+      "path": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_public_innovation_candidate_pool_residual_n8_cpu_label_choice/arc_openbookqa_soft_prefix_preflight.json",
+      "sha256": "bd3e8c3e679089f97638ee373f842008d426acb1c6ff9c767029feef3aa1b817"
+    },
+    {
+      "bytes": 20769,
+      "path": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_public_innovation_candidate_pool_residual_n8_cpu_label_choice/prediction_audit.jsonl",
+      "sha256": "30dfc06144cff1e3d9fef4962dfd385aa0c2d0a365b50b5b50ad23274a48e822"
+    },
+    {
+      "bytes": 6263,
+      "path": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_public_innovation_candidate_pool_residual_n8_cpu_label_choice/prediction_audit.csv",
+      "sha256": "22a3184ef8ffce5e609fdda9b360da0bc987babfe5088f753ca24c1b71779d52"
+    },
+    {
+      "bytes": 1689,
+      "path": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_public_innovation_candidate_pool_residual_n8_cpu_label_choice/arc_openbookqa_soft_prefix_preflight.md",
+      "sha256": "5de08095b69e8b6e236e94120cf0d03bd00455af282bcac54026ff39e429f036"
+    }
+  ],
+  "gate": "source_private_arc_openbookqa_soft_prefix_preflight",
+  "inputs": {
+    "eval_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl"
+  },
+  "pass_gate": false
+}

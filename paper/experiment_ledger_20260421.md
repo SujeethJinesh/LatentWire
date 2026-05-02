@@ -19631,3 +19631,43 @@ Lay explanation: this run gave the receiver one small clue per answer choice
 instead of a single chosen-answer clue or a pile of raw tokens. That still did
 not beat simple controls, so the current soft-prefix translator is not using
 source candidate information reliably.
+
+ARC public-innovation soft-prefix preflight: extended
+`scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py` with
+train-only public-side-information innovation modes:
+`hf_choice_hidden_public_innovation_candidate_pool`,
+`hf_choice_hidden_public_innovation_candidate_pool_residual`,
+`hf_choice_hidden_score_public_innovation_candidate_pool`, and
+`hf_choice_hidden_score_public_innovation_candidate_pool_residual`. Added
+tests in `tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`,
+memo `paper/source_private_arc_public_innovation_preflight_20260502.md`,
+references `references/652_arc_public_innovation_preflight_refs_20260502.md`,
+and artifacts:
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_public_innovation_candidate_pool_residual_n8_cpu_label_choice/`,
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_score_public_innovation_candidate_pool_residual_n8_cpu_label_choice/`,
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_score_public_innovation_candidate_pool_residual_n8_cpu_label_choice_target_query/`,
+and
+`results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_hf_hidden_score_public_innovation_candidate_pool_residual_n8_cpu_label_choice_ridge1000/`.
+Outcome: the conditional public-ridge innovation packet does not clear the
+source-necessity gate. Hidden-only public innovation is prediction-free but
+matched reaches only `1/4` while shuffled-source reaches `2/4`, with
+matched-minus-best-control margin about `-0.900`. Hidden+score public
+innovation at ridge `10` is the least bad row: matched reaches `2/4`, ties
+target-cache-only and same-norm noise at `2/4`, and has a small positive
+matched-minus-best-control margin of about `+0.051`; pass gate is still
+`False`. Target-conditioned query falls back to `1/4`, and ridge `1000` lowers
+fit explained variance from `0.9985` to `0.6295` but also drops matched to
+`1/4`.
+
+Decision: rule out train-only public-ridge innovation as a standalone
+soft-prefix positive method on the current Mac-local surface. The result keeps
+the conditional-innovation framing alive but shows answer-CE-only soft-prefix
+training is too weak: the next exact gate is a source-control-contrastive
+conditional innovation receiver that penalizes zero-source, shuffled-source,
+same-norm-noise, and packet-level candidate-roll controls before any n32/n64
+widening.
+
+Lay explanation: this run tried to send only what the source model knows after
+subtracting what the target can already infer from the question and answer
+choices. The best version helped a little, but it only tied a target-only
+learned prefix, so we still cannot claim real model-to-model communication.

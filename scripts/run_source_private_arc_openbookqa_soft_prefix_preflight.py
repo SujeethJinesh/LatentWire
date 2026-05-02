@@ -336,6 +336,8 @@ def _selected_choice_features(
     source_hidden_layer: int,
     source_token_pool_size: int,
     local_files_only: bool,
+    fit_indices: Sequence[int] | None = None,
+    innovation_ridge: float = 10.0,
 ) -> tuple[torch.Tensor, dict[str, Any]]:
     residualized = source_feature_mode.endswith("_residual")
     base_mode = source_feature_mode.removesuffix("_residual")
@@ -385,6 +387,8 @@ def _selected_choice_features(
         "cached_choice_score_pool",
         "hf_choice_hidden_candidate_pool",
         "hf_choice_hidden_score_candidate_pool",
+        "hf_choice_hidden_public_innovation_candidate_pool",
+        "hf_choice_hidden_score_public_innovation_candidate_pool",
     }:
         pooled, metadata = _choice_candidate_pool_features(
             rows,
@@ -397,6 +401,8 @@ def _selected_choice_features(
             source_max_length=source_max_length,
             source_hidden_layer=source_hidden_layer,
             source_token_pool_size=source_token_pool_size,
+            fit_indices=fit_indices,
+            innovation_ridge=innovation_ridge,
             local_files_only=local_files_only,
         )
         return torch.tensor(pooled.astype(np.float32)), metadata
@@ -472,6 +478,93 @@ def _source_selection_score_rows(
     return score_rows
 
 
+def _flat_candidate_indices_for_rows(rows: Sequence[arc_gate.ArcRow], row_indices: Sequence[int]) -> np.ndarray:
+    offsets: list[tuple[int, int]] = []
+    start = 0
+    for row in rows:
+        end = start + len(row.choices)
+        offsets.append((start, end))
+        start = end
+    flat_indices: list[int] = []
+    for row_index in row_indices:
+        start, end = offsets[int(row_index)]
+        flat_indices.extend(range(start, end))
+    if not flat_indices:
+        raise ValueError("need at least one fit candidate for public innovation features")
+    return np.asarray(flat_indices, dtype=np.int64)
+
+
+def _public_candidate_hashed_features(rows: list[arc_gate.ArcRow], *, feature_dim: int) -> tuple[np.ndarray, dict[str, Any]]:
+    features = arc_gate._features(
+        _source_choice_texts(rows),
+        dim=feature_dim,
+        feature_mode="hashed",
+        feature_model="",
+        feature_device="auto",
+        feature_dtype="float32",
+        feature_max_length=0,
+        local_files_only=True,
+    )
+    return np.asarray(features, dtype=np.float64), {
+        "kind": "public_question_choice_hashed_side_info",
+        "feature_dim": int(feature_dim),
+    }
+
+
+def _public_candidate_innovation_features(
+    source_features: np.ndarray,
+    public_features: np.ndarray,
+    *,
+    fit_flat_indices: np.ndarray,
+    ridge: float,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    source = np.asarray(source_features, dtype=np.float64)
+    public = np.asarray(public_features, dtype=np.float64)
+    if source.ndim != 2 or public.ndim != 2:
+        raise ValueError("source_features and public_features must be rank-2 matrices")
+    if source.shape[0] != public.shape[0]:
+        raise ValueError("source/public candidate feature counts must match")
+    if ridge < 0.0:
+        raise ValueError("innovation_ridge must be non-negative")
+    fit = np.asarray(fit_flat_indices, dtype=np.int64)
+    if fit.size == 0:
+        raise ValueError("fit_flat_indices must not be empty")
+
+    fit_public = public[fit]
+    public_mean = fit_public.mean(axis=0, keepdims=True)
+    public_std = fit_public.std(axis=0, keepdims=True).clip(min=1e-6)
+    standardized_public = (public - public_mean) / public_std
+
+    source_mean = source[fit].mean(axis=0, keepdims=True)
+    centered_source = source - source_mean
+    x_fit = standardized_public[fit]
+    y_fit = centered_source[fit]
+    xtx = x_fit.T @ x_fit
+    xty = x_fit.T @ y_fit
+    if ridge > 0.0:
+        xtx = xtx + float(ridge) * np.eye(xtx.shape[0], dtype=np.float64)
+    weights = np.linalg.solve(xtx, xty)
+    predicted = standardized_public @ weights
+    innovation = centered_source - predicted
+
+    fit_baseline_mse = float(np.mean(np.square(y_fit)))
+    fit_residual_mse = float(np.mean(np.square(innovation[fit])))
+    explained = 0.0 if fit_baseline_mse <= 1e-12 else 1.0 - fit_residual_mse / fit_baseline_mse
+    return innovation.astype(np.float64, copy=False), {
+        "kind": "train_only_public_candidate_ridge_innovation",
+        "ridge": float(ridge),
+        "fit_candidate_count": int(fit.size),
+        "source_feature_dim": int(source.shape[1]),
+        "public_feature_dim": int(public.shape[1]),
+        "fit_baseline_mse": fit_baseline_mse,
+        "fit_residual_mse": fit_residual_mse,
+        "fit_explained_variance_ratio": float(explained),
+        "public_mean_l2": float(np.linalg.norm(public_mean)),
+        "public_std_min": float(public_std.min()),
+        "public_std_max": float(public_std.max()),
+    }
+
+
 def _choice_candidate_pool_features(
     rows: list[arc_gate.ArcRow],
     source_predictions: list[int],
@@ -485,6 +578,8 @@ def _choice_candidate_pool_features(
     source_hidden_layer: int,
     source_token_pool_size: int,
     local_files_only: bool,
+    fit_indices: Sequence[int] | None = None,
+    innovation_ridge: float = 10.0,
 ) -> tuple[np.ndarray, dict[str, Any]]:
     residualized = source_feature_mode.endswith("_residual")
     base_mode = source_feature_mode.removesuffix("_residual")
@@ -492,11 +587,21 @@ def _choice_candidate_pool_features(
     if pool_size < 1:
         raise ValueError("source_token_pool_size must be at least 1")
 
-    score_rows = _source_selection_score_rows(rows, source_predictions)
     hidden_rows: list[np.ndarray] | None = None
     hidden_meta: dict[str, Any] = {}
+    innovation_meta: dict[str, Any] = {}
     normalize_rows = base_mode != "cached_choice_score_pool"
-    if base_mode in {"hf_choice_hidden_candidate_pool", "hf_choice_hidden_score_candidate_pool"}:
+    hidden_base_modes = {
+        "hf_choice_hidden_candidate_pool",
+        "hf_choice_hidden_score_candidate_pool",
+        "hf_choice_hidden_public_innovation_candidate_pool",
+        "hf_choice_hidden_score_public_innovation_candidate_pool",
+    }
+    innovation_base_modes = {
+        "hf_choice_hidden_public_innovation_candidate_pool",
+        "hf_choice_hidden_score_public_innovation_candidate_pool",
+    }
+    if base_mode in hidden_base_modes:
         flat_hidden, hidden_meta = _hf_choice_hidden_features(
             rows,
             model_path=source_model,
@@ -506,6 +611,17 @@ def _choice_candidate_pool_features(
             local_files_only=local_files_only,
             hidden_layer=source_hidden_layer,
         )
+        if base_mode in innovation_base_modes:
+            if fit_indices is None:
+                raise ValueError(f"{source_feature_mode!r} requires fit_indices")
+            public_flat, public_meta = _public_candidate_hashed_features(rows, feature_dim=feature_dim)
+            flat_hidden, innovation_meta = _public_candidate_innovation_features(
+                flat_hidden,
+                public_flat,
+                fit_flat_indices=_flat_candidate_indices_for_rows(rows, fit_indices),
+                ridge=innovation_ridge,
+            )
+            innovation_meta = {**innovation_meta, "public_metadata": public_meta}
         hidden_rows = []
         offset = 0
         for row in rows:
@@ -514,8 +630,9 @@ def _choice_candidate_pool_features(
 
     pooled_rows: list[np.ndarray] = []
     feature_kind: str
-    for row_index, score_row in enumerate(score_rows):
+    for row_index, row in enumerate(rows):
         if base_mode == "cached_choice_score_pool":
+            score_row = _source_selection_score_rows([row], [source_predictions[row_index]])[0]
             row_features = score_row
             feature_kind = "cached_source_selection_score_candidate_pool"
         elif base_mode == "hf_choice_hidden_candidate_pool":
@@ -526,8 +643,20 @@ def _choice_candidate_pool_features(
         elif base_mode == "hf_choice_hidden_score_candidate_pool":
             if hidden_rows is None:
                 raise ValueError("hidden rows were not loaded")
+            score_row = _source_selection_score_rows([row], [source_predictions[row_index]])[0]
             row_features = np.concatenate([hidden_rows[row_index], score_row], axis=1)
             feature_kind = "hf_choice_hidden_score_candidate_pool"
+        elif base_mode == "hf_choice_hidden_public_innovation_candidate_pool":
+            if hidden_rows is None:
+                raise ValueError("hidden rows were not loaded")
+            row_features = hidden_rows[row_index]
+            feature_kind = "hf_choice_hidden_public_innovation_candidate_pool"
+        elif base_mode == "hf_choice_hidden_score_public_innovation_candidate_pool":
+            if hidden_rows is None:
+                raise ValueError("hidden rows were not loaded")
+            score_row = _source_selection_score_rows([row], [source_predictions[row_index]])[0]
+            row_features = np.concatenate([hidden_rows[row_index], score_row], axis=1)
+            feature_kind = "hf_choice_hidden_score_public_innovation_candidate_pool"
         else:
             raise ValueError(f"unknown candidate pool mode {source_feature_mode!r}")
         pooled_rows.append(
@@ -549,8 +678,13 @@ def _choice_candidate_pool_features(
         "choice_count_mean": float(statistics.fmean(choice_counts)) if choice_counts else 0.0,
         "row_centered_candidate_residual": bool(residualized),
         "uses_source_predictions": base_mode
-        in {"cached_choice_score_pool", "hf_choice_hidden_score_candidate_pool"},
+        in {
+            "cached_choice_score_pool",
+            "hf_choice_hidden_score_candidate_pool",
+            "hf_choice_hidden_score_public_innovation_candidate_pool",
+        },
         "hidden_metadata": hidden_meta,
+        "innovation_metadata": innovation_meta,
         "feature_dim": int(pooled_rows[0].shape[-1]) if pooled_rows else int(feature_dim),
     }
 
@@ -995,6 +1129,7 @@ def run_preflight(
     target_max_length: int,
     source_hidden_layer: int,
     source_token_pool_size: int,
+    innovation_ridge: float,
     local_files_only: bool,
     prefix_len: int,
     hidden_dim: int,
@@ -1029,6 +1164,8 @@ def run_preflight(
         source_max_length=source_max_length,
         source_hidden_layer=source_hidden_layer,
         source_token_pool_size=source_token_pool_size,
+        fit_indices=fit_indices,
+        innovation_ridge=innovation_ridge,
         local_files_only=local_files_only,
     )
     target_summary, target_meta = _target_public_features(rows, feature_dim=target_feature_dim)
@@ -1307,6 +1444,7 @@ def run_preflight(
             "source_feature_mode": source_feature_mode,
             "source_feature_dim": source_feature_dim,
             "source_token_pool_size": source_token_pool_size,
+            "innovation_ridge": innovation_ridge,
             "source_tensor_rank": source_tensor_rank,
             "target_feature_dim": target_feature_dim,
             "prefix_len": prefix_len,
@@ -1397,6 +1535,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "hf_choice_hidden_candidate_pool_residual",
             "hf_choice_hidden_score_candidate_pool",
             "hf_choice_hidden_score_candidate_pool_residual",
+            "hf_choice_hidden_public_innovation_candidate_pool",
+            "hf_choice_hidden_public_innovation_candidate_pool_residual",
+            "hf_choice_hidden_score_public_innovation_candidate_pool",
+            "hf_choice_hidden_score_public_innovation_candidate_pool_residual",
             "hf_choice_token_hidden_pool",
             "hf_choice_token_hidden_pool_residual",
         ),
@@ -1404,6 +1546,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--source-feature-dim", type=int, default=128)
     parser.add_argument("--source-token-pool-size", type=int, default=32)
+    parser.add_argument("--innovation-ridge", type=float, default=10.0)
     parser.add_argument("--target-feature-dim", type=int, default=64)
     parser.add_argument("--source-model", default=DEFAULT_QWEN_SOURCE)
     parser.add_argument("--target-model", default=DEFAULT_QWEN_TARGET)
@@ -1455,6 +1598,7 @@ def main(argv: list[str] | None = None) -> int:
         target_max_length=int(args.target_max_length),
         source_hidden_layer=int(args.source_hidden_layer),
         source_token_pool_size=int(args.source_token_pool_size),
+        innovation_ridge=float(args.innovation_ridge),
         local_files_only=str(args.local_files_only).lower() == "true",
         prefix_len=int(args.prefix_len),
         hidden_dim=int(args.hidden_dim),
