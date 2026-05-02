@@ -94,3 +94,31 @@ Systems implication: the method still has an attractive byte/exposure profile
 relative to KV/cache-transfer baselines, but ICLR cannot rest on systems
 accounting alone until native NVIDIA serving rows and a robust cross-family
 method are available.
+
+## 8B b2000 Follow-Up
+
+Follow-up artifacts:
+
+- plain same-protocol Fourier gate:
+  `results/source_private_arc_challenge_fourier_anchor_syndrome_cross_family_phi3_gate_20260502_budget8_10seed_b2000/`;
+- strict source-family wrapper:
+  `results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu_budget8_10seed_b2000/`;
+- memo:
+  `paper/source_private_arc_phi3_8b_b2000_cross_family_falsification_20260502.md`.
+
+The stricter follow-up uses the promoted `8B` payload / `11B` framed packet,
+10 seeds, and 2000 paired bootstrap samples. It remains negative:
+
+- overall pass gate: `False`;
+- full validation/test pass: `0/10` and `0/10`;
+- Qwen-disagreement validation/test pass: `0/10` and `0/10`;
+- test full-slice matched/target/text: `0.244/0.265/0.232`;
+- test Qwen-disagreement rows: `833`;
+- test Qwen-disagreement matched/Qwen-substituted/text/target:
+  `0.200/0.340/0.203/0.273`;
+- test Qwen-disagreement CI95 low versus Qwen-substituted: `-0.192`.
+
+Decision update: the current ARC packet is now explicitly same-family/source
+cache bounded. Do not present it as source-family-general. The next live branch
+must change the source endpoint or the representation basis, not merely repeat
+the Phi-3 packet-only path.

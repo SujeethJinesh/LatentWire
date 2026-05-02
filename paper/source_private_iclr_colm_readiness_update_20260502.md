@@ -13,10 +13,12 @@ Date: 2026-05-02
 - Exact gap: one positive source-family repair, learned receiver, or
   common-language connector must beat packet-only under paired uncertainty,
   destructive controls, and at least one strict cross-family or cross-benchmark
-  falsification. The Mac-local Phi-3 cross-family source diagnostic and the
+  falsification. The promoted `8B` ARC packet is now seed-stable and
+  b2000-stable in the same-family Qwen-source setting, but the strict
+  Mac-local Phi-3 `8B`/10-seed/b2000 cross-family falsification fails. The
   TinyLlama hidden/query PCA/ridge, transport/common-basis, nonlinear
   sparse-query cache-bottleneck, and train-only MLP cache-to-packet connectors
-  now fail this gate. The Llama-8B
+  also fail this gate. The Llama-8B
   true non-Qwen scout now runs locally after the MPS workaround, but also fails
   the strict validation/paired-uncertainty gate. The systems boundary table is
   paper-ready as accounting and the native ingest gate now refuses premature
@@ -42,6 +44,30 @@ Date: 2026-05-02
    are now explicitly recorded as negative or non-headline.
 
 ## What Changed
+
+The promoted ARC Fourier/anchor-syndrome packet now has a strict Phi-3
+cross-family falsification at the same rate/uncertainty:
+
+- plain artifact:
+  `results/source_private_arc_challenge_fourier_anchor_syndrome_cross_family_phi3_gate_20260502_budget8_10seed_b2000/`;
+- strict wrapper:
+  `results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu_budget8_10seed_b2000/`;
+- memo:
+  `paper/source_private_arc_phi3_8b_b2000_cross_family_falsification_20260502.md`;
+- payload/framed bytes: `8B/11B`;
+- seeds/bootstrap samples: `10/2000`;
+- full validation/test pass: `0/10` and `0/10`;
+- Qwen-disagreement validation/test pass: `0/10` and `0/10`;
+- test full-slice matched/target/text: `0.244/0.265/0.232`;
+- test Qwen-disagreement matched/Qwen-substituted/text/target:
+  `0.200/0.340/0.203/0.273`;
+- test Qwen-disagreement CI95 low versus Qwen-substituted: `-0.192`;
+- plain Fourier anchor-ID/value and spectral-bin mismatch controls remain
+  `0/10`.
+
+Lay explanation: this repeated the strongest tiny-packet experiment but asked
+Phi-3, a different model family, to be the private source. The packet no longer
+helped, so the current ARC positive row is not yet source-family-general.
 
 The systems boundary figure/table V3 is now materialized:
 
@@ -824,3 +850,31 @@ on strict cross-family generality and native GPU systems rows.
 Lay explanation: this was a more careful uncertainty check. The positive
 interval stayed positive even with more resampling, so the `8B` packet result
 is statistically steadier.
+
+## 2026-05-02 ARC Phi-3 8B b2000 Cross-Family Follow-Up
+
+Reran the promoted `8B` / `10`-seed / b2000 packet with complete Phi-3 source
+caches:
+
+- plain artifact:
+  `results/source_private_arc_challenge_fourier_anchor_syndrome_cross_family_phi3_gate_20260502_budget8_10seed_b2000/`;
+- strict wrapper:
+  `results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu_budget8_10seed_b2000/`;
+- memo:
+  `paper/source_private_arc_phi3_8b_b2000_cross_family_falsification_20260502.md`;
+- overall pass gate: `False`;
+- full validation/test pass: `0/10` and `0/10`;
+- Qwen-disagreement validation/test pass: `0/10` and `0/10`;
+- test full-slice matched/target/text: `0.244/0.265/0.232`;
+- test Qwen-disagreement rows: `833`;
+- test Qwen-disagreement matched/Qwen-substituted/text/target:
+  `0.200/0.340/0.203/0.273`;
+- test Qwen-disagreement CI95 low versus Qwen-substituted: `-0.192`.
+
+Decision: use this as the current strict source-family claim boundary. The
+ARC `8B` packet remains the strongest positive row, but it is same-family
+bounded until a stronger non-Qwen source or common-feature connector survives.
+
+Lay explanation: changing the source model family broke the tiny-packet win.
+This is useful evidence because it tells us exactly what a reviewer will ask
+for next.

@@ -811,6 +811,8 @@ def build_source_family_cache_falsification(
             "spectral_dim": spectral_dim,
             "code_dim": code_dim,
             "budget_bytes": budget_bytes,
+            "seeds": seeds,
+            "bootstrap_samples": bootstrap_samples,
             "basis": "public train-anchor relative coordinates followed by orthonormal low-frequency DCT-II",
         },
         "source_cache_audit": {

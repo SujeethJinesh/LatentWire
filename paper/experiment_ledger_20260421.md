@@ -19976,3 +19976,38 @@ the unchanged `8B` payload / `11B` framed protocol, same 10 seeds, same
 Lay explanation: we repeated the uncertainty calculation with four times as
 many bootstrap resamples. The confidence interval stayed positive, so the
 small-packet result is not just a loose statistical artifact.
+
+## 2026-05-02 ARC Phi-3 8B b2000 Cross-Family Falsification
+
+Reran the promoted ARC Fourier/anchor-syndrome packet with the same `8B`
+payload, `10` seeds, and `2000` bootstrap samples, but swapped in the complete
+Phi-3 source-choice caches:
+
+- plain artifact:
+  `results/source_private_arc_challenge_fourier_anchor_syndrome_cross_family_phi3_gate_20260502_budget8_10seed_b2000/`;
+- strict wrapper artifact:
+  `results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu_budget8_10seed_b2000/`;
+- memo:
+  `paper/source_private_arc_phi3_8b_b2000_cross_family_falsification_20260502.md`;
+- alternate source family: `phi3_mini_4k`;
+- payload/framed bytes: `8B/11B`;
+- full validation/test pass: `0/10` and `0/10`;
+- Qwen-disagreement validation/test pass: `0/10` and `0/10`;
+- test full-slice matched/target/text: `0.244/0.265/0.232`;
+- test Qwen-disagreement rows: `833`;
+- test Qwen-disagreement matched/Qwen-substituted/text/target:
+  `0.200/0.340/0.203/0.273`;
+- test Qwen-disagreement CI95 low versus Qwen-substituted: `-0.192`;
+- anchor-ID shuffle, anchor-value shuffle, and spectral-bin permutation all
+  fail at `0/10` in the plain Fourier artifact.
+
+Decision: rule out the available Mac-local Phi-3 source as the strict
+cross-family repair for the current `8B` ARC packet. The same-family Qwen
+packet row remains alive and strong enough for COLM-style positive evidence,
+but ICLR remains blocked until a stronger non-Qwen source endpoint or a richer
+SAE/crosscoder/query-bottleneck common-feature connector survives this same
+gate.
+
+Lay explanation: this asked a different model family to make the source
+decision and send the same tiny packet. The packet no longer helped the target;
+on rows where Phi-3 and Qwen disagreed, the Qwen packet was much stronger.

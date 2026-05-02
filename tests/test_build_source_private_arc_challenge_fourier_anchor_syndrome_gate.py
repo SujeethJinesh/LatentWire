@@ -28,6 +28,9 @@ def _cache_row(row: dict, source_index: int) -> dict:
     return {
         "row_id": row["id"],
         "content_id": row["content_id"],
+        "source_family": "toy_source",
+        "source_model": "toy-model",
+        "source_score_mode": "fixture_choice",
         "source_selected_index": source_index,
         "source_selected_choice_sha256": "",
         "source_visible_fields": ["question", "choices"],
@@ -84,6 +87,8 @@ def test_fourier_anchor_syndrome_gate_writes_artifacts(tmp_path) -> None:
     assert "spectral_bin_permutation" in payload["splits"]["test"]["variants"]
     assert "anchor_value_shuffle" in payload["splits"]["validation"]["variants"]
     assert payload["method_contract"]["forbidden_eval_source_inputs"]
+    assert payload["source_cache_audit"]["source_families"] == ["toy_source"]
+    assert "source_cache_audit" in payload["method_contract"]["source_packet_origin"]
     assert (tmp_path / "out" / "arc_challenge_fourier_anchor_syndrome_gate.json").exists()
     assert (tmp_path / "out" / "per_variant_seed_metrics.csv").exists()
     assert (tmp_path / "out" / "matched_predictions.jsonl").exists()

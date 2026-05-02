@@ -99,3 +99,10 @@ Do not claim ICLR readiness yet. Next exact gate: run a strict cross-family
 falsification or train-source selector on top of this shared basis, then run
 native NVIDIA systems comparisons against C2C, KVComm, TurboQuant/QJL/KV-cache
 quantization, vLLM, and SGLang.
+
+Follow-up status: the strict Phi-3 `8B`/10-seed/b2000 cross-family gate is now
+negative. The full test slice reaches matched/target/text
+`0.244/0.265/0.232`, and on `833` Qwen-disagreement rows the
+matched/Qwen-substituted/text/target row is `0.200/0.340/0.203/0.273`. Keep
+the Fourier/anchor-syndrome method as a positive same-family packet result and
+use the Phi-3 artifact as the current cross-family claim boundary.

@@ -1,0 +1,23 @@
+{
+  "artifact_sha256": {
+    "matched_predictions.jsonl": "7aeda7b0cfdde25d09da27a1504e4908030183febd0af4d5e5bb4727ae98279f",
+    "per_source_split_seed_metrics.csv": "855d55f10ee261a846f29ef35dad1bdbb830f2c21fb1a92a4a93b7792392dd55",
+    "qwen_disagreement_predictions.jsonl": "073896ef9bc3bcc5f53a9ea95a118abbf1c4d953f1e0b4d09ee1ceec3f6df38e",
+    "source_cache_agreement.csv": "b2dd6cb076cb718b78671b0d29ec25ae61ecca44c7818ac30613d38e10ed1396",
+    "source_cache_audit.json": "a74432b48b0d82ae0a0a250ec71a71444ecd5de907d814e877f19c589ef3d8ff",
+    "source_family_cache_falsification.json": "9a7cfc159d77dc583d4294773c6ed595ce3f1c3ed544bad4cfb556fff88626fe",
+    "source_family_cache_falsification.md": "c19f3ebf60b4c6020d71f4152227fc681fdda0f61d5718d44697334a845111d0"
+  },
+  "artifacts": [
+    "source_family_cache_falsification.json",
+    "source_family_cache_falsification.md",
+    "source_cache_audit.json",
+    "per_source_split_seed_metrics.csv",
+    "source_cache_agreement.csv",
+    "matched_predictions.jsonl",
+    "qwen_disagreement_predictions.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

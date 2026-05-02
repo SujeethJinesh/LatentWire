@@ -71,8 +71,21 @@ and seed stability.
 
 Do not claim a lower minimum rate yet. Exploratory `4B` and `6B` probes were
 interrupted after producing no artifacts so the 8B gate could complete on the
-Mac; they are not evidence. The next exact scientific gate is a strict
-cross-family ARC run with the unchanged `8B` payload / `11B` framed packet,
-the same 10 seeds, and the same 2000-bootstrap paired uncertainty. A planned
-overnight `4B/6B/8B/12B` resumable sweep is useful only after the cross-family
-gate is settled.
+Mac; they are not evidence.
+
+The strict Phi-3 cross-family follow-up is now settled and negative:
+
+- plain artifact:
+  `results/source_private_arc_challenge_fourier_anchor_syndrome_cross_family_phi3_gate_20260502_budget8_10seed_b2000/`;
+- strict wrapper:
+  `results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu_budget8_10seed_b2000/`;
+- full test matched/target/text: `0.244/0.265/0.232`;
+- test Qwen-disagreement matched/Qwen-substituted/text/target:
+  `0.200/0.340/0.203/0.273`;
+- pass gate: `False`.
+
+The current `8B` headline remains a strong same-family Qwen-source packet row,
+not an ICLR-complete source-family-general result. The next exact scientific
+gate is a stronger non-Qwen source endpoint or a richer SAE/crosscoder/query
+bottleneck common-feature connector under the same `8B`, 10-seed, b2000
+falsification protocol.

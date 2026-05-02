@@ -2119,5 +2119,12 @@
     "path": "references/659_latent_communication_uniqueness_systems_boundary_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo pinning the current LatentWire novelty boundary against C2C, KVComm, Interlat, Relative Representations, QJL, TurboQuant, gist tokens, LLMLingua, vLLM/PagedAttention, SGLang, and future-method inspiration boundaries from DiT, consistency models, and SAE feature-space universality."
+  },
+  {
+    "num": 660,
+    "slug": "phi3_8b_cross_family_and_uniqueness_refs_20260502",
+    "path": "references/660_phi3_8b_cross_family_and_uniqueness_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the strict Phi-3 8B/b2000 cross-family falsification and novelty boundary, covering C2C, KVComm/KVCOMM, InterLat, Relative Representations, prefix/gist/LLMLingua, QJL, TurboQuant, vLLM, SGLang, SAE/USAE, DiT, and consistency-model inspiration."
   }
 ]

@@ -89,6 +89,8 @@ def test_source_family_cache_falsification_writes_disagreement_artifacts(tmp_pat
     assert payload["splits"]["test"]["source_cache_agreement"]["disagreement_count"] == len(test_rows)
     assert payload["splits"]["test"]["qwen_disagreement_slice"]["aggregate"]["n"] == len(test_rows)
     assert payload["basis"]["spectral_dim"] == 6
+    assert payload["basis"]["seeds"] == [3]
+    assert payload["basis"]["bootstrap_samples"] == 20
     assert (tmp_path / "out" / "source_family_cache_falsification.json").exists()
     assert (tmp_path / "out" / "per_source_split_seed_metrics.csv").exists()
     assert (tmp_path / "out" / "qwen_disagreement_predictions.jsonl").exists()

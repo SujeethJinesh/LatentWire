@@ -105,6 +105,43 @@ def _read_source_cache(path: pathlib.Path) -> dict[str, int]:
     return choices
 
 
+def _source_cache_summary(path: pathlib.Path) -> dict[str, Any]:
+    row_count = 0
+    source_families: set[str] = set()
+    source_models: set[str] = set()
+    source_score_modes: set[str] = set()
+    source_visible_fields: set[str] = set()
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row_count += 1
+            row = json.loads(line)
+            forbidden = set(row.get("forbidden_source_fields", ()))
+            if not set(arc_gate.FORBIDDEN_SOURCE_KEYS) <= forbidden:
+                raise ValueError(f"source cache row {row.get('row_id')} is missing forbidden-field contract")
+            if row.get("source_family"):
+                source_families.add(str(row["source_family"]))
+            if row.get("source_model"):
+                source_models.add(str(row["source_model"]))
+            if row.get("source_score_mode"):
+                source_score_modes.add(str(row["source_score_mode"]))
+            source_visible_fields.update(str(field) for field in row.get("source_visible_fields", ()))
+    if row_count <= 0:
+        raise ValueError(f"{path} contained no source-choice rows")
+    return {
+        "path": _display_path(path),
+        "sha256": _sha256_file(path),
+        "rows": row_count,
+        "source_families": sorted(source_families),
+        "source_models": sorted(source_models),
+        "source_score_modes": sorted(source_score_modes),
+        "source_visible_fields": sorted(source_visible_fields),
+        "forbidden_source_fields": list(arc_gate.FORBIDDEN_SOURCE_KEYS),
+        "forbidden_contract_declared": True,
+    }
+
+
 def _source_predictions(rows: list[arc_gate.ArcRow], cache: dict[str, int]) -> list[int]:
     predictions: list[int] = []
     missing: list[str] = []
@@ -385,11 +422,13 @@ def _write_variant_csv(path: pathlib.Path, payload: dict[str, Any]) -> None:
 
 def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
     test = payload["splits"]["test"]["headline"]["matched_aggregate"]
+    source_families = ", ".join(payload["source_cache_audit"]["source_families"]) or "unspecified"
     lines = [
         "# Source-Private ARC-Challenge Fourier/Anchor-Syndrome Gate",
         "",
         f"- date: `{payload['date']}`",
         f"- pass gate: `{payload['pass_gate']}`",
+        f"- source cache families: `{source_families}`",
         f"- packet budget: `{payload['budget_bytes']}B`",
         f"- anchor / spectral / code dims: `{payload['anchor_count']}` / `{payload['spectral_dim']}` / `{payload['code_dim']}`",
         f"- test matched mean/min: `{test['matched_accuracy_mean']:.3f}` / `{test['matched_accuracy_min']:.3f}`",
@@ -451,6 +490,11 @@ def build_fourier_anchor_syndrome_gate(
     test_rows = arc_gate._load_rows(test_path)
     validation_overlap = sorted({row.content_id for row in train_rows} & {row.content_id for row in validation_rows})
     test_overlap = sorted({row.content_id for row in train_rows} & {row.content_id for row in test_rows})
+    validation_cache_summary = _source_cache_summary(validation_source_cache)
+    test_cache_summary = _source_cache_summary(test_source_cache)
+    source_families = sorted(
+        set(validation_cache_summary["source_families"]) | set(test_cache_summary["source_families"])
+    )
 
     validation_payload, validation_prediction_rows = _evaluate_split(
         split_name="validation",
@@ -506,6 +550,14 @@ def build_fourier_anchor_syndrome_gate(
         "spectral_dim": spectral_dim,
         "code_dim": code_dim,
         "bootstrap_samples": bootstrap_samples,
+        "source_cache_audit": {
+            "validation": validation_cache_summary,
+            "test": test_cache_summary,
+            "source_families": source_families,
+            "source_family_consistent_across_splits": bool(
+                validation_cache_summary["source_families"] == test_cache_summary["source_families"]
+            ),
+        },
         "basis_contract": {
             "basis": "public train-anchor relative coordinates followed by orthonormal low-frequency DCT-II",
             "anchor_source": "train split question/candidate texts",
@@ -519,7 +571,9 @@ def build_fourier_anchor_syndrome_gate(
         },
         "method_contract": {
             "source_packet_budget_bytes": budget_bytes,
-            "source_packet_origin": "answer-key-forbidden Qwen2.5-0.5B source-choice cache from frozen ARC packet gates",
+            "source_packet_origin": (
+                "answer-key-forbidden source-choice cache; see source_cache_audit for family/model identity"
+            ),
             "receiver_inputs_at_test": [
                 "fixed-byte Fourier/anchor-syndrome source packet",
                 "public question/candidate text through the same public anchor chart",
