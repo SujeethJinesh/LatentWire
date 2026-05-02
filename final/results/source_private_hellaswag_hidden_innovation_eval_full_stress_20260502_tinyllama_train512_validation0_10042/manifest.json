@@ -1,0 +1,84 @@
+{
+  "created_utc": "2026-05-02T03:30:30.652305+00:00",
+  "files": [
+    {
+      "bytes": 385956,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "f311987d70dbe15bdea339f94fe9cdf360c981f9d4e6505a89425d019082dd8f"
+    },
+    {
+      "bytes": 804,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/hellaswag_hidden_innovation_eval_slice_stress.md",
+      "sha256": "f77375f3ce05a889116285d82d94db9fce801f785e13dca9c6c1317a7cccd559"
+    },
+    {
+      "bytes": 10782630,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/hellaswag_validation_rows_0_10042.jsonl",
+      "sha256": "748c3b3822c2423f3ff3e8b80523cb3d971f5f5c940a4da029a9fa0f4e1faf12"
+    },
+    {
+      "bytes": 1085544,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/source_eval_score_cache.json",
+      "sha256": "707bbbd52c87f326f6e0b19d572878b1313d89e55dd09909929ee463896b531d"
+    },
+    {
+      "bytes": 128911,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/source_eval_hidden_cache.json",
+      "sha256": "8e1c74267e7582a9ddaab2592e0cce3b47e2e407321bad0a6cf765827fbdd551"
+    },
+    {
+      "bytes": 190172,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/bagged_gate/hellaswag_hidden_innovation_bagged_gate.json",
+      "sha256": "fb5b649bf0b0de99f75fa5da9a5684b8a2b554c6074b16e55ed6220f0bb1a3fa"
+    },
+    {
+      "bytes": 1650,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/bagged_gate/jackknife_rows.csv",
+      "sha256": "44d319069b435700234e2df4e12baa74658efa8b6787187ce56a07ec170511e8"
+    },
+    {
+      "bytes": 3597,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/bagged_gate/manifest.json",
+      "sha256": "a4e528d0aa61d9a57f882681f37da05a89e005dfe07676ab91d792b6d64904af"
+    }
+  ],
+  "gate": "source_private_hellaswag_hidden_innovation_eval_slice_stress",
+  "headline": {
+    "best_label_copy_eval_accuracy": 0.5587532364070902,
+    "candidate_roll_hidden_control_accuracy": 0.3661621190997809,
+    "component_model_count": 9,
+    "eval_rows": 10042,
+    "eval_slice_end_exclusive": 10042,
+    "eval_slice_start": 0,
+    "framed_record_bytes": 5,
+    "jackknife_min_ci95_low_vs_best_label_copy": 0.04963901613224457,
+    "jackknife_min_delta_vs_best_label_copy": 0.056960764787890916,
+    "jackknife_pass_count": 3,
+    "jackknife_row_count": 3,
+    "paired_ci95_high_vs_best_label_copy": 0.06772057359091814,
+    "paired_ci95_low_vs_best_label_copy": 0.053423122883887675,
+    "paired_ci95_low_vs_score_only_bagged": 0.054319358693487356,
+    "raw_payload_bytes": 2,
+    "score_only_bagged_control_accuracy": 0.5587532364070902,
+    "selected_eval_accuracy": 0.6191993626767576,
+    "selected_minus_best_label_copy": 0.06044612626966739,
+    "selected_minus_score_only_bagged_control": 0.06044612626966739,
+    "selected_minus_zero_hidden_control": 0.06044612626966739,
+    "source_label_copy_eval_accuracy": 0.5587532364070902,
+    "standard_sized_slice": false,
+    "strict_delta_required": 0.02,
+    "terminal_tail_slice": false,
+    "train_sample_seed_count": 3,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.5576578370842462,
+    "wrong_example_hidden_control_accuracy": 0.45668193586934874,
+    "zero_hidden_control_accuracy": 0.5587532364070902
+  },
+  "omitted_large_files": [
+    {
+      "bytes": 272402684,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/source_eval_hidden_cache.npz",
+      "reason": "Large reproducible hidden tensor cache omitted from git after recording metadata, SHA-256, predictions, score cache, and aggregate gate outputs; regenerate with the recorded TinyLlama model path and validation row slice if needed.",
+      "sha256": "77a569be5f823766bbe8a800d12063c328fdcc2080194e175a2d3ee6c251dece"
+    }
+  ]
+}

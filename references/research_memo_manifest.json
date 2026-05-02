@@ -1748,5 +1748,12 @@
     "path": "references/606_hellaswag_tinyllama_source_family_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the TinyLlama non-Qwen source-family HellaSwag hidden-innovation heldout-slice pass, covering the source-family stress claim and boundaries against prefix/prompt/adapters, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, SAE/crosscoder/relative representations, vLLM, and SGLang."
+  },
+  {
+    "num": 607,
+    "slug": "hellaswag_tinyllama_full_validation_refs_20260502",
+    "path": "references/607_hellaswag_tinyllama_full_validation_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the TinyLlama full-validation HellaSwag hidden-innovation source-family pass and Mac systems card, covering the safe source-family robustness claim and boundaries against prefix/prompt/adapters, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, SAE/crosscoder/relative representations, vLLM, and SGLang."
   }
 ]

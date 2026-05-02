@@ -1,0 +1,66 @@
+{
+  "created_utc": "2026-05-02T03:31:37.364401+00:00",
+  "files": [
+    {
+      "bytes": 7683,
+      "path": "results/source_private_hellaswag_source_family_full_validation_card_20260502/hellaswag_source_family_stress_card.json",
+      "sha256": "c76cb22cb51c682730801658cc0af970ee6a48a711d0fb7dfc2310e99125c2ed"
+    },
+    {
+      "bytes": 2757,
+      "path": "results/source_private_hellaswag_source_family_full_validation_card_20260502/hellaswag_source_family_stress_card.csv",
+      "sha256": "b5487b8d7d43853efb99c04ccad6d937fc82cd7694e1665d2c4c3ce87f67d1a4"
+    },
+    {
+      "bytes": 1182,
+      "path": "results/source_private_hellaswag_source_family_full_validation_card_20260502/hellaswag_source_family_stress_card.md",
+      "sha256": "4ff442f2fe62805ed546fdb24d6529681e00ecb8bbbe7f914fd829631751ac7b"
+    }
+  ],
+  "gate": "source_private_hellaswag_source_family_stress_card",
+  "headline": {
+    "framed_record_bytes": 5,
+    "iclr_ready": false,
+    "qwen_full_validation_pass": true,
+    "raw_payload_bytes": 2,
+    "remaining_iclr_gaps": [
+      "test a true source-family-to-receiver-family transfer surface when target-model receiver artifacts exist",
+      "add native NVIDIA systems rows before throughput/HBM claims",
+      "add benchmark diversity beyond HellaSwag before broad ICLR claims"
+    ],
+    "source_family_count": 2,
+    "tinyllama_accuracy": 0.501953125,
+    "tinyllama_best_label_copy_accuracy": 0.4501953125,
+    "tinyllama_ci95_low_vs_best_label_copy": 0.025390625,
+    "tinyllama_delta_vs_best_label_copy": 0.0517578125,
+    "tinyllama_delta_vs_score_only": 0.0556640625,
+    "tinyllama_full_accuracy": 0.6191993626767576,
+    "tinyllama_full_best_label_copy_accuracy": 0.5587532364070902,
+    "tinyllama_full_ci95_low_vs_best_label_copy": 0.053423122883887675,
+    "tinyllama_full_delta_vs_best_label_copy": 0.06044612626966739,
+    "tinyllama_full_delta_vs_score_only": 0.06044612626966739,
+    "tinyllama_full_jackknife_pass_count": 3,
+    "tinyllama_full_jackknife_row_count": 3,
+    "tinyllama_full_score_only_accuracy": 0.5587532364070902,
+    "tinyllama_full_validation_pass": true,
+    "tinyllama_full_validation_present": true,
+    "tinyllama_heldout_slice_pass": true,
+    "tinyllama_jackknife_pass_count": 3,
+    "tinyllama_jackknife_row_count": 3,
+    "tinyllama_score_only_accuracy": 0.4462890625
+  },
+  "inputs": [
+    {
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/hellaswag_hidden_innovation_global_stability.json",
+      "sha256": "9bfd8fd48e20c7c6bf6e7fa7bf43bff16e323545382818c6798b6d53e9ef4696"
+    },
+    {
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260502_tinyllama_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "ef26211d965a377e146030a62658a71fdedb10febb50d4baf19a561e4193b50a"
+    },
+    {
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "22300aa517c800c45bdf6a01488a9279a2da966228911c46dbdf43b2bfc4c323"
+    }
+  ]
+}

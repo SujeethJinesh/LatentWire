@@ -1,0 +1,58 @@
+{
+  "created_utc": "2026-05-02T03:31:37.356530+00:00",
+  "files": [
+    {
+      "bytes": 3305,
+      "path": "results/source_private_hellaswag_tinyllama_full_mac_systems_card_20260502/tinyllama_full_mac_systems_card.json",
+      "sha256": "f49df87f634aaeb459703e488a124c6f46b9c5b05956791a422f21e43e313d71"
+    },
+    {
+      "bytes": 640,
+      "path": "results/source_private_hellaswag_tinyllama_full_mac_systems_card_20260502/tinyllama_full_mac_systems_card.md",
+      "sha256": "c732bcfae773cdc123a14088ea9871a9893c81bd252c0b7fc6f463678c7b73c5"
+    }
+  ],
+  "gate": "source_private_hellaswag_tinyllama_full_mac_systems_card",
+  "headline": {
+    "accuracy": 0.6191993626767576,
+    "backend": "PyTorch/MPS Mac-local artifact",
+    "batch64_cacheline_bytes_per_request": 5.0,
+    "batch64_dma_bytes_per_request": 6.0,
+    "benchmark": "HellaSwag",
+    "best_label_copy_accuracy": 0.5587532364070902,
+    "delta_vs_best_label_copy": 0.06044612626966739,
+    "delta_vs_score_only": 0.06044612626966739,
+    "device": "mps",
+    "examples_per_second_end_to_end": 2.812852475268177,
+    "native_gpu_claims_allowed": false,
+    "packet_build_and_gate_wall_time_s": 94.69759437598987,
+    "packet_framed_bytes": 5,
+    "packet_raw_bytes": 2,
+    "paired_ci95_low_vs_best_label_copy": 0.053423122883887675,
+    "precision": "float16",
+    "raw_hidden_vector_transmitted": false,
+    "raw_scores_transmitted": false,
+    "row_count": 10042,
+    "score_only_accuracy": 0.5587532364070902,
+    "single_request_cacheline_bytes": 64.0,
+    "single_request_dma_bytes": 128.0,
+    "source_hidden_cache_bytes": 272402684,
+    "source_hidden_extraction_wall_time_s": 1709.469959000009,
+    "source_hidden_meta_bytes": 128911,
+    "source_kv_exposed": false,
+    "source_label_copy_accuracy": 0.5587532364070902,
+    "source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+    "source_score_cache_bytes": 1085544,
+    "source_scoring_wall_time_s": 1765.873921707971,
+    "source_text_exposed": false,
+    "split": "validation",
+    "target_model": "frozen candidate selector/evaluator contract",
+    "total_wall_time_s": 3570.04147508397
+  },
+  "inputs": [
+    {
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "22300aa517c800c45bdf6a01488a9279a2da966228911c46dbdf43b2bfc4c323"
+    }
+  ]
+}
