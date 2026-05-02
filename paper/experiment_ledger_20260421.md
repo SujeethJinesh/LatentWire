@@ -18851,3 +18851,36 @@ packet and score features. Do not keep tuning linear selectors; the next live
 method branch must change representation class to a nonlinear
 query-bottleneck/resampler or sparse dictionary that still emits a fixed-byte
 source-private syndrome.
+
+HellaSwag nonlinear selector/syndrome gate: added
+`scripts/build_source_private_hellaswag_nonlinear_selector_syndrome_gate.py`,
+test
+`tests/test_build_source_private_hellaswag_nonlinear_selector_syndrome_gate.py`,
+memo
+`paper/source_private_hellaswag_nonlinear_selector_syndrome_gate_20260502.md`,
+references
+`references/623_hellaswag_nonlinear_selector_syndrome_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_nonlinear_selector_syndrome_gate_20260502/`.
+Outcome: this bounded nonlinear RFF-kernel train-only selector/syndrome method
+does not promote. It keeps the `1B` raw / `4B` framed packet contract and
+uses official HellaSwag train calibration (`1487` rows after dropping `5`
+duplicates and `44` out-of-bag overlaps; split `1115/372`) before full
+validation on `10042` rows. The official-dev-selected default reaches
+`0.616610` versus packet-only `0.619199` (delta `-0.002589`, CI95 low
+`-0.003884`, help/harm `11/37`) and hurts all `5/5` contiguous validation
+blocks. The best eval-only diagnostic scout reaches `0.621390` (delta
+`+0.002191`, CI95 low `+0.000393`) but captures only `2.68%` of the
+packet-or-Qwen oracle headroom and fails the `+0.020`/`20% headroom-capture`
+promotion rule. Destructive controls stay below packet-only, including
+row-shuffle source code `-0.002689`, Qwen-derived source code `-0.008763`,
+random same-byte code `-0.003286`, zero source code `-0.013543`, RFF projection
+seed control `-0.001394`, and label permutation `-0.025095`. Mac-local cached
+selector timing for the selected row is light (`54.67us` p50 at batch 1,
+`1.82us` p50 at batch 256), but the method-quality gate fails. Interpretation:
+the HellaSwag oracle headroom is real but is not recovered by scalar/linear or
+bounded nonlinear selectors over the current packet/Qwen-score surface. Stop
+tuning selector variants on this feature family; the next ICLR branch must
+change source information, train a true joint connector on NVIDIA hardware, or
+cut the HellaSwag receiver-improvement claim and keep HellaSwag as
+complementarity/headroom plus systems-rate evidence.
