@@ -116,6 +116,8 @@ def test_lm_choice_scoring_normalizes_default_rope_and_disables_cache(monkeypatc
         def from_pretrained(cls, *args, **kwargs):
             captured["config"] = kwargs["config"]
             captured["torch_dtype"] = kwargs["torch_dtype"]
+            captured["attn_implementation"] = kwargs.get("attn_implementation")
+            captured["model_calls"] = 0
             return cls()
 
         def to(self, device):
@@ -126,6 +128,7 @@ def test_lm_choice_scoring_normalizes_default_rope_and_disables_cache(monkeypatc
             return None
 
         def __call__(self, **kwargs):
+            captured["model_calls"] += 1
             captured["use_cache"] = kwargs.get("use_cache")
             batch, seq = kwargs["input_ids"].shape
             return SimpleNamespace(logits=torch.zeros((batch, seq, 8), dtype=torch.float32))
@@ -153,6 +156,8 @@ def test_lm_choice_scoring_normalizes_default_rope_and_disables_cache(monkeypatc
         local_files_only=True,
         normalization="mean",
         prompt_mode="qa",
+        attn_implementation="eager",
+        choice_batch_size=1,
     )
 
     assert config.rope_scaling is None
@@ -160,9 +165,13 @@ def test_lm_choice_scoring_normalizes_default_rope_and_disables_cache(monkeypatc
     assert captured["use_cache"] is False
     assert captured["device"] == "cpu"
     assert captured["torch_dtype"] is torch.float32
+    assert captured["attn_implementation"] == "eager"
+    assert captured["model_calls"] == 2
     assert predictions == [0]
     assert len(scores) == 1
     assert state["kind"] == "local_causal_lm_choice_loglikelihood"
+    assert state["attn_implementation"] == "eager"
+    assert state["choice_batch_size"] == 1
 
 
 def test_run_gate_writes_arc_control_artifacts(tmp_path) -> None:

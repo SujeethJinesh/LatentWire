@@ -2007,5 +2007,12 @@
     "path": "references/643_native_systems_result_ingest_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the native systems result ingest gate, covering vLLM/PagedAttention, SGLang/RadixAttention, C2C, KVComm/KVCOMM, QJL, TurboQuant, KV Packet, RelayCaching, LMCache, KV-cache prompt leakage, and the claim boundary for source-private byte accounting versus native GPU systems wins."
+  },
+  {
+    "num": 644,
+    "slug": "arc_llama8b_mps_workaround_source_scout_refs_20260502",
+    "path": "references/644_arc_llama8b_mps_workaround_source_scout_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC Llama-8B true non-Qwen source scout, covering the Apple MPS eager-attention workaround, Llama/GQA source-family boundary, strict gate failure, and novelty boundaries against C2C/KVComm-style cache communication."
   }
 ]

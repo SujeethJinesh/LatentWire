@@ -19397,3 +19397,30 @@ failure (`LLVM ERROR: Failed to infer result type(s): "mps.matmul"`). Decision:
 record as an environment/hardware blocker, not a scientific negative. Rerun on
 NVIDIA or after fixing the attention path before judging Llama-8B as a source
 family.
+
+ARC Llama-8B MPS workaround and full frozen-disagreement scout: updated the
+shared local-LM choice scorer in
+`scripts/run_source_private_arc_challenge_fixed_packet_gate.py` with optional
+`attn_implementation` and `choice_batch_size` controls, defaulted the Llama
+scout to `attn_implementation=eager` and `choice_batch_size=1`, added tests in
+`tests/test_run_source_private_arc_challenge_fixed_packet_gate.py` and
+`tests/test_build_source_private_arc_challenge_llama8b_disagreement_source_scout.py`,
+added references
+`references/644_arc_llama8b_mps_workaround_source_scout_refs_20260502.md`,
+and materialized
+`results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/`.
+Outcome: the Apple MPS blocker is cleared, but the scientific gate fails. The
+full run scores `144` validation and `473` frozen test TinyLlama-vs-Qwen ARC
+disagreement rows with the same `12B` source-private packet. Llama source
+accuracy before packet is `0.542` validation and `0.554` test. Validation
+matched/Qwen-substituted/cached-Tiny mean is `0.356/0.389/0.250`, with
+matched-minus-Qwen mean `-0.033` and CI95 lower bound `-0.174`. Frozen test is
+directionally positive but not statistically clean: matched/Qwen-substituted/
+cached-Tiny mean is `0.368/0.317/0.269`, matched-minus-Qwen mean/min is
+`+0.051/+0.017`, but the paired CI95 lower bound versus Qwen-substituted is
+`-0.035`, and same-byte visible text is stronger at `0.495`. Decision: rule out
+the current Mac-local Llama-8B LM-choice sender as the ICLR source-family
+repair. The Llama branch is only revivable as a distinct prompt/scoring/
+calibration method selected on validation; the top live branch returns to a
+learned query/cache connector or stronger cross-family source on NVIDIA plus
+native systems rows.

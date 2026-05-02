@@ -43,3 +43,43 @@ def test_source_cache_rows_include_source_private_contract() -> None:
     assert cache_row["source_visible_fields"] == ["question", "choices"]
     assert set(cache_row["forbidden_source_fields"]) >= {"answer_index", "answerKey"}
     assert "source_selected_choice_sha256" in cache_row
+
+
+def test_materialize_source_caches_forwards_mps_workaround_controls(tmp_path, monkeypatch) -> None:
+    validation_rows = [DummyRow(["alpha", "beta"], answer_index=1)]
+    test_rows = [DummyRow(["gamma", "delta"], answer_index=0)]
+    captured = {}
+
+    def fake_lm_choice_loglikelihood_scores(rows, **kwargs):
+        captured["row_count"] = len(rows)
+        captured.update(kwargs)
+        return [[0.1, 0.9], [0.8, 0.2]], [1, 0], {"kind": "fake_lm"}
+
+    monkeypatch.setattr(
+        scout.arc_gate,
+        "_lm_choice_loglikelihood_scores",
+        fake_lm_choice_loglikelihood_scores,
+    )
+
+    audit = scout._materialize_source_caches(
+        validation_rows=validation_rows,
+        test_rows=test_rows,
+        validation_cache=tmp_path / "validation" / "source_prediction_cache.jsonl",
+        test_cache=tmp_path / "test" / "source_prediction_cache.jsonl",
+        source_family="dummy",
+        source_model=tmp_path / "model",
+        source_lm_device="mps",
+        source_lm_dtype="float16",
+        source_lm_max_length=192,
+        source_lm_normalization="mean",
+        source_lm_prompt_mode="qa",
+        source_lm_attn_implementation="eager",
+        source_lm_choice_batch_size=1,
+        local_files_only=True,
+        force_rematerialize=True,
+    )
+
+    assert captured["row_count"] == 2
+    assert captured["attn_implementation"] == "eager"
+    assert captured["choice_batch_size"] == 1
+    assert audit["lm_state"]["kind"] == "fake_lm"

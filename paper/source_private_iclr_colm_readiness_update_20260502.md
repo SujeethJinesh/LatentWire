@@ -15,9 +15,11 @@ Date: 2026-05-02
   destructive controls, and at least one strict cross-family or cross-benchmark
   falsification. The Mac-local Phi-3 cross-family source diagnostic and the
   TinyLlama hidden/query PCA/ridge, transport/common-basis, and nonlinear
-  sparse-query cache-bottleneck connectors now fail this gate. The systems
-  boundary table is paper-ready as accounting and the native ingest gate now
-  refuses premature claims, but native NVIDIA serving rows remain incomplete.
+  sparse-query cache-bottleneck connectors now fail this gate. The Llama-8B
+  true non-Qwen scout now runs locally after the MPS workaround, but also fails
+  the strict validation/paired-uncertainty gate. The systems boundary table is
+  paper-ready as accounting and the native ingest gate now refuses premature
+  claims, but native NVIDIA serving rows remain incomplete.
 
 ## Contributions To Put Forward
 
@@ -244,21 +246,31 @@ Lay explanation: this checker will not let the paper claim a real GPU systems
 win until every required method has the same accuracy, latency, memory,
 traffic, byte, and source-exposure fields.
 
-The ARC Llama-8B frozen-disagreement source scout is scaffolded but hardware
-blocked:
+The ARC Llama-8B frozen-disagreement source scout now clears the Mac hardware
+blocker but fails the strict source-family gate:
 
 - script:
   `scripts/build_source_private_arc_challenge_llama8b_disagreement_source_scout.py`
-- intended surface: the frozen TinyLlama-vs-Qwen ARC disagreement rows;
+- artifact:
+  `results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/llama8b_disagreement_source_scout.json`
+- surface: `144` validation and `473` frozen test TinyLlama-vs-Qwen ARC
+  disagreement rows;
 - source model: locally cached `Meta-Llama-3.1-8B-Instruct`;
-- preflight: model loads on MPS with `float16` and scores two rows;
-- full run blocker: Apple MPS attention-shape failure,
-  `LLVM ERROR: Failed to infer result type(s): "mps.matmul"`;
-- scientific decision: inconclusive, not negative.
+- MPS workaround: `attn_implementation=eager`, `choice_batch_size=1`;
+- pass gate: `False`;
+- validation matched/Qwen-substituted/cached-Tiny mean:
+  `0.356/0.389/0.250`;
+- validation CI95 lower bound versus Qwen-substituted: `-0.174`;
+- frozen test matched/Qwen-substituted/cached-Tiny mean:
+  `0.368/0.317/0.269`;
+- frozen test matched-minus-Qwen-substituted mean/min: `+0.051/+0.017`;
+- frozen test CI95 lower bound versus Qwen-substituted: `-0.035`;
+- frozen test same-byte visible text: `0.495`.
 
-Lay explanation: this run would ask whether a much stronger non-Qwen model can
-send the same 12-byte ARC hint on the hard rows, but the local Mac attention
-kernel failed before producing measurements.
+Lay explanation: this run asked whether a stronger non-Qwen model can send the
+same 12-byte ARC hint on the hard rows. It produced a promising frozen-test
+average, but it lost on validation and the uncertainty interval still overlaps
+zero, so it is not a reviewer-safe positive.
 
 The 2026-05-02 evidence bundle now ingests the HellaSwag PQ hidden innovation
 codec gate:
@@ -315,8 +327,8 @@ same controls.
 
 - NVIDIA access for vLLM/SGLang native systems baselines and any true
   continuous query/cache connector.
-- A non-MPS path for the Llama-8B ARC source scout; the current Mac MPS
-  attention path crashes before the frozen-disagreement source gate can run.
+- A trainable query/cache connector or new stronger cross-family source branch;
+  the current Mac-local Phi-3 and Llama-8B source-choice senders are not enough.
 - Confirmation on whether COLM should be framed as a workshop paper with
   negative HellaSwag ablations or held until a positive learned connector
   exists.
@@ -331,6 +343,7 @@ Phi-3 source packets, and shallow TinyLlama hidden/query PCA/ridge connectors
 or static transport/Procrustes connectors, and random Fourier sparse-query
 cache bottlenecks are now ruled out for this ARC disagreement surface. The
 same-family Qwen-1.5B stronger-source diagnostic should be repeated with a true
-stronger cross-family source before making the ICLR claim. The Llama-8B source
-scout is the best available true non-Qwen local source branch, but it is
-currently hardware-blocked on MPS rather than scientifically resolved.
+stronger cross-family source before making the ICLR claim. The current
+Llama-8B source-choice scout is now scientifically resolved as a strict gate
+failure, although a separately selected Llama prompt/scoring/calibration branch
+could be revived if it first clears validation.

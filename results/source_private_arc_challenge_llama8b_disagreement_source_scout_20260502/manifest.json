@@ -1,0 +1,48 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/llama8b_disagreement_source_scout.json",
+      "sha256": "9acd0851beb01b24e87143a8ff6c1e6f1dbf84a4acb2026afd583b7f9e062294"
+    },
+    {
+      "path": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/llama8b_disagreement_source_scout.md",
+      "sha256": "1341994622cebe4ae517819fc6e7772a36f3a5b709535de472157fc0e40ad407"
+    },
+    {
+      "path": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/split_summary.csv",
+      "sha256": "81b157caccecb224aae792469cf6a338dfb734b287e0a0b70610ac70c77dfaa7"
+    },
+    {
+      "path": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/predictions.jsonl",
+      "sha256": "f2471ea78a6d803396b38d6ca877a2ef396addfa30770bb0f5b7e4d70fc875e7"
+    },
+    {
+      "path": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/llama8b_validation/source_prediction_cache.jsonl",
+      "sha256": "4a92a8a9c23e1779059c3d592ab4897e7a7dbffd5cd2d1be5b2299930de8dd61"
+    },
+    {
+      "path": "results/source_private_arc_challenge_llama8b_disagreement_source_scout_20260502/llama8b_test/source_prediction_cache.jsonl",
+      "sha256": "571d8eac0b476b923de77f4e93dc767a49a486d814a37ad97c75a2b3115936f0"
+    }
+  ],
+  "gate": "source_private_arc_challenge_llama8b_disagreement_source_scout",
+  "headline": {
+    "elapsed_s": 472.98930070904316,
+    "pass_gate": false,
+    "test_cached_tiny_packet_accuracy_mean": 0.2693446088794926,
+    "test_matched_accuracy_mean": 0.3682875264270613,
+    "test_matched_minus_cached_tiny_packet_mean": 0.0989429175475687,
+    "test_matched_minus_qwen_substituted_mean": 0.05116279069767442,
+    "test_paired_ci95_low_vs_cached_tiny_packet_min": 0.008456659619450317,
+    "test_paired_ci95_low_vs_qwen_substituted_min": -0.03493657505285412,
+    "test_pass": false,
+    "test_qwen_substituted_accuracy_mean": 0.3171247357293869,
+    "test_random_source_choice_accuracy_mean": 0.24566596194503174,
+    "test_rolled_source_choice_accuracy_mean": 0.2050739957716702,
+    "test_rows": 473,
+    "test_source_accuracy_before_packet": 0.5539112050739958,
+    "validation_pass": false,
+    "validation_rows": 144
+  },
+  "pass_gate": false
+}

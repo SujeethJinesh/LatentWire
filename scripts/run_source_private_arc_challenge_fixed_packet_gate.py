@@ -320,12 +320,16 @@ def _lm_choice_loglikelihood_scores(
     local_files_only: bool,
     normalization: str,
     prompt_mode: str = "qa",
+    attn_implementation: str | None = None,
+    choice_batch_size: int | None = None,
 ) -> tuple[list[list[float]], list[int], dict[str, Any]]:
     import torch
     from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
     if normalization not in {"mean", "sum"}:
         raise ValueError(f"unknown LM score normalization {normalization!r}")
+    if choice_batch_size is not None and choice_batch_size <= 0:
+        raise ValueError("choice_batch_size must be positive when provided")
     resolved_device = "cpu" if device == "auto_cpu" else syn._resolve_torch_device(device)
     tokenizer = AutoTokenizer.from_pretrained(
         model_path,
@@ -347,14 +351,50 @@ def _lm_choice_loglikelihood_scores(
         # Older remote model code, notably cached Phi-3, expects no RoPE scaling
         # for default RoPE while newer Transformers normalizes it to a dict.
         config.rope_scaling = None
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        config=config,
-        local_files_only=local_files_only,
-        trust_remote_code=True,
-        torch_dtype=_torch_dtype(dtype),
-    ).to(resolved_device)
+    model_kwargs: dict[str, Any] = {
+        "config": config,
+        "local_files_only": local_files_only,
+        "trust_remote_code": True,
+        "torch_dtype": _torch_dtype(dtype),
+    }
+    if attn_implementation and attn_implementation != "auto":
+        model_kwargs["attn_implementation"] = attn_implementation
+    model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).to(resolved_device)
     model.eval()
+
+    def _score_text_batch(texts: list[str], *, prompt_len: int) -> list[float]:
+        padding_mode: bool | str = True
+        tokenizer_max_length = max_length
+        if str(resolved_device).startswith("mps"):
+            raw_lengths = tokenizer(texts, padding=False, truncation=True, max_length=max_length)["input_ids"]
+            row_max_length = max(len(input_ids) for input_ids in raw_lengths)
+            tokenizer_max_length = min(max_length, int(math.ceil(row_max_length / 32.0) * 32))
+            padding_mode = "max_length"
+        encoded = tokenizer(
+            texts,
+            padding=padding_mode,
+            truncation=True,
+            max_length=tokenizer_max_length,
+            return_tensors="pt",
+        )
+        encoded = {key: value.to(resolved_device) for key, value in encoded.items()}
+        output = model(**encoded, use_cache=False)
+        logits = output.logits[:, :-1, :]
+        labels = encoded["input_ids"][:, 1:]
+        token_logp = torch.log_softmax(logits, dim=-1).gather(-1, labels.unsqueeze(-1)).squeeze(-1)
+        attention = encoded["attention_mask"][:, 1:].bool()
+        batch_scores: list[float] = []
+        for batch_index in range(len(texts)):
+            valid = attention[batch_index].clone()
+            valid[: max(0, prompt_len - 1)] = False
+            values = token_logp[batch_index][valid]
+            if values.numel() == 0:
+                batch_scores.append(float("-inf"))
+            elif normalization == "sum":
+                batch_scores.append(float(values.sum().detach().cpu()))
+            else:
+                batch_scores.append(float(values.mean().detach().cpu()))
+        return batch_scores
 
     scores_by_row: list[list[float]] = []
     predictions: list[int] = []
@@ -364,37 +404,17 @@ def _lm_choice_loglikelihood_scores(
             prompt = _lm_choice_prompt(row, prompt_mode=prompt_mode)
             prompt_len = tokenizer(prompt, return_tensors="pt").input_ids.shape[1]
             texts = [prompt + " " + choice for choice in row.choices]
-            padding_mode: bool | str = True
-            tokenizer_max_length = max_length
-            if str(resolved_device).startswith("mps"):
-                raw_lengths = tokenizer(texts, padding=False, truncation=True, max_length=max_length)["input_ids"]
-                row_max_length = max(len(input_ids) for input_ids in raw_lengths)
-                tokenizer_max_length = min(max_length, int(math.ceil(row_max_length / 32.0) * 32))
-                padding_mode = "max_length"
-            encoded = tokenizer(
-                texts,
-                padding=padding_mode,
-                truncation=True,
-                max_length=tokenizer_max_length,
-                return_tensors="pt",
-            )
-            encoded = {key: value.to(resolved_device) for key, value in encoded.items()}
-            output = model(**encoded, use_cache=False)
-            logits = output.logits[:, :-1, :]
-            labels = encoded["input_ids"][:, 1:]
-            token_logp = torch.log_softmax(logits, dim=-1).gather(-1, labels.unsqueeze(-1)).squeeze(-1)
-            attention = encoded["attention_mask"][:, 1:].bool()
-            row_scores: list[float] = []
-            for choice_index in range(len(row.choices)):
-                valid = attention[choice_index].clone()
-                valid[: max(0, prompt_len - 1)] = False
-                values = token_logp[choice_index][valid]
-                if values.numel() == 0:
-                    row_scores.append(float("-inf"))
-                elif normalization == "sum":
-                    row_scores.append(float(values.sum().detach().cpu()))
-                else:
-                    row_scores.append(float(values.mean().detach().cpu()))
+            if choice_batch_size is None or choice_batch_size >= len(texts):
+                row_scores = _score_text_batch(texts, prompt_len=prompt_len)
+            else:
+                row_scores = []
+                for batch_start in range(0, len(texts), choice_batch_size):
+                    row_scores.extend(
+                        _score_text_batch(
+                            texts[batch_start : batch_start + choice_batch_size],
+                            prompt_len=prompt_len,
+                        )
+                    )
             scores_by_row.append(row_scores)
             predictions.append(int(max(range(len(row_scores)), key=lambda index: (row_scores[index], -index))))
     return scores_by_row, predictions, {
@@ -405,6 +425,8 @@ def _lm_choice_loglikelihood_scores(
         "max_length": max_length,
         "normalization": normalization,
         "prompt_mode": prompt_mode,
+        "attn_implementation": attn_implementation or "auto",
+        "choice_batch_size": choice_batch_size,
         "latency_s": float(time.perf_counter() - start),
     }
 

@@ -162,6 +162,8 @@ def _materialize_source_caches(
     source_lm_max_length: int,
     source_lm_normalization: str,
     source_lm_prompt_mode: str,
+    source_lm_attn_implementation: str | None,
+    source_lm_choice_batch_size: int | None,
     local_files_only: bool,
     force_rematerialize: bool,
 ) -> dict[str, Any]:
@@ -197,6 +199,8 @@ def _materialize_source_caches(
         local_files_only=local_files_only,
         normalization=source_lm_normalization,
         prompt_mode=source_lm_prompt_mode,
+        attn_implementation=source_lm_attn_implementation,
+        choice_batch_size=source_lm_choice_batch_size,
     )
     cursor = 0
     if need_validation:
@@ -520,6 +524,8 @@ def build_scout(
     source_lm_max_length: int = 192,
     source_lm_normalization: str = "mean",
     source_lm_prompt_mode: str = "qa",
+    source_lm_attn_implementation: str | None = "eager",
+    source_lm_choice_batch_size: int | None = 1,
     local_files_only: bool = True,
     force_rematerialize: bool = False,
     seeds: tuple[int, ...] = DEFAULT_SEEDS,
@@ -563,6 +569,8 @@ def build_scout(
         source_lm_max_length=source_lm_max_length,
         source_lm_normalization=source_lm_normalization,
         source_lm_prompt_mode=source_lm_prompt_mode,
+        source_lm_attn_implementation=source_lm_attn_implementation,
+        source_lm_choice_batch_size=source_lm_choice_batch_size,
         local_files_only=local_files_only,
         force_rematerialize=force_rematerialize,
     )
@@ -748,6 +756,17 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--source-lm-max-length", type=int, default=192)
     parser.add_argument("--source-lm-normalization", choices=("mean", "sum"), default="mean")
     parser.add_argument("--source-lm-prompt-mode", choices=("qa", "continuation", "generic_mcq"), default="qa")
+    parser.add_argument(
+        "--source-lm-attn-implementation",
+        default="eager",
+        help="Passed to Transformers from_pretrained; use auto to keep the model default.",
+    )
+    parser.add_argument(
+        "--source-lm-choice-batch-size",
+        type=int,
+        default=1,
+        help="Number of candidate answers scored per forward pass; 1 avoids fragile batched MPS attention paths.",
+    )
     parser.add_argument("--allow-downloads", action="store_true")
     parser.add_argument("--force-rematerialize", action="store_true")
     parser.add_argument("--seeds", type=_parse_int_tuple, default="47,53,59,61,67")
@@ -773,6 +792,8 @@ def main() -> None:
         source_lm_max_length=args.source_lm_max_length,
         source_lm_normalization=args.source_lm_normalization,
         source_lm_prompt_mode=args.source_lm_prompt_mode,
+        source_lm_attn_implementation=args.source_lm_attn_implementation,
+        source_lm_choice_batch_size=args.source_lm_choice_batch_size,
         local_files_only=not args.allow_downloads,
         force_rematerialize=args.force_rematerialize,
         seeds=args.seeds,
