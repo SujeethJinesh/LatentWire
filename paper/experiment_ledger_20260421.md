@@ -18619,3 +18619,36 @@ and sparse-query receivers, the current receiver/common-language family is
 saturated. Keep the result as a negative ablation and do not claim learned
 syndrome/source-code communication until a new source-code objective beats
 packet-only under train-only calibration and destructive controls.
+
+HellaSwag learned source-code packet gate: added
+`scripts/build_source_private_hellaswag_learned_source_code_packet_gate.py`,
+test
+`tests/test_build_source_private_hellaswag_learned_source_code_packet_gate.py`,
+memo
+`paper/source_private_hellaswag_learned_source_code_packet_gate_20260502.md`,
+references
+`references/616_hellaswag_learned_source_code_packet_refs_20260502.md`, and
+artifact
+`results/source_private_hellaswag_learned_source_code_packet_gate_20260502/`.
+Outcome: this train-only learned source-score discrete-code branch does not
+promote. The gate used the same official-train calibration surface (`1487`
+rows after dropping `5` duplicates and `44` out-of-bag overlap rows, split
+`1115/372`) and evaluated once on full HellaSwag validation (`10042` rows).
+It tested one-byte source-only codes from TinyLlama score features and the
+compact packet candidate id, including quantile subcodes over packet score,
+top-2 margin, packet rank, and k-means source-feature subcodes. The
+train-dev-selected learned code, `packet_z_quantile_32` with `128` symbols and
+ridge `10.0`, reaches `0.615316` versus compact packet-only `0.619199` (delta
+`-0.003884`, CI95 low `-0.006326`) and is negative in `4/5` contiguous blocks.
+The best diagnostic scout, `top2_margin_quantile_2`, reaches `0.619896`
+(delta `+0.000697`, CI95 low `-0.000498`), far below the `+0.010` promotion
+bar and below the prior receiver-scout comfort target. Controls include a
+proper compact-candidate-only decoder (`0.619199`), Qwen-side-only decoder
+(`0.532364`), row-shuffled source code (`0.272057`), source-feature shuffle
+before encoding (`0.275344`), codebook permutation mismatch (`0.256423`),
+Qwen-derived code (`0.488050`), and label-permutation decoder (`0.328520`).
+Interpretation: source-score-derived learned discrete codes are weakened or
+ruled out on this HellaSwag surface. The next live branch should either use
+source hidden-state codes with a true learned quantizer/crosscoder objective or
+move to a benchmark where the compact candidate id does not already saturate
+the source-side signal.

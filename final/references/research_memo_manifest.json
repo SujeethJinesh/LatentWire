@@ -1811,5 +1811,12 @@
     "path": "references/615_hellaswag_wyner_ziv_residual_packet_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed train-only HellaSwag Wyner-Ziv residual-logit packet gate, covering the negative residual-code result, strict packet-only and prior-scout comparison, destructive controls, and novelty boundaries against distributed source coding, prefix/prompt tuning, C2C/KVComm/Q-KVComm, QJL/TurboQuant/KIVI/KVQuant, vLLM, and SGLang."
+  },
+  {
+    "num": 616,
+    "slug": "hellaswag_learned_source_code_packet_refs_20260502",
+    "path": "references/616_hellaswag_learned_source_code_packet_refs_20260502.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the failed train-only HellaSwag learned source-code packet gate, covering source-score-derived discrete-code saturation, compact packet-only and Qwen-side controls, and novelty boundaries against Wyner-Ziv/neural DSC, VQ-VAE, prefix/prompt tuning, SAE/crosscoder common bases, C2C/KVComm, QJL/TurboQuant/KIVI/KVQuant, diffusion transformers, vLLM, and SGLang."
   }
 ]
