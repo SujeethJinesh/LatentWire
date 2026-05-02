@@ -1,0 +1,52 @@
+{
+  "created_utc": "2026-05-02T01:15:12.493274+00:00",
+  "files": [
+    {
+      "bytes": 5185,
+      "path": "results/source_private_hellaswag_source_family_stress_card_20260502/hellaswag_source_family_stress_card.json",
+      "sha256": "7000734f516d0b6846ec9e6a473f3a4e27eb5ad7fe9da253a85606dc1b53b244"
+    },
+    {
+      "bytes": 1986,
+      "path": "results/source_private_hellaswag_source_family_stress_card_20260502/hellaswag_source_family_stress_card.csv",
+      "sha256": "5edb94f8997fdac3a4367ec01a5030168b00408abed6eaea500e7e8cfe2bff26"
+    },
+    {
+      "bytes": 1050,
+      "path": "results/source_private_hellaswag_source_family_stress_card_20260502/hellaswag_source_family_stress_card.md",
+      "sha256": "5bc87af3e55b5f08529d21f48df1af7a5372e85a82453dada2b72416f88415e3"
+    }
+  ],
+  "gate": "source_private_hellaswag_source_family_stress_card",
+  "headline": {
+    "framed_record_bytes": 5,
+    "iclr_ready": false,
+    "qwen_full_validation_pass": true,
+    "raw_payload_bytes": 2,
+    "remaining_iclr_gaps": [
+      "run TinyLlama or another non-Qwen source over full frozen HellaSwag validation",
+      "test a true source-family-to-receiver-family transfer surface when target-model receiver artifacts exist",
+      "add native NVIDIA systems rows before throughput/HBM claims"
+    ],
+    "source_family_count": 2,
+    "tinyllama_accuracy": 0.501953125,
+    "tinyllama_best_label_copy_accuracy": 0.4501953125,
+    "tinyllama_ci95_low_vs_best_label_copy": 0.025390625,
+    "tinyllama_delta_vs_best_label_copy": 0.0517578125,
+    "tinyllama_delta_vs_score_only": 0.0556640625,
+    "tinyllama_heldout_slice_pass": true,
+    "tinyllama_jackknife_pass_count": 3,
+    "tinyllama_jackknife_row_count": 3,
+    "tinyllama_score_only_accuracy": 0.4462890625
+  },
+  "inputs": [
+    {
+      "path": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/hellaswag_hidden_innovation_global_stability.json",
+      "sha256": "9bfd8fd48e20c7c6bf6e7fa7bf43bff16e323545382818c6798b6d53e9ef4696"
+    },
+    {
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260502_tinyllama_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "98cc92329a9946e811f100b8f00df45b3d570625375350a05978d17789769e70"
+    }
+  ]
+}
