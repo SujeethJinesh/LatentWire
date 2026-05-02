@@ -11,7 +11,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
 Final output:
 
 ```text
-Output written on latentwire_colm2026.pdf (9 pages, 233346 bytes).
+Output written on latentwire_colm2026.pdf (9 pages, 233892 bytes).
 ```
 
 Final log scan:
@@ -24,7 +24,8 @@ boxes were found in the final build log.
 Remaining final-log typography notes:
 
 ```text
-Underfull hbox: 4
+Underfull hbox: 7
+Underfull vbox: 1
 ```
 
 These underfull boxes are from bibliography/path wrapping and do not indicate

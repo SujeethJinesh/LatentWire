@@ -25,8 +25,8 @@ Date: 2026-05-02
 
 Safe main claims:
 
-- ARC-Challenge test: 8B payload / 11B framed packet, 10/10 seeds, matched 0.344, target 0.265, same-byte text 0.300, minimum paired CI95 lower bound vs target +0.038.
-- OpenBookQA test: 3B payload / 6B framed packet, 5/5 seeds, matched 0.378, target 0.276, same-byte text 0.350, minimum paired CI95 lower bound vs target +0.038.
+- ARC-Challenge test: 8B payload / 11B framed packet, 10/10 seeds, matched 0.344, target 0.265, same-budget text 0.300, minimum paired CI95 lower bound vs target +0.038.
+- OpenBookQA test: 3B payload / 6B framed packet, 5/5 seeds, matched 0.378, target 0.276, same-budget text 0.350, minimum paired CI95 lower bound vs target +0.038.
 - ARC destructive coordinate controls fail on test in 0/10 seeds.
 - Phi-3 strict cross-family replacement fails; Qwen-disagreement packet is 0.200 vs Qwen-substituted packet 0.340.
 - Systems artifact supports byte/exposure accounting only: 6-11 framed packet bytes versus a 768B one-token 1-bit-per-KV-element accounting floor; no native GPU speed claim.

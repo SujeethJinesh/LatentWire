@@ -16,7 +16,7 @@ tests, ablations, and frozen result artifacts in `colm_final`.
 | ARC destructive controls fail in 0/10 seeds | Same ARC artifact and `per_variant_seed_metrics.csv` | Supported | Anchor-ID shuffle, anchor-value shuffle, and spectral-bin permutation all fail 0/10. |
 | Random shared anchors work nearly as well as named anchors | Same ARC artifact | Supported with caveat | The paper correctly frames this as shared-coordinate evidence, not semantic-anchor evidence. |
 | OpenBookQA 3-byte packet reaches 0.378 over 5 seeds on 500 test examples | `evidence/results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/arc_challenge_seed_stability.md` | Supported | Reports 0.378-0.380, target 0.276, text 0.350, min CI95 lower lift +0.038. |
-| OpenBookQA source-choice accuracy is 0.378 | Same OpenBookQA artifact and frozen source cache | Supported | Packet accuracy matches source-choice accuracy, so the claim is source-private candidate transfer, not synthesis beyond the source. |
+| OpenBookQA separate source-choice accuracy | Same OpenBookQA artifact | Not claimed in current paper | The frozen artifact supports packet/target/text/control rows but does not expose a separate source-choice accuracy field; the paper now reports `--` for this table cell. |
 | Phi-3 cross-family replacement fails | `evidence/results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu_budget8_10seed_b2000/source_family_cache_falsification.md` | Supported | Reports pass gate false; full test packet 0.244 vs target 0.265. |
 | Failure decomposition shows packet follows source choice at about 0.996-0.997 | `evidence/results/source_private_arc_cross_family_failure_decomposition_20260502/arc_cross_family_failure_decomposition.md` | Supported | This is a major reviewer caveat: packet transfer currently resembles source-choice-preserving candidate evidence. |
 | Cached candidate/hidden-query connector repairs fail | `evidence/results/source_private_arc_challenge_candidate_syndrome_connector_gate_20260502` and `evidence/results/source_private_arc_challenge_hidden_query_mlp_cache_connector_gate_20260502_tinyllama_disagreement` | Supported | Paper states these are negative cached-artifact diagnostics, not completed learned connectors. |
@@ -38,8 +38,9 @@ The full command and output are in `audits/test_report.txt`.
 - No direct source-choice/index baseline is in the paper yet.
 - No native GPU serving measurements are claimed or provided.
 - No strict cross-family positive has passed.
-- The appendix artifact list is useful but not a complete reproducibility
-  manifest with model snapshot hashes and exact cache provenance.
+- The appendix artifact list is useful but compact. Full commands and artifact
+  hashes are in `audits/reproducibility_report.md`; model snapshot IDs and a
+  normalized JSON rerun-diff mode remain useful additions.
 - Late HellaSwag diagnostics are copied under
   `evidence/excluded_diagnostics/`; they are relevant to next-paper strategy but
   are not current PDF claims.

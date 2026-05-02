@@ -2,8 +2,10 @@
 
 Date: 2026-05-02
 
-This folder is the self-contained COLM submission bundle for the current
-LatentWire draft.
+This folder is the repo-root reproducibility bundle for the current LatentWire
+COLM draft. It includes the paper, copied evidence, copied scripts/tests, and
+audit reports; full reruns still assume the repository root and the local
+`./venv_arm64` environment.
 
 ## Current Readiness
 

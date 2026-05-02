@@ -51,3 +51,9 @@ The same targeted suite also passed from inside `colm_final/code`:
 ```text
 16 passed in 1.84s
 ```
+
+Final local recheck after citation and wording cleanup:
+
+```text
+16 passed in 5.55s
+```

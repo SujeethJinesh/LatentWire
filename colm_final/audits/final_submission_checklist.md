@@ -25,8 +25,8 @@ Date: 2026-05-02
 - [ ] No strict cross-family positive is available.
 - [ ] No native systems throughput row is available.
 - [ ] No direct source-choice/index baseline is included.
-- [ ] The appendix does not yet provide full command/hash provenance for every
-  cache-generation step.
+- [ ] Full command/hash provenance is in `audits/reproducibility_report.md`, but
+  the PDF appendix only summarizes it compactly.
 - [ ] Same-byte text is not a complete compression baseline suite.
 
 ## Submission Decision

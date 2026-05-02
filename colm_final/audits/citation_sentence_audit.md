@@ -26,7 +26,7 @@ throughput. The paper text explicitly avoids those claims.
 | `Cunningham2023SAE` | `https://openreview.net/forum?id=F76bwRSLeK` | ICLR 2024 OpenReview record; author order Robert Huben, Hoagy Cunningham, Logan Riggs Smith, Aidan Ewart, Lee Sharkey. |
 | `Li2023BLIP2` | `https://proceedings.mlr.press/v202/li23q.html` | ICML/PMLR 2023; pages 19730-19742. |
 | `Liu2024KIVI` | `https://proceedings.mlr.press/v235/liu24bz.html` | ICML/PMLR 2024; pages 32332-32344. |
-| `Hooper2024KVQuant` | `https://proceedings.neurips.cc/paper_files/paper/2024/hash/028fcbcf85435d39a40c4d61b42c99a4-Abstract-Conference.html` | NeurIPS 2024 proceedings and author spelling. |
+| `Hooper2024KVQuant` | `https://proceedings.neurips.cc/paper_files/paper/2024/hash/028fcbcf85435d39a40c4d61b42c99a4-Abstract-Conference.html` | NeurIPS 2024 proceedings, DOI 10.52202/079017-0040, and author spelling. |
 | `Karvonen2025SAEBench` | `https://proceedings.mlr.press/v267/karvonen25a.html` | ICML/PMLR 2025; full title, author list, and pages 29223-29264. |
 | `Engels2024SAEUniversality` | `https://arxiv.org/abs/2410.06981` | Title and author list for SAE feature-space universality. |
 | `Kwon2023vLLM` | `https://dl.acm.org/doi/10.1145/3600006.3613165` | SOSP 2023 proceedings; pages 611-626; DOI 10.1145/3600006.3613165. |

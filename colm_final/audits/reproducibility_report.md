@@ -7,7 +7,8 @@ Date: 2026-05-02
 - Frozen artifact hash validation: passed, 32/32 manifest entries matched.
 - Repository test suite: passed, `1324 passed in 145.02s`.
 - Targeted COLM test subset from repo root: passed, `16 passed in 18.84s`.
-- Targeted COLM test subset from `colm_final/code`: passed, `16 passed in 1.84s`.
+- Targeted COLM test subset from `colm_final/code`: passed, `16 passed in 5.55s`
+  in the final local recheck.
 - LaTeX build from `colm_final/paper`: passed, 9-page PDF, no unresolved
   references/citations and no overfull boxes.
 
@@ -160,7 +161,7 @@ PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python \
 
 ## Rerun Results This Pass
 
-- OpenBookQA rerun completed: packet mean `0.3784`, target `0.276`, same-byte
+- OpenBookQA rerun completed: packet mean `0.3784`, target `0.276`, same-budget
   text `0.350`, minimum paired CI low `+0.038`, 5/5 seeds pass.
 - Systems rerun completed: pass gate true, max headline packet `11B`,
   one-token 1-bit-per-KV-element floor `768B`, ratio `69.818x`.
@@ -174,7 +175,7 @@ PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python \
 
 | Artifact | SHA256 |
 |---|---|
-| `paper/latentwire_colm2026.pdf` | `6bec5e8e355bc973abd37d5555d4c1bf0a3be5f707e2b78242eb72dc31b37ad6` |
+| `paper/latentwire_colm2026.pdf` | `8e34f4513de4f33eb27cf8a04348661914246f66a422ab95ef1ee90d5de6d7f0` |
 | ARC headline JSON | `45b103c9330e4b512c18d6572d2915787a7caeb9c3aa8528e045a06292146f17` |
 | ARC matched predictions | `9ab7b9da8a377c59bd206906b02fb26baecce1df433925aa1c34f172ac124c33` |
 | OpenBookQA headline JSON | `999fefa6cebb762eebbb78957969fc2832781ec79734aefdaa1746227dceaec6` |
@@ -184,6 +185,8 @@ PYTHONDONTWRITEBYTECODE=1 ./venv_arm64/bin/python \
 
 ## Remaining Reproducibility Risk
 
-The package is metric-reproducible and hash-verifiable for frozen artifacts,
-but a reviewer may still ask for a deterministic compare mode that strips
-timestamps and latency fields from rerun JSON before diffing.
+The package is hash-verifiable for frozen artifacts. The final local pass also
+completed the cheaper OBQA, systems, and failure-decomposition reruns. A
+reviewer may still ask for a deterministic compare mode that strips timestamps
+and latency fields from rerun JSON before diffing, and for full ARC/Phi-3
+reruns on a longer machine window.

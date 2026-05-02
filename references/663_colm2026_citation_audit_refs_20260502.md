@@ -56,6 +56,7 @@ allowed to support.
   - Supports a 2-bit KV-cache quantization comparator floor.
 - KVQuant: `https://proceedings.neurips.cc/paper_files/paper/2024/hash/028fcbcf85435d39a40c4d61b42c99a4-Abstract-Conference.html`
   - Supports sub-4-bit KV-cache quantization comparator framing.
+  - DOI: `10.52202/079017-0040`.
   - Verified author list after audit correction: Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, Michael W. Mahoney, Yakun Sophia Shao, Kurt Keutzer, Amir Gholami.
 - TurboQuant: `https://openreview.net/forum?id=tO3ASKZlok`
   - Supports vector/KV quantization comparator framing.

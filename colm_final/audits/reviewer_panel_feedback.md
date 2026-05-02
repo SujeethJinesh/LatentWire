@@ -52,8 +52,9 @@ Average overall score: 5.4 / 10.
 3. The systems contribution is accounting only. It should not be sold as a
    latency, throughput, HBM, or GPU result.
 4. Random anchors passing weakens any semantic-anchor interpretation.
-5. Reproducibility still needs exact commands, model snapshot IDs, cache hashes,
-   and output hashes.
+5. Reproducibility is documented in the bundle with exact commands, seeds, and
+   frozen output hashes, but a reviewer may still ask for model snapshot IDs and
+   a normalized rerun diff that strips timestamps/latency fields.
 6. Same-byte text is not enough as the only nonlatent compression baseline.
 
 ## Reviewer-Recommended Fixes Before Submission
@@ -64,8 +65,9 @@ Average overall score: 5.4 / 10.
   controls, not only packet-vs-target.
 - Add a compact rate curve over byte budgets and entropy-matched baselines.
 - Move "packet mostly follows source choice" from caveat to explicit framing.
-- Add a reviewer-facing reproducibility table with exact commands, input cache
-  hashes, seeds, bootstrap settings, and expected output paths.
+- Add a PDF-visible reproducibility table with exact commands, input cache
+  hashes, seeds, bootstrap settings, and expected output paths; the bundle has
+  these details, but the paper only summarizes them compactly.
 - Keep cross-family failure in the thesis, not as an appendix-only limitation.
 
 ## Recommended COLM Framing
@@ -85,5 +87,5 @@ Avoid submitting as:
 
 The most important experiment before camera-ready or ICLR extension is a
 source-choice/index baseline and a strict receiver-family gate. The receiver
-must beat target-only, packet-only/source-choice, same-byte text, and destructive
+must beat target-only, packet-only/source-choice, same-budget text, and destructive
 controls with paired confidence intervals.
