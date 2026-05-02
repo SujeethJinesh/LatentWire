@@ -1,0 +1,47 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_arc_challenge_sparse_query_cache_bottleneck_gate_20260502_tinyllama_disagreement/arc_challenge_sparse_query_cache_bottleneck_gate.json",
+      "sha256": "2efee075e66f8c88203f1cea4319ebc6c9951fa95656b60b8b49e1d6ac73a1d6"
+    },
+    {
+      "path": "results/source_private_arc_challenge_sparse_query_cache_bottleneck_gate_20260502_tinyllama_disagreement/arc_challenge_sparse_query_cache_bottleneck_gate.md",
+      "sha256": "b61fefb7d345f1cba86573c87f6e69b40a657ee5514c54bce1592fa6feab3616"
+    },
+    {
+      "path": "results/source_private_arc_challenge_sparse_query_cache_bottleneck_gate_20260502_tinyllama_disagreement/sparse_query_bottleneck_frontier.csv",
+      "sha256": "3cd9ddd92edf8eb17e7bb98ff7f4512ae0ad1e86d61943a7d6e4adca71f0b6b4"
+    },
+    {
+      "path": "results/source_private_arc_challenge_sparse_query_cache_bottleneck_gate_20260502_tinyllama_disagreement/test_predictions.jsonl",
+      "sha256": "d12c4b39ede57afed9576d628bc6818ca826443d271f0e3baa7253f34f3e9536"
+    }
+  ],
+  "gate": "source_private_arc_challenge_sparse_query_cache_bottleneck_gate",
+  "headline": {
+    "candidate_roll_matched_accuracy_mean": 0.26046511627906976,
+    "content_rotation_matched_accuracy_mean": 0.2816067653276956,
+    "elapsed_s": 264.37560812500305,
+    "fit_alignment_cosine_mean": 0.18473815678684702,
+    "frontier_candidate_count": 216,
+    "pass_gate": false,
+    "selected_active_components": 16,
+    "selected_gamma": 1.0,
+    "selected_pca_dim": 16,
+    "selected_rff_components": 32,
+    "selected_ridge": 1000.0,
+    "selected_view": "hidden_query_residual",
+    "sparsity_fraction": 0.5,
+    "spectral_permutation_matched_accuracy_mean": 0.25116279069767444,
+    "test_cached_tiny_packet_accuracy_mean": 0.2693446088794926,
+    "test_disagreement_rows": 473,
+    "test_matched_accuracy_mean": 0.24820295983086682,
+    "test_matched_minus_cached_tiny_packet_mean": -0.021141649048625793,
+    "test_matched_minus_qwen_substituted_mean": -0.06892177589852008,
+    "test_paired_ci95_low_vs_cached_tiny_packet_min": -0.0877906976744186,
+    "test_paired_ci95_low_vs_qwen_substituted_min": -0.1385306553911205,
+    "test_qwen_substituted_accuracy_mean": 0.3171247357293869,
+    "validation_disagreement_rows": 144
+  },
+  "pass_gate": false
+}

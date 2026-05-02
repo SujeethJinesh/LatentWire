@@ -19333,3 +19333,33 @@ rule out static nearest-neighbor, sign-sketch, and orthogonal-Procrustes
 repairs over the current TinyLlama ARC hidden/query caches; promote a learned
 query/cache bottleneck, nonlinear sparse crosscoder, or stronger true
 cross-family source as the next live method branch.
+
+ARC-Challenge sparse-query cache-bottleneck connector gate: added
+`scripts/build_source_private_arc_challenge_sparse_query_cache_bottleneck_gate.py`,
+test
+`tests/test_build_source_private_arc_challenge_sparse_query_cache_bottleneck_gate.py`,
+memo
+`paper/source_private_arc_sparse_query_cache_bottleneck_gate_20260502.md`,
+references
+`references/641_arc_sparse_query_cache_bottleneck_refs_20260502.md`, and
+artifact
+`results/source_private_arc_challenge_sparse_query_cache_bottleneck_gate_20260502_tinyllama_disagreement/`.
+Outcome: this is the nonlinear Mac-local follow-up to the negative hidden/query
+PCA/ridge and static transport gates, and it is also negative. The gate reuses
+cached TinyLlama hidden/query features, trains/selects on the `144` ARC
+validation rows where TinyLlama and Qwen-0.5B source packets disagree, and
+evaluates once on the frozen `473` test disagreement rows. It tests
+row-centered hidden/query residual views through train-only PCA, random
+Fourier features, top-k sparse query activations, and ridge decoding into the
+public ARC Fourier/anchor receiver basis while preserving the same `12B`
+source-private packet. The selected validation row is `hidden_query_residual`
+with PCA/RFF/active/gamma/ridge `16/32/16/1.0/1000.0`. Frozen test
+matched/Qwen-substituted/cached-Tiny mean accuracy is
+`0.248/0.317/0.269`; matched-minus-Qwen is `-0.069`,
+matched-minus-cached-Tiny is `-0.021`, and the paired CI95 lower bound versus
+Qwen-substituted is `-0.139`. Candidate-roll, content-rotation, and
+spectral-permutation controls remain below Qwen-substituted accuracy. Decision:
+rule out low-data random Fourier sparse-query bottlenecks over the current
+TinyLlama ARC hidden/query caches; the next live method branch needs a stronger
+true non-Qwen source or a larger learned query/cache connector/sparse
+crosscoder with more matched activations, likely on NVIDIA.
