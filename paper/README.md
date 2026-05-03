@@ -17,6 +17,10 @@
   records the HellaSwag TinyLlama -> Phi-3 receiver-family gate: fixed packets
   transfer to a non-Qwen receiver slice, but the learned receiver does not beat
   packet-only.
+- `source_private_arc_conditional_innovation_packet_gate_20260503.md` records
+  the ARC receiver-conditioned innovation packet preflight: matched innovation
+  beats learned source-index and quantized source-score decoder controls in
+  mean accuracy, but not direct source-label text or paired uncertainty.
 - `qwen25math_svamp32_headroom_and_source_probes_20260426.md` records the new
   Qwen2.5-Math -> Qwen3 SVAMP32 C2C-headroom target set and the negative
   source-only numeric sidecar / source-hidden ridge screens on that surface.

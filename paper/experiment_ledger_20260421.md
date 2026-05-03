@@ -20107,3 +20107,45 @@ Lay explanation: sending the source model's full answer-score shape did not
 help beyond sending its top answer. Sending a TinyLlama packet to Phi-3 did
 help Phi-3 compared with no packet, but our learned combiner made it slightly
 worse than just trusting the packet.
+
+## 2026-05-03 ARC Conditional-Innovation Packet Gate
+
+Added a cache-only ARC receiver-conditioned innovation preflight:
+
+- script:
+  `scripts/build_source_private_arc_conditional_innovation_packet_gate.py`;
+- test:
+  `tests/test_build_source_private_arc_conditional_innovation_packet_gate.py`;
+- artifact:
+  `results/source_private_arc_conditional_innovation_packet_gate_20260503_qwen05_qwen3_validation/`;
+- memo:
+  `paper/source_private_arc_conditional_innovation_packet_gate_20260503.md`;
+- references:
+  `references/666_conditional_innovation_sparse_systems_refs_20260503.md`.
+
+Outcome: the matched conditional-innovation packet is the best learned packet
+row on the frozen ARC validation heldout parity split but fails the promotion
+gate. It reaches `0.395973` versus source-label text `0.389262`, receiver
+label `0.335570`, source-index-only decoder `0.362416`, quantized source-score
+packet `0.362416`, row-shuffle control `0.308725`, and candidate-roll control
+`0.315436`. The mean lift over source-index and quantized score decoders is
+`+0.033557`, but the paired CI95 lows are `-0.026846` and `-0.013423`. The
+mean lift over direct source-label text is only `+0.006711` with CI95 low
+`-0.053691`.
+
+Flip audit: matched innovation keeps the same prediction as source-label text
+on `120/149` heldout rows, fixes `11` source errors, breaks `10` source-correct
+rows, changes `8` wrong rows to other wrong rows, and nets only `+1` correct
+example over the source.
+
+Decision: keep conditional innovation as the right framing but stop
+score-surface implementations as a headline branch. The next highest-value
+method is a query-conditioned sparse/common-feature innovation packet, using
+receiver-query or SAE/common-feature coordinates and QJL-style sketches, with
+strict controls against source-label, source-index, source-score, same-byte
+text, target-derived packets, row-shuffle, candidate-roll, and label-shuffle.
+
+Lay explanation: this sent "where the source disagrees with the receiver" for
+each answer option. It barely beat just sending the source answer and was not
+statistically stable, so it is not enough for ICLR, but it tells us what to
+try next: a more selective packet that sends only useful disagreement features.
