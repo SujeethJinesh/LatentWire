@@ -97,18 +97,47 @@ REPRODUCTION_COMMANDS = [
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_repair_probe.py --output-dir results/source_private_hellaswag_hidden_innovation_repair_probe_20260501_qwen05_train512_validation1024 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_stability_gate.py --output-dir results/source_private_hellaswag_hidden_innovation_stability_gate_20260501_qwen05_train512_validation1024 --run-date 2026-05-01",
     "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_train_sample_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
-    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_bagged_gate.py --output-dir results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
-    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048 --eval-slice-start 1024 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
-    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072 --eval-slice-start 2048 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
-    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096 --eval-slice-start 3072 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
-    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation4096_5120 --eval-slice-start 4096 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-01",
-    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation5120_6144 --eval-slice-start 5120 --eval-slice-rows 1024 --bootstrap-samples 300 --run-date 2026-05-01",
-    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation6144_7168 --eval-slice-start 6144 --eval-slice-rows 1024 --bootstrap-samples 300 --run-date 2026-05-01",
-    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation7168_8192 --eval-slice-start 7168 --eval-slice-rows 1024 --bootstrap-samples 300 --run-date 2026-05-01",
-    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation8192_9216 --eval-slice-start 8192 --eval-slice-rows 1024 --bootstrap-samples 300 --run-date 2026-05-01",
-    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation9216_10042 --eval-slice-start 9216 --eval-slice-rows 826 --bootstrap-samples 300 --run-date 2026-05-01",
-    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_9216 --slice-artifacts results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation4096_5120/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation5120_6144/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation6144_7168/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation7168_8192/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation8192_9216/hellaswag_hidden_innovation_eval_slice_stress.json --run-date 2026-05-01",
-    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_10042 --slice-artifacts results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation4096_5120/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation5120_6144/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation6144_7168/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation7168_8192/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation8192_9216/hellaswag_hidden_innovation_eval_slice_stress.json,results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation9216_10042/hellaswag_hidden_innovation_eval_slice_stress.json --run-date 2026-05-01",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_bagged_gate.py --output-dir results/source_private_hellaswag_hidden_innovation_bagged_gate_20260503_rank_score_channel_controls_qwen05_train512_validation1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-03",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation1024_2048 --eval-slice-start 1024 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-03",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation2048_3072 --eval-slice-start 2048 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-03",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096 --eval-slice-start 3072 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-03",
+    "HF_HOME=.debug/hf_home HF_DATASETS_CACHE=.debug/hf_datasets TRANSFORMERS_CACHE=.debug/hf_transformers OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation4096_5120 --eval-slice-start 4096 --eval-slice-rows 1024 --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --bootstrap-samples 500 --run-date 2026-05-03",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation5120_6144 --eval-slice-start 5120 --eval-slice-rows 1024 --bootstrap-samples 500 --run-date 2026-05-03",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation6144_7168 --eval-slice-start 6144 --eval-slice-rows 1024 --bootstrap-samples 500 --run-date 2026-05-03",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation7168_8192 --eval-slice-start 7168 --eval-slice-rows 1024 --bootstrap-samples 500 --run-date 2026-05-03",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation8192_9216 --eval-slice-start 8192 --eval-slice-rows 1024 --bootstrap-samples 500 --run-date 2026-05-03",
+    "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py --output-dir results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation9216_10042 --eval-slice-start 9216 --eval-slice-rows 826 --bootstrap-samples 500 --run-date 2026-05-03",
+    (
+        "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py "
+        "--output-dir results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260503_rank_score_channel_qwen05_validation0_9216 "
+        "--slice-artifacts "
+        "results/source_private_hellaswag_hidden_innovation_bagged_gate_20260503_rank_score_channel_controls_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation4096_5120/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation5120_6144/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation6144_7168/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation7168_8192/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation8192_9216/hellaswag_hidden_innovation_eval_slice_stress.json "
+        "--run-date 2026-05-03"
+    ),
+    (
+        "./venv_arm64/bin/python scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py "
+        "--output-dir results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260503_rank_score_channel_qwen05_validation0_10042 "
+        "--slice-artifacts "
+        "results/source_private_hellaswag_hidden_innovation_bagged_gate_20260503_rank_score_channel_controls_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation4096_5120/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation5120_6144/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation6144_7168/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation7168_8192/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation8192_9216/hellaswag_hidden_innovation_eval_slice_stress.json,"
+        "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation9216_10042/hellaswag_hidden_innovation_eval_slice_stress.json "
+        "--run-date 2026-05-03"
+    ),
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_anchor_relative_hidden_innovation_gate.py --output-dir results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation0_1024 --eval-path results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_validation_first1024.jsonl --eval-score-cache results/source_private_hellaswag_score_packet_headroom_20260501_qwen05_validation1024/source_score_cache.json --eval-hidden-cache results/source_private_hellaswag_hidden_summary_repair_probe_20260501_qwen05_train512_validation1024/source_eval_hidden_cache.npz --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --anchor-count 128 --bootstrap-samples 500 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_anchor_relative_hidden_innovation_gate.py --output-dir results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation1024_2048 --eval-path results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_validation_rows_1024_2048.jsonl --eval-score-cache results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/source_eval_score_cache.json --eval-hidden-cache results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/source_eval_hidden_cache.npz --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --anchor-count 128 --bootstrap-samples 500 --run-date 2026-05-01",
     "./venv_arm64/bin/python scripts/build_source_private_hellaswag_anchor_relative_hidden_innovation_gate.py --output-dir results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260501_qwen05_train512_validation2048_3072 --eval-path results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_validation_rows_2048_3072.jsonl --eval-score-cache results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/source_eval_score_cache.json --eval-hidden-cache results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/source_eval_hidden_cache.npz --train-sample-cache-dir results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024 --train-sample-seeds 1729,2027,2039 --split-seeds 1729,1731,1733 --anchor-count 128 --bootstrap-samples 500 --run-date 2026-05-01",
@@ -223,14 +252,14 @@ REQUIRED_ARTIFACTS = {
     "hellaswag_hidden_innovation_repair": "results/source_private_hellaswag_hidden_innovation_repair_probe_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_repair_probe.json",
     "hellaswag_hidden_innovation_stability": "results/source_private_hellaswag_hidden_innovation_stability_gate_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_stability_gate.json",
     "hellaswag_hidden_innovation_train_sample_stress": "results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_train_sample_stress.json",
-    "hellaswag_hidden_innovation_bagged_gate": "results/source_private_hellaswag_hidden_innovation_bagged_gate_third_sample_20260501_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json",
-    "hellaswag_hidden_innovation_eval_slice_stress": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
-    "hellaswag_hidden_innovation_eval_slice_stress_2048_3072": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json",
-    "hellaswag_hidden_innovation_eval_slice_stress_3072_4096": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json",
-    "hellaswag_hidden_innovation_eval_slice_stress_4096_5120": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation4096_5120/hellaswag_hidden_innovation_eval_slice_stress.json",
-    "hellaswag_hidden_innovation_multi_slice_stress": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_9216/hellaswag_hidden_innovation_multi_slice_stress.json",
-    "hellaswag_hidden_innovation_terminal_tail": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation9216_10042/hellaswag_hidden_innovation_eval_slice_stress.json",
-    "hellaswag_hidden_innovation_full_validation_multi_slice": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_10042/hellaswag_hidden_innovation_multi_slice_stress.json",
+    "hellaswag_hidden_innovation_bagged_gate": "results/source_private_hellaswag_hidden_innovation_bagged_gate_20260503_rank_score_channel_controls_qwen05_train512_validation1024/hellaswag_hidden_innovation_bagged_gate.json",
+    "hellaswag_hidden_innovation_eval_slice_stress": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "hellaswag_hidden_innovation_eval_slice_stress_2048_3072": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation2048_3072/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "hellaswag_hidden_innovation_eval_slice_stress_3072_4096": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "hellaswag_hidden_innovation_eval_slice_stress_4096_5120": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation4096_5120/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "hellaswag_hidden_innovation_multi_slice_stress": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260503_rank_score_channel_qwen05_validation0_9216/hellaswag_hidden_innovation_multi_slice_stress.json",
+    "hellaswag_hidden_innovation_terminal_tail": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation9216_10042/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "hellaswag_hidden_innovation_full_validation_multi_slice": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260503_rank_score_channel_qwen05_validation0_10042/hellaswag_hidden_innovation_multi_slice_stress.json",
     "hellaswag_anchor_relative_hidden_innovation_multi_slice": "results/source_private_hellaswag_anchor_relative_hidden_innovation_multi_slice_stress_20260501_qwen05_validation0_5120/hellaswag_anchor_relative_hidden_innovation_multi_slice_stress.json",
     "hellaswag_repair_systems_acceptance": "results/source_private_hellaswag_repair_systems_acceptance_card_20260501/hellaswag_repair_systems_acceptance_card.json",
     "hellaswag_pq_hidden_innovation_codec": "results/source_private_hellaswag_pq_hidden_innovation_codec_gate_20260502_tinyllama_validation1024_2048/hellaswag_pq_hidden_innovation_codec_gate.json",
@@ -2802,6 +2831,14 @@ def _pass_checks(
             and hellaswag_hidden_innovation_bagged_gate["jackknife_summary"][
                 "paired_ci95_low_vs_score_only_bagged_min"
             ]
+            > 0.0
+            and hellaswag_hidden_innovation_bagged_gate["jackknife_summary"][
+                "selected_minus_source_rank_only_bagged_control_min"
+            ]
+            >= 0.02
+            and hellaswag_hidden_innovation_bagged_gate["jackknife_summary"][
+                "paired_ci95_low_vs_source_rank_only_bagged_min"
+            ]
             > 0.0,
         ),
         (
@@ -2837,6 +2874,14 @@ def _pass_checks(
             and hellaswag_hidden_innovation_eval_slice_stress["headline"][
                 "paired_ci95_low_vs_score_only_bagged"
             ]
+            > 0.0
+            and hellaswag_hidden_innovation_eval_slice_stress["headline"][
+                "selected_minus_source_rank_only_bagged_control"
+            ]
+            >= 0.02
+            and hellaswag_hidden_innovation_eval_slice_stress["headline"][
+                "paired_ci95_low_vs_source_rank_only_bagged"
+            ]
             > 0.0,
         ),
         (
@@ -2846,6 +2891,10 @@ def _pass_checks(
             <= hellaswag_hidden_innovation_eval_slice_stress["headline"]["best_label_copy_eval_accuracy"]
             and hellaswag_hidden_innovation_eval_slice_stress["headline"][
                 "candidate_roll_hidden_control_accuracy"
+            ]
+            <= hellaswag_hidden_innovation_eval_slice_stress["headline"]["best_label_copy_eval_accuracy"]
+            and hellaswag_hidden_innovation_eval_slice_stress["headline"][
+                "score_channel_roll_hidden_control_accuracy"
             ]
             <= hellaswag_hidden_innovation_eval_slice_stress["headline"]["best_label_copy_eval_accuracy"]
             and hellaswag_hidden_innovation_eval_slice_stress["headline"]["jackknife_pass_count"]
@@ -2970,6 +3019,14 @@ def _pass_checks(
             >= 0.02
             and hellaswag_hidden_innovation_multi_slice_stress["headline"]["min_ci95_low_vs_score_only_bagged"]
             > 0.0
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"][
+                "min_delta_vs_source_rank_only_bagged"
+            ]
+            >= 0.02
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"][
+                "min_ci95_low_vs_source_rank_only_bagged"
+            ]
+            > 0.0
             and hellaswag_hidden_innovation_multi_slice_stress["headline"]["min_delta_vs_zero_hidden"] >= 0.02,
         ),
         (
@@ -2978,6 +3035,20 @@ def _pass_checks(
                 "corrupted_hidden_controls_below_label_copy"
             ]
             is True
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"][
+                "all_rank_score_channel_controls_available"
+            ]
+            is True
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"][
+                "rank_score_channel_control_slice_count"
+            ]
+            == hellaswag_hidden_innovation_multi_slice_stress["headline"]["slice_count"]
+            and hellaswag_hidden_innovation_multi_slice_stress["headline"][
+                "max_score_channel_roll_hidden_control_accuracy"
+            ]
+            <= hellaswag_hidden_innovation_multi_slice_stress["headline"][
+                "weighted_best_label_copy_eval_accuracy"
+            ]
             and hellaswag_hidden_innovation_multi_slice_stress["headline"]["jackknife_slice_pass_count"]
             == hellaswag_hidden_innovation_multi_slice_stress["headline"]["slice_count"],
         ),

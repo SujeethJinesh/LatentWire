@@ -20292,3 +20292,72 @@ Lay explanation: this checks whether the small source message only says "the
 source likes answer B" or whether it contains useful hidden evidence. Simple
 rank/index and score-only controls cannot explain the gain, and attaching the
 score hints to the wrong answer choices makes performance collapse.
+
+## 2026-05-03 HellaSwag Strict Rank/Score-Channel Multi-Slice Gate
+
+Reran the HellaSwag hidden-innovation branch across all frozen held-out
+validation slices with the new strict source-rank/index-only and
+score-channel-roll controls.
+
+- strict `0:9216` aggregate:
+  `results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260503_rank_score_channel_qwen05_validation0_9216/`;
+- full `0:10042` tail stress:
+  `results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260503_rank_score_channel_qwen05_validation0_10042/`;
+- held-out slice artifacts:
+  `results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation*/`;
+- memo:
+  `paper/source_private_hellaswag_strict_multislice_rank_score_channel_20260503.md`;
+- references:
+  `references/670_hellaswag_strict_multislice_and_systems_refs_20260503.md`.
+
+Outcome: the strict contiguous `0:9216` validation prefix passes. Weighted
+selected accuracy is `0.525499` versus best label-copy `0.483941`,
+source-rank/index-only `0.479384`, score-only `0.479384`, and zero-hidden
+`0.479384`. All `9/9` slices pass. The worst-slice delta is `+0.034180`
+versus best label-copy and `+0.037109` versus source-rank/index-only /
+score-only controls. Minimum CI95 low is `+0.011719` versus best label-copy and
+`+0.018555` versus source-rank/index-only. The max score-channel-roll hidden
+control is `0.273438`, far below label-copy.
+
+Full validation `0:10042` does not pass the strict aggregate. The terminal
+`9216:10042` tail has positive average lift (`0.539952` selected versus
+`0.498789` best label-copy and `0.497579` source-rank/index-only), with positive
+paired CI95 lows, but only `1/3` train-sample jackknife subbags pass and the
+jackknife min CI95 low versus best label-copy is `-0.007264`.
+
+Decision: promote HellaSwag hidden-innovation as the strongest current positive
+branch with a strict `0:9216` claim. Do not claim full-validation strict
+stability. The next exact gate is a receiver-family or cross-family
+falsification under the same control ladder. If that fails, pivot to the ARC
+sparse common-feature innovation packet with feature-id shuffle, target-derived
+packet, same-byte text, and candidate-score-roll controls.
+
+Lay explanation: the tiny hidden message keeps helping across the first nine
+validation chunks, even after checking that it is not just copying the source
+answer, rank, or score. The final smaller chunk still looks positive on
+average, but one training subsample is unstable, so the full validation claim
+is not yet solid.
+
+## 2026-05-03 ICLR Evidence Bundle Strict-Control Refresh
+
+Updated the canonical ICLR evidence bundle to consume the new HellaSwag
+rank/score-channel-control artifacts instead of the older 20260501 hidden
+innovation artifacts.
+
+- script:
+  `scripts/build_source_private_iclr_evidence_bundle.py`;
+- test:
+  `tests/test_build_source_private_iclr_evidence_bundle.py`;
+- artifact:
+  `results/source_private_iclr_evidence_bundle_20260503/`.
+
+Outcome: the refreshed bundle passes (`204/204` checks) while explicitly
+recording both sides of the HellaSwag result: the strict `0:9216` aggregate
+passes (`9/9` slices, `9216` rows), and the full `0:10042` validation aggregate
+is not overclaimed (`10` slices, `9` passing, terminal-tail jackknife soft
+fail). The reproduction script now points to the 20260503 strict-control
+HellaSwag commands.
+
+Decision: cite the 20260503 evidence bundle for paper status, but keep the ICLR
+gate blocked on receiver-family/cross-family falsification and hardware
+systems rows.

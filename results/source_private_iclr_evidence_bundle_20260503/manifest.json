@@ -1,0 +1,22 @@
+{
+  "artifact_sha256": {
+    "contribution_matrix.csv": "bd2c2d0591540c465af49af39b9d73d396158e4b87373f3b1dbf9b8e3bde2c3b",
+    "iclr_evidence_bundle.json": "7efb5736109966d51ac5bad6e938aab3399199b1d5ceaab1d76ce1bdc06079d0",
+    "iclr_evidence_bundle.md": "8e3668f6b91fa8f9572ec77ac9bbfb77672bb4c7df8e9f6a87d2fc22c40b2ae6",
+    "novelty_matrix.csv": "41d856b71a65da86375d1dfcdeac7e8003cdca42bfdfbeb022ff5719d283cc36",
+    "reproduce_iclr_evidence_bundle.sh": "8eeec63b9f18b5baf4843c0f8be4ce036c0d2277d3e468c47c25dea522ca6ce0"
+  },
+  "artifacts": [
+    "iclr_evidence_bundle.json",
+    "iclr_evidence_bundle.md",
+    "novelty_matrix.csv",
+    "contribution_matrix.csv",
+    "reproduce_iclr_evidence_bundle.sh",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "./venv_arm64/bin/python scripts/build_source_private_iclr_evidence_bundle.py --output-dir results/source_private_iclr_evidence_bundle_20260503",
+  "pass_gate": true,
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "script_sha256": "e68ad06632bd9d308f5fde66707939e6a337b16ed245e88df4b85301ea21ae8c"
+}

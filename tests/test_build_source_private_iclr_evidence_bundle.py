@@ -561,6 +561,11 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert bagged_headline["selected_packet_framed_bytes"] == 5
     assert bagged_headline["selected_minus_best_label_copy"] >= 0.02
     assert bagged_headline["selected_minus_score_only_bagged_control"] >= 0.02
+    assert bagged_headline["selected_minus_source_rank_only_bagged_control"] >= 0.02
+    assert bagged_headline["paired_ci95_low_vs_source_rank_only_bagged"] > 0.0
+    assert bagged_headline["score_channel_roll_hidden_control_accuracy"] < bagged_headline[
+        "best_label_copy_eval_accuracy"
+    ]
     assert bagged_headline["selected_minus_zero_hidden_control"] >= 0.02
     assert bagged_headline["paired_ci95_low_vs_best_label_copy"] > 0.0
     assert bagged_headline["total_wall_time_sec"] > 0
@@ -572,6 +577,11 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert eval_slice_headline["selected_minus_best_label_copy"] >= 0.02
     assert eval_slice_headline["paired_ci95_low_vs_best_label_copy"] > 0.0
     assert eval_slice_headline["selected_minus_score_only_bagged_control"] >= 0.02
+    assert eval_slice_headline["selected_minus_source_rank_only_bagged_control"] >= 0.02
+    assert eval_slice_headline["paired_ci95_low_vs_source_rank_only_bagged"] > 0.0
+    assert eval_slice_headline["score_channel_roll_hidden_control_accuracy"] < eval_slice_headline[
+        "best_label_copy_eval_accuracy"
+    ]
     assert eval_slice_headline["jackknife_pass_count"] == eval_slice_headline["jackknife_row_count"]
     assert eval_slice_headline["raw_payload_bytes"] == 2
     assert eval_slice_headline["framed_record_bytes"] == 5
@@ -588,6 +598,13 @@ def test_bundle_highlights_source_private_and_systems_axes(tmp_path) -> None:
     assert multi_slice_headline["contiguous_validation_prefix"] is True
     assert multi_slice_headline["min_delta_vs_best_label_copy"] >= 0.02
     assert multi_slice_headline["min_delta_vs_score_only_bagged"] >= 0.02
+    assert multi_slice_headline["min_delta_vs_source_rank_only_bagged"] >= 0.02
+    assert multi_slice_headline["min_ci95_low_vs_source_rank_only_bagged"] > 0.0
+    assert multi_slice_headline["all_rank_score_channel_controls_available"] is True
+    assert multi_slice_headline["rank_score_channel_control_slice_count"] == 9
+    assert multi_slice_headline["max_score_channel_roll_hidden_control_accuracy"] < multi_slice_headline[
+        "weighted_best_label_copy_eval_accuracy"
+    ]
     assert multi_slice_headline["source_private_packet"] is True
     assert len(multi_slice_headline["slice_artifacts"]) == 9
     acceptance_headline = payload["hellaswag_repair_systems_acceptance_headline"]

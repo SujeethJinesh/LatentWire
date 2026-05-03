@@ -1,0 +1,86 @@
+{
+  "created_utc": "2026-05-03T20:50:21.267475+00:00",
+  "files": [
+    {
+      "bytes": 69218,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "sha256": "be4fd1a5a682a3e41c5dc200fc96441a64ab2c7b3db5b054b7f8d966a91aca6b"
+    },
+    {
+      "bytes": 904,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/hellaswag_hidden_innovation_eval_slice_stress.md",
+      "sha256": "f1704654f2c161ba77d61bbe8c0b7191d5bc92102a71d4b160e8130f74eacdd6"
+    },
+    {
+      "bytes": 1199219,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/hellaswag_validation_rows_3072_4096.jsonl",
+      "sha256": "69a6021f0e7c2738156d7b119ac591af9816ddb285e769a5dc593f4b98ba08aa"
+    },
+    {
+      "bytes": 140856,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/source_eval_score_cache.json",
+      "sha256": "d9700a84d9d861c6ae900c47e1c89e4d62fd889e391dffde3e6bf4d9720ac3da"
+    },
+    {
+      "bytes": 13680610,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/source_eval_hidden_cache.npz",
+      "sha256": "b85fccd81e844bc1a8a0f78bcd790390eca4dde4faef222f975a93f09416efa3"
+    },
+    {
+      "bytes": 12907,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation3072_4096/source_eval_hidden_cache.json",
+      "sha256": "2156fdb44d6186dbc4d90e9a9cbb2d74988a61e27c37990bb3705f6958518bda"
+    },
+    {
+      "bytes": 42964,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/bagged_gate/hellaswag_hidden_innovation_bagged_gate.json",
+      "sha256": "9619a2a9534ce92e7985cf8d942384d722180e1edf6b002ad2cbf6d53205d3de"
+    },
+    {
+      "bytes": 1703,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/bagged_gate/jackknife_rows.csv",
+      "sha256": "f89b255d729af73c8d96a8de5dd4f86621830daebe2fac74c4a9e499ceb26bd0"
+    },
+    {
+      "bytes": 3959,
+      "path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation3072_4096/bagged_gate/manifest.json",
+      "sha256": "dd8070a56e5806fa9789dbbaef478770910ebcf6f224858caef13a776d9291d7"
+    }
+  ],
+  "gate": "source_private_hellaswag_hidden_innovation_eval_slice_stress",
+  "headline": {
+    "best_label_copy_eval_accuracy": 0.484375,
+    "candidate_roll_hidden_control_accuracy": 0.4052734375,
+    "component_model_count": 9,
+    "eval_rows": 1024,
+    "eval_slice_end_exclusive": 4096,
+    "eval_slice_start": 3072,
+    "framed_record_bytes": 5,
+    "jackknife_min_ci95_low_vs_best_label_copy": 0.0166015625,
+    "jackknife_min_delta_vs_best_label_copy": 0.0390625,
+    "jackknife_pass_count": 3,
+    "jackknife_row_count": 3,
+    "paired_ci95_high_vs_best_label_copy": 0.0673828125,
+    "paired_ci95_high_vs_source_rank_only_bagged": 0.0703125,
+    "paired_ci95_low_vs_best_label_copy": 0.0263671875,
+    "paired_ci95_low_vs_score_only_bagged": 0.0322265625,
+    "paired_ci95_low_vs_source_rank_only_bagged": 0.0322265625,
+    "raw_payload_bytes": 2,
+    "score_channel_roll_hidden_control_accuracy": 0.2412109375,
+    "score_only_bagged_control_accuracy": 0.48046875,
+    "selected_eval_accuracy": 0.53125,
+    "selected_minus_best_label_copy": 0.046875,
+    "selected_minus_score_only_bagged_control": 0.05078125,
+    "selected_minus_source_rank_only_bagged_control": 0.05078125,
+    "selected_minus_zero_hidden_control": 0.05078125,
+    "source_label_copy_eval_accuracy": 0.48046875,
+    "source_rank_only_bagged_control_accuracy": 0.48046875,
+    "standard_sized_slice": true,
+    "strict_delta_required": 0.02,
+    "terminal_tail_slice": false,
+    "train_sample_seed_count": 3,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.484375,
+    "wrong_example_hidden_control_accuracy": 0.455078125,
+    "zero_hidden_control_accuracy": 0.48046875
+  }
+}

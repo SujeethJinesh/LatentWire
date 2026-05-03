@@ -2189,5 +2189,12 @@
     "path": "references/669_hellaswag_rank_score_channel_controls_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the HellaSwag hidden-innovation rank/score-channel control hardening, recording strict source-rank/index-only and score-channel-roll control boundaries plus the next sparse common-feature innovation branch."
+  },
+  {
+    "num": 670,
+    "slug": "hellaswag_strict_multislice_and_systems_refs_20260503",
+    "path": "references/670_hellaswag_strict_multislice_and_systems_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the HellaSwag strict rank/score-channel multi-slice gate, recording the 0:9216 positive surface, full-tail jackknife instability, close communication priors, and systems/quantization boundaries."
   }
 ]
