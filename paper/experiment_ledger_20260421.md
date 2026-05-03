@@ -20847,3 +20847,60 @@ Lay explanation: Phi sometimes has the right answer when the Qwen hint is
 wrong. This test learned a small rule for when Phi should override Qwen. On new
 examples that rule made more bad switches than good switches, so it made the
 system worse.
+
+## 2026-05-03 HellaSwag Fixed Hybrid Option-Position Audit
+
+Implemented and ran a cached option-position audit for the full-validation
+fixed hybrid HellaSwag packet row.
+
+- script added:
+  `scripts/build_source_private_hellaswag_fixed_hybrid_option_position_audit.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_fixed_hybrid_option_position_audit.py`;
+- artifact:
+  `results/source_private_hellaswag_fixed_hybrid_option_position_audit_20260503_validation0_10042/`;
+- memo:
+  `paper/source_private_hellaswag_fixed_hybrid_option_position_audit_20260503.md`;
+- references:
+  `references/682_hellaswag_fixed_hybrid_option_position_audit_refs_20260503.md`.
+
+Gate design: reuse cached full-validation prediction artifacts over
+HellaSwag `0:10042`. Compare fixed hybrid against candidate-only overall,
+under a uniform-by-gold-answer-position bootstrap, within each answer slot,
+against direct cyclic-roll packet controls, against all non-identity global
+packet-label permutations, against rowwise random derangements/permutations,
+and under same-permutation equivariance sanity checks. Also log prediction-slot
+distribution shift from the gold answer-slot distribution.
+
+Outcome: the cached option-position audit passes. Fixed hybrid remains
+positive overall (`+0.005776`, CI95 low `+0.002888`) and under
+answer-position-balanced resampling (`+0.005779`, CI95 low `+0.002984`). Mean
+delta is positive for all four gold answer slots:
+
+- answer slot `0`: `+0.006759`, CI95 low `+0.000398`;
+- answer slot `1`: `+0.007646`, CI95 low `+0.002414`;
+- answer slot `2`: `+0.004644`, CI95 low `-0.000774`;
+- answer slot `3`: `+0.004068`, CI95 low `-0.002441`.
+
+Direct cyclic rolls of the fixed hybrid packet collapse to `0.155148`,
+`0.157040`, and `0.155348` accuracy, with CI95 highs versus fixed hybrid all
+below `-0.361673`. The best non-identity global packet-label permutation reaches
+only `0.348636` accuracy, delta `-0.183828`, CI95 high `-0.173170`; the best
+rowwise random derangement reaches `0.162517`; and the best rowwise random
+permutation reaches `0.259908`. Same-permutation equivariance sanity checks
+over all `24` label permutations have max absolute accuracy difference `0.0`.
+The fixed-hybrid prediction distribution is close to the gold answer
+distribution, with max absolute slot shift `0.013045`.
+
+Decision: promote this as cached option-position hardening for the
+full-validation fixed hybrid packet row. Do not claim true candidate-text
+permutation invariance, because the source model was not rerun with reordered
+candidate texts. The next stronger HellaSwag bias-control gate should physically
+shuffle answer options on a smaller frozen slice and remap predictions back to
+canonical IDs.
+
+Lay explanation: we checked whether the tiny hybrid hint only helps when the
+right answer is in one particular choice position. It helps a little for all
+four positions. If we rotate or remap the hint to wrong option numbers,
+accuracy collapses. That makes the packet result less likely to be just an
+answer-slot trick, but it is not yet a full shuffle test.

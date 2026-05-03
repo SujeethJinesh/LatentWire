@@ -2273,5 +2273,12 @@
     "path": "references/681_hellaswag_qwen_hybrid_to_phi_conditional_acceptor_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the negative Qwen-hybrid-to-Phi conditional acceptor gate, recording the failed target-score override branch, oracle headroom, and boundaries against selective prediction, learning-to-defer, MCQ selector bias, C2C, KVComm, prefix/gist tokens, QJL, and TurboQuant."
+  },
+  {
+    "num": 682,
+    "slug": "hellaswag_fixed_hybrid_option_position_audit_refs_20260503",
+    "path": "references/682_hellaswag_fixed_hybrid_option_position_audit_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the fixed HellaSwag hybrid packet option-position audit, recording answer-position balanced survival, packet-ID permutation and cyclic-roll controls, MCQ option-order limitations, and boundaries against C2C, KVComm, prefix/gist tokens, QJL, and TurboQuant."
   }
 ]

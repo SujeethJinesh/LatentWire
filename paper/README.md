@@ -163,3 +163,6 @@
   records the negative cached Qwen-hybrid-to-Phi conditional acceptor gate:
   simple Phi score-side override rules fail to beat the fixed hybrid packet
   despite large target-or-hybrid oracle headroom.
+- `source_private_hellaswag_fixed_hybrid_option_position_audit_20260503.md`
+  records the cached option-position hardening audit for the full-validation
+  HellaSwag fixed hybrid packet row.

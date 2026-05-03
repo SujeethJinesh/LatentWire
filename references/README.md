@@ -553,7 +553,7 @@ final-paper framing:
   systems/uniqueness boundary against C2C, KVComm, Interlat, QJL, TurboQuant,
   prompt compression, vLLM, SGLang, DiT/consistency inspiration, and SAE
   feature-space universality.
-- `660_` through `681_`: 2026-05-02/03 ICLR gate memos covering Phi-3 and
+- `660_` through `682_`: 2026-05-02/03 ICLR gate memos covering Phi-3 and
   Llama-family falsification, common-feature and soft-prefix failures, HellaSwag
   strict rank/score-channel controls, the `0:9216` positive HellaSwag surface,
   non-Qwen TinyLlama-to-Phi and Qwen-to-Phi packet utility, receiver-fusion
@@ -563,6 +563,7 @@ final-paper framing:
   fixed hybrid channel-selector packet-policy row, the cached Qwen-to-Phi
   cross-family hybrid packet-policy survival row, the killed packet-preserving
   anti-harm veto gate, the fixed hybrid full cached validation pass, the killed
-  Qwen-hybrid-to-Phi conditional acceptor, and systems/uniqueness boundaries
-  against selective prediction, learning-to-defer, C2C, KVComm, QJL/TurboQuant,
+  Qwen-hybrid-to-Phi conditional acceptor, the fixed hybrid option-position
+  hardening audit, and systems/uniqueness boundaries against MCQ option-order
+  bias, selective prediction, learning-to-defer, C2C, KVComm, QJL/TurboQuant,
   prefix/gist tokens, SAE/crosscoder common bases, vLLM, and SGLang.
