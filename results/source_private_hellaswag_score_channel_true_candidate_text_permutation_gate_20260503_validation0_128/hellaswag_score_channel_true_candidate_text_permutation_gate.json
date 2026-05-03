@@ -1,0 +1,263 @@
+{
+  "answer_position_rows": [
+    {
+      "answer_index": 0,
+      "canonical_examples": 31,
+      "consistency_rate": 1.0,
+      "identity_accuracy": 0.3870967741935484,
+      "permuted_evaluations": 248,
+      "remapped_accuracy": 0.3870967741935484,
+      "unremapped_accuracy": 0.25
+    },
+    {
+      "answer_index": 1,
+      "canonical_examples": 30,
+      "consistency_rate": 1.0,
+      "identity_accuracy": 0.36666666666666664,
+      "permuted_evaluations": 240,
+      "remapped_accuracy": 0.36666666666666664,
+      "unremapped_accuracy": 0.225
+    },
+    {
+      "answer_index": 2,
+      "canonical_examples": 38,
+      "consistency_rate": 1.0,
+      "identity_accuracy": 0.5,
+      "permuted_evaluations": 304,
+      "remapped_accuracy": 0.5,
+      "unremapped_accuracy": 0.24671052631578946
+    },
+    {
+      "answer_index": 3,
+      "canonical_examples": 29,
+      "consistency_rate": 1.0,
+      "identity_accuracy": 0.6206896551724138,
+      "permuted_evaluations": 232,
+      "remapped_accuracy": 0.6206896551724138,
+      "unremapped_accuracy": 0.30603448275862066
+    }
+  ],
+  "created_utc": "2026-05-03T23:38:01.912687+00:00",
+  "date": "2026-05-03",
+  "gate": "source_private_hellaswag_score_channel_true_candidate_text_permutation_gate",
+  "headline": {
+    "accuracy_std_across_permutations": 0.0,
+    "answer_balanced_ci95_low_vs_candidate_only": 0.0,
+    "answer_balanced_delta_vs_candidate_only": 0.0,
+    "best_nonidentity_wrong_remap_accuracy": 0.1767578125,
+    "best_wrong_remap_ci95_high_vs_remapped": -0.24802246093750002,
+    "candidate_only_accuracy": 0.46875,
+    "canonical_packet_consistency_rate": 1.0,
+    "canonical_packet_flip_rate": 0.0,
+    "ci95_high_remapped_vs_candidate_only": 0.0,
+    "ci95_low_remapped_vs_candidate_only": 0.0,
+    "delta_remapped_vs_candidate_only": 0.0,
+    "eval_rows": 128,
+    "harms_remapped_vs_candidate_only": 0,
+    "helps_remapped_vs_candidate_only": 0,
+    "identity_accuracy": 0.46875,
+    "mac_local_only": true,
+    "max_abs_accuracy_delta_from_identity": 0.0,
+    "max_prediction_slot_shift_from_answer_distribution": 0.0546875,
+    "method": "score_channel_candidate_id_packet_true_candidate_text_permutation",
+    "native_systems_claim_allowed": false,
+    "packet_framed_record_bytes": 4,
+    "packet_raw_payload_bytes": 1,
+    "parse_failure_rate": 0.0,
+    "permutations_per_example": 8,
+    "permuted_evaluations": 1024,
+    "positive_answer_position_count": 0,
+    "promotion_pass_gate": false,
+    "remapped_accuracy": 0.46875,
+    "smoke_pass_gate": true,
+    "source_hidden_or_score_vector_exposed": false,
+    "source_kv_exposed": false,
+    "source_score_channel_scope": "component-level physical candidate-text permutation smoke; not full fixed-hybrid rerun",
+    "source_text_exposed": false,
+    "total_variation_from_answer_distribution": 0.0546875,
+    "transferred_source_state_bytes": 0,
+    "unremapped_accuracy": 0.255859375,
+    "wrong_remap_accuracy": 0.1767578125
+  },
+  "interpretation": "This physically reruns the Qwen HellaSwag continuation-likelihood source scorer after reordering candidate endings, then maps display predictions back to canonical candidate IDs. A pass means the score-channel candidate-id packet is content-stable under true display-order perturbation on this frozen slice. It does not prove the learned hidden fixed-hybrid row is candidate-order invariant; that requires rerunning the hidden-innovation pipeline under the same physical permutations.",
+  "lay_explanation": "We actually shuffled the answer endings before asking the local source model to score them. Then we translated the displayed option number back to the original option number. If the same original answer is selected after shuffling, the score-channel hint is following the candidate text rather than the slot it appeared in.",
+  "packet_contract": {
+    "framed_record_bytes": 4,
+    "raw_payload_bytes": 1,
+    "raw_scores_transmitted": false,
+    "receiver_visible_payload": "one source-selected candidate id after canonical remapping",
+    "source_hidden_or_score_vector_exposed": false,
+    "source_kv_exposed": false,
+    "source_logits_transmitted": false,
+    "source_text_exposed": false,
+    "transferred_source_state_bytes": 0
+  },
+  "pass_gate": true,
+  "pass_rule": "Component smoke passes when a Mac-local true candidate-text rerun covers the requested frozen slice with at least eight permutations per example, remapped canonical source candidate IDs match the identity packet at >=0.99 consistency, per-permutation accuracy does not drift from identity by more than 0.01, accuracy std across permutations is <=0.005, and intentionally wrong remaps are significantly worse. Promotion to positive full HellaSwag packet evidence remains false unless a >=1024 row all-24-permutation rerun shows positive paired/answer-balanced lift. This gate is source score/candidate-id only, not a full hidden fixed-hybrid rerun.",
+  "permutation_accuracy_rows": [
+    {
+      "canonical_packet_consistency_rate": 1.0,
+      "eval_rows": 128,
+      "permutation_display_to_canonical": "0 1 2 3",
+      "permutation_id": 0,
+      "remapped_accuracy": 0.46875,
+      "unremapped_accuracy": 0.46875,
+      "wrong_remap_accuracy": 0.171875
+    },
+    {
+      "canonical_packet_consistency_rate": 1.0,
+      "eval_rows": 128,
+      "permutation_display_to_canonical": "1 2 3 0",
+      "permutation_id": 1,
+      "remapped_accuracy": 0.46875,
+      "unremapped_accuracy": 0.1796875,
+      "wrong_remap_accuracy": 0.171875
+    },
+    {
+      "canonical_packet_consistency_rate": 1.0,
+      "eval_rows": 128,
+      "permutation_display_to_canonical": "2 3 0 1",
+      "permutation_id": 2,
+      "remapped_accuracy": 0.46875,
+      "unremapped_accuracy": 0.1796875,
+      "wrong_remap_accuracy": 0.171875
+    },
+    {
+      "canonical_packet_consistency_rate": 1.0,
+      "eval_rows": 128,
+      "permutation_display_to_canonical": "3 0 1 2",
+      "permutation_id": 3,
+      "remapped_accuracy": 0.46875,
+      "unremapped_accuracy": 0.171875,
+      "wrong_remap_accuracy": 0.171875
+    },
+    {
+      "canonical_packet_consistency_rate": 1.0,
+      "eval_rows": 128,
+      "permutation_display_to_canonical": "1 0 2 3",
+      "permutation_id": 4,
+      "remapped_accuracy": 0.46875,
+      "unremapped_accuracy": 0.390625,
+      "wrong_remap_accuracy": 0.203125
+    },
+    {
+      "canonical_packet_consistency_rate": 1.0,
+      "eval_rows": 128,
+      "permutation_display_to_canonical": "0 2 1 3",
+      "permutation_id": 5,
+      "remapped_accuracy": 0.46875,
+      "unremapped_accuracy": 0.328125,
+      "wrong_remap_accuracy": 0.15625
+    },
+    {
+      "canonical_packet_consistency_rate": 1.0,
+      "eval_rows": 128,
+      "permutation_display_to_canonical": "3 2 1 0",
+      "permutation_id": 6,
+      "remapped_accuracy": 0.46875,
+      "unremapped_accuracy": 0.1640625,
+      "wrong_remap_accuracy": 0.1796875
+    },
+    {
+      "canonical_packet_consistency_rate": 1.0,
+      "eval_rows": 128,
+      "permutation_display_to_canonical": "2 0 3 1",
+      "permutation_id": 7,
+      "remapped_accuracy": 0.46875,
+      "unremapped_accuracy": 0.1640625,
+      "wrong_remap_accuracy": 0.1875
+    }
+  ],
+  "promotion_pass_gate": false,
+  "smoke_pass_gate": true,
+  "source_artifacts": {
+    "eval_path": "results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_validation.jsonl",
+    "eval_sha256": "748c3b3822c2423f3ff3e8b80523cb3d971f5f5c940a4da029a9fa0f4e1faf12",
+    "score_cache": "results/source_private_hellaswag_score_channel_true_candidate_text_permutation_gate_20260503_validation0_128/source_score_cache.json",
+    "score_cache_sha256": "7d9f3892ac0ead53312ccf185b2ae1475930ff41c826f338d323c718a9c48a92"
+  },
+  "source_model": {
+    "attn_implementation": "auto",
+    "cache_hit": false,
+    "cache_path": "results/source_private_hellaswag_score_channel_true_candidate_text_permutation_gate_20260503_validation0_128/source_score_cache.json",
+    "choice_batch_size": null,
+    "device": "cpu",
+    "dtype": "float32",
+    "forbidden_source_fields": [
+      "answer",
+      "answerKey",
+      "answer_index",
+      "answer_label",
+      "gold"
+    ],
+    "kind": "local_causal_lm_choice_loglikelihood",
+    "latency_s": 288.9565267909784,
+    "max_length": 256,
+    "model_path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775",
+    "normalization": "mean",
+    "prompt_mode": "continuation",
+    "source_visible_fields": [
+      "question",
+      "choices"
+    ]
+  },
+  "summary_rows": [
+    {
+      "accuracy_std_across_permutations": 0.0,
+      "answer_balanced_ci95_low_vs_candidate_only": 0.0,
+      "answer_balanced_delta_vs_candidate_only": 0.0,
+      "best_nonidentity_wrong_remap_accuracy": 0.1767578125,
+      "best_wrong_remap_ci95_high_vs_remapped": -0.24802246093750002,
+      "candidate_only_accuracy": 0.46875,
+      "canonical_packet_consistency_rate": 1.0,
+      "canonical_packet_flip_rate": 0.0,
+      "ci95_high_remapped_vs_candidate_only": 0.0,
+      "ci95_low_remapped_vs_candidate_only": 0.0,
+      "delta_remapped_vs_candidate_only": 0.0,
+      "eval_rows": 128,
+      "harms_remapped_vs_candidate_only": 0,
+      "helps_remapped_vs_candidate_only": 0,
+      "identity_accuracy": 0.46875,
+      "mac_local_only": true,
+      "max_abs_accuracy_delta_from_identity": 0.0,
+      "max_prediction_slot_shift_from_answer_distribution": 0.0546875,
+      "method": "score_channel_candidate_id_packet_true_candidate_text_permutation",
+      "native_systems_claim_allowed": false,
+      "packet_framed_record_bytes": 4,
+      "packet_raw_payload_bytes": 1,
+      "parse_failure_rate": 0.0,
+      "permutations_per_example": 8,
+      "permuted_evaluations": 1024,
+      "positive_answer_position_count": 0,
+      "promotion_pass_gate": false,
+      "remapped_accuracy": 0.46875,
+      "smoke_pass_gate": true,
+      "source_hidden_or_score_vector_exposed": false,
+      "source_kv_exposed": false,
+      "source_text_exposed": false,
+      "transferred_source_state_bytes": 0,
+      "unremapped_accuracy": 0.255859375,
+      "wrong_remap_accuracy": 0.1767578125
+    }
+  ],
+  "systems_trace": {
+    "mac_local_only": true,
+    "measurement_scope": "Mac-local offline Transformers score-channel rerun; no native GPU serving claim.",
+    "native_systems_claim_allowed": false,
+    "packet_framed_record_bytes_per_request": 4,
+    "packet_raw_payload_bytes_per_request": 1,
+    "permuted_evaluations": 1024,
+    "transferred_source_state_bytes_per_request": 0,
+    "unavailable_native_metrics": [
+      "ttft_ms_p50",
+      "ttft_ms_p95",
+      "tpot_ms_p50",
+      "tpot_ms_p95",
+      "goodput_requests_per_s",
+      "peak_gpu_memory_gb",
+      "hbm_read_bytes_per_request",
+      "hbm_write_bytes_per_request"
+    ],
+    "wall_time_s": 288.9565267909766
+  }
+}

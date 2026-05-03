@@ -2280,5 +2280,12 @@
     "path": "references/682_hellaswag_fixed_hybrid_option_position_audit_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the fixed HellaSwag hybrid packet option-position audit, recording answer-position balanced survival, packet-ID permutation and cyclic-roll controls, MCQ option-order limitations, and boundaries against C2C, KVComm, prefix/gist tokens, QJL, and TurboQuant."
+  },
+  {
+    "num": 683,
+    "slug": "hellaswag_score_channel_true_candidate_text_permutation_refs_20260503",
+    "path": "references/683_hellaswag_score_channel_true_candidate_text_permutation_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the HellaSwag score-channel true candidate-text permutation smoke, recording a fresh physical candidate-ending rerun, canonical remapping, option-order MCQ robustness boundaries, and strict separation from full fixed-hybrid hidden reruns, prefix/gist tokens, C2C, KVComm, QJL, and TurboQuant."
   }
 ]

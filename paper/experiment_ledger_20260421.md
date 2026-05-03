@@ -20904,3 +20904,51 @@ right answer is in one particular choice position. It helps a little for all
 four positions. If we rotate or remap the hint to wrong option numbers,
 accuracy collapses. That makes the packet result less likely to be just an
 answer-slot trick, but it is not yet a full shuffle test.
+
+## 2026-05-03 HellaSwag Score-Channel True Candidate-Text Permutation Gate
+
+Implemented and ran a Mac-local true candidate-text permutation smoke gate for
+the Qwen HellaSwag source score/candidate-id packet component.
+
+- script added:
+  `scripts/build_source_private_hellaswag_score_channel_true_candidate_text_permutation_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_score_channel_true_candidate_text_permutation_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_score_channel_true_candidate_text_permutation_gate_20260503_validation0_128/`;
+- memo:
+  `paper/source_private_hellaswag_score_channel_true_candidate_text_permutation_gate_20260503.md`;
+- references:
+  `references/683_hellaswag_score_channel_true_candidate_text_permutation_refs_20260503.md`.
+
+Gate design: load HellaSwag validation rows `0:128`, apply eight fixed
+candidate-ending permutations per example, physically rerun Qwen2.5-0.5B
+continuation-likelihood scoring on the displayed candidate strings, remap the
+displayed prediction back to canonical candidate IDs, and compare against the
+identity score-channel packet and intentionally wrong remaps. The score cache
+was freshly generated for the final artifact (`cache_hit: false`) on CPU
+float32.
+
+Outcome: the component smoke passes. On `128` rows and `1024` permuted
+evaluations, identity and remapped accuracy are both `0.468750`; canonical
+packet consistency is `1.000000`; max accuracy delta from identity is
+`0.000000`; accuracy std across the eight permutations is `0.000000`;
+unremapped accuracy is `0.255859`; wrong-remap accuracy is `0.176758`; and the
+wrong-remap CI95 high versus remapped is `-0.248022`. The packet contract is
+still `1B` raw / `4B` framed with no source text, KV, hidden vector, score
+vector, or logits transmitted. The Mac-local score rerun took `288.956527`
+seconds and does not enable native systems claims.
+
+Decision: promote this as true candidate-text hardening for the source
+score/candidate-id packet channel. Do not promote it as a full fixed-hybrid
+hidden-innovation permutation audit or as learned receiver/common-basis
+evidence. The next exact HellaSwag gate is a `512`-row or larger physical
+candidate-text permutation rerun of the hidden fixed-hybrid pipeline with
+canonical remapping and paired uncertainty.
+
+Lay explanation: this time we actually shuffled the answer endings before the
+local source model scored them, then translated the displayed answer number
+back to the original candidate. The selected original candidate stayed the
+same after shuffling, so this score-channel hint follows answer text rather
+than display slots. It does not yet prove the full hidden hybrid hint survives
+the same shuffle.
