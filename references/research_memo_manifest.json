@@ -2252,5 +2252,12 @@
     "path": "references/678_hellaswag_qwen_hybrid_to_phi_cross_family_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the cached Qwen hybrid-to-Phi cross-family gate, recording packet-policy survival under receiver-family pressure and boundaries against multiple-choice selector bias, relative representations, SAE/crosscoder common bases, prefix/gist tokens, C2C, KVComm, QJL, and TurboQuant."
+  },
+  {
+    "num": 679,
+    "slug": "hellaswag_hybrid_anti_harm_veto_refs_20260503",
+    "path": "references/679_hellaswag_hybrid_anti_harm_veto_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the killed HellaSwag hybrid anti-harm veto gate, recording selective-classification and learning-to-defer novelty boundaries, MCQ option-bias concerns, and the decision to move from shallow source-side vetoes to receiver/common-basis methods."
   }
 ]

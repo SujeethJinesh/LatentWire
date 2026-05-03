@@ -152,3 +152,7 @@
 - `../results/query_pool_toy_20260421/route_class_frontier_sweep_20260421.md`
   is the follow-up showing that route-/class-calibrated local protection still
   does not rescue the current frontier family.
+- `source_private_hellaswag_hybrid_anti_harm_veto_gate_20260503.md` records
+  the killed strict HellaSwag anti-harm veto gate: the frozen fit/select rule
+  loses to fixed hybrid on `1024:9216` and cached Qwen-to-Phi rows, so shallow
+  packet-preserving source-side vetoes are no longer the next method branch.

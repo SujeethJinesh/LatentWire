@@ -20707,3 +20707,54 @@ Lay explanation: we checked whether the improved Qwen hint still works when
 the receiving model is Phi. It does: the hybrid hint beats both Phi alone and
 the older Qwen candidate-only hint. But Phi is still receiving one answer-choice
 hint, not a rich hidden thought.
+
+## 2026-05-03 HellaSwag Hybrid Anti-Harm Veto Gate
+
+Implemented and ran a packet-preserving anti-harm veto gate for the current
+strict Qwen HellaSwag fixed hybrid packet policy.
+
+- script added:
+  `scripts/build_source_private_hellaswag_hybrid_anti_harm_veto_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_hybrid_anti_harm_veto_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_hybrid_anti_harm_veto_gate_20260503_validation0_9216/`;
+- memo:
+  `paper/source_private_hellaswag_hybrid_anti_harm_veto_gate_20260503.md`;
+- references:
+  `references/679_hellaswag_hybrid_anti_harm_veto_refs_20260503.md`.
+
+Gate design: define candidate one-rule source-side vetoes on strict rows
+`0:512`, select one on `512:1024`, evaluate on frozen strict rows
+`1024:9216`, then apply the same frozen rule to cached Qwen-to-Phi rows
+`1024:2048` with the first `128` rows per slice excluded for parity with the
+prior cross-family gate. The receiver-visible packet remains `1B` raw / `4B`
+framed with no source text, source KV, raw hidden vectors, raw scores, or extra
+veto bit.
+
+Outcome: the anti-harm veto fails. The selected rule is `selected_id <= 1`, an
+option-position rule. On strict heldout rows `1024:9216`, it reaches
+`0.529663` accuracy versus `0.532715` for fixed hybrid, with paired delta
+`-0.003052` and CI95 low `-0.005249`. It still beats candidate-only weakly
+(`+0.002563`, CI95 low `+0.000363`), but that is below the fixed hybrid row.
+It avoids `32` hybrid harms while sacrificing `57` hybrid helps and improves
+fixed hybrid on `0/8` heldout slices.
+
+The cached Qwen-to-Phi falsification also fails: the frozen veto reaches
+`0.462240` versus `0.467448` for fixed hybrid, delta `-0.005208`, CI95 low
+`-0.014323`. It is negative versus fixed hybrid on both cached slices.
+
+The candidate/hybrid oracle remains high at `0.539063` on full strict
+`0:9216`, so anti-harm headroom exists, but shallow source-side packet fields
+do not expose it reliably. The margin-only variant selects no-op and merely
+ties fixed hybrid.
+
+Decision: kill shallow packet-preserving anti-harm vetoes unless a new feature
+source is introduced. Keep fixed hybrid vote-on-score-agreement as the current
+strict HellaSwag packet-policy row. The next exact Mac-local branch should be a
+target-loss query/soft-prefix or conditional hidden-innovation receiver that
+can use target evidence without falling below packet-only.
+
+Lay explanation: we tried to train a simple warning rule for when the hybrid
+hint should be ignored. It mostly learned an answer-choice-position shortcut,
+and on new examples it threw away more good switches than bad switches.

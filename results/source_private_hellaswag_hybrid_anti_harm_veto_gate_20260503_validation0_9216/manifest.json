@@ -1,0 +1,12 @@
+{
+  "date": "2026-05-03",
+  "gate": "source_private_hellaswag_hybrid_anti_harm_veto_gate",
+  "outputs": [
+    "hellaswag_hybrid_anti_harm_veto_gate.json",
+    "hellaswag_hybrid_anti_harm_veto_gate.md",
+    "method_rows.csv",
+    "slice_method_rows.csv"
+  ],
+  "source_artifact": "results/source_private_hellaswag_strict_candidate_only_packet_audit_20260503_validation0_9216/hellaswag_strict_candidate_only_packet_audit.json",
+  "source_artifact_sha256": "24edb66de4f413f11fc6e3f1356d3171ba514e50bb34f386ecc2a3b603843f1b"
+}
