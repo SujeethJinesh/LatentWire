@@ -1,0 +1,12 @@
+{
+  "date": "2026-05-03",
+  "gate": "source_private_hellaswag_strict_source_score_quantization_gate",
+  "outputs": [
+    "hellaswag_strict_source_score_quantization_gate.json",
+    "hellaswag_strict_source_score_quantization_gate.md",
+    "variant_rows.csv",
+    "slice_variant_rows.csv"
+  ],
+  "source_artifact": "results/source_private_hellaswag_hidden_innovation_multi_slice_stress_20260503_rank_score_channel_qwen05_validation0_9216/hellaswag_hidden_innovation_multi_slice_stress.json",
+  "source_artifact_sha256": "953ac2c0472730b201c25a5c878fba641358164114597ccceb9f87618af59053"
+}

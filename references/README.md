@@ -553,12 +553,12 @@ final-paper framing:
   systems/uniqueness boundary against C2C, KVComm, Interlat, QJL, TurboQuant,
   prompt compression, vLLM, SGLang, DiT/consistency inspiration, and SAE
   feature-space universality.
-- `660_` through `675_`: 2026-05-02/03 ICLR gate memos covering Phi-3 and
+- `660_` through `676_`: 2026-05-02/03 ICLR gate memos covering Phi-3 and
   Llama-family falsification, common-feature and soft-prefix failures, HellaSwag
   strict rank/score-channel controls, the `0:9216` positive HellaSwag surface,
   non-Qwen TinyLlama-to-Phi and Qwen-to-Phi packet utility, receiver-fusion
   failure, the negative score-simplex Fourier/SVD receiver gate, the cautious
   anchor/quantile acceptor preservation row, the strict Qwen `1B` candidate-only
-  packet audit, and systems/uniqueness boundaries against C2C, KVComm,
-  QJL/TurboQuant, prefix/gist tokens,
+  packet audit, the negative strict source-score quantization gate, and
+  systems/uniqueness boundaries against C2C, KVComm, QJL/TurboQuant, prefix/gist tokens,
   SAE/crosscoder common bases, vLLM, and SGLang.

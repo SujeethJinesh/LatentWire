@@ -21,6 +21,10 @@
   records the strict Qwen HellaSwag `0:9216` candidate-only packet audit:
   the selected-packet row preserves accuracy at `1B` raw / `4B` framed, but
   remains a systems/privacy compaction row rather than a positive receiver.
+- `source_private_hellaswag_strict_source_score_quantization_gate_20260503.md`
+  records the strict Qwen HellaSwag source-score quantization gate: train-only
+  score-code decoders at `1B`, `2B`, and `3B` raw budgets do not beat the
+  `1B` candidate-only packet.
 - `source_private_arc_conditional_innovation_packet_gate_20260503.md` records
   the ARC receiver-conditioned innovation packet preflight: matched innovation
   beats learned source-index and quantized source-score decoder controls in

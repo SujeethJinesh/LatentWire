@@ -2231,5 +2231,12 @@
     "path": "references/675_hellaswag_strict_candidate_only_packet_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the strict Qwen HellaSwag candidate-only packet audit, recording 1B raw / 4B framed decision compaction, explicit source-index limitations, and boundaries against prefix/gist tokens, C2C, KVComm, QJL, TurboQuant, vLLM, and SGLang."
+  },
+  {
+    "num": 676,
+    "slug": "hellaswag_strict_source_score_quantization_refs_20260503",
+    "path": "references/676_hellaswag_strict_source_score_quantization_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the strict Qwen HellaSwag source-score quantization gate, recording negative calibrated score-code controls at 1B/2B/3B, boundaries against prefix/gist tokens, relative representations, sparse crosscoders, C2C, KVComm, QJL, and TurboQuant, and the next target-loss query or hidden-innovation method branch."
   }
 ]

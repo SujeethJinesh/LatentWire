@@ -20569,3 +20569,43 @@ Lay explanation: we checked whether the best HellaSwag hint needed the extra
 byte. It did not. The receiver can get the same answers from only the source's
 chosen answer id, which makes the packet smaller but also makes the limitation
 very clear.
+
+## 2026-05-03 HellaSwag Strict Source-Score Quantization Gate
+
+Implemented and ran a train-only source-score quantization gate for the strict
+Qwen HellaSwag validation `0:9216` surface.
+
+- script added:
+  `scripts/build_source_private_hellaswag_strict_source_score_quantization_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_strict_source_score_quantization_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_strict_source_score_quantization_gate_20260503_validation0_9216/`;
+- memo:
+  `paper/source_private_hellaswag_strict_source_score_quantization_gate_20260503.md`;
+- references:
+  `references/676_hellaswag_strict_source_score_quantization_refs_20260503.md`.
+
+Outcome: calibrated source-score packets do not beat candidate-only. The gate
+trains decoders only on HellaSwag train-split Qwen source-score caches (`1495`
+unique train rows), then freezes them and evaluates on the strict validation
+surface. The best score-code row is direct source argmax at `1B` raw / `4B`
+framed with `0.479384` accuracy, versus `0.525499` for candidate-only. Its
+paired delta versus candidate-only is `-0.046115`, with CI95 low `-0.052083`.
+
+The tried score-code family includes direct argmax, rank-order majority,
+top-2-margin quantization, and z-score vector quantization at `1B`, `2B`, and
+`3B` raw budgets. All remain below candidate-only.
+
+Decision: close the reviewer gap on calibrated source-score quantization and
+weaken score-only branches as ICLR-positive methods. The next live method gate
+should move away from shallow score codes toward either a target-loss
+query/soft-prefix connector or a conditional hidden-innovation packet. A
+separate cached Qwen-strict-to-Phi score-simplex repair scout may still be
+useful as a cross-family falsification, but it should not become the main
+positive story unless it beats packet-only with paired CIs.
+
+Lay explanation: we tried sending compressed versions of the source model's
+four answer scores instead of just the chosen answer. A train-only decoder
+learned how to interpret those score codes. On the large validation set, the
+score codes still did worse than the tiny candidate-only hint.
