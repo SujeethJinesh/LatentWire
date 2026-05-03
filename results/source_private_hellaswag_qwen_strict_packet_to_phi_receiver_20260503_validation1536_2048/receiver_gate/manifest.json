@@ -1,0 +1,51 @@
+{
+  "created_utc": "2026-05-03T21:20:49.925271+00:00",
+  "files": [
+    {
+      "bytes": 6761,
+      "path": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/receiver_gate/hellaswag_receiver_family_packet_gate.json",
+      "sha256": "6db95f85c737e38671cd1b33d5523cea49cf068ae9ac7343f893a3dbc542beee"
+    },
+    {
+      "bytes": 1051,
+      "path": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/receiver_gate/hellaswag_receiver_family_packet_gate.md",
+      "sha256": "5822514f93442b06bb8c148e757ff0dd53a85b678e1b7e5d0109abed0d4d935b"
+    }
+  ],
+  "gate": "source_private_hellaswag_receiver_family_packet_gate",
+  "headline": {
+    "eval_rows": 384,
+    "packet_field": "selected_prediction",
+    "packet_margin_field": "selected_margin",
+    "packet_only_eval_accuracy": 0.4375,
+    "receiver_ci95_high_vs_packet_only": -0.0546875,
+    "receiver_ci95_high_vs_target_only": 0.15364583333333334,
+    "receiver_ci95_low_vs_packet_only": -0.15885416666666666,
+    "receiver_ci95_low_vs_target_only": 0.0026041666666666665,
+    "receiver_eval_accuracy": 0.3307291666666667,
+    "receiver_minus_packet_only": -0.10677083333333333,
+    "receiver_minus_target_only": 0.07552083333333333,
+    "row_count": 512,
+    "selected_receiver_kind": "candidate_ridge_receiver",
+    "selected_receiver_train_accuracy": 0.5,
+    "source_family": "Qwen2.5",
+    "strict_packet_delta_required": 0.005,
+    "strict_target_delta_required": 0.02,
+    "target_family": "Phi-3-mini",
+    "target_only_eval_accuracy": 0.2552083333333333,
+    "target_or_packet_oracle_eval_accuracy": 0.5729166666666666,
+    "train_rows": 128
+  },
+  "inputs": [
+    {
+      "artifact_path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "artifact_sha256": "e4c59c17bb1c09b692daf75a4427f0cefee7cee41e65bd3e5b53244d352d085e",
+      "predictions_jsonl": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/qwen_strict_packet_predictions_1536_2048.jsonl",
+      "predictions_sha256": "780629fbf2b4d2134af252caa8829c5f2bfd3795bf560d5dd42057126e5ce5aa"
+    },
+    {
+      "artifact_path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/target_global_artifact.json",
+      "artifact_sha256": "d0ee6d5327a394d490047085d060f2dce850d45cdcf762e30ce10f159fb3bba9"
+    }
+  ]
+}

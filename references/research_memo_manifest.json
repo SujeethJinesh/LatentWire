@@ -2203,5 +2203,12 @@
     "path": "references/671_hellaswag_nonqwen_receiver_family_multislice_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the second HellaSwag non-Qwen receiver-family slice, recording TinyLlama-to-Phi packet utility, receiver-fusion failure, oracle headroom, common-basis next-method controls, and boundaries against C2C, KVComm, prefix/gist tokens, SAE universality, QJL, TurboQuant, vLLM, and SGLang."
+  },
+  {
+    "num": 672,
+    "slug": "hellaswag_qwen_strict_to_phi_receiver_refs_20260503",
+    "path": "references/672_hellaswag_qwen_strict_to_phi_receiver_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after testing the strict Qwen HellaSwag packet against Phi receiver scores, recording packet transfer, receiver-fusion failure, score-simplex common-basis next branch, and boundaries against relative representations, SAE/crosscoders, prefix/gist tokens, C2C, KVComm, QJL, TurboQuant, and consistency repair."
   }
 ]

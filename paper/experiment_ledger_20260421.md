@@ -20405,3 +20405,41 @@ Lay explanation: TinyLlama's tiny private hint helps Phi-3 on another chunk of
 HellaSwag, so the hint is not just a one-slice accident. But our combiner still
 does not know when to trust Phi-3 versus the hint, so we have not yet solved
 model-to-model reasoning.
+
+## 2026-05-03 HellaSwag Qwen Strict Packet To Phi Receiver Scout
+
+Materialized the strongest current Qwen strict HellaSwag hidden-innovation
+packet for the cached Phi receiver slices `1024:1536` and `1536:2048`, then ran
+the generic receiver-family gate with strict source-rank/index-only and
+score-channel-roll controls.
+
+- script added:
+  `scripts/build_source_private_hellaswag_receiver_family_multislice_summary.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_receiver_family_multislice_summary.py`;
+- artifacts:
+  `results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1024_1536/`,
+  `results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/`,
+  and
+  `results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_multislice_20260503_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503.md`.
+
+Outcome: the Qwen strict packet transfers to Phi as a packet-only signal but
+the current receiver fails. Across contiguous validation `1024:2048`, Phi
+target-only reaches `0.263021`, Qwen strict packet-only reaches `0.455729`,
+the candidate ridge receiver reaches `0.401042`, and the target-or-packet
+oracle reaches `0.593750`. Receiver improvement holds on `0/2` slices and the
+weighted receiver-minus-packet delta is `-0.054688`.
+
+Decision: weaken the generic ridge/confidence receiver branch. The Qwen packet
+contains cross-family useful signal, but the receiver does not use Phi's own
+scores well enough to beat packet-only. The next exact gate should change the
+feature space to a score-simplex Fourier/SVD innovation receiver using the
+shared four-candidate basis, with basis-permutation, sign-flip, source-score,
+candidate-roll, target-derived, and same-byte controls.
+
+Lay explanation: we tried giving Phi the best current Qwen hint instead of the
+TinyLlama hint. The hint still helps if trusted directly, but our combiner makes
+things worse, especially on the second slice. That means the bottleneck is the
+receiver's common language, not whether the source packet contains signal.

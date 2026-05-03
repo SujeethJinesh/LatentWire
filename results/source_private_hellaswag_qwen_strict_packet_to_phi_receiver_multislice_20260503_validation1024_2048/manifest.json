@@ -1,0 +1,57 @@
+{
+  "created_utc": "2026-05-03T21:22:56.130459+00:00",
+  "files": [
+    {
+      "bytes": 4465,
+      "path": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_multislice_20260503_validation1024_2048/hellaswag_receiver_family_multislice_summary.json",
+      "sha256": "ea82caeb48627e892522fc3f04f5c0932f3fba62c03b9b0a626c507a9494e8a4"
+    },
+    {
+      "bytes": 895,
+      "path": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_multislice_20260503_validation1024_2048/hellaswag_receiver_family_multislice_summary.md",
+      "sha256": "b960dc5e0800b4498e13970c4141d88ec5e6635fa54af5e10533aeb06b81e301"
+    },
+    {
+      "bytes": 1459,
+      "path": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_multislice_20260503_validation1024_2048/slice_rows.csv",
+      "sha256": "afc4b86136c2ea564492ec7433f658ec803a14df1e30f3c5f7aeefad462e6b64"
+    }
+  ],
+  "gate": "source_private_hellaswag_receiver_family_multislice_summary",
+  "headline": {
+    "contiguous": true,
+    "framed_record_bytes": 5,
+    "min_receiver_ci95_low_vs_packet_only": -0.15885416666666666,
+    "min_receiver_ci95_low_vs_target_only": 0.0026041666666666665,
+    "range_end_exclusive": 2048,
+    "range_start": 1024,
+    "raw_payload_bytes": 2,
+    "receiver_improvement_slice_count": 0,
+    "slice_count": 2,
+    "source_family": "Qwen2.5",
+    "source_private_packet": true,
+    "target_family": "Phi-3-mini",
+    "target_family_transfer_slice_count": 1,
+    "total_eval_rows": 768,
+    "total_rows": 1024,
+    "total_train_rows": 256,
+    "weighted_oracle_minus_packet_only": 0.13802083333333331,
+    "weighted_packet_minus_target_only": 0.19270833333333337,
+    "weighted_packet_only_eval_accuracy": 0.4557291666666667,
+    "weighted_receiver_eval_accuracy": 0.4010416666666667,
+    "weighted_receiver_minus_packet_only": -0.0546875,
+    "weighted_receiver_minus_target_only": 0.13802083333333337,
+    "weighted_target_only_eval_accuracy": 0.2630208333333333,
+    "weighted_target_or_packet_oracle_eval_accuracy": 0.59375
+  },
+  "source_artifacts": [
+    {
+      "path": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1024_1536/receiver_gate/hellaswag_receiver_family_packet_gate.json",
+      "sha256": "7ec2f95b9b8880a8bcd2a0a4eeb5f4e99c7e35c13548db9c3452c86f9f0ebefc"
+    },
+    {
+      "path": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/receiver_gate/hellaswag_receiver_family_packet_gate.json",
+      "sha256": "6db95f85c737e38671cd1b33d5523cea49cf068ae9ac7343f893a3dbc542beee"
+    }
+  ]
+}

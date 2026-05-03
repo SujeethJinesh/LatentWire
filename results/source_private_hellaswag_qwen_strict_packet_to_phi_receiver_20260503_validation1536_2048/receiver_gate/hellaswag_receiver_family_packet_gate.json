@@ -1,0 +1,163 @@
+{
+  "baseline_rows": [
+    {
+      "eval_accuracy": 0.2552083333333333,
+      "name": "target_only",
+      "train_accuracy": 0.2265625
+    },
+    {
+      "eval_accuracy": 0.4375,
+      "name": "packet_only",
+      "train_accuracy": 0.3984375
+    },
+    {
+      "eval_accuracy": 0.3307291666666667,
+      "name": "receiver_selected",
+      "train_accuracy": 0.5
+    },
+    {
+      "eval_accuracy": 0.5729166666666666,
+      "name": "target_or_packet_oracle",
+      "train_accuracy": 0.5546875
+    }
+  ],
+  "control_rows": [
+    {
+      "ci95_high_vs_receiver": 0.018229166666666668,
+      "ci95_low_vs_receiver": -0.027408854166666663,
+      "eval_accuracy": 0.3333333333333333,
+      "name": "wrong_example_hidden_prediction",
+      "receiver_minus_control": -0.0026041666666666665,
+      "train_accuracy": 0.4375
+    },
+    {
+      "ci95_high_vs_receiver": 0.026041666666666668,
+      "ci95_low_vs_receiver": -0.026041666666666668,
+      "eval_accuracy": 0.3333333333333333,
+      "name": "candidate_roll_hidden_prediction",
+      "receiver_minus_control": -0.0026041666666666665,
+      "train_accuracy": 0.421875
+    },
+    {
+      "ci95_high_vs_receiver": -0.005208333333333333,
+      "ci95_low_vs_receiver": -0.0390625,
+      "eval_accuracy": 0.3489583333333333,
+      "name": "zero_hidden_prediction",
+      "receiver_minus_control": -0.018229166666666668,
+      "train_accuracy": 0.4765625
+    },
+    {
+      "ci95_high_vs_receiver": -0.0026041666666666665,
+      "ci95_low_vs_receiver": -0.033854166666666664,
+      "eval_accuracy": 0.3489583333333333,
+      "name": "source_label_prediction",
+      "receiver_minus_control": -0.018229166666666668,
+      "train_accuracy": 0.4765625
+    },
+    {
+      "ci95_high_vs_receiver": -0.0026041666666666665,
+      "ci95_low_vs_receiver": -0.036458333333333336,
+      "eval_accuracy": 0.3489583333333333,
+      "name": "source_rank_only_bagged_prediction",
+      "receiver_minus_control": -0.018229166666666668,
+      "train_accuracy": 0.4765625
+    },
+    {
+      "ci95_high_vs_receiver": -0.0026041666666666665,
+      "ci95_low_vs_receiver": -0.033854166666666664,
+      "eval_accuracy": 0.3489583333333333,
+      "name": "score_only_bagged_prediction",
+      "receiver_minus_control": -0.018229166666666668,
+      "train_accuracy": 0.4765625
+    },
+    {
+      "ci95_high_vs_receiver": 0.15104166666666666,
+      "ci95_low_vs_receiver": 0.04550781250000001,
+      "eval_accuracy": 0.234375,
+      "name": "score_channel_roll_hidden_prediction",
+      "receiver_minus_control": 0.09635416666666667,
+      "train_accuracy": 0.328125
+    }
+  ],
+  "created_utc": "2026-05-03T21:20:49.925271+00:00",
+  "date": "2026-05-03",
+  "gate": "source_private_hellaswag_receiver_family_packet_gate",
+  "headline": {
+    "eval_rows": 384,
+    "packet_field": "selected_prediction",
+    "packet_margin_field": "selected_margin",
+    "packet_only_eval_accuracy": 0.4375,
+    "receiver_ci95_high_vs_packet_only": -0.0546875,
+    "receiver_ci95_high_vs_target_only": 0.15364583333333334,
+    "receiver_ci95_low_vs_packet_only": -0.15885416666666666,
+    "receiver_ci95_low_vs_target_only": 0.0026041666666666665,
+    "receiver_eval_accuracy": 0.3307291666666667,
+    "receiver_minus_packet_only": -0.10677083333333333,
+    "receiver_minus_target_only": 0.07552083333333333,
+    "row_count": 512,
+    "selected_receiver_kind": "candidate_ridge_receiver",
+    "selected_receiver_train_accuracy": 0.5,
+    "source_family": "Qwen2.5",
+    "strict_packet_delta_required": 0.005,
+    "strict_target_delta_required": 0.02,
+    "target_family": "Phi-3-mini",
+    "target_only_eval_accuracy": 0.2552083333333333,
+    "target_or_packet_oracle_eval_accuracy": 0.5729166666666666,
+    "train_rows": 128
+  },
+  "interpretation": "This scout tests whether a different-family target score receiver can use the TinyLlama hidden-innovation packet. It shows target-family utility when the receiver is compared with Qwen target-only scoring, but it does not promote a true receiver-improvement claim unless the target-aware receiver beats packet-only. The remaining ICLR gap is therefore a receiver/common-language method that closes the target-or-packet oracle headroom rather than merely trusting the source-side packet.",
+  "packet_ci": {
+    "ci95_high": -0.0546875,
+    "ci95_low": -0.15885416666666666,
+    "delta": -0.10677083333333333
+  },
+  "pass_gate": false,
+  "pass_rule": "ICLR strict pass requires a different-family target-score receiver that beats target-only by >=0.02 with positive paired CI, keeps destructive packet controls below the selected receiver by >=0.02, and also beats packet-only by >=0.005 with positive paired CI. The target-family transfer subgate alone is not enough because a trivial receiver can trust the source packet without learning a target-specific communication interface.",
+  "receiver_candidates": [
+    {
+      "kind": "candidate_ridge_receiver",
+      "ridge": 0.1,
+      "train_accuracy": 0.5
+    },
+    {
+      "kind": "target_margin_accept_packet",
+      "threshold": 0.4388682556152346,
+      "train_accept_rate": 0.9375,
+      "train_accuracy": 0.3984375
+    }
+  ],
+  "receiver_improvement_gate": false,
+  "selected_receiver": {
+    "kind": "candidate_ridge_receiver",
+    "ridge": 0.1,
+    "train_accuracy": 0.5
+  },
+  "source_packet": {
+    "artifact_path": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation1024_2048/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "artifact_sha256": "e4c59c17bb1c09b692daf75a4427f0cefee7cee41e65bd3e5b53244d352d085e",
+    "predictions_jsonl": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/qwen_strict_packet_predictions_1536_2048.jsonl",
+    "predictions_sha256": "780629fbf2b4d2134af252caa8829c5f2bfd3795bf560d5dd42057126e5ce5aa"
+  },
+  "target_ci": {
+    "ci95_high": 0.15364583333333334,
+    "ci95_low": 0.0026041666666666665,
+    "delta": 0.07552083333333333
+  },
+  "target_family_transfer_gate": false,
+  "target_scores": {
+    "artifact_path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/target_global_artifact.json",
+    "artifact_sha256": "d0ee6d5327a394d490047085d060f2dce850d45cdcf762e30ce10f159fb3bba9",
+    "row_count": 512,
+    "score_slice_count": 1,
+    "slices": [
+      {
+        "end": 2048,
+        "name": "nonqwen_receiver_family_slice",
+        "rows": 512,
+        "score_cache": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/target_score_cache.json",
+        "score_cache_sha256": "115de3107d95b4ab1f5af5b428d4c51be28295abd45bd4d0b1a8c565a6ac5f28",
+        "start": 1536
+      }
+    ]
+  }
+}
