@@ -20800,3 +20800,50 @@ Lay explanation: we checked the final cached HellaSwag examples that were not
 part of the previous large strict surface. The same tiny hybrid answer hint
 still helps on that tail and on the full validation set, so the current packet
 result is not just from the first `9216` examples.
+
+## 2026-05-03 HellaSwag Qwen Hybrid-To-Phi Conditional Acceptor Gate
+
+Implemented and ran a cached Qwen-hybrid-to-Phi conditional acceptor gate for
+the current fixed hybrid packet policy.
+
+- script added:
+  `scripts/build_source_private_hellaswag_qwen_hybrid_to_phi_conditional_acceptor_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_qwen_hybrid_to_phi_conditional_acceptor_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_hybrid_to_phi_conditional_acceptor_gate_20260503_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_hybrid_to_phi_conditional_acceptor_gate_20260503.md`;
+- references:
+  `references/681_hellaswag_qwen_hybrid_to_phi_conditional_acceptor_refs_20260503.md`.
+
+Gate design: use cached Qwen hybrid packet predictions and cached Phi target
+score vectors on HellaSwag slices `1024:1536` and `1536:2048`. Reserve `64`
+rows per slice for fitting one-rule override candidates, `64` rows per slice
+for selecting one frozen rule, and evaluate on the remaining `384` rows per
+slice. The receiver-visible source packet remains the fixed Qwen hybrid
+candidate id; Phi scores are receiver-side information.
+
+Outcome: the branch fails. The selected rule is
+`selected_margin <= 0.213526913511`. On `768` held-out rows, conditional target
+acceptor accuracy is `0.454427` versus `0.467448` for fixed hybrid, with paired
+delta `-0.013021` and CI95 low `-0.028646`. It creates `14` helps but `24`
+harms versus fixed hybrid, and is negative on both held-out slices:
+
+- `1024:1536`: `0.473958` versus `0.486979`, delta `-0.013021`;
+- `1536:2048`: `0.434896` versus `0.447917`, delta `-0.013021`.
+
+The target-or-hybrid oracle remains high at `0.604167`, so receiver headroom is
+real. The simple score/margin acceptor just cannot identify it reliably.
+
+Decision: kill shallow target-score conditional acceptors unless a new feature
+source is introduced. Keep fixed hybrid vote-on-score-agreement as the current
+best cross-family packet-policy row. The next exact gate should either harden
+the HellaSwag packet row against option-order/candidate-permutation concerns or
+introduce a genuinely stronger receiver/common-basis feature source that must
+beat fixed hybrid under the same destructive controls.
+
+Lay explanation: Phi sometimes has the right answer when the Qwen hint is
+wrong. This test learned a small rule for when Phi should override Qwen. On new
+examples that rule made more bad switches than good switches, so it made the
+system worse.

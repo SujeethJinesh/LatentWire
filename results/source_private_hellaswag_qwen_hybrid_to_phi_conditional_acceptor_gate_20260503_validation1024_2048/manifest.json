@@ -1,0 +1,36 @@
+{
+  "date": "2026-05-03",
+  "gate": "source_private_hellaswag_qwen_hybrid_to_phi_conditional_acceptor_gate",
+  "outputs": [
+    "hellaswag_qwen_hybrid_to_phi_conditional_acceptor_gate.json",
+    "hellaswag_qwen_hybrid_to_phi_conditional_acceptor_gate.md",
+    "method_rows.csv",
+    "slice_rows.csv"
+  ],
+  "slice_metadata": [
+    {
+      "eval_rows": 384,
+      "fit_rows": 64,
+      "phi_target_score_cache": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/target_score_cache.json",
+      "phi_target_score_cache_sha256": "d19ff8973a283c8a3bed814d2fdc6c4ca03bcc7bbf298e88551760ac5abba9fa",
+      "qwen_predictions": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1024_1536/qwen_strict_packet_predictions_1024_1536.jsonl",
+      "qwen_predictions_sha256": "8740fa0d9a8771400e87410150841e910d93c86004ae3f9e4b999b8b3cf39e9d",
+      "rows": 512,
+      "select_rows": 64,
+      "slice_end_exclusive": 1536,
+      "slice_start": 1024
+    },
+    {
+      "eval_rows": 384,
+      "fit_rows": 64,
+      "phi_target_score_cache": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/target_score_cache.json",
+      "phi_target_score_cache_sha256": "115de3107d95b4ab1f5af5b428d4c51be28295abd45bd4d0b1a8c565a6ac5f28",
+      "qwen_predictions": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/qwen_strict_packet_predictions_1536_2048.jsonl",
+      "qwen_predictions_sha256": "780629fbf2b4d2134af252caa8829c5f2bfd3795bf560d5dd42057126e5ce5aa",
+      "rows": 512,
+      "select_rows": 64,
+      "slice_end_exclusive": 2048,
+      "slice_start": 1536
+    }
+  ]
+}

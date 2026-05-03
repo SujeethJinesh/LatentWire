@@ -159,3 +159,7 @@
 - `source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503.md`
   records the full cached HellaSwag validation pass for the fixed hybrid packet
   policy over `0:10042`, including the terminal tail.
+- `source_private_hellaswag_qwen_hybrid_to_phi_conditional_acceptor_gate_20260503.md`
+  records the negative cached Qwen-hybrid-to-Phi conditional acceptor gate:
+  simple Phi score-side override rules fail to beat the fixed hybrid packet
+  despite large target-or-hybrid oracle headroom.
