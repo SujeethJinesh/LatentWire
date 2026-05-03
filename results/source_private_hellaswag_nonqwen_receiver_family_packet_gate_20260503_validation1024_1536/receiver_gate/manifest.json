@@ -1,0 +1,51 @@
+{
+  "created_utc": "2026-05-03T19:28:42.791358+00:00",
+  "files": [
+    {
+      "bytes": 6851,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/receiver_gate/hellaswag_receiver_family_packet_gate.json",
+      "sha256": "00c02e11b3d760b82af1e1c751cc415d0dff6ad054f51945e48e9e1d67451801"
+    },
+    {
+      "bytes": 1052,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/receiver_gate/hellaswag_receiver_family_packet_gate.md",
+      "sha256": "87cb065edd091cd5390953cc29a39a8735c8ae8b06185b17519c246f6064b796"
+    }
+  ],
+  "gate": "source_private_hellaswag_receiver_family_packet_gate",
+  "headline": {
+    "eval_rows": 384,
+    "packet_field": "selected_prediction",
+    "packet_margin_field": "selected_margin",
+    "packet_only_eval_accuracy": 0.4895833333333333,
+    "receiver_ci95_high_vs_packet_only": 0.0026041666666666665,
+    "receiver_ci95_high_vs_target_only": 0.2760416666666667,
+    "receiver_ci95_low_vs_packet_only": -0.020833333333333332,
+    "receiver_ci95_low_vs_target_only": 0.14186197916666668,
+    "receiver_eval_accuracy": 0.4817708333333333,
+    "receiver_minus_packet_only": -0.0078125,
+    "receiver_minus_target_only": 0.2109375,
+    "row_count": 512,
+    "selected_receiver_kind": "candidate_ridge_receiver",
+    "selected_receiver_train_accuracy": 0.5,
+    "source_family": "TinyLlama",
+    "strict_packet_delta_required": 0.005,
+    "strict_target_delta_required": 0.02,
+    "target_family": "Phi-3-mini",
+    "target_only_eval_accuracy": 0.2708333333333333,
+    "target_or_packet_oracle_eval_accuracy": 0.6119791666666666,
+    "train_rows": 128
+  },
+  "inputs": [
+    {
+      "artifact_path": "results/source_private_hellaswag_hidden_innovation_eval_full_stress_20260502_tinyllama_train512_validation0_10042/hellaswag_hidden_innovation_eval_slice_stress.json",
+      "artifact_sha256": "22300aa517c800c45bdf6a01488a9279a2da966228911c46dbdf43b2bfc4c323",
+      "predictions_jsonl": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/tinyllama_source_packet_slice_augmented.jsonl",
+      "predictions_sha256": "1bab477b739dbb29113fee1a85ef89be16e8e6f6c34fff3c407a97e158c235fd"
+    },
+    {
+      "artifact_path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/target_global_artifact.json",
+      "artifact_sha256": "44022edf86428b33372445b76b4182c32ce37e1dd259795863d9ecacab391aa6"
+    }
+  ]
+}

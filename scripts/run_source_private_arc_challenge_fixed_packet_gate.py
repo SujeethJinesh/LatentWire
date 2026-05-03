@@ -343,13 +343,17 @@ def _lm_choice_loglikelihood_scores(
         local_files_only=local_files_only,
         trust_remote_code=True,
     )
+    model_type = str(getattr(config, "model_type", "")).lower()
+    model_path_lower = str(model_path).lower()
     if (
-        isinstance(getattr(config, "rope_scaling", None), dict)
+        ("phi" in model_type or "phi" in model_path_lower)
+        and isinstance(getattr(config, "rope_scaling", None), dict)
         and config.rope_scaling.get("rope_type") == "default"
         and "type" not in config.rope_scaling
     ):
-        # Older remote model code, notably cached Phi-3, expects no RoPE scaling
-        # for default RoPE while newer Transformers normalizes it to a dict.
+        # Older cached Phi-3 remote code expects no default RoPE scaling dict.
+        # Qwen2/Qwen3 on current Transformers requires `rope_parameters`, so
+        # this compatibility normalization must stay Phi-scoped.
         config.rope_scaling = None
     model_kwargs: dict[str, Any] = {
         "config": config,

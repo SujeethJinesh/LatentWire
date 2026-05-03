@@ -2154,5 +2154,12 @@
     "path": "references/664_arc_soft_prefix_connector_uniqueness_systems_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the ARC n32 soft-prefix/query connector preflight, pinning novelty boundaries against prefix tuning, activation steering, C2C, InterLat, direct vector translation, KV-cache alignment, KVCOMM, TurboQuant/KV quantization, vLLM, and SGLang."
+  },
+  {
+    "num": 665,
+    "slug": "score_vector_receiver_systems_refs_20260503",
+    "path": "references/665_score_vector_receiver_systems_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the ARC score-vector fusion and HellaSwag non-Qwen receiver-family gates, recording latent-communication uniqueness threats, score/receiver decision boundaries, and native-serving systems baselines."
   }
 ]

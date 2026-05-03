@@ -1,0 +1,70 @@
+{
+  "created_utc": "2026-05-03T19:28:42.794214+00:00",
+  "files": [
+    {
+      "bytes": 12477,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/hellaswag_nonqwen_receiver_family_packet_gate.json",
+      "sha256": "7831bbe35a06851773886006123201541937c87bd02875f6e9dac1cce5f81b0e"
+    },
+    {
+      "bytes": 934,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/hellaswag_nonqwen_receiver_family_packet_gate.md",
+      "sha256": "3c59a560e133addc7712cd3aa7f353657fc4fa4c5028c6b6d53021b79cc6580f"
+    },
+    {
+      "bytes": 271896,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/tinyllama_source_packet_slice_augmented.jsonl",
+      "sha256": "1bab477b739dbb29113fee1a85ef89be16e8e6f6c34fff3c407a97e158c235fd"
+    },
+    {
+      "bytes": 290,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/target_global_artifact.json",
+      "sha256": "44022edf86428b33372445b76b4182c32ce37e1dd259795863d9ecacab391aa6"
+    },
+    {
+      "bytes": 71933,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/target_score_cache.json",
+      "sha256": "d19ff8973a283c8a3bed814d2fdc6c4ca03bcc7bbf298e88551760ac5abba9fa"
+    },
+    {
+      "bytes": 6851,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/receiver_gate/hellaswag_receiver_family_packet_gate.json",
+      "sha256": "00c02e11b3d760b82af1e1c751cc415d0dff6ad054f51945e48e9e1d67451801"
+    },
+    {
+      "bytes": 2550,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/receiver_gate/manifest.json",
+      "sha256": "2fdbac8a3e83f584834da8f5e43a7903174624abf84af0523fde1e8f64b823f9"
+    }
+  ],
+  "gate": "source_private_hellaswag_nonqwen_receiver_family_packet_gate",
+  "headline": {
+    "eval_rows": 384,
+    "native_systems_complete": false,
+    "packet_minus_target_only": 0.21875,
+    "packet_only_eval_accuracy": 0.4895833333333333,
+    "receiver_ci95_low_vs_packet_only": -0.020833333333333332,
+    "receiver_ci95_low_vs_target_only": 0.14186197916666668,
+    "receiver_eval_accuracy": 0.4817708333333333,
+    "receiver_improvement_gate": false,
+    "receiver_minus_packet_only": -0.0078125,
+    "receiver_minus_target_only": 0.2109375,
+    "row_count": 512,
+    "selected_receiver_kind": "candidate_ridge_receiver",
+    "slice_end_exclusive": 1536,
+    "slice_start": 1024,
+    "source_family": "TinyLlama",
+    "source_utility_gate": true,
+    "strict_receiver_packet_lift_required": 0.005,
+    "strict_target_lift_required": 0.05,
+    "target_family": "Phi-3-mini",
+    "target_family_transfer_gate": true,
+    "target_lm_device": "mps",
+    "target_lm_dtype": "float16",
+    "target_only_eval_accuracy": 0.2708333333333333,
+    "target_or_packet_oracle_eval_accuracy": 0.6119791666666666,
+    "target_score_cache_hit": false,
+    "target_score_latency_s": 175.22952408302808,
+    "train_rows": 128
+  }
+}

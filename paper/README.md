@@ -8,6 +8,15 @@
 - `repo_readiness_review_20260426.md` is the latest repo-wide ICLR readiness
   audit: what has been tried, what is saturated, what remains live, and the next
   exact gate.
+- `source_private_arc_soft_prefix_query_packet_control_preflight_20260503.md`
+  records the negative ARC n32 target-loss soft-prefix/query connector gate.
+- `source_private_arc_score_fusion_packet_probe_20260503.md` records the
+  negative ARC source-score-vector fusion gate: quantized score profiles tie
+  source-label/source-index on heldout rows despite large top-2 oracle headroom.
+- `source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503.md`
+  records the HellaSwag TinyLlama -> Phi-3 receiver-family gate: fixed packets
+  transfer to a non-Qwen receiver slice, but the learned receiver does not beat
+  packet-only.
 - `qwen25math_svamp32_headroom_and_source_probes_20260426.md` records the new
   Qwen2.5-Math -> Qwen3 SVAMP32 C2C-headroom target set and the negative
   source-only numeric sidecar / source-hidden ridge screens on that surface.

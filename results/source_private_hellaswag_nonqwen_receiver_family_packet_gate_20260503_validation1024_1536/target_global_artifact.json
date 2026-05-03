@@ -1,0 +1,11 @@
+{
+  "eval_slices": [
+    {
+      "end": 1536,
+      "name": "nonqwen_receiver_family_slice",
+      "rows": 512,
+      "score_cache": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/target_score_cache.json",
+      "start": 1024
+    }
+  ]
+}

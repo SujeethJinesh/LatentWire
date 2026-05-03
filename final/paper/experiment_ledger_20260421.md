@@ -18852,3 +18852,44 @@ packet and score features. Do not keep tuning linear selectors; the next live
 method branch must change representation class to a nonlinear
 query-bottleneck/resampler or sparse dictionary that still emits a fixed-byte
 source-private syndrome.
+
+## 2026-05-03 ARC Score-Vector Fusion and HellaSwag Non-Qwen Receiver Gates
+
+Added two Mac-local reviewer gates:
+
+- ARC score-vector fusion artifact:
+  `results/source_private_arc_score_fusion_packet_probe_20260503_qwen05_qwen3_validation/`;
+- ARC score-vector memo:
+  `paper/source_private_arc_score_fusion_packet_probe_20260503.md`;
+- HellaSwag non-Qwen receiver artifact:
+  `results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/`;
+- HellaSwag non-Qwen receiver memo:
+  `paper/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503.md`;
+- references:
+  `references/665_score_vector_receiver_systems_refs_20260503.md`.
+
+Outcome 1: the ARC quantized source-score distribution branch is negative.
+On ARC validation heldout parity rows, Qwen2.5 source-label/source-index is
+`0.389262`, Qwen3 receiver-label is `0.335570`, and the quantized score-fusion
+packet is exactly `0.389262`. It ties the best top-label pair rule and fails
+the promotion gate despite source/receiver union top-2 oracle `0.711409`.
+
+Outcome 2: the HellaSwag TinyLlama packet transfers to a non-Qwen receiver
+slice but the learned receiver is not additive. On validation rows
+`1024:1536`, Phi-3 target-only eval is `0.270833`, TinyLlama packet-only is
+`0.489583`, and the candidate ridge receiver is `0.481771`. The receiver CI95
+low versus packet-only is `-0.020833`; the packet-minus-target lift is
+`+0.218750`.
+
+Decision: stop global score-vector fusion and simple target-aware receiver
+tuning as ICLR-positive branches. Keep HellaSwag as evidence that the compact
+packet can have receiver-family utility, but do not claim learned cross-family
+latent reasoning. The next live method branch must change the communicated
+object to conditional innovation, sparse/common-feature packets, or a
+resonance sketch, and it must beat packet-only, source-index, quantized
+source-score, same-byte text, candidate-roll, and source-destroying controls.
+
+Lay explanation: sending the source model's full answer-score shape did not
+help beyond sending its top answer. Sending a TinyLlama packet to Phi-3 did
+help Phi-3 compared with no packet, but our learned combiner made it slightly
+worse than just trusting the packet.

@@ -31,6 +31,11 @@ def _display_path(path: pathlib.Path) -> str:
         return str(path)
 
 
+def _slugify(value: str) -> str:
+    slug = "".join(char.lower() if char.isalnum() else "_" for char in value.strip())
+    return "_".join(part for part in slug.split("_") if part)
+
+
 def _sha256_file(path: pathlib.Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -165,6 +170,7 @@ def _union_top2_oracle(rows: list[arc_gate.ArcRow], source_scores: list[list[flo
 def build_probe(
     *,
     output_dir: pathlib.Path,
+    benchmark_name: str,
     eval_path: pathlib.Path,
     source_score_cache: pathlib.Path,
     receiver_score_cache: pathlib.Path,
@@ -227,8 +233,10 @@ def build_probe(
     receiver_heldout = _accuracy(rows, receiver_predictions, eval_indices)
     label_pair_heldout = _accuracy(rows, label_pair_predictions, eval_indices)
     fusion_heldout = _accuracy(rows, fusion_predictions, eval_indices)
+    benchmark_slug = _slugify(benchmark_name)
     payload = {
-        "gate": "source_private_commonsenseqa_score_fusion_packet_probe",
+        "gate": f"source_private_{benchmark_slug}_score_fusion_packet_probe",
+        "benchmark": benchmark_name,
         "date": run_date,
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
         "eval_path": _display_path(eval_path),
@@ -289,12 +297,12 @@ def build_probe(
         payload["headline"]["fusion_minus_source_label_text_heldout"] >= 0.02
         and payload["headline"]["fusion_minus_best_top_label_pair_heldout"] >= 0.01
     )
-    (output_dir / "commonsenseqa_score_fusion_packet_probe.json").write_text(
+    (output_dir / f"{benchmark_slug}_score_fusion_packet_probe.json").write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     lines = [
-        "# CommonsenseQA Score-Fusion Packet Probe",
+        f"# {benchmark_name} Score-Fusion Packet Probe",
         "",
         f"- pass gate: `{payload['pass_gate']}`",
         f"- source-label heldout accuracy: `{source_heldout:.3f}`",
@@ -306,7 +314,7 @@ def build_probe(
         f"- source/receiver union top-2 oracle heldout accuracy: `{payload['headline']['source_receiver_union_top2_oracle_heldout_accuracy']:.3f}`",
         "",
     ]
-    (output_dir / "commonsenseqa_score_fusion_packet_probe.md").write_text("\n".join(lines), encoding="utf-8")
+    (output_dir / f"{benchmark_slug}_score_fusion_packet_probe.md").write_text("\n".join(lines), encoding="utf-8")
     print(json.dumps(payload, indent=2, sort_keys=True))
     return payload
 
@@ -314,6 +322,7 @@ def build_probe(
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Probe a quantized source-score packet fused with receiver scores.")
     parser.add_argument("--output-dir", type=pathlib.Path, required=True)
+    parser.add_argument("--benchmark-name", default="CommonsenseQA")
     parser.add_argument(
         "--eval-path",
         type=pathlib.Path,
@@ -339,6 +348,7 @@ def main() -> None:
     args = _parse_args()
     build_probe(
         output_dir=args.output_dir,
+        benchmark_name=args.benchmark_name,
         eval_path=args.eval_path,
         source_score_cache=args.source_score_cache,
         receiver_score_cache=args.receiver_score_cache,

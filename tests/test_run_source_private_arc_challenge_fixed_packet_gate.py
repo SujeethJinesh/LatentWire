@@ -174,6 +174,84 @@ def test_lm_choice_scoring_normalizes_default_rope_and_disables_cache(monkeypatc
     assert state["choice_batch_size"] == 1
 
 
+def test_lm_choice_scoring_preserves_qwen_default_rope_parameters(monkeypatch) -> None:
+    import sys
+
+    import torch
+
+    config = SimpleNamespace(
+        model_type="qwen2",
+        rope_scaling={"rope_theta": 1000000.0, "rope_type": "default"},
+        rope_parameters={"rope_theta": 1000000.0, "rope_type": "default"},
+    )
+
+    class FakeTokenizer:
+        pad_token_id = None
+        eos_token = "<eos>"
+        pad_token = None
+
+        @classmethod
+        def from_pretrained(cls, *args, **kwargs):
+            return cls()
+
+        def __call__(self, texts, **kwargs):
+            if isinstance(texts, str):
+                return SimpleNamespace(input_ids=torch.tensor([[1, 2]], dtype=torch.long))
+            if kwargs.get("padding") is False:
+                return {"input_ids": [[1, 2, 3] for _ in texts]}
+            return {
+                "input_ids": torch.tensor([[1, 2, 3] for _ in texts], dtype=torch.long),
+                "attention_mask": torch.ones((len(texts), 3), dtype=torch.long),
+            }
+
+    class FakeConfig:
+        @classmethod
+        def from_pretrained(cls, *args, **kwargs):
+            return config
+
+    class FakeModel:
+        @classmethod
+        def from_pretrained(cls, *args, **kwargs):
+            return cls()
+
+        def to(self, device):
+            return self
+
+        def eval(self):
+            return None
+
+        def __call__(self, **kwargs):
+            batch, seq = kwargs["input_ids"].shape
+            return SimpleNamespace(logits=torch.zeros((batch, seq, 8), dtype=torch.float32))
+
+    transformers = sys.modules["transformers"]
+    monkeypatch.setattr(transformers, "AutoTokenizer", FakeTokenizer)
+    monkeypatch.setattr(transformers, "AutoConfig", FakeConfig, raising=False)
+    monkeypatch.setattr(transformers, "AutoModelForCausalLM", FakeModel)
+
+    row = arc_gate.ArcRow(
+        row_id="r0",
+        content_id="c0",
+        question="Which choice fits?",
+        choices=("alpha", "beta"),
+        choice_labels=("A", "B"),
+        answer_index=0,
+        answer_label="A",
+    )
+    arc_gate._lm_choice_loglikelihood_scores(
+        [row],
+        model_path="fake-qwen",
+        device="auto_cpu",
+        dtype="float32",
+        max_length=16,
+        local_files_only=True,
+        normalization="mean",
+    )
+
+    assert config.rope_scaling == {"rope_theta": 1000000.0, "rope_type": "default"}
+    assert config.rope_parameters == {"rope_theta": 1000000.0, "rope_type": "default"}
+
+
 def test_run_gate_writes_arc_control_artifacts(tmp_path) -> None:
     train_rows = [
         {
