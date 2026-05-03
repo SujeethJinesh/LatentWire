@@ -57,6 +57,28 @@ def test_select_rows_with_cache_requires_valid_source_predictions() -> None:
     assert predictions == [1, 0]
 
 
+def test_source_predictions_for_rows_require_complete_valid_cache() -> None:
+    rows = _rows()
+
+    assert preflight._source_predictions_for_rows(rows, {"c0": 1, "c1": 0}, label="qwen") == [1, 0]
+
+    with pytest.raises(ValueError, match="missing content_id=c1"):
+        preflight._source_predictions_for_rows(rows, {"c0": 1}, label="qwen")
+
+    with pytest.raises(ValueError, match="invalid choice index"):
+        preflight._source_predictions_for_rows(rows, {"c0": 99, "c1": 0}, label="qwen")
+
+
+def test_source_index_scores_are_finite_packet_controls() -> None:
+    scores = preflight._source_index_scores(choice_count=4, selected_index=2)
+
+    assert scores == [0.0, 0.0, 1.0, 0.0]
+    assert preflight._prediction(scores) == 2
+
+    with pytest.raises(ValueError, match="outside choice_count"):
+        preflight._source_index_scores(choice_count=2, selected_index=3)
+
+
 def test_soft_prefix_connector_shapes() -> None:
     source = torch.randn(5)
     target = torch.randn(3)
@@ -491,6 +513,7 @@ def test_residual_feature_modes_are_cli_options() -> None:
             "zero_source,shuffled_source,candidate_roll_source",
         ]
     )
+    qwen_cache = preflight.parse_args(["--qwen-source-cache-path", "qwen_cache.jsonl"])
 
     assert hashed.source_feature_mode == "hashed_selected_residual"
     assert hidden.source_feature_mode == "hf_selected_hidden_residual"
@@ -506,6 +529,7 @@ def test_residual_feature_modes_are_cli_options() -> None:
         "shuffled_source",
         "candidate_roll_source",
     )
+    assert str(qwen_cache.qwen_source_cache_path) == "qwen_cache.jsonl"
 
 
 def test_unknown_contrastive_controls_raise() -> None:

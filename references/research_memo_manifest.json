@@ -2147,5 +2147,12 @@
     "path": "references/663_colm2026_citation_audit_refs_20260502.md",
     "status": "local_memo",
     "reason": "Paper-facing COLM 2026 citation audit for dataset, model-family, representation, connector, systems, quantization, and information-theory citations used in the official-template LatentWire draft, with explicit claim boundaries."
+  },
+  {
+    "num": 664,
+    "slug": "arc_soft_prefix_connector_uniqueness_systems_refs_20260503",
+    "path": "references/664_arc_soft_prefix_connector_uniqueness_systems_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the ARC n32 soft-prefix/query connector preflight, pinning novelty boundaries against prefix tuning, activation steering, C2C, InterLat, direct vector translation, KV-cache alignment, KVCOMM, TurboQuant/KV quantization, vLLM, and SGLang."
   }
 ]

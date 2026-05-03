@@ -35,7 +35,7 @@ if str(ROOT) not in sys.path:
 from scripts import run_source_private_arc_challenge_fixed_packet_gate as arc_gate  # noqa: E402
 
 
-DEFAULT_OUTPUT = pathlib.Path("results/source_private_arc_openbookqa_soft_prefix_preflight_20260502_arc_smoke")
+DEFAULT_OUTPUT = pathlib.Path("results/source_private_arc_openbookqa_soft_prefix_preflight_20260503_arc_smoke")
 DEFAULT_ARC_VALIDATION = pathlib.Path(
     "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl"
 )
@@ -54,6 +54,7 @@ DEFAULT_QWEN_TARGET = (
 MATCHED_CONDITION = "matched_soft_prefix"
 CONTROL_CONDITIONS = (
     "target_only",
+    "source_free_prefix",
     "target_cache_only_prefix",
     "slots_only_prefix",
     "zero_source",
@@ -64,6 +65,8 @@ CONTROL_CONDITIONS = (
     "candidate_roll_source",
     "candidate_derangement",
     "same_byte_visible_text",
+    "packet_only_source_index",
+    "qwen_substituted_packet",
     "source_label_copy_audit_upper_bound",
 )
 PASS_CONTROL_CONDITIONS = tuple(
@@ -215,6 +218,25 @@ def _read_source_cache(path: pathlib.Path) -> dict[str, int]:
             predictions[str(row["content_id"])] = int(row["source_selected_index"])
     if not predictions:
         raise ValueError(f"{path} contained no source predictions")
+    return predictions
+
+
+def _source_predictions_for_rows(
+    rows: Sequence[arc_gate.ArcRow],
+    source_cache: dict[str, int],
+    *,
+    label: str,
+) -> list[int]:
+    predictions: list[int] = []
+    for row in rows:
+        if row.content_id not in source_cache:
+            raise ValueError(f"{label} source cache is missing content_id={row.content_id}")
+        prediction = int(source_cache[row.content_id])
+        if prediction < 0 or prediction >= len(row.choices):
+            raise ValueError(
+                f"{label} source cache row {row.content_id} selected invalid choice index {prediction}"
+            )
+        predictions.append(prediction)
     return predictions
 
 
@@ -1103,6 +1125,14 @@ def _prediction(scores: Sequence[float]) -> int:
     return int(max(range(len(scores)), key=lambda index: (float(scores[index]), -index)))
 
 
+def _source_index_scores(choice_count: int, selected_index: int) -> list[float]:
+    if selected_index < 0 or selected_index >= choice_count:
+        raise ValueError(f"selected_index {selected_index} outside choice_count {choice_count}")
+    scores = [0.0 for _ in range(choice_count)]
+    scores[int(selected_index)] = 1.0
+    return scores
+
+
 def _paired_bootstrap(deltas: list[float], *, seed: int, samples: int) -> dict[str, float]:
     if not deltas:
         return {"mean": 0.0, "ci95_low": 0.0, "ci95_high": 0.0}
@@ -1237,6 +1267,7 @@ def run_preflight(
     output_dir: pathlib.Path,
     eval_path: pathlib.Path,
     source_cache_path: pathlib.Path,
+    qwen_source_cache_path: pathlib.Path | None,
     benchmark: str,
     row_limit: int,
     fit_fraction: float,
@@ -1280,6 +1311,9 @@ def run_preflight(
     rows_all = arc_gate._load_rows(_resolve(eval_path))
     source_cache = _read_source_cache(_resolve(source_cache_path))
     rows, source_predictions = _select_rows_with_cache(rows_all, source_cache, row_limit=row_limit)
+    qwen_cache_path = source_cache_path if qwen_source_cache_path is None else qwen_source_cache_path
+    qwen_source_cache = _read_source_cache(_resolve(qwen_cache_path))
+    qwen_predictions = _source_predictions_for_rows(rows, qwen_source_cache, label="qwen-substituted")
     fit_indices, eval_indices = _row_indices(row_count=len(rows), fit_fraction=fit_fraction, seed=seed)
 
     source_summary, source_meta = _selected_choice_features(
@@ -1393,6 +1427,15 @@ def run_preflight(
 
     connectors = {
         MATCHED_CONDITION: matched_connector(),
+        "source_free_prefix": SourceSoftPrefixConnector(
+            source_dim=source_dim,
+            target_dim=target_dim,
+            target_embed_dim=embed_dim,
+            hidden_dim=hidden_dim,
+            prefix_len=prefix_len,
+            use_source=False,
+            use_target=True,
+        ),
         "target_cache_only_prefix": SourceSoftPrefixConnector(
             source_dim=source_dim,
             target_dim=target_dim,
@@ -1451,6 +1494,7 @@ def run_preflight(
                 "candidate_roll_source": (
                     candidate_roll_source if candidate_roll_source is not None else source_summary[idx]
                 ),
+                "source_free_prefix": source_summary[idx],
                 "target_cache_only_prefix": source_summary[idx],
                 "slots_only_prefix": source_summary[idx],
                 "label_shuffled": source_summary[idx],
@@ -1498,7 +1542,26 @@ def run_preflight(
                     length_normalize=length_normalize,
                     device=resolved_train_device,
                 )
+            condition_scores["source_free_prefix"] = _score_connector_condition(
+                connector=connectors["source_free_prefix"],
+                target_model=model,
+                embed_tokens=embed_tokens,
+                source_summary=source_variants["source_free_prefix"],
+                target_summary=target_summary[idx],
+                prompt_ids=prompt_ids[idx],
+                continuation_ids=choice_ids[idx],
+                length_normalize=length_normalize,
+                device=resolved_train_device,
+            )
             condition_scores["candidate_derangement"] = list(np.roll(condition_scores[MATCHED_CONDITION], 1))
+            condition_scores["packet_only_source_index"] = _source_index_scores(
+                len(row.choices),
+                int(source_predictions[idx]),
+            )
+            condition_scores["qwen_substituted_packet"] = _source_index_scores(
+                len(row.choices),
+                int(qwen_predictions[idx]),
+            )
             hint = row.choices[source_predictions[idx]].encode("utf-8")[:same_byte_budget].decode(
                 "utf-8", errors="ignore"
             )
@@ -1540,6 +1603,8 @@ def run_preflight(
                         "scores": [float(score) for score in scores],
                         "source_selected_index": int(source_predictions[idx]),
                         "source_selected_label": row.choice_labels[int(source_predictions[idx])],
+                        "qwen_substituted_index": int(qwen_predictions[idx]),
+                        "qwen_substituted_label": row.choice_labels[int(qwen_predictions[idx])],
                     }
                 )
 
@@ -1567,10 +1632,11 @@ def run_preflight(
         "target-only/static/shuffled/noise controls cannot reproduce. A failure is not a final "
         "scientific negative; it either kills this exact tiny Mac-local setup or exposes a target-cache leak."
     )
+    created_utc = dt.datetime.now(dt.UTC)
     payload = {
         "gate": "source_private_arc_openbookqa_soft_prefix_preflight",
-        "date": "2026-05-02",
-        "created_utc": dt.datetime.now(dt.UTC).isoformat(),
+        "date": created_utc.date().isoformat(),
+        "created_utc": created_utc.isoformat(),
         "benchmark": benchmark,
         "pass_gate": pass_gate,
         "implementation_gate_only": True,
@@ -1622,6 +1688,7 @@ def run_preflight(
         "inputs": {
             "eval_path": _display(eval_path),
             "source_cache_path": _display(source_cache_path),
+            "qwen_source_cache_path": _display(qwen_cache_path),
         },
         "runtime": {
             "latency_s": float(time.perf_counter() - total_start),
@@ -1663,6 +1730,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--benchmark", default="ARC-Challenge")
     parser.add_argument("--eval-path", type=pathlib.Path, default=DEFAULT_ARC_VALIDATION)
     parser.add_argument("--source-cache-path", type=pathlib.Path, default=DEFAULT_ARC_SOURCE_CACHE)
+    parser.add_argument("--qwen-source-cache-path", type=pathlib.Path, default=None)
     parser.add_argument("--row-limit", type=int, default=8)
     parser.add_argument("--fit-fraction", type=float, default=0.5)
     parser.add_argument(
@@ -1736,6 +1804,7 @@ def main(argv: list[str] | None = None) -> int:
         output_dir=args.output_dir,
         eval_path=args.eval_path,
         source_cache_path=args.source_cache_path,
+        qwen_source_cache_path=args.qwen_source_cache_path,
         benchmark=str(args.benchmark),
         row_limit=int(args.row_limit),
         fit_fraction=float(args.fit_fraction),
