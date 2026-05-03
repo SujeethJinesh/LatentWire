@@ -2168,5 +2168,12 @@
     "path": "references/666_conditional_innovation_sparse_systems_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the ARC conditional-innovation packet gate, recording Wyner-Ziv/query-conditioned sparse innovation motivation, SAE/common-feature next-branch references, and native systems comparator boundaries."
+  },
+  {
+    "num": 667,
+    "slug": "disagreement_prototype_soft_prefix_refs_20260503",
+    "path": "references/667_disagreement_prototype_soft_prefix_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the negative HellaSwag disagreement-prototype receiver gate, recording soft-prefix/query-bottleneck uniqueness boundaries, SAE/crosscoder caveats, and the next ARC TinyLlama-to-Qwen soft-prefix gate."
   }
 ]

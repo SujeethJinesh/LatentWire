@@ -20149,3 +20149,40 @@ Lay explanation: this sent "where the source disagrees with the receiver" for
 each answer option. It barely beat just sending the source answer and was not
 statistically stable, so it is not enough for ICLR, but it tells us what to
 try next: a more selective packet that sends only useful disagreement features.
+
+## 2026-05-03 HellaSwag Disagreement-Prototype Receiver Gate
+
+Added an official-train HellaSwag disagreement-prototype receiver gate:
+
+- script:
+  `scripts/build_source_private_hellaswag_disagreement_prototype_receiver_gate.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_disagreement_prototype_receiver_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_disagreement_prototype_receiver_gate_20260503/`;
+- memo:
+  `paper/source_private_hellaswag_disagreement_prototype_receiver_gate_20260503.md`;
+- references:
+  `references/667_disagreement_prototype_soft_prefix_refs_20260503.md`.
+
+Outcome: the prototype receiver fails. On full HellaSwag validation, TinyLlama
+packet-only is `0.619199`, Qwen target-score is `0.480880`, Qwen hybrid is
+`0.532464`, and Tiny-or-Qwen-hybrid oracle is `0.686815`. The predeclared
+prototype receiver reaches only `0.619299`, `+0.000100` over packet-only with
+CI95 low `-0.000896`; the best diagnostic prototype row reaches `0.620394`,
+`+0.001195` over packet-only with CI95 low `-0.000199`. The predeclared row
+fixes `13` packet errors but breaks `12` packet-correct rows, netting only
+`+1` validation example. The best diagnostic row nets `+12`, still below the
+`+0.005` receiver gate and with negative CI.
+
+Decision: kill shallow disagreement-prototype receivers on HellaSwag. This
+further weakens score/hidden-confidence geometry as the missing common
+language. The next exact Mac-local gate is the ARC TinyLlama-to-Qwen n64
+target-loss soft-prefix/query repair preflight with target-only,
+static-prefix, zero-source, shuffled-source, same-norm-noise, candidate-roll,
+same-byte text, and Qwen-substituted controls.
+
+Lay explanation: the receiver learned examples where Qwen should override
+TinyLlama and examples where it should not. At test time it almost never found
+stable useful overrides, even though an oracle says there are many rows where
+Qwen and TinyLlama could complement each other.

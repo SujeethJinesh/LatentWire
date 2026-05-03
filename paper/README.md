@@ -21,6 +21,10 @@
   the ARC receiver-conditioned innovation packet preflight: matched innovation
   beats learned source-index and quantized source-score decoder controls in
   mean accuracy, but not direct source-label text or paired uncertainty.
+- `source_private_hellaswag_disagreement_prototype_receiver_gate_20260503.md`
+  records the negative official-train HellaSwag disagreement-prototype receiver
+  gate: prototype overrides recover almost none of the TinyLlama/Qwen
+  target-or-packet oracle headroom.
 - `qwen25math_svamp32_headroom_and_source_probes_20260426.md` records the new
   Qwen2.5-Math -> Qwen3 SVAMP32 C2C-headroom target set and the negative
   source-only numeric sidecar / source-hidden ridge screens on that surface.
