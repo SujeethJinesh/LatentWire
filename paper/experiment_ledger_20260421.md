@@ -20242,3 +20242,53 @@ Lay explanation: TinyLlama sent Qwen a tiny learned hidden hint. The hint made
 Qwen worse than just answering from its own prompt, worse than trusting
 TinyLlama's selected answer, and worse than showing Qwen a tiny same-byte text
 hint. This is not the positive method we need for ICLR.
+
+## 2026-05-03 HellaSwag Hidden-Innovation Rank/Score-Channel Controls
+
+Hardened the strongest current positive HellaSwag branch with stricter
+reviewer controls:
+
+- script updated:
+  `scripts/build_source_private_hellaswag_hidden_innovation_bagged_gate.py`;
+- slice/aggregate gate scripts updated:
+  `scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py`
+  and
+  `scripts/build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py`;
+- tests updated:
+  `tests/test_build_source_private_hellaswag_hidden_innovation_bagged_gate.py`
+  and
+  `tests/test_build_source_private_hellaswag_hidden_innovation_multi_slice_stress.py`;
+- artifact:
+  `results/source_private_hellaswag_hidden_innovation_bagged_gate_20260503_rank_score_channel_controls_qwen05_train512_validation1024/`;
+- memo:
+  `paper/source_private_hellaswag_rank_score_channel_controls_20260503.md`;
+- references:
+  `references/669_hellaswag_rank_score_channel_controls_refs_20260503.md`.
+
+Outcome: the stricter first-slice HellaSwag gate passes. The selected
+hidden-innovation packet reaches `0.512695` versus best label-copy
+`0.463867`, source-label copy `0.461914`, source-rank/index-only bagged
+control `0.461914`, score-only bagged control `0.461914`, zero-hidden control
+`0.461914`, wrong-example hidden `0.437500`, candidate-roll hidden
+`0.389648`, and score-channel-roll hidden `0.252930`. Paired CI95 lows are
+positive versus best label-copy (`+0.026367`), source-rank/index-only
+(`+0.033203`), and score-only (`+0.031250`).
+
+Jackknife over the three train-sample bags also passes: `3/3` subbags, min
+delta versus best label-copy `+0.032227`, min CI95 low versus best label-copy
+`+0.010742`, min delta versus source-rank/index-only `+0.033203`, and min
+CI95 low versus source-rank/index-only `+0.014648`.
+
+Decision: promote HellaSwag hidden-innovation as the strongest current
+positive branch, but keep ICLR readiness blocked. The old multi-slice
+HellaSwag artifacts do not yet include these strict rank/score-channel
+controls, so they should not be cited as strict-control evidence until rerun.
+The next exact gate is to rerun held-out HellaSwag slices `1024:2048` through
+the terminal tail under the new controls and rebuild the strict multi-slice
+aggregate. If this fails, pivot to the ARC sparse common-feature innovation
+packet branch recommended by the literature and code-scout subagents.
+
+Lay explanation: this checks whether the small source message only says "the
+source likes answer B" or whether it contains useful hidden evidence. Simple
+rank/index and score-only controls cannot explain the gain, and attaching the
+score hints to the wrong answer choices makes performance collapse.

@@ -64,6 +64,34 @@ def _aggregate_model_scores(
     raise ValueError(f"unsupported aggregation policy: {policy}")
 
 
+def _score_rank_only_feature_tensor(scores: list[list[float]]) -> np.ndarray:
+    score_features = repair._candidate_feature_tensor(
+        scores=scores,
+        hidden=np.zeros((len(scores), 4, 1, 1), dtype=np.float64),
+        view="score_only",
+    )
+    rank_and_index_columns = [4, 5, *range(8, 16)]
+    return score_features[:, :, rank_and_index_columns]
+
+
+def _score_channel_roll_hidden_feature_tensor(
+    *,
+    scores: list[list[float]],
+    hidden: np.ndarray,
+) -> np.ndarray:
+    score_features = repair._candidate_feature_tensor(
+        scores=scores,
+        hidden=hidden,
+        view="score_only",
+    )
+    hidden_features = repair._candidate_feature_tensor(
+        scores=scores,
+        hidden=hidden,
+        view="hidden_residual_only",
+    )
+    return np.concatenate([np.roll(score_features, 1, axis=1), hidden_features], axis=2)
+
+
 def _hybrid_vote_on_score_agreement(
     *,
     mean_predictions: list[int],
@@ -198,13 +226,16 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- best label-copy accuracy: `{h['best_label_copy_eval_accuracy']:.6f}`",
         f"- delta vs best label-copy: `{h['selected_minus_best_label_copy']:.6f}`",
         f"- CI95 vs best label-copy: `[{h['paired_ci95_low_vs_best_label_copy']:.6f}, {h['paired_ci95_high_vs_best_label_copy']:.6f}]`",
+        f"- source-rank/index-only bagged control accuracy: `{h['source_rank_only_bagged_control_accuracy']:.6f}`",
         f"- score-only bagged control accuracy: `{h['score_only_bagged_control_accuracy']:.6f}`",
         f"- zero-hidden control accuracy: `{h['zero_hidden_control_accuracy']:.6f}`",
         f"- wrong-example hidden control accuracy: `{h['wrong_example_hidden_control_accuracy']:.6f}`",
         f"- candidate-roll hidden control accuracy: `{h['candidate_roll_hidden_control_accuracy']:.6f}`",
+        f"- score-channel-roll hidden control accuracy: `{h['score_channel_roll_hidden_control_accuracy']:.6f}`",
         f"- jackknife subbags passing: `{j['pass_count']}/{j['row_count']}`",
         f"- jackknife min delta vs best label-copy: `{j['selected_minus_best_label_copy_min']:.6f}`",
         f"- jackknife min CI95 low vs best label-copy: `{j['paired_ci95_low_vs_best_label_copy_min']:.6f}`",
+        f"- jackknife min delta vs source-rank/index-only: `{j['selected_minus_source_rank_only_bagged_control_min']:.6f}`",
         "",
         "## Interpretation",
         "",
@@ -258,6 +289,7 @@ def build_gate(
         hidden=eval_hidden,
         view="score_hidden_residual",
     )
+    rank_only_eval_features = _score_rank_only_feature_tensor(eval_scores)
     score_eval_features = repair._candidate_feature_tensor(
         scores=eval_scores,
         hidden=eval_hidden,
@@ -278,10 +310,16 @@ def build_gate(
         hidden=np.roll(eval_hidden, 1, axis=1),
         view="score_hidden_residual",
     )
+    score_channel_roll_eval_features = _score_channel_roll_hidden_feature_tensor(
+        scores=eval_scores,
+        hidden=eval_hidden,
+    )
 
     hidden_models: list[dict[str, Any]] = []
+    rank_only_models: list[dict[str, Any]] = []
     score_models: list[dict[str, Any]] = []
     hidden_models_by_sample: dict[int, list[dict[str, Any]]] = {}
+    rank_only_models_by_sample: dict[int, list[dict[str, Any]]] = {}
     score_models_by_sample: dict[int, list[dict[str, Any]]] = {}
     trained_label_predictions: list[list[int]] = []
     trained_label_predictions_by_sample: dict[int, list[list[int]]] = {}
@@ -290,6 +328,7 @@ def build_gate(
 
     for sample_seed in train_sample_seeds:
         hidden_models_by_sample.setdefault(sample_seed, [])
+        rank_only_models_by_sample.setdefault(sample_seed, [])
         score_models_by_sample.setdefault(sample_seed, [])
         trained_label_predictions_by_sample.setdefault(sample_seed, [])
         train_rows = top2._select_train_rows(all_train_rows, count=train_hidden_rows, seed=sample_seed)
@@ -320,6 +359,7 @@ def build_gate(
             }
         )
         train_feature_by_view = {
+            "score_rank_only": _score_rank_only_feature_tensor(train_scores),
             "score_only": repair._candidate_feature_tensor(
                 scores=train_scores,
                 hidden=train_hidden,
@@ -332,6 +372,7 @@ def build_gate(
             ),
         }
         eval_feature_by_view = {
+            "score_rank_only": rank_only_eval_features,
             "score_only": score_eval_features,
             "score_hidden_residual": hidden_eval_features,
         }
@@ -349,7 +390,7 @@ def build_gate(
                 [score_repair._predict_calibrated_label(row_scores, offsets) for row_scores in eval_scores]
             )
             trained_label_predictions_by_sample[sample_seed].append(trained_label_predictions[-1])
-            for view in ("score_only", "score_hidden_residual"):
+            for view in ("score_rank_only", "score_only", "score_hidden_residual"):
                 model, component = _select_component_model(
                     view=view,
                     train_features=train_feature_by_view[view],
@@ -373,6 +414,9 @@ def build_gate(
                 if view == "score_hidden_residual":
                     hidden_models.append(model)
                     hidden_models_by_sample[sample_seed].append(model)
+                elif view == "score_rank_only":
+                    rank_only_models.append(model)
+                    rank_only_models_by_sample[sample_seed].append(model)
                 else:
                     score_models.append(model)
                     score_models_by_sample[sample_seed].append(model)
@@ -386,6 +430,12 @@ def build_gate(
         features=score_eval_features,
         models=score_models,
         policy="vote",
+    )
+    rank_only_predictions = _control_predictions_for_policy(
+        features=rank_only_eval_features,
+        models=rank_only_models,
+        score_mean_predictions=score_mean_predictions,
+        aggregation_policy=aggregation_policy,
     )
     hidden_mean_predictions, hidden_mean_scores = _aggregate_model_scores(
         features=hidden_eval_features,
@@ -433,6 +483,12 @@ def build_gate(
         score_mean_predictions=score_mean_predictions,
         aggregation_policy=aggregation_policy,
     )
+    score_channel_roll_predictions = _control_predictions_for_policy(
+        features=score_channel_roll_eval_features,
+        models=hidden_models,
+        score_mean_predictions=score_mean_predictions,
+        aggregation_policy=aggregation_policy,
+    )
 
     source_label_predictions = top2._source_label_predictions(eval_scores)
     best_trained_predictions = max(
@@ -446,10 +502,12 @@ def build_gate(
     )
     best_label_accuracy = max(source_label_accuracy, trained_label_accuracy)
     selected_accuracy = top2._accuracy(eval_rows, selected_predictions)
+    rank_only_accuracy = top2._accuracy(eval_rows, rank_only_predictions)
     score_only_accuracy = top2._accuracy(eval_rows, score_only_predictions)
     zero_accuracy = top2._accuracy(eval_rows, zero_predictions)
     wrong_accuracy = top2._accuracy(eval_rows, wrong_predictions)
     candidate_roll_accuracy = top2._accuracy(eval_rows, candidate_roll_predictions)
+    score_channel_roll_accuracy = top2._accuracy(eval_rows, score_channel_roll_predictions)
     paired_ci_label = top2._paired_ci_predictions(
         eval_rows,
         selected_predictions,
@@ -464,6 +522,13 @@ def build_gate(
         seed=7002,
         samples=bootstrap_samples,
     )
+    paired_ci_rank = top2._paired_ci_predictions(
+        eval_rows,
+        selected_predictions,
+        rank_only_predictions,
+        seed=7003,
+        samples=bootstrap_samples,
+    )
 
     def _subbag_readout(
         *,
@@ -474,6 +539,9 @@ def build_gate(
     ) -> dict[str, Any]:
         sub_hidden_models = [
             model for seed in included_sample_seeds for model in hidden_models_by_sample[int(seed)]
+        ]
+        sub_rank_only_models = [
+            model for seed in included_sample_seeds for model in rank_only_models_by_sample[int(seed)]
         ]
         sub_score_models = [
             model for seed in included_sample_seeds for model in score_models_by_sample[int(seed)]
@@ -492,6 +560,12 @@ def build_gate(
             features=score_eval_features,
             models=sub_score_models,
             policy="vote",
+        )
+        sub_rank_only_predictions = _control_predictions_for_policy(
+            features=rank_only_eval_features,
+            models=sub_rank_only_models,
+            score_mean_predictions=sub_score_mean_predictions,
+            aggregation_policy=aggregation_policy,
         )
         sub_hidden_mean_predictions, _ = _aggregate_model_scores(
             features=hidden_eval_features,
@@ -536,6 +610,12 @@ def build_gate(
             score_mean_predictions=sub_score_mean_predictions,
             aggregation_policy=aggregation_policy,
         )
+        sub_score_channel_roll_predictions = _control_predictions_for_policy(
+            features=score_channel_roll_eval_features,
+            models=sub_hidden_models,
+            score_mean_predictions=sub_score_mean_predictions,
+            aggregation_policy=aggregation_policy,
+        )
         sub_best_trained_predictions = max(
             sub_trained_predictions,
             key=lambda predictions: top2._accuracy(eval_rows, predictions),
@@ -548,10 +628,12 @@ def build_gate(
         )
         sub_best_label_accuracy = max(source_label_accuracy, sub_trained_label_accuracy)
         sub_selected_accuracy = top2._accuracy(eval_rows, sub_selected_predictions)
+        sub_rank_only_accuracy = top2._accuracy(eval_rows, sub_rank_only_predictions)
         sub_score_only_accuracy = top2._accuracy(eval_rows, sub_score_only_predictions)
         sub_zero_accuracy = top2._accuracy(eval_rows, sub_zero_predictions)
         sub_wrong_accuracy = top2._accuracy(eval_rows, sub_wrong_predictions)
         sub_candidate_roll_accuracy = top2._accuracy(eval_rows, sub_candidate_roll_predictions)
+        sub_score_channel_roll_accuracy = top2._accuracy(eval_rows, sub_score_channel_roll_predictions)
         sub_paired_ci_label = top2._paired_ci_predictions(
             eval_rows,
             sub_selected_predictions,
@@ -566,36 +648,52 @@ def build_gate(
             seed=ci_seed + 101,
             samples=bootstrap_samples,
         )
+        sub_paired_ci_rank = top2._paired_ci_predictions(
+            eval_rows,
+            sub_selected_predictions,
+            sub_rank_only_predictions,
+            seed=ci_seed + 202,
+            samples=bootstrap_samples,
+        )
         sub_row = {
             "name": name,
             "included_sample_seeds": list(included_sample_seeds),
             "held_out_sample_seed": held_out_sample_seed,
             "component_model_count": len(sub_hidden_models),
+            "rank_only_component_model_count": len(sub_rank_only_models),
             "score_only_component_model_count": len(sub_score_models),
             "selected_eval_accuracy": sub_selected_accuracy,
+            "source_rank_only_bagged_control_accuracy": sub_rank_only_accuracy,
             "score_only_bagged_control_accuracy": sub_score_only_accuracy,
             "source_label_copy_eval_accuracy": source_label_accuracy,
             "trained_choice_bias_label_copy_eval_accuracy": sub_trained_label_accuracy,
             "best_label_copy_eval_accuracy": sub_best_label_accuracy,
             "selected_minus_best_label_copy": sub_selected_accuracy - sub_best_label_accuracy,
+            "selected_minus_source_rank_only_bagged_control": sub_selected_accuracy - sub_rank_only_accuracy,
             "selected_minus_score_only_bagged_control": sub_selected_accuracy - sub_score_only_accuracy,
             "zero_hidden_control_accuracy": sub_zero_accuracy,
             "selected_minus_zero_hidden_control": sub_selected_accuracy - sub_zero_accuracy,
             "wrong_example_hidden_control_accuracy": sub_wrong_accuracy,
             "candidate_roll_hidden_control_accuracy": sub_candidate_roll_accuracy,
+            "score_channel_roll_hidden_control_accuracy": sub_score_channel_roll_accuracy,
             "paired_ci95_low_vs_best_label_copy": sub_paired_ci_label["ci95_low"],
             "paired_ci95_high_vs_best_label_copy": sub_paired_ci_label["ci95_high"],
+            "paired_ci95_low_vs_source_rank_only_bagged": sub_paired_ci_rank["ci95_low"],
+            "paired_ci95_high_vs_source_rank_only_bagged": sub_paired_ci_rank["ci95_high"],
             "paired_ci95_low_vs_score_only_bagged": sub_paired_ci_score["ci95_low"],
             "paired_ci95_high_vs_score_only_bagged": sub_paired_ci_score["ci95_high"],
         }
         sub_row["pass_gate"] = bool(
             sub_row["selected_minus_best_label_copy"] >= STRICT_DELTA
             and sub_row["paired_ci95_low_vs_best_label_copy"] > 0.0
+            and sub_row["selected_minus_source_rank_only_bagged_control"] >= STRICT_DELTA
+            and sub_row["paired_ci95_low_vs_source_rank_only_bagged"] > 0.0
             and sub_row["selected_minus_score_only_bagged_control"] >= STRICT_DELTA
             and sub_row["paired_ci95_low_vs_score_only_bagged"] > 0.0
             and sub_row["selected_minus_zero_hidden_control"] >= STRICT_DELTA
             and sub_wrong_accuracy <= sub_best_label_accuracy
             and sub_candidate_roll_accuracy <= sub_best_label_accuracy
+            and sub_score_channel_roll_accuracy <= sub_best_label_accuracy
         )
         return sub_row
 
@@ -624,6 +722,14 @@ def build_gate(
             (row["paired_ci95_low_vs_best_label_copy"] for row in jackknife_rows),
             default=paired_ci_label["ci95_low"],
         ),
+        "selected_minus_source_rank_only_bagged_control_min": min(
+            (row["selected_minus_source_rank_only_bagged_control"] for row in jackknife_rows),
+            default=selected_accuracy - rank_only_accuracy,
+        ),
+        "paired_ci95_low_vs_source_rank_only_bagged_min": min(
+            (row["paired_ci95_low_vs_source_rank_only_bagged"] for row in jackknife_rows),
+            default=paired_ci_rank["ci95_low"],
+        ),
         "selected_minus_score_only_bagged_control_min": min(
             (row["selected_minus_score_only_bagged_control"] for row in jackknife_rows),
             default=selected_accuracy - score_only_accuracy,
@@ -644,6 +750,10 @@ def build_gate(
             (row["candidate_roll_hidden_control_accuracy"] for row in jackknife_rows),
             default=candidate_roll_accuracy,
         ),
+        "score_channel_roll_hidden_control_accuracy_max": max(
+            (row["score_channel_roll_hidden_control_accuracy"] for row in jackknife_rows),
+            default=score_channel_roll_accuracy,
+        ),
     }
 
     sample_seed_count = len(set(train_sample_seeds))
@@ -651,6 +761,7 @@ def build_gate(
     headline = {
         "aggregation_policy": aggregation_policy,
         "component_model_count": len(hidden_models),
+        "rank_only_component_model_count": len(rank_only_models),
         "score_only_component_model_count": len(score_models),
         "train_sample_seed_count": sample_seed_count,
         "new_train_sample_seed_count": new_sample_seed_count,
@@ -663,6 +774,8 @@ def build_gate(
         "selected_minus_source_label_copy": selected_accuracy - source_label_accuracy,
         "selected_minus_trained_choice_bias_label_copy": selected_accuracy - trained_label_accuracy,
         "selected_minus_best_label_copy": selected_accuracy - best_label_accuracy,
+        "source_rank_only_bagged_control_accuracy": rank_only_accuracy,
+        "selected_minus_source_rank_only_bagged_control": selected_accuracy - rank_only_accuracy,
         "score_only_bagged_control_accuracy": score_only_accuracy,
         "selected_minus_score_only_bagged_control": selected_accuracy - score_only_accuracy,
         "zero_hidden_control_accuracy": zero_accuracy,
@@ -671,8 +784,12 @@ def build_gate(
         "selected_minus_wrong_example_hidden_control": selected_accuracy - wrong_accuracy,
         "candidate_roll_hidden_control_accuracy": candidate_roll_accuracy,
         "selected_minus_candidate_roll_hidden_control": selected_accuracy - candidate_roll_accuracy,
+        "score_channel_roll_hidden_control_accuracy": score_channel_roll_accuracy,
+        "selected_minus_score_channel_roll_hidden_control": selected_accuracy - score_channel_roll_accuracy,
         "paired_ci95_low_vs_best_label_copy": paired_ci_label["ci95_low"],
         "paired_ci95_high_vs_best_label_copy": paired_ci_label["ci95_high"],
+        "paired_ci95_low_vs_source_rank_only_bagged": paired_ci_rank["ci95_low"],
+        "paired_ci95_high_vs_source_rank_only_bagged": paired_ci_rank["ci95_high"],
         "paired_ci95_low_vs_score_only_bagged": paired_ci_score["ci95_low"],
         "paired_ci95_high_vs_score_only_bagged": paired_ci_score["ci95_high"],
         "source_top2_oracle_accuracy": top2._topk_oracle(eval_rows, eval_scores, k=2),
@@ -689,11 +806,14 @@ def build_gate(
         new_sample_seed_count >= 1
         and headline["selected_minus_best_label_copy"] >= STRICT_DELTA
         and headline["paired_ci95_low_vs_best_label_copy"] > 0.0
+        and headline["selected_minus_source_rank_only_bagged_control"] >= STRICT_DELTA
+        and headline["paired_ci95_low_vs_source_rank_only_bagged"] > 0.0
         and headline["selected_minus_score_only_bagged_control"] >= STRICT_DELTA
         and headline["paired_ci95_low_vs_score_only_bagged"] > 0.0
         and headline["selected_minus_zero_hidden_control"] >= STRICT_DELTA
         and wrong_accuracy <= best_label_accuracy
         and candidate_roll_accuracy <= best_label_accuracy
+        and score_channel_roll_accuracy <= best_label_accuracy
         and jackknife_summary["all_pass"]
     )
     packet_contract = {
@@ -720,12 +840,14 @@ def build_gate(
             "vote_prediction": int(vote),
             "source_label_prediction": int(source),
             "trained_label_prediction": int(trained),
+            "source_rank_only_bagged_prediction": int(rank_only),
             "score_only_bagged_prediction": int(score_only),
             "score_mean_prediction": int(score_mean),
             "score_vote_prediction": int(score_vote),
             "zero_hidden_prediction": int(zero),
             "wrong_example_hidden_prediction": int(wrong),
             "candidate_roll_hidden_prediction": int(candidate_roll),
+            "score_channel_roll_hidden_prediction": int(score_channel_roll),
             "selected_margin": float(np.partition(selected_scores[index], -2)[-1] - np.partition(selected_scores[index], -2)[-2]),
         }
         for index, (
@@ -735,12 +857,14 @@ def build_gate(
             vote,
             source,
             trained,
+            rank_only,
             score_only,
             score_mean,
             score_vote,
             zero,
             wrong,
             candidate_roll,
+            score_channel_roll,
         ) in enumerate(
             zip(
                 eval_rows,
@@ -749,12 +873,14 @@ def build_gate(
                 vote_predictions,
                 source_label_predictions,
                 best_trained_predictions,
+                rank_only_predictions,
                 score_only_predictions,
                 score_mean_predictions,
                 score_vote_predictions,
                 zero_predictions,
                 wrong_predictions,
                 candidate_roll_predictions,
+                score_channel_roll_predictions,
                 strict=True,
             )
         )
@@ -768,8 +894,9 @@ def build_gate(
         "pass_rule": (
             "Pass if the predeclared mean-zscore bag over source-side score+hidden-residual denoisers includes "
             "at least one fresh train-row sample seed and beats the best source/trained label-copy control, the "
-            "bagged score-only control, and the zero-hidden control by at least 0.02 with paired CI95 low > 0; "
-            "wrong-example and candidate-roll hidden controls must not beat label-copy."
+            "bagged source-rank/index-only control, the bagged score-only control, and the zero-hidden control "
+            "by at least 0.02 with paired CI95 low > 0; wrong-example, candidate-roll hidden, and rolled-score-channel "
+            "controls must not beat label-copy."
         ),
         "train_path": top2._display_path(train_path),
         "train_sha256": top2._sha256_file(train_path),
@@ -804,10 +931,12 @@ def build_gate(
         "control_readouts": {
             "source_label_copy": top2._evaluate(eval_rows, source_label_predictions),
             "trained_choice_bias_label_copy": top2._evaluate(eval_rows, best_trained_predictions),
+            "source_rank_only_bagged_control": top2._evaluate(eval_rows, rank_only_predictions),
             "score_only_bagged_control": top2._evaluate(eval_rows, score_only_predictions),
             "zero_hidden_control": top2._evaluate(eval_rows, zero_predictions),
             "wrong_example_hidden_control": top2._evaluate(eval_rows, wrong_predictions),
             "candidate_roll_hidden_control": top2._evaluate(eval_rows, candidate_roll_predictions),
+            "score_channel_roll_hidden_control": top2._evaluate(eval_rows, score_channel_roll_predictions),
         },
         "interpretation": (
             "The previous single-denoiser HellaSwag branch was support-sensitive: one fresh 512-row train sample "

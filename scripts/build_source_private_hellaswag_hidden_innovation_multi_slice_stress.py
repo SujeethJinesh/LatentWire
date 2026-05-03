@@ -72,6 +72,15 @@ def _slice_row(path: pathlib.Path, payload: dict[str, Any], index: int) -> dict[
     headline = payload["headline"]
     packet_contract = payload["packet_contract"]
     is_eval_slice = payload.get("gate") == "source_private_hellaswag_hidden_innovation_eval_slice_stress"
+    rank_score_channel_controls_available = all(
+        key in headline
+        for key in (
+            "source_rank_only_bagged_control_accuracy",
+            "selected_minus_source_rank_only_bagged_control",
+            "paired_ci95_low_vs_source_rank_only_bagged",
+            "score_channel_roll_hidden_control_accuracy",
+        )
+    )
     rows = int(headline["eval_rows"]) if is_eval_slice else _rows_from_bagged(payload)
     start = int(headline["eval_slice_start"]) if is_eval_slice else index * rows
     end = int(headline["eval_slice_end_exclusive"]) if is_eval_slice else start + rows
@@ -102,6 +111,30 @@ def _slice_row(path: pathlib.Path, payload: dict[str, Any], index: int) -> dict[
         "selected_minus_best_label_copy": float(headline["selected_minus_best_label_copy"]),
         "paired_ci95_low_vs_best_label_copy": float(headline["paired_ci95_low_vs_best_label_copy"]),
         "paired_ci95_high_vs_best_label_copy": float(headline["paired_ci95_high_vs_best_label_copy"]),
+        "source_rank_only_bagged_control_accuracy": float(
+            headline.get(
+                "source_rank_only_bagged_control_accuracy",
+                headline["score_only_bagged_control_accuracy"],
+            )
+        ),
+        "selected_minus_source_rank_only_bagged_control": float(
+            headline.get(
+                "selected_minus_source_rank_only_bagged_control",
+                headline["selected_minus_score_only_bagged_control"],
+            )
+        ),
+        "paired_ci95_low_vs_source_rank_only_bagged": float(
+            headline.get(
+                "paired_ci95_low_vs_source_rank_only_bagged",
+                headline["paired_ci95_low_vs_score_only_bagged"],
+            )
+        ),
+        "paired_ci95_high_vs_source_rank_only_bagged": float(
+            headline.get(
+                "paired_ci95_high_vs_source_rank_only_bagged",
+                headline.get("paired_ci95_high_vs_score_only_bagged", 0.0),
+            )
+        ),
         "score_only_bagged_control_accuracy": float(headline["score_only_bagged_control_accuracy"]),
         "selected_minus_score_only_bagged_control": float(
             headline["selected_minus_score_only_bagged_control"]
@@ -111,6 +144,12 @@ def _slice_row(path: pathlib.Path, payload: dict[str, Any], index: int) -> dict[
         "selected_minus_zero_hidden_control": float(headline["selected_minus_zero_hidden_control"]),
         "wrong_example_hidden_control_accuracy": float(headline["wrong_example_hidden_control_accuracy"]),
         "candidate_roll_hidden_control_accuracy": float(headline["candidate_roll_hidden_control_accuracy"]),
+        "score_channel_roll_hidden_control_accuracy": float(
+            headline.get(
+                "score_channel_roll_hidden_control_accuracy",
+                headline["candidate_roll_hidden_control_accuracy"],
+            )
+        ),
         "jackknife_pass_count": jackknife_pass_count,
         "jackknife_row_count": jackknife_row_count,
         "jackknife_min_delta_vs_best_label_copy": jackknife_min_delta,
@@ -121,16 +160,21 @@ def _slice_row(path: pathlib.Path, payload: dict[str, Any], index: int) -> dict[
         "source_kv_exposed": bool(packet_contract["source_kv_exposed"]),
         "raw_hidden_vector_transmitted": bool(packet_contract["raw_hidden_vector_transmitted"]),
         "raw_scores_transmitted": bool(packet_contract["raw_scores_transmitted"]),
+        "rank_score_channel_controls_available": rank_score_channel_controls_available,
     }
     row["slice_pass_rule"] = bool(
         row["pass_gate"]
+        and row["rank_score_channel_controls_available"]
         and row["selected_minus_best_label_copy"] >= STRICT_DELTA
         and row["paired_ci95_low_vs_best_label_copy"] > 0.0
+        and row["selected_minus_source_rank_only_bagged_control"] >= STRICT_DELTA
+        and row["paired_ci95_low_vs_source_rank_only_bagged"] > 0.0
         and row["selected_minus_score_only_bagged_control"] >= STRICT_DELTA
         and row["paired_ci95_low_vs_score_only_bagged"] > 0.0
         and row["selected_minus_zero_hidden_control"] >= STRICT_DELTA
         and row["wrong_example_hidden_control_accuracy"] <= row["best_label_copy_eval_accuracy"]
         and row["candidate_roll_hidden_control_accuracy"] <= row["best_label_copy_eval_accuracy"]
+        and row["score_channel_roll_hidden_control_accuracy"] <= row["best_label_copy_eval_accuracy"]
         and row["jackknife_pass_count"] == row["jackknife_row_count"]
         and row["jackknife_min_delta_vs_best_label_copy"] >= STRICT_DELTA
         and row["jackknife_min_ci95_low_vs_best_label_copy"] > 0.0
@@ -186,9 +230,12 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- weighted best label-copy accuracy: `{h['weighted_best_label_copy_eval_accuracy']:.6f}`",
         f"- min delta vs best label-copy: `{h['min_delta_vs_best_label_copy']:.6f}`",
         f"- min CI95 low vs best label-copy: `{h['min_ci95_low_vs_best_label_copy']:.6f}`",
+        f"- min delta vs source-rank/index-only bagged: `{h['min_delta_vs_source_rank_only_bagged']:.6f}`",
+        f"- min source-rank/index-only CI95 low: `{h['min_ci95_low_vs_source_rank_only_bagged']:.6f}`",
         f"- min delta vs score-only bagged: `{h['min_delta_vs_score_only_bagged']:.6f}`",
         f"- min score-only CI95 low: `{h['min_ci95_low_vs_score_only_bagged']:.6f}`",
         f"- min delta vs zero-hidden: `{h['min_delta_vs_zero_hidden']:.6f}`",
+        f"- strict rank/score-channel control slices: `{h['rank_score_channel_control_slice_count']}/{h['slice_count']}`",
         f"- all corrupted-hidden controls below label-copy: `{h['corrupted_hidden_controls_below_label_copy']}`",
         f"- jackknife slices passing: `{h['jackknife_slice_pass_count']}/{h['slice_count']}`",
         f"- packet: `{h['raw_payload_bytes']}B` raw / `{h['framed_record_bytes']}B` framed",
@@ -226,6 +273,7 @@ def build_gate(
     corrupted_controls_below_label = all(
         row["wrong_example_hidden_control_accuracy"] <= row["best_label_copy_eval_accuracy"]
         and row["candidate_roll_hidden_control_accuracy"] <= row["best_label_copy_eval_accuracy"]
+        and row["score_channel_roll_hidden_control_accuracy"] <= row["best_label_copy_eval_accuracy"]
         for row in slice_rows
     )
     headline = {
@@ -243,6 +291,10 @@ def build_gate(
             slice_rows,
             "best_label_copy_eval_accuracy",
         ),
+        "weighted_source_rank_only_bagged_control_accuracy": _weighted_accuracy(
+            slice_rows,
+            "source_rank_only_bagged_control_accuracy",
+        ),
         "weighted_score_only_bagged_control_accuracy": _weighted_accuracy(
             slice_rows,
             "score_only_bagged_control_accuracy",
@@ -251,6 +303,12 @@ def build_gate(
         "min_delta_vs_best_label_copy": min(row["selected_minus_best_label_copy"] for row in slice_rows),
         "min_ci95_low_vs_best_label_copy": min(
             row["paired_ci95_low_vs_best_label_copy"] for row in slice_rows
+        ),
+        "min_delta_vs_source_rank_only_bagged": min(
+            row["selected_minus_source_rank_only_bagged_control"] for row in slice_rows
+        ),
+        "min_ci95_low_vs_source_rank_only_bagged": min(
+            row["paired_ci95_low_vs_source_rank_only_bagged"] for row in slice_rows
         ),
         "min_delta_vs_score_only_bagged": min(
             row["selected_minus_score_only_bagged_control"] for row in slice_rows
@@ -265,11 +323,20 @@ def build_gate(
         "max_candidate_roll_hidden_control_accuracy": max(
             row["candidate_roll_hidden_control_accuracy"] for row in slice_rows
         ),
+        "max_score_channel_roll_hidden_control_accuracy": max(
+            row["score_channel_roll_hidden_control_accuracy"] for row in slice_rows
+        ),
         "corrupted_hidden_controls_below_label_copy": corrupted_controls_below_label,
         "jackknife_slice_pass_count": sum(
             1 for row in slice_rows if row["jackknife_pass_count"] == row["jackknife_row_count"]
         ),
         "source_private_packet": source_private_packet,
+        "rank_score_channel_control_slice_count": sum(
+            1 for row in slice_rows if row["rank_score_channel_controls_available"]
+        ),
+        "all_rank_score_channel_controls_available": all(
+            row["rank_score_channel_controls_available"] for row in slice_rows
+        ),
         "raw_payload_bytes": packet_bytes[0][0] if packet_bytes else None,
         "framed_record_bytes": packet_bytes[0][1] if packet_bytes else None,
         "strict_delta_required": STRICT_DELTA,
@@ -281,12 +348,15 @@ def build_gate(
         and headline["contiguous_validation_prefix"]
         and headline["min_delta_vs_best_label_copy"] >= STRICT_DELTA
         and headline["min_ci95_low_vs_best_label_copy"] > 0.0
+        and headline["min_delta_vs_source_rank_only_bagged"] >= STRICT_DELTA
+        and headline["min_ci95_low_vs_source_rank_only_bagged"] > 0.0
         and headline["min_delta_vs_score_only_bagged"] >= STRICT_DELTA
         and headline["min_ci95_low_vs_score_only_bagged"] > 0.0
         and headline["min_delta_vs_zero_hidden"] >= STRICT_DELTA
         and headline["corrupted_hidden_controls_below_label_copy"]
         and headline["jackknife_slice_pass_count"] == headline["slice_count"]
         and headline["source_private_packet"]
+        and headline["all_rank_score_channel_controls_available"]
     )
     payload = {
         "gate": "source_private_hellaswag_hidden_innovation_multi_slice_stress",
@@ -296,7 +366,8 @@ def build_gate(
         "pass_rule": (
             "Pass if at least three contiguous frozen HellaSwag validation slices totaling at least "
             "3072 rows each pass the same hidden-innovation gate: >=0.02 over best label-copy, "
-            "score-only bag, and zero-hidden controls; paired CI95 lows > 0; corrupted-hidden "
+            "source-rank/index-only bag, score-only bag, and zero-hidden controls; paired CI95 "
+            "lows > 0; strict rank/score-channel controls available on every slice; corrupted-hidden "
             "controls below best label-copy; all jackknife subbags pass; and the packet remains "
             "2B raw / 5B framed with no source text/KV/raw hidden/raw score exposure."
         ),
@@ -307,7 +378,7 @@ def build_gate(
             "This aggregate gate is the Mac-feasible bridge between a single heldout HellaSwag slice "
             "and full-validation evidence. It turns the current headline-candidate into a stricter "
             "multi-slice claim only if every contiguous validation block preserves the source-private "
-            "advantage and all leakage controls still collapse."
+            "advantage and all rank, score, and hidden-corruption controls still collapse."
         ),
     }
     json_path = output_dir / "hellaswag_hidden_innovation_multi_slice_stress.json"

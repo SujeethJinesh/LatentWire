@@ -28,14 +28,18 @@ def test_bagged_gate_rescues_fresh_train_sample_stress(tmp_path) -> None:
 
     assert payload["pass_gate"] is True
     assert headline["component_model_count"] == 6
+    assert headline["rank_only_component_model_count"] == 6
     assert headline["new_train_sample_seed_count"] == 1
     assert headline["selected_minus_best_label_copy"] >= 0.02
+    assert headline["selected_minus_source_rank_only_bagged_control"] >= 0.02
     assert headline["selected_minus_score_only_bagged_control"] >= 0.02
     assert headline["selected_minus_zero_hidden_control"] >= 0.02
     assert headline["paired_ci95_low_vs_best_label_copy"] > 0.0
+    assert headline["paired_ci95_low_vs_source_rank_only_bagged"] > 0.0
     assert headline["paired_ci95_low_vs_score_only_bagged"] > 0.0
     assert headline["wrong_example_hidden_control_accuracy"] <= headline["best_label_copy_eval_accuracy"]
     assert headline["candidate_roll_hidden_control_accuracy"] <= headline["best_label_copy_eval_accuracy"]
+    assert headline["score_channel_roll_hidden_control_accuracy"] <= headline["best_label_copy_eval_accuracy"]
     assert payload["jackknife_summary"]["row_count"] == 0
     assert payload["jackknife_summary"]["all_pass"] is True
     assert payload["packet_contract"]["raw_payload_bytes"] == 2
@@ -58,6 +62,7 @@ def test_bagged_gate_requires_fresh_train_sample_for_promotion(tmp_path) -> None
     assert payload["pass_gate"] is False
     assert payload["headline"]["new_train_sample_seed_count"] == 0
     assert payload["headline"]["component_model_count"] == 2
+    assert payload["headline"]["rank_only_component_model_count"] == 2
 
 
 def test_bagged_gate_reports_three_sample_jackknife(tmp_path) -> None:
@@ -71,11 +76,14 @@ def test_bagged_gate_reports_three_sample_jackknife(tmp_path) -> None:
 
     assert payload["pass_gate"] is True
     assert payload["headline"]["component_model_count"] == 9
+    assert payload["headline"]["rank_only_component_model_count"] == 9
     assert payload["headline"]["new_train_sample_seed_count"] == 2
     assert payload["jackknife_summary"]["row_count"] == 3
     assert payload["jackknife_summary"]["pass_count"] == 3
     assert payload["jackknife_summary"]["selected_minus_best_label_copy_min"] >= 0.02
     assert payload["jackknife_summary"]["paired_ci95_low_vs_best_label_copy_min"] > 0.0
+    assert payload["jackknife_summary"]["selected_minus_source_rank_only_bagged_control_min"] >= 0.02
+    assert payload["jackknife_summary"]["paired_ci95_low_vs_source_rank_only_bagged_min"] > 0.0
     assert payload["jackknife_summary"]["selected_minus_score_only_bagged_control_min"] >= 0.02
     assert payload["jackknife_summary"]["paired_ci95_low_vs_score_only_bagged_min"] > 0.0
 
@@ -103,5 +111,9 @@ def test_bagged_gate_writes_artifacts(tmp_path) -> None:
     assert parsed["gate"] == "source_private_hellaswag_hidden_innovation_bagged_gate"
     with rows.open(encoding="utf-8", newline="") as handle:
         parsed_rows = list(csv.DictReader(handle))
-    assert len(parsed_rows) == 4
-    assert {row["view"] for row in parsed_rows} == {"score_only", "score_hidden_residual"}
+    assert len(parsed_rows) == 6
+    assert {row["view"] for row in parsed_rows} == {
+        "score_rank_only",
+        "score_only",
+        "score_hidden_residual",
+    }

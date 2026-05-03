@@ -2182,5 +2182,12 @@
     "path": "references/668_arc_tinyllama_qwen_soft_prefix_failure_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the negative ARC TinyLlama-to-Qwen n64 target-loss soft-prefix/query preflight, recording novelty limits against soft prompts, query bottlenecks, cross-model KV/activation communication, common-basis work, activation steering, and native systems baselines."
+  },
+  {
+    "num": 669,
+    "slug": "hellaswag_rank_score_channel_controls_refs_20260503",
+    "path": "references/669_hellaswag_rank_score_channel_controls_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the HellaSwag hidden-innovation rank/score-channel control hardening, recording strict source-rank/index-only and score-channel-roll control boundaries plus the next sparse common-feature innovation branch."
   }
 ]

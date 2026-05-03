@@ -148,10 +148,12 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- best label-copy accuracy: `{h['best_label_copy_eval_accuracy']:.6f}`",
         f"- delta vs best label-copy: `{h['selected_minus_best_label_copy']:.6f}`",
         f"- CI95 vs best label-copy: `[{h['paired_ci95_low_vs_best_label_copy']:.6f}, {h['paired_ci95_high_vs_best_label_copy']:.6f}]`",
+        f"- source-rank/index-only bagged control: `{h['source_rank_only_bagged_control_accuracy']:.6f}`",
         f"- score-only bagged control: `{h['score_only_bagged_control_accuracy']:.6f}`",
         f"- zero-hidden control: `{h['zero_hidden_control_accuracy']:.6f}`",
         f"- wrong-example hidden control: `{h['wrong_example_hidden_control_accuracy']:.6f}`",
         f"- candidate-roll hidden control: `{h['candidate_roll_hidden_control_accuracy']:.6f}`",
+        f"- score-channel-roll hidden control: `{h['score_channel_roll_hidden_control_accuracy']:.6f}`",
         f"- jackknife subbags passing: `{h['jackknife_pass_count']}/{h['jackknife_row_count']}`",
         f"- packet: `{h['raw_payload_bytes']}B` raw / `{h['framed_record_bytes']}B` framed",
         "",
@@ -258,9 +260,12 @@ def build_gate(
         and bagged_payload["pass_gate"]
         and h["selected_minus_best_label_copy"] >= STRICT_DELTA
         and h["paired_ci95_low_vs_best_label_copy"] > 0.0
+        and h["selected_minus_source_rank_only_bagged_control"] >= STRICT_DELTA
+        and h["paired_ci95_low_vs_source_rank_only_bagged"] > 0.0
         and h["selected_minus_score_only_bagged_control"] >= STRICT_DELTA
         and h["paired_ci95_low_vs_score_only_bagged"] > 0.0
         and h["selected_minus_zero_hidden_control"] >= STRICT_DELTA
+        and h["score_channel_roll_hidden_control_accuracy"] <= h["best_label_copy_eval_accuracy"]
         and j["all_pass"]
     )
     headline = {
@@ -276,6 +281,14 @@ def build_gate(
         "selected_minus_best_label_copy": h["selected_minus_best_label_copy"],
         "paired_ci95_low_vs_best_label_copy": h["paired_ci95_low_vs_best_label_copy"],
         "paired_ci95_high_vs_best_label_copy": h["paired_ci95_high_vs_best_label_copy"],
+        "source_rank_only_bagged_control_accuracy": h["source_rank_only_bagged_control_accuracy"],
+        "selected_minus_source_rank_only_bagged_control": h[
+            "selected_minus_source_rank_only_bagged_control"
+        ],
+        "paired_ci95_low_vs_source_rank_only_bagged": h["paired_ci95_low_vs_source_rank_only_bagged"],
+        "paired_ci95_high_vs_source_rank_only_bagged": h[
+            "paired_ci95_high_vs_source_rank_only_bagged"
+        ],
         "score_only_bagged_control_accuracy": h["score_only_bagged_control_accuracy"],
         "selected_minus_score_only_bagged_control": h["selected_minus_score_only_bagged_control"],
         "paired_ci95_low_vs_score_only_bagged": h["paired_ci95_low_vs_score_only_bagged"],
@@ -283,6 +296,7 @@ def build_gate(
         "selected_minus_zero_hidden_control": h["selected_minus_zero_hidden_control"],
         "wrong_example_hidden_control_accuracy": h["wrong_example_hidden_control_accuracy"],
         "candidate_roll_hidden_control_accuracy": h["candidate_roll_hidden_control_accuracy"],
+        "score_channel_roll_hidden_control_accuracy": h["score_channel_roll_hidden_control_accuracy"],
         "jackknife_row_count": j["row_count"],
         "jackknife_pass_count": j["pass_count"],
         "jackknife_min_delta_vs_best_label_copy": j["selected_minus_best_label_copy_min"],
@@ -302,8 +316,9 @@ def build_gate(
             "Pass if a frozen post-first1024 validation slice is either a standard >=1024-row "
             "slice or the terminal validation tail with >=512 rows ending at the validation split "
             "boundary, and passes the same bagged hidden-innovation gate: >=0.02 over best "
-            "label-copy, score-only bag, and zero-hidden controls, paired CI95 lows > 0, all "
-            "jackknife subbags pass, and no source text/KV/raw hidden/raw score payload is exposed."
+            "label-copy, source-rank/index-only bag, score-only bag, and zero-hidden controls, "
+            "paired CI95 lows > 0, all jackknife subbags pass, score-channel roll below label-copy, "
+            "and no source text/KV/raw hidden/raw score payload is exposed."
         ),
         "slice_metadata": slice_metadata,
         "eval_cache_metadata": eval_cache_metadata,

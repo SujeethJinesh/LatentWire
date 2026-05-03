@@ -28,6 +28,10 @@ def _headline(start: int, *, delta: float = 0.04) -> dict[str, object]:
         "selected_minus_best_label_copy": delta,
         "paired_ci95_low_vs_best_label_copy": 0.01,
         "paired_ci95_high_vs_best_label_copy": 0.06,
+        "source_rank_only_bagged_control_accuracy": 0.45,
+        "selected_minus_source_rank_only_bagged_control": 0.05,
+        "paired_ci95_low_vs_source_rank_only_bagged": 0.02,
+        "paired_ci95_high_vs_source_rank_only_bagged": 0.06,
         "score_only_bagged_control_accuracy": 0.45,
         "selected_minus_score_only_bagged_control": 0.05,
         "paired_ci95_low_vs_score_only_bagged": 0.02,
@@ -35,6 +39,7 @@ def _headline(start: int, *, delta: float = 0.04) -> dict[str, object]:
         "selected_minus_zero_hidden_control": 0.05,
         "wrong_example_hidden_control_accuracy": 0.43,
         "candidate_roll_hidden_control_accuracy": 0.42,
+        "score_channel_roll_hidden_control_accuracy": 0.41,
     }
 
 
@@ -96,6 +101,7 @@ def test_multi_slice_gate_passes_for_three_contiguous_private_slices(tmp_path) -
     assert payload["headline"]["pass_slice_count"] == 3
     assert payload["headline"]["contiguous_validation_prefix"] is True
     assert payload["headline"]["min_delta_vs_best_label_copy"] >= 0.02
+    assert payload["headline"]["all_rank_score_channel_controls_available"] is True
     assert payload["headline"]["source_private_packet"] is True
     assert (tmp_path / "out" / "hellaswag_hidden_innovation_multi_slice_stress.json").exists()
     assert (tmp_path / "out" / "hellaswag_hidden_innovation_multi_slice_stress.md").exists()
