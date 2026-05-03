@@ -1,0 +1,44 @@
+{
+  "created_utc": "2026-05-03T21:45:53.889412+00:00",
+  "files": [
+    {
+      "bytes": 84306,
+      "path": "results/source_private_hellaswag_nonqwen_anchor_acceptor_gate_20260503_validation1024_2048/hellaswag_nonqwen_anchor_acceptor_gate.json",
+      "sha256": "dd976182f9f39c37957f3b8b574d9a8392b879352b142bab26c357264b6f22f5"
+    },
+    {
+      "bytes": 724,
+      "path": "results/source_private_hellaswag_nonqwen_anchor_acceptor_gate_20260503_validation1024_2048/hellaswag_nonqwen_anchor_acceptor_gate.md",
+      "sha256": "b0a6c7a9ccbc4a6bf0e7971b49eff9ec370f4a2e76125d4057939662735aeb0c"
+    },
+    {
+      "bytes": 1134,
+      "path": "results/source_private_hellaswag_nonqwen_anchor_acceptor_gate_20260503_validation1024_2048/slice_rows.csv",
+      "sha256": "586a492ff433359a58cb27b793dca228a7eac97f74a361783dc405b82e0b8cca"
+    }
+  ],
+  "gate": "source_private_hellaswag_nonqwen_anchor_acceptor_gate",
+  "headline": {
+    "candidate_only_preservation_slice_count": 2,
+    "max_selected_framed_packet_bytes": 4,
+    "max_selected_raw_packet_bytes": 1,
+    "min_anchor_acceptor_ci95_low_vs_packet_only": 0.0,
+    "packet_improvement_slice_count": 0,
+    "range_end_exclusive": 2048,
+    "range_start": 1024,
+    "selected_config_names": [
+      "candidate_only_no_override",
+      "candidate_only_no_override"
+    ],
+    "slice_count": 2,
+    "target_transfer_slice_count": 2,
+    "total_eval_rows": 768,
+    "weighted_anchor_acceptor_eval_accuracy": 0.5065104166666666,
+    "weighted_anchor_acceptor_minus_packet_only": 0.0,
+    "weighted_anchor_acceptor_minus_target_only": 0.24348958333333334,
+    "weighted_oracle_minus_packet_only": 0.11328125,
+    "weighted_packet_only_eval_accuracy": 0.5065104166666666,
+    "weighted_target_only_eval_accuracy": 0.2630208333333333,
+    "weighted_target_or_packet_oracle_eval_accuracy": 0.6197916666666666
+  }
+}

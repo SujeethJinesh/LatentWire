@@ -20485,3 +20485,52 @@ the matched packet.
 Lay explanation: we tried teaching Phi to compare TinyLlama's and Phi's four
 answer scores in a shared coordinate system. It still understood some signal,
 but it made worse decisions than simply trusting TinyLlama's tiny private hint.
+
+## 2026-05-03 HellaSwag Non-Qwen Anchor Acceptor Gate
+
+Implemented and ran a packet-preserving TinyLlama-to-Phi anchor/quantile
+acceptor gate on HellaSwag validation `1024:2048`.
+
+- script added:
+  `scripts/build_source_private_hellaswag_nonqwen_anchor_acceptor_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_nonqwen_anchor_acceptor_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_nonqwen_anchor_acceptor_gate_20260503_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_nonqwen_anchor_acceptor_gate_20260503.md`;
+- references:
+  `references/674_hellaswag_nonqwen_anchor_acceptor_systems_refs_20260503.md`.
+
+Outcome: receiver improvement still fails, but cautious packet preservation
+passes. The receiver-visible packet contract is stricter than the failed
+score-simplex receiver: the target sees only the source candidate and a tiny
+discrete source code, not source text, raw scores, hidden states, logits, or
+KV/cache. The acceptor uses a `64/64/384` fit/select/eval split inside each
+slice and may override the packet only if the select split shows at least two
+net helps.
+
+Across `768` held-out eval rows, Phi target-only reaches `0.263021`,
+TinyLlama packet-only reaches `0.506510`, the cautious anchor acceptor reaches
+`0.506510`, and target-or-packet oracle reaches `0.619792`. The positive
+receiver gate fails (`0/2` packet-improvement slices), but the preservation
+gate passes (`2/2` slices): both slices select `candidate_only_no_override`,
+requiring only `1B` raw / `4B` framed.
+
+The rejected non-fallback candidates explain the policy. On `1024:1536`,
+`anchor_relative_k32` gained one select-split example but hurt held-out eval by
+`-0.005208` versus packet-only. On `1536:2048`, `packet_prob_q8` gained one
+select-split example but hurt eval by `-0.052083`. The stronger acceptor rule
+therefore correctly refuses to trust tiny select-split wins.
+
+Decision: weaken anchor/quantile acceptors as positive receiver methods. Keep
+the candidate-only `1B` raw / `4B` framed preservation row as a systems/privacy
+contribution on the non-Qwen surface. The next ICLR-positive branch must either
+improve the packet itself on the strict Qwen `0:9216` surface or use a stronger
+receiver training signal than 64-row accept/reject supervision.
+
+Lay explanation: we let TinyLlama attach a very small code describing its score
+pattern. Phi was allowed to use that code only when a small held-out split said
+it was safe. The safe choice was to ignore the extra code and keep the original
+hint, which preserves accuracy with fewer visible packet bytes but does not
+solve receiver reasoning.

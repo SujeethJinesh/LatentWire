@@ -2217,5 +2217,12 @@
     "path": "references/673_hellaswag_nonqwen_score_simplex_receiver_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the negative HellaSwag TinyLlama-to-Phi score-simplex Fourier/SVD receiver gate, recording receiver-fusion failure, oracle headroom, anchor-relative next branch, and boundaries against relative representations, model stitching, SVCCA, prefix/gist tokens, SAE/crosscoders, C2C, KVComm, QJL, and TurboQuant."
+  },
+  {
+    "num": 674,
+    "slug": "hellaswag_nonqwen_anchor_acceptor_systems_refs_20260503",
+    "path": "references/674_hellaswag_nonqwen_anchor_acceptor_systems_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the cautious HellaSwag TinyLlama-to-Phi anchor/quantile acceptor gate, recording candidate-only packet preservation at 1B raw / 4B framed, receiver-fusion failure, narrow novelty boundaries against relative representations, prefix/gist tokens, C2C, KVComm, QJL, TurboQuant, KIVI, KVQuant, vLLM, SGLang, and FlashAttention, plus Mac and NVIDIA systems metrics."
   }
 ]
