@@ -25,6 +25,10 @@
   records the strict Qwen HellaSwag source-score quantization gate: train-only
   score-code decoders at `1B`, `2B`, and `3B` raw budgets do not beat the
   `1B` candidate-only packet.
+- `source_private_hellaswag_strict_channel_selector_gate_20260503.md` records
+  the strict Qwen HellaSwag channel-selector gate: a fixed hybrid
+  vote-on-score-agreement packet policy beats candidate-only on `0:9216`, while
+  train-prefix learned channel selectors still fail.
 - `source_private_arc_conditional_innovation_packet_gate_20260503.md` records
   the ARC receiver-conditioned innovation packet preflight: matched innovation
   beats learned source-index and quantized source-score decoder controls in

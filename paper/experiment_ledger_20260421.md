@@ -20609,3 +20609,52 @@ Lay explanation: we tried sending compressed versions of the source model's
 four answer scores instead of just the chosen answer. A train-only decoder
 learned how to interpret those score codes. On the large validation set, the
 score codes still did worse than the tiny candidate-only hint.
+
+## 2026-05-03 HellaSwag Strict Channel-Selector Gate
+
+Implemented and ran a strict channel-selector gate for the Qwen HellaSwag
+validation `0:9216` surface after the candidate-only audit. The gate compares
+fixed packet channels, a fixed hybrid packet policy, and train-prefix selectors
+against the `1B` candidate-only packet.
+
+- script added:
+  `scripts/build_source_private_hellaswag_strict_channel_selector_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_strict_channel_selector_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_strict_channel_selector_gate_20260503_validation0_9216/`;
+- memo:
+  `paper/source_private_hellaswag_strict_channel_selector_gate_20260503.md`;
+- references:
+  `references/677_hellaswag_strict_channel_selector_refs_20260503.md`.
+
+Outcome: the fixed hybrid vote-on-score-agreement packet policy passes the
+strict gate. It reaches `0.531141` accuracy versus `0.525499` for candidate-only
+over `9216` rows, with paired delta `+0.005642`, CI95 low `+0.002713`, `125`
+helps, `73` harms, and positive mean delta on all nine `1024`-row slices. The
+policy is:
+
+```text
+if hidden_mean_prediction == score_mean_prediction:
+    emit vote_prediction
+else:
+    emit hidden_mean_prediction
+```
+
+The learned selectors still fail. The best train-prefix selector chooses
+`vote_prediction` from the first `1024` rows and reaches only `0.528320` on the
+heldout `8192` rows, with paired delta `+0.001221` and CI95 low `-0.002930`.
+The selected/vote/trained/score oracle remains high at `0.593099`, and the
+all-channel oracle is `0.646159`.
+
+Decision: promote fixed hybrid vote-on-score-agreement as the strongest current
+strict HellaSwag packet-policy row, while keeping candidate-only as the minimum
+byte/exposure contract and the key limitation. Do not promote train-prefix
+channel selection as a learned receiver. The next exact gate should test
+cross-family survival of this hybrid policy or beat it with a target-loss
+query/soft-prefix or conditional hidden-innovation method.
+
+Lay explanation: we tested whether the source should always send its default
+tiny hint, or sometimes send the vote hint instead. A fixed agreement rule
+helps reliably, but the learned selector trained on one slice did not find a
+better general rule.
