@@ -2210,5 +2210,12 @@
     "path": "references/672_hellaswag_qwen_strict_to_phi_receiver_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after testing the strict Qwen HellaSwag packet against Phi receiver scores, recording packet transfer, receiver-fusion failure, score-simplex common-basis next branch, and boundaries against relative representations, SAE/crosscoders, prefix/gist tokens, C2C, KVComm, QJL, TurboQuant, and consistency repair."
+  },
+  {
+    "num": 673,
+    "slug": "hellaswag_nonqwen_score_simplex_receiver_refs_20260503",
+    "path": "references/673_hellaswag_nonqwen_score_simplex_receiver_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the negative HellaSwag TinyLlama-to-Phi score-simplex Fourier/SVD receiver gate, recording receiver-fusion failure, oracle headroom, anchor-relative next branch, and boundaries against relative representations, model stitching, SVCCA, prefix/gist tokens, SAE/crosscoders, C2C, KVComm, QJL, and TurboQuant."
   }
 ]

@@ -20443,3 +20443,45 @@ Lay explanation: we tried giving Phi the best current Qwen hint instead of the
 TinyLlama hint. The hint still helps if trusted directly, but our combiner makes
 things worse, especially on the second slice. That means the bottleneck is the
 receiver's common language, not whether the source packet contains signal.
+
+## 2026-05-03 HellaSwag Non-Qwen Score-Simplex Receiver Gate
+
+Implemented and ran the cached TinyLlama-to-Phi score-simplex Fourier/SVD
+receiver gate on the adjacent HellaSwag validation slices `1024:1536` and
+`1536:2048`.
+
+- script added:
+  `scripts/build_source_private_hellaswag_nonqwen_score_simplex_receiver_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_nonqwen_score_simplex_receiver_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_nonqwen_score_simplex_receiver_gate_20260503_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_nonqwen_score_simplex_receiver_gate_20260503.md`;
+- references:
+  `references/673_hellaswag_nonqwen_score_simplex_receiver_refs_20260503.md`.
+
+Outcome: the common score basis does not solve receiver fusion. Across `768`
+held-out eval rows, Phi target-only reaches `0.263021`, TinyLlama packet-only
+reaches `0.506510`, the score-simplex receiver reaches `0.442708`, and the
+target-or-packet oracle reaches `0.619792`. Receiver improvement holds on
+`0/2` adjacent slices, with weighted receiver-minus-packet `-0.063802` and
+minimum slice CI95 low versus packet-only `-0.182292`.
+
+Per slice, `1024:1536` has a tiny receiver-minus-packet delta of `+0.005208`,
+but its CI95 low is `-0.031250`, so it fails the strict paired gate. The
+adjacent `1536:2048` slice collapses to `-0.132812` versus packet-only. Basis
+sign-flip, basis-permutation, source-row-shuffle, candidate-roll, target-derived
+packet, and same-byte controls also do not produce a clean source-necessary
+separation.
+
+Decision: weaken the score-simplex Fourier/SVD receiver branch. The packet
+evidence remains alive, but free fusion overrules a strong packet too often.
+The next exact branch should be packet-preserving and common-coordinate:
+anchor-relative score packets or an acceptor that defaults to packet-only and
+allows target overrides only when trained source-destroying controls stay below
+the matched packet.
+
+Lay explanation: we tried teaching Phi to compare TinyLlama's and Phi's four
+answer scores in a shared coordinate system. It still understood some signal,
+but it made worse decisions than simply trusting TinyLlama's tiny private hint.
