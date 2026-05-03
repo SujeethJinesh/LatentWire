@@ -20361,3 +20361,47 @@ HellaSwag commands.
 Decision: cite the 20260503 evidence bundle for paper status, but keep the ICLR
 gate blocked on receiver-family/cross-family falsification and hardware
 systems rows.
+
+## 2026-05-03 HellaSwag Non-Qwen Receiver-Family Second Slice
+
+Reran the non-Qwen receiver-family packet scout on the adjacent HellaSwag
+validation slice `1536:2048` and added a two-slice aggregate for `1024:2048`.
+
+- script added:
+  `scripts/build_source_private_hellaswag_nonqwen_receiver_family_multislice_summary.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_nonqwen_receiver_family_multislice_summary.py`;
+- second-slice artifact:
+  `results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/`;
+- aggregate artifact:
+  `results/source_private_hellaswag_nonqwen_receiver_family_multislice_summary_20260503_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503.md`;
+- references:
+  `references/671_hellaswag_nonqwen_receiver_family_multislice_refs_20260503.md`.
+
+Outcome: the adjacent slice repeats the receiver-family packet-utility pattern.
+On `1536:2048`, Phi-3 target-only reaches `0.255208`, TinyLlama packet-only
+reaches `0.523438`, and the candidate ridge receiver reaches `0.473958`.
+Thus the `5B` framed TinyLlama packet beats Phi-3 by `+0.268229`, but the
+receiver trails packet-only by `-0.049479` with CI95 low versus packet-only
+`-0.089909`.
+
+Across contiguous validation `1024:2048`, weighted Phi-3 target-only accuracy
+is `0.263021`, TinyLlama packet-only is `0.506510`, candidate ridge receiver is
+`0.477865`, and target-or-packet oracle is `0.619792`. Source utility and
+target-family transfer both hold on `2/2` slices, but receiver improvement
+holds on `0/2` slices.
+
+Decision: promote this only as non-Qwen receiver-family packet utility, not as
+cross-family latent reasoning. The branch stays alive because the oracle gap is
+large (`+0.113281` over packet-only), but the current ridge/confidence receiver
+is weakened. The next exact method branch should attack the fusion gap with a
+query-conditioned sparse/common-basis innovation packet or receiver, with
+feature-id shuffle, magnitude shuffle, target-derived packet, same-byte text,
+row-shuffle, candidate-score-roll, and source-rank/score controls.
+
+Lay explanation: TinyLlama's tiny private hint helps Phi-3 on another chunk of
+HellaSwag, so the hint is not just a one-slice accident. But our combiner still
+does not know when to trust Phi-3 versus the hint, so we have not yet solved
+model-to-model reasoning.

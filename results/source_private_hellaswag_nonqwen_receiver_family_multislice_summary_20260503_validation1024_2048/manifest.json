@@ -1,0 +1,61 @@
+{
+  "created_utc": "2026-05-03T21:15:21.770160+00:00",
+  "files": [
+    {
+      "bytes": 5071,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_multislice_summary_20260503_validation1024_2048/hellaswag_nonqwen_receiver_family_multislice_summary.json",
+      "sha256": "82cd4e44fc5f403ca494d98c22fa6b4c03dbc1f75313b633e5f67a68b9a033d4"
+    },
+    {
+      "bytes": 1003,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_multislice_summary_20260503_validation1024_2048/hellaswag_nonqwen_receiver_family_multislice_summary.md",
+      "sha256": "43df9efc2b8dfe094f19e4baf39b718007340a512f1b16e2cc969dd14efa593f"
+    },
+    {
+      "bytes": 1577,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_multislice_summary_20260503_validation1024_2048/slice_rows.csv",
+      "sha256": "9e11b9bbebb555ca4b8f78d2ec333f7dd24d49f148a165f929b93e523c074589"
+    }
+  ],
+  "gate": "source_private_hellaswag_nonqwen_receiver_family_multislice_summary",
+  "headline": {
+    "contiguous": true,
+    "framed_record_bytes": 5,
+    "min_receiver_ci95_low_vs_packet_only": -0.08990885416666666,
+    "min_receiver_ci95_low_vs_target_only": 0.14186197916666668,
+    "native_systems_complete": false,
+    "range_end_exclusive": 2048,
+    "range_start": 1024,
+    "raw_payload_bytes": 2,
+    "receiver_improvement_slice_count": 0,
+    "slice_count": 2,
+    "source_family": "TinyLlama",
+    "source_private_packet": true,
+    "source_utility_slice_count": 2,
+    "target_family": "Phi-3-mini",
+    "target_family_transfer_slice_count": 2,
+    "target_score_cache_hit_slice_count": 0,
+    "target_score_latency_s_sum": 373.8884597910219,
+    "total_eval_rows": 768,
+    "total_rows": 1024,
+    "total_train_rows": 256,
+    "weighted_oracle_minus_packet_only": 0.11328125,
+    "weighted_packet_minus_target_only": 0.24348958333333331,
+    "weighted_packet_only_eval_accuracy": 0.5065104166666666,
+    "weighted_receiver_eval_accuracy": 0.4778645833333333,
+    "weighted_receiver_minus_packet_only": -0.028645833333333315,
+    "weighted_receiver_minus_target_only": 0.21484375,
+    "weighted_target_only_eval_accuracy": 0.2630208333333333,
+    "weighted_target_or_packet_oracle_eval_accuracy": 0.6197916666666666
+  },
+  "source_artifacts": [
+    {
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/hellaswag_nonqwen_receiver_family_packet_gate.json",
+      "sha256": "7831bbe35a06851773886006123201541937c87bd02875f6e9dac1cce5f81b0e"
+    },
+    {
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/hellaswag_nonqwen_receiver_family_packet_gate.json",
+      "sha256": "265fe06560c5f6bdadf8c8f0abd65a397ff4e1446373e931a99867a8eea31f43"
+    }
+  ]
+}

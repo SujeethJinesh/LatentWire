@@ -1,0 +1,70 @@
+{
+  "created_utc": "2026-05-03T21:11:18.970652+00:00",
+  "files": [
+    {
+      "bytes": 12451,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/hellaswag_nonqwen_receiver_family_packet_gate.json",
+      "sha256": "265fe06560c5f6bdadf8c8f0abd65a397ff4e1446373e931a99867a8eea31f43"
+    },
+    {
+      "bytes": 934,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/hellaswag_nonqwen_receiver_family_packet_gate.md",
+      "sha256": "6cd661462b503ce12b66fa38cd7a658195f44f6fe0e17353691604b2ce771968"
+    },
+    {
+      "bytes": 271895,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/tinyllama_source_packet_slice_augmented.jsonl",
+      "sha256": "7c253ebfd76ab68a86d301228589727ffe9da1fdc0fe9f2fc8d43b4ff6eb9a2c"
+    },
+    {
+      "bytes": 290,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/target_global_artifact.json",
+      "sha256": "d0ee6d5327a394d490047085d060f2dce850d45cdcf762e30ce10f159fb3bba9"
+    },
+    {
+      "bytes": 71969,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/target_score_cache.json",
+      "sha256": "115de3107d95b4ab1f5af5b428d4c51be28295abd45bd4d0b1a8c565a6ac5f28"
+    },
+    {
+      "bytes": 6817,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/receiver_gate/hellaswag_receiver_family_packet_gate.json",
+      "sha256": "7f8a32cace05ec3ec812af3bff34acd78784d0ee0ab8c0e7056b5c44ee534ee2"
+    },
+    {
+      "bytes": 2543,
+      "path": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/receiver_gate/manifest.json",
+      "sha256": "e2d0cf06040888fa38df0507b89b5e2bb08e9fea88e9165512e9b05c7d6eef9b"
+    }
+  ],
+  "gate": "source_private_hellaswag_nonqwen_receiver_family_packet_gate",
+  "headline": {
+    "eval_rows": 384,
+    "native_systems_complete": false,
+    "packet_minus_target_only": 0.2682291666666667,
+    "packet_only_eval_accuracy": 0.5234375,
+    "receiver_ci95_low_vs_packet_only": -0.08990885416666666,
+    "receiver_ci95_low_vs_target_only": 0.14707031250000002,
+    "receiver_eval_accuracy": 0.4739583333333333,
+    "receiver_improvement_gate": false,
+    "receiver_minus_packet_only": -0.049479166666666664,
+    "receiver_minus_target_only": 0.21875,
+    "row_count": 512,
+    "selected_receiver_kind": "candidate_ridge_receiver",
+    "slice_end_exclusive": 2048,
+    "slice_start": 1536,
+    "source_family": "TinyLlama",
+    "source_utility_gate": true,
+    "strict_receiver_packet_lift_required": 0.005,
+    "strict_target_lift_required": 0.05,
+    "target_family": "Phi-3-mini",
+    "target_family_transfer_gate": true,
+    "target_lm_device": "mps",
+    "target_lm_dtype": "float16",
+    "target_only_eval_accuracy": 0.2552083333333333,
+    "target_or_packet_oracle_eval_accuracy": 0.6276041666666666,
+    "target_score_cache_hit": false,
+    "target_score_latency_s": 198.6589357079938,
+    "train_rows": 128
+  }
+}
