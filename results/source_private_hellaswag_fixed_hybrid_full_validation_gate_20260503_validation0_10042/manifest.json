@@ -1,0 +1,16 @@
+{
+  "date": "2026-05-03",
+  "gate": "source_private_hellaswag_fixed_hybrid_full_validation_gate",
+  "outputs": [
+    "hellaswag_fixed_hybrid_full_validation_gate.json",
+    "hellaswag_fixed_hybrid_full_validation_gate.md",
+    "method_rows.csv",
+    "slice_rows.csv"
+  ],
+  "source_artifacts": {
+    "candidate_only_audit": "results/source_private_hellaswag_strict_candidate_only_packet_audit_20260503_validation0_9216/hellaswag_strict_candidate_only_packet_audit.json",
+    "candidate_only_audit_sha256": "24edb66de4f413f11fc6e3f1356d3171ba514e50bb34f386ecc2a3b603843f1b",
+    "tail_predictions": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation9216_10042/bagged_gate/predictions.jsonl",
+    "tail_predictions_sha256": "e407187110b01d3cc86664e0ae431d69fa44fbb390ecfbabd54e0f4ba51a10bc"
+  }
+}

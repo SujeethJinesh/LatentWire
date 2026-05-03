@@ -156,3 +156,6 @@
   the killed strict HellaSwag anti-harm veto gate: the frozen fit/select rule
   loses to fixed hybrid on `1024:9216` and cached Qwen-to-Phi rows, so shallow
   packet-preserving source-side vetoes are no longer the next method branch.
+- `source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503.md`
+  records the full cached HellaSwag validation pass for the fixed hybrid packet
+  policy over `0:10042`, including the terminal tail.

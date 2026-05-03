@@ -2259,5 +2259,12 @@
     "path": "references/679_hellaswag_hybrid_anti_harm_veto_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the killed HellaSwag hybrid anti-harm veto gate, recording selective-classification and learning-to-defer novelty boundaries, MCQ option-bias concerns, and the decision to move from shallow source-side vetoes to receiver/common-basis methods."
+  },
+  {
+    "num": 680,
+    "slug": "hellaswag_fixed_hybrid_full_validation_refs_20260503",
+    "path": "references/680_hellaswag_fixed_hybrid_full_validation_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the fixed HellaSwag hybrid packet full cached validation gate, recording the 0:10042 packet-policy pass and boundaries against learned receiver fusion, common latent bases, soft-prefix/gist compression, C2C, KVComm, QJL, and TurboQuant."
   }
 ]

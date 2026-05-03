@@ -20758,3 +20758,45 @@ can use target evidence without falling below packet-only.
 Lay explanation: we tried to train a simple warning rule for when the hybrid
 hint should be ignored. It mostly learned an answer-choice-position shortcut,
 and on new examples it threw away more good switches than bad switches.
+
+## 2026-05-03 HellaSwag Fixed Hybrid Full-Validation Gate
+
+Implemented and ran a full cached validation gate for the fixed hybrid
+vote-on-score-agreement packet policy.
+
+- script added:
+  `scripts/build_source_private_hellaswag_fixed_hybrid_full_validation_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_fixed_hybrid_full_validation_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503_validation0_10042/`;
+- memo:
+  `paper/source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503.md`;
+- references:
+  `references/680_hellaswag_fixed_hybrid_full_validation_refs_20260503.md`.
+
+Outcome: the fixed hybrid packet policy extends from the prior strict
+`0:9216` surface to the full cached HellaSwag validation range `0:10042`,
+including the terminal tail `9216:10042`. Full-range candidate-only reaches
+`0.526688`, fixed hybrid reaches `0.532464`, and the paired delta is
+`+0.005776` with CI95 low `+0.002888`, `139` helps and `81` harms. The hybrid
+delta is positive on all ten contiguous validation slices; the tail slice alone
+is `0.547215` versus `0.539952`, delta `+0.007264`.
+
+Destructive/source-score controls remain well below fixed hybrid: trained-label
+is `0.484565`, source-label/source-rank/score-only/zero-hidden are `0.480880`,
+wrong-example hidden is `0.452599`, candidate-roll hidden is `0.416152`, and
+score-channel-roll hidden is `0.253933`.
+
+Decision: promote fixed hybrid vote-on-score-agreement as the strongest
+HellaSwag packet-policy row over full cached validation `0:10042`. This updates
+the older systems warning about full-validation status for the fixed hybrid
+packet only; it does not rescue the older hidden-innovation jackknife tail or
+solve learned receiver/common-basis fusion. The next exact method gate remains
+a target-loss score-simplex conditional innovation receiver or stronger
+common-basis method that must beat packet-only under source-destroying controls.
+
+Lay explanation: we checked the final cached HellaSwag examples that were not
+part of the previous large strict surface. The same tiny hybrid answer hint
+still helps on that tail and on the full validation set, so the current packet
+result is not just from the first `9216` examples.
