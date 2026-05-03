@@ -152,6 +152,55 @@ def test_contrastive_margin_penalty_rewards_matched_over_control() -> None:
     assert torch.allclose(capped, torch.tensor(0.5), atol=1e-6)
 
 
+def test_batched_choice_scores_match_unbatched_reference() -> None:
+    class ToyTarget(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.proj = torch.nn.Linear(5, 9, bias=False)
+
+        def forward(self, *, inputs_embeds, attention_mask, use_cache=False):
+            del attention_mask, use_cache
+            return type("Output", (), {"logits": self.proj(inputs_embeds.cumsum(dim=1))})()
+
+    torch.manual_seed(7)
+    target = ToyTarget()
+    embed_tokens = torch.nn.Embedding(9, 5)
+    prefix = torch.randn(2, 5, requires_grad=True)
+    prompt_ids = torch.tensor([1, 2, 3])
+    continuations = [
+        torch.tensor([4]),
+        torch.tensor([5, 6]),
+        torch.tensor([7, 8, 4]),
+    ]
+
+    batched = preflight._choice_scores(
+        target_model=target,
+        embed_tokens=embed_tokens,
+        prefix=prefix,
+        prompt_ids=prompt_ids,
+        continuation_ids=continuations,
+        length_normalize=True,
+    )
+    reference = torch.stack(
+        [
+            preflight._continuation_logprob(
+                target_model=target,
+                embed_tokens=embed_tokens,
+                prefix=prefix,
+                prompt_ids=prompt_ids,
+                continuation_ids=ids,
+                length_normalize=True,
+            )
+            for ids in continuations
+        ]
+    )
+
+    assert torch.allclose(batched, reference, atol=1e-6)
+    batched.sum().backward()
+    assert prefix.grad is not None
+    assert prefix.grad.norm() > 0.0
+
+
 def test_fit_source_control_variants_are_destructive() -> None:
     source = torch.arange(24, dtype=torch.float32).reshape(3, 4, 2)
 
@@ -185,6 +234,16 @@ def test_fit_source_control_variants_are_destructive() -> None:
         epoch=0,
         device="cpu",
     )
+    score_rolled = preflight._fit_source_control_variant(
+        source,
+        fit_indices=[0, 1, 2],
+        fit_position=0,
+        row_index=0,
+        control="candidate_score_roll_source",
+        seed=7,
+        epoch=0,
+        device="cpu",
+    )
     noise_a = preflight._fit_source_control_variant(
         source,
         fit_indices=[0, 1, 2],
@@ -209,7 +268,10 @@ def test_fit_source_control_variants_are_destructive() -> None:
     assert torch.allclose(zero, torch.zeros_like(source[0]))
     assert torch.allclose(shuffled, source[1])
     assert torch.allclose(rolled, torch.roll(source[0], shifts=1, dims=0))
+    assert torch.allclose(score_rolled[:, :-1], source[0, :, :-1])
+    assert torch.allclose(score_rolled[:, -1], torch.roll(source[0, :, -1], shifts=1, dims=0))
     assert preflight._candidate_roll_source_summary(torch.arange(4, dtype=torch.float32)) is None
+    assert preflight._candidate_score_roll_source_summary(torch.arange(4, dtype=torch.float32)) is None
     assert torch.allclose(noise_a, noise_b)
     assert torch.allclose(noise_a.norm(), source[0].norm(), atol=1e-5)
 
@@ -510,7 +572,7 @@ def test_residual_feature_modes_are_cli_options() -> None:
             "--contrastive-loss-cap",
             "0.25",
             "--contrastive-controls",
-            "zero_source,shuffled_source,candidate_roll_source",
+            "zero_source,shuffled_source,candidate_roll_source,candidate_score_roll_source",
         ]
     )
     qwen_cache = preflight.parse_args(["--qwen-source-cache-path", "qwen_cache.jsonl"])
@@ -528,6 +590,7 @@ def test_residual_feature_modes_are_cli_options() -> None:
         "zero_source",
         "shuffled_source",
         "candidate_roll_source",
+        "candidate_score_roll_source",
     )
     assert str(qwen_cache.qwen_source_cache_path) == "qwen_cache.jsonl"
 

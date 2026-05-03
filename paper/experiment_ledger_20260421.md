@@ -20186,3 +20186,59 @@ Lay explanation: the receiver learned examples where Qwen should override
 TinyLlama and examples where it should not. At test time it almost never found
 stable useful overrides, even though an oracle says there are many rows where
 Qwen and TinyLlama could complement each other.
+
+## 2026-05-03 ARC TinyLlama-to-Qwen Soft-Prefix Preflight
+
+Ran the live Mac-local ARC TinyLlama-to-Qwen target-loss soft-prefix/query
+repair preflight and hardened the harness:
+
+- script updated:
+  `scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py`;
+- test updated:
+  `tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`;
+- artifact:
+  `results/source_private_arc_openbookqa_soft_prefix_preflight_20260503_arc_tinyllama_to_qwen_n64_mps_batched_gradaccum/`;
+- memo:
+  `paper/source_private_arc_tinyllama_qwen_soft_prefix_preflight_20260503.md`;
+- references:
+  `references/668_arc_tinyllama_qwen_soft_prefix_failure_refs_20260503.md`.
+
+Systems/harness changes: source hidden extraction now forces eager attention
+and releases source-model memory before loading the target; target
+multiple-choice scores are batched across choices; and connector fitting uses
+row-wise gradient accumulation to avoid retaining every fit-row target graph
+until a single backward pass. The batched scorer is tested against the old
+per-choice objective and preserves prefix gradient flow.
+
+Outcome: the n64 gate fails decisively. On ARC validation fit/eval rows
+`32/32`, matched soft-prefix accuracy is `0.218750` with mean margin
+`-0.718780`. Target-only is `0.406250`, slots-only prefix is `0.468750`,
+packet-only source index is `0.468750`, Qwen-substituted packet is `0.437500`,
+and same-byte visible text is `0.500000`. The best control is same-byte
+visible text; matched minus best-control accuracy is `-0.281250`, and matched
+minus best-control margin is `-0.740378`.
+
+Flip audit: matched fixes `3` target-only errors but breaks `9` target-correct
+rows. Versus packet-only source index it fixes `4` packet errors and breaks
+`12` packet-correct rows. Versus same-byte visible text it fixes `2` and
+breaks `11`.
+
+Control audit: `candidate_roll_source` is ineffective for the rank-3
+query-pooling connector because the connector is permutation invariant over
+the candidate set. The harness now adds `candidate_score_roll_source`, which
+preserves candidate hidden geometry but rolls the source score/selection
+channel across candidates. Future candidate-pool gates should include this
+control.
+
+Decision: kill the answer-CE target-loss soft-prefix/query branch on the
+current ARC Mac-local surface. Do not run another shallow soft-prefix sweep
+without a crisp new objective. The next highest-value branch is a
+query-conditioned sparse/common-feature innovation packet or resonance
+objective that must beat packet-only, source-index, Qwen-substituted,
+same-byte text, static-prefix, target-only, zero-source, shuffled-source,
+candidate-roll, candidate-score-roll, and label-shuffle controls.
+
+Lay explanation: TinyLlama sent Qwen a tiny learned hidden hint. The hint made
+Qwen worse than just answering from its own prompt, worse than trusting
+TinyLlama's selected answer, and worse than showing Qwen a tiny same-byte text
+hint. This is not the positive method we need for ICLR.

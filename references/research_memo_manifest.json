@@ -2175,5 +2175,12 @@
     "path": "references/667_disagreement_prototype_soft_prefix_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the negative HellaSwag disagreement-prototype receiver gate, recording soft-prefix/query-bottleneck uniqueness boundaries, SAE/crosscoder caveats, and the next ARC TinyLlama-to-Qwen soft-prefix gate."
+  },
+  {
+    "num": 668,
+    "slug": "arc_tinyllama_qwen_soft_prefix_failure_refs_20260503",
+    "path": "references/668_arc_tinyllama_qwen_soft_prefix_failure_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the negative ARC TinyLlama-to-Qwen n64 target-loss soft-prefix/query preflight, recording novelty limits against soft prompts, query bottlenecks, cross-model KV/activation communication, common-basis work, activation steering, and native systems baselines."
   }
 ]

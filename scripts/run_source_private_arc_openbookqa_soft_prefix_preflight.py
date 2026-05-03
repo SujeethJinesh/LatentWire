@@ -12,6 +12,7 @@ target-only/static/source-destroying controls on a tiny held-out slice.
 import argparse
 import csv
 import datetime as dt
+import gc
 import hashlib
 import json
 import math
@@ -63,6 +64,7 @@ CONTROL_CONDITIONS = (
     "train_mean_source",
     "label_shuffled",
     "candidate_roll_source",
+    "candidate_score_roll_source",
     "candidate_derangement",
     "same_byte_visible_text",
     "packet_only_source_index",
@@ -78,6 +80,7 @@ CONTRASTIVE_CONTROL_CHOICES = (
     "shuffled_source",
     "same_norm_noise",
     "candidate_roll_source",
+    "candidate_score_roll_source",
 )
 
 
@@ -193,6 +196,12 @@ def _sha256_file(path: pathlib.Path | str) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _release_torch_model_memory(*, device: str) -> None:
+    gc.collect()
+    if device == "mps" and hasattr(torch, "mps"):
+        torch.mps.empty_cache()
 
 
 def _peak_rss_mib() -> float:
@@ -747,6 +756,7 @@ def _hf_choice_hidden_features(
         local_files_only=local_files_only,
         trust_remote_code=True,
         torch_dtype=_torch_dtype(dtype),
+        attn_implementation="eager",
     ).to(resolved_device)
     model.eval()
 
@@ -769,15 +779,20 @@ def _hf_choice_hidden_features(
             feature = values.mean(dim=0).detach().cpu().numpy().astype(np.float64)
             norm = np.linalg.norm(feature)
             features.append(feature / max(norm, 1e-12))
-    return np.asarray(features, dtype=np.float64), {
+    feature_array = np.asarray(features, dtype=np.float64)
+    metadata = {
         "kind": "answer_key_forbidden_hf_choice_hidden",
         "model_path": model_path,
         "device": resolved_device,
         "dtype": dtype,
+        "attn_implementation": "eager",
         "max_length": int(max_length),
         "hidden_layer": int(hidden_layer),
         "latency_s": float(time.perf_counter() - start),
     }
+    del model, tokenizer
+    _release_torch_model_memory(device=resolved_device)
+    return feature_array, metadata
 
 
 def _hf_choice_token_hidden_pool_features(
@@ -807,6 +822,7 @@ def _hf_choice_token_hidden_pool_features(
         local_files_only=local_files_only,
         trust_remote_code=True,
         torch_dtype=_torch_dtype(dtype),
+        attn_implementation="eager",
     ).to(resolved_device)
     model.eval()
 
@@ -853,11 +869,13 @@ def _hf_choice_token_hidden_pool_features(
             pooled_rows.append(
                 _fixed_token_pool(tokens, pool_size=pool_size, residualized=residualized)
             )
-    return np.asarray(pooled_rows, dtype=np.float64), {
+    feature_array = np.asarray(pooled_rows, dtype=np.float64)
+    metadata = {
         "kind": "answer_key_forbidden_hf_choice_token_hidden_pool",
         "model_path": model_path,
         "device": resolved_device,
         "dtype": dtype,
+        "attn_implementation": "eager",
         "max_length": int(max_length),
         "hidden_layer": int(hidden_layer),
         "pool_size": int(pool_size),
@@ -868,6 +886,9 @@ def _hf_choice_token_hidden_pool_features(
         "suffix_fallback_choice_count": int(suffix_fallback_rows),
         "latency_s": float(time.perf_counter() - start),
     }
+    del model, tokenizer
+    _release_torch_model_memory(device=resolved_device)
+    return feature_array, metadata
 
 
 def _target_public_features(rows: list[arc_gate.ArcRow], *, feature_dim: int) -> tuple[torch.Tensor, dict[str, Any]]:
@@ -916,19 +937,46 @@ def _choice_scores(
     continuation_ids: Sequence[torch.Tensor],
     length_normalize: bool,
 ) -> torch.Tensor:
-    return torch.stack(
-        [
-            _continuation_logprob(
-                target_model=target_model,
-                embed_tokens=embed_tokens,
-                prefix=prefix,
-                prompt_ids=prompt_ids,
-                continuation_ids=ids,
-                length_normalize=length_normalize,
-            )
-            for ids in continuation_ids
-        ]
+    if not continuation_ids:
+        raise ValueError("continuation_ids must not be empty")
+    device = prefix.device if prefix.numel() else prompt_ids.device
+    prompt_embeds = embed_tokens(prompt_ids.to(device)).detach()
+    prefix = prefix.to(device=device, dtype=prompt_embeds.dtype)
+
+    batched_inputs: list[torch.Tensor] = []
+    input_lengths: list[int] = []
+    continuation_tensors: list[torch.Tensor] = []
+    for ids in continuation_ids:
+        ids = ids.to(device)
+        continuation_tensors.append(ids)
+        continuation_embeds = embed_tokens(ids).detach()
+        if continuation_embeds.shape[0] > 1:
+            inputs = torch.cat([prefix, prompt_embeds, continuation_embeds[:-1]], dim=0)
+        else:
+            inputs = torch.cat([prefix, prompt_embeds], dim=0)
+        batched_inputs.append(inputs)
+        input_lengths.append(int(inputs.shape[0]))
+
+    inputs_embeds = torch.nn.utils.rnn.pad_sequence(
+        batched_inputs,
+        batch_first=True,
+        padding_value=0.0,
     )
+    lengths = torch.tensor(input_lengths, dtype=torch.long, device=device)
+    positions = torch.arange(inputs_embeds.shape[1], dtype=torch.long, device=device)
+    attention_mask = (positions.unsqueeze(0) < lengths.unsqueeze(1)).long()
+    out = target_model(inputs_embeds=inputs_embeds, attention_mask=attention_mask, use_cache=False)
+    logits = out.logits
+    start = int(prefix.shape[0] + prompt_embeds.shape[0] - 1)
+    scores: list[torch.Tensor] = []
+    for choice_index, ids in enumerate(continuation_tensors):
+        token_logits = logits[choice_index, start : start + ids.shape[0]]
+        logprobs = torch.log_softmax(token_logits.float(), dim=-1)
+        score = logprobs.gather(1, ids[:, None]).sum()
+        if length_normalize:
+            score = score / max(int(ids.shape[0]), 1)
+        scores.append(score)
+    return torch.stack(scores)
 
 
 def _gold_margin_tensor(scores: torch.Tensor, answer_index: int) -> torch.Tensor:
@@ -961,6 +1009,14 @@ def _candidate_roll_source_summary(source: torch.Tensor) -> torch.Tensor | None:
     return torch.roll(source, shifts=1, dims=0)
 
 
+def _candidate_score_roll_source_summary(source: torch.Tensor) -> torch.Tensor | None:
+    if source.numel() == 0 or source.dim() != 2 or source.shape[0] < 2:
+        return None
+    rolled = source.clone()
+    rolled[:, -1] = torch.roll(source[:, -1], shifts=1, dims=0)
+    return rolled
+
+
 def _fit_source_control_variant(
     source_summary: torch.Tensor,
     *,
@@ -984,6 +1040,8 @@ def _fit_source_control_variant(
         return noise / noise.norm().clamp_min(1e-6) * base.norm().clamp_min(1e-6)
     if control == "candidate_roll_source":
         return _candidate_roll_source_summary(base)
+    if control == "candidate_score_roll_source":
+        return _candidate_score_roll_source_summary(base)
     raise ValueError(f"unknown contrastive control {control!r}")
 
 
@@ -1016,8 +1074,9 @@ def _fit_connector(
     losses: list[float] = []
     contrastive_losses: list[float] = []
     for epoch in range(config.epochs):
-        total = torch.zeros((), device=device)
-        contrastive_total = torch.zeros((), device=device)
+        optimizer.zero_grad(set_to_none=True)
+        total_value = 0.0
+        contrastive_value = 0.0
         for fit_position, idx in enumerate(fit_indices):
             row_source = source_summary[idx].to(device)
             row_target = target_summary[idx].to(device)
@@ -1031,7 +1090,7 @@ def _fit_connector(
                 length_normalize=config.length_normalize,
             )
             label = torch.tensor([shifted_answers[idx]], dtype=torch.long, device=device)
-            total = total + torch.nn.functional.cross_entropy(scores.unsqueeze(0), label)
+            row_loss = torch.nn.functional.cross_entropy(scores.unsqueeze(0), label)
             if use_contrastive and config.contrastive_weight > 0.0 and config.contrastive_controls:
                 row_penalties: list[torch.Tensor] = []
                 for control in config.contrastive_controls:
@@ -1066,13 +1125,13 @@ def _fit_connector(
                     row_penalties.append(penalty)
                 if row_penalties:
                     row_penalty = torch.stack(row_penalties).mean()
-                    contrastive_total = contrastive_total + row_penalty
-                    total = total + float(config.contrastive_weight) * row_penalty
-        optimizer.zero_grad(set_to_none=True)
-        total.backward()
+                    contrastive_value += float(row_penalty.detach().cpu())
+                    row_loss = row_loss + float(config.contrastive_weight) * row_penalty
+            total_value += float(row_loss.detach().cpu())
+            row_loss.backward()
         optimizer.step()
-        losses.append(float(total.detach().cpu()))
-        contrastive_losses.append(float(contrastive_total.detach().cpu()))
+        losses.append(total_value)
+        contrastive_losses.append(contrastive_value)
     connector.eval()
     return {
         "loss_initial": float(losses[0]) if losses else 0.0,
@@ -1485,6 +1544,7 @@ def run_preflight(
             noise = noise_cpu.to(resolved_train_device)
             noise = noise / noise.norm().clamp_min(1e-6) * source_summary[idx].norm().clamp_min(1e-6)
             candidate_roll_source = _candidate_roll_source_summary(source_summary[idx])
+            candidate_score_roll_source = _candidate_score_roll_source_summary(source_summary[idx])
             source_variants = {
                 MATCHED_CONDITION: source_summary[idx],
                 "zero_source": torch.zeros_like(source_summary[idx]),
@@ -1493,6 +1553,11 @@ def run_preflight(
                 "train_mean_source": train_mean_source,
                 "candidate_roll_source": (
                     candidate_roll_source if candidate_roll_source is not None else source_summary[idx]
+                ),
+                "candidate_score_roll_source": (
+                    candidate_score_roll_source
+                    if candidate_score_roll_source is not None
+                    else source_summary[idx]
                 ),
                 "source_free_prefix": source_summary[idx],
                 "target_cache_only_prefix": source_summary[idx],
@@ -1518,6 +1583,7 @@ def run_preflight(
                 "same_norm_noise",
                 "train_mean_source",
                 "candidate_roll_source",
+                "candidate_score_roll_source",
             ):
                 condition_scores[condition] = _score_connector_condition(
                     connector=connectors[MATCHED_CONDITION],
