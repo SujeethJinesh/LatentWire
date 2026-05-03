@@ -2224,5 +2224,12 @@
     "path": "references/674_hellaswag_nonqwen_anchor_acceptor_systems_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the cautious HellaSwag TinyLlama-to-Phi anchor/quantile acceptor gate, recording candidate-only packet preservation at 1B raw / 4B framed, receiver-fusion failure, narrow novelty boundaries against relative representations, prefix/gist tokens, C2C, KVComm, QJL, TurboQuant, KIVI, KVQuant, vLLM, SGLang, and FlashAttention, plus Mac and NVIDIA systems metrics."
+  },
+  {
+    "num": 675,
+    "slug": "hellaswag_strict_candidate_only_packet_refs_20260503",
+    "path": "references/675_hellaswag_strict_candidate_only_packet_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the strict Qwen HellaSwag candidate-only packet audit, recording 1B raw / 4B framed decision compaction, explicit source-index limitations, and boundaries against prefix/gist tokens, C2C, KVComm, QJL, TurboQuant, vLLM, and SGLang."
   }
 ]

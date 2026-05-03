@@ -20534,3 +20534,38 @@ pattern. Phi was allowed to use that code only when a small held-out split said
 it was safe. The safe choice was to ignore the extra code and keep the original
 hint, which preserves accuracy with fewer visible packet bytes but does not
 solve receiver reasoning.
+
+## 2026-05-03 HellaSwag Strict Candidate-Only Packet Audit
+
+Implemented and ran a strict candidate-only packet audit for the strongest Qwen
+HellaSwag rank/score-channel positive surface over validation `0:9216`.
+
+- script added:
+  `scripts/build_source_private_hellaswag_strict_candidate_only_packet_audit.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_strict_candidate_only_packet_audit.py`;
+- artifact:
+  `results/source_private_hellaswag_strict_candidate_only_packet_audit_20260503_validation0_9216/`;
+- memo:
+  `paper/source_private_hellaswag_strict_candidate_only_packet_audit_20260503.md`;
+- references:
+  `references/675_hellaswag_strict_candidate_only_packet_refs_20260503.md`.
+
+Outcome: the audit passes. Recomputing all nine saved `1024`-row slices from
+their `predictions.jsonl` files shows that the selected candidate id alone
+exactly preserves the previous strict row: weighted candidate-only accuracy is
+`0.525499` across `9216` examples, versus `0.479384` for source-rank/index-only,
+`0.479384` for score-only, and `0.483941` for best label-copy. The minimum
+slice delta versus source-rank/index-only and score-only remains `0.037109`,
+with minimum paired CI95 lows `0.018555`.
+
+Decision: promote this only as a systems/privacy compaction row. The strict
+HellaSwag packet can be represented as `1B` raw / `4B` framed rather than `2B`
+raw / `5B` framed, with no source text, KV cache, raw hidden vector, raw score
+vector, or source logits exposed. It does not solve receiver fusion or prove a
+general latent language.
+
+Lay explanation: we checked whether the best HellaSwag hint needed the extra
+byte. It did not. The receiver can get the same answers from only the source's
+chosen answer id, which makes the packet smaller but also makes the limitation
+very clear.
