@@ -29,6 +29,10 @@
   the strict Qwen HellaSwag channel-selector gate: a fixed hybrid
   vote-on-score-agreement packet policy beats candidate-only on `0:9216`, while
   train-prefix learned channel selectors still fail.
+- `source_private_hellaswag_qwen_hybrid_to_phi_cross_family_gate_20260503.md`
+  records the cached Qwen-to-Phi cross-family gate: the fixed hybrid packet
+  policy beats Qwen candidate-only on Phi heldout rows, while remaining a
+  packet-policy survival result rather than learned receiver fusion.
 - `source_private_arc_conditional_innovation_packet_gate_20260503.md` records
   the ARC receiver-conditioned innovation packet preflight: matched innovation
   beats learned source-index and quantized source-score decoder controls in

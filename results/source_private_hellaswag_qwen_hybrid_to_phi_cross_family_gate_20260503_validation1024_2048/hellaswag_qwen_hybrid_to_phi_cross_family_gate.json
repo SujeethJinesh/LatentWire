@@ -1,0 +1,229 @@
+{
+  "created_utc": "2026-05-03T22:26:33.345423+00:00",
+  "date": "2026-05-03",
+  "gate": "source_private_hellaswag_qwen_hybrid_to_phi_cross_family_gate",
+  "headline": {
+    "best_control_accuracy": 0.4140625,
+    "best_control_name": "trained_label",
+    "candidate_only_accuracy": 0.4557291666666667,
+    "candidate_only_ci95_low_vs_phi_target": 0.14583333333333334,
+    "candidate_only_delta_vs_phi_target": 0.19270833333333334,
+    "heldout_eval_rows": 768,
+    "hybrid_accuracy": 0.4674479166666667,
+    "hybrid_ci95_high_vs_candidate_only": 0.0234375,
+    "hybrid_ci95_high_vs_phi_target": 0.2513020833333333,
+    "hybrid_ci95_low_vs_best_control": 0.02734375,
+    "hybrid_ci95_low_vs_candidate_only": 0.0013020833333333333,
+    "hybrid_ci95_low_vs_phi_target": 0.16015625,
+    "hybrid_delta_vs_best_control": 0.053385416666666664,
+    "hybrid_delta_vs_candidate_only": 0.01171875,
+    "hybrid_delta_vs_phi_target": 0.20442708333333334,
+    "hybrid_harms_vs_candidate_only": 5,
+    "hybrid_helps_vs_candidate_only": 14,
+    "phi_target_accuracy": 0.2630208333333333,
+    "range_end_exclusive": 2048,
+    "range_start": 1024,
+    "target_or_candidate_only_oracle_accuracy": 0.59375,
+    "target_or_hybrid_oracle_accuracy": 0.6041666666666666,
+    "total_rows": 1024,
+    "train_prefix_rows": 256
+  },
+  "interpretation": "The fixed Qwen hybrid vote-on-score-agreement packet improves over candidate-only on the cached Phi cross-family heldout rows while retaining the same receiver-visible one-candidate packet contract. This is useful cross-family packet-policy survival, but it is not a learned Phi receiver or a general latent language: the receiver still sees only the final candidate id.",
+  "lay_explanation": "We checked whether the improved Qwen hint still helps when the receiving model is Phi instead of Qwen. On the cached Phi rows, the fixed hybrid hint beats both Phi's own answer and the older Qwen candidate-only hint. The caveat is that Phi is still just receiving an answer-choice hint, not a rich hidden thought.",
+  "method_rows": [
+    {
+      "accuracy": 0.4674479166666667,
+      "ci95_high_vs_candidate_only": 0.0234375,
+      "ci95_low_vs_candidate_only": 0.0013020833333333333,
+      "delta_vs_candidate_only": 0.01171875,
+      "harms_vs_candidate_only": 5,
+      "helps_vs_candidate_only": 14,
+      "name": "qwen_hybrid_vote_on_score_agreement"
+    },
+    {
+      "accuracy": 0.4557291666666667,
+      "ci95_high_vs_candidate_only": 0.0,
+      "ci95_low_vs_candidate_only": 0.0,
+      "delta_vs_candidate_only": 0.0,
+      "harms_vs_candidate_only": 0,
+      "helps_vs_candidate_only": 0,
+      "name": "qwen_candidate_only"
+    },
+    {
+      "accuracy": 0.4140625,
+      "ci95_high_vs_candidate_only": -0.016927083333333332,
+      "ci95_low_vs_candidate_only": -0.06640625,
+      "delta_vs_candidate_only": -0.041666666666666664,
+      "harms_vs_candidate_only": 65,
+      "helps_vs_candidate_only": 33,
+      "name": "trained_label"
+    },
+    {
+      "accuracy": 0.4114583333333333,
+      "ci95_high_vs_candidate_only": -0.024739583333333332,
+      "ci95_low_vs_candidate_only": -0.06510416666666667,
+      "delta_vs_candidate_only": -0.044270833333333336,
+      "harms_vs_candidate_only": 51,
+      "helps_vs_candidate_only": 17,
+      "name": "source_label"
+    },
+    {
+      "accuracy": 0.4114583333333333,
+      "ci95_high_vs_candidate_only": -0.024739583333333332,
+      "ci95_low_vs_candidate_only": -0.06510416666666667,
+      "delta_vs_candidate_only": -0.044270833333333336,
+      "harms_vs_candidate_only": 51,
+      "helps_vs_candidate_only": 17,
+      "name": "source_rank_only_bagged"
+    },
+    {
+      "accuracy": 0.4114583333333333,
+      "ci95_high_vs_candidate_only": -0.024739583333333332,
+      "ci95_low_vs_candidate_only": -0.06510416666666667,
+      "delta_vs_candidate_only": -0.044270833333333336,
+      "harms_vs_candidate_only": 51,
+      "helps_vs_candidate_only": 17,
+      "name": "score_only_bagged"
+    },
+    {
+      "accuracy": 0.4114583333333333,
+      "ci95_high_vs_candidate_only": -0.0234375,
+      "ci95_low_vs_candidate_only": -0.06510416666666667,
+      "delta_vs_candidate_only": -0.044270833333333336,
+      "harms_vs_candidate_only": 51,
+      "helps_vs_candidate_only": 17,
+      "name": "score_mean"
+    },
+    {
+      "accuracy": 0.4114583333333333,
+      "ci95_high_vs_candidate_only": -0.0234375,
+      "ci95_low_vs_candidate_only": -0.06640625,
+      "delta_vs_candidate_only": -0.044270833333333336,
+      "harms_vs_candidate_only": 51,
+      "helps_vs_candidate_only": 17,
+      "name": "score_vote"
+    },
+    {
+      "accuracy": 0.4114583333333333,
+      "ci95_high_vs_candidate_only": -0.0234375,
+      "ci95_low_vs_candidate_only": -0.06510416666666667,
+      "delta_vs_candidate_only": -0.044270833333333336,
+      "harms_vs_candidate_only": 51,
+      "helps_vs_candidate_only": 17,
+      "name": "zero_hidden"
+    },
+    {
+      "accuracy": 0.390625,
+      "ci95_high_vs_candidate_only": -0.037760416666666664,
+      "ci95_low_vs_candidate_only": -0.09375,
+      "delta_vs_candidate_only": -0.06510416666666667,
+      "harms_vs_candidate_only": 90,
+      "helps_vs_candidate_only": 40,
+      "name": "wrong_example_hidden"
+    },
+    {
+      "accuracy": 0.3763020833333333,
+      "ci95_high_vs_candidate_only": -0.049479166666666664,
+      "ci95_low_vs_candidate_only": -0.109375,
+      "delta_vs_candidate_only": -0.07942708333333333,
+      "harms_vs_candidate_only": 105,
+      "helps_vs_candidate_only": 44,
+      "name": "candidate_roll_hidden"
+    },
+    {
+      "accuracy": 0.2630208333333333,
+      "ci95_high_vs_candidate_only": -0.14583333333333334,
+      "ci95_low_vs_candidate_only": -0.23828125,
+      "delta_vs_candidate_only": -0.19270833333333334,
+      "harms_vs_candidate_only": 254,
+      "helps_vs_candidate_only": 106,
+      "name": "phi_target_only"
+    },
+    {
+      "accuracy": 0.2578125,
+      "ci95_high_vs_candidate_only": -0.14583333333333334,
+      "ci95_low_vs_candidate_only": -0.25,
+      "delta_vs_candidate_only": -0.19791666666666666,
+      "harms_vs_candidate_only": 296,
+      "helps_vs_candidate_only": 144,
+      "name": "score_channel_roll_hidden"
+    }
+  ],
+  "packet_contract": {
+    "framed_record_bytes": 4,
+    "raw_hidden_vector_transmitted": false,
+    "raw_payload_bytes": 1,
+    "raw_scores_transmitted": false,
+    "receiver_visible_payload": "one final Qwen source candidate id emitted by a fixed source-side hybrid policy",
+    "source_family": "Qwen2.5",
+    "source_kv_exposed": false,
+    "source_text_exposed": false,
+    "target_family": "Phi-3-mini"
+  },
+  "pass_gate": true,
+  "pass_rule": "The fixed Qwen hybrid packet survives this cached cross-family gate only if it beats Qwen candidate-only with positive paired CI on heldout Phi rows, beats Phi target-only and the best destructive/source-score control with positive paired CIs, and improves candidate-only on both contiguous slices. This is packet-policy survival, not learned receiver fusion.",
+  "slice_metadata": [
+    {
+      "eval_rows": 384,
+      "phi_target_score_cache": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/target_score_cache.json",
+      "phi_target_score_cache_sha256": "d19ff8973a283c8a3bed814d2fdc6c4ca03bcc7bbf298e88551760ac5abba9fa",
+      "qwen_predictions": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1024_1536/qwen_strict_packet_predictions_1024_1536.jsonl",
+      "qwen_predictions_sha256": "8740fa0d9a8771400e87410150841e910d93c86004ae3f9e4b999b8b3cf39e9d",
+      "rows": 512,
+      "slice_end_exclusive": 1536,
+      "slice_start": 1024,
+      "train_prefix_rows": 128
+    },
+    {
+      "eval_rows": 384,
+      "phi_target_score_cache": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/target_score_cache.json",
+      "phi_target_score_cache_sha256": "115de3107d95b4ab1f5af5b428d4c51be28295abd45bd4d0b1a8c565a6ac5f28",
+      "qwen_predictions": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/qwen_strict_packet_predictions_1536_2048.jsonl",
+      "qwen_predictions_sha256": "780629fbf2b4d2134af252caa8829c5f2bfd3795bf560d5dd42057126e5ce5aa",
+      "rows": 512,
+      "slice_end_exclusive": 2048,
+      "slice_start": 1536,
+      "train_prefix_rows": 128
+    }
+  ],
+  "slice_rows": [
+    {
+      "candidate_only_accuracy": 0.4739583333333333,
+      "eval_rows": 384,
+      "hybrid_accuracy": 0.4869791666666667,
+      "hybrid_ci95_high_vs_candidate_only": 0.03125,
+      "hybrid_ci95_high_vs_phi_target": 0.2838541666666667,
+      "hybrid_ci95_low_vs_candidate_only": -0.0026041666666666665,
+      "hybrid_ci95_low_vs_phi_target": 0.14583333333333334,
+      "hybrid_delta_vs_candidate_only": 0.013020833333333334,
+      "hybrid_delta_vs_phi_target": 0.21614583333333334,
+      "hybrid_harms_vs_candidate_only": 3,
+      "hybrid_helps_vs_candidate_only": 8,
+      "phi_target_accuracy": 0.2708333333333333,
+      "slice_end_exclusive": 1536,
+      "slice_start": 1024,
+      "target_or_hybrid_oracle_accuracy": 0.6276041666666666,
+      "total_rows": 512,
+      "train_prefix_rows": 128
+    },
+    {
+      "candidate_only_accuracy": 0.4375,
+      "eval_rows": 384,
+      "hybrid_accuracy": 0.4479166666666667,
+      "hybrid_ci95_high_vs_candidate_only": 0.026041666666666668,
+      "hybrid_ci95_high_vs_phi_target": 0.25527343749999903,
+      "hybrid_ci95_low_vs_candidate_only": -0.0026041666666666665,
+      "hybrid_ci95_low_vs_phi_target": 0.12760416666666666,
+      "hybrid_delta_vs_candidate_only": 0.010416666666666666,
+      "hybrid_delta_vs_phi_target": 0.19270833333333334,
+      "hybrid_harms_vs_candidate_only": 2,
+      "hybrid_helps_vs_candidate_only": 6,
+      "phi_target_accuracy": 0.2552083333333333,
+      "slice_end_exclusive": 2048,
+      "slice_start": 1536,
+      "target_or_hybrid_oracle_accuracy": 0.5807291666666666,
+      "total_rows": 512,
+      "train_prefix_rows": 128
+    }
+  ]
+}

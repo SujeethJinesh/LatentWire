@@ -2245,5 +2245,12 @@
     "path": "references/677_hellaswag_strict_channel_selector_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the strict Qwen HellaSwag channel-selector gate, recording the fixed hybrid vote-on-score-agreement packet-policy win, learned-selector failure, and boundaries against selective prediction, mixture-of-experts routing, prefix/gist tokens, C2C, KVComm, QJL, and TurboQuant."
+  },
+  {
+    "num": 678,
+    "slug": "hellaswag_qwen_hybrid_to_phi_cross_family_refs_20260503",
+    "path": "references/678_hellaswag_qwen_hybrid_to_phi_cross_family_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the cached Qwen hybrid-to-Phi cross-family gate, recording packet-policy survival under receiver-family pressure and boundaries against multiple-choice selector bias, relative representations, SAE/crosscoder common bases, prefix/gist tokens, C2C, KVComm, QJL, and TurboQuant."
   }
 ]

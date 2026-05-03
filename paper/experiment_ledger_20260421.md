@@ -20658,3 +20658,52 @@ Lay explanation: we tested whether the source should always send its default
 tiny hint, or sometimes send the vote hint instead. A fixed agreement rule
 helps reliably, but the learned selector trained on one slice did not find a
 better general rule.
+
+## 2026-05-03 HellaSwag Qwen Hybrid-To-Phi Cross-Family Gate
+
+Implemented and ran a cached cross-family survival gate for the fixed Qwen
+hybrid vote-on-score-agreement packet policy on Phi-3 HellaSwag rows
+`1024:2048`.
+
+- script added:
+  `scripts/build_source_private_hellaswag_qwen_hybrid_to_phi_cross_family_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_qwen_hybrid_to_phi_cross_family_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_hybrid_to_phi_cross_family_gate_20260503_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_hybrid_to_phi_cross_family_gate_20260503.md`;
+- references:
+  `references/678_hellaswag_qwen_hybrid_to_phi_cross_family_refs_20260503.md`.
+
+Outcome: the fixed Qwen hybrid packet policy survives this cached cross-family
+pressure. On the same `768` heldout Phi rows as the prior failed receiver gate,
+Phi target-only reaches `0.263021`, Qwen candidate-only packet reaches
+`0.455729`, and Qwen hybrid packet reaches `0.467448`. The hybrid delta versus
+candidate-only is `+0.011719` with CI95 low `+0.001302`, `14` helps and `5`
+harms. The hybrid also beats the best destructive/source-score control
+(`trained_label`, `0.414062`) by `+0.053385`, CI95 low `+0.027344`.
+
+Slice readout remains positive in mean on both contiguous slices:
+
+- `1024:1536`: hybrid `0.486979`, candidate-only `0.473958`,
+  delta `+0.013021`;
+- `1536:2048`: hybrid `0.447917`, candidate-only `0.437500`,
+  delta `+0.010417`.
+
+The target-or-hybrid oracle is still high at `0.604167`, versus `0.593750` for
+target-or-candidate-only. That means there is still headroom for a true Phi
+receiver, but the prior generic receiver remains killed because it trails
+packet-only.
+
+Decision: promote this as cross-family survival for the fixed hybrid
+source-private packet policy. Do not promote it as learned receiver fusion,
+common-basis communication, or a general latent language. The next exact
+Mac-local method gate should beat this hybrid row with a packet-preserving
+anti-harm veto or target-loss query/soft-prefix connector under the same
+destructive controls.
+
+Lay explanation: we checked whether the improved Qwen hint still works when
+the receiving model is Phi. It does: the hybrid hint beats both Phi alone and
+the older Qwen candidate-only hint. But Phi is still receiving one answer-choice
+hint, not a rich hidden thought.
