@@ -23569,3 +23569,47 @@ whether a tiny sparse packet could nudge it toward the right ARC answer. It
 memorized the training examples, but on new examples the best move was to
 ignore the packet. That means this version of sparse target atoms is not yet a
 useful steering language.
+
+## 2026-05-04 Conditional PQ ICLR/COLM_v2 Branch Status
+
+Consolidated the conditional-PQ evidence after the newest sparse
+atom/residual/transcoder failures:
+
+- new status builder:
+  `scripts/build_source_private_conditional_pq_iclr_colm_v2_status.py`;
+- new test:
+  `tests/test_build_source_private_conditional_pq_iclr_colm_v2_status.py`;
+- generated artifact:
+  `results/source_private_conditional_pq_iclr_colm_v2_status_20260504/`;
+- paper memo:
+  `paper/source_private_conditional_pq_iclr_colm_v2_status_20260504.md`;
+- reference memo:
+  `references/739_conditional_pq_iclr_colm_v2_status_refs_20260504.md`;
+- manifest update:
+  `references/research_memo_manifest.json`.
+
+Outcome: promote conditional PQ as the current COLM_v2 live positive branch,
+but keep ICLR blocked. The status artifact reports `16/16` same-family
+disjoint n500 pass rows, `8/8` less-diagnostic n500 pass rows, `4/4` budget-2
+n500 pass rows, `0/2` original cross-family pass rows, and `0/28`
+cross-family basis/schema-grid pass rows. The packet-ISA waterfall attaches
+the live method to `2` and `4` byte payloads, `5` and `7` byte framed records,
+no source-text/KV exposure, and a local KV-floor comparator of `21504` bytes.
+
+Decision: the next main branch should not be another direct sparse-atom scout.
+The highest-priority gate is now public-conditioned conditional-PQ resurrection:
+n256 bidirectional held-out-family first, then n500/remap only if positive.
+The method should keep the source-private conditional innovation packet but
+replace static public bases with target-public conditioned residual/codebook
+decoding. Required controls include target-only, answer-masked source,
+constrained wrong-row, same-source-choice wrong-row, candidate roll or deranged
+public basis, code permutation, random same-byte packet, opaque-slot/deranged
+basis, source-index/rank/score comparators where meaningful, and same-byte
+visible text.
+
+Lay explanation: after several newer packet ideas failed, we stopped treating
+all branches as equally alive. The tiny conditional repair-code method is the
+best current positive result, but it only works when train and test share the
+same repair schema. To make it ICLR-strong, the next test must teach the target
+to build a better local codebook for new repair families instead of relying on
+the old static public basis.

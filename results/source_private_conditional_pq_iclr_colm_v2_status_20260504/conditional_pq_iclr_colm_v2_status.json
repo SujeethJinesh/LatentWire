@@ -1,0 +1,103 @@
+{
+  "claim_boundaries": [
+    "Do not claim unseen-family transfer: both original cross-family rows and the 28-row basis/schema grid fail.",
+    "Do not claim product quantization, rotations, or side-information coding as standalone novelty.",
+    "Do not claim GPU throughput, HBM savings, latency, energy, PCIe, or NVLink wins from Mac-local packet accounting.",
+    "Do frame C2C/KV methods as dense or cache-sharing baselines with different exposure and byte regimes."
+  ],
+  "created_utc": "2026-05-04T21:04:23.680478+00:00",
+  "current_contributions": [
+    {
+      "name": "source_private_conditional_innovation_packet",
+      "needs_work": "show broader benchmark or held-out-family transfer",
+      "status": "alive_positive_shared_schema"
+    },
+    {
+      "name": "strict_destructive_controls",
+      "needs_work": "add paper-facing source-index/rank/score and same-byte-text comparators where meaningful",
+      "status": "strong_for_current_synthetic_surface"
+    },
+    {
+      "name": "utility_per_byte_systems_accounting",
+      "needs_work": "native GPU/C2C/KV measurements before throughput, HBM, PCIe, NVLink, energy, or serving claims",
+      "status": "ready_for_mac_local_packet_boundary_claim"
+    }
+  ],
+  "evidence": {
+    "budget2_pass_rows": 4,
+    "budget2_rows": 4,
+    "cross_family_max_ci95_low_vs_control": 0.0,
+    "cross_family_max_source_minus_control": 0.007812000000000041,
+    "cross_family_original_pass_rows": 0,
+    "cross_family_original_rows": 2,
+    "cross_family_schema_grid_pass_rows": 0,
+    "cross_family_schema_grid_rows": 28,
+    "decisive_disjoint_n500_pass_rows": 16,
+    "decisive_disjoint_n500_rows": 16,
+    "less_diagnostic_pass_rows": 8,
+    "less_diagnostic_rows": 8,
+    "max_decisive_best_control_accuracy": 0.302,
+    "min_decisive_ci95_low_vs_best_control": 0.6579999923706055,
+    "min_decisive_source_accuracy": 0.996,
+    "systems": {
+      "method_payload_bytes": [
+        2,
+        4
+      ],
+      "method_record_bytes_range": [
+        5,
+        7
+      ],
+      "min_kv_floor_record_bytes": 21504,
+      "native_gpu_claim_allowed": false,
+      "private_state_exposure_separated": true,
+      "receiver_exact": true
+    }
+  },
+  "gate": "source_private_conditional_pq_iclr_colm_v2_status",
+  "input_artifacts": {
+    "conditional_summary": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_innovation_gate_20260430/summary/conditional_pq_innovation_summary.json",
+    "schema_grid": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_basis_schema_grid_20260430/summary/conditional_pq_basis_schema_grid_summary.json",
+    "systems_waterfall": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_packet_isa_waterfall_20260430/conditional_pq_packet_isa_waterfall.json"
+  },
+  "input_sha256": {
+    "conditional_summary": "ee596f94e494fc6e320ed128a46f8605f3c74817667247a8b43b017cbe17f568",
+    "schema_grid": "4b10fb9dd8ec10c2471244ba82e3f5fb136eb3f0174bf7ee62006bb836197cdd",
+    "systems_waterfall": "db8bdf00150de6b8722cc80e27eddead2d05070d52c45db203b8ba16b78fd96f"
+  },
+  "next_exact_gate": {
+    "decision_surface": "n256 bidirectional held-out family first, then n500/remap repeat if positive",
+    "method": "replace static public bases with target-public conditioned residual/codebook decoding while keeping the same source-private conditional innovation packet interface",
+    "name": "public_conditioned_conditional_pq_resurrection_gate",
+    "pass_bar": "source minus best destructive/shortcut control >= +0.10 with positive paired CI95 low",
+    "required_controls": [
+      "target_only",
+      "answer_masked_source",
+      "constrained_wrong_row_source",
+      "same_source_choice_wrong_row",
+      "candidate_roll_or_deranged_public_basis",
+      "permuted_codes",
+      "random_same_byte",
+      "opaque_slot_or_deranged_basis",
+      "source_index_rank_score_comparators_when_not_answer_oracles",
+      "same_byte_visible_text"
+    ]
+  },
+  "readiness": {
+    "budget2_positive": true,
+    "colm_v2": "scoped_positive_method_ready_for_writeup",
+    "cross_family_blocked": true,
+    "iclr": "blocked_by_cross_family_or_broader_benchmark_positive_gate",
+    "same_family_disjoint_n500_positive": true,
+    "systems_accounting_ready": true
+  },
+  "references": [
+    "references/543_conditional_pq_innovation_refs_20260430.md",
+    "references/544_conditional_pq_semantic_schema_systems_refs_20260430.md",
+    "references/727_srp_competitor_basis_quant_benchmark_lateral_refresh_20260504.md",
+    "references/728_event_triggered_defer_syndrome_packet_refs_20260504.md",
+    "references/739_conditional_pq_iclr_colm_v2_status_refs_20260504.md"
+  ],
+  "story": "Conditional PQ innovation is the current strongest LatentWire_v2 branch: a source-private conditional innovation packet is product-quantized into 2-4 payload bytes and decoded against target/public candidate side information. The defensible claim is shared-schema source-private communication with utility-per-byte accounting, not broad unseen-family latent transfer.",
+  "submission_gap": "COLM_v2 needs the scoped conditional-PQ table, systems waterfall, and limitations integrated. ICLR needs one more positive gate: either held-out-family/public-conditioned residual codebooks, a less synthetic benchmark, or a learned receiver that keeps the same byte and exposure advantages."
+}

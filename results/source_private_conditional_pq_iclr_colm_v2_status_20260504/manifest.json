@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": {
+    "conditional_pq_iclr_colm_v2_status.json": "3d6d2f760c7695eb91169cb7a3093429a39c12f96542eba25ce35e327f4afdd7",
+    "conditional_pq_iclr_colm_v2_status.md": "2bf1c65bc0962c51ac333494ebbbb0b5db2aff9644a546cf808286fde3de2d81"
+  },
+  "artifacts": [
+    "conditional_pq_iclr_colm_v2_status.json",
+    "conditional_pq_iclr_colm_v2_status.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "colm_v2_readiness": "scoped_positive_method_ready_for_writeup",
+  "iclr_readiness": "blocked_by_cross_family_or_broader_benchmark_positive_gate"
+}

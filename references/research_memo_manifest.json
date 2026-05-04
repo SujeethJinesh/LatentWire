@@ -2665,5 +2665,12 @@
     "path": "references/738_target_behavior_transcoder_probe_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted reference memo and scout readout for the target-hidden oracle behavior-transcoder feasibility probe, covering transcoders, circuit tracing, sparse feature circuits, activation/SAE steering, Gemma Scope, TurboQuant, and the failed held-out target-native atom steering gate."
+  },
+  {
+    "num": 739,
+    "slug": "conditional_pq_iclr_colm_v2_status_refs_20260504",
+    "path": "references/739_conditional_pq_iclr_colm_v2_status_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Paper-facing reference refresh for the conditional PQ ICLR/COLM_v2 branch status, consolidating side-information coding, PQ, C2C/KV competitors, low-bit KV quantization, selective/defer priors, and the current novelty boundary."
   }
 ]
