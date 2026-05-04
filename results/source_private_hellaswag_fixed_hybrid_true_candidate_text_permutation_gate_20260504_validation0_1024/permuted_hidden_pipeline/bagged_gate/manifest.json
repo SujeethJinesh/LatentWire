@@ -1,0 +1,79 @@
+{
+  "created_utc": "2026-05-04T06:25:47.968748+00:00",
+  "files": [
+    {
+      "bytes": 58815,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation0_1024/permuted_hidden_pipeline/bagged_gate/hellaswag_hidden_innovation_bagged_gate.json",
+      "sha256": "6f1a008aba9bd06203f3a1b648e148256da908b242478343473928c3ffce3a30"
+    },
+    {
+      "bytes": 1430,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation0_1024/permuted_hidden_pipeline/bagged_gate/hellaswag_hidden_innovation_bagged_gate.md",
+      "sha256": "4f841477f9a625ca5c9ed0e97fe6ba129add1a41f62020bec43c3ff265a3ca67"
+    },
+    {
+      "bytes": 2476,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation0_1024/permuted_hidden_pipeline/bagged_gate/component_rows.csv",
+      "sha256": "92c2cee16dd63d117948e131c636ca2d585fb90c514efc73c77619b92cbf855e"
+    },
+    {
+      "bytes": 1837,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation0_1024/permuted_hidden_pipeline/bagged_gate/jackknife_rows.csv",
+      "sha256": "2c700fd8eca6274973301d36c398f10a59b99e89aa22cfe6cf75859d0619fe1d"
+    },
+    {
+      "bytes": 523412,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation0_1024/permuted_hidden_pipeline/bagged_gate/predictions.jsonl",
+      "sha256": "e64d61bc2ae85f78f0606418c79d675e555181ba83118732500ad0ccab2766a2"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation0_1024/permuted_hidden_pipeline/bagged_gate/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    }
+  ],
+  "gate": "source_private_hellaswag_hidden_innovation_bagged_gate",
+  "headline": {
+    "aggregation_policy": "mean_zscore_vote_on_score_agreement",
+    "best_label_copy_eval_accuracy": 0.4619140625,
+    "candidate_roll_hidden_control_accuracy": 0.3896484375,
+    "component_model_count": 9,
+    "new_train_sample_seed_count": 2,
+    "paired_ci95_high_vs_best_label_copy": 0.0840087890625,
+    "paired_ci95_high_vs_score_only_bagged": 0.08203125,
+    "paired_ci95_high_vs_source_rank_only_bagged": 0.0810791015625,
+    "paired_ci95_low_vs_best_label_copy": 0.0429443359375,
+    "paired_ci95_low_vs_score_only_bagged": 0.0419921875,
+    "paired_ci95_low_vs_source_rank_only_bagged": 0.0458740234375,
+    "rank_only_component_model_count": 9,
+    "score_channel_roll_hidden_control_accuracy": 0.2587890625,
+    "score_only_bagged_control_accuracy": 0.4619140625,
+    "score_only_component_model_count": 9,
+    "selected_eval_accuracy": 0.5234375,
+    "selected_minus_best_label_copy": 0.0615234375,
+    "selected_minus_candidate_roll_hidden_control": 0.1337890625,
+    "selected_minus_score_channel_roll_hidden_control": 0.2646484375,
+    "selected_minus_score_only_bagged_control": 0.0615234375,
+    "selected_minus_source_label_copy": 0.0615234375,
+    "selected_minus_source_rank_only_bagged_control": 0.0615234375,
+    "selected_minus_trained_choice_bias_label_copy": 0.0625,
+    "selected_minus_wrong_example_hidden_control": 0.1162109375,
+    "selected_minus_zero_hidden_control": 0.0615234375,
+    "selected_ridge_counts": {
+      "1000.0": 4,
+      "10000.0": 4,
+      "100000.0": 1
+    },
+    "source_label_copy_eval_accuracy": 0.4619140625,
+    "source_rank_only_bagged_control_accuracy": 0.4619140625,
+    "source_top2_oracle_accuracy": 0.7158203125,
+    "source_top4_oracle_accuracy": 1.0,
+    "split_seed_count": 3,
+    "strict_delta_required": 0.02,
+    "train_sample_seed_count": 3,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.4609375,
+    "vote_eval_accuracy": 0.5263671875,
+    "wrong_example_hidden_control_accuracy": 0.4072265625,
+    "zero_hidden_control_accuracy": 0.4619140625
+  }
+}

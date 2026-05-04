@@ -2294,5 +2294,12 @@
     "path": "references/684_hellaswag_fixed_hybrid_true_candidate_text_permutation_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the full hidden fixed-hybrid HellaSwag true candidate-text permutation gate, recording 512-row physical candidate-ending hardening, MCQ option-order boundaries, and strict separation from prefix/gist tokens, C2C, KVComm, QJL, TurboQuant, sparse crosscoders, and latent diffusion."
+  },
+  {
+    "num": 685,
+    "slug": "hellaswag_fixed_hybrid_true_candidate_text_permutation_1024_refs_20260504",
+    "path": "references/685_hellaswag_fixed_hybrid_true_candidate_text_permutation_1024_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the 1024-row full hidden fixed-hybrid HellaSwag true candidate-text permutation gate, recording doubled physical candidate-ending hardening and boundaries against MCQ option-order artifacts, prefix/gist tokens, C2C, KVComm/KVCOMM, QJL, TurboQuant, SAE, and sparse crosscoders."
   }
 ]

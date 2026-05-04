@@ -21006,3 +21006,70 @@ original candidate number. The remapped predictions stayed close to the
 original predictions, while unremapped and wrong-remapped predictions failed
 badly. That means the full hybrid hint is mostly following answer text rather
 than answer slots.
+
+## 2026-05-04 HellaSwag 1024 Fixed-Hybrid Candidate-Text Permutation And 1B Packet Systems Microbench
+
+Widened the physical candidate-text permutation hardening gate for the full
+hidden fixed-hybrid HellaSwag packet from `512` to `1024` rows and updated the
+Mac packet-ring systems microbench to include the current `1B` raw / `4B`
+framed packet profile.
+
+- permutation artifact:
+  `results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation0_1024/`;
+- paper memo:
+  `paper/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_1024_20260504.md`;
+- references:
+  `references/685_hellaswag_fixed_hybrid_true_candidate_text_permutation_1024_refs_20260504.md`;
+- systems artifact:
+  `results/source_private_mac_packet_ring_transport_microbench_20260504_1b_packet/`;
+- systems memo:
+  `paper/source_private_mac_packet_ring_transport_microbench_1b_20260504.md`;
+- scripts updated:
+  `scripts/build_source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate.py`,
+  `scripts/source_private_packet_ring_transport_microbench.c`,
+  `scripts/build_source_private_mac_packet_ring_transport_microbench.py`.
+
+Permutation gate design: use HellaSwag validation rows `0:1024`, apply one
+non-identity candidate-ending permutation per row, physically reorder candidate
+text and displayed answer labels, rerun the Qwen hidden fixed-hybrid pipeline
+from fresh score and hidden caches, then remap display-space predictions back
+to canonical candidate IDs and compare against the original same-row first1024
+prediction artifact.
+
+Outcome: the `1024`-row hidden fixed-hybrid candidate-text hardening gate
+passes its promotion flag. Original same-row fixed-hybrid accuracy is
+`0.518555`; remapped fixed-hybrid accuracy is `0.523438`, delta `+0.004883`
+with paired CI95 low `-0.004883`; canonical consistency is `0.957031`;
+unremapped fixed-hybrid accuracy collapses to `0.212891`; wrong-remap accuracy
+collapses to `0.167969`; wrong-remap CI95 high versus remapped is
+`-0.307593`; score and hidden caches are fresh (`false` cache hits). The final
+packet remains `1B` raw / `4B` framed with no source text, KV, raw hidden,
+score vector, logits, or raw scores transmitted.
+
+The permuted hidden pipeline itself is positive on the shuffled candidate text:
+selected accuracy is `0.523438` versus best label-copy `0.461914`, delta
+`+0.061523`, paired CI95 low `+0.042944`; score-channel roll hidden control is
+`0.258789`; wrong-example hidden control is `0.407227`; candidate-roll hidden
+control is `0.389648`. The Mac CPU run took `529.57s` wall time.
+
+Systems microbench outcome: the new `packet_1b_payload_4b_record` profile
+passes. At batch64 the current packet has `4.00` line bytes/request,
+`4.00` DMA bytes/request, p50 `0.654399ns/request`, and p95
+`0.655591ns/request`. Full private log movement is `8.81x` the packet p50,
+and the QJL one-bit KV floor row is `608.67x` the packet p50. This is local
+transport accounting only, not native serving throughput.
+
+Decision: promote the `1024`-row physical candidate-text permutation result as
+the strongest HellaSwag option-order hardening evidence for the fixed-hybrid
+packet. Do not claim exact all-permutation invariance, full-validation
+permutation invariance, learned common-basis transfer, or native systems
+speedup. The next exact branch should be either seed/slice repeat hardening or
+the decision-supervised SAE/crosscoder hidden-innovation packet branch with
+atom-shuffle, wrong-row, and top-atom knockout controls.
+
+Lay explanation: we doubled the shuffle test. We physically shuffled the answer
+endings for `1024` examples, reran the source pipeline, and translated the
+displayed choice back to the original choice. The method still mostly picked
+the same original answer, while wrong translations failed badly. The systems
+microbench separately checks how small the final packet is when moved through
+memory.

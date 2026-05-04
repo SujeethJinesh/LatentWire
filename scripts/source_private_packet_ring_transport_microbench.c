@@ -12,6 +12,7 @@ typedef struct {
 } profile_t;
 
 static const profile_t PROFILES[] = {
+    {"packet_1b_payload_4b_record", 4, 0, 0},
     {"packet_2b_payload_5b_record", 5, 0, 0},
     {"pq_packet_4b_payload_7b_record", 7, 0, 0},
     {"query_aware_text_14b", 14, 1, 0},

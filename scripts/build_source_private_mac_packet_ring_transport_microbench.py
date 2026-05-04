@@ -67,10 +67,15 @@ def _run(binary: pathlib.Path, *, target_bytes: int, repeats: int, min_iteration
 
 
 def _augment_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    packet_profile = (
+        "packet_1b_payload_4b_record"
+        if any(row["profile"] == "packet_1b_payload_4b_record" for row in rows)
+        else "packet_2b_payload_5b_record"
+    )
     packet_by_batch = {
         int(row["batch_size"]): row
         for row in rows
-        if row["profile"] == "packet_2b_payload_5b_record"
+        if row["profile"] == packet_profile
     }
     augmented: list[dict[str, Any]] = []
     for row in rows:
@@ -112,7 +117,8 @@ def build_microbench(
     raw = _run(binary, target_bytes=target_bytes, repeats=repeats, min_iterations=min_iterations)
     rows = _augment_rows(raw["rows"])
     by_profile_batch = {(row["profile"], int(row["batch_size"])): row for row in rows}
-    packet64 = by_profile_batch[("packet_2b_payload_5b_record", 64)]
+    packet64 = by_profile_batch[("packet_1b_payload_4b_record", 64)]
+    legacy_packet64 = by_profile_batch[("packet_2b_payload_5b_record", 64)]
     pq_packet64 = by_profile_batch[("pq_packet_4b_payload_7b_record", 64)]
     query64 = by_profile_batch[("query_aware_text_14b", 64)]
     full64 = by_profile_batch[("full_hidden_log_370b", 64)]
@@ -127,6 +133,11 @@ def build_microbench(
         "packet_batch64_dma_bytes_per_request": packet64["dma_bytes_per_request"],
         "packet_batch64_p50_ns_per_request": packet64["p50_ns_per_request"],
         "packet_batch64_p95_ns_per_request": packet64["p95_ns_per_request"],
+        "legacy_packet_batch64_record_bytes": legacy_packet64["record_bytes"],
+        "legacy_packet_batch64_line_bytes_per_request": legacy_packet64["line_bytes_per_request"],
+        "legacy_packet_batch64_dma_bytes_per_request": legacy_packet64["dma_bytes_per_request"],
+        "legacy_packet_batch64_p50_ns_per_request": legacy_packet64["p50_ns_per_request"],
+        "legacy_packet_batch64_p95_ns_per_request": legacy_packet64["p95_ns_per_request"],
         "pq_packet_batch64_record_bytes": pq_packet64["record_bytes"],
         "pq_packet_batch64_line_bytes_per_request": pq_packet64["line_bytes_per_request"],
         "pq_packet_batch64_dma_bytes_per_request": pq_packet64["dma_bytes_per_request"],
@@ -230,6 +241,7 @@ def build_microbench(
         f"- packet batch64 p95 ns/request: `{packet64['p95_ns_per_request']:.2f}`",
         f"- packet batch64 line bytes/request: `{packet64['line_bytes_per_request']:.2f}`",
         f"- packet batch64 DMA bytes/request: `{packet64['dma_bytes_per_request']:.2f}`",
+        f"- legacy 2B packet batch64 p95 ns/request: `{legacy_packet64['p95_ns_per_request']:.2f}`",
         f"- PQ packet batch64 p50 ns/request: `{pq_packet64['p50_ns_per_request']:.2f}`",
         f"- PQ packet batch64 p95 ns/request: `{pq_packet64['p95_ns_per_request']:.2f}`",
         f"- PQ packet batch64 line bytes/request: `{pq_packet64['line_bytes_per_request']:.2f}`",

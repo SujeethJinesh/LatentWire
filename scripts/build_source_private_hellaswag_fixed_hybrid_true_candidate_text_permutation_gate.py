@@ -451,7 +451,7 @@ def evaluate_gate(
     headline["smoke_pass_gate"] = bool(smoke_pass)
     headline["promotion_pass_gate"] = bool(promotion_pass)
     headline["promotion_scope"] = (
-        "512-row one-nonidentity-per-example hidden fixed-hybrid candidate-text hardening; "
+        f"{len(comparison_rows)}-row one-nonidentity-per-example hidden fixed-hybrid candidate-text hardening; "
         "not all-24 permutation invariance and not full validation"
     )
     payload = {

@@ -6,18 +6,25 @@ from scripts import build_source_private_mac_packet_ring_transport_microbench as
 def test_augment_rows_computes_same_batch_ratios() -> None:
     rows = [
         {
-            "profile": "packet_2b_payload_5b_record",
-            "record_bytes": 5,
+            "profile": "packet_1b_payload_4b_record",
+            "record_bytes": 4,
             "batch_size": 64,
             "p50_ns_per_request": 10.0,
             "p95_ns_per_request": 12.0,
         },
         {
-            "profile": "pq_packet_4b_payload_7b_record",
-            "record_bytes": 7,
+            "profile": "packet_2b_payload_5b_record",
+            "record_bytes": 5,
             "batch_size": 64,
             "p50_ns_per_request": 11.0,
             "p95_ns_per_request": 13.0,
+        },
+        {
+            "profile": "pq_packet_4b_payload_7b_record",
+            "record_bytes": 7,
+            "batch_size": 64,
+            "p50_ns_per_request": 14.0,
+            "p95_ns_per_request": 18.0,
         },
         {
             "profile": "full_hidden_log_370b",
@@ -35,6 +42,9 @@ def test_augment_rows_computes_same_batch_ratios() -> None:
     assert full["dma_bytes_per_request"] == 370.0
     assert full["ratio_p50_vs_packet_same_batch"] == 4.0
     assert full["ratio_p95_vs_packet_same_batch"] == 5.0
+    packet = next(row for row in augmented if row["profile"] == "packet_1b_payload_4b_record")
+    assert packet["line_bytes_per_request"] == 4.0
+    assert packet["dma_bytes_per_request"] == 4.0
     pq = next(row for row in augmented if row["profile"] == "pq_packet_4b_payload_7b_record")
     assert pq["line_bytes_per_request"] == 7.0
     assert pq["dma_bytes_per_request"] == 8.0
