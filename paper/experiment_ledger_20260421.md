@@ -23100,3 +23100,65 @@ Lay explanation: we compressed TinyLlama's hidden evidence into a few learned
 feature clues and taught Qwen a small correction rule. Qwen improved slightly
 over its own guesses, but removing the strongest clue improved even more. That
 means the current PCA atoms are not reliable evidence atoms yet.
+
+## 2026-05-04 Behavior-Atom Decoder Sparse Resonance Packet Gate
+
+Implemented and ran the next strict ARC-Challenge hidden-packet branch:
+behavior-supervised sparse atoms. This keeps the answer-key-forbidden
+TinyLlama hidden-innovation packet transport from the hidden-atom decoder, but
+fits the atom basis against Qwen3 target residual behavior on the train
+disagreement slice instead of fitting unsupervised PCA variance. The receiver is
+the same small target-conditioned residual decoder, now with an explicit
+same-source-choice wrong-row control and an optional zero-packet-baseline
+subtraction mode.
+
+- new script:
+  `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- primary scout:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4/`;
+- top-1 diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top1q4/`;
+- zero-baseline-subtracted diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_zsub/`;
+- memo:
+  `paper/behavior_atom_decoder_sparse_resonance_packet_gate_20260504.md`;
+- refreshed reference synthesis:
+  `references/731_behavior_atom_decoder_packet_refs_20260504.md`.
+
+Outcome: fail, but narrower than the PCA failure. The primary rank-8 top-2
+4-bit behavior-atom packet uses `7` framed bytes per row and reaches matched
+accuracy `0.375000` versus target-only `0.250000`, firing on `8/16` rows,
+helping `2`, and harming `0`. It beats atom shuffle (`0.062500`),
+coefficient shuffle (`0.125000`), generic source-row shuffle (`0.187500`),
+target-derived packet (`0.187500`), and same-byte visible text (`0.250000`).
+
+It still fails the strict source-necessity gate. Zero-source,
+same-source-choice wrong-row, and candidate roll all tie matched at `0.375000`;
+top-atom knockout and Qwen-substitution reach `0.437500`; worst required
+paired CI95 low is `-0.375000`. The top-1 diagnostic collapses to target-only
+(`0.250000`) and harms as often as it helps. The zero-baseline-subtracted
+top-2 diagnostic is cleaner but weaker: matched is `0.312500`, target-only and
+zero-source are `0.250000`, fired rows are `6/16`, helped `1`, harmed `0`, but
+same-source-choice wrong-row and top-atom knockout reach `0.375000`, and
+Qwen-substitution remains `0.437500`.
+
+Important diagnostic: behavior-supervised atoms improve the no-harm profile and
+are more task-aligned than plain PCA, but the receiver still learns a
+no-source/target-side correction component and cannot distinguish row-specific
+source evidence from same-source-choice donor packets. The failure is therefore
+not only basis variance; it is source-specific innovation and gate calibration.
+
+Decision: demote the current linear behavior-atom residual decoder as a
+positive method, but keep it as the strict behavior-atom harness. Promote only a
+receiver that explicitly models matched-vs-null packet innovation: subtract the
+zero-packet residual during training/evaluation, select gates by source-specific
+gain, and preferably train with packet corruption so matched packets remain
+stable while wrong-row and atom-ID permutation collapse.
+
+Lay explanation: we trained the clues to point at the kinds of mistakes Qwen
+makes. That helped a little and did not break answers, but fake clues from
+another row with the same TinyLlama answer worked about as well. We need the
+next version to prove the packet contains row-specific evidence, not just a
+generic correction or source-answer shortcut.

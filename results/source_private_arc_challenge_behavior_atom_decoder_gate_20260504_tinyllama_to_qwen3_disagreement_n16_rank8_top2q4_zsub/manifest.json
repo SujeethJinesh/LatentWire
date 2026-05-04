@@ -1,0 +1,41 @@
+{
+  "created_utc": "2026-05-04T19:23:37.575326+00:00",
+  "files": [
+    {
+      "bytes": 21002,
+      "path": "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_zsub/arc_challenge_behavior_atom_decoder_gate.json",
+      "sha256": "e86c592f7f58442839212d1b4d502d0ea7ad129bd4ad999e58913e508703f0c1"
+    },
+    {
+      "bytes": 2082,
+      "path": "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_zsub/arc_challenge_behavior_atom_decoder_gate.md",
+      "sha256": "cdb40188c8b5de23fb9c691c4070e833470baec8dc2e22bcefc9ee395b669257"
+    },
+    {
+      "bytes": 318753,
+      "path": "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_zsub/prediction_audit.jsonl",
+      "sha256": "384790431c444c79b05968b3d7d1fd91dd8e75ba60da7d49535ce75906604e26"
+    }
+  ],
+  "gate": "source_private_arc_challenge_behavior_atom_decoder_gate",
+  "inputs": {
+    "agreement_path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_cache_agreement.csv",
+    "packet_bits": 4,
+    "packet_rank": 8,
+    "packet_top_k": 2,
+    "qwen_test_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/qwen_test_source_scores.jsonl",
+    "qwen_validation_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/qwen_validation_source_scores.jsonl",
+    "same_byte_budget": 7,
+    "source_family_gate_dir": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu",
+    "source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+    "subtract_zero_packet_baseline": true,
+    "target_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca",
+    "test_disagreement_limit": 16,
+    "test_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl",
+    "tiny_test_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/tinyllama_test_source_scores.jsonl",
+    "tiny_validation_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/tinyllama_validation_source_scores.jsonl",
+    "train_disagreement_limit": 16,
+    "validation_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl"
+  },
+  "pass_gate": false
+}
