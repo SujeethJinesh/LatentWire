@@ -1,0 +1,403 @@
+{
+  "claim_boundaries": [
+    "Do not claim broad cross-family latent communication yet.",
+    "Do not claim sparse resonance packets as a positive method from the current PCA or sparse-atom gates.",
+    "Do not claim C2C/KV throughput, HBM, PCIe, NVLink, or energy wins without native measurements.",
+    "Frame C2C/KVComm/TurboQuant/KIVI as high-bandwidth or KV-compression baselines with different exposure regimes."
+  ],
+  "colm_v2_core_rows": [
+    {
+      "artifact": "conditional_pq_status",
+      "baseline": 16,
+      "branch": "Conditional PQ shared-schema packet",
+      "ci95_low": 0.658,
+      "decision": "Use as the COLM_v2 positive method boundary; not enough for ICLR generality.",
+      "delta": 0.658,
+      "evidence": "16/16 disjoint n500 rows pass; 4/4 budget-2 rows pass; cross-family grid is 0/28.",
+      "record_bytes": 7,
+      "score": 16,
+      "status": "promote_for_colm_v2_only"
+    },
+    {
+      "artifact": "hellaswag_fixed_hybrid",
+      "baseline": 0.526688,
+      "branch": "HellaSwag fixed hybrid candidate packet",
+      "ci95_low": 0.002888,
+      "decision": "Useful COLM_v2 systems/privacy row, but not a learned latent receiver.",
+      "delta": 0.005776,
+      "evidence": "Full cached validation pass over 10042 rows; positive on 10/10 slices.",
+      "record_bytes": 4,
+      "score": 0.532464,
+      "status": "promote_for_colm_v2_systems_baseline"
+    }
+  ],
+  "colm_v2_supporting_rows": [
+    {
+      "artifact": "conditional_pq_integrity_threshold",
+      "baseline": 0.457031,
+      "branch": "Conditional PQ scalar integrity threshold",
+      "ci95_low": -0.097656,
+      "decision": "Do not continue scalar threshold integrity on this public-zscore conditional-PQ receiver.",
+      "delta": -0.03125,
+      "evidence": "Selected negative_min_l2 threshold; source 0.425781 vs best control label_shuffled_encoder at 0.457031; source/max-corrupt accept 0.773438/1.000000.",
+      "record_bytes": 7,
+      "score": 0.425781,
+      "status": "ruled_out_simple_integrity_threshold"
+    },
+    {
+      "artifact": "target_self_oracle_soft_prefix",
+      "baseline": 0.625,
+      "branch": "Target self-resonance oracle soft-prefix capacity",
+      "ci95_low": null,
+      "decision": "Use only as capacity/headroom evidence; it optimizes on eval rows.",
+      "delta": 0.3125,
+      "evidence": "3/3 tiny oracle rows pass; best optimized agreement 0.937500 beats shuffled_optimized_prefix at 0.625000.",
+      "record_bytes": null,
+      "score": 0.9375,
+      "status": "capacity_alive_not_source_private_method"
+    },
+    {
+      "artifact": "hellaswag_complementarity_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag complementarity-frontier selector diagnostic",
+      "ci95_low": 0.0,
+      "decision": "Do not train another HellaSwag selector on the same packet fields; require a new information path.",
+      "delta": 0.0,
+      "evidence": "Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.",
+      "record_bytes": 4,
+      "score": 0.467448,
+      "status": "headroom_alive_selector_blocked"
+    },
+    {
+      "artifact": "hellaswag_multisignal_packet_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag multi-signal source packet frontier",
+      "ci95_low": -0.02347,
+      "decision": "Do not continue cached Qwen policy-prediction packets on this HellaSwag slice.",
+      "delta": -0.011719,
+      "evidence": "Selector accuracy 0.455729 vs fixed 0.467448; overrides 30 rows; best destructive control field_shuffle_multisignal_control at 0.430990.",
+      "record_bytes": 5,
+      "score": 0.455729,
+      "status": "ruled_out_cached_policy_packet"
+    }
+  ],
+  "created_utc": "2026-05-04T22:51:18.773447+00:00",
+  "current_contributions": [
+    {
+      "name": "source_private_low_rate_packets",
+      "needs_work": "broader or learned receiver evidence for ICLR",
+      "status": "alive_for_colm_v2"
+    },
+    {
+      "name": "strict_destructive_controls",
+      "needs_work": "paper integration and compact tables",
+      "status": "strong"
+    },
+    {
+      "name": "systems_byte_accounting",
+      "needs_work": "native dense-KV/C2C measurements before throughput or energy claims",
+      "status": "mac_local_ready"
+    },
+    {
+      "name": "sparse_resonance_packets",
+      "needs_work": "new mechanism beyond deterministic PQ, PCA atoms, chunk encoders, query resamplers, and source-to-prefix decoders",
+      "status": "framing_alive_method_not_yet_positive"
+    },
+    {
+      "name": "target_self_resonance_capacity_probe",
+      "needs_work": "held-out/source-private receiver that beats slots-only, zero-source, wrong-source, source-choice, and candidate-roll controls",
+      "status": "capacity_alive"
+    }
+  ],
+  "iclr_blocker_rows": [
+    {
+      "artifact": "conditional_public_zscore",
+      "baseline": 0.441406,
+      "branch": "Conditional PQ public-zscore held-out-family decoder",
+      "ci95_low": -0.085938,
+      "decision": "Do not widen public-zscore to n500/remap.",
+      "delta": 0.011719,
+      "evidence": "0/2 pass; best source-minus-control 0.011719 against label_shuffled_encoder.",
+      "record_bytes": 7,
+      "score": 0.453125,
+      "status": "ruled_out_as_cross_family_rescue"
+    },
+    {
+      "artifact": "conditional_public_svd",
+      "baseline": 0.613281,
+      "branch": "Conditional PQ public-SVD whitening held-out-family decoder",
+      "ci95_low": -0.32041,
+      "decision": "Do not continue deterministic public-basis whitening as the rescue path.",
+      "delta": -0.238281,
+      "evidence": "0/2 pass; best source-minus-control -0.238281 against permuted_codes. Worst row -0.500000.",
+      "record_bytes": 7,
+      "score": 0.375,
+      "status": "ruled_out_as_cross_family_rescue"
+    },
+    {
+      "artifact": "conditional_corruption_noop",
+      "baseline": 0.25,
+      "branch": "Conditional PQ corruption-to-noop receiver",
+      "ci95_low": 0.0,
+      "decision": "Keep as diagnostic; do not promote this receiver family.",
+      "delta": 0.0,
+      "evidence": "0/6 pass; best source-minus-control 0.000000 against label_shuffled_encoder.",
+      "record_bytes": 7,
+      "score": 0.25,
+      "status": "ruled_out_as_cross_family_rescue"
+    },
+    {
+      "artifact": "conditional_pq_integrity_threshold",
+      "baseline": 0.457031,
+      "branch": "Conditional PQ scalar integrity threshold",
+      "ci95_low": -0.097656,
+      "decision": "Do not continue scalar threshold integrity on this public-zscore conditional-PQ receiver.",
+      "delta": -0.03125,
+      "evidence": "Selected negative_min_l2 threshold; source 0.425781 vs best control label_shuffled_encoder at 0.457031; source/max-corrupt accept 0.773438/1.000000.",
+      "record_bytes": 7,
+      "score": 0.425781,
+      "status": "ruled_out_simple_integrity_threshold"
+    },
+    {
+      "artifact": "arc_sparse_resonance",
+      "baseline": 0.625,
+      "branch": "ARC sparse resonance PCA/target-aligned soft-prefix packets",
+      "ci95_low": null,
+      "decision": "Do not widen plain PCA/target-aligned soft-prefix packets.",
+      "delta": -0.375,
+      "evidence": "0/4 pass; best matched-minus-control -0.375000 with best control source_free_prefix.",
+      "record_bytes": null,
+      "score": 0.25,
+      "status": "ruled_out_current_basis_receiver"
+    },
+    {
+      "artifact": "hellaswag_protected_rival",
+      "baseline": 0.467448,
+      "branch": "HellaSwag protected top-2/rival packet",
+      "ci95_low": -0.013021,
+      "decision": "Do not rerun generic protected top-2/rival switchers.",
+      "delta": -0.005208,
+      "evidence": "Oracle 0.678385, selected decoder harms 6 vs helps 2.",
+      "record_bytes": 5,
+      "score": 0.46224,
+      "status": "ruled_out_shallow_pair_decoder"
+    },
+    {
+      "artifact": "hellaswag_official_receiver",
+      "baseline": 0.467448,
+      "branch": "HellaSwag official-train receiver-calibrated selector",
+      "ci95_low": -0.007812,
+      "decision": "Do not continue shallow linear score-feature selectors without new evidence.",
+      "delta": -0.001302,
+      "evidence": "Oracle 0.766927; eval-label diagnostic delta is only 0.002604.",
+      "record_bytes": 5,
+      "score": 0.466146,
+      "status": "weakened_near_miss"
+    },
+    {
+      "artifact": "hellaswag_harm_bucket",
+      "baseline": 0.467448,
+      "branch": "HellaSwag harm-controlled complementarity buckets",
+      "ci95_low": 0.0,
+      "decision": "Low-harm bucket receiver is saturated.",
+      "delta": 0.0,
+      "evidence": "Selected scheme no_op with 0 eligible buckets and 0 overrides.",
+      "record_bytes": 6,
+      "score": 0.467448,
+      "status": "ruled_out_no_safe_bucket"
+    },
+    {
+      "artifact": "hellaswag_top2_bucket",
+      "baseline": 0.467448,
+      "branch": "HellaSwag top1/top2 ambiguity buckets",
+      "ci95_low": 0.0,
+      "decision": "Do not continue rank/score-bin top2 buckets without a new packet field.",
+      "delta": 0.0,
+      "evidence": "Source top1/top2 oracle 0.675781, but selected bucket overrides 0 rows.",
+      "record_bytes": 4,
+      "score": 0.467448,
+      "status": "ruled_out_no_safe_bucket"
+    },
+    {
+      "artifact": "hellaswag_denoising_syndrome",
+      "baseline": 0.467448,
+      "branch": "HellaSwag denoising syndrome packet",
+      "ci95_low": -0.010417,
+      "decision": "Do not promote ridge-denoising syndrome decoder.",
+      "delta": -0.003906,
+      "evidence": "Target/hybrid oracle 0.604167; denoising helps 2 and harms 5.",
+      "record_bytes": 4,
+      "score": 0.463542,
+      "status": "ruled_out_shallow_syndrome_decoder"
+    },
+    {
+      "artifact": "hellaswag_sparse_common_basis",
+      "baseline": 0.501953,
+      "branch": "HellaSwag sparse/common-basis top2 ambiguity code",
+      "ci95_low": -0.00293,
+      "decision": "Do not claim sparse atom causality from this branch.",
+      "delta": -0.000977,
+      "evidence": "Best destructive control target_derived_source_pair_ambiguity_control at 0.501953; atom code helps 0 and harms 1.",
+      "record_bytes": 4,
+      "score": 0.500977,
+      "status": "weakened_common_basis_atom"
+    },
+    {
+      "artifact": "target_self_oracle_soft_prefix",
+      "baseline": 0.625,
+      "branch": "Target self-resonance oracle soft-prefix capacity",
+      "ci95_low": null,
+      "decision": "Use only as capacity/headroom evidence; it optimizes on eval rows.",
+      "delta": 0.3125,
+      "evidence": "3/3 tiny oracle rows pass; best optimized agreement 0.937500 beats shuffled_optimized_prefix at 0.625000.",
+      "record_bytes": null,
+      "score": 0.9375,
+      "status": "capacity_alive_not_source_private_method"
+    },
+    {
+      "artifact": "target_self_learned_encoders",
+      "baseline": 0.6875,
+      "branch": "Target self-resonance held-out learned prefix encoders",
+      "ci95_low": null,
+      "decision": "Do not run more chunk/distill/query-resampler variants without a new information path.",
+      "delta": 0.0,
+      "evidence": "1/5 pass; best agreement delta 0.000000 against slots_only_encoder; worst agreement delta -0.125000.",
+      "record_bytes": null,
+      "score": 0.6875,
+      "status": "ruled_out_current_target_native_encoder_family"
+    },
+    {
+      "artifact": "target_self_source_conditioned_receivers",
+      "baseline": 0.375,
+      "branch": "Source-conditioned target-native resonance receivers",
+      "ci95_low": null,
+      "decision": "Diagnose complementarity/gating before implementing another source-to-prefix decoder.",
+      "delta": 0.0,
+      "evidence": "0/5 pass; best accuracy delta 0.000000 against zero_source_hidden; source top1/top2 oracle reaches 1.000000.",
+      "record_bytes": null,
+      "score": 0.375,
+      "status": "ruled_out_current_source_conditioned_receiver_family"
+    },
+    {
+      "artifact": "hellaswag_complementarity_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag complementarity-frontier selector diagnostic",
+      "ci95_low": 0.0,
+      "decision": "Do not train another HellaSwag selector on the same packet fields; require a new information path.",
+      "delta": 0.0,
+      "evidence": "Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.",
+      "record_bytes": 4,
+      "score": 0.467448,
+      "status": "headroom_alive_selector_blocked"
+    },
+    {
+      "artifact": "hellaswag_multisignal_packet_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag multi-signal source packet frontier",
+      "ci95_low": -0.02347,
+      "decision": "Do not continue cached Qwen policy-prediction packets on this HellaSwag slice.",
+      "delta": -0.011719,
+      "evidence": "Selector accuracy 0.455729 vs fixed 0.467448; overrides 30 rows; best destructive control field_shuffle_multisignal_control at 0.430990.",
+      "record_bytes": 5,
+      "score": 0.455729,
+      "status": "ruled_out_cached_policy_packet"
+    }
+  ],
+  "literature_boundaries": [
+    {
+      "boundary": "C2C projects and fuses source KV cache into a target KV cache with a learned gate; LatentWire must not claim the same contribution unless it reports a different low-rate, source-private packet regime and utility-per-byte controls.",
+      "role": "closest dense KV-cache communication baseline",
+      "source": "https://openreview.net/forum?id=LeatkxrBCi",
+      "work": "Cache-to-Cache (C2C)"
+    },
+    {
+      "boundary": "DroidSpeak reuses KV caches across distributed nodes running different LLMs with the same architecture; LatentWire must separate semantic packet transfer from compatible-cache reuse and report source exposure.",
+      "role": "cross-LLM KV-cache sharing / serving baseline",
+      "source": "https://arxiv.org/abs/2411.02820",
+      "work": "DroidSpeak"
+    },
+    {
+      "boundary": "KVCOMM is training-free cross-context KV-cache reuse for multi-agent inference; LatentWire should avoid claiming general multi-agent cache communication and instead stress source-private packet transfer under destructive controls.",
+      "role": "multi-agent KV-cache communication baseline",
+      "source": "https://arxiv.org/abs/2510.12872",
+      "work": "KVCOMM"
+    },
+    {
+      "boundary": "RelayCaching accelerates collaboration by reusing decoding KV caches; LatentWire differs only if it transmits compact source evidence rather than reusing produced cache states.",
+      "role": "collaborative decoding KV-cache reuse baseline",
+      "source": "https://arxiv.org/abs/2603.13289",
+      "work": "RelayCaching"
+    },
+    {
+      "boundary": "A lightweight query transformer between frozen encoders and LMs is established; LatentWire novelty cannot be the existence of a query bottleneck.",
+      "role": "learned query bottleneck precedent",
+      "source": "https://arxiv.org/abs/2301.12597",
+      "work": "BLIP-2 / Q-Former"
+    },
+    {
+      "boundary": "Fixed latent resampling into a frozen LM is established in multimodal models; LatentWire must distinguish by source-private model-to-model transfer and destructive controls.",
+      "role": "fixed latent-token resampler and gated cross-attention precedent",
+      "source": "https://arxiv.org/abs/2204.14198",
+      "work": "Flamingo / Perceiver Resampler"
+    },
+    {
+      "boundary": "Flexible latent queries for structured inputs/outputs are prior art; use it as architectural motivation, not a novelty claim.",
+      "role": "general latent query architecture",
+      "source": "https://arxiv.org/abs/2107.14795",
+      "work": "Perceiver IO"
+    },
+    {
+      "boundary": "TurboQuant optimizes vector/KV distortion under low bit widths; LatentWire should compare against it as a source-state byte floor and avoid unmeasured throughput claims.",
+      "role": "strong online vector/KV quantization baseline",
+      "source": "https://arxiv.org/abs/2504.19874",
+      "work": "TurboQuant"
+    },
+    {
+      "boundary": "KVQuant compresses a model's own cache for long-context serving; LatentWire moves compact source evidence to another model and must report this access model difference.",
+      "role": "low-bit KV-cache compression baseline",
+      "source": "https://arxiv.org/abs/2401.18079",
+      "work": "KVQuant"
+    }
+  ],
+  "next_exact_gate": {
+    "fallback_path": "If the next method branch is not implementable Mac-locally in one turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, multi-signal packet failure, and scalar-integrity failure.",
+    "name": "new_interface_or_colm_v2_integration_gate",
+    "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
+    "primary_path": "Stop HellaSwag cached-selector work and stop conditional-PQ held-out-family rescues that only add deterministic public transforms, no-op weight sweeps, or scalar integrity thresholds. The next ICLR branch needs a qualitatively new source-causal interface, such as a learned bottleneck/resampler preflight, or a benchmark where source quality and complementarity are easier to separate from packet artifacts.",
+    "required_controls": [
+      "target_only",
+      "answer_masked_source",
+      "constrained_wrong_row_source",
+      "same_source_choice_wrong_row",
+      "candidate_roll_or_deranged_public_basis",
+      "permuted_codes",
+      "random_same_byte",
+      "opaque_slot_or_deranged_basis",
+      "source_index_rank_score_comparators_when_meaningful",
+      "same_byte_visible_text"
+    ]
+  },
+  "paper_decision": {
+    "colm_v2_claim": "LatentWire_v2 demonstrates byte-scale source-private packet transfer with strict destructive controls, plus explicit negative gates that prevent overclaiming cross-family latent communication.",
+    "iclr_claim_not_yet_supported": "Sparse Resonance Packets as a broad learned cross-model communication method.",
+    "single_highest_priority": "Backport the live ICLR triage into COLM_v2 tables/figures now, while the next ICLR method branch is redesigned around a qualitatively new source-causal interface rather than another deterministic PQ transform, scalar integrity gate, source-score selector, or target-native soft-prefix decoder."
+  },
+  "readiness": {
+    "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
+    "conditional_pq_cross_family_blocked": true,
+    "conditional_pq_same_family_alive": true,
+    "conditional_pq_simple_integrity_threshold_blocked": true,
+    "hellaswag_cached_policy_packets_blocked": true,
+    "hellaswag_complementarity_headroom_alive": true,
+    "hellaswag_current_frontier_selector_blocked": true,
+    "hellaswag_shallow_receiver_family_saturated": true,
+    "iclr": "blocked_by_lack_of_broad_or_learned_positive_receiver",
+    "source_conditioned_target_native_receivers_blocked": true,
+    "sparse_resonance_current_basis_blocked": true,
+    "target_self_resonance_capacity_alive": true,
+    "target_self_resonance_learned_encoders_blocked": true
+  },
+  "source_triage": "results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json",
+  "story": "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, and HellaSwag learned/source-conditioned resonance receivers have not produced a positive row beyond packet/source-choice/target-cache controls.",
+  "submission_gap": "ICLR needs a positive learned or broader-benchmark receiver that passes strict destructive controls. COLM_v2 can be prepared around the conditional-PQ shared-schema method, the fixed-byte HellaSwag packet row, and the target-resonance capacity-versus-held-out-failure analysis with explicit limitations."
+}

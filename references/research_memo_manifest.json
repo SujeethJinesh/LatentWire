@@ -2721,5 +2721,12 @@
     "path": "references/746_conditional_pq_integrity_threshold_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference and novelty-boundary memo for the conditional-PQ scalar integrity threshold gate, covering side-information coding, syndrome decoding, selective prediction, PQ, KIVI, TurboQuant, and the failed clean-vs-corrupt packet accept/reject test."
+  },
+  {
+    "num": 747,
+    "slug": "colm_v2_iclr_evidence_integration_refs_20260504",
+    "path": "references/747_colm_v2_iclr_evidence_integration_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source novelty-boundary memo for the COLM_v2/ICLR evidence integration table, covering C2C, KV/cache communication, Q-Former/Perceiver-style bottlenecks, TurboQuant, KVQuant, and the saturated local learned-resampler family."
   }
 ]
