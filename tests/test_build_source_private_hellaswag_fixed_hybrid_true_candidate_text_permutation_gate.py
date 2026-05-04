@@ -115,3 +115,45 @@ def test_fixed_hybrid_true_candidate_text_permutation_prepare_and_evaluate(tmp_p
     assert headline["hidden_cache_hit"] is False
     assert (tmp_path / "out" / "comparison_rows.csv").exists()
     assert (tmp_path / "out" / "component_rows.csv").exists()
+
+
+def test_seeded_candidate_text_permutation_uses_seed(tmp_path):
+    eval_rows = [_eval_row(index, index % 4) for index in range(32)]
+    eval_path = tmp_path / "eval.jsonl"
+    _write_jsonl(eval_path, eval_rows)
+
+    first = gate.prepare_permuted_eval(
+        eval_full_path=eval_path,
+        output_dir=tmp_path / "seed_a",
+        eval_slice_start=0,
+        eval_rows=len(eval_rows),
+        permutation_mode="seeded_all24_nonidentity",
+        seed=11,
+        run_date="2026-05-04",
+    )
+    second = gate.prepare_permuted_eval(
+        eval_full_path=eval_path,
+        output_dir=tmp_path / "seed_b",
+        eval_slice_start=0,
+        eval_rows=len(eval_rows),
+        permutation_mode="seeded_all24_nonidentity",
+        seed=23,
+        run_date="2026-05-04",
+    )
+
+    first_rows = [
+        json.loads(line)
+        for line in (tmp_path / "seed_a" / "hellaswag_validation_permuted_rows_0_32.jsonl").read_text().splitlines()
+    ]
+    second_rows = [
+        json.loads(line)
+        for line in (tmp_path / "seed_b" / "hellaswag_validation_permuted_rows_0_32.jsonl").read_text().splitlines()
+    ]
+    first_perms = [row["permutation_display_to_canonical"] for row in first_rows]
+    second_perms = [row["permutation_display_to_canonical"] for row in second_rows]
+
+    assert first["permutation_seed"] == 11
+    assert second["permutation_seed"] == 23
+    assert first["permutation_count"] == 23
+    assert first_perms != second_perms
+    assert all(perm != [0, 1, 2, 3] for perm in first_perms)

@@ -131,11 +131,28 @@ def _read_jsonl(path: pathlib.Path | str) -> list[dict[str, Any]]:
 
 
 def _permutations(mode: str) -> list[tuple[int, int, int, int]]:
-    if mode == "fixed8_nonidentity":
+    if mode in {"fixed8_nonidentity", "seeded_fixed8_nonidentity"}:
         return list(FIXED8_NONIDENTITY)
-    if mode == "all24_nonidentity":
+    if mode in {"all24_nonidentity", "seeded_all24_nonidentity"}:
         return [tuple(perm) for perm in itertools.permutations(range(4), 4) if tuple(perm) != (0, 1, 2, 3)]
     raise ValueError(f"unknown permutation mode {mode!r}")
+
+
+def _select_permutation_index(
+    *,
+    mode: str,
+    local_index: int,
+    global_index: int,
+    row_id: str,
+    seed: int,
+    permutation_count: int,
+) -> int:
+    if permutation_count <= 0:
+        raise ValueError("at least one permutation is required")
+    if mode.startswith("seeded_"):
+        digest = hashlib.sha256(f"{seed}:{global_index}:{row_id}".encode("utf-8")).digest()
+        return int.from_bytes(digest[:8], byteorder="big", signed=False) % permutation_count
+    return local_index % permutation_count
 
 
 def _inverse(display_to_canonical: tuple[int, ...] | list[int]) -> list[int]:
@@ -165,7 +182,6 @@ def prepare_permuted_eval(
     seed: int = 20260503,
     run_date: str | None = None,
 ) -> dict[str, Any]:
-    del seed
     run_date = run_date or dt.date.today().isoformat()
     output_dir = _resolve(output_dir)
     source_rows = _load_eval_slice(eval_full_path, start=eval_slice_start, rows=eval_rows)
@@ -173,19 +189,29 @@ def prepare_permuted_eval(
     permuted_rows: list[dict[str, Any]] = []
     mapping_rows: list[dict[str, Any]] = []
     for local_index, source in enumerate(source_rows):
-        display_to_canonical = permutations[local_index % len(permutations)]
+        global_index = int(eval_slice_start + local_index)
+        original_id = str(source["id"])
+        permutation_id = _select_permutation_index(
+            mode=permutation_mode,
+            local_index=local_index,
+            global_index=global_index,
+            row_id=original_id,
+            seed=seed,
+            permutation_count=len(permutations),
+        )
+        display_to_canonical = permutations[permutation_id]
         canonical_to_display = _inverse(display_to_canonical)
         old_answer = int(source["answer_index"])
         new_choices = [source["choices"][canonical_index] for canonical_index in display_to_canonical]
         display_answer = int(canonical_to_display[old_answer])
-        original_id = str(source["id"])
-        new_id = f"{original_id}_permtext_{eval_slice_start + local_index}_{local_index % len(permutations)}"
+        new_id = f"{original_id}_permtext_{global_index}_{permutation_id}"
         row = dict(source)
         row["id"] = new_id
         row["original_id"] = original_id
         row["original_content_id"] = str(source["content_id"])
         row["original_answer_index"] = old_answer
-        row["permutation_id"] = int(local_index % len(permutations))
+        row["permutation_id"] = int(permutation_id)
+        row["permutation_seed"] = int(seed)
         row["permutation_display_to_canonical"] = list(display_to_canonical)
         row["permutation_canonical_to_display"] = canonical_to_display
         row["choices"] = new_choices
@@ -199,7 +225,8 @@ def prepare_permuted_eval(
                 "original_row_id": original_id,
                 "original_content_id": str(source["content_id"]),
                 "permuted_content_id": str(row["content_id"]),
-                "permutation_id": int(local_index % len(permutations)),
+                "permutation_id": int(permutation_id),
+                "permutation_seed": int(seed),
                 "permutation_display_to_canonical": " ".join(str(value) for value in display_to_canonical),
                 "permutation_canonical_to_display": " ".join(str(value) for value in canonical_to_display),
                 "canonical_answer_index": old_answer,
@@ -222,6 +249,8 @@ def prepare_permuted_eval(
         "eval_slice_end_exclusive": int(eval_slice_start + eval_rows),
         "eval_rows": int(eval_rows),
         "permutation_mode": permutation_mode,
+        "permutation_seed": int(seed),
+        "permutation_count": len(permutations),
         "permuted_eval_path": _display_path(eval_path),
         "permuted_eval_sha256": _sha256_file(eval_path),
         "mapping_rows_path": _display_path(mapping_path),
@@ -551,7 +580,16 @@ def main() -> None:
     parser.add_argument("--eval-full-path", type=pathlib.Path, default=DEFAULT_EVAL)
     parser.add_argument("--eval-slice-start", type=int, default=0)
     parser.add_argument("--eval-rows", type=int, default=128)
-    parser.add_argument("--permutation-mode", choices=("fixed8_nonidentity", "all24_nonidentity"), default="fixed8_nonidentity")
+    parser.add_argument(
+        "--permutation-mode",
+        choices=(
+            "fixed8_nonidentity",
+            "all24_nonidentity",
+            "seeded_fixed8_nonidentity",
+            "seeded_all24_nonidentity",
+        ),
+        default="fixed8_nonidentity",
+    )
     parser.add_argument("--seed", type=int, default=20260503)
     parser.add_argument("--original-predictions", type=pathlib.Path, default=DEFAULT_ORIGINAL_PREDICTIONS)
     parser.add_argument("--permuted-predictions", type=pathlib.Path)

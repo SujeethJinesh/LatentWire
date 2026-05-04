@@ -21073,3 +21073,62 @@ displayed choice back to the original choice. The method still mostly picked
 the same original answer, while wrong translations failed badly. The systems
 microbench separately checks how small the final packet is when moved through
 memory.
+
+## 2026-05-04 HellaSwag Seeded Candidate-Text Permutation Gate
+
+Fixed the HellaSwag physical candidate-text permutation scheduler so `--seed`
+is no longer a no-op and ran a seed-controlled `1024`-row full hidden
+fixed-hybrid permutation gate.
+
+- script updated:
+  `scripts/build_source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate.py`;
+- test updated:
+  `tests/test_build_source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_seed_gate_20260504_validation0_1024_seed314159/`;
+- paper memo:
+  `paper/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_seed_gate_20260504.md`;
+- references:
+  `references/686_hellaswag_fixed_hybrid_true_candidate_text_permutation_seed_refs_20260504.md`.
+
+Code change: added seeded permutation modes
+`seeded_fixed8_nonidentity` and `seeded_all24_nonidentity`. The latter chooses
+one of the `23` non-identity candidate permutations per row using a stable
+hash of seed, global row index, and row ID. This is not all-24-per-example
+expansion; it is a real seeded one-per-row schedule.
+
+Gate design: use HellaSwag validation rows `0:1024`, draw one non-identity
+candidate-ending permutation per row from all `23` non-identity permutations
+with seed `314159`, physically reorder candidate text and displayed labels,
+rerun the Qwen hidden fixed-hybrid pipeline from fresh score and hidden caches,
+then remap display-space predictions back to canonical candidate IDs and
+compare against the original same-row first1024 prediction artifact.
+
+Outcome: the seeded permutation-schedule hardening gate passes its promotion
+flag. Original same-row fixed-hybrid accuracy is `0.518555`; remapped
+fixed-hybrid accuracy is `0.523438`, delta `+0.004883` with paired CI95 low
+`-0.005859`; canonical consistency is `0.964844`; unremapped fixed-hybrid
+accuracy collapses to `0.208008`; wrong-remap accuracy collapses to
+`0.157227`; wrong-remap CI95 high versus remapped is `-0.318359`; score and
+hidden caches are fresh (`false` cache hits). The final packet remains `1B`
+raw / `4B` framed with no source text, KV, raw hidden, score vector, logits, or
+raw scores transmitted.
+
+The seeded permuted hidden pipeline itself is positive on the shuffled
+candidate text: selected accuracy is `0.523438` versus best label-copy
+`0.461914`, delta `+0.061523`, paired CI95 low `+0.041943`; score-channel roll
+hidden control is `0.245117`; wrong-example hidden control is `0.419922`; and
+candidate-roll hidden control is `0.403320`. The Mac CPU run took `521.89s`
+wall time.
+
+Decision: promote this as seed/permutation-schedule hardening for the full
+hidden fixed-hybrid HellaSwag packet. Do not claim all-24-per-example
+invariance, full-validation permutation invariance, learned common-basis
+transfer, or native systems speedup. The next exact gate is the non-overlapping
+HellaSwag validation `1024:2048` physical candidate-text permutation slice with
+fresh caches and the correct original prediction artifact.
+
+Lay explanation: before this update, changing the shuffle seed did not actually
+change the shuffle. We fixed that, reran a genuinely different rowwise shuffle
+schedule, and the tiny fixed-hybrid packet still mostly followed answer text
+after translating displayed choices back to original choices.
