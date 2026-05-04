@@ -21791,3 +21791,61 @@ harder helped compared with raw chunk compression, but a generic target-only
 slot cache still did better. So the problem is not that soft tokens cannot work;
 it is that this direct student is not yet learning a reusable communication
 interface.
+
+## 2026-05-04 Target Self-Resonance HellaSwag Query-Resampler Gate
+
+Implemented and ran the target self-resonance query-resampler gate on official
+HellaSwag train-to-validation rows with frozen Qwen2.5-0.5B-Instruct.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_query_resampler_gate.py`;
+- tests:
+  `tests/test_build_target_self_resonance_hellaswag_query_resampler_gate.py`;
+- artifacts:
+  `results/target_self_resonance_hellaswag_query_resampler_gate_20260504_qwen05_train32_validation72_80/`,
+  `results/target_self_resonance_hellaswag_query_resampler_gate_20260504_qwen05_train64_validation72_80/`;
+- paper memo:
+  `paper/target_self_resonance_hellaswag_query_resampler_gate_20260504.md`;
+- references:
+  `references/698_target_self_resonance_query_resampler_refs_20260504.md`.
+
+Gate design: train learned query slots that cross-attend over target prompt
+token embeddings and emit `8` target-native soft slots. The compressed target
+path does not receive the original HellaSwag context text; it receives only the
+soft slots, a fixed anchor, and each candidate continuation. Controls are
+chunk-mean prefix, slots-only learned target cache, zero prefix, same-norm
+random prefix, wrong-row shuffled query-resampler prefix, and candidate-score
+derangement.
+
+Implementation note: the first focused run exposed a nonfinite-loss failure.
+The committed gate stabilizes attention logits, clamps/nan-cleans soft-prefix
+outputs, normalizes rows to the target embedding RMS, and logs nonfinite
+score/KL counts as pass blockers.
+
+Outcome: negative. On validation `72:80` with `32` train rows, the
+query-resampler improves KL over chunk and slots-only but fails agreement and
+barely separates from the wrong-row query control: query `0.500000`/`0.244325`,
+chunk `0.625000`/`0.426502`, slots-only `0.000000`/`0.393548`, shuffled query
+`0.500000`/`0.252318`. A bounded `64`-train-row rescue fails harder: query
+`0.500000`/`0.557950`, chunk `0.625000`/`0.426502`, slots-only
+`0.500000`/`0.198077`. Query attention entropy is diffuse in both runs,
+returning to approximately uniform in the rescue.
+
+Decision: demote plain target-only query resampling. The oracle target
+self-resonance branch still proves headroom, but reusable learned interfaces
+must attack the control-separation problem directly. The next highest-priority
+branch is a source-conditioned common-basis / relative-feature packet with
+wrong-source, shuffled-anchor, target-only, and candidate-deranged controls.
+
+Systems note: this gate preserves byte and resource accounting but is not a
+systems win. The emitted `8` Qwen slots are `14,336` raw fp16 bytes; the default
+query-resampler has `928,512` parameters and the Mac run used about `3425` MiB
+peak RSS. Native systems claims still need source-present quality gains at the
+same budget and comparisons against C2C, KVComm, vLLM/SGLang, and
+KIVI/QJL/TurboQuant-style compression.
+
+Lay explanation: this experiment asked whether a small module could compress a
+question into eight hidden summary tokens that let the model answer without the
+original question. It fit the training examples, but on new examples the hidden
+tokens were not reliably tied to the right question. A wrong-question hidden
+token often worked almost as well, so this is not yet real communication.
