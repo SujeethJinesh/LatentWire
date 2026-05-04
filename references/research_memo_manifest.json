@@ -2364,5 +2364,12 @@
     "path": "references/694_hellaswag_qwen_to_phi_receiver_calibrated_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the near-miss failed HellaSwag Qwen-to-Phi official-train receiver-calibrated gate, recording selective prediction, deferral/risk control, side-information coding, model-to-model baselines, prefix/gist, KV compression, TurboQuant/QJL/KIVI/KVQuant, and diffusion-refinement boundaries."
+  },
+  {
+    "num": 695,
+    "slug": "hellaswag_qwen_to_phi_harm_controlled_bucket_refs_20260504",
+    "path": "references/695_hellaswag_qwen_to_phi_harm_controlled_bucket_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the failed no-op HellaSwag Qwen-to-Phi harm-controlled bucket gate, recording boundaries against selective prediction, learning-to-defer, conformal risk control, Slepian-Wolf/Wyner-Ziv side-information coding, C2C/KVComm, prefix/gist, and TurboQuant/QJL/KIVI/KVQuant systems baselines."
   }
 ]

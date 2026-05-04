@@ -21572,3 +21572,57 @@ Lay explanation: this time Phi got to practice too. It scored the training
 questions, and the learned rule saw Qwen's safe answer, Qwen's backup, and
 Phi's own answer scores. On new questions it almost matched the safe Qwen
 packet, but it still made one more bad change than good changes overall.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Harm-Controlled Bucket Gate
+
+Implemented and ran the harm-controlled bucket accept/defer gate on the cached
+Qwen-to-Phi HellaSwag validation `1024:2048` surface.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_harm_controlled_bucket_gate.py`;
+- tests:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_harm_controlled_bucket_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_harm_controlled_bucket_gate_20260504_validation1024_2048/`;
+- paper memo:
+  `paper/source_private_hellaswag_qwen_to_phi_harm_controlled_bucket_gate_20260504.md`;
+- references:
+  `references/695_hellaswag_qwen_to_phi_harm_controlled_bucket_refs_20260504.md`.
+
+Gate design: default to fixed Qwen hybrid and accept a Qwen-rival or Phi-top1
+override only if the official-train fit split identifies a sufficiently
+supported low-harm bucket and the official-train dev split selects that
+configuration. Unlike the previous linear receiver, this gate does not expose
+raw Qwen score vectors to the receiver. Qwen scores are used source-side only
+to emit quantized packet fields: hybrid/rival candidate IDs, Qwen margin bin,
+Qwen rival-advantage bin, selected-margin bin, Qwen top1 relation, and Qwen
+mean relation. Phi scores remain receiver-local side information. The packet is
+`3B` raw / `6B` framed with no source text, KV, hidden vector, raw scores, or
+logits transmitted.
+
+Outcome: the gate fails by selecting no safe override buckets. Fixed Qwen
+hybrid is `0.467448`; harm-controlled bucket packet is exactly tied at
+`0.467448`; delta `0.000000`; CI95 low `0.000000`; overrides/helps/harms are
+`0/0/0`; selected scheme is `no_op`; selected eligible bucket count is `0`.
+The best non-noop official-dev configurations each made one override and
+harmed it (`0` helps, `1` harm, delta `-0.002688`). The hybrid/rival/Phi oracle
+remains `0.766927` with `230` oracle helps, so the candidate set still has
+large unrealized headroom.
+
+Controls: source-score-row-shuffle before encoding ties fixed hybrid only
+because the selected rule is no-op. Label permutation, source-row shuffle,
+code-value permutation, random same-byte source, and candidate-roll source
+collapse below fixed hybrid.
+
+Decision: strongly weaken the current shallow receiver family. Protected-rival
+packets, official-train source dictionaries, receiver-calibrated linear
+models, and now harm-controlled buckets all fail to turn the large oracle into
+a positive train-only receiver. The next exact gate should move to a different
+interface: target self-resonance / self-compression first, or a
+decision-supervised sparse/common-dictionary intervention with atom-shuffle,
+wrong-row, target-cache-only, and top-atom knockout controls.
+
+Lay explanation: Qwen sent a tiny message naming its safe answer, its backup
+answer, and a few coarse confidence levels. Phi then used a cautious
+training-learned rule that should only switch in buckets where switching
+usually helps. The rule found no safe buckets, so it made no switches.
