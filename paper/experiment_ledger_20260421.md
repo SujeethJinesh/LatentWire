@@ -21345,3 +21345,60 @@ Lay explanation: we gave Phi a tiny correction clue from Qwen and asked it to
 use that clue plus its own answer scores to repair the Qwen hint. The clue
 was not random: wrong-example and permuted clues failed. But it still made more
 bad repairs than good ones, so it is not the ICLR method yet.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Oracle Switch Decomposition Gate
+
+Implemented and ran the Qwen-to-Phi selective oracle-switch decomposition gate
+with Fourier/Helmert source score-contrast packet modes.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_oracle_switch_decomposition_gate.py`;
+- tests:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_oracle_switch_decomposition_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_oracle_switch_decomposition_gate_20260504_validation1024_2048/`;
+- paper memo:
+  `paper/source_private_hellaswag_qwen_to_phi_oracle_switch_decomposition_gate_20260504.md`;
+- references:
+  `references/691_hellaswag_qwen_to_phi_oracle_switch_refs_20260504.md`.
+
+Gate design: use the cached Qwen packet rows, Phi target score caches, and the
+aligned Qwen source score cache for HellaSwag validation `1024:2048`. The
+source packet encodes either the existing fixed-hybrid policy or a
+Helmert/Fourier score-contrast syndrome. The receiver learns a conservative
+switch controller: default to fixed Qwen hybrid and override to Phi only when
+predicted target advantage is positive. Fit/select/eval remains `64/64/384`
+per `512`-row slice, with `768` eval rows total.
+
+Outcome: the gate fails and is a strong decomposition result. Fixed Qwen hybrid
+is `0.467448`; target-or-hybrid oracle is `0.604167`; Qwen source-score top-2
+oracle is `0.675781`; and target+hybrid+Qwen-top2 oracle is `0.776042`. Despite
+that headroom, the selected train/select switcher reaches only `0.460938`,
+delta `-0.006510`, CI95 low `-0.015625`, with `3` helps and `8` harms across
+`21` overrides. The forced nonzero switcher is identical. Even the
+eval-label-selected switcher diagnostic ties fixed hybrid at `0.467448` with
+`5` helps and `5` harms.
+
+Oracle decomposition on eval: both Qwen hybrid and Phi correct on `97` rows;
+Qwen hybrid only correct on `262`; Phi only correct on `105`; both wrong on
+`304`; Qwen hybrid and Phi disagree on `551`.
+
+Controls: source-row shuffle, source-score row shuffle before encoding,
+code-value permutation, candidate-roll code, Fourier sign flip, Fourier basis
+permutation, random same-byte code, and label-permutation switcher are all
+reported. The best destructive control ties fixed hybrid because the frozen
+switch rule performs no net useful switch under that corruption, so the pass
+gate remains false.
+
+Decision: weaken shallow selective-deferral, Fourier score-contrast, and
+protected-frontier switchers over the current packet family. The live headroom
+is no longer "can Phi decide when to override Qwen from this tiny switch
+packet?"; the answer is no on this surface. The next exact gate should transmit
+the candidate-pair/top-rival evidence more directly or train a richer
+official-train source-code dictionary before another receiver switcher is
+attempted.
+
+Lay explanation: Qwen's top two score choices often contain the right answer,
+but our tiny score-pattern switch packet did not tell Phi when to trust that
+information. It made more bad switches than good switches, and even a cheating
+threshold diagnostic could not beat the fixed Qwen hint.

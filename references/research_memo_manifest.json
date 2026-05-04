@@ -2336,5 +2336,12 @@
     "path": "references/690_hellaswag_qwen_to_phi_denoising_syndrome_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the failed HellaSwag Qwen-to-Phi denoising syndrome packet gate, recording boundaries against rate-distortion, Wyner-Ziv/Slepian-Wolf syndrome coding, diffusion/DiT denoising, TurboQuant/QJL/KV compression, prefix/gist tokens, and KV/hidden communication systems."
+  },
+  {
+    "num": 691,
+    "slug": "hellaswag_qwen_to_phi_oracle_switch_refs_20260504",
+    "path": "references/691_hellaswag_qwen_to_phi_oracle_switch_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the failed HellaSwag Qwen-to-Phi selective oracle-switch and Fourier score-contrast packet gate, recording learning-to-defer, selective prediction, calibration, Wyner-Ziv, MoE routing, prefix/gist, C2C/KVComm, and quantized systems boundaries."
   }
 ]
