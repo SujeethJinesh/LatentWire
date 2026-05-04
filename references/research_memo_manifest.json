@@ -2553,5 +2553,12 @@
     "path": "references/722_sparse_resonance_packet_competitor_refresh_20260504.md",
     "status": "local_memo",
     "reason": "Fresh targeted literature refresh for the Sparse Resonance Packet pivot, recording primary C2C/KVComm/DroidSpeak/LatentMAS/activation-communication/KV compression/systems baselines, exact claims, byte and memory-movement formulas, table columns, and strongest reviewer objections."
+  },
+  {
+    "num": 723,
+    "slug": "strict_source_private_benchmark_reviewer_risk_refs_20260504",
+    "path": "references/723_strict_source_private_benchmark_reviewer_risk_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Fresh targeted benchmark and reviewer-risk memo for strict source-private ARC/OpenBookQA/HellaSwag evaluation, recording destructive controls, leakage threats, paired uncertainty, MCQ option-bias risks, utility-per-byte reporting, and negative-claim boundaries for COLM_v2."
   }
 ]
