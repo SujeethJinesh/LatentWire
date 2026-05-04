@@ -64,6 +64,7 @@ CONTROL_CONDITIONS = (
     "source_row_shuffle",
     "same_norm_noise",
     "train_mean_source",
+    "atom_shuffle",
     "label_shuffled",
     "candidate_roll_source",
     "candidate_roll",
@@ -84,6 +85,7 @@ CONTRASTIVE_CONTROL_CHOICES = (
     "zero_source",
     "shuffled_source",
     "same_norm_noise",
+    "atom_shuffle",
     "candidate_roll_source",
     "candidate_score_roll_source",
 )
@@ -103,6 +105,9 @@ class SoftPrefixConfig:
     contrastive_margin: float = 0.05
     contrastive_loss_cap: float = 0.5
     contrastive_controls: tuple[str, ...] = ()
+    sparse_packet_rank: int = 16
+    sparse_packet_top_k: int = 4
+    sparse_packet_bits: int = 4
 
 
 class SourceSoftPrefixConnector(torch.nn.Module):
@@ -403,6 +408,9 @@ def _selected_choice_features(
     local_files_only: bool,
     fit_indices: Sequence[int] | None = None,
     innovation_ridge: float = 10.0,
+    sparse_packet_rank: int = 16,
+    sparse_packet_top_k: int = 4,
+    sparse_packet_bits: int = 4,
 ) -> tuple[torch.Tensor, dict[str, Any]]:
     residualized = source_feature_mode.endswith("_residual")
     base_mode = source_feature_mode.removesuffix("_residual")
@@ -454,6 +462,8 @@ def _selected_choice_features(
         "hf_choice_hidden_score_candidate_pool",
         "hf_choice_hidden_public_innovation_candidate_pool",
         "hf_choice_hidden_score_public_innovation_candidate_pool",
+        "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool",
+        "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool",
     }:
         pooled, metadata = _choice_candidate_pool_features(
             rows,
@@ -468,6 +478,9 @@ def _selected_choice_features(
             source_token_pool_size=source_token_pool_size,
             fit_indices=fit_indices,
             innovation_ridge=innovation_ridge,
+            sparse_packet_rank=sparse_packet_rank,
+            sparse_packet_top_k=sparse_packet_top_k,
+            sparse_packet_bits=sparse_packet_bits,
             local_files_only=local_files_only,
         )
         return torch.tensor(pooled.astype(np.float32)), metadata
@@ -630,6 +643,99 @@ def _public_candidate_innovation_features(
     }
 
 
+def _sparse_pca_packet_features(
+    candidate_features: np.ndarray,
+    *,
+    fit_flat_indices: np.ndarray,
+    rank: int,
+    top_k: int,
+    quant_bits: int,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    features = np.asarray(candidate_features, dtype=np.float64)
+    if features.ndim != 2:
+        raise ValueError("candidate_features must be a [candidate_count, dim] matrix")
+    fit = np.asarray(fit_flat_indices, dtype=np.int64)
+    if fit.size == 0:
+        raise ValueError("fit_flat_indices must not be empty")
+    if rank < 1:
+        raise ValueError("sparse_packet_rank must be at least 1")
+    if top_k < 1:
+        raise ValueError("sparse_packet_top_k must be at least 1")
+    if quant_bits < 1:
+        raise ValueError("sparse_packet_bits must be at least 1")
+
+    fit_features = features[fit]
+    mean = fit_features.mean(axis=0, keepdims=True)
+    centered = features - mean
+    centered_fit = centered[fit]
+    _, singular_values, vt = np.linalg.svd(centered_fit, full_matrices=False)
+    actual_rank = int(min(rank, vt.shape[0], vt.shape[1]))
+    if actual_rank < 1:
+        raise ValueError("could not fit a non-empty PCA basis")
+    basis = vt[:actual_rank]
+    coeffs = centered @ basis.T
+    top_k = int(min(top_k, actual_rank))
+
+    sparse = np.zeros_like(coeffs)
+    if top_k >= actual_rank:
+        sparse[:] = coeffs
+        top_indices = np.tile(np.arange(actual_rank, dtype=np.int64), (coeffs.shape[0], 1))
+    else:
+        top_indices = np.argpartition(np.abs(coeffs), -top_k, axis=1)[:, -top_k:]
+        row_indices = np.arange(coeffs.shape[0])[:, None]
+        sparse[row_indices, top_indices] = coeffs[row_indices, top_indices]
+
+    fit_abs = np.abs(sparse[fit])
+    scale = float(fit_abs.max()) if fit_abs.size else 0.0
+    signed_levels = int((2 ** (quant_bits - 1)) - 1)
+    if scale <= 1e-12 or signed_levels < 1:
+        quantized = np.zeros_like(sparse, dtype=np.int64)
+        dequantized = np.zeros_like(sparse)
+        step = 0.0
+    else:
+        step = scale / float(signed_levels)
+        quantized = np.clip(np.rint(sparse / step), -signed_levels, signed_levels).astype(np.int64)
+        dequantized = quantized.astype(np.float64) * step
+
+    atom_id_bits = int(math.ceil(math.log2(max(actual_rank, 2))))
+    packet_bits_per_candidate = int(top_k * (atom_id_bits + quant_bits))
+    nonzero_counts = (quantized != 0).sum(axis=1)
+    energy = np.square(coeffs).sum(axis=1)
+    sparse_energy = np.square(dequantized).sum(axis=1)
+    fit_energy_ratio = float(
+        np.mean(
+            np.divide(
+                sparse_energy[fit],
+                np.maximum(energy[fit], 1e-12),
+                out=np.zeros_like(sparse_energy[fit]),
+                where=energy[fit] > 1e-12,
+            )
+        )
+    )
+    explained = np.square(singular_values[:actual_rank])
+    total = float(np.square(singular_values).sum())
+    explained_ratio = float(explained.sum() / total) if total > 1e-12 else 0.0
+    return dequantized.astype(np.float64, copy=False), {
+        "kind": "train_fit_sparse_pca_packet_coordinates",
+        "fit_candidate_count": int(fit.size),
+        "source_feature_dim": int(features.shape[1]),
+        "packet_rank": int(actual_rank),
+        "requested_packet_rank": int(rank),
+        "top_k": int(top_k),
+        "quant_bits": int(quant_bits),
+        "atom_id_bits": int(atom_id_bits),
+        "packet_bits_per_candidate": int(packet_bits_per_candidate),
+        "packet_bytes_per_candidate": float(packet_bits_per_candidate / 8.0),
+        "quant_step": float(step),
+        "quant_scale": float(scale),
+        "fit_mean_nonzero_coefficients": float(nonzero_counts[fit].mean()) if fit.size else 0.0,
+        "fit_sparse_energy_ratio": float(fit_energy_ratio),
+        "pca_explained_variance_ratio": float(explained_ratio),
+        "singular_value_max": float(singular_values[0]) if singular_values.size else 0.0,
+        "singular_value_min_retained": float(singular_values[actual_rank - 1]) if singular_values.size else 0.0,
+    }
+
+
 def _choice_candidate_pool_features(
     rows: list[arc_gate.ArcRow],
     source_predictions: list[int],
@@ -645,6 +751,9 @@ def _choice_candidate_pool_features(
     local_files_only: bool,
     fit_indices: Sequence[int] | None = None,
     innovation_ridge: float = 10.0,
+    sparse_packet_rank: int = 16,
+    sparse_packet_top_k: int = 4,
+    sparse_packet_bits: int = 4,
 ) -> tuple[np.ndarray, dict[str, Any]]:
     residualized = source_feature_mode.endswith("_residual")
     base_mode = source_feature_mode.removesuffix("_residual")
@@ -661,10 +770,18 @@ def _choice_candidate_pool_features(
         "hf_choice_hidden_score_candidate_pool",
         "hf_choice_hidden_public_innovation_candidate_pool",
         "hf_choice_hidden_score_public_innovation_candidate_pool",
+        "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool",
+        "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool",
     }
     innovation_base_modes = {
         "hf_choice_hidden_public_innovation_candidate_pool",
         "hf_choice_hidden_score_public_innovation_candidate_pool",
+        "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool",
+        "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool",
+    }
+    sparse_packet_base_modes = {
+        "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool",
+        "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool",
     }
     if base_mode in hidden_base_modes:
         flat_hidden, hidden_meta = _hf_choice_hidden_features(
@@ -687,6 +804,16 @@ def _choice_candidate_pool_features(
                 ridge=innovation_ridge,
             )
             innovation_meta = {**innovation_meta, "public_metadata": public_meta}
+            if base_mode in sparse_packet_base_modes:
+                sparse_packet_flat, sparse_packet_meta = _sparse_pca_packet_features(
+                    flat_hidden,
+                    fit_flat_indices=_flat_candidate_indices_for_rows(rows, fit_indices),
+                    rank=sparse_packet_rank,
+                    top_k=sparse_packet_top_k,
+                    quant_bits=sparse_packet_bits,
+                )
+                flat_hidden = sparse_packet_flat
+                innovation_meta = {**innovation_meta, "sparse_packet_metadata": sparse_packet_meta}
         hidden_rows = []
         offset = 0
         for row in rows:
@@ -722,6 +849,17 @@ def _choice_candidate_pool_features(
             score_row = _source_selection_score_rows([row], [source_predictions[row_index]])[0]
             row_features = np.concatenate([hidden_rows[row_index], score_row], axis=1)
             feature_kind = "hf_choice_hidden_score_public_innovation_candidate_pool"
+        elif base_mode == "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool":
+            if hidden_rows is None:
+                raise ValueError("hidden rows were not loaded")
+            row_features = hidden_rows[row_index]
+            feature_kind = "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool"
+        elif base_mode == "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool":
+            if hidden_rows is None:
+                raise ValueError("hidden rows were not loaded")
+            score_row = _source_selection_score_rows([row], [source_predictions[row_index]])[0]
+            row_features = np.concatenate([hidden_rows[row_index], score_row], axis=1)
+            feature_kind = "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool"
         else:
             raise ValueError(f"unknown candidate pool mode {source_feature_mode!r}")
         pooled_rows.append(
@@ -747,10 +885,12 @@ def _choice_candidate_pool_features(
             "cached_choice_score_pool",
             "hf_choice_hidden_score_candidate_pool",
             "hf_choice_hidden_score_public_innovation_candidate_pool",
+            "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool",
         },
         "hidden_metadata": hidden_meta,
         "innovation_metadata": innovation_meta,
         "feature_dim": int(pooled_rows[0].shape[-1]) if pooled_rows else int(feature_dim),
+        "sparse_packet": innovation_meta.get("sparse_packet_metadata", {}),
     }
 
 
@@ -1040,6 +1180,12 @@ def _candidate_score_roll_source_summary(source: torch.Tensor) -> torch.Tensor |
     return rolled
 
 
+def _atom_shuffle_source_summary(source: torch.Tensor) -> torch.Tensor | None:
+    if source.numel() == 0 or source.dim() < 1 or source.shape[-1] < 2:
+        return None
+    return torch.roll(source, shifts=1, dims=-1)
+
+
 def _fit_source_control_variant(
     source_summary: torch.Tensor,
     *,
@@ -1061,6 +1207,8 @@ def _fit_source_control_variant(
         generator = torch.Generator(device="cpu").manual_seed(int(seed) * 2003 + int(row_index) * 101 + int(epoch))
         noise = torch.randn(tuple(base.shape), generator=generator).to(device=device, dtype=base.dtype)
         return noise / noise.norm().clamp_min(1e-6) * base.norm().clamp_min(1e-6)
+    if control == "atom_shuffle":
+        return _atom_shuffle_source_summary(base)
     if control == "candidate_roll_source":
         return _candidate_roll_source_summary(base)
     if control == "candidate_score_roll_source":
@@ -1436,6 +1584,9 @@ def run_preflight(
     source_hidden_layer: int,
     source_token_pool_size: int,
     innovation_ridge: float,
+    sparse_packet_rank: int,
+    sparse_packet_top_k: int,
+    sparse_packet_bits: int,
     local_files_only: bool,
     prefix_len: int,
     hidden_dim: int,
@@ -1487,6 +1638,9 @@ def run_preflight(
         source_token_pool_size=source_token_pool_size,
         fit_indices=fit_indices,
         innovation_ridge=innovation_ridge,
+        sparse_packet_rank=sparse_packet_rank,
+        sparse_packet_top_k=sparse_packet_top_k,
+        sparse_packet_bits=sparse_packet_bits,
         local_files_only=local_files_only,
     )
     target_summary, target_meta = _target_public_features(rows, feature_dim=target_feature_dim)
@@ -1554,6 +1708,9 @@ def run_preflight(
         contrastive_margin=contrastive_margin,
         contrastive_loss_cap=contrastive_loss_cap,
         contrastive_controls=tuple(contrastive_controls),
+        sparse_packet_rank=sparse_packet_rank,
+        sparse_packet_top_k=sparse_packet_top_k,
+        sparse_packet_bits=sparse_packet_bits,
     )
     torch.manual_seed(seed)
     source_summary = source_summary.to(resolved_train_device)
@@ -1644,6 +1801,7 @@ def run_preflight(
             noise = noise / noise.norm().clamp_min(1e-6) * source_summary[idx].norm().clamp_min(1e-6)
             candidate_roll_source = _candidate_roll_source_summary(source_summary[idx])
             candidate_score_roll_source = _candidate_score_roll_source_summary(source_summary[idx])
+            atom_shuffle_source = _atom_shuffle_source_summary(source_summary[idx])
             source_variants = {
                 MATCHED_CONDITION: source_summary[idx],
                 "zero_source": torch.zeros_like(source_summary[idx]),
@@ -1651,6 +1809,7 @@ def run_preflight(
                 "source_row_shuffle": source_summary[shuffled_idx],
                 "same_norm_noise": noise,
                 "train_mean_source": train_mean_source,
+                "atom_shuffle": atom_shuffle_source if atom_shuffle_source is not None else source_summary[idx],
                 "candidate_roll_source": (
                     candidate_roll_source if candidate_roll_source is not None else source_summary[idx]
                 ),
@@ -1695,6 +1854,7 @@ def run_preflight(
                 "source_row_shuffle",
                 "same_norm_noise",
                 "train_mean_source",
+                "atom_shuffle",
                 "candidate_roll_source",
                 "candidate_roll",
                 "candidate_score_roll_source",
@@ -1881,6 +2041,9 @@ def run_preflight(
             "source_feature_dim": source_feature_dim,
             "source_token_pool_size": source_token_pool_size,
             "innovation_ridge": innovation_ridge,
+            "sparse_packet_rank": sparse_packet_rank,
+            "sparse_packet_top_k": sparse_packet_top_k,
+            "sparse_packet_bits": sparse_packet_bits,
             "source_tensor_rank": source_tensor_rank,
             "target_feature_dim": target_feature_dim,
             "prefix_len": prefix_len,
@@ -1990,6 +2153,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
             "hf_choice_hidden_public_innovation_candidate_pool_residual",
             "hf_choice_hidden_score_public_innovation_candidate_pool",
             "hf_choice_hidden_score_public_innovation_candidate_pool_residual",
+            "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool",
+            "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool_residual",
+            "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool",
+            "hf_choice_hidden_score_public_innovation_sparse_pca_packet_candidate_pool_residual",
             "hf_choice_token_hidden_pool",
             "hf_choice_token_hidden_pool_residual",
         ),
@@ -1998,6 +2165,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source-feature-dim", type=int, default=128)
     parser.add_argument("--source-token-pool-size", type=int, default=32)
     parser.add_argument("--innovation-ridge", type=float, default=10.0)
+    parser.add_argument("--sparse-packet-rank", type=int, default=16)
+    parser.add_argument("--sparse-packet-top-k", type=int, default=4)
+    parser.add_argument("--sparse-packet-bits", type=int, default=4)
     parser.add_argument("--target-feature-dim", type=int, default=64)
     parser.add_argument("--source-model", default=DEFAULT_QWEN_SOURCE)
     parser.add_argument("--target-model", default=DEFAULT_QWEN_TARGET)
@@ -2065,6 +2235,9 @@ def main(argv: list[str] | None = None) -> int:
         source_hidden_layer=int(args.source_hidden_layer),
         source_token_pool_size=int(args.source_token_pool_size),
         innovation_ridge=float(args.innovation_ridge),
+        sparse_packet_rank=int(args.sparse_packet_rank),
+        sparse_packet_top_k=int(args.sparse_packet_top_k),
+        sparse_packet_bits=int(args.sparse_packet_bits),
         local_files_only=str(args.local_files_only).lower() == "true",
         prefix_len=int(args.prefix_len),
         hidden_dim=int(args.hidden_dim),

@@ -2511,5 +2511,26 @@
     "path": "references/716_target_error_syndrome_side_information_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the Qwen-to-Phi target-error repair audit, grounding the live source-private syndrome branch in Slepian-Wolf, Wyner-Ziv, ECOC, margin decoding, selective defer, relative representations, query bottlenecks, and C2C while documenting novelty boundaries."
+  },
+  {
+    "num": 717,
+    "slug": "arc_soft_prefix_resonance_gate_refs_20260504",
+    "path": "references/717_arc_soft_prefix_resonance_gate_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the strict ARC soft-prefix resonance gate, recording boundaries against prefix/prompt tuning, C2C, TurboQuant, consistency models, and target-native soft-prefix communication controls."
+  },
+  {
+    "num": 718,
+    "slug": "sparse_common_basis_packet_design_refs_20260504",
+    "path": "references/718_sparse_common_basis_packet_design_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo for the Sparse Resonance Packet pivot, grounding common-basis atom design in SAEs, universal SAEs, crosscoders, transcoders, relative representations, SVCCA, activation steering, C2C, and query-token bottlenecks."
+  },
+  {
+    "num": 719,
+    "slug": "sparse_resonance_packet_competitor_systems_refs_20260504",
+    "path": "references/719_sparse_resonance_packet_competitor_systems_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo for the Sparse Resonance Packet competitor and systems boundary, recording C2C/KV-cache communication competitors, TurboQuant/KIVI/KVQuant/QJL byte-floor baselines, utility-per-byte reporting, and no-throughput-claim boundaries."
   }
 ]

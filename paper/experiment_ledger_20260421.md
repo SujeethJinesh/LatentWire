@@ -22702,3 +22702,65 @@ source and target models disagree, then tested it on new disagreement
 questions. A hidden-source version did learn something, but not enough to beat
 Qwen using no source clue or a visible same-byte hint. The stricter gate is now
 ready for the next common-basis encoder attempt.
+
+## 2026-05-04 COLM_v2 / ICLR Sparse Resonance Packet Pivot
+
+Pivoted the post-COLM_v1 ICLR branch toward Sparse Resonance Packets: a
+low-rate, source-private, interpretable packet interface meant to compete with
+C2C on utility per byte, privacy, and hardware-friendliness rather than dense
+KV-cache fusion. COLM_v1 is frozen except for cleanup/reproducibility/style
+fixes; COLM_v2 inherits the strict controls and opens the sparse/common-basis
+method track.
+
+Implemented the first strict ARC sparse packet gate inside the existing
+source-private soft-prefix wrapper. The new feature mode fits PCA/SVD on
+answer-key-forbidden TinyLlama candidate hidden-state public innovations,
+keeps top-k atom coefficients, quantizes them, and feeds those packet
+coordinates to a Qwen target-native soft-prefix receiver. Added an
+`atom_shuffle` destructive control and systems sideband fields for packet bytes
+per candidate / estimated packet bytes per row. These byte fields are
+accounting only, not native serving throughput.
+
+- updated preflight:
+  `scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py`;
+- updated strict wrapper:
+  `scripts/build_source_private_arc_challenge_soft_prefix_resonance_gate.py`;
+- tests:
+  `tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`
+  and `tests/test_build_source_private_arc_challenge_soft_prefix_resonance_gate.py`;
+- artifacts:
+  `results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top2q3/`
+  and
+  `results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top4q4_noresid/`;
+- pivot memo:
+  `paper/latentwire_colm_v2_sparse_resonance_pivot_20260504.md`;
+- references:
+  `references/718_sparse_common_basis_packet_design_refs_20260504.md`
+  and
+  `references/719_sparse_resonance_packet_competitor_systems_refs_20260504.md`.
+
+Outcome: fail, but with the right new gate surface. The main `n8_pca_top2q3`
+packet uses rank `4`, top-`2` atoms, `3` coefficient bits, `10` bits per
+candidate, and about `5.0` estimated packet bytes per row. Matched accuracy is
+`0.250000`, while target-only is `0.500000`, target-derived prefix is
+`0.625000`, atom-shuffle is `0.375000`, same-byte visible text is `0.500000`,
+and Qwen-substituted packet is `0.625000`; the worst required paired CI95 low
+is `-0.750000`. A wider no-residual `n8_pca_top4q4_noresid` packet also fails:
+matched accuracy is `0.250000`, while the best required control reaches
+`0.625000`.
+
+Decision: promote Sparse Resonance Packets as the COLM_v2/ICLR story, but
+demote plain source-only PCA public-innovation packets as currently
+implemented. The failure points to basis quality and target alignment: the
+packet is tiny and source-private, but atom identity is not yet causally useful
+to the target receiver. The next exact branch should test target-aligned
+coordinates before SAE scale-up: CCA/Procrustes/anchor-relative common-basis
+packets with atom-shuffle, coefficient-shuffle, top-atom knockout, wrong-row,
+candidate-roll, source-index/rank/score, same-byte text, target-derived, and
+Qwen-substitution controls.
+
+Lay explanation: we tried sending Qwen only a few compressed feature clues from
+TinyLlama instead of text or KV cache. The message was very small, but Qwen did
+not use it reliably; no-source and target-derived hints did better. The packet
+format and strict controls are now in place, but the feature basis needs to be
+better aligned to the target before this can become a positive method.

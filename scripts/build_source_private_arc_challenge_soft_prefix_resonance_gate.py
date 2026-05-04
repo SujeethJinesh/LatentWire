@@ -55,6 +55,7 @@ STRICT_REQUIRED_CONTROLS = (
     "zero_source",
     "source_row_shuffle",
     "candidate_roll",
+    "atom_shuffle",
     "target_derived_prefix",
     "packet_only_source_index",
     "source_rank_control",
@@ -221,6 +222,9 @@ def build_gate(
     source_hidden_layer: int,
     source_token_pool_size: int,
     innovation_ridge: float,
+    sparse_packet_rank: int,
+    sparse_packet_top_k: int,
+    sparse_packet_bits: int,
     local_files_only: bool,
     prefix_len: int,
     hidden_dim: int,
@@ -308,6 +312,9 @@ def build_gate(
         source_hidden_layer=source_hidden_layer,
         source_token_pool_size=source_token_pool_size,
         innovation_ridge=innovation_ridge,
+        sparse_packet_rank=sparse_packet_rank,
+        sparse_packet_top_k=sparse_packet_top_k,
+        sparse_packet_bits=sparse_packet_bits,
         local_files_only=local_files_only,
         prefix_len=prefix_len,
         hidden_dim=hidden_dim,
@@ -330,6 +337,10 @@ def build_gate(
 
     metrics = preflight_payload["condition_metrics"]
     matched = metrics[preflight.MATCHED_CONDITION]
+    source_feature_metadata = preflight_payload.get("feature_metadata", {}).get("source", {})
+    sparse_packet_metadata = source_feature_metadata.get("sparse_packet") or {}
+    packet_bytes_per_candidate = float(sparse_packet_metadata.get("packet_bytes_per_candidate", 0.0) or 0.0)
+    estimated_packet_bytes_per_row = float(packet_bytes_per_candidate * int(source_token_pool_size))
     strict_control_metrics: dict[str, dict[str, float]] = {}
     for control in STRICT_REQUIRED_CONTROLS:
         paired = matched[f"paired_accuracy_vs_{control}"]
@@ -358,6 +369,20 @@ def build_gate(
             "best_required_control": best_required_control,
             "best_required_control_accuracy": float(metrics[best_required_control]["accuracy"]),
             "worst_required_ci95_low": float(worst_ci_low),
+        },
+        "systems_packet_sideband": {
+            "source_private": True,
+            "source_text_exposed": False,
+            "source_kv_exposed": False,
+            "native_serving_throughput_measured": False,
+            "packet_bytes_per_candidate": packet_bytes_per_candidate,
+            "estimated_packet_bytes_per_row": estimated_packet_bytes_per_row,
+            "sparse_packet_metadata": sparse_packet_metadata,
+            "receiver_soft_prefix_tokens": int(prefix_len),
+            "note": (
+                "Byte counts cover the sparse packet sideband only. They are not native GPU throughput, "
+                "HBM traffic, or an end-to-end serving measurement."
+            ),
         },
         "train_rows": len(train_rows),
         "test_rows": len(test_rows),
@@ -428,6 +453,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source-hidden-layer", type=int, default=-1)
     parser.add_argument("--source-token-pool-size", type=int, default=4)
     parser.add_argument("--innovation-ridge", type=float, default=10.0)
+    parser.add_argument("--sparse-packet-rank", type=int, default=16)
+    parser.add_argument("--sparse-packet-top-k", type=int, default=4)
+    parser.add_argument("--sparse-packet-bits", type=int, default=4)
     parser.add_argument("--local-files-only", choices=("true", "false"), default="true")
     parser.add_argument("--prefix-len", type=int, default=4)
     parser.add_argument("--hidden-dim", type=int, default=32)
@@ -477,6 +505,9 @@ def main(argv: list[str] | None = None) -> int:
         source_hidden_layer=int(args.source_hidden_layer),
         source_token_pool_size=int(args.source_token_pool_size),
         innovation_ridge=float(args.innovation_ridge),
+        sparse_packet_rank=int(args.sparse_packet_rank),
+        sparse_packet_top_k=int(args.sparse_packet_top_k),
+        sparse_packet_bits=int(args.sparse_packet_bits),
         local_files_only=str(args.local_files_only).lower() == "true",
         prefix_len=int(args.prefix_len),
         hidden_dim=int(args.hidden_dim),
