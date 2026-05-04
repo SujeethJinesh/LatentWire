@@ -129,6 +129,39 @@ feature. For COLM_v2, use this as an honest negative row explaining why
 utility-per-byte must be paired with wrong-row, field-shuffle, candidate-roll,
 source-choice, and same-byte controls.
 
+## Conditional-PQ Integrity Threshold Update
+
+The first conditional-PQ integrity follow-up has now been run on the n256
+core-to-holdout held-out-family surface:
+
+- artifact:
+  `results/source_private_conditional_pq_integrity_threshold_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w001/summary.json`;
+- packet: `4` payload bytes, `7` framed bytes;
+- fit/select/eval rows: `512/256/256`;
+- selected integrity score: `negative_min_l2`;
+- target-only accuracy: `0.250000`;
+- source accuracy: `0.425781`;
+- best control: `label_shuffled_encoder` at `0.457031`;
+- source minus best control: `-0.031250`;
+- CI95 low vs best control: `-0.097656`;
+- source accept rate: `0.773438`;
+- max corrupt accept rate: `1.000000`;
+- unquantized predicted accuracy: `0.511719`;
+- target innovation oracle accuracy: `1.000000`.
+
+Interpretation: simple scalar integrity does not rescue held-out-family
+conditional PQ. The matched packet improves over target-only, but the integrity
+rule also accepts corrupted or label-shuffled packet families too often. The
+result narrows the ICLR path: deterministic public transforms, no-op weight
+sweeps, and scalar trust thresholds are not enough.
+
+Updated decision: for ICLR, the next method branch must introduce a
+qualitatively new source-causal interface or switch to a benchmark where source
+quality is separable from packet artifacts. For COLM_v2, this should be used
+as a negative control row showing why packet integrity must be evaluated
+against label-shuffled, wrong-row, candidate-roll, random same-byte, and
+public-condition-only controls.
+
 ## First Implemented Gate
 
 Implemented a train-fit sparse PCA packet mode in the strict ARC soft-prefix

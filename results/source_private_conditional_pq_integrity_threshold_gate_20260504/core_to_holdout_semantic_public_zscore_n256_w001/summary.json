@@ -1,0 +1,373 @@
+{
+  "anchor_count": 128,
+  "basis_view": "semantic",
+  "budget_bytes": 4,
+  "candidates": 4,
+  "codebook_iterations": 12,
+  "codebook_sha256": "95e31f4a22b0772c7bbe0a58d2b90cc2e331b7299b84fa0c1928d59c96e50de7",
+  "conditioning_mode": "public_zscore",
+  "created_utc": "2026-05-04T22:36:43.260149+00:00",
+  "diagnostic_table_mode": "plausible_decoys",
+  "encoder_ridge": 0.01,
+  "encoder_sha256": "3909bf3741d6ef7d449bf79f6f39a65026d14ae870164855f09667122d08e837",
+  "eval_examples": 256,
+  "eval_family_set": "holdout",
+  "eval_seed": 29,
+  "eval_start_index": 0,
+  "feature_dim": 512,
+  "fit_examples": 512,
+  "fit_intercept": false,
+  "gate": "source_private_conditional_pq_integrity_threshold_gate",
+  "headline": {
+    "best_control_accuracy": 0.45703125,
+    "best_control_condition": "label_shuffled_encoder",
+    "ci95_low_vs_best_control": -0.09765625,
+    "eval_rows": 256,
+    "fit_rows": 512,
+    "framed_record_bytes": 7,
+    "harms": 14,
+    "helps": 59,
+    "max_corrupt_accept_rate": 1.0,
+    "select_rows": 256,
+    "selected_score_name": "negative_min_l2",
+    "selected_threshold": -1.5634799003601074,
+    "source_accept_rate": 0.7734375,
+    "source_accuracy": 0.42578125,
+    "source_minus_best_control": -0.03125,
+    "target_innovation_oracle_accuracy": 1.0,
+    "target_only_accuracy": 0.25,
+    "unquantized_predicted_accuracy": 0.51171875
+  },
+  "integrity_select_examples": 256,
+  "interpretation": "This gate tests whether an explicit scalar packet-integrity rule can preserve matched conditional-PQ packet gains while forcing corrupted packet controls to no-op. A failure rules out simple thresholded integrity on top of the existing public-zscore receiver.",
+  "label_shuffle_encoder_sha256": "f92e75e1c1106b7eea5f003a6a7a87f50ce553a368fcf6b2a3e1d0f926e0764b",
+  "lay_explanation": "The receiver first scores what the tiny packet wants it to do, then a separate trust rule decides whether to accept that packet or ignore it and keep the target's original answer.",
+  "mask_repeats": 1,
+  "pass_gate": false,
+  "receiver": {
+    "condition_counts": {
+      "answer_masked_source": 512,
+      "candidate_roll": 512,
+      "constrained_shuffled_source": 512,
+      "deranged_public_basis": 512,
+      "label_shuffled_encoder": 512,
+      "opaque_slot_basis": 512,
+      "permuted_codes": 512,
+      "public_condition_only": 512,
+      "random_same_byte": 512,
+      "same_answer_slot_wrong_row_source": 512,
+      "source": 512,
+      "target_only": 512
+    },
+    "feature_names": [
+      "intercept",
+      "packet_candidate_similarity",
+      "negative_packet_candidate_l2",
+      "target_prior_score",
+      "is_target_prior",
+      "prior_l2_minus_candidate_l2",
+      "candidate_similarity_minus_prior_similarity",
+      "has_payload"
+    ],
+    "noop_weight": 0.01,
+    "ridge": 0.01,
+    "training_diagnostics": {
+      "answer_masked_source": {
+        "predicted_answer": 128,
+        "predicted_answer_rate": 0.25,
+        "predicted_prior": 512,
+        "predicted_prior_rate": 1.0,
+        "rows": 512,
+        "target_accuracy": 1.0,
+        "target_correct": 512
+      },
+      "candidate_roll": {
+        "predicted_answer": 108,
+        "predicted_answer_rate": 0.2109375,
+        "predicted_prior": 256,
+        "predicted_prior_rate": 0.5,
+        "rows": 512,
+        "target_accuracy": 0.5,
+        "target_correct": 256
+      },
+      "constrained_shuffled_source": {
+        "predicted_answer": 265,
+        "predicted_answer_rate": 0.517578125,
+        "predicted_prior": 296,
+        "predicted_prior_rate": 0.578125,
+        "rows": 512,
+        "target_accuracy": 0.578125,
+        "target_correct": 296
+      },
+      "deranged_public_basis": {
+        "predicted_answer": 104,
+        "predicted_answer_rate": 0.203125,
+        "predicted_prior": 239,
+        "predicted_prior_rate": 0.466796875,
+        "rows": 512,
+        "target_accuracy": 0.466796875,
+        "target_correct": 239
+      },
+      "label_shuffled_encoder": {
+        "predicted_answer": 274,
+        "predicted_answer_rate": 0.53515625,
+        "predicted_prior": 304,
+        "predicted_prior_rate": 0.59375,
+        "rows": 512,
+        "target_accuracy": 0.59375,
+        "target_correct": 304
+      },
+      "opaque_slot_basis": {
+        "predicted_answer": 124,
+        "predicted_answer_rate": 0.2421875,
+        "predicted_prior": 290,
+        "predicted_prior_rate": 0.56640625,
+        "rows": 512,
+        "target_accuracy": 0.56640625,
+        "target_correct": 290
+      },
+      "permuted_codes": {
+        "predicted_answer": 258,
+        "predicted_answer_rate": 0.50390625,
+        "predicted_prior": 266,
+        "predicted_prior_rate": 0.51953125,
+        "rows": 512,
+        "target_accuracy": 0.51953125,
+        "target_correct": 266
+      },
+      "public_condition_only": {
+        "predicted_answer": 128,
+        "predicted_answer_rate": 0.25,
+        "predicted_prior": 512,
+        "predicted_prior_rate": 1.0,
+        "rows": 512,
+        "target_accuracy": 1.0,
+        "target_correct": 512
+      },
+      "random_same_byte": {
+        "predicted_answer": 261,
+        "predicted_answer_rate": 0.509765625,
+        "predicted_prior": 260,
+        "predicted_prior_rate": 0.5078125,
+        "rows": 512,
+        "target_accuracy": 0.5078125,
+        "target_correct": 260
+      },
+      "same_answer_slot_wrong_row_source": {
+        "predicted_answer": 280,
+        "predicted_answer_rate": 0.546875,
+        "predicted_prior": 248,
+        "predicted_prior_rate": 0.484375,
+        "rows": 512,
+        "target_accuracy": 0.484375,
+        "target_correct": 248
+      },
+      "source": {
+        "predicted_answer": 458,
+        "predicted_answer_rate": 0.89453125,
+        "predicted_prior": 154,
+        "predicted_prior_rate": 0.30078125,
+        "rows": 512,
+        "target_accuracy": 0.89453125,
+        "target_correct": 458
+      },
+      "target_only": {
+        "predicted_answer": 128,
+        "predicted_answer_rate": 0.25,
+        "predicted_prior": 512,
+        "predicted_prior_rate": 1.0,
+        "rows": 512,
+        "target_accuracy": 1.0,
+        "target_correct": 512
+      }
+    },
+    "weights": [
+      0.253340802599546,
+      3.092869869534949,
+      0.046789614058761766,
+      0.01890669888590295,
+      0.13532592201675614,
+      0.07762844881736856,
+      0.039585898943096276,
+      0.04158381729084996
+    ]
+  },
+  "receiver_noop_weight": 0.01,
+  "receiver_ridge": 0.01,
+  "receiver_sha256": "225f82f8b08fe387caacddef52658108287c71fd507e526a3999ced030d385f6",
+  "remap_slot_seed": 101,
+  "selected_integrity_rule": {
+    "best_control_accuracy": 0.4921875,
+    "best_control_condition": "constrained_shuffled_source",
+    "ci95_low_vs_best_control": 0.09765625,
+    "harms": 11,
+    "helps": 116,
+    "max_corrupt_accept_rate": 1.0,
+    "score_name": "negative_min_l2",
+    "source_accept_rate": 0.73046875,
+    "source_accuracy": 0.66015625,
+    "source_minus_best_control": 0.16796875,
+    "target_only_accuracy": 0.25,
+    "threshold": -1.5634799003601074,
+    "threshold_is_noop": false
+  },
+  "source_topk": 64,
+  "summary": {
+    "best_control_accept_rate": 0.60546875,
+    "best_control_accuracy": 0.45703125,
+    "best_control_condition": "label_shuffled_encoder",
+    "conditions": [
+      "target_only",
+      "source",
+      "label_shuffled_encoder",
+      "constrained_shuffled_source",
+      "same_answer_slot_wrong_row_source",
+      "answer_masked_source",
+      "public_condition_only",
+      "permuted_codes",
+      "random_same_byte",
+      "deranged_public_basis",
+      "candidate_roll",
+      "opaque_slot_basis"
+    ],
+    "harms": 14,
+    "helps": 59,
+    "max_corrupt_accept_rate": 1.0,
+    "metrics": {
+      "answer_masked_source": {
+        "accept_rate": 1.0,
+        "accuracy": 0.25,
+        "correct": 64,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.2511249515227973
+      },
+      "candidate_roll": {
+        "accept_rate": 0.7734375,
+        "accuracy": 0.22265625,
+        "correct": 57,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.2717285426333547
+      },
+      "constrained_shuffled_source": {
+        "accept_rate": 0.72265625,
+        "accuracy": 0.34375,
+        "correct": 88,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.3053125003352761
+      },
+      "deranged_public_basis": {
+        "accept_rate": 0.7734375,
+        "accuracy": 0.21484375,
+        "correct": 55,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.2972080148756504
+      },
+      "label_shuffled_encoder": {
+        "accept_rate": 0.60546875,
+        "accuracy": 0.45703125,
+        "correct": 117,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.2608959805220366
+      },
+      "opaque_slot_basis": {
+        "accept_rate": 0.69921875,
+        "accuracy": 0.26953125,
+        "correct": 69,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 0.7619999814778566
+      },
+      "permuted_codes": {
+        "accept_rate": 0.18359375,
+        "accuracy": 0.25,
+        "correct": 64,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.2569579994305968
+      },
+      "public_condition_only": {
+        "accept_rate": 1.0,
+        "accuracy": 0.25,
+        "correct": 64,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.2552915140986443
+      },
+      "random_same_byte": {
+        "accept_rate": 0.07421875,
+        "accuracy": 0.26171875,
+        "correct": 67,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 0.7369585218839347
+      },
+      "same_answer_slot_wrong_row_source": {
+        "accept_rate": 0.74609375,
+        "accuracy": 0.390625,
+        "correct": 100,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.3316245167516172
+      },
+      "source": {
+        "accept_rate": 0.7734375,
+        "accuracy": 0.42578125,
+        "correct": 109,
+        "mean_payload_bytes": 4.0,
+        "mean_payload_tokens": 1.0,
+        "p50_latency_ms": 1.4108334435150027
+      },
+      "target_only": {
+        "accept_rate": 0.0,
+        "accuracy": 0.25,
+        "correct": 64,
+        "mean_payload_bytes": 0.0,
+        "mean_payload_tokens": 0.0,
+        "p50_latency_ms": 0.7446249946951866
+      }
+    },
+    "n": 256,
+    "paired_bootstrap": {
+      "source_vs_best_control": {
+        "ci95_high": 0.0390625,
+        "ci95_low": -0.09765625,
+        "delta": -0.03125,
+        "harms": 39,
+        "helps": 31
+      },
+      "source_vs_target": {
+        "ci95_high": 0.23828125,
+        "ci95_low": 0.1171875,
+        "delta": 0.17578125,
+        "harms": 14,
+        "helps": 59
+      }
+    },
+    "pass_gate": false,
+    "source_accept_rate": 0.7734375,
+    "source_accuracy": 0.42578125,
+    "source_minus_best_control": -0.03125,
+    "source_minus_target": 0.17578125,
+    "target_only_accuracy": 0.25
+  },
+  "systems_accounting": {
+    "dense_kv_floor_bytes_reference": 21504,
+    "framed_packet_bytes_estimate": 7,
+    "native_systems_claim_allowed": false,
+    "payload_bytes": 4
+  },
+  "target_innovation_oracle_accuracy": 1.0,
+  "target_topk": 32,
+  "train_eval_id_intersection_count": 0,
+  "train_examples": 768,
+  "train_family_set": "core",
+  "train_seed": 30,
+  "train_start_index": 10000,
+  "unquantized_predicted_accuracy": 0.51171875,
+  "variant": "utility_protected_hadamard"
+}

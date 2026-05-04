@@ -1,0 +1,16 @@
+{
+  "artifact_sha256": {
+    "predictions.jsonl": "86546b13059cba2b7999e1a21b6e66b20045f4cb03bc10924f67fda625f1a625",
+    "summary.json": "bde2f381e84e9613ea109fe26dd1b0e4f3285bc37bcff4b04452169459767afb",
+    "summary.md": "860f45ce53bce8521dcd0cb780c0a8c56b385bef90bacb23c69d4b590feac467",
+    "threshold_rows.csv": "b1c15eb4c467b591ef8bd6db7a4d7bd4fb5e655b079df089d672d739ed7e3803"
+  },
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "predictions.jsonl",
+    "threshold_rows.csv",
+    "manifest.json"
+  ],
+  "pass_gate": false
+}

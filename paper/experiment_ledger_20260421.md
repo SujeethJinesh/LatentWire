@@ -23972,3 +23972,59 @@ Lay explanation: we tried sending Phi a compact bundle of Qwen's internal
 rows, but those switches were worse than doing nothing. Qwen has useful
 information somewhere, but these tiny cached hints still do not tell Phi when
 to trust it.
+
+## 2026-05-04 Conditional PQ Integrity Threshold Gate
+
+Added an explicit scalar accept/no-op layer on top of the existing
+conditional-PQ corruption/no-op receiver:
+
+- script:
+  `scripts/build_source_private_conditional_pq_integrity_threshold_gate.py`;
+- test:
+  `tests/test_build_source_private_conditional_pq_integrity_threshold_gate.py`;
+- artifact:
+  `results/source_private_conditional_pq_integrity_threshold_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w001/summary.json`;
+- memo:
+  `paper/source_private_conditional_pq_integrity_threshold_gate_20260504.md`;
+- references:
+  `references/746_conditional_pq_integrity_threshold_refs_20260504.md`.
+
+Purpose: separate packet decoding from packet trust. The receiver first scores
+the packet's preferred candidate, then a scalar integrity threshold decides
+whether to accept the packet or no-op to the target prior. The threshold is
+selected on held-out train rows and evaluated on the n256 core-to-holdout
+surface. The reverse direction was not run because the first decision surface
+failed.
+
+Headline:
+
+- fit/select/eval rows: `512/256/256`;
+- selected integrity score: `negative_min_l2`;
+- selected threshold: `-1.563480`;
+- target-only accuracy: `0.250000`;
+- source accuracy: `0.425781`;
+- best control: `label_shuffled_encoder` at `0.457031`;
+- source minus best control: `-0.031250`;
+- CI95 low vs best control: `-0.097656`;
+- source accept rate: `0.773438`;
+- max corrupt accept rate: `1.000000`;
+- unquantized predicted accuracy: `0.511719`;
+- target innovation oracle accuracy: `1.000000`;
+- packet: `4` payload bytes, `7` framed bytes.
+
+Outcome: fail. The integrity threshold recovers source lift over target-only,
+but it does not separate real source packets from corrupted packet families.
+The label-shuffled encoder beats the matched source packet, and several
+corruptions are accepted at source-scale rates.
+
+Decision: do not continue conditional-PQ held-out-family rescue work by adding
+only deterministic public transforms, no-op weight sweeps, or scalar integrity
+thresholds over the current receiver scores. The next ICLR branch needs a
+qualitatively different source-causal interface or a benchmark where source
+quality and complementarity are easier to separate from packet artifacts.
+For COLM_v2, this is a useful negative row supporting the strict-control
+story.
+
+Lay explanation: we taught the receiver to ask, "does this tiny packet look
+trustworthy?" before using it. It improved over doing nothing, but it trusted
+fake packet patterns too often and lost to a shuffled-source control.

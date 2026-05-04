@@ -44,6 +44,8 @@ DEFAULT_ARTIFACT_PATHS = {
         ROOT
         / "results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w01/summary.json",
     ],
+    "conditional_pq_integrity_threshold": ROOT
+    / "results/source_private_conditional_pq_integrity_threshold_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w001/summary.json",
     "arc_sparse_resonance": [
         ROOT
         / "results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top2q3/arc_challenge_soft_prefix_resonance_gate.json",
@@ -396,6 +398,28 @@ def build_triage(
         )
     )
 
+    integrity = artifacts["conditional_pq_integrity_threshold"]["headline"]
+    rows.append(
+        _headline_row(
+            branch="Conditional PQ scalar integrity threshold",
+            status="ruled_out_simple_integrity_threshold",
+            artifact="conditional_pq_integrity_threshold",
+            score=integrity["source_accuracy"],
+            baseline=integrity["best_control_accuracy"],
+            delta=integrity["source_minus_best_control"],
+            ci95_low=integrity["ci95_low_vs_best_control"],
+            bytes_record=integrity["framed_record_bytes"],
+            evidence=(
+                f"Selected {integrity['selected_score_name']} threshold; source "
+                f"{integrity['source_accuracy']:.6f} vs best control "
+                f"{integrity['best_control_condition']} at {integrity['best_control_accuracy']:.6f}; "
+                f"source/max-corrupt accept {integrity['source_accept_rate']:.6f}/"
+                f"{integrity['max_corrupt_accept_rate']:.6f}."
+            ),
+            decision="Do not continue scalar threshold integrity on this public-zscore conditional-PQ receiver.",
+        )
+    )
+
     sparse_resonance = _best_sparse_resonance(artifacts["arc_sparse_resonance"])
     rows.append(
         _headline_row(
@@ -685,13 +709,15 @@ def build_triage(
             "hellaswag_complementarity_headroom_alive": True,
             "hellaswag_current_frontier_selector_blocked": True,
             "hellaswag_cached_policy_packets_blocked": True,
+            "conditional_pq_simple_integrity_threshold_blocked": True,
         },
         "story": (
             "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, "
             "source-private packets plus strict destructive controls. The ICLR story is "
             "still blocked because cross-family conditional PQ, deterministic public-basis "
-            "conditioning, and HellaSwag learned/source-conditioned resonance receivers have "
-            "not produced a positive row beyond packet/source-choice/target-cache controls."
+            "conditioning, scalar integrity thresholds, and HellaSwag learned/source-conditioned "
+            "resonance receivers have not produced a positive row beyond packet/source-choice/"
+            "target-cache controls."
         ),
         "submission_gap": (
             "ICLR needs a positive learned or broader-benchmark receiver that passes strict "
@@ -741,20 +767,22 @@ def build_triage(
             "Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.",
             "HellaSwag complementarity-frontier selector with current top1/top2 packet fields.",
             "HellaSwag cached hidden/score/vote policy-prediction packets as a repair frontier.",
+            "Conditional PQ scalar integrity thresholds on the public-zscore held-out-family receiver.",
         ],
         "next_exact_gate": {
-            "name": "conditional_pq_integrity_or_colm_v2_integration_gate",
+            "name": "new_interface_or_colm_v2_integration_gate",
             "primary_path": (
-                "Stop HellaSwag cached-selector work unless a qualitatively new hidden/PQ residual "
-                "feature is introduced. The next ICLR implementation should return to conditional "
-                "PQ with learned integrity/corruption-to-no-op decoding on the n256 held-out-family "
-                "surface, or use this HellaSwag map only as a diagnostic limitation."
+                "Stop HellaSwag cached-selector work and stop conditional-PQ held-out-family rescues "
+                "that only add deterministic public transforms, no-op weight sweeps, or scalar "
+                "integrity thresholds. The next ICLR branch needs a qualitatively new source-causal "
+                "interface, such as a learned bottleneck/resampler preflight, or a benchmark where "
+                "source quality and complementarity are easier to separate from packet artifacts."
             ),
             "fallback_path": (
-                "If the conditional-PQ integrity branch is too large for the next Mac-local turn, "
-                "switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte "
-                "HellaSwag, target-resonance capacity, complementarity-frontier saturation, and "
-                "multi-signal packet failure."
+                "If the next method branch is not implementable Mac-locally in one turn, switch to "
+                "COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, "
+                "target-resonance capacity, complementarity-frontier saturation, multi-signal packet "
+                "failure, and scalar-integrity failure."
             ),
             "pass_bar": (
                 "A learned or rule-based packet receiver must improve over source-index/rank/score, "

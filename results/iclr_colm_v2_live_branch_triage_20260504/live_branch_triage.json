@@ -49,6 +49,18 @@
       "status": "ruled_out_as_cross_family_rescue"
     },
     {
+      "artifact": "conditional_pq_integrity_threshold",
+      "baseline": 0.457031,
+      "branch": "Conditional PQ scalar integrity threshold",
+      "ci95_low": -0.097656,
+      "decision": "Do not continue scalar threshold integrity on this public-zscore conditional-PQ receiver.",
+      "delta": -0.03125,
+      "evidence": "Selected negative_min_l2 threshold; source 0.425781 vs best control label_shuffled_encoder at 0.457031; source/max-corrupt accept 0.773438/1.000000.",
+      "record_bytes": 7,
+      "score": 0.425781,
+      "status": "ruled_out_simple_integrity_threshold"
+    },
+    {
       "artifact": "arc_sparse_resonance",
       "baseline": 0.625,
       "branch": "ARC sparse resonance PCA/target-aligned soft-prefix packets",
@@ -211,7 +223,7 @@
     "Do not claim C2C/KV throughput, HBM, PCIe, NVLink, or energy wins without native measurements.",
     "Frame C2C/KVComm/TurboQuant/KIVI as high-bandwidth or KV-compression baselines with different exposure regimes."
   ],
-  "created_utc": "2026-05-04T22:26:31.334272+00:00",
+  "created_utc": "2026-05-04T22:39:49.547799+00:00",
   "current_contributions": [
     {
       "name": "source_private_low_rate_packets",
@@ -255,6 +267,7 @@
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w005/summary.json",
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w01/summary.json"
     ],
+    "conditional_pq_integrity_threshold": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_integrity_threshold_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w001/summary.json",
     "conditional_pq_status": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_iclr_colm_v2_status_20260504/conditional_pq_iclr_colm_v2_status.json",
     "conditional_public_svd": [
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_svd_whiten_gate_20260504/core_to_holdout_semantic_public_svd_whiten_n256/summary.json",
@@ -308,6 +321,7 @@
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w005/summary.json": "ce15c3c0a2126ed78030456db1a36eb2ac6203e8440a24d60669cc795c40c5f3",
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w01/summary.json": "caca93411795ac2eff6df6d3951497156e28335236b3a0c59e7b9f6bd6fd5c25"
     },
+    "conditional_pq_integrity_threshold": "bde2f381e84e9613ea109fe26dd1b0e4f3285bc37bcff4b04452169459767afb",
     "conditional_pq_status": "3d6d2f760c7695eb91169cb7a3093429a39c12f96542eba25ce35e327f4afdd7",
     "conditional_public_svd": {
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_svd_whiten_gate_20260504/core_to_holdout_semantic_public_svd_whiten_n256/summary.json": "df6b4c87b68e9d9180a73274e0647904801882d8cdc22716674bc43e020e486c",
@@ -347,10 +361,10 @@
     }
   },
   "next_exact_gate": {
-    "fallback_path": "If the conditional-PQ integrity branch is too large for the next Mac-local turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, and multi-signal packet failure.",
-    "name": "conditional_pq_integrity_or_colm_v2_integration_gate",
+    "fallback_path": "If the next method branch is not implementable Mac-locally in one turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, multi-signal packet failure, and scalar-integrity failure.",
+    "name": "new_interface_or_colm_v2_integration_gate",
     "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
-    "primary_path": "Stop HellaSwag cached-selector work unless a qualitatively new hidden/PQ residual feature is introduced. The next ICLR implementation should return to conditional PQ with learned integrity/corruption-to-no-op decoding on the n256 held-out-family surface, or use this HellaSwag map only as a diagnostic limitation.",
+    "primary_path": "Stop HellaSwag cached-selector work and stop conditional-PQ held-out-family rescues that only add deterministic public transforms, no-op weight sweeps, or scalar integrity thresholds. The next ICLR branch needs a qualitatively new source-causal interface, such as a learned bottleneck/resampler preflight, or a benchmark where source quality and complementarity are easier to separate from packet artifacts.",
     "required_controls": [
       "target_only",
       "answer_masked_source",
@@ -372,6 +386,7 @@
     "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
     "conditional_pq_cross_family_blocked": true,
     "conditional_pq_same_family_alive": true,
+    "conditional_pq_simple_integrity_threshold_blocked": true,
     "hellaswag_cached_policy_packets_blocked": true,
     "hellaswag_complementarity_headroom_alive": true,
     "hellaswag_current_frontier_selector_blocked": true,
@@ -382,7 +397,7 @@
     "target_self_resonance_capacity_alive": true,
     "target_self_resonance_learned_encoders_blocked": true
   },
-  "story": "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, and HellaSwag learned/source-conditioned resonance receivers have not produced a positive row beyond packet/source-choice/target-cache controls.",
+  "story": "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, and HellaSwag learned/source-conditioned resonance receivers have not produced a positive row beyond packet/source-choice/target-cache controls.",
   "submission_gap": "ICLR needs a positive learned or broader-benchmark receiver that passes strict destructive controls. COLM_v2 can be prepared around the conditional-PQ shared-schema method, the fixed-byte HellaSwag packet row, and the target-resonance capacity-versus-held-out-failure analysis with explicit limitations.",
   "weakened_or_ruled_out": [
     "Conditional PQ public-zscore and corruption-to-noop as held-out-family rescues.",
@@ -393,6 +408,7 @@
     "Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.",
     "Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.",
     "HellaSwag complementarity-frontier selector with current top1/top2 packet fields.",
-    "HellaSwag cached hidden/score/vote policy-prediction packets as a repair frontier."
+    "HellaSwag cached hidden/score/vote policy-prediction packets as a repair frontier.",
+    "Conditional PQ scalar integrity thresholds on the public-zscore held-out-family receiver."
   ]
 }

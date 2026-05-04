@@ -1,12 +1,12 @@
 # ICLR / COLM_v2 Live Branch Triage
 
-- created UTC: `2026-05-04T22:26:31.334272+00:00`
+- created UTC: `2026-05-04T22:39:49.547799+00:00`
 - COLM_v2 readiness: `scoped_positive_ready_for_writeup_if_claims_are_narrow`
 - ICLR readiness: `blocked_by_lack_of_broad_or_learned_positive_receiver`
 
 ## Current Story
 
-LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, and HellaSwag learned/source-conditioned resonance receivers have not produced a positive row beyond packet/source-choice/target-cache controls.
+LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, and HellaSwag learned/source-conditioned resonance receivers have not produced a positive row beyond packet/source-choice/target-cache controls.
 
 ## Exact Submission Gap
 
@@ -28,6 +28,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 | Conditional PQ public-zscore held-out-family decoder | `ruled_out_as_cross_family_rescue` | `0.453125` | `0.441406` | `0.011719` | `-0.085938` | `7` | Do not widen public-zscore to n500/remap. |
 | Conditional PQ public-SVD whitening held-out-family decoder | `ruled_out_as_cross_family_rescue` | `0.375` | `0.613281` | `-0.238281` | `-0.32041` | `7` | Do not continue deterministic public-basis whitening as the rescue path. |
 | Conditional PQ corruption-to-noop receiver | `ruled_out_as_cross_family_rescue` | `0.25` | `0.25` | `0.0` | `0.0` | `7` | Keep as diagnostic; do not promote this receiver family. |
+| Conditional PQ scalar integrity threshold | `ruled_out_simple_integrity_threshold` | `0.425781` | `0.457031` | `-0.03125` | `-0.097656` | `7` | Do not continue scalar threshold integrity on this public-zscore conditional-PQ receiver. |
 | ARC sparse resonance PCA/target-aligned soft-prefix packets | `ruled_out_current_basis_receiver` | `0.25` | `0.625` | `-0.375` | `None` | `None` | Do not widen plain PCA/target-aligned soft-prefix packets. |
 | HellaSwag fixed hybrid candidate packet | `promote_for_colm_v2_systems_baseline` | `0.532464` | `0.526688` | `0.005776` | `0.002888` | `4` | Useful COLM_v2 systems/privacy row, but not a learned latent receiver. |
 | HellaSwag protected top-2/rival packet | `ruled_out_shallow_pair_decoder` | `0.46224` | `0.467448` | `-0.005208` | `-0.013021` | `5` | Do not rerun generic protected top-2/rival switchers. |
@@ -48,6 +49,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - `Conditional PQ public-zscore held-out-family decoder`: 0/2 pass; best source-minus-control 0.011719 against label_shuffled_encoder.
 - `Conditional PQ public-SVD whitening held-out-family decoder`: 0/2 pass; best source-minus-control -0.238281 against permuted_codes. Worst row -0.500000.
 - `Conditional PQ corruption-to-noop receiver`: 0/6 pass; best source-minus-control 0.000000 against label_shuffled_encoder.
+- `Conditional PQ scalar integrity threshold`: Selected negative_min_l2 threshold; source 0.425781 vs best control label_shuffled_encoder at 0.457031; source/max-corrupt accept 0.773438/1.000000.
 - `ARC sparse resonance PCA/target-aligned soft-prefix packets`: 0/4 pass; best matched-minus-control -0.375000 with best control source_free_prefix.
 - `HellaSwag fixed hybrid candidate packet`: Full cached validation pass over 10042 rows; positive on 10/10 slices.
 - `HellaSwag protected top-2/rival packet`: Oracle 0.678385, selected decoder harms 6 vs helps 2.
@@ -78,12 +80,13 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.
 - HellaSwag complementarity-frontier selector with current top1/top2 packet fields.
 - HellaSwag cached hidden/score/vote policy-prediction packets as a repair frontier.
+- Conditional PQ scalar integrity thresholds on the public-zscore held-out-family receiver.
 
 ## Next Exact Gate
 
-- name: `conditional_pq_integrity_or_colm_v2_integration_gate`
-- primary path: Stop HellaSwag cached-selector work unless a qualitatively new hidden/PQ residual feature is introduced. The next ICLR implementation should return to conditional PQ with learned integrity/corruption-to-no-op decoding on the n256 held-out-family surface, or use this HellaSwag map only as a diagnostic limitation.
-- fallback path: If the conditional-PQ integrity branch is too large for the next Mac-local turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, and multi-signal packet failure.
+- name: `new_interface_or_colm_v2_integration_gate`
+- primary path: Stop HellaSwag cached-selector work and stop conditional-PQ held-out-family rescues that only add deterministic public transforms, no-op weight sweeps, or scalar integrity thresholds. The next ICLR branch needs a qualitatively new source-causal interface, such as a learned bottleneck/resampler preflight, or a benchmark where source quality and complementarity are easier to separate from packet artifacts.
+- fallback path: If the next method branch is not implementable Mac-locally in one turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, multi-signal packet failure, and scalar-integrity failure.
 - pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
 - required controls: `target_only`, `answer_masked_source`, `constrained_wrong_row_source`, `same_source_choice_wrong_row`, `candidate_roll_or_deranged_public_basis`, `permuted_codes`, `random_same_byte`, `opaque_slot_or_deranged_basis`, `source_index_rank_score_comparators_when_meaningful`, `same_byte_visible_text`
 

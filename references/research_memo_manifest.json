@@ -2714,5 +2714,12 @@
     "path": "references/745_complementarity_frontier_diagnostic_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference and novelty-boundary memo for the HellaSwag complementarity-frontier diagnostic, covering selective prediction, learning to defer, LLM routing, decoder-side-information coding, C2C/KVComm competitors, and the current source-complementarity versus packet-selector failure."
+  },
+  {
+    "num": 746,
+    "slug": "conditional_pq_integrity_threshold_refs_20260504",
+    "path": "references/746_conditional_pq_integrity_threshold_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference and novelty-boundary memo for the conditional-PQ scalar integrity threshold gate, covering side-information coding, syndrome decoding, selective prediction, PQ, KIVI, TurboQuant, and the failed clean-vs-corrupt packet accept/reject test."
   }
 ]

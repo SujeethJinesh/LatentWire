@@ -126,6 +126,19 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
         "conditional_corruption_noop": [
             _summary(source_accuracy=0.25, best_control_accuracy=0.25, source_minus_best_control=0.0, pass_gate=False)
         ],
+        "conditional_pq_integrity_threshold": {
+            "headline": {
+                "best_control_accuracy": 0.457,
+                "best_control_condition": "label_shuffled_encoder",
+                "ci95_low_vs_best_control": -0.098,
+                "framed_record_bytes": 7,
+                "max_corrupt_accept_rate": 1.0,
+                "selected_score_name": "negative_min_l2",
+                "source_accept_rate": 0.773,
+                "source_accuracy": 0.426,
+                "source_minus_best_control": -0.031,
+            }
+        },
         "arc_sparse_resonance": [
             {
                 "headline": {
@@ -270,11 +283,16 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
     assert payload["readiness"]["hellaswag_complementarity_headroom_alive"] is True
     assert payload["readiness"]["hellaswag_current_frontier_selector_blocked"] is True
     assert payload["readiness"]["hellaswag_cached_policy_packets_blocked"] is True
+    assert payload["readiness"]["conditional_pq_simple_integrity_threshold_blocked"] is True
     assert any(
         row["status"] == "ruled_out_cached_policy_packet"
         for row in payload["branch_rows"]
     )
-    assert payload["next_exact_gate"]["name"] == "conditional_pq_integrity_or_colm_v2_integration_gate"
+    assert any(
+        row["status"] == "ruled_out_simple_integrity_threshold"
+        for row in payload["branch_rows"]
+    )
+    assert payload["next_exact_gate"]["name"] == "new_interface_or_colm_v2_integration_gate"
 
     out_dir = tmp_path / "out"
     paper_path = tmp_path / "paper.md"
