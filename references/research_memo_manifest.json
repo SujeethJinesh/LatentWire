@@ -2581,5 +2581,12 @@
     "path": "references/726_confidence_error_coded_side_information_packet_refs_20260504.md",
     "status": "local_memo",
     "reason": "Fresh targeted primary-source memo for confidence/error-coded side-information packet decoding, grounding the next strict ARC Sparse Resonance Packet branch in Wyner-Ziv, Slepian-Wolf, DISCUS, ECOC, list and soft-decision decoding, selective classification, conformal prediction, control-theoretic gating, low-bit packet headers, and exact controls."
+  },
+  {
+    "num": 727,
+    "slug": "srp_competitor_basis_quant_benchmark_lateral_refresh_20260504",
+    "path": "references/727_srp_competitor_basis_quant_benchmark_lateral_refresh_20260504.md",
+    "status": "local_memo",
+    "reason": "Second targeted subagent refresh for the Sparse Resonance Packet pivot, consolidating C2C/KV-cache competitors, SAE/crosscoder/transcoder basis threats, TurboQuant/KV quantization byte floors, MCQ benchmark reviewer risks, and lateral event-triggered innovation/defer gate ideas."
   }
 ]

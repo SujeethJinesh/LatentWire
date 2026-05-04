@@ -22880,3 +22880,55 @@ instead of a hidden-state coordinate. The correction learned the training
 questions but did not help new questions, and removing the strongest clue often
 helped. The next packet needs a reliability header and a gate so it only fires
 when the target is unsure and the source clue is likely to help.
+
+## 2026-05-04 Confidence/ECOC Sparse Resonance Packet Gate
+
+Implemented and ran the next strict ARC-Challenge Sparse Resonance Packet
+branch: a 2-byte confidence/ECOC side-information packet. The packet carries an
+8-bit candidate codeword plus an 8-bit reliability/header field with source
+top-2 identity, source margin bin, source entropy bin, and a parity/check bit.
+The receiver decodes against Qwen3 target scores and fires only when the packet
+passes train-calibrated source-reliability, parity, and target-uncertainty
+checks.
+
+- new script:
+  `scripts/build_source_private_arc_challenge_confidence_ecoc_packet_gate.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_confidence_ecoc_packet_gate.py`;
+- initial source-confidence scout:
+  `results/source_private_arc_challenge_confidence_ecoc_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n16_2b/`;
+- main uncertainty-gated scout:
+  `results/source_private_arc_challenge_confidence_ecoc_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n16_2b_uncertainty/`;
+- memo:
+  `paper/confidence_ecoc_sparse_resonance_packet_gate_20260504.md`;
+- refreshed reference synthesis:
+  `references/727_srp_competitor_basis_quant_benchmark_lateral_refresh_20260504.md`.
+
+Outcome: fail. The looser source-confidence scout fired on `5/16` test rows,
+helped `1`, harmed `2`, and reached matched accuracy `0.187500` versus
+target-only `0.250000` and Qwen-substitution `0.375000`; worst required paired
+CI95 low was `-0.437500`. After tightening the receiver to require target
+uncertainty, the gate fired on `0/16` test rows and tied target-only at
+`0.250000`; source-row shuffle, source-index/rank/score, source-score
+quantization, and same-byte visible text reached `0.312500`, and worst
+required paired CI95 low was `-0.375000`.
+
+Important diagnostic: the main uncertainty-gated scout has real repair
+headroom but cannot identify it. Target-only is correct on `4/16`, TinyLlama
+source top1 is correct on `5/16`, and the source-or-target oracle is correct on
+`8/16`. There are `4/16` source-helpable target-wrong rows and `3/16`
+source-harm-risk target-right rows. The failure is therefore not packet byte
+budget; it is helpability prediction and receiver calibration.
+
+Decision: demote hand-binned confidence/ECOC packets as currently implemented.
+Promote an event-triggered innovation/defer controller: keep the 2-4 byte
+packet transport, but learn a tiny calibrated helpability gate over target
+uncertainty, source reliability, source-target disagreement, and source/target
+score-shape features. The next branch should report fired-row helps/harms,
+risk/coverage, and an oracle headroom table before widening.
+
+Lay explanation: we tried sending Qwen a tiny coded hint plus a confidence
+stamp. If Qwen listened too often, the hint did more harm than good. If Qwen
+listened only when it looked uncertain, it never listened on the test rows.
+There are still questions where either TinyLlama or Qwen knows the answer, but
+the simple confidence stamp cannot tell which source hints are safe.
