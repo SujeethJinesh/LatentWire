@@ -21626,3 +21626,52 @@ Lay explanation: Qwen sent a tiny message naming its safe answer, its backup
 answer, and a few coarse confidence levels. Phi then used a cautious
 training-learned rule that should only switch in buckets where switching
 usually helps. The rule found no safe buckets, so it made no switches.
+
+## 2026-05-04 Target Self-Resonance HellaSwag Soft-Prefix Gate
+
+Implemented and ran the first true target-side resonance capacity gate with
+`inputs_embeds` on cached Qwen2.5-0.5B-Instruct and HellaSwag validation
+`0:32`.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_soft_prefix_gate.py`;
+- tests:
+  `tests/test_build_target_self_resonance_hellaswag_soft_prefix_gate.py`;
+- artifacts:
+  `results/target_self_resonance_hellaswag_soft_prefix_gate_20260504_qwen05_validation0_16/`,
+  `results/target_self_resonance_hellaswag_soft_prefix_gate_20260504_qwen05_validation16_32/`;
+- paper memo:
+  `paper/target_self_resonance_hellaswag_soft_prefix_gate_20260504.md`;
+- references:
+  `references/696_target_self_resonance_interface_refs_20260504.md`.
+
+Gate design: remove the HellaSwag context text and learn a per-example
+`8`-token continuous prefix that makes the frozen target's candidate
+log-likelihood distribution match the same target model under the full prompt.
+The objective matches target full-prompt behavior, not gold labels. Controls
+include chunk-mean prompt compression, zero prefix, same-norm random prefix,
+shuffled optimized prefix from another row, and candidate-score derangement.
+
+Outcome: the target self-resonance branch passes as an oracle capacity probe on
+two adjacent tiny slices. On validation `0:16`, optimized-prefix agreement with
+full-prompt decisions is `0.937500`, mean KL to full prompt is `0.000853`,
+chunk-mean agreement/KL is `0.500000`/`0.126353`, and best destructive
+agreement/KL is `0.625000`/`0.153753`. On validation `16:32`, optimized-prefix
+agreement is `0.812500`, mean KL is `0.013037`, chunk-mean is
+`0.375000`/`0.131362`, and best destructive is `0.500000`/`0.135498`. Both
+slices pass the predeclared KL and control criteria.
+
+Decision: promote target self-resonance as the live method branch and stop
+spending mainline effort on shallow Qwen-to-Phi switchers unless a new
+interface is introduced. This is not yet a cross-model method: the optimized
+prefix is per-example oracle state and costs `14,336` raw fp16 bytes for Qwen's
+embedding dimension. The next exact gate is a held-out text/source-to-prefix
+encoder that beats zero-source target slots, chunk-mean, random, shuffled-row,
+and candidate-deranged controls under paired uncertainty.
+
+Lay explanation: we first let Qwen answer with the whole HellaSwag context.
+Then we remove that context and tune only a few soft tokens until Qwen behaves
+almost as if it had seen the full context. This worked on two small slices, so
+compact target-side resonance is possible. The next step is to train a normal
+encoder to produce those soft tokens on unseen rows, then let source-model
+signals fill them.
