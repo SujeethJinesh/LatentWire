@@ -23,12 +23,16 @@ def _row(
     return {
         "artifact_path": f"results/{row_id}.json",
         "dataset": dataset,
+        "eval_rows": 100,
         "framed_record_bytes": framed,
         "headline_eligible": headline,
         "matched_accuracy_mean": accuracy,
         "payload_bytes": payload,
+        "receiver_decode_p50_us": 10.0,
+        "receiver_decode_p95_us": 20.0,
         "row_id": row_id,
         "same_byte_text_accuracy": accuracy - 0.02,
+        "source_scoring_ms_per_question": 2.5,
         "source_kv_exposed": False,
         "source_text_exposed": False,
         "split": split,
@@ -104,13 +108,30 @@ def test_systems_boundary_writes_paper_artifacts_and_guards(tmp_path) -> None:
     )
 
     assert payload["pass_gate"] is True
-    assert payload["headline"]["packet_row_count"] == 4
+    assert payload["headline"]["packet_row_count"] == 8
+    assert payload["headline"]["cached_source_packet_row_count"] == 4
+    assert payload["headline"]["end_to_end_source_scoring_packet_row_count"] == 4
     assert payload["headline"]["min_packet_framed_bytes"] == 4.0
     assert payload["headline"]["max_packet_framed_bytes"] == 15.0
     assert payload["headline"]["min_source_state_floor_ratio_vs_max_packet"] >= 50.0
     rows = {row["row_id"]: row for row in payload["rows"]}
-    assert rows["latentwire_arc_challenge_test_12b"]["source_private"] is True
+    cached = rows["latentwire_arc_challenge_test_12b_cached_source"]
+    e2e = rows["latentwire_arc_challenge_test_12b_end_to_end_source_scoring"]
+    assert cached["systems_row_id"] == "latentwire_packet_cached_source"
+    assert cached["source_private"] is True
+    assert cached["source_packet_cached"] is True
+    assert cached["source_scoring_included"] is False
+    assert cached["native_measured"] is False
+    assert cached["native_claim_allowed"] is False
+    assert e2e["systems_row_id"] == "latentwire_packet_end_to_end_source_scoring"
+    assert e2e["source_private"] is True
+    assert e2e["source_scoring_included"] is True
+    assert e2e["source_scoring_ms_per_question"] == 2.5
+    assert e2e["source_scoring_total_s"] == 0.25
+    assert e2e["receiver_decode_p50_us"] == 10.0
     assert rows["same_byte_text_control_arc"]["source_text_exposed"] is True
+    assert rows["source_score_vector_fp16_floor"]["source_private"] is False
+    assert rows["source_logit_vector_fp16_floor"]["source_private"] is False
     assert rows["c2c_fp16_kv_floor"]["source_kv_exposed"] is True
     assert rows["c2c_fp16_kv_floor"]["nvidia_vllm_required"] is True
     assert "native C2C" in rows["c2c_fp16_kv_floor"]["overclaim_guard"]
@@ -142,7 +163,7 @@ def test_written_csv_tex_svg_are_parseable(tmp_path) -> None:
     svg = (tmp_path / "out" / "systems_boundary_waterfall.svg").read_text(encoding="utf-8")
     manifest = json.loads((tmp_path / "out" / "manifest.json").read_text(encoding="utf-8"))
 
-    assert len(rows) == 16
+    assert len(rows) == 22
     assert "overclaim_guard" in rows[0]
     assert "\\label{tab:systems-boundary}" in tex
     assert "Log-scale framed or state bytes" in svg

@@ -36,6 +36,10 @@ CSV_COLUMNS = (
     "batch64_dma_bytes_per_request",
     "ratio_vs_framed_packet",
     "ratio_vs_cacheline_packet",
+    "source_scoring_ms_per_question",
+    "packet_build_ms_per_question",
+    "receiver_decode_p50_us",
+    "receiver_decode_p95_us",
     "source_private",
     "source_text_exposed",
     "source_score_vector_exposed",
@@ -145,6 +149,10 @@ def _record(
     source_kv_exposed: bool = False,
     native_measured: bool = False,
     measurement_status: str,
+    source_scoring_ms_per_question: float | None = None,
+    packet_build_ms_per_question: float | None = None,
+    receiver_decode_p50_us: float | None = None,
+    receiver_decode_p95_us: float | None = None,
     claim_allowed: str,
     overclaim_guard: str,
     source_url: str,
@@ -188,6 +196,10 @@ def _record(
         ),
         "ratio_vs_framed_packet": float(framed_or_state_bytes) / framed_packet,
         "ratio_vs_cacheline_packet": float(framed_or_state_bytes) / cacheline_packet,
+        "source_scoring_ms_per_question": source_scoring_ms_per_question,
+        "packet_build_ms_per_question": packet_build_ms_per_question,
+        "receiver_decode_p50_us": receiver_decode_p50_us,
+        "receiver_decode_p95_us": receiver_decode_p95_us,
         "source_private": private,
         "source_text_exposed": bool(source_text_exposed),
         "source_score_vector_exposed": bool(source_score_vector_exposed),
@@ -224,32 +236,74 @@ def _interface_rows_for_benchmark(
     kvcomm30_bytes = _kv_bytes(source_config, bits_per_element=16.0, layer_fraction=0.30)
     fp16_kv_bytes = _kv_bytes(source_config, bits_per_element=16.0)
     packet_claim = (
-        "Measured cached packet row; source-private byte/exposure claim only, not native GPU throughput."
+        "Cached packet row; source-private byte/exposure claim only, not native GPU throughput."
     )
     fixed_equivalence = "measured_same_cached_packet_predictions"
     floor_equivalence = (
         "counterfactual_same_predictions_for_byte_accounting_only_not_a_native_quality_result"
     )
+    source_scoring_ms = benchmark.get("source_scoring_ms_per_question")
+    receiver_p50_us = benchmark.get("receiver_decode_p50_us")
+    receiver_p95_us = benchmark.get("receiver_decode_p95_us")
+    e2e_status = (
+        "mac_local_end_to_end_source_scoring_disclosed"
+        if source_scoring_ms is not None
+        else "mac_local_end_to_end_source_scoring_missing_phase_trace"
+    )
+    e2e_notes = (
+        f"source_scoring_ms_per_question={source_scoring_ms}; "
+        f"receiver_decode_p50_us={receiver_p50_us}; "
+        f"receiver_decode_p95_us={receiver_p95_us}"
+    )
     return [
         _record(
             benchmark=benchmark,
             source_config=source_config,
-            interface_id="latentwire_framed_packet",
+            interface_id="latentwire_packet_cached_source",
             interface_group="source_private_packet",
-            communicated_object="framed source-private task packet",
+            communicated_object="cached-source framed source-private task packet",
             payload_bytes=payload,
             framed_or_state_bytes=framed,
             exact_prediction_equivalence_to_packet=1.0,
             equivalence_status=fixed_equivalence,
-            native_measured=True,
-            measurement_status="mac_local_cached_packet",
+            native_measured=False,
+            measurement_status="cached_source_communication_object",
             claim_allowed=packet_claim,
-            overclaim_guard="Do not treat this cached packet row as a native TTFT/TPOT/goodput claim.",
-            source_url=benchmark["artifact_path"],
-            notes=(
-                f"receiver_decode_p50_us={benchmark.get('receiver_decode_p50_us')}; "
-                f"receiver_decode_p95_us={benchmark.get('receiver_decode_p95_us')}"
+            overclaim_guard=(
+                "This row counts only the communicated packet object; source scoring and serving "
+                "latency are intentionally excluded."
             ),
+            source_url=benchmark["artifact_path"],
+            notes="Communication-object row only; use paired end-to-end row for source-side work.",
+        ),
+        _record(
+            benchmark=benchmark,
+            source_config=source_config,
+            interface_id="latentwire_packet_end_to_end_source_scoring",
+            interface_group="source_private_packet",
+            communicated_object="same packet with source scoring disclosed separately",
+            payload_bytes=payload,
+            framed_or_state_bytes=framed,
+            exact_prediction_equivalence_to_packet=1.0,
+            equivalence_status=fixed_equivalence,
+            native_measured=False,
+            measurement_status=e2e_status,
+            source_scoring_ms_per_question=(
+                None if source_scoring_ms is None else float(source_scoring_ms)
+            ),
+            packet_build_ms_per_question=None,
+            receiver_decode_p50_us=None if receiver_p50_us is None else float(receiver_p50_us),
+            receiver_decode_p95_us=None if receiver_p95_us is None else float(receiver_p95_us),
+            claim_allowed=(
+                "Honest end-to-end disclosure row: packet bytes are unchanged, but source scoring "
+                "is not hidden from the systems accounting."
+            ),
+            overclaim_guard=(
+                "Do not merge this row with the cached-source packet row when making latency, "
+                "TTFT, TPOT, HBM, or goodput claims."
+            ),
+            source_url=benchmark["artifact_path"],
+            notes=e2e_notes,
         ),
         _record(
             benchmark=benchmark,
@@ -284,6 +338,23 @@ def _interface_rows_for_benchmark(
             overclaim_guard="This is a source-score relay floor, not a source-private packet.",
             source_url=benchmark["artifact_path"],
             notes="Included because byte count alone is insufficient; exposure/threat model matters.",
+        ),
+        _record(
+            benchmark=benchmark,
+            source_config=source_config,
+            interface_id="source_logit_vector_fp16_floor",
+            interface_group="source_state_floor",
+            communicated_object=f"{choice_count}-choice fp16 source logit vector",
+            payload_bytes=score_bytes,
+            framed_or_state_bytes=score_bytes,
+            exact_prediction_equivalence_to_packet=1.0,
+            equivalence_status=floor_equivalence,
+            source_score_vector_exposed=True,
+            measurement_status="logit_vector_floor_not_source_private",
+            claim_allowed="Reviewer-facing exposure boundary: logits are byte-small but leak source state.",
+            overclaim_guard="This is a source-logit relay floor, not a source-private packet.",
+            source_url=benchmark["artifact_path"],
+            notes="Separate alias from score vector so reviewers cannot collapse source-state relays into packet rows.",
         ),
         _record(
             benchmark=benchmark,
@@ -437,9 +508,11 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         "|---|---|---|---|---:|---:|---:|---:|---:|---|---|",
     ]
     selected_ids = {
-        "latentwire_framed_packet",
+        "latentwire_packet_cached_source",
+        "latentwire_packet_end_to_end_source_scoring",
         "latentwire_cacheline_padded_packet",
         "source_score_vector_fp16_floor",
+        "source_logit_vector_fp16_floor",
         "qjl_1bit_kv_floor",
         "turboquant_3p5bit_kv_floor",
         "c2c_fp16_kv_floor",
@@ -528,23 +601,38 @@ def build_byte_amplification_ablation(
                 choice_count=choice_count,
             )
         )
-    packet_rows = [row for row in rows if row["interface_id"] == "latentwire_framed_packet"]
+    packet_rows = [row for row in rows if row["interface_id"] == "latentwire_packet_cached_source"]
+    e2e_packet_rows = [
+        row for row in rows if row["interface_id"] == "latentwire_packet_end_to_end_source_scoring"
+    ]
     padded_rows = [row for row in rows if row["interface_id"] == "latentwire_cacheline_padded_packet"]
     kv_floor_rows = [row for row in rows if row["interface_group"] in {"kv_cache_floor", "kv_communication_floor"}]
     score_rows = [row for row in rows if row["interface_id"] == "source_score_vector_fp16_floor"]
+    logit_rows = [row for row in rows if row["interface_id"] == "source_logit_vector_fp16_floor"]
     min_packet = min(row["framed_or_state_bytes"] for row in packet_rows)
     max_packet = max(row["framed_or_state_bytes"] for row in packet_rows)
     min_kv_floor = min(row["framed_or_state_bytes"] for row in kv_floor_rows)
     checks = [
         {
             "check": "packet_and_padded_packet_rows_remain_prediction_equivalent",
-            "pass": all(row["exact_prediction_equivalence_to_packet"] == 1.0 for row in packet_rows + padded_rows),
-            "value": len(packet_rows + padded_rows),
+            "pass": all(
+                row["exact_prediction_equivalence_to_packet"] == 1.0
+                for row in packet_rows + e2e_packet_rows + padded_rows
+            ),
+            "value": len(packet_rows + e2e_packet_rows + padded_rows),
         },
         {
             "check": "packet_and_padded_packet_rows_remain_source_private",
-            "pass": all(row["source_private"] for row in packet_rows + padded_rows),
-            "value": len(packet_rows + padded_rows),
+            "pass": all(row["source_private"] for row in packet_rows + e2e_packet_rows + padded_rows),
+            "value": len(packet_rows + e2e_packet_rows + padded_rows),
+        },
+        {
+            "check": "cached_source_and_end_to_end_packet_rows_are_split",
+            "pass": len(packet_rows) == len(e2e_packet_rows) == len(comparator["rows"]),
+            "value": {
+                "cached_source_packet_rows": len(packet_rows),
+                "end_to_end_packet_rows": len(e2e_packet_rows),
+            },
         },
         {
             "check": "score_floor_is_marked_non_private",
@@ -552,6 +640,13 @@ def build_byte_amplification_ablation(
                 row["source_score_vector_exposed"] and not row["source_private"] for row in score_rows
             ),
             "value": len(score_rows),
+        },
+        {
+            "check": "logit_floor_is_marked_non_private",
+            "pass": all(
+                row["source_score_vector_exposed"] and not row["source_private"] for row in logit_rows
+            ),
+            "value": len(logit_rows),
         },
         {
             "check": "kv_floors_exceed_64b_padded_packet_by_10x",

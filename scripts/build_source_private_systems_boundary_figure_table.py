@@ -19,18 +19,28 @@ DEFAULT_OUTPUT = pathlib.Path("results/source_private_systems_boundary_figure_ta
 
 CSV_COLUMNS = (
     "row_id",
+    "systems_row_id",
     "row_group",
+    "systems_scope",
     "method",
     "communicated_object",
+    "source_packet_cached",
+    "source_scoring_included",
     "source_private",
     "raw_bytes",
     "framed_bytes",
     "cacheline_bytes",
     "batch64_bytes",
+    "source_scoring_ms_per_question",
+    "source_scoring_total_s",
+    "packet_build_ms_per_question",
+    "receiver_decode_p50_us",
+    "receiver_decode_p95_us",
     "source_text_exposed",
     "source_kv_exposed",
     "source_hidden_or_score_vector_exposed",
     "native_measured",
+    "native_claim_allowed",
     "measurement_status",
     "nvidia_vllm_required",
     "claim_allowed",
@@ -152,15 +162,25 @@ def _tex_escape(value: Any) -> str:
 def _record(
     *,
     row_id: str,
+    systems_row_id: str | None = None,
     row_group: str,
+    systems_scope: str,
     method: str,
     communicated_object: str,
+    source_packet_cached: bool = False,
+    source_scoring_included: bool = False,
     raw_bytes: float,
     framed_bytes: float | None = None,
+    source_scoring_ms_per_question: float | None = None,
+    source_scoring_total_s: float | None = None,
+    packet_build_ms_per_question: float | None = None,
+    receiver_decode_p50_us: float | None = None,
+    receiver_decode_p95_us: float | None = None,
     source_text_exposed: bool = False,
     source_kv_exposed: bool = False,
     source_hidden_or_score_vector_exposed: bool = False,
     native_measured: bool = False,
+    native_claim_allowed: bool = False,
     measurement_status: str,
     nvidia_vllm_required: bool = False,
     claim_allowed: str,
@@ -176,18 +196,28 @@ def _record(
     )
     return {
         "row_id": row_id,
+        "systems_row_id": systems_row_id or row_id,
         "row_group": row_group,
+        "systems_scope": systems_scope,
         "method": method,
         "communicated_object": communicated_object,
+        "source_packet_cached": bool(source_packet_cached),
+        "source_scoring_included": bool(source_scoring_included),
         "source_private": source_private,
         "raw_bytes": float(raw_bytes),
         "framed_bytes": framed,
         "cacheline_bytes": _round_up(framed, 64),
         "batch64_bytes": framed * 64.0,
+        "source_scoring_ms_per_question": source_scoring_ms_per_question,
+        "source_scoring_total_s": source_scoring_total_s,
+        "packet_build_ms_per_question": packet_build_ms_per_question,
+        "receiver_decode_p50_us": receiver_decode_p50_us,
+        "receiver_decode_p95_us": receiver_decode_p95_us,
         "source_text_exposed": bool(source_text_exposed),
         "source_kv_exposed": bool(source_kv_exposed),
         "source_hidden_or_score_vector_exposed": bool(source_hidden_or_score_vector_exposed),
         "native_measured": bool(native_measured),
+        "native_claim_allowed": bool(native_claim_allowed),
         "measurement_status": measurement_status,
         "nvidia_vllm_required": bool(nvidia_vllm_required),
         "claim_allowed": claim_allowed,
@@ -207,31 +237,99 @@ def _packet_rows(comparator: dict[str, Any]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for row in comparator["rows"]:
         method = f"LatentWire {row['dataset']} {row['split']} packet"
-        rows.append(
-            _record(
-                row_id=f"latentwire_{row['row_id']}",
-                row_group="LatentWire packet",
-                method=method,
-                communicated_object="task-level candidate evidence packet",
-                raw_bytes=float(row["payload_bytes"]),
-                framed_bytes=float(row["framed_record_bytes"]),
-                source_text_exposed=bool(row["source_text_exposed"]),
-                source_kv_exposed=bool(row["source_kv_exposed"]),
-                native_measured=True,
-                measurement_status="mac_local_artifact",
-                claim_allowed=(
-                    "source-private byte/exposure accounting with local benchmark accuracy; "
-                    "not a native GPU serving row"
+        source_scoring_ms = row.get("source_scoring_ms_per_question")
+        source_scoring_total_s = (
+            None
+            if source_scoring_ms is None or row.get("eval_rows") is None
+            else float(source_scoring_ms) * float(row["eval_rows"]) / 1000.0
+        )
+        receiver_p50_us = row.get("receiver_decode_p50_us")
+        receiver_p95_us = row.get("receiver_decode_p95_us")
+        rows.extend(
+            [
+                _record(
+                    row_id=f"latentwire_{row['row_id']}_cached_source",
+                    systems_row_id="latentwire_packet_cached_source",
+                    row_group="LatentWire packet",
+                    systems_scope="communication_object",
+                    method=f"{method} (cached source)",
+                    communicated_object="cached-source task-level candidate evidence packet",
+                    source_packet_cached=True,
+                    source_scoring_included=False,
+                    raw_bytes=float(row["payload_bytes"]),
+                    framed_bytes=float(row["framed_record_bytes"]),
+                    receiver_decode_p50_us=(
+                        None if receiver_p50_us is None else float(receiver_p50_us)
+                    ),
+                    receiver_decode_p95_us=(
+                        None if receiver_p95_us is None else float(receiver_p95_us)
+                    ),
+                    source_text_exposed=bool(row["source_text_exposed"]),
+                    source_kv_exposed=bool(row["source_kv_exposed"]),
+                    native_measured=False,
+                    native_claim_allowed=False,
+                    measurement_status="cached_source_communication_object",
+                    claim_allowed=(
+                        "source-private packet byte/exposure accounting only; source scoring excluded"
+                    ),
+                    overclaim_guard=(
+                        "This row is the object that crosses the interface, not an end-to-end "
+                        "source-scoring or native serving latency row."
+                    ),
+                    source_url=row["artifact_path"],
+                    notes=(
+                        f"accuracy={row['matched_accuracy_mean']:.3f}; "
+                        f"headline_eligible={str(row['headline_eligible']).lower()}"
+                    ),
                 ),
-                overclaim_guard=(
-                    "Use as a packet byte/exposure row only; native GPU serving speed is still unmeasured."
+                _record(
+                    row_id=f"latentwire_{row['row_id']}_end_to_end_source_scoring",
+                    systems_row_id="latentwire_packet_end_to_end_source_scoring",
+                    row_group="LatentWire packet",
+                    systems_scope="end_to_end_source_scoring",
+                    method=f"{method} (source scoring disclosed)",
+                    communicated_object="same packet with source scoring disclosed separately",
+                    source_packet_cached=False,
+                    source_scoring_included=True,
+                    raw_bytes=float(row["payload_bytes"]),
+                    framed_bytes=float(row["framed_record_bytes"]),
+                    source_scoring_ms_per_question=(
+                        None if source_scoring_ms is None else float(source_scoring_ms)
+                    ),
+                    source_scoring_total_s=source_scoring_total_s,
+                    packet_build_ms_per_question=None,
+                    receiver_decode_p50_us=(
+                        None if receiver_p50_us is None else float(receiver_p50_us)
+                    ),
+                    receiver_decode_p95_us=(
+                        None if receiver_p95_us is None else float(receiver_p95_us)
+                    ),
+                    source_text_exposed=bool(row["source_text_exposed"]),
+                    source_kv_exposed=bool(row["source_kv_exposed"]),
+                    native_measured=False,
+                    native_claim_allowed=False,
+                    measurement_status=(
+                        "mac_local_end_to_end_source_scoring_disclosed"
+                        if source_scoring_ms is not None
+                        else "mac_local_end_to_end_source_scoring_missing_phase_trace"
+                    ),
+                    claim_allowed=(
+                        "source-private packet byte/exposure accounting with source scoring timing "
+                        "disclosed; not a native GPU serving row"
+                    ),
+                    overclaim_guard=(
+                        "Do not merge this row with the cached-source object row when making TTFT, "
+                        "TPOT, HBM, goodput, or native baseline claims."
+                    ),
+                    source_url=row["artifact_path"],
+                    notes=(
+                        f"accuracy={row['matched_accuracy_mean']:.3f}; "
+                        f"source_scoring_ms_per_question={source_scoring_ms}; "
+                        f"receiver_decode_p50_us={receiver_p50_us}; "
+                        f"receiver_decode_p95_us={receiver_p95_us}"
+                    ),
                 ),
-                source_url=row["artifact_path"],
-                notes=(
-                    f"accuracy={row['matched_accuracy_mean']:.3f}; "
-                    f"headline_eligible={str(row['headline_eligible']).lower()}"
-                ),
-            )
+            ]
         )
     return rows
 
@@ -243,6 +341,7 @@ def _control_rows(comparator: dict[str, Any], source_config: dict[str, Any]) -> 
         _record(
             row_id="same_byte_text_control_arc",
             row_group="local control",
+            systems_scope="local_control",
             method="Same-byte structured text control (ARC)",
             communicated_object="text-form control with same packet budget",
             raw_bytes=float(arc["payload_bytes"]),
@@ -256,8 +355,39 @@ def _control_rows(comparator: dict[str, Any], source_config: dict[str, Any]) -> 
             notes=f"same-byte text accuracy={arc['same_byte_text_accuracy']:.3f}",
         ),
         _record(
+            row_id="source_score_vector_fp16_floor",
+            row_group="state relay floor",
+            systems_scope="source_state_floor",
+            method="Four-choice fp16 score-vector relay floor",
+            communicated_object="source score vector, fp16",
+            raw_bytes=8.0,
+            framed_bytes=8.0,
+            source_hidden_or_score_vector_exposed=True,
+            measurement_status="score_vector_floor_not_source_private",
+            claim_allowed="source-state exposure floor only; not a source-private packet",
+            overclaim_guard="This row exposes a source score vector; do not claim it is a LatentWire packet.",
+            source_url=arc["artifact_path"],
+            notes="4 candidate scores times fp16.",
+        ),
+        _record(
+            row_id="source_logit_vector_fp16_floor",
+            row_group="state relay floor",
+            systems_scope="source_state_floor",
+            method="Four-choice fp16 logit-vector relay floor",
+            communicated_object="source logit vector, fp16",
+            raw_bytes=8.0,
+            framed_bytes=8.0,
+            source_hidden_or_score_vector_exposed=True,
+            measurement_status="logit_vector_floor_not_source_private",
+            claim_allowed="source-state exposure floor only; not a source-private packet",
+            overclaim_guard="This row exposes a source logit vector; do not claim it is a LatentWire packet.",
+            source_url=arc["artifact_path"],
+            notes="4 candidate logits times fp16; kept separate from score-vector floor.",
+        ),
+        _record(
             row_id="hidden_vector_fp16_floor",
             row_group="state relay floor",
+            systems_scope="source_state_floor",
             method="One hidden-vector fp16 relay floor",
             communicated_object="one source hidden vector, fp16",
             raw_bytes=hidden_bytes,
@@ -286,6 +416,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="qjl_1bit_kv_floor",
             row_group="KV/source-state floor",
+            systems_scope="kv_state_floor",
             method="1-bit/KV-element accounting floor",
             communicated_object="one-token K+V state at 1 bit/element",
             raw_bytes=qjl1,
@@ -303,6 +434,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="kivi_2bit_kv_floor",
             row_group="KV/source-state floor",
+            systems_scope="kv_state_floor",
             method="KIVI 2-bit KV floor",
             communicated_object="one-token K+V state at 2 bits/element",
             raw_bytes=kivi2,
@@ -317,6 +449,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="q_kvcomm_6x_floor",
             row_group="KV communication floor",
+            systems_scope="kv_communication_floor",
             method="Q-KVComm optimistic 6x floor",
             communicated_object="compressed source KV cache representation",
             raw_bytes=q_kvcomm_6x,
@@ -333,6 +466,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="kvquant_3bit_kv_floor",
             row_group="KV/source-state floor",
+            systems_scope="kv_state_floor",
             method="KVQuant 3-bit proxy floor",
             communicated_object="one-token K+V state at 3 bits/element",
             raw_bytes=kvquant3,
@@ -349,6 +483,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="turboquant_3p5bit_kv_floor",
             row_group="KV/source-state floor",
+            systems_scope="kv_state_floor",
             method="TurboQuant 3.5-bit KV floor",
             communicated_object="one-token K+V state at 3.5 bits/element",
             raw_bytes=turbo35,
@@ -363,6 +498,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="kvcomm30_fp16_floor",
             row_group="KV communication floor",
+            systems_scope="kv_communication_floor",
             method="KVComm 30% fp16 KV floor",
             communicated_object="selected source KV layers, fp16",
             raw_bytes=kvcomm30,
@@ -377,6 +513,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="c2c_fp16_kv_floor",
             row_group="KV communication floor",
+            systems_scope="kv_communication_floor",
             method="C2C one-token fp16 KV floor",
             communicated_object="projected/fused source KV cache",
             raw_bytes=fp16_kv,
@@ -391,6 +528,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="kvcomm_cross_context_fp16_floor",
             row_group="KV communication floor",
+            systems_scope="kv_communication_floor",
             method="KVCOMM cross-context fp16 KV floor",
             communicated_object="aligned/reused source KV cache",
             raw_bytes=fp16_kv,
@@ -405,6 +543,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="vllm_pagedattention_fp16_kv_floor",
             row_group="serving substrate",
+            systems_scope="serving_substrate",
             method="vLLM/PagedAttention one-token KV floor",
             communicated_object="paged KV-cache serving substrate",
             raw_bytes=fp16_kv,
@@ -418,6 +557,7 @@ def _external_rows(source_config: dict[str, Any]) -> list[dict[str, Any]]:
         _record(
             row_id="sglang_radixattention_fp16_kv_floor",
             row_group="serving substrate",
+            systems_scope="serving_substrate",
             method="SGLang/RadixAttention one-token KV floor",
             communicated_object="KV-cache reuse serving substrate",
             raw_bytes=fp16_kv,
@@ -491,7 +631,12 @@ def _write_tex(path: pathlib.Path, payload: dict[str, Any]) -> None:
     selected = [
         row
         for row in payload["rows"]
-        if row["row_group"] in {"LatentWire packet", "KV communication floor", "KV/source-state floor"}
+        if row["row_group"] in {
+            "LatentWire packet",
+            "state relay floor",
+            "KV communication floor",
+            "KV/source-state floor",
+        }
     ]
     lines = [
         r"\begin{table}[t]",
@@ -647,13 +792,32 @@ def build_systems_boundary_figure_table(
         + _external_rows(source_config)
     )
     packet_rows = [row for row in rows if row["row_group"] == "LatentWire packet"]
+    cached_packet_rows = [
+        row for row in packet_rows if row["systems_row_id"] == "latentwire_packet_cached_source"
+    ]
+    e2e_packet_rows = [
+        row
+        for row in packet_rows
+        if row["systems_row_id"] == "latentwire_packet_end_to_end_source_scoring"
+    ]
     source_state_rows = [
         row
         for row in rows
         if row["source_kv_exposed"] or row["source_hidden_or_score_vector_exposed"]
     ]
+    dense_source_state_rows = [
+        row
+        for row in source_state_rows
+        if row["source_kv_exposed"] or row["row_id"] == "hidden_vector_fp16_floor"
+    ]
+    score_or_logit_rows = [
+        row
+        for row in source_state_rows
+        if row["row_id"] in {"source_score_vector_fp16_floor", "source_logit_vector_fp16_floor"}
+    ]
     max_packet = max(row["framed_bytes"] for row in packet_rows)
-    min_state_floor = min(row["framed_bytes"] for row in source_state_rows)
+    min_state_floor = min(row["framed_bytes"] for row in dense_source_state_rows)
+    min_score_or_logit_floor = min(row["framed_bytes"] for row in score_or_logit_rows)
     checks = [
         {
             "check": "packet_rows_remain_source_private",
@@ -667,9 +831,32 @@ def build_systems_boundary_figure_table(
             "value": len(packet_rows),
         },
         {
-            "check": "source_state_floor_exceeds_max_packet_by_50x",
+            "check": "cached_source_and_end_to_end_packet_rows_are_split",
+            "pass": len(cached_packet_rows) == len(e2e_packet_rows) == len(comparator["rows"]),
+            "value": {
+                "cached_source_packet_rows": len(cached_packet_rows),
+                "end_to_end_packet_rows": len(e2e_packet_rows),
+            },
+        },
+        {
+            "check": "packet_rows_forbid_native_claims",
+            "pass": all(
+                not row["native_measured"] and not row["native_claim_allowed"] for row in packet_rows
+            ),
+            "value": len(packet_rows),
+        },
+        {
+            "check": "dense_source_state_floor_exceeds_max_packet_by_50x",
             "pass": min_state_floor / max_packet >= 50.0,
             "value": min_state_floor / max_packet,
+        },
+        {
+            "check": "score_and_logit_floors_are_marked_non_private",
+            "pass": all(
+                row["source_hidden_or_score_vector_exposed"] and not row["source_private"]
+                for row in score_or_logit_rows
+            ),
+            "value": len(score_or_logit_rows),
         },
         {
             "check": "native_nvidia_rows_marked_pending",
@@ -697,11 +884,16 @@ def build_systems_boundary_figure_table(
         "max_packet_framed_bytes": max_packet,
         "min_source_state_floor_bytes": min_state_floor,
         "min_source_state_floor_ratio_vs_max_packet": min_state_floor / max_packet,
+        "min_score_or_logit_floor_bytes": min_score_or_logit_floor,
+        "min_score_or_logit_floor_ratio_vs_max_packet": min_score_or_logit_floor / max_packet,
+        "cached_source_packet_row_count": len(cached_packet_rows),
+        "end_to_end_source_scoring_packet_row_count": len(e2e_packet_rows),
         "native_nvidia_complete": False,
         "claim_scope": (
-            "Paper-ready systems boundary artifact: LatentWire rows are fixed-byte source-private task "
-            "packets; KV/cache rows are byte floors or pending native serving baselines. The artifact "
-            "supports byte/exposure accounting, not a native C2C/KVComm/TurboQuant/QJL/vLLM/SGLang win."
+            "Paper-ready systems boundary artifact: LatentWire cached-source rows count the fixed-byte "
+            "source-private packet object; paired end-to-end rows disclose source scoring separately. "
+            "KV/cache rows are byte floors or pending native serving baselines. The artifact supports "
+            "byte/exposure accounting, not a native C2C/KVComm/TurboQuant/QJL/vLLM/SGLang win."
         ),
     }
     payload = {

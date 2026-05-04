@@ -30,6 +30,7 @@ def _row(
         "receiver_decode_p50_us": 10.0,
         "receiver_decode_p95_us": 20.0,
         "row_id": row_id,
+        "source_scoring_ms_per_question": 2.5,
         "split": split,
         "target_accuracy": accuracy - 0.08,
     }
@@ -86,7 +87,7 @@ def test_byte_amplification_ablation_writes_guarded_rows(tmp_path) -> None:
 
     assert payload["pass_gate"] is True
     assert payload["headline"]["benchmark_row_count"] == 2
-    assert payload["headline"]["interface_row_count"] == 20
+    assert payload["headline"]["interface_row_count"] == 24
     assert payload["headline"]["min_packet_framed_bytes"] == 4.0
     assert payload["headline"]["max_packet_framed_bytes"] == 15.0
     assert payload["headline"]["max_single_request_cacheline_amplification"] == 16.0
@@ -96,20 +97,28 @@ def test_byte_amplification_ablation_writes_guarded_rows(tmp_path) -> None:
     rows = {
         (row["benchmark_row_id"], row["interface_id"]): row for row in payload["rows"]
     }
-    packet = rows[("arc_challenge_test_12b", "latentwire_framed_packet")]
+    packet = rows[("arc_challenge_test_12b", "latentwire_packet_cached_source")]
+    e2e = rows[("arc_challenge_test_12b", "latentwire_packet_end_to_end_source_scoring")]
     padded = rows[("hellaswag_full_compact_1b", "latentwire_cacheline_padded_packet")]
     score = rows[("hellaswag_full_compact_1b", "source_score_vector_fp16_floor")]
+    logit = rows[("hellaswag_full_compact_1b", "source_logit_vector_fp16_floor")]
     qjl = rows[("arc_challenge_test_12b", "qjl_1bit_kv_floor")]
     c2c = rows[("arc_challenge_test_12b", "c2c_fp16_kv_floor")]
 
     assert packet["source_private"] is True
-    assert packet["native_measured"] is True
+    assert packet["native_measured"] is False
+    assert packet["source_scoring_ms_per_question"] is None
+    assert e2e["source_private"] is True
+    assert e2e["source_scoring_ms_per_question"] == 2.5
+    assert e2e["receiver_decode_p50_us"] == 10.0
     assert padded["source_private"] is True
     assert padded["framed_or_state_bytes"] == 64.0
     assert padded["exact_prediction_equivalence_to_packet"] == 1.0
     assert score["source_private"] is False
     assert score["source_score_vector_exposed"] is True
     assert score["framed_or_state_bytes"] == 8.0
+    assert logit["source_private"] is False
+    assert logit["framed_or_state_bytes"] == 8.0
     assert qjl["source_kv_exposed"] is True
     assert qjl["framed_or_state_bytes"] == 768.0
     assert c2c["framed_or_state_bytes"] == 12288.0
@@ -139,7 +148,7 @@ def test_byte_amplification_csv_and_markdown_are_parseable(tmp_path) -> None:
     )
     manifest = json.loads((tmp_path / "out" / "manifest.json").read_text(encoding="utf-8"))
 
-    assert len(rows) == 20
+    assert len(rows) == 24
     assert "overclaim_guard" in rows[0]
     assert "Source-Private Byte-Amplification Ablation" in md
     assert "QJL" in md or "qjl" in md

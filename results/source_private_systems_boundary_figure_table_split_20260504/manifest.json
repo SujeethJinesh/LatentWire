@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_figure_data.json",
+      "sha256": "81a776e985428f6945c22ccc3b7921016afb4f0a2e32d4b4a7af4b04cea9ee49"
+    },
+    {
+      "path": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_figure_data.csv",
+      "sha256": "214a77061c3584885649dc3a3adc93c0f4b5d0493b0658a7ccf4a2c40b2b8ea8"
+    },
+    {
+      "path": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_table.md",
+      "sha256": "13b550788b3d3cef3147e21a3cf6922f1873611cb1f1b95fa6e6cb2e88afa2d9"
+    },
+    {
+      "path": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_table.tex",
+      "sha256": "c7410b3045b8316915cee7770c56eca7d9f35b8f36fcd10b5a1caa50d56d495b"
+    },
+    {
+      "path": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_waterfall.svg",
+      "sha256": "f302d48ab673f8f0448b2b46e43d08ceed0ac94f2c32e83e2c8c3946dd3e12a8"
+    }
+  ],
+  "gate": "source_private_systems_boundary_figure_table",
+  "headline": {
+    "cached_source_packet_row_count": 4,
+    "claim_scope": "Paper-ready systems boundary artifact: LatentWire cached-source rows count the fixed-byte source-private packet object; paired end-to-end rows disclose source scoring separately. KV/cache rows are byte floors or pending native serving baselines. The artifact supports byte/exposure accounting, not a native C2C/KVComm/TurboQuant/QJL/vLLM/SGLang win.",
+    "end_to_end_source_scoring_packet_row_count": 4,
+    "max_packet_framed_bytes": 11.0,
+    "min_packet_framed_bytes": 4.0,
+    "min_score_or_logit_floor_bytes": 8.0,
+    "min_score_or_logit_floor_ratio_vs_max_packet": 0.7272727272727273,
+    "min_source_state_floor_bytes": 768.0,
+    "min_source_state_floor_ratio_vs_max_packet": 69.81818181818181,
+    "native_nvidia_complete": false,
+    "packet_row_count": 8,
+    "pass_gate": true
+  },
+  "pass_gate": true
+}

@@ -21236,3 +21236,53 @@ tiny answer packet. The extra id has a small hint of signal because removing it
 hurts a little, but the improvement is too small and similar controls do just
 as well. For the paper, this is useful because it tells us not to sell this
 SAE/common-basis branch as the core ICLR method.
+
+## 2026-05-04 Source-Private Systems Boundary Split
+
+Implemented and rebuilt the systems-boundary split requested by the systems
+review path.
+
+- byte-amplification artifact:
+  `results/source_private_byte_amplification_ablation_split_20260504/`;
+- systems figure/table artifact:
+  `results/source_private_systems_boundary_figure_table_split_20260504/`;
+- paper memo:
+  `paper/source_private_systems_boundary_split_20260504.md`;
+- references:
+  `references/689_source_private_systems_boundary_split_refs_20260504.md`.
+
+Code changes: `build_source_private_byte_amplification_ablation.py` and
+`build_source_private_systems_boundary_figure_table.py` now emit paired
+LatentWire rows for `latentwire_packet_cached_source` and
+`latentwire_packet_end_to_end_source_scoring`. The systems table also carries
+`systems_row_id`, `systems_scope`, source-scoring inclusion flags,
+source-scoring timing fields, receiver-decode timing fields, and
+`native_claim_allowed=false`. fp16 source-score and source-logit vector floors
+are now explicit non-private rows.
+
+Outcome: both artifacts pass. The byte-amplification artifact covers 4
+benchmark rows and 48 interface rows. The systems-boundary artifact emits 8
+LatentWire packet rows: 4 cached-source communication-object rows and 4
+end-to-end source-scoring disclosure rows. All packet rows remain source-private
+and forbid native claims. The packet range is `4-11B` framed; the score/logit
+floors are `8B` and marked non-private; the minimum dense source-state/KV floor
+is the `768B` QJL-style one-bit KV floor, which is `69.8x` the largest packet
+and `12.0x` a single `64B` padded packet.
+
+The only row with complete Mac phase timing in the comparator is HellaSwag
+`validation_first1024`: source scoring is `488.631 ms/question`, receiver
+decode p50 is `28.959 us`, and receiver decode p95 is `30.375 us`. ARC,
+OpenBookQA, and full HellaSwag compaction rows remain marked as missing phase
+traces instead of inheriting speed claims.
+
+Decision: promote the systems-boundary split as a defensible paper contribution.
+It supports byte/exposure accounting and threat-model clarity, not native
+serving throughput. ICLR still needs a positive learned method or native
+NVIDIA rows; COLM can use this as a strong rigor/systems-boundary component.
+The next exact method gate is a rate-distortion / denoising syndrome packet on
+HellaSwag Qwen-to-Phi, with source-row shuffle, code permutation,
+candidate-roll, target-derived-code, and label-permutation controls.
+
+Lay explanation: we made the tables separate "the tiny message sent" from "the
+cost of deciding what tiny message to send." The message can be only a few
+bytes, but computing it is not free; the paper now states those separately.

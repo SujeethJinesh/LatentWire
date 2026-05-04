@@ -1,0 +1,33 @@
+{
+  "files": [
+    {
+      "path": "results/source_private_byte_amplification_ablation_split_20260504/byte_amplification_ablation.json",
+      "sha256": "25c846c1adcec2514294edc9accdf49e1512d5d9def6e44d5b69cc23b38b5340"
+    },
+    {
+      "path": "results/source_private_byte_amplification_ablation_split_20260504/byte_amplification_ablation.csv",
+      "sha256": "d96e25c78d459c6a0841f9da2d0a9804163cb280590eb2b226bd5711b986f664"
+    },
+    {
+      "path": "results/source_private_byte_amplification_ablation_split_20260504/byte_amplification_ablation.md",
+      "sha256": "dfadbba5be67c2218aa61c702c7ee550a80dc3d9629d55c8bd49fa85f797b6bb"
+    }
+  ],
+  "gate": "source_private_byte_amplification_ablation",
+  "headline": {
+    "benchmark_row_count": 4,
+    "interface_row_count": 48,
+    "max_packet_framed_bytes": 11.0,
+    "max_single_request_cacheline_amplification": 16.0,
+    "max_single_request_dma_amplification": 32.0,
+    "min_kv_floor_bytes": 768.0,
+    "min_kv_floor_ratio_vs_cacheline_packet": 12.0,
+    "min_kv_floor_ratio_vs_max_packet": 69.81818181818181,
+    "min_packet_framed_bytes": 4.0,
+    "native_nvidia_complete": false,
+    "pass_gate": true,
+    "score_floor_bytes": 8.0,
+    "score_floor_ratio_vs_min_packet": 2.0
+  },
+  "pass_gate": true
+}

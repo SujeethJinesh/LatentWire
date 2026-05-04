@@ -2322,5 +2322,12 @@
     "path": "references/688_hellaswag_decision_sparse_common_basis_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the failed HellaSwag decision-supervised sparse common-basis hidden packet gate, recording negative SAE/crosscoder atom evidence, atom-shuffle and top-atom knockout controls, and boundaries against SAE universality, sparse crosscoders, prefix/gist tokens, latent reasoning, KV sharing, QJL, and TurboQuant."
+  },
+  {
+    "num": 689,
+    "slug": "source_private_systems_boundary_split_refs_20260504",
+    "path": "references/689_source_private_systems_boundary_split_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the systems-boundary split, recording cached-source packet versus end-to-end source-scoring disclosure rows and boundaries against C2C, KVComm, DroidSpeak, Interlat, QJL, KIVI, KVQuant, TurboQuant, vLLM, SGLang, prefix tuning, and gist tokens."
   }
 ]
