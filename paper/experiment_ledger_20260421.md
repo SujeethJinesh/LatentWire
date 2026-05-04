@@ -22403,3 +22403,49 @@ Lay explanation: Qwen often has the right answer in its best two guesses, but
 we still cannot tell Phi when to use those guesses. The safety rule learned on
 training questions found no trustworthy pattern, so the receiver correctly did
 nothing rather than making risky switches.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Quantized Score Packet Gate
+
+Implemented and ran the reviewer-requested equal-byte quantized source-score
+packet comparator on the official-train Qwen-to-Phi validation `1024:2048`
+surface. The source packet compresses Qwen's four candidate scores into
+`1B/2B/4B/8B` raw packets, using either direct row-wise z-score scalar
+quantization or a deterministic random rotation followed by scalar
+quantization. Phi combines the reconstructed score packet with Phi-local scores
+using a frozen official-train blend/threshold receiver.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_quantized_score_packet_gate.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_quantized_score_packet_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_quantized_score_packet_gate_20260504_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_to_phi_quantized_score_packet_gate_20260504.md`;
+- references:
+  `references/711_qwen_to_phi_quantized_score_packet_refs_20260504.md`.
+
+Outcome: fail. The best packet is
+`quantized_score_packet_rotated_uniform_zscore_2B`, with `2B` raw / `5B`
+framed payload, `0.468750` accuracy, delta `+0.001302` versus fixed hybrid,
+and CI95 low `-0.003906`. It produces only `3` helps and `2` harms. Fixed
+hybrid is `0.467448`; candidate-only is `0.455729`; raw source-score logit
+fusion is harmful at `0.391927`; source top1/top2 oracle remains high at
+`0.675781`.
+
+Slice diagnosis: slice `1024` is weakly positive (`+0.007812`, CI95 low
+`0.000000`, `3` helps / `0` harms), but slice `1536` is negative
+(`-0.005208`, CI95 low `-0.013021`, `0` helps / `2` harms). The best
+destructive control is a zero-source packet tied with fixed hybrid. There is
+zero official-train/eval content overlap.
+
+Decision: demote shallow score-level packet methods on Qwen-to-Phi. Top1/top2
+ambiguity buckets, raw source-score logit fusion, and equal-byte quantized
+score packets all fail the frozen receiver gate. The next live branch should
+pivot back to target-native resonance receivers with selective hidden/logit
+matching and strict source-specific destructive controls.
+
+Lay explanation: we squeezed Qwen's answer preferences into tiny 1-8 byte
+messages and let Phi use them with its own scores. The best tiny message helped
+three questions but hurt two, and one validation slice got worse. That is not
+reliable enough to claim real cross-model communication.

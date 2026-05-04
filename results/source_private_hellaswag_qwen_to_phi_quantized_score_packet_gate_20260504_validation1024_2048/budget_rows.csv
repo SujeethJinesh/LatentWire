@@ -1,0 +1,5 @@
+raw_payload_bytes,framed_record_bytes,best_method,best_accuracy,best_delta_vs_fixed_hybrid,best_ci95_low_vs_fixed_hybrid,best_override_count_vs_fixed_hybrid
+1,4,quantized_score_packet_uniform_zscore_1B,0.46484375,-0.0026041666666666665,-0.010416666666666666,11
+2,5,quantized_score_packet_rotated_uniform_zscore_2B,0.46875,0.0013020833333333333,-0.00390625,8
+4,7,quantized_score_packet_rotated_uniform_zscore_4B,0.46875,0.0013020833333333333,-0.00390625,8
+8,11,quantized_score_packet_rotated_uniform_zscore_8B,0.46875,0.0013020833333333333,-0.00390625,8

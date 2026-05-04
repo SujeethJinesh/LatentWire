@@ -2476,5 +2476,12 @@
     "path": "references/710_qwen_to_phi_top2_ambiguity_bucket_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the failed official-train Qwen-to-Phi top1/top2 ambiguity-bucket gate, recording novelty boundaries against distillation, prefix/prompt/context compression, representation alignment, logit fusion, selective defer, C2C/KV communication, QJL/TurboQuant/KIVI/KVQuant, and vLLM/SGLang systems baselines."
+  },
+  {
+    "num": 711,
+    "slug": "qwen_to_phi_quantized_score_packet_refs_20260504",
+    "path": "references/711_qwen_to_phi_quantized_score_packet_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the failed Qwen-to-Phi equal-byte quantized source-score packet gate, recording novelty boundaries against knowledge distillation, decoding-time logit composition, selective defer, C2C, QJL/TurboQuant, and KV-cache compression systems baselines."
   }
 ]
