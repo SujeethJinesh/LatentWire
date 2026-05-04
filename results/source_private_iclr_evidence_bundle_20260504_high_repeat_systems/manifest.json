@@ -1,0 +1,22 @@
+{
+  "artifact_sha256": {
+    "contribution_matrix.csv": "33e9e50ea65984692bce4216c322b1cea6bb6f8c6da19b462634d048ef581c42",
+    "iclr_evidence_bundle.json": "0957a6436910c56afd51a28510569a6ee9d19aef96f25551c33671736ccf0287",
+    "iclr_evidence_bundle.md": "e1c77795e085893c2f690182d5230375c6ef5b4d708daef2f96dc78cab74ec64",
+    "novelty_matrix.csv": "41d856b71a65da86375d1dfcdeac7e8003cdca42bfdfbeb022ff5719d283cc36",
+    "reproduce_iclr_evidence_bundle.sh": "9a36a3570a0fb520ffbce04e37a38adb5773f4db6c331128ead473ab43bcfeda"
+  },
+  "artifacts": [
+    "iclr_evidence_bundle.json",
+    "iclr_evidence_bundle.md",
+    "novelty_matrix.csv",
+    "contribution_matrix.csv",
+    "reproduce_iclr_evidence_bundle.sh",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "./venv_arm64/bin/python scripts/build_source_private_iclr_evidence_bundle.py --output-dir results/source_private_iclr_evidence_bundle_20260504_high_repeat_systems",
+  "pass_gate": true,
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "script_sha256": "d1e1189b3144dd6e3b36f039d453b487a70e484fad340a11987a4a8435bc81cb"
+}

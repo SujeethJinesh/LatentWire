@@ -2406,5 +2406,12 @@
     "path": "references/700_hellaswag_terminal_tail_stability_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the no-method-change HellaSwag terminal-tail stability rerun, recording the HellaSwag benchmark source, paired-bootstrap uncertainty boundary, and the safe claim that validation 0:9216 remains strong while full validation is still blocked by jackknife instability."
+  },
+  {
+    "num": 701,
+    "slug": "hellaswag_qwen_to_phi_conditional_innovation_codec_refs_20260504",
+    "path": "references/701_hellaswag_qwen_to_phi_conditional_innovation_codec_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the failed Qwen-to-Phi conditional innovation codec gate, recording side-information coding, prompt/prefix/gist, C2C/KVComm, quantization, shared-basis, and diffusion/refinement boundaries."
   }
 ]

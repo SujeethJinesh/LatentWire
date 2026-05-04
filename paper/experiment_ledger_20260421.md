@@ -21941,3 +21941,75 @@ Lay explanation: we reran the last HellaSwag slice with the same tiny hidden
 clue and a more precise uncertainty check. The clue still helps on average,
 but one held-out version of the training recipe is too uncertain, so this is
 useful evidence rather than a full benchmark pass.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Conditional Innovation Codec Gate
+
+Implemented and ran the conditional innovation codec gate recommended by the
+current decision review: fit a Phi-side ghost predictor of Qwen's candidate
+frontier on official HellaSwag train rows, then transmit only a tiny quantized
+Qwen residual packet to the Phi receiver.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_conditional_innovation_codec_gate.py`;
+- tests:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_conditional_innovation_codec_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_conditional_innovation_codec_gate_20260504_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_to_phi_conditional_innovation_codec_20260504.md`;
+- references:
+  `references/701_hellaswag_qwen_to_phi_conditional_innovation_codec_refs_20260504.md`.
+
+Outcome: fail. The selected official-train configuration is `1B` raw / `4B`
+framed and exactly matches fixed hybrid on eval: conditional innovation
+accuracy `0.467448`, fixed hybrid `0.467448`, delta `0.000000`, CI95 low
+`0.000000`, and `0` overrides. The packet is above candidate-only
+`0.455729` and ghost-only `0.309896`, but only because it degenerates to fixed
+hybrid. Destructive controls are lower, with best destructive
+`code_value_permutation_innovation_control` at `0.388021`.
+
+Decision: rule out this shallow linear ghost plus discrete residual codec as a
+positive ICLR branch. The conditional side-information framing remains
+scientifically useful, but the next branch must use a stronger learned
+receiver/interface and prove nonzero beneficial source-conditioned overrides.
+The highest-priority method gate is now target-side self-compression /
+resonance first, followed by source packet conditioning with wrong-source and
+target-derived controls.
+
+Lay explanation: we asked Phi to guess what Qwen would think, then let Qwen
+send a tiny correction. The safest model ignored the correction and kept the
+old fixed answer packet, so this correction format did not create useful
+cross-model communication.
+
+## 2026-05-04 Mac Packet-Ring High-Repeat Systems Rerun
+
+Reran the Mac packet-ring transport microbench with a stricter high-repeat
+configuration and refreshed the native-readiness/evidence-bundle pointers to
+use the new artifact.
+
+- script:
+  `scripts/build_source_private_mac_packet_ring_transport_microbench.py`;
+- artifact:
+  `results/source_private_mac_packet_ring_transport_microbench_20260504_high_repeat/`;
+- native ledger:
+  `results/source_private_native_readiness_ledger_20260504_high_repeat/`;
+- evidence bundle:
+  `results/source_private_iclr_evidence_bundle_20260504_high_repeat_systems/`;
+- memo:
+  `paper/source_private_mac_packet_ring_transport_high_repeat_20260504.md`.
+
+Outcome: pass. The `1B` raw / `4B` framed packet has batch64 p50
+`0.643432 ns/request`, p95 `0.646390 ns/request`, CV `0.002467`, max packet CV
+`0.023542`, full-log p50 ratio `8.83x`, and KV-floor p50 ratio `542.33x`
+under `9` repeats and `1073741824` target bytes per repeat.
+
+Decision: this is now the systems-boundary artifact to cite for Mac-local
+source-private packet byte accounting and packed-record transport proxy
+evidence. It still does not allow native GPU serving claims. The exact systems
+blocker remains an NVIDIA/vLLM/SGLang run with TTFT, TPOT, goodput, memory,
+HBM/PCIe/NVLink bytes, and energy against C2C, KVComm, QJL, TurboQuant, KIVI,
+KVQuant, and text baselines.
+
+Lay explanation: this benchmark repeatedly moves tiny packet records through
+memory. The packet is stable and very small in the local test, but this does
+not prove end-to-end GPU serving speed.

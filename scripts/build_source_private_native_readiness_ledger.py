@@ -15,13 +15,13 @@ DEFAULT_FRONTIER = pathlib.Path(
     "train_donor_locked_rate_frontier.json"
 )
 DEFAULT_PACKET_RING = pathlib.Path(
-    "results/source_private_mac_packet_ring_transport_microbench_20260501/"
+    "results/source_private_mac_packet_ring_transport_microbench_20260504_high_repeat/"
     "packet_ring_transport_microbench.json"
 )
 DEFAULT_SERVING_SLO = pathlib.Path(
     "results/source_private_serving_slo_envelope_20260501/serving_slo_envelope.json"
 )
-DEFAULT_OUTPUT = pathlib.Path("results/source_private_native_readiness_ledger_20260501")
+DEFAULT_OUTPUT = pathlib.Path("results/source_private_native_readiness_ledger_20260504_high_repeat")
 
 CSV_COLUMNS = (
     "row_id",
