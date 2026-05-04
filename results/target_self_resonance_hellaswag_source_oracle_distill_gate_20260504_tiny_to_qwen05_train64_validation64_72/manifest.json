@@ -1,0 +1,42 @@
+{
+  "created_at": "2026-05-04T14:43:56.172521+00:00",
+  "files": {
+    "predictions.jsonl": "da7729bca194e8a5902fbd6e0f7f592396160c37c9e14509b74bc83ff13dc28d",
+    "row_summaries.csv": "262392d524f51c411a7394ff6dbc4d406c31005eec2b7e8b261437f8d8265205",
+    "source_eval_hidden_cache.json": "c705848969ff5b34a183a906136caa87389b3c84e6f20c1e488c0cbfd5d86b44",
+    "source_eval_hidden_cache.npz": "e59666995088ff7e96b43ae6ff99764719161e7a2ab0374352e3186a04d58cca",
+    "target_self_resonance_hellaswag_source_oracle_distill_gate.json": "cf5b2da7faf145200808685d0c51e16f5b060e05991064f96f9cf8b426f00201",
+    "target_self_resonance_hellaswag_source_oracle_distill_gate.md": "6f1424c836f69b40ba07971a26d24193227847c66298ea35ccc07860749a6ed8"
+  },
+  "headline": {
+    "best_destructive_accuracy": 0.25,
+    "best_destructive_by_accuracy": "zero_source_code",
+    "best_destructive_by_kl": "candidate_roll_source_code",
+    "best_destructive_mean_kl": 0.10745217574314844,
+    "kl_gain_vs_mean_oracle_slots": -0.008385498545136538,
+    "mean_oracle_slots_accuracy": 0.25,
+    "mean_oracle_slots_mean_kl": 0.11576635174448119,
+    "oracle_train_mean_kl_final": 0.059265098185278475,
+    "oracle_train_mean_kl_initial": 0.06603763694874942,
+    "paired_vs_mean_oracle_slots": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "mean_delta": 0.0,
+      "samples": 500
+    },
+    "paired_vs_source_top1_label_control": {
+      "ci95_high": 0.625,
+      "ci95_low": 0.0,
+      "mean_delta": 0.25,
+      "samples": 500
+    },
+    "source_oracle_accuracy": 0.25,
+    "source_oracle_agreement": 0.375,
+    "source_oracle_mean_kl": 0.12415185028961773,
+    "source_oracle_nonfinite_kl_count": 0,
+    "source_oracle_nonfinite_score_row_count": 0,
+    "source_top1_label_accuracy": 0.0,
+    "source_top1_or_top2_oracle_accuracy": 0.5
+  },
+  "pass_gate": false
+}

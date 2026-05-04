@@ -1,0 +1,42 @@
+{
+  "created_at": "2026-05-04T14:38:00.993479+00:00",
+  "files": {
+    "predictions.jsonl": "b878805c2546560f77dd771d132b566558c9d72a89131a2ddea398b2da3bdf19",
+    "row_summaries.csv": "df1bee8421546d7c9b6601ad127776430a070c80c0ab4134e4d5e2c98d696e77",
+    "source_eval_hidden_cache.json": "b3839bf8df2cf14821b42d51c7debaddd0695037f10a38f129fe596f5945b5e3",
+    "source_eval_hidden_cache.npz": "e59666995088ff7e96b43ae6ff99764719161e7a2ab0374352e3186a04d58cca",
+    "target_self_resonance_hellaswag_source_oracle_distill_gate.json": "6077685d0dc34663d1eb5df363661f1acbab872db7f6c8b88bb13e34d4aec840",
+    "target_self_resonance_hellaswag_source_oracle_distill_gate.md": "7019beb12c47a27db9e69bc019a148778ba6197cd0633fe2b5228655303f90a1"
+  },
+  "headline": {
+    "best_destructive_accuracy": 0.375,
+    "best_destructive_by_accuracy": "candidate_derangement",
+    "best_destructive_by_kl": "target_score_derived_code",
+    "best_destructive_mean_kl": 0.10745726865601357,
+    "kl_gain_vs_mean_oracle_slots": 0.023178413693273572,
+    "mean_oracle_slots_accuracy": 0.25,
+    "mean_oracle_slots_mean_kl": 0.14194645498272093,
+    "oracle_train_mean_kl_final": 0.08014476764947176,
+    "oracle_train_mean_kl_initial": 0.0695622842758894,
+    "paired_vs_mean_oracle_slots": {
+      "ci95_high": 0.0,
+      "ci95_low": -0.375,
+      "mean_delta": -0.125,
+      "samples": 500
+    },
+    "paired_vs_source_top1_label_control": {
+      "ci95_high": 0.375,
+      "ci95_low": 0.0,
+      "mean_delta": 0.125,
+      "samples": 500
+    },
+    "source_oracle_accuracy": 0.125,
+    "source_oracle_agreement": 0.25,
+    "source_oracle_mean_kl": 0.11876804128944736,
+    "source_oracle_nonfinite_kl_count": 0,
+    "source_oracle_nonfinite_score_row_count": 0,
+    "source_top1_label_accuracy": 0.0,
+    "source_top1_or_top2_oracle_accuracy": 0.5
+  },
+  "pass_gate": false
+}

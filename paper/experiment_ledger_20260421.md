@@ -22500,3 +22500,55 @@ question text for Qwen. On two more groups of questions, the tuned hidden
 tokens made Qwen behave almost exactly as if it had seen the full question.
 This means the hidden-token interface itself is real; the hard unsolved part
 is teaching another model or encoder to create those tokens without cheating.
+
+## 2026-05-04 HellaSwag Source-Oracle Prefix Distillation Gate
+
+Implemented and ran a source-conditioned oracle-prefix distillation gate after
+target self-resonance capacity passed through validation `0:64`. The bridge
+uses TinyLlama hidden summaries, projects them with train-fit PCA, and trains a
+small encoder to emit Qwen-native 8-token soft prefixes. The target never sees
+source text, source KV, raw source logits, or validation optimized target
+prefixes.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_source_oracle_distill_gate.py`;
+- test:
+  `tests/test_build_target_self_resonance_hellaswag_source_oracle_distill_gate.py`;
+- artifacts:
+  `results/target_self_resonance_hellaswag_source_oracle_distill_gate_20260504_tiny_to_qwen05_train16_validation64_72/`
+  and
+  `results/target_self_resonance_hellaswag_source_oracle_distill_gate_20260504_tiny_to_qwen05_train64_validation64_72/`;
+- memo:
+  `paper/target_self_resonance_source_oracle_distill_gate_20260504.md`;
+- relevant reference memos:
+  `references/714_source_conditioned_soft_prefix_selective_resonance_refs_20260504.md`
+  and
+  `references/715_source_private_systems_hardware_quantization_review_20260504.md`.
+
+Outcome: fail, with a useful diagnosis. The 16-row train smoke used a
+16-dimensional projected source code (`32` fp16 bytes). It improved KL versus
+the mean target prefix (`0.118768` versus `0.141946`) but dropped accuracy
+from `0.250000` to `0.125000`; candidate derangement reached `0.375000`
+accuracy, so the method clearly failed source-specificity. The 64-row train
+ablation removed the rank objection with a 64-dimensional source code
+(`128` fp16 bytes), but the method tied the mean target prefix and zero-source
+control at `0.250000` accuracy while worsening KL versus mean target slots
+(`0.124152` versus `0.115766`). Candidate-roll source-code control had the
+best destructive KL (`0.107452`).
+
+Source headroom remains visible on this slice: source top1/top2 oracle accuracy
+is `0.500000`, matching full-prompt Qwen accuracy, while source top1 alone is
+`0.000000`. The receiver is not extracting that conditional headroom.
+
+Decision: weaken generic source-hidden-to-oracle-prefix distillation as
+currently implemented. The target soft-prefix interface remains alive, but a
+projected hidden MLP is not a positive method. Do not widen this exact branch
+to the terminal-tail `9216:9344` gate. The next branch should be
+target-error-conditioned repair or ECC/syndrome-style top1/top2 ambiguity
+coding with wrong-row, candidate-roll, target-derived, source-index/rank/score,
+and same-byte controls.
+
+Lay explanation: we tried to teach a small translator to turn TinyLlama's
+hidden clue into the hidden Qwen tokens that replace the question. It learned
+something on the training rows, but on new rows it either hurt or behaved no
+better than giving Qwen no source clue at all.
