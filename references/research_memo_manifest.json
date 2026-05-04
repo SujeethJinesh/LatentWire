@@ -2532,5 +2532,12 @@
     "path": "references/719_sparse_resonance_packet_competitor_systems_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo for the Sparse Resonance Packet competitor and systems boundary, recording C2C/KV-cache communication competitors, TurboQuant/KIVI/KVQuant/QJL byte-floor baselines, utility-per-byte reporting, and no-throughput-claim boundaries."
+  },
+  {
+    "num": 720,
+    "slug": "target_aligned_feature_basis_scout_refs_20260504",
+    "path": "references/720_target_aligned_feature_basis_scout_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted primary-source scout for Sparse Resonance Packet target-aligned feature bases, covering SVCCA/CKA, relative representations, model stitching, Wasserstein Procrustes, SAE/universal SAE, crosscoders, transcoders, SAEBench, C2C, and activation-communication competitors with Mac-first ARC next experiments."
   }
 ]
