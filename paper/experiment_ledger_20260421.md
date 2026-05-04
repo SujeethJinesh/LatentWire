@@ -22094,3 +22094,49 @@ Lay explanation: we gave the target a tiny source clue and it fixed one
 example without breaking any. That is the first real sign this branch can steer
 the target, but the simple source answer shortcut was still better, so this is
 not yet strong enough for a paper.
+
+## 2026-05-04 Source-Codebook Candidate Repair Gates
+
+Implemented and ran two quantized source-codebook candidate repair gates after
+the residual-slot run showed usable source signal but poor conversion into
+target decisions.
+
+- target self-resonance script:
+  `scripts/build_target_self_resonance_hellaswag_source_codebook_candidate_repair_gate.py`;
+- target self-resonance artifact:
+  `results/target_self_resonance_hellaswag_source_codebook_candidate_repair_gate_20260504_tiny_to_qwen05_train64_validation72_80/`;
+- Qwen-to-Phi script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_top2_rival_codebook_gate.py`;
+- Qwen-to-Phi artifact:
+  `results/source_private_hellaswag_qwen_to_phi_top2_rival_codebook_gate_20260504_validation1024_2048/`;
+- memo:
+  `paper/source_codebook_candidate_repair_gates_20260504.md`;
+- references:
+  `references/704_source_codebook_candidate_repair_refs_20260504.md`.
+
+Outcome: fail, with stronger headroom diagnostics. On the tiny
+TinyLlama-to-Qwen target-resonance surface, the codebook repair matches the
+previous residual-slot accuracy at `0.500000` versus frozen target slots
+`0.375000`, but it remains below direct source-top1 `0.750000`, has CI95 low
+`0.000000` versus frozen slots, and a candidate-roll source-codebook control
+reaches `0.625000`. The source top-1/top-2 oracle is `1.000000`, so the pair
+contains the answer on the slice but the learned codebook does not route it.
+
+On the larger cached Qwen-to-Phi validation `1024:2048` surface, the protected
+top-2/rival codebook loses to fixed hybrid: `0.460938` versus `0.467448`,
+delta `-0.006510`, CI95 low `-0.014323`, with `2` helps and `7` harms over
+`13` overrides. The source-row shuffle codebook reaches `0.468750`, so the
+matched source code is not isolated. The source top-1/top-2 oracle remains
+large at `0.675781`.
+
+Decision: demote naive score-level source-codebook repair and protected
+top-2/rival bucket switching. The top-1/top-2 source pair has recoverable
+headroom, but simple buckets over source top pair plus Phi/local candidate
+features do not extract it robustly. The next branch should be a stronger
+learned uncertainty router or a return to target-latent codebook receivers,
+with explicit controls against logit fusion and source-choice copying.
+
+Lay explanation: the source can often narrow the answer down to two choices,
+but the learned receiver still cannot tell which of those two to trust. The
+oracle says there is useful information left, but the current codebook does
+not recover it.

@@ -2427,5 +2427,12 @@
     "path": "references/703_target_self_resonance_source_residual_slot_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the weak-but-failed TinyLlama-to-Qwen source-residual slot gate, recording novelty boundaries against soft prompts, prompt compression, query bottlenecks, representation alignment, C2C/KVComm, KV quantization, diffusion/refinement, and SAE/crosscoder interpretability."
+  },
+  {
+    "num": 704,
+    "slug": "source_codebook_candidate_repair_refs_20260504",
+    "path": "references/704_source_codebook_candidate_repair_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after failed TinyLlama-to-Qwen and Qwen-to-Phi source-codebook candidate repair gates, recording boundaries against logit fusion, prefix/context compression, C2C/KVComm, KV quantization/TurboQuant, and shared-basis interpretability work."
   }
 ]
