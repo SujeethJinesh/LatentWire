@@ -2490,5 +2490,12 @@
     "path": "references/712_target_self_resonance_capacity_extension_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after extending target self-resonance soft-prefix oracle capacity through HellaSwag validation 0:64, recording boundaries against prefix/prompt tuning, context compression, distillation/logit composition, relative representations, SAEs/crosscoders, continuous latent reasoning, diffusion/consistency models, C2C/KV communication, and KV quantization systems baselines."
+  },
+  {
+    "num": 714,
+    "slug": "source_conditioned_soft_prefix_selective_resonance_refs_20260504",
+    "path": "references/714_source_conditioned_soft_prefix_selective_resonance_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted primary-source novelty review for learned source-conditioned target soft-prefix / selective logit-resonance communication, recording uniqueness, reviewer attacks, citations, and no-claim boundaries against soft prompts, prompt compression, distillation/logit fusion, C2C/KVComm/DroidSpeak, relative representations, SAEs/crosscoders, and continuous latent reasoning."
   }
 ]
