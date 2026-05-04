@@ -21402,3 +21402,63 @@ Lay explanation: Qwen's top two score choices often contain the right answer,
 but our tiny score-pattern switch packet did not tell Phi when to trust that
 information. It made more bad switches than good switches, and even a cheating
 threshold diagnostic could not beat the fixed Qwen hint.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Protected Rival Packet Gate
+
+Implemented and ran the protected top-rival packet gate on the cached
+Qwen-to-Phi HellaSwag validation `1024:2048` surface.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_protected_rival_packet_gate.py`;
+- tests:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_protected_rival_packet_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_protected_rival_packet_gate_20260504_validation1024_2048/`;
+- paper memo:
+  `paper/source_private_hellaswag_qwen_to_phi_protected_rival_packet_gate_20260504.md`;
+- references:
+  `references/692_hellaswag_qwen_to_phi_protected_rival_refs_20260504.md`.
+
+Gate design: directly test the Qwen source-score top-2 headroom revealed by
+the oracle-switch decomposition. The source packet names either fixed Qwen
+hybrid plus the strongest Qwen source-score rival, or the Qwen source-score
+top-2 pair. The receiver only sees that byte-scale pair packet plus Phi's
+receiver-local score simplex; it does not see source text, source KV, raw
+hidden vectors, raw source scores, or source logits. Fit/select/eval remains
+`64/64/384` per cached `512`-row slice, with `768` held-out eval rows total.
+
+Outcome: the gate fails. The selected train/select decoder uses
+`code16_hybrid_rival_policy`, `2B` raw / `5B` framed, ridge L2 `3000.0`. It
+reaches `0.462240` accuracy versus fixed hybrid `0.467448`, delta `-0.005208`,
+CI95 low `-0.013021`, with `2` helps and `6` harms across `9` overrides. The
+fit+select diagnostic also reaches only `0.462240`, so the failure is not just
+a select-threshold artifact. Slice deltas are `-0.002604` and `-0.007812`.
+
+The oracle remains large: hybrid-rival oracle diagnostic is `0.678385`, delta
+`+0.210938` with `162` helps and `0` harms versus fixed hybrid; source top-2
+oracle diagnostic is `0.675781`, delta `+0.208333`, but has `174` helps and
+`14` harms because the fixed hybrid can be outside Qwen's top-2. Deterministic
+baselines fail: Qwen source-score top-1 is `0.411458`; Phi argmax within the
+hybrid-rival pair is `0.329427`; Phi argmax within source top-2 is also
+`0.329427`. The target-derived Phi top-2 pair control reaches `0.511719` but
+is not a source packet and its CI low versus fixed hybrid is negative
+(`-0.003906`).
+
+Controls: source-row shuffle, code-value permutation, random same-byte,
+label-permutation, and other destructive controls collapse. Source-score-row
+shuffle and candidate-roll controls tie fixed hybrid because the selected
+conservative model falls back to the protected hybrid, so they do not create a
+positive source-use claim.
+
+Decision: weaken protected-rival/top-2 packet decoders trained on the tiny
+fit/select surface. This result closes the most direct "just send the rival"
+branch: the rival candidate is present and oracle headroom is large, but the
+receiver cannot safely choose it from the available calibration. The next exact
+gate should be a larger official-train, cross-fitted source-code dictionary or
+a new receiver interface, not another small handcrafted switcher on the same
+cached rows.
+
+Lay explanation: we sent Phi Qwen's safe answer plus Qwen's strongest backup
+answer. The right answer is often in that two-answer packet, but Phi still
+chooses the wrong member too often. The next problem is teaching the receiver
+when the backup should beat the safe default.
