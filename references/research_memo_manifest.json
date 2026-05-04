@@ -2420,5 +2420,12 @@
     "path": "references/702_target_self_resonance_query_resampler_contrastive_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the failed target self-resonance contrastive query-resampler rescue, recording boundaries against prefix/prompt tuning, gist/AutoCompressor/ICAE context compression, query bottlenecks, representation alignment, C2C/KVComm, TurboQuant, and KV-cache systems baselines."
+  },
+  {
+    "num": 703,
+    "slug": "target_self_resonance_source_residual_slot_refs_20260504",
+    "path": "references/703_target_self_resonance_source_residual_slot_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the weak-but-failed TinyLlama-to-Qwen source-residual slot gate, recording novelty boundaries against soft prompts, prompt compression, query bottlenecks, representation alignment, C2C/KVComm, KV quantization, diffusion/refinement, and SAE/crosscoder interpretability."
   }
 ]

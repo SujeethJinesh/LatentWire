@@ -22050,3 +22050,47 @@ question and fail for the wrong question. It did not: the hidden summary stayed
 vague and target-only cached slots were still better. The next experiment must
 add a real source-conditioned correction rather than only improving target-side
 summaries.
+
+## 2026-05-04 Target Self-Resonance Source-Residual Slot Gate
+
+Implemented and ran the first source-conditioned residual-slot gate over a
+frozen target-slot baseline. The source is cached TinyLlama HellaSwag score
+summaries, the frozen target is Qwen2.5-0.5B-Instruct, and the source packet is
+a top-1/top-2/margin score summary: `2B` raw / `5B` framed. The target
+compressed path receives only frozen target slots, a learned residual from the
+source packet, a fixed anchor, and candidate continuations.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_source_residual_slot_gate.py`;
+- tests:
+  `tests/test_build_target_self_resonance_hellaswag_source_residual_slot_gate.py`;
+- artifacts:
+  `results/target_self_resonance_hellaswag_source_residual_slot_gate_20260504_tiny_to_qwen05_train64_validation72_80/`,
+  `results/target_self_resonance_hellaswag_source_residual_slot_gate_20260504_tiny_to_qwen05_train64_validation72_80_gate2p5/`;
+- memo:
+  `paper/target_self_resonance_hellaswag_source_residual_slot_gate_20260504.md`;
+- references:
+  `references/703_target_self_resonance_source_residual_slot_refs_20260504.md`.
+
+Outcome: fail, but with a weak source-conditioned signal. The default
+near-zero-gate run improves mean KL over frozen target slots
+`0.380034 -> 0.324309` but does not improve accuracy: both are `0.375000`.
+The higher residual-gate rescue improves accuracy from frozen target slots
+`0.375000` to source residual `0.500000`, with paired mean delta `+0.125000`
+and zero harms, while zero-source, wrong-source, target-derived, and random
+residual controls remain `0.375000`. However, the paired CI95 low versus
+frozen is only `0.000000`, and the direct source-top1 label control is much
+stronger at `0.750000`.
+
+Decision: promote the broader source-conditioned residual-interface branch,
+but demote this exact continuous residual-slot implementation as not
+paper-ready. The source has usable signal, and matched source can steer the
+target more than wrong/zero/target-derived controls, but a generic continuous
+residual does not yet convert source evidence into target decisions as well as
+a trivial source-top1 shortcut. The next exact gate should be a quantized
+source-conditioned candidate repair head or a codebook residual interface.
+
+Lay explanation: we gave the target a tiny source clue and it fixed one
+example without breaking any. That is the first real sign this branch can steer
+the target, but the simple source answer shortcut was still better, so this is
+not yet strong enough for a paper.
