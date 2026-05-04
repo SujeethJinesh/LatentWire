@@ -40,6 +40,54 @@ def test_anchor_relative_features_change_under_anchor_id_permutation() -> None:
     assert not np.allclose(features[:, :, score_dim:], permuted[:, :, score_dim:])
 
 
+def test_topk_rbf_anchor_features_are_sparse_and_bounded() -> None:
+    scores = [[0.4, 0.3, 0.2, 0.1]]
+    hidden = np.zeros((1, 4, 1, 4), dtype=np.float64)
+    hidden[0, :, 0, :] = np.asarray(
+        [
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+    anchors = np.eye(4, dtype=np.float64)
+
+    features = gate._anchor_relative_feature_tensor(
+        scores=scores,
+        hidden=hidden,
+        anchors=anchors,
+        feature_mode="topk_rbf",
+        rbf_gamma=4.0,
+        topk_anchors=2,
+    )
+    score_dim = gate.repair._candidate_score_features(scores[0], 0).shape[0]
+    anchor_values = features[:, :, score_dim:]
+
+    assert anchor_values.shape == (1, 4, 4)
+    assert np.all(anchor_values >= 0.0)
+    assert np.all(anchor_values <= 1.0)
+    assert np.all(np.count_nonzero(anchor_values, axis=-1) <= 2)
+
+
+def test_invalid_anchor_feature_mode_raises() -> None:
+    scores = [[0.4, 0.3, 0.2, 0.1]]
+    hidden = np.zeros((1, 4, 1, 3), dtype=np.float64)
+    anchors = np.eye(3, dtype=np.float64)
+
+    try:
+        gate._anchor_relative_feature_tensor(
+            scores=scores,
+            hidden=hidden,
+            anchors=anchors,
+            feature_mode="bad",
+        )
+    except ValueError as exc:
+        assert "unsupported anchor feature mode" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
 def test_fit_anchor_bank_uses_fit_rows_only_and_writes_metadata() -> None:
     scores = [
         [0.9, 0.1, 0.0, -0.1],
@@ -133,10 +181,15 @@ def test_build_gate_writes_parseable_artifacts_with_mocked_inputs(tmp_path, monk
         train_sample_seeds=(1729, 2027, 2039),
         split_seeds=(1729,),
         anchor_count=4,
+        anchor_feature_mode="topk_rbf",
+        rbf_gamma=4.0,
+        topk_anchors=2,
         bootstrap_samples=10,
     )
 
     assert payload["gate"] == "source_private_hellaswag_anchor_relative_hidden_innovation_gate"
     assert payload["headline"]["raw_payload_bytes"] == 2
+    assert payload["headline"]["anchor_feature_mode"] == "topk_rbf"
+    assert payload["topk_anchors"] == 2
     assert (tmp_path / "out" / "hellaswag_anchor_relative_hidden_innovation_gate.json").exists()
     assert (tmp_path / "out" / "anchor_banks.npz").exists()

@@ -21849,3 +21849,54 @@ question into eight hidden summary tokens that let the model answer without the
 original question. It fit the training examples, but on new examples the hidden
 tokens were not reliably tied to the right question. A wrong-question hidden
 token often worked almost as well, so this is not yet real communication.
+
+## 2026-05-04 HellaSwag Anchor-Relative Feature-Mode Grid
+
+Implemented and ran a bounded common-basis follow-up on the existing HellaSwag
+anchor-relative hidden-innovation gate.
+
+- script:
+  `scripts/build_source_private_hellaswag_anchor_relative_hidden_innovation_gate.py`;
+- tests:
+  `tests/test_build_source_private_hellaswag_anchor_relative_hidden_innovation_gate.py`;
+- artifacts:
+  `results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260504_qwen05_train512_validation1024_2048_topk_rbf/`,
+  `results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260504_qwen05_train512_validation1024_2048_topk_cosine/`,
+  `results/source_private_hellaswag_anchor_relative_hidden_innovation_gate_20260504_qwen05_train512_validation1024_2048_cosine_rbf/`;
+- paper memo:
+  `paper/source_private_hellaswag_anchor_relative_feature_mode_grid_20260504.md`;
+- references:
+  `references/699_anchor_relative_feature_mode_grid_refs_20260504.md`.
+
+Gate design: keep the existing `2B` raw / `5B` framed source-private
+HellaSwag hidden-innovation packet contract and train-only anchor banks, but
+replace the old dense cosine anchor chart with opt-in `topk_rbf`,
+`topk_cosine`, and `cosine_rbf` feature modes. Evaluation uses the frozen
+validation `1024:2048` slice and the same label-copy, score-only, zero-hidden,
+wrong-example, candidate-roll, anchor-ID shuffle, and anchor-value roll
+controls.
+
+Outcome: all variants fail. `topk_rbf` has selected/label/score-only accuracy
+`0.409180`/`0.414062`/`0.409180`, with CI95 low vs label `-0.022461`.
+`topk_cosine` has `0.411133`/`0.414062`/`0.409180`, CI95 low `-0.020508`.
+`cosine_rbf` has `0.412109`/`0.414062`/`0.409180`, CI95 low `-0.020508`.
+All three have `0/3` passing jackknife subbags.
+
+Decision: demote top-k/RBF anchor-relative common-basis features as a current
+positive method branch. The failure is useful: it shows the previous
+anchor-relative negative result was not simply an artifact of using diffuse
+cosine similarities. The useful HellaSwag source signal appears to be erased by
+these anchor charts. The next exact method branch should be a conditional
+source-syndrome / denoising receiver with target-side candidate scores as
+decoder side information, explicit wrong-source controls, and rate curves over
+tiny syndrome packets.
+
+Systems note: the packet contract remains `2B` raw / `5B` framed and exposes
+no source text, KV cache, raw hidden vector, score vector, logits, or raw
+scores. This supports the byte/exposure systems story, but not native latency
+or HBM claims.
+
+Lay explanation: we tried to make the hidden clue easier to share by describing
+it only through the closest public anchor directions. That made the clue too
+blunt: the receiver mostly fell back to the same answer it would pick from the
+source label or score-only baseline.

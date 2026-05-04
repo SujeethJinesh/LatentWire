@@ -2392,5 +2392,12 @@
     "path": "references/698_target_self_resonance_query_resampler_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the failed HellaSwag target self-resonance query-resampler gate, recording novelty boundaries against prefix/prompt tuning, gist/AutoCompressor/ICAE context compression, Perceiver/Flamingo/Q-Former query bottlenecks, Relative Representations, C2C/KVComm, vLLM/SGLang, and TurboQuant systems baselines."
+  },
+  {
+    "num": 699,
+    "slug": "anchor_relative_feature_mode_grid_refs_20260504",
+    "path": "references/699_anchor_relative_feature_mode_grid_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the failed HellaSwag anchor-relative top-k/RBF common-basis feature-mode grid, recording novelty boundaries against Relative Representations, LSTIRP, CCA/SVCCA/CKA, ICAE/gist/prefix compression, sparse crosscoders/SAEs, C2C/KVComm, QJL/KIVI/TurboQuant, and motivating the next conditional source-syndrome denoising branch."
   }
 ]

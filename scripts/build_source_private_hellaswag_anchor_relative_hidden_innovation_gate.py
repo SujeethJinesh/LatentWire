@@ -47,6 +47,7 @@ DEFAULT_TRAIN_SAMPLE_SEEDS = (1729, 2027, 2039)
 DEFAULT_SPLIT_SEEDS = (1729, 1731, 1733)
 DEFAULT_RIDGES = (1000.0, 10000.0, 100000.0)
 STRICT_DELTA = 0.02
+FEATURE_MODES = ("cosine", "rbf", "cosine_rbf", "topk_cosine", "topk_rbf")
 
 
 def _hidden_residual_tensor(*, scores: list[list[float]], hidden: np.ndarray) -> np.ndarray:
@@ -122,16 +123,57 @@ def _fit_anchor_bank(
     }
 
 
+def _topk_mask(values: np.ndarray, *, k: int) -> np.ndarray:
+    if k <= 0 or k >= values.shape[-1]:
+        return np.ones_like(values, dtype=bool)
+    partition = np.argpartition(values, -k, axis=-1)[..., -k:]
+    mask = np.zeros_like(values, dtype=bool)
+    np.put_along_axis(mask, partition, True, axis=-1)
+    return mask
+
+
+def _anchor_feature_values(
+    similarities: np.ndarray,
+    *,
+    feature_mode: str,
+    rbf_gamma: float,
+    topk_anchors: int,
+) -> np.ndarray:
+    if feature_mode not in FEATURE_MODES:
+        raise ValueError(f"unsupported anchor feature mode: {feature_mode}")
+    clipped = np.clip(similarities, -1.0, 1.0)
+    rbf = np.exp(-float(rbf_gamma) * (1.0 - clipped))
+    if feature_mode == "cosine":
+        return similarities
+    if feature_mode == "rbf":
+        return rbf
+    if feature_mode == "cosine_rbf":
+        return np.concatenate([similarities, rbf], axis=-1)
+    mask_source = rbf if feature_mode == "topk_rbf" else similarities
+    mask = _topk_mask(mask_source, k=int(topk_anchors))
+    values = rbf if feature_mode == "topk_rbf" else similarities
+    return np.where(mask, values, 0.0)
+
+
 def _anchor_relative_feature_tensor(
     *,
     scores: list[list[float]],
     hidden: np.ndarray,
     anchors: np.ndarray,
+    feature_mode: str = "cosine",
+    rbf_gamma: float = 8.0,
+    topk_anchors: int = 16,
 ) -> np.ndarray:
     residuals = _hidden_residual_tensor(scores=scores, hidden=hidden)
     flat = residuals.reshape(-1, residuals.shape[-1])
     normalized = _normalize_rows(flat).reshape(residuals.shape)
     similarities = np.einsum("ncd,kd->nck", normalized, anchors, optimize=True)
+    anchor_features = _anchor_feature_values(
+        similarities,
+        feature_mode=feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
+    )
     rows: list[list[np.ndarray]] = []
     for row_index, row_scores in enumerate(scores):
         row_features: list[np.ndarray] = []
@@ -140,7 +182,7 @@ def _anchor_relative_feature_tensor(
                 np.concatenate(
                     [
                         repair._candidate_score_features(row_scores, candidate),
-                        similarities[row_index, candidate],
+                        anchor_features[row_index, candidate],
                     ]
                 )
             )
@@ -160,6 +202,9 @@ def _select_anchor_component_model(
     eval_rows: list[arc_gate.ArcRow],
     ridges: tuple[float, ...],
     anchor_count: int,
+    feature_mode: str,
+    rbf_gamma: float,
+    topk_anchors: int,
 ) -> tuple[dict[str, Any], dict[str, Any], np.ndarray]:
     anchors, anchor_meta = _fit_anchor_bank(
         rows=train_rows,
@@ -172,11 +217,17 @@ def _select_anchor_component_model(
         scores=train_scores,
         hidden=train_hidden,
         anchors=anchors,
+        feature_mode=feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
     )
     eval_features = _anchor_relative_feature_tensor(
         scores=eval_scores,
         hidden=eval_hidden,
         anchors=anchors,
+        feature_mode=feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
     )
     readouts = [
         repair._fit_and_eval_view(
@@ -209,13 +260,16 @@ def _select_anchor_component_model(
         ridge=selected["ridge"],
     )
     row = {
-        "view": "score_anchor_relative_hidden_innovation",
+        "view": f"score_anchor_relative_hidden_innovation_{feature_mode}",
         "selected_ridge": selected["ridge"],
         "selected_feature_dim": selected["feature_dim"],
         "selected_fit_accuracy": selected["fit"]["accuracy"],
         "selected_internal_dev_accuracy": selected["internal_dev"]["accuracy"],
         "selected_eval_accuracy": selected["eval"]["accuracy"],
         "candidate_readout_count": len(readouts),
+        "anchor_feature_mode": feature_mode,
+        "rbf_gamma": float(rbf_gamma),
+        "topk_anchors": int(topk_anchors),
         **anchor_meta,
     }
     return model, row, anchors
@@ -233,6 +287,9 @@ def _aggregate_anchor_scores(
     hidden: np.ndarray,
     components: list[dict[str, Any]],
     policy: str,
+    feature_mode: str = "cosine",
+    rbf_gamma: float = 8.0,
+    topk_anchors: int = 16,
     permute_anchor_ids: bool = False,
     roll_anchor_values: bool = False,
 ) -> tuple[list[int], np.ndarray]:
@@ -243,7 +300,14 @@ def _aggregate_anchor_scores(
         anchors = np.asarray(component["anchors"], dtype=np.float64)
         if roll_anchor_values and anchors.shape[0] > 1:
             anchors = np.roll(anchors, 1, axis=0)
-        features = _anchor_relative_feature_tensor(scores=scores, hidden=hidden, anchors=anchors)
+        features = _anchor_relative_feature_tensor(
+            scores=scores,
+            hidden=hidden,
+            anchors=anchors,
+            feature_mode=feature_mode,
+            rbf_gamma=rbf_gamma,
+            topk_anchors=topk_anchors,
+        )
         if permute_anchor_ids and anchors.shape[0] > 1:
             score_feature_dim = repair._candidate_score_features(scores[0], 0).shape[0]
             features = features.copy()
@@ -284,6 +348,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- pass gate: `{payload['pass_gate']}`",
         f"- eval rows: `{h['eval_rows']}`",
         f"- anchor count: `{h['anchor_count']}`",
+        f"- anchor feature mode: `{h['anchor_feature_mode']}`",
         f"- component models: `{h['component_model_count']}`",
         f"- selected accuracy: `{h['selected_eval_accuracy']:.6f}`",
         f"- best label-copy accuracy: `{h['best_label_copy_eval_accuracy']:.6f}`",
@@ -318,6 +383,9 @@ def build_gate(
     split_seeds: tuple[int, ...] = DEFAULT_SPLIT_SEEDS,
     ridges: tuple[float, ...] = DEFAULT_RIDGES,
     anchor_count: int = 128,
+    anchor_feature_mode: str = "cosine",
+    rbf_gamma: float = 8.0,
+    topk_anchors: int = 16,
     dev_fraction: float = 0.25,
     bootstrap_samples: int = 500,
     aggregation_policy: str = "mean_zscore",
@@ -334,6 +402,8 @@ def build_gate(
     output_dir = top2._resolve(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     started = time.perf_counter()
+    if anchor_feature_mode not in FEATURE_MODES:
+        raise ValueError(f"unsupported anchor feature mode: {anchor_feature_mode}")
 
     train_path = top2._resolve(train_path)
     eval_path = top2._resolve(eval_path)
@@ -448,6 +518,9 @@ def build_gate(
                 eval_rows=eval_rows,
                 ridges=ridges,
                 anchor_count=anchor_count,
+                feature_mode=anchor_feature_mode,
+                rbf_gamma=rbf_gamma,
+                topk_anchors=topk_anchors,
             )
             key = f"sample{sample_seed}_split{split_seed}"
             anchor_arrays[key] = anchors
@@ -470,6 +543,9 @@ def build_gate(
         hidden=eval_hidden,
         components=anchor_components,
         policy=aggregation_policy,
+        feature_mode=anchor_feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
     )
     score_only_predictions, _ = bagged._aggregate_model_scores(
         features=score_eval_features,
@@ -481,24 +557,36 @@ def build_gate(
         hidden=zero_hidden,
         components=anchor_components,
         policy=aggregation_policy,
+        feature_mode=anchor_feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
     )
     wrong_predictions, _ = _aggregate_anchor_scores(
         scores=eval_scores,
         hidden=wrong_hidden,
         components=anchor_components,
         policy=aggregation_policy,
+        feature_mode=anchor_feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
     )
     candidate_roll_predictions, _ = _aggregate_anchor_scores(
         scores=eval_scores,
         hidden=candidate_roll_hidden,
         components=anchor_components,
         policy=aggregation_policy,
+        feature_mode=anchor_feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
     )
     anchor_id_shuffle_predictions, _ = _aggregate_anchor_scores(
         scores=eval_scores,
         hidden=eval_hidden,
         components=anchor_components,
         policy=aggregation_policy,
+        feature_mode=anchor_feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
         permute_anchor_ids=True,
     )
     anchor_value_roll_predictions, _ = _aggregate_anchor_scores(
@@ -506,6 +594,9 @@ def build_gate(
         hidden=eval_hidden,
         components=anchor_components,
         policy=aggregation_policy,
+        feature_mode=anchor_feature_mode,
+        rbf_gamma=rbf_gamma,
+        topk_anchors=topk_anchors,
         roll_anchor_values=True,
     )
 
@@ -565,6 +656,9 @@ def build_gate(
             hidden=eval_hidden,
             components=sub_anchor_components,
             policy=aggregation_policy,
+            feature_mode=anchor_feature_mode,
+            rbf_gamma=rbf_gamma,
+            topk_anchors=topk_anchors,
         )
         sub_score_only_predictions, _ = bagged._aggregate_model_scores(
             features=score_eval_features,
@@ -576,18 +670,27 @@ def build_gate(
             hidden=zero_hidden,
             components=sub_anchor_components,
             policy=aggregation_policy,
+            feature_mode=anchor_feature_mode,
+            rbf_gamma=rbf_gamma,
+            topk_anchors=topk_anchors,
         )
         sub_wrong_predictions, _ = _aggregate_anchor_scores(
             scores=eval_scores,
             hidden=wrong_hidden,
             components=sub_anchor_components,
             policy=aggregation_policy,
+            feature_mode=anchor_feature_mode,
+            rbf_gamma=rbf_gamma,
+            topk_anchors=topk_anchors,
         )
         sub_candidate_roll_predictions, _ = _aggregate_anchor_scores(
             scores=eval_scores,
             hidden=candidate_roll_hidden,
             components=sub_anchor_components,
             policy=aggregation_policy,
+            feature_mode=anchor_feature_mode,
+            rbf_gamma=rbf_gamma,
+            topk_anchors=topk_anchors,
         )
         sub_best_trained_predictions = max(
             sub_trained_predictions,
@@ -705,11 +808,14 @@ def build_gate(
         "raw_scores_transmitted": False,
         "decoder_rule": "receiver chooses the candidate id produced by a predeclared anchor-relative source-side denoiser",
     }
-    anchor_rows = [row for row in component_rows if row["view"] == "score_anchor_relative_hidden_innovation"]
+    anchor_rows = [row for row in component_rows if str(row["view"]).startswith("score_anchor_relative_hidden_innovation")]
     headline = {
         "eval_rows": len(eval_rows),
         "aggregation_policy": aggregation_policy,
         "anchor_count": int(anchor_count),
+        "anchor_feature_mode": anchor_feature_mode,
+        "rbf_gamma": float(rbf_gamma),
+        "topk_anchors": int(topk_anchors),
         "anchor_count_min": min((row["anchor_count"] for row in anchor_rows), default=0),
         "anchor_count_max": max((row["anchor_count"] for row in anchor_rows), default=0),
         "component_model_count": len(anchor_components),
@@ -821,6 +927,9 @@ def build_gate(
         "train_hidden_rows": train_hidden_rows,
         "train_sample_seeds": list(train_sample_seeds),
         "split_seeds": list(split_seeds),
+        "anchor_feature_mode": anchor_feature_mode,
+        "rbf_gamma": float(rbf_gamma),
+        "topk_anchors": int(topk_anchors),
         "source_model": {
             "score_eval": eval_source_model,
             "hidden_eval": eval_hidden_model,
@@ -896,6 +1005,9 @@ def main() -> int:
     parser.add_argument("--train-sample-seeds", type=_parse_int_tuple, default=DEFAULT_TRAIN_SAMPLE_SEEDS)
     parser.add_argument("--split-seeds", type=_parse_int_tuple, default=DEFAULT_SPLIT_SEEDS)
     parser.add_argument("--anchor-count", type=int, default=128)
+    parser.add_argument("--anchor-feature-mode", choices=FEATURE_MODES, default="cosine")
+    parser.add_argument("--rbf-gamma", type=float, default=8.0)
+    parser.add_argument("--topk-anchors", type=int, default=16)
     parser.add_argument("--bootstrap-samples", type=int, default=500)
     parser.add_argument("--run-date", default="2026-05-01")
     args = parser.parse_args()
@@ -910,6 +1022,9 @@ def main() -> int:
         train_sample_seeds=args.train_sample_seeds,
         split_seeds=args.split_seeds,
         anchor_count=args.anchor_count,
+        anchor_feature_mode=args.anchor_feature_mode,
+        rbf_gamma=args.rbf_gamma,
+        topk_anchors=args.topk_anchors,
         bootstrap_samples=args.bootstrap_samples,
         run_date=args.run_date,
     )
