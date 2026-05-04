@@ -22764,3 +22764,62 @@ TinyLlama instead of text or KV cache. The message was very small, but Qwen did
 not use it reliably; no-source and target-derived hints did better. The packet
 format and strict controls are now in place, but the feature basis needs to be
 better aligned to the target before this can become a positive method.
+
+## 2026-05-04 Target-Aligned Sparse Resonance Packet Gate
+
+Implemented and ran the next Sparse Resonance Packet branch on the strict
+ARC-Challenge disagreement wrapper. This branch fits target-native Qwen3 PCA
+coordinates on answer-key-forbidden candidate hidden innovations, learns a
+train-only ridge map from TinyLlama candidate hidden innovations into those
+target coordinates, then transmits sparse top-k atom IDs plus quantized
+coefficients to the Qwen3 soft-prefix receiver. Added `coefficient_shuffle`
+and `top_atom_knockout` destructive controls to the shared preflight and
+strict gate.
+
+- updated preflight:
+  `scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py`;
+- updated strict wrapper:
+  `scripts/build_source_private_arc_challenge_soft_prefix_resonance_gate.py`;
+- tests:
+  `tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`
+  and `tests/test_build_source_private_arc_challenge_soft_prefix_resonance_gate.py`;
+- artifacts:
+  `results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_target_aligned_top2q3/`
+  and
+  `results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_target_aligned_top8q8_noresid/`;
+- memo:
+  `paper/target_aligned_sparse_resonance_packet_gate_20260504.md`;
+- reference scouts:
+  `references/720_target_aligned_feature_basis_scout_refs_20260504.md`,
+  `references/721_sparse_resonance_packet_quant_confidence_systems_refs_20260504.md`,
+  `references/722_sparse_resonance_packet_competitor_refresh_20260504.md`,
+  and
+  `references/723_strict_source_private_benchmark_reviewer_risk_refs_20260504.md`.
+
+Outcome: fail. The low-rate target-aligned `top2q3` residual packet uses rank
+`4`, top-`2` atoms, `3` coefficient bits, and about `5.0` estimated packet
+bytes per row. It preserves `0.921` fit sparse energy and reaches
+`0.999986` target-coordinate train R2, but matched accuracy is only
+`0.250000`; target-only and same-byte text reach `0.500000`, target-derived
+and Qwen-substitution reach `0.625000`, and worst required paired CI95 low is
+`-0.750000`. A high-rate no-residual `top8q8` ablation uses about `44.0`
+estimated packet bytes per row and preserves essentially all train coordinate
+energy, but matched accuracy drops to `0.125000`; Qwen-substitution remains
+`0.625000`, and worst required CI95 low is `-0.875000`.
+
+Decision: demote target-PCA alignment plus one-step soft-prefix decoding on
+this ARC n8 scouting slice. The failure is unlikely to be solved by simply
+spending more packet bits: both the low-rate and high-rate packets reconstruct
+the fitted target coordinate space, yet destructive and target-derived
+controls remain tied or better. Promote receiver/objective changes next:
+target-side behavior/transcoder packets, anchor-relative candidate-local
+atoms, or confidence/error-coded Wyner-Ziv-style packets that use target
+uncertainty as side information. Do not widen this exact branch until a new
+receiver clears the strict scouting controls.
+
+Lay explanation: we translated TinyLlama's tiny message into Qwen's own
+coordinate system before sending it. The translation looked clean on the rows
+used to fit it, and making the message much larger did not help. That says the
+current receiver is not turning those coordinates into better answers, so the
+next method has to be trained around Qwen's answer behavior rather than just
+matching hidden-state coordinates.

@@ -56,6 +56,8 @@ STRICT_REQUIRED_CONTROLS = (
     "source_row_shuffle",
     "candidate_roll",
     "atom_shuffle",
+    "coefficient_shuffle",
+    "top_atom_knockout",
     "target_derived_prefix",
     "packet_only_source_index",
     "source_rank_control",

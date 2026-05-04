@@ -287,6 +287,12 @@ def test_fit_source_control_variants_are_destructive() -> None:
     assert atom_shuffled is not None
     assert torch.equal(atom_shuffled[..., 0], source[0, ..., -1])
     assert torch.equal(atom_shuffled[..., 1:], source[0, ..., :-1])
+    coefficient_shuffled = preflight._coefficient_shuffle_source_summary(source[0])
+    assert coefficient_shuffled is not None
+    assert torch.equal(coefficient_shuffled, torch.flip(source[0], dims=(-1,)))
+    knocked = preflight._top_atom_knockout_source_summary(source[0])
+    assert knocked is not None
+    assert torch.count_nonzero(knocked == 0.0) >= source[0].shape[0]
     assert torch.allclose(noise_a, noise_b)
     assert torch.allclose(noise_a.norm(), source[0].norm(), atol=1e-5)
 
@@ -448,6 +454,46 @@ def test_sparse_pca_packet_features_are_topk_quantized() -> None:
     assert np.all((packet != 0.0).sum(axis=1) <= 1)
 
 
+def test_target_aligned_sparse_pca_packet_features_predict_target_coordinates() -> None:
+    source = np.asarray(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [2.0, 0.0, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    target = np.asarray(
+        [
+            [1.0, 0.0],
+            [0.0, 1.0],
+            [1.0, 1.0],
+            [2.0, 0.5],
+        ],
+        dtype=np.float64,
+    )
+
+    packet, metadata = preflight._target_aligned_sparse_pca_packet_features(
+        source,
+        target,
+        fit_flat_indices=np.asarray([0, 1, 2], dtype=np.int64),
+        rank=2,
+        top_k=1,
+        quant_bits=3,
+        ridge=1.0,
+    )
+
+    assert packet.shape == (4, 2)
+    assert metadata["kind"] == "train_fit_target_aligned_sparse_pca_packet_coordinates"
+    assert metadata["packet_rank"] == 2
+    assert metadata["top_k"] == 1
+    assert metadata["target_feature_dim"] == 2
+    assert metadata["source_feature_dim"] == 3
+    assert "fit_target_coord_r2" in metadata
+    assert np.all((packet != 0.0).sum(axis=1) <= 1)
+
+
 def test_candidate_hidden_public_innovation_pool_is_prediction_free(monkeypatch) -> None:
     rows = _rows()
 
@@ -567,6 +613,86 @@ def test_sparse_pca_packet_candidate_pool_is_prediction_free(monkeypatch) -> Non
 
     assert metadata["kind"] == "hf_choice_hidden_public_innovation_sparse_pca_packet_candidate_pool"
     assert metadata["uses_source_predictions"] is False
+    assert metadata["sparse_packet"]["packet_rank"] == 2
+    assert metadata["sparse_packet"]["top_k"] == 1
+    assert metadata["sparse_packet"]["quant_bits"] == 3
+    assert pooled.shape == (2, 3, 2)
+
+
+def test_target_aligned_sparse_packet_candidate_pool_is_prediction_free(monkeypatch) -> None:
+    rows = _rows()
+
+    def fake_hidden(*args, **kwargs):
+        del args
+        if kwargs["model_path"] == "target":
+            return np.asarray(
+                [
+                    [1.0, 1.0],
+                    [2.0, 1.0],
+                    [3.0, 1.0],
+                    [1.0, 2.0],
+                    [1.0, 3.0],
+                ],
+                dtype=np.float64,
+            ), {"kind": "fake_target_hidden"}
+        return np.asarray(
+            [
+                [1.0, 0.0],
+                [3.0, 0.0],
+                [5.0, 0.0],
+                [2.0, 2.0],
+                [2.0, 6.0],
+            ],
+            dtype=np.float64,
+        ), {"kind": "fake_source_hidden"}
+
+    def fake_public(*args, **kwargs):
+        del args, kwargs
+        return np.asarray(
+            [
+                [0.0, 1.0],
+                [1.0, 1.0],
+                [2.0, 1.0],
+                [100.0, 0.0],
+                [200.0, 0.0],
+            ],
+            dtype=np.float64,
+        ), {"kind": "fake_public"}
+
+    def fail_score_rows(*args, **kwargs):
+        del args, kwargs
+        raise AssertionError("hidden-only target-aligned packet must not read source predictions")
+
+    monkeypatch.setattr(preflight, "_hf_choice_hidden_features", fake_hidden)
+    monkeypatch.setattr(preflight, "_public_candidate_hashed_features", fake_public)
+    monkeypatch.setattr(preflight, "_source_selection_score_rows", fail_score_rows)
+
+    pooled, metadata = preflight._choice_candidate_pool_features(
+        rows,
+        [1, 0],
+        source_feature_mode="hf_choice_hidden_public_innovation_target_aligned_sparse_pca_packet_candidate_pool",
+        feature_dim=2,
+        source_model="source",
+        source_device="auto_cpu",
+        source_dtype="float32",
+        source_max_length=32,
+        source_hidden_layer=-1,
+        source_token_pool_size=3,
+        target_alignment_model="target",
+        target_alignment_device="auto_cpu",
+        local_files_only=True,
+        fit_indices=[0],
+        innovation_ridge=10.0,
+        sparse_packet_rank=2,
+        sparse_packet_top_k=1,
+        sparse_packet_bits=3,
+    )
+
+    assert metadata["kind"] == "hf_choice_hidden_public_innovation_target_aligned_sparse_pca_packet_candidate_pool"
+    assert metadata["uses_source_predictions"] is False
+    assert metadata["hidden_metadata"]["source"]["kind"] == "fake_source_hidden"
+    assert metadata["hidden_metadata"]["target_alignment"]["kind"] == "fake_target_hidden"
+    assert metadata["sparse_packet"]["kind"] == "train_fit_target_aligned_sparse_pca_packet_coordinates"
     assert metadata["sparse_packet"]["packet_rank"] == 2
     assert metadata["sparse_packet"]["top_k"] == 1
     assert metadata["sparse_packet"]["quant_bits"] == 3
@@ -696,6 +822,14 @@ def test_residual_feature_modes_are_cli_options() -> None:
             "atom_shuffle",
         ]
     )
+    target_aligned_sparse_packet = preflight.parse_args(
+        [
+            "--source-feature-mode",
+            "hf_choice_hidden_public_innovation_target_aligned_sparse_pca_packet_candidate_pool_residual",
+            "--contrastive-controls",
+            "atom_shuffle,coefficient_shuffle,top_atom_knockout",
+        ]
+    )
     qwen_cache = preflight.parse_args(["--qwen-source-cache-path", "qwen_cache.jsonl"])
     score_cache = preflight.parse_args(
         ["--source-score-cache-path", "score_cache.jsonl", "--fixed-fit-rows", "3"]
@@ -721,6 +855,15 @@ def test_residual_feature_modes_are_cli_options() -> None:
     assert sparse_packet.sparse_packet_top_k == 2
     assert sparse_packet.sparse_packet_bits == 3
     assert preflight._parse_contrastive_controls(sparse_packet.contrastive_controls) == ("atom_shuffle",)
+    assert (
+        target_aligned_sparse_packet.source_feature_mode
+        == "hf_choice_hidden_public_innovation_target_aligned_sparse_pca_packet_candidate_pool_residual"
+    )
+    assert preflight._parse_contrastive_controls(target_aligned_sparse_packet.contrastive_controls) == (
+        "atom_shuffle",
+        "coefficient_shuffle",
+        "top_atom_knockout",
+    )
     assert str(qwen_cache.qwen_source_cache_path) == "qwen_cache.jsonl"
     assert str(score_cache.source_score_cache_path) == "score_cache.jsonl"
     assert score_cache.fixed_fit_rows == 3
