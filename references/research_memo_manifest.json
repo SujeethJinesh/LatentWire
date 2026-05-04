@@ -2371,5 +2371,12 @@
     "path": "references/695_hellaswag_qwen_to_phi_harm_controlled_bucket_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the failed no-op HellaSwag Qwen-to-Phi harm-controlled bucket gate, recording boundaries against selective prediction, learning-to-defer, conformal risk control, Slepian-Wolf/Wyner-Ziv side-information coding, C2C/KVComm, prefix/gist, and TurboQuant/QJL/KIVI/KVQuant systems baselines."
+  },
+  {
+    "num": 696,
+    "slug": "target_self_resonance_interface_refs_20260504",
+    "path": "references/696_target_self_resonance_interface_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the pivot from failed shallow receiver switching to a target self-resonance / compact learned target-side interface gate, recording novelty boundaries against prefix/prompt tuning, gist/ICAE/AutoCompressors, Q-Former/Perceiver resamplers, activation steering, C2C/KVComm/KV-cache alignment, SAE/crosscoders, diffusion/refinement, and TurboQuant/QJL/KIVI systems comparators."
   }
 ]
