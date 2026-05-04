@@ -22552,3 +22552,46 @@ Lay explanation: we tried to teach a small translator to turn TinyLlama's
 hidden clue into the hidden Qwen tokens that replace the question. It learned
 something on the training rows, but on new rows it either hurt or behaved no
 better than giving Qwen no source clue at all.
+
+## 2026-05-04 Qwen-to-Phi Target-Error Repair Audit
+
+Implemented and ran a held-out target-error repair audit for HellaSwag
+Qwen-to-Phi cached rows. This is not a promoted method; it measures whether the
+next ECC/syndrome-style branch has source-unique repair mass after the
+unconditioned source-score/top2 receivers failed.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_error_repair_audit.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_error_repair_audit.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_error_repair_audit_20260504_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_to_phi_error_repair_audit_20260504.md`;
+- reference memo:
+  `references/716_target_error_syndrome_side_information_refs_20260504.md`.
+
+Outcome: the target-error syndrome branch is alive as an oracle surface. On
+`768` held-out eval rows, Phi target-only accuracy is `0.263021`, the fixed
+Qwen-hybrid packet is `0.467448`, Qwen candidate-only is `0.455729`, and Qwen
+source-score top1 is only `0.411458`. However, Qwen source top2 oracle reaches
+`0.675781`, fixed-hybrid-or-Qwen-top2 oracle reaches `0.694010`, fixed-hybrid
+or Phi-top2 oracle reaches `0.727865`, and the union top2 oracle reaches
+`0.845052`.
+
+The important decision surface is source-unique repair: `90 / 768` rows are
+fixed-hybrid wrong, Phi top2 misses gold, and Qwen source top2 contains gold.
+That is `0.117188` of held-out eval and `0.220049` of fixed-hybrid errors.
+
+Decision: promote target-error-conditioned source top2/ECC syndrome repair as
+the next live branch. Weaken generic unconditioned score/rank/top2 switch
+decoders. The next gate must train a harm-controlled receiver on official-train
+error/headroom patterns and beat fixed hybrid, Phi-local target-side top2,
+candidate-only, row-shuffle, candidate-roll, random same-byte, target-derived,
+source-index/rank/score, and label-permuted controls with positive paired CI.
+
+Lay explanation: we checked whether Qwen has a tiny clue that Phi does not have
+when the current packet is wrong. There are 90 held-out questions where Phi's
+own top guesses miss the answer but Qwen's top two include it. That means
+useful source-only information exists; the hard next step is learning when to
+use it without looking at the answer.
