@@ -1,0 +1,20 @@
+{
+  "date": "2026-05-04",
+  "gate": "source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate",
+  "outputs": [
+    "hellaswag_fixed_hybrid_true_candidate_text_permutation_gate.json",
+    "hellaswag_fixed_hybrid_true_candidate_text_permutation_gate.md",
+    "comparison_rows.csv",
+    "component_rows.csv"
+  ],
+  "source_artifacts": {
+    "original_predictions": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260503_rank_score_channel_qwen05_train512_validation1024_2048/bagged_gate/predictions.jsonl",
+    "original_predictions_sha256": "f568bfade523aca74b560c813f74aa22f907b85e2b84c79caba5ac4b71d219e3",
+    "permuted_eval_path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/hellaswag_validation_permuted_rows_1024_2048.jsonl",
+    "permuted_eval_sha256": "0b51aef87fc7b6d64e822c697c8633788201c7102a28fbfce258862014995055",
+    "permuted_predictions": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/permuted_hidden_pipeline/bagged_gate/predictions.jsonl",
+    "permuted_predictions_sha256": "5db1574b5f373ca8d41c5dd360eb566e0f03da5341b527a98904a1ae7aa9f4f6",
+    "permuted_run_json": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/permuted_hidden_pipeline/hellaswag_hidden_innovation_eval_slice_stress.json",
+    "permuted_run_json_sha256": "1d3bc3554c1ac604db877aaac9b6c3d542321dc59592ce685290338de3887508"
+  }
+}

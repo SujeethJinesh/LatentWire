@@ -21132,3 +21132,55 @@ Lay explanation: before this update, changing the shuffle seed did not actually
 change the shuffle. We fixed that, reran a genuinely different rowwise shuffle
 schedule, and the tiny fixed-hybrid packet still mostly followed answer text
 after translating displayed choices back to original choices.
+
+## 2026-05-04 HellaSwag Non-Overlapping Candidate-Text Permutation Slice Repeat
+
+Ran the physical candidate-text permutation hardening gate for the full hidden
+fixed-hybrid HellaSwag packet on the non-overlapping validation `1024:2048`
+slice.
+
+- artifact:
+  `results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/`;
+- paper memo:
+  `paper/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_slice_repeat_20260504.md`;
+- references:
+  `references/687_hellaswag_fixed_hybrid_true_candidate_text_permutation_slice_repeat_refs_20260504.md`.
+
+Gate design: use HellaSwag validation rows `1024:2048`, apply one fixed
+non-identity candidate-ending permutation per row, physically reorder candidate
+text and displayed answer labels, rerun the Qwen hidden fixed-hybrid pipeline
+from fresh score and hidden caches, then remap display-space predictions back
+to canonical candidate IDs and compare against the original same-row
+`1024:2048` prediction artifact.
+
+Outcome: the non-overlapping slice repeat passes its promotion flag, but it is
+a robustness result rather than a new accuracy-lift result. Original same-row
+fixed-hybrid accuracy is `0.465820`; remapped fixed-hybrid accuracy is
+`0.463867`, delta `-0.001953` with paired CI95 low `-0.010742`; canonical
+consistency is `0.964844`; unremapped fixed-hybrid accuracy collapses to
+`0.221680`; wrong-remap accuracy collapses to `0.188477`; wrong-remap CI95
+high versus remapped is `-0.230469`; score and hidden caches are fresh
+(`false` cache hits). The final packet remains `1B` raw / `4B` framed with no
+source text, KV, raw hidden, score vector, logits, or raw scores transmitted.
+
+The permuted hidden pipeline itself remains positive on the shuffled candidate
+text: selected accuracy is `0.463867` versus best label-copy `0.416992`,
+delta `+0.046875`, paired CI95 low `+0.024390`; score-channel roll hidden
+control is `0.264648`, wrong-example hidden control is `0.382812`, and
+candidate-roll hidden control is `0.353516`. The Mac CPU run took `515.27s`
+wall time.
+
+Decision: promote this as second-slice physical candidate-text hardening for
+the full hidden fixed-hybrid HellaSwag packet. Do not claim all-24-per-example
+invariance, full-validation physical permutation invariance, learned
+common-basis transfer, cross-family generalization, or native systems speedup.
+The next exact gate is a decision-supervised sparse common-basis
+hidden-innovation packet on the same frozen `1024:2048` surface with
+source-index, target-derived, row-shuffle, candidate-roll, atom-ID permutation,
+and top-atom knockout controls.
+
+Lay explanation: we reran the shuffle test on a different block of `1024`
+questions. The tiny packet still mostly pointed to the same original candidate
+after translating from the shuffled display labels, while wrong translations
+failed badly. This makes the shuffle evidence less likely to be a first-slice
+artifact, but it does not by itself prove a learned latent language.

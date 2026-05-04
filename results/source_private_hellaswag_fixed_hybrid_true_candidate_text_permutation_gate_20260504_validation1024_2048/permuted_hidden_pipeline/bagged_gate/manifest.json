@@ -1,0 +1,79 @@
+{
+  "created_utc": "2026-05-04T06:56:33.177338+00:00",
+  "files": [
+    {
+      "bytes": 60704,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/permuted_hidden_pipeline/bagged_gate/hellaswag_hidden_innovation_bagged_gate.json",
+      "sha256": "b104ca8b12a3c218e169ea0245e2f76e20a8f96b511e0411cba309449f08372c"
+    },
+    {
+      "bytes": 1430,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/permuted_hidden_pipeline/bagged_gate/hellaswag_hidden_innovation_bagged_gate.md",
+      "sha256": "d42a88521dadada224772cf5d24d16d48bb1f92880cc0b68cc5084d754a6c16a"
+    },
+    {
+      "bytes": 2481,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/permuted_hidden_pipeline/bagged_gate/component_rows.csv",
+      "sha256": "f7e9a43f8e280331d127e734c2caba0884a49b4b839fffe0c5ceb2ec57908e17"
+    },
+    {
+      "bytes": 1797,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/permuted_hidden_pipeline/bagged_gate/jackknife_rows.csv",
+      "sha256": "8a573c0d9902a652855e18ba5ffb1180893f1e410b210af0e4fb9f189795e303"
+    },
+    {
+      "bytes": 525349,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/permuted_hidden_pipeline/bagged_gate/predictions.jsonl",
+      "sha256": "5db1574b5f373ca8d41c5dd360eb566e0f03da5341b527a98904a1ae7aa9f4f6"
+    },
+    {
+      "bytes": 2264,
+      "path": "results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260504_validation1024_2048/permuted_hidden_pipeline/bagged_gate/sample_caches.jsonl",
+      "sha256": "77dc7963caede397066ad761b6ed83495e705088f8624c55f9c85ab2e146893e"
+    }
+  ],
+  "gate": "source_private_hellaswag_hidden_innovation_bagged_gate",
+  "headline": {
+    "aggregation_policy": "mean_zscore_vote_on_score_agreement",
+    "best_label_copy_eval_accuracy": 0.4169921875,
+    "candidate_roll_hidden_control_accuracy": 0.353515625,
+    "component_model_count": 9,
+    "new_train_sample_seed_count": 2,
+    "paired_ci95_high_vs_best_label_copy": 0.0664306640625,
+    "paired_ci95_high_vs_score_only_bagged": 0.0791015625,
+    "paired_ci95_high_vs_source_rank_only_bagged": 0.07426757812500001,
+    "paired_ci95_low_vs_best_label_copy": 0.0243896484375,
+    "paired_ci95_low_vs_score_only_bagged": 0.034130859375,
+    "paired_ci95_low_vs_source_rank_only_bagged": 0.0351318359375,
+    "rank_only_component_model_count": 9,
+    "score_channel_roll_hidden_control_accuracy": 0.2646484375,
+    "score_only_bagged_control_accuracy": 0.4091796875,
+    "score_only_component_model_count": 9,
+    "selected_eval_accuracy": 0.4638671875,
+    "selected_minus_best_label_copy": 0.046875,
+    "selected_minus_candidate_roll_hidden_control": 0.1103515625,
+    "selected_minus_score_channel_roll_hidden_control": 0.19921875,
+    "selected_minus_score_only_bagged_control": 0.0546875,
+    "selected_minus_source_label_copy": 0.0546875,
+    "selected_minus_source_rank_only_bagged_control": 0.0546875,
+    "selected_minus_trained_choice_bias_label_copy": 0.046875,
+    "selected_minus_wrong_example_hidden_control": 0.0810546875,
+    "selected_minus_zero_hidden_control": 0.0546875,
+    "selected_ridge_counts": {
+      "1000.0": 4,
+      "10000.0": 4,
+      "100000.0": 1
+    },
+    "source_label_copy_eval_accuracy": 0.4091796875,
+    "source_rank_only_bagged_control_accuracy": 0.4091796875,
+    "source_top2_oracle_accuracy": 0.6767578125,
+    "source_top4_oracle_accuracy": 1.0,
+    "split_seed_count": 3,
+    "strict_delta_required": 0.02,
+    "train_sample_seed_count": 3,
+    "trained_choice_bias_label_copy_eval_accuracy": 0.4169921875,
+    "vote_eval_accuracy": 0.4580078125,
+    "wrong_example_hidden_control_accuracy": 0.3828125,
+    "zero_hidden_control_accuracy": 0.4091796875
+  }
+}

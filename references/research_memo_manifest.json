@@ -2308,5 +2308,12 @@
     "path": "references/686_hellaswag_fixed_hybrid_true_candidate_text_permutation_seed_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after fixing seeded physical candidate-text permutation preparation and running the 1024-row HellaSwag seeded-all24 nonidentity schedule, recording seed/permutation-schedule hardening and boundaries against MCQ option-order artifacts, C2C, KVComm, Interlat, prefix/gist tokens, relative representations, sparse crosscoders, TurboQuant, and QJL."
+  },
+  {
+    "num": 687,
+    "slug": "hellaswag_fixed_hybrid_true_candidate_text_permutation_slice_repeat_refs_20260504",
+    "path": "references/687_hellaswag_fixed_hybrid_true_candidate_text_permutation_slice_repeat_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the non-overlapping 1024:2048 HellaSwag physical candidate-text permutation repeat, recording second-slice fixed-hybrid packet hardening and boundaries against MCQ option-order artifacts, prefix/gist tokens, latent reasoning, DroidSpeak, Interlat, SAE/crosscoders, and TurboQuant."
   }
 ]
