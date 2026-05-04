@@ -22823,3 +22823,60 @@ used to fit it, and making the message much larger did not help. That says the
 current receiver is not turning those coordinates into better answers, so the
 next method has to be trained around Qwen's answer behavior rather than just
 matching hidden-state coordinates.
+
+## 2026-05-04 Behavior-Residual Sparse Resonance Packet Gate
+
+Implemented and ran a behavior-aligned Sparse Resonance Packet gate after both
+source-only PCA and target-aligned PCA packets failed. This branch changes the
+receiver objective: instead of reconstructing hidden coordinates, it fits a
+train-only map from answer-key-forbidden TinyLlama candidate hidden public
+innovations to Qwen3 target behavior residuals
+`gold_one_hot - target_probability`, sparsifies/quantizes the candidate-local
+residual packet, and decodes it as a small Qwen3 target score correction.
+
+- new script:
+  `scripts/build_source_private_arc_challenge_behavior_residual_packet_gate.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_behavior_residual_packet_gate.py`;
+- artifacts:
+  `results/source_private_arc_challenge_behavior_residual_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_top2q4_corrected_prompt/`
+  and
+  `results/source_private_arc_challenge_behavior_residual_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_top2q4_corrected_prompt_w1/`;
+- memo:
+  `paper/behavior_residual_sparse_resonance_packet_gate_20260504.md`;
+- relevant references:
+  `references/724_behavior_aligned_packet_gate_control_refs_20260504.md`,
+  `references/725_behavior_transcoder_crosscoder_packet_atoms_refs_20260504.md`,
+  and
+  `references/726_confidence_error_coded_side_information_packet_refs_20260504.md`.
+
+Outcome: fail, but the diagnosis changed. The corrected-prompt behavior packet
+uses top-`2` candidate-local residual atoms with `4` coefficient bits:
+`12` payload bits / `1.5` B per row, framed to `2` B. The source behavior map
+fits train residuals with R2 `0.911`, but held-out matched accuracy is
+`0.375000`, tying target-only at `0.375000` and losing to Qwen-substitution at
+`0.625000`; worst required paired CI95 low is `-0.750000`. A conservative
+fixed residual weight of `1.0` gives the same matched accuracy, so the failure
+is not only the train-selected residual weight. Top-atom knockout reaches
+`0.500000`, which means the strongest transmitted residual atom is often
+harmful rather than causally useful.
+
+Important correction: an earlier scout run used a target scoring prompt without
+an explicit choices list. That surface was invalid for comparison to the
+strict soft-prefix wrapper, so the ledgered behavior result is based on the
+corrected full multiple-choice prompt.
+
+Decision: demote always-on ridge behavior-residual packets. They are more
+task-aligned than hidden-coordinate packets, but still overfit and fail
+source-family substitution and top-atom knockout controls. Promote selective
+confidence/error-coded side-information packets next: emit tiny top1/top2 or
+ECOC-style candidate codes plus reliability headers, and decode only when the
+target is uncertain and the source packet passes train-calibrated harm-control
+rules. The next branch should measure fired-row helps/harms separately from
+overall accuracy.
+
+Lay explanation: we tried sending Qwen a tiny correction to its answer scores
+instead of a hidden-state coordinate. The correction learned the training
+questions but did not help new questions, and removing the strongest clue often
+helped. The next packet needs a reliability header and a gate so it only fires
+when the target is unsure and the source clue is likely to help.
