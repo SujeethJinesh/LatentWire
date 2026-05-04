@@ -2567,5 +2567,12 @@
     "path": "references/724_behavior_aligned_packet_gate_control_refs_20260504.md",
     "status": "local_memo",
     "reason": "Fresh targeted benchmark and reviewer-risk memo for the next behavior-aligned Sparse Resonance Packet gate, sharpening controls for source-choice copying, target-cache effects, label/order bias, cherry-picking, paired uncertainty, and publishable slice thresholds."
+  },
+  {
+    "num": 725,
+    "slug": "behavior_transcoder_crosscoder_packet_atoms_refs_20260504",
+    "path": "references/725_behavior_transcoder_crosscoder_packet_atoms_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Fresh targeted SAE/crosscoder/transcoder/common-basis literature scout after source-only and target-aligned PCA failures, identifying behavior-oriented transcoders and BatchTopK shared/private crosscoders as the highest-priority Mac-local packet-atom branch with uniqueness threats and controls."
   }
 ]
