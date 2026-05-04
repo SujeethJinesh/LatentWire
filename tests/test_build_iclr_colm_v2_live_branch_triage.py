@@ -39,6 +39,62 @@ def _hellaswag_headline(**overrides: float | int | str | bool) -> dict:
     return {"headline": headline}
 
 
+def _target_oracle_headline(**overrides: float | int | str | bool) -> dict:
+    headline = {
+        "agreement_gap_vs_best_destructive": 0.25,
+        "best_destructive_agreement": 0.75,
+        "best_destructive_by_agreement": "zero_prefix",
+        "optimized_accuracy": 0.31,
+        "optimized_agreement": 1.0,
+    }
+    headline.update(overrides)
+    return {"headline": headline, "pass_gate": True}
+
+
+def _chunk_encoder_headline(**overrides: float | int | str | bool) -> dict:
+    headline = {
+        "best_destructive_agreement": 0.75,
+        "best_destructive_by_agreement": "zero_prefix",
+        "learned_accuracy": 0.25,
+        "learned_agreement": 0.75,
+    }
+    headline.update(overrides)
+    return {"headline": headline, "pass_gate": False}
+
+
+def _oracle_distill_headline(**overrides: float | int | str | bool) -> dict:
+    headline = {
+        "best_target_only_agreement": 0.5,
+        "best_target_only_by_agreement": "slots_only_oracle_distill",
+        "distill_accuracy": 0.25,
+        "distill_agreement": 0.375,
+    }
+    headline.update(overrides)
+    return {"headline": headline, "pass_gate": False}
+
+
+def _query_resampler_headline(**overrides: float | int | str | bool) -> dict:
+    headline = {
+        "best_control_agreement": 0.625,
+        "best_control_by_agreement": "chunk_mean_prefix",
+        "query_accuracy": 0.375,
+        "query_agreement": 0.5,
+    }
+    headline.update(overrides)
+    return {"headline": headline, "pass_gate": False}
+
+
+def _source_conditioned_headline(method_field: str, **overrides: float | int | str | bool) -> dict:
+    headline = {
+        "best_destructive_accuracy": 0.375,
+        "best_destructive_by_accuracy": "zero_source",
+        method_field: 0.375,
+        "source_top1_or_top2_oracle_accuracy": 0.625,
+    }
+    headline.update(overrides)
+    return {"headline": headline, "pass_gate": False}
+
+
 def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
     synthetic_input = tmp_path / "synthetic.json"
     synthetic_input.write_text("{}", encoding="utf-8")
@@ -62,6 +118,10 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
         "conditional_public_zscore": [
             _summary(source_accuracy=0.3, best_control_accuracy=0.35, source_minus_best_control=-0.05, pass_gate=False),
             _summary(source_accuracy=0.46, best_control_accuracy=0.44, source_minus_best_control=0.02, pass_gate=False),
+        ],
+        "conditional_public_svd": [
+            _summary(source_accuracy=0.375, best_control_accuracy=0.613, source_minus_best_control=-0.238, pass_gate=False),
+            _summary(source_accuracy=0.25, best_control_accuracy=0.75, source_minus_best_control=-0.5, pass_gate=False),
         ],
         "conditional_corruption_noop": [
             _summary(source_accuracy=0.25, best_control_accuracy=0.25, source_minus_best_control=0.0, pass_gate=False)
@@ -144,6 +204,27 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
             framed_record_bytes=4,
             packet_only_accuracy=0.502,
         ),
+        "target_self_oracle_soft_prefix": [
+            _target_oracle_headline(),
+            _target_oracle_headline(agreement_gap_vs_best_destructive=0.125, optimized_agreement=0.875),
+        ],
+        "target_self_learned_encoders": [
+            _chunk_encoder_headline(),
+            _oracle_distill_headline(),
+            _query_resampler_headline(),
+        ],
+        "target_self_source_conditioned_receivers": [
+            _source_conditioned_headline("source_oracle_accuracy", source_oracle_accuracy=0.25),
+            _source_conditioned_headline("source_hidden_residual_accuracy"),
+            _source_conditioned_headline(
+                "source_codebook_accuracy",
+                best_destructive_accuracy=0.75,
+                best_destructive_by_accuracy="source_top1_label_control",
+                source_codebook_accuracy=0.5,
+                source_top1_or_top2_oracle_accuracy=1.0,
+            ),
+            _source_conditioned_headline("consistency_refined_accuracy"),
+        ],
     }
 
     payload = build_triage(artifacts=artifacts, artifact_paths={"synthetic": synthetic_input})
@@ -151,7 +232,14 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
     assert payload["readiness"]["iclr"] == "blocked_by_lack_of_broad_or_learned_positive_receiver"
     assert payload["branch_rows"][0]["status"] == "promote_for_colm_v2_only"
     assert any(row["status"] == "ruled_out_shallow_pair_decoder" for row in payload["branch_rows"])
-    assert payload["next_exact_gate"]["name"] == "source_private_conditional_codebook_or_target_resonance_gate"
+    assert any(
+        row["status"] == "capacity_alive_not_source_private_method" for row in payload["branch_rows"]
+    )
+    assert any(
+        row["status"] == "ruled_out_current_source_conditioned_receiver_family"
+        for row in payload["branch_rows"]
+    )
+    assert payload["next_exact_gate"]["name"] == "colm_v2_table_refresh_then_complementarity_frontier_gate"
 
     out_dir = tmp_path / "out"
     paper_path = tmp_path / "paper.md"

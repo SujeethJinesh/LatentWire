@@ -24,6 +24,12 @@ DEFAULT_ARTIFACT_PATHS = {
         ROOT
         / "results/source_private_conditional_pq_public_zscore_gate_20260504/holdout_to_core_semantic_public_zscore_n256/summary.json",
     ],
+    "conditional_public_svd": [
+        ROOT
+        / "results/source_private_conditional_pq_public_svd_whiten_gate_20260504/core_to_holdout_semantic_public_svd_whiten_n256/summary.json",
+        ROOT
+        / "results/source_private_conditional_pq_public_svd_whiten_gate_20260504/holdout_to_core_semantic_public_svd_whiten_n256/summary.json",
+    ],
     "conditional_corruption_noop": [
         ROOT
         / "results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w001/summary.json",
@@ -62,6 +68,38 @@ DEFAULT_ARTIFACT_PATHS = {
     / "results/source_private_hellaswag_qwen_to_phi_denoising_syndrome_packet_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_denoising_syndrome_packet_gate.json",
     "hellaswag_sparse_common_basis": ROOT
     / "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate.json",
+    "target_self_oracle_soft_prefix": [
+        ROOT
+        / "results/target_self_resonance_hellaswag_soft_prefix_gate_20260504_qwen05_validation0_16/target_self_resonance_hellaswag_soft_prefix_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_soft_prefix_gate_20260504_qwen05_validation16_32/target_self_resonance_hellaswag_soft_prefix_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_soft_prefix_gate_20260504_qwen05_validation48_64/target_self_resonance_hellaswag_soft_prefix_gate.json",
+    ],
+    "target_self_learned_encoders": [
+        ROOT
+        / "results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train64_validation32_48/target_self_resonance_hellaswag_chunk_encoder_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train64_validation48_64/target_self_resonance_hellaswag_chunk_encoder_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_oracle_distill_gate_20260504_qwen05_train16_validation64_72_stronger_student/target_self_resonance_hellaswag_oracle_distill_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_query_resampler_gate_20260504_qwen05_train32_validation72_80/target_self_resonance_hellaswag_query_resampler_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_query_resampler_gate_20260504_qwen05_train64_validation72_80/target_self_resonance_hellaswag_query_resampler_gate.json",
+    ],
+    "target_self_source_conditioned_receivers": [
+        ROOT
+        / "results/target_self_resonance_hellaswag_source_oracle_distill_gate_20260504_tiny_to_qwen05_train16_validation64_72/target_self_resonance_hellaswag_source_oracle_distill_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_source_oracle_distill_gate_20260504_tiny_to_qwen05_train64_validation64_72/target_self_resonance_hellaswag_source_oracle_distill_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_source_hidden_residual_slot_gate_20260504_tiny_to_qwen05_train64_validation80_88_top2_stable/target_self_resonance_hellaswag_source_hidden_residual_slot_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_source_codebook_candidate_repair_gate_20260504_tiny_to_qwen05_train64_validation72_80/target_self_resonance_hellaswag_source_codebook_candidate_repair_gate.json",
+        ROOT
+        / "results/target_self_resonance_hellaswag_consistency_refined_slot_gate_20260504_tiny_to_qwen05_train64_validation88_96/target_self_resonance_hellaswag_consistency_refined_slot_gate.json",
+    ],
 }
 
 
@@ -109,6 +147,11 @@ def _source_minus_control_summaries(rows: list[dict[str, Any]]) -> dict[str, Any
     summaries = [row["summary"] for row in rows]
     best = max(summaries, key=lambda row: row["source_minus_best_control"])
     worst = min(summaries, key=lambda row: row["source_minus_best_control"])
+    best_ci = (
+        best.get("paired_bootstrap", {})
+        .get("source_vs_best_control", {})
+        .get("ci95_low")
+    )
     return {
         "rows": len(summaries),
         "pass_rows": sum(1 for row in summaries if row.get("pass_gate")),
@@ -116,6 +159,7 @@ def _source_minus_control_summaries(rows: list[dict[str, Any]]) -> dict[str, Any
         "best_source_accuracy": best["source_accuracy"],
         "best_control_accuracy": best["best_control_accuracy"],
         "best_control_condition": best["best_control_condition"],
+        "best_ci95_low_vs_control": best_ci,
         "worst_source_minus_control": worst["source_minus_best_control"],
     }
 
@@ -130,6 +174,103 @@ def _best_sparse_resonance(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "best_control_accuracy": best["best_control_accuracy"],
         "best_control_name": best["best_control_by_accuracy"],
         "best_matched_minus_control": best["matched_minus_best_control_accuracy"],
+    }
+
+
+def _target_self_oracle_capacity(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    headlines = [row["headline"] for row in rows]
+    best = max(headlines, key=lambda row: row["agreement_gap_vs_best_destructive"])
+    return {
+        "rows": len(rows),
+        "pass_rows": sum(1 for row in rows if row.get("pass_gate")),
+        "best_optimized_agreement": best["optimized_agreement"],
+        "best_destructive_agreement": best["best_destructive_agreement"],
+        "best_destructive_by_agreement": best["best_destructive_by_agreement"],
+        "best_agreement_gap": best["agreement_gap_vs_best_destructive"],
+        "best_optimized_accuracy": best["optimized_accuracy"],
+    }
+
+
+def _learned_target_encoder_summaries(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    keyed_rows: list[dict[str, Any]] = []
+    for row in rows:
+        h = row["headline"]
+        if "learned_agreement" in h:
+            method = h["learned_agreement"]
+            baseline = h["best_destructive_agreement"]
+            method_accuracy = h["learned_accuracy"]
+            control_name = h["best_destructive_by_agreement"]
+        elif "distill_agreement" in h:
+            method = h["distill_agreement"]
+            baseline = h["best_target_only_agreement"]
+            method_accuracy = h["distill_accuracy"]
+            control_name = h["best_target_only_by_agreement"]
+        else:
+            method = h["query_agreement"]
+            baseline = h["best_control_agreement"]
+            method_accuracy = h["query_accuracy"]
+            control_name = h["best_control_by_agreement"]
+        keyed_rows.append(
+            {
+                "method_agreement": method,
+                "baseline_agreement": baseline,
+                "agreement_delta": method - baseline,
+                "method_accuracy": method_accuracy,
+                "control_name": control_name,
+                "pass_gate": bool(row.get("pass_gate")),
+            }
+        )
+    best = max(keyed_rows, key=lambda row: (row["agreement_delta"], row["method_accuracy"]))
+    worst = min(keyed_rows, key=lambda row: row["agreement_delta"])
+    return {
+        "rows": len(keyed_rows),
+        "pass_rows": sum(1 for row in keyed_rows if row["pass_gate"]),
+        "best_method_agreement": best["method_agreement"],
+        "best_baseline_agreement": best["baseline_agreement"],
+        "best_agreement_delta": best["agreement_delta"],
+        "best_method_accuracy": best["method_accuracy"],
+        "best_control_name": best["control_name"],
+        "worst_agreement_delta": worst["agreement_delta"],
+    }
+
+
+def _source_conditioned_receiver_summaries(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    method_accuracy_fields = [
+        "source_oracle_accuracy",
+        "source_hidden_residual_accuracy",
+        "source_codebook_accuracy",
+        "consistency_refined_accuracy",
+    ]
+    keyed_rows: list[dict[str, Any]] = []
+    for row in rows:
+        h = row["headline"]
+        method_field = next(field for field in method_accuracy_fields if field in h)
+        method_accuracy = h[method_field]
+        baseline_accuracy = h["best_destructive_accuracy"]
+        keyed_rows.append(
+            {
+                "method_accuracy": method_accuracy,
+                "baseline_accuracy": baseline_accuracy,
+                "accuracy_delta": method_accuracy - baseline_accuracy,
+                "best_control_name": h["best_destructive_by_accuracy"],
+                "source_top1_or_top2_oracle_accuracy": h.get("source_top1_or_top2_oracle_accuracy"),
+                "pass_gate": bool(row.get("pass_gate")),
+            }
+        )
+    best = max(keyed_rows, key=lambda row: (row["accuracy_delta"], row["method_accuracy"]))
+    oracle_values = [
+        row["source_top1_or_top2_oracle_accuracy"]
+        for row in keyed_rows
+        if row["source_top1_or_top2_oracle_accuracy"] is not None
+    ]
+    return {
+        "rows": len(keyed_rows),
+        "pass_rows": sum(1 for row in keyed_rows if row["pass_gate"]),
+        "best_method_accuracy": best["method_accuracy"],
+        "best_baseline_accuracy": best["baseline_accuracy"],
+        "best_accuracy_delta": best["accuracy_delta"],
+        "best_control_name": best["best_control_name"],
+        "max_source_top1_or_top2_oracle_accuracy": max(oracle_values) if oracle_values else None,
     }
 
 
@@ -200,7 +341,7 @@ def build_triage(
             score=public_zscore["best_source_accuracy"],
             baseline=public_zscore["best_control_accuracy"],
             delta=public_zscore["best_source_minus_control"],
-            ci95_low=None,
+            ci95_low=public_zscore["best_ci95_low_vs_control"],
             bytes_record=7,
             evidence=(
                 f"{public_zscore['pass_rows']}/{public_zscore['rows']} pass; best source-minus-control "
@@ -208,6 +349,27 @@ def build_triage(
                 f"{public_zscore['best_control_condition']}."
             ),
             decision="Do not widen public-zscore to n500/remap.",
+        )
+    )
+
+    public_svd = _source_minus_control_summaries(artifacts["conditional_public_svd"])
+    rows.append(
+        _headline_row(
+            branch="Conditional PQ public-SVD whitening held-out-family decoder",
+            status="ruled_out_as_cross_family_rescue",
+            artifact="conditional_public_svd",
+            score=public_svd["best_source_accuracy"],
+            baseline=public_svd["best_control_accuracy"],
+            delta=public_svd["best_source_minus_control"],
+            ci95_low=public_svd["best_ci95_low_vs_control"],
+            bytes_record=7,
+            evidence=(
+                f"{public_svd['pass_rows']}/{public_svd['rows']} pass; best source-minus-control "
+                f"{public_svd['best_source_minus_control']:.6f} against "
+                f"{public_svd['best_control_condition']}. Worst row "
+                f"{public_svd['worst_source_minus_control']:.6f}."
+            ),
+            decision="Do not continue deterministic public-basis whitening as the rescue path.",
         )
     )
 
@@ -220,7 +382,7 @@ def build_triage(
             score=noop["best_source_accuracy"],
             baseline=noop["best_control_accuracy"],
             delta=noop["best_source_minus_control"],
-            ci95_low=None,
+            ci95_low=noop["best_ci95_low_vs_control"],
             bytes_record=7,
             evidence=(
                 f"{noop['pass_rows']}/{noop['rows']} pass; best source-minus-control "
@@ -388,6 +550,75 @@ def build_triage(
         )
     )
 
+    target_oracle = _target_self_oracle_capacity(artifacts["target_self_oracle_soft_prefix"])
+    rows.append(
+        _headline_row(
+            branch="Target self-resonance oracle soft-prefix capacity",
+            status="capacity_alive_not_source_private_method",
+            artifact="target_self_oracle_soft_prefix",
+            score=target_oracle["best_optimized_agreement"],
+            baseline=target_oracle["best_destructive_agreement"],
+            delta=target_oracle["best_agreement_gap"],
+            ci95_low=None,
+            bytes_record=None,
+            evidence=(
+                f"{target_oracle['pass_rows']}/{target_oracle['rows']} tiny oracle rows pass; "
+                f"best optimized agreement {target_oracle['best_optimized_agreement']:.6f} "
+                f"beats {target_oracle['best_destructive_by_agreement']} at "
+                f"{target_oracle['best_destructive_agreement']:.6f}."
+            ),
+            decision="Use only as capacity/headroom evidence; it optimizes on eval rows.",
+        )
+    )
+
+    learned_target = _learned_target_encoder_summaries(artifacts["target_self_learned_encoders"])
+    rows.append(
+        _headline_row(
+            branch="Target self-resonance held-out learned prefix encoders",
+            status="ruled_out_current_target_native_encoder_family",
+            artifact="target_self_learned_encoders",
+            score=learned_target["best_method_agreement"],
+            baseline=learned_target["best_baseline_agreement"],
+            delta=learned_target["best_agreement_delta"],
+            ci95_low=None,
+            bytes_record=None,
+            evidence=(
+                f"{learned_target['pass_rows']}/{learned_target['rows']} pass; best agreement delta "
+                f"{learned_target['best_agreement_delta']:.6f} against "
+                f"{learned_target['best_control_name']}; worst agreement delta "
+                f"{learned_target['worst_agreement_delta']:.6f}."
+            ),
+            decision="Do not run more chunk/distill/query-resampler variants without a new information path.",
+        )
+    )
+
+    source_conditioned = _source_conditioned_receiver_summaries(
+        artifacts["target_self_source_conditioned_receivers"]
+    )
+    oracle_text = (
+        "unknown"
+        if source_conditioned["max_source_top1_or_top2_oracle_accuracy"] is None
+        else f"{source_conditioned['max_source_top1_or_top2_oracle_accuracy']:.6f}"
+    )
+    rows.append(
+        _headline_row(
+            branch="Source-conditioned target-native resonance receivers",
+            status="ruled_out_current_source_conditioned_receiver_family",
+            artifact="target_self_source_conditioned_receivers",
+            score=source_conditioned["best_method_accuracy"],
+            baseline=source_conditioned["best_baseline_accuracy"],
+            delta=source_conditioned["best_accuracy_delta"],
+            ci95_low=None,
+            bytes_record=None,
+            evidence=(
+                f"{source_conditioned['pass_rows']}/{source_conditioned['rows']} pass; best accuracy delta "
+                f"{source_conditioned['best_accuracy_delta']:.6f} against "
+                f"{source_conditioned['best_control_name']}; source top1/top2 oracle reaches {oracle_text}."
+            ),
+            decision="Diagnose complementarity/gating before implementing another source-to-prefix decoder.",
+        )
+    )
+
     return {
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
         "gate": "iclr_colm_v2_live_branch_triage",
@@ -402,18 +633,22 @@ def build_triage(
             "conditional_pq_cross_family_blocked": bool(conditional_readiness["cross_family_blocked"]),
             "hellaswag_shallow_receiver_family_saturated": True,
             "sparse_resonance_current_basis_blocked": True,
+            "target_self_resonance_capacity_alive": True,
+            "target_self_resonance_learned_encoders_blocked": True,
+            "source_conditioned_target_native_receivers_blocked": True,
         },
         "story": (
             "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, "
             "source-private packets plus strict destructive controls. The ICLR story is "
-            "still blocked because neither cross-family conditional PQ nor HellaSwag "
-            "learned receivers have produced a positive row beyond packet/source-choice "
-            "baselines."
+            "still blocked because cross-family conditional PQ, deterministic public-basis "
+            "conditioning, and HellaSwag learned/source-conditioned resonance receivers have "
+            "not produced a positive row beyond packet/source-choice/target-cache controls."
         ),
         "submission_gap": (
-            "ICLR needs a positive learned or broader-benchmark receiver. COLM_v2 can be "
-            "prepared around the conditional-PQ shared-schema method and the HellaSwag "
-            "fixed-byte packet as systems/privacy evidence, with explicit limitations."
+            "ICLR needs a positive learned or broader-benchmark receiver that passes strict "
+            "destructive controls. COLM_v2 can be prepared around the conditional-PQ "
+            "shared-schema method, the fixed-byte HellaSwag packet row, and the target-resonance "
+            "capacity-versus-held-out-failure analysis with explicit limitations."
         ),
         "current_contributions": [
             {
@@ -434,7 +669,12 @@ def build_triage(
             {
                 "name": "sparse_resonance_packets",
                 "status": "framing_alive_method_not_yet_positive",
-                "needs_work": "new target-native or conditional-codebook receiver, not current PCA/score switchers",
+                "needs_work": "new mechanism beyond deterministic PQ, PCA atoms, chunk encoders, query resamplers, and source-to-prefix decoders",
+            },
+            {
+                "name": "target_self_resonance_capacity_probe",
+                "status": "capacity_alive",
+                "needs_work": "held-out/source-private receiver that beats slots-only, zero-source, wrong-source, source-choice, and candidate-roll controls",
             },
         ],
         "branch_rows": rows,
@@ -444,25 +684,30 @@ def build_triage(
         ],
         "weakened_or_ruled_out": [
             "Conditional PQ public-zscore and corruption-to-noop as held-out-family rescues.",
+            "Conditional PQ public-SVD whitening as a held-out-family rescue.",
             "ARC sparse resonance PCA/target-aligned soft-prefix basis as implemented.",
             "HellaSwag protected-rival, top2 bucket, linear receiver, harm bucket, and denoising syndrome switchers.",
             "Sparse/common-basis top2 atom causality in the current HellaSwag implementation.",
+            "Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.",
+            "Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.",
         ],
         "next_exact_gate": {
-            "name": "source_private_conditional_codebook_or_target_resonance_gate",
+            "name": "colm_v2_table_refresh_then_complementarity_frontier_gate",
             "primary_path": (
-                "Implement a richer public-conditioned residual/codebook receiver for conditional PQ "
-                "on n256 held-out family, using QINCo-style conditioning or another explicit target-public "
-                "codebook instead of row-zscore normalization."
+                "Backport this live triage into COLM_v2 tables/figures, then run a small "
+                "complementarity-frontier diagnostic that isolates rows where the target is wrong "
+                "and source top1/top2 could help, measuring whether any source-private packet field "
+                "beats source-choice and wrong-row controls before another decoder is trained."
             ),
             "fallback_path": (
-                "If the conditional-codebook branch is too large for the next Mac turn, switch to "
-                "COLM_v2 table integration and a target-self-resonance held-out encoder preflight; "
-                "do not run more HellaSwag shallow switchers."
+                "If the frontier diagnostic shows no separable source-causal signal, stop HellaSwag "
+                "receiver work and pivot to an alternate benchmark/method where the source has "
+                "measurable complementarity beyond rank/score shortcuts."
             ),
             "pass_bar": (
-                "source minus best destructive/shortcut control >= +0.10 with positive paired CI95 low "
-                "on both held-out-family directions"
+                "A learned or rule-based packet receiver must improve over source-index/rank/score, "
+                "same-byte text, wrong-source, candidate-roll, and target-derived controls with a "
+                "positive paired CI95 low on a frozen slice."
             ),
             "required_controls": [
                 "target_only",

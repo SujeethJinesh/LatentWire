@@ -2700,5 +2700,12 @@
     "path": "references/743_public_svd_whiten_conditional_pq_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference and novelty-boundary memo for the failed public-SVD whitening conditional-PQ gate, covering QINCo/QINCo2, C2C, TurboQuant, and the deterministic public-conditioning failure."
+  },
+  {
+    "num": 744,
+    "slug": "target_resonance_saturation_refs_20260504",
+    "path": "references/744_target_resonance_saturation_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference and novelty-boundary memo for the target-self-resonance saturation triage, covering C2C/Q-KVComm/TurboQuant, prefix/prompt/gist compression, activation steering, continuous thought, and the current capacity-versus-held-out failure boundary."
   }
 ]

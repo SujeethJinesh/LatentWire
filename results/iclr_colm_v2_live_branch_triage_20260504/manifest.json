@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-05-04T21:42:39.992967+00:00",
+  "created_utc": "2026-05-04T22:02:15.345502+00:00",
   "files": [
     "results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json",
     "results/iclr_colm_v2_live_branch_triage_20260504/branch_rows.csv",
@@ -14,6 +14,9 @@
     "conditional_pq_same_family_alive": true,
     "hellaswag_shallow_receiver_family_saturated": true,
     "iclr": "blocked_by_lack_of_broad_or_learned_positive_receiver",
-    "sparse_resonance_current_basis_blocked": true
+    "source_conditioned_target_native_receivers_blocked": true,
+    "sparse_resonance_current_basis_blocked": true,
+    "target_self_resonance_capacity_alive": true,
+    "target_self_resonance_learned_encoders_blocked": true
   }
 }

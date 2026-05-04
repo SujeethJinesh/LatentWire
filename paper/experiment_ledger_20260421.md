@@ -23808,3 +23808,50 @@ Lay explanation: the receiver built a smarter per-question decoder ring from
 the visible answer choices, but scrambled/fake packet codes became more useful
 than real source codes. That means the decoder ring was exploiting code/order
 artifacts, not reading a reliable source message.
+
+## 2026-05-04 Target-Resonance Saturation Triage Refresh
+
+Refreshed the ICLR/COLM_v2 live triage builder so the paper-facing dashboard
+now includes the target-self-resonance artifacts and the failed public-SVD
+conditional-PQ row:
+
+- script: `scripts/build_iclr_colm_v2_live_branch_triage.py`;
+- test: `tests/test_build_iclr_colm_v2_live_branch_triage.py`;
+- artifacts:
+  `results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json`,
+  `results/iclr_colm_v2_live_branch_triage_20260504/branch_rows.csv`, and
+  `results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.md`;
+- paper memo: `paper/iclr_colm_v2_live_branch_triage_20260504.md`;
+- reference memo:
+  `references/744_target_resonance_saturation_refs_20260504.md`.
+
+New table rows:
+
+- target self-resonance oracle soft-prefix capacity: `3/3` tiny rows pass;
+  best optimized agreement `0.937500` vs best destructive agreement `0.625000`;
+- target self-resonance held-out learned prefix encoders: `1/5` pass; best
+  agreement delta `0.000000` against `slots_only_encoder`, worst
+  `-0.125000`;
+- source-conditioned target-native resonance receivers: `0/5` pass; best
+  accuracy delta `0.000000` against the best destructive control; source
+  top1/top2 oracle reaches `1.000000` on a tiny diagnostic slice;
+- conditional public-SVD whitening: `0/2` pass and is now included as a
+  generated triage row rather than a manual note.
+
+Decision: target resonance is alive only as a capacity/headroom result. The
+current reusable receiver family is saturated: chunk encoders, oracle distill,
+query resamplers, source-hidden residuals, source-codebook candidate repair,
+and one-step consistency refinement should not be rerun without a new
+information path. The next exact gate is to backport this triage into COLM_v2
+tables/figures and then run a small complementarity-frontier diagnostic: isolate
+rows where the target is wrong and source top1/top2 could help, and test
+whether any source-private packet field offers source-causal signal beyond
+source-choice, wrong-row, candidate-roll, same-byte, and target-derived
+controls.
+
+Lay explanation: we proved the target can sometimes be pushed into the right
+state if we hand-optimize a private hint for that exact example. But the hints
+do not generalize when learned from training rows or driven by source-model
+features, so this is not yet a communication method. The next step is to check
+whether there is a predictable set of examples where the source truly has useful
+extra information before training another decoder.
