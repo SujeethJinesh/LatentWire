@@ -2497,5 +2497,12 @@
     "path": "references/714_source_conditioned_soft_prefix_selective_resonance_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted primary-source novelty review for learned source-conditioned target soft-prefix / selective logit-resonance communication, recording uniqueness, reviewer attacks, citations, and no-claim boundaries against soft prompts, prompt compression, distillation/logit fusion, C2C/KVComm/DroidSpeak, relative representations, SAEs/crosscoders, and continuous latent reasoning."
+  },
+  {
+    "num": 715,
+    "slug": "source_private_systems_hardware_quantization_review_20260504",
+    "path": "references/715_source_private_systems_hardware_quantization_review_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted systems, hardware, and quantization review for source-private latent communication, recording Mac packet-ring claim boundaries, required NVIDIA/vLLM/SGLang runs, defensible Mac-local next experiment, TurboQuant/QJL/KIVI/KVQuant/C2C/KVComm/DroidSpeak citations, and Tambe-style hardware implications."
   }
 ]
