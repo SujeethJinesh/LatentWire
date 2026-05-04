@@ -1,0 +1,43 @@
+{
+  "date": "2026-05-04",
+  "gate": "source_private_hellaswag_multisignal_packet_frontier_gate",
+  "outputs": [
+    "hellaswag_multisignal_packet_frontier_gate.json",
+    "hellaswag_multisignal_packet_frontier_gate.md",
+    "method_rows.csv",
+    "config_rows.csv",
+    "prediction_rows.jsonl"
+  ],
+  "pass_gate": false,
+  "slice_metadata": [
+    {
+      "eval_rows": 384,
+      "fit_rows": 64,
+      "phi_target_score_cache": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1024_1536/target_score_cache.json",
+      "phi_target_score_cache_sha256": "d19ff8973a283c8a3bed814d2fdc6c4ca03bcc7bbf298e88551760ac5abba9fa",
+      "qwen_predictions": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1024_1536/qwen_strict_packet_predictions_1024_1536.jsonl",
+      "qwen_predictions_sha256": "8740fa0d9a8771400e87410150841e910d93c86004ae3f9e4b999b8b3cf39e9d",
+      "rows": 512,
+      "select_rows": 64,
+      "slice_end_exclusive": 1536,
+      "slice_start": 1024
+    },
+    {
+      "eval_rows": 384,
+      "fit_rows": 64,
+      "phi_target_score_cache": "results/source_private_hellaswag_nonqwen_receiver_family_packet_gate_20260503_validation1536_2048/target_score_cache.json",
+      "phi_target_score_cache_sha256": "115de3107d95b4ab1f5af5b428d4c51be28295abd45bd4d0b1a8c565a6ac5f28",
+      "qwen_predictions": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/qwen_strict_packet_predictions_1536_2048.jsonl",
+      "qwen_predictions_sha256": "780629fbf2b4d2134af252caa8829c5f2bfd3795bf560d5dd42057126e5ce5aa",
+      "rows": 512,
+      "select_rows": 64,
+      "slice_end_exclusive": 2048,
+      "slice_start": 1536
+    }
+  ],
+  "source_score_metadata": {
+    "source_score_cache": "results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260501_qwen05_train512_validation1024_2048/source_eval_score_cache.json",
+    "source_score_cache_rows": 1024,
+    "source_score_cache_sha256": "e3a6b9c550816557d9f786ba11b3bfb6c0872cc1fa223ced9b533f53e0a02dd6"
+  }
+}

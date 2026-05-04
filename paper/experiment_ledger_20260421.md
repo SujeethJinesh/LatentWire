@@ -23915,3 +23915,60 @@ Lay explanation: Qwen often has the right answer among its top two choices
 when Phi or the fixed hybrid is wrong. But the tiny packet cannot yet tell Phi
 which of those cases are safe to trust. That means the source has useful
 information, but this particular packet does not expose it in a reliable way.
+
+## 2026-05-04 HellaSwag Multi-Signal Packet Frontier Gate
+
+Added a no-new-inference follow-up that packs the existing strict Qwen packet
+policy predictions into a tiny source-private multi-signal packet:
+
+- script:
+  `scripts/build_source_private_hellaswag_multisignal_packet_frontier_gate.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_multisignal_packet_frontier_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_multisignal_packet_frontier_gate_20260504_validation1024_2048/hellaswag_multisignal_packet_frontier_gate.json`;
+- refreshed triage:
+  `results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json`
+  and `paper/iclr_colm_v2_live_branch_triage_20260504.md`.
+
+Purpose: test whether richer cached source-private packet fields can unlock
+the HellaSwag complementarity frontier without transmitting source text,
+candidate hidden states, dense scores, or KV cache. The packet contains
+quantized IDs derived from Qwen's selected, hidden-mean, score-mean, vote,
+score-vote, rank-only, score-only, and margin-bin signals. The held-out gate
+then decides whether to override the fixed hybrid baseline.
+
+Headline:
+
+- eval rows: `768`;
+- target-only accuracy: `0.263021`;
+- fixed-hybrid accuracy: `0.467448`;
+- source top1/top2 oracle accuracy: `0.694010`;
+- candidate-only accuracy: `0.455729`;
+- multi-signal selector accuracy: `0.455729`;
+- multi-signal selector delta vs fixed: `-0.011719`;
+- multi-signal selector CI95 low vs fixed: `-0.023470`;
+- multi-signal selector overrides: `30`;
+- best source-choice control: `source_top1_choice_control` at `0.411458`;
+- best destructive control: `field_shuffle_multisignal_control` at
+  `0.430990`;
+- packet: `3` raw bytes, `5` framed bytes.
+
+Outcome: fail. The richer cached packet made nonzero held-out overrides, but
+those overrides hurt fixed-hybrid accuracy and tied the candidate-only row. The
+source top1/top2 oracle remains high, so complementarity is still alive, but
+cached Qwen policy predictions do not expose a safe repair frontier on this
+slice.
+
+Decision: mark HellaSwag cached hidden/score/vote policy-prediction packets as
+ruled out for the current frontier. Stop cached-selector work unless a
+qualitatively new source-causal feature is introduced. The next exact gate is
+conditional-PQ integrity/corruption-aware decoding on the n256 held-out-family
+surface, or COLM_v2 table/figure integration if the implementation branch is
+too large for the next Mac-local turn.
+
+Lay explanation: we tried sending Phi a compact bundle of Qwen's internal
+"which answer seems likely" hints. Phi switched answers 30 times on held-out
+rows, but those switches were worse than doing nothing. Qwen has useful
+information somewhere, but these tiny cached hints still do not tell Phi when
+to trust it.

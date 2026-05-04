@@ -1,0 +1,13 @@
+method,accuracy,baseline_accuracy,delta_vs_baseline,ci95_low_vs_baseline,ci95_high_vs_baseline,helps_vs_baseline,harms_vs_baseline,override_count_vs_baseline,raw_payload_bytes,framed_record_bytes,source_text_exposed,source_kv_exposed,source_hidden_vector_exposed,raw_source_scores_or_logits_exposed,details
+fixed_or_source_top1_top2_oracle_diagnostic,0.6940104166666666,0.4674479166666667,0.2265625,0.19661458333333334,0.2552083333333333,174,0,174,0,0,False,False,False,False,"{""not_promotable"": true, ""oracle"": true}"
+multisignal_packet_frontier,0.4557291666666667,0.4674479166666667,-0.01171875,-0.02347005208333333,0.0,6,15,30,3,5,False,False,False,False,"{""model"": {""l2"": 300.0, ""select_row"": {""l2"": 300.0, ""select_accuracy"": 0.53125, ""select_ci95_low_vs_fixed"": 0.0, ""select_delta_vs_fixed"": 0.015625, ""select_harms_vs_fixed"": 0, ""select_helps_vs_fixed"": 2, ""select_overrides"": 3, ""threshold"": 0.0, ""threshold_is_noop"": false}, ""threshold"": 0.0, ""threshold_is_noop"": false}}"
+candidate_only,0.4557291666666667,0.4674479166666667,-0.01171875,-0.022135416666666668,-0.0012695312500000295,5,14,26,1,4,False,False,False,False,{}
+field_shuffle_multisignal_control,0.4309895833333333,0.4674479166666667,-0.036458333333333336,-0.053385416666666664,-0.01953125,10,38,69,3,5,False,False,False,False,{}
+source_top1_choice_control,0.4114583333333333,0.4674479166666667,-0.055989583333333336,-0.07942708333333333,-0.033854166666666664,22,65,134,1,4,False,False,False,False,{}
+target_derived_packet_multisignal_control,0.30078125,0.4674479166666667,-0.16666666666666666,-0.2109375,-0.12630208333333334,75,203,411,0,0,False,False,False,False,{}
+source_row_shuffle_multisignal_control,0.28515625,0.4674479166666667,-0.18229166666666666,-0.2265625,-0.13541666666666666,101,241,502,3,5,False,False,False,False,{}
+zero_source_multisignal_control,0.2721354166666667,0.4674479166666667,-0.1953125,-0.23958333333333334,-0.14973958333333334,101,251,535,0,0,False,False,False,False,{}
+source_top2_choice_control,0.2643229166666667,0.4674479166666667,-0.203125,-0.2578125,-0.14973958333333334,152,308,673,1,4,False,False,False,False,{}
+target_only,0.2630208333333333,0.4674479166666667,-0.20442708333333334,-0.2552083333333333,-0.15885416666666666,105,262,551,0,0,False,False,False,False,{}
+random_same_byte_multisignal_control,0.2591145833333333,0.4674479166666667,-0.20833333333333334,-0.2513020833333333,-0.1640625,85,245,496,3,5,False,False,False,False,{}
+candidate_roll_multisignal_control,0.22135416666666666,0.4674479166666667,-0.24609375,-0.2943033854166667,-0.19791666666666666,123,312,667,3,5,False,False,False,False,{}

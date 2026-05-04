@@ -191,6 +191,18 @@
       "record_bytes": 4,
       "score": 0.467448,
       "status": "headroom_alive_selector_blocked"
+    },
+    {
+      "artifact": "hellaswag_multisignal_packet_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag multi-signal source packet frontier",
+      "ci95_low": -0.02347,
+      "decision": "Do not continue cached Qwen policy-prediction packets on this HellaSwag slice.",
+      "delta": -0.011719,
+      "evidence": "Selector accuracy 0.455729 vs fixed 0.467448; overrides 30 rows; best destructive control field_shuffle_multisignal_control at 0.430990.",
+      "record_bytes": 5,
+      "score": 0.455729,
+      "status": "ruled_out_cached_policy_packet"
     }
   ],
   "claim_boundaries": [
@@ -199,7 +211,7 @@
     "Do not claim C2C/KV throughput, HBM, PCIe, NVLink, or energy wins without native measurements.",
     "Frame C2C/KVComm/TurboQuant/KIVI as high-bandwidth or KV-compression baselines with different exposure regimes."
   ],
-  "created_utc": "2026-05-04T22:16:23.378551+00:00",
+  "created_utc": "2026-05-04T22:26:31.334272+00:00",
   "current_contributions": [
     {
       "name": "source_private_low_rate_packets",
@@ -256,6 +268,7 @@
     "hellaswag_denoising_syndrome": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_denoising_syndrome_packet_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_denoising_syndrome_packet_gate.json",
     "hellaswag_fixed_hybrid": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503_validation0_10042/hellaswag_fixed_hybrid_full_validation_gate.json",
     "hellaswag_harm_bucket": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_harm_controlled_bucket_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_harm_controlled_bucket_gate.json",
+    "hellaswag_multisignal_packet_frontier": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_multisignal_packet_frontier_gate_20260504_validation1024_2048/hellaswag_multisignal_packet_frontier_gate.json",
     "hellaswag_official_receiver": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_official_train_receiver_calibrated_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_official_train_receiver_calibrated_gate.json",
     "hellaswag_protected_rival": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_protected_rival_packet_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_protected_rival_packet_gate.json",
     "hellaswag_sparse_common_basis": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate.json",
@@ -308,6 +321,7 @@
     "hellaswag_denoising_syndrome": "7ec4c91d9613b9752f5bcbdd005689826be5902009b24052b7f51a277a86fc78",
     "hellaswag_fixed_hybrid": "0fd7d311cec8c8aac0de60de1193246d9cfb86642d407355bd815cb15d82456d",
     "hellaswag_harm_bucket": "59ccbc69d4887c87798b2ff7e9edc64fe0b6a548db0b8da4ad8f0c33044d8dbf",
+    "hellaswag_multisignal_packet_frontier": "ffacbca994500c19086e8b340013873d5993c6c801d245b840e400768f375e9d",
     "hellaswag_official_receiver": "5effe4cdd3d409485deb43691451e840032c52447de1580b724c2e3d5fdd033f",
     "hellaswag_protected_rival": "cd3468cdd8f3f7986650f1b8e37b86ebbf52254b92d15148a5089dfcddb51e74",
     "hellaswag_sparse_common_basis": "01e6be4324fe99bd4a8f2a58589a1c22a6bc533e35d972194de72470c3dcc509",
@@ -333,10 +347,10 @@
     }
   },
   "next_exact_gate": {
-    "fallback_path": "If no new source-causal packet field is available on Mac, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, and complementarity-frontier saturation.",
-    "name": "new_information_path_or_alternate_benchmark_gate",
+    "fallback_path": "If the conditional-PQ integrity branch is too large for the next Mac-local turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, and multi-signal packet failure.",
+    "name": "conditional_pq_integrity_or_colm_v2_integration_gate",
     "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
-    "primary_path": "Use the complementarity-frontier rows as a diagnostic set, but require a new packet field or representation path before training another HellaSwag receiver. The next implementation should either add a genuinely new source-causal feature with source-choice/wrong-row controls, or move to an alternate benchmark where source complementarity is easier to separate from rank/score shortcuts.",
+    "primary_path": "Stop HellaSwag cached-selector work unless a qualitatively new hidden/PQ residual feature is introduced. The next ICLR implementation should return to conditional PQ with learned integrity/corruption-to-no-op decoding on the n256 held-out-family surface, or use this HellaSwag map only as a diagnostic limitation.",
     "required_controls": [
       "target_only",
       "answer_masked_source",
@@ -358,6 +372,7 @@
     "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
     "conditional_pq_cross_family_blocked": true,
     "conditional_pq_same_family_alive": true,
+    "hellaswag_cached_policy_packets_blocked": true,
     "hellaswag_complementarity_headroom_alive": true,
     "hellaswag_current_frontier_selector_blocked": true,
     "hellaswag_shallow_receiver_family_saturated": true,
@@ -377,6 +392,7 @@
     "Sparse/common-basis top2 atom causality in the current HellaSwag implementation.",
     "Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.",
     "Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.",
-    "HellaSwag complementarity-frontier selector with current top1/top2 packet fields."
+    "HellaSwag complementarity-frontier selector with current top1/top2 packet fields.",
+    "HellaSwag cached hidden/score/vote policy-prediction packets as a repair frontier."
   ]
 }

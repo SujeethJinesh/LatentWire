@@ -1,6 +1,6 @@
 # ICLR / COLM_v2 Live Branch Triage
 
-- created UTC: `2026-05-04T22:16:23.378551+00:00`
+- created UTC: `2026-05-04T22:26:31.334272+00:00`
 - COLM_v2 readiness: `scoped_positive_ready_for_writeup_if_claims_are_narrow`
 - ICLR readiness: `blocked_by_lack_of_broad_or_learned_positive_receiver`
 
@@ -40,6 +40,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 | Target self-resonance held-out learned prefix encoders | `ruled_out_current_target_native_encoder_family` | `0.6875` | `0.6875` | `0.0` | `None` | `None` | Do not run more chunk/distill/query-resampler variants without a new information path. |
 | Source-conditioned target-native resonance receivers | `ruled_out_current_source_conditioned_receiver_family` | `0.375` | `0.375` | `0.0` | `None` | `None` | Diagnose complementarity/gating before implementing another source-to-prefix decoder. |
 | HellaSwag complementarity-frontier selector diagnostic | `headroom_alive_selector_blocked` | `0.467448` | `0.467448` | `0.0` | `0.0` | `4` | Do not train another HellaSwag selector on the same packet fields; require a new information path. |
+| HellaSwag multi-signal source packet frontier | `ruled_out_cached_policy_packet` | `0.455729` | `0.467448` | `-0.011719` | `-0.02347` | `5` | Do not continue cached Qwen policy-prediction packets on this HellaSwag slice. |
 
 ## Evidence Notes
 
@@ -59,6 +60,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - `Target self-resonance held-out learned prefix encoders`: 1/5 pass; best agreement delta 0.000000 against slots_only_encoder; worst agreement delta -0.125000.
 - `Source-conditioned target-native resonance receivers`: 0/5 pass; best accuracy delta 0.000000 against zero_source_hidden; source top1/top2 oracle reaches 1.000000.
 - `HellaSwag complementarity-frontier selector diagnostic`: Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.
+- `HellaSwag multi-signal source packet frontier`: Selector accuracy 0.455729 vs fixed 0.467448; overrides 30 rows; best destructive control field_shuffle_multisignal_control at 0.430990.
 
 ## Promoted
 
@@ -75,12 +77,13 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.
 - Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.
 - HellaSwag complementarity-frontier selector with current top1/top2 packet fields.
+- HellaSwag cached hidden/score/vote policy-prediction packets as a repair frontier.
 
 ## Next Exact Gate
 
-- name: `new_information_path_or_alternate_benchmark_gate`
-- primary path: Use the complementarity-frontier rows as a diagnostic set, but require a new packet field or representation path before training another HellaSwag receiver. The next implementation should either add a genuinely new source-causal feature with source-choice/wrong-row controls, or move to an alternate benchmark where source complementarity is easier to separate from rank/score shortcuts.
-- fallback path: If no new source-causal packet field is available on Mac, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, and complementarity-frontier saturation.
+- name: `conditional_pq_integrity_or_colm_v2_integration_gate`
+- primary path: Stop HellaSwag cached-selector work unless a qualitatively new hidden/PQ residual feature is introduced. The next ICLR implementation should return to conditional PQ with learned integrity/corruption-to-no-op decoding on the n256 held-out-family surface, or use this HellaSwag map only as a diagnostic limitation.
+- fallback path: If the conditional-PQ integrity branch is too large for the next Mac-local turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, and multi-signal packet failure.
 - pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
 - required controls: `target_only`, `answer_masked_source`, `constrained_wrong_row_source`, `same_source_choice_wrong_row`, `candidate_roll_or_deranged_public_basis`, `permuted_codes`, `random_same_byte`, `opaque_slot_or_deranged_basis`, `source_index_rank_score_comparators_when_meaningful`, `same_byte_visible_text`
 

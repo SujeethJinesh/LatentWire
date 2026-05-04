@@ -237,6 +237,18 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
                 "selected_selector_overrides": 0,
             }
         },
+        "hellaswag_multisignal_packet_frontier": {
+            "headline": {
+                "best_destructive_control_accuracy": 0.431,
+                "best_destructive_control_name": "field_shuffle_multisignal_control",
+                "fixed_hybrid_accuracy": 0.47,
+                "framed_record_bytes": 5,
+                "multisignal_selector_accuracy": 0.456,
+                "multisignal_selector_ci95_low_vs_fixed_hybrid": -0.024,
+                "multisignal_selector_delta_vs_fixed_hybrid": -0.014,
+                "multisignal_selector_overrides": 30,
+            }
+        },
     }
 
     payload = build_triage(artifacts=artifacts, artifact_paths={"synthetic": synthetic_input})
@@ -257,7 +269,12 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
     )
     assert payload["readiness"]["hellaswag_complementarity_headroom_alive"] is True
     assert payload["readiness"]["hellaswag_current_frontier_selector_blocked"] is True
-    assert payload["next_exact_gate"]["name"] == "new_information_path_or_alternate_benchmark_gate"
+    assert payload["readiness"]["hellaswag_cached_policy_packets_blocked"] is True
+    assert any(
+        row["status"] == "ruled_out_cached_policy_packet"
+        for row in payload["branch_rows"]
+    )
+    assert payload["next_exact_gate"]["name"] == "conditional_pq_integrity_or_colm_v2_integration_gate"
 
     out_dir = tmp_path / "out"
     paper_path = tmp_path / "paper.md"

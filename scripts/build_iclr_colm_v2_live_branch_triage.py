@@ -102,6 +102,8 @@ DEFAULT_ARTIFACT_PATHS = {
     ],
     "hellaswag_complementarity_frontier": ROOT
     / "results/source_private_hellaswag_complementarity_frontier_diagnostic_20260504_validation1024_2048/hellaswag_complementarity_frontier_diagnostic.json",
+    "hellaswag_multisignal_packet_frontier": ROOT
+    / "results/source_private_hellaswag_multisignal_packet_frontier_gate_20260504_validation1024_2048/hellaswag_multisignal_packet_frontier_gate.json",
 }
 
 
@@ -641,6 +643,28 @@ def build_triage(
         )
     )
 
+    multisignal = artifacts["hellaswag_multisignal_packet_frontier"]["headline"]
+    rows.append(
+        _headline_row(
+            branch="HellaSwag multi-signal source packet frontier",
+            status="ruled_out_cached_policy_packet",
+            artifact="hellaswag_multisignal_packet_frontier",
+            score=multisignal["multisignal_selector_accuracy"],
+            baseline=multisignal["fixed_hybrid_accuracy"],
+            delta=multisignal["multisignal_selector_delta_vs_fixed_hybrid"],
+            ci95_low=multisignal["multisignal_selector_ci95_low_vs_fixed_hybrid"],
+            bytes_record=multisignal["framed_record_bytes"],
+            evidence=(
+                f"Selector accuracy {multisignal['multisignal_selector_accuracy']:.6f} vs fixed "
+                f"{multisignal['fixed_hybrid_accuracy']:.6f}; overrides "
+                f"{multisignal['multisignal_selector_overrides']} rows; best destructive control "
+                f"{multisignal['best_destructive_control_name']} at "
+                f"{multisignal['best_destructive_control_accuracy']:.6f}."
+            ),
+            decision="Do not continue cached Qwen policy-prediction packets on this HellaSwag slice.",
+        )
+    )
+
     return {
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
         "gate": "iclr_colm_v2_live_branch_triage",
@@ -660,6 +684,7 @@ def build_triage(
             "source_conditioned_target_native_receivers_blocked": True,
             "hellaswag_complementarity_headroom_alive": True,
             "hellaswag_current_frontier_selector_blocked": True,
+            "hellaswag_cached_policy_packets_blocked": True,
         },
         "story": (
             "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, "
@@ -715,20 +740,21 @@ def build_triage(
             "Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.",
             "Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.",
             "HellaSwag complementarity-frontier selector with current top1/top2 packet fields.",
+            "HellaSwag cached hidden/score/vote policy-prediction packets as a repair frontier.",
         ],
         "next_exact_gate": {
-            "name": "new_information_path_or_alternate_benchmark_gate",
+            "name": "conditional_pq_integrity_or_colm_v2_integration_gate",
             "primary_path": (
-                "Use the complementarity-frontier rows as a diagnostic set, but require a new "
-                "packet field or representation path before training another HellaSwag receiver. "
-                "The next implementation should either add a genuinely new source-causal feature "
-                "with source-choice/wrong-row controls, or move to an alternate benchmark where "
-                "source complementarity is easier to separate from rank/score shortcuts."
+                "Stop HellaSwag cached-selector work unless a qualitatively new hidden/PQ residual "
+                "feature is introduced. The next ICLR implementation should return to conditional "
+                "PQ with learned integrity/corruption-to-no-op decoding on the n256 held-out-family "
+                "surface, or use this HellaSwag map only as a diagnostic limitation."
             ),
             "fallback_path": (
-                "If no new source-causal packet field is available on Mac, switch to COLM_v2 table "
-                "and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance "
-                "capacity, and complementarity-frontier saturation."
+                "If the conditional-PQ integrity branch is too large for the next Mac-local turn, "
+                "switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte "
+                "HellaSwag, target-resonance capacity, complementarity-frontier saturation, and "
+                "multi-signal packet failure."
             ),
             "pass_bar": (
                 "A learned or rule-based packet receiver must improve over source-index/rank/score, "

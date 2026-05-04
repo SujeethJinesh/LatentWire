@@ -95,6 +95,40 @@ shortcuts. If no such feature is available Mac-locally, switch to COLM_v2
 table/figure integration using the positive conditional-PQ row, the HellaSwag
 fixed-byte systems row, target-resonance capacity, and this saturation result.
 
+## Multi-Signal Packet Frontier Update
+
+A richer no-new-inference follow-up tested whether the cached strict Qwen
+packet predictions expose the missing repair signal:
+
+- artifact:
+  `results/source_private_hellaswag_multisignal_packet_frontier_gate_20260504_validation1024_2048/hellaswag_multisignal_packet_frontier_gate.json`;
+- packet: selected, hidden-mean, score-mean, vote, score-vote, rank-only,
+  score-only, and quantized margin-bin IDs;
+- packet size: `3` raw bytes and `5` framed bytes;
+- eval rows: `768`;
+- fixed-hybrid accuracy: `0.467448`;
+- multi-signal selector accuracy: `0.455729`;
+- delta vs fixed: `-0.011719`;
+- CI95 low vs fixed: `-0.023470`;
+- overrides: `30`;
+- source top1/top2 oracle accuracy: `0.694010`;
+- best destructive control: `field_shuffle_multisignal_control` at
+  `0.430990`.
+
+Interpretation: the cached policy packet makes real held-out decisions, but
+they are harmful. This rules out another shallow HellaSwag receiver that only
+recombines existing Qwen strict packet predictions. The result is useful for
+the paper because it sharpens the threat model: source complementarity is not
+enough; LatentWire needs a packet field that is source-causal under destructive
+controls, not just a model-choice or policy-cache proxy.
+
+Updated decision: HellaSwag remains useful as a systems/privacy and saturation
+benchmark, but the next positive-method branch should return to conditional-PQ
+integrity/corruption-aware decoding or introduce a qualitatively new source
+feature. For COLM_v2, use this as an honest negative row explaining why
+utility-per-byte must be paired with wrong-row, field-shuffle, candidate-roll,
+source-choice, and same-byte controls.
+
 ## First Implemented Gate
 
 Implemented a train-fit sparse PCA packet mode in the strict ARC soft-prefix

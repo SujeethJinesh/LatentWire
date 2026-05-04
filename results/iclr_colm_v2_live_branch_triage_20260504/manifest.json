@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-05-04T22:16:23.378551+00:00",
+  "created_utc": "2026-05-04T22:26:31.334272+00:00",
   "files": [
     "results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json",
     "results/iclr_colm_v2_live_branch_triage_20260504/branch_rows.csv",
@@ -12,6 +12,7 @@
     "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
     "conditional_pq_cross_family_blocked": true,
     "conditional_pq_same_family_alive": true,
+    "hellaswag_cached_policy_packets_blocked": true,
     "hellaswag_complementarity_headroom_alive": true,
     "hellaswag_current_frontier_selector_blocked": true,
     "hellaswag_shallow_receiver_family_saturated": true,

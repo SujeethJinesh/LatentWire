@@ -115,9 +115,17 @@ source top1/top2 could repair many fixed-hybrid errors. But the selected
 frontier made zero held-out overrides, so the existing source top1/top2 plus
 margin/entropy packet fields do not expose a stable decision surface.
 
+A richer cached-policy packet follow-up also fails: the multi-signal packet
+selector reaches `0.455729` versus the fixed hybrid's `0.467448`, with CI95 low
+`-0.023470`, despite the fixed-or-source top1/top2 oracle staying at
+`0.694010`. This weakens cached Qwen policy-prediction packets as a repair
+frontier; the issue is not only that the first selector was too conservative.
+
 Next gate:
 
 - Do not train another HellaSwag selector on the same packet fields.
+- Do not continue cached hidden/score/vote policy-prediction packets on this
+  slice without a qualitatively new source-causal feature.
 - Add a genuinely new source-causal feature, or move to a benchmark where
   complementarity is separable from rank/score shortcuts.
 - Main-table comparators must include target-only, fixed hybrid, source-index,
