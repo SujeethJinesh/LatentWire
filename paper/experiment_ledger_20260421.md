@@ -23469,3 +23469,54 @@ the tiny training examples, but on new examples it did not beat Qwen alone and
 sometimes changed correct answers to wrong ones. That means "learn sparse atoms
 from source features only" is not enough; the atoms need to be grounded in both
 source and target behavior.
+
+## 2026-05-04 Paired BatchTopK Source/Target Atom-Bank Scout
+
+Implemented the smallest paired source/target atom-basis variant inside the
+same strict ARC behavior-atom harness:
+
+- new CLI mode:
+  `--atom-basis-mode paired_batchtopk_behavior`;
+- implementation:
+  `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- reference/novelty memo:
+  `references/737_paired_batchtopk_crosscoder_atom_refs_20260504.md`;
+- scratch n8 scouts, intentionally kept out of git:
+  `.debug/arc_behavior_paired_batchtopk_n8_atoms16_top1q4/` and
+  `.debug/arc_behavior_paired_batchtopk_n8_atoms16_top2q4/`.
+
+This mode computes TinyLlama source-hidden public innovations for all rows, but
+computes Qwen target-hidden public innovations only on the train/fit rows for
+basis calibration. At runtime, the packet remains source-only: top-k atom IDs
+plus quantized TinyLlama source coefficients. Target hidden calibration is
+logged as train-only side information and is not counted as transferred bytes.
+
+Outcome: fail, but it narrows the path. The rank-16 top-1 q4 paired scout
+reaches matched `0.250000` versus target-only `0.375000`, fires `8/8`, helps
+`1`, harms `2`, and loses to Qwen-substitution at `0.625000`. The rank-16
+top-2 q4 paired scout also reaches matched `0.250000` versus target-only
+`0.375000`, fires `8/8`, helps `0`, harms `1`, and loses to Qwen-substitution
+at `0.625000`.
+
+The paired atom bank fits train behavior strongly: top-1 source/target behavior
+fit R2 is approximately `0.73/0.93`, and top-2 is approximately `0.90/0.96`.
+The top-2 alignment loss is lower than top-1, and candidate-roll controls
+collapse on the n8 slice, but matched collapses too. This means the paired
+source/target sparse basis is learning train behavior and some candidate
+alignment, but it is not producing a useful held-out source packet.
+
+Decision: weaken naive paired BatchTopK/crosscoder-style atoms as the next
+positive method. Do not promote to n16/n32 as-is. If continuing this family,
+the next step needs either an explicit DFC shared/source-only/target-only atom
+partition with a harm-aware receiver objective, or a target-side
+behavior-transcoder feasibility probe proving that target-native sparse atoms
+can causally improve ARC margins before source transmission is attempted.
+
+Lay explanation: this time we let the packet vocabulary look at both TinyLlama
+and Qwen during training, but only TinyLlama was allowed to send the packet at
+test time. The vocabulary learned the training examples very well, but the
+packets made Qwen worse on new examples. So the issue is not just that the old
+vocabulary was source-only; we need a receiver-aware or target-native way to
+make sparse atoms useful.

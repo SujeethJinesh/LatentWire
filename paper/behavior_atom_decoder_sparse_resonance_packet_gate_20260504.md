@@ -60,11 +60,16 @@ only source-specific packet information can move the target scores.
   `--atom-basis-mode batchtopk_behavior` in
   `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`
   (initial n8 scouts were run in `.debug/` and intentionally not tracked)
+- paired BatchTopK source/target atom-bank implementation:
+  `--atom-basis-mode paired_batchtopk_behavior` in the same strict harness;
+  target hidden states are used only for train-time basis calibration, and
+  held-out runtime packets remain source-only
 - reference synthesis:
   `references/731_behavior_atom_decoder_packet_refs_20260504.md`
   and `references/733_event_triggered_packet_gate_refs_20260504.md`
   and `references/734_corruption_noop_receiver_refs_20260504.md`
   and `references/736_batchtopk_behavior_atom_bank_refs_20260504.md`
+  and `references/737_paired_batchtopk_crosscoder_atom_refs_20260504.md`
 
 ## Results
 
@@ -181,6 +186,20 @@ top-atom-knockout at `0.3750`. The train behavior fit was high
 (`fit_r2 ~= 0.79` top-1, `0.91` top-2), so the failure is held-out atom
 causality and harm control, not inability to fit the tiny train slice.
 
+The paired BatchTopK source/target atom-bank scout adds train-only Qwen hidden
+public innovations while still emitting source-only TinyLlama packets at
+runtime. This was intended as the smallest crosscoder-style test: learn atom
+coordinates that are visible to both source and target models, then transmit
+only source-side atom IDs and coefficients. The implementation explicitly logs
+that target hidden calibration is fit-row-only and does not add target hidden
+state to packet bytes. The n8 result is worse than source-only BatchTopK:
+rank-16 top-1 q4 reaches matched `0.2500` versus target-only `0.3750`, with
+helps/harms `1/2`; rank-16 top-2 q4 also reaches matched `0.2500` versus
+target-only `0.3750`, with helps/harms `0/1`. Both lose to Qwen-substitution
+at `0.6250`. The train source/target behavior fits are high
+(`source_fit_r2 ~= 0.73/0.90`, `target_fit_r2 ~= 0.93/0.96`), so this again
+looks like train-fit without held-out communication utility.
+
 ## Diagnostics
 
 The behavior basis fit is train-predictive but not held-out causal enough. For
@@ -218,10 +237,14 @@ candidate-roll/top-atom-knockout/same-source-choice failure:
 1. DFC/crosscoder/transcoder packet atoms that explicitly separate shared,
    source-private, and target-private behavior features. A naive source-only
    BatchTopK behavior encoder is weakened by the n8 scout and should not be
-   scaled without adding a paired source/target decomposition or stronger
-   target-side atom feasibility evidence.
+   scaled. A naive paired source/target BatchTopK crosscoder is also weakened:
+   simply aligning source and target sparse atoms is not enough without a
+   receiver/harm objective or explicit DFC partition.
 2. Reintroduce packet-integrity only after the atom bank has stable held-out
    candidate alignment and top-atom knockout sensitivity.
+3. Before another atom-bank scale-up, run a target-side behavior-transcoder
+   feasibility probe: prove that sparse target-native atoms can causally steer
+   ARC margins before asking the source to transmit those atoms.
 
 Lay explanation: we trained the feature clues to point at the kinds of mistakes
 Qwen makes, rather than at generic TinyLlama hidden-state variation. That helped

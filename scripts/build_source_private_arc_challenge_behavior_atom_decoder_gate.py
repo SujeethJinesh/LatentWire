@@ -84,7 +84,7 @@ EVENT_GATE_CORRUPTION_CONDITIONS = (
 )
 RECEIVER_TRAINING_MODES = ("matched_only", "corruption_noop")
 PACKET_INTEGRITY_MODES = ("none", "candidate_atom")
-ATOM_BASIS_MODES = ("behavior_svd", "batchtopk_behavior")
+ATOM_BASIS_MODES = ("behavior_svd", "batchtopk_behavior", "paired_batchtopk_behavior")
 
 
 def _parse_condition_weight_spec(spec: str) -> dict[str, float]:
@@ -415,17 +415,212 @@ def _fit_batchtopk_behavior_atom_packet_from_features(
     }
 
 
+def _fit_paired_batchtopk_behavior_atom_packet_from_features(
+    source_features: np.ndarray,
+    target_features: np.ndarray,
+    behavior_targets: np.ndarray,
+    *,
+    fit_flat_indices: np.ndarray,
+    rank: int,
+    top_k: int,
+    quant_bits: int,
+    epochs: int,
+    learning_rate: float,
+    batch_size: int,
+    reconstruction_weight: float,
+    l1_weight: float,
+    alignment_weight: float,
+    target_behavior_weight: float,
+    seed: int,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    try:
+        import torch
+    except ImportError as exc:  # pragma: no cover - depends on local venv.
+        raise RuntimeError("paired_batchtopk_behavior atom basis requires torch in the repo-local venv") from exc
+
+    source = np.asarray(source_features, dtype=np.float32)
+    target = np.asarray(target_features, dtype=np.float32)
+    behavior = np.asarray(behavior_targets, dtype=np.float32)
+    fit = np.asarray(fit_flat_indices, dtype=np.int64)
+    if source.ndim != 2 or target.ndim != 2 or behavior.ndim != 2:
+        raise ValueError("source_features, target_fit_features, and behavior_targets must be rank-2")
+    if source.shape[0] != behavior.shape[0]:
+        raise ValueError("source/behavior row mismatch")
+    if fit.size == 0:
+        raise ValueError("fit_flat_indices must not be empty")
+    if target.shape[0] != fit.size:
+        raise ValueError("target_fit_features must contain exactly the fit candidates")
+    if rank < 1:
+        raise ValueError("packet rank must be at least 1")
+
+    torch.manual_seed(int(seed))
+    torch.set_num_threads(max(1, min(4, torch.get_num_threads())))
+
+    source_mean = source[fit].mean(axis=0, keepdims=True)
+    source_std = source[fit].std(axis=0, keepdims=True)
+    source_std = np.where(source_std < 1e-6, 1.0, source_std).astype(np.float32)
+    source_scaled = (source - source_mean) / source_std
+
+    target_mean = target.mean(axis=0, keepdims=True)
+    target_std = target.std(axis=0, keepdims=True)
+    target_std = np.where(target_std < 1e-6, 1.0, target_std).astype(np.float32)
+    target_scaled = (target - target_mean) / target_std
+
+    behavior_mean = behavior[fit].mean(axis=0, keepdims=True)
+    behavior_std = behavior[fit].std(axis=0, keepdims=True)
+    behavior_std = np.where(behavior_std < 1e-6, 1.0, behavior_std).astype(np.float32)
+    behavior_scaled = (behavior - behavior_mean) / behavior_std
+
+    tensor_source = torch.from_numpy(source_scaled)
+    tensor_target = torch.from_numpy(target_scaled)
+    tensor_behavior = torch.from_numpy(behavior_scaled)
+    source_dim = int(tensor_source.shape[1])
+    target_dim = int(tensor_target.shape[1])
+    behavior_dim = int(tensor_behavior.shape[1])
+    latent_dim = int(rank)
+
+    source_encoder = torch.nn.Linear(source_dim, latent_dim)
+    target_encoder = torch.nn.Linear(target_dim, latent_dim)
+    source_decoder = torch.nn.Linear(latent_dim, source_dim)
+    target_decoder = torch.nn.Linear(latent_dim, target_dim)
+    head = torch.nn.Linear(latent_dim, behavior_dim)
+    for module in (source_encoder, target_encoder, source_decoder, target_decoder, head):
+        torch.nn.init.xavier_uniform_(module.weight)
+        torch.nn.init.zeros_(module.bias)
+    opt = torch.optim.Adam(
+        list(source_encoder.parameters())
+        + list(target_encoder.parameters())
+        + list(source_decoder.parameters())
+        + list(target_decoder.parameters())
+        + list(head.parameters()),
+        lr=float(learning_rate),
+    )
+    rng = np.random.default_rng(int(seed) + 6151)
+    actual_batch = max(4, int(batch_size))
+    epochs = max(1, int(epochs))
+    final_source_behavior_loss = 0.0
+    final_target_behavior_loss = 0.0
+    final_alignment_loss = 0.0
+    final_reconstruction_loss = 0.0
+    final_l1_loss = 0.0
+    for _ in range(epochs):
+        order = rng.permutation(fit.size)
+        for start in range(0, order.size, actual_batch):
+            batch_positions_np = order[start : start + actual_batch].astype(np.int64)
+            batch_positions = torch.from_numpy(batch_positions_np)
+            batch_source_ids = torch.from_numpy(fit[batch_positions_np].astype(np.int64))
+            batch_source = tensor_source[batch_source_ids]
+            batch_target = tensor_target[batch_positions]
+            batch_behavior = tensor_behavior[batch_source_ids]
+            source_latent = _torch_batch_topk(torch.relu(source_encoder(batch_source)), top_k=top_k)
+            target_latent = _torch_batch_topk(torch.relu(target_encoder(batch_target)), top_k=top_k)
+            source_behavior = head(source_latent)
+            target_behavior = head(target_latent)
+            source_behavior_loss = torch.mean((source_behavior - batch_behavior) ** 2)
+            target_behavior_loss = torch.mean((target_behavior - batch_behavior) ** 2)
+            alignment_loss = torch.mean((source_latent - target_latent.detach()) ** 2)
+            reconstruction_loss = torch.mean((source_decoder(source_latent) - batch_source) ** 2) + torch.mean(
+                (target_decoder(target_latent) - batch_target) ** 2
+            )
+            l1_loss = torch.mean(source_latent) + torch.mean(target_latent)
+            loss = (
+                source_behavior_loss
+                + float(target_behavior_weight) * target_behavior_loss
+                + float(alignment_weight) * alignment_loss
+                + float(reconstruction_weight) * reconstruction_loss
+                + float(l1_weight) * l1_loss
+            )
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+            final_source_behavior_loss = float(source_behavior_loss.detach().cpu())
+            final_target_behavior_loss = float(target_behavior_loss.detach().cpu())
+            final_alignment_loss = float(alignment_loss.detach().cpu())
+            final_reconstruction_loss = float(reconstruction_loss.detach().cpu())
+            final_l1_loss = float(l1_loss.detach().cpu())
+
+    with torch.no_grad():
+        source_latent = torch.relu(source_encoder(tensor_source)).detach().cpu().numpy().astype(np.float64)
+        target_latent = torch.relu(target_encoder(tensor_target)).detach().cpu().numpy().astype(np.float64)
+        source_sparse = _numpy_topk_rows(source_latent, top_k=top_k)
+        target_sparse = _numpy_topk_rows(target_latent, top_k=top_k)
+        train_source = torch.from_numpy(source_sparse[fit].astype(np.float32))
+        train_target = torch.from_numpy(target_sparse.astype(np.float32))
+        pred_source_fit = head(train_source).detach().cpu().numpy().astype(np.float64)
+        pred_target_fit = head(train_target).detach().cpu().numpy().astype(np.float64)
+        y_fit = behavior_scaled[fit].astype(np.float64)
+    source_mse = float(np.mean(np.square(y_fit - pred_source_fit)))
+    target_mse = float(np.mean(np.square(y_fit - pred_target_fit)))
+    baseline = float(np.mean(np.square(y_fit - y_fit.mean(axis=0, keepdims=True))))
+    source_r2 = 0.0 if baseline <= 1e-12 else 1.0 - source_mse / baseline
+    target_r2 = 0.0 if baseline <= 1e-12 else 1.0 - target_mse / baseline
+    alignment_mse = float(np.mean(np.square(source_sparse[fit] - target_sparse)))
+    source_active = np.count_nonzero(source_sparse[fit] > 1e-8, axis=1)
+    target_active = np.count_nonzero(target_sparse[fit] > 1e-8, axis=1)
+
+    sparse_packet, quant_meta = preflight._sparse_topk_quantized_coordinates(
+        source_sparse,
+        fit_flat_indices=fit,
+        top_k=top_k,
+        quant_bits=quant_bits,
+    )
+    return sparse_packet, {
+        "kind": "train_fit_paired_batchtopk_behavior_hidden_atom_packet_coordinates",
+        "fit_candidate_count": int(fit.size),
+        "source_feature_dim": int(source.shape[1]),
+        "target_feature_dim": int(target.shape[1]),
+        "target_hidden_fit_candidates_only": True,
+        "behavior_target_dim": int(behavior.shape[1]),
+        "packet_rank": int(latent_dim),
+        "requested_packet_rank": int(rank),
+        "batchtopk_top_k": int(top_k),
+        "batchtopk_epochs": int(epochs),
+        "batchtopk_batch_size": int(actual_batch),
+        "batchtopk_learning_rate": float(learning_rate),
+        "batchtopk_reconstruction_weight": float(reconstruction_weight),
+        "batchtopk_l1_weight": float(l1_weight),
+        "paired_alignment_weight": float(alignment_weight),
+        "paired_target_behavior_weight": float(target_behavior_weight),
+        "paired_final_source_behavior_loss": float(final_source_behavior_loss),
+        "paired_final_target_behavior_loss": float(final_target_behavior_loss),
+        "paired_final_alignment_loss": float(final_alignment_loss),
+        "paired_final_reconstruction_loss": float(final_reconstruction_loss),
+        "paired_final_l1_loss": float(final_l1_loss),
+        "paired_source_behavior_fit_mse": float(source_mse),
+        "paired_target_behavior_fit_mse": float(target_mse),
+        "paired_source_behavior_fit_r2": float(source_r2),
+        "paired_target_behavior_fit_r2": float(target_r2),
+        "paired_source_target_latent_fit_mse": float(alignment_mse),
+        "paired_source_active_atoms_mean": float(source_active.mean()) if source_active.size else 0.0,
+        "paired_source_active_atoms_max": int(source_active.max()) if source_active.size else 0,
+        "paired_target_active_atoms_mean": float(target_active.mean()) if target_active.size else 0.0,
+        "paired_target_active_atoms_max": int(target_active.max()) if target_active.size else 0,
+        "paired_dead_source_atom_count": int(np.sum(np.max(source_sparse[fit], axis=0) <= 1e-8)),
+        "paired_dead_target_atom_count": int(np.sum(np.max(target_sparse[fit], axis=0) <= 1e-8)),
+        "source_std_min": float(source_std.min()),
+        "source_std_max": float(source_std.max()),
+        "target_std_min": float(target_std.min()),
+        "target_std_max": float(target_std.max()),
+        **quant_meta,
+    }
+
+
 def _fit_source_packet(
     rows: Sequence[arc_gate.ArcRow],
     *,
     target_scores: Sequence[Sequence[float]],
     source_model: str,
+    target_model: str,
     source_device: str,
+    target_device: str,
     dtype: str,
     source_max_length: int,
+    target_max_length: int,
     source_hidden_layer: int,
+    target_hidden_layer: int,
     source_feature_dim: int,
     fit_candidate_indices: np.ndarray,
+    fit_row_count: int,
     ridge: float,
     packet_rank: int,
     packet_top_k: int,
@@ -436,6 +631,8 @@ def _fit_source_packet(
     batchtopk_batch_size: int,
     batchtopk_reconstruction_weight: float,
     batchtopk_l1_weight: float,
+    paired_alignment_weight: float,
+    paired_target_behavior_weight: float,
     seed: int,
     local_files_only: bool,
 ) -> tuple[np.ndarray, dict[str, Any]]:
@@ -480,6 +677,53 @@ def _fit_source_packet(
             l1_weight=batchtopk_l1_weight,
             seed=seed,
         )
+    elif atom_basis_mode == "paired_batchtopk_behavior":
+        target_fit_rows = list(rows[: int(fit_row_count)])
+        target_flat_hidden, target_hidden_meta = preflight._hf_choice_hidden_features(
+            target_fit_rows,
+            model_path=target_model,
+            device=target_device,
+            dtype=dtype,
+            max_length=target_max_length,
+            local_files_only=local_files_only,
+            hidden_layer=target_hidden_layer,
+        )
+        target_public_flat, target_public_meta = preflight._public_candidate_hashed_features(
+            target_fit_rows,
+            feature_dim=source_feature_dim,
+        )
+        target_fit_indices = np.arange(target_flat_hidden.shape[0], dtype=np.int64)
+        target_innovation, target_innovation_meta = preflight._public_candidate_innovation_features(
+            target_flat_hidden,
+            target_public_flat,
+            fit_flat_indices=target_fit_indices,
+            ridge=ridge,
+        )
+        sparse_packet, sparse_meta = _fit_paired_batchtopk_behavior_atom_packet_from_features(
+            innovation,
+            target_innovation,
+            behavior_targets,
+            fit_flat_indices=fit_candidate_indices,
+            rank=packet_rank,
+            top_k=packet_top_k,
+            quant_bits=packet_bits,
+            epochs=batchtopk_epochs,
+            learning_rate=batchtopk_learning_rate,
+            batch_size=batchtopk_batch_size,
+            reconstruction_weight=batchtopk_reconstruction_weight,
+            l1_weight=batchtopk_l1_weight,
+            alignment_weight=paired_alignment_weight,
+            target_behavior_weight=paired_target_behavior_weight,
+            seed=seed,
+        )
+        sparse_meta = {
+            **sparse_meta,
+            "target_hidden": target_hidden_meta,
+            "target_public": target_public_meta,
+            "target_public_innovation": target_innovation_meta,
+            "target_hidden_fit_row_count": int(fit_row_count),
+            "target_hidden_fit_candidate_count": int(target_flat_hidden.shape[0]),
+        }
     else:
         raise ValueError(f"unknown atom_basis_mode: {atom_basis_mode}")
     return sparse_packet, {
@@ -1658,6 +1902,7 @@ def build_gate(
     source_max_length: int,
     target_max_length: int,
     source_hidden_layer: int,
+    target_hidden_layer: int,
     source_feature_dim: int,
     ridge: float,
     packet_rank: int,
@@ -1669,6 +1914,8 @@ def build_gate(
     batchtopk_batch_size: int,
     batchtopk_reconstruction_weight: float,
     batchtopk_l1_weight: float,
+    paired_alignment_weight: float,
+    paired_target_behavior_weight: float,
     local_files_only: bool,
     bootstrap_samples: int,
     same_byte_budget: int,
@@ -1757,12 +2004,17 @@ def build_gate(
         rows,
         target_scores=target_scores,
         source_model=source_model,
+        target_model=target_model,
         source_device=source_device,
+        target_device=target_device,
         dtype=dtype,
         source_max_length=source_max_length,
+        target_max_length=target_max_length,
         source_hidden_layer=source_hidden_layer,
+        target_hidden_layer=target_hidden_layer,
         source_feature_dim=source_feature_dim,
         fit_candidate_indices=fit_candidate_indices,
+        fit_row_count=fit_row_count,
         ridge=ridge,
         packet_rank=packet_rank,
         packet_top_k=packet_top_k,
@@ -1773,6 +2025,8 @@ def build_gate(
         batchtopk_batch_size=batchtopk_batch_size,
         batchtopk_reconstruction_weight=batchtopk_reconstruction_weight,
         batchtopk_l1_weight=batchtopk_l1_weight,
+        paired_alignment_weight=paired_alignment_weight,
+        paired_target_behavior_weight=paired_target_behavior_weight,
         seed=seed,
         local_files_only=local_files_only,
     )
@@ -2191,6 +2445,8 @@ def build_gate(
             "decode_flops_proxy_per_row": int(max(len(row.choices) for row in rows) * packet_rank),
             "sparse_packet_metadata": sparse_meta,
             "atom_basis_mode": atom_basis_mode,
+            "paired_alignment_weight": float(paired_alignment_weight),
+            "paired_target_behavior_weight": float(paired_target_behavior_weight),
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
             "decoder_mode": decoder_mode,
             "gate_mode": gate_mode,
@@ -2237,6 +2493,8 @@ def build_gate(
             "qwen_test_score_cache": behavior_gate._display(qwen_test_score_cache),
             "source_model": str(source_model),
             "target_model": str(target_model),
+            "source_hidden_layer": int(source_hidden_layer),
+            "target_hidden_layer": int(target_hidden_layer),
             "train_disagreement_limit": int(train_disagreement_limit),
             "test_disagreement_limit": int(test_disagreement_limit),
             "packet_rank": int(packet_rank),
@@ -2248,6 +2506,8 @@ def build_gate(
             "batchtopk_batch_size": int(batchtopk_batch_size),
             "batchtopk_reconstruction_weight": float(batchtopk_reconstruction_weight),
             "batchtopk_l1_weight": float(batchtopk_l1_weight),
+            "paired_alignment_weight": float(paired_alignment_weight),
+            "paired_target_behavior_weight": float(paired_target_behavior_weight),
             "same_byte_budget": int(same_byte_budget_used),
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
             "decoder_mode": decoder_mode,
@@ -2313,6 +2573,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source-max-length", type=int, default=160)
     parser.add_argument("--target-max-length", type=int, default=192)
     parser.add_argument("--source-hidden-layer", type=int, default=-1)
+    parser.add_argument("--target-hidden-layer", type=int, default=-1)
     parser.add_argument("--source-feature-dim", type=int, default=128)
     parser.add_argument("--ridge", type=float, default=10.0)
     parser.add_argument("--packet-rank", type=int, default=8)
@@ -2324,6 +2585,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--batchtopk-batch-size", type=int, default=16)
     parser.add_argument("--batchtopk-reconstruction-weight", type=float, default=0.05)
     parser.add_argument("--batchtopk-l1-weight", type=float, default=0.001)
+    parser.add_argument("--paired-alignment-weight", type=float, default=0.25)
+    parser.add_argument("--paired-target-behavior-weight", type=float, default=0.25)
     parser.add_argument("--local-files-only", choices=("true", "false"), default="true")
     parser.add_argument("--bootstrap-samples", type=int, default=500)
     parser.add_argument(
@@ -2379,6 +2642,7 @@ def main(argv: list[str] | None = None) -> int:
         source_max_length=int(args.source_max_length),
         target_max_length=int(args.target_max_length),
         source_hidden_layer=int(args.source_hidden_layer),
+        target_hidden_layer=int(args.target_hidden_layer),
         source_feature_dim=int(args.source_feature_dim),
         ridge=float(args.ridge),
         packet_rank=int(args.packet_rank),
@@ -2390,6 +2654,8 @@ def main(argv: list[str] | None = None) -> int:
         batchtopk_batch_size=int(args.batchtopk_batch_size),
         batchtopk_reconstruction_weight=float(args.batchtopk_reconstruction_weight),
         batchtopk_l1_weight=float(args.batchtopk_l1_weight),
+        paired_alignment_weight=float(args.paired_alignment_weight),
+        paired_target_behavior_weight=float(args.paired_target_behavior_weight),
         local_files_only=str(args.local_files_only).lower() == "true",
         bootstrap_samples=int(args.bootstrap_samples),
         same_byte_budget=int(args.same_byte_budget),

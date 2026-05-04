@@ -2651,5 +2651,12 @@
     "path": "references/736_batchtopk_behavior_atom_bank_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted reference memo and scout readout for the Mac-local BatchTopK behavior atom bank branch, grounding the atom-basis implementation in BatchTopK SAEs, crosscoders/DFC, transcoders, C2C/KVComm, and prefix-tuning novelty boundaries."
+  },
+  {
+    "num": 737,
+    "slug": "paired_batchtopk_crosscoder_atom_refs_20260504",
+    "path": "references/737_paired_batchtopk_crosscoder_atom_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted reference memo and scout readout for the paired source/target BatchTopK crosscoder-style atom basis, covering crosscoders/DFC, relative representations, gist/prefix baselines, C2C/KVComm, and the train-fit versus held-out communication failure."
   }
 ]
