@@ -22449,3 +22449,54 @@ Lay explanation: we squeezed Qwen's answer preferences into tiny 1-8 byte
 messages and let Phi use them with its own scores. The best tiny message helped
 three questions but hurt two, and one validation slice got worse. That is not
 reliable enough to claim real cross-model communication.
+
+## 2026-05-04 Target Self-Resonance Soft-Prefix Capacity Extension
+
+After the Qwen-to-Phi score-packet branch saturated, I returned to the target
+self-resonance branch and extended the per-example oracle soft-prefix capacity
+probe to the next two frozen HellaSwag validation slices, `32:48` and `48:64`.
+The purpose was to separate target reachability from encoder weakness: prior
+held-out encoders failed around this region, so we needed to know whether the
+target can still be driven into full-context behavior when the prefix is
+optimized per example.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_soft_prefix_gate.py`;
+- new artifacts:
+  `results/target_self_resonance_hellaswag_soft_prefix_gate_20260504_qwen05_validation32_48/`
+  and
+  `results/target_self_resonance_hellaswag_soft_prefix_gate_20260504_qwen05_validation48_64/`;
+- memo:
+  `paper/target_self_resonance_soft_prefix_capacity_extension_20260504.md`;
+- references:
+  `references/712_target_self_resonance_capacity_extension_refs_20260504.md`.
+
+Outcome: pass as an oracle capacity result, not as a learned method. On
+validation `32:48`, optimized 8-token soft prefixes reach `1.000000`
+agreement with full-prompt Qwen decisions and mean KL `0.000060`; chunk mean is
+`0.625000` agreement / `0.093210` KL, and the best destructive agreement is
+`0.687500`. On validation `48:64`, optimized prefixes again reach `1.000000`
+agreement and mean KL `0.000181`; chunk mean is `0.687500` agreement /
+`0.075388` KL, and the best destructive agreement is `0.750000`.
+
+Aggregated over all now-run soft-prefix capacity slices, validation `0:64`,
+the optimized prefixes reach `0.937500` agreement with full-prompt decisions
+and `0.003533` mean KL. Chunk-mean prefix is only `0.546875` agreement /
+`0.106579` KL; zero prefix is `0.593750` agreement / `0.142256` KL; random
+same-norm is `0.531250` agreement / `0.128185` KL; shuffled optimized prefix
+is `0.609375` agreement / `0.134414` KL; candidate derangement is `0.046875`
+agreement / `0.563535` KL.
+
+Decision: promote target self-resonance as a stable capacity surface through
+validation `0:64`. The bottleneck is not target reachability; it is learning a
+generalizing, source-specific encoder that emits the right target-native
+prefix without per-example oracle optimization. The next live gate should be a
+selective logit-resonance encoder trained on official train rows with RMS
+normalization and wrong-row/source-row-shuffle/candidate-roll/target-derived/
+zero-source/same-byte controls.
+
+Lay explanation: we checked whether eight hidden tokens can replace the
+question text for Qwen. On two more groups of questions, the tuned hidden
+tokens made Qwen behave almost exactly as if it had seen the full question.
+This means the hidden-token interface itself is real; the hard unsolved part
+is teaching another model or encoder to create those tokens without cheating.

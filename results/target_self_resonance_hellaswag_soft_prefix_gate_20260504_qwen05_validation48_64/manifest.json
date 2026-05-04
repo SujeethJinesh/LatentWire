@@ -1,0 +1,24 @@
+{
+  "created_at": "2026-05-04T14:21:50.274242+00:00",
+  "files": {
+    "predictions.jsonl": "3e33859f45603f87cd97835bc84e366ea4050b22f1d112bf6f376da9a36dab98",
+    "row_summaries.csv": "f05e49c403600f9c28d6be8e937a8fac7bb57b19dd0213c14e2dc0feb3a0ff6a",
+    "target_self_resonance_hellaswag_soft_prefix_gate.json": "24e2448b1aa3a34e0fffd9fb4b8fe40f5f149c6524f43a20059c4aff1cd85d8b",
+    "target_self_resonance_hellaswag_soft_prefix_gate.md": "358262a0e57db49b812de7f7ed0825ce9640eb9bacfe6d28d380b6872436e41f"
+  },
+  "headline": {
+    "agreement_gap_vs_best_destructive": 0.25,
+    "best_destructive_agreement": 0.75,
+    "best_destructive_by_agreement": "zero_prefix",
+    "best_destructive_by_kl": "shuffled_optimized_prefix",
+    "best_destructive_mean_kl": 0.0970992145271386,
+    "chunk_mean_agreement": 0.6875,
+    "chunk_mean_kl": 0.07538832099080618,
+    "kl_gain_vs_best_destructive": 0.09691862197518956,
+    "kl_gain_vs_chunk_mean": 0.07520772843885715,
+    "optimized_accuracy": 0.3125,
+    "optimized_agreement": 1.0,
+    "optimized_mean_kl": 0.0001805925519490388
+  },
+  "pass_gate": true
+}

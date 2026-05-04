@@ -2483,5 +2483,12 @@
     "path": "references/711_qwen_to_phi_quantized_score_packet_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the failed Qwen-to-Phi equal-byte quantized source-score packet gate, recording novelty boundaries against knowledge distillation, decoding-time logit composition, selective defer, C2C, QJL/TurboQuant, and KV-cache compression systems baselines."
+  },
+  {
+    "num": 712,
+    "slug": "target_self_resonance_capacity_extension_refs_20260504",
+    "path": "references/712_target_self_resonance_capacity_extension_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after extending target self-resonance soft-prefix oracle capacity through HellaSwag validation 0:64, recording boundaries against prefix/prompt tuning, context compression, distillation/logit composition, relative representations, SAEs/crosscoders, continuous latent reasoning, diffusion/consistency models, C2C/KV communication, and KV quantization systems baselines."
   }
 ]
