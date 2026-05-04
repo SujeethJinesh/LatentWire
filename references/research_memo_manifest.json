@@ -2469,5 +2469,12 @@
     "path": "references/709_receiver_calibrated_top2_ambiguity_code_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the failed HellaSwag receiver-calibrated top1/top2 ambiguity-code gate, recording novelty boundaries against prefix/prompt/gist/context compression, relative representations, SAEs/crosscoders, logit fusion, selective prediction/defer, C2C/KVComm, and QJL/TurboQuant/KIVI systems comparators."
+  },
+  {
+    "num": 710,
+    "slug": "qwen_to_phi_top2_ambiguity_bucket_refs_20260504",
+    "path": "references/710_qwen_to_phi_top2_ambiguity_bucket_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the failed official-train Qwen-to-Phi top1/top2 ambiguity-bucket gate, recording novelty boundaries against distillation, prefix/prompt/context compression, representation alignment, logit fusion, selective defer, C2C/KV communication, QJL/TurboQuant/KIVI/KVQuant, and vLLM/SGLang systems baselines."
   }
 ]

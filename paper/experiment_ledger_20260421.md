@@ -22359,3 +22359,47 @@ so we tried sending Qwen both choices plus a tiny learned clue. Qwen changed
 one answer, but it was a harm, and the same result appears when the learned clue
 is removed or derived from Qwen itself. The clue is not doing useful
 cross-model communication yet.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Top1/Top2 Ambiguity Bucket Gate
+
+Implemented and ran an official-train Qwen-to-Phi top1/top2 ambiguity-bucket
+gate after the same-family sparse-atom ambiguity code failed. The source-side
+encoder emits source top-1/top-2 candidate IDs plus quantized source-side
+decision-syndrome bins. The receiver uses Phi-local score bins as side
+information and may choose among source top1, source top2, Phi top1, and Qwen
+mean against the fixed Qwen hybrid baseline. The bucket receiver is selected on
+official-train fit/dev rows and frozen on validation `1024:2048`.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_top2_ambiguity_bucket_gate.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_top2_ambiguity_bucket_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_top2_ambiguity_bucket_gate_20260504_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_to_phi_top2_ambiguity_bucket_gate_20260504.md`;
+- references:
+  `references/710_qwen_to_phi_top2_ambiguity_bucket_refs_20260504.md`.
+
+Outcome: fail, but as a clean saturation result. The official-train selector
+chose `no_op` with zero eligible buckets. The top2 ambiguity bucket therefore
+ties fixed hybrid at `0.467448`, with delta `0.000000`, CI95 low `0.000000`,
+and `0` helps / `0` harms. The no-syndrome top-pair control also ties
+`0.467448`; the best destructive control also ties because the selected model
+does not act. Source top1 is weak at `0.411458`, raw source-score logit fusion
+is weaker at `0.391927`, but the source top1/top2 oracle remains high at
+`0.675781`, delta `+0.208333`, CI95 low `+0.177083`.
+
+Decision: demote score-level top1/top2 ambiguity buckets on the Qwen-to-Phi
+surface. The remaining source-pair headroom is real but conditional; shallow
+rank/score-bin packets cannot safely identify when Phi should trust source
+top1 or top2. The next highest-priority bounded gate is an equal-byte quantized
+source-score / QJL-TurboQuant-style comparator at `1B/2B/4B/8B` to close the
+reviewer-requested raw-score-vector quantization baseline. If that also fails,
+score-level packet methods should be treated as saturated on Qwen-to-Phi and
+the project should pivot back to target-native latent receiver objectives.
+
+Lay explanation: Qwen often has the right answer in its best two guesses, but
+we still cannot tell Phi when to use those guesses. The safety rule learned on
+training questions found no trustworthy pattern, so the receiver correctly did
+nothing rather than making risky switches.
