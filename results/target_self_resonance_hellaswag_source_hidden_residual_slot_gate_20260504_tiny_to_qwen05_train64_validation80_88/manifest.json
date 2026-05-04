@@ -1,0 +1,40 @@
+{
+  "created_at": "2026-05-04T13:02:49.224408+00:00",
+  "files": {
+    "predictions.jsonl": "86d41682931370bb8a64474a2beeddbde43149d98318e6c5a0657b0114c56910",
+    "row_summaries.csv": "89705ddaaec8bc2f752d57eb7becacd95f51eb352eed50eb66b2217ec7313816",
+    "source_eval_hidden_cache.json": "7aec0a4baa7985ec0e85604ecd9551d68df2c4f5c68702bc3a7e410ff33078f6",
+    "source_eval_hidden_cache.npz": "8f8e6ab244d3b4361f6dcd10037df45456fe8282777e6f09b5d58cf8fbdb8c8c",
+    "target_self_resonance_hellaswag_source_hidden_residual_slot_gate.json": "e5dca91c569d6dc2245f0ef16a47a1dc9baf2a198651bc118940617aae1e5391",
+    "target_self_resonance_hellaswag_source_hidden_residual_slot_gate.md": "f49af9f1693e1028a05d184167a80cf0eca030fc724a2c5b0af8a09f757ddeb6"
+  },
+  "headline": {
+    "best_destructive_accuracy": 0.375,
+    "best_destructive_by_accuracy": "zero_source_hidden",
+    "best_destructive_by_kl": "source_top1_label_control",
+    "best_destructive_mean_kl": 0.08359557273035541,
+    "frozen_target_slots_accuracy": 0.375,
+    "frozen_target_slots_mean_kl": 0.13380956918594694,
+    "kl_gain_vs_frozen_target_slots": -0.0037141768816820464,
+    "paired_vs_frozen_target_slots": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "mean_delta": 0.0,
+      "samples": 1000
+    },
+    "paired_vs_source_top1_label_control": {
+      "ci95_high": 0.5,
+      "ci95_low": 0.0,
+      "mean_delta": 0.25,
+      "samples": 1000
+    },
+    "source_hidden_residual_accuracy": 0.375,
+    "source_hidden_residual_agreement": 0.375,
+    "source_hidden_residual_mean_kl": 0.137523746067629,
+    "source_hidden_residual_nonfinite_kl_count": 0,
+    "source_hidden_residual_nonfinite_score_row_count": 0,
+    "source_top1_label_accuracy": 0.125,
+    "source_top1_or_top2_oracle_accuracy": 0.625
+  },
+  "pass_gate": false
+}

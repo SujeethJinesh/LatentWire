@@ -2441,5 +2441,12 @@
     "path": "references/705_hellaswag_qwen_to_phi_heldout_uncertainty_router_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the failed HellaSwag Qwen-to-Phi held-out uncertainty-router gate, recording novelty boundaries against C2C, KVComm/Q-KVComm, logit-fusion and guided-decoding methods, prefix/gist/soft-token interfaces, vLLM/SGLang serving baselines, and KV quantization/TurboQuant systems comparators."
+  },
+  {
+    "num": 706,
+    "slug": "target_self_resonance_source_hidden_residual_slot_refs_20260504",
+    "path": "references/706_target_self_resonance_source_hidden_residual_slot_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the failed TinyLlama-hidden to Qwen soft-prefix residual gate, recording novelty boundaries against prefix/prompt tuning, gist/AutoCompressors/ICAE, Perceiver/Flamingo/Q-Former bridge modules, representation alignment and SAE common-basis work, C2C/KVComm, vLLM/SGLang, TurboQuant/KV quantization, and consistency/refinement inspiration."
   }
 ]

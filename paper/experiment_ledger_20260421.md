@@ -22182,3 +22182,48 @@ Lay explanation: Qwen sent Phi a tiny coarse message naming its favorite
 answers and confidence. Phi learned when to trust that message on training
 examples. On the held-out slice, it changed three answers and made one worse,
 so this message format is not strong enough.
+
+## 2026-05-04 HellaSwag TinyLlama-To-Qwen Source-Hidden Residual Slot Gate
+
+Implemented and ran a source-conditioned target-native residual-slot gate after
+the uncertainty-router family failed. The bridge receives cached TinyLlama
+candidate hidden summaries and source score summaries, then emits a residual
+over frozen Qwen soft slots. Qwen never receives the original HellaSwag context
+text in the compressed path.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_source_hidden_residual_slot_gate.py`;
+- test:
+  `tests/test_build_target_self_resonance_hellaswag_source_hidden_residual_slot_gate.py`;
+- main artifact:
+  `results/target_self_resonance_hellaswag_source_hidden_residual_slot_gate_20260504_tiny_to_qwen05_train64_validation80_88_top2_stable/`;
+- stability/debug variant:
+  `results/target_self_resonance_hellaswag_source_hidden_residual_slot_gate_20260504_tiny_to_qwen05_train64_validation80_88/`;
+- memo:
+  `paper/target_self_resonance_source_hidden_residual_slot_gate_20260504.md`;
+- references:
+  `references/706_target_self_resonance_source_hidden_residual_slot_refs_20260504.md`.
+
+Outcome: fail under the stricter positive-method rule. The top2-delta hidden
+variant gets a tiny KL gain over frozen target slots (`0.166265 -> 0.165418`),
+but it does not move answers: source-hidden residual accuracy is `0.375000`,
+frozen target slots are `0.375000`, and zero-source hidden is also `0.375000`.
+The paired delta versus frozen slots is `0.000000` with CI95 low `0.000000`.
+The source top1 label control is weak at `0.125000`, but the source top1/top2
+oracle is `0.625000`, so the slice still has source-side headroom that the
+receiver is not extracting. The current hidden feature is also too large for a
+systems win: `16404` fp16 bytes before target decoding, versus `14336` fp16
+bytes for the target prefix.
+
+Decision: demote the direct high-dimensional TinyLlama-hidden to shallow
+Qwen-residual-MLP branch. This does not kill target-native latent transfer, but
+it says the next branch should target the top1/top2 ambiguity more directly:
+source-conditioned candidate repair, oracle-prefix distillation, a smaller
+PCA/SAE/common-basis hidden code, or a consistency-refined target-native slot
+interface. Do not claim the tiny KL gain as progress because zero-source and
+wrong-source controls tie the method on answers.
+
+Lay explanation: TinyLlama often narrows the answer to the right two choices,
+but the learned hidden message does not teach Qwen which one to choose. It
+nudges Qwen's score distribution slightly, but a zero-source message does just
+as well on this slice.
