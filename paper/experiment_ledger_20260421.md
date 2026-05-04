@@ -22932,3 +22932,54 @@ stamp. If Qwen listened too often, the hint did more harm than good. If Qwen
 listened only when it looked uncertain, it never listened on the test rows.
 There are still questions where either TinyLlama or Qwen knows the answer, but
 the simple confidence stamp cannot tell which source hints are safe.
+
+## 2026-05-04 Innovation-Defer Sparse Resonance Packet Gate
+
+Implemented and ran the next strict ARC-Challenge Sparse Resonance Packet
+receiver branch: keep the 2-byte confidence/ECOC source packet, but replace
+hand-binned firing with a learned event-triggered defer controller. The value
+model fits the first half of validation disagreement rows, selects a firing
+threshold on the second half, and evaluates once on held-out test disagreement
+rows.
+
+- new script:
+  `scripts/build_source_private_arc_challenge_innovation_defer_packet_gate.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_innovation_defer_packet_gate.py`;
+- main scout:
+  `results/source_private_arc_challenge_innovation_defer_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n64_2b/`;
+- ridge sensitivity:
+  `results/source_private_arc_challenge_innovation_defer_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n64_2b_ridge01/`;
+- memo:
+  `paper/innovation_defer_sparse_resonance_packet_gate_20260504.md`;
+- refreshed reference synthesis:
+  `references/728_event_triggered_defer_syndrome_packet_refs_20260504.md`.
+
+Outcome: fail. With ridge `3.0`, the learned value model has fit R2 `0.105`,
+fires on `3/64` held-out rows, helps `0`, harms `0`, and ties target-only at
+`0.234375`; same-byte visible text reaches `0.359375`, and worst required
+paired CI95 low is `-0.250000`. Lowering ridge to `0.1` improves fit R2 to
+`0.173` and fires on `9/64` rows, but it helps `1`, harms `2`, and drops to
+`0.218750`.
+
+Important diagnostic: source-or-target oracle headroom remains substantial.
+Target-only is correct on `15/64`, TinyLlama source top1 is correct on `16/64`,
+and the source-or-target oracle is correct on `30/64`. There are `15/64`
+source-helpable target-wrong rows and `14/64` source-harm-risk target-right
+rows. The failure is therefore not lack of repair opportunities; the observable
+candidate-packet and target-score features cannot identify safe source
+overrides well enough.
+
+Decision: demote simple learned candidate-override defer gates. Candidate
+identity, even with confidence and a learned trust controller, remains too close
+to source-index/source-score communication and does not beat same-byte text.
+Promote a residual/syndrome packet with target side information next: encode
+source-target residual diagnostics rather than source top1 identity, decode
+against target logits in a Wyner-Ziv/Slepian-Wolf-style framing, and retain all
+source-choice, same-byte, wrong-row, target-derived, and substitution controls.
+
+Lay explanation: we taught Qwen a small rule for when to trust TinyLlama's
+tiny hint. The rule was cautious and usually refused to listen. When made less
+cautious, it listened more but broke more answers than it fixed. That means the
+source still has useful information, but sending "which answer the source
+picked" is not the right shape of message.

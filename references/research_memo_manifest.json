@@ -2588,5 +2588,12 @@
     "path": "references/727_srp_competitor_basis_quant_benchmark_lateral_refresh_20260504.md",
     "status": "local_memo",
     "reason": "Second targeted subagent refresh for the Sparse Resonance Packet pivot, consolidating C2C/KV-cache competitors, SAE/crosscoder/transcoder basis threats, TurboQuant/KV quantization byte floors, MCQ benchmark reviewer risks, and lateral event-triggered innovation/defer gate ideas."
+  },
+  {
+    "num": 728,
+    "slug": "event_triggered_defer_syndrome_packet_refs_20260504",
+    "path": "references/728_event_triggered_defer_syndrome_packet_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted subagent refresh after the confidence/ECOC gate, consolidating selective prediction, calibration, learning-to-defer, event-triggered control, Wyner-Ziv/Slepian-Wolf residual-syndrome coding, benchmark controls, C2C/KV byte baselines, and the novelty boundary for the next SRP branch."
   }
 ]
