@@ -2546,5 +2546,12 @@
     "path": "references/721_sparse_resonance_packet_quant_confidence_systems_refs_20260504.md",
     "status": "local_memo",
     "reason": "Fresh targeted primary-source scan for Sparse Resonance Packet quantization, TurboQuant/QJL/KIVI/KVQuant byte floors, sparse/hardware-friendly formats, syndrome/error-correcting and confidence-coded communication, native vLLM/SGLang/NVIDIA systems metrics, Mac-feasible ablations, and no-claim hardware boundaries."
+  },
+  {
+    "num": 722,
+    "slug": "sparse_resonance_packet_competitor_refresh_20260504",
+    "path": "references/722_sparse_resonance_packet_competitor_refresh_20260504.md",
+    "status": "local_memo",
+    "reason": "Fresh targeted literature refresh for the Sparse Resonance Packet pivot, recording primary C2C/KVComm/DroidSpeak/LatentMAS/activation-communication/KV compression/systems baselines, exact claims, byte and memory-movement formulas, table columns, and strongest reviewer objections."
   }
 ]
