@@ -1,0 +1,494 @@
+{
+  "audit_only_conditions": [
+    "source_label_copy_audit_upper_bound"
+  ],
+  "benchmark": "ARC-Challenge",
+  "condition_metrics": {
+    "atom_shuffle": {
+      "accuracy": 0.5,
+      "correct": 2,
+      "mean_margin": -0.7106967307627201,
+      "n": 4
+    },
+    "candidate_derangement": {
+      "accuracy": 0.25,
+      "correct": 1,
+      "mean_margin": -2.3488836120814085,
+      "n": 4
+    },
+    "candidate_roll": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -3.356766453012824,
+      "n": 4
+    },
+    "candidate_roll_source": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -3.356766453012824,
+      "n": 4
+    },
+    "candidate_score_roll_source": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -3.731837081722915,
+      "n": 4
+    },
+    "coefficient_shuffle": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -3.346677727997303,
+      "n": 4
+    },
+    "label_shuffled": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -4.503168821334839,
+      "n": 4
+    },
+    "matched_soft_prefix": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -3.3567028138786554,
+      "mean_margin_delta_vs_atom_shuffle": -2.6460060831159353,
+      "mean_margin_delta_vs_candidate_derangement": -1.007819201797247,
+      "mean_margin_delta_vs_candidate_roll": 6.363913416862488e-05,
+      "mean_margin_delta_vs_candidate_roll_source": 6.363913416862488e-05,
+      "mean_margin_delta_vs_candidate_score_roll_source": 0.37513426784425974,
+      "mean_margin_delta_vs_coefficient_shuffle": -0.010025085881352425,
+      "mean_margin_delta_vs_label_shuffled": 1.1464660074561834,
+      "mean_margin_delta_vs_packet_only_source_index": -3.8567028138786554,
+      "mean_margin_delta_vs_qwen_substituted_packet": -3.8567028138786554,
+      "mean_margin_delta_vs_same_byte_visible_text": -4.598475969163701,
+      "mean_margin_delta_vs_same_norm_noise": 0.8559418153017759,
+      "mean_margin_delta_vs_shuffled_source": 0.09054261445999146,
+      "mean_margin_delta_vs_slots_only_prefix": -2.6102686170488596,
+      "mean_margin_delta_vs_source_free_prefix": 6.549357078270987,
+      "mean_margin_delta_vs_source_label_copy_audit_upper_bound": -500000003.3567028,
+      "mean_margin_delta_vs_source_rank_control": -3.3567028138786554,
+      "mean_margin_delta_vs_source_row_shuffle": 0.09054261445999146,
+      "mean_margin_delta_vs_source_score_control": -4.511403352257907,
+      "mean_margin_delta_vs_target_cache_only_prefix": -0.928404314443469,
+      "mean_margin_delta_vs_target_derived_prefix": 6.549357078270987,
+      "mean_margin_delta_vs_target_only": -3.787878016009927,
+      "mean_margin_delta_vs_top_atom_knockout": -0.3458996079862118,
+      "mean_margin_delta_vs_train_mean_source": -1.1170938704162836,
+      "mean_margin_delta_vs_zero_source": 2.6956748785451055,
+      "n": 4,
+      "paired_accuracy_vs_atom_shuffle": {
+        "ci95_high": 0.0,
+        "ci95_low": -1.0,
+        "mean": -0.5
+      },
+      "paired_accuracy_vs_candidate_derangement": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.75,
+        "mean": -0.25
+      },
+      "paired_accuracy_vs_candidate_roll": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_candidate_roll_source": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_candidate_score_roll_source": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_coefficient_shuffle": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_label_shuffled": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_packet_only_source_index": {
+        "ci95_high": -0.25,
+        "ci95_low": -1.0,
+        "mean": -0.75
+      },
+      "paired_accuracy_vs_qwen_substituted_packet": {
+        "ci95_high": -0.25,
+        "ci95_low": -1.0,
+        "mean": -0.75
+      },
+      "paired_accuracy_vs_same_byte_visible_text": {
+        "ci95_high": 0.0,
+        "ci95_low": -1.0,
+        "mean": -0.5
+      },
+      "paired_accuracy_vs_same_norm_noise": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_shuffled_source": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.75,
+        "mean": -0.25
+      },
+      "paired_accuracy_vs_slots_only_prefix": {
+        "ci95_high": 0.0,
+        "ci95_low": -1.0,
+        "mean": -0.5
+      },
+      "paired_accuracy_vs_source_free_prefix": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_source_label_copy_audit_upper_bound": {
+        "ci95_high": -0.25,
+        "ci95_low": -1.0,
+        "mean": -0.75
+      },
+      "paired_accuracy_vs_source_rank_control": {
+        "ci95_high": -0.25,
+        "ci95_low": -1.0,
+        "mean": -0.75
+      },
+      "paired_accuracy_vs_source_row_shuffle": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.75,
+        "mean": -0.25
+      },
+      "paired_accuracy_vs_source_score_control": {
+        "ci95_high": -0.25,
+        "ci95_low": -1.0,
+        "mean": -0.75
+      },
+      "paired_accuracy_vs_target_cache_only_prefix": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_target_derived_prefix": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_target_only": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.75,
+        "mean": -0.25
+      },
+      "paired_accuracy_vs_top_atom_knockout": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_train_mean_source": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_zero_source": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      }
+    },
+    "packet_only_source_index": {
+      "accuracy": 0.75,
+      "correct": 3,
+      "mean_margin": 0.5,
+      "n": 4
+    },
+    "qwen_substituted_packet": {
+      "accuracy": 0.75,
+      "correct": 3,
+      "mean_margin": 0.5,
+      "n": 4
+    },
+    "same_byte_visible_text": {
+      "accuracy": 0.5,
+      "correct": 2,
+      "mean_margin": 1.2417731552850455,
+      "n": 4
+    },
+    "same_norm_noise": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -4.212644629180431,
+      "n": 4
+    },
+    "shuffled_source": {
+      "accuracy": 0.25,
+      "correct": 1,
+      "mean_margin": -3.447245428338647,
+      "n": 4
+    },
+    "slots_only_prefix": {
+      "accuracy": 0.5,
+      "correct": 2,
+      "mean_margin": -0.7464341968297958,
+      "n": 4
+    },
+    "source_free_prefix": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -9.906059892149642,
+      "n": 4
+    },
+    "source_label_copy_audit_upper_bound": {
+      "accuracy": 0.75,
+      "correct": 3,
+      "mean_margin": 500000000.0,
+      "n": 4
+    },
+    "source_rank_control": {
+      "accuracy": 0.75,
+      "correct": 3,
+      "mean_margin": 0.0,
+      "n": 4
+    },
+    "source_row_shuffle": {
+      "accuracy": 0.25,
+      "correct": 1,
+      "mean_margin": -3.447245428338647,
+      "n": 4
+    },
+    "source_score_control": {
+      "accuracy": 0.75,
+      "correct": 3,
+      "mean_margin": 1.1547005383792517,
+      "n": 4
+    },
+    "target_cache_only_prefix": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -2.4282984994351864,
+      "n": 4
+    },
+    "target_derived_prefix": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -9.906059892149642,
+      "n": 4
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "correct": 1,
+      "mean_margin": 0.43117520213127136,
+      "n": 4
+    },
+    "top_atom_knockout": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -3.0108032058924437,
+      "n": 4
+    },
+    "train_mean_source": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -2.239608943462372,
+      "n": 4
+    },
+    "zero_source": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "mean_margin": -6.052377692423761,
+      "n": 4
+    }
+  },
+  "config": {
+    "continuation_mode": "label",
+    "contrastive_controls": [
+      "zero_source",
+      "shuffled_source",
+      "candidate_roll_source",
+      "atom_shuffle"
+    ],
+    "contrastive_loss_cap": 0.5,
+    "contrastive_margin": 0.05,
+    "contrastive_weight": 0.1,
+    "dtype": "float32",
+    "epochs": 2,
+    "fixed_fit_rows": 4,
+    "hidden_dim": 32,
+    "innovation_ridge": 10.0,
+    "length_normalize": true,
+    "lr": 0.003,
+    "matched_use_target": false,
+    "prefix_len": 4,
+    "same_byte_budget": 12,
+    "source_device": "auto_cpu",
+    "source_feature_dim": 128,
+    "source_feature_mode": "hf_choice_token_hidden_pool_residual",
+    "source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775",
+    "source_tensor_rank": 3,
+    "source_token_pool_size": 16,
+    "sparse_packet_bits": 4,
+    "sparse_packet_rank": 16,
+    "sparse_packet_top_k": 4,
+    "target_attn_implementation": "auto",
+    "target_device": "auto_cpu",
+    "target_feature_dim": 64,
+    "target_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca",
+    "train_device": "cpu",
+    "weight_decay": 0.001
+  },
+  "created_utc": "2026-05-04T23:46:33.731544+00:00",
+  "date": "2026-05-04",
+  "eval_indices": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "eval_rows": 4,
+  "feature_metadata": {
+    "source": {
+      "attn_implementation": "eager",
+      "device": "cpu",
+      "dtype": "float32",
+      "hidden_layer": -1,
+      "kind": "answer_key_forbidden_hf_choice_token_hidden_pool",
+      "latency_s": 3.272830125060864,
+      "max_length": 160,
+      "model_path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct/snapshots/7ae557604adf67be50417f59c2c2f167def9a775",
+      "pool_size": 16,
+      "row_centered_selected_residual": false,
+      "row_centered_token_residual": true,
+      "source_feature_mode": "hf_choice_token_hidden_pool_residual",
+      "suffix_fallback_choice_count": 4,
+      "token_count_max": 34,
+      "token_count_mean": 26.875,
+      "token_count_min": 12,
+      "uses_source_predictions": false
+    },
+    "source_standardizer": {
+      "mean_l2": 0.08509468287229538,
+      "std_max": 0.2689267098903656,
+      "std_min": 0.00015466977492906153,
+      "tensor_rank": 3
+    },
+    "target": {
+      "feature_dim": 64,
+      "kind": "hashed_public_question_choices"
+    },
+    "target_standardizer": {
+      "mean_l2": 0.9719323515892029,
+      "std_max": 0.06466841697692871,
+      "std_min": 0.007598647382110357,
+      "tensor_rank": 2
+    }
+  },
+  "fit_indices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "fit_logs": {
+    "label_shuffled": {
+      "contrastive_control_count": 0,
+      "contrastive_loss_cap": 0.0,
+      "contrastive_margin": 0.0,
+      "contrastive_penalty_final": 0.0,
+      "contrastive_penalty_initial": 0.0,
+      "contrastive_weight": 0.0,
+      "loss_final": 7.765681110322475,
+      "loss_initial": 10.000973999500275
+    },
+    "matched_soft_prefix": {
+      "contrastive_control_count": 4,
+      "contrastive_loss_cap": 0.5,
+      "contrastive_margin": 0.05,
+      "contrastive_penalty_final": 0.9413344385102391,
+      "contrastive_penalty_initial": 0.42500761803239584,
+      "contrastive_weight": 0.1,
+      "loss_final": 11.881463453173637,
+      "loss_initial": 8.015094008296728
+    },
+    "slots_only_prefix": {
+      "contrastive_control_count": 0,
+      "contrastive_loss_cap": 0.0,
+      "contrastive_margin": 0.0,
+      "contrastive_penalty_final": 0.0,
+      "contrastive_penalty_initial": 0.0,
+      "contrastive_weight": 0.0,
+      "loss_final": 8.7223299741745,
+      "loss_initial": 11.789463818073273
+    },
+    "source_free_prefix": {
+      "contrastive_control_count": 0,
+      "contrastive_loss_cap": 0.0,
+      "contrastive_margin": 0.0,
+      "contrastive_penalty_final": 0.0,
+      "contrastive_penalty_initial": 0.0,
+      "contrastive_weight": 0.0,
+      "loss_final": 9.253094183281064,
+      "loss_initial": 15.45098090171814
+    },
+    "target_cache_only_prefix": {
+      "contrastive_control_count": 0,
+      "contrastive_loss_cap": 0.0,
+      "contrastive_margin": 0.0,
+      "contrastive_penalty_final": 0.0,
+      "contrastive_penalty_initial": 0.0,
+      "contrastive_weight": 0.0,
+      "loss_final": 15.662320017814636,
+      "loss_initial": 10.318412989377975
+    }
+  },
+  "fit_rows": 4,
+  "gate": "source_private_arc_openbookqa_soft_prefix_preflight",
+  "headline": {
+    "best_control_accuracy": 0.75,
+    "best_control_by_accuracy": "packet_only_source_index",
+    "best_control_by_margin": "same_byte_visible_text",
+    "best_control_mean_margin": 1.2417731552850455,
+    "matched_accuracy": 0.0,
+    "matched_mean_margin": -3.3567028138786554,
+    "matched_minus_best_control_accuracy": -0.75,
+    "matched_minus_best_control_margin": -4.598475969163701
+  },
+  "implementation_gate_only": true,
+  "inputs": {
+    "eval_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "qwen_source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+    "source_score_cache_path": null
+  },
+  "interpretation": "This preflight passes only if the matched soft-prefix uses source information that the target-only/static/shuffled/noise controls cannot reproduce. A failure is not a final scientific negative; it either kills this exact tiny Mac-local setup or exposes a target-cache leak.",
+  "pass_control_conditions": [
+    "target_only",
+    "source_free_prefix",
+    "target_cache_only_prefix",
+    "target_derived_prefix",
+    "slots_only_prefix",
+    "zero_source",
+    "shuffled_source",
+    "source_row_shuffle",
+    "same_norm_noise",
+    "train_mean_source",
+    "atom_shuffle",
+    "coefficient_shuffle",
+    "top_atom_knockout",
+    "label_shuffled",
+    "candidate_roll_source",
+    "candidate_roll",
+    "candidate_score_roll_source",
+    "candidate_derangement",
+    "same_byte_visible_text",
+    "packet_only_source_index",
+    "source_rank_control",
+    "source_score_control",
+    "qwen_substituted_packet"
+  ],
+  "pass_gate": false,
+  "row_limit": 8,
+  "runtime": {
+    "latency_s": 145.7832004999509,
+    "peak_rss_mib": 14335.859375
+  }
+}

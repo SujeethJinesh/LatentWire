@@ -1312,6 +1312,23 @@ def _choice_scores(
     if not continuation_ids:
         raise ValueError("continuation_ids must not be empty")
     device = prefix.device if prefix.numel() else prompt_ids.device
+    if str(device).startswith("mps"):
+        # MPSGraph can fail shape inference for padded variable-length batches
+        # with prefix inputs_embeds. The unbatched scorer uses the same objective
+        # and is slower but reliable for Mac-local gates.
+        return torch.stack(
+            [
+                _continuation_logprob(
+                    target_model=target_model,
+                    embed_tokens=embed_tokens,
+                    prefix=prefix,
+                    prompt_ids=prompt_ids,
+                    continuation_ids=ids,
+                    length_normalize=length_normalize,
+                )
+                for ids in continuation_ids
+            ]
+        )
     prompt_embeds = embed_tokens(prompt_ids.to(device)).detach()
     prefix = prefix.to(device=device, dtype=prompt_embeds.dtype)
 

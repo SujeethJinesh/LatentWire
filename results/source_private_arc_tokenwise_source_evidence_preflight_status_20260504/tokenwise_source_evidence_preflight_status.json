@@ -1,0 +1,46 @@
+{
+  "created_utc": "2026-05-04T23:59:00Z",
+  "gate": "arc_n32_tokenwise_source_evidence_preflight",
+  "status": "blocked_on_mps_qwen3_prefix_scoring_with_negative_cpu_smoke",
+  "colm_v2_backport": {
+    "claim_effect": "negative/guardrail only",
+    "recommended_use": "Mention as an ICLR live-gate preflight that does not yet support broad Sparse Resonance Packets."
+  },
+  "iclr_effect": {
+    "promoted": "source-causal tokenwise preflight remains the right question",
+    "weakened": "the current token-pooled source-to-soft-prefix receiver on Qwen3",
+    "ruled_out": "promoting the n8 CPU token-pool residual soft-prefix smoke as positive evidence"
+  },
+  "mps_n32_attempt": {
+    "command_summary": "run_source_private_arc_openbookqa_soft_prefix_preflight.py with row_limit=32, fixed_fit_rows=16, hf_choice_token_hidden_pool_residual, Qwen2.5-0.5B source, Qwen3-0.6B target on MPS",
+    "completed": false,
+    "failure_kind": "MPSGraph attention shape inference failure during prefix inputs_embeds target scoring",
+    "failure_excerpt": "LLVM ERROR: Failed to infer result type(s): \"mps.matmul\"(...) : (tensor<1x16x90x128xf32>, tensor<1x8x128x90xf32>) -> ( ??? )",
+    "interpretation": "This is a Mac/MPS execution blocker, not a scientific pass/fail. The n32 gate needs CPU execution, a different target/MPS attention path, or a non-prefix receiver."
+  },
+  "cpu_n8_smoke": {
+    "artifact": "results/source_private_arc_tokenwise_source_evidence_preflight_20260504_n8_cpu_qwen05_to_qwen3/arc_openbookqa_soft_prefix_preflight.json",
+    "completed": true,
+    "pass_gate": false,
+    "fit_rows": 4,
+    "eval_rows": 4,
+    "source_feature_mode": "hf_choice_token_hidden_pool_residual",
+    "source_tensor_rank": 3,
+    "source_pool_size": 16,
+    "source_token_count_mean": 26.875,
+    "matched_accuracy": 0.0,
+    "target_only_accuracy": 0.25,
+    "best_control_by_accuracy": "packet_only_source_index",
+    "best_control_accuracy": 0.75,
+    "same_byte_visible_text_accuracy": 0.5,
+    "matched_minus_best_control_accuracy": -0.75,
+    "matched_minus_best_control_margin": -4.598475969163701,
+    "interpretation": "The token-pooled soft-prefix receiver did not recover source-causal signal on this tiny CPU smoke; source-index/score controls remained much stronger."
+  },
+  "next_exact_gate": {
+    "name": "arc_tokenwise_repair_readout_preflight",
+    "reason": "The tokenwise source features may still contain repair signal, but the current soft-prefix receiver is unstable and MPS-blocked. Test source-causal repair readout before another target-prefix training loop.",
+    "pass_bar": "A lightweight receiver using tokenwise source features improves over target-only, source-index/rank/score, same-byte text, wrong-row, same-source-choice wrong-row, candidate-roll, and target-derived controls with positive paired CI.",
+    "fallback": "Run the full n32 CPU version only if the lightweight repair readout shows signal."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "created_utc": "2026-05-04T23:46:33.731544+00:00",
+  "files": [
+    {
+      "bytes": 14804,
+      "path": "results/source_private_arc_tokenwise_source_evidence_preflight_20260504_n8_cpu_qwen05_to_qwen3/arc_openbookqa_soft_prefix_preflight.json",
+      "sha256": "2b30bbfa14eb6926a3d7e6b8563610388b8ae1a201df3088c9d9849f633f8093"
+    },
+    {
+      "bytes": 76075,
+      "path": "results/source_private_arc_tokenwise_source_evidence_preflight_20260504_n8_cpu_qwen05_to_qwen3/prediction_audit.jsonl",
+      "sha256": "b3e7e771f414fc962d90b2e3da75179d532bfb8aecdd464119b58c3d615b6905"
+    },
+    {
+      "bytes": 12897,
+      "path": "results/source_private_arc_tokenwise_source_evidence_preflight_20260504_n8_cpu_qwen05_to_qwen3/prediction_audit.csv",
+      "sha256": "caa216a6cbaca85e720f45f2d644d5265c5c630205477199db9506be916cf927"
+    },
+    {
+      "bytes": 2399,
+      "path": "results/source_private_arc_tokenwise_source_evidence_preflight_20260504_n8_cpu_qwen05_to_qwen3/arc_openbookqa_soft_prefix_preflight.md",
+      "sha256": "3c1fb4a730bc3acb59dc1a8bd757920a956b9f4751c98d4a526dfa92a7438f2f"
+    }
+  ],
+  "gate": "source_private_arc_openbookqa_soft_prefix_preflight",
+  "inputs": {
+    "eval_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "qwen_source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+    "source_score_cache_path": null
+  },
+  "pass_gate": false
+}
