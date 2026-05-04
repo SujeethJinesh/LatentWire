@@ -2434,5 +2434,12 @@
     "path": "references/704_source_codebook_candidate_repair_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after failed TinyLlama-to-Qwen and Qwen-to-Phi source-codebook candidate repair gates, recording boundaries against logit fusion, prefix/context compression, C2C/KVComm, KV quantization/TurboQuant, and shared-basis interpretability work."
+  },
+  {
+    "num": 705,
+    "slug": "hellaswag_qwen_to_phi_heldout_uncertainty_router_refs_20260504",
+    "path": "references/705_hellaswag_qwen_to_phi_heldout_uncertainty_router_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the failed HellaSwag Qwen-to-Phi held-out uncertainty-router gate, recording novelty boundaries against C2C, KVComm/Q-KVComm, logit-fusion and guided-decoding methods, prefix/gist/soft-token interfaces, vLLM/SGLang serving baselines, and KV quantization/TurboQuant systems comparators."
   }
 ]

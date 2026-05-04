@@ -22140,3 +22140,45 @@ Lay explanation: the source can often narrow the answer down to two choices,
 but the learned receiver still cannot tell which of those two to trust. The
 oracle says there is useful information left, but the current codebook does
 not recover it.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Held-Out Uncertainty Router Gate
+
+Implemented and ran a held-out uncertainty-router gate after the protected
+top-2/rival codebook failed. The source-side encoder may inspect Qwen scores,
+but the receiver-visible packet is only candidate IDs plus quantized Qwen
+uncertainty bins. Phi-local scores remain receiver side information. The
+router is trained on official HellaSwag train calibration rows, selected on
+official-train dev, then frozen on the cached validation `1024:2048` surface.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_heldout_uncertainty_router_gate.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_heldout_uncertainty_router_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_heldout_uncertainty_router_gate_20260504_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_to_phi_heldout_uncertainty_router_gate_20260504.md`;
+- references:
+  `references/705_hellaswag_qwen_to_phi_heldout_uncertainty_router_refs_20260504.md`.
+
+Outcome: fail. The official-dev selector found a tiny positive rule
+(`+0.005376` delta, CI95 low `0.000000`, `2` helps / `0` harms), but frozen
+eval did not carry: held-out uncertainty router accuracy is `0.466146` versus
+fixed Qwen hybrid `0.467448`, delta `-0.001302`, CI95 low `-0.003906`, with
+`0` helps and `1` harm across `3` overrides. The best destructive control is
+the target-derived source-packet router, which ties fixed hybrid at
+`0.467448`. Source top-1/top-2 oracle remains large at `0.675781`, while raw
+source-score logit fusion is only `0.391927`.
+
+Decision: demote the shallow uncertainty-router family on this Qwen-to-Phi
+surface. Together with the receiver-calibrated linear rule, harm-controlled
+buckets, and top-2/rival codebook, this shows score-level packet switchers are
+not the positive ICLR method. The next highest-priority positive branch should
+move to a target-native latent receiver: held-out encoder into the target
+self-resonance soft-prefix slots, or a decision-supervised sparse/common
+dictionary with atom-shuffle, wrong-row, target-derived, and knockout controls.
+
+Lay explanation: Qwen sent Phi a tiny coarse message naming its favorite
+answers and confidence. Phi learned when to trust that message on training
+examples. On the held-out slice, it changed three answers and made one worse,
+so this message format is not strong enough.
