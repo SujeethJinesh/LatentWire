@@ -2539,5 +2539,12 @@
     "path": "references/720_target_aligned_feature_basis_scout_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted primary-source scout for Sparse Resonance Packet target-aligned feature bases, covering SVCCA/CKA, relative representations, model stitching, Wasserstein Procrustes, SAE/universal SAE, crosscoders, transcoders, SAEBench, C2C, and activation-communication competitors with Mac-first ARC next experiments."
+  },
+  {
+    "num": 721,
+    "slug": "sparse_resonance_packet_quant_confidence_systems_refs_20260504",
+    "path": "references/721_sparse_resonance_packet_quant_confidence_systems_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Fresh targeted primary-source scan for Sparse Resonance Packet quantization, TurboQuant/QJL/KIVI/KVQuant byte floors, sparse/hardware-friendly formats, syndrome/error-correcting and confidence-coded communication, native vLLM/SGLang/NVIDIA systems metrics, Mac-feasible ablations, and no-claim hardware boundaries."
   }
 ]
