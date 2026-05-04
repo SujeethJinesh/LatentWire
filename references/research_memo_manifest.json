@@ -2378,5 +2378,12 @@
     "path": "references/696_target_self_resonance_interface_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the pivot from failed shallow receiver switching to a target self-resonance / compact learned target-side interface gate, recording novelty boundaries against prefix/prompt tuning, gist/ICAE/AutoCompressors, Q-Former/Perceiver resamplers, activation steering, C2C/KVComm/KV-cache alignment, SAE/crosscoders, diffusion/refinement, and TurboQuant/QJL/KIVI systems comparators."
+  },
+  {
+    "num": 697,
+    "slug": "target_self_resonance_oracle_distill_refs_20260504",
+    "path": "references/697_target_self_resonance_oracle_distill_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the failed HellaSwag target self-resonance oracle-prefix distillation gate, recording novelty boundaries against prefix/prompt tuning, gist/AutoCompressors/ICAE, Q-Former/Perceiver query bottlenecks, Relative Representations, C2C/KVComm/KVCOMM, vLLM/SGLang, and KIVI/QJL/TurboQuant systems baselines."
   }
 ]

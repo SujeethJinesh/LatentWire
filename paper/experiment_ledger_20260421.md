@@ -21737,3 +21737,57 @@ question. This run trained one small encoder on training questions and asked
 it to make soft tokens for new questions. It helped one small validation group
 but not the next, so the interface is still promising while this simple encoder
 is too weak for the paper's core method.
+
+## 2026-05-04 Target Self-Resonance HellaSwag Oracle-Distill Gate
+
+Implemented and ran the target self-resonance oracle-prefix distillation gate
+on official HellaSwag train-to-validation rows with frozen
+Qwen2.5-0.5B-Instruct.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_oracle_distill_gate.py`;
+- tests:
+  `tests/test_build_target_self_resonance_hellaswag_oracle_distill_gate.py`;
+- artifacts:
+  `results/target_self_resonance_hellaswag_oracle_distill_gate_20260504_qwen05_train16_validation64_72/`,
+  `results/target_self_resonance_hellaswag_oracle_distill_gate_20260504_qwen05_train16_validation64_72_stronger_student/`;
+- paper memo:
+  `paper/target_self_resonance_hellaswag_oracle_distill_gate_20260504.md`;
+- references:
+  `references/697_target_self_resonance_oracle_distill_refs_20260504.md`.
+
+Gate design: generate per-example oracle soft prefixes on official train rows
+only, using the frozen target model's full-prompt distribution as the reference.
+Then train a shared chunk-to-prefix encoder with both target logit KL and
+oracle-prefix imitation. A slots-only encoder is trained under the same
+objective as the target-cache baseline. Held-out validation rows are evaluated
+without prefix optimization against chunk-mean, slots-only, zero, random
+same-norm, shuffled-row encoder, and candidate-score derangement controls.
+
+Outcome: the gate fails. The train-row oracle teachers are strong: mean train
+KL improves from `0.107092` to `0.000983`. The default student on validation
+`64:72` has agreement/KL `0.375000`/`0.128162`, worse than chunk
+`0.375000`/`0.105277` and slots-only `0.250000`/`0.106234`. A stronger student
+fit improves over chunk KL but still fails slots-only: distilled
+`0.375000`/`0.097225`, chunk `0.375000`/`0.105277`, slots-only
+`0.375000`/`0.089671`.
+
+Decision: weaken direct oracle-prefix distillation from chunk means. The oracle
+capacity result remains alive, but the student generalization surface does not
+yet beat a target-only slot cache. The next highest-priority method branch is a
+query-resampler / ICAE-style target interface, followed only after a held-out
+target-only pass by source-conditioned residual slots and strict cross-family
+controls.
+
+Systems note: this remains a target-side diagnostic, not a systems win. The
+emitted `8` Qwen slots are `14,336` raw fp16 bytes, and the stronger student
+has `253,705` trainable parameters. Mac can support byte/exposure accounting
+and encode/decode proxy timing, but native TTFT/TPOT/HBM comparisons against
+C2C, KVComm, vLLM/SGLang, QJL, and TurboQuant still require NVIDIA hardware.
+
+Lay explanation: we made excellent custom soft tokens for training examples,
+then trained one small encoder to imitate those tokens on new examples. Training
+harder helped compared with raw chunk compression, but a generic target-only
+slot cache still did better. So the problem is not that soft tokens cannot work;
+it is that this direct student is not yet learning a reusable communication
+interface.
