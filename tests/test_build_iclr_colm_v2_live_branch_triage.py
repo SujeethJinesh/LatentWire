@@ -225,6 +225,18 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
             ),
             _source_conditioned_headline("consistency_refined_accuracy"),
         ],
+        "hellaswag_complementarity_frontier": {
+            "headline": {
+                "fixed_hybrid_accuracy": 0.47,
+                "fixed_or_source_top1_top2_oracle_accuracy": 0.69,
+                "fixed_wrong_source_top1_or_top2_correct": 17,
+                "framed_record_bytes": 4,
+                "selected_selector_accuracy": 0.47,
+                "selected_selector_ci95_low_vs_fixed_hybrid": 0.0,
+                "selected_selector_delta_vs_fixed_hybrid": 0.0,
+                "selected_selector_overrides": 0,
+            }
+        },
     }
 
     payload = build_triage(artifacts=artifacts, artifact_paths={"synthetic": synthetic_input})
@@ -239,7 +251,13 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
         row["status"] == "ruled_out_current_source_conditioned_receiver_family"
         for row in payload["branch_rows"]
     )
-    assert payload["next_exact_gate"]["name"] == "colm_v2_table_refresh_then_complementarity_frontier_gate"
+    assert any(
+        row["status"] == "headroom_alive_selector_blocked"
+        for row in payload["branch_rows"]
+    )
+    assert payload["readiness"]["hellaswag_complementarity_headroom_alive"] is True
+    assert payload["readiness"]["hellaswag_current_frontier_selector_blocked"] is True
+    assert payload["next_exact_gate"]["name"] == "new_information_path_or_alternate_benchmark_gate"
 
     out_dir = tmp_path / "out"
     paper_path = tmp_path / "paper.md"

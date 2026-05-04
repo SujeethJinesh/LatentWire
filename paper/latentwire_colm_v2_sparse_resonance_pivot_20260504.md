@@ -63,6 +63,38 @@ source top1/top2 could help, and test whether any source-private packet field
 has source-causal signal beyond source-choice, wrong-row, candidate-roll,
 same-byte, and target-derived controls.
 
+## Complementarity-Frontier Diagnostic Update
+
+That diagnostic has now been run on the existing HellaSwag validation1024-2048
+fit/select/eval caches:
+
+- artifact:
+  `results/source_private_hellaswag_complementarity_frontier_diagnostic_20260504_validation1024_2048/hellaswag_complementarity_frontier_diagnostic.json`;
+- eval rows: `768`;
+- target-only accuracy: `0.263021`;
+- fixed-hybrid accuracy: `0.467448`;
+- source top1/top2 oracle accuracy: `0.675781`;
+- fixed-or-source-top1/top2 oracle accuracy: `0.694010`;
+- target-wrong/source-can-help rows: `386`;
+- fixed-wrong/source-can-help rows: `174`;
+- selected frontier accuracy: `0.467448`;
+- selected frontier delta vs fixed: `0.000000`;
+- selected frontier overrides: `0`;
+- best destructive control: `source_row_shuffle_frontier_control` at
+  `0.467448`.
+
+Interpretation: source complementarity is real, but the current top1/top2 plus
+quantized margin/entropy packet fields do not expose a stable held-out decision
+surface. The live triage now marks this branch as
+`headroom_alive_selector_blocked`.
+
+Updated decision: do not train another HellaSwag selector on the same packet
+fields. The next ICLR gate must add a genuinely new source-causal feature, or
+move to a benchmark where source help is easier to separate from rank/score
+shortcuts. If no such feature is available Mac-locally, switch to COLM_v2
+table/figure integration using the positive conditional-PQ row, the HellaSwag
+fixed-byte systems row, target-resonance capacity, and this saturation result.
+
 ## First Implemented Gate
 
 Implemented a train-fit sparse PCA packet mode in the strict ARC soft-prefix

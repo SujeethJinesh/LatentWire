@@ -179,6 +179,18 @@
       "record_bytes": null,
       "score": 0.375,
       "status": "ruled_out_current_source_conditioned_receiver_family"
+    },
+    {
+      "artifact": "hellaswag_complementarity_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag complementarity-frontier selector diagnostic",
+      "ci95_low": 0.0,
+      "decision": "Do not train another HellaSwag selector on the same packet fields; require a new information path.",
+      "delta": 0.0,
+      "evidence": "Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.",
+      "record_bytes": 4,
+      "score": 0.467448,
+      "status": "headroom_alive_selector_blocked"
     }
   ],
   "claim_boundaries": [
@@ -187,7 +199,7 @@
     "Do not claim C2C/KV throughput, HBM, PCIe, NVLink, or energy wins without native measurements.",
     "Frame C2C/KVComm/TurboQuant/KIVI as high-bandwidth or KV-compression baselines with different exposure regimes."
   ],
-  "created_utc": "2026-05-04T22:02:15.345502+00:00",
+  "created_utc": "2026-05-04T22:16:23.378551+00:00",
   "current_contributions": [
     {
       "name": "source_private_low_rate_packets",
@@ -240,6 +252,7 @@
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_zscore_gate_20260504/core_to_holdout_semantic_public_zscore_n256/summary.json",
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_zscore_gate_20260504/holdout_to_core_semantic_public_zscore_n256/summary.json"
     ],
+    "hellaswag_complementarity_frontier": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_complementarity_frontier_diagnostic_20260504_validation1024_2048/hellaswag_complementarity_frontier_diagnostic.json",
     "hellaswag_denoising_syndrome": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_denoising_syndrome_packet_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_denoising_syndrome_packet_gate.json",
     "hellaswag_fixed_hybrid": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503_validation0_10042/hellaswag_fixed_hybrid_full_validation_gate.json",
     "hellaswag_harm_bucket": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_harm_controlled_bucket_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_harm_controlled_bucket_gate.json",
@@ -291,6 +304,7 @@
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_zscore_gate_20260504/core_to_holdout_semantic_public_zscore_n256/summary.json": "15ff7a0806b35771ddaf6eb0fa0b1e762abe2eb8c4a82846f63d92e61a03cf24",
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_zscore_gate_20260504/holdout_to_core_semantic_public_zscore_n256/summary.json": "cfa9786c235b2ecee0bc55ebbe75df57e94c603b45fcc46c4f64f5fc773fa7aa"
     },
+    "hellaswag_complementarity_frontier": "5ee1d2a500d419eace8293c816baeff4d4749b62bd87032d5895cb3456d6b7ac",
     "hellaswag_denoising_syndrome": "7ec4c91d9613b9752f5bcbdd005689826be5902009b24052b7f51a277a86fc78",
     "hellaswag_fixed_hybrid": "0fd7d311cec8c8aac0de60de1193246d9cfb86642d407355bd815cb15d82456d",
     "hellaswag_harm_bucket": "59ccbc69d4887c87798b2ff7e9edc64fe0b6a548db0b8da4ad8f0c33044d8dbf",
@@ -319,10 +333,10 @@
     }
   },
   "next_exact_gate": {
-    "fallback_path": "If the frontier diagnostic shows no separable source-causal signal, stop HellaSwag receiver work and pivot to an alternate benchmark/method where the source has measurable complementarity beyond rank/score shortcuts.",
-    "name": "colm_v2_table_refresh_then_complementarity_frontier_gate",
+    "fallback_path": "If no new source-causal packet field is available on Mac, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, and complementarity-frontier saturation.",
+    "name": "new_information_path_or_alternate_benchmark_gate",
     "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
-    "primary_path": "Backport this live triage into COLM_v2 tables/figures, then run a small complementarity-frontier diagnostic that isolates rows where the target is wrong and source top1/top2 could help, measuring whether any source-private packet field beats source-choice and wrong-row controls before another decoder is trained.",
+    "primary_path": "Use the complementarity-frontier rows as a diagnostic set, but require a new packet field or representation path before training another HellaSwag receiver. The next implementation should either add a genuinely new source-causal feature with source-choice/wrong-row controls, or move to an alternate benchmark where source complementarity is easier to separate from rank/score shortcuts.",
     "required_controls": [
       "target_only",
       "answer_masked_source",
@@ -344,6 +358,8 @@
     "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
     "conditional_pq_cross_family_blocked": true,
     "conditional_pq_same_family_alive": true,
+    "hellaswag_complementarity_headroom_alive": true,
+    "hellaswag_current_frontier_selector_blocked": true,
     "hellaswag_shallow_receiver_family_saturated": true,
     "iclr": "blocked_by_lack_of_broad_or_learned_positive_receiver",
     "source_conditioned_target_native_receivers_blocked": true,
@@ -360,6 +376,7 @@
     "HellaSwag protected-rival, top2 bucket, linear receiver, harm bucket, and denoising syndrome switchers.",
     "Sparse/common-basis top2 atom causality in the current HellaSwag implementation.",
     "Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.",
-    "Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented."
+    "Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.",
+    "HellaSwag complementarity-frontier selector with current top1/top2 packet fields."
   ]
 }

@@ -1,6 +1,6 @@
 # ICLR / COLM_v2 Live Branch Triage
 
-- created UTC: `2026-05-04T22:02:15.345502+00:00`
+- created UTC: `2026-05-04T22:16:23.378551+00:00`
 - COLM_v2 readiness: `scoped_positive_ready_for_writeup_if_claims_are_narrow`
 - ICLR readiness: `blocked_by_lack_of_broad_or_learned_positive_receiver`
 
@@ -39,6 +39,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 | Target self-resonance oracle soft-prefix capacity | `capacity_alive_not_source_private_method` | `0.9375` | `0.625` | `0.3125` | `None` | `None` | Use only as capacity/headroom evidence; it optimizes on eval rows. |
 | Target self-resonance held-out learned prefix encoders | `ruled_out_current_target_native_encoder_family` | `0.6875` | `0.6875` | `0.0` | `None` | `None` | Do not run more chunk/distill/query-resampler variants without a new information path. |
 | Source-conditioned target-native resonance receivers | `ruled_out_current_source_conditioned_receiver_family` | `0.375` | `0.375` | `0.0` | `None` | `None` | Diagnose complementarity/gating before implementing another source-to-prefix decoder. |
+| HellaSwag complementarity-frontier selector diagnostic | `headroom_alive_selector_blocked` | `0.467448` | `0.467448` | `0.0` | `0.0` | `4` | Do not train another HellaSwag selector on the same packet fields; require a new information path. |
 
 ## Evidence Notes
 
@@ -57,6 +58,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - `Target self-resonance oracle soft-prefix capacity`: 3/3 tiny oracle rows pass; best optimized agreement 0.937500 beats shuffled_optimized_prefix at 0.625000.
 - `Target self-resonance held-out learned prefix encoders`: 1/5 pass; best agreement delta 0.000000 against slots_only_encoder; worst agreement delta -0.125000.
 - `Source-conditioned target-native resonance receivers`: 0/5 pass; best accuracy delta 0.000000 against zero_source_hidden; source top1/top2 oracle reaches 1.000000.
+- `HellaSwag complementarity-frontier selector diagnostic`: Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.
 
 ## Promoted
 
@@ -72,12 +74,13 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - Sparse/common-basis top2 atom causality in the current HellaSwag implementation.
 - Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.
 - Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.
+- HellaSwag complementarity-frontier selector with current top1/top2 packet fields.
 
 ## Next Exact Gate
 
-- name: `colm_v2_table_refresh_then_complementarity_frontier_gate`
-- primary path: Backport this live triage into COLM_v2 tables/figures, then run a small complementarity-frontier diagnostic that isolates rows where the target is wrong and source top1/top2 could help, measuring whether any source-private packet field beats source-choice and wrong-row controls before another decoder is trained.
-- fallback path: If the frontier diagnostic shows no separable source-causal signal, stop HellaSwag receiver work and pivot to an alternate benchmark/method where the source has measurable complementarity beyond rank/score shortcuts.
+- name: `new_information_path_or_alternate_benchmark_gate`
+- primary path: Use the complementarity-frontier rows as a diagnostic set, but require a new packet field or representation path before training another HellaSwag receiver. The next implementation should either add a genuinely new source-causal feature with source-choice/wrong-row controls, or move to an alternate benchmark where source complementarity is easier to separate from rank/score shortcuts.
+- fallback path: If no new source-causal packet field is available on Mac, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, and complementarity-frontier saturation.
 - pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
 - required controls: `target_only`, `answer_masked_source`, `constrained_wrong_row_source`, `same_source_choice_wrong_row`, `candidate_roll_or_deranged_public_basis`, `permuted_codes`, `random_same_byte`, `opaque_slot_or_deranged_basis`, `source_index_rank_score_comparators_when_meaningful`, `same_byte_visible_text`
 

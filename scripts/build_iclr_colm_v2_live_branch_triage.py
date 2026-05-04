@@ -100,6 +100,8 @@ DEFAULT_ARTIFACT_PATHS = {
         ROOT
         / "results/target_self_resonance_hellaswag_consistency_refined_slot_gate_20260504_tiny_to_qwen05_train64_validation88_96/target_self_resonance_hellaswag_consistency_refined_slot_gate.json",
     ],
+    "hellaswag_complementarity_frontier": ROOT
+    / "results/source_private_hellaswag_complementarity_frontier_diagnostic_20260504_validation1024_2048/hellaswag_complementarity_frontier_diagnostic.json",
 }
 
 
@@ -619,6 +621,26 @@ def build_triage(
         )
     )
 
+    frontier = artifacts["hellaswag_complementarity_frontier"]["headline"]
+    rows.append(
+        _headline_row(
+            branch="HellaSwag complementarity-frontier selector diagnostic",
+            status="headroom_alive_selector_blocked",
+            artifact="hellaswag_complementarity_frontier",
+            score=frontier["selected_selector_accuracy"],
+            baseline=frontier["fixed_hybrid_accuracy"],
+            delta=frontier["selected_selector_delta_vs_fixed_hybrid"],
+            ci95_low=frontier["selected_selector_ci95_low_vs_fixed_hybrid"],
+            bytes_record=frontier["framed_record_bytes"],
+            evidence=(
+                f"Fixed+source top1/top2 oracle {frontier['fixed_or_source_top1_top2_oracle_accuracy']:.6f}; "
+                f"source top1/top2 covers {frontier['fixed_wrong_source_top1_or_top2_correct']} fixed-hybrid errors, "
+                f"but selected frontier makes {frontier['selected_selector_overrides']} overrides."
+            ),
+            decision="Do not train another HellaSwag selector on the same packet fields; require a new information path.",
+        )
+    )
+
     return {
         "created_utc": dt.datetime.now(dt.UTC).isoformat(),
         "gate": "iclr_colm_v2_live_branch_triage",
@@ -636,6 +658,8 @@ def build_triage(
             "target_self_resonance_capacity_alive": True,
             "target_self_resonance_learned_encoders_blocked": True,
             "source_conditioned_target_native_receivers_blocked": True,
+            "hellaswag_complementarity_headroom_alive": True,
+            "hellaswag_current_frontier_selector_blocked": True,
         },
         "story": (
             "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, "
@@ -690,19 +714,21 @@ def build_triage(
             "Sparse/common-basis top2 atom causality in the current HellaSwag implementation.",
             "Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.",
             "Source-conditioned source-hidden/codebook/refinement target-native receivers as currently implemented.",
+            "HellaSwag complementarity-frontier selector with current top1/top2 packet fields.",
         ],
         "next_exact_gate": {
-            "name": "colm_v2_table_refresh_then_complementarity_frontier_gate",
+            "name": "new_information_path_or_alternate_benchmark_gate",
             "primary_path": (
-                "Backport this live triage into COLM_v2 tables/figures, then run a small "
-                "complementarity-frontier diagnostic that isolates rows where the target is wrong "
-                "and source top1/top2 could help, measuring whether any source-private packet field "
-                "beats source-choice and wrong-row controls before another decoder is trained."
+                "Use the complementarity-frontier rows as a diagnostic set, but require a new "
+                "packet field or representation path before training another HellaSwag receiver. "
+                "The next implementation should either add a genuinely new source-causal feature "
+                "with source-choice/wrong-row controls, or move to an alternate benchmark where "
+                "source complementarity is easier to separate from rank/score shortcuts."
             ),
             "fallback_path": (
-                "If the frontier diagnostic shows no separable source-causal signal, stop HellaSwag "
-                "receiver work and pivot to an alternate benchmark/method where the source has "
-                "measurable complementarity beyond rank/score shortcuts."
+                "If no new source-causal packet field is available on Mac, switch to COLM_v2 table "
+                "and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance "
+                "capacity, and complementarity-frontier saturation."
             ),
             "pass_bar": (
                 "A learned or rule-based packet receiver must improve over source-index/rank/score, "
@@ -750,7 +776,7 @@ def _display_path(path: pathlib.Path) -> str:
 
 def _write_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()))
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0].keys()), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 

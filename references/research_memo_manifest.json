@@ -2707,5 +2707,12 @@
     "path": "references/744_target_resonance_saturation_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference and novelty-boundary memo for the target-self-resonance saturation triage, covering C2C/Q-KVComm/TurboQuant, prefix/prompt/gist compression, activation steering, continuous thought, and the current capacity-versus-held-out failure boundary."
+  },
+  {
+    "num": 745,
+    "slug": "complementarity_frontier_diagnostic_refs_20260504",
+    "path": "references/745_complementarity_frontier_diagnostic_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference and novelty-boundary memo for the HellaSwag complementarity-frontier diagnostic, covering selective prediction, learning to defer, LLM routing, decoder-side-information coding, C2C/KVComm competitors, and the current source-complementarity versus packet-selector failure."
   }
 ]

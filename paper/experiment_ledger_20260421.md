@@ -23855,3 +23855,63 @@ do not generalize when learned from training rows or driven by source-model
 features, so this is not yet a communication method. The next step is to check
 whether there is a predictable set of examples where the source truly has useful
 extra information before training another decoder.
+
+## 2026-05-04 HellaSwag Complementarity-Frontier Diagnostic
+
+Added a no-new-inference diagnostic to test whether the existing HellaSwag
+Qwen-to-Phi packet fields expose a usable frontier for source help:
+
+- script:
+  `scripts/build_source_private_hellaswag_complementarity_frontier_diagnostic.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_complementarity_frontier_diagnostic.py`;
+- artifact:
+  `results/source_private_hellaswag_complementarity_frontier_diagnostic_20260504_validation1024_2048/hellaswag_complementarity_frontier_diagnostic.json`;
+- refreshed triage:
+  `results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json`
+  and `paper/iclr_colm_v2_live_branch_triage_20260504.md`;
+- reference memo:
+  `references/745_complementarity_frontier_diagnostic_refs_20260504.md`.
+
+Purpose: before training another receiver, isolate whether there is a stable
+source-causal decision surface. The diagnostic uses fit/select/eval splits from
+the existing validation1024-2048 HellaSwag caches. The packet exposes source
+top1/top2 candidate IDs plus quantized source margin/entropy bins, while Phi
+score features remain receiver-local side information. It then trains a small
+utility selector to decide when to override the fixed hybrid baseline.
+
+Headline:
+
+- eval rows: `768`;
+- target-only accuracy: `0.263021`;
+- fixed-hybrid accuracy: `0.467448`;
+- source top1 accuracy: `0.411458`;
+- source top1/top2 oracle accuracy: `0.675781`;
+- fixed-or-source-top1/top2 oracle accuracy: `0.694010`;
+- target-wrong/source-can-help rows: `386`;
+- fixed-wrong/source-can-help rows: `174`;
+- selected frontier accuracy: `0.467448`;
+- selected frontier delta vs fixed: `0.000000`;
+- selected frontier CI95 low vs fixed: `0.000000`;
+- selected frontier overrides: `0`;
+- best destructive control: `source_row_shuffle_frontier_control` at
+  `0.467448`.
+
+Outcome: fail as a method, useful as diagnosis. There is substantial source
+complementarity: an oracle that can use source top1/top2 to repair fixed-hybrid
+errors reaches `0.694010`, a `+0.226562` delta with positive CI. But the
+train/select-selected frontier chooses no held-out overrides, and destructive
+controls tie it. This rules out another shallow selector on the same source
+top1/top2/margin/entropy packet fields.
+
+Decision: source complementarity is alive, but the current packet information
+path is blocked. The next ICLR gate must add a genuinely new source-causal
+feature or move to a benchmark where source help is separable from candidate
+rank/score shortcuts. If no such Mac-local feature is available, switch to
+COLM_v2 table/figure integration around conditional-PQ, fixed-byte HellaSwag,
+target-resonance capacity, and complementarity-frontier saturation.
+
+Lay explanation: Qwen often has the right answer among its top two choices
+when Phi or the fixed hybrid is wrong. But the tiny packet cannot yet tell Phi
+which of those cases are safe to trust. That means the source has useful
+information, but this particular packet does not expose it in a reliable way.

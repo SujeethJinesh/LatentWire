@@ -1,0 +1,4 @@
+split,rows,target_only_accuracy,fixed_hybrid_accuracy,candidate_only_accuracy,source_top1_accuracy,source_pair_phi_accuracy,source_top1_or_top2_oracle_accuracy,target_wrong_source_top1_or_top2_correct,fixed_wrong_source_top1_or_top2_correct,target_harm_risk_if_pair_phi,fixed_harm_risk_if_pair_phi
+fit,128,0.25,0.40625,0.375,0.359375,0.3828125,0.6484375,60,31,9,20
+select,128,0.2578125,0.515625,0.5234375,0.4453125,0.359375,0.7109375,68,28,10,37
+eval,768,0.2630208333333333,0.4674479166666667,0.4557291666666667,0.4114583333333333,0.3294270833333333,0.67578125,386,174,69,185
