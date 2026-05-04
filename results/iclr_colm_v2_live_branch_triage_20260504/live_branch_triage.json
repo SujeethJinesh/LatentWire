@@ -1,0 +1,260 @@
+{
+  "branch_rows": [
+    {
+      "artifact": "conditional_pq_status",
+      "baseline": 16,
+      "branch": "Conditional PQ shared-schema packet",
+      "ci95_low": 0.658,
+      "decision": "Use as the COLM_v2 positive method boundary; not enough for ICLR generality.",
+      "delta": 0.658,
+      "evidence": "16/16 disjoint n500 rows pass; 4/4 budget-2 rows pass; cross-family grid is 0/28.",
+      "record_bytes": 7,
+      "score": 16,
+      "status": "promote_for_colm_v2_only"
+    },
+    {
+      "artifact": "conditional_public_zscore",
+      "baseline": 0.441406,
+      "branch": "Conditional PQ public-zscore held-out-family decoder",
+      "ci95_low": null,
+      "decision": "Do not widen public-zscore to n500/remap.",
+      "delta": 0.011719,
+      "evidence": "0/2 pass; best source-minus-control 0.011719 against label_shuffled_encoder.",
+      "record_bytes": 7,
+      "score": 0.453125,
+      "status": "ruled_out_as_cross_family_rescue"
+    },
+    {
+      "artifact": "conditional_corruption_noop",
+      "baseline": 0.25,
+      "branch": "Conditional PQ corruption-to-noop receiver",
+      "ci95_low": null,
+      "decision": "Keep as diagnostic; do not promote this receiver family.",
+      "delta": 0.0,
+      "evidence": "0/6 pass; best source-minus-control 0.000000 against label_shuffled_encoder.",
+      "record_bytes": 7,
+      "score": 0.25,
+      "status": "ruled_out_as_cross_family_rescue"
+    },
+    {
+      "artifact": "arc_sparse_resonance",
+      "baseline": 0.625,
+      "branch": "ARC sparse resonance PCA/target-aligned soft-prefix packets",
+      "ci95_low": null,
+      "decision": "Do not widen plain PCA/target-aligned soft-prefix packets.",
+      "delta": -0.375,
+      "evidence": "0/4 pass; best matched-minus-control -0.375000 with best control source_free_prefix.",
+      "record_bytes": null,
+      "score": 0.25,
+      "status": "ruled_out_current_basis_receiver"
+    },
+    {
+      "artifact": "hellaswag_fixed_hybrid",
+      "baseline": 0.526688,
+      "branch": "HellaSwag fixed hybrid candidate packet",
+      "ci95_low": 0.002888,
+      "decision": "Useful COLM_v2 systems/privacy row, but not a learned latent receiver.",
+      "delta": 0.005776,
+      "evidence": "Full cached validation pass over 10042 rows; positive on 10/10 slices.",
+      "record_bytes": 4,
+      "score": 0.532464,
+      "status": "promote_for_colm_v2_systems_baseline"
+    },
+    {
+      "artifact": "hellaswag_protected_rival",
+      "baseline": 0.467448,
+      "branch": "HellaSwag protected top-2/rival packet",
+      "ci95_low": -0.013021,
+      "decision": "Do not rerun generic protected top-2/rival switchers.",
+      "delta": -0.005208,
+      "evidence": "Oracle 0.678385, selected decoder harms 6 vs helps 2.",
+      "record_bytes": 5,
+      "score": 0.46224,
+      "status": "ruled_out_shallow_pair_decoder"
+    },
+    {
+      "artifact": "hellaswag_official_receiver",
+      "baseline": 0.467448,
+      "branch": "HellaSwag official-train receiver-calibrated selector",
+      "ci95_low": -0.007812,
+      "decision": "Do not continue shallow linear score-feature selectors without new evidence.",
+      "delta": -0.001302,
+      "evidence": "Oracle 0.766927; eval-label diagnostic delta is only 0.002604.",
+      "record_bytes": 5,
+      "score": 0.466146,
+      "status": "weakened_near_miss"
+    },
+    {
+      "artifact": "hellaswag_harm_bucket",
+      "baseline": 0.467448,
+      "branch": "HellaSwag harm-controlled complementarity buckets",
+      "ci95_low": 0.0,
+      "decision": "Low-harm bucket receiver is saturated.",
+      "delta": 0.0,
+      "evidence": "Selected scheme no_op with 0 eligible buckets and 0 overrides.",
+      "record_bytes": 6,
+      "score": 0.467448,
+      "status": "ruled_out_no_safe_bucket"
+    },
+    {
+      "artifact": "hellaswag_top2_bucket",
+      "baseline": 0.467448,
+      "branch": "HellaSwag top1/top2 ambiguity buckets",
+      "ci95_low": 0.0,
+      "decision": "Do not continue rank/score-bin top2 buckets without a new packet field.",
+      "delta": 0.0,
+      "evidence": "Source top1/top2 oracle 0.675781, but selected bucket overrides 0 rows.",
+      "record_bytes": 4,
+      "score": 0.467448,
+      "status": "ruled_out_no_safe_bucket"
+    },
+    {
+      "artifact": "hellaswag_denoising_syndrome",
+      "baseline": 0.467448,
+      "branch": "HellaSwag denoising syndrome packet",
+      "ci95_low": -0.010417,
+      "decision": "Do not promote ridge-denoising syndrome decoder.",
+      "delta": -0.003906,
+      "evidence": "Target/hybrid oracle 0.604167; denoising helps 2 and harms 5.",
+      "record_bytes": 4,
+      "score": 0.463542,
+      "status": "ruled_out_shallow_syndrome_decoder"
+    },
+    {
+      "artifact": "hellaswag_sparse_common_basis",
+      "baseline": 0.501953,
+      "branch": "HellaSwag sparse/common-basis top2 ambiguity code",
+      "ci95_low": -0.00293,
+      "decision": "Do not claim sparse atom causality from this branch.",
+      "delta": -0.000977,
+      "evidence": "Best destructive control target_derived_source_pair_ambiguity_control at 0.501953; atom code helps 0 and harms 1.",
+      "record_bytes": 4,
+      "score": 0.500977,
+      "status": "weakened_common_basis_atom"
+    }
+  ],
+  "claim_boundaries": [
+    "Do not claim broad cross-family latent communication yet.",
+    "Do not claim sparse resonance packets as a positive method from the current PCA or sparse-atom gates.",
+    "Do not claim C2C/KV throughput, HBM, PCIe, NVLink, or energy wins without native measurements.",
+    "Frame C2C/KVComm/TurboQuant/KIVI as high-bandwidth or KV-compression baselines with different exposure regimes."
+  ],
+  "created_utc": "2026-05-04T21:42:39.992967+00:00",
+  "current_contributions": [
+    {
+      "name": "source_private_low_rate_packets",
+      "needs_work": "broader or learned receiver evidence for ICLR",
+      "status": "alive_for_colm_v2"
+    },
+    {
+      "name": "strict_destructive_controls",
+      "needs_work": "paper integration and compact tables",
+      "status": "strong"
+    },
+    {
+      "name": "systems_byte_accounting",
+      "needs_work": "native dense-KV/C2C measurements before throughput or energy claims",
+      "status": "mac_local_ready"
+    },
+    {
+      "name": "sparse_resonance_packets",
+      "needs_work": "new target-native or conditional-codebook receiver, not current PCA/score switchers",
+      "status": "framing_alive_method_not_yet_positive"
+    }
+  ],
+  "gate": "iclr_colm_v2_live_branch_triage",
+  "input_artifacts": {
+    "arc_sparse_resonance": [
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top2q3/arc_challenge_soft_prefix_resonance_gate.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top4q4_noresid/arc_challenge_soft_prefix_resonance_gate.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_target_aligned_top2q3/arc_challenge_soft_prefix_resonance_gate.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_target_aligned_top8q8_noresid/arc_challenge_soft_prefix_resonance_gate.json"
+    ],
+    "conditional_corruption_noop": [
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w001/summary.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w005/summary.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w01/summary.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w001/summary.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w005/summary.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w01/summary.json"
+    ],
+    "conditional_pq_status": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_iclr_colm_v2_status_20260504/conditional_pq_iclr_colm_v2_status.json",
+    "conditional_public_zscore": [
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_zscore_gate_20260504/core_to_holdout_semantic_public_zscore_n256/summary.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_zscore_gate_20260504/holdout_to_core_semantic_public_zscore_n256/summary.json"
+    ],
+    "hellaswag_denoising_syndrome": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_denoising_syndrome_packet_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_denoising_syndrome_packet_gate.json",
+    "hellaswag_fixed_hybrid": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503_validation0_10042/hellaswag_fixed_hybrid_full_validation_gate.json",
+    "hellaswag_harm_bucket": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_harm_controlled_bucket_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_harm_controlled_bucket_gate.json",
+    "hellaswag_official_receiver": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_official_train_receiver_calibrated_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_official_train_receiver_calibrated_gate.json",
+    "hellaswag_protected_rival": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_protected_rival_packet_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_protected_rival_packet_gate.json",
+    "hellaswag_sparse_common_basis": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate.json",
+    "hellaswag_top2_bucket": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_top2_ambiguity_bucket_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_top2_ambiguity_bucket_gate.json"
+  },
+  "input_sha256": {
+    "arc_sparse_resonance": {
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top2q3/arc_challenge_soft_prefix_resonance_gate.json": "b3cdc40c9ee3f0abdb28292bd58f4a1c8d577ee4f833be05213270b261258fac",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top4q4_noresid/arc_challenge_soft_prefix_resonance_gate.json": "390c04582e8eb3ee591c9e5feb7fe38088ce6eab27036d91d8fa5355ff589672",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_target_aligned_top2q3/arc_challenge_soft_prefix_resonance_gate.json": "08d940d3e7536eb76be505b3cb98e8da15cb680e200e25f8c61975b9a0e2a9af",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_target_aligned_top8q8_noresid/arc_challenge_soft_prefix_resonance_gate.json": "3efe61943561c833c9e49edb63e8c814d157fa73d42972c434c1fb6dc15fdc29"
+    },
+    "conditional_corruption_noop": {
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w001/summary.json": "ac1577e89d93de5114098159fa5b567e1561ef15baf6d90a6040c4ccb25cd96e",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w005/summary.json": "1821d5e50531c328033417c66da8d5141dde3a15fe3d3e5291c0c5a68cb00b08",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/core_to_holdout_semantic_public_zscore_n256_w01/summary.json": "959373a578aa9eb9925e4a39a0b9d6b044a9b87ebe784420071279b31a110014",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w001/summary.json": "93b16b9ee97b7c6165b5e95b33a914891ecd3d2b63efca12f873af24c3db946f",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w005/summary.json": "ce15c3c0a2126ed78030456db1a36eb2ac6203e8440a24d60669cc795c40c5f3",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/holdout_to_core_semantic_public_zscore_n256_w01/summary.json": "caca93411795ac2eff6df6d3951497156e28335236b3a0c59e7b9f6bd6fd5c25"
+    },
+    "conditional_pq_status": "3d6d2f760c7695eb91169cb7a3093429a39c12f96542eba25ce35e327f4afdd7",
+    "conditional_public_zscore": {
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_zscore_gate_20260504/core_to_holdout_semantic_public_zscore_n256/summary.json": "15ff7a0806b35771ddaf6eb0fa0b1e762abe2eb8c4a82846f63d92e61a03cf24",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_conditional_pq_public_zscore_gate_20260504/holdout_to_core_semantic_public_zscore_n256/summary.json": "cfa9786c235b2ecee0bc55ebbe75df57e94c603b45fcc46c4f64f5fc773fa7aa"
+    },
+    "hellaswag_denoising_syndrome": "7ec4c91d9613b9752f5bcbdd005689826be5902009b24052b7f51a277a86fc78",
+    "hellaswag_fixed_hybrid": "0fd7d311cec8c8aac0de60de1193246d9cfb86642d407355bd815cb15d82456d",
+    "hellaswag_harm_bucket": "59ccbc69d4887c87798b2ff7e9edc64fe0b6a548db0b8da4ad8f0c33044d8dbf",
+    "hellaswag_official_receiver": "5effe4cdd3d409485deb43691451e840032c52447de1580b724c2e3d5fdd033f",
+    "hellaswag_protected_rival": "cd3468cdd8f3f7986650f1b8e37b86ebbf52254b92d15148a5089dfcddb51e74",
+    "hellaswag_sparse_common_basis": "01e6be4324fe99bd4a8f2a58589a1c22a6bc533e35d972194de72470c3dcc509",
+    "hellaswag_top2_bucket": "3c13541102e97c3c37bb27be63c13bead2d060c7b500a2ec0ff4248e4a429855"
+  },
+  "next_exact_gate": {
+    "fallback_path": "If the conditional-codebook branch is too large for the next Mac turn, switch to COLM_v2 table integration and a target-self-resonance held-out encoder preflight; do not run more HellaSwag shallow switchers.",
+    "name": "source_private_conditional_codebook_or_target_resonance_gate",
+    "pass_bar": "source minus best destructive/shortcut control >= +0.10 with positive paired CI95 low on both held-out-family directions",
+    "primary_path": "Implement a richer public-conditioned residual/codebook receiver for conditional PQ on n256 held-out family, using QINCo-style conditioning or another explicit target-public codebook instead of row-zscore normalization.",
+    "required_controls": [
+      "target_only",
+      "answer_masked_source",
+      "constrained_wrong_row_source",
+      "same_source_choice_wrong_row",
+      "candidate_roll_or_deranged_public_basis",
+      "permuted_codes",
+      "random_same_byte",
+      "opaque_slot_or_deranged_basis",
+      "source_index_rank_score_comparators_when_meaningful",
+      "same_byte_visible_text"
+    ]
+  },
+  "promoted": [
+    "Conditional PQ shared-schema packet as COLM_v2 positive method.",
+    "HellaSwag fixed hybrid candidate packet as a systems/privacy packet row."
+  ],
+  "readiness": {
+    "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
+    "conditional_pq_cross_family_blocked": true,
+    "conditional_pq_same_family_alive": true,
+    "hellaswag_shallow_receiver_family_saturated": true,
+    "iclr": "blocked_by_lack_of_broad_or_learned_positive_receiver",
+    "sparse_resonance_current_basis_blocked": true
+  },
+  "story": "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The ICLR story is still blocked because neither cross-family conditional PQ nor HellaSwag learned receivers have produced a positive row beyond packet/source-choice baselines.",
+  "submission_gap": "ICLR needs a positive learned or broader-benchmark receiver. COLM_v2 can be prepared around the conditional-PQ shared-schema method and the HellaSwag fixed-byte packet as systems/privacy evidence, with explicit limitations.",
+  "weakened_or_ruled_out": [
+    "Conditional PQ public-zscore and corruption-to-noop as held-out-family rescues.",
+    "ARC sparse resonance PCA/target-aligned soft-prefix basis as implemented.",
+    "HellaSwag protected-rival, top2 bucket, linear receiver, harm bucket, and denoising syndrome switchers.",
+    "Sparse/common-basis top2 atom causality in the current HellaSwag implementation."
+  ]
+}

@@ -2686,5 +2686,12 @@
     "path": "references/741_conditional_pq_corruption_noop_receiver_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference and novelty-boundary memo for the conditional-PQ corruption-to-noop receiver gate, covering corruption/no-op objectives, selective/defer framing, PQ and side-information coding, dense C2C/KV competitors, TurboQuant/KIVI byte floors, and the failed held-out-family receiver sweep."
+  },
+  {
+    "num": 742,
+    "slug": "iclr_colm_v2_live_branch_triage_refs_20260504",
+    "path": "references/742_iclr_colm_v2_live_branch_triage_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference and novelty-boundary memo for the ICLR/COLM_v2 live branch triage, covering dense C2C/KV competitors, TurboQuant/KIVI systems byte floors, conditional codebook priors, and the decision to stop rerunning saturated HellaSwag shallow receiver branches."
   }
 ]

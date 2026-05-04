@@ -23712,3 +23712,60 @@ Lay explanation: we taught the receiver to trust real packets and ignore fake
 packets. Strong fake-packet training made it ignore everything; weak
 fake-packet training let fake packets become useful again. That is not a clean
 source communication result.
+
+## 2026-05-04 ICLR / COLM_v2 Live Branch Triage
+
+Added a reproducible branch-triage artifact after reviewing the later
+HellaSwag protected-rival, official-train receiver, harm-controlled bucket,
+top2 ambiguity, denoising syndrome, sparse/common-basis atom, ARC sparse
+resonance, and conditional-PQ resurrection results:
+
+- script: `scripts/build_iclr_colm_v2_live_branch_triage.py`;
+- test: `tests/test_build_iclr_colm_v2_live_branch_triage.py`;
+- artifact: `results/iclr_colm_v2_live_branch_triage_20260504/`;
+- paper memo: `paper/iclr_colm_v2_live_branch_triage_20260504.md`;
+- references: `references/742_iclr_colm_v2_live_branch_triage_refs_20260504.md`.
+
+Outcome: COLM_v2 is scoped-positive if claims stay narrow; ICLR remains
+blocked. The triage promotes conditional PQ as the current COLM_v2 positive
+method boundary and the HellaSwag full-validation fixed hybrid candidate
+packet as systems/privacy evidence. It explicitly supersedes the stale
+recommendation to move next to HellaSwag protected top-2/rival switchers:
+that family is already saturated by negative or no-op receiver-calibrated,
+harm-controlled, top2-bucket, denoising-syndrome, and sparse/common-basis
+runs.
+
+Key table rows:
+
+- conditional PQ shared-schema packet: `16/16` disjoint n500 rows pass,
+  `4/4` budget-2 rows pass, cross-family grid `0/28`;
+- conditional PQ public-zscore held-out-family: `0/2` pass, best
+  source-minus-control `+0.011719` but still fails against
+  `label_shuffled_encoder`;
+- conditional PQ corruption-to-noop receiver: `0/6` pass, best
+  source-minus-control `0.000000`;
+- ARC sparse resonance PCA/target-aligned packets: `0/4` pass, best
+  matched-minus-control `-0.375000`;
+- HellaSwag fixed hybrid candidate packet: full cached validation accuracy
+  `0.532464` vs candidate-only `0.526688`, CI95 low `+0.002888`,
+  positive on `10/10` slices;
+- HellaSwag protected top-2/rival packet: `0.462240` vs fixed hybrid
+  `0.467448`, CI95 low `-0.013021`;
+- HellaSwag official-train receiver: `0.466146` vs fixed hybrid `0.467448`;
+- HellaSwag harm/top2 bucket receivers: selected no-op / no safe buckets;
+- HellaSwag denoising syndrome: `0.463542` vs fixed hybrid `0.467448`;
+- HellaSwag sparse/common-basis top2 code: `0.500977` vs packet-only
+  `0.501953`.
+
+Decision: do not spend the next turn on another shallow HellaSwag switcher.
+The next exact ICLR gate should be either a richer public-conditioned
+residual/codebook receiver for conditional PQ on the n256 held-out-family
+surface, or a target-self-resonance held-out encoder preflight if the
+conditional-codebook branch is too large for a Mac-local turn. COLM_v2 should
+now start integrating the conditional-PQ table and HellaSwag fixed-byte
+systems/privacy row with explicit limitations.
+
+Lay explanation: this was the map update. We checked all the nearby "maybe
+this receiver works" branches and marked which ones are actually dead, which
+ones are only useful as limited workshop evidence, and what exact branch is
+worth trying next.

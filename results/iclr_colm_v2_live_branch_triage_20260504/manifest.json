@@ -1,0 +1,19 @@
+{
+  "created_utc": "2026-05-04T21:42:39.992967+00:00",
+  "files": [
+    "results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json",
+    "results/iclr_colm_v2_live_branch_triage_20260504/branch_rows.csv",
+    "results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.md",
+    "paper/iclr_colm_v2_live_branch_triage_20260504.md"
+  ],
+  "gate": "iclr_colm_v2_live_branch_triage",
+  "pass_gate": false,
+  "readiness": {
+    "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
+    "conditional_pq_cross_family_blocked": true,
+    "conditional_pq_same_family_alive": true,
+    "hellaswag_shallow_receiver_family_saturated": true,
+    "iclr": "blocked_by_lack_of_broad_or_learned_positive_receiver",
+    "sparse_resonance_current_basis_blocked": true
+  }
+}
