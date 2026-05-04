@@ -41,6 +41,27 @@ def test_attention_summary_reports_normalized_entropy() -> None:
     assert math.isclose(summary["mean_attention_max"], 0.7, rel_tol=1e-6)
 
 
+def test_attention_entropy_loss_matches_summary_bounds() -> None:
+    sharp_attention = torch.tensor([[1.0, 0.0, 0.0], [0.98, 0.01, 0.01]], dtype=torch.float32)
+    diffuse_attention = torch.full((2, 3), 1.0 / 3.0, dtype=torch.float32)
+
+    sharp_loss = gate._normalized_attention_entropy_loss(sharp_attention)
+    diffuse_loss = gate._normalized_attention_entropy_loss(diffuse_attention)
+
+    assert 0.0 <= float(sharp_loss) < float(diffuse_loss) <= 1.0
+
+
+def test_contrastive_kl_penalty_rewards_worse_wrong_row() -> None:
+    positive_kl = torch.tensor(0.10)
+    weak_negative_kl = torch.tensor(0.11)
+    strong_negative_kl = torch.tensor(0.80)
+
+    weak_penalty = gate._contrastive_kl_penalty(positive_kl, weak_negative_kl, margin=0.05)
+    strong_penalty = gate._contrastive_kl_penalty(positive_kl, strong_negative_kl, margin=0.05)
+
+    assert float(strong_penalty) < float(weak_penalty)
+
+
 def _prediction_row(row_id: str, condition: str, prediction: int, answer: int, kl: float) -> dict:
     return {
         "row_id": row_id,

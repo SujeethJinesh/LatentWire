@@ -22013,3 +22013,40 @@ KVQuant, and text baselines.
 Lay explanation: this benchmark repeatedly moves tiny packet records through
 memory. The packet is stable and very small in the local test, but this does
 not prove end-to-end GPU serving speed.
+
+## 2026-05-04 Target Self-Resonance Query-Resampler Contrastive Rescue
+
+Implemented and ran a contrastive rescue for the failed target-side
+query-resampler gate. The previous query bottleneck failed because wrong-row
+prefixes were too competitive and attention stayed diffuse. This rescue adds a
+wrong-row contrastive KL penalty and a normalized attention-entropy penalty.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_query_resampler_gate.py`;
+- tests:
+  `tests/test_build_target_self_resonance_hellaswag_query_resampler_gate.py`;
+- artifact:
+  `results/target_self_resonance_hellaswag_query_resampler_gate_20260504_qwen05_train64_validation72_80_contrastive/`;
+- memo:
+  `paper/target_self_resonance_hellaswag_query_resampler_contrastive_20260504.md`;
+- references:
+  `references/702_target_self_resonance_query_resampler_contrastive_refs_20260504.md`.
+
+Outcome: fail. Query-resampler agreement remains `0.500000`, mean KL is
+`0.557950`, chunk mean is stronger at agreement `0.625000` and KL `0.426502`,
+and slots-only remains the best KL control at `0.217971`. The query branch has
+negative KL gain versus best control, `-0.339979`. Mean normalized attention
+entropy is `1.000000`, and matched-train KL and wrong-row-train KL collapse to
+the same final value, `0.124080`.
+
+Decision: demote the simple target-only query-resampler branch. This rules out
+the lowest-cost target-only contrastive rescue. The next exact positive-method
+gate is source-conditioned residual slots over a frozen target-slot baseline,
+with zero-source, wrong-source, shuffled-source, target-derived-code,
+candidate-deranged, and paired uncertainty controls.
+
+Lay explanation: we tried to make the hidden summary work for the correct
+question and fail for the wrong question. It did not: the hidden summary stayed
+vague and target-only cached slots were still better. The next experiment must
+add a real source-conditioned correction rather than only improving target-side
+summaries.

@@ -193,6 +193,18 @@ def _attention_summary(attn: torch.Tensor) -> dict[str, float]:
     }
 
 
+def _normalized_attention_entropy_loss(attn: torch.Tensor) -> torch.Tensor:
+    token_count = max(int(attn.shape[-1]), 1)
+    entropy = -(attn.float().clamp_min(1e-12) * attn.float().clamp_min(1e-12).log()).sum(dim=-1)
+    if token_count <= 1:
+        return torch.zeros((), dtype=entropy.dtype, device=entropy.device)
+    return (entropy / math.log(token_count)).mean()
+
+
+def _contrastive_kl_penalty(pos_kl: torch.Tensor, neg_kl: torch.Tensor, *, margin: float) -> torch.Tensor:
+    return torch.nn.functional.softplus(torch.as_tensor(float(margin), device=pos_kl.device) + pos_kl - neg_kl)
+
+
 def _condition_metrics(
     prediction_rows: Sequence[dict[str, Any]],
     *,
@@ -328,6 +340,9 @@ def _train_query_resampler(
     lr: float,
     weight_decay: float,
     norm_weight: float,
+    contrastive_weight: float,
+    contrastive_margin: float,
+    attention_entropy_weight: float,
     embed_rms: float,
     length_normalize: bool,
     seed: int,
@@ -337,12 +352,16 @@ def _train_query_resampler(
     rng = random.Random(int(seed))
     losses: list[float] = []
     kls: list[float] = []
+    negative_kls: list[float] = []
+    contrastive_losses: list[float] = []
     attention_entropies: list[float] = []
     for epoch in range(int(epochs)):
         indices = list(range(len(train_items)))
         rng.shuffle(indices)
         epoch_loss = 0.0
         epoch_kl = 0.0
+        epoch_negative_kl = 0.0
+        epoch_contrastive = 0.0
         epoch_entropy = 0.0
         for idx in indices:
             item = train_items[idx]
@@ -365,7 +384,40 @@ def _train_query_resampler(
                 full_probs,
                 reduction="sum",
             )
-            loss = kl + float(norm_weight) * _prefix_rms_loss(prefix, embed_rms=embed_rms)
+            entropy_loss = _normalized_attention_entropy_loss(attn)
+            contrastive_loss = torch.zeros((), dtype=kl.dtype, device=kl.device)
+            negative_kl = torch.zeros((), dtype=kl.dtype, device=kl.device)
+            if float(contrastive_weight) > 0.0 and len(train_items) > 1:
+                wrong_idx = rng.randrange(len(train_items) - 1)
+                if wrong_idx >= idx:
+                    wrong_idx += 1
+                wrong_prompt_embeds = train_items[wrong_idx]["prompt_embeds"].to(
+                    device=device,
+                    dtype=embed_tokens.weight.dtype,
+                )
+                wrong_raw, _ = encoder.forward_with_attention(wrong_prompt_embeds)
+                wrong_prefix = _normalize_prefix_rms(wrong_raw, embed_rms=embed_rms)
+                wrong_scores = _prefix_scores(
+                    target_model=target_model,
+                    embed_tokens=embed_tokens,
+                    prefix=wrong_prefix,
+                    anchor_ids=anchor_ids,
+                    choice_ids=item["choice_ids"],
+                    device=device,
+                    length_normalize=length_normalize,
+                )
+                negative_kl = torch.nn.functional.kl_div(
+                    torch.log_softmax(wrong_scores.float(), dim=-1),
+                    full_probs,
+                    reduction="sum",
+                )
+                contrastive_loss = _contrastive_kl_penalty(kl, negative_kl, margin=contrastive_margin)
+            loss = (
+                kl
+                + float(norm_weight) * _prefix_rms_loss(prefix, embed_rms=embed_rms)
+                + float(contrastive_weight) * contrastive_loss
+                + float(attention_entropy_weight) * entropy_loss
+            )
             if not torch.isfinite(loss):
                 raise FloatingPointError(
                     f"nonfinite query-resampler loss at epoch={epoch} row_index={idx}: "
@@ -373,12 +425,16 @@ def _train_query_resampler(
                 )
             epoch_loss += float(loss.detach().cpu())
             epoch_kl += float(kl.detach().cpu())
-            epoch_entropy += _attention_summary(attn)["normalized_attention_entropy"]
+            epoch_negative_kl += float(negative_kl.detach().cpu())
+            epoch_contrastive += float(contrastive_loss.detach().cpu())
+            epoch_entropy += float(entropy_loss.detach().cpu())
             loss.backward()
             torch.nn.utils.clip_grad_norm_(encoder.parameters(), max_norm=1.0)
             optimizer.step()
         losses.append(epoch_loss / max(1, len(train_items)))
         kls.append(epoch_kl / max(1, len(train_items)))
+        negative_kls.append(epoch_negative_kl / max(1, len(train_items)))
+        contrastive_losses.append(epoch_contrastive / max(1, len(train_items)))
         attention_entropies.append(epoch_entropy / max(1, len(train_items)))
     encoder.eval()
     return {
@@ -386,12 +442,19 @@ def _train_query_resampler(
         "loss_final": float(losses[-1]) if losses else 0.0,
         "kl_initial": float(kls[0]) if kls else 0.0,
         "kl_final": float(kls[-1]) if kls else 0.0,
+        "negative_kl_initial": float(negative_kls[0]) if negative_kls else 0.0,
+        "negative_kl_final": float(negative_kls[-1]) if negative_kls else 0.0,
+        "contrastive_loss_initial": float(contrastive_losses[0]) if contrastive_losses else 0.0,
+        "contrastive_loss_final": float(contrastive_losses[-1]) if contrastive_losses else 0.0,
         "attention_entropy_initial": float(attention_entropies[0]) if attention_entropies else 0.0,
         "attention_entropy_final": float(attention_entropies[-1]) if attention_entropies else 0.0,
         "epochs": int(epochs),
         "lr": float(lr),
         "weight_decay": float(weight_decay),
         "norm_weight": float(norm_weight),
+        "contrastive_weight": float(contrastive_weight),
+        "contrastive_margin": float(contrastive_margin),
+        "attention_entropy_weight": float(attention_entropy_weight),
     }
 
 
@@ -482,6 +545,9 @@ def build_gate(
     lr: float,
     weight_decay: float,
     norm_weight: float,
+    contrastive_weight: float,
+    contrastive_margin: float,
+    attention_entropy_weight: float,
     seed: int,
     device: str,
     dtype: str,
@@ -576,6 +642,9 @@ def build_gate(
         lr=lr,
         weight_decay=weight_decay,
         norm_weight=norm_weight,
+        contrastive_weight=contrastive_weight,
+        contrastive_margin=contrastive_margin,
+        attention_entropy_weight=attention_entropy_weight,
         embed_rms=embed_rms,
         length_normalize=length_normalize,
         seed=seed,
@@ -775,15 +844,16 @@ def build_gate(
         "The query-resampler target interface passes this held-out gate. It is still target-side "
         "self-compression, but it is now a plausible target interface for source-conditioned residual slots."
         if pass_gate
-        else "The query-resampler target interface does not yet pass. The branch remains alive only if a "
-        "larger/stronger query bottleneck can beat slots-only and wrong-row controls."
+        else "The query-resampler target interface does not pass this held-out gate. Treat this as a "
+        "negative target-only compression ablation unless a future source-conditioned residual packet "
+        "beats slots-only and wrong-row controls."
     )
     next_exact_gate = (
         "Repeat adjacent slices with seed repeats, then add source-conditioned residual slots over the "
         "frozen query-resampler interface."
         if pass_gate
-        else "Run one bounded capacity rescue with more train rows or query depth; if still negative, demote "
-        "target self-compression encoders and return to source-conditioned common-basis features."
+        else "Implement source-conditioned residual slots over a frozen target-slot baseline with zero-source, "
+        "wrong-source, target-derived-code, and candidate-deranged controls."
     )
     payload: dict[str, Any] = {
         "date": run_date,
@@ -823,6 +893,11 @@ def build_gate(
             "min_kl_gain_vs_slots": float(min_kl_gain_vs_slots),
             "min_kl_gain_vs_best_control": float(min_kl_gain_vs_best_control),
             "max_mean_kl": float(max_mean_kl),
+        },
+        "training_regularizers": {
+            "contrastive_weight": float(contrastive_weight),
+            "contrastive_margin": float(contrastive_margin),
+            "attention_entropy_weight": float(attention_entropy_weight),
         },
         "bootstrap_samples": int(bootstrap_samples),
         "runtime_s": float(time.perf_counter() - start_time),
@@ -873,6 +948,9 @@ def main() -> None:
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--norm-weight", type=float, default=0.001)
+    parser.add_argument("--contrastive-weight", type=float, default=0.0)
+    parser.add_argument("--contrastive-margin", type=float, default=0.05)
+    parser.add_argument("--attention-entropy-weight", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=17)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--dtype", choices=("float32", "float16", "bfloat16"), default="float32")
@@ -903,6 +981,9 @@ def main() -> None:
         lr=args.lr,
         weight_decay=args.weight_decay,
         norm_weight=args.norm_weight,
+        contrastive_weight=args.contrastive_weight,
+        contrastive_margin=args.contrastive_margin,
+        attention_entropy_weight=args.attention_entropy_weight,
         seed=args.seed,
         device=args.device,
         dtype=args.dtype,

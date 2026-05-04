@@ -2413,5 +2413,12 @@
     "path": "references/701_hellaswag_qwen_to_phi_conditional_innovation_codec_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the failed Qwen-to-Phi conditional innovation codec gate, recording side-information coding, prompt/prefix/gist, C2C/KVComm, quantization, shared-basis, and diffusion/refinement boundaries."
+  },
+  {
+    "num": 702,
+    "slug": "target_self_resonance_query_resampler_contrastive_refs_20260504",
+    "path": "references/702_target_self_resonance_query_resampler_contrastive_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the failed target self-resonance contrastive query-resampler rescue, recording boundaries against prefix/prompt tuning, gist/AutoCompressor/ICAE context compression, query bottlenecks, representation alignment, C2C/KVComm, TurboQuant, and KV-cache systems baselines."
   }
 ]
