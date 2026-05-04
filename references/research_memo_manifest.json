@@ -2350,5 +2350,12 @@
     "path": "references/692_hellaswag_qwen_to_phi_protected_rival_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the failed HellaSwag Qwen-to-Phi protected-rival packet gate, recording candidate-ID shared-basis, top-k/reranking, knowledge-distillation, side-information coding, unequal-protection, C2C/KVComm, and quantized systems boundaries."
+  },
+  {
+    "num": 693,
+    "slug": "hellaswag_qwen_to_phi_official_train_source_dictionary_refs_20260504",
+    "path": "references/693_hellaswag_qwen_to_phi_official_train_source_dictionary_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the failed HellaSwag Qwen-to-Phi official-train source dictionary gate, recording pairwise utility, calibration, selective deferral, side-information coding, diffusion-refinement inspiration, and quantized systems boundaries."
   }
 ]

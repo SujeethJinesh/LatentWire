@@ -21462,3 +21462,56 @@ Lay explanation: we sent Phi Qwen's safe answer plus Qwen's strongest backup
 answer. The right answer is often in that two-answer packet, but Phi still
 chooses the wrong member too often. The next problem is teaching the receiver
 when the backup should beat the safe default.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Official-Train Source Dictionary Gate
+
+Implemented and ran the official-train Qwen source-side utility dictionary
+gate for Qwen-to-Phi HellaSwag validation `1024:2048`.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_official_train_source_dictionary_gate.py`;
+- tests:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_official_train_source_dictionary_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_official_train_source_dictionary_gate_20260504_validation1024_2048/`;
+- paper memo:
+  `paper/source_private_hellaswag_qwen_to_phi_official_train_source_dictionary_gate_20260504.md`;
+- references:
+  `references/693_hellaswag_qwen_to_phi_official_train_source_dictionary_refs_20260504.md`.
+
+Gate design: train a source-only official-train dictionary on `1,487`
+out-of-bag Qwen rows. The protected default is fixed Qwen hybrid. The rival is
+Qwen source-score top-1 unless top-1 already equals the hybrid, then top-2.
+Features are source-side only: score z-values, margins, rival-minus-hybrid
+gaps, policy agreement bits, and candidate IDs. Phi scores are not used to
+train or select the source dictionary. The frozen dictionary emits one
+byte-scale selected-candidate packet on held-out Qwen-to-Phi eval rows.
+
+Outcome: the gate fails. Official-train dev selection was only weakly positive
+and statistically unsafe: dev accuracy `0.518817`, delta `+0.008065`, CI95 low
+`-0.032258`. On held-out Qwen-to-Phi eval, fixed hybrid is `0.467448`, Qwen
+candidate-only is `0.455729`, and the official-train source dictionary falls
+to `0.429688`, delta `-0.037760`, CI95 low `-0.063802`. It makes `194`
+overrides, with `41` helps and `70` harms. Slice deltas are `-0.036458` and
+`-0.039062`. The hybrid-rival oracle remains high at `0.678385`, so headroom
+still exists but this source-only dictionary does not unlock it.
+
+Controls and systems accounting: the label-permutation dictionary control is
+`0.360677`; row shuffle, code permutation, candidate roll, and random same-byte
+controls also fail. The packet is `2` raw bits, `1B` stored, `4B` framed, with
+no source text, KV, hidden vector, score vector, or logits transmitted. The
+frozen dictionary is `464B` static, amortized to `0.604B/request` on eval. Since
+quality is negative, these byte numbers are context only, not a systems win.
+
+Decision: weaken the larger official-train source-only utility dictionary
+branch. This closes the main Mac-local "more Qwen training data can decide
+when to trust the rival" hypothesis. The next exact gate should use a
+receiver-calibrated interface, ideally by creating a clean Phi official-train
+score cache and learning a Qwen-packet/Phi-side selective receiver under
+official-train-only selection. Do not keep widening source-only dictionaries
+on this same surface without new receiver information.
+
+Lay explanation: we trained Qwen on more official training questions to learn
+when its backup answer should replace its safe answer. That looked a little
+better on Qwen's own training-dev split, but when frozen for Qwen-to-Phi it
+made too many bad swaps.
