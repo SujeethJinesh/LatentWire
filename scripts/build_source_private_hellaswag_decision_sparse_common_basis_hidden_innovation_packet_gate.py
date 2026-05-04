@@ -55,6 +55,15 @@ CONTROL_SEPARATION_DELTA = 0.003
 RAW_PACKET_BYTES = 1
 FRAMED_PACKET_BYTES = 4
 CANDIDATE_COUNT = 4
+AMBIGUITY_ATOM_BITS = 4
+AMBIGUITY_ATOM_SLOTS = (1 << AMBIGUITY_ATOM_BITS) - 1
+AMBIGUITY_ACTION_NAMES = (
+    "source_top1",
+    "source_top2",
+    "qwen_target",
+    "qwen_mean",
+    "qwen_hybrid",
+)
 
 
 def _resolve(path: pathlib.Path | str) -> pathlib.Path:
@@ -330,6 +339,220 @@ def _candidate_decoder_features_with_sae(
                 slot[local] - 1,
             ]
     return np.concatenate([base, target_atom_values, selected, np.repeat(nonzero, CANDIDATE_COUNT, axis=1)], axis=2)
+
+
+def _top2_from_scores(scores: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    order = np.argsort(-np.asarray(scores, dtype=np.float64), axis=1)
+    return order[:, 0].astype(np.int64), order[:, 1].astype(np.int64)
+
+
+def _pack_ambiguity_code(
+    *,
+    source_top1: np.ndarray,
+    source_top2: np.ndarray,
+    atom_slot: np.ndarray,
+    max_atom_slots: int = AMBIGUITY_ATOM_SLOTS,
+) -> np.ndarray:
+    source_top1 = np.asarray(source_top1, dtype=np.int64) % CANDIDATE_COUNT
+    source_top2 = np.asarray(source_top2, dtype=np.int64) % CANDIDATE_COUNT
+    atom_slot = np.asarray(atom_slot, dtype=np.int64)
+    atom_slot = np.where((atom_slot >= 1) & (atom_slot <= int(max_atom_slots)), atom_slot, 0)
+    return (
+        (atom_slot.astype(np.int64) << (2 * int(math.log2(CANDIDATE_COUNT))))
+        | (source_top2.astype(np.int64) << int(math.log2(CANDIDATE_COUNT)))
+        | source_top1.astype(np.int64)
+    ).astype(np.int64)
+
+
+def _decode_ambiguity_code(code: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    code = np.asarray(code, dtype=np.int64)
+    source_top1 = code & 0b11
+    source_top2 = (code >> 2) & 0b11
+    atom_slot = code >> 4
+    return source_top1.astype(np.int64), source_top2.astype(np.int64), atom_slot.astype(np.int64)
+
+
+def _zscore_rows(scores: np.ndarray) -> np.ndarray:
+    scores = np.asarray(scores, dtype=np.float64)
+    centered = scores - np.mean(scores, axis=1, keepdims=True)
+    scale = np.std(centered, axis=1, keepdims=True)
+    return centered / np.where(scale > 1e-8, scale, 1.0)
+
+
+def _one_hot(values: np.ndarray, width: int) -> np.ndarray:
+    values = np.asarray(values, dtype=np.int64)
+    return np.stack([(values == item).astype(np.float64) for item in range(int(width))], axis=1)
+
+
+def _ambiguity_action_features(
+    *,
+    qwen_scores: np.ndarray,
+    qwen_target: np.ndarray,
+    qwen_mean: np.ndarray,
+    qwen_hybrid: np.ndarray,
+    ambiguity_code: np.ndarray,
+    target_atom_values: np.ndarray,
+    max_atom_slots: int = AMBIGUITY_ATOM_SLOTS,
+) -> tuple[np.ndarray, np.ndarray, dict[str, np.ndarray]]:
+    qwen_scores = np.asarray(qwen_scores, dtype=np.float64)
+    qwen_target = np.asarray(qwen_target, dtype=np.int64)
+    qwen_mean = np.asarray(qwen_mean, dtype=np.int64)
+    qwen_hybrid = np.asarray(qwen_hybrid, dtype=np.int64)
+    source_top1, source_top2, atom_slot = _decode_ambiguity_code(ambiguity_code)
+    atom_slot = np.minimum(atom_slot, int(max_atom_slots)).astype(np.int64)
+    qwen_top1, qwen_top2 = _top2_from_scores(qwen_scores)
+    qz = _zscore_rows(qwen_scores)
+    row_ids = np.arange(qwen_scores.shape[0])
+    q_margin = qz[row_ids, qwen_top1] - qz[row_ids, qwen_top2]
+    actions = np.stack([source_top1, source_top2, qwen_target, qwen_mean, qwen_hybrid], axis=1)
+    source_pair_disagrees = (source_top1 != source_top2).astype(np.float64)
+    source_target_disagrees = (source_top1 != qwen_target).astype(np.float64)
+    features: list[np.ndarray] = []
+    for role, candidate in enumerate(actions.T):
+        candidate = np.asarray(candidate, dtype=np.int64)
+        selected_atom = np.zeros((qwen_scores.shape[0], 1), dtype=np.float64)
+        active = atom_slot > 0
+        if np.any(active):
+            selected_atom[active, 0] = target_atom_values[
+                np.where(active)[0],
+                candidate[active],
+                atom_slot[active] - 1,
+            ]
+        parts = [
+            np.ones((qwen_scores.shape[0], 1), dtype=np.float64),
+            _one_hot(np.full(qwen_scores.shape[0], role, dtype=np.int64), len(AMBIGUITY_ACTION_NAMES)),
+            _one_hot(candidate, CANDIDATE_COUNT),
+            _one_hot(source_top1, CANDIDATE_COUNT),
+            _one_hot(source_top2, CANDIDATE_COUNT),
+            _one_hot(qwen_target, CANDIDATE_COUNT),
+            _one_hot(qwen_top1, CANDIDATE_COUNT),
+            _one_hot(np.minimum(atom_slot, int(max_atom_slots)), int(max_atom_slots) + 1),
+            qz[row_ids, candidate][:, None],
+            qz[row_ids, qwen_target][:, None],
+            q_margin[:, None],
+            target_atom_values[row_ids, candidate, :].reshape(qwen_scores.shape[0], -1),
+            selected_atom,
+            (candidate == source_top1).astype(np.float64)[:, None],
+            (candidate == source_top2).astype(np.float64)[:, None],
+            (candidate == qwen_target).astype(np.float64)[:, None],
+            (candidate == qwen_top1).astype(np.float64)[:, None],
+            source_pair_disagrees[:, None],
+            source_target_disagrees[:, None],
+            (atom_slot > 0).astype(np.float64)[:, None],
+        ]
+        features.append(np.concatenate(parts, axis=1).astype(np.float64))
+    diagnostics = {
+        "source_top1": source_top1,
+        "source_top2": source_top2,
+        "atom_slot": atom_slot,
+        "qwen_top1": qwen_top1,
+        "qwen_top2": qwen_top2,
+    }
+    return np.stack(features, axis=1), actions.astype(np.int64), diagnostics
+
+
+def _fit_ambiguity_router(
+    *,
+    train_features: np.ndarray,
+    train_actions: np.ndarray,
+    train_baseline: np.ndarray,
+    train_answers: np.ndarray,
+    fit_indices: np.ndarray,
+    dev_indices: np.ndarray,
+    ridges: tuple[float, ...],
+    label_permutation_seed: int | None = None,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    fit_indices = np.asarray(fit_indices, dtype=np.int64)
+    dev_indices = np.asarray(dev_indices, dtype=np.int64)
+    answers = np.asarray(train_answers, dtype=np.int64)
+    if label_permutation_seed is not None:
+        rng = np.random.default_rng(int(label_permutation_seed))
+        answers = answers[rng.permutation(len(answers))]
+    flat_x = train_features[fit_indices].reshape(-1, train_features.shape[-1])
+    flat_actions = train_actions[fit_indices].reshape(-1)
+    repeated_answers = np.repeat(answers[fit_indices], train_actions.shape[1])
+    repeated_baseline = np.repeat(train_baseline[fit_indices], train_actions.shape[1])
+    target = (flat_actions == repeated_answers).astype(np.float64) - (
+        repeated_baseline == repeated_answers
+    ).astype(np.float64)
+    best_model: dict[str, Any] = {
+        "weights": np.zeros(train_features.shape[-1], dtype=np.float64).tolist(),
+        "threshold": 1.0,
+        "ridge": 0.0,
+        "selection": "no_op",
+    }
+    best_key: tuple[float, float, int, int, str] = (0.0, 0.0, 0, 0, "no_op")
+    rows: list[dict[str, Any]] = []
+    for ridge in ridges:
+        penalty = float(ridge) * np.eye(flat_x.shape[1], dtype=np.float64)
+        penalty[0, 0] = 0.0
+        lhs = flat_x.T @ flat_x + penalty
+        rhs = flat_x.T @ target
+        try:
+            weights = np.linalg.solve(lhs, rhs)
+        except np.linalg.LinAlgError:
+            weights = np.linalg.pinv(lhs) @ rhs
+        dev_scores = train_features[dev_indices] @ weights
+        max_scores = np.max(dev_scores, axis=1)
+        thresholds = sorted(set(float(value) for value in max_scores))
+        thresholds.append(float(np.max(max_scores) + max(1e-6, abs(float(np.max(max_scores))) * 1e-6)))
+        if len(thresholds) > 96:
+            finite = thresholds[:-1]
+            thresholds = sorted({finite[int(round(q * (len(finite) - 1)))] for q in np.linspace(0.0, 1.0, 80)})
+            thresholds.append(float(np.max(max_scores) + max(1e-6, abs(float(np.max(max_scores))) * 1e-6)))
+        for threshold in thresholds:
+            model = {"weights": weights.tolist(), "threshold": float(threshold), "ridge": float(ridge)}
+            pred = _predict_ambiguity_router(
+                features=train_features[dev_indices],
+                actions=train_actions[dev_indices],
+                baseline=train_baseline[dev_indices],
+                model=model,
+            )
+            correct = pred == answers[dev_indices]
+            base_correct = train_baseline[dev_indices] == answers[dev_indices]
+            delta = float(np.mean(correct.astype(float) - base_correct.astype(float)))
+            row = {
+                "ridge": float(ridge),
+                "threshold": float(threshold),
+                "official_dev_accuracy": float(np.mean(correct)),
+                "official_dev_delta_vs_packet": delta,
+                "official_dev_helps": int(np.sum(correct & ~base_correct)),
+                "official_dev_harms": int(np.sum(~correct & base_correct)),
+                "official_dev_override_count": int(np.sum(pred != train_baseline[dev_indices])),
+            }
+            rows.append(row)
+            key = (
+                row["official_dev_accuracy"],
+                row["official_dev_delta_vs_packet"],
+                int(row["official_dev_helps"]) - int(row["official_dev_harms"]),
+                -int(row["official_dev_override_count"]),
+                json.dumps({"ridge": float(ridge), "threshold": float(threshold)}, sort_keys=True),
+            )
+            if key > best_key:
+                best_key = key
+                best_model = model
+    return best_model, rows
+
+
+def _predict_ambiguity_router(
+    *,
+    features: np.ndarray,
+    actions: np.ndarray,
+    baseline: np.ndarray,
+    model: dict[str, Any],
+) -> np.ndarray:
+    weights = np.asarray(model["weights"], dtype=np.float64)
+    scores = np.asarray(features, dtype=np.float64) @ weights
+    best_action = np.argmax(scores, axis=1)
+    best_score = scores[np.arange(scores.shape[0]), best_action]
+    predictions = np.asarray(baseline, dtype=np.int64).copy()
+    mask = best_score > float(model["threshold"])
+    predictions[mask] = actions[np.arange(actions.shape[0]), best_action][mask]
+    return predictions.astype(np.int64)
+
+
+def _source_pair_oracle_predictions(source_top1: np.ndarray, source_top2: np.ndarray, answers: np.ndarray) -> np.ndarray:
+    return np.where(source_top1 == answers, source_top1, np.where(source_top2 == answers, source_top2, source_top1)).astype(np.int64)
 
 
 def _score_predictions(
@@ -794,6 +1017,233 @@ def _control_rows(
     return rows
 
 
+def _ambiguity_code_rows(
+    *,
+    selected_blob: dict[str, Any],
+    selected_ridges: tuple[float, ...],
+    surfaces: dict[str, Any],
+    bootstrap_samples: int,
+    control_seed: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    calibration = surfaces["calibration"]
+    validation = surfaces["validation"]
+    fit_indices = surfaces["fit_indices"]
+    dev_indices = surfaces["dev_indices"]
+    train_source_top1, train_source_top2 = _top2_from_scores(surfaces["tiny_train_scores"])
+    eval_source_top1, eval_source_top2 = _top2_from_scores(surfaces["tiny_eval_scores"])
+    train_code = _pack_ambiguity_code(
+        source_top1=train_source_top1,
+        source_top2=train_source_top2,
+        atom_slot=selected_blob["train_code"] // CANDIDATE_COUNT,
+    )
+    eval_code = _pack_ambiguity_code(
+        source_top1=eval_source_top1,
+        source_top2=eval_source_top2,
+        atom_slot=selected_blob["eval_code"] // CANDIDATE_COUNT,
+    )
+    train_features, train_actions, train_diag = _ambiguity_action_features(
+        qwen_scores=calibration["qwen_scores"],
+        qwen_target=calibration["qwen_target"],
+        qwen_mean=calibration["qwen_mean"],
+        qwen_hybrid=calibration["qwen_hybrid"],
+        ambiguity_code=train_code,
+        target_atom_values=selected_blob["train_target_atoms"][:, :, :AMBIGUITY_ATOM_SLOTS],
+    )
+    eval_features, eval_actions, eval_diag = _ambiguity_action_features(
+        qwen_scores=validation["qwen_scores"],
+        qwen_target=validation["alternatives"]["qwen_target_score"],
+        qwen_mean=validation["alternatives"]["mean_zscore_prediction"],
+        qwen_hybrid=validation["alternatives"]["hybrid_vote_on_score_agreement_prediction"],
+        ambiguity_code=eval_code,
+        target_atom_values=selected_blob["eval_target_atoms"][:, :, :AMBIGUITY_ATOM_SLOTS],
+    )
+    model, config_rows = _fit_ambiguity_router(
+        train_features=train_features,
+        train_actions=train_actions,
+        train_baseline=calibration["tiny_packet"],
+        train_answers=calibration["answers"],
+        fit_indices=fit_indices,
+        dev_indices=dev_indices,
+        ridges=selected_ridges,
+    )
+    predictions = _predict_ambiguity_router(
+        features=eval_features,
+        actions=eval_actions,
+        baseline=validation["packet"],
+        model=model,
+    )
+    rows: list[dict[str, Any]] = [
+        _score_predictions(
+            name="receiver_calibrated_top2_ambiguity_code",
+            predictions=predictions,
+            validation=validation,
+            seed=60100,
+            bootstrap_samples=bootstrap_samples,
+            extra={
+                "encoder_name": str(selected_blob["config"]["name"]),
+                "ridge": float(model["ridge"]),
+                "threshold": float(model["threshold"]),
+                "raw_payload_bytes": RAW_PACKET_BYTES,
+                "framed_record_bytes": FRAMED_PACKET_BYTES,
+                "atom_slots": AMBIGUITY_ATOM_SLOTS,
+                "source_top2_visible": True,
+            },
+        )
+    ]
+    rng = np.random.default_rng(control_seed + 808)
+
+    def predict_control(name: str, code: np.ndarray, *, seed: int) -> None:
+        features, actions, _ = _ambiguity_action_features(
+            qwen_scores=validation["qwen_scores"],
+            qwen_target=validation["alternatives"]["qwen_target_score"],
+            qwen_mean=validation["alternatives"]["mean_zscore_prediction"],
+            qwen_hybrid=validation["alternatives"]["hybrid_vote_on_score_agreement_prediction"],
+            ambiguity_code=np.asarray(code, dtype=np.int64),
+            target_atom_values=selected_blob["eval_target_atoms"][:, :, :AMBIGUITY_ATOM_SLOTS],
+        )
+        rows.append(
+            _score_predictions(
+                name=name,
+                predictions=_predict_ambiguity_router(
+                    features=features,
+                    actions=actions,
+                    baseline=validation["packet"],
+                    model=model,
+                ),
+                validation=validation,
+                seed=seed,
+                bootstrap_samples=bootstrap_samples,
+                extra={
+                    "encoder_name": str(selected_blob["config"]["name"]),
+                    "ridge": float(model["ridge"]),
+                    "threshold": float(model["threshold"]),
+                    "raw_payload_bytes": RAW_PACKET_BYTES,
+                    "framed_record_bytes": FRAMED_PACKET_BYTES,
+                },
+            )
+        )
+
+    source_top1, source_top2, atom_slot = _decode_ambiguity_code(eval_code)
+    no_atom_code = _pack_ambiguity_code(
+        source_top1=source_top1,
+        source_top2=source_top2,
+        atom_slot=np.zeros_like(atom_slot),
+    )
+    predict_control("source_pair_no_atom_ambiguity_decoder", no_atom_code, seed=60101)
+    qwen_top1, qwen_top2 = _top2_from_scores(validation["qwen_scores"])
+    target_derived = _pack_ambiguity_code(
+        source_top1=qwen_top1,
+        source_top2=qwen_top2,
+        atom_slot=np.zeros_like(atom_slot),
+    )
+    predict_control("target_derived_source_pair_ambiguity_control", target_derived, seed=60102)
+    order = rng.permutation(len(eval_code))
+    wrong_row = _pack_ambiguity_code(
+        source_top1=source_top1[order],
+        source_top2=source_top2[order],
+        atom_slot=atom_slot[order],
+    )
+    predict_control("wrong_row_ambiguity_code_control", wrong_row, seed=60103)
+    candidate_roll = _pack_ambiguity_code(
+        source_top1=(source_top1 + 1) % CANDIDATE_COUNT,
+        source_top2=(source_top2 + 1) % CANDIDATE_COUNT,
+        atom_slot=atom_slot,
+    )
+    predict_control("candidate_roll_ambiguity_code_control", candidate_roll, seed=60104)
+    perm = np.arange(AMBIGUITY_ATOM_SLOTS + 1, dtype=np.int64)
+    perm[1:] = rng.permutation(np.arange(1, AMBIGUITY_ATOM_SLOTS + 1, dtype=np.int64))
+    atom_permuted = _pack_ambiguity_code(
+        source_top1=source_top1,
+        source_top2=source_top2,
+        atom_slot=perm[np.minimum(atom_slot, AMBIGUITY_ATOM_SLOTS)],
+    )
+    predict_control("atom_slot_permutation_ambiguity_control", atom_permuted, seed=60105)
+    zero_source = _pack_ambiguity_code(
+        source_top1=np.zeros_like(source_top1),
+        source_top2=np.ones_like(source_top2),
+        atom_slot=np.zeros_like(atom_slot),
+    )
+    predict_control("zero_source_ambiguity_control", zero_source, seed=60106)
+    random_same_byte = rng.integers(0, 256, size=len(eval_code), dtype=np.int64)
+    predict_control("random_same_byte_ambiguity_control", random_same_byte, seed=60107)
+
+    label_model, label_config = _fit_ambiguity_router(
+        train_features=train_features,
+        train_actions=train_actions,
+        train_baseline=calibration["tiny_packet"],
+        train_answers=calibration["answers"],
+        fit_indices=fit_indices,
+        dev_indices=dev_indices,
+        ridges=selected_ridges,
+        label_permutation_seed=control_seed + 909,
+    )
+    rows.append(
+        _score_predictions(
+            name="label_permutation_ambiguity_decoder_control",
+            predictions=_predict_ambiguity_router(
+                features=eval_features,
+                actions=eval_actions,
+                baseline=validation["packet"],
+                model=label_model,
+            ),
+            validation=validation,
+            seed=60108,
+            bootstrap_samples=bootstrap_samples,
+            extra={
+                "encoder_name": str(selected_blob["config"]["name"]),
+                "ridge": float(label_model["ridge"]),
+                "threshold": float(label_model["threshold"]),
+            },
+        )
+    )
+    rows.append(
+        _score_predictions(
+            name="source_top1_label_control",
+            predictions=source_top1,
+            validation=validation,
+            seed=60109,
+            bootstrap_samples=bootstrap_samples,
+            extra={"source_rank": 1},
+        )
+    )
+    rows.append(
+        _score_predictions(
+            name="source_top2_label_control",
+            predictions=source_top2,
+            validation=validation,
+            seed=60110,
+            bootstrap_samples=bootstrap_samples,
+            extra={"source_rank": 2},
+        )
+    )
+    rows.append(
+        _score_predictions(
+            name="source_top1_top2_oracle_diagnostic",
+            predictions=_source_pair_oracle_predictions(source_top1, source_top2, validation["answers"]),
+            validation=validation,
+            seed=60111,
+            bootstrap_samples=bootstrap_samples,
+            extra={"oracle": True, "not_promotable": True},
+        )
+    )
+    blocks = wz._block_rows(
+        selected=predictions,
+        packet=validation["packet"],
+        answers=validation["answers"],
+    )
+    audit = {
+        "model": {key: value for key, value in model.items() if key != "weights"},
+        "label_permutation_model": {key: value for key, value in label_model.items() if key != "weights"},
+        "source_pair_disagreement_rate": float(np.mean(eval_diag["source_top1"] != eval_diag["source_top2"])),
+        "source_target_disagreement_rate": float(np.mean(eval_diag["source_top1"] != eval_diag["qwen_top1"])),
+        "active_4bit_atom_rate": float(np.mean(eval_diag["atom_slot"] > 0)),
+        "unique_ambiguity_codes": int(len(np.unique(eval_code))),
+        "train_active_4bit_atom_rate": float(np.mean(train_diag["atom_slot"] > 0)),
+        "label_permutation_config_rows": label_config,
+    }
+    return rows, config_rows, blocks, audit
+
+
 def _write_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
         path.write_text("", encoding="utf-8")
@@ -805,7 +1255,7 @@ def _write_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
                 if key not in keys:
                     keys.append(key)
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=keys)
+        writer = csv.DictWriter(handle, fieldnames=keys, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({key: row.get(key) for key in keys})
@@ -856,6 +1306,11 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- default delta vs packet-only: `{h['default_delta_vs_packet_only']:.6f}`",
         f"- default CI95 low vs packet-only: `{h['default_ci95_low_vs_packet_only']:.6f}`",
         f"- top-atom knockout accuracy: `{h['top_atom_knockout_accuracy']:.6f}`",
+        f"- top1/top2 ambiguity-code accuracy: `{h['ambiguity_code_accuracy']:.6f}`",
+        f"- top1/top2 ambiguity-code delta vs packet-only: `{h['ambiguity_code_delta_vs_packet_only']:.6f}`",
+        f"- top1/top2 ambiguity-code CI95 low: `{h['ambiguity_code_ci95_low_vs_packet_only']:.6f}`",
+        f"- top1/top2 ambiguity-code no-atom accuracy: `{h['ambiguity_source_pair_no_atom_accuracy']:.6f}`",
+        f"- top1/top2 ambiguity-code best destructive: `{h['ambiguity_best_destructive_control_name']}` (`{h['ambiguity_best_destructive_control_accuracy']:.6f}`)",
         f"- best scout accuracy: `{h['best_scout_accuracy']:.6f}`",
         f"- best scout delta vs packet-only: `{h['best_scout_delta_vs_packet_only']:.6f}`",
         f"- packet: `{h['raw_payload_bytes']}B` raw / `{h['framed_record_bytes']}B` framed",
@@ -1095,7 +1550,47 @@ def build_gate(
         bootstrap_samples=bootstrap_samples,
         control_seed=control_seed,
     )
+    ambiguity_rows, ambiguity_config_rows, ambiguity_blocks, ambiguity_audit = _ambiguity_code_rows(
+        selected_blob=selected_blob,
+        selected_ridges=decoder_ridges,
+        surfaces={
+            **surfaces,
+            "tiny_eval_scores": surfaces["tiny_eval_scores"][eval_slice_start : eval_slice_start + eval_slice_rows],
+        },
+        bootstrap_samples=bootstrap_samples,
+        control_seed=control_seed,
+    )
     control_by_name = {row["name"]: row for row in control_rows}
+    ambiguity_by_name = {row["name"]: row for row in ambiguity_rows}
+    ambiguity_default = ambiguity_by_name["receiver_calibrated_top2_ambiguity_code"]
+    ambiguity_no_atom = ambiguity_by_name["source_pair_no_atom_ambiguity_decoder"]
+    ambiguity_top_atom_knockout = ambiguity_no_atom
+    ambiguity_destructive_controls = [
+        row
+        for row in ambiguity_rows
+        if row["name"].endswith("_control")
+        or row["name"] in {"label_permutation_ambiguity_decoder_control"}
+    ]
+    ambiguity_best_destructive = max(ambiguity_destructive_controls, key=lambda row: row["accuracy"])
+    ambiguity_block_stability = bool(sum(row["delta_vs_packet_only"] > 0.0 for row in ambiguity_blocks) >= 4)
+    ambiguity_control_gate = bool(
+        ambiguity_default["accuracy"] - ambiguity_best_destructive["accuracy"] >= BASELINE_DELTA
+        and ambiguity_best_destructive["delta_vs_packet_only"] <= CONTROL_TOLERANCE
+    )
+    ambiguity_atom_gate = bool(
+        ambiguity_default["accuracy"] - ambiguity_top_atom_knockout["accuracy"] >= 0.005
+    )
+    ambiguity_no_atom_gate = bool(
+        ambiguity_default["accuracy"] - ambiguity_no_atom["accuracy"] >= BASELINE_DELTA
+    )
+    ambiguity_pass_gate = bool(
+        ambiguity_default["delta_vs_packet_only"] >= STRICT_DELTA
+        and ambiguity_default["ci95_low_vs_packet_only"] > 0.0
+        and ambiguity_no_atom_gate
+        and ambiguity_atom_gate
+        and ambiguity_block_stability
+        and ambiguity_control_gate
+    )
     compact_accuracy = control_by_name["compact_candidate_common_basis_decoder"]["accuracy"]
     qwen_side_accuracy = control_by_name["qwen_side_only_common_basis_decoder"]["accuracy"]
     top_atom_knockout_accuracy = control_by_name["top_atom_knockout"]["accuracy"]
@@ -1176,6 +1671,25 @@ def build_gate(
             best_scout["delta_vs_packet_only"] >= STRICT_DELTA
             and best_scout["ci95_low_vs_packet_only"] > 0.0
         ),
+        "ambiguity_code_accuracy": ambiguity_default["accuracy"],
+        "ambiguity_code_delta_vs_packet_only": ambiguity_default["delta_vs_packet_only"],
+        "ambiguity_code_ci95_low_vs_packet_only": ambiguity_default["ci95_low_vs_packet_only"],
+        "ambiguity_code_help_count": ambiguity_default["help_count"],
+        "ambiguity_code_harm_count": ambiguity_default["harm_count"],
+        "ambiguity_source_pair_no_atom_accuracy": ambiguity_no_atom["accuracy"],
+        "ambiguity_delta_vs_no_atom_pair_code": float(
+            ambiguity_default["accuracy"] - ambiguity_no_atom["accuracy"]
+        ),
+        "ambiguity_top_atom_knockout_accuracy": ambiguity_top_atom_knockout["accuracy"],
+        "ambiguity_best_destructive_control_name": ambiguity_best_destructive["name"],
+        "ambiguity_best_destructive_control_accuracy": ambiguity_best_destructive["accuracy"],
+        "ambiguity_control_gate": ambiguity_control_gate,
+        "ambiguity_no_atom_gate": ambiguity_no_atom_gate,
+        "ambiguity_atom_gate": ambiguity_atom_gate,
+        "ambiguity_block_stability_gate": ambiguity_block_stability,
+        "ambiguity_pass_gate": ambiguity_pass_gate,
+        "ambiguity_unique_codes": ambiguity_audit["unique_ambiguity_codes"],
+        "ambiguity_active_4bit_atom_rate": ambiguity_audit["active_4bit_atom_rate"],
         "source_hidden_cache_hit": bool(eval_hidden_model.get("cache_hit")),
         "source_hidden_extraction_wall_time_s": float(eval_hidden_model.get("latency_s") or 0.0),
     }
@@ -1203,11 +1717,24 @@ def build_gate(
             "candidate_low_bits_preserved": True,
             "decoder_uses_qwen_side_information": True,
             "decoder_uses_qwen_common_basis_atom_features": True,
+            "receiver_calibrated_top2_ambiguity_packet": {
+                "raw_payload_bytes": RAW_PACKET_BYTES,
+                "framed_record_bytes": FRAMED_PACKET_BYTES,
+                "layout": "2 bits source top1, 2 bits source top2, 4 bits sparse atom slot",
+                "max_sparse_atom_slots": AMBIGUITY_ATOM_SLOTS,
+                "receiver_actions": list(AMBIGUITY_ACTION_NAMES),
+                "raw_scores_transmitted": False,
+                "raw_hidden_vector_transmitted": False,
+            },
         },
         "headline": headline,
         "frontier_rows": frontier_rows,
         "default_blocks": default_blocks,
         "control_rows": control_rows,
+        "ambiguity_rows": ambiguity_rows,
+        "ambiguity_config_rows": ambiguity_config_rows,
+        "ambiguity_blocks": ambiguity_blocks,
+        "ambiguity_audit": ambiguity_audit,
         "selected_encoder_audit": selected_blob["encoder_audit"],
         "crosscoder_audits": crosscoder_audits,
         "slice_metadata": slice_meta,
@@ -1251,12 +1778,18 @@ def build_gate(
     frontier_csv = output_dir / "frontier_rows.csv"
     control_csv = output_dir / "control_rows.csv"
     block_csv = output_dir / "default_blocks.csv"
+    ambiguity_csv = output_dir / "ambiguity_rows.csv"
+    ambiguity_config_csv = output_dir / "ambiguity_config_rows.csv"
+    ambiguity_block_csv = output_dir / "ambiguity_blocks.csv"
     predictions_jsonl = output_dir / "predictions.jsonl"
     json_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     _write_markdown(md_path, payload)
     _write_csv(frontier_csv, frontier_rows)
     _write_csv(control_csv, control_rows)
     _write_csv(block_csv, default_blocks)
+    _write_csv(ambiguity_csv, ambiguity_rows)
+    _write_csv(ambiguity_config_csv, ambiguity_config_rows)
+    _write_csv(ambiguity_block_csv, ambiguity_blocks)
     _write_predictions_jsonl(
         predictions_jsonl,
         row_ids=[str(row_id) for row_id in validation_slice["row_ids"]],
@@ -1272,7 +1805,17 @@ def build_gate(
         "inputs": payload["inputs"],
         "files": [
             {"path": _display_path(path), "sha256": _sha256_file(path), "bytes": path.stat().st_size}
-            for path in (json_path, md_path, frontier_csv, control_csv, block_csv, predictions_jsonl)
+            for path in (
+                json_path,
+                md_path,
+                frontier_csv,
+                control_csv,
+                block_csv,
+                ambiguity_csv,
+                ambiguity_config_csv,
+                ambiguity_block_csv,
+                predictions_jsonl,
+            )
         ],
     }
     manifest_path = output_dir / "manifest.json"

@@ -1,0 +1,123 @@
+{
+  "created_utc": "2026-05-04T13:45:02.742752+00:00",
+  "files": [
+    {
+      "bytes": 393607,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate.json",
+      "sha256": "01e6be4324fe99bd4a8f2a58589a1c22a6bc533e35d972194de72470c3dcc509"
+    },
+    {
+      "bytes": 1454,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate.md",
+      "sha256": "5b2d218ed3141874504f86757232cd1e7435d140f0b6f39ef9e0862d1a2a6964"
+    },
+    {
+      "bytes": 2802,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/frontier_rows.csv",
+      "sha256": "88e33cf13d9186863b004dd809c1f122fb0894c958929b3bbe5d7274259558dd"
+    },
+    {
+      "bytes": 2699,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/control_rows.csv",
+      "sha256": "099633d90fb6f6cc391bf9dac88cdfa451b2524958d237b4e99ee6cc120c271c"
+    },
+    {
+      "bytes": 371,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/default_blocks.csv",
+      "sha256": "db242fe216c0aff0169a88944ced0a175c2756a894e6ead6ec7bcd1cd55b6061"
+    },
+    {
+      "bytes": 2932,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/ambiguity_rows.csv",
+      "sha256": "6d0b61a3532f53c7a3ce220d55b124b04607d67f335de1c67740ac8b1b3e11bf"
+    },
+    {
+      "bytes": 40566,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/ambiguity_config_rows.csv",
+      "sha256": "8c827000da39cac002b83cb438e1c58a7c5246d98613a0d1e661e438172da4e3"
+    },
+    {
+      "bytes": 337,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/ambiguity_blocks.csv",
+      "sha256": "8a310dd1aee77d26bfcccb2cf89c3d57a9338fd0078e66742407ee399df4be17"
+    },
+    {
+      "bytes": 207695,
+      "path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/predictions.jsonl",
+      "sha256": "94074c7e5d6c485074d9dd517359910105218f7a8fe752eea4991a5a31b16b63"
+    }
+  ],
+  "gate": "source_private_hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate",
+  "headline": {
+    "ambiguity_active_4bit_atom_rate": 0.7783203125,
+    "ambiguity_atom_gate": false,
+    "ambiguity_best_destructive_control_accuracy": 0.501953125,
+    "ambiguity_best_destructive_control_name": "target_derived_source_pair_ambiguity_control",
+    "ambiguity_block_stability_gate": false,
+    "ambiguity_code_accuracy": 0.5009765625,
+    "ambiguity_code_ci95_low_vs_packet_only": -0.0029296875,
+    "ambiguity_code_delta_vs_packet_only": -0.0009765625,
+    "ambiguity_code_harm_count": 1,
+    "ambiguity_code_help_count": 0,
+    "ambiguity_control_gate": false,
+    "ambiguity_delta_vs_no_atom_pair_code": -0.0009765625,
+    "ambiguity_no_atom_gate": false,
+    "ambiguity_pass_gate": false,
+    "ambiguity_source_pair_no_atom_accuracy": 0.501953125,
+    "ambiguity_top_atom_knockout_accuracy": 0.501953125,
+    "ambiguity_unique_codes": 86,
+    "best_scout_accuracy": 0.50390625,
+    "best_scout_ci95_low_vs_packet_only": -0.001953125,
+    "best_scout_delta_vs_packet_only": 0.001953125,
+    "best_scout_encoder_name": "cca_pca64_d8_sae64_top2_dw0p2_l10p001",
+    "block_stability_gate": false,
+    "compact_common_basis_accuracy": 0.50390625,
+    "compact_common_basis_gate": false,
+    "control_max_delta_vs_packet_only": 0.00390625,
+    "control_separation_gate": false,
+    "default_accuracy": 0.50390625,
+    "default_ci95_low_vs_packet_only": -0.001953125,
+    "default_codebook_size": 256,
+    "default_delta_vs_compact_common_basis": 0.0,
+    "default_delta_vs_packet_only": 0.001953125,
+    "default_delta_vs_qwen_side_common_basis": 0.0390625,
+    "default_delta_vs_top_atom_knockout": 0.0048828125,
+    "default_encoder_name": "cca_pca64_d8_sae64_top2_dw0p2_l10p001",
+    "default_eval_active_atom_rate": 1.0,
+    "default_eval_code_unique_count": 88,
+    "default_pass_gate": false,
+    "default_pca_dims": 64,
+    "default_ridge": 100.0,
+    "default_sae_atoms": 64,
+    "default_sae_topk": 2,
+    "default_sae_transmit_atoms": 63,
+    "default_shared_dims": 8,
+    "eval_slice_end_exclusive": 2048,
+    "eval_slice_start": 1024,
+    "framed_record_bytes": 4,
+    "official_train_calibration_rows": 1487,
+    "official_train_dev_rows": 372,
+    "official_train_fit_rows": 1115,
+    "packet_only_accuracy": 0.501953125,
+    "qwen_side_common_basis_accuracy": 0.46484375,
+    "qwen_side_gate": true,
+    "qwen_target_accuracy": 0.4091796875,
+    "raw_payload_bytes": 1,
+    "scout_pass_gate": false,
+    "source_hidden_cache_hit": true,
+    "source_hidden_extraction_wall_time_s": 112.1363627089886,
+    "top_atom_gate": true,
+    "top_atom_knockout_accuracy": 0.4990234375,
+    "validation_rows": 1024
+  },
+  "inputs": {
+    "eval_full_path": "results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_validation.jsonl",
+    "eval_hidden_cache": "results/source_private_hellaswag_hidden_code_packet_scout_20260502_tinyllama_validation1024_2048/source_eval_hidden_cache.npz",
+    "eval_hidden_cache_sha256": "8ff5c0c046cb70fab26e7d167e59818dd879e55bf339a959b7d7a230afd28760",
+    "eval_slice_path": "results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/hellaswag_validation_rows_1024_2048.jsonl",
+    "qwen_global_artifact": "results/source_private_hellaswag_hidden_innovation_global_stability_20260502/hellaswag_hidden_innovation_global_stability.json",
+    "source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+    "tiny_train_cache_dir": "results/source_private_hellaswag_hidden_innovation_train_sample_stress_20260502_tinyllama_train512",
+    "train_path": "results/source_private_hellaswag_bridge_contract_20260501/official_splits/hellaswag_train.jsonl"
+  }
+}

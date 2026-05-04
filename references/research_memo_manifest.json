@@ -2462,5 +2462,12 @@
     "path": "references/708_source_private_post_receiver_systems_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo for the post-receiver-failure Mac packet-ring systems gate, recording claim boundaries against C2C, KVComm/KVCOMM, QJL, TurboQuant, KIVI, vLLM/PagedAttention, and SGLang/RadixAttention native serving baselines."
+  },
+  {
+    "num": 709,
+    "slug": "receiver_calibrated_top2_ambiguity_code_refs_20260504",
+    "path": "references/709_receiver_calibrated_top2_ambiguity_code_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the failed HellaSwag receiver-calibrated top1/top2 ambiguity-code gate, recording novelty boundaries against prefix/prompt/gist/context compression, relative representations, SAEs/crosscoders, logit fusion, selective prediction/defer, C2C/KVComm, and QJL/TurboQuant/KIVI systems comparators."
   }
 ]

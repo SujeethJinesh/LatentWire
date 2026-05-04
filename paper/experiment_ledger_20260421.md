@@ -22317,3 +22317,45 @@ Lay explanation: this test moves the tiny LatentWire message through local
 memory over and over and checks that the packet arrives correctly. It shows the
 packet is tiny and cheap to move on the Mac. It does not yet show that a GPU
 server will be faster.
+
+## 2026-05-04 HellaSwag Receiver-Calibrated Top1/Top2 Ambiguity-Code Gate
+
+Implemented and ran a receiver-calibrated ambiguity-code extension to the
+decision-sparse common-basis hidden packet gate. The packet uses one byte:
+`2` bits for source top-1, `2` bits for source top-2, and `4` bits for a sparse
+common-basis atom slot. The receiver chooses among source top-1, source top-2,
+Qwen target top-1, Qwen mean-zscore, and Qwen hybrid using Qwen-side scores and
+target-side common-basis atom values.
+
+- script:
+  `scripts/build_source_private_hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504.md`;
+- references:
+  `references/709_receiver_calibrated_top2_ambiguity_code_refs_20260504.md`.
+
+Outcome: fail. Packet-only accuracy is `0.501953`; the receiver-calibrated
+top1/top2 ambiguity code reaches `0.500977`, delta `-0.000977`, CI95 low
+`-0.002930`, with `0` helps and `1` harm. The no-atom source-pair decoder is
+`0.501953`, target-derived source-pair control is `0.501953`, candidate-roll
+control is `0.501953`, and atom-slot permutation is `0.500977`. The
+source-top1/top2 oracle remains high at `0.693359`, delta `+0.191406`, CI95
+low `+0.160620`.
+
+Decision: demote this implementation of receiver-calibrated top1/top2
+ambiguity coding. The source top1/top2 pair has headroom, but the current
+4-bit sparse common-basis atom is not causal source-specific evidence. The next
+live method gate should move to the Qwen-to-Phi official-train scaffold with
+the same ambiguity-code idea and a stronger source-specific packet, or only
+revisit sparse atoms after a near-miss where an ECC/syndrome audit can explain
+helps versus harms.
+
+Lay explanation: TinyLlama often has the right answer in its top two choices,
+so we tried sending Qwen both choices plus a tiny learned clue. Qwen changed
+one answer, but it was a harm, and the same result appears when the learned clue
+is removed or derived from Qwen itself. The clue is not doing useful
+cross-model communication yet.

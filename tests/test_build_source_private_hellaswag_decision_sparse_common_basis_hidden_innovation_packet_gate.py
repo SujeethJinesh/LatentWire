@@ -77,3 +77,46 @@ def test_decoder_features_with_sae_includes_selected_target_atom_value() -> None
     assert np.allclose(features[0, :, -2], [0.1, 0.2, 0.3, 0.4])
     # Final appended channel marks that a nonzero atom slot was transmitted.
     assert np.allclose(features[0, :, -1], 1.0)
+
+
+def test_ambiguity_code_packs_source_pair_and_four_bit_atom_slot() -> None:
+    code = gate._pack_ambiguity_code(
+        source_top1=np.asarray([0, 2, 3], dtype=np.int64),
+        source_top2=np.asarray([1, 3, 0], dtype=np.int64),
+        atom_slot=np.asarray([0, 7, 22], dtype=np.int64),
+    )
+
+    top1, top2, slot = gate._decode_ambiguity_code(code)
+
+    assert code.tolist() == [4, 126, 3]
+    assert top1.tolist() == [0, 2, 3]
+    assert top2.tolist() == [1, 3, 0]
+    assert slot.tolist() == [0, 7, 0]
+
+
+def test_ambiguity_action_features_use_rowwise_target_atoms() -> None:
+    qwen_scores = np.asarray([[1.0, 0.0, -1.0, 0.5], [0.0, 1.0, 0.5, -0.5]], dtype=np.float64)
+    code = gate._pack_ambiguity_code(
+        source_top1=np.asarray([0, 1], dtype=np.int64),
+        source_top2=np.asarray([3, 2], dtype=np.int64),
+        atom_slot=np.asarray([1, 1], dtype=np.int64),
+    )
+    target_atoms = np.zeros((2, 4, gate.AMBIGUITY_ATOM_SLOTS), dtype=np.float64)
+    target_atoms[0, 0, 0] = 10.0
+    target_atoms[1, 1, 0] = 20.0
+
+    features, actions, diagnostics = gate._ambiguity_action_features(
+        qwen_scores=qwen_scores,
+        qwen_target=np.asarray([0, 1], dtype=np.int64),
+        qwen_mean=np.asarray([3, 2], dtype=np.int64),
+        qwen_hybrid=np.asarray([0, 1], dtype=np.int64),
+        ambiguity_code=code,
+        target_atom_values=target_atoms,
+    )
+
+    assert features.shape[0] == 2
+    assert features.shape[1] == len(gate.AMBIGUITY_ACTION_NAMES)
+    assert actions[:, 0].tolist() == [0, 1]
+    assert diagnostics["atom_slot"].tolist() == [1, 1]
+    assert 10.0 in features[0, 0].tolist()
+    assert 20.0 in features[1, 0].tolist()
