@@ -1,0 +1,15 @@
+{
+  "artifact_sha256": {
+    "predictions.jsonl": "c64f9f86ef416d36860f73b1527efdb15bdb82f56ef55eec15c7134bfc9dd5e5",
+    "summary.json": "ac1577e89d93de5114098159fa5b567e1561ef15baf6d90a6040c4ccb25cd96e",
+    "summary.md": "f0e0fd3ebe2020f2e05dc8983aaa6ef92eea46b0b3cd9c53f770b1d0e27f3b91"
+  },
+  "artifacts": [
+    "summary.json",
+    "summary.md",
+    "predictions.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false
+}

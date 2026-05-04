@@ -23664,3 +23664,51 @@ Lay explanation: we let the target adjust the decoder ring using the public
 answer choices. The real source code improved over target-only, but damaged
 codes and shuffled encoders improved too. So the target found a better public
 coordinate system, but not one that reliably depends on the real source packet.
+
+## 2026-05-04 Conditional PQ Corruption-To-Noop Receiver Gate
+
+Implemented a receiver-only conditional-PQ diagnostic:
+
+- script:
+  `scripts/build_source_private_conditional_pq_corruption_noop_receiver_gate.py`;
+- test:
+  `tests/test_build_source_private_conditional_pq_corruption_noop_receiver_gate.py`;
+- artifact root:
+  `results/source_private_conditional_pq_corruption_noop_receiver_gate_20260504/`;
+- paper memo:
+  `paper/source_private_conditional_pq_corruption_noop_receiver_gate_20260504.md`;
+- reference memo:
+  `references/741_conditional_pq_corruption_noop_receiver_refs_20260504.md`.
+
+The gate keeps the fixed source-private conditional-PQ packet interface and
+trains a tiny public-candidate receiver to map matched source packets to the
+answer while mapping target-only, label-shuffled, wrong-row,
+same-answer-slot-wrong-row, answer-masked, public-only, permuted-code,
+random-same-byte, deranged-basis, candidate-roll, and opaque-slot controls to
+the target prior/no-op.
+
+Outcome: fail. At no-op weight `0.10`, both held-out-family directions collapse
+all conditions to target-only (`0.250000`). At `0.05`, source lift is gone or
+tied and permuted-code controls remain competitive. At `0.01`, source lift
+partially returns (`0.285156` core-to-holdout and `0.300781` holdout-to-core),
+but random-same-byte, permuted-code, and label-shuffled controls beat source
+(`0.367188` and `0.351562` best controls respectively).
+
+The asymmetry is diagnostic: core-to-holdout still has unquantized source
+prediction headroom (`0.500000`) while holdout-to-core does not (`0.253906`),
+and both directions have target innovation oracle `1.000000`. This means the
+failure is not simply lack of target-side headroom. In one direction the packet
+quantizer/receiver fails to preserve available source signal; in the other
+direction the train-fitted source encoder has no held-out signal.
+
+Decision: demote corruption-to-noop conditional PQ as a cross-family positive
+branch. Keep the script as a reusable diagnostic for future packet families.
+Do not widen this exact held-out-family conditional-PQ surface. The next
+highest-value Mac-local gate should move to the HellaSwag protected-top-2/rival
+packet branch: there is source top-2 oracle headroom, while shallow switchers
+and uncertainty routers have already failed under controls.
+
+Lay explanation: we taught the receiver to trust real packets and ignore fake
+packets. Strong fake-packet training made it ignore everything; weak
+fake-packet training let fake packets become useful again. That is not a clean
+source communication result.

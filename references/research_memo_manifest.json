@@ -2679,5 +2679,12 @@
     "path": "references/740_public_conditioned_conditional_pq_gate_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference and novelty-boundary memo for the public-conditioned conditional-PQ held-out-family gate, covering QINCo/QINCo2, PQ/OPQ, side-information coding, dense C2C/KV competitors, and the failed public-zscore branch."
+  },
+  {
+    "num": 741,
+    "slug": "conditional_pq_corruption_noop_receiver_refs_20260504",
+    "path": "references/741_conditional_pq_corruption_noop_receiver_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference and novelty-boundary memo for the conditional-PQ corruption-to-noop receiver gate, covering corruption/no-op objectives, selective/defer framing, PQ and side-information coding, dense C2C/KV competitors, TurboQuant/KIVI byte floors, and the failed held-out-family receiver sweep."
   }
 ]
