@@ -57,17 +57,22 @@ CONTROL_CONDITIONS = (
     "target_only",
     "source_free_prefix",
     "target_cache_only_prefix",
+    "target_derived_prefix",
     "slots_only_prefix",
     "zero_source",
     "shuffled_source",
+    "source_row_shuffle",
     "same_norm_noise",
     "train_mean_source",
     "label_shuffled",
     "candidate_roll_source",
+    "candidate_roll",
     "candidate_score_roll_source",
     "candidate_derangement",
     "same_byte_visible_text",
     "packet_only_source_index",
+    "source_rank_control",
+    "source_score_control",
     "qwen_substituted_packet",
     "source_label_copy_audit_upper_bound",
 )
@@ -228,6 +233,24 @@ def _read_source_cache(path: pathlib.Path) -> dict[str, int]:
     if not predictions:
         raise ValueError(f"{path} contained no source predictions")
     return predictions
+
+
+def _read_source_score_cache(path: pathlib.Path | None) -> dict[str, list[float]]:
+    if path is None:
+        return {}
+    scores_by_content: dict[str, list[float]] = {}
+    with _resolve(path).open("r", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            forbidden = set(row.get("forbidden_source_fields", ()))
+            if not set(arc_gate.FORBIDDEN_SOURCE_KEYS) <= forbidden:
+                raise ValueError(f"source score row {row.get('row_id')} is missing forbidden fields")
+            raw_scores = [float(value) for value in row.get("source_scores", ())]
+            if raw_scores:
+                scores_by_content[str(row["content_id"])] = raw_scores
+    return scores_by_content
 
 
 def _source_predictions_for_rows(
@@ -1192,6 +1215,39 @@ def _source_index_scores(choice_count: int, selected_index: int) -> list[float]:
     return scores
 
 
+def _source_scores_for_control(
+    *,
+    row: arc_gate.ArcRow,
+    selected_index: int,
+    source_score_cache: dict[str, list[float]],
+) -> list[float]:
+    raw_scores = source_score_cache.get(row.content_id)
+    if raw_scores is None:
+        return _source_index_scores(len(row.choices), selected_index)
+    if len(raw_scores) != len(row.choices):
+        raise ValueError(f"source score control length mismatch for content_id={row.content_id}")
+    return [float(score) for score in raw_scores]
+
+
+def _source_rank_scores(raw_scores: Sequence[float]) -> list[float]:
+    values = [float(score) for score in raw_scores]
+    order = sorted(range(len(values)), key=lambda index: (-values[index], index))
+    ranks = {index: rank for rank, index in enumerate(order)}
+    count = max(len(values), 1)
+    return [float(count - ranks[index]) / float(count) for index in range(len(values))]
+
+
+def _centered_source_score_control(raw_scores: Sequence[float]) -> list[float]:
+    values = np.asarray([float(score) for score in raw_scores], dtype=np.float64)
+    if values.size == 0:
+        return []
+    centered = values - float(values.mean())
+    scale = float(centered.std())
+    if not math.isfinite(scale) or scale < 1e-8:
+        scale = 1.0
+    return [float(value / scale) for value in centered]
+
+
 def _paired_bootstrap(deltas: list[float], *, seed: int, samples: int) -> dict[str, float]:
     if not deltas:
         return {"mean": 0.0, "ci95_low": 0.0, "ci95_high": 0.0}
@@ -1202,6 +1258,39 @@ def _paired_bootstrap(deltas: list[float], *, seed: int, samples: int) -> dict[s
         "mean": float(statistics.fmean(deltas)),
         "ci95_low": float(np.percentile(means, 2.5)),
         "ci95_high": float(np.percentile(means, 97.5)),
+    }
+
+
+def _score_entropy(scores: Sequence[float]) -> float:
+    values = np.asarray([float(score) for score in scores], dtype=np.float64)
+    if values.size == 0:
+        return 0.0
+    values = values - float(values.max())
+    probs = np.exp(values)
+    total = float(probs.sum())
+    if total <= 0.0 or not math.isfinite(total):
+        return 0.0
+    probs = probs / total
+    return float(-(probs * np.log(np.clip(probs, 1e-12, 1.0))).sum())
+
+
+@torch.no_grad()
+def _prefix_stats_for_condition(
+    *,
+    connector: torch.nn.Module | None,
+    source_summary: torch.Tensor,
+    target_summary: torch.Tensor,
+    embed_dim: int,
+    device: str,
+) -> dict[str, Any]:
+    if connector is None:
+        return {"prefix_l2": 0.0, "prefix_rms": 0.0, "prefix_len": 0, "embed_dim": int(embed_dim)}
+    prefix = connector(source_summary.to(device), target_summary.to(device))
+    return {
+        "prefix_l2": float(prefix.float().norm().detach().cpu()),
+        "prefix_rms": float(prefix.float().pow(2).mean().sqrt().detach().cpu()),
+        "prefix_len": int(prefix.shape[0]),
+        "embed_dim": int(prefix.shape[-1]) if prefix.dim() >= 2 else int(embed_dim),
     }
 
 
@@ -1327,9 +1416,11 @@ def run_preflight(
     eval_path: pathlib.Path,
     source_cache_path: pathlib.Path,
     qwen_source_cache_path: pathlib.Path | None,
+    source_score_cache_path: pathlib.Path | None,
     benchmark: str,
     row_limit: int,
     fit_fraction: float,
+    fixed_fit_rows: int | None,
     source_feature_mode: str,
     source_feature_dim: int,
     target_feature_dim: int,
@@ -1373,7 +1464,15 @@ def run_preflight(
     qwen_cache_path = source_cache_path if qwen_source_cache_path is None else qwen_source_cache_path
     qwen_source_cache = _read_source_cache(_resolve(qwen_cache_path))
     qwen_predictions = _source_predictions_for_rows(rows, qwen_source_cache, label="qwen-substituted")
-    fit_indices, eval_indices = _row_indices(row_count=len(rows), fit_fraction=fit_fraction, seed=seed)
+    source_score_cache = _read_source_score_cache(_resolve(source_score_cache_path) if source_score_cache_path else None)
+    if fixed_fit_rows is None:
+        fit_indices, eval_indices = _row_indices(row_count=len(rows), fit_fraction=fit_fraction, seed=seed)
+    else:
+        fit_count = int(fixed_fit_rows)
+        if fit_count < 1 or fit_count >= len(rows):
+            raise ValueError("fixed_fit_rows must leave at least one fit row and one eval row")
+        fit_indices = list(range(fit_count))
+        eval_indices = list(range(fit_count, len(rows)))
 
     source_summary, source_meta = _selected_choice_features(
         rows,
@@ -1549,9 +1648,13 @@ def run_preflight(
                 MATCHED_CONDITION: source_summary[idx],
                 "zero_source": torch.zeros_like(source_summary[idx]),
                 "shuffled_source": source_summary[shuffled_idx],
+                "source_row_shuffle": source_summary[shuffled_idx],
                 "same_norm_noise": noise,
                 "train_mean_source": train_mean_source,
                 "candidate_roll_source": (
+                    candidate_roll_source if candidate_roll_source is not None else source_summary[idx]
+                ),
+                "candidate_roll": (
                     candidate_roll_source if candidate_roll_source is not None else source_summary[idx]
                 ),
                 "candidate_score_roll_source": (
@@ -1561,10 +1664,12 @@ def run_preflight(
                 ),
                 "source_free_prefix": source_summary[idx],
                 "target_cache_only_prefix": source_summary[idx],
+                "target_derived_prefix": source_summary[idx],
                 "slots_only_prefix": source_summary[idx],
                 "label_shuffled": source_summary[idx],
             }
             condition_scores: dict[str, list[float]] = {}
+            condition_prefix_stats: dict[str, dict[str, Any]] = {}
             condition_scores["target_only"] = _score_connector_condition(
                 connector=None,
                 target_model=model,
@@ -1576,13 +1681,22 @@ def run_preflight(
                 length_normalize=length_normalize,
                 device=resolved_train_device,
             )
+            condition_prefix_stats["target_only"] = _prefix_stats_for_condition(
+                connector=None,
+                source_summary=source_summary[idx],
+                target_summary=target_summary[idx],
+                embed_dim=embed_dim,
+                device=resolved_train_device,
+            )
             for condition in (
                 MATCHED_CONDITION,
                 "zero_source",
                 "shuffled_source",
+                "source_row_shuffle",
                 "same_norm_noise",
                 "train_mean_source",
                 "candidate_roll_source",
+                "candidate_roll",
                 "candidate_score_roll_source",
             ):
                 condition_scores[condition] = _score_connector_condition(
@@ -1594,6 +1708,13 @@ def run_preflight(
                     prompt_ids=prompt_ids[idx],
                     continuation_ids=choice_ids[idx],
                     length_normalize=length_normalize,
+                    device=resolved_train_device,
+                )
+                condition_prefix_stats[condition] = _prefix_stats_for_condition(
+                    connector=connectors[MATCHED_CONDITION],
+                    source_summary=source_variants[condition],
+                    target_summary=target_summary[idx],
+                    embed_dim=embed_dim,
                     device=resolved_train_device,
                 )
             for condition in ("target_cache_only_prefix", "slots_only_prefix", "label_shuffled"):
@@ -1608,6 +1729,13 @@ def run_preflight(
                     length_normalize=length_normalize,
                     device=resolved_train_device,
                 )
+                condition_prefix_stats[condition] = _prefix_stats_for_condition(
+                    connector=connectors[condition],
+                    source_summary=source_variants[condition],
+                    target_summary=target_summary[idx],
+                    embed_dim=embed_dim,
+                    device=resolved_train_device,
+                )
             condition_scores["source_free_prefix"] = _score_connector_condition(
                 connector=connectors["source_free_prefix"],
                 target_model=model,
@@ -1619,15 +1747,36 @@ def run_preflight(
                 length_normalize=length_normalize,
                 device=resolved_train_device,
             )
+            condition_prefix_stats["source_free_prefix"] = _prefix_stats_for_condition(
+                connector=connectors["source_free_prefix"],
+                source_summary=source_variants["source_free_prefix"],
+                target_summary=target_summary[idx],
+                embed_dim=embed_dim,
+                device=resolved_train_device,
+            )
+            condition_scores["target_derived_prefix"] = list(condition_scores["source_free_prefix"])
+            condition_prefix_stats["target_derived_prefix"] = dict(condition_prefix_stats["source_free_prefix"])
             condition_scores["candidate_derangement"] = list(np.roll(condition_scores[MATCHED_CONDITION], 1))
+            condition_prefix_stats["candidate_derangement"] = dict(condition_prefix_stats[MATCHED_CONDITION])
             condition_scores["packet_only_source_index"] = _source_index_scores(
                 len(row.choices),
                 int(source_predictions[idx]),
             )
+            condition_prefix_stats["packet_only_source_index"] = dict(condition_prefix_stats["target_only"])
+            raw_source_scores = _source_scores_for_control(
+                row=row,
+                selected_index=int(source_predictions[idx]),
+                source_score_cache=source_score_cache,
+            )
+            condition_scores["source_rank_control"] = _source_rank_scores(raw_source_scores)
+            condition_scores["source_score_control"] = _centered_source_score_control(raw_source_scores)
+            condition_prefix_stats["source_rank_control"] = dict(condition_prefix_stats["target_only"])
+            condition_prefix_stats["source_score_control"] = dict(condition_prefix_stats["target_only"])
             condition_scores["qwen_substituted_packet"] = _source_index_scores(
                 len(row.choices),
                 int(qwen_predictions[idx]),
             )
+            condition_prefix_stats["qwen_substituted_packet"] = dict(condition_prefix_stats["target_only"])
             hint = row.choices[source_predictions[idx]].encode("utf-8")[:same_byte_budget].decode(
                 "utf-8", errors="ignore"
             )
@@ -1649,12 +1798,15 @@ def run_preflight(
                 length_normalize=length_normalize,
                 device=resolved_train_device,
             )
+            condition_prefix_stats["same_byte_visible_text"] = dict(condition_prefix_stats["target_only"])
             audit_scores = [-1.0e9 for _ in row.choices]
             audit_scores[source_predictions[idx]] = 0.0
             condition_scores["source_label_copy_audit_upper_bound"] = audit_scores
+            condition_prefix_stats["source_label_copy_audit_upper_bound"] = dict(condition_prefix_stats["target_only"])
             for condition in REPORT_CONDITIONS:
                 scores = condition_scores[condition]
                 pred = _prediction(scores)
+                prefix_stats = condition_prefix_stats.get(condition, condition_prefix_stats["target_only"])
                 prediction_rows.append(
                     {
                         "row_id": row.row_id,
@@ -1666,11 +1818,24 @@ def run_preflight(
                         "prediction_label": row.choice_labels[pred],
                         "correct": bool(pred == row.answer_index),
                         "margin": float(_margin(scores, row.answer_index)),
+                        "entropy": _score_entropy(scores),
                         "scores": [float(score) for score in scores],
                         "source_selected_index": int(source_predictions[idx]),
                         "source_selected_label": row.choice_labels[int(source_predictions[idx])],
+                        "source_scores": [float(score) for score in raw_source_scores],
+                        "source_score_margin": float(
+                            sorted(raw_source_scores, reverse=True)[0] - sorted(raw_source_scores, reverse=True)[1]
+                            if len(raw_source_scores) > 1
+                            else 0.0
+                        ),
+                        "source_rank_by_candidate": [
+                            int(rank)
+                            for rank in np.argsort(np.argsort(-np.asarray(raw_source_scores, dtype=np.float64)))
+                        ],
                         "qwen_substituted_index": int(qwen_predictions[idx]),
                         "qwen_substituted_label": row.choice_labels[int(qwen_predictions[idx])],
+                        "control_origin": condition,
+                        **prefix_stats,
                     }
                 )
 
@@ -1731,6 +1896,7 @@ def run_preflight(
             "contrastive_controls": list(contrastive_controls),
             "continuation_mode": continuation_mode,
             "same_byte_budget": same_byte_budget,
+            "fixed_fit_rows": None if fixed_fit_rows is None else int(fixed_fit_rows),
             "source_model": source_model,
             "target_model": target_model_path,
             "source_device": source_device,
@@ -1755,6 +1921,7 @@ def run_preflight(
             "eval_path": _display(eval_path),
             "source_cache_path": _display(source_cache_path),
             "qwen_source_cache_path": _display(qwen_cache_path),
+            "source_score_cache_path": _display(source_score_cache_path) if source_score_cache_path else None,
         },
         "runtime": {
             "latency_s": float(time.perf_counter() - total_start),
@@ -1797,8 +1964,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--eval-path", type=pathlib.Path, default=DEFAULT_ARC_VALIDATION)
     parser.add_argument("--source-cache-path", type=pathlib.Path, default=DEFAULT_ARC_SOURCE_CACHE)
     parser.add_argument("--qwen-source-cache-path", type=pathlib.Path, default=None)
+    parser.add_argument("--source-score-cache-path", type=pathlib.Path, default=None)
     parser.add_argument("--row-limit", type=int, default=8)
     parser.add_argument("--fit-fraction", type=float, default=0.5)
+    parser.add_argument(
+        "--fixed-fit-rows",
+        type=int,
+        default=None,
+        help="Use the first N selected rows for fitting and all remaining selected rows for eval.",
+    )
     parser.add_argument(
         "--source-feature-mode",
         choices=(
@@ -1871,9 +2045,11 @@ def main(argv: list[str] | None = None) -> int:
         eval_path=args.eval_path,
         source_cache_path=args.source_cache_path,
         qwen_source_cache_path=args.qwen_source_cache_path,
+        source_score_cache_path=args.source_score_cache_path,
         benchmark=str(args.benchmark),
         row_limit=int(args.row_limit),
         fit_fraction=float(args.fit_fraction),
+        fixed_fit_rows=None if args.fixed_fit_rows is None else int(args.fixed_fit_rows),
         source_feature_mode=str(args.source_feature_mode),
         source_feature_dim=int(args.source_feature_dim),
         target_feature_dim=int(args.target_feature_dim),

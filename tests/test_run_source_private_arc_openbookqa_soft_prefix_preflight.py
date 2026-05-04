@@ -79,6 +79,17 @@ def test_source_index_scores_are_finite_packet_controls() -> None:
         preflight._source_index_scores(choice_count=2, selected_index=3)
 
 
+def test_source_rank_and_score_controls_use_cached_scores() -> None:
+    scores = [-2.0, -0.5, -1.0, -3.0]
+
+    assert preflight._source_rank_scores(scores) == [0.5, 1.0, 0.75, 0.25]
+    centered = preflight._centered_source_score_control(scores)
+
+    assert len(centered) == 4
+    assert abs(float(np.mean(centered))) < 1e-7
+    assert preflight._prediction(centered) == 1
+
+
 def test_soft_prefix_connector_shapes() -> None:
     source = torch.randn(5)
     target = torch.randn(3)
@@ -576,6 +587,9 @@ def test_residual_feature_modes_are_cli_options() -> None:
         ]
     )
     qwen_cache = preflight.parse_args(["--qwen-source-cache-path", "qwen_cache.jsonl"])
+    score_cache = preflight.parse_args(
+        ["--source-score-cache-path", "score_cache.jsonl", "--fixed-fit-rows", "3"]
+    )
 
     assert hashed.source_feature_mode == "hashed_selected_residual"
     assert hidden.source_feature_mode == "hf_selected_hidden_residual"
@@ -593,6 +607,8 @@ def test_residual_feature_modes_are_cli_options() -> None:
         "candidate_score_roll_source",
     )
     assert str(qwen_cache.qwen_source_cache_path) == "qwen_cache.jsonl"
+    assert str(score_cache.source_score_cache_path) == "score_cache.jsonl"
+    assert score_cache.fixed_fit_rows == 3
 
 
 def test_unknown_contrastive_controls_raise() -> None:

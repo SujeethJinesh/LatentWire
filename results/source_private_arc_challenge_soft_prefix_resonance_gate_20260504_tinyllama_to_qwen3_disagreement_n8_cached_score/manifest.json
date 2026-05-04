@@ -1,0 +1,35 @@
+{
+  "created_utc": "2026-05-04T15:24:32.150185+00:00",
+  "files": [
+    {
+      "bytes": 17152,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/arc_challenge_soft_prefix_resonance_gate.json",
+      "sha256": "994d43618e124c3f97d755fd4dc966102fcfd7710b7c79e38d4c1d4718390b30"
+    },
+    {
+      "bytes": 1779,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/arc_challenge_soft_prefix_resonance_gate.md",
+      "sha256": "0023e0d67d2e92c79cc4b0bca4b7798bd1e9ee322cdbc9aa72d0ef9172762f4c"
+    },
+    {
+      "bytes": 146918,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/preflight/prediction_audit.jsonl",
+      "sha256": "e8f582c4e267ecb5885676bbf03c208e3e26e47c80747f8f368acfb6975161c7"
+    }
+  ],
+  "gate": "source_private_arc_challenge_soft_prefix_resonance_gate",
+  "inputs": {
+    "agreement_path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_cache_agreement.csv",
+    "combined_qwen_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/strict_inputs/qwen_source_score_cache.jsonl",
+    "combined_row_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/strict_inputs/arc_challenge_validation_train_plus_test_disagreement.jsonl",
+    "combined_source_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/strict_inputs/tinyllama_source_score_cache.jsonl",
+    "eval_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/strict_inputs/arc_challenge_validation_train_plus_test_disagreement.jsonl",
+    "qwen_source_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/strict_inputs/qwen_source_score_cache.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/strict_inputs/tinyllama_source_score_cache.jsonl",
+    "source_family_gate_dir": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu",
+    "source_score_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/strict_inputs/tinyllama_source_score_cache.jsonl",
+    "test_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl",
+    "validation_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl"
+  },
+  "pass_gate": false
+}

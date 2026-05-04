@@ -1,0 +1,33 @@
+{
+  "created_utc": "2026-05-04T15:27:44.544645+00:00",
+  "files": [
+    {
+      "bytes": 15073,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/preflight/arc_openbookqa_soft_prefix_preflight.json",
+      "sha256": "7d2f8b4cf54bb12c6f1125fb1c22c5ab8311f358896e80e6d6be9e99a55b778a"
+    },
+    {
+      "bytes": 146903,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/preflight/prediction_audit.jsonl",
+      "sha256": "b4ee3dfadda75deac0b917d260b761082e9873d898acb190f1dfccbd11e4a062"
+    },
+    {
+      "bytes": 22604,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/preflight/prediction_audit.csv",
+      "sha256": "5163f50a4f6d0af1451182969ed037ff0a2b6107cab2b07607801ab8bc097377"
+    },
+    {
+      "bytes": 2246,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/preflight/arc_openbookqa_soft_prefix_preflight.md",
+      "sha256": "4741f65d8f67a2c25c10d7a6e3313dd66dc53b74dd3da38d77fb0850d6ab1755"
+    }
+  ],
+  "gate": "source_private_arc_openbookqa_soft_prefix_preflight",
+  "inputs": {
+    "eval_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/strict_inputs/arc_challenge_validation_train_plus_test_disagreement.jsonl",
+    "qwen_source_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/strict_inputs/qwen_source_score_cache.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/strict_inputs/tinyllama_source_score_cache.jsonl",
+    "source_score_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/strict_inputs/tinyllama_source_score_cache.jsonl"
+  },
+  "pass_gate": false
+}

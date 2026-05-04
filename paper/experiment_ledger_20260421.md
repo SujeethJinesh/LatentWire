@@ -22651,3 +22651,54 @@ Lay explanation: we tried the rule that the previous audit demanded. Qwen sent
 Phi a tiny two-answer hint plus coarse confidence bins, and Phi learned when to
 change the packet answer. The rule looked good on training/dev rows but made
 slightly more held-out mistakes than fixes, so this is not the main ICLR path.
+
+## 2026-05-04 ARC-Challenge Strict Soft-Prefix Resonance Gate
+
+Implemented and ran a stricter ARC-Challenge source-conditioned soft-prefix
+resonance gate after the Qwen-to-Phi error-conditioned syndrome branch failed.
+The new wrapper trains on validation disagreement rows and evaluates once on
+frozen test disagreement rows. It uses the existing Mac-local soft-prefix
+preflight machinery but adds fixed train/test selection, source score/rank
+controls, source-row-shuffle and candidate-roll aliases, target-derived-prefix
+controls, same-byte text, Qwen-substitution, and per-row entropy/prefix/source
+score telemetry.
+
+- script:
+  `scripts/build_source_private_arc_challenge_soft_prefix_resonance_gate.py`;
+- updated preflight:
+  `scripts/run_source_private_arc_openbookqa_soft_prefix_preflight.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_soft_prefix_resonance_gate.py`
+  and `tests/test_run_source_private_arc_openbookqa_soft_prefix_preflight.py`;
+- artifacts:
+  `results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_cached_score/`,
+  `results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/`,
+  `results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation_contrastive/`;
+- memo:
+  `paper/source_private_arc_soft_prefix_resonance_gate_20260504.md`;
+- references:
+  `references/717_arc_soft_prefix_resonance_gate_refs_20260504.md`.
+
+Outcome: fail, but with sharper diagnostics. Cached score-pool residual
+soft-prefixes score `0.250000` matched accuracy while target-only, slots-only,
+same-byte text, and Qwen-substitution controls reach `0.500000`, `0.500000`,
+`0.500000`, and `0.625000`. TinyLlama hidden+score public-innovation residual
+features improve matched accuracy to `0.500000` and beat zero-source,
+source-row-shuffle, source rank/score, and candidate derangement controls, but
+still tie target-only/same-byte and lose to Qwen-substitution at `0.625000`.
+The contrastive rescue collapses: matched accuracy is `0.250000`, while
+zero-source reaches `0.750000`.
+
+Decision: demote shallow ARC source-conditioned soft-prefix receivers based on
+cached score pools and one-step hidden public-innovation pooling. This does not
+kill target-native soft-prefix resonance; it says the source representation is
+too weak and the gate now needs common-basis/SAE/crosscoder source atoms with
+atom-shuffle and wrong-row controls before widening. Do not claim the n8 hidden
+improvement as a positive method because it fails target-only and
+source-family-substitution controls.
+
+Lay explanation: we trained a small translator on science questions where the
+source and target models disagree, then tested it on new disagreement
+questions. A hidden-source version did learn something, but not enough to beat
+Qwen using no source clue or a visible same-byte hint. The stricter gate is now
+ready for the next common-basis encoder attempt.

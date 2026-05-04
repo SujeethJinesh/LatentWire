@@ -1,0 +1,35 @@
+{
+  "created_utc": "2026-05-04T15:25:57.115328+00:00",
+  "files": [
+    {
+      "bytes": 18509,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/arc_challenge_soft_prefix_resonance_gate.json",
+      "sha256": "0b58a49b8b53907d069279bf128b97bd07c2965d6fcb8049d5d44b4205cac5b8"
+    },
+    {
+      "bytes": 1772,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/arc_challenge_soft_prefix_resonance_gate.md",
+      "sha256": "8f8cd476af8a3c58b6488c3ccacd936338d36b5e1d961baa61440046a01f6c40"
+    },
+    {
+      "bytes": 146938,
+      "path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/preflight/prediction_audit.jsonl",
+      "sha256": "ca1cee7d8d7ec22e02deafa6ea01624d518e3cf7f6b7279aa7c5832ac63021c7"
+    }
+  ],
+  "gate": "source_private_arc_challenge_soft_prefix_resonance_gate",
+  "inputs": {
+    "agreement_path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_cache_agreement.csv",
+    "combined_qwen_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/strict_inputs/qwen_source_score_cache.jsonl",
+    "combined_row_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/strict_inputs/arc_challenge_validation_train_plus_test_disagreement.jsonl",
+    "combined_source_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/strict_inputs/tinyllama_source_score_cache.jsonl",
+    "eval_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/strict_inputs/arc_challenge_validation_train_plus_test_disagreement.jsonl",
+    "qwen_source_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/strict_inputs/qwen_source_score_cache.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/strict_inputs/tinyllama_source_score_cache.jsonl",
+    "source_family_gate_dir": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu",
+    "source_score_cache_path": "results/source_private_arc_challenge_soft_prefix_resonance_gate_20260504_tinyllama_to_qwen3_disagreement_n8_hidden_public_innovation/strict_inputs/tinyllama_source_score_cache.jsonl",
+    "test_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl",
+    "validation_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl"
+  },
+  "pass_gate": false
+}
