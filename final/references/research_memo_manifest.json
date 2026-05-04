@@ -1860,5 +1860,12 @@
     "path": "references/622_hellaswag_conditional_selector_syndrome_refs_20260502.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the failed HellaSwag conditional selector/syndrome gate, covering the negative linear benefit-predictor result, fixed-byte source-private novelty boundary, systems byte-floor accounting, and boundaries against prefix/prompt tuning, C2C/KVComm/KVCOMM, Q-Former/Perceiver/Flamingo, SAE/crosscoders, QJL, and TurboQuant."
+  },
+  {
+    "num": 718,
+    "slug": "sparse_common_basis_packet_design_refs_20260504",
+    "path": "references/718_sparse_common_basis_packet_design_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted sparse/common-basis packet memo for SAE/universal SAE/crosscoder/transcoder, CCA/PCA/Procrustes/relative-coordinate, representation-similarity, feature-dictionary, activation-steering, and C2C/Q-Former boundaries, with three Mac-first method designs and leakage controls."
   }
 ]
