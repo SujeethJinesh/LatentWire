@@ -23045,3 +23045,58 @@ preferences and let Qwen use its own guesses to decode that checksum. The
 checksum fixed a few rows but broke as many or more, and simply sending source
 score/rank or tiny visible text did better. More checksum bits did not fix it,
 so this packet shape is not the ICLR-positive method.
+
+## 2026-05-04 Hidden-Atom Decoder Sparse Resonance Packet Gate
+
+Implemented and ran a target-conditioned hidden-atom Sparse Resonance Packet
+gate after score-syndrome packets failed. This branch extracts
+answer-key-forbidden TinyLlama candidate hidden states, removes public
+question/choice hashed features with a train-only residualizer, fits train-only
+PCA atoms, transmits sparse top-k atom IDs plus quantized coefficients, and
+decodes them with a small Qwen3 target-score-conditioned residual model.
+
+- new script:
+  `scripts/build_source_private_arc_challenge_hidden_atom_decoder_gate.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_hidden_atom_decoder_gate.py`;
+- primary scout:
+  `results/source_private_arc_challenge_hidden_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4/`;
+- regularization diagnostic:
+  `results/source_private_arc_challenge_hidden_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_ridge100/`;
+- memo:
+  `paper/hidden_atom_decoder_sparse_resonance_packet_gate_20260504.md`;
+- refreshed reference synthesis:
+  `references/730_hidden_atom_decoder_packet_refs_20260504.md`.
+
+Outcome: fail, but with a partial positive signal. The ridge-10 hidden-atom
+decoder uses rank-8 PCA atoms, top-2 coefficients, 4-bit coefficient
+quantization, and an estimated `7` framed packet bytes per row. It reaches
+matched accuracy `0.312500` versus target-only `0.250000`, fires on `12/16`
+rows, helps `4`, harms `3`, and has net help `+1`. This is the first May 4
+strict ARC SRP scout with positive target-only lift.
+
+It still fails the strict gate. Zero-source, target-derived packet,
+coefficient shuffle, candidate roll/derangement, packet-only source-index,
+source-rank, source-score, source-score quantization, and same-byte visible
+text all tie matched at `0.312500`. Qwen-substitution reaches `0.437500`, and
+top-atom knockout also reaches `0.437500`; worst required paired CI95 low is
+`-0.375000`. The top-atom knockout improvement is the key negative diagnostic:
+the largest transmitted PCA atom is often harmful rather than causally useful.
+
+The ridge-100 regularization diagnostic collapses to no firing: matched equals
+target-only at `0.250000`, fired rows are `0/16`, Qwen-substitution remains
+`0.437500`, and worst required CI95 low is `-0.437500`. Stronger ridge does
+not rescue the branch; it removes the source-conditioned correction.
+
+Decision: demote plain PCA hidden atoms plus ridge target-conditioned residual
+decoder as currently implemented. Keep the script because it is a reusable ARC
+hidden-atom packet harness, but do not widen this exact configuration. Promote
+behavior-trained atoms next: Kalman-gated behavior-innovation SRP or
+BatchTopK/delta-crosscoder/transcoder atoms trained directly for target-margin
+residual behavior, with same-source-choice wrong-row and calibrated
+source-score quantization controls from the start.
+
+Lay explanation: we compressed TinyLlama's hidden evidence into a few learned
+feature clues and taught Qwen a small correction rule. Qwen improved slightly
+over its own guesses, but removing the strongest clue improved even more. That
+means the current PCA atoms are not reliable evidence atoms yet.

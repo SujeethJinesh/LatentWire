@@ -1,0 +1,585 @@
+{
+  "condition_metrics": {
+    "atom_shuffle": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.8910685160690627,
+      "n": 16,
+      "packet_fired": 2,
+      "packet_fired_rate": 0.125,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "candidate_derangement": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.730827447026968,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "candidate_roll": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.730827447026968,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "coefficient_shuffle": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.7645166595651879,
+      "n": 16,
+      "packet_fired": 3,
+      "packet_fired_rate": 0.1875,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "matched_hidden_atom_decoder_packet": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.730827447026968,
+      "mean_margin_delta_vs_atom_shuffle": 0.16024106904209467,
+      "mean_margin_delta_vs_candidate_derangement": 0.0,
+      "mean_margin_delta_vs_candidate_roll": 0.0,
+      "mean_margin_delta_vs_coefficient_shuffle": 0.03368921253821987,
+      "mean_margin_delta_vs_packet_only_source_index": -0.355827447026968,
+      "mean_margin_delta_vs_qwen_substituted_packet": -0.605827447026968,
+      "mean_margin_delta_vs_same_byte_visible_text": 0.24657071009278297,
+      "mean_margin_delta_vs_source_rank_control": -0.527702447026968,
+      "mean_margin_delta_vs_source_row_shuffle": 0.27149537717532557,
+      "mean_margin_delta_vs_source_score_control": -0.1548848749666881,
+      "mean_margin_delta_vs_source_score_quantized_control": -0.2315391334039825,
+      "mean_margin_delta_vs_target_decoder_only": 0.0,
+      "mean_margin_delta_vs_target_derived_packet": 0.0,
+      "mean_margin_delta_vs_target_only": 0.0,
+      "mean_margin_delta_vs_top_atom_knockout": 0.0,
+      "mean_margin_delta_vs_zero_source": 0.0,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0,
+      "paired_accuracy_vs_atom_shuffle": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_candidate_derangement": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_candidate_roll": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_coefficient_shuffle": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_packet_only_source_index": {
+        "ci95_high": 0.25,
+        "ci95_low": -0.375,
+        "mean": -0.0625
+      },
+      "paired_accuracy_vs_qwen_substituted_packet": {
+        "ci95_high": 0.0625,
+        "ci95_low": -0.4375,
+        "mean": -0.1875
+      },
+      "paired_accuracy_vs_same_byte_visible_text": {
+        "ci95_high": 0.25,
+        "ci95_low": -0.375,
+        "mean": -0.0625
+      },
+      "paired_accuracy_vs_source_rank_control": {
+        "ci95_high": 0.2828124999999986,
+        "ci95_low": -0.375,
+        "mean": -0.0625
+      },
+      "paired_accuracy_vs_source_row_shuffle": {
+        "ci95_high": 0.1875,
+        "ci95_low": 0.0,
+        "mean": 0.0625
+      },
+      "paired_accuracy_vs_source_score_control": {
+        "ci95_high": 0.1875,
+        "ci95_low": -0.375,
+        "mean": -0.0625
+      },
+      "paired_accuracy_vs_source_score_quantized_control": {
+        "ci95_high": 0.25,
+        "ci95_low": -0.4078124999999999,
+        "mean": -0.0625
+      },
+      "paired_accuracy_vs_target_decoder_only": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_target_derived_packet": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_target_only": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_top_atom_knockout": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      },
+      "paired_accuracy_vs_zero_source": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "mean": 0.0
+      }
+    },
+    "packet_only_source_index": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "mean_margin": -0.375,
+      "n": 16,
+      "packet_fired": 16,
+      "packet_fired_rate": 1.0,
+      "packet_harmed_vs_target": 3,
+      "packet_helped_vs_target": 4,
+      "packet_net_help_vs_target": 1
+    },
+    "qwen_substituted_packet": {
+      "accuracy": 0.4375,
+      "correct": 7,
+      "mean_margin": -0.125,
+      "n": 16,
+      "packet_fired": 16,
+      "packet_fired_rate": 1.0,
+      "packet_harmed_vs_target": 1,
+      "packet_helped_vs_target": 4,
+      "packet_net_help_vs_target": 3
+    },
+    "same_byte_visible_text": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "mean_margin": -0.977398157119751,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "source_rank_control": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "mean_margin": -0.203125,
+      "n": 16,
+      "packet_fired": 16,
+      "packet_fired_rate": 1.0,
+      "packet_harmed_vs_target": 3,
+      "packet_helped_vs_target": 4,
+      "packet_net_help_vs_target": 1
+    },
+    "source_row_shuffle": {
+      "accuracy": 0.1875,
+      "correct": 3,
+      "mean_margin": -1.0023228242022935,
+      "n": 16,
+      "packet_fired": 2,
+      "packet_fired_rate": 0.125,
+      "packet_harmed_vs_target": 1,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": -1
+    },
+    "source_score_control": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "mean_margin": -0.5759425720602799,
+      "n": 16,
+      "packet_fired": 16,
+      "packet_fired_rate": 1.0,
+      "packet_harmed_vs_target": 3,
+      "packet_helped_vs_target": 4,
+      "packet_net_help_vs_target": 1
+    },
+    "source_score_quantized_control": {
+      "accuracy": 0.3125,
+      "correct": 5,
+      "mean_margin": -0.49928831362298554,
+      "n": 16,
+      "packet_fired": 16,
+      "packet_fired_rate": 1.0,
+      "packet_harmed_vs_target": 3,
+      "packet_helped_vs_target": 4,
+      "packet_net_help_vs_target": 1
+    },
+    "target_decoder_only": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.730827447026968,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "target_derived_packet": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.730827447026968,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "target_only": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.730827447026968,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "top_atom_knockout": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.730827447026968,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    },
+    "zero_source": {
+      "accuracy": 0.25,
+      "correct": 4,
+      "mean_margin": -0.730827447026968,
+      "n": 16,
+      "packet_fired": 0,
+      "packet_fired_rate": 0.0,
+      "packet_harmed_vs_target": 0,
+      "packet_helped_vs_target": 0,
+      "packet_net_help_vs_target": 0
+    }
+  },
+  "created_utc": "2026-05-04T18:36:44.806672+00:00",
+  "date": "2026-05-04",
+  "feature_metadata": {
+    "public": {
+      "feature_dim": 128,
+      "kind": "public_question_choice_hashed_side_info"
+    },
+    "same_byte_score_metadata": {
+      "attn_implementation": "eager",
+      "device": "mps",
+      "dtype": "float32",
+      "kind": "local_causal_lm_choice_loglikelihood_with_prompt_builder",
+      "latency_s": 2.291507125017233,
+      "max_length": 192,
+      "model_path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca",
+      "normalization": "mean"
+    },
+    "source_hidden": {
+      "attn_implementation": "eager",
+      "device": "cpu",
+      "dtype": "float32",
+      "hidden_layer": -1,
+      "kind": "answer_key_forbidden_hf_choice_hidden",
+      "latency_s": 48.82250400003977,
+      "max_length": 160,
+      "model_path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6"
+    },
+    "source_public_innovation": {
+      "fit_baseline_mse": 0.00012748652863363568,
+      "fit_candidate_count": 64,
+      "fit_explained_variance_ratio": 0.9603259705290987,
+      "fit_residual_mse": 5.0579042941537644e-06,
+      "kind": "train_only_public_candidate_ridge_innovation",
+      "public_feature_dim": 128,
+      "public_mean_l2": 0.9280233579428362,
+      "public_std_max": 0.11480043835817394,
+      "public_std_min": 0.016653928723206726,
+      "ridge": 100.0,
+      "source_feature_dim": 2048
+    },
+    "sparse_packet": {
+      "atom_id_bits": 3,
+      "fit_candidate_count": 64,
+      "fit_mean_nonzero_coefficients": 2.0,
+      "fit_sparse_energy_ratio": 0.7395698941550052,
+      "kind": "train_fit_sparse_pca_packet_coordinates",
+      "packet_bits_per_candidate": 14,
+      "packet_bytes_per_candidate": 1.75,
+      "packet_rank": 8,
+      "pca_explained_variance_ratio": 0.7467780342527158,
+      "quant_bits": 4,
+      "quant_scale": 0.1183043840986039,
+      "quant_step": 0.016900626299800558,
+      "requested_packet_rank": 8,
+      "singular_value_max": 0.3368841539067795,
+      "singular_value_min_retained": 0.16744830865197097,
+      "source_feature_dim": 2048,
+      "top_k": 2
+    },
+    "target_conditioned_decoder": {
+      "fit_mse": 0.1645258124764799,
+      "fit_r2": 0.3391823100996525,
+      "ridge": 100.0,
+      "selected_gate_rule": {
+        "max_target_margin": 0.19239240884780884,
+        "min_residual_l1": 0.40407747649104286,
+        "require_prediction_change": false,
+        "residual_weight": 4.0,
+        "train_accuracy": 0.4375,
+        "train_fired": 6,
+        "train_fired_rate": 0.375,
+        "train_harmed": 0,
+        "train_helped": 4,
+        "train_mean_margin": -1.1559713403973595,
+        "train_net_help": 4
+      }
+    },
+    "target_derived_packet_map": {
+      "fit_mse": 0.0006937191362548173,
+      "fit_r2": 0.011717514528630013,
+      "ridge": 100.0
+    },
+    "target_only_decoder": {
+      "fit_mse": 0.19682028178479916,
+      "fit_r2": 0.20947162042940992,
+      "ridge": 100.0
+    },
+    "target_score_metadata": {
+      "attn_implementation": "eager",
+      "device": "mps",
+      "dtype": "float32",
+      "kind": "local_causal_lm_choice_loglikelihood_with_prompt_builder",
+      "latency_s": 5.186590167111717,
+      "max_length": 192,
+      "model_path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca",
+      "normalization": "mean"
+    }
+  },
+  "gate": "source_private_arc_challenge_hidden_atom_decoder_gate",
+  "implementation_gate_only": false,
+  "inputs": {
+    "agreement_path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_cache_agreement.csv",
+    "packet_bits": 4,
+    "packet_rank": 8,
+    "packet_top_k": 2,
+    "qwen_test_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/qwen_test_source_scores.jsonl",
+    "qwen_validation_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/qwen_validation_source_scores.jsonl",
+    "same_byte_budget": 4096,
+    "source_family_gate_dir": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu",
+    "source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+    "target_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca",
+    "test_disagreement_limit": 16,
+    "test_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl",
+    "tiny_test_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/tinyllama_test_source_scores.jsonl",
+    "tiny_validation_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/tinyllama_validation_source_scores.jsonl",
+    "train_disagreement_limit": 16,
+    "validation_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl"
+  },
+  "interpretation": "This gate tests whether compact source-hidden PCA atom packets become useful when decoded by a target-conditioned residual receiver instead of direct soft-prefix reconstruction. It passes only if the matched packet beats target-only, target-decoder-only, target-derived packets, source-row/atom/coefficient destruction, candidate roll/derangement, source-index/rank/score, same-byte text, and Qwen-substitution controls with positive paired uncertainty.",
+  "oracle_diagnostics": {
+    "n": 16,
+    "qwen_or_target_oracle_accuracy": 0.5,
+    "qwen_or_target_oracle_correct": 8,
+    "qwen_substitution_accuracy": 0.4375,
+    "qwen_substitution_correct": 7,
+    "source_harm_risk_rows": 3,
+    "source_helpable_rows": 4,
+    "source_or_target_oracle_accuracy": 0.5,
+    "source_or_target_oracle_correct": 8,
+    "source_top1_accuracy": 0.3125,
+    "source_top1_correct": 5,
+    "target_only_accuracy": 0.25,
+    "target_only_correct": 4
+  },
+  "pass_gate": false,
+  "strict_control_metrics": {
+    "atom_shuffle": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    },
+    "candidate_derangement": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    },
+    "candidate_roll": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    },
+    "coefficient_shuffle": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    },
+    "packet_only_source_index": {
+      "ci95_high": 0.25,
+      "ci95_low": -0.375,
+      "control_accuracy": 0.3125,
+      "delta_accuracy": -0.0625
+    },
+    "qwen_substituted_packet": {
+      "ci95_high": 0.0625,
+      "ci95_low": -0.4375,
+      "control_accuracy": 0.4375,
+      "delta_accuracy": -0.1875
+    },
+    "same_byte_visible_text": {
+      "ci95_high": 0.25,
+      "ci95_low": -0.375,
+      "control_accuracy": 0.3125,
+      "delta_accuracy": -0.0625
+    },
+    "source_rank_control": {
+      "ci95_high": 0.2828124999999986,
+      "ci95_low": -0.375,
+      "control_accuracy": 0.3125,
+      "delta_accuracy": -0.0625
+    },
+    "source_row_shuffle": {
+      "ci95_high": 0.1875,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.1875,
+      "delta_accuracy": 0.0625
+    },
+    "source_score_control": {
+      "ci95_high": 0.1875,
+      "ci95_low": -0.375,
+      "control_accuracy": 0.3125,
+      "delta_accuracy": -0.0625
+    },
+    "source_score_quantized_control": {
+      "ci95_high": 0.25,
+      "ci95_low": -0.4078124999999999,
+      "control_accuracy": 0.3125,
+      "delta_accuracy": -0.0625
+    },
+    "target_decoder_only": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    },
+    "target_derived_packet": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    },
+    "target_only": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    },
+    "top_atom_knockout": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    },
+    "zero_source": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0,
+      "control_accuracy": 0.25,
+      "delta_accuracy": 0.0
+    }
+  },
+  "strict_headline": {
+    "best_required_control": "qwen_substituted_packet",
+    "best_required_control_accuracy": 0.4375,
+    "matched_accuracy": 0.25,
+    "matched_packet_fired": 0,
+    "matched_packet_fired_rate": 0.0,
+    "matched_packet_harmed": 0,
+    "matched_packet_helped": 0,
+    "matched_packet_net_help": 0,
+    "target_only_accuracy": 0.25,
+    "worst_required_ci95_low": -0.4375
+  },
+  "strict_required_controls": [
+    "target_only",
+    "target_decoder_only",
+    "target_derived_packet",
+    "zero_source",
+    "source_row_shuffle",
+    "atom_shuffle",
+    "coefficient_shuffle",
+    "top_atom_knockout",
+    "candidate_roll",
+    "candidate_derangement",
+    "packet_only_source_index",
+    "source_rank_control",
+    "source_score_control",
+    "source_score_quantized_control",
+    "same_byte_visible_text",
+    "qwen_substituted_packet"
+  ],
+  "systems_packet_sideband": {
+    "cache_line_bytes_per_row_64b": 64,
+    "decode_flops_proxy_per_row": 32,
+    "dma_bytes_per_row_128b": 128,
+    "framed_packet_bytes_per_row": 7,
+    "native_serving_throughput_measured": false,
+    "note": "Byte counts cover sparse source-hidden atom IDs plus quantized coefficients only. They are not native GPU throughput, HBM traffic, or an end-to-end serving measurement.",
+    "packet_bytes_per_row": 7.0,
+    "raw_hidden_exposed": false,
+    "raw_logits_or_scores_exposed": false,
+    "source_kv_exposed": false,
+    "source_private": true,
+    "source_text_exposed": false,
+    "sparse_packet_metadata": {
+      "atom_id_bits": 3,
+      "fit_candidate_count": 64,
+      "fit_mean_nonzero_coefficients": 2.0,
+      "fit_sparse_energy_ratio": 0.7395698941550052,
+      "kind": "train_fit_sparse_pca_packet_coordinates",
+      "packet_bits_per_candidate": 14,
+      "packet_bytes_per_candidate": 1.75,
+      "packet_rank": 8,
+      "pca_explained_variance_ratio": 0.7467780342527158,
+      "quant_bits": 4,
+      "quant_scale": 0.1183043840986039,
+      "quant_step": 0.016900626299800558,
+      "requested_packet_rank": 8,
+      "singular_value_max": 0.3368841539067795,
+      "singular_value_min_retained": 0.16744830865197097,
+      "source_feature_dim": 2048,
+      "top_k": 2
+    }
+  },
+  "test_rows": 16,
+  "train_rows": 16
+}

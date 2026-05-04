@@ -2602,5 +2602,12 @@
     "path": "references/729_residual_syndrome_packet_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted literature and competitor refresh for the residual/syndrome Sparse Resonance Packet gate, covering distributed source coding, ECOC/syndrome decoding, C2C/KV systems, KV quantization byte floors, SAE/crosscoder novelty boundaries, and benchmark controls."
+  },
+  {
+    "num": 730,
+    "slug": "hidden_atom_decoder_packet_refs_20260504",
+    "path": "references/730_hidden_atom_decoder_packet_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted literature and competitor refresh for the hidden-atom residual decoder Sparse Resonance Packet gate, covering dense KV/activation communication, sparse feature bases, crosscoders, transcoders, quantized systems byte floors, and strict benchmark controls."
   }
 ]
