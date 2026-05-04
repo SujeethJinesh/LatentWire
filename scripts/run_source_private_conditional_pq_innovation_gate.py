@@ -71,7 +71,7 @@ CONTROL_CONDITIONS = [
     "opaque_slot_basis",
 ]
 BASIS_VIEWS = ("shared_text", "anchor_relative", "semantic", "no_diag", "full", "diag_only", "slot")
-CONDITIONING_MODES = ("none", "public_zscore")
+CONDITIONING_MODES = ("none", "public_zscore", "public_svd_whiten")
 
 
 def _sha256_file(path: pathlib.Path) -> str:
@@ -174,6 +174,46 @@ def _public_condition_stats(
     return center, scale
 
 
+def _public_svd_condition(
+    values: np.ndarray,
+    example: Example,
+    *,
+    basis_view: str,
+    feature_dim: int,
+    anchor_matrix: np.ndarray | None,
+    target_topk: int,
+) -> np.ndarray:
+    is_vector = values.ndim == 1
+    matrix = values[None, :] if is_vector else values
+    candidates = _candidate_innovations_for_basis(
+        example,
+        basis_view=basis_view,
+        feature_dim=feature_dim,
+        anchor_matrix=anchor_matrix,
+        target_topk=target_topk,
+    )
+    center = np.mean(candidates, axis=0, keepdims=True).astype(np.float32)
+    centered_candidates = (candidates - center).astype(np.float64)
+    try:
+        _, singular_values, vt = np.linalg.svd(centered_candidates, full_matrices=False)
+    except np.linalg.LinAlgError:
+        singular_values = np.asarray([], dtype=np.float64)
+        vt = np.zeros((0, candidates.shape[1]), dtype=np.float64)
+    if singular_values.size == 0 or float(np.max(singular_values)) <= 1e-8:
+        conditioned = matrix - center
+    else:
+        floor = max(float(np.max(singular_values)) * 0.05, 1e-4)
+        rank = int(np.sum(singular_values > floor))
+        rank = max(1, min(rank, vt.shape[0]))
+        basis = vt[:rank].astype(np.float32)
+        denom = np.maximum(singular_values[:rank].astype(np.float32), floor)
+        coeff = ((matrix - center) @ basis.T) / denom[None, :]
+        conditioned = coeff @ basis
+    norms = np.linalg.norm(conditioned, axis=1, keepdims=True)
+    conditioned = np.divide(conditioned, np.maximum(norms, 1e-8)).astype(np.float32)
+    return conditioned[0] if is_vector else conditioned
+
+
 def _same_answer_slot_nonself_index(index: int, examples: list[Example]) -> int:
     current = examples[index]
     current_slot = _answer_index(current)
@@ -202,20 +242,29 @@ def _condition_vector_to_public(
 ) -> np.ndarray:
     if conditioning_mode == "none":
         return vector.astype(np.float32)
-    if conditioning_mode != "public_zscore":
-        raise ValueError(f"unknown conditioning mode {conditioning_mode!r}")
-    center, scale = _public_condition_stats(
-        example,
-        basis_view=basis_view,
-        feature_dim=feature_dim,
-        anchor_matrix=anchor_matrix,
-        target_topk=target_topk,
-    )
-    conditioned = (vector - center) / scale
-    norm = float(np.linalg.norm(conditioned))
-    if norm > 1e-8:
-        conditioned = conditioned / norm
-    return conditioned.astype(np.float32)
+    if conditioning_mode == "public_zscore":
+        center, scale = _public_condition_stats(
+            example,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
+        conditioned = (vector - center) / scale
+        norm = float(np.linalg.norm(conditioned))
+        if norm > 1e-8:
+            conditioned = conditioned / norm
+        return conditioned.astype(np.float32)
+    if conditioning_mode == "public_svd_whiten":
+        return _public_svd_condition(
+            vector,
+            example,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
+    raise ValueError(f"unknown conditioning mode {conditioning_mode!r}")
 
 
 def _condition_candidates_to_public(
@@ -230,18 +279,27 @@ def _condition_candidates_to_public(
 ) -> np.ndarray:
     if conditioning_mode == "none":
         return candidates.astype(np.float32)
-    if conditioning_mode != "public_zscore":
-        raise ValueError(f"unknown conditioning mode {conditioning_mode!r}")
-    center, scale = _public_condition_stats(
-        example,
-        basis_view=basis_view,
-        feature_dim=feature_dim,
-        anchor_matrix=anchor_matrix,
-        target_topk=target_topk,
-    )
-    conditioned = (candidates - center[None, :]) / scale[None, :]
-    norms = np.linalg.norm(conditioned, axis=1, keepdims=True)
-    return np.divide(conditioned, np.maximum(norms, 1e-8)).astype(np.float32)
+    if conditioning_mode == "public_zscore":
+        center, scale = _public_condition_stats(
+            example,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
+        conditioned = (candidates - center[None, :]) / scale[None, :]
+        norms = np.linalg.norm(conditioned, axis=1, keepdims=True)
+        return np.divide(conditioned, np.maximum(norms, 1e-8)).astype(np.float32)
+    if conditioning_mode == "public_svd_whiten":
+        return _public_svd_condition(
+            candidates,
+            example,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
+    raise ValueError(f"unknown conditioning mode {conditioning_mode!r}")
 
 
 def _fit_conditional_encoder(
@@ -1227,9 +1285,10 @@ def run_gate(
             "This gate sends a rate-capped product-quantized conditional innovation: source matched "
             "features minus answer-masked source features are mapped into the target/public candidate "
             "innovation basis and decoded against candidate-minus-target-prior vectors. It directly tests "
-            "whether a shared public basis fixes the disjoint-ID PQ collapse. The public_zscore conditioning "
-            "mode additionally normalizes packet and candidate innovations by each row's public candidate "
-            "geometry before quantization/decoding."
+            "whether a shared public basis fixes the disjoint-ID PQ collapse. The public conditioning "
+            "modes additionally normalize packet and candidate innovations by each row's public candidate "
+            "geometry before quantization/decoding; public_svd_whiten projects through the row's public "
+            "candidate subspace before sparse packet matching."
         ),
     }
     _write_jsonl(output_dir / "predictions.jsonl", rows)

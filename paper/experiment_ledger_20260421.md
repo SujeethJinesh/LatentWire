@@ -23769,3 +23769,42 @@ Lay explanation: this was the map update. We checked all the nearby "maybe
 this receiver works" branches and marked which ones are actually dead, which
 ones are only useful as limited workshop evidence, and what exact branch is
 worth trying next.
+
+## 2026-05-04 Conditional PQ Public-SVD Whitening Gate
+
+Added and tested `--conditioning-mode public_svd_whiten` in the source-private
+conditional-PQ innovation gate:
+
+- script: `scripts/run_source_private_conditional_pq_innovation_gate.py`;
+- test: `tests/test_run_source_private_conditional_pq_innovation_gate.py`;
+- artifacts:
+  `results/source_private_conditional_pq_public_svd_whiten_gate_20260504/`;
+- paper memo:
+  `paper/source_private_conditional_pq_public_svd_whiten_gate_20260504.md`;
+- reference memo:
+  `references/743_public_svd_whiten_conditional_pq_refs_20260504.md`.
+
+Purpose: use each row's public candidate innovation SVD as receiver-side
+geometry before product-quantized source-packet decoding. This was the richer
+deterministic public-conditioning follow-up after public z-score conditioning
+failed.
+
+Outcome: fail, and stronger than the public-zscore failure. Core-to-holdout
+source reached `0.375000` versus target `0.250000`, but `permuted_codes`
+reached `0.613281` and `random_same_byte` reached `0.515625`. Holdout-to-core
+source stayed at target (`0.250000`), while `permuted_codes` reached
+`0.750000`. Paired source-vs-best-control CI95 lows were `-0.320410` and
+`-0.558594`.
+
+Decision: do not widen public-SVD whitening to larger slices, remap repeats, or
+new benchmarks. The deterministic public-conditioned PQ path is weakened: it
+can amplify code artifacts rather than source-causal signal. The next
+highest-value branch should either use a learned conditional codebook/receiver
+with explicit corruption-to-no-op integrity training, or test target-self
+resonance first to prove compact target-native packets can preserve behavior
+before cross-model source conditioning.
+
+Lay explanation: the receiver built a smarter per-question decoder ring from
+the visible answer choices, but scrambled/fake packet codes became more useful
+than real source codes. That means the decoder ring was exploiting code/order
+artifacts, not reading a reliable source message.

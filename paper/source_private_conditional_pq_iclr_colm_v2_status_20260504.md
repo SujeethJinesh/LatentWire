@@ -80,7 +80,21 @@ Do not promote for ICLR yet:
 
 ## Next Exact Gate
 
-Promote the public-conditioned conditional-PQ resurrection gate:
+Update after the public-conditioned resurrection attempts:
+
+- `public_zscore`: failed bidirectional n256 held-out-family gate;
+- `public_svd_whiten`: failed bidirectional n256 held-out-family gate, with
+  permuted-code and random-same-byte controls outperforming source.
+
+Do not widen deterministic public-conditioning gates to n500/remap repeats.
+The next exact gate should be one of two higher-value branches:
+
+1. a learned conditional codebook/receiver with explicit corrupted-packet
+   no-op/integrity training, keeping the same controls;
+2. target-self-resonance preflight, proving compact target-native packets can
+   preserve behavior before adding cross-model source conditioning.
+
+Historical command shape for the now-failed public-conditioned gate:
 
 ```text
 n256 bidirectional held-out family first,

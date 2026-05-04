@@ -2693,5 +2693,12 @@
     "path": "references/742_iclr_colm_v2_live_branch_triage_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference and novelty-boundary memo for the ICLR/COLM_v2 live branch triage, covering dense C2C/KV competitors, TurboQuant/KIVI systems byte floors, conditional codebook priors, and the decision to stop rerunning saturated HellaSwag shallow receiver branches."
+  },
+  {
+    "num": 743,
+    "slug": "public_svd_whiten_conditional_pq_refs_20260504",
+    "path": "references/743_public_svd_whiten_conditional_pq_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference and novelty-boundary memo for the failed public-SVD whitening conditional-PQ gate, covering QINCo/QINCo2, C2C, TurboQuant, and the deterministic public-conditioning failure."
   }
 ]
