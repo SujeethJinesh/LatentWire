@@ -2644,5 +2644,12 @@
     "path": "references/735_packet_integrity_sideband_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted reference memo for the candidate/atom packet-integrity sideband diagnostic, covering semantic HARQ/error detection, neural joint source-channel coding, decoder-side-information coding, C2C/KV competitors, soft-prompt novelty risk, sparse-basis novelty risk, and the held-out integrity failure."
+  },
+  {
+    "num": 736,
+    "slug": "batchtopk_behavior_atom_bank_refs_20260504",
+    "path": "references/736_batchtopk_behavior_atom_bank_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted reference memo and scout readout for the Mac-local BatchTopK behavior atom bank branch, grounding the atom-basis implementation in BatchTopK SAEs, crosscoders/DFC, transcoders, C2C/KVComm, and prefix-tuning novelty boundaries."
   }
 ]

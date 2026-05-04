@@ -23412,3 +23412,60 @@ real packet still helped, but the shifted and damaged packets still helped too.
 Then we added a packet checker, but it rejected every real test packet. That
 means the current packet vocabulary is too unstable; the next step is to learn
 a better sparse vocabulary, not keep tuning the checker.
+
+## 2026-05-04 BatchTopK Behavior Atom-Bank Scout
+
+Implemented the smallest safe atom-basis swap inside the strict ARC
+behavior-atom harness:
+
+- new CLI mode:
+  `--atom-basis-mode batchtopk_behavior`;
+- implementation:
+  `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- reference/novelty memo:
+  `references/736_batchtopk_behavior_atom_bank_refs_20260504.md`;
+- scratch n8 scouts, intentionally kept out of git:
+  `.debug/arc_behavior_batchtopk_n8_atoms16_top1q4/` and
+  `.debug/arc_behavior_batchtopk_n8_atoms16_top2q4/`.
+
+The new atom basis trains a tiny Torch encoder on source-hidden public
+innovations with batch-level top-k sparsity and target behavior loss, then
+emits the same sparse quantized atom-ID/coefficient packet used by the rest of
+the harness. This isolates the question "does a learned behavior-loss sparse
+vocabulary improve atom causality?" without touching the receiver, controls, or
+systems accounting.
+
+Outcome: fail, but useful. The rank-16 top-1 q4 scout ties target-only:
+matched `0.375000`, target-only `0.375000`, fired `8/8`, helped `1`, harmed
+`1`, and loses to Qwen-substitution at `0.625000`. Atom shuffle,
+coefficient shuffle, candidate roll, candidate derangement, zero-source, and
+target-only all tie matched at `0.375000` or better.
+
+The rank-16 top-2 q4 scout also ties target-only: matched `0.375000`,
+target-only `0.375000`, fired `8/8`, helped `2`, harmed `2`, and loses to
+Qwen-substitution at `0.625000`. Same-byte visible text, same-source-choice
+wrong-row, source-row shuffle, zero-source, and top-atom knockout all tie
+matched at `0.375000`.
+
+The atom bank does fit the tiny train behavior targets (`fit_r2 ~= 0.79` for
+top-1 and `0.91` for top-2), so the failure is held-out communication and harm
+control rather than train optimization. This weakens the naive source-only
+BatchTopK behavior atom branch. It does not rule out DFC/crosscoder atoms,
+because this implementation does not yet separate shared, source-private, and
+target-private features from paired source/target activations.
+
+Decision: do not promote naive BatchTopK source-only behavior atoms to n16/n32.
+If continuing sparse atoms, the next branch should add paired source/target
+decomposition or first run a target-side behavior-transcoder atom feasibility
+probe. Keep the implementation because it provides a reusable basis-mode seam
+for DFC/crosscoder/transcoder variants while preserving all existing strict
+controls.
+
+Lay explanation: we replaced the old hand-built feature directions with a
+small learned sparse vocabulary trained to predict what Qwen needs. It learned
+the tiny training examples, but on new examples it did not beat Qwen alone and
+sometimes changed correct answers to wrong ones. That means "learn sparse atoms
+from source features only" is not enough; the atoms need to be grounded in both
+source and target behavior.

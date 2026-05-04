@@ -56,10 +56,15 @@ only source-specific packet information can move the target scores.
   `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_candidate_aligned_noop_w005_emphasis/`
 - candidate/atom packet-integrity diagnostic:
   `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_integrity_candidate_atom_w01/`
+- BatchTopK behavior atom-bank implementation:
+  `--atom-basis-mode batchtopk_behavior` in
+  `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`
+  (initial n8 scouts were run in `.debug/` and intentionally not tracked)
 - reference synthesis:
   `references/731_behavior_atom_decoder_packet_refs_20260504.md`
   and `references/733_event_triggered_packet_gate_refs_20260504.md`
   and `references/734_corruption_noop_receiver_refs_20260504.md`
+  and `references/736_batchtopk_behavior_atom_bank_refs_20260504.md`
 
 ## Results
 
@@ -163,6 +168,19 @@ matched train packets and `53/144` train corruptions, but accepts `0/16`
 held-out matched packets. Matched falls to target-only (`0.2500`) because every
 real held-out packet is rejected.
 
+The first BatchTopK behavior atom-bank scout changes the atom basis rather than
+the receiver. It trains a tiny Torch encoder with batch-level top-k sparsity
+against target behavior targets, then emits the same sparse quantized packet
+format and reuses the full strict ARC receiver/control harness. This was tested
+only as `.debug/` n8 scouts because the gate did not clear promotion criteria.
+Rank-16 top-1 q4 and rank-16 top-2 q4 both tied target-only at `0.3750`.
+Top-1 helped `1` and harmed `1`; top-2 helped `2` and harmed `2`. Both lost to
+Qwen-substitution at `0.6250`, and top-2 also tied same-byte text,
+same-source-choice wrong-row, source-row shuffle, zero-source, and
+top-atom-knockout at `0.3750`. The train behavior fit was high
+(`fit_r2 ~= 0.79` top-1, `0.91` top-2), so the failure is held-out atom
+causality and harm control, not inability to fit the tiny train slice.
+
 ## Diagnostics
 
 The behavior basis fit is train-predictive but not held-out causal enough. For
@@ -197,8 +215,11 @@ corruption-to-no-op receiver training, and no-op residual diagnostics.
 Promote the next branch only if it changes the atom basis enough to remove the
 candidate-roll/top-atom-knockout/same-source-choice failure:
 
-1. small BatchTopK/DFC/crosscoder/transcoder packet atoms that explicitly
-   separate shared, source-private, and target-private behavior features.
+1. DFC/crosscoder/transcoder packet atoms that explicitly separate shared,
+   source-private, and target-private behavior features. A naive source-only
+   BatchTopK behavior encoder is weakened by the n8 scout and should not be
+   scaled without adding a paired source/target decomposition or stronger
+   target-side atom feasibility evidence.
 2. Reintroduce packet-integrity only after the atom bank has stable held-out
    candidate alignment and top-atom knockout sensitivity.
 

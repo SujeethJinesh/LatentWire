@@ -88,6 +88,54 @@ def test_behavior_atom_packet_is_sparse_and_quantized() -> None:
     assert meta["packet_bits_per_candidate"] == 1 * (1 + 3)
 
 
+def test_batchtopk_behavior_atom_packet_is_sparse_and_quantized() -> None:
+    source = np.asarray(
+        [
+            [2.0, 0.0, 1.0],
+            [1.5, 0.1, 0.9],
+            [-1.0, 2.0, 0.0],
+            [-0.8, 2.2, 0.1],
+            [0.1, -1.5, 2.0],
+            [0.0, -1.2, 2.4],
+        ],
+        dtype=np.float64,
+    )
+    behavior = np.asarray(
+        [
+            [1.0, 0.5],
+            [0.9, 0.4],
+            [-1.0, 0.2],
+            [-0.8, 0.1],
+            [0.0, -1.0],
+            [0.1, -0.9],
+        ],
+        dtype=np.float64,
+    )
+
+    packet, meta = gate._fit_batchtopk_behavior_atom_packet_from_features(
+        source,
+        behavior,
+        fit_flat_indices=np.asarray([0, 1, 2, 3], dtype=np.int64),
+        rank=4,
+        top_k=1,
+        quant_bits=3,
+        epochs=40,
+        learning_rate=0.03,
+        batch_size=4,
+        reconstruction_weight=0.01,
+        l1_weight=0.001,
+        seed=11,
+    )
+
+    assert packet.shape == (6, 4)
+    assert meta["kind"] == "train_fit_batchtopk_behavior_hidden_atom_packet_coordinates"
+    assert meta["packet_rank"] == 4
+    assert np.max(np.count_nonzero(packet, axis=1)) <= 1
+    assert meta["packet_bits_per_candidate"] == 1 * (2 + 3)
+    assert meta["batchtopk_active_atoms_max"] <= 1
+    assert meta["batchtopk_behavior_fit_r2"] > -1.0
+
+
 def test_packet_innovation_decoder_is_zero_for_zero_packet() -> None:
     target = np.asarray(
         [
@@ -236,12 +284,18 @@ def test_parse_args_accepts_corruption_noop_receiver() -> None:
             "candidate_roll=0.5,top_atom_knockout=0.75",
             "--packet-integrity-mode",
             "candidate_atom",
+            "--atom-basis-mode",
+            "batchtopk_behavior",
+            "--batchtopk-epochs",
+            "12",
         ]
     )
 
     assert args.receiver_training_mode == "corruption_noop"
     assert args.corruption_loss_weight == 0.25
     assert args.packet_integrity_mode == "candidate_atom"
+    assert args.atom_basis_mode == "batchtopk_behavior"
+    assert args.batchtopk_epochs == 12
     assert gate._parse_condition_weight_spec(args.corruption_condition_weights) == {
         "candidate_roll": 0.5,
         "top_atom_knockout": 0.75,

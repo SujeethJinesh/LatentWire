@@ -84,6 +84,7 @@ EVENT_GATE_CORRUPTION_CONDITIONS = (
 )
 RECEIVER_TRAINING_MODES = ("matched_only", "corruption_noop")
 PACKET_INTEGRITY_MODES = ("none", "candidate_atom")
+ATOM_BASIS_MODES = ("behavior_svd", "batchtopk_behavior")
 
 
 def _parse_condition_weight_spec(spec: str) -> dict[str, float]:
@@ -246,6 +247,174 @@ def _fit_behavior_atom_packet_from_features(
     }
 
 
+def _torch_batch_topk(latent: Any, top_k: int) -> Any:
+    if top_k < 1:
+        return latent
+    import torch
+
+    if latent.numel() == 0:
+        return latent
+    keep = min(int(latent.shape[0]) * int(top_k), int(latent.numel()))
+    if keep >= int(latent.numel()):
+        return latent
+    values = latent.reshape(-1)
+    threshold = torch.topk(values, k=keep, largest=True).values[-1]
+    return latent * (latent >= threshold).to(latent.dtype)
+
+
+def _numpy_topk_rows(values: np.ndarray, top_k: int) -> np.ndarray:
+    matrix = np.asarray(values, dtype=np.float64)
+    if top_k < 1 or top_k >= matrix.shape[1]:
+        return matrix.copy()
+    output = np.zeros_like(matrix, dtype=np.float64)
+    top_ids = np.argsort(matrix, axis=1)[:, -int(top_k) :]
+    rows = np.arange(matrix.shape[0])[:, None]
+    output[rows, top_ids] = matrix[rows, top_ids]
+    return output
+
+
+def _fit_batchtopk_behavior_atom_packet_from_features(
+    source_features: np.ndarray,
+    behavior_targets: np.ndarray,
+    *,
+    fit_flat_indices: np.ndarray,
+    rank: int,
+    top_k: int,
+    quant_bits: int,
+    epochs: int,
+    learning_rate: float,
+    batch_size: int,
+    reconstruction_weight: float,
+    l1_weight: float,
+    seed: int,
+) -> tuple[np.ndarray, dict[str, Any]]:
+    try:
+        import torch
+    except ImportError as exc:  # pragma: no cover - depends on local venv.
+        raise RuntimeError("batchtopk_behavior atom basis requires torch in the repo-local venv") from exc
+
+    source = np.asarray(source_features, dtype=np.float32)
+    targets = np.asarray(behavior_targets, dtype=np.float32)
+    fit = np.asarray(fit_flat_indices, dtype=np.int64)
+    if source.ndim != 2:
+        raise ValueError("source_features must be rank-2")
+    if targets.ndim != 2:
+        raise ValueError("behavior_targets must be rank-2")
+    if source.shape[0] != targets.shape[0]:
+        raise ValueError("source/target row mismatch")
+    if fit.size == 0:
+        raise ValueError("fit_flat_indices must not be empty")
+    if rank < 1:
+        raise ValueError("packet rank must be at least 1")
+
+    torch.manual_seed(int(seed))
+    torch.set_num_threads(max(1, min(4, torch.get_num_threads())))
+
+    x_mean = source[fit].mean(axis=0, keepdims=True)
+    x_std = source[fit].std(axis=0, keepdims=True)
+    x_std = np.where(x_std < 1e-6, 1.0, x_std).astype(np.float32)
+    standardized_source = (source - x_mean) / x_std
+
+    y_mean = targets[fit].mean(axis=0, keepdims=True)
+    y_std = targets[fit].std(axis=0, keepdims=True)
+    y_std = np.where(y_std < 1e-6, 1.0, y_std).astype(np.float32)
+    standardized_targets = (targets - y_mean) / y_std
+
+    tensor_x = torch.from_numpy(standardized_source)
+    tensor_y = torch.from_numpy(standardized_targets)
+    fit_tensor = torch.from_numpy(fit.astype(np.int64))
+    dim = int(tensor_x.shape[1])
+    target_dim = int(tensor_y.shape[1])
+    latent_dim = int(rank)
+
+    encoder = torch.nn.Linear(dim, latent_dim)
+    decoder = torch.nn.Linear(latent_dim, dim)
+    head = torch.nn.Linear(latent_dim, target_dim)
+    torch.nn.init.xavier_uniform_(encoder.weight)
+    torch.nn.init.zeros_(encoder.bias)
+    torch.nn.init.xavier_uniform_(decoder.weight)
+    torch.nn.init.zeros_(decoder.bias)
+    torch.nn.init.xavier_uniform_(head.weight)
+    torch.nn.init.zeros_(head.bias)
+    opt = torch.optim.Adam(
+        list(encoder.parameters()) + list(decoder.parameters()) + list(head.parameters()),
+        lr=float(learning_rate),
+    )
+    rng = np.random.default_rng(int(seed) + 4099)
+    actual_batch = max(4, int(batch_size))
+    final_behavior_loss = 0.0
+    final_reconstruction_loss = 0.0
+    final_l1_loss = 0.0
+    epochs = max(1, int(epochs))
+    for _ in range(epochs):
+        order = rng.permutation(fit)
+        for start in range(0, order.size, actual_batch):
+            batch_ids = torch.from_numpy(order[start : start + actual_batch].astype(np.int64))
+            batch_x = tensor_x[batch_ids]
+            batch_y = tensor_y[batch_ids]
+            latent = torch.relu(encoder(batch_x))
+            sparse_latent = _torch_batch_topk(latent, top_k=top_k)
+            pred_y = head(sparse_latent)
+            reconstruction = decoder(sparse_latent)
+            behavior_loss = torch.mean((pred_y - batch_y) ** 2)
+            reconstruction_loss = torch.mean((reconstruction - batch_x) ** 2)
+            l1_loss = torch.mean(latent)
+            loss = (
+                behavior_loss
+                + float(reconstruction_weight) * reconstruction_loss
+                + float(l1_weight) * l1_loss
+            )
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
+            final_behavior_loss = float(behavior_loss.detach().cpu())
+            final_reconstruction_loss = float(reconstruction_loss.detach().cpu())
+            final_l1_loss = float(l1_loss.detach().cpu())
+
+    with torch.no_grad():
+        latent = torch.relu(encoder(tensor_x)).detach().cpu().numpy().astype(np.float64)
+        sparse_coeffs = _numpy_topk_rows(latent, top_k=top_k)
+        train_latent = torch.from_numpy(sparse_coeffs[fit].astype(np.float32))
+        pred_fit = head(train_latent).detach().cpu().numpy().astype(np.float64)
+        y_fit = standardized_targets[fit].astype(np.float64)
+    fit_mse = float(np.mean(np.square(y_fit - pred_fit)))
+    baseline = float(np.mean(np.square(y_fit - y_fit.mean(axis=0, keepdims=True))))
+    fit_r2 = 0.0 if baseline <= 1e-12 else 1.0 - fit_mse / baseline
+    active_counts = np.count_nonzero(sparse_coeffs[fit] > 1e-8, axis=1)
+
+    sparse_packet, quant_meta = preflight._sparse_topk_quantized_coordinates(
+        sparse_coeffs,
+        fit_flat_indices=fit,
+        top_k=top_k,
+        quant_bits=quant_bits,
+    )
+    return sparse_packet, {
+        "kind": "train_fit_batchtopk_behavior_hidden_atom_packet_coordinates",
+        "fit_candidate_count": int(fit.size),
+        "source_feature_dim": int(source.shape[1]),
+        "behavior_target_dim": int(targets.shape[1]),
+        "packet_rank": int(latent_dim),
+        "requested_packet_rank": int(rank),
+        "batchtopk_top_k": int(top_k),
+        "batchtopk_epochs": int(epochs),
+        "batchtopk_batch_size": int(actual_batch),
+        "batchtopk_learning_rate": float(learning_rate),
+        "batchtopk_reconstruction_weight": float(reconstruction_weight),
+        "batchtopk_l1_weight": float(l1_weight),
+        "batchtopk_final_behavior_loss": float(final_behavior_loss),
+        "batchtopk_final_reconstruction_loss": float(final_reconstruction_loss),
+        "batchtopk_final_l1_loss": float(final_l1_loss),
+        "batchtopk_behavior_fit_mse": float(fit_mse),
+        "batchtopk_behavior_fit_r2": float(fit_r2),
+        "batchtopk_active_atoms_mean": float(active_counts.mean()) if active_counts.size else 0.0,
+        "batchtopk_active_atoms_max": int(active_counts.max()) if active_counts.size else 0,
+        "batchtopk_dead_atom_count": int(np.sum(np.max(sparse_coeffs[fit], axis=0) <= 1e-8)),
+        "source_std_min": float(x_std.min()),
+        "source_std_max": float(x_std.max()),
+        **quant_meta,
+    }
+
+
 def _fit_source_packet(
     rows: Sequence[arc_gate.ArcRow],
     *,
@@ -261,6 +430,13 @@ def _fit_source_packet(
     packet_rank: int,
     packet_top_k: int,
     packet_bits: int,
+    atom_basis_mode: str,
+    batchtopk_epochs: int,
+    batchtopk_learning_rate: float,
+    batchtopk_batch_size: int,
+    batchtopk_reconstruction_weight: float,
+    batchtopk_l1_weight: float,
+    seed: int,
     local_files_only: bool,
 ) -> tuple[np.ndarray, dict[str, Any]]:
     flat_hidden, hidden_meta = preflight._hf_choice_hidden_features(
@@ -280,18 +456,37 @@ def _fit_source_packet(
         ridge=ridge,
     )
     behavior_targets = _behavior_target_matrix(rows, target_scores)
-    sparse_packet, sparse_meta = _fit_behavior_atom_packet_from_features(
-        innovation,
-        behavior_targets,
-        fit_flat_indices=fit_candidate_indices,
-        rank=packet_rank,
-        top_k=packet_top_k,
-        quant_bits=packet_bits,
-    )
+    if atom_basis_mode == "behavior_svd":
+        sparse_packet, sparse_meta = _fit_behavior_atom_packet_from_features(
+            innovation,
+            behavior_targets,
+            fit_flat_indices=fit_candidate_indices,
+            rank=packet_rank,
+            top_k=packet_top_k,
+            quant_bits=packet_bits,
+        )
+    elif atom_basis_mode == "batchtopk_behavior":
+        sparse_packet, sparse_meta = _fit_batchtopk_behavior_atom_packet_from_features(
+            innovation,
+            behavior_targets,
+            fit_flat_indices=fit_candidate_indices,
+            rank=packet_rank,
+            top_k=packet_top_k,
+            quant_bits=packet_bits,
+            epochs=batchtopk_epochs,
+            learning_rate=batchtopk_learning_rate,
+            batch_size=batchtopk_batch_size,
+            reconstruction_weight=batchtopk_reconstruction_weight,
+            l1_weight=batchtopk_l1_weight,
+            seed=seed,
+        )
+    else:
+        raise ValueError(f"unknown atom_basis_mode: {atom_basis_mode}")
     return sparse_packet, {
         "source_hidden": hidden_meta,
         "public": public_meta,
         "source_public_innovation": innovation_meta,
+        "atom_basis_mode": atom_basis_mode,
         "sparse_packet": sparse_meta,
     }
 
@@ -1468,6 +1663,12 @@ def build_gate(
     packet_rank: int,
     packet_top_k: int,
     packet_bits: int,
+    atom_basis_mode: str,
+    batchtopk_epochs: int,
+    batchtopk_learning_rate: float,
+    batchtopk_batch_size: int,
+    batchtopk_reconstruction_weight: float,
+    batchtopk_l1_weight: float,
     local_files_only: bool,
     bootstrap_samples: int,
     same_byte_budget: int,
@@ -1490,6 +1691,8 @@ def build_gate(
         raise ValueError(f"unknown receiver_training_mode: {receiver_training_mode}")
     if packet_integrity_mode not in PACKET_INTEGRITY_MODES:
         raise ValueError(f"unknown packet_integrity_mode: {packet_integrity_mode}")
+    if atom_basis_mode not in ATOM_BASIS_MODES:
+        raise ValueError(f"unknown atom_basis_mode: {atom_basis_mode}")
     output_dir = behavior_gate._resolve(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     input_dir = output_dir / "strict_inputs"
@@ -1564,6 +1767,13 @@ def build_gate(
         packet_rank=packet_rank,
         packet_top_k=packet_top_k,
         packet_bits=packet_bits,
+        atom_basis_mode=atom_basis_mode,
+        batchtopk_epochs=batchtopk_epochs,
+        batchtopk_learning_rate=batchtopk_learning_rate,
+        batchtopk_batch_size=batchtopk_batch_size,
+        batchtopk_reconstruction_weight=batchtopk_reconstruction_weight,
+        batchtopk_l1_weight=batchtopk_l1_weight,
+        seed=seed,
         local_files_only=local_files_only,
     )
     sparse_meta = source_packet_meta["sparse_packet"]
@@ -1980,6 +2190,7 @@ def build_gate(
             "dma_bytes_per_row_128b": int(math.ceil(max(framed_packet_bytes, 1) / 128.0) * 128),
             "decode_flops_proxy_per_row": int(max(len(row.choices) for row in rows) * packet_rank),
             "sparse_packet_metadata": sparse_meta,
+            "atom_basis_mode": atom_basis_mode,
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
             "decoder_mode": decoder_mode,
             "gate_mode": gate_mode,
@@ -2031,6 +2242,12 @@ def build_gate(
             "packet_rank": int(packet_rank),
             "packet_top_k": int(packet_top_k),
             "packet_bits": int(packet_bits),
+            "atom_basis_mode": atom_basis_mode,
+            "batchtopk_epochs": int(batchtopk_epochs),
+            "batchtopk_learning_rate": float(batchtopk_learning_rate),
+            "batchtopk_batch_size": int(batchtopk_batch_size),
+            "batchtopk_reconstruction_weight": float(batchtopk_reconstruction_weight),
+            "batchtopk_l1_weight": float(batchtopk_l1_weight),
             "same_byte_budget": int(same_byte_budget_used),
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
             "decoder_mode": decoder_mode,
@@ -2044,7 +2261,8 @@ def build_gate(
         },
         "interpretation": (
             "This gate tests whether source-hidden innovations become more useful when the sparse atom basis is "
-            "trained toward target residual behavior rather than unsupervised PCA variance. It passes only if the "
+            "trained toward target residual behavior rather than unsupervised PCA variance. The atom basis mode is "
+            f"`{atom_basis_mode}`. It passes only if the "
             "matched packet beats target-only, target-decoder-only, target-derived packets, same-source-choice and "
             "generic wrong-row packets, atom/coefficient destruction, candidate roll/derangement, source-index/"
             "rank/score, same-byte text, and Qwen-substitution controls with positive paired uncertainty."
@@ -2100,6 +2318,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--packet-rank", type=int, default=8)
     parser.add_argument("--packet-top-k", type=int, default=2)
     parser.add_argument("--packet-bits", type=int, default=4)
+    parser.add_argument("--atom-basis-mode", choices=ATOM_BASIS_MODES, default="behavior_svd")
+    parser.add_argument("--batchtopk-epochs", type=int, default=300)
+    parser.add_argument("--batchtopk-learning-rate", type=float, default=0.01)
+    parser.add_argument("--batchtopk-batch-size", type=int, default=16)
+    parser.add_argument("--batchtopk-reconstruction-weight", type=float, default=0.05)
+    parser.add_argument("--batchtopk-l1-weight", type=float, default=0.001)
     parser.add_argument("--local-files-only", choices=("true", "false"), default="true")
     parser.add_argument("--bootstrap-samples", type=int, default=500)
     parser.add_argument(
@@ -2160,6 +2384,12 @@ def main(argv: list[str] | None = None) -> int:
         packet_rank=int(args.packet_rank),
         packet_top_k=int(args.packet_top_k),
         packet_bits=int(args.packet_bits),
+        atom_basis_mode=str(args.atom_basis_mode),
+        batchtopk_epochs=int(args.batchtopk_epochs),
+        batchtopk_learning_rate=float(args.batchtopk_learning_rate),
+        batchtopk_batch_size=int(args.batchtopk_batch_size),
+        batchtopk_reconstruction_weight=float(args.batchtopk_reconstruction_weight),
+        batchtopk_l1_weight=float(args.batchtopk_l1_weight),
         local_files_only=str(args.local_files_only).lower() == "true",
         bootstrap_samples=int(args.bootstrap_samples),
         same_byte_budget=int(args.same_byte_budget),
