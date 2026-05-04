@@ -23162,3 +23162,58 @@ makes. That helped a little and did not break answers, but fake clues from
 another row with the same TinyLlama answer worked about as well. We need the
 next version to prove the packet contains row-specific evidence, not just a
 generic correction or source-answer shortcut.
+
+## 2026-05-04 Packet-Innovation Behavior-Atom Decoder Diagnostic
+
+Implemented and ran the no-intercept packet-only innovation diagnostic inside
+the behavior-atom decoder harness. This decoder is deliberately stricter than
+the target-conditioned residual decoder: it builds candidate residual features
+only from interactions involving the sparse packet, so an all-zero packet
+decodes to an all-zero score residual by construction.
+
+- updated script:
+  `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- updated tests:
+  `tests/test_build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- packet-innovation diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_packet_innovation/`;
+- updated memo:
+  `paper/behavior_atom_decoder_sparse_resonance_packet_gate_20260504.md`;
+- reference synthesis:
+  `references/732_packet_innovation_decoder_refs_20260504.md`.
+
+Outcome: fail, but the failure is useful. The rank-8 top-2 4-bit
+packet-only innovation decoder uses `7` framed bytes per row and reaches
+matched accuracy `0.250000`, tying target-only and zero-source at `0.250000`.
+It fires on `7/16` held-out rows, helps `1`, harms `1`, and has net help `0`.
+It beats generic source-row shuffle, atom shuffle, and target-derived packet by
+one row, but those paired CI95 lows are not positive enough for a claim.
+
+The required shortcut controls still dominate or tie: same-source-choice
+wrong-row, same-byte visible text, top-atom knockout, and candidate derangement
+tie matched at `0.250000`; candidate roll, source-index, source-rank,
+source-score, and source-score quantization reach `0.312500`; coefficient
+shuffle reaches `0.375000`; Qwen substitution reaches `0.437500`. Worst
+required paired CI95 low is `-0.437500`.
+
+Important diagnostic: the packet-only decoder removes the zero-source receiver
+shortcut but also removes held-out lift. Its train decoder fit is strong
+(`fit_r2 = 0.653`) and the selected train gate reaches `0.75` accuracy with
+`9` train helps and `0` train harms, so the problem is not fitting train
+behavior. The problem is that a linear packet-dependent receiver cannot
+generalize a safe override rule on this frozen n16 surface.
+
+Decision: demote linear packet-only innovation as the next ICLR-positive
+branch. Keep the decoder mode because it is the cleanest diagnostic for
+zero-packet causality. Promote an event-triggered accept/abstain innovation
+decoder or a target-loss Dedicated Feature Crosscoder/BatchTopK packet atom
+preflight with corruption-to-no-op training. Do not widen benchmarks until one
+of those beats target-only, source-index/rank/score, same-byte text, wrong-row
+packets, candidate roll/derangement, atom/coefficient destruction, and
+Qwen-substitution with paired uncertainty on the frozen slice.
+
+Lay explanation: we made the receiver unable to change its answer unless the
+tiny packet actually contains nonzero information. That fixed one kind of
+cheating, but the real packet no longer improved Qwen's answers. The next
+receiver needs to learn when to ignore a risky packet, not only how to decode
+it.

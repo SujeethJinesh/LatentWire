@@ -2616,5 +2616,12 @@
     "path": "references/731_behavior_atom_decoder_packet_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted reference memo for the behavior-supervised atom decoder Sparse Resonance Packet gate, covering dense C2C/KVComm/activation competitors, sparse basis priors, quantized KV byte floors, and same-source-choice wrong-row controls."
+  },
+  {
+    "num": 732,
+    "slug": "packet_innovation_decoder_refs_20260504",
+    "path": "references/732_packet_innovation_decoder_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted reference memo for the no-intercept packet-innovation decoder diagnostic, covering dense C2C/KV competitors, sparse basis/DFC directions, quantized KV byte floors, required destructive controls, and the promoted event-triggered accept/abstain receiver gate."
   }
 ]

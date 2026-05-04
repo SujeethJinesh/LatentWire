@@ -17,6 +17,7 @@ import math
 import pathlib
 import statistics
 import sys
+from dataclasses import dataclass
 from typing import Any, Sequence
 
 import numpy as np
@@ -70,6 +71,20 @@ CONTROL_CONDITIONS = (
 )
 REPORT_CONDITIONS = (MATCHED_CONDITION, *CONTROL_CONDITIONS)
 STRICT_REQUIRED_CONTROLS = CONTROL_CONDITIONS
+
+
+@dataclass(frozen=True)
+class RidgeNoInterceptScalarMap:
+    x_scale: np.ndarray
+    weights: np.ndarray
+    ridge: float
+    fit_mse: float
+    fit_r2: float
+
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        values = np.asarray(x, dtype=np.float64)
+        scaled = values / self.x_scale
+        return scaled @ self.weights
 
 
 def _behavior_target_matrix(
@@ -227,6 +242,71 @@ def _fit_source_packet(
     }
 
 
+def _innovation_decoder_features(target_features: np.ndarray, packet_features: np.ndarray) -> np.ndarray:
+    target = np.asarray(target_features, dtype=np.float64)
+    packet = np.asarray(packet_features, dtype=np.float64)
+    if target.ndim != 2 or packet.ndim != 2:
+        raise ValueError("target_features and packet_features must be rank-2")
+    if target.shape[0] != packet.shape[0]:
+        raise ValueError("target/packet candidate mismatch")
+    if target.shape[1] < 5:
+        raise ValueError("target_features must include score, centered, prob, rank, and margin columns")
+    centered = target[:, [1]]
+    probability = target[:, [2]]
+    margin = target[:, [4]]
+    return np.concatenate(
+        [
+            packet,
+            np.abs(packet),
+            packet * centered,
+            packet * probability,
+            packet * margin,
+            packet * np.square(centered),
+        ],
+        axis=1,
+    )
+
+
+def _fit_ridge_no_intercept_scalar_map(
+    features: np.ndarray,
+    targets: np.ndarray,
+    *,
+    fit_indices: np.ndarray,
+    ridge: float,
+) -> RidgeNoInterceptScalarMap:
+    x = np.asarray(features, dtype=np.float64)
+    y = np.asarray(targets, dtype=np.float64)
+    fit = np.asarray(fit_indices, dtype=np.int64)
+    if x.ndim != 2 or y.ndim != 1:
+        raise ValueError("features must be rank-2 and targets rank-1")
+    if x.shape[0] != y.shape[0]:
+        raise ValueError("feature/target row mismatch")
+    if fit.size == 0:
+        raise ValueError("fit_indices must not be empty")
+    if ridge < 0.0:
+        raise ValueError("ridge must be non-negative")
+    x_scale = x[fit].std(axis=0, keepdims=True).clip(min=1e-6)
+    scaled = x / x_scale
+    x_fit = scaled[fit]
+    y_fit = y[fit]
+    xtx = x_fit.T @ x_fit
+    if ridge > 0.0:
+        xtx = xtx + float(ridge) * np.eye(xtx.shape[0], dtype=np.float64)
+    xty = x_fit.T @ y_fit
+    weights = np.linalg.solve(xtx, xty)
+    pred_fit = x_fit @ weights
+    mse = float(np.mean(np.square(y_fit - pred_fit)))
+    baseline = float(np.mean(np.square(y_fit)))
+    r2 = 0.0 if baseline <= 1e-12 else 1.0 - mse / baseline
+    return RidgeNoInterceptScalarMap(
+        x_scale=x_scale,
+        weights=weights,
+        ridge=float(ridge),
+        fit_mse=mse,
+        fit_r2=float(r2),
+    )
+
+
 def _same_choice_shuffle_index(
     *,
     row_index: int,
@@ -273,15 +353,38 @@ def _decode_one_row(
     row_index: int,
     target_features: np.ndarray,
     packet: np.ndarray,
-    decoder: behavior_gate.RidgeScalarMap,
+    decoder: Any,
+    decoder_mode: str,
 ) -> np.ndarray:
     start, end = hidden_gate._row_offsets(rows)[row_index]
-    return hidden_gate._decode_residual_rows(
+    return _decode_packet_residual_rows(
         [row],
         target_features=target_features[start:end],
         packet_features=np.asarray(packet, dtype=np.float64),
         decoder=decoder,
+        decoder_mode=decoder_mode,
     )[0]
+
+
+def _decode_packet_residual_rows(
+    rows: Sequence[arc_gate.ArcRow],
+    *,
+    target_features: np.ndarray,
+    packet_features: np.ndarray,
+    decoder: Any,
+    decoder_mode: str,
+) -> list[np.ndarray]:
+    if decoder_mode == "target_conditioned":
+        return hidden_gate._decode_residual_rows(
+            rows,
+            target_features=target_features,
+            packet_features=packet_features,
+            decoder=decoder,
+        )
+    if decoder_mode == "packet_innovation":
+        flat_pred = decoder.predict(_innovation_decoder_features(target_features, packet_features))
+        return hidden_gate._rows_from_candidate_values(rows, flat_pred)
+    raise ValueError(f"unknown decoder_mode: {decoder_mode}")
 
 
 def _subtract_row_baseline(residuals: Sequence[np.ndarray], baselines: Sequence[np.ndarray]) -> list[np.ndarray]:
@@ -397,10 +500,13 @@ def build_gate(
     bootstrap_samples: int,
     same_byte_budget: int,
     subtract_zero_packet_baseline: bool,
+    decoder_mode: str,
     min_accuracy_gap: float,
     min_ci_low: float,
     seed: int,
 ) -> dict[str, Any]:
+    if decoder_mode not in {"target_conditioned", "packet_innovation"}:
+        raise ValueError(f"unknown decoder_mode: {decoder_mode}")
     output_dir = behavior_gate._resolve(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     input_dir = output_dir / "strict_inputs"
@@ -508,12 +614,20 @@ def build_gate(
 
     target_features = hidden_gate._target_score_features(rows, target_scores)
     behavior_targets = behavior_gate._candidate_targets(rows, target_scores)
-    decoder = behavior_gate._fit_ridge_scalar_map(
-        hidden_gate._decoder_features(target_features, source_packet_flat),
-        behavior_targets,
-        fit_indices=fit_candidate_indices,
-        ridge=ridge,
-    )
+    if decoder_mode == "packet_innovation":
+        decoder = _fit_ridge_no_intercept_scalar_map(
+            _innovation_decoder_features(target_features, source_packet_flat),
+            behavior_targets,
+            fit_indices=fit_candidate_indices,
+            ridge=ridge,
+        )
+    else:
+        decoder = behavior_gate._fit_ridge_scalar_map(
+            hidden_gate._decoder_features(target_features, source_packet_flat),
+            behavior_targets,
+            fit_indices=fit_candidate_indices,
+            ridge=ridge,
+        )
     target_only_decoder = behavior_gate._fit_ridge_scalar_map(
         target_features,
         behavior_targets,
@@ -528,25 +642,28 @@ def build_gate(
     )
     target_derived_packet_flat = target_packet_map.predict(target_features)
 
-    source_residuals = hidden_gate._decode_residual_rows(
+    source_residuals = _decode_packet_residual_rows(
         rows,
         target_features=target_features,
         packet_features=source_packet_flat,
         decoder=decoder,
+        decoder_mode=decoder_mode,
     )
     target_decoder_residuals = hidden_gate._rows_from_candidate_values(rows, target_only_decoder.predict(target_features))
-    target_derived_residuals = hidden_gate._decode_residual_rows(
+    target_derived_residuals = _decode_packet_residual_rows(
         rows,
         target_features=target_features,
         packet_features=target_derived_packet_flat,
         decoder=decoder,
+        decoder_mode=decoder_mode,
     )
     zero_packet_flat = np.zeros_like(source_packet_flat)
-    zero_residuals = hidden_gate._decode_residual_rows(
+    zero_residuals = _decode_packet_residual_rows(
         rows,
         target_features=target_features,
         packet_features=zero_packet_flat,
         decoder=decoder,
+        decoder_mode=decoder_mode,
     )
     zero_baseline_residuals = [np.asarray(residual, dtype=np.float64) for residual in zero_residuals]
     if subtract_zero_packet_baseline:
@@ -608,6 +725,7 @@ def build_gate(
                     target_features=target_features,
                     packet=packet,
                     decoder=decoder,
+                    decoder_mode=decoder_mode,
                 )
                 if subtract_zero_packet_baseline:
                     residual = np.asarray(residual, dtype=np.float64) - np.asarray(
@@ -751,6 +869,7 @@ def build_gate(
             "decode_flops_proxy_per_row": int(max(len(row.choices) for row in rows) * packet_rank),
             "sparse_packet_metadata": sparse_meta,
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
+            "decoder_mode": decoder_mode,
             "note": (
                 "Byte counts cover behavior-supervised source-hidden atom IDs plus quantized coefficients only. "
                 "They are not native GPU throughput, HBM traffic, or an end-to-end serving measurement."
@@ -761,6 +880,7 @@ def build_gate(
             "target_score_metadata": target_score_meta,
             "same_byte_score_metadata": same_byte_meta,
             "target_conditioned_decoder": {
+                "decoder_mode": decoder_mode,
                 "ridge": decoder.ridge,
                 "fit_mse": decoder.fit_mse,
                 "fit_r2": decoder.fit_r2,
@@ -795,6 +915,7 @@ def build_gate(
             "packet_bits": int(packet_bits),
             "same_byte_budget": int(same_byte_budget_used),
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
+            "decoder_mode": decoder_mode,
         },
         "interpretation": (
             "This gate tests whether source-hidden innovations become more useful when the sparse atom basis is "
@@ -863,6 +984,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Visible-text byte budget. 0 means use framed packet bytes per row.",
     )
     parser.add_argument("--subtract-zero-packet-baseline", choices=("true", "false"), default="true")
+    parser.add_argument("--decoder-mode", choices=("target_conditioned", "packet_innovation"), default="target_conditioned")
     parser.add_argument("--min-accuracy-gap", type=float, default=0.0)
     parser.add_argument("--min-ci-low", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=37)
@@ -900,6 +1022,7 @@ def main(argv: list[str] | None = None) -> int:
         bootstrap_samples=int(args.bootstrap_samples),
         same_byte_budget=int(args.same_byte_budget),
         subtract_zero_packet_baseline=str(args.subtract_zero_packet_baseline).lower() == "true",
+        decoder_mode=str(args.decoder_mode),
         min_accuracy_gap=float(args.min_accuracy_gap),
         min_ci_low=float(args.min_ci_low),
         seed=int(args.seed),

@@ -88,6 +88,32 @@ def test_behavior_atom_packet_is_sparse_and_quantized() -> None:
     assert meta["packet_bits_per_candidate"] == 1 * (1 + 3)
 
 
+def test_packet_innovation_decoder_is_zero_for_zero_packet() -> None:
+    target = np.asarray(
+        [
+            [0.1, 0.2, 0.3, 1.0, 0.4],
+            [0.0, -0.5, 0.2, 0.5, -0.1],
+            [0.4, 0.8, 0.6, 1.0, 0.2],
+        ],
+        dtype=np.float64,
+    )
+    packet = np.asarray([[1.0, 0.0], [0.0, 2.0], [1.0, -1.0]], dtype=np.float64)
+    targets = np.asarray([0.5, -0.5, 0.25], dtype=np.float64)
+
+    features = gate._innovation_decoder_features(target, packet)
+    model = gate._fit_ridge_no_intercept_scalar_map(
+        features,
+        targets,
+        fit_indices=np.asarray([0, 1, 2], dtype=np.int64),
+        ridge=0.1,
+    )
+    zero_features = gate._innovation_decoder_features(target, np.zeros_like(packet))
+
+    assert features.shape == (3, 12)
+    assert np.allclose(model.predict(zero_features), 0.0)
+    assert model.fit_r2 > 0.0
+
+
 def test_same_source_choice_shuffle_prefers_same_choice_same_shape() -> None:
     rows = _rows()
     index = gate._same_choice_shuffle_index(
