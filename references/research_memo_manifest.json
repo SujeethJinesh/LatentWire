@@ -2287,5 +2287,12 @@
     "path": "references/683_hellaswag_score_channel_true_candidate_text_permutation_refs_20260503.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the HellaSwag score-channel true candidate-text permutation smoke, recording a fresh physical candidate-ending rerun, canonical remapping, option-order MCQ robustness boundaries, and strict separation from full fixed-hybrid hidden reruns, prefix/gist tokens, C2C, KVComm, QJL, and TurboQuant."
+  },
+  {
+    "num": 684,
+    "slug": "hellaswag_fixed_hybrid_true_candidate_text_permutation_refs_20260503",
+    "path": "references/684_hellaswag_fixed_hybrid_true_candidate_text_permutation_refs_20260503.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the full hidden fixed-hybrid HellaSwag true candidate-text permutation gate, recording 512-row physical candidate-ending hardening, MCQ option-order boundaries, and strict separation from prefix/gist tokens, C2C, KVComm, QJL, TurboQuant, sparse crosscoders, and latent diffusion."
   }
 ]

@@ -20952,3 +20952,57 @@ back to the original candidate. The selected original candidate stayed the
 same after shuffling, so this score-channel hint follows answer text rather
 than display slots. It does not yet prove the full hidden hybrid hint survives
 the same shuffle.
+
+## 2026-05-03 HellaSwag Fixed-Hybrid True Candidate-Text Permutation Gate
+
+Implemented and ran a full hidden fixed-hybrid true candidate-text permutation
+gate for HellaSwag.
+
+- script added:
+  `scripts/build_source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate.py`;
+- test added:
+  `tests/test_build_source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260503_validation0_512/`;
+- memo:
+  `paper/source_private_hellaswag_fixed_hybrid_true_candidate_text_permutation_gate_20260503.md`;
+- references:
+  `references/684_hellaswag_fixed_hybrid_true_candidate_text_permutation_refs_20260503.md`.
+
+Gate design: use HellaSwag validation rows `0:512`, assign one non-identity
+candidate-ending permutation per canonical row, physically reorder the
+candidate text and displayed answer index, rerun the existing Qwen hidden
+innovation eval-slice stress pipeline with fresh score and hidden caches, then
+map the display-space fixed-hybrid prediction back to the canonical candidate
+ID and compare against the original same-row first-slice prediction artifact.
+
+Outcome: the 512-row hidden fixed-hybrid candidate-text hardening flag passes.
+The permuted hidden pipeline used fresh caches (`score_cache_hit: false`,
+`hidden_cache_hit: false`). Original same-row fixed-hybrid accuracy is
+`0.525391`; remapped fixed-hybrid accuracy is `0.531250`, delta `+0.005859`
+with paired CI95 low `-0.009766`. Canonical prediction consistency is
+`0.955078`; unremapped accuracy collapses to `0.236328`; wrong-remap accuracy
+collapses to `0.177734`; wrong-remap CI95 high versus remapped is `-0.288965`.
+The fixed final packet remains `1B` raw / `4B` framed with no source text, KV,
+hidden vector, score vector, or logits transmitted.
+
+The permuted hidden pipeline itself remains positive on the shuffled candidate
+text: selected accuracy is `0.531250` versus best label-copy `0.482422`, delta
+`+0.048828`, paired CI95 low `+0.021484`; score-channel roll hidden control is
+`0.246094`, wrong-example hidden control is `0.414062`, and candidate-roll
+hidden control is `0.400391`.
+
+Decision: promote this as 512-row physical candidate-text hardening for the
+full hidden fixed-hybrid HellaSwag packet. Do not promote it as exact
+candidate-order invariance, full-validation permutation invariance, learned
+receiver/common-basis evidence, or a native systems result. The next method
+branch should be decision-supervised SAE/crosscoder hidden-innovation packets,
+unless we first widen this permutation gate to `1024` rows or all `24`
+permutations on `512` rows.
+
+Lay explanation: we shuffled the answer endings, reran the full hidden hybrid
+pipeline from scratch, and translated the displayed answer number back to the
+original candidate number. The remapped predictions stayed close to the
+original predictions, while unremapped and wrong-remapped predictions failed
+badly. That means the full hybrid hint is mostly following answer text rather
+than answer slots.
