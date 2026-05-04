@@ -64,12 +64,17 @@ only source-specific packet information can move the target scores.
   `--atom-basis-mode paired_batchtopk_behavior` in the same strict harness;
   target hidden states are used only for train-time basis calibration, and
   held-out runtime packets remain source-only
+- target-side behavior-transcoder diagnostic:
+  `scripts/build_arc_challenge_target_behavior_transcoder_probe.py`; this is a
+  target-hidden oracle feasibility probe, not a source-private communication
+  result
 - reference synthesis:
   `references/731_behavior_atom_decoder_packet_refs_20260504.md`
   and `references/733_event_triggered_packet_gate_refs_20260504.md`
   and `references/734_corruption_noop_receiver_refs_20260504.md`
   and `references/736_batchtopk_behavior_atom_bank_refs_20260504.md`
   and `references/737_paired_batchtopk_crosscoder_atom_refs_20260504.md`
+  and `references/738_target_behavior_transcoder_probe_refs_20260504.md`
 
 ## Results
 
@@ -200,6 +205,20 @@ at `0.6250`. The train source/target behavior fits are high
 (`source_fit_r2 ~= 0.73/0.90`, `target_fit_r2 ~= 0.93/0.96`), so this again
 looks like train-fit without held-out communication utility.
 
+The target-side behavior-transcoder probe tested the precursor claim that
+Qwen-native sparse atoms can steer Qwen before any source transmission is
+attempted. It is explicitly marked
+`target_hidden_oracle_feasibility_only`: Qwen target hidden states are used at
+runtime, no source model is used, and the result must not be treated as
+source-private communication. Two `.debug/` n8 scouts failed. Rank-16 top-2 q4
+reaches matched `0.2500` versus target-only `0.3750`, fires on `8/8`, helps
+`0`, harms `1`, and loses to coefficient shuffle at `0.5000`. Rank-32 top-4 q4
+also reaches matched `0.2500` versus target-only `0.3750`, fires on `8/8`,
+helps `0`, harms `1`, and does not beat target-only. In both runs the selected
+receiver overfits train accuracy to `1.0000`; held-out fixed-weight sweeps pick
+residual weight `0.0` for matched packets, so the best held-out behavior is to
+ignore the packet.
+
 ## Diagnostics
 
 The behavior basis fit is train-predictive but not held-out causal enough. For
@@ -223,6 +242,12 @@ candidate-aligned causal information for a held-out integrity gate to trust
 them. The next live method must change the atom basis so candidate-rolled and
 top-atom-knockout packets naturally collapse.
 
+The target-side oracle diagnostic adds one more constraint: even when we grant
+runtime target hidden states, this particular sparse behavior-transcoder atom
+decoder does not show held-out causal lift. That weakens the "validate
+target-native atoms first, then transmit them" path unless the target atom basis
+or receiver objective changes materially.
+
 ## Decision
 
 Demote the current linear behavior-atom residual decoder and weighted
@@ -243,8 +268,8 @@ candidate-roll/top-atom-knockout/same-source-choice failure:
 2. Reintroduce packet-integrity only after the atom bank has stable held-out
    candidate alignment and top-atom knockout sensitivity.
 3. Before another atom-bank scale-up, run a target-side behavior-transcoder
-   feasibility probe: prove that sparse target-native atoms can causally steer
-   ARC margins before asking the source to transmit those atoms.
+   feasibility probe with a materially different decision surface. The first
+   direct residual-steering probe failed, so do not scale it unchanged.
 
 Lay explanation: we trained the feature clues to point at the kinds of mistakes
 Qwen makes, rather than at generic TinyLlama hidden-state variation. That helped

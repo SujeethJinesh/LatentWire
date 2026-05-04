@@ -23520,3 +23520,52 @@ test time. The vocabulary learned the training examples very well, but the
 packets made Qwen worse on new examples. So the issue is not just that the old
 vocabulary was source-only; we need a receiver-aware or target-native way to
 make sparse atoms useful.
+
+## 2026-05-04 Target-Side Behavior-Transcoder Feasibility Probe
+
+Implemented a standalone target-hidden oracle diagnostic:
+
+- script:
+  `scripts/build_arc_challenge_target_behavior_transcoder_probe.py`;
+- tests:
+  `tests/test_build_arc_challenge_target_behavior_transcoder_probe.py`;
+- reference memo:
+  `references/738_target_behavior_transcoder_probe_refs_20260504.md`;
+- scratch n8 scouts, intentionally kept out of git:
+  `.debug/arc_target_behavior_transcoder_probe_n8_rank16_top2q4/` and
+  `.debug/arc_target_behavior_transcoder_probe_n8_rank32_top4q4/`.
+
+This probe is not a source-private communication result. It uses Qwen target
+hidden states at runtime and is explicitly labeled
+`target_hidden_oracle_feasibility_only`. The point was to test the precursor
+claim: if target-native sparse behavior atoms cannot causally steer Qwen ARC
+candidate margins, then asking TinyLlama to transmit those atoms is unlikely to
+be the next best ICLR branch.
+
+Outcome: fail. The rank-16 top-2 q4 diagnostic reaches matched `0.250000`
+versus target-only `0.375000`, fires on `8/8`, helps `0`, harms `1`, and loses
+to coefficient shuffle at `0.500000`. The rank-32 top-4 q4 diagnostic also
+reaches matched `0.250000` versus target-only `0.375000`, fires on `8/8`,
+helps `0`, harms `1`, and does not beat target-only.
+
+The selected gate overfits train behavior in both runs: train accuracy is
+`1.000000`, train helps are `8/8`, and the chosen residual weight is `4.0`.
+Held-out fixed-weight sweeps explain the failure. For matched packets, the best
+held-out residual weight is `0.0` in both settings, which simply recovers
+target-only. In contrast, coefficient-shuffled packets can reach `0.500000` on
+the tiny slice. This means the current target-native atom/residual decoder has
+no held-out causal lift; scaling this exact branch would be poor expected
+value.
+
+Decision: weaken target-side sparse behavior-transcoder atoms as a promoted
+positive-method branch. Keep the script because it is a useful claim-separation
+diagnostic and can test future target-native bases, but do not spend the next
+turn widening this setting. The next gate should change the decision surface:
+either target error/defer prediction, a no-harm calibrated receiver, or another
+source-private side-information branch with stronger held-out causality.
+
+Lay explanation: we gave Qwen access to its own internal clues and asked
+whether a tiny sparse packet could nudge it toward the right ARC answer. It
+memorized the training examples, but on new examples the best move was to
+ignore the packet. That means this version of sparse target atoms is not yet a
+useful steering language.
