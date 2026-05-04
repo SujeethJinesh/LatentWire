@@ -22227,3 +22227,49 @@ Lay explanation: TinyLlama often narrows the answer to the right two choices,
 but the learned hidden message does not teach Qwen which one to choose. It
 nudges Qwen's score distribution slightly, but a zero-source message does just
 as well on this slice.
+
+## 2026-05-04 HellaSwag Consistency-Refined Slot Gate
+
+Implemented and ran a one-step consistency-refined target-native slot gate
+after the direct source-hidden residual branch failed. The bridge initializes
+Qwen slots from frozen target slots plus a TinyLlama source-hidden residual,
+scores candidates, then applies one learned refinement update conditioned on
+the source features and Qwen's current candidate-score state. Qwen never
+receives the original HellaSwag context text in the compressed path.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_consistency_refined_slot_gate.py`;
+- test:
+  `tests/test_build_target_self_resonance_hellaswag_consistency_refined_slot_gate.py`;
+- artifact:
+  `results/target_self_resonance_hellaswag_consistency_refined_slot_gate_20260504_tiny_to_qwen05_train64_validation88_96/`;
+- memo:
+  `paper/target_self_resonance_consistency_refined_slot_gate_20260504.md`;
+- references:
+  `references/707_target_self_resonance_consistency_refined_slot_refs_20260504.md`.
+
+Outcome: fail under the strict source-specificity rule. The consistency-refined
+path improves accuracy over frozen target slots and no-refine source residual
+on the 8-row held-out slice (`0.375000` versus `0.250000`), but it ties
+wrong-source refinement, candidate-roll source refinement, and shuffled-refine
+controls at `0.375000`. It also worsens KL relative to the no-refine path
+(`0.178246` versus `0.178143`). Paired delta versus frozen target slots is
+`0.125000`, but CI95 low is `0.000000`.
+
+Row-level diagnosis: the single useful answer flip occurs on row `1117`, but
+wrong-source, candidate-roll, and shuffled-refine variants flip the same row.
+That means the learned refinement behaves like a generic target-score
+perturbation rather than source-specific communication. The source top1/top2
+oracle is `1.000000` on this slice, so there is source-side headroom, but this
+interface does not extract it.
+
+Decision: demote one-step consistency-refined slots as currently implemented.
+Do not add more unconstrained residual/refinement steps without a stronger
+source-specific objective and controls. The next branch should either learn a
+compact sparse/common-basis source code with atom-shuffle/wrong-row controls or
+return to oracle-prefix distillation with a stricter source-conditioned target.
+
+Lay explanation: we let Qwen look at its first guess from the hidden clue, then
+gave it one chance to revise the clue. It changed one answer, but the same
+change happened even when we gave it the wrong source clue, so the revision is
+not trustworthy evidence of model-to-model communication.

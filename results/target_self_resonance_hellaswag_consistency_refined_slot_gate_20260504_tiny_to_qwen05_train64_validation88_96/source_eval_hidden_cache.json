@@ -1,0 +1,27 @@
+{
+  "cache_hit": false,
+  "content_digest": "1ae16896f514b2e223bc583bb34d24f72a59480856bb4ac145342d5a252d33ca",
+  "created_utc": "2026-05-04T13:22:38.460142+00:00",
+  "device": "mps",
+  "dtype": "float16",
+  "hidden_dim": 2048,
+  "kind": "local_causal_lm_hidden_choice_mean",
+  "latency_s": 1.3618142500054091,
+  "layers": [
+    -1
+  ],
+  "max_length": 256,
+  "model_path": "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+  "prompt_mode": "continuation",
+  "row_count": 8,
+  "row_ids": [
+    "1115",
+    "1117",
+    "1119",
+    "1140",
+    "1189",
+    "1199",
+    "1200",
+    "1201"
+  ]
+}

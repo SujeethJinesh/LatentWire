@@ -2448,5 +2448,12 @@
     "path": "references/706_target_self_resonance_source_hidden_residual_slot_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the failed TinyLlama-hidden to Qwen soft-prefix residual gate, recording novelty boundaries against prefix/prompt tuning, gist/AutoCompressors/ICAE, Perceiver/Flamingo/Q-Former bridge modules, representation alignment and SAE common-basis work, C2C/KVComm, vLLM/SGLang, TurboQuant/KV quantization, and consistency/refinement inspiration."
+  },
+  {
+    "num": 707,
+    "slug": "target_self_resonance_consistency_refined_slot_refs_20260504",
+    "path": "references/707_target_self_resonance_consistency_refined_slot_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the failed TinyLlama-to-Qwen consistency-refined slot gate, recording novelty boundaries against consistency models and latent consistency models, prefix/prompt/gist compression, C2C/KVComm/KVCOMM communication competitors, relative representations and SAE common-basis work, and QJL/TurboQuant systems baselines."
   }
 ]
