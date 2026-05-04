@@ -2329,5 +2329,12 @@
     "path": "references/689_source_private_systems_boundary_split_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the systems-boundary split, recording cached-source packet versus end-to-end source-scoring disclosure rows and boundaries against C2C, KVComm, DroidSpeak, Interlat, QJL, KIVI, KVQuant, TurboQuant, vLLM, SGLang, prefix tuning, and gist tokens."
+  },
+  {
+    "num": 690,
+    "slug": "hellaswag_qwen_to_phi_denoising_syndrome_refs_20260504",
+    "path": "references/690_hellaswag_qwen_to_phi_denoising_syndrome_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the failed HellaSwag Qwen-to-Phi denoising syndrome packet gate, recording boundaries against rate-distortion, Wyner-Ziv/Slepian-Wolf syndrome coding, diffusion/DiT denoising, TurboQuant/QJL/KV compression, prefix/gist tokens, and KV/hidden communication systems."
   }
 ]

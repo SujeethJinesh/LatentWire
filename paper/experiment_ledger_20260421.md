@@ -21286,3 +21286,62 @@ candidate-roll, target-derived-code, and label-permutation controls.
 Lay explanation: we made the tables separate "the tiny message sent" from "the
 cost of deciding what tiny message to send." The message can be only a few
 bytes, but computing it is not free; the paper now states those separately.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Denoising Syndrome Packet Gate
+
+Implemented and ran the cached Qwen-to-Phi rate-distortion / denoising
+syndrome packet gate.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_denoising_syndrome_packet_gate.py`;
+- tests:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_denoising_syndrome_packet_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_denoising_syndrome_packet_gate_20260504_validation1024_2048/`;
+- paper memo:
+  `paper/source_private_hellaswag_qwen_to_phi_denoising_syndrome_packet_gate_20260504.md`;
+- references:
+  `references/690_hellaswag_qwen_to_phi_denoising_syndrome_refs_20260504.md`.
+
+Gate design: use the cached Qwen strict packet predictions and Phi target score
+caches for HellaSwag validation `1024:2048`. Per `512`-row slice, fit on the
+first `64` rows, select code/ridge hyperparameters on the next `64`, and freeze
+on the remaining `384`; eval is `768` rows total. The source sends a byte-scale
+syndrome code derived from Qwen packet-policy predictions; Phi uses its
+receiver-local four-choice scores as side information. Controls include
+zero-byte target ridge, target-derived-code, source-row shuffle, code-value
+permutation, random same-byte code, candidate-roll code, and label-permutation
+decoder.
+
+Outcome: the gate fails. The selected source code is
+`code8_hybrid_selected_margin` with ridge L2 `300.0`, `1B` raw / `4B` framed.
+It reaches `0.463542` accuracy versus fixed hybrid `0.467448`, delta
+`-0.003906`, paired CI95 low `-0.010417`. It remains slightly above Qwen
+candidate-only `0.455729`, delta `+0.007812`, but the CI95 low versus
+candidate-only is `-0.001302`, so this is not a robust improvement. Slice
+`1024:1536` ties fixed hybrid at `0.486979`; slice `1536:2048` falls to
+`0.440104` versus fixed hybrid `0.447917`.
+
+The controls behave as leakage checks should: zero-byte target ridge and
+target-derived-code are both `0.252604`; source-row shuffle is `0.250000`;
+code-value permutation is `0.248698`; random same-byte code is `0.218750`;
+candidate-roll code is `0.190104`; label-permutation decoder is `0.164062`.
+The target-or-hybrid oracle remains `0.604167`, leaving `+0.136719` absolute
+headroom over fixed hybrid.
+
+Decision: weaken this simple ridge-denoising syndrome branch. It shows that the
+source code semantics are real enough for controls to collapse, but the learned
+receiver cannot yet decide when to repair the fixed hybrid packet. Do not claim
+a positive learned receiver, latent reasoning, or a common latent language from
+this gate. The Qwen-to-Phi surface remains alive because oracle headroom is
+large.
+
+Next exact gate: do not continue hand-coded ridge denoising on the same feature
+set. Either cache a larger official-train Qwen/Phi calibration surface for a
+cross-fitted source-code dictionary, or pivot to native systems rows if NVIDIA
+access arrives first.
+
+Lay explanation: we gave Phi a tiny correction clue from Qwen and asked it to
+use that clue plus its own answer scores to repair the Qwen hint. The clue
+was not random: wrong-example and permuted clues failed. But it still made more
+bad repairs than good ones, so it is not the ICLR method yet.
