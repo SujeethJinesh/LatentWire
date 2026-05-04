@@ -1,0 +1,27 @@
+{
+  "created_at": "2026-05-04T10:03:11.912738+00:00",
+  "files": {
+    "predictions.jsonl": "b29f6c4ae2ec5784037255b9567651dce7b2ee829339163d9ffdb877ee72c691",
+    "row_summaries.csv": "cc12f6ba78e872cfe2be4c5f6c0b91807d6be0425298bfe092f7a3005c686749",
+    "target_self_resonance_hellaswag_chunk_encoder_gate.json": "4762b5992035979ff0fb9f7cd7bd4b2933a6e32a14b14834b1e674842a40cda5",
+    "target_self_resonance_hellaswag_chunk_encoder_gate.md": "ba9d34bf6809e33aaf42471fedeeb28969394367f6db14fb5fad35d7b057cb77"
+  },
+  "headline": {
+    "best_destructive_agreement": 0.6875,
+    "best_destructive_by_agreement": "slots_only_encoder",
+    "best_destructive_by_kl": "shuffled_chunk_encoder",
+    "best_destructive_mean_kl": 0.08979331383715808,
+    "chunk_mean_agreement": 0.625,
+    "chunk_mean_kl": 0.09321018853560531,
+    "kl_gain_vs_chunk_mean": 0.011917845929324836,
+    "kl_gain_vs_slots_only": 0.008966631623344226,
+    "learned_accuracy": 0.4375,
+    "learned_agreement": 0.6875,
+    "learned_mean_kl": 0.08129234260628047,
+    "learned_nonfinite_kl_count": 0,
+    "learned_nonfinite_score_row_count": 0,
+    "slots_only_agreement": 0.6875,
+    "slots_only_kl": 0.0902589742296247
+  },
+  "pass_gate": true
+}

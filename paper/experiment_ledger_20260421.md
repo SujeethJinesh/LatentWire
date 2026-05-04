@@ -21675,3 +21675,65 @@ almost as if it had seen the full context. This worked on two small slices, so
 compact target-side resonance is possible. The next step is to train a normal
 encoder to produce those soft tokens on unseen rows, then let source-model
 signals fill them.
+
+## 2026-05-04 Target Self-Resonance HellaSwag Chunk-Encoder Gate
+
+Implemented and ran the first held-out learned target-slot encoder gate on
+official HellaSwag train-to-validation rows with frozen Qwen2.5-0.5B-Instruct.
+
+- script:
+  `scripts/build_target_self_resonance_hellaswag_chunk_encoder_gate.py`;
+- tests:
+  `tests/test_build_target_self_resonance_hellaswag_chunk_encoder_gate.py`;
+- artifacts:
+  `results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train32_validation32_48/`,
+  `results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train64_validation32_48/`,
+  `results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train64_validation48_64/`;
+- paper memo:
+  `paper/target_self_resonance_hellaswag_chunk_encoder_gate_20260504.md`;
+- references:
+  `references/696_target_self_resonance_interface_refs_20260504.md`.
+
+Gate design: train a small shared chunk-prefix encoder on official train rows,
+freeze it, and evaluate held-out validation rows. The compressed target path
+does not receive the original HellaSwag context text; it receives `8` learned
+target-native soft slots plus a fixed anchor and each candidate continuation.
+The full-prompt target distribution is the behavioral reference. Controls are
+chunk-mean prefix, slots-only encoder, zero prefix, same-norm random prefix,
+shuffled-row chunk encoder, and candidate-score derangement.
+
+Implementation note: the first training attempt exposed nonfinite scores from
+an overly aggressive residual gate. The committed gate uses a small sigmoid
+residual, row-wise RMS normalization to the target embedding manifold,
+gradient clipping, and explicit nonfinite score/KL telemetry that blocks the
+pass gate.
+
+Outcome: mixed and not ICLR-positive yet. With `32` train rows and validation
+`32:48`, the learned encoder fails: agreement `0.625000`, mean KL `0.094576`,
+chunk agreement/KL `0.625000`/`0.093210`, and slots-only
+`0.625000`/`0.097726`. With `64` train rows on the same held-out slice, it
+passes the small gate: learned agreement `0.687500`, mean KL `0.081292`, chunk
+`0.625000`/`0.093210`, and slots-only `0.687500`/`0.090259`. The adjacent
+repeat validation `48:64` fails because slots-only is stronger in KL:
+learned `0.750000`/`0.074528`, chunk `0.687500`/`0.075388`, slots-only
+`0.687500`/`0.067913`.
+
+Decision: promote target self-resonance as the live branch, but weaken the
+plain chunk-residual encoder as the positive method. The oracle capacity result
+remains alive; the failure is the simple encoder class. The next exact gate is
+oracle-prefix distillation or a query-resampler/ICAE-style encoder trained on
+official train rows, then evaluated against chunk, slots-only, zero, random,
+wrong-row, and candidate-deranged controls before adding source-conditioned
+residual slots.
+
+Systems note: the emitted `8` Qwen slots are `14,336` raw fp16 bytes and the
+64-row encoder has `239,361` parameters. These numbers are useful accounting,
+but this is not yet a systems win. A systems claim still needs a source-present
+quality gain at the same byte/slot budget and native comparison against
+C2C/KVComm/TurboQuant-style cache/vector communication.
+
+Lay explanation: the previous run hand-tuned special soft tokens for each
+question. This run trained one small encoder on training questions and asked
+it to make soft tokens for new questions. It helped one small validation group
+but not the next, so the interface is still promising while this simple encoder
+is too weak for the paper's core method.
