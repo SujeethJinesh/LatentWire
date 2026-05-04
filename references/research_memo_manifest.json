@@ -2574,5 +2574,12 @@
     "path": "references/725_behavior_transcoder_crosscoder_packet_atoms_refs_20260504.md",
     "status": "local_memo",
     "reason": "Fresh targeted SAE/crosscoder/transcoder/common-basis literature scout after source-only and target-aligned PCA failures, identifying behavior-oriented transcoders and BatchTopK shared/private crosscoders as the highest-priority Mac-local packet-atom branch with uniqueness threats and controls."
+  },
+  {
+    "num": 726,
+    "slug": "confidence_error_coded_side_information_packet_refs_20260504",
+    "path": "references/726_confidence_error_coded_side_information_packet_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Fresh targeted primary-source memo for confidence/error-coded side-information packet decoding, grounding the next strict ARC Sparse Resonance Packet branch in Wyner-Ziv, Slepian-Wolf, DISCUS, ECOC, list and soft-decision decoding, selective classification, conformal prediction, control-theoretic gating, low-bit packet headers, and exact controls."
   }
 ]
