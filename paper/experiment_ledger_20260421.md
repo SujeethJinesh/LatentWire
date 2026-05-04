@@ -22595,3 +22595,59 @@ when the current packet is wrong. There are 90 held-out questions where Phi's
 own top guesses miss the answer but Qwen's top two include it. That means
 useful source-only information exists; the hard next step is learning when to
 use it without looking at the answer.
+
+## 2026-05-04 Qwen-to-Phi Error-Conditioned Syndrome Gate
+
+Implemented and ran the official-train target-error-conditioned syndrome gate
+that the repair audit called for. The receiver sees only Qwen source top1/top2
+candidate IDs plus quantized source-side syndrome bins and Phi-local score
+bins. It does not see source text, source KV, source hidden states, raw Qwen
+score vectors, or evaluation labels.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_error_conditioned_syndrome_gate.py`;
+- test:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_error_conditioned_syndrome_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_error_conditioned_syndrome_gate_20260504_validation1024_2048/`;
+- memo:
+  `paper/source_private_hellaswag_qwen_to_phi_error_conditioned_syndrome_gate_20260504.md`;
+- related literature / novelty memos:
+  `references/714_source_conditioned_soft_prefix_selective_resonance_refs_20260504.md`,
+  `references/715_source_private_systems_hardware_quantization_review_20260504.md`,
+  and
+  `references/716_target_error_syndrome_side_information_refs_20260504.md`.
+
+Outcome: fail. The selector found a dev-positive official-train model
+(`compact_error_syndrome`, focus `fixed_and_phi_wrong`, official-dev delta
+`+0.016129`), but it did not generalize. On `768` held-out eval rows:
+
+- fixed Qwen-hybrid packet: `0.467448`;
+- error-conditioned syndrome packet: `0.463542`, delta `-0.003906`,
+  CI95 low `-0.020833`, `20` helps and `23` harms;
+- source-pair no-syndrome control: `0.467448`;
+- Qwen candidate-only: `0.455729`;
+- Phi target-only: `0.263021`;
+- best destructive control:
+  `target_derived_source_packet_receiver_control` at `0.450521`.
+
+The oracle surface remains real but not learned:
+
+- fixed-hybrid-or-Qwen-top2 oracle: `0.694010`;
+- fixed-hybrid-or-Phi-top2 oracle: `0.727865`;
+- fixed-hybrid-or-union-top2 oracle: `0.845052`;
+- source-unique top2 repair rows remain `90`.
+
+Decision: demote target-error-conditioned Qwen top2/ECC syndrome repair as
+the primary ICLR method branch. The headroom is genuine, but this score/bin
+receiver captures only `20 / 174` possible Qwen-top2 fixed-hybrid repairs and
+adds `23` new harms. The next highest-value branch is now source-conditioned
+target-native soft-prefix resonance: train a learned encoder to emit target
+soft slots and require it to beat target-only slots, source-index/rank/score,
+same-byte text/code, wrong-source, zero-source, target-derived, candidate-roll,
+and label-permuted controls.
+
+Lay explanation: we tried the rule that the previous audit demanded. Qwen sent
+Phi a tiny two-answer hint plus coarse confidence bins, and Phi learned when to
+change the packet answer. The rule looked good on training/dev rows but made
+slightly more held-out mistakes than fixes, so this is not the main ICLR path.
