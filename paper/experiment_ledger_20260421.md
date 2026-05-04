@@ -21515,3 +21515,60 @@ Lay explanation: we trained Qwen on more official training questions to learn
 when its backup answer should replace its safe answer. That looked a little
 better on Qwen's own training-dev split, but when frozen for Qwen-to-Phi it
 made too many bad swaps.
+
+## 2026-05-04 HellaSwag Qwen-To-Phi Official-Train Receiver-Calibrated Gate
+
+Implemented and ran the official-train receiver-calibrated Qwen-to-Phi packet
+gate, including a new Phi official-train score cache on the same `1,487`
+out-of-bag Qwen calibration rows.
+
+- script:
+  `scripts/build_source_private_hellaswag_qwen_to_phi_official_train_receiver_calibrated_gate.py`;
+- tests:
+  `tests/test_build_source_private_hellaswag_qwen_to_phi_official_train_receiver_calibrated_gate.py`;
+- artifact:
+  `results/source_private_hellaswag_qwen_to_phi_official_train_receiver_calibrated_gate_20260504_validation1024_2048/`;
+- paper memo:
+  `paper/source_private_hellaswag_qwen_to_phi_official_train_receiver_calibrated_gate_20260504.md`;
+- references:
+  `references/694_hellaswag_qwen_to_phi_receiver_calibrated_refs_20260504.md`.
+
+Gate design: train on official-train rows where both Qwen packet features and
+Phi local score features are available. The frozen receiver can keep fixed
+Qwen hybrid, switch to Qwen's source-score rival, or switch to Phi target
+top-1. Validation labels are used only for final evaluation and a marked
+eval-label diagnostic. The source payload remains source-private: `2B` raw /
+`5B` framed, with no source text, KV, hidden vectors, score vectors, or logits
+transmitted.
+
+Cache: generated
+`phi_official_train_score_cache.json` locally with Phi-3-mini on MPS,
+`float16`, `max_length=256`, `mean` normalization, and `continuation` prompt
+mode. The first full scorer run recorded `861.247s`; the committed gate result
+reran cache-only with `phi_train_score_cache_hit=true`. Content overlap between
+official-train calibration and validation eval is `0`.
+
+Outcome: the gate fails but is a near miss. Fixed hybrid is `0.467448`.
+Official-train receiver-calibrated packet is `0.466146`, delta `-0.001302`,
+CI95 low `-0.007812`, with `12` overrides, `3` helps, and `4` harms. Slice
+deltas are `+0.002604` and `-0.005208`, so the second slice fails. The
+eval-label best threshold diagnostic reaches `0.470052`, only `+0.002604`
+with CI95 low `0.0`, which means the learned score family has tiny but
+insufficient held-out signal. Hybrid/rival/Phi oracle is very large at
+`0.766927`, delta `+0.299479`, so the candidate set is not the bottleneck.
+
+Controls: source-row shuffle, candidate-roll source, code-value permutation,
+and official-train label permutation collapse below the real receiver.
+
+Decision: receiver-side calibration revives the branch relative to the harmful
+source-only dictionary (`0.429688`), but the current linear score-feature
+receiver is still not the positive ICLR method. Do not continue shallow linear
+switchers over the same feature set. The next exact gate should be a
+harm-controlled accept/defer receiver over explicit complementarity buckets,
+or a separate target self-compression/resonance branch that first proves Phi
+can be driven by compact soft/latent tokens before cross-model transfer.
+
+Lay explanation: this time Phi got to practice too. It scored the training
+questions, and the learned rule saw Qwen's safe answer, Qwen's backup, and
+Phi's own answer scores. On new questions it almost matched the safe Qwen
+packet, but it still made one more bad change than good changes overall.

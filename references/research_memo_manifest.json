@@ -2357,5 +2357,12 @@
     "path": "references/693_hellaswag_qwen_to_phi_official_train_source_dictionary_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the failed HellaSwag Qwen-to-Phi official-train source dictionary gate, recording pairwise utility, calibration, selective deferral, side-information coding, diffusion-refinement inspiration, and quantized systems boundaries."
+  },
+  {
+    "num": 694,
+    "slug": "hellaswag_qwen_to_phi_receiver_calibrated_refs_20260504",
+    "path": "references/694_hellaswag_qwen_to_phi_receiver_calibrated_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the near-miss failed HellaSwag Qwen-to-Phi official-train receiver-calibrated gate, recording selective prediction, deferral/risk control, side-information coding, model-to-model baselines, prefix/gist, KV compression, TurboQuant/QJL/KIVI/KVQuant, and diffusion-refinement boundaries."
   }
 ]
