@@ -71,6 +71,8 @@ def test_openbookqa_receiver_gate_writes_artifacts(tmp_path) -> None:
     assert payload["gate"] == "source_private_openbookqa_receiver_headroom_gate"
     assert payload["test_rows"] == 8
     assert "source_label_copy" in payload["per_seed"][0]["condition_metrics"]
+    assert "same_source_choice_wrong_row_packet" in payload["per_seed"][0]["condition_metrics"]
+    assert "candidate_roll_packet" in payload["per_seed"][0]["condition_metrics"]
     assert "target_public_ridge" in payload["per_seed"][0]["condition_metrics"]
     assert (tmp_path / "out" / "openbookqa_receiver_headroom_gate.json").exists()
     assert (tmp_path / "out" / "receiver_predictions.jsonl").exists()

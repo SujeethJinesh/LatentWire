@@ -1,9 +1,9 @@
 {
   "artifact_sha256": {
-    "openbookqa_receiver_headroom_gate.csv": "c6b1bf266f835508209c7c028199a31569f35860c9865410fc5a2e345f41c2ec",
-    "openbookqa_receiver_headroom_gate.json": "177b9e04bf627eda1138ba3bbe99f494e8cec21ef996d272db5eb50367cbe0cf",
-    "openbookqa_receiver_headroom_gate.md": "f5bfb3462ee39b1c58a216f0c0b9724eae7872f5ca8ab50ff1f4167f4cfb1b85",
-    "receiver_predictions.jsonl": "e46ab64f4ac1bc3d8eece488359d383e6ea9e2e67198761dbbdf78e56efbe0d1"
+    "openbookqa_receiver_headroom_gate.csv": "f1ae9fbba66065781fb3fb605ef686169abf572c4332738e4a823fbf641a61c0",
+    "openbookqa_receiver_headroom_gate.json": "7b451ba0e16e3793511d0d1e659c2e550ee196745b67134a420b4e7ea7616e8c",
+    "openbookqa_receiver_headroom_gate.md": "8b0ae6d397a84c53c4631e78f84dbb9ddcfdb0c3878e7c2b6d55da0f1da634a9",
+    "receiver_predictions.jsonl": "ad1d1e5154d9b517663973e0b2fdf71bf8f766288bb0be58f664d168e42bada0"
   },
   "artifacts": [
     "openbookqa_receiver_headroom_gate.json",
@@ -13,6 +13,6 @@
     "manifest.json",
     "manifest.md"
   ],
-  "pass_gate": true,
-  "receiver_candidate_pass": true
+  "pass_gate": false,
+  "receiver_candidate_pass": false
 }

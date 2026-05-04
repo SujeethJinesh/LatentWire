@@ -73,6 +73,30 @@
       "status": "ruled_out_current_basis_receiver"
     },
     {
+      "artifact": "arc_behavior_atom_decoder",
+      "baseline": 0.4375,
+      "branch": "ARC behavior-supervised atom SRP decoder",
+      "ci95_low": -0.3125,
+      "decision": "Keep the strict atom harness, but do not scale the current behavior/PCA/BatchTopK-style atom basis without a new source-causality mechanism.",
+      "delta": 0.0,
+      "evidence": "0/5 pass; best matched 0.437500 vs required control top_atom_knockout at 0.437500; fired 8 rows, helps/harms 3/0.",
+      "record_bytes": 7,
+      "score": 0.4375,
+      "status": "ruled_out_current_behavior_atom_basis"
+    },
+    {
+      "artifact": "openbookqa_receiver_headroom",
+      "baseline": 0.422,
+      "branch": "OpenBookQA train-only packet+target receiver",
+      "ci95_low": 0.00795,
+      "decision": "Do not promote as a positive second-benchmark row; the same-source-choice wrong-row control nearly matches the receiver, so it is a source-choice artifact diagnostic.",
+      "delta": 0.002,
+      "evidence": "Held-out test n=500; receiver candidate pass False; default receiver 0.424000 vs best baseline/control 0.422000; aggregate seed-row CI low 0.000400; strict per-seed CI 2/5.",
+      "record_bytes": 3,
+      "score": 0.424,
+      "status": "weakened_openbookqa_source_choice_control"
+    },
+    {
       "artifact": "hellaswag_fixed_hybrid",
       "baseline": 0.526688,
       "branch": "HellaSwag fixed hybrid candidate packet",
@@ -223,7 +247,7 @@
     "Do not claim C2C/KV throughput, HBM, PCIe, NVLink, or energy wins without native measurements.",
     "Frame C2C/KVComm/TurboQuant/KIVI as high-bandwidth or KV-compression baselines with different exposure regimes."
   ],
-  "created_utc": "2026-05-04T22:39:49.547799+00:00",
+  "created_utc": "2026-05-04T23:04:12.079413+00:00",
   "current_contributions": [
     {
       "name": "source_private_low_rate_packets",
@@ -242,8 +266,13 @@
     },
     {
       "name": "sparse_resonance_packets",
-      "needs_work": "new mechanism beyond deterministic PQ, PCA atoms, chunk encoders, query resamplers, and source-to-prefix decoders",
+      "needs_work": "new mechanism beyond deterministic PQ, PCA/behavior atoms, BatchTopK-style atom banks, chunk encoders, query resamplers, and source-to-prefix decoders",
       "status": "framing_alive_method_not_yet_positive"
+    },
+    {
+      "name": "train_only_packet_target_receiver",
+      "needs_work": "a packet that carries row-specific source evidence beyond same-source-choice wrong-row packets",
+      "status": "openbookqa_weakened_by_source_choice_control"
     },
     {
       "name": "target_self_resonance_capacity_probe",
@@ -253,6 +282,13 @@
   ],
   "gate": "iclr_colm_v2_live_branch_triage",
   "input_artifacts": {
+    "arc_behavior_atom_decoder": [
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4/arc_challenge_behavior_atom_decoder_gate.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_packet_innovation/arc_challenge_behavior_atom_decoder_gate.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered/arc_challenge_behavior_atom_decoder_gate.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w01_decoder/arc_challenge_behavior_atom_decoder_gate.json",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_candidate_aligned_noop_w005_emphasis/arc_challenge_behavior_atom_decoder_gate.json"
+    ],
     "arc_sparse_resonance": [
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top2q3/arc_challenge_soft_prefix_resonance_gate.json",
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top4q4_noresid/arc_challenge_soft_prefix_resonance_gate.json",
@@ -286,6 +322,7 @@
     "hellaswag_protected_rival": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_protected_rival_packet_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_protected_rival_packet_gate.json",
     "hellaswag_sparse_common_basis": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_receiver_calibrated_top2_ambiguity_code_gate_20260504_validation1024_2048/hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate.json",
     "hellaswag_top2_bucket": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_hellaswag_qwen_to_phi_top2_ambiguity_bucket_gate_20260504_validation1024_2048/hellaswag_qwen_to_phi_top2_ambiguity_bucket_gate.json",
+    "openbookqa_receiver_headroom": "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_openbookqa_receiver_headroom_gate_20260502/openbookqa_receiver_headroom_gate.json",
     "target_self_learned_encoders": [
       "/Users/sujeethjinesh/Desktop/LatentWire/results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train64_validation32_48/target_self_resonance_hellaswag_chunk_encoder_gate.json",
       "/Users/sujeethjinesh/Desktop/LatentWire/results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train64_validation48_64/target_self_resonance_hellaswag_chunk_encoder_gate.json",
@@ -307,6 +344,13 @@
     ]
   },
   "input_sha256": {
+    "arc_behavior_atom_decoder": {
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4/arc_challenge_behavior_atom_decoder_gate.json": "773986a3e5862a1db8c6dc40f6abb0379420410f46e4cf93501600b2d0b009da",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_candidate_aligned_noop_w005_emphasis/arc_challenge_behavior_atom_decoder_gate.json": "501ba41f9136b02da8e15ea718a4f46e91a63a00611cdc0bf37168447666431a",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w01_decoder/arc_challenge_behavior_atom_decoder_gate.json": "3e410e1c708a46bfe8acfc2dbbf34b3662ed896bebbe4d966e80d7a6f1acf4a1",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered/arc_challenge_behavior_atom_decoder_gate.json": "cd78f4b77de3d3133af44bce39e5cc6c741d1af0f32f0a474872926acbf5228e",
+      "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_packet_innovation/arc_challenge_behavior_atom_decoder_gate.json": "70a521092639a7d454b0136b0bd4d267e9e2c0756f2acb31286ea86e480ea7e7"
+    },
     "arc_sparse_resonance": {
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top2q3/arc_challenge_soft_prefix_resonance_gate.json": "b3cdc40c9ee3f0abdb28292bd58f4a1c8d577ee4f833be05213270b261258fac",
       "/Users/sujeethjinesh/Desktop/LatentWire/results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_pca_top4q4_noresid/arc_challenge_soft_prefix_resonance_gate.json": "390c04582e8eb3ee591c9e5feb7fe38088ce6eab27036d91d8fa5355ff589672",
@@ -340,6 +384,7 @@
     "hellaswag_protected_rival": "cd3468cdd8f3f7986650f1b8e37b86ebbf52254b92d15148a5089dfcddb51e74",
     "hellaswag_sparse_common_basis": "01e6be4324fe99bd4a8f2a58589a1c22a6bc533e35d972194de72470c3dcc509",
     "hellaswag_top2_bucket": "3c13541102e97c3c37bb27be63c13bead2d060c7b500a2ec0ff4248e4a429855",
+    "openbookqa_receiver_headroom": "7b451ba0e16e3793511d0d1e659c2e550ee196745b67134a420b4e7ea7616e8c",
     "target_self_learned_encoders": {
       "/Users/sujeethjinesh/Desktop/LatentWire/results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train64_validation32_48/target_self_resonance_hellaswag_chunk_encoder_gate.json": "4762b5992035979ff0fb9f7cd7bd4b2933a6e32a14b14834b1e674842a40cda5",
       "/Users/sujeethjinesh/Desktop/LatentWire/results/target_self_resonance_hellaswag_chunk_encoder_gate_20260504_qwen05_train64_validation48_64/target_self_resonance_hellaswag_chunk_encoder_gate.json": "041a06059fb593445f3eae937260834bf6e80114ca1dcea09fbddac92c207adf",
@@ -361,10 +406,10 @@
     }
   },
   "next_exact_gate": {
-    "fallback_path": "If the next method branch is not implementable Mac-locally in one turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, multi-signal packet failure, and scalar-integrity failure.",
-    "name": "new_interface_or_colm_v2_integration_gate",
-    "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
-    "primary_path": "Stop HellaSwag cached-selector work and stop conditional-PQ held-out-family rescues that only add deterministic public transforms, no-op weight sweeps, or scalar integrity thresholds. The next ICLR branch needs a qualitatively new source-causal interface, such as a learned bottleneck/resampler preflight, or a benchmark where source quality and complementarity are easier to separate from packet artifacts.",
+    "fallback_path": "If local model loading is not feasible on the Mac, run a target-side behavior-transcoder feasibility probe from available target traces, then only packetize source atoms after target atoms causally steer margins.",
+    "name": "arc_n32_tokenwise_source_evidence_preflight",
+    "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
+    "primary_path": "Materialize a tiny ARC n32 tokenwise source-evidence cache and run a target-loss connector preflight on source-unique repair rows. Existing ARC/HellaSwag caches are mean-pooled and the OpenBookQA hardening now shows score/choice receiver fusion is not source-causal enough.",
     "required_controls": [
       "target_only",
       "answer_masked_source",
@@ -383,6 +428,7 @@
     "HellaSwag fixed hybrid candidate packet as a systems/privacy packet row."
   ],
   "readiness": {
+    "arc_behavior_atom_basis_blocked": true,
     "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
     "conditional_pq_cross_family_blocked": true,
     "conditional_pq_same_family_alive": true,
@@ -392,17 +438,20 @@
     "hellaswag_current_frontier_selector_blocked": true,
     "hellaswag_shallow_receiver_family_saturated": true,
     "iclr": "blocked_by_lack_of_broad_or_learned_positive_receiver",
+    "openbookqa_receiver_second_benchmark_alive": false,
     "source_conditioned_target_native_receivers_blocked": true,
     "sparse_resonance_current_basis_blocked": true,
     "target_self_resonance_capacity_alive": true,
     "target_self_resonance_learned_encoders_blocked": true
   },
-  "story": "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, and HellaSwag learned/source-conditioned resonance receivers have not produced a positive row beyond packet/source-choice/target-cache controls.",
-  "submission_gap": "ICLR needs a positive learned or broader-benchmark receiver that passes strict destructive controls. COLM_v2 can be prepared around the conditional-PQ shared-schema method, the fixed-byte HellaSwag packet row, and the target-resonance capacity-versus-held-out-failure analysis with explicit limitations.",
+  "story": "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The previously caveated OpenBookQA train-only receiver row is now weakened by same-source-choice wrong-row hardening. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, ARC atom packets, OpenBookQA receiver fusion, and HellaSwag learned/source-conditioned resonance receivers have not produced a broad positive row beyond packet/source-choice/target-cache controls.",
+  "submission_gap": "ICLR needs a positive learned or broader-benchmark receiver that passes strict destructive controls with per-seed stability and source-choice separation. COLM_v2 can be prepared around the conditional-PQ shared-schema method, the fixed-byte HellaSwag packet row, OpenBookQA hardening as a negative diagnostic, and the target-resonance capacity-versus-held-out-failure analysis with explicit limitations.",
   "weakened_or_ruled_out": [
     "Conditional PQ public-zscore and corruption-to-noop as held-out-family rescues.",
     "Conditional PQ public-SVD whitening as a held-out-family rescue.",
     "ARC sparse resonance PCA/target-aligned soft-prefix basis as implemented.",
+    "ARC behavior-supervised, packet-innovation, event-triggered, and corruption-no-op atom decoders as implemented.",
+    "OpenBookQA train-only packet+target receiver as a positive row after same-source-choice wrong-row hardening.",
     "HellaSwag protected-rival, top2 bucket, linear receiver, harm bucket, and denoising syndrome switchers.",
     "Sparse/common-basis top2 atom causality in the current HellaSwag implementation.",
     "Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.",

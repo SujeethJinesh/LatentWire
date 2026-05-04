@@ -56,6 +56,20 @@ DEFAULT_ARTIFACT_PATHS = {
         ROOT
         / "results/source_private_arc_challenge_sparse_resonance_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n8_target_aligned_top8q8_noresid/arc_challenge_soft_prefix_resonance_gate.json",
     ],
+    "arc_behavior_atom_decoder": [
+        ROOT
+        / "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4/arc_challenge_behavior_atom_decoder_gate.json",
+        ROOT
+        / "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_packet_innovation/arc_challenge_behavior_atom_decoder_gate.json",
+        ROOT
+        / "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered/arc_challenge_behavior_atom_decoder_gate.json",
+        ROOT
+        / "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w01_decoder/arc_challenge_behavior_atom_decoder_gate.json",
+        ROOT
+        / "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_candidate_aligned_noop_w005_emphasis/arc_challenge_behavior_atom_decoder_gate.json",
+    ],
+    "openbookqa_receiver_headroom": ROOT
+    / "results/source_private_openbookqa_receiver_headroom_gate_20260502/openbookqa_receiver_headroom_gate.json",
     "hellaswag_fixed_hybrid": ROOT
     / "results/source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503_validation0_10042/hellaswag_fixed_hybrid_full_validation_gate.json",
     "hellaswag_protected_rival": ROOT
@@ -180,6 +194,73 @@ def _best_sparse_resonance(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "best_control_accuracy": best["best_control_accuracy"],
         "best_control_name": best["best_control_by_accuracy"],
         "best_matched_minus_control": best["matched_minus_best_control_accuracy"],
+    }
+
+
+def _best_behavior_atom(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    keyed_rows: list[dict[str, Any]] = []
+    for row in rows:
+        h = row["strict_headline"]
+        systems = row.get("systems_packet_sideband", {})
+        keyed_rows.append(
+            {
+                "matched_accuracy": h["matched_accuracy"],
+                "target_only_accuracy": h["target_only_accuracy"],
+                "best_required_control": h["best_required_control"],
+                "best_required_control_accuracy": h["best_required_control_accuracy"],
+                "matched_minus_best_required_control": (
+                    h["matched_accuracy"] - h["best_required_control_accuracy"]
+                ),
+                "worst_required_ci95_low": h["worst_required_ci95_low"],
+                "matched_packet_fired": h["matched_packet_fired"],
+                "matched_packet_helped": h["matched_packet_helped"],
+                "matched_packet_harmed": h["matched_packet_harmed"],
+                "framed_packet_bytes": systems.get("framed_packet_bytes_per_row"),
+                "pass_gate": bool(row.get("pass_gate")),
+            }
+        )
+    best = max(
+        keyed_rows,
+        key=lambda row: (
+            row["matched_minus_best_required_control"],
+            row["matched_accuracy"] - row["target_only_accuracy"],
+            -row["matched_packet_harmed"],
+        ),
+    )
+    return {
+        "rows": len(keyed_rows),
+        "pass_rows": sum(1 for row in keyed_rows if row["pass_gate"]),
+        **best,
+    }
+
+
+def _openbookqa_receiver_summary(row: dict[str, Any]) -> dict[str, Any]:
+    h = row["headline"]
+    matched = h["default_seed_matched"]
+    baseline = max(
+        matched["base_accuracy"],
+        matched["target_public_accuracy"],
+        h["default_best_receiver_control_accuracy"],
+    )
+    return {
+        "pass_gate": bool(row["pass_gate"]),
+        "receiver_candidate_pass": bool(row["receiver_candidate_pass"]),
+        "seed_count": h["seed_count"],
+        "strict_per_seed_ci_pass_count": h["strict_per_seed_ci_pass_count"],
+        "all_seed_deltas_positive": bool(h["all_seed_deltas_positive"]),
+        "receiver_accuracy": matched["receiver_accuracy"],
+        "baseline_accuracy": baseline,
+        "receiver_minus_baseline": matched["receiver_accuracy"] - baseline,
+        "receiver_minus_packet": matched["receiver_minus_base"],
+        "receiver_minus_target_public": matched["receiver_minus_target_public"],
+        "paired_ci95_low_vs_packet": matched["paired_ci95_vs_base"]["ci95_low"],
+        "aggregate_ci95_low_vs_packet": h["aggregate_seed_row_ci_vs_packet"]["ci95_low"],
+        "default_best_receiver_control": h["default_best_receiver_control"],
+        "default_best_receiver_control_accuracy": h["default_best_receiver_control_accuracy"],
+        "budget_bytes": row["budget_bytes"],
+        "test_rows": row["test_rows"],
+        "help_count": matched["help_count"],
+        "harm_count": matched["harm_count"],
     }
 
 
@@ -437,6 +518,72 @@ def build_triage(
                 f"{sparse_resonance['best_control_name']}."
             ),
             decision="Do not widen plain PCA/target-aligned soft-prefix packets.",
+        )
+    )
+
+    behavior_atom = _best_behavior_atom(artifacts["arc_behavior_atom_decoder"])
+    rows.append(
+        _headline_row(
+            branch="ARC behavior-supervised atom SRP decoder",
+            status="ruled_out_current_behavior_atom_basis",
+            artifact="arc_behavior_atom_decoder",
+            score=behavior_atom["matched_accuracy"],
+            baseline=behavior_atom["best_required_control_accuracy"],
+            delta=behavior_atom["matched_minus_best_required_control"],
+            ci95_low=behavior_atom["worst_required_ci95_low"],
+            bytes_record=behavior_atom["framed_packet_bytes"],
+            evidence=(
+                f"{behavior_atom['pass_rows']}/{behavior_atom['rows']} pass; best matched "
+                f"{behavior_atom['matched_accuracy']:.6f} vs required control "
+                f"{behavior_atom['best_required_control']} at "
+                f"{behavior_atom['best_required_control_accuracy']:.6f}; fired "
+                f"{behavior_atom['matched_packet_fired']} rows, helps/harms "
+                f"{behavior_atom['matched_packet_helped']}/"
+                f"{behavior_atom['matched_packet_harmed']}."
+            ),
+            decision=(
+                "Keep the strict atom harness, but do not scale the current behavior/PCA/"
+                "BatchTopK-style atom basis without a new source-causality mechanism."
+            ),
+        )
+    )
+
+    openbook = _openbookqa_receiver_summary(artifacts["openbookqa_receiver_headroom"])
+    openbook_promoted = bool(
+        openbook["receiver_candidate_pass"] and openbook["aggregate_ci95_low_vs_packet"] > 0.0
+    )
+    rows.append(
+        _headline_row(
+            branch="OpenBookQA train-only packet+target receiver",
+            status=(
+                "promote_for_colm_v2_second_benchmark_caveated"
+                if openbook_promoted
+                else "weakened_openbookqa_source_choice_control"
+            ),
+            artifact="openbookqa_receiver_headroom",
+            score=openbook["receiver_accuracy"],
+            baseline=openbook["baseline_accuracy"],
+            delta=openbook["receiver_minus_baseline"],
+            ci95_low=openbook["paired_ci95_low_vs_packet"],
+            bytes_record=openbook["budget_bytes"],
+            evidence=(
+                f"Held-out test n={openbook['test_rows']}; receiver candidate pass "
+                f"{openbook['receiver_candidate_pass']}; default receiver "
+                f"{openbook['receiver_accuracy']:.6f} vs best baseline/control "
+                f"{openbook['baseline_accuracy']:.6f}; aggregate seed-row CI low "
+                f"{openbook['aggregate_ci95_low_vs_packet']:.6f}; strict per-seed CI "
+                f"{openbook['strict_per_seed_ci_pass_count']}/{openbook['seed_count']}."
+            ),
+            decision=(
+                "Use as a caveated COLM_v2 second-benchmark positive receiver row; "
+                "ICLR still requires stricter seed stability and source-choice controls."
+                if openbook_promoted
+                else (
+                    "Do not promote as a positive second-benchmark row; the same-source-choice "
+                    "wrong-row control nearly matches the receiver, so it is a source-choice "
+                    "artifact diagnostic."
+                )
+            ),
         )
     )
 
@@ -703,6 +850,8 @@ def build_triage(
             "conditional_pq_cross_family_blocked": bool(conditional_readiness["cross_family_blocked"]),
             "hellaswag_shallow_receiver_family_saturated": True,
             "sparse_resonance_current_basis_blocked": True,
+            "arc_behavior_atom_basis_blocked": True,
+            "openbookqa_receiver_second_benchmark_alive": openbook_promoted,
             "target_self_resonance_capacity_alive": True,
             "target_self_resonance_learned_encoders_blocked": True,
             "source_conditioned_target_native_receivers_blocked": True,
@@ -713,17 +862,21 @@ def build_triage(
         },
         "story": (
             "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, "
-            "source-private packets plus strict destructive controls. The ICLR story is "
-            "still blocked because cross-family conditional PQ, deterministic public-basis "
-            "conditioning, scalar integrity thresholds, and HellaSwag learned/source-conditioned "
-            "resonance receivers have not produced a positive row beyond packet/source-choice/"
-            "target-cache controls."
+            "source-private packets plus strict destructive controls. The previously caveated "
+            "OpenBookQA train-only receiver row is now weakened by same-source-choice wrong-row "
+            "hardening. The ICLR story is still blocked because cross-family conditional PQ, "
+            "deterministic public-basis conditioning, scalar integrity thresholds, ARC atom "
+            "packets, OpenBookQA receiver fusion, and HellaSwag learned/source-conditioned "
+            "resonance receivers have not produced a broad positive row beyond packet/"
+            "source-choice/target-cache controls."
         ),
         "submission_gap": (
             "ICLR needs a positive learned or broader-benchmark receiver that passes strict "
-            "destructive controls. COLM_v2 can be prepared around the conditional-PQ "
-            "shared-schema method, the fixed-byte HellaSwag packet row, and the target-resonance "
-            "capacity-versus-held-out-failure analysis with explicit limitations."
+            "destructive controls with per-seed stability and source-choice separation. "
+            "COLM_v2 can be prepared around the conditional-PQ shared-schema method, the "
+            "fixed-byte HellaSwag packet row, OpenBookQA hardening as a negative diagnostic, "
+            "and the target-resonance capacity-versus-held-out-failure analysis with explicit "
+            "limitations."
         ),
         "current_contributions": [
             {
@@ -744,7 +897,12 @@ def build_triage(
             {
                 "name": "sparse_resonance_packets",
                 "status": "framing_alive_method_not_yet_positive",
-                "needs_work": "new mechanism beyond deterministic PQ, PCA atoms, chunk encoders, query resamplers, and source-to-prefix decoders",
+                "needs_work": "new mechanism beyond deterministic PQ, PCA/behavior atoms, BatchTopK-style atom banks, chunk encoders, query resamplers, and source-to-prefix decoders",
+            },
+            {
+                "name": "train_only_packet_target_receiver",
+                "status": "openbookqa_weakened_by_source_choice_control",
+                "needs_work": "a packet that carries row-specific source evidence beyond same-source-choice wrong-row packets",
             },
             {
                 "name": "target_self_resonance_capacity_probe",
@@ -755,12 +913,19 @@ def build_triage(
         "branch_rows": rows,
         "promoted": [
             "Conditional PQ shared-schema packet as COLM_v2 positive method.",
+            *(
+                ["OpenBookQA train-only packet+target receiver as a caveated COLM_v2 second-benchmark positive row."]
+                if openbook_promoted
+                else []
+            ),
             "HellaSwag fixed hybrid candidate packet as a systems/privacy packet row.",
         ],
         "weakened_or_ruled_out": [
             "Conditional PQ public-zscore and corruption-to-noop as held-out-family rescues.",
             "Conditional PQ public-SVD whitening as a held-out-family rescue.",
             "ARC sparse resonance PCA/target-aligned soft-prefix basis as implemented.",
+            "ARC behavior-supervised, packet-innovation, event-triggered, and corruption-no-op atom decoders as implemented.",
+            "OpenBookQA train-only packet+target receiver as a positive row after same-source-choice wrong-row hardening.",
             "HellaSwag protected-rival, top2 bucket, linear receiver, harm bucket, and denoising syndrome switchers.",
             "Sparse/common-basis top2 atom causality in the current HellaSwag implementation.",
             "Target self-resonance chunk/distill/query-resampler encoders as reusable target-native receivers.",
@@ -770,24 +935,22 @@ def build_triage(
             "Conditional PQ scalar integrity thresholds on the public-zscore held-out-family receiver.",
         ],
         "next_exact_gate": {
-            "name": "new_interface_or_colm_v2_integration_gate",
+            "name": "arc_n32_tokenwise_source_evidence_preflight",
             "primary_path": (
-                "Stop HellaSwag cached-selector work and stop conditional-PQ held-out-family rescues "
-                "that only add deterministic public transforms, no-op weight sweeps, or scalar "
-                "integrity thresholds. The next ICLR branch needs a qualitatively new source-causal "
-                "interface, such as a learned bottleneck/resampler preflight, or a benchmark where "
-                "source quality and complementarity are easier to separate from packet artifacts."
+                "Materialize a tiny ARC n32 tokenwise source-evidence cache and run a "
+                "target-loss connector preflight on source-unique repair rows. Existing "
+                "ARC/HellaSwag caches are mean-pooled and the OpenBookQA hardening now "
+                "shows score/choice receiver fusion is not source-causal enough."
             ),
             "fallback_path": (
-                "If the next method branch is not implementable Mac-locally in one turn, switch to "
-                "COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, "
-                "target-resonance capacity, complementarity-frontier saturation, multi-signal packet "
-                "failure, and scalar-integrity failure."
+                "If local model loading is not feasible on the Mac, run a target-side "
+                "behavior-transcoder feasibility probe from available target traces, then "
+                "only packetize source atoms after target atoms causally steer margins."
             ),
             "pass_bar": (
                 "A learned or rule-based packet receiver must improve over source-index/rank/score, "
-                "same-byte text, wrong-source, candidate-roll, and target-derived controls with a "
-                "positive paired CI95 low on a frozen slice."
+                "same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and "
+                "target-derived controls with a positive paired CI95 low on a frozen slice."
             ),
             "required_controls": [
                 "target_only",

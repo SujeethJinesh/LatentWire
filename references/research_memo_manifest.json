@@ -2728,5 +2728,12 @@
     "path": "references/747_colm_v2_iclr_evidence_integration_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source novelty-boundary memo for the COLM_v2/ICLR evidence integration table, covering C2C, KV/cache communication, Q-Former/Perceiver-style bottlenecks, TurboQuant, KVQuant, and the saturated local learned-resampler family."
+  },
+  {
+    "num": 748,
+    "slug": "openbookqa_hardening_and_sparse_basis_boundaries_20260504",
+    "path": "references/748_openbookqa_hardening_and_sparse_basis_boundaries_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source novelty-boundary memo for promoting OpenBookQA receiver hardening as the next ICLR gate after caveated positive packet+target fusion and failed ARC behavior-atom/crosscoder-style packet branches."
   }
 ]

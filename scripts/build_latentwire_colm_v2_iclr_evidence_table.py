@@ -106,12 +106,42 @@ LITERATURE_BOUNDARIES = [
             "model difference."
         ),
     },
+    {
+        "work": "Sparse Crosscoders",
+        "source": "https://transformer-circuits.pub/2024/crosscoders/",
+        "role": "shared/private feature-basis precedent",
+        "boundary": (
+            "Crosscoders already cover shared-feature discovery across activation spaces; "
+            "LatentWire is novel only if sparse features are packetized and shown to cause "
+            "source-private downstream utility under atom-shuffle, wrong-row, and target-derived controls."
+        ),
+    },
+    {
+        "work": "Universal Sparse Autoencoders",
+        "source": "https://arxiv.org/abs/2502.03714",
+        "role": "cross-model sparse concept-space precedent",
+        "boundary": (
+            "A universal sparse basis is not enough for a LatentWire contribution. The paper "
+            "must show low-byte source-to-target communication, not just interpretable common coordinates."
+        ),
+    },
+    {
+        "work": "Communicating Activations Between Language Model Agents",
+        "source": "https://arxiv.org/abs/2501.14082",
+        "role": "direct activation-communication competitor",
+        "boundary": (
+            "Direct activation exchange pressures broad latent-communication novelty. LatentWire "
+            "should claim source-private, byte-accounted, destructive-control packet transfer rather "
+            "than generic activation communication."
+        ),
+    },
 ]
 
 
 COLM_PROMOTED_STATUSES = {
     "promote_for_colm_v2_only",
     "promote_for_colm_v2_systems_baseline",
+    "promote_for_colm_v2_second_benchmark_caveated",
 }
 
 COLM_SUPPORTING_STATUSES = {
@@ -119,6 +149,7 @@ COLM_SUPPORTING_STATUSES = {
     "headroom_alive_selector_blocked",
     "ruled_out_cached_policy_packet",
     "ruled_out_simple_integrity_threshold",
+    "weakened_openbookqa_source_choice_control",
 }
 
 
@@ -197,15 +228,16 @@ def build_table(triage: dict[str, Any]) -> dict[str, Any]:
         "literature_boundaries": LITERATURE_BOUNDARIES,
         "paper_decision": {
             "single_highest_priority": (
-                "Backport the live ICLR triage into COLM_v2 tables/figures now, while "
-                "the next ICLR method branch is redesigned around a qualitatively new "
-                "source-causal interface rather than another deterministic PQ transform, "
-                "scalar integrity gate, source-score selector, or target-native soft-prefix decoder."
+                "Backport the live ICLR triage into COLM_v2 tables/figures now, including "
+                "the OpenBookQA source-choice hardening failure. The next ICLR method branch "
+                "needs a qualitatively new source-causal interface rather than another "
+                "deterministic PQ transform, scalar integrity gate, source-score selector, "
+                "behavior atom, or target-native soft-prefix decoder."
             ),
             "colm_v2_claim": (
                 "LatentWire_v2 demonstrates byte-scale source-private packet transfer with "
-                "strict destructive controls, plus explicit negative gates that prevent "
-                "overclaiming cross-family latent communication."
+                "strict destructive controls, plus explicit negative gates, including OpenBookQA "
+                "source-choice hardening, that prevent overclaiming cross-family latent communication."
             ),
             "iclr_claim_not_yet_supported": (
                 "Sparse Resonance Packets as a broad learned cross-model communication method."

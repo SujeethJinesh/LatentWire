@@ -150,6 +150,46 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
                 "pass_gate": False,
             }
         ],
+        "arc_behavior_atom_decoder": [
+            {
+                "strict_headline": {
+                    "best_required_control": "top_atom_knockout",
+                    "best_required_control_accuracy": 0.4375,
+                    "matched_accuracy": 0.375,
+                    "matched_packet_fired": 8,
+                    "matched_packet_harmed": 0,
+                    "matched_packet_helped": 2,
+                    "target_only_accuracy": 0.25,
+                    "worst_required_ci95_low": -0.375,
+                },
+                "systems_packet_sideband": {"framed_packet_bytes_per_row": 7},
+                "pass_gate": False,
+            }
+        ],
+        "openbookqa_receiver_headroom": {
+            "budget_bytes": 3,
+            "headline": {
+                "aggregate_seed_row_ci_vs_packet": {"ci95_low": 0.0004},
+                "all_seed_deltas_positive": True,
+                "default_best_receiver_control": "same_byte_structured_text",
+                "default_best_receiver_control_accuracy": 0.378,
+                "default_seed_matched": {
+                    "base_accuracy": 0.378,
+                    "harm_count": 35,
+                    "help_count": 58,
+                    "paired_ci95_vs_base": {"ci95_low": 0.008},
+                    "receiver_accuracy": 0.424,
+                    "receiver_minus_base": 0.046,
+                    "receiver_minus_target_public": 0.052,
+                    "target_public_accuracy": 0.372,
+                },
+                "seed_count": 5,
+                "strict_per_seed_ci_pass_count": 2,
+            },
+            "pass_gate": True,
+            "receiver_candidate_pass": True,
+            "test_rows": 500,
+        },
         "hellaswag_fixed_hybrid": _hellaswag_headline(
             best_control_accuracy=0.48,
             candidate_only_accuracy=0.52,
@@ -284,6 +324,8 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
     assert payload["readiness"]["hellaswag_current_frontier_selector_blocked"] is True
     assert payload["readiness"]["hellaswag_cached_policy_packets_blocked"] is True
     assert payload["readiness"]["conditional_pq_simple_integrity_threshold_blocked"] is True
+    assert payload["readiness"]["arc_behavior_atom_basis_blocked"] is True
+    assert payload["readiness"]["openbookqa_receiver_second_benchmark_alive"] is True
     assert any(
         row["status"] == "ruled_out_cached_policy_packet"
         for row in payload["branch_rows"]
@@ -292,7 +334,15 @@ def test_live_branch_triage_summarizes_current_decision(tmp_path) -> None:
         row["status"] == "ruled_out_simple_integrity_threshold"
         for row in payload["branch_rows"]
     )
-    assert payload["next_exact_gate"]["name"] == "new_interface_or_colm_v2_integration_gate"
+    assert any(
+        row["status"] == "promote_for_colm_v2_second_benchmark_caveated"
+        for row in payload["branch_rows"]
+    )
+    assert any(
+        row["status"] == "ruled_out_current_behavior_atom_basis"
+        for row in payload["branch_rows"]
+    )
+    assert payload["next_exact_gate"]["name"] == "arc_n32_tokenwise_source_evidence_preflight"
 
     out_dir = tmp_path / "out"
     paper_path = tmp_path / "paper.md"

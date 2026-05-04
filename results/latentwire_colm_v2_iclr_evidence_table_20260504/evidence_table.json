@@ -45,6 +45,18 @@
       "status": "ruled_out_simple_integrity_threshold"
     },
     {
+      "artifact": "openbookqa_receiver_headroom",
+      "baseline": 0.422,
+      "branch": "OpenBookQA train-only packet+target receiver",
+      "ci95_low": 0.00795,
+      "decision": "Do not promote as a positive second-benchmark row; the same-source-choice wrong-row control nearly matches the receiver, so it is a source-choice artifact diagnostic.",
+      "delta": 0.002,
+      "evidence": "Held-out test n=500; receiver candidate pass False; default receiver 0.424000 vs best baseline/control 0.422000; aggregate seed-row CI low 0.000400; strict per-seed CI 2/5.",
+      "record_bytes": 3,
+      "score": 0.424,
+      "status": "weakened_openbookqa_source_choice_control"
+    },
+    {
       "artifact": "target_self_oracle_soft_prefix",
       "baseline": 0.625,
       "branch": "Target self-resonance oracle soft-prefix capacity",
@@ -81,7 +93,7 @@
       "status": "ruled_out_cached_policy_packet"
     }
   ],
-  "created_utc": "2026-05-04T22:51:18.773447+00:00",
+  "created_utc": "2026-05-04T23:04:12.121431+00:00",
   "current_contributions": [
     {
       "name": "source_private_low_rate_packets",
@@ -100,8 +112,13 @@
     },
     {
       "name": "sparse_resonance_packets",
-      "needs_work": "new mechanism beyond deterministic PQ, PCA atoms, chunk encoders, query resamplers, and source-to-prefix decoders",
+      "needs_work": "new mechanism beyond deterministic PQ, PCA/behavior atoms, BatchTopK-style atom banks, chunk encoders, query resamplers, and source-to-prefix decoders",
       "status": "framing_alive_method_not_yet_positive"
+    },
+    {
+      "name": "train_only_packet_target_receiver",
+      "needs_work": "a packet that carries row-specific source evidence beyond same-source-choice wrong-row packets",
+      "status": "openbookqa_weakened_by_source_choice_control"
     },
     {
       "name": "target_self_resonance_capacity_probe",
@@ -169,6 +186,30 @@
       "record_bytes": null,
       "score": 0.25,
       "status": "ruled_out_current_basis_receiver"
+    },
+    {
+      "artifact": "arc_behavior_atom_decoder",
+      "baseline": 0.4375,
+      "branch": "ARC behavior-supervised atom SRP decoder",
+      "ci95_low": -0.3125,
+      "decision": "Keep the strict atom harness, but do not scale the current behavior/PCA/BatchTopK-style atom basis without a new source-causality mechanism.",
+      "delta": 0.0,
+      "evidence": "0/5 pass; best matched 0.437500 vs required control top_atom_knockout at 0.437500; fired 8 rows, helps/harms 3/0.",
+      "record_bytes": 7,
+      "score": 0.4375,
+      "status": "ruled_out_current_behavior_atom_basis"
+    },
+    {
+      "artifact": "openbookqa_receiver_headroom",
+      "baseline": 0.422,
+      "branch": "OpenBookQA train-only packet+target receiver",
+      "ci95_low": 0.00795,
+      "decision": "Do not promote as a positive second-benchmark row; the same-source-choice wrong-row control nearly matches the receiver, so it is a source-choice artifact diagnostic.",
+      "delta": 0.002,
+      "evidence": "Held-out test n=500; receiver candidate pass False; default receiver 0.424000 vs best baseline/control 0.422000; aggregate seed-row CI low 0.000400; strict per-seed CI 2/5.",
+      "record_bytes": 3,
+      "score": 0.424,
+      "status": "weakened_openbookqa_source_choice_control"
     },
     {
       "artifact": "hellaswag_protected_rival",
@@ -357,13 +398,31 @@
       "role": "low-bit KV-cache compression baseline",
       "source": "https://arxiv.org/abs/2401.18079",
       "work": "KVQuant"
+    },
+    {
+      "boundary": "Crosscoders already cover shared-feature discovery across activation spaces; LatentWire is novel only if sparse features are packetized and shown to cause source-private downstream utility under atom-shuffle, wrong-row, and target-derived controls.",
+      "role": "shared/private feature-basis precedent",
+      "source": "https://transformer-circuits.pub/2024/crosscoders/",
+      "work": "Sparse Crosscoders"
+    },
+    {
+      "boundary": "A universal sparse basis is not enough for a LatentWire contribution. The paper must show low-byte source-to-target communication, not just interpretable common coordinates.",
+      "role": "cross-model sparse concept-space precedent",
+      "source": "https://arxiv.org/abs/2502.03714",
+      "work": "Universal Sparse Autoencoders"
+    },
+    {
+      "boundary": "Direct activation exchange pressures broad latent-communication novelty. LatentWire should claim source-private, byte-accounted, destructive-control packet transfer rather than generic activation communication.",
+      "role": "direct activation-communication competitor",
+      "source": "https://arxiv.org/abs/2501.14082",
+      "work": "Communicating Activations Between Language Model Agents"
     }
   ],
   "next_exact_gate": {
-    "fallback_path": "If the next method branch is not implementable Mac-locally in one turn, switch to COLM_v2 table and figure integration using conditional-PQ, fixed-byte HellaSwag, target-resonance capacity, complementarity-frontier saturation, multi-signal packet failure, and scalar-integrity failure.",
-    "name": "new_interface_or_colm_v2_integration_gate",
-    "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
-    "primary_path": "Stop HellaSwag cached-selector work and stop conditional-PQ held-out-family rescues that only add deterministic public transforms, no-op weight sweeps, or scalar integrity thresholds. The next ICLR branch needs a qualitatively new source-causal interface, such as a learned bottleneck/resampler preflight, or a benchmark where source quality and complementarity are easier to separate from packet artifacts.",
+    "fallback_path": "If local model loading is not feasible on the Mac, run a target-side behavior-transcoder feasibility probe from available target traces, then only packetize source atoms after target atoms causally steer margins.",
+    "name": "arc_n32_tokenwise_source_evidence_preflight",
+    "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
+    "primary_path": "Materialize a tiny ARC n32 tokenwise source-evidence cache and run a target-loss connector preflight on source-unique repair rows. Existing ARC/HellaSwag caches are mean-pooled and the OpenBookQA hardening now shows score/choice receiver fusion is not source-causal enough.",
     "required_controls": [
       "target_only",
       "answer_masked_source",
@@ -378,11 +437,12 @@
     ]
   },
   "paper_decision": {
-    "colm_v2_claim": "LatentWire_v2 demonstrates byte-scale source-private packet transfer with strict destructive controls, plus explicit negative gates that prevent overclaiming cross-family latent communication.",
+    "colm_v2_claim": "LatentWire_v2 demonstrates byte-scale source-private packet transfer with strict destructive controls, plus explicit negative gates, including OpenBookQA source-choice hardening, that prevent overclaiming cross-family latent communication.",
     "iclr_claim_not_yet_supported": "Sparse Resonance Packets as a broad learned cross-model communication method.",
-    "single_highest_priority": "Backport the live ICLR triage into COLM_v2 tables/figures now, while the next ICLR method branch is redesigned around a qualitatively new source-causal interface rather than another deterministic PQ transform, scalar integrity gate, source-score selector, or target-native soft-prefix decoder."
+    "single_highest_priority": "Backport the live ICLR triage into COLM_v2 tables/figures now, including the OpenBookQA source-choice hardening failure. The next ICLR method branch needs a qualitatively new source-causal interface rather than another deterministic PQ transform, scalar integrity gate, source-score selector, behavior atom, or target-native soft-prefix decoder."
   },
   "readiness": {
+    "arc_behavior_atom_basis_blocked": true,
     "colm_v2": "scoped_positive_ready_for_writeup_if_claims_are_narrow",
     "conditional_pq_cross_family_blocked": true,
     "conditional_pq_same_family_alive": true,
@@ -392,12 +452,13 @@
     "hellaswag_current_frontier_selector_blocked": true,
     "hellaswag_shallow_receiver_family_saturated": true,
     "iclr": "blocked_by_lack_of_broad_or_learned_positive_receiver",
+    "openbookqa_receiver_second_benchmark_alive": false,
     "source_conditioned_target_native_receivers_blocked": true,
     "sparse_resonance_current_basis_blocked": true,
     "target_self_resonance_capacity_alive": true,
     "target_self_resonance_learned_encoders_blocked": true
   },
   "source_triage": "results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json",
-  "story": "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, and HellaSwag learned/source-conditioned resonance receivers have not produced a positive row beyond packet/source-choice/target-cache controls.",
-  "submission_gap": "ICLR needs a positive learned or broader-benchmark receiver that passes strict destructive controls. COLM_v2 can be prepared around the conditional-PQ shared-schema method, the fixed-byte HellaSwag packet row, and the target-resonance capacity-versus-held-out-failure analysis with explicit limitations."
+  "story": "LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The previously caveated OpenBookQA train-only receiver row is now weakened by same-source-choice wrong-row hardening. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, ARC atom packets, OpenBookQA receiver fusion, and HellaSwag learned/source-conditioned resonance receivers have not produced a broad positive row beyond packet/source-choice/target-cache controls.",
+  "submission_gap": "ICLR needs a positive learned or broader-benchmark receiver that passes strict destructive controls with per-seed stability and source-choice separation. COLM_v2 can be prepared around the conditional-PQ shared-schema method, the fixed-byte HellaSwag packet row, OpenBookQA hardening as a negative diagnostic, and the target-resonance capacity-versus-held-out-failure analysis with explicit limitations."
 }

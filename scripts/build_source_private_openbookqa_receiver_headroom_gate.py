@@ -53,8 +53,10 @@ DEFAULT_TEST_SOURCE_CACHE = pathlib.Path(
 STRICT_SOURCE_DESTROY_CONTROLS = (
     "zero_source",
     "shuffled_source_packet",
+    "same_source_choice_wrong_row_packet",
     "random_same_byte_packet",
     "target_derived_sidecar",
+    "candidate_roll_packet",
     "candidate_derangement",
 )
 REPORT_CONDITIONS = (
@@ -264,6 +266,74 @@ def _target_public_row(
     }
 
 
+def _copy_packet_row(row: dict[str, Any], *, condition: str) -> dict[str, Any]:
+    copied = dict(row)
+    copied["condition"] = condition
+    copied["metadata"] = dict(row.get("metadata", {}))
+    return copied
+
+
+def _same_source_choice_wrong_row(
+    *,
+    rows: list[arc_gate.ArcRow],
+    grouped: dict[str, dict[str, dict[str, Any]]],
+    row_index: int,
+) -> dict[str, Any]:
+    row = rows[row_index]
+    matched = grouped[row.content_id][arc_gate.MATCHED_CONDITION]
+    source_index = int(matched.get("metadata", {}).get("source_selected_index", matched["prediction_index"]))
+    donor_index: int | None = None
+    for candidate_index, candidate_row in enumerate(rows):
+        if candidate_index == row_index:
+            continue
+        candidate_matched = grouped[candidate_row.content_id][arc_gate.MATCHED_CONDITION]
+        candidate_source_index = int(
+            candidate_matched.get("metadata", {}).get(
+                "source_selected_index",
+                candidate_matched["prediction_index"],
+            )
+        )
+        if candidate_source_index == source_index:
+            donor_index = candidate_index
+            break
+    if donor_index is None:
+        donor_index = arc_gate._nonself_index(rows, row_index)
+    donor_row = rows[donor_index]
+    donor_packet = _copy_packet_row(
+        grouped[donor_row.content_id][arc_gate.MATCHED_CONDITION],
+        condition="same_source_choice_wrong_row_packet",
+    )
+    donor_packet["metadata"] |= {
+        "same_source_choice_wrong_row": True,
+        "donor_content_id": donor_row.content_id,
+        "donor_row_id": donor_row.row_id,
+        "requested_source_selected_index": source_index,
+    }
+    return donor_packet
+
+
+def _candidate_roll_packet_row(
+    *,
+    row: arc_gate.ArcRow,
+    packet_row: dict[str, Any],
+) -> dict[str, Any]:
+    rolled = _copy_packet_row(packet_row, condition="candidate_roll_packet")
+    metadata = dict(rolled.get("metadata", {}))
+    scores = [float(score) for score in metadata.get("scores", [])]
+    if scores:
+        rolled_scores = scores[-1:] + scores[:-1]
+        prediction_index = int(max(range(len(rolled_scores)), key=lambda index: (rolled_scores[index], -index)))
+        metadata["scores"] = rolled_scores
+    else:
+        prediction_index = (int(packet_row["prediction_index"]) + 1) % len(row.choices)
+    rolled["prediction_index"] = prediction_index
+    rolled["prediction_label"] = row.choice_labels[prediction_index]
+    rolled["correct"] = bool(prediction_index == row.answer_index)
+    metadata["candidate_roll_packet"] = True
+    rolled["metadata"] = metadata
+    return rolled
+
+
 def _top_margin(scores: list[float]) -> tuple[float, float]:
     if not scores:
         return 0.0, 0.0
@@ -302,7 +372,7 @@ def _condition_data(
     condition: str,
 ) -> list[dict[str, Any]]:
     data: list[dict[str, Any]] = []
-    for row in rows:
+    for row_index, row in enumerate(rows):
         conditions = grouped[row.content_id]
         if condition == "source_label_copy":
             packet_row = _source_label_copy_row(conditions[arc_gate.MATCHED_CONDITION])
@@ -311,6 +381,17 @@ def _condition_data(
                 row=row,
                 target_scores=target_scores_by_id[row.content_id],
                 target_prediction=target_predictions_by_id[row.content_id],
+            )
+        elif condition == "same_source_choice_wrong_row_packet":
+            packet_row = _same_source_choice_wrong_row(
+                rows=rows,
+                grouped=grouped,
+                row_index=row_index,
+            )
+        elif condition == "candidate_roll_packet":
+            packet_row = _candidate_roll_packet_row(
+                row=row,
+                packet_row=conditions[arc_gate.MATCHED_CONDITION],
             )
         else:
             packet_row = conditions[condition]
