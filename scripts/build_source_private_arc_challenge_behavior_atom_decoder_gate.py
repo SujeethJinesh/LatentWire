@@ -82,6 +82,7 @@ EVENT_GATE_CORRUPTION_CONDITIONS = (
     "candidate_roll",
     "candidate_derangement",
 )
+RECEIVER_TRAINING_MODES = ("matched_only", "corruption_noop")
 
 
 @dataclass(frozen=True)
@@ -321,6 +322,109 @@ def _fit_ridge_no_intercept_scalar_map(
     return RidgeNoInterceptScalarMap(
         x_scale=x_scale,
         weights=weights,
+        ridge=float(ridge),
+        fit_mse=mse,
+        fit_r2=float(r2),
+    )
+
+
+def _fit_weighted_ridge_scalar_map(
+    features: np.ndarray,
+    targets: np.ndarray,
+    *,
+    sample_weights: np.ndarray,
+    ridge: float,
+) -> behavior_gate.RidgeScalarMap:
+    x = np.asarray(features, dtype=np.float64)
+    y = np.asarray(targets, dtype=np.float64)
+    weights = np.asarray(sample_weights, dtype=np.float64).reshape(-1)
+    if x.ndim != 2 or y.ndim != 1:
+        raise ValueError("features must be rank-2 and targets rank-1")
+    if x.shape[0] != y.shape[0] or x.shape[0] != weights.shape[0]:
+        raise ValueError("feature/target/weight row mismatch")
+    if x.shape[0] == 0:
+        raise ValueError("features must not be empty")
+    if ridge < 0.0:
+        raise ValueError("ridge must be non-negative")
+    weights = np.maximum(weights, 0.0)
+    total_weight = float(weights.sum())
+    if total_weight <= 1e-12:
+        raise ValueError("sample weights must have positive total mass")
+    norm_weights = weights / total_weight
+    weights = weights * (float(weights.size) / total_weight)
+    total_weight = float(weights.sum())
+    x_mean = (norm_weights.reshape(-1, 1) * x).sum(axis=0, keepdims=True)
+    x_var = (norm_weights.reshape(-1, 1) * np.square(x - x_mean)).sum(axis=0, keepdims=True)
+    x_std = np.sqrt(x_var).clip(min=1e-6)
+    y_mean = float(np.dot(norm_weights, y))
+    x_scaled = (x - x_mean) / x_std
+    y_centered = y - y_mean
+    sqrt_w = np.sqrt(weights).reshape(-1, 1)
+    x_weighted = x_scaled * sqrt_w
+    y_weighted = y_centered * sqrt_w.reshape(-1)
+    xtx = x_weighted.T @ x_weighted
+    if ridge > 0.0:
+        xtx = xtx + float(ridge) * np.eye(xtx.shape[0], dtype=np.float64)
+    xty = x_weighted.T @ y_weighted
+    solved_weights = np.linalg.solve(xtx, xty)
+    pred = x_scaled @ solved_weights + y_mean
+    mse = float(np.sum(weights * np.square(y - pred)) / total_weight)
+    baseline = float(np.sum(weights * np.square(y - y_mean)) / total_weight)
+    r2 = 0.0 if baseline <= 1e-12 else 1.0 - mse / baseline
+    return behavior_gate.RidgeScalarMap(
+        x_mean=x_mean,
+        x_std=x_std,
+        y_mean=y_mean,
+        weights=solved_weights,
+        ridge=float(ridge),
+        fit_mse=mse,
+        fit_r2=float(r2),
+    )
+
+
+def _fit_weighted_ridge_no_intercept_scalar_map(
+    features: np.ndarray,
+    targets: np.ndarray,
+    *,
+    sample_weights: np.ndarray,
+    ridge: float,
+) -> RidgeNoInterceptScalarMap:
+    x = np.asarray(features, dtype=np.float64)
+    y = np.asarray(targets, dtype=np.float64)
+    weights = np.asarray(sample_weights, dtype=np.float64).reshape(-1)
+    if x.ndim != 2 or y.ndim != 1:
+        raise ValueError("features must be rank-2 and targets rank-1")
+    if x.shape[0] != y.shape[0] or x.shape[0] != weights.shape[0]:
+        raise ValueError("feature/target/weight row mismatch")
+    if x.shape[0] == 0:
+        raise ValueError("features must not be empty")
+    if ridge < 0.0:
+        raise ValueError("ridge must be non-negative")
+    weights = np.maximum(weights, 0.0)
+    total_weight = float(weights.sum())
+    if total_weight <= 1e-12:
+        raise ValueError("sample weights must have positive total mass")
+    norm_weights = weights / total_weight
+    weights = weights * (float(weights.size) / total_weight)
+    total_weight = float(weights.sum())
+    x_var = (norm_weights.reshape(-1, 1) * np.square(x)).sum(axis=0, keepdims=True)
+    x_scale = np.sqrt(x_var).clip(min=1e-6)
+    scaled = x / x_scale
+    sqrt_w = np.sqrt(weights).reshape(-1, 1)
+    x_weighted = scaled * sqrt_w
+    y_weighted = y * sqrt_w.reshape(-1)
+    xtx = x_weighted.T @ x_weighted
+    if ridge > 0.0:
+        xtx = xtx + float(ridge) * np.eye(xtx.shape[0], dtype=np.float64)
+    xty = x_weighted.T @ y_weighted
+    solved_weights = np.linalg.solve(xtx, xty)
+    pred = scaled @ solved_weights
+    mse = float(np.sum(weights * np.square(y - pred)) / total_weight)
+    baseline = float(np.sum(weights * np.square(y)) / total_weight)
+    r2 = 0.0 if baseline <= 1e-12 else 1.0 - mse / baseline
+    return RidgeNoInterceptScalarMap(
+        x_scale=x_scale,
+        weights=solved_weights,
         ridge=float(ridge),
         fit_mse=mse,
         fit_r2=float(r2),
@@ -593,6 +697,189 @@ def _event_training_packets(
     }
 
 
+def _decoder_feature_rows(
+    target_features: np.ndarray,
+    packet_features: np.ndarray,
+    *,
+    decoder_mode: str,
+) -> np.ndarray:
+    if decoder_mode == "target_conditioned":
+        return hidden_gate._decoder_features(target_features, packet_features)
+    if decoder_mode == "packet_innovation":
+        return _innovation_decoder_features(target_features, packet_features)
+    raise ValueError(f"unknown decoder_mode: {decoder_mode}")
+
+
+def _fit_decoder_from_features(
+    features: np.ndarray,
+    targets: np.ndarray,
+    *,
+    sample_weights: np.ndarray | None = None,
+    decoder_mode: str,
+    ridge: float,
+) -> Any:
+    fit_indices = np.arange(features.shape[0], dtype=np.int64)
+    if sample_weights is not None:
+        if decoder_mode == "target_conditioned":
+            return _fit_weighted_ridge_scalar_map(
+                features,
+                targets,
+                sample_weights=sample_weights,
+                ridge=ridge,
+            )
+        if decoder_mode == "packet_innovation":
+            return _fit_weighted_ridge_no_intercept_scalar_map(
+                features,
+                targets,
+                sample_weights=sample_weights,
+                ridge=ridge,
+            )
+        raise ValueError(f"unknown decoder_mode: {decoder_mode}")
+    if decoder_mode == "target_conditioned":
+        return behavior_gate._fit_ridge_scalar_map(
+            features,
+            targets,
+            fit_indices=fit_indices,
+            ridge=ridge,
+        )
+    if decoder_mode == "packet_innovation":
+        return _fit_ridge_no_intercept_scalar_map(
+            features,
+            targets,
+            fit_indices=fit_indices,
+            ridge=ridge,
+        )
+    raise ValueError(f"unknown decoder_mode: {decoder_mode}")
+
+
+def _fit_matched_only_decoder(
+    *,
+    target_features: np.ndarray,
+    source_packet_flat: np.ndarray,
+    behavior_targets: np.ndarray,
+    fit_candidate_indices: np.ndarray,
+    decoder_mode: str,
+    ridge: float,
+) -> tuple[Any, dict[str, Any]]:
+    features = _decoder_feature_rows(
+        target_features,
+        source_packet_flat,
+        decoder_mode=decoder_mode,
+    )
+    if decoder_mode == "target_conditioned":
+        decoder = behavior_gate._fit_ridge_scalar_map(
+            features,
+            behavior_targets,
+            fit_indices=fit_candidate_indices,
+            ridge=ridge,
+        )
+    elif decoder_mode == "packet_innovation":
+        decoder = _fit_ridge_no_intercept_scalar_map(
+            features,
+            behavior_targets,
+            fit_indices=fit_candidate_indices,
+            ridge=ridge,
+        )
+    else:
+        raise ValueError(f"unknown decoder_mode: {decoder_mode}")
+    return decoder, {
+        "receiver_training_mode": "matched_only",
+        "matched_training_examples": int(fit_candidate_indices.size),
+        "corruption_training_examples": 0,
+        "corruption_conditions": [],
+    }
+
+
+def _fit_corruption_noop_decoder(
+    *,
+    rows: Sequence[arc_gate.ArcRow],
+    train_indices: Sequence[int],
+    target_features: np.ndarray,
+    source_packet_flat: np.ndarray,
+    target_derived_packet_flat: np.ndarray,
+    behavior_targets: np.ndarray,
+    source_selected: Sequence[int],
+    decoder_mode: str,
+    corruption_loss_weight: float,
+    ridge: float,
+) -> tuple[Any, dict[str, Any]]:
+    if corruption_loss_weight < 0.0:
+        raise ValueError("corruption_loss_weight must be non-negative")
+    train = [int(index) for index in train_indices]
+    row_packets = hidden_gate._row_packet_arrays(rows, source_packet_flat)
+    target_derived_row_packets = hidden_gate._row_packet_arrays(rows, target_derived_packet_flat)
+    feature_blocks: list[np.ndarray] = []
+    target_blocks: list[np.ndarray] = []
+    weight_blocks: list[np.ndarray] = []
+    matched_examples = 0
+    corruption_examples = 0
+    corruption_counts = {condition: 0 for condition in EVENT_GATE_CORRUPTION_CONDITIONS}
+
+    offsets = hidden_gate._row_offsets(rows)
+    for row_index in train:
+        start, end = offsets[row_index]
+        row_target_features = target_features[start:end]
+        matched_packet = row_packets[row_index]
+        matched_target = behavior_targets[start:end]
+        feature_blocks.append(
+            _decoder_feature_rows(
+                row_target_features,
+                matched_packet,
+                decoder_mode=decoder_mode,
+            )
+        )
+        target_blocks.append(np.asarray(matched_target, dtype=np.float64))
+        weight_blocks.append(np.ones(end - start, dtype=np.float64))
+        matched_examples += int(end - start)
+
+        corruption_packets = _event_training_packets(
+            row_index=row_index,
+            train_indices=train,
+            rows=rows,
+            row_packets=row_packets,
+            target_derived_row_packets=target_derived_row_packets,
+            source_selected=source_selected,
+        )
+        for condition, packet in corruption_packets.items():
+            feature_blocks.append(
+                _decoder_feature_rows(
+                    row_target_features,
+                    packet,
+                    decoder_mode=decoder_mode,
+                )
+            )
+            target_blocks.append(np.zeros(end - start, dtype=np.float64))
+            weight_blocks.append(np.full(end - start, float(corruption_loss_weight), dtype=np.float64))
+            corruption_examples += int(end - start)
+            corruption_counts[condition] = corruption_counts.get(condition, 0) + int(end - start)
+
+    if not feature_blocks:
+        raise ValueError("corruption-noop decoder has no training examples")
+    features = np.vstack(feature_blocks)
+    targets = np.concatenate(target_blocks, axis=0)
+    sample_weights = np.concatenate(weight_blocks, axis=0)
+    decoder = _fit_decoder_from_features(
+        features,
+        targets,
+        sample_weights=sample_weights,
+        decoder_mode=decoder_mode,
+        ridge=ridge,
+    )
+    return decoder, {
+        "receiver_training_mode": "corruption_noop",
+        "matched_training_examples": int(matched_examples),
+        "corruption_training_examples": int(corruption_examples),
+        "total_training_examples": int(features.shape[0]),
+        "matched_training_weight": float(matched_examples),
+        "corruption_loss_weight": float(corruption_loss_weight),
+        "corruption_training_weight": float(corruption_examples * float(corruption_loss_weight)),
+        "corruption_conditions": list(EVENT_GATE_CORRUPTION_CONDITIONS),
+        "corruption_condition_example_counts": {
+            condition: int(count) for condition, count in sorted(corruption_counts.items())
+        },
+    }
+
+
 def _choose_event_gate_rule(
     *,
     rows: Sequence[arc_gate.ArcRow],
@@ -852,6 +1139,23 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
             f"| `{name}` | {row['control_accuracy']:.6f} | {row['delta_accuracy']:.6f} | "
             f"{row['ci95_low']:.6f} |"
         )
+    if "no_op_residual_diagnostics" in payload:
+        lines.extend(
+            [
+                "",
+                "## No-Op Residual Diagnostics",
+                "",
+                "| Condition | Mean L2 | Mean Ratio | P95 Ratio | Flips vs Target |",
+                "|---|---:|---:|---:|---:|",
+            ]
+        )
+        for name, row in payload["no_op_residual_diagnostics"].items():
+            lines.append(
+                f"| `{name}` | {row['mean_residual_l2']:.6f} | "
+                f"{row.get('mean_residual_l2_ratio_vs_matched', 1.0):.6f} | "
+                f"{row.get('p95_residual_l2_ratio_vs_matched', 1.0):.6f} | "
+                f"{int(row.get('prediction_flips_vs_target_only', 0))} |"
+            )
     lines.extend(["", "## Interpretation", "", payload["interpretation"], ""])
     path.write_text("\n".join(lines), encoding="utf-8")
 
@@ -888,6 +1192,8 @@ def build_gate(
     subtract_zero_packet_baseline: bool,
     decoder_mode: str,
     gate_mode: str,
+    receiver_training_mode: str,
+    corruption_loss_weight: float,
     min_accuracy_gap: float,
     min_ci_low: float,
     seed: int,
@@ -896,6 +1202,8 @@ def build_gate(
         raise ValueError(f"unknown decoder_mode: {decoder_mode}")
     if gate_mode not in {"residual_threshold", "event_triggered"}:
         raise ValueError(f"unknown gate_mode: {gate_mode}")
+    if receiver_training_mode not in RECEIVER_TRAINING_MODES:
+        raise ValueError(f"unknown receiver_training_mode: {receiver_training_mode}")
     output_dir = behavior_gate._resolve(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     input_dir = output_dir / "strict_inputs"
@@ -1003,20 +1311,6 @@ def build_gate(
 
     target_features = hidden_gate._target_score_features(rows, target_scores)
     behavior_targets = behavior_gate._candidate_targets(rows, target_scores)
-    if decoder_mode == "packet_innovation":
-        decoder = _fit_ridge_no_intercept_scalar_map(
-            _innovation_decoder_features(target_features, source_packet_flat),
-            behavior_targets,
-            fit_indices=fit_candidate_indices,
-            ridge=ridge,
-        )
-    else:
-        decoder = behavior_gate._fit_ridge_scalar_map(
-            hidden_gate._decoder_features(target_features, source_packet_flat),
-            behavior_targets,
-            fit_indices=fit_candidate_indices,
-            ridge=ridge,
-        )
     target_only_decoder = behavior_gate._fit_ridge_scalar_map(
         target_features,
         behavior_targets,
@@ -1030,6 +1324,31 @@ def build_gate(
         ridge=ridge,
     )
     target_derived_packet_flat = target_packet_map.predict(target_features)
+    source_selected_all = [behavior_gate._source_prediction_for_row(row, tiny_cache) for row in rows]
+    if receiver_training_mode == "matched_only":
+        decoder, receiver_training_meta = _fit_matched_only_decoder(
+            target_features=target_features,
+            source_packet_flat=source_packet_flat,
+            behavior_targets=behavior_targets,
+            fit_candidate_indices=fit_candidate_indices,
+            decoder_mode=decoder_mode,
+            ridge=ridge,
+        )
+    elif receiver_training_mode == "corruption_noop":
+        decoder, receiver_training_meta = _fit_corruption_noop_decoder(
+            rows=rows,
+            train_indices=list(range(fit_row_count)),
+            target_features=target_features,
+            source_packet_flat=source_packet_flat,
+            target_derived_packet_flat=target_derived_packet_flat,
+            behavior_targets=behavior_targets,
+            source_selected=source_selected_all,
+            decoder_mode=decoder_mode,
+            corruption_loss_weight=corruption_loss_weight,
+            ridge=ridge,
+        )
+    else:
+        raise ValueError(f"unknown receiver_training_mode: {receiver_training_mode}")
 
     source_residuals = _decode_packet_residual_rows(
         rows,
@@ -1061,7 +1380,6 @@ def build_gate(
         zero_residuals = [np.zeros_like(residual, dtype=np.float64) for residual in zero_residuals]
     row_packets = hidden_gate._row_packet_arrays(rows, source_packet_flat)
     target_derived_row_packets = hidden_gate._row_packet_arrays(rows, target_derived_packet_flat)
-    source_selected_all = [behavior_gate._source_prediction_for_row(row, tiny_cache) for row in rows]
     if gate_mode == "event_triggered":
         gate_rule: dict[str, Any] | EventGateRule = _choose_event_gate_rule(
             rows=rows,
@@ -1235,6 +1553,46 @@ def build_gate(
             )
 
     metrics = _condition_metrics(prediction_rows, seed=seed, bootstrap_samples=bootstrap_samples)
+    matched_norms = [
+        _safe_l2(np.asarray(row["packet_residual"], dtype=np.float64))
+        for row in prediction_rows
+        if row["condition"] == MATCHED_CONDITION
+    ]
+    matched_mean_norm = float(statistics.fmean(matched_norms)) if matched_norms else 0.0
+    matched_p95_norm = float(np.percentile(matched_norms, 95)) if matched_norms else 0.0
+    no_op_diagnostics: dict[str, dict[str, Any]] = {
+        MATCHED_CONDITION: {
+            "mean_residual_l2": matched_mean_norm,
+            "p95_residual_l2": matched_p95_norm,
+        }
+    }
+    for condition in EVENT_GATE_CORRUPTION_CONDITIONS:
+        subset = [row for row in prediction_rows if row["condition"] == condition]
+        norms = [_safe_l2(np.asarray(row["packet_residual"], dtype=np.float64)) for row in subset]
+        flips = 0
+        for row in subset:
+            target_group = next(
+                (
+                    other
+                    for other in prediction_rows
+                    if other["content_id"] == row["content_id"] and other["condition"] == "target_only"
+                ),
+                None,
+            )
+            if target_group is not None:
+                flips += int(int(row["prediction_index"]) != int(target_group["prediction_index"]))
+        mean_norm = float(statistics.fmean(norms)) if norms else 0.0
+        p95_norm = float(np.percentile(norms, 95)) if norms else 0.0
+        no_op_diagnostics[condition] = {
+            "mean_residual_l2": mean_norm,
+            "p95_residual_l2": p95_norm,
+            "mean_residual_l2_ratio_vs_matched": float(mean_norm / max(matched_mean_norm, 1e-12)),
+            "p95_residual_l2_ratio_vs_matched": float(p95_norm / max(matched_p95_norm, 1e-12)),
+            "prediction_flips_vs_target_only": int(flips),
+            "prediction_flip_rate_vs_target_only": float(flips / len(subset)) if subset else 0.0,
+            "packet_helped_vs_target": int(metrics[condition]["packet_helped_vs_target"]),
+            "packet_harmed_vs_target": int(metrics[condition]["packet_harmed_vs_target"]),
+        }
     oracle = ecoc_gate._oracle_diagnostics(prediction_rows)
     matched = metrics[MATCHED_CONDITION]
     strict_control_metrics: dict[str, dict[str, float]] = {}
@@ -1276,6 +1634,7 @@ def build_gate(
             "matched_packet_net_help": int(matched["packet_net_help_vs_target"]),
         },
         "condition_metrics": metrics,
+        "no_op_residual_diagnostics": no_op_diagnostics,
         "oracle_diagnostics": oracle,
         "systems_packet_sideband": {
             "source_private": True,
@@ -1294,6 +1653,8 @@ def build_gate(
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
             "decoder_mode": decoder_mode,
             "gate_mode": gate_mode,
+            "receiver_training_mode": receiver_training_mode,
+            "corruption_loss_weight": float(corruption_loss_weight),
             "note": (
                 "Byte counts cover behavior-supervised source-hidden atom IDs plus quantized coefficients only. "
                 "They are not native GPU throughput, HBM traffic, or an end-to-end serving measurement."
@@ -1309,6 +1670,7 @@ def build_gate(
                 "fit_mse": decoder.fit_mse,
                 "fit_r2": decoder.fit_r2,
                 "selected_gate_rule": _public_gate_rule(gate_rule),
+                "receiver_training": receiver_training_meta,
             },
             "target_only_decoder": {
                 "ridge": target_only_decoder.ridge,
@@ -1341,6 +1703,8 @@ def build_gate(
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
             "decoder_mode": decoder_mode,
             "gate_mode": gate_mode,
+            "receiver_training_mode": receiver_training_mode,
+            "corruption_loss_weight": float(corruption_loss_weight),
         },
         "interpretation": (
             "This gate tests whether source-hidden innovations become more useful when the sparse atom basis is "
@@ -1411,6 +1775,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--subtract-zero-packet-baseline", choices=("true", "false"), default="true")
     parser.add_argument("--decoder-mode", choices=("target_conditioned", "packet_innovation"), default="target_conditioned")
     parser.add_argument("--gate-mode", choices=("residual_threshold", "event_triggered"), default="residual_threshold")
+    parser.add_argument("--receiver-training-mode", choices=RECEIVER_TRAINING_MODES, default="matched_only")
+    parser.add_argument(
+        "--corruption-loss-weight",
+        type=float,
+        default=0.1,
+        help="Per-example weight for no-op corruption targets when receiver-training-mode is corruption_noop.",
+    )
     parser.add_argument("--min-accuracy-gap", type=float, default=0.0)
     parser.add_argument("--min-ci-low", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=37)
@@ -1450,6 +1821,8 @@ def main(argv: list[str] | None = None) -> int:
         subtract_zero_packet_baseline=str(args.subtract_zero_packet_baseline).lower() == "true",
         decoder_mode=str(args.decoder_mode),
         gate_mode=str(args.gate_mode),
+        receiver_training_mode=str(args.receiver_training_mode),
+        corruption_loss_weight=float(args.corruption_loss_weight),
         min_accuracy_gap=float(args.min_accuracy_gap),
         min_ci_low=float(args.min_ci_low),
         seed=int(args.seed),

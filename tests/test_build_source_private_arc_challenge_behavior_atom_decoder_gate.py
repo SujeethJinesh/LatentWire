@@ -179,3 +179,60 @@ def test_same_shape_shuffle_ignores_source_choice() -> None:
     index = gate._same_shape_shuffle_index(row_index=0, eval_indices=[0, 1, 2], rows=rows)
 
     assert index == 1
+
+
+def test_corruption_noop_decoder_trains_corrupt_packets_toward_noop() -> None:
+    rows = _rows()
+    target_features = np.zeros((9, 5), dtype=np.float64)
+    source_packet = np.asarray(
+        [
+            [2.0, 0.0, 0.0],
+            [-2.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 2.0, 0.0],
+            [0.0, -2.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 2.0],
+            [0.0, 0.0, -2.0],
+            [0.0, 0.0, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    target_derived_packet = np.zeros_like(source_packet)
+    behavior_targets = np.asarray([1.0, -1.0, 0.5, 1.0, -1.0, 0.5, 1.0, -1.0, 0.5], dtype=np.float64)
+
+    decoder, meta = gate._fit_corruption_noop_decoder(
+        rows=rows,
+        train_indices=[0, 1, 2],
+        target_features=target_features,
+        source_packet_flat=source_packet,
+        target_derived_packet_flat=target_derived_packet,
+        behavior_targets=behavior_targets,
+        source_selected=[1, 0, 1],
+        decoder_mode="target_conditioned",
+        corruption_loss_weight=0.1,
+        ridge=0.01,
+    )
+
+    matched = decoder.predict(gate.hidden_gate._decoder_features(target_features, source_packet))
+    zero = decoder.predict(gate.hidden_gate._decoder_features(target_features, np.zeros_like(source_packet)))
+
+    assert meta["receiver_training_mode"] == "corruption_noop"
+    assert meta["matched_training_examples"] == 9
+    assert meta["corruption_training_examples"] == 9 * len(gate.EVENT_GATE_CORRUPTION_CONDITIONS)
+    assert float(np.mean(np.abs(matched))) > 2.0 * float(np.mean(np.abs(zero)))
+    assert decoder.fit_r2 > 0.0
+
+
+def test_parse_args_accepts_corruption_noop_receiver() -> None:
+    args = gate.parse_args(
+        [
+            "--receiver-training-mode",
+            "corruption_noop",
+            "--corruption-loss-weight",
+            "0.25",
+        ]
+    )
+
+    assert args.receiver_training_mode == "corruption_noop"
+    assert args.corruption_loss_weight == 0.25

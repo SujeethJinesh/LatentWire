@@ -44,9 +44,18 @@ only source-specific packet information can move the target scores.
   `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered/`
 - event-triggered no-subtraction diagnostic:
   `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered_no_zsub/`
+- corruption-noop unweighted diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_decoder/`
+- corruption-noop weighted diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w01_decoder/`
+- corruption-noop higher-weight diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w025_decoder/`
+- corruption-noop weighted zero-subtracted diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w01_zsub_decoder/`
 - reference synthesis:
   `references/731_behavior_atom_decoder_packet_refs_20260504.md`
   and `references/733_event_triggered_packet_gate_refs_20260504.md`
+  and `references/734_corruption_noop_receiver_refs_20260504.md`
 
 ## Results
 
@@ -58,6 +67,10 @@ only source-specific packet information can move the target scores.
 | packet-only innovation decoder | rank8 top2 q4 | 7 | 0.2500 | 0.2500 | qwen_substituted_packet, 0.4375 | -0.4375 | 7/16 | 1 | 1 |
 | event-triggered zero-subtracted decoder | rank8 top2 q4 | 7 | 0.3125 | 0.2500 | qwen_substituted_packet, 0.4375 | -0.3750 | 5/16 | 1 | 0 |
 | event-triggered decoder, no subtraction | rank8 top2 q4 | 7 | 0.3750 | 0.2500 | top_atom_knockout, 0.4375 | -0.3750 | 8/16 | 2 | 0 |
+| corruption-noop decoder, weight 1.0 | rank8 top2 q4 | 7 | 0.2500 | 0.2500 | qwen_substituted_packet, 0.4375 | -0.4375 | 3/16 | 0 | 0 |
+| corruption-noop decoder, weight 0.1 | rank8 top2 q4 | 7 | 0.4375 | 0.2500 | candidate_roll, 0.5000 | -0.3125 | 7/16 | 3 | 0 |
+| corruption-noop decoder, weight 0.25 | rank8 top2 q4 | 7 | 0.3750 | 0.2500 | top_atom_knockout, 0.5000 | -0.3750 | 7/16 | 2 | 0 |
+| corruption-noop decoder, weight 0.1, zero-subtracted | rank8 top2 q4 | 7 | 0.3750 | 0.2500 | top_atom_knockout, 0.4375 | -0.3750 | 7/16 | 2 | 0 |
 
 The primary behavior-atom scout is a partial positive signal: matched accuracy
 beats target-only by two rows and has helped `2`, harmed `0`. It also beats
@@ -108,6 +121,24 @@ matched at `0.3750`, source-index/rank/score controls remain close at
 event gate therefore improves harm control but not source necessity or atom
 causality.
 
+The corruption-to-no-op decoder moves the destructive controls into receiver
+training. The unweighted objective is too conservative: with nine corruption
+families per matched example, it collapses matched lift to target-only
+(`0.2500`). A balanced corruption weight of `0.1` restores and improves the
+held-out lift: matched reaches `0.4375` versus target-only `0.2500`, fires on
+`7/16`, helps `3`, and harms `0`. However, it still fails strict causality:
+candidate roll reaches `0.5000`, top-atom knockout and Qwen substitution tie
+matched at `0.4375`, and same-source-choice wrong-row remains high at
+`0.3750`.
+
+The no-op residual diagnostics show why this is not yet a positive method.
+With corruption weight `0.1`, zero-source and generic source-row shuffle are
+partly suppressed, but candidate roll, candidate derangement, atom shuffle,
+coefficient shuffle, same-source-choice wrong-row, and top-atom knockout all
+decode to residual norms close to matched. Increasing the corruption weight to
+`0.25` weakens matched lift before it solves top-atom-knockout; zero-baseline
+subtraction also weakens matched lift without clearing the strongest controls.
+
 ## Diagnostics
 
 The behavior basis fit is train-predictive but not held-out causal enough. For
@@ -124,23 +155,29 @@ absence of source signal.
 The packet-only innovation and event-triggered results further narrow the
 diagnosis: subtracting or forbidding target-only receiver bias is necessary but
 not sufficient, and a row-level accept/abstain gate alone does not make the
-current behavior atoms source-necessary. The next live method must change the
-atom basis or decoder training objective so corrupted packets decode to no-op,
-not only post-hoc reject some decoded residuals.
+current behavior atoms source-necessary. The corruption-noop results narrow it
+again: no-op receiver training can recover a stronger no-harm matched lift, but
+linear behavior atoms still do not carry enough candidate-aligned causal
+information. The next live method must change the atom basis or add an
+explicit candidate-alignment/integrity mechanism so candidate-rolled and
+top-atom-knockout packets collapse.
 
 ## Decision
 
-Demote the current linear behavior-atom residual decoder as an ICLR-positive
-method. Keep the implementation because it is now the cleanest strict ARC
-behavior-atom packet harness and includes same-source-choice wrong-row and
-zero-packet-baseline subtraction.
+Demote the current linear behavior-atom residual decoder and weighted
+corruption-noop variant as ICLR-positive methods. Keep the implementation
+because it is now the cleanest strict ARC behavior-atom packet harness and
+includes same-source-choice wrong-row, zero-packet-baseline subtraction,
+corruption-to-no-op receiver training, and no-op residual diagnostics.
 
-Promote the next branch only if it changes the receiver enough to remove the
-zero-source/same-source-choice failure:
+Promote the next branch only if it changes the atom basis or packet integrity
+enough to remove the candidate-roll/top-atom-knockout/same-source-choice
+failure:
 
-1. consistency/corruption-trained decoder: train the receiver so matched
-   packets are stable under coefficient noise but wrong-row and atom-ID
-   permutations collapse;
+1. candidate-aligned corruption training: train matched packets to remain
+   stable under mild coefficient noise, but candidate roll, candidate
+   derangement, top-atom knockout, same-source-choice wrong-row, and atom-ID
+   permutations must decode to no-op with residual norms below matched;
 2. small BatchTopK/DFC/crosscoder/transcoder packet atoms that explicitly
    separate shared, source-private, and target-private behavior features.
 

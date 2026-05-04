@@ -23280,3 +23280,76 @@ help and to ignore fake packet variants. That prevented the matched packet from
 hurting answers, but some fake or damaged packets still worked as well or
 better. The next model has to learn better packet atoms, not just a better
 listen/ignore threshold.
+
+## 2026-05-04 Weighted Corruption-Noop Behavior-Atom Decoder Diagnostics
+
+Implemented and ran a decoder-level corruption-to-no-op training mode for the
+behavior-atom SRP harness. Instead of only using corruptions to train a
+post-hoc accept/abstain gate, this branch augments receiver training with
+zero, target-derived, wrong-row, same-source-choice wrong-row, atom-shuffled,
+coefficient-shuffled, top-atom-knockout, candidate-roll, and
+candidate-derangement packets mapped to zero residual targets. It also logs
+matched-vs-corruption residual L2 norms and prediction flips versus target-only.
+
+- updated script:
+  `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- updated tests:
+  `tests/test_build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- unweighted corruption-noop diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_decoder/`;
+- weighted corruption-noop diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w01_decoder/`;
+- higher-weight corruption-noop diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w025_decoder/`;
+- weighted zero-subtracted diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w01_zsub_decoder/`;
+- updated memo:
+  `paper/behavior_atom_decoder_sparse_resonance_packet_gate_20260504.md`;
+- reference synthesis:
+  `references/734_corruption_noop_receiver_refs_20260504.md`.
+
+Outcome: fail, but the branch is informative. The unweighted corruption-noop
+decoder has nine corruption families per matched example and collapses matched
+lift to target-only: matched `0.250000`, target-only `0.250000`, fired `3/16`,
+helped `0`, harmed `0`. The best required control is Qwen substitution at
+`0.437500`; worst required paired CI95 low is `-0.437500`.
+
+The weighted corruption-noop decoder with per-corruption example weight `0.1`
+is the strongest behavior-atom scout so far on point estimate: matched
+`0.437500` versus target-only `0.250000`, fired `7/16`, helped `3`, harmed
+`0`, and net help `+3`. It still fails strict source causality. Candidate roll
+reaches `0.500000`, top-atom knockout and Qwen substitution tie matched at
+`0.437500`, same-source-choice wrong-row reaches `0.375000`, and worst
+required paired CI95 low is `-0.312500`.
+
+Residual-norm diagnostics explain the failure. In the weight-`0.1` run, matched
+mean residual L2 is `0.393`. Zero-source is partly suppressed (`0.36x` matched)
+and generic source-row shuffle is partly suppressed (`0.96x` matched, but only
+`1/16` target flips). However, candidate roll (`1.07x` matched), candidate
+derangement (`1.00x`), atom shuffle (`0.97x`), coefficient shuffle (`1.14x`),
+same-source-choice wrong-row (`1.10x`), and top-atom knockout (`1.04x`) still
+decode to residuals at essentially matched scale. These controls also flip many
+target decisions, so the receiver has not learned a true packet-integrity
+notion.
+
+Increasing corruption weight to `0.25` weakens matched lift before it clears
+the hard controls: matched `0.375000`, target-only `0.250000`, top-atom
+knockout `0.500000`, fired `7/16`, helped `2`, harmed `0`. Running weight
+`0.1` with zero-packet-baseline subtraction also weakens matched to `0.375000`
+and still loses to top-atom knockout at `0.437500`.
+
+Decision: demote linear behavior atoms plus weighted corruption-noop receiver
+as an ICLR-positive method. Keep the implementation and diagnostics because
+they sharpen the next gate. The next exact branch must address candidate
+alignment and atom causality, either by adding candidate-aligned packet
+integrity/no-op objectives or by replacing linear behavior atoms with a
+behavior-loss BatchTopK/DFC/crosscoder-style atom bank that explicitly
+separates shared, source-private, and target-private behavior features. Do not
+widen benchmarks from this row.
+
+Lay explanation: we taught the receiver directly that fake packets should do
+nothing. A carefully weighted version let real packets help more often, but
+packets with their candidate clues shifted around or with the strongest atom
+removed still worked as well or better. That means the current packet is not
+yet carrying robust row-specific evidence; it still behaves too much like a
+source-choice shortcut.

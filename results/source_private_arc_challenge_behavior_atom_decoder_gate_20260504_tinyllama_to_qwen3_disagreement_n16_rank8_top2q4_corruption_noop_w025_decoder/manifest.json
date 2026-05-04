@@ -1,0 +1,45 @@
+{
+  "created_utc": "2026-05-04T20:03:34.556113+00:00",
+  "files": [
+    {
+      "bytes": 26416,
+      "path": "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w025_decoder/arc_challenge_behavior_atom_decoder_gate.json",
+      "sha256": "150c1f29efaf461c323ce1e69cd0075c77b935afe89116abffab3555cf2c2210"
+    },
+    {
+      "bytes": 2079,
+      "path": "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w025_decoder/arc_challenge_behavior_atom_decoder_gate.md",
+      "sha256": "dd2e219e29b43cc13a94818416536fe1d10ed52fc40499831f28824355682ee8"
+    },
+    {
+      "bytes": 326374,
+      "path": "results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w025_decoder/prediction_audit.jsonl",
+      "sha256": "d0d17391250551f2c9d911622349c093bcbd7b4cac2c659ab20ab5d7840ad1f8"
+    }
+  ],
+  "gate": "source_private_arc_challenge_behavior_atom_decoder_gate",
+  "inputs": {
+    "agreement_path": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu/source_cache_agreement.csv",
+    "corruption_loss_weight": 0.25,
+    "decoder_mode": "target_conditioned",
+    "gate_mode": "residual_threshold",
+    "packet_bits": 4,
+    "packet_rank": 8,
+    "packet_top_k": 2,
+    "qwen_test_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/qwen_test_source_scores.jsonl",
+    "qwen_validation_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/qwen_validation_source_scores.jsonl",
+    "receiver_training_mode": "corruption_noop",
+    "same_byte_budget": 7,
+    "source_family_gate_dir": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_tinyllama_cpu",
+    "source_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--TinyLlama--TinyLlama-1.1B-Chat-v1.0/snapshots/fe8a4ea1ffedaf415f4da2f062534de366a451e6",
+    "subtract_zero_packet_baseline": false,
+    "target_model": "/Users/sujeethjinesh/.cache/huggingface/hub/models--Qwen--Qwen3-0.6B/snapshots/c1899de289a04d12100db370d81485cdf75e47ca",
+    "test_disagreement_limit": 16,
+    "test_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_test.jsonl",
+    "tiny_test_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/tinyllama_test_source_scores.jsonl",
+    "tiny_validation_score_cache": "results/source_private_arc_challenge_source_score_router_gate_20260502/source_score_caches/tinyllama_validation_source_scores.jsonl",
+    "train_disagreement_limit": 16,
+    "validation_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl"
+  },
+  "pass_gate": false
+}

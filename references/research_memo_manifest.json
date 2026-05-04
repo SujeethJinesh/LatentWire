@@ -2630,5 +2630,12 @@
     "path": "references/733_event_triggered_packet_gate_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted reference memo for the event-triggered behavior-atom packet gate, covering selective prediction, learning to defer, event-triggered control, denoising/consistency corruption training, sparse crosscoder/DFC next branches, dense C2C/KV baselines, and required risk/coverage controls."
+  },
+  {
+    "num": 734,
+    "slug": "corruption_noop_receiver_refs_20260504",
+    "path": "references/734_corruption_noop_receiver_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted reference memo for the weighted corruption-to-no-op receiver diagnostic, covering denoising/corruption objectives, outlier negatives, selective/defer receivers, sparse atom novelty boundaries, direct C2C/KV competitors, KV quantization byte floors, and the candidate-alignment failure."
   }
 ]
