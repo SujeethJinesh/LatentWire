@@ -1,0 +1,26 @@
+{
+  "artifact_sha256": {
+    "native_readiness_ledger.csv": "6e4342108030fc18da817f22397c62488b99514746756316bc639ab2ba9a2d69",
+    "native_readiness_ledger.json": "08a6a654913ffa2d7ffddadd5aad3b731d6aba96ad70c2e22afe5272e46c607a",
+    "native_readiness_ledger.md": "6a823e857280b4f9673396d623e0d65b095ff0edfc60aa85bdb633977fd2929e"
+  },
+  "artifacts": [
+    "native_readiness_ledger.json",
+    "native_readiness_ledger.csv",
+    "native_readiness_ledger.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "gate": "source_private_native_readiness_ledger",
+  "headline": {
+    "claim_allowed": "Mac-local source-private packet accuracy/byte-boundary/transport proxy evidence.",
+    "claim_forbidden_count": 8,
+    "local_measured_rows": 3,
+    "native_blocker": "NVIDIA/vLLM/SGLang run is still required for systems claims.",
+    "native_ready": false,
+    "pass_gate": false,
+    "pending_native_rows": 5,
+    "source_private_local_rows": 3
+  },
+  "pass_gate": false
+}

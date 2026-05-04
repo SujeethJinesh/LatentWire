@@ -22273,3 +22273,47 @@ Lay explanation: we let Qwen look at its first guess from the hidden clue, then
 gave it one chance to revise the clue. It changed one answer, but the same
 change happened even when we gave it the wrong source clue, so the revision is
 not trustworthy evidence of model-to-model communication.
+
+## 2026-05-04 Post-Receiver-Failure Mac Packet-Ring Systems Gate
+
+After the consistency-refined slot receiver failed source-specific controls, I
+reran the high-repeat Mac packet-ring transport microbenchmark and regenerated
+the native-readiness ledger against that artifact.
+
+- script:
+  `scripts/build_source_private_mac_packet_ring_transport_microbench.py`;
+- readiness script:
+  `scripts/build_source_private_native_readiness_ledger.py`;
+- packet artifact:
+  `results/source_private_mac_packet_ring_transport_microbench_20260504_post_receiver_fail/`;
+- readiness artifact:
+  `results/source_private_native_readiness_ledger_20260504_post_receiver_fail/`;
+- memo:
+  `paper/source_private_mac_packet_ring_transport_post_receiver_fail_20260504.md`;
+- references:
+  `references/708_source_private_post_receiver_systems_refs_20260504.md`.
+
+Outcome: pass as a Mac-local systems support artifact, not as a learned-method
+gate. The source-private packet profile is `1B` payload / `4B` framed record
+with batch64 p50 `0.642475 ns/request`, p95 `0.646144 ns/request`, and
+line/DMA bytes `4.0/4.0 B/request`. The run is stable across nine repeats
+with packet CV `0.002493` and max packet CV `0.024077`. The full private
+hidden-log buffer is `8.896008x` slower than the packet at p50, and the QJL
+1-bit KV-floor buffer is `593.085303x` slower at p50.
+
+The native-readiness ledger still fails by design: local measured rows are `3`,
+pending native rows are `5`, and the blocker remains an NVIDIA/vLLM/SGLang
+serving run. Do not claim native TTFT, TPOT, goodput, HBM, peak-memory, or
+superiority over C2C, KVComm/KVCOMM, QJL, TurboQuant, KIVI, vLLM, or SGLang.
+
+Decision: promote this as the canonical Mac-local systems artifact. It improves
+the systems side of the paper, but it does not close the ICLR positive-method
+blocker. The next live method branch should be a receiver-calibrated
+sparse/common-basis top1/top2 ambiguity code that sends conditional evidence
+for concrete source-target disagreement, with wrong-row, atom-permutation,
+candidate-roll, target-derived, zero-source, and same-byte random controls.
+
+Lay explanation: this test moves the tiny LatentWire message through local
+memory over and over and checks that the packet arrives correctly. It shows the
+packet is tiny and cheap to move on the Mac. It does not yet show that a GPU
+server will be faster.

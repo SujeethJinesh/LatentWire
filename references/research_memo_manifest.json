@@ -2455,5 +2455,12 @@
     "path": "references/707_target_self_resonance_consistency_refined_slot_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reference memo after the failed TinyLlama-to-Qwen consistency-refined slot gate, recording novelty boundaries against consistency models and latent consistency models, prefix/prompt/gist compression, C2C/KVComm/KVCOMM communication competitors, relative representations and SAE common-basis work, and QJL/TurboQuant systems baselines."
+  },
+  {
+    "num": 708,
+    "slug": "source_private_post_receiver_systems_refs_20260504",
+    "path": "references/708_source_private_post_receiver_systems_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo for the post-receiver-failure Mac packet-ring systems gate, recording claim boundaries against C2C, KVComm/KVCOMM, QJL, TurboQuant, KIVI, vLLM/PagedAttention, and SGLang/RadixAttention native serving baselines."
   }
 ]
