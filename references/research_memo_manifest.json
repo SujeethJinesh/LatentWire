@@ -2735,5 +2735,12 @@
     "path": "references/748_openbookqa_hardening_and_sparse_basis_boundaries_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source novelty-boundary memo for promoting OpenBookQA receiver hardening as the next ICLR gate after caveated positive packet+target fusion and failed ARC behavior-atom/crosscoder-style packet branches."
+  },
+  {
+    "num": 749,
+    "slug": "colm_v2_review_packet_baseline_matrix_refs_20260504",
+    "path": "references/749_colm_v2_review_packet_baseline_matrix_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reviewer-facing primary-source baseline matrix memo for COLM_v2, separating dense cache communication, activation/latent communication, prompt/query bottlenecks, sparse/common-basis work, KV compression, serving substrates, and local destructive controls."
   }
 ]

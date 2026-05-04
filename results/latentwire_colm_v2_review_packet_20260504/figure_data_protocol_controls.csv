@@ -1,0 +1,8 @@
+stage,object,review_question,control_or_check
+source_private_source,source model hidden/candidate evidence,Is information computed by a separate source model?,answer-key-forbidden source path
+packet_encoder,low-byte packet,How many bytes cross the model boundary?,raw/framed/cacheline/DMA byte accounting
+receiver,target-side packet use,Does the target improve because of the matched source row?,"target-only, zero-source, target-derived packet"
+row_causality,matched versus nonmatched source packet,Is the packet carrying row-specific evidence?,"wrong-row, source-row shuffle, same-source-choice wrong-row"
+choice_artifact,answer-choice preference,Is the receiver just copying the source's favorite option?,"source-index, source-rank, source-score, candidate roll"
+packet_semantics,packet atoms/coefficients,Do the packet contents matter?,"atom shuffle, coefficient corruption, random same-byte packet"
+text_baseline,visible text at same byte budget,Does opaque packet transfer beat tiny visible prompts?,same-byte visible text

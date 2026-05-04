@@ -1,0 +1,26 @@
+tier,branch,status,score,baseline,delta,ci95_low,record_bytes,artifact
+1_core_colm_v2_positive,Conditional PQ shared-schema packet,promote_for_colm_v2_only,16,16,0.658,0.658,7,conditional_pq_status
+1_core_colm_v2_positive,HellaSwag fixed hybrid candidate packet,promote_for_colm_v2_systems_baseline,0.532464,0.526688,0.005776,0.002888,4,hellaswag_fixed_hybrid
+2_guardrail_or_support,Conditional PQ scalar integrity threshold,ruled_out_simple_integrity_threshold,0.425781,0.457031,-0.03125,-0.097656,7,conditional_pq_integrity_threshold
+2_guardrail_or_support,OpenBookQA train-only packet+target receiver,weakened_openbookqa_source_choice_control,0.424,0.422,0.002,0.00795,3,openbookqa_receiver_headroom
+2_guardrail_or_support,Target self-resonance oracle soft-prefix capacity,capacity_alive_not_source_private_method,0.9375,0.625,0.3125,,,target_self_oracle_soft_prefix
+2_guardrail_or_support,HellaSwag complementarity-frontier selector diagnostic,headroom_alive_selector_blocked,0.467448,0.467448,0,0,4,hellaswag_complementarity_frontier
+2_guardrail_or_support,HellaSwag multi-signal source packet frontier,ruled_out_cached_policy_packet,0.455729,0.467448,-0.011719,-0.02347,5,hellaswag_multisignal_packet_frontier
+3_iclr_blocker_or_negative,Conditional PQ public-zscore held-out-family decoder,ruled_out_as_cross_family_rescue,0.453125,0.441406,0.011719,-0.085938,7,conditional_public_zscore
+3_iclr_blocker_or_negative,Conditional PQ public-SVD whitening held-out-family decoder,ruled_out_as_cross_family_rescue,0.375,0.613281,-0.238281,-0.32041,7,conditional_public_svd
+3_iclr_blocker_or_negative,Conditional PQ corruption-to-noop receiver,ruled_out_as_cross_family_rescue,0.25,0.25,0,0,7,conditional_corruption_noop
+3_iclr_blocker_or_negative,Conditional PQ scalar integrity threshold,ruled_out_simple_integrity_threshold,0.425781,0.457031,-0.03125,-0.097656,7,conditional_pq_integrity_threshold
+3_iclr_blocker_or_negative,ARC sparse resonance PCA/target-aligned soft-prefix packets,ruled_out_current_basis_receiver,0.25,0.625,-0.375,,,arc_sparse_resonance
+3_iclr_blocker_or_negative,ARC behavior-supervised atom SRP decoder,ruled_out_current_behavior_atom_basis,0.4375,0.4375,0,-0.3125,7,arc_behavior_atom_decoder
+3_iclr_blocker_or_negative,OpenBookQA train-only packet+target receiver,weakened_openbookqa_source_choice_control,0.424,0.422,0.002,0.00795,3,openbookqa_receiver_headroom
+3_iclr_blocker_or_negative,HellaSwag protected top-2/rival packet,ruled_out_shallow_pair_decoder,0.46224,0.467448,-0.005208,-0.013021,5,hellaswag_protected_rival
+3_iclr_blocker_or_negative,HellaSwag official-train receiver-calibrated selector,weakened_near_miss,0.466146,0.467448,-0.001302,-0.007812,5,hellaswag_official_receiver
+3_iclr_blocker_or_negative,HellaSwag harm-controlled complementarity buckets,ruled_out_no_safe_bucket,0.467448,0.467448,0,0,6,hellaswag_harm_bucket
+3_iclr_blocker_or_negative,HellaSwag top1/top2 ambiguity buckets,ruled_out_no_safe_bucket,0.467448,0.467448,0,0,4,hellaswag_top2_bucket
+3_iclr_blocker_or_negative,HellaSwag denoising syndrome packet,ruled_out_shallow_syndrome_decoder,0.463542,0.467448,-0.003906,-0.010417,4,hellaswag_denoising_syndrome
+3_iclr_blocker_or_negative,HellaSwag sparse/common-basis top2 ambiguity code,weakened_common_basis_atom,0.500977,0.501953,-0.000977,-0.00293,4,hellaswag_sparse_common_basis
+3_iclr_blocker_or_negative,Target self-resonance oracle soft-prefix capacity,capacity_alive_not_source_private_method,0.9375,0.625,0.3125,,,target_self_oracle_soft_prefix
+3_iclr_blocker_or_negative,Target self-resonance held-out learned prefix encoders,ruled_out_current_target_native_encoder_family,0.6875,0.6875,0,,,target_self_learned_encoders
+3_iclr_blocker_or_negative,Source-conditioned target-native resonance receivers,ruled_out_current_source_conditioned_receiver_family,0.375,0.375,0,,,target_self_source_conditioned_receivers
+3_iclr_blocker_or_negative,HellaSwag complementarity-frontier selector diagnostic,headroom_alive_selector_blocked,0.467448,0.467448,0,0,4,hellaswag_complementarity_frontier
+3_iclr_blocker_or_negative,HellaSwag multi-signal source packet frontier,ruled_out_cached_policy_packet,0.455729,0.467448,-0.011719,-0.02347,5,hellaswag_multisignal_packet_frontier
