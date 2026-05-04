@@ -1,0 +1,22 @@
+{
+  "artifact_sha256": {
+    "contribution_matrix.csv": "21f51fd54d7eadf80b984b01c52b5067482708fad331f05d6cd2f0d05a29f2cb",
+    "iclr_evidence_bundle.json": "65c2ffa05f397f17746abc9a24dfdb339c9b2f098b39be6fa2ca338f66fa7a8b",
+    "iclr_evidence_bundle.md": "1e5cac589a3bb487c5c956e60c90b2c7bbe701082e4dbdd1fdabe6f02073ae5d",
+    "novelty_matrix.csv": "41d856b71a65da86375d1dfcdeac7e8003cdca42bfdfbeb022ff5719d283cc36",
+    "reproduce_iclr_evidence_bundle.sh": "04f555a38e840d26a45984655bd0faef695e884acf9347ccd82d267fd7a9fc7a"
+  },
+  "artifacts": [
+    "iclr_evidence_bundle.json",
+    "iclr_evidence_bundle.md",
+    "novelty_matrix.csv",
+    "contribution_matrix.csv",
+    "reproduce_iclr_evidence_bundle.sh",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "command": "./venv_arm64/bin/python scripts/build_source_private_iclr_evidence_bundle.py --output-dir results/source_private_iclr_evidence_bundle_20260504_terminal_tail_stability",
+  "pass_gate": true,
+  "python": "3.11.6 (v3.11.6:8b6ee5ba3b, Oct  2 2023, 11:18:21) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "script_sha256": "d9d80a928edeaa8007d1df65d4e8f604641ecf3cc54176820c2577bb231957d5"
+}

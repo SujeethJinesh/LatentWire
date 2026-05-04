@@ -21900,3 +21900,44 @@ Lay explanation: we tried to make the hidden clue easier to share by describing
 it only through the closest public anchor directions. That made the clue too
 blunt: the receiver mostly fell back to the same answer it would pick from the
 source label or score-only baseline.
+
+## 2026-05-04 HellaSwag Terminal-Tail Stability Rerun
+
+Reran the frozen HellaSwag terminal validation tail `9216:10042` with the
+current tail-aware eval-slice runner and `5000` bootstrap samples, reusing the
+existing cached Qwen score and hidden-state artifacts. No method or packet
+construction changed.
+
+- script:
+  `scripts/build_source_private_hellaswag_hidden_innovation_eval_slice_stress.py`;
+- artifact:
+  `results/source_private_hellaswag_hidden_innovation_eval_slice_stress_20260504_qwen05_train512_validation9216_10042_terminal_tail_stability/`;
+- refreshed evidence bundle:
+  `results/source_private_iclr_evidence_bundle_20260504_terminal_tail_stability/`;
+- memo:
+  `paper/source_private_hellaswag_terminal_tail_stability_rerun_20260504.md`;
+- references:
+  `references/700_hellaswag_terminal_tail_stability_refs_20260504.md`.
+
+Outcome: fail. Aggregate tail signal remains positive: selected accuracy
+`0.539952` versus best label-copy `0.498789`, source-rank/index-only
+`0.497579`, score-only `0.497579`, and zero-hidden `0.497579`. Paired CI95 low
+versus best label-copy is `+0.014528`; CI95 low versus source-rank/index-only
+and score-only is `+0.020581`. Corrupted hidden controls remain lower:
+wrong-example `0.484262`, candidate-roll `0.433414`, and score-channel-roll
+`0.266344`. However, train-sample jackknife robustness remains the blocker:
+only `1/3` jackknife subbags pass, with min jackknife CI95 low versus best
+label-copy `-0.007264`.
+
+Decision: freeze the HellaSwag claim as validation `0:9216` plus a positive but
+jackknife-unstable terminal-tail diagnostic. Do not claim full-validation
+HellaSwag success from the current dense bagged hidden-innovation method. The
+next method gate must change the mechanism, not the confidence estimator:
+source-conditioned top-2/rival repair, a learned receiver interface with
+target/self-resonance controls, or native systems rows if NVIDIA access arrives
+first.
+
+Lay explanation: we reran the last HellaSwag slice with the same tiny hidden
+clue and a more precise uncertainty check. The clue still helps on average,
+but one held-out version of the training recipe is too uncertain, so this is
+useful evidence rather than a full benchmark pass.

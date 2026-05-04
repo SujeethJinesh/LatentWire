@@ -2399,5 +2399,12 @@
     "path": "references/699_anchor_relative_feature_mode_grid_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the failed HellaSwag anchor-relative top-k/RBF common-basis feature-mode grid, recording novelty boundaries against Relative Representations, LSTIRP, CCA/SVCCA/CKA, ICAE/gist/prefix compression, sparse crosscoders/SAEs, C2C/KVComm, QJL/KIVI/TurboQuant, and motivating the next conditional source-syndrome denoising branch."
+  },
+  {
+    "num": 700,
+    "slug": "hellaswag_terminal_tail_stability_refs_20260504",
+    "path": "references/700_hellaswag_terminal_tail_stability_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference memo after the no-method-change HellaSwag terminal-tail stability rerun, recording the HellaSwag benchmark source, paired-bootstrap uncertainty boundary, and the safe claim that validation 0:9216 remains strong while full validation is still blocked by jackknife instability."
   }
 ]
