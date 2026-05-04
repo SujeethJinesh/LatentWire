@@ -22983,3 +22983,65 @@ tiny hint. The rule was cautious and usually refused to listen. When made less
 cautious, it listened more but broke more answers than it fixed. That means the
 source still has useful information, but sending "which answer the source
 picked" is not the right shape of message.
+
+## 2026-05-04 Residual/Syndrome Sparse Resonance Packet Gate
+
+Implemented and ran the next strict ARC-Challenge Sparse Resonance Packet
+branch: a pairwise residual/syndrome packet decoded with target side
+information. The source converts answer-key-forbidden candidate scores into
+pairwise comparison bits, transmits a short parity syndrome plus a
+confidence/check header, and the receiver decodes the closest syndrome coset
+member using Qwen3 target scores as side information. The receiver applies only
+the decoded source-target pairwise residual as a target score correction.
+
+- new script:
+  `scripts/build_source_private_arc_challenge_residual_syndrome_packet_gate.py`;
+- tests:
+  `tests/test_build_source_private_arc_challenge_residual_syndrome_packet_gate.py`;
+- primary scout:
+  `results/source_private_arc_challenge_residual_syndrome_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n32_2b/`;
+- bit-budget diagnostic:
+  `results/source_private_arc_challenge_residual_syndrome_packet_gate_20260504_tinyllama_to_qwen3_disagreement_n32_2b_syndrome6/`;
+- memo:
+  `paper/residual_syndrome_sparse_resonance_packet_gate_20260504.md`;
+- refreshed reference synthesis:
+  `references/729_residual_syndrome_packet_refs_20260504.md`.
+
+Outcome: fail. The primary 4-syndrome-bit packet uses 9 payload bits
+(`1.125` B, framed to 2 B), fires on `14/32` test rows, helps `2`, harms `3`,
+and reaches matched accuracy `0.218750` versus target-only `0.250000`. The
+best required control is candidate derangement at `0.312500`; source-index,
+source-rank, source-score, source-score-quantized, and same-byte visible text
+also reach `0.312500`; worst required paired CI95 low is `-0.375000`.
+
+The 6-syndrome-bit diagnostic uses 11 payload bits (`1.375` B, framed to 2 B),
+fires on `14/32`, helps `3`, harms `4`, and again reaches matched accuracy
+`0.218750` versus target-only `0.250000`. Qwen-substitution is the best
+required control at `0.375000`, and worst required paired CI95 low is
+`-0.328906`. Increasing the syndrome budget within the same framed 2-byte
+packet therefore does not solve the failure.
+
+Important diagnostic: source-or-target oracle headroom remains high
+(`17/32`, `0.531250`) while target-only is `8/32` and source top-1 is `10/32`.
+There are `9/32` source-helpable target-wrong rows and `7/32` source-harm-risk
+target-right rows. The failure is not lack of source headroom; it is that
+pairwise score-syndrome residuals and the selected receiver rule cannot
+identify safe repairs. Target-side-information removal does not hurt the
+6-bit row, and wrong parity matrix decoding can match or beat the matched
+packet, so this implementation does not yet demonstrate causally useful
+side-information decoding.
+
+Decision: demote pairwise score-syndrome packets as currently implemented.
+They are cleaner than candidate-identity/ECOC packets and closer to the
+Slepian-Wolf/Wyner-Ziv story, but still fail source-score, same-byte text,
+target-derived, substitution, and destructive controls. Promote only a branch
+that changes the observable message shape or receiver: target-conditioned
+hidden/behavior residual atoms, learned posterior/risk decoders with
+same-source-choice wrong-row controls, or a benchmark surface where score
+surface oracle headroom is less dominated by source-choice shortcuts.
+
+Lay explanation: we sent Qwen a tiny checksum of TinyLlama's pairwise answer
+preferences and let Qwen use its own guesses to decode that checksum. The
+checksum fixed a few rows but broke as many or more, and simply sending source
+score/rank or tiny visible text did better. More checksum bits did not fix it,
+so this packet shape is not the ICLR-positive method.

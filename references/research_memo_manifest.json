@@ -2595,5 +2595,12 @@
     "path": "references/728_event_triggered_defer_syndrome_packet_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted subagent refresh after the confidence/ECOC gate, consolidating selective prediction, calibration, learning-to-defer, event-triggered control, Wyner-Ziv/Slepian-Wolf residual-syndrome coding, benchmark controls, C2C/KV byte baselines, and the novelty boundary for the next SRP branch."
+  },
+  {
+    "num": 729,
+    "slug": "residual_syndrome_packet_refs_20260504",
+    "path": "references/729_residual_syndrome_packet_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted literature and competitor refresh for the residual/syndrome Sparse Resonance Packet gate, covering distributed source coding, ECOC/syndrome decoding, C2C/KV systems, KV quantization byte floors, SAE/crosscoder novelty boundaries, and benchmark controls."
   }
 ]
