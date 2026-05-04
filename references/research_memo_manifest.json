@@ -2315,5 +2315,12 @@
     "path": "references/687_hellaswag_fixed_hybrid_true_candidate_text_permutation_slice_repeat_refs_20260504.md",
     "status": "local_memo",
     "reason": "Primary-source memo after the non-overlapping 1024:2048 HellaSwag physical candidate-text permutation repeat, recording second-slice fixed-hybrid packet hardening and boundaries against MCQ option-order artifacts, prefix/gist tokens, latent reasoning, DroidSpeak, Interlat, SAE/crosscoders, and TurboQuant."
+  },
+  {
+    "num": 688,
+    "slug": "hellaswag_decision_sparse_common_basis_refs_20260504",
+    "path": "references/688_hellaswag_decision_sparse_common_basis_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo after the failed HellaSwag decision-supervised sparse common-basis hidden packet gate, recording negative SAE/crosscoder atom evidence, atom-shuffle and top-atom knockout controls, and boundaries against SAE universality, sparse crosscoders, prefix/gist tokens, latent reasoning, KV sharing, QJL, and TurboQuant."
   }
 ]

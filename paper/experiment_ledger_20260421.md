@@ -21184,3 +21184,55 @@ questions. The tiny packet still mostly pointed to the same original candidate
 after translating from the shuffled display labels, while wrong translations
 failed badly. This makes the shuffle evidence less likely to be a first-slice
 artifact, but it does not by itself prove a learned latent language.
+
+## 2026-05-04 HellaSwag Decision-Sparse Common-Basis Hidden Packet Gate
+
+Implemented and ran the train-only decision-supervised sparse common-basis
+hidden-innovation packet gate on HellaSwag validation `1024:2048`.
+
+- artifact:
+  `results/source_private_hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate_20260504_validation1024_2048/`;
+- paper memo:
+  `paper/source_private_hellaswag_decision_sparse_common_basis_hidden_innovation_packet_gate_20260504.md`;
+- references:
+  `references/688_hellaswag_decision_sparse_common_basis_refs_20260504.md`.
+
+Gate design: fit TinyLlama/Qwen train-only PCA plus linear CCA-style shared
+coordinates, train an SAE-style sparse encoder over source shared candidate
+vectors with reconstruction, L1, and binary decision loss, then transmit a
+one-byte packet consisting of a reserved/selected atom slot plus candidate low
+bits. Evaluate on the frozen `1024:2048` slice with packet-only,
+Qwen-side-only, compact-candidate, source-row shuffle, atom-index permutation,
+top-atom knockout, candidate-roll, random same-byte, zero-source, label
+permutation, and SAE-label-permutation controls.
+
+Outcome: the gate fails. The train-dev-selected row
+`cca_pca64_d8_sae64_top2_dw0p2_l10p001` with decoder ridge `100.0` reaches
+`0.503906` accuracy versus packet-only `0.501953`, delta `+0.001953`, paired
+CI95 low `-0.001953`. The best diagnostic row is also only `0.503906`, delta
+`+0.001953`, CI95 low `-0.001953`. Compact-candidate common-basis decoding is
+also `0.503906`, Qwen-side-only common-basis decoding is `0.464844`, and
+top-atom knockout is `0.499023`. Block deltas are `+0.004878`, `0.000000`,
+`+0.009756`, `0.000000`, and `-0.004902`, so block stability fails.
+
+Controls show the atom is not reliable enough for a source-specific claim:
+source-shared shuffle before encoding matches the selected row at `0.503906`,
+atom-index permutation is `0.504883`, and SAE-label-permutation encoder is
+`0.505859`. Destructive packet-structure controls collapse as expected:
+row-shuffled sparse atom code is `0.283203`, candidate-roll code is `0.235352`,
+random same-byte code is `0.277344`, zero-source code is `0.295898`, and
+label-permutation decoder is `0.330078`.
+
+Decision: mark shallow decision-supervised SAE/common-basis hidden packets as
+weakened on this saturated HellaSwag surface. Do not claim universal sparse
+features, interpretable atoms, learned latent language, or cross-model latent
+reasoning from this gate. The next exact gate is the systems-boundary split
+requested by the systems side: separate the current strongest packet into a
+cached-source communication-object row and an honest end-to-end source-scoring
+row, while keeping native NVIDIA claims disabled until real serving data exists.
+
+Lay explanation: we tried to add one extra learned "hidden feature id" to the
+tiny answer packet. The extra id has a small hint of signal because removing it
+hurts a little, but the improvement is too small and similar controls do just
+as well. For the paper, this is useful because it tells us not to sell this
+SAE/common-basis branch as the core ICLR method.
