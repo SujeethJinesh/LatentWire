@@ -51,7 +51,9 @@ CONDITIONS = [
     "source",
     "label_shuffled_encoder",
     "constrained_shuffled_source",
+    "same_answer_slot_wrong_row_source",
     "answer_masked_source",
+    "public_condition_only",
     "permuted_codes",
     "random_same_byte",
     "deranged_public_basis",
@@ -60,13 +62,16 @@ CONDITIONS = [
 CONTROL_CONDITIONS = [
     "label_shuffled_encoder",
     "constrained_shuffled_source",
+    "same_answer_slot_wrong_row_source",
     "answer_masked_source",
+    "public_condition_only",
     "permuted_codes",
     "random_same_byte",
     "deranged_public_basis",
     "opaque_slot_basis",
 ]
 BASIS_VIEWS = ("shared_text", "anchor_relative", "semantic", "no_diag", "full", "diag_only", "slot")
+CONDITIONING_MODES = ("none", "public_zscore")
 
 
 def _sha256_file(path: pathlib.Path) -> str:
@@ -147,6 +152,96 @@ def _target_innovation_for_basis(
         anchor_matrix=anchor_matrix,
         target_topk=target_topk,
     )[_answer_index(example)]
+
+
+def _public_condition_stats(
+    example: Example,
+    *,
+    basis_view: str,
+    feature_dim: int,
+    anchor_matrix: np.ndarray | None,
+    target_topk: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    candidates = _candidate_innovations_for_basis(
+        example,
+        basis_view=basis_view,
+        feature_dim=feature_dim,
+        anchor_matrix=anchor_matrix,
+        target_topk=target_topk,
+    )
+    center = np.mean(candidates, axis=0).astype(np.float32)
+    scale = np.sqrt(np.mean((candidates - center[None, :]) ** 2, axis=0) + 1e-6).astype(np.float32)
+    return center, scale
+
+
+def _same_answer_slot_nonself_index(index: int, examples: list[Example]) -> int:
+    current = examples[index]
+    current_slot = _answer_index(current)
+    n = len(examples)
+    for offset in range(1, n):
+        candidate_index = (index * 23 + 5 + offset) % n
+        candidate = examples[candidate_index]
+        if candidate_index != index and candidate.family_name != current.family_name and _answer_index(candidate) == current_slot:
+            return candidate_index
+    for offset in range(1, n):
+        candidate_index = (index + offset) % n
+        if candidate_index != index and _answer_index(examples[candidate_index]) == current_slot:
+            return candidate_index
+    return _constrained_nonself_index(index, examples)
+
+
+def _condition_vector_to_public(
+    vector: np.ndarray,
+    example: Example,
+    *,
+    conditioning_mode: str,
+    basis_view: str,
+    feature_dim: int,
+    anchor_matrix: np.ndarray | None,
+    target_topk: int,
+) -> np.ndarray:
+    if conditioning_mode == "none":
+        return vector.astype(np.float32)
+    if conditioning_mode != "public_zscore":
+        raise ValueError(f"unknown conditioning mode {conditioning_mode!r}")
+    center, scale = _public_condition_stats(
+        example,
+        basis_view=basis_view,
+        feature_dim=feature_dim,
+        anchor_matrix=anchor_matrix,
+        target_topk=target_topk,
+    )
+    conditioned = (vector - center) / scale
+    norm = float(np.linalg.norm(conditioned))
+    if norm > 1e-8:
+        conditioned = conditioned / norm
+    return conditioned.astype(np.float32)
+
+
+def _condition_candidates_to_public(
+    candidates: np.ndarray,
+    example: Example,
+    *,
+    conditioning_mode: str,
+    basis_view: str,
+    feature_dim: int,
+    anchor_matrix: np.ndarray | None,
+    target_topk: int,
+) -> np.ndarray:
+    if conditioning_mode == "none":
+        return candidates.astype(np.float32)
+    if conditioning_mode != "public_zscore":
+        raise ValueError(f"unknown conditioning mode {conditioning_mode!r}")
+    center, scale = _public_condition_stats(
+        example,
+        basis_view=basis_view,
+        feature_dim=feature_dim,
+        anchor_matrix=anchor_matrix,
+        target_topk=target_topk,
+    )
+    conditioned = (candidates - center[None, :]) / scale[None, :]
+    norms = np.linalg.norm(conditioned, axis=1, keepdims=True)
+    return np.divide(conditioned, np.maximum(norms, 1e-8)).astype(np.float32)
 
 
 def _fit_conditional_encoder(
@@ -233,6 +328,7 @@ def _dimension_utilities(
     anchor_matrix: np.ndarray | None,
     source_topk: int,
     target_topk: int,
+    conditioning_mode: str,
 ) -> np.ndarray:
     utilities = np.zeros(_representation_dim(feature_dim=feature_dim, anchor_matrix=anchor_matrix), dtype=np.float64)
     for example in train_rows:
@@ -243,8 +339,26 @@ def _dimension_utilities(
             source_topk=source_topk,
             mode="matched",
         )
+        predicted = _condition_vector_to_public(
+            predicted,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
         candidates = _candidate_innovations_for_basis(
             example,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
+        candidates = _condition_candidates_to_public(
+            candidates,
+            example,
+            conditioning_mode=conditioning_mode,
             basis_view=basis_view,
             feature_dim=feature_dim,
             anchor_matrix=anchor_matrix,
@@ -267,7 +381,11 @@ def _fit_innovation_codebook(
     *,
     encoder: np.ndarray,
     feature_dim: int,
+    basis_view: str,
+    anchor_matrix: np.ndarray | None,
     source_topk: int,
+    target_topk: int,
+    conditioning_mode: str,
     groups: tuple[np.ndarray, ...],
     variant: str,
     utilities: np.ndarray,
@@ -276,12 +394,20 @@ def _fit_innovation_codebook(
 ) -> GeometryProductCodebook:
     vectors = np.stack(
         [
-            _predict_conditional_innovation(
+            _condition_vector_to_public(
+                _predict_conditional_innovation(
+                    example,
+                    encoder=encoder,
+                    feature_dim=feature_dim,
+                    source_topk=source_topk,
+                    mode="matched",
+                ),
                 example,
-                encoder=encoder,
+                conditioning_mode=conditioning_mode,
+                basis_view=basis_view,
                 feature_dim=feature_dim,
-                source_topk=source_topk,
-                mode="matched",
+                anchor_matrix=anchor_matrix,
+                target_topk=target_topk,
             )
             for example in train_rows
         ],
@@ -328,6 +454,7 @@ def _decode_packet(
     basis_view: str,
     anchor_matrix: np.ndarray | None,
     target_topk: int,
+    conditioning_mode: str,
     permutation: np.ndarray | None = None,
 ) -> tuple[str, dict[str, Any]]:
     prior = _prior_prediction(example)
@@ -340,6 +467,15 @@ def _decode_packet(
         reconstructed[codebook.groups[subspace_index]] = centroids[int(code) % centroids.shape[0]]
     candidates = _candidate_innovations_for_basis(
         example,
+        basis_view=basis_view,
+        feature_dim=feature_dim,
+        anchor_matrix=anchor_matrix,
+        target_topk=target_topk,
+    )
+    candidates = _condition_candidates_to_public(
+        candidates,
+        example,
+        conditioning_mode=conditioning_mode,
         basis_view=basis_view,
         feature_dim=feature_dim,
         anchor_matrix=anchor_matrix,
@@ -359,6 +495,7 @@ def _decode_packet(
     return prediction, {
         "decoder": f"{codebook.variant}_conditional_pq_innovation_l2",
         "basis_view": basis_view,
+        "conditioning_mode": conditioning_mode,
         "min_l2": min_distance,
         "ties": [int(value) for value in tied.tolist()],
         "deranged_public_basis": permutation is not None,
@@ -390,7 +527,11 @@ def _payload_for_condition(
     label_shuffle_encoder: np.ndarray,
     codebook: GeometryProductCodebook,
     feature_dim: int,
+    basis_view: str,
+    anchor_matrix: np.ndarray | None,
     source_topk: int,
+    target_topk: int,
+    conditioning_mode: str,
     rng: random.Random,
 ) -> bytes | None:
     if condition == "target_only":
@@ -403,6 +544,15 @@ def _payload_for_condition(
             source_topk=source_topk,
             mode="matched",
         )
+        vector = _condition_vector_to_public(
+            vector,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
         return _packet_from_vector(vector, codebook=codebook)
     if condition == "label_shuffled_encoder":
         vector = _predict_conditional_innovation(
@@ -411,6 +561,15 @@ def _payload_for_condition(
             feature_dim=feature_dim,
             source_topk=source_topk,
             mode="matched",
+        )
+        vector = _condition_vector_to_public(
+            vector,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
         )
         return _packet_from_vector(vector, codebook=codebook)
     if condition == "constrained_shuffled_source":
@@ -422,14 +581,51 @@ def _payload_for_condition(
             source_topk=source_topk,
             mode="matched",
         )
+        vector = _condition_vector_to_public(
+            vector,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
         return _packet_from_vector(vector, codebook=codebook)
-    if condition == "answer_masked_source":
+    if condition == "same_answer_slot_wrong_row_source":
+        other = eval_rows[_same_answer_slot_nonself_index(index, eval_rows)]
+        vector = _predict_conditional_innovation(
+            other,
+            encoder=encoder,
+            feature_dim=feature_dim,
+            source_topk=source_topk,
+            mode="matched",
+        )
+        vector = _condition_vector_to_public(
+            vector,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
+        return _packet_from_vector(vector, codebook=codebook)
+    if condition in {"answer_masked_source", "public_condition_only"}:
         vector = _predict_conditional_innovation(
             example,
             encoder=encoder,
             feature_dim=feature_dim,
             source_topk=source_topk,
             mode="answer_masked",
+        )
+        vector = _condition_vector_to_public(
+            vector,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
         )
         return _packet_from_vector(vector, codebook=codebook)
     if condition == "permuted_codes":
@@ -439,6 +635,15 @@ def _payload_for_condition(
             feature_dim=feature_dim,
             source_topk=source_topk,
             mode="matched",
+        )
+        vector = _condition_vector_to_public(
+            vector,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
         )
         return _permute_payload(_packet_from_vector(vector, codebook=codebook))
     if condition == "random_same_byte":
@@ -460,6 +665,7 @@ def _predict_condition(
     anchor_matrix: np.ndarray | None,
     target_topk: int,
     source_topk: int,
+    conditioning_mode: str,
     seed: int,
     rng: random.Random,
 ) -> dict[str, Any]:
@@ -473,7 +679,11 @@ def _predict_condition(
         label_shuffle_encoder=label_shuffle_encoder,
         codebook=codebook,
         feature_dim=feature_dim,
+        basis_view=basis_view,
+        anchor_matrix=anchor_matrix,
         source_topk=source_topk,
+        target_topk=target_topk,
+        conditioning_mode=conditioning_mode,
         rng=rng,
     )
     decode_basis = "slot" if condition == "opaque_slot_basis" else basis_view
@@ -486,6 +696,7 @@ def _predict_condition(
         basis_view=decode_basis,
         anchor_matrix=anchor_matrix,
         target_topk=target_topk,
+        conditioning_mode=conditioning_mode,
         permutation=permutation,
     )
     payload_hex = (payload or b"").hex()
@@ -514,6 +725,7 @@ def _unquantized_accuracy(
     target_topk: int,
     basis_view: str,
     anchor_matrix: np.ndarray | None,
+    conditioning_mode: str,
 ) -> dict[str, Any]:
     correct_ids: list[str] = []
     for example in eval_rows:
@@ -524,8 +736,26 @@ def _unquantized_accuracy(
             source_topk=source_topk,
             mode="matched",
         )
+        vector = _condition_vector_to_public(
+            vector,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
         candidates = _candidate_innovations_for_basis(
             example,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
+        candidates = _condition_candidates_to_public(
+            candidates,
+            example,
+            conditioning_mode=conditioning_mode,
             basis_view=basis_view,
             feature_dim=feature_dim,
             anchor_matrix=anchor_matrix,
@@ -551,6 +781,7 @@ def _oracle_accuracy(
     target_topk: int,
     basis_view: str,
     anchor_matrix: np.ndarray | None,
+    conditioning_mode: str,
 ) -> dict[str, Any]:
     correct_ids: list[str] = []
     for example in eval_rows:
@@ -561,8 +792,26 @@ def _oracle_accuracy(
             anchor_matrix=anchor_matrix,
             target_topk=target_topk,
         )
+        vector = _condition_vector_to_public(
+            vector,
+            example,
+            conditioning_mode=conditioning_mode,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
         candidates = _candidate_innovations_for_basis(
             example,
+            basis_view=basis_view,
+            feature_dim=feature_dim,
+            anchor_matrix=anchor_matrix,
+            target_topk=target_topk,
+        )
+        candidates = _condition_candidates_to_public(
+            candidates,
+            example,
+            conditioning_mode=conditioning_mode,
             basis_view=basis_view,
             feature_dim=feature_dim,
             anchor_matrix=anchor_matrix,
@@ -742,6 +991,7 @@ def _write_markdown(path: pathlib.Path, payload: dict[str, Any]) -> None:
         f"- examples: `{summary['n']}`",
         f"- train/eval ID overlap: `{summary['train_eval_id_intersection_count']}`",
         f"- basis view: `{payload['basis_view']}`",
+        f"- conditioning mode: `{payload['conditioning_mode']}`",
         f"- variant: `{payload['variant']}`",
         f"- budget bytes: `{payload['budget_bytes']}`",
         f"- source accuracy: `{summary['source_accuracy']:.3f}`",
@@ -798,6 +1048,7 @@ def run_gate(
     codebook_iterations: int,
     seed: int,
     bootstrap_samples: int,
+    conditioning_mode: str = "none",
     conditions: list[str] | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -863,6 +1114,7 @@ def run_gate(
         anchor_matrix=anchor_matrix,
         source_topk=source_topk,
         target_topk=target_topk,
+        conditioning_mode=conditioning_mode,
     )
     groups = _groups_for_variant(
         variant=variant,
@@ -875,7 +1127,11 @@ def run_gate(
         train_rows,
         encoder=encoder,
         feature_dim=feature_dim,
+        basis_view=basis_view,
+        anchor_matrix=anchor_matrix,
         source_topk=source_topk,
+        target_topk=target_topk,
+        conditioning_mode=conditioning_mode,
         groups=groups,
         variant=variant,
         utilities=utilities,
@@ -901,6 +1157,7 @@ def run_gate(
                     anchor_matrix=anchor_matrix,
                     target_topk=target_topk,
                     source_topk=source_topk,
+                    conditioning_mode=conditioning_mode,
                     seed=seed,
                     rng=rng,
                 )
@@ -913,6 +1170,7 @@ def run_gate(
         target_topk=target_topk,
         basis_view=basis_view,
         anchor_matrix=anchor_matrix,
+        conditioning_mode=conditioning_mode,
     )
     oracle = _oracle_accuracy(
         eval_rows,
@@ -920,6 +1178,7 @@ def run_gate(
         target_topk=target_topk,
         basis_view=basis_view,
         anchor_matrix=anchor_matrix,
+        conditioning_mode=conditioning_mode,
     )
     summary = _summarize(
         rows,
@@ -950,6 +1209,7 @@ def run_gate(
         "basis_view": basis_view,
         "source_topk": source_topk,
         "target_topk": target_topk,
+        "conditioning_mode": conditioning_mode,
         "budget_bytes": budget_bytes,
         "variant": variant,
         "remap_slot_seed": remap_slot_seed,
@@ -967,7 +1227,9 @@ def run_gate(
             "This gate sends a rate-capped product-quantized conditional innovation: source matched "
             "features minus answer-masked source features are mapped into the target/public candidate "
             "innovation basis and decoded against candidate-minus-target-prior vectors. It directly tests "
-            "whether a shared public basis fixes the disjoint-ID PQ collapse."
+            "whether a shared public basis fixes the disjoint-ID PQ collapse. The public_zscore conditioning "
+            "mode additionally normalizes packet and candidate innovations by each row's public candidate "
+            "geometry before quantization/decoding."
         ),
     }
     _write_jsonl(output_dir / "predictions.jsonl", rows)
@@ -989,6 +1251,7 @@ def run_gate(
                 "",
                 f"- pass gate: `{summary['pass_gate']}`",
                 f"- basis view: `{basis_view}`",
+                f"- conditioning mode: `{conditioning_mode}`",
                 f"- train/eval overlap: `{summary['train_eval_id_intersection_count']}`",
                 "",
             ]
@@ -1020,6 +1283,7 @@ def main() -> None:
     parser.add_argument("--basis-view", choices=BASIS_VIEWS, default="shared_text")
     parser.add_argument("--source-topk", type=int, default=64)
     parser.add_argument("--target-topk", type=int, default=32)
+    parser.add_argument("--conditioning-mode", choices=CONDITIONING_MODES, default="none")
     parser.add_argument("--budget-bytes", type=int, default=4)
     parser.add_argument(
         "--variant",
@@ -1053,6 +1317,7 @@ def main() -> None:
         basis_view=args.basis_view,
         source_topk=args.source_topk,
         target_topk=args.target_topk,
+        conditioning_mode=args.conditioning_mode,
         budget_bytes=args.budget_bytes,
         variant=args.variant,
         remap_slot_seed=args.remap_slot_seed,

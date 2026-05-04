@@ -2672,5 +2672,12 @@
     "path": "references/739_conditional_pq_iclr_colm_v2_status_refs_20260504.md",
     "status": "local_memo",
     "reason": "Paper-facing reference refresh for the conditional PQ ICLR/COLM_v2 branch status, consolidating side-information coding, PQ, C2C/KV competitors, low-bit KV quantization, selective/defer priors, and the current novelty boundary."
+  },
+  {
+    "num": 740,
+    "slug": "public_conditioned_conditional_pq_gate_refs_20260504",
+    "path": "references/740_public_conditioned_conditional_pq_gate_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Reference and novelty-boundary memo for the public-conditioned conditional-PQ held-out-family gate, covering QINCo/QINCo2, PQ/OPQ, side-information coding, dense C2C/KV competitors, and the failed public-zscore branch."
   }
 ]

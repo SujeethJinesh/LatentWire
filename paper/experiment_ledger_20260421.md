@@ -23613,3 +23613,54 @@ best current positive result, but it only works when train and test share the
 same repair schema. To make it ICLR-strong, the next test must teach the target
 to build a better local codebook for new repair families instead of relying on
 the old static public basis.
+
+## 2026-05-04 Public-Zscore Conditional PQ Held-Out-Family Gate
+
+Implemented the first public-conditioned conditional-PQ resurrection attempt
+inside the established conditional-PQ harness:
+
+- new CLI mode:
+  `--conditioning-mode public_zscore`;
+- new control:
+  `public_condition_only`;
+- implementation:
+  `scripts/run_source_private_conditional_pq_innovation_gate.py`;
+- tests:
+  `tests/test_run_source_private_conditional_pq_innovation_gate.py`;
+- artifacts:
+  `results/source_private_conditional_pq_public_zscore_gate_20260504/`;
+- memo:
+  `paper/source_private_conditional_pq_public_zscore_gate_20260504.md`;
+- reference memo:
+  `references/740_public_conditioned_conditional_pq_gate_refs_20260504.md`.
+
+The method keeps the source-private packet interface fixed. It normalizes
+predicted source innovations and public candidate innovations by each row's
+public candidate mean and scale before PQ training, packetization, and L2
+candidate decoding.
+
+Outcome: fail. Core-to-holdout reaches source `0.335938` versus target
+`0.250000`, but loses to permuted-code and random same-byte controls at
+`0.375000`; CI95 low versus best control is `-0.125000`. Holdout-to-core
+reaches source `0.453125` versus target `0.250000`, but label-shuffled encoder
+reaches `0.441406`; CI95 low versus best control is `-0.085938`.
+
+Diagnostics: `public_condition_only` and `answer_masked_source` stay at
+target-only (`0.250000`) in both directions, and deranged/opaque basis controls
+stay below target. That means the public conditioner itself did not become the
+answer path. The failure is that row-public normalization makes corrupted,
+random, or label-shuffled packets too competitive with matched packets. The
+target-innovation oracle stays at `1.000000`, so the missing component is
+source-causal packet decoding rather than candidate-side headroom.
+
+Decision: do not promote public-zscore conditional PQ to n500/remap repeats.
+Keep the harness because it is reusable, but the next conditional-PQ branch
+needs a stronger public-conditioned residual codebook or receiver objective
+that explicitly trains corrupted packets to no-op. This weakens the hypothesis
+that simple row-local normalization fixes the cross-family static-basis
+failure.
+
+Lay explanation: we let the target adjust the decoder ring using the public
+answer choices. The real source code improved over target-only, but damaged
+codes and shuffled encoders improved too. So the target found a better public
+coordinate system, but not one that reliably depends on the real source packet.
