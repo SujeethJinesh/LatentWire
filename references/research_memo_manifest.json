@@ -2552,7 +2552,7 @@
     "slug": "sparse_resonance_packet_competitor_refresh_20260504",
     "path": "references/722_sparse_resonance_packet_competitor_refresh_20260504.md",
     "status": "local_memo",
-    "reason": "Fresh targeted literature refresh for the Sparse Resonance Packet pivot, recording primary C2C/KVComm/DroidSpeak/LatentMAS/activation-communication/KV compression/systems baselines, exact claims, byte and memory-movement formulas, table columns, and strongest reviewer objections."
+    "reason": "Fresh targeted literature refresh for the Sparse Resonance Packet pivot, recording primary C2C/C2C-C/selective-KVComm/online-KVCOMM/QCFuse/DroidSpeak/LatentMAS/activation-communication/KV compression/systems baselines, exact claims, byte and memory-movement formulas, cache-conditioning table columns, and strongest reviewer objections."
   },
   {
     "num": 723,
@@ -2560,5 +2560,12 @@
     "path": "references/723_strict_source_private_benchmark_reviewer_risk_refs_20260504.md",
     "status": "local_memo",
     "reason": "Fresh targeted benchmark and reviewer-risk memo for strict source-private ARC/OpenBookQA/HellaSwag evaluation, recording destructive controls, leakage threats, paired uncertainty, MCQ option-bias risks, utility-per-byte reporting, and negative-claim boundaries for COLM_v2."
+  },
+  {
+    "num": 724,
+    "slug": "behavior_aligned_packet_gate_control_refs_20260504",
+    "path": "references/724_behavior_aligned_packet_gate_control_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Fresh targeted benchmark and reviewer-risk memo for the next behavior-aligned Sparse Resonance Packet gate, sharpening controls for source-choice copying, target-cache effects, label/order bias, cherry-picking, paired uncertainty, and publishable slice thresholds."
   }
 ]
