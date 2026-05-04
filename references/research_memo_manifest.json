@@ -2623,5 +2623,12 @@
     "path": "references/732_packet_innovation_decoder_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted reference memo for the no-intercept packet-innovation decoder diagnostic, covering dense C2C/KV competitors, sparse basis/DFC directions, quantized KV byte floors, required destructive controls, and the promoted event-triggered accept/abstain receiver gate."
+  },
+  {
+    "num": 733,
+    "slug": "event_triggered_packet_gate_refs_20260504",
+    "path": "references/733_event_triggered_packet_gate_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted reference memo for the event-triggered behavior-atom packet gate, covering selective prediction, learning to defer, event-triggered control, denoising/consistency corruption training, sparse crosscoder/DFC next branches, dense C2C/KV baselines, and required risk/coverage controls."
   }
 ]

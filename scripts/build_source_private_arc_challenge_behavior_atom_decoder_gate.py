@@ -71,6 +71,17 @@ CONTROL_CONDITIONS = (
 )
 REPORT_CONDITIONS = (MATCHED_CONDITION, *CONTROL_CONDITIONS)
 STRICT_REQUIRED_CONTROLS = CONTROL_CONDITIONS
+EVENT_GATE_CORRUPTION_CONDITIONS = (
+    "target_derived_packet",
+    "zero_source",
+    "source_row_shuffle",
+    "same_source_choice_row_shuffle",
+    "atom_shuffle",
+    "coefficient_shuffle",
+    "top_atom_knockout",
+    "candidate_roll",
+    "candidate_derangement",
+)
 
 
 @dataclass(frozen=True)
@@ -85,6 +96,15 @@ class RidgeNoInterceptScalarMap:
         values = np.asarray(x, dtype=np.float64)
         scaled = values / self.x_scale
         return scaled @ self.weights
+
+
+@dataclass(frozen=True)
+class EventGateRule:
+    residual_weight: float
+    threshold: float
+    event_model: behavior_gate.RidgeScalarMap
+    require_prediction_change: bool
+    metadata: dict[str, Any]
 
 
 def _behavior_target_matrix(
@@ -394,6 +414,372 @@ def _subtract_row_baseline(residuals: Sequence[np.ndarray], baselines: Sequence[
     ]
 
 
+def _safe_l2(values: np.ndarray) -> float:
+    return float(np.sqrt(float(np.square(values).sum())))
+
+
+def _safe_corr(left: np.ndarray, right: np.ndarray) -> float:
+    left_centered = left - float(left.mean()) if left.size else left
+    right_centered = right - float(right.mean()) if right.size else right
+    denom = _safe_l2(left_centered) * _safe_l2(right_centered)
+    if denom <= 1e-12:
+        return 0.0
+    return float(np.dot(left_centered, right_centered) / denom)
+
+
+def _event_gate_features(
+    target_scores: Sequence[float],
+    residual: Sequence[float],
+    packet: np.ndarray,
+    *,
+    residual_weight: float,
+) -> np.ndarray:
+    target = np.asarray(target_scores, dtype=np.float64)
+    correction = np.asarray(residual, dtype=np.float64)
+    packet_values = np.asarray(packet, dtype=np.float64)
+    if target.ndim != 1 or correction.ndim != 1:
+        raise ValueError("target_scores and residual must be rank-1")
+    if target.shape != correction.shape:
+        raise ValueError("target/residual shape mismatch")
+    weighted = target + float(residual_weight) * correction
+    target_pred = behavior_gate._prediction(target)
+    fused_pred = behavior_gate._prediction(weighted)
+    target_probs = behavior_gate._softmax(target)
+    fused_probs = behavior_gate._softmax(weighted)
+    flat_packet = packet_values.reshape(-1) if packet_values.size else np.zeros(1, dtype=np.float64)
+    target_margin = hidden_gate._target_margin(target)
+    fused_margin = hidden_gate._target_margin(weighted)
+    correction_abs = np.abs(correction)
+    packet_abs = np.abs(flat_packet)
+    changed = 1.0 if fused_pred != target_pred else 0.0
+    return np.asarray(
+        [
+            1.0,
+            float(target.size),
+            float(target_margin),
+            float(behavior_gate._entropy(target)),
+            float(target_probs[target_pred]) if target_probs.size else 0.0,
+            float(fused_margin),
+            float(behavior_gate._entropy(weighted)),
+            float(fused_probs[fused_pred]) if fused_probs.size else 0.0,
+            changed,
+            float(correction_abs.sum()),
+            _safe_l2(correction),
+            float(correction_abs.max()) if correction_abs.size else 0.0,
+            float(correction.std()) if correction.size else 0.0,
+            float(correction[target_pred]) if correction.size else 0.0,
+            float(correction[fused_pred]) if correction.size else 0.0,
+            float(correction[fused_pred] - correction[target_pred]) if correction.size else 0.0,
+            _safe_corr(target, correction),
+            float(packet_abs.sum()),
+            _safe_l2(flat_packet),
+            float(packet_abs.max()) if packet_abs.size else 0.0,
+            float(np.count_nonzero(flat_packet) / max(flat_packet.size, 1)),
+            float(flat_packet.mean()) if flat_packet.size else 0.0,
+            float(packet_abs.mean()) if packet_abs.size else 0.0,
+        ],
+        dtype=np.float64,
+    )
+
+
+def _event_triggered_fused_scores(
+    target_scores: Sequence[float],
+    residual: Sequence[float],
+    packet: np.ndarray,
+    *,
+    rule: EventGateRule,
+) -> tuple[list[float], bool, float]:
+    target = np.asarray(target_scores, dtype=np.float64)
+    correction = np.asarray(residual, dtype=np.float64)
+    fused = target + float(rule.residual_weight) * correction
+    event_features = _event_gate_features(
+        target,
+        correction,
+        packet,
+        residual_weight=float(rule.residual_weight),
+    ).reshape(1, -1)
+    event_score = float(rule.event_model.predict(event_features)[0])
+    fires = event_score >= float(rule.threshold)
+    if bool(rule.require_prediction_change):
+        fires = fires and behavior_gate._prediction(fused) != behavior_gate._prediction(target)
+    if not fires:
+        return [float(score) for score in target], False, event_score
+    return [float(score) for score in fused], True, event_score
+
+
+def _fuse_with_gate(
+    target_scores: Sequence[float],
+    residual: Sequence[float],
+    packet: np.ndarray,
+    *,
+    gate_rule: dict[str, Any] | EventGateRule,
+    gate_mode: str,
+) -> tuple[list[float], bool, float | None]:
+    if gate_mode == "residual_threshold":
+        fused, fired = hidden_gate._fused_scores(target_scores, residual, rule=gate_rule)  # type: ignore[arg-type]
+        return fused, fired, None
+    if gate_mode == "event_triggered":
+        fused, fired, event_score = _event_triggered_fused_scores(
+            target_scores,
+            residual,
+            packet,
+            rule=gate_rule,  # type: ignore[arg-type]
+        )
+        return fused, fired, event_score
+    raise ValueError(f"unknown gate_mode: {gate_mode}")
+
+
+def _public_gate_rule(gate_rule: dict[str, Any] | EventGateRule) -> dict[str, Any]:
+    if isinstance(gate_rule, EventGateRule):
+        return dict(gate_rule.metadata)
+    return dict(gate_rule)
+
+
+def _decode_control_residual_for_row(
+    row: arc_gate.ArcRow,
+    *,
+    rows: Sequence[arc_gate.ArcRow],
+    row_index: int,
+    target_features: np.ndarray,
+    packet: np.ndarray,
+    decoder: Any,
+    decoder_mode: str,
+    subtract_zero_packet_baseline: bool,
+    zero_baseline_residuals: Sequence[np.ndarray],
+) -> np.ndarray:
+    residual = _decode_one_row(
+        row,
+        rows=rows,
+        row_index=row_index,
+        target_features=target_features,
+        packet=packet,
+        decoder=decoder,
+        decoder_mode=decoder_mode,
+    )
+    if subtract_zero_packet_baseline:
+        residual = np.asarray(residual, dtype=np.float64) - np.asarray(
+            zero_baseline_residuals[row_index],
+            dtype=np.float64,
+        )
+    return np.asarray(residual, dtype=np.float64)
+
+
+def _event_training_packets(
+    *,
+    row_index: int,
+    train_indices: Sequence[int],
+    rows: Sequence[arc_gate.ArcRow],
+    row_packets: Sequence[np.ndarray],
+    target_derived_row_packets: Sequence[np.ndarray],
+    source_selected: Sequence[int],
+) -> dict[str, np.ndarray]:
+    shuffled_index = _same_shape_shuffle_index(row_index=row_index, eval_indices=train_indices, rows=rows)
+    same_choice_index = _same_choice_shuffle_index(
+        row_index=row_index,
+        eval_indices=train_indices,
+        rows=rows,
+        source_selected=source_selected,
+    )
+    return {
+        "target_derived_packet": target_derived_row_packets[row_index],
+        "zero_source": np.zeros_like(row_packets[row_index]),
+        "source_row_shuffle": row_packets[shuffled_index],
+        "same_source_choice_row_shuffle": row_packets[same_choice_index],
+        "atom_shuffle": hidden_gate._atom_shuffle_packet(row_packets[row_index]),
+        "coefficient_shuffle": hidden_gate._coefficient_shuffle_packet(row_packets[row_index]),
+        "top_atom_knockout": hidden_gate._top_atom_knockout_packet(row_packets[row_index]),
+        "candidate_roll": hidden_gate._candidate_roll_packet(row_packets[row_index], shift=1),
+        "candidate_derangement": hidden_gate._candidate_roll_packet(row_packets[row_index], shift=-1),
+    }
+
+
+def _choose_event_gate_rule(
+    *,
+    rows: Sequence[arc_gate.ArcRow],
+    train_indices: Sequence[int],
+    target_scores: Sequence[Sequence[float]],
+    source_residuals: Sequence[np.ndarray],
+    target_derived_residuals: Sequence[np.ndarray],
+    zero_residuals: Sequence[np.ndarray],
+    row_packets: Sequence[np.ndarray],
+    target_derived_row_packets: Sequence[np.ndarray],
+    target_features: np.ndarray,
+    decoder: Any,
+    decoder_mode: str,
+    subtract_zero_packet_baseline: bool,
+    zero_baseline_residuals: Sequence[np.ndarray],
+    source_selected: Sequence[int],
+    ridge: float,
+) -> EventGateRule:
+    train = [int(index) for index in train_indices]
+    examples: list[dict[str, Any]] = []
+    for row_index in train:
+        row = rows[row_index]
+        target = [float(score) for score in target_scores[row_index]]
+        target_pred = behavior_gate._prediction(target)
+        target_correct = target_pred == int(row.answer_index)
+        examples.append(
+            {
+                "condition": MATCHED_CONDITION,
+                "row_index": row_index,
+                "target": target,
+                "packet": row_packets[row_index],
+                "residual": np.asarray(source_residuals[row_index], dtype=np.float64),
+                "target_correct": target_correct,
+                "is_matched": True,
+            }
+        )
+        corruption_packets = _event_training_packets(
+            row_index=row_index,
+            train_indices=train,
+            rows=rows,
+            row_packets=row_packets,
+            target_derived_row_packets=target_derived_row_packets,
+            source_selected=source_selected,
+        )
+        for condition, packet in corruption_packets.items():
+            if condition == "target_derived_packet":
+                residual = np.asarray(target_derived_residuals[row_index], dtype=np.float64)
+            elif condition == "zero_source":
+                residual = np.asarray(zero_residuals[row_index], dtype=np.float64)
+            else:
+                residual = _decode_control_residual_for_row(
+                    row,
+                    rows=rows,
+                    row_index=row_index,
+                    target_features=target_features,
+                    packet=packet,
+                    decoder=decoder,
+                    decoder_mode=decoder_mode,
+                    subtract_zero_packet_baseline=subtract_zero_packet_baseline,
+                    zero_baseline_residuals=zero_baseline_residuals,
+                )
+            examples.append(
+                {
+                    "condition": condition,
+                    "row_index": row_index,
+                    "target": target,
+                    "packet": packet,
+                    "residual": np.asarray(residual, dtype=np.float64),
+                    "target_correct": target_correct,
+                    "is_matched": False,
+                }
+            )
+
+    best_rule: EventGateRule | None = None
+    best_key: tuple[Any, ...] | None = None
+    for residual_weight in (0.25, 0.5, 1.0, 2.0, 4.0):
+        feature_rows: list[np.ndarray] = []
+        labels: list[float] = []
+        for example in examples:
+            feature_rows.append(
+                _event_gate_features(
+                    example["target"],
+                    example["residual"],
+                    example["packet"],
+                    residual_weight=float(residual_weight),
+                )
+            )
+            fused = np.asarray(example["target"], dtype=np.float64) + float(residual_weight) * np.asarray(
+                example["residual"],
+                dtype=np.float64,
+            )
+            fused_correct = behavior_gate._prediction(fused) == int(rows[int(example["row_index"])].answer_index)
+            label = bool(example["is_matched"] and fused_correct and not bool(example["target_correct"]))
+            labels.append(1.0 if label else 0.0)
+        features = np.vstack(feature_rows)
+        label_values = np.asarray(labels, dtype=np.float64)
+        model = behavior_gate._fit_ridge_scalar_map(
+            features,
+            label_values,
+            fit_indices=np.arange(features.shape[0], dtype=np.int64),
+            ridge=float(ridge),
+        )
+        event_scores = np.asarray(model.predict(features), dtype=np.float64)
+        thresholds = sorted(
+            {
+                float(event_scores.min() - 1e-6),
+                float(event_scores.max() + 1e-6),
+                *[float(value) for value in np.percentile(event_scores, [50, 60, 70, 80, 90])],
+                *[float(value) for value in event_scores],
+            }
+        )
+        for threshold in thresholds:
+            correct = 0
+            fired = 0
+            helped = 0
+            harmed = 0
+            control_fired = 0
+            margins: list[float] = []
+            for example, event_score in zip(examples, event_scores, strict=True):
+                row = rows[int(example["row_index"])]
+                target = np.asarray(example["target"], dtype=np.float64)
+                residual = np.asarray(example["residual"], dtype=np.float64)
+                fused = target + float(residual_weight) * residual
+                pred_changed = behavior_gate._prediction(fused) != behavior_gate._prediction(target)
+                did_fire = float(event_score) >= float(threshold) and pred_changed
+                if not bool(example["is_matched"]):
+                    control_fired += int(did_fire)
+                    continue
+                selected_scores = fused if did_fire else target
+                target_correct = bool(example["target_correct"])
+                is_correct = behavior_gate._prediction(selected_scores) == int(row.answer_index)
+                correct += int(is_correct)
+                fired += int(did_fire)
+                helped += int(did_fire and is_correct and not target_correct)
+                harmed += int(did_fire and (not is_correct) and target_correct)
+                margins.append(behavior_gate._margin(selected_scores, int(row.answer_index)))
+            accuracy = correct / max(len(train), 1)
+            fired_rate = fired / max(len(train), 1)
+            control_count = max(len(examples) - len(train), 1)
+            control_fired_rate = control_fired / control_count
+            metadata = {
+                "gate_mode": "event_triggered",
+                "residual_weight": float(residual_weight),
+                "threshold": float(threshold),
+                "require_prediction_change": True,
+                "train_accuracy": float(accuracy),
+                "train_fired": int(fired),
+                "train_fired_rate": float(fired_rate),
+                "train_helped": int(helped),
+                "train_harmed": int(harmed),
+                "train_net_help": int(helped - harmed),
+                "train_mean_margin": float(statistics.fmean(margins)) if margins else 0.0,
+                "train_event_examples": int(len(examples)),
+                "train_positive_events": int(label_values.sum()),
+                "train_corruption_examples": int(len(examples) - len(train)),
+                "train_corruption_fired": int(control_fired),
+                "train_corruption_fired_rate": float(control_fired_rate),
+                "event_model_fit_mse": float(model.fit_mse),
+                "event_model_fit_r2": float(model.fit_r2),
+                "event_model_weight_l2": _safe_l2(np.asarray(model.weights, dtype=np.float64)),
+                "event_feature_dim": int(features.shape[1]),
+                "corruption_conditions": list(EVENT_GATE_CORRUPTION_CONDITIONS),
+            }
+            key = (
+                metadata["train_accuracy"],
+                metadata["train_net_help"],
+                -metadata["train_harmed"],
+                metadata["train_helped"],
+                -metadata["train_corruption_fired"],
+                -abs(metadata["train_fired_rate"] - 0.35),
+                metadata["train_mean_margin"],
+                -metadata["residual_weight"],
+            )
+            if best_rule is None or best_key is None or key > best_key:
+                best_key = key
+                best_rule = EventGateRule(
+                    residual_weight=float(residual_weight),
+                    threshold=float(threshold),
+                    event_model=model,
+                    require_prediction_change=True,
+                    metadata=metadata,
+                )
+    if best_rule is None:
+        raise ValueError("could not select event-triggered gate rule")
+    return best_rule
+
+
 def _condition_metrics(rows: list[dict[str, Any]], *, seed: int, bootstrap_samples: int) -> dict[str, Any]:
     metrics: dict[str, Any] = {}
     for condition in REPORT_CONDITIONS:
@@ -501,12 +887,15 @@ def build_gate(
     same_byte_budget: int,
     subtract_zero_packet_baseline: bool,
     decoder_mode: str,
+    gate_mode: str,
     min_accuracy_gap: float,
     min_ci_low: float,
     seed: int,
 ) -> dict[str, Any]:
     if decoder_mode not in {"target_conditioned", "packet_innovation"}:
         raise ValueError(f"unknown decoder_mode: {decoder_mode}")
+    if gate_mode not in {"residual_threshold", "event_triggered"}:
+        raise ValueError(f"unknown gate_mode: {gate_mode}")
     output_dir = behavior_gate._resolve(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     input_dir = output_dir / "strict_inputs"
@@ -670,15 +1059,33 @@ def build_gate(
         source_residuals = _subtract_row_baseline(source_residuals, zero_baseline_residuals)
         target_derived_residuals = _subtract_row_baseline(target_derived_residuals, zero_baseline_residuals)
         zero_residuals = [np.zeros_like(residual, dtype=np.float64) for residual in zero_residuals]
-    gate_rule = hidden_gate._choose_gate_rule(
-        train_rows,
-        target_scores[:fit_row_count],
-        source_residuals[:fit_row_count],
-    )
-
     row_packets = hidden_gate._row_packet_arrays(rows, source_packet_flat)
     target_derived_row_packets = hidden_gate._row_packet_arrays(rows, target_derived_packet_flat)
     source_selected_all = [behavior_gate._source_prediction_for_row(row, tiny_cache) for row in rows]
+    if gate_mode == "event_triggered":
+        gate_rule: dict[str, Any] | EventGateRule = _choose_event_gate_rule(
+            rows=rows,
+            train_indices=list(range(fit_row_count)),
+            target_scores=target_scores,
+            source_residuals=source_residuals,
+            target_derived_residuals=target_derived_residuals,
+            zero_residuals=zero_residuals,
+            row_packets=row_packets,
+            target_derived_row_packets=target_derived_row_packets,
+            target_features=target_features,
+            decoder=decoder,
+            decoder_mode=decoder_mode,
+            subtract_zero_packet_baseline=subtract_zero_packet_baseline,
+            zero_baseline_residuals=zero_baseline_residuals,
+            source_selected=source_selected_all,
+            ridge=ridge,
+        )
+    else:
+        gate_rule = hidden_gate._choose_gate_rule(
+            train_rows,
+            target_scores[:fit_row_count],
+            source_residuals[:fit_row_count],
+        )
     prediction_rows: list[dict[str, Any]] = []
     for eval_position, row in enumerate(test_rows):
         row_index = fit_row_count + eval_position
@@ -709,7 +1116,7 @@ def build_gate(
             "candidate_roll": hidden_gate._candidate_roll_packet(row_packets[row_index], shift=1),
             "candidate_derangement": hidden_gate._candidate_roll_packet(row_packets[row_index], shift=-1),
         }
-        condition_scores: dict[str, tuple[list[float], bool, np.ndarray]] = {}
+        condition_scores: dict[str, tuple[list[float], bool, np.ndarray, float | None]] = {}
         for condition, packet in candidate_packets.items():
             if condition == MATCHED_CONDITION:
                 residual = source_residuals[row_index]
@@ -732,56 +1139,71 @@ def build_gate(
                         zero_baseline_residuals[row_index],
                         dtype=np.float64,
                     )
-            fused, fired = hidden_gate._fused_scores(target, residual, rule=gate_rule)
-            condition_scores[condition] = (fused, fired, np.asarray(residual, dtype=np.float64))
-        target_decoder_scores, target_decoder_fired = hidden_gate._fused_scores(
+            fused, fired, event_score = _fuse_with_gate(
+                target,
+                residual,
+                packet,
+                gate_rule=gate_rule,
+                gate_mode=gate_mode,
+            )
+            condition_scores[condition] = (fused, fired, np.asarray(residual, dtype=np.float64), event_score)
+        target_decoder_scores, target_decoder_fired, target_decoder_event_score = _fuse_with_gate(
             target,
             target_decoder_residuals[row_index],
-            rule=gate_rule,
+            np.zeros_like(row_packets[row_index]),
+            gate_rule=gate_rule,
+            gate_mode=gate_mode,
         )
         condition_scores.update(
             {
-                "target_only": (target, False, np.zeros(len(row.choices), dtype=np.float64)),
+                "target_only": (target, False, np.zeros(len(row.choices), dtype=np.float64), None),
                 "target_decoder_only": (
                     target_decoder_scores,
                     target_decoder_fired,
                     np.asarray(target_decoder_residuals[row_index], dtype=np.float64),
+                    target_decoder_event_score,
                 ),
                 "packet_only_source_index": (
                     behavior_gate._source_index_scores(len(row.choices), source_selected),
                     True,
                     np.zeros(len(row.choices), dtype=np.float64),
+                    None,
                 ),
                 "source_rank_control": (
                     behavior_gate._source_rank_scores(raw_source_scores),
                     True,
                     np.zeros(len(row.choices), dtype=np.float64),
+                    None,
                 ),
                 "source_score_control": (
                     behavior_gate._centered_source_score_control(raw_source_scores),
                     True,
                     np.zeros(len(row.choices), dtype=np.float64),
+                    None,
                 ),
                 "source_score_quantized_control": (
                     ecoc_gate._source_score_quantized_control(raw_source_scores, bits=4),
                     True,
                     np.zeros(len(row.choices), dtype=np.float64),
+                    None,
                 ),
                 "same_byte_visible_text": (
                     same_byte_scores[eval_position],
                     False,
                     np.zeros(len(row.choices), dtype=np.float64),
+                    None,
                 ),
                 "qwen_substituted_packet": (
                     behavior_gate._source_index_scores(len(row.choices), qwen_selected),
                     True,
                     np.zeros(len(row.choices), dtype=np.float64),
+                    None,
                 ),
             }
         )
         target_correct = behavior_gate._prediction(target) == int(row.answer_index)
         for condition in REPORT_CONDITIONS:
-            scores, fired, residual = condition_scores[condition]
+            scores, fired, residual, event_score = condition_scores[condition]
             pred = behavior_gate._prediction(scores)
             correct = pred == int(row.answer_index)
             prediction_rows.append(
@@ -801,12 +1223,13 @@ def build_gate(
                     "packet_helped": bool(fired and correct and not target_correct),
                     "packet_harmed": bool(fired and (not correct) and target_correct),
                     "packet_residual": [float(value) for value in residual],
+                    "event_score": float(event_score) if event_score is not None else None,
                     "source_selected_index": int(source_selected),
                     "source_selected_label": row.choice_labels[source_selected],
                     "qwen_substituted_index": int(qwen_selected),
                     "qwen_substituted_label": row.choice_labels[qwen_selected],
                     "source_scores": [float(score) for score in raw_source_scores],
-                    "gate_rule": gate_rule,
+                    "gate_rule": _public_gate_rule(gate_rule),
                     "control_origin": condition,
                 }
             )
@@ -870,6 +1293,7 @@ def build_gate(
             "sparse_packet_metadata": sparse_meta,
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
             "decoder_mode": decoder_mode,
+            "gate_mode": gate_mode,
             "note": (
                 "Byte counts cover behavior-supervised source-hidden atom IDs plus quantized coefficients only. "
                 "They are not native GPU throughput, HBM traffic, or an end-to-end serving measurement."
@@ -884,7 +1308,7 @@ def build_gate(
                 "ridge": decoder.ridge,
                 "fit_mse": decoder.fit_mse,
                 "fit_r2": decoder.fit_r2,
-                "selected_gate_rule": gate_rule,
+                "selected_gate_rule": _public_gate_rule(gate_rule),
             },
             "target_only_decoder": {
                 "ridge": target_only_decoder.ridge,
@@ -916,6 +1340,7 @@ def build_gate(
             "same_byte_budget": int(same_byte_budget_used),
             "subtract_zero_packet_baseline": bool(subtract_zero_packet_baseline),
             "decoder_mode": decoder_mode,
+            "gate_mode": gate_mode,
         },
         "interpretation": (
             "This gate tests whether source-hidden innovations become more useful when the sparse atom basis is "
@@ -985,6 +1410,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--subtract-zero-packet-baseline", choices=("true", "false"), default="true")
     parser.add_argument("--decoder-mode", choices=("target_conditioned", "packet_innovation"), default="target_conditioned")
+    parser.add_argument("--gate-mode", choices=("residual_threshold", "event_triggered"), default="residual_threshold")
     parser.add_argument("--min-accuracy-gap", type=float, default=0.0)
     parser.add_argument("--min-ci-low", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=37)
@@ -1023,6 +1449,7 @@ def main(argv: list[str] | None = None) -> int:
         same_byte_budget=int(args.same_byte_budget),
         subtract_zero_packet_baseline=str(args.subtract_zero_packet_baseline).lower() == "true",
         decoder_mode=str(args.decoder_mode),
+        gate_mode=str(args.gate_mode),
         min_accuracy_gap=float(args.min_accuracy_gap),
         min_ci_low=float(args.min_ci_low),
         seed=int(args.seed),

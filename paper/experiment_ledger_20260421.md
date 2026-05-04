@@ -23217,3 +23217,66 @@ tiny packet actually contains nonzero information. That fixed one kind of
 cheating, but the real packet no longer improved Qwen's answers. The next
 receiver needs to learn when to ignore a risky packet, not only how to decode
 it.
+
+## 2026-05-04 Event-Triggered Behavior-Atom Decoder Diagnostics
+
+Implemented and ran a learned event-triggered accept/abstain gate for the
+behavior-atom SRP harness. The residual decoder remains the behavior-supervised
+atom decoder, but the receiver now learns a row-level event score. Matched
+packets are act candidates only when they repair target-wrong rows; zero,
+target-derived, wrong-row, same-source-choice wrong-row, atom-shuffled,
+coefficient-shuffled, top-atom-knockout, and candidate-rolled packets are
+trained as no-op negatives. Abstention returns the target-only scores exactly.
+
+- updated script:
+  `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- updated tests:
+  `tests/test_build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- zero-subtracted event diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered/`;
+- no-subtraction event diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered_no_zsub/`;
+- updated memo:
+  `paper/behavior_atom_decoder_sparse_resonance_packet_gate_20260504.md`;
+- reference synthesis:
+  `references/733_event_triggered_packet_gate_refs_20260504.md`.
+
+Outcome: fail, but it sharpens the next move. The zero-subtracted event gate
+uses `7` framed bytes per row and reaches matched accuracy `0.312500` versus
+target-only `0.250000`, fires on `5/16`, helps `1`, harms `0`, and has net
+help `+1`. It beats target-derived packet, zero-source, source-row shuffle,
+atom shuffle, coefficient shuffle, and candidate derangement on point estimate,
+but it ties candidate roll, packet-only source-index, source-rank,
+source-score, and source-score quantization at `0.312500`; Qwen substitution
+reaches `0.437500`. Worst required paired CI95 low is `-0.375000`.
+
+The no-subtraction event gate preserves the higher behavior-atom lift:
+matched accuracy is `0.375000` versus target-only `0.250000`, fired rows are
+`8/16`, helped `2`, harmed `0`, and net help is `+2`. It now beats zero-source
+and target-derived packet on point estimate. It still fails source necessity:
+same-source-choice wrong-row and candidate roll tie matched at `0.375000`;
+source-index/rank/score and source-score quantization reach `0.312500`; and
+top-atom knockout plus Qwen substitution reach `0.437500`. Worst required
+paired CI95 low remains `-0.375000`.
+
+Important diagnostic: event-triggering improves harm control but does not
+solve atom causality. A post-hoc accept/abstain gate cannot reliably distinguish
+matched behavior atoms from same-source-choice wrong-row packets or top-atom
+knockout packets on this frozen slice. The failure is no longer just receiver
+thresholding. It points to basis/decoder training: corruptions need to be part
+of the residual decoder objective itself, or the atom bank needs a
+source-private/shared/target-private decomposition.
+
+Decision: demote shallow event-triggered gating on top of linear behavior
+atoms as an ICLR-positive method. Keep it as a useful receiver diagnostic and
+control implementation. Promote a behavior-loss BatchTopK/DFC packet gate or a
+corruption-to-no-op residual decoder that trains the decoded residual itself to
+collapse for wrong-row, same-source-choice, atom-shuffle, coefficient-shuffle,
+candidate-roll, and target-derived packets. Do not widen benchmarks from this
+row.
+
+Lay explanation: we taught Qwen to listen only when the packet looked likely to
+help and to ignore fake packet variants. That prevented the matched packet from
+hurting answers, but some fake or damaged packets still worked as well or
+better. The next model has to learn better packet atoms, not just a better
+listen/ignore threshold.

@@ -40,8 +40,13 @@ only source-specific packet information can move the target scores.
   `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_zsub/`
 - packet-only innovation diagnostic:
   `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_packet_innovation/`
+- event-triggered zero-subtracted diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered/`
+- event-triggered no-subtraction diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_event_triggered_no_zsub/`
 - reference synthesis:
   `references/731_behavior_atom_decoder_packet_refs_20260504.md`
+  and `references/733_event_triggered_packet_gate_refs_20260504.md`
 
 ## Results
 
@@ -51,6 +56,8 @@ only source-specific packet information can move the target scores.
 | top-1 behavior atoms | rank8 top1 q4 | 4 | 0.2500 | 0.2500 | source_row_shuffle, 0.4375 | -0.4375 | 10/16 | 2 | 2 |
 | zero-subtracted behavior atoms | rank8 top2 q4 | 7 | 0.3125 | 0.2500 | qwen_substituted_packet, 0.4375 | -0.3750 | 6/16 | 1 | 0 |
 | packet-only innovation decoder | rank8 top2 q4 | 7 | 0.2500 | 0.2500 | qwen_substituted_packet, 0.4375 | -0.4375 | 7/16 | 1 | 1 |
+| event-triggered zero-subtracted decoder | rank8 top2 q4 | 7 | 0.3125 | 0.2500 | qwen_substituted_packet, 0.4375 | -0.3750 | 5/16 | 1 | 0 |
+| event-triggered decoder, no subtraction | rank8 top2 q4 | 7 | 0.3750 | 0.2500 | top_atom_knockout, 0.4375 | -0.3750 | 8/16 | 2 | 0 |
 
 The primary behavior-atom scout is a partial positive signal: matched accuracy
 beats target-only by two rows and has helped `2`, harmed `0`. It also beats
@@ -82,6 +89,25 @@ Qwen-substitution at `0.4375`. The train decoder still fits strongly
 held-out receiver generalization and harm calibration rather than inability to
 fit train residuals.
 
+The event-triggered diagnostics add a learned accept/abstain gate trained with
+matched packets as possible act events and zero, wrong-row, target-derived,
+atom-shuffled, coefficient-shuffled, top-atom-knockout, and candidate-rolled
+packets as no-op negatives. The zero-subtracted event gate is cleaner than the
+plain zero-subtracted row: it reaches `0.3125` matched accuracy, fires on
+`5/16`, helps `1`, harms `0`, and beats target-derived, zero-source,
+source-row shuffle, atom shuffle, coefficient shuffle, and candidate
+derangement. It still ties or loses to same-source-choice wrong-row,
+candidate roll, source-index/rank/score controls, same-byte text, top-atom
+knockout, and Qwen substitution.
+
+The no-subtraction event gate preserves the larger matched lift: `0.3750`
+matched accuracy versus `0.2500` target-only, firing on `8/16`, helping `2`,
+and harming `0`. However, same-source-choice wrong-row and candidate roll tie
+matched at `0.3750`, source-index/rank/score controls remain close at
+`0.3125`, and top-atom knockout plus Qwen substitution reach `0.4375`. The
+event gate therefore improves harm control but not source necessity or atom
+causality.
+
 ## Diagnostics
 
 The behavior basis fit is train-predictive but not held-out causal enough. For
@@ -95,13 +121,12 @@ is `0.25` and source top-1 is `0.3125`. There is still repair headroom. The
 failure is now narrowed to source-specific helpability and atom causality, not
 absence of source signal.
 
-The packet-only innovation result further narrows the diagnosis: subtracting or
-forbidding target-only receiver bias is necessary but not sufficient. Linear
-packet-dependent interactions do not identify when the packet should safely
-override Qwen on this n16 slice. The next live receiver therefore needs an
-explicit accept/abstain or corruption-to-no-op objective, or a behavior-trained
-DFC/crosscoder atom bank that separates source-private innovation from shared
-and target-private features.
+The packet-only innovation and event-triggered results further narrow the
+diagnosis: subtracting or forbidding target-only receiver bias is necessary but
+not sufficient, and a row-level accept/abstain gate alone does not make the
+current behavior atoms source-necessary. The next live method must change the
+atom basis or decoder training objective so corrupted packets decode to no-op,
+not only post-hoc reject some decoded residuals.
 
 ## Decision
 
@@ -113,13 +138,10 @@ zero-packet-baseline subtraction.
 Promote the next branch only if it changes the receiver enough to remove the
 zero-source/same-source-choice failure:
 
-1. event-triggered accept/abstain decoder: train matched packets as possible
-   act events and corrupted/wrong-row packets as no-op events, so the receiver
-   returns target-only unless packet gain is predicted to exceed harm risk;
-2. consistency/corruption-trained decoder: train the receiver so matched
+1. consistency/corruption-trained decoder: train the receiver so matched
    packets are stable under coefficient noise but wrong-row and atom-ID
    permutations collapse;
-3. small BatchTopK/DFC/crosscoder/transcoder packet atoms that explicitly
+2. small BatchTopK/DFC/crosscoder/transcoder packet atoms that explicitly
    separate shared, source-private, and target-private behavior features.
 
 Lay explanation: we trained the feature clues to point at the kinds of mistakes

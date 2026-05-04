@@ -114,6 +114,54 @@ def test_packet_innovation_decoder_is_zero_for_zero_packet() -> None:
     assert model.fit_r2 > 0.0
 
 
+def test_event_triggered_gate_can_accept_helpful_packet_and_reject_zero_packet() -> None:
+    target = np.asarray([0.0, 1.0], dtype=np.float64)
+    helpful_residual = np.asarray([2.0, -2.0], dtype=np.float64)
+    zero_residual = np.zeros_like(helpful_residual)
+    helpful_packet = np.asarray([[1.0, 0.0], [0.0, -1.0]], dtype=np.float64)
+    zero_packet = np.zeros_like(helpful_packet)
+
+    features = np.vstack(
+        [
+            gate._event_gate_features(target, helpful_residual, helpful_packet, residual_weight=1.0),
+            gate._event_gate_features(target, zero_residual, zero_packet, residual_weight=1.0),
+        ]
+    )
+    model = gate.behavior_gate._fit_ridge_scalar_map(
+        features,
+        np.asarray([1.0, 0.0], dtype=np.float64),
+        fit_indices=np.asarray([0, 1], dtype=np.int64),
+        ridge=0.01,
+    )
+    scores = model.predict(features)
+    rule = gate.EventGateRule(
+        residual_weight=1.0,
+        threshold=float(np.mean(scores)),
+        event_model=model,
+        require_prediction_change=True,
+        metadata={"gate_mode": "event_triggered"},
+    )
+
+    helpful_scores, helpful_fired, helpful_event_score = gate._event_triggered_fused_scores(
+        target,
+        helpful_residual,
+        helpful_packet,
+        rule=rule,
+    )
+    zero_scores, zero_fired, zero_event_score = gate._event_triggered_fused_scores(
+        target,
+        zero_residual,
+        zero_packet,
+        rule=rule,
+    )
+
+    assert helpful_fired
+    assert int(np.argmax(helpful_scores)) == 0
+    assert not zero_fired
+    assert int(np.argmax(zero_scores)) == 1
+    assert helpful_event_score > zero_event_score
+
+
 def test_same_source_choice_shuffle_prefers_same_choice_same_shape() -> None:
     rows = _rows()
     index = gate._same_choice_shuffle_index(
