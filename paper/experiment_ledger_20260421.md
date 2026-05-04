@@ -23353,3 +23353,62 @@ packets with their candidate clues shifted around or with the strongest atom
 removed still worked as well or better. That means the current packet is not
 yet carrying robust row-specific evidence; it still behaves too much like a
 source-choice shortcut.
+
+## 2026-05-04 Candidate-Aligned Noop And Packet-Integrity Diagnostics
+
+Implemented two focused follow-ups to the weighted corruption-noop receiver:
+
+1. condition-specific no-op weights, allowing candidate-roll,
+   candidate-derangement, same-source-choice wrong-row, and top-atom-knockout
+   corruptions to receive higher loss weight than easier corruptions;
+2. a label-free candidate/atom packet-integrity gate that learns to accept
+   matched packets and reject synthetic packet corruptions before residual
+   fusion. The integrity features use packet-to-target-feature alignment and
+   atom-profile statistics, not answer labels.
+
+- updated script:
+  `scripts/build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- updated tests:
+  `tests/test_build_source_private_arc_challenge_behavior_atom_decoder_gate.py`;
+- candidate-aligned weighting diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_candidate_aligned_noop_w005_emphasis/`;
+- candidate/atom integrity diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_integrity_candidate_atom_w01/`;
+- updated memo:
+  `paper/behavior_atom_decoder_sparse_resonance_packet_gate_20260504.md`.
+
+Outcome: fail, but it cleanly ends the linear behavior-atom receiver-tuning
+branch. The condition-specific no-op run preserves the best point estimate:
+matched `0.437500`, target-only `0.250000`, fired `8/16`, helped `3`, harmed
+`0`. It improves same-source-choice wrong-row to `0.250000`, but still fails
+the core destructive controls: candidate roll ties matched at `0.437500`,
+top-atom knockout ties matched at `0.437500`, and Qwen substitution ties
+matched at `0.437500`. The worst required paired CI95 low is `-0.312500`.
+
+The residual diagnostics explain the failure. Candidate roll mean residual L2
+is `1.08x` matched, candidate derangement is `1.02x`, coefficient shuffle is
+`1.19x`, and top-atom knockout is `1.01x`. Even when the objective emphasizes
+the hardest corruptions, these damaged packets still produce matched-scale
+residuals and flip many target decisions.
+
+The candidate/atom integrity gate fails in the opposite direction. It accepts
+`13/16` matched training packets and `53/144` training corruptions, but accepts
+`0/16` held-out matched packets. Matched accuracy collapses to target-only
+(`0.250000`), fired rows are `0/16`, helped `0`, harmed `0`, and Qwen
+substitution remains `0.437500`. The integrity classifier fit is weak
+(`fit_r2 ~= 0.09`) and the packet-to-target-feature alignment fit is also weak
+(`fit_r2 ~= 0.22`), so the current linear atoms do not provide a stable
+held-out packet-integrity signal.
+
+Decision: rule out more linear receiver tuning on behavior-supervised atom
+packets as the next ICLR-positive branch. The live branch is now a Mac-local
+behavior-loss BatchTopK/DFC/crosscoder-style atom bank that explicitly
+separates shared, source-private, and target-private candidate behavior
+features. Reintroduce packet integrity only after the atom bank shows
+candidate-roll and top-atom-knockout sensitivity.
+
+Lay explanation: first we punished the exact fake packets that fooled us; the
+real packet still helped, but the shifted and damaged packets still helped too.
+Then we added a packet checker, but it rejected every real test packet. That
+means the current packet vocabulary is too unstable; the next step is to learn
+a better sparse vocabulary, not keep tuning the checker.

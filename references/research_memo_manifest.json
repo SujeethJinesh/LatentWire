@@ -2637,5 +2637,12 @@
     "path": "references/734_corruption_noop_receiver_refs_20260504.md",
     "status": "local_memo",
     "reason": "Targeted reference memo for the weighted corruption-to-no-op receiver diagnostic, covering denoising/corruption objectives, outlier negatives, selective/defer receivers, sparse atom novelty boundaries, direct C2C/KV competitors, KV quantization byte floors, and the candidate-alignment failure."
+  },
+  {
+    "num": 735,
+    "slug": "packet_integrity_sideband_refs_20260504",
+    "path": "references/735_packet_integrity_sideband_refs_20260504.md",
+    "status": "local_memo",
+    "reason": "Targeted reference memo for the candidate/atom packet-integrity sideband diagnostic, covering semantic HARQ/error detection, neural joint source-channel coding, decoder-side-information coding, C2C/KV competitors, soft-prompt novelty risk, sparse-basis novelty risk, and the held-out integrity failure."
   }
 ]

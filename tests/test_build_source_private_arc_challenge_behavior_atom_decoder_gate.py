@@ -211,6 +211,7 @@ def test_corruption_noop_decoder_trains_corrupt_packets_toward_noop() -> None:
         source_selected=[1, 0, 1],
         decoder_mode="target_conditioned",
         corruption_loss_weight=0.1,
+        corruption_condition_weights=None,
         ridge=0.01,
     )
 
@@ -231,8 +232,74 @@ def test_parse_args_accepts_corruption_noop_receiver() -> None:
             "corruption_noop",
             "--corruption-loss-weight",
             "0.25",
+            "--corruption-condition-weights",
+            "candidate_roll=0.5,top_atom_knockout=0.75",
+            "--packet-integrity-mode",
+            "candidate_atom",
         ]
     )
 
     assert args.receiver_training_mode == "corruption_noop"
     assert args.corruption_loss_weight == 0.25
+    assert args.packet_integrity_mode == "candidate_atom"
+    assert gate._parse_condition_weight_spec(args.corruption_condition_weights) == {
+        "candidate_roll": 0.5,
+        "top_atom_knockout": 0.75,
+    }
+
+
+def test_parse_condition_weight_spec_rejects_unknown_control() -> None:
+    try:
+        gate._parse_condition_weight_spec("not_a_control=0.5")
+    except ValueError as exc:
+        assert "unknown corruption condition" in str(exc)
+    else:  # pragma: no cover - defensive assertion.
+        raise AssertionError("expected ValueError")
+
+
+def test_packet_integrity_rule_rejects_candidate_roll() -> None:
+    rows = _rows()
+    target_features = np.asarray(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.1],
+            [0.0, 1.0, 0.1],
+            [0.0, 0.0, 1.1],
+            [1.0, 0.1, 0.0],
+            [0.0, 1.1, 0.0],
+            [0.0, 0.1, 1.0],
+        ],
+        dtype=np.float64,
+    )
+    source_packet = target_features.copy()
+    target_derived_packet = np.zeros_like(source_packet)
+    fit_indices = np.arange(source_packet.shape[0], dtype=np.int64)
+
+    rule = gate._choose_packet_integrity_rule(
+        rows=rows,
+        train_indices=[0, 1, 2],
+        target_features=target_features,
+        source_packet_flat=source_packet,
+        target_derived_packet_flat=target_derived_packet,
+        fit_candidate_indices=fit_indices,
+        source_selected=[1, 0, 1],
+        ridge=0.01,
+    )
+    row_packets = gate.hidden_gate._row_packet_arrays(rows, source_packet)
+    matched_accept, matched_score = gate._packet_integrity_accept(
+        packet=row_packets[0],
+        target_features=target_features[:3],
+        rule=rule,
+    )
+    rolled_accept, rolled_score = gate._packet_integrity_accept(
+        packet=gate.hidden_gate._candidate_roll_packet(row_packets[0], shift=1),
+        target_features=target_features[:3],
+        rule=rule,
+    )
+
+    assert matched_accept
+    assert not rolled_accept
+    assert matched_score is not None and rolled_score is not None
+    assert matched_score > rolled_score

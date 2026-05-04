@@ -83,6 +83,29 @@ EVENT_GATE_CORRUPTION_CONDITIONS = (
     "candidate_derangement",
 )
 RECEIVER_TRAINING_MODES = ("matched_only", "corruption_noop")
+PACKET_INTEGRITY_MODES = ("none", "candidate_atom")
+
+
+def _parse_condition_weight_spec(spec: str) -> dict[str, float]:
+    weights: dict[str, float] = {}
+    text = str(spec).strip()
+    if not text:
+        return weights
+    for item in text.split(","):
+        entry = item.strip()
+        if not entry:
+            continue
+        if "=" not in entry:
+            raise ValueError(
+                "condition weight overrides must use condition=weight entries, "
+                f"got {entry!r}"
+            )
+        condition, value = entry.split("=", 1)
+        condition = condition.strip()
+        if condition not in EVENT_GATE_CORRUPTION_CONDITIONS:
+            raise ValueError(f"unknown corruption condition override: {condition}")
+        weights[condition] = float(value)
+    return weights
 
 
 @dataclass(frozen=True)
@@ -105,6 +128,16 @@ class EventGateRule:
     threshold: float
     event_model: behavior_gate.RidgeScalarMap
     require_prediction_change: bool
+    metadata: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class PacketIntegrityRule:
+    packet_to_target_map: hidden_gate.RidgeMatrixMap
+    integrity_model: behavior_gate.RidgeScalarMap
+    threshold: float
+    atom_profile: np.ndarray
+    atom_profile_scale: np.ndarray
     metadata: dict[str, Any]
 
 
@@ -697,6 +730,238 @@ def _event_training_packets(
     }
 
 
+def _cosine_similarity_matrix(left: np.ndarray, right: np.ndarray) -> np.ndarray:
+    lhs = np.asarray(left, dtype=np.float64)
+    rhs = np.asarray(right, dtype=np.float64)
+    lhs_norm = np.linalg.norm(lhs, axis=1, keepdims=True).clip(min=1e-12)
+    rhs_norm = np.linalg.norm(rhs, axis=1, keepdims=True).clip(min=1e-12)
+    return (lhs / lhs_norm) @ (rhs / rhs_norm).T
+
+
+def _packet_atom_profile(packet: np.ndarray) -> np.ndarray:
+    values = np.asarray(packet, dtype=np.float64)
+    if values.ndim != 2:
+        raise ValueError("packet must be rank-2")
+    return np.mean(np.abs(values), axis=0)
+
+
+def _packet_integrity_features(
+    *,
+    packet: np.ndarray,
+    target_features: np.ndarray,
+    rule: PacketIntegrityRule,
+) -> np.ndarray:
+    packet_values = np.asarray(packet, dtype=np.float64)
+    target = np.asarray(target_features, dtype=np.float64)
+    if packet_values.ndim != 2 or target.ndim != 2:
+        raise ValueError("packet and target_features must be rank-2")
+    if packet_values.shape[0] != target.shape[0]:
+        raise ValueError("packet/target row mismatch")
+    pred_target = rule.packet_to_target_map.predict(packet_values)
+    sim = _cosine_similarity_matrix(pred_target, target)
+    diag = np.diag(sim) if sim.size else np.zeros(0, dtype=np.float64)
+    if sim.shape[0] > 1:
+        offdiag = sim.copy()
+        np.fill_diagonal(offdiag, -1e9)
+        offdiag_max = offdiag.max(axis=1)
+        alignment_rate = float(np.mean(np.argmax(sim, axis=1) == np.arange(sim.shape[0])))
+    else:
+        offdiag_max = np.full_like(diag, -1.0)
+        alignment_rate = 1.0 if diag.size else 0.0
+    diag_gap = diag - offdiag_max
+    flat_packet = packet_values.reshape(-1)
+    abs_packet = np.abs(flat_packet)
+    energy = np.square(flat_packet)
+    total_energy = float(energy.sum())
+    top_energy_share = float(energy.max() / total_energy) if total_energy > 1e-12 else 0.0
+    atom_profile = _packet_atom_profile(packet_values)
+    atom_z = np.abs((atom_profile - rule.atom_profile) / rule.atom_profile_scale)
+    pred_mse = float(np.mean(np.square(pred_target - target))) if target.size else 0.0
+    return np.asarray(
+        [
+            1.0,
+            float(packet_values.shape[0]),
+            float(diag.mean()) if diag.size else 0.0,
+            float(diag.min()) if diag.size else 0.0,
+            float(diag_gap.mean()) if diag_gap.size else 0.0,
+            float(diag_gap.min()) if diag_gap.size else 0.0,
+            alignment_rate,
+            pred_mse,
+            float(abs_packet.sum()),
+            _safe_l2(flat_packet),
+            float(abs_packet.max()) if abs_packet.size else 0.0,
+            float(np.count_nonzero(flat_packet) / max(flat_packet.size, 1)),
+            top_energy_share,
+            float(atom_z.mean()) if atom_z.size else 0.0,
+            float(atom_z.max()) if atom_z.size else 0.0,
+            float(np.count_nonzero(atom_profile) / max(atom_profile.size, 1)),
+        ],
+        dtype=np.float64,
+    )
+
+
+def _choose_packet_integrity_rule(
+    *,
+    rows: Sequence[arc_gate.ArcRow],
+    train_indices: Sequence[int],
+    target_features: np.ndarray,
+    source_packet_flat: np.ndarray,
+    target_derived_packet_flat: np.ndarray,
+    fit_candidate_indices: np.ndarray,
+    source_selected: Sequence[int],
+    ridge: float,
+) -> PacketIntegrityRule:
+    train = [int(index) for index in train_indices]
+    packet_to_target_map = hidden_gate._fit_ridge_matrix_map(
+        source_packet_flat,
+        target_features,
+        fit_indices=fit_candidate_indices,
+        ridge=ridge,
+    )
+    row_packets = hidden_gate._row_packet_arrays(rows, source_packet_flat)
+    target_derived_row_packets = hidden_gate._row_packet_arrays(rows, target_derived_packet_flat)
+    offsets = hidden_gate._row_offsets(rows)
+    train_profiles = [_packet_atom_profile(row_packets[index]) for index in train]
+    if not train_profiles:
+        raise ValueError("packet integrity needs at least one train row")
+    profile_matrix = np.vstack(train_profiles)
+    atom_profile = profile_matrix.mean(axis=0)
+    atom_profile_scale = profile_matrix.std(axis=0).clip(min=1e-6)
+    template_rule = PacketIntegrityRule(
+        packet_to_target_map=packet_to_target_map,
+        integrity_model=behavior_gate.RidgeScalarMap(
+            x_mean=np.zeros((1, 1), dtype=np.float64),
+            x_std=np.ones((1, 1), dtype=np.float64),
+            y_mean=0.0,
+            weights=np.zeros(1, dtype=np.float64),
+            ridge=float(ridge),
+            fit_mse=0.0,
+            fit_r2=0.0,
+        ),
+        threshold=0.0,
+        atom_profile=atom_profile,
+        atom_profile_scale=atom_profile_scale,
+        metadata={},
+    )
+    feature_rows: list[np.ndarray] = []
+    labels: list[float] = []
+    condition_counts: dict[str, int] = {MATCHED_CONDITION: 0}
+    for row_index in train:
+        start, end = offsets[row_index]
+        row_target_features = target_features[start:end]
+        feature_rows.append(
+            _packet_integrity_features(
+                packet=row_packets[row_index],
+                target_features=row_target_features,
+                rule=template_rule,
+            )
+        )
+        labels.append(1.0)
+        condition_counts[MATCHED_CONDITION] += 1
+        corruption_packets = _event_training_packets(
+            row_index=row_index,
+            train_indices=train,
+            rows=rows,
+            row_packets=row_packets,
+            target_derived_row_packets=target_derived_row_packets,
+            source_selected=source_selected,
+        )
+        for condition, packet in corruption_packets.items():
+            feature_rows.append(
+                _packet_integrity_features(
+                    packet=packet,
+                    target_features=row_target_features,
+                    rule=template_rule,
+                )
+            )
+            labels.append(0.0)
+            condition_counts[condition] = condition_counts.get(condition, 0) + 1
+    features = np.vstack(feature_rows)
+    label_values = np.asarray(labels, dtype=np.float64)
+    model = behavior_gate._fit_ridge_scalar_map(
+        features,
+        label_values,
+        fit_indices=np.arange(features.shape[0], dtype=np.int64),
+        ridge=ridge,
+    )
+    scores = np.asarray(model.predict(features), dtype=np.float64)
+    thresholds = sorted(
+        {
+            float(scores.min() - 1e-6),
+            float(scores.max() + 1e-6),
+            *[float(value) for value in np.percentile(scores, [50, 60, 70, 80, 90])],
+            *[float(value) for value in scores],
+        }
+    )
+    best: dict[str, Any] | None = None
+    best_key: tuple[Any, ...] | None = None
+    is_matched = label_values > 0.5
+    for threshold in thresholds:
+        accepted = scores >= float(threshold)
+        matched_accept = int(np.sum(accepted & is_matched))
+        corrupt_accept = int(np.sum(accepted & ~is_matched))
+        matched_total = int(np.sum(is_matched))
+        corrupt_total = int(np.sum(~is_matched))
+        matched_rate = matched_accept / max(matched_total, 1)
+        corrupt_rate = corrupt_accept / max(corrupt_total, 1)
+        key = (
+            matched_rate - corrupt_rate,
+            -corrupt_accept,
+            matched_accept,
+            float(threshold),
+        )
+        if best is None or best_key is None or key > best_key:
+            best_key = key
+            best = {
+                "threshold": float(threshold),
+                "train_matched_accept": int(matched_accept),
+                "train_corrupt_accept": int(corrupt_accept),
+                "train_matched_accept_rate": float(matched_rate),
+                "train_corrupt_accept_rate": float(corrupt_rate),
+            }
+    if best is None:
+        raise ValueError("could not select packet integrity threshold")
+    metadata = {
+        "packet_integrity_mode": "candidate_atom",
+        "ridge": float(ridge),
+        "threshold": float(best["threshold"]),
+        "train_examples": int(features.shape[0]),
+        "train_matched_examples": int(np.sum(is_matched)),
+        "train_corruption_examples": int(np.sum(~is_matched)),
+        "train_matched_accept": int(best["train_matched_accept"]),
+        "train_corrupt_accept": int(best["train_corrupt_accept"]),
+        "train_matched_accept_rate": float(best["train_matched_accept_rate"]),
+        "train_corrupt_accept_rate": float(best["train_corrupt_accept_rate"]),
+        "condition_counts": {condition: int(count) for condition, count in sorted(condition_counts.items())},
+        "integrity_model_fit_mse": float(model.fit_mse),
+        "integrity_model_fit_r2": float(model.fit_r2),
+        "packet_to_target_fit_mse": float(packet_to_target_map.fit_mse),
+        "packet_to_target_fit_r2": float(packet_to_target_map.fit_r2),
+        "feature_dim": int(features.shape[1]),
+    }
+    return PacketIntegrityRule(
+        packet_to_target_map=packet_to_target_map,
+        integrity_model=model,
+        threshold=float(best["threshold"]),
+        atom_profile=atom_profile,
+        atom_profile_scale=atom_profile_scale,
+        metadata=metadata,
+    )
+
+
+def _packet_integrity_accept(
+    *,
+    packet: np.ndarray,
+    target_features: np.ndarray,
+    rule: PacketIntegrityRule | None,
+) -> tuple[bool, float | None]:
+    if rule is None:
+        return True, None
+    features = _packet_integrity_features(packet=packet, target_features=target_features, rule=rule).reshape(1, -1)
+    score = float(rule.integrity_model.predict(features)[0])
+    return score >= float(rule.threshold) - 1e-12, score
+
+
 def _decoder_feature_rows(
     target_features: np.ndarray,
     packet_features: np.ndarray,
@@ -801,10 +1066,17 @@ def _fit_corruption_noop_decoder(
     source_selected: Sequence[int],
     decoder_mode: str,
     corruption_loss_weight: float,
+    corruption_condition_weights: dict[str, float] | None = None,
     ridge: float,
 ) -> tuple[Any, dict[str, Any]]:
     if corruption_loss_weight < 0.0:
         raise ValueError("corruption_loss_weight must be non-negative")
+    condition_weights = dict(corruption_condition_weights or {})
+    for condition, weight in condition_weights.items():
+        if condition not in EVENT_GATE_CORRUPTION_CONDITIONS:
+            raise ValueError(f"unknown corruption condition weight: {condition}")
+        if weight < 0.0:
+            raise ValueError(f"corruption condition weight must be non-negative: {condition}")
     train = [int(index) for index in train_indices]
     row_packets = hidden_gate._row_packet_arrays(rows, source_packet_flat)
     target_derived_row_packets = hidden_gate._row_packet_arrays(rows, target_derived_packet_flat)
@@ -841,6 +1113,7 @@ def _fit_corruption_noop_decoder(
             source_selected=source_selected,
         )
         for condition, packet in corruption_packets.items():
+            condition_weight = float(condition_weights.get(condition, corruption_loss_weight))
             feature_blocks.append(
                 _decoder_feature_rows(
                     row_target_features,
@@ -849,7 +1122,7 @@ def _fit_corruption_noop_decoder(
                 )
             )
             target_blocks.append(np.zeros(end - start, dtype=np.float64))
-            weight_blocks.append(np.full(end - start, float(corruption_loss_weight), dtype=np.float64))
+            weight_blocks.append(np.full(end - start, condition_weight, dtype=np.float64))
             corruption_examples += int(end - start)
             corruption_counts[condition] = corruption_counts.get(condition, 0) + int(end - start)
 
@@ -872,7 +1145,16 @@ def _fit_corruption_noop_decoder(
         "total_training_examples": int(features.shape[0]),
         "matched_training_weight": float(matched_examples),
         "corruption_loss_weight": float(corruption_loss_weight),
-        "corruption_training_weight": float(corruption_examples * float(corruption_loss_weight)),
+        "corruption_condition_weights": {
+            condition: float(condition_weights.get(condition, corruption_loss_weight))
+            for condition in EVENT_GATE_CORRUPTION_CONDITIONS
+        },
+        "corruption_training_weight": float(
+            sum(
+                corruption_counts[condition] * float(condition_weights.get(condition, corruption_loss_weight))
+                for condition in EVENT_GATE_CORRUPTION_CONDITIONS
+            )
+        ),
         "corruption_conditions": list(EVENT_GATE_CORRUPTION_CONDITIONS),
         "corruption_condition_example_counts": {
             condition: int(count) for condition, count in sorted(corruption_counts.items())
@@ -1194,6 +1476,8 @@ def build_gate(
     gate_mode: str,
     receiver_training_mode: str,
     corruption_loss_weight: float,
+    corruption_condition_weights: dict[str, float] | None,
+    packet_integrity_mode: str,
     min_accuracy_gap: float,
     min_ci_low: float,
     seed: int,
@@ -1204,6 +1488,8 @@ def build_gate(
         raise ValueError(f"unknown gate_mode: {gate_mode}")
     if receiver_training_mode not in RECEIVER_TRAINING_MODES:
         raise ValueError(f"unknown receiver_training_mode: {receiver_training_mode}")
+    if packet_integrity_mode not in PACKET_INTEGRITY_MODES:
+        raise ValueError(f"unknown packet_integrity_mode: {packet_integrity_mode}")
     output_dir = behavior_gate._resolve(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     input_dir = output_dir / "strict_inputs"
@@ -1345,6 +1631,7 @@ def build_gate(
             source_selected=source_selected_all,
             decoder_mode=decoder_mode,
             corruption_loss_weight=corruption_loss_weight,
+            corruption_condition_weights=corruption_condition_weights,
             ridge=ridge,
         )
     else:
@@ -1404,6 +1691,18 @@ def build_gate(
             target_scores[:fit_row_count],
             source_residuals[:fit_row_count],
         )
+    packet_integrity_rule: PacketIntegrityRule | None = None
+    if packet_integrity_mode == "candidate_atom":
+        packet_integrity_rule = _choose_packet_integrity_rule(
+            rows=rows,
+            train_indices=list(range(fit_row_count)),
+            target_features=target_features,
+            source_packet_flat=source_packet_flat,
+            target_derived_packet_flat=target_derived_packet_flat,
+            fit_candidate_indices=fit_candidate_indices,
+            source_selected=source_selected_all,
+            ridge=ridge,
+        )
     prediction_rows: list[dict[str, Any]] = []
     for eval_position, row in enumerate(test_rows):
         row_index = fit_row_count + eval_position
@@ -1435,7 +1734,14 @@ def build_gate(
             "candidate_derangement": hidden_gate._candidate_roll_packet(row_packets[row_index], shift=-1),
         }
         condition_scores: dict[str, tuple[list[float], bool, np.ndarray, float | None]] = {}
+        condition_integrity: dict[str, tuple[bool, float | None]] = {}
         for condition, packet in candidate_packets.items():
+            start, end = hidden_gate._row_offsets(rows)[row_index]
+            integrity_accept, integrity_score = _packet_integrity_accept(
+                packet=packet,
+                target_features=target_features[start:end],
+                rule=packet_integrity_rule,
+            )
             if condition == MATCHED_CONDITION:
                 residual = source_residuals[row_index]
             elif condition == "target_derived_packet":
@@ -1457,6 +1763,15 @@ def build_gate(
                         zero_baseline_residuals[row_index],
                         dtype=np.float64,
                     )
+            if not integrity_accept:
+                condition_scores[condition] = (
+                    target,
+                    False,
+                    np.zeros(len(row.choices), dtype=np.float64),
+                    None,
+                )
+                condition_integrity[condition] = (False, integrity_score)
+                continue
             fused, fired, event_score = _fuse_with_gate(
                 target,
                 residual,
@@ -1465,6 +1780,7 @@ def build_gate(
                 gate_mode=gate_mode,
             )
             condition_scores[condition] = (fused, fired, np.asarray(residual, dtype=np.float64), event_score)
+            condition_integrity[condition] = (True, integrity_score)
         target_decoder_scores, target_decoder_fired, target_decoder_event_score = _fuse_with_gate(
             target,
             target_decoder_residuals[row_index],
@@ -1519,9 +1835,21 @@ def build_gate(
                 ),
             }
         )
+        for condition in (
+            "target_only",
+            "target_decoder_only",
+            "packet_only_source_index",
+            "source_rank_control",
+            "source_score_control",
+            "source_score_quantized_control",
+            "same_byte_visible_text",
+            "qwen_substituted_packet",
+        ):
+            condition_integrity[condition] = (True, None)
         target_correct = behavior_gate._prediction(target) == int(row.answer_index)
         for condition in REPORT_CONDITIONS:
             scores, fired, residual, event_score = condition_scores[condition]
+            integrity_accept, integrity_score = condition_integrity[condition]
             pred = behavior_gate._prediction(scores)
             correct = pred == int(row.answer_index)
             prediction_rows.append(
@@ -1542,6 +1870,8 @@ def build_gate(
                     "packet_harmed": bool(fired and (not correct) and target_correct),
                     "packet_residual": [float(value) for value in residual],
                     "event_score": float(event_score) if event_score is not None else None,
+                    "packet_integrity_accept": bool(integrity_accept),
+                    "packet_integrity_score": float(integrity_score) if integrity_score is not None else None,
                     "source_selected_index": int(source_selected),
                     "source_selected_label": row.choice_labels[source_selected],
                     "qwen_substituted_index": int(qwen_selected),
@@ -1655,6 +1985,7 @@ def build_gate(
             "gate_mode": gate_mode,
             "receiver_training_mode": receiver_training_mode,
             "corruption_loss_weight": float(corruption_loss_weight),
+            "packet_integrity_mode": packet_integrity_mode,
             "note": (
                 "Byte counts cover behavior-supervised source-hidden atom IDs plus quantized coefficients only. "
                 "They are not native GPU throughput, HBM traffic, or an end-to-end serving measurement."
@@ -1671,6 +2002,7 @@ def build_gate(
                 "fit_r2": decoder.fit_r2,
                 "selected_gate_rule": _public_gate_rule(gate_rule),
                 "receiver_training": receiver_training_meta,
+                "packet_integrity": packet_integrity_rule.metadata if packet_integrity_rule is not None else None,
             },
             "target_only_decoder": {
                 "ridge": target_only_decoder.ridge,
@@ -1705,6 +2037,10 @@ def build_gate(
             "gate_mode": gate_mode,
             "receiver_training_mode": receiver_training_mode,
             "corruption_loss_weight": float(corruption_loss_weight),
+            "corruption_condition_weights": {
+                condition: float(weight) for condition, weight in sorted((corruption_condition_weights or {}).items())
+            },
+            "packet_integrity_mode": packet_integrity_mode,
         },
         "interpretation": (
             "This gate tests whether source-hidden innovations become more useful when the sparse atom basis is "
@@ -1782,6 +2118,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=0.1,
         help="Per-example weight for no-op corruption targets when receiver-training-mode is corruption_noop.",
     )
+    parser.add_argument(
+        "--corruption-condition-weights",
+        default="",
+        help=(
+            "Comma-separated per-condition no-op weights, e.g. "
+            "candidate_roll=0.25,top_atom_knockout=0.25. Overrides --corruption-loss-weight."
+        ),
+    )
+    parser.add_argument("--packet-integrity-mode", choices=PACKET_INTEGRITY_MODES, default="none")
     parser.add_argument("--min-accuracy-gap", type=float, default=0.0)
     parser.add_argument("--min-ci-low", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=37)
@@ -1823,6 +2168,8 @@ def main(argv: list[str] | None = None) -> int:
         gate_mode=str(args.gate_mode),
         receiver_training_mode=str(args.receiver_training_mode),
         corruption_loss_weight=float(args.corruption_loss_weight),
+        corruption_condition_weights=_parse_condition_weight_spec(str(args.corruption_condition_weights)),
+        packet_integrity_mode=str(args.packet_integrity_mode),
         min_accuracy_gap=float(args.min_accuracy_gap),
         min_ci_low=float(args.min_ci_low),
         seed=int(args.seed),

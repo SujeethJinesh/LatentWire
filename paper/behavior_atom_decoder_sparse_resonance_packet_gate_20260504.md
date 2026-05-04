@@ -52,6 +52,10 @@ only source-specific packet information can move the target scores.
   `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w025_decoder/`
 - corruption-noop weighted zero-subtracted diagnostic:
   `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_corruption_noop_w01_zsub_decoder/`
+- candidate-aligned no-op weighting diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_candidate_aligned_noop_w005_emphasis/`
+- candidate/atom packet-integrity diagnostic:
+  `results/source_private_arc_challenge_behavior_atom_decoder_gate_20260504_tinyllama_to_qwen3_disagreement_n16_rank8_top2q4_integrity_candidate_atom_w01/`
 - reference synthesis:
   `references/731_behavior_atom_decoder_packet_refs_20260504.md`
   and `references/733_event_triggered_packet_gate_refs_20260504.md`
@@ -71,6 +75,8 @@ only source-specific packet information can move the target scores.
 | corruption-noop decoder, weight 0.1 | rank8 top2 q4 | 7 | 0.4375 | 0.2500 | candidate_roll, 0.5000 | -0.3125 | 7/16 | 3 | 0 |
 | corruption-noop decoder, weight 0.25 | rank8 top2 q4 | 7 | 0.3750 | 0.2500 | top_atom_knockout, 0.5000 | -0.3750 | 7/16 | 2 | 0 |
 | corruption-noop decoder, weight 0.1, zero-subtracted | rank8 top2 q4 | 7 | 0.3750 | 0.2500 | top_atom_knockout, 0.4375 | -0.3750 | 7/16 | 2 | 0 |
+| candidate-aligned no-op emphasis | rank8 top2 q4 | 7 | 0.4375 | 0.2500 | top_atom_knockout, 0.4375 | -0.3125 | 8/16 | 3 | 0 |
+| candidate/atom integrity gate | rank8 top2 q4 | 7 | 0.2500 | 0.2500 | qwen_substituted_packet, 0.4375 | -0.4375 | 0/16 | 0 | 0 |
 
 The primary behavior-atom scout is a partial positive signal: matched accuracy
 beats target-only by two rows and has helped `2`, harmed `0`. It also beats
@@ -139,6 +145,24 @@ decode to residual norms close to matched. Increasing the corruption weight to
 `0.25` weakens matched lift before it solves top-atom-knockout; zero-baseline
 subtraction also weakens matched lift without clearing the strongest controls.
 
+Condition-specific no-op weighting, with higher weights on candidate roll,
+candidate derangement, same-source-choice wrong-row, and top-atom knockout,
+preserves the best matched point estimate (`0.4375`) and keeps harms at zero.
+It improves same-source-choice wrong-row to `0.2500`, but candidate roll still
+ties matched at `0.4375`, top-atom knockout still ties matched at `0.4375`,
+and Qwen substitution also ties. Residual norms for candidate roll and
+top-atom knockout remain close to matched, so targeted linear no-op pressure is
+not sufficient.
+
+The candidate/atom packet-integrity gate is a separate label-free accept/reject
+layer trained only from matched packets versus synthetic packet corruptions.
+It uses packet-to-target-feature alignment and atom-profile diagnostics rather
+than answer labels. The idea is sound as a protocol direction, but this first
+linear integrity classifier fails held-out generalization: it accepts `13/16`
+matched train packets and `53/144` train corruptions, but accepts `0/16`
+held-out matched packets. Matched falls to target-only (`0.2500`) because every
+real held-out packet is rejected.
+
 ## Diagnostics
 
 The behavior basis fit is train-predictive but not held-out causal enough. For
@@ -155,12 +179,12 @@ absence of source signal.
 The packet-only innovation and event-triggered results further narrow the
 diagnosis: subtracting or forbidding target-only receiver bias is necessary but
 not sufficient, and a row-level accept/abstain gate alone does not make the
-current behavior atoms source-necessary. The corruption-noop results narrow it
-again: no-op receiver training can recover a stronger no-harm matched lift, but
-linear behavior atoms still do not carry enough candidate-aligned causal
-information. The next live method must change the atom basis or add an
-explicit candidate-alignment/integrity mechanism so candidate-rolled and
-top-atom-knockout packets collapse.
+current behavior atoms source-necessary. The corruption-noop and integrity
+results narrow it again: no-op receiver training can recover a stronger
+no-harm matched lift, but linear behavior atoms still do not carry enough
+candidate-aligned causal information for a held-out integrity gate to trust
+them. The next live method must change the atom basis so candidate-rolled and
+top-atom-knockout packets naturally collapse.
 
 ## Decision
 
@@ -170,16 +194,13 @@ because it is now the cleanest strict ARC behavior-atom packet harness and
 includes same-source-choice wrong-row, zero-packet-baseline subtraction,
 corruption-to-no-op receiver training, and no-op residual diagnostics.
 
-Promote the next branch only if it changes the atom basis or packet integrity
-enough to remove the candidate-roll/top-atom-knockout/same-source-choice
-failure:
+Promote the next branch only if it changes the atom basis enough to remove the
+candidate-roll/top-atom-knockout/same-source-choice failure:
 
-1. candidate-aligned corruption training: train matched packets to remain
-   stable under mild coefficient noise, but candidate roll, candidate
-   derangement, top-atom knockout, same-source-choice wrong-row, and atom-ID
-   permutations must decode to no-op with residual norms below matched;
-2. small BatchTopK/DFC/crosscoder/transcoder packet atoms that explicitly
+1. small BatchTopK/DFC/crosscoder/transcoder packet atoms that explicitly
    separate shared, source-private, and target-private behavior features.
+2. Reintroduce packet-integrity only after the atom bank has stable held-out
+   candidate alignment and top-atom knockout sensitivity.
 
 Lay explanation: we trained the feature clues to point at the kinds of mistakes
 Qwen makes, rather than at generic TinyLlama hidden-state variation. That helped
