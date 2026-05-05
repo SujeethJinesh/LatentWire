@@ -24520,3 +24520,49 @@ measured-vs-estimated systems table, and reviewer-facing claim boundary section.
 Lay explanation: we are turning the v1/v2 material into one workshop paper and
 putting the three new systems ideas into safe sandboxes. They are not evidence
 yet; they are candidates for future hard systems numbers.
+
+## 2026-05-05 COLM_v3 Review Packet Generation
+
+Built the reproducible COLM_v3 review packet from the existing v2 evidence
+bundle, systems boundary artifact, reviewer feedback, readiness memo, experiment
+ledger, and experimental side-branch status:
+
+- script: `scripts/build_latentwire_colm_v3_review_packet.py`;
+- test: `tests/test_build_latentwire_colm_v3_review_packet.py`;
+- output directory: `results/latentwire_colm_v3_review_packet_20260505/`;
+- mirrored paper memo: `paper/latentwire_colm_v3_review_packet_20260505.md`.
+
+Generated artifacts:
+
+- `claim_audit.csv`;
+- `contribution_table.csv`;
+- `systems_measured_vs_estimated.csv`;
+- `table_figure_inventory.csv`;
+- `submission_checklist.csv`;
+- `experiment_scoping.csv`;
+- `artifact_manifest.csv`;
+- `nvidia_native_runbook.md`;
+- `review_packet.json` and `review_packet.md`.
+
+Subagent scoping reviews for the three experimental systems side branches
+confirmed that none should enter COLM_v3 claims yet:
+
+- HybridKernel remains a separate systems spinout unless a vLLM hybrid
+  SSM/disaggregated-serving audit clears novelty, a roofline pass predicts at
+  least a 3% theoretical gain, and native GPU profiling confirms measurable
+  transition overhead.
+- SinkAware remains the cheapest quick-kill branch; its next gate is a
+  line-numbered FlashInfer prefill/decode attention audit.
+- ThoughtFlow-FP8 remains a high-upside but crowded spinout; its next gate is
+  LongFlow OpenReview/arXiv forensics to find a concrete failure mode before
+  any implementation.
+
+Decision: COLM_v3 now has the missing reviewer packet and systems
+measured-vs-estimated ledger. The workshop blocker has shifted from evidence
+packaging to paper integration: abstract/introduction, method/threat model,
+final tables/figures, limitations, and reproducibility checklist.
+
+Lay explanation: the scattered results are now in one reviewer-facing packet.
+It tells us exactly what we can claim, which tables support those claims, which
+systems numbers are measured versus estimated, and which side experiments are
+future work rather than current evidence.

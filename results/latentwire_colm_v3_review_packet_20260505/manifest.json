@@ -1,0 +1,54 @@
+{
+  "created_utc": "2026-05-05T05:36:15.109879+00:00",
+  "input_manifest": [
+    {
+      "key": "colm_v2_review_packet",
+      "path": "results/latentwire_colm_v2_review_packet_20260504/review_packet.json",
+      "sha256": "367ce9562a207b6c813b45951ebd25a395ab5e97a043a7c964cf693e371efe65"
+    },
+    {
+      "key": "colm_v3_readiness",
+      "path": "paper/latentwire_colm_v3_readiness_20260505.md",
+      "sha256": "50135b0bcb08b77a660e848aebcab6ab2ec006869c53833db75d7da2979a73dd"
+    },
+    {
+      "key": "experiment_ledger",
+      "path": "paper/experiment_ledger_20260421.md",
+      "sha256": "bc075f619cf53042a22286a27df6e4a258b95b7174db626afdeb0eace0d6f1fb"
+    },
+    {
+      "key": "experimental_status",
+      "path": "experimental/status_20260505.md",
+      "sha256": "242ade8531decd887cace22823e619f9d003ac808989e23983ce5a2c9d15e2ae"
+    },
+    {
+      "key": "reviewer_feedback",
+      "path": "paper/reviewer_feedback.md",
+      "sha256": "282ee615ffe970797c695908214088af55b0ae80656ea5c4829aa01c2492198e"
+    },
+    {
+      "key": "systems_boundary",
+      "path": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_figure_data.json",
+      "sha256": "81a776e985428f6945c22ccc3b7921016afb4f0a2e32d4b4a7af4b04cea9ee49"
+    }
+  ],
+  "outputs": [
+    "results/latentwire_colm_v3_review_packet_20260505/artifact_manifest.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/baseline_matrix.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/claim_audit.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/contribution_table.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/experiment_scoping.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/main_results.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/manifest.json",
+    "results/latentwire_colm_v3_review_packet_20260505/negative_results.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/nvidia_native_runbook.md",
+    "results/latentwire_colm_v3_review_packet_20260505/review_packet.json",
+    "results/latentwire_colm_v3_review_packet_20260505/review_packet.md",
+    "results/latentwire_colm_v3_review_packet_20260505/strict_controls.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/submission_checklist.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/systems_measured_vs_estimated.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/table_figure_inventory.csv",
+    "paper/latentwire_colm_v3_review_packet_20260505.md"
+  ],
+  "packet": "latentwire_colm_v3_review_packet"
+}

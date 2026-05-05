@@ -1,0 +1,13 @@
+base_accuracy,benchmark,ci95_high_vs_base,ci95_low_vs_base,condition,harm_count,help_count,matched_minus_condition,override_rate,receiver_accuracy,receiver_minus_base,seed,target_public_accuracy
+0.21,OpenBookQA,0.12,0.04595,candidate_derangement,25,66,0.132,0.29,0.292,0.082,47,0.372
+0.21,OpenBookQA,0.12,0.04595,candidate_roll_packet,25,66,0.132,0.29,0.292,0.082,47,0.372
+0.378,OpenBookQA,0.084,0.008,label_permutation,35,58,0,0.28,0.424,0.046,47,0.372
+0.378,OpenBookQA,0.08405,0.00795,matched_source_private_packet,35,58,0,0.28,0.424,0.046,47,0.372
+0.228,OpenBookQA,0.194,0.088,random_same_byte_packet,64,135,0.054,0.842,0.37,0.142,47,0.372
+0.35,OpenBookQA,0.056,0,same_byte_structured_text,18,32,0.046,0.196,0.378,0.028,47,0.372
+0.378,OpenBookQA,0.088,0,same_source_choice_wrong_row_packet,54,76,0.002,0.414,0.422,0.044,47,0.372
+0.25,OpenBookQA,0.168,0.06,shuffled_source_packet,70,127,0.06,0.8,0.364,0.114,47,0.372
+0.378,OpenBookQA,0.056,-0.066,source_label_copy,118,115,0.052,0.96,0.372,-0.006,47,0.372
+0.276,OpenBookQA,0.112,0.04,target_derived_sidecar,23,61,0.072,0.312,0.352,0.076,47,0.372
+0.372,OpenBookQA,0,0,target_public_ridge,0,0,0.052,0.836,0.372,0,47,0.372
+0.276,OpenBookQA,0.152,0.04,zero_source,78,126,0.052,0.95,0.372,0.096,47,0.372

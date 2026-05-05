@@ -1,0 +1,13 @@
+artifact,status,source,next_action
+unified abstract and introduction,paper_edit_needed,paper draft,write COLM_v3 prose around the safe main claim
+method/protocol definition,partial,COLM_v1 method intuition plus COLM_v2 packet protocol,merge without broad latent-language wording
+source-private threat model,partial,COLM_v2 controls and systems boundary notes,define what can cross the interface and what cannot
+strict-control table,data_ready,strict_controls.csv,add to paper with caveats per row
+main positive result table,data_ready,main_results.csv,keep ARC as narrow same-family positive evidence
+utility-per-byte / packet-byte table,data_ready,systems_measured_vs_estimated.csv,"separate raw, framed, cacheline, and batch64 bytes"
+systems boundary table,data_ready,systems_measured_vs_estimated.csv,"label measured, estimated, and future native rows"
+baseline/related-work matrix,data_ready,baseline_matrix.csv,compress for main paper and move overflow to appendix
+negative-results / failure-boundary table,data_ready,negative_results.csv,use to define claim boundaries
+claim audit table,generated,claim_audit.csv,use as reviewer-facing internal checklist
+reproducibility checklist,partial,artifact_manifest.csv and input_manifest,convert to workshop checklist before submission
+NVIDIA native benchmark runbook,generated_future_work,nvidia_native_runbook.md,run only on native NVIDIA hardware later

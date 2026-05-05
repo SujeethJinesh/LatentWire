@@ -1,0 +1,17 @@
+artifact,role,status
+review_packet.json,machine-readable COLM_v3 review packet,generated
+review_packet.md,human-readable COLM_v3 review packet,generated
+claim_audit.csv,claim to evidence and wording boundary table,generated
+contribution_table.csv,current contribution status table,generated
+systems_measured_vs_estimated.csv,systems rows with measured-vs-estimated labels,generated
+table_figure_inventory.csv,paper table and figure readiness tracker,generated
+submission_checklist.csv,remaining workshop submission blockers,generated
+experiment_scoping.csv,three systems side experiments scoped for COLM_v3,generated
+nvidia_native_runbook.md,future native GPU measurement runbook,generated
+manifest.json,input and output manifest,generated
+results/latentwire_colm_v2_review_packet_20260504/review_packet.json,input:colm_v2_review_packet,read
+paper/latentwire_colm_v3_readiness_20260505.md,input:colm_v3_readiness,read
+paper/experiment_ledger_20260421.md,input:experiment_ledger,read
+experimental/status_20260505.md,input:experimental_status,read
+paper/reviewer_feedback.md,input:reviewer_feedback,read
+results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_figure_data.json,input:systems_boundary,read

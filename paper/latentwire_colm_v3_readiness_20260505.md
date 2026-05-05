@@ -6,10 +6,11 @@
 
 ## Current Readiness
 
-COLM_v3 is plausible but not yet submission-ready. The safe path is a unified
-workshop paper that combines the original packet intuition with the later
-control hardening, systems boundary accounting, source-choice audits, and C2C
-claim boundaries.
+COLM_v3 is plausible and now has a reproducible review-packet artifact, but it
+is not yet submission-ready. The remaining blocker is paper integration: a
+unified abstract/introduction, method/threat-model section, final table/figure
+placement, limitations, and reproducibility checklist built from the generated
+packet.
 
 ICLR remains blocked by the lack of a broad learned/source-causal receiver that
 survives strict destructive controls.
@@ -44,6 +45,7 @@ shortcuts.
 | `paper/iclr_colm_v2_live_branch_triage_20260504.md` | C2C replay/headroom revived but packet distillation branches failed or are leakage upper bounds; pre-answer C2C gate is implemented but not complete | C2C boundary and future-work framing |
 | `paper/svamp32_c2c_generated_answer_packet_audit_20260505.md` | generated-answer value/index packet is answer leakage, matched by same-byte visible answer and nearly by same-source-choice wrong-row | negative/leakage boundary |
 | `experimental/status_20260505.md` | three hard-systems side experiments scaffolded but not evidence | optional future systems appendix only |
+| `results/latentwire_colm_v3_review_packet_20260505/` | generated v3 claim audit, artifact manifest, systems measured-vs-estimated table, table/figure inventory, side-experiment scoping, and NVIDIA native runbook | reviewer packet and source of truth for paper integration |
 
 ## Required COLM_v3 Package
 
@@ -58,9 +60,9 @@ shortcuts.
 | Systems boundary table/figure | present for accounting | label measured-vs-estimated and native-missing rows explicitly |
 | Related-work/baseline matrix | present in v2 packet | update to v3 and point C2C/KV/cache methods to source-exposure regimes |
 | Negative/failure-boundary table | present but split | include cross-family, source-choice, C2C leakage, and failed learned receivers |
-| Claim audit table | present for COLM package | update to v3 claim wording and add artifact paths |
-| Reproducibility checklist | present for COLM package | update with v3 artifact manifest and expected commands |
-| Artifact manifest | present for v1/v2 pieces | build a v3 manifest that references only claim-supporting artifacts |
+| Claim audit table | generated for v3 | integrate `results/latentwire_colm_v3_review_packet_20260505/claim_audit.csv` into the paper audit/checklist |
+| Reproducibility checklist | partial | convert `artifact_manifest.csv`, `manifest.json`, and expected build commands into the workshop checklist |
+| Artifact manifest | generated for v3 | use `results/latentwire_colm_v3_review_packet_20260505/artifact_manifest.csv` and `manifest.json` |
 | Limitations | present but needs v3 consistency | keep strong limits visible in main text |
 
 ## Systems State
@@ -83,15 +85,30 @@ shortcuts.
 | SinkAware | scaffolded, `.venv` created, no evidence | cheapest Phase 1 audit if spare systems time exists |
 | ThoughtFlow-FP8 | scaffolded, `.venv` created, no evidence | high-upside but crowded; use only if pivoting to a separate systems paper |
 
+## Generated Review Packet
+
+The COLM_v3 review packet now exists at
+`results/latentwire_colm_v3_review_packet_20260505/`, with a mirrored memo at
+`paper/latentwire_colm_v3_review_packet_20260505.md`. It contains:
+
+1. v3 contribution table,
+2. reviewer claim audit,
+3. table/figure inventory,
+4. measured-vs-estimated systems table,
+5. side-experiment scoping,
+6. submission checklist,
+7. artifact and input manifest,
+8. NVIDIA native benchmark runbook.
+
 ## Highest-Priority Next Gate
 
-Build the COLM_v3 review packet from existing evidence:
+Edit the COLM_v3 paper around the generated review packet:
 
 1. v3 abstract/introduction/contribution bullets,
-2. v3 claim audit table,
-3. v3 artifact manifest,
-4. one systems table with measured-vs-estimated labels,
-5. one reviewer-facing "what we claim / what we do not claim" section.
+2. method/protocol and source-private threat model,
+3. main result, strict-control, negative-result, and systems tables,
+4. one reviewer-facing "what we claim / what we do not claim" section,
+5. reproducibility checklist and artifact manifest.
 
 Do not run speculative new method experiments until that package exposes a
 specific missing table cell or unsupported claim.

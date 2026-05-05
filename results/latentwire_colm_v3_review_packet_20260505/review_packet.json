@@ -1,0 +1,1702 @@
+{
+  "artifact_manifest": [
+    {
+      "artifact": "review_packet.json",
+      "role": "machine-readable COLM_v3 review packet",
+      "status": "generated"
+    },
+    {
+      "artifact": "review_packet.md",
+      "role": "human-readable COLM_v3 review packet",
+      "status": "generated"
+    },
+    {
+      "artifact": "claim_audit.csv",
+      "role": "claim to evidence and wording boundary table",
+      "status": "generated"
+    },
+    {
+      "artifact": "contribution_table.csv",
+      "role": "current contribution status table",
+      "status": "generated"
+    },
+    {
+      "artifact": "systems_measured_vs_estimated.csv",
+      "role": "systems rows with measured-vs-estimated labels",
+      "status": "generated"
+    },
+    {
+      "artifact": "table_figure_inventory.csv",
+      "role": "paper table and figure readiness tracker",
+      "status": "generated"
+    },
+    {
+      "artifact": "submission_checklist.csv",
+      "role": "remaining workshop submission blockers",
+      "status": "generated"
+    },
+    {
+      "artifact": "experiment_scoping.csv",
+      "role": "three systems side experiments scoped for COLM_v3",
+      "status": "generated"
+    },
+    {
+      "artifact": "nvidia_native_runbook.md",
+      "role": "future native GPU measurement runbook",
+      "status": "generated"
+    },
+    {
+      "artifact": "manifest.json",
+      "role": "input and output manifest",
+      "status": "generated"
+    },
+    {
+      "artifact": "results/latentwire_colm_v2_review_packet_20260504/review_packet.json",
+      "role": "input:colm_v2_review_packet",
+      "status": "read"
+    },
+    {
+      "artifact": "paper/latentwire_colm_v3_readiness_20260505.md",
+      "role": "input:colm_v3_readiness",
+      "status": "read"
+    },
+    {
+      "artifact": "paper/experiment_ledger_20260421.md",
+      "role": "input:experiment_ledger",
+      "status": "read"
+    },
+    {
+      "artifact": "experimental/status_20260505.md",
+      "role": "input:experimental_status",
+      "status": "read"
+    },
+    {
+      "artifact": "paper/reviewer_feedback.md",
+      "role": "input:reviewer_feedback",
+      "status": "read"
+    },
+    {
+      "artifact": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_figure_data.json",
+      "role": "input:systems_boundary",
+      "status": "read"
+    }
+  ],
+  "baseline_matrix": [
+    {
+      "baseline": "Cache-to-Cache (C2C)",
+      "byte_regime": "high bandwidth KV/cache state",
+      "category": "dense_cache_transfer",
+      "included_in_current_eval": "systems-boundary comparator only",
+      "latentwire_distinction": "LatentWire transmits tiny source-private packets and evaluates utility per byte; it does not claim raw-accuracy or native serving wins over C2C.",
+      "receiver_training": "learned projection/gating",
+      "source": "https://openreview.net/forum?id=LeatkxrBCi",
+      "source_private": "no, dense source cache state crosses the interface",
+      "still_needed": "direct native C2C run on matching models/tasks for any stronger claim",
+      "target_access": "target internals",
+      "what_transfers": "projected source KV cache fused into target KV cache"
+    },
+    {
+      "baseline": "Latent Space Communication via K-V Cache Alignment",
+      "byte_regime": "dense K/V cache state",
+      "category": "dense_cache_transfer",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "K/V cache alignment is a direct dense latent-communication competitor; LatentWire must claim only low-rate packet transfer unless direct cache alignment rows are run.",
+      "receiver_training": "cache alignment map",
+      "source": "https://arxiv.org/abs/2601.06123",
+      "source_private": "no, aligned cache state crosses the boundary",
+      "still_needed": "direct comparison if claiming broad latent communication novelty",
+      "target_access": "target cache path",
+      "what_transfers": "aligned prefix K/V cache from source model into target model decoding"
+    },
+    {
+      "baseline": "DroidSpeak",
+      "byte_regime": "KV/cache state",
+      "category": "kv_cache_serving",
+      "included_in_current_eval": "related-work and systems-boundary comparator",
+      "latentwire_distinction": "DroidSpeak is cache reuse; LatentWire studies source-private task packets with wrong-row and source-choice controls.",
+      "receiver_training": "serving/runtime method",
+      "source": "https://arxiv.org/abs/2411.02820",
+      "source_private": "no, cache state is reused",
+      "still_needed": "native serving comparison only after GPU setup",
+      "target_access": "compatible architecture cache path",
+      "what_transfers": "compatible KV caches across distributed LLM nodes"
+    },
+    {
+      "baseline": "KVCOMM",
+      "byte_regime": "KV/cache state",
+      "category": "kv_cache_serving",
+      "included_in_current_eval": "related-work and systems-boundary comparator",
+      "latentwire_distinction": "KVCOMM is a high-bandwidth cache communication regime; LatentWire is a low-byte packet protocol with destructive source-private controls.",
+      "receiver_training": "training-free cache communication",
+      "source": "https://arxiv.org/abs/2510.12872",
+      "source_private": "no, cache information crosses the agent boundary",
+      "still_needed": "native baseline if claiming runtime superiority",
+      "target_access": "cache-level access",
+      "what_transfers": "cross-context KV-cache information for multi-agent inference"
+    },
+    {
+      "baseline": "RelayCaching",
+      "byte_regime": "KV/cache state",
+      "category": "kv_cache_serving",
+      "included_in_current_eval": "related-work and systems-boundary comparator",
+      "latentwire_distinction": "RelayCaching accelerates cache reuse; LatentWire evaluates whether compact source evidence causes target utility without exposing cache/text.",
+      "receiver_training": "serving/runtime method",
+      "source": "https://arxiv.org/abs/2603.13289",
+      "source_private": "no, produced cache state is reused",
+      "still_needed": "native serving baseline for latency or throughput claims",
+      "target_access": "cache-level access",
+      "what_transfers": "decoding-time KV caches for collaborative generation"
+    },
+    {
+      "baseline": "CacheGen / LMCache / CacheBlend-style reuse",
+      "byte_regime": "compressed cache/prompt state",
+      "category": "kv_cache_reuse",
+      "included_in_current_eval": "systems-boundary comparator",
+      "latentwire_distinction": "Cache-reuse systems optimize serving reuse for existing context; LatentWire sends small task-level source evidence packets across model boundaries.",
+      "receiver_training": "system-dependent",
+      "source": "https://arxiv.org/abs/2310.07240",
+      "source_private": "no, cache or prompt-derived state is reused",
+      "still_needed": "native vLLM/SGLang/LMCache run for throughput claims",
+      "target_access": "serving cache path",
+      "what_transfers": "compressed, streamed, or blended reusable prompt/cache state"
+    },
+    {
+      "baseline": "Communicating Activations Between Language Model Agents",
+      "byte_regime": "dense activations",
+      "category": "activation_communication",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "LatentWire emphasizes source-private low-byte packets, explicit packet bytes, and destructive controls rather than generic activation exchange.",
+      "receiver_training": "method-dependent",
+      "source": "https://arxiv.org/abs/2501.14082",
+      "source_private": "limited; activation vectors are exposed",
+      "still_needed": "cite and distinguish in related-work matrix",
+      "target_access": "activation-level access",
+      "what_transfers": "activation vectors between language-model agents"
+    },
+    {
+      "baseline": "CIPHER / Let Models Speak Ciphers",
+      "byte_regime": "embedding vectors or continuous messages",
+      "category": "activation_communication",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "CIPHER pressures broad latent-message novelty; LatentWire's narrower claim is byte-counted source-private packets with destructive controls.",
+      "receiver_training": "method-dependent",
+      "source": "https://arxiv.org/abs/2310.06272",
+      "source_private": "partial; embedding messages are exposed to peers",
+      "still_needed": "avoid claiming generic embedding communication novelty",
+      "target_access": "embedding/message interface",
+      "what_transfers": "embedding-level messages between debating LLM agents"
+    },
+    {
+      "baseline": "Direct Semantic Communication via Vector Translation",
+      "byte_regime": "dense vector communication",
+      "category": "latent_translation",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "LatentWire requires low-byte source-private packet accounting and source-choice destructive controls.",
+      "receiver_training": "translation model",
+      "source": "https://arxiv.org/abs/2511.03945",
+      "source_private": "partial; dense vectors may expose source state",
+      "still_needed": "verify final citation metadata before camera-ready",
+      "target_access": "representation-level access",
+      "what_transfers": "translated semantic vectors"
+    },
+    {
+      "baseline": "InterLat",
+      "byte_regime": "latent vector state",
+      "category": "latent_translation",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "LatentWire claims only packetized, byte-counted, source-private transfer under destructive controls.",
+      "receiver_training": "method-dependent",
+      "source": "https://arxiv.org/abs/2511.09149",
+      "source_private": "partial; dense latent state may cross",
+      "still_needed": "verify final citation metadata before camera-ready",
+      "target_access": "latent-level access",
+      "what_transfers": "intermediate latent representations"
+    },
+    {
+      "baseline": "Prefix tuning",
+      "byte_regime": "learned prompt parameters",
+      "category": "soft_prompting",
+      "included_in_current_eval": "conceptual baseline",
+      "latentwire_distinction": "Prefix tuning adapts one model; LatentWire tests row-specific source evidence packets with wrong-row and source-choice controls.",
+      "receiver_training": "trained prefix",
+      "source": "https://aclanthology.org/2021.acl-long.353/",
+      "source_private": "not a source-to-target communication protocol",
+      "still_needed": "baseline wording in related work",
+      "target_access": "target model prompt interface",
+      "what_transfers": "task-specific continuous prefix parameters"
+    },
+    {
+      "baseline": "Gist tokens",
+      "byte_regime": "soft/visible compressed context",
+      "category": "context_compression",
+      "included_in_current_eval": "conceptual baseline",
+      "latentwire_distinction": "Gist compresses a model's context; LatentWire transfers hidden source evidence between models with source-private controls.",
+      "receiver_training": "trained compression behavior",
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/3d77c6dcc7f143aa2154e7f4d5e22d68-Abstract-Conference.html",
+      "source_private": "no, compression is of visible context",
+      "still_needed": "same-byte visible text baseline remains the local control",
+      "target_access": "target prompt/context path",
+      "what_transfers": "learned summary tokens for prompt compression"
+    },
+    {
+      "baseline": "LLMLingua / LongLLMLingua",
+      "byte_regime": "compressed text/token context",
+      "category": "context_compression",
+      "included_in_current_eval": "same-byte visible text is the local control",
+      "latentwire_distinction": "LLMLingua compresses visible context; LatentWire tests whether opaque source-private packets add utility beyond same-byte visible text.",
+      "receiver_training": "prompt compression model",
+      "source": "https://arxiv.org/abs/2310.05736; https://arxiv.org/abs/2310.06839",
+      "source_private": "no, visible prompt content is compressed and exposed",
+      "still_needed": "optional stronger visible-text compression baseline for ICLR",
+      "target_access": "target text prompt interface",
+      "what_transfers": "compressed visible prompt text or retained prompt tokens"
+    },
+    {
+      "baseline": "BLIP-2 / Q-Former",
+      "byte_regime": "learned query token bottleneck",
+      "category": "query_bottleneck",
+      "included_in_current_eval": "architectural precedent",
+      "latentwire_distinction": "LatentWire's novelty is not query bottlenecks; it is packetized source-private model-to-model transfer plus destructive controls.",
+      "receiver_training": "trained Q-Former",
+      "source": "https://arxiv.org/abs/2301.12597",
+      "source_private": "not a source-to-target LLM communication protocol",
+      "still_needed": "cite as precedent, not baseline claim",
+      "target_access": "frozen LM interface",
+      "what_transfers": "query bottleneck between vision encoder and language model"
+    },
+    {
+      "baseline": "Flamingo / Perceiver Resampler",
+      "byte_regime": "latent token bottleneck",
+      "category": "query_bottleneck",
+      "included_in_current_eval": "architectural precedent",
+      "latentwire_distinction": "LatentWire differs by source-private packets, byte accounting, and controls against source-choice artifacts.",
+      "receiver_training": "trained multimodal bridge",
+      "source": "https://arxiv.org/abs/2204.14198",
+      "source_private": "not source-private model-to-model communication",
+      "still_needed": "cite as precedent, not novelty",
+      "target_access": "LM cross-attention path",
+      "what_transfers": "fixed latent resampler tokens into LM cross-attention"
+    },
+    {
+      "baseline": "Perceiver IO",
+      "byte_regime": "latent array",
+      "category": "query_bottleneck",
+      "included_in_current_eval": "architectural precedent",
+      "latentwire_distinction": "Latent arrays are prior art; LatentWire's claim is communication protocol evaluation under strict controls.",
+      "receiver_training": "trained architecture",
+      "source": "https://arxiv.org/abs/2107.14795",
+      "source_private": "not a source-to-target LLM communication protocol",
+      "still_needed": "cite as motivation only",
+      "target_access": "model architecture",
+      "what_transfers": "latent query array for generic input/output mapping"
+    },
+    {
+      "baseline": "Sparse Crosscoders",
+      "byte_regime": "sparse feature coordinates if packetized",
+      "category": "common_basis",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "Common bases alone are not novel; LatentWire must show sparse features cause source-private downstream utility under atom-shuffle and wrong-row controls.",
+      "receiver_training": "trained crosscoder",
+      "source": "https://transformer-circuits.pub/2024/crosscoders/",
+      "source_private": "feature analysis, not packet transfer",
+      "still_needed": "future SRP method should compare directly if using crosscoders",
+      "target_access": "activation datasets",
+      "what_transfers": "shared and private features across activation spaces"
+    },
+    {
+      "baseline": "Universal Sparse Autoencoders",
+      "byte_regime": "sparse coordinates if packetized",
+      "category": "common_basis",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "LatentWire uses common-basis work only as a possible packet representation; novelty requires byte-counted causal packet utility.",
+      "receiver_training": "trained SAE",
+      "source": "https://arxiv.org/abs/2502.03714",
+      "source_private": "feature analysis, not packet transfer",
+      "still_needed": "future SRP baseline if PCA succeeds",
+      "target_access": "activation datasets",
+      "what_transfers": "cross-model sparse concept basis"
+    },
+    {
+      "baseline": "Transcoders / sparse feature circuits",
+      "byte_regime": "sparse feature coordinates if packetized",
+      "category": "common_basis",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "Transcoders can define interpretable atoms, but LatentWire must prove that packetized atoms causally improve target behavior under strict controls.",
+      "receiver_training": "trained transcoder",
+      "source": "https://arxiv.org/abs/2406.11944",
+      "source_private": "analysis method, not direct packet transfer",
+      "still_needed": "strong future baseline for behavior-transcoder packet branch",
+      "target_access": "activation datasets and internal features",
+      "what_transfers": "sparse feature-to-feature computation approximating model internals"
+    },
+    {
+      "baseline": "SAEBench and SAE non-canonicity checks",
+      "byte_regime": "not a communication protocol",
+      "category": "common_basis",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "SAE quality and feature stability are prerequisites if Sparse Resonance Packets use sparse atoms; they are not themselves the communication result.",
+      "receiver_training": "SAE training/evaluation",
+      "source": "https://proceedings.mlr.press/v267/karvonen25a.html",
+      "source_private": "analysis/evaluation method",
+      "still_needed": "use if upgrading from PCA/SVD to SAE/crosscoder packets",
+      "target_access": "activation datasets",
+      "what_transfers": "benchmarking and reliability checks for sparse feature dictionaries"
+    },
+    {
+      "baseline": "TurboQuant",
+      "byte_regime": "low-bit dense vector/KV compression",
+      "category": "quantization",
+      "included_in_current_eval": "systems byte floor comparator",
+      "latentwire_distinction": "TurboQuant reduces dense state cost; LatentWire sends task-level packets and must avoid unmeasured throughput claims.",
+      "receiver_training": "quantization/calibration",
+      "source": "https://arxiv.org/abs/2504.19874",
+      "source_private": "no, quantized source state still exposes state",
+      "still_needed": "native comparison after NVIDIA hardware",
+      "target_access": "state/vector path",
+      "what_transfers": "low-bit quantized vectors/KV state"
+    },
+    {
+      "baseline": "KVQuant",
+      "byte_regime": "low-bit KV cache",
+      "category": "quantization",
+      "included_in_current_eval": "systems byte floor comparator",
+      "latentwire_distinction": "KVQuant compresses one model's cache; LatentWire transfers compact source evidence across models.",
+      "receiver_training": "quantization/calibration",
+      "source": "https://arxiv.org/abs/2401.18079",
+      "source_private": "no, cache is still exposed/reused",
+      "still_needed": "native comparison after NVIDIA hardware",
+      "target_access": "cache path",
+      "what_transfers": "low-bit KV cache for long-context serving"
+    },
+    {
+      "baseline": "KIVI / QJL low-bit KV sketches",
+      "byte_regime": "low-bit dense cache/vector state",
+      "category": "quantization",
+      "included_in_current_eval": "systems byte floor comparator",
+      "latentwire_distinction": "These methods shrink dense state; LatentWire transfers task-level packets and should compare byte floors without claiming native speed.",
+      "receiver_training": "quantization/calibration or training-free compression",
+      "source": "https://arxiv.org/abs/2402.02750; https://arxiv.org/abs/2504.19874",
+      "source_private": "no, dense state is compressed rather than hidden",
+      "still_needed": "native low-bit cache comparison for ICLR systems claims",
+      "target_access": "cache/vector path",
+      "what_transfers": "low-bit KV/cache values or sketch-corrected quantized vectors"
+    },
+    {
+      "baseline": "H2O",
+      "byte_regime": "pruned KV cache",
+      "category": "kv_cache_compression",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "H2O reduces one model's cache memory; LatentWire sends source-private cross-model evidence packets.",
+      "receiver_training": "training-free cache policy",
+      "source": "https://arxiv.org/abs/2306.14048",
+      "source_private": "no, same-model cache retention",
+      "still_needed": "long-context reviewer baseline, not direct COLM_v2 competitor",
+      "target_access": "same-model cache path",
+      "what_transfers": "retained heavy-hitter KV cache tokens"
+    },
+    {
+      "baseline": "SnapKV",
+      "byte_regime": "pruned KV cache",
+      "category": "kv_cache_compression",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "SnapKV is same-model long-context compression; LatentWire is source-to-target packet communication.",
+      "receiver_training": "training-free cache policy",
+      "source": "https://arxiv.org/abs/2404.14469",
+      "source_private": "no, same-model cache compression",
+      "still_needed": "systems appendix comparator if adding long-context tasks",
+      "target_access": "same-model cache path",
+      "what_transfers": "selected KV cache tokens before generation"
+    },
+    {
+      "baseline": "Quest",
+      "byte_regime": "sparse KV page loading",
+      "category": "kv_cache_compression",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "Quest optimizes attention cache loading; LatentWire optimizes byte-limited model-to-model evidence transfer.",
+      "receiver_training": "training-free cache selection",
+      "source": "https://arxiv.org/abs/2406.10774",
+      "source_private": "no, same-model cache sparsity",
+      "still_needed": "native systems appendix if reviewers demand long-context baselines",
+      "target_access": "same-model cache path",
+      "what_transfers": "query-aware sparse KV pages for long-context inference"
+    },
+    {
+      "baseline": "KVzip",
+      "byte_regime": "compressed KV cache",
+      "category": "kv_cache_compression",
+      "included_in_current_eval": "related-work boundary",
+      "latentwire_distinction": "KVzip is cache storage compression; LatentWire is packetized cross-model communication with source-private controls.",
+      "receiver_training": "compression/reconstruction method",
+      "source": "https://arxiv.org/abs/2505.23416",
+      "source_private": "no, same-model cache compression",
+      "still_needed": "appendix context if broad systems framing expands",
+      "target_access": "same-model cache path",
+      "what_transfers": "query-agnostic compressed KV cache with reconstruction objective"
+    },
+    {
+      "baseline": "vLLM / PagedAttention",
+      "byte_regime": "serving memory-management baseline",
+      "category": "serving_substrate",
+      "included_in_current_eval": "native-system blocker only",
+      "latentwire_distinction": "vLLM is a required runtime baseline for TTFT/TPOT/goodput/HBM once GPU measurements are available.",
+      "receiver_training": "runtime system",
+      "source": "https://dl.acm.org/doi/10.1145/3600006.3613165",
+      "source_private": "not a communication method",
+      "still_needed": "native NVIDIA run before any latency/HBM claim",
+      "target_access": "serving engine",
+      "what_transfers": "paged KV-cache serving substrate"
+    },
+    {
+      "baseline": "SGLang / RadixAttention",
+      "byte_regime": "serving memory-management baseline",
+      "category": "serving_substrate",
+      "included_in_current_eval": "native-system blocker only",
+      "latentwire_distinction": "SGLang is a second serving substrate for native claims; Mac byte accounting cannot replace it.",
+      "receiver_training": "runtime system",
+      "source": "https://proceedings.neurips.cc/paper_files/paper/2024/hash/724be4472168f31ba1c9ac630f15dec8-Abstract-Conference.html",
+      "source_private": "not a communication method",
+      "still_needed": "native NVIDIA run before any latency/HBM claim",
+      "target_access": "serving engine",
+      "what_transfers": "structured LM serving runtime with KV reuse"
+    },
+    {
+      "baseline": "source-index / source-label copy",
+      "byte_regime": "1-2 bytes",
+      "category": "local_control",
+      "included_in_current_eval": "yes",
+      "latentwire_distinction": "LatentWire must beat this to show more than answer-choice copying.",
+      "receiver_training": "none or simple receiver",
+      "source": "internal destructive control",
+      "source_private": "yes but artifact-prone",
+      "still_needed": "keep in all packet tables",
+      "target_access": "answer-choice interface",
+      "what_transfers": "the source's preferred answer index or label"
+    },
+    {
+      "baseline": "source-rank / source-score quantization",
+      "byte_regime": "few bytes",
+      "category": "local_control",
+      "included_in_current_eval": "yes",
+      "latentwire_distinction": "LatentWire must exceed score/rank packet controls to claim richer communication.",
+      "receiver_training": "none or simple receiver",
+      "source": "internal destructive control",
+      "source_private": "yes but may reveal source choice behavior",
+      "still_needed": "include in claim audit",
+      "target_access": "answer-choice interface",
+      "what_transfers": "source ranking or quantized score vector"
+    },
+    {
+      "baseline": "same-byte visible text",
+      "byte_regime": "same byte budget as packet",
+      "category": "local_control",
+      "included_in_current_eval": "yes",
+      "latentwire_distinction": "LatentWire packets must justify why opaque source-private bytes are useful relative to visible text at the same byte budget.",
+      "receiver_training": "none or same receiver",
+      "source": "internal destructive control",
+      "source_private": "no, visible text crosses the boundary",
+      "still_needed": "include in strict-control table",
+      "target_access": "prompt text",
+      "what_transfers": "human-readable text within the same byte budget"
+    },
+    {
+      "baseline": "wrong-row / shuffled / target-derived packet",
+      "byte_regime": "same packet budget",
+      "category": "local_control",
+      "included_in_current_eval": "yes",
+      "latentwire_distinction": "Passing these controls is the main evidence that the packet is row-specific source communication rather than receiver artifact.",
+      "receiver_training": "same receiver",
+      "source": "internal destructive control",
+      "source_private": "yes",
+      "still_needed": "keep as hard gate for ICLR",
+      "target_access": "same packet interface",
+      "what_transfers": "noncausal or target-only packet with matched format"
+    }
+  ],
+  "claim_audit": [
+    {
+      "claim": "LatentWire defines a source-private packet protocol and strict evaluation framework.",
+      "controls_passed": "source-private interface, wrong-row/source-choice controls where available",
+      "evidence_artifact": "COLM_v2 review packet plus COLM_v3 review packet",
+      "required_wording": "safe as a protocol/evaluation contribution",
+      "support_level": "supported"
+    },
+    {
+      "claim": "Low-byte packets show narrow same-family utility on ARC-style rows.",
+      "controls_passed": "target-only and same-byte/text controls on the reported rows; source-index remains a hard boundary",
+      "evidence_artifact": "main_results.csv; strict_controls.csv; systems_measured_vs_estimated.csv",
+      "required_wording": "narrow packet utility, not broad latent communication",
+      "support_level": "supported_but_narrow"
+    },
+    {
+      "claim": "Many apparent wins collapse into source-choice, source-rank, or target-cache artifacts.",
+      "controls_passed": "same-source-choice wrong-row, source-index/rank/score, and destructive controls where available",
+      "evidence_artifact": "negative_results.csv; source-choice controls; reviewer feedback",
+      "required_wording": "use as a reviewer-strengthening result, not as the headline alone",
+      "support_level": "supported"
+    },
+    {
+      "claim": "LatentWire beats C2C or dense KV/cache transfer.",
+      "controls_passed": "none; no native matched C2C row",
+      "evidence_artifact": "systems boundary table only",
+      "required_wording": "do not claim; compare as byte/exposure boundary only",
+      "support_level": "not_supported"
+    },
+    {
+      "claim": "LatentWire has native GPU latency, HBM, energy, or throughput wins.",
+      "controls_passed": "not run",
+      "evidence_artifact": "NVIDIA native benchmark runbook",
+      "required_wording": "future work until native measurements exist",
+      "support_level": "not_supported"
+    },
+    {
+      "claim": "LatentWire solves broad latent model-to-model communication or cross-family transfer.",
+      "controls_passed": "cross-family falsification weakened the broad claim",
+      "evidence_artifact": "negative_results.csv; cross-family failure rows",
+      "required_wording": "do not claim; present as an open ICLR goal",
+      "support_level": "not_supported"
+    }
+  ],
+  "contribution_table": [
+    {
+      "contribution": "source-private packet protocol",
+      "evidence": "packet rows and source-private interface definition",
+      "status": "supported_for_colm_v3",
+      "still_needs_work": "paper prose must avoid broad latent-language claims"
+    },
+    {
+      "contribution": "strict destructive controls",
+      "evidence": "wrong-row, same-source-choice, source-index/rank/score, same-byte/text controls",
+      "status": "supported_for_colm_v3",
+      "still_needs_work": "compress into one main table plus appendix"
+    },
+    {
+      "contribution": "narrow low-byte packet utility",
+      "evidence": "main_results.csv",
+      "status": "supported_but_narrow",
+      "still_needs_work": "state that source-index remains a strong boundary"
+    },
+    {
+      "contribution": "systems byte and exposure accounting",
+      "evidence": "systems_measured_vs_estimated.csv",
+      "status": "supported_as_accounting",
+      "still_needs_work": "no native GPU/HBM/energy claim until NVIDIA runbook is executed"
+    },
+    {
+      "contribution": "broad positive latent communication method",
+      "evidence": "negative_results.csv and ICLR triage",
+      "status": "not_supported_for_colm_v3",
+      "still_needs_work": "keep as ICLR future method target"
+    },
+    {
+      "contribution": "source_private_low_rate_packets",
+      "evidence": "",
+      "status": "alive_for_colm_v2",
+      "still_needs_work": ""
+    },
+    {
+      "contribution": "strict_destructive_controls",
+      "evidence": "",
+      "status": "strong",
+      "still_needs_work": ""
+    },
+    {
+      "contribution": "systems_byte_accounting",
+      "evidence": "",
+      "status": "mac_local_ready",
+      "still_needs_work": ""
+    },
+    {
+      "contribution": "sparse_resonance_packets",
+      "evidence": "",
+      "status": "framing_alive_method_not_yet_positive",
+      "still_needs_work": ""
+    },
+    {
+      "contribution": "train_only_packet_target_receiver",
+      "evidence": "",
+      "status": "openbookqa_weakened_by_source_choice_control",
+      "still_needs_work": ""
+    },
+    {
+      "contribution": "target_self_resonance_capacity_probe",
+      "evidence": "",
+      "status": "capacity_alive",
+      "still_needs_work": ""
+    }
+  ],
+  "created_utc": "2026-05-05T05:36:15.109879+00:00",
+  "experiment_scoping": [
+    {
+      "colm_v3_scope": "separate systems spinout; exclude from COLM_v3 claims unless Phase 1 confirms novelty, Phase 2 shows at least 3% theoretical benefit, and native GPU profiling confirms overhead",
+      "experiment": "HybridKernel",
+      "folder": "experimental/hybridkernel",
+      "highest_value_gate": "vLLM hybrid SSM/disaggregated serving source audit",
+      "novelty_risk": "boundary fusion may already be covered by vLLM/vendor hybrid serving optimizations",
+      "status": "alive_but_deferred"
+    },
+    {
+      "colm_v3_scope": "separate systems spinout only; mention in COLM_v3 only as future work unless Phase 1-4 produce source-backed novelty plus a reference artifact",
+      "experiment": "SinkAware",
+      "folder": "experimental/sinkaware",
+      "highest_value_gate": "FlashInfer prefill/decode attention path audit",
+      "novelty_risk": "static sink priors may already be expressible through generic mask or sparse-block APIs",
+      "status": "quick_kill_candidate"
+    },
+    {
+      "colm_v3_scope": "separate systems spinout candidate after Phase 1, not current COLM_v3 evidence",
+      "experiment": "ThoughtFlow-FP8",
+      "folder": "experimental/thoughtflow_fp8",
+      "highest_value_gate": "LongFlow OpenReview/arXiv forensics and failure-mode audit",
+      "novelty_risk": "could collapse into LongFlow plus FP8/anchor tweaks unless a concrete failure mode is documented",
+      "status": "high_upside_high_crowding"
+    }
+  ],
+  "input_manifest": [
+    {
+      "key": "colm_v2_review_packet",
+      "path": "results/latentwire_colm_v2_review_packet_20260504/review_packet.json",
+      "sha256": "367ce9562a207b6c813b45951ebd25a395ab5e97a043a7c964cf693e371efe65"
+    },
+    {
+      "key": "colm_v3_readiness",
+      "path": "paper/latentwire_colm_v3_readiness_20260505.md",
+      "sha256": "50135b0bcb08b77a660e848aebcab6ab2ec006869c53833db75d7da2979a73dd"
+    },
+    {
+      "key": "experiment_ledger",
+      "path": "paper/experiment_ledger_20260421.md",
+      "sha256": "bc075f619cf53042a22286a27df6e4a258b95b7174db626afdeb0eace0d6f1fb"
+    },
+    {
+      "key": "experimental_status",
+      "path": "experimental/status_20260505.md",
+      "sha256": "242ade8531decd887cace22823e619f9d003ac808989e23983ce5a2c9d15e2ae"
+    },
+    {
+      "key": "reviewer_feedback",
+      "path": "paper/reviewer_feedback.md",
+      "sha256": "282ee615ffe970797c695908214088af55b0ae80656ea5c4829aa01c2492198e"
+    },
+    {
+      "key": "systems_boundary",
+      "path": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_figure_data.json",
+      "sha256": "81a776e985428f6945c22ccc3b7921016afb4f0a2e32d4b4a7af4b04cea9ee49"
+    }
+  ],
+  "main_claim": "LatentWire provides a practical protocol and evaluation framework for byte-scale, source-private model-to-model communication, with controlled evidence of narrow packet utility, explicit utility-per-byte accounting, and strong safeguards against shortcut claims.",
+  "main_results": [
+    {
+      "artifact": "conditional_pq_status",
+      "baseline": 16,
+      "branch": "Conditional PQ shared-schema packet",
+      "ci95_low": 0.658,
+      "decision": "Use as the COLM_v2 positive method boundary; not enough for ICLR generality.",
+      "delta": 0.658,
+      "evidence": "16/16 disjoint n500 rows pass; 4/4 budget-2 rows pass; cross-family grid is 0/28.",
+      "record_bytes": 7,
+      "score": 16,
+      "section": "colm_v2_core",
+      "status": "promote_for_colm_v2_only"
+    },
+    {
+      "artifact": "hellaswag_fixed_hybrid",
+      "baseline": 0.526688,
+      "branch": "HellaSwag fixed hybrid candidate packet",
+      "ci95_low": 0.002888,
+      "decision": "Useful COLM_v2 systems/privacy row, but not a learned latent receiver.",
+      "delta": 0.005776,
+      "evidence": "Full cached validation pass over 10042 rows; positive on 10/10 slices.",
+      "record_bytes": 4,
+      "score": 0.532464,
+      "section": "colm_v2_core",
+      "status": "promote_for_colm_v2_systems_baseline"
+    },
+    {
+      "artifact": "conditional_pq_integrity_threshold",
+      "baseline": 0.457031,
+      "branch": "Conditional PQ scalar integrity threshold",
+      "ci95_low": -0.097656,
+      "decision": "Do not continue scalar threshold integrity on this public-zscore conditional-PQ receiver.",
+      "delta": -0.03125,
+      "evidence": "Selected negative_min_l2 threshold; source 0.425781 vs best control label_shuffled_encoder at 0.457031; source/max-corrupt accept 0.773438/1.000000.",
+      "record_bytes": 7,
+      "score": 0.425781,
+      "section": "colm_v2_supporting",
+      "status": "ruled_out_simple_integrity_threshold"
+    },
+    {
+      "artifact": "openbookqa_receiver_headroom",
+      "baseline": 0.422,
+      "branch": "OpenBookQA train-only packet+target receiver",
+      "ci95_low": 0.00795,
+      "decision": "Do not promote as a positive second-benchmark row; the same-source-choice wrong-row control nearly matches the receiver, so it is a source-choice artifact diagnostic.",
+      "delta": 0.002,
+      "evidence": "Held-out test n=500; receiver candidate pass False; default receiver 0.424000 vs best baseline/control 0.422000; aggregate seed-row CI low 0.000400; strict per-seed CI 2/5.",
+      "record_bytes": 3,
+      "score": 0.424,
+      "section": "colm_v2_supporting",
+      "status": "weakened_openbookqa_source_choice_control"
+    },
+    {
+      "artifact": "target_self_oracle_soft_prefix",
+      "baseline": 0.625,
+      "branch": "Target self-resonance oracle soft-prefix capacity",
+      "ci95_low": null,
+      "decision": "Use only as capacity/headroom evidence; it optimizes on eval rows.",
+      "delta": 0.3125,
+      "evidence": "3/3 tiny oracle rows pass; best optimized agreement 0.937500 beats shuffled_optimized_prefix at 0.625000.",
+      "record_bytes": null,
+      "score": 0.9375,
+      "section": "colm_v2_supporting",
+      "status": "capacity_alive_not_source_private_method"
+    },
+    {
+      "artifact": "hellaswag_complementarity_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag complementarity-frontier selector diagnostic",
+      "ci95_low": 0.0,
+      "decision": "Do not train another HellaSwag selector on the same packet fields; require a new information path.",
+      "delta": 0.0,
+      "evidence": "Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.",
+      "record_bytes": 4,
+      "score": 0.467448,
+      "section": "colm_v2_supporting",
+      "status": "headroom_alive_selector_blocked"
+    },
+    {
+      "artifact": "hellaswag_multisignal_packet_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag multi-signal source packet frontier",
+      "ci95_low": -0.02347,
+      "decision": "Do not continue cached Qwen policy-prediction packets on this HellaSwag slice.",
+      "delta": -0.011719,
+      "evidence": "Selector accuracy 0.455729 vs fixed 0.467448; overrides 30 rows; best destructive control field_shuffle_multisignal_control at 0.430990.",
+      "record_bytes": 5,
+      "score": 0.455729,
+      "section": "colm_v2_supporting",
+      "status": "ruled_out_cached_policy_packet"
+    }
+  ],
+  "negative_results": [
+    {
+      "artifact": "conditional_public_zscore",
+      "baseline": 0.441406,
+      "branch": "Conditional PQ public-zscore held-out-family decoder",
+      "ci95_low": -0.085938,
+      "decision": "Do not widen public-zscore to n500/remap.",
+      "delta": 0.011719,
+      "evidence": "0/2 pass; best source-minus-control 0.011719 against label_shuffled_encoder.",
+      "record_bytes": 7,
+      "score": 0.453125,
+      "section": "iclr_blocker",
+      "status": "ruled_out_as_cross_family_rescue"
+    },
+    {
+      "artifact": "conditional_public_svd",
+      "baseline": 0.613281,
+      "branch": "Conditional PQ public-SVD whitening held-out-family decoder",
+      "ci95_low": -0.32041,
+      "decision": "Do not continue deterministic public-basis whitening as the rescue path.",
+      "delta": -0.238281,
+      "evidence": "0/2 pass; best source-minus-control -0.238281 against permuted_codes. Worst row -0.500000.",
+      "record_bytes": 7,
+      "score": 0.375,
+      "section": "iclr_blocker",
+      "status": "ruled_out_as_cross_family_rescue"
+    },
+    {
+      "artifact": "conditional_corruption_noop",
+      "baseline": 0.25,
+      "branch": "Conditional PQ corruption-to-noop receiver",
+      "ci95_low": 0.0,
+      "decision": "Keep as diagnostic; do not promote this receiver family.",
+      "delta": 0.0,
+      "evidence": "0/6 pass; best source-minus-control 0.000000 against label_shuffled_encoder.",
+      "record_bytes": 7,
+      "score": 0.25,
+      "section": "iclr_blocker",
+      "status": "ruled_out_as_cross_family_rescue"
+    },
+    {
+      "artifact": "conditional_pq_integrity_threshold",
+      "baseline": 0.457031,
+      "branch": "Conditional PQ scalar integrity threshold",
+      "ci95_low": -0.097656,
+      "decision": "Do not continue scalar threshold integrity on this public-zscore conditional-PQ receiver.",
+      "delta": -0.03125,
+      "evidence": "Selected negative_min_l2 threshold; source 0.425781 vs best control label_shuffled_encoder at 0.457031; source/max-corrupt accept 0.773438/1.000000.",
+      "record_bytes": 7,
+      "score": 0.425781,
+      "section": "iclr_blocker",
+      "status": "ruled_out_simple_integrity_threshold"
+    },
+    {
+      "artifact": "arc_sparse_resonance",
+      "baseline": 0.625,
+      "branch": "ARC sparse resonance PCA/target-aligned soft-prefix packets",
+      "ci95_low": null,
+      "decision": "Do not widen plain PCA/target-aligned soft-prefix packets.",
+      "delta": -0.375,
+      "evidence": "0/4 pass; best matched-minus-control -0.375000 with best control source_free_prefix.",
+      "record_bytes": null,
+      "score": 0.25,
+      "section": "iclr_blocker",
+      "status": "ruled_out_current_basis_receiver"
+    },
+    {
+      "artifact": "arc_behavior_atom_decoder",
+      "baseline": 0.4375,
+      "branch": "ARC behavior-supervised atom SRP decoder",
+      "ci95_low": -0.3125,
+      "decision": "Keep the strict atom harness, but do not scale the current behavior/PCA/BatchTopK-style atom basis without a new source-causality mechanism.",
+      "delta": 0.0,
+      "evidence": "0/5 pass; best matched 0.437500 vs required control top_atom_knockout at 0.437500; fired 8 rows, helps/harms 3/0.",
+      "record_bytes": 7,
+      "score": 0.4375,
+      "section": "iclr_blocker",
+      "status": "ruled_out_current_behavior_atom_basis"
+    },
+    {
+      "artifact": "openbookqa_receiver_headroom",
+      "baseline": 0.422,
+      "branch": "OpenBookQA train-only packet+target receiver",
+      "ci95_low": 0.00795,
+      "decision": "Do not promote as a positive second-benchmark row; the same-source-choice wrong-row control nearly matches the receiver, so it is a source-choice artifact diagnostic.",
+      "delta": 0.002,
+      "evidence": "Held-out test n=500; receiver candidate pass False; default receiver 0.424000 vs best baseline/control 0.422000; aggregate seed-row CI low 0.000400; strict per-seed CI 2/5.",
+      "record_bytes": 3,
+      "score": 0.424,
+      "section": "iclr_blocker",
+      "status": "weakened_openbookqa_source_choice_control"
+    },
+    {
+      "artifact": "hellaswag_protected_rival",
+      "baseline": 0.467448,
+      "branch": "HellaSwag protected top-2/rival packet",
+      "ci95_low": -0.013021,
+      "decision": "Do not rerun generic protected top-2/rival switchers.",
+      "delta": -0.005208,
+      "evidence": "Oracle 0.678385, selected decoder harms 6 vs helps 2.",
+      "record_bytes": 5,
+      "score": 0.46224,
+      "section": "iclr_blocker",
+      "status": "ruled_out_shallow_pair_decoder"
+    },
+    {
+      "artifact": "hellaswag_official_receiver",
+      "baseline": 0.467448,
+      "branch": "HellaSwag official-train receiver-calibrated selector",
+      "ci95_low": -0.007812,
+      "decision": "Do not continue shallow linear score-feature selectors without new evidence.",
+      "delta": -0.001302,
+      "evidence": "Oracle 0.766927; eval-label diagnostic delta is only 0.002604.",
+      "record_bytes": 5,
+      "score": 0.466146,
+      "section": "iclr_blocker",
+      "status": "weakened_near_miss"
+    },
+    {
+      "artifact": "hellaswag_harm_bucket",
+      "baseline": 0.467448,
+      "branch": "HellaSwag harm-controlled complementarity buckets",
+      "ci95_low": 0.0,
+      "decision": "Low-harm bucket receiver is saturated.",
+      "delta": 0.0,
+      "evidence": "Selected scheme no_op with 0 eligible buckets and 0 overrides.",
+      "record_bytes": 6,
+      "score": 0.467448,
+      "section": "iclr_blocker",
+      "status": "ruled_out_no_safe_bucket"
+    },
+    {
+      "artifact": "hellaswag_top2_bucket",
+      "baseline": 0.467448,
+      "branch": "HellaSwag top1/top2 ambiguity buckets",
+      "ci95_low": 0.0,
+      "decision": "Do not continue rank/score-bin top2 buckets without a new packet field.",
+      "delta": 0.0,
+      "evidence": "Source top1/top2 oracle 0.675781, but selected bucket overrides 0 rows.",
+      "record_bytes": 4,
+      "score": 0.467448,
+      "section": "iclr_blocker",
+      "status": "ruled_out_no_safe_bucket"
+    },
+    {
+      "artifact": "hellaswag_denoising_syndrome",
+      "baseline": 0.467448,
+      "branch": "HellaSwag denoising syndrome packet",
+      "ci95_low": -0.010417,
+      "decision": "Do not promote ridge-denoising syndrome decoder.",
+      "delta": -0.003906,
+      "evidence": "Target/hybrid oracle 0.604167; denoising helps 2 and harms 5.",
+      "record_bytes": 4,
+      "score": 0.463542,
+      "section": "iclr_blocker",
+      "status": "ruled_out_shallow_syndrome_decoder"
+    },
+    {
+      "artifact": "hellaswag_sparse_common_basis",
+      "baseline": 0.501953,
+      "branch": "HellaSwag sparse/common-basis top2 ambiguity code",
+      "ci95_low": -0.00293,
+      "decision": "Do not claim sparse atom causality from this branch.",
+      "delta": -0.000977,
+      "evidence": "Best destructive control target_derived_source_pair_ambiguity_control at 0.501953; atom code helps 0 and harms 1.",
+      "record_bytes": 4,
+      "score": 0.500977,
+      "section": "iclr_blocker",
+      "status": "weakened_common_basis_atom"
+    },
+    {
+      "artifact": "target_self_oracle_soft_prefix",
+      "baseline": 0.625,
+      "branch": "Target self-resonance oracle soft-prefix capacity",
+      "ci95_low": null,
+      "decision": "Use only as capacity/headroom evidence; it optimizes on eval rows.",
+      "delta": 0.3125,
+      "evidence": "3/3 tiny oracle rows pass; best optimized agreement 0.937500 beats shuffled_optimized_prefix at 0.625000.",
+      "record_bytes": null,
+      "score": 0.9375,
+      "section": "iclr_blocker",
+      "status": "capacity_alive_not_source_private_method"
+    },
+    {
+      "artifact": "target_self_learned_encoders",
+      "baseline": 0.6875,
+      "branch": "Target self-resonance held-out learned prefix encoders",
+      "ci95_low": null,
+      "decision": "Do not run more chunk/distill/query-resampler variants without a new information path.",
+      "delta": 0.0,
+      "evidence": "1/5 pass; best agreement delta 0.000000 against slots_only_encoder; worst agreement delta -0.125000.",
+      "record_bytes": null,
+      "score": 0.6875,
+      "section": "iclr_blocker",
+      "status": "ruled_out_current_target_native_encoder_family"
+    },
+    {
+      "artifact": "target_self_source_conditioned_receivers",
+      "baseline": 0.375,
+      "branch": "Source-conditioned target-native resonance receivers",
+      "ci95_low": null,
+      "decision": "Diagnose complementarity/gating before implementing another source-to-prefix decoder.",
+      "delta": 0.0,
+      "evidence": "0/5 pass; best accuracy delta 0.000000 against zero_source_hidden; source top1/top2 oracle reaches 1.000000.",
+      "record_bytes": null,
+      "score": 0.375,
+      "section": "iclr_blocker",
+      "status": "ruled_out_current_source_conditioned_receiver_family"
+    },
+    {
+      "artifact": "hellaswag_complementarity_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag complementarity-frontier selector diagnostic",
+      "ci95_low": 0.0,
+      "decision": "Do not train another HellaSwag selector on the same packet fields; require a new information path.",
+      "delta": 0.0,
+      "evidence": "Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.",
+      "record_bytes": 4,
+      "score": 0.467448,
+      "section": "iclr_blocker",
+      "status": "headroom_alive_selector_blocked"
+    },
+    {
+      "artifact": "hellaswag_multisignal_packet_frontier",
+      "baseline": 0.467448,
+      "branch": "HellaSwag multi-signal source packet frontier",
+      "ci95_low": -0.02347,
+      "decision": "Do not continue cached Qwen policy-prediction packets on this HellaSwag slice.",
+      "delta": -0.011719,
+      "evidence": "Selector accuracy 0.455729 vs fixed 0.467448; overrides 30 rows; best destructive control field_shuffle_multisignal_control at 0.430990.",
+      "record_bytes": 5,
+      "score": 0.455729,
+      "section": "iclr_blocker",
+      "status": "ruled_out_cached_policy_packet"
+    }
+  ],
+  "next_exact_gate": "edit the COLM_v3 paper around this packet: abstract, intro, method/threat model, tables/figures, limitations, and reproducibility checklist",
+  "packet": "latentwire_colm_v3_review_packet",
+  "readiness": {
+    "colm_v3": "evidence_package_ready_after_paper_integration",
+    "iclr": "still blocked by lack of broad source-causal positive method",
+    "workshop_blocker": "unified prose pass and final table/figure integration; no new speculative experiment is required unless a table row is missing"
+  },
+  "source_text_sanity": {
+    "colm_v3_readiness_chars": 7442,
+    "experimental_status_chars": 3649
+  },
+  "story": "LatentWire studies whether compact source-private packets can transmit useful model evidence without dense cache transfer, and uses byte accounting plus destructive controls to separate real packet utility from answer-choice and target-cache shortcuts.",
+  "strict_controls": [
+    {
+      "base_accuracy": 0.21,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.12,
+      "ci95_low_vs_base": 0.045950000000000005,
+      "condition": "candidate_derangement",
+      "harm_count": 25,
+      "help_count": 66,
+      "matched_minus_condition": 0.132,
+      "override_rate": 0.29,
+      "receiver_accuracy": 0.292,
+      "receiver_minus_base": 0.082,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.21,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.12,
+      "ci95_low_vs_base": 0.045950000000000005,
+      "condition": "candidate_roll_packet",
+      "harm_count": 25,
+      "help_count": 66,
+      "matched_minus_condition": 0.132,
+      "override_rate": 0.29,
+      "receiver_accuracy": 0.292,
+      "receiver_minus_base": 0.082,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.378,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.084,
+      "ci95_low_vs_base": 0.008,
+      "condition": "label_permutation",
+      "harm_count": 35,
+      "help_count": 58,
+      "matched_minus_condition": 0.0,
+      "override_rate": 0.28,
+      "receiver_accuracy": 0.424,
+      "receiver_minus_base": 0.046,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.378,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.08404999999999974,
+      "ci95_low_vs_base": 0.007950000000000002,
+      "condition": "matched_source_private_packet",
+      "harm_count": 35,
+      "help_count": 58,
+      "matched_minus_condition": 0.0,
+      "override_rate": 0.28,
+      "receiver_accuracy": 0.424,
+      "receiver_minus_base": 0.046,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.228,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.194,
+      "ci95_low_vs_base": 0.088,
+      "condition": "random_same_byte_packet",
+      "harm_count": 64,
+      "help_count": 135,
+      "matched_minus_condition": 0.05399999999999999,
+      "override_rate": 0.842,
+      "receiver_accuracy": 0.37,
+      "receiver_minus_base": 0.142,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.35,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.056,
+      "ci95_low_vs_base": 0.0,
+      "condition": "same_byte_structured_text",
+      "harm_count": 18,
+      "help_count": 32,
+      "matched_minus_condition": 0.045999999999999985,
+      "override_rate": 0.196,
+      "receiver_accuracy": 0.378,
+      "receiver_minus_base": 0.028,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.378,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.088,
+      "ci95_low_vs_base": 0.0,
+      "condition": "same_source_choice_wrong_row_packet",
+      "harm_count": 54,
+      "help_count": 76,
+      "matched_minus_condition": 0.0020000000000000018,
+      "override_rate": 0.414,
+      "receiver_accuracy": 0.422,
+      "receiver_minus_base": 0.044,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.25,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.168,
+      "ci95_low_vs_base": 0.06,
+      "condition": "shuffled_source_packet",
+      "harm_count": 70,
+      "help_count": 127,
+      "matched_minus_condition": 0.06,
+      "override_rate": 0.8,
+      "receiver_accuracy": 0.364,
+      "receiver_minus_base": 0.114,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.378,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.056,
+      "ci95_low_vs_base": -0.066,
+      "condition": "source_label_copy",
+      "harm_count": 118,
+      "help_count": 115,
+      "matched_minus_condition": 0.05199999999999999,
+      "override_rate": 0.96,
+      "receiver_accuracy": 0.372,
+      "receiver_minus_base": -0.006,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.276,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.112,
+      "ci95_low_vs_base": 0.04,
+      "condition": "target_derived_sidecar",
+      "harm_count": 23,
+      "help_count": 61,
+      "matched_minus_condition": 0.07200000000000001,
+      "override_rate": 0.312,
+      "receiver_accuracy": 0.352,
+      "receiver_minus_base": 0.076,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.372,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.0,
+      "ci95_low_vs_base": 0.0,
+      "condition": "target_public_ridge",
+      "harm_count": 0,
+      "help_count": 0,
+      "matched_minus_condition": 0.05199999999999999,
+      "override_rate": 0.836,
+      "receiver_accuracy": 0.372,
+      "receiver_minus_base": 0.0,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    },
+    {
+      "base_accuracy": 0.276,
+      "benchmark": "OpenBookQA",
+      "ci95_high_vs_base": 0.152,
+      "ci95_low_vs_base": 0.04,
+      "condition": "zero_source",
+      "harm_count": 78,
+      "help_count": 126,
+      "matched_minus_condition": 0.05199999999999999,
+      "override_rate": 0.95,
+      "receiver_accuracy": 0.372,
+      "receiver_minus_base": 0.096,
+      "seed": 47,
+      "target_public_accuracy": 0.372
+    }
+  ],
+  "submission_checklist": [
+    {
+      "blocker": "requires paper prose pass",
+      "item": "Main claim agrees across abstract, intro, results, limitations.",
+      "status": "not_done"
+    },
+    {
+      "blocker": "review packet generated; paper still needs integration",
+      "item": "Every table and figure maps to a claim in the claim audit.",
+      "status": "ready_for_paper_pass"
+    },
+    {
+      "blocker": "native GPU claims remain forbidden",
+      "item": "Systems claims separate measured packet bytes from analytical KV/cache floors.",
+      "status": "ready"
+    },
+    {
+      "blocker": "related-work matrix likely too large for main text",
+      "item": "Related work distinguishes dense KV/cache transfer, compression, and packet controls.",
+      "status": "ready_for_compression"
+    },
+    {
+      "blocker": "needs prose integration",
+      "item": "Limitations explicitly cover source-choice artifacts and cross-family failures.",
+      "status": "ready"
+    },
+    {
+      "blocker": "only future-work wording should remain",
+      "item": "Experimental side projects are scoped away from COLM_v3 claims.",
+      "status": "ready"
+    }
+  ],
+  "systems_checks": [
+    {
+      "check": "packet_rows_remain_source_private",
+      "pass": true,
+      "value": 8
+    },
+    {
+      "check": "cached_source_and_end_to_end_packet_rows_are_split",
+      "pass": true,
+      "value": {
+        "cached_source_packet_rows": 4,
+        "end_to_end_packet_rows": 4
+      }
+    },
+    {
+      "check": "packet_rows_forbid_native_claims",
+      "pass": true,
+      "value": 8
+    },
+    {
+      "check": "dense_source_state_floor_exceeds_max_packet_by_50x",
+      "pass": true,
+      "value": 69.81818181818181
+    },
+    {
+      "check": "score_and_logit_floors_are_marked_non_private",
+      "pass": true,
+      "value": 2
+    },
+    {
+      "check": "native_nvidia_rows_marked_pending",
+      "pass": true,
+      "value": "native NVIDIA rows are pending and non-claims"
+    },
+    {
+      "check": "source_state_rows_have_overclaim_guards",
+      "pass": true,
+      "value": 11
+    }
+  ],
+  "systems_headline": {
+    "cached_source_packet_row_count": 4,
+    "claim_scope": "Paper-ready systems boundary artifact: LatentWire cached-source rows count the fixed-byte source-private packet object; paired end-to-end rows disclose source scoring separately. KV/cache rows are byte floors or pending native serving baselines. The artifact supports byte/exposure accounting, not a native C2C/KVComm/TurboQuant/QJL/vLLM/SGLang win.",
+    "end_to_end_source_scoring_packet_row_count": 4,
+    "max_packet_framed_bytes": 11.0,
+    "min_packet_framed_bytes": 4.0,
+    "min_score_or_logit_floor_bytes": 8.0,
+    "min_score_or_logit_floor_ratio_vs_max_packet": 0.7272727272727273,
+    "min_source_state_floor_bytes": 768.0,
+    "min_source_state_floor_ratio_vs_max_packet": 69.81818181818181,
+    "native_nvidia_complete": false,
+    "packet_row_count": 8,
+    "pass_gate": true
+  },
+  "systems_measured_vs_estimated": [
+    {
+      "batch64_bytes": 704.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-private packet byte/exposure accounting only; source scoring excluded",
+      "communicated_object": "cached-source task-level candidate evidence packet",
+      "framed_bytes": 11.0,
+      "measured_vs_estimated": "measured_packet_object_bytes",
+      "measurement_status": "cached_source_communication_object",
+      "method": "LatentWire ARC-Challenge test packet (cached source)",
+      "native_measured": false,
+      "overclaim_guard": "This row is the object that crosses the interface, not an end-to-end source-scoring or native serving latency row.",
+      "raw_bytes": 8.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 704.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row",
+      "communicated_object": "same packet with source scoring disclosed separately",
+      "framed_bytes": 11.0,
+      "measured_vs_estimated": "local_partial_measurement_or_missing_phase_trace",
+      "measurement_status": "mac_local_end_to_end_source_scoring_missing_phase_trace",
+      "method": "LatentWire ARC-Challenge test packet (source scoring disclosed)",
+      "native_measured": false,
+      "overclaim_guard": "Do not merge this row with the cached-source object row when making TTFT, TPOT, HBM, goodput, or native baseline claims.",
+      "raw_bytes": 8.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 384.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-private packet byte/exposure accounting only; source scoring excluded",
+      "communicated_object": "cached-source task-level candidate evidence packet",
+      "framed_bytes": 6.0,
+      "measured_vs_estimated": "measured_packet_object_bytes",
+      "measurement_status": "cached_source_communication_object",
+      "method": "LatentWire OpenBookQA test packet (cached source)",
+      "native_measured": false,
+      "overclaim_guard": "This row is the object that crosses the interface, not an end-to-end source-scoring or native serving latency row.",
+      "raw_bytes": 3.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 384.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row",
+      "communicated_object": "same packet with source scoring disclosed separately",
+      "framed_bytes": 6.0,
+      "measured_vs_estimated": "local_partial_measurement_or_missing_phase_trace",
+      "measurement_status": "mac_local_end_to_end_source_scoring_missing_phase_trace",
+      "method": "LatentWire OpenBookQA test packet (source scoring disclosed)",
+      "native_measured": false,
+      "overclaim_guard": "Do not merge this row with the cached-source object row when making TTFT, TPOT, HBM, goodput, or native baseline claims.",
+      "raw_bytes": 3.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 320.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-private packet byte/exposure accounting only; source scoring excluded",
+      "communicated_object": "cached-source task-level candidate evidence packet",
+      "framed_bytes": 5.0,
+      "measured_vs_estimated": "measured_packet_object_bytes",
+      "measurement_status": "cached_source_communication_object",
+      "method": "LatentWire HellaSwag validation_first1024 packet (cached source)",
+      "native_measured": false,
+      "overclaim_guard": "This row is the object that crosses the interface, not an end-to-end source-scoring or native serving latency row.",
+      "raw_bytes": 2.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 320.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row",
+      "communicated_object": "same packet with source scoring disclosed separately",
+      "framed_bytes": 5.0,
+      "measured_vs_estimated": "local_partial_measurement_or_missing_phase_trace",
+      "measurement_status": "mac_local_end_to_end_source_scoring_disclosed",
+      "method": "LatentWire HellaSwag validation_first1024 packet (source scoring disclosed)",
+      "native_measured": false,
+      "overclaim_guard": "Do not merge this row with the cached-source object row when making TTFT, TPOT, HBM, goodput, or native baseline claims.",
+      "raw_bytes": 2.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 256.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-private packet byte/exposure accounting only; source scoring excluded",
+      "communicated_object": "cached-source task-level candidate evidence packet",
+      "framed_bytes": 4.0,
+      "measured_vs_estimated": "measured_packet_object_bytes",
+      "measurement_status": "cached_source_communication_object",
+      "method": "LatentWire HellaSwag validation_full_compaction packet (cached source)",
+      "native_measured": false,
+      "overclaim_guard": "This row is the object that crosses the interface, not an end-to-end source-scoring or native serving latency row.",
+      "raw_bytes": 1.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 256.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row",
+      "communicated_object": "same packet with source scoring disclosed separately",
+      "framed_bytes": 4.0,
+      "measured_vs_estimated": "local_partial_measurement_or_missing_phase_trace",
+      "measurement_status": "mac_local_end_to_end_source_scoring_missing_phase_trace",
+      "method": "LatentWire HellaSwag validation_full_compaction packet (source scoring disclosed)",
+      "native_measured": false,
+      "overclaim_guard": "Do not merge this row with the cached-source object row when making TTFT, TPOT, HBM, goodput, or native baseline claims.",
+      "raw_bytes": 1.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 704.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "negative/control row only; cannot support source-private claim",
+      "communicated_object": "text-form control with same packet budget",
+      "framed_bytes": 11.0,
+      "measured_vs_estimated": "measured_local_control_or_accounting_row",
+      "measurement_status": "mac_local_control",
+      "method": "Same-byte structured text control (ARC)",
+      "native_measured": true,
+      "overclaim_guard": "This row intentionally exposes source text and is not a source-private method.",
+      "raw_bytes": 8.0,
+      "source_kv_exposed": false,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 512.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-state exposure floor only; not a source-private packet",
+      "communicated_object": "source score vector, fp16",
+      "framed_bytes": 8.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "score_vector_floor_not_source_private",
+      "method": "Four-choice fp16 score-vector relay floor",
+      "native_measured": false,
+      "overclaim_guard": "This row exposes a source score vector; do not claim it is a LatentWire packet.",
+      "raw_bytes": 8.0,
+      "source_kv_exposed": false,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 512.0,
+      "cacheline_bytes": 64.0,
+      "claim_allowed": "source-state exposure floor only; not a source-private packet",
+      "communicated_object": "source logit vector, fp16",
+      "framed_bytes": 8.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "logit_vector_floor_not_source_private",
+      "method": "Four-choice fp16 logit-vector relay floor",
+      "native_measured": false,
+      "overclaim_guard": "This row exposes a source logit vector; do not claim it is a LatentWire packet.",
+      "raw_bytes": 8.0,
+      "source_kv_exposed": false,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 114688.0,
+      "cacheline_bytes": 1792.0,
+      "claim_allowed": "state-exposure lower bound only; not a baseline win",
+      "communicated_object": "one source hidden vector, fp16",
+      "framed_bytes": 1792.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "byte_floor_from_model_config",
+      "method": "One hidden-vector fp16 relay floor",
+      "native_measured": false,
+      "overclaim_guard": "This row exposes a continuous hidden vector; do not claim it is a LatentWire packet.",
+      "raw_bytes": 1792.0,
+      "source_kv_exposed": false,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 49152.0,
+      "cacheline_bytes": 768.0,
+      "claim_allowed": "mathematical state-size lower bound only",
+      "communicated_object": "one-token K+V state at 1 bit/element",
+      "framed_bytes": 768.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "optimistic_byte_floor_not_native",
+      "method": "1-bit/KV-element accounting floor",
+      "native_measured": false,
+      "overclaim_guard": "This is an internal one-bit-per-KV-element accounting floor; do not treat it as a defeated QJL native baseline.",
+      "raw_bytes": 768.0,
+      "source_kv_exposed": true,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 98304.0,
+      "cacheline_bytes": 1536.0,
+      "claim_allowed": "KV-cache compression comparator only",
+      "communicated_object": "one-token K+V state at 2 bits/element",
+      "framed_bytes": 1536.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "byte_floor_not_native",
+      "method": "KIVI 2-bit KV floor",
+      "native_measured": false,
+      "overclaim_guard": "KIVI compresses KV cache state and still requires native quality/throughput comparison.",
+      "raw_bytes": 1536.0,
+      "source_kv_exposed": true,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 131072.0,
+      "cacheline_bytes": 2048.0,
+      "claim_allowed": "compressed-KV communication boundary only",
+      "communicated_object": "compressed source KV cache representation",
+      "framed_bytes": 2048.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "ratio_floor_not_native",
+      "method": "Q-KVComm optimistic 6x floor",
+      "native_measured": false,
+      "overclaim_guard": "Q-KVComm transmits compressed KV-derived state; do not claim this is a source-private packet.",
+      "raw_bytes": 2048.0,
+      "source_kv_exposed": true,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 147456.0,
+      "cacheline_bytes": 2304.0,
+      "claim_allowed": "sub-4-bit KV comparator only",
+      "communicated_object": "one-token K+V state at 3 bits/element",
+      "framed_bytes": 2304.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "proxy_byte_floor_not_native",
+      "method": "KVQuant 3-bit proxy floor",
+      "native_measured": false,
+      "overclaim_guard": "KVQuant is a KV-cache quantization comparator; do not claim it is a packet baseline.",
+      "raw_bytes": 2304.0,
+      "source_kv_exposed": true,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 172032.0,
+      "cacheline_bytes": 2688.0,
+      "claim_allowed": "KV/vector quantization comparator only",
+      "communicated_object": "one-token K+V state at 3.5 bits/element",
+      "framed_bytes": 2688.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "byte_floor_not_native",
+      "method": "TurboQuant 3.5-bit KV floor",
+      "native_measured": false,
+      "overclaim_guard": "TurboQuant is a vector/KV quantizer; byte floors alone do not compare native latency.",
+      "raw_bytes": 2688.0,
+      "source_kv_exposed": true,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 235929.59999999998,
+      "cacheline_bytes": 3712.0,
+      "claim_allowed": "selective-KV communication boundary only",
+      "communicated_object": "selected source KV layers, fp16",
+      "framed_bytes": 3686.3999999999996,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "30pct_layer_floor_not_native",
+      "method": "KVComm 30% fp16 KV floor",
+      "native_measured": false,
+      "overclaim_guard": "KVComm shares selected KV pairs; this is only a native-pending 30%-layer byte floor.",
+      "raw_bytes": 3686.3999999999996,
+      "source_kv_exposed": true,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 786432.0,
+      "cacheline_bytes": 12288.0,
+      "claim_allowed": "closest cache-transfer baseline; native run still required",
+      "communicated_object": "projected/fused source KV cache",
+      "framed_bytes": 12288.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "one_token_floor_not_native",
+      "method": "C2C one-token fp16 KV floor",
+      "native_measured": false,
+      "overclaim_guard": "C2C fuses source KV cache; do not claim superiority without native C2C.",
+      "raw_bytes": 12288.0,
+      "source_kv_exposed": true,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 786432.0,
+      "cacheline_bytes": 12288.0,
+      "claim_allowed": "systems neighbor only; native run still required",
+      "communicated_object": "aligned/reused source KV cache",
+      "framed_bytes": 12288.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "one_token_floor_not_native",
+      "method": "KVCOMM cross-context fp16 KV floor",
+      "native_measured": false,
+      "overclaim_guard": "KVCOMM is a cross-context KV reuse system; this row is only a native-pending byte floor.",
+      "raw_bytes": 12288.0,
+      "source_kv_exposed": true,
+      "source_private": false
+    },
+    {
+      "batch64_bytes": 786432.0,
+      "cacheline_bytes": 12288.0,
+      "claim_allowed": "native TTFT/TPOT/goodput/HBM target, not closed on Mac",
+      "communicated_object": "paged KV-cache serving substrate",
+      "framed_bytes": 12288.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "native_nvidia_pending",
+      "method": "vLLM/PagedAttention one-token KV floor",
+      "native_measured": false,
+      "overclaim_guard": "No vLLM serving claim is valid until native NVIDIA rows are measured.",
+      "raw_bytes": 12288.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    },
+    {
+      "batch64_bytes": 786432.0,
+      "cacheline_bytes": 12288.0,
+      "claim_allowed": "native TTFT/TPOT/goodput/HBM target, not closed on Mac",
+      "communicated_object": "KV-cache reuse serving substrate",
+      "framed_bytes": 12288.0,
+      "measured_vs_estimated": "analytical_or_literature_byte_floor",
+      "measurement_status": "native_nvidia_pending",
+      "method": "SGLang/RadixAttention one-token KV floor",
+      "native_measured": false,
+      "overclaim_guard": "No SGLang serving claim is valid until native NVIDIA rows are measured.",
+      "raw_bytes": 12288.0,
+      "source_kv_exposed": false,
+      "source_private": true
+    }
+  ],
+  "table_figure_inventory": [
+    {
+      "artifact": "unified abstract and introduction",
+      "next_action": "write COLM_v3 prose around the safe main claim",
+      "source": "paper draft",
+      "status": "paper_edit_needed"
+    },
+    {
+      "artifact": "method/protocol definition",
+      "next_action": "merge without broad latent-language wording",
+      "source": "COLM_v1 method intuition plus COLM_v2 packet protocol",
+      "status": "partial"
+    },
+    {
+      "artifact": "source-private threat model",
+      "next_action": "define what can cross the interface and what cannot",
+      "source": "COLM_v2 controls and systems boundary notes",
+      "status": "partial"
+    },
+    {
+      "artifact": "strict-control table",
+      "next_action": "add to paper with caveats per row",
+      "source": "strict_controls.csv",
+      "status": "data_ready"
+    },
+    {
+      "artifact": "main positive result table",
+      "next_action": "keep ARC as narrow same-family positive evidence",
+      "source": "main_results.csv",
+      "status": "data_ready"
+    },
+    {
+      "artifact": "utility-per-byte / packet-byte table",
+      "next_action": "separate raw, framed, cacheline, and batch64 bytes",
+      "source": "systems_measured_vs_estimated.csv",
+      "status": "data_ready"
+    },
+    {
+      "artifact": "systems boundary table",
+      "next_action": "label measured, estimated, and future native rows",
+      "source": "systems_measured_vs_estimated.csv",
+      "status": "data_ready"
+    },
+    {
+      "artifact": "baseline/related-work matrix",
+      "next_action": "compress for main paper and move overflow to appendix",
+      "source": "baseline_matrix.csv",
+      "status": "data_ready"
+    },
+    {
+      "artifact": "negative-results / failure-boundary table",
+      "next_action": "use to define claim boundaries",
+      "source": "negative_results.csv",
+      "status": "data_ready"
+    },
+    {
+      "artifact": "claim audit table",
+      "next_action": "use as reviewer-facing internal checklist",
+      "source": "claim_audit.csv",
+      "status": "generated"
+    },
+    {
+      "artifact": "reproducibility checklist",
+      "next_action": "convert to workshop checklist before submission",
+      "source": "artifact_manifest.csv and input_manifest",
+      "status": "partial"
+    },
+    {
+      "artifact": "NVIDIA native benchmark runbook",
+      "next_action": "run only on native NVIDIA hardware later",
+      "source": "nvidia_native_runbook.md",
+      "status": "generated_future_work"
+    }
+  ]
+}
