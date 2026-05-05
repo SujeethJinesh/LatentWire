@@ -3,8 +3,8 @@
 Status: **ALIVE for GPU gate; rank-2 improves output error over position-only with bounded drift.**
 
 - model: `distilgpt2`
-- traces: 24
-- held-out token samples per layer: 520
+- traces: 48
+- held-out token samples per layer: 1038
 - sink tokens: 4
 
 This probe keeps all non-sink QK scores exact and replaces only fixed sink-token logits.
@@ -14,12 +14,12 @@ It measures softmax drift and attention-output error on held-out tokens. It is n
 
 | Predictor | Sink-logit RMSE | Sink-mass MAE | Attention L1 | Output rel-L2 |
 |---|---:|---:|---:|---:|
-| static | 1182.8939 | 0.1031 | 0.2187 | 0.1981 |
-| position | 1141.3060 | 0.0802 | 0.1701 | 0.1731 |
-| rank1 | 1027.9389 | 0.0719 | 0.1520 | 0.1651 |
-| rank2 | 940.8725 | 0.0546 | 0.1174 | 0.1341 |
-| rank4 | 774.7908 | 0.0437 | 0.0963 | 0.1144 |
-| rank8 | 618.0497 | 0.0352 | 0.0782 | 0.0965 |
+| static | 1229.5088 | 0.0954 | 0.2165 | 0.1927 |
+| position | 1197.3897 | 0.0756 | 0.1750 | 0.1700 |
+| rank1 | 1079.5410 | 0.0670 | 0.1573 | 0.1596 |
+| rank2 | 1001.5057 | 0.0550 | 0.1350 | 0.1408 |
+| rank4 | 838.3202 | 0.0448 | 0.1151 | 0.1221 |
+| rank8 | 699.2322 | 0.0396 | 0.1042 | 0.1075 |
 
 ## Decision
 

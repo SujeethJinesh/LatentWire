@@ -1,0 +1,56 @@
+# SinkAware Native GPU Gate Runbook
+
+- status: future native benchmark plan
+- scope: compare exact attention, exact fixed-sink decomposition, and rank-2
+  approximate sink-logit prediction
+
+## Why This Gate Exists
+
+The Mac-local evidence revived SinkAware only as an approximate low-rank branch:
+rank-2 reduces held-out output relative-L2 versus position-only while staying
+below the estimated multiply-add cost of exact four-sink QK. Exact static sink
+reuse remains killed.
+
+The GPU gate must answer whether the approximation is useful after real kernel
+costs, memory movement, and output drift are measured together.
+
+## Rows To Run
+
+| Row | Computes `QK_sink`? | Approximate? | Purpose |
+|---|---:|---:|---|
+| exact attention | yes | no | quality and speed reference |
+| exact fixed-sink decomposition | yes | no | checks whether separating sink path helps layout/fusion without changing outputs |
+| rank-2 sink-logit predictor | no, predicted | yes | live approximate branch |
+| position-only predictor | no, predicted | yes | cheap baseline the rank-2 method must beat |
+
+## Promotion Criteria
+
+Promote only if all are true:
+
+1. rank-2 output drift remains below the paper threshold selected from the
+   Mac-local probe;
+2. rank-2 improves speed or memory traffic over exact attention by at least 3%
+   on repeated native runs;
+3. rank-2 beats position-only on output drift and any quality proxy;
+4. exact decomposition does not already capture the systems win without
+   approximation.
+
+Kill if rank-2 is slower than exact attention, if output drift is unbounded, or
+if position-only is indistinguishable.
+
+## Required Artifacts
+
+- `metadata.json`: GPU, driver, CUDA, PyTorch, Triton, model, dtype, sequence
+  shapes.
+- `quality_drift.csv`: per-layer and mean output relative-L2, sink-mass MAE,
+  attention L1.
+- `latency.csv`: paired timing for each row, batch, and sequence length.
+- `ncu_summary.csv`: memory bytes, achieved occupancy, register pressure, and
+  tensor/core utilization where available.
+- `decision.md`: promote/kill decision with the exact threshold.
+
+## Current Mac Inputs
+
+- `real_qk_sink_softmax_output_probe.md`
+- `qk_sink_cost_model.md`
+- `decomposition_decision.md`

@@ -141,9 +141,21 @@ nsys profile \
   2>&1 | tee "$HWK_RUN/logs/nsys_b1.log"
 ```
 
-If `profiler_driver.py` does not exist on the NVIDIA host, use an equivalent
-fixed-request driver and save it under `$HWK_RUN/metadata/driver.py`. Do not
-interpret ad hoc manual API calls as benchmark evidence.
+`profiler_driver.py` is tracked in this repository and can be sanity-checked on
+Mac with:
+
+```bash
+./venv_arm64/bin/python "$HWK_ROOT/phase2/profiler_driver.py" \
+  --model "$MODEL" \
+  --batch-size 1 \
+  --prefill-tokens 128 \
+  --decode-tokens 64 \
+  --requests 2 \
+  --seed 1 \
+  --dry-run
+```
+
+Do not interpret ad hoc manual API calls as benchmark evidence.
 
 Repeat for batch 8 if memory allows.
 

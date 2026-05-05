@@ -4,7 +4,9 @@ from experimental.thoughtflow_fp8.phase2.perplexity_impact_proxy import (
     _select_context_ids,
     _status,
     _summary,
+    thoughtflow_recent,
 )
+from experimental.thoughtflow_fp8.phase2.simulate_phase_retention import Token
 
 
 def test_select_context_ids_preserves_original_order() -> None:
@@ -57,3 +59,20 @@ def test_status_weakened_when_proxy_is_better() -> None:
     }
 
     assert _status(summary).startswith("WEAKENED")
+
+
+def test_thoughtflow_recent_reserves_recent_tokens() -> None:
+    trace = [
+        Token("a", "anchor", 1.0),
+        Token("b", "anchor", 0.9),
+        Token("phase", "phase", 0.8),
+        Token("low", "reason", 0.1),
+        Token("recent1", "reason", 0.1),
+        Token("recent2", "reason", 0.1),
+    ]
+
+    kept = thoughtflow_recent(trace, budget=4)
+
+    assert {0, 1}.issubset(kept)
+    assert 5 in kept
+    assert len(kept) == 4

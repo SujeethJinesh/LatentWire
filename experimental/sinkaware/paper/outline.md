@@ -39,7 +39,7 @@ Non-claims:
    - synthetic predictability,
    - real QK sink-logit predictability,
    - cost model,
-   - per-head softmax/output error.
+   - per-head softmax/output error on 48 distilgpt2 traces.
 6. Limitations and threats to validity.
 7. GPU gate and benchmark plan.
 
@@ -52,7 +52,7 @@ Non-claims:
 | Synthetic low-rank prior | Alive only as approximation | Useful for branch selection, not paper evidence. |
 | Real QK-logit prediction | Alive | Hidden+position beats position-only on distilgpt2 traces. |
 | Cost model | Alive only at rank-2 | Higher ranks are too expensive under current estimate. |
-| Softmax/output error | Alive for GPU gate | Rank-2 reduces held-out output drift versus position-only on distilgpt2 traces; not an end-to-end quality result. |
+| Softmax/output error | Alive for GPU gate | On 48 distilgpt2 traces, rank-2 reduces held-out output rel-L2 drift to 0.141 versus 0.170 for position-only; not an end-to-end quality result. |
 
 ## Reviewer-Risk Notes
 

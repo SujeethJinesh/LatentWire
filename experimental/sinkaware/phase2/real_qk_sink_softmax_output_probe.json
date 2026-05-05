@@ -1,275 +1,275 @@
 {
   "model_name": "distilgpt2",
-  "n_traces": 24,
-  "n_samples": 9450,
-  "heldout_samples_per_layer": 520,
+  "n_traces": 48,
+  "n_samples": 18858,
+  "heldout_samples_per_layer": 1038,
   "sink_tokens": 4,
   "rows": {
     "0": {
       "static": {
-        "sink_logit_rmse": 10.699862556274121,
-        "sink_mass_mae": 0.29262929806897703,
-        "attention_l1": 0.6307986492506014,
-        "output_rel_l2": 0.5187167069659784
+        "sink_logit_rmse": 10.321590656949375,
+        "sink_mass_mae": 0.27514788598788503,
+        "attention_l1": 0.6023113773740929,
+        "output_rel_l2": 0.5095701046603838
       },
       "position": {
-        "sink_logit_rmse": 8.462727292684407,
-        "sink_mass_mae": 0.17524336850603084,
-        "attention_l1": 0.388751922827214,
-        "output_rel_l2": 0.38011903401571684
+        "sink_logit_rmse": 7.902206430315742,
+        "sink_mass_mae": 0.17237617951810633,
+        "attention_l1": 0.39204501736144715,
+        "output_rel_l2": 0.3903502008665949
       },
       "rank1": {
-        "sink_logit_rmse": 7.629591997770163,
-        "sink_mass_mae": 0.15976246868337443,
-        "attention_l1": 0.3483625999271261,
-        "output_rel_l2": 0.33720977966575166
+        "sink_logit_rmse": 7.117263983095312,
+        "sink_mass_mae": 0.15072861879370678,
+        "attention_l1": 0.3427271805380638,
+        "output_rel_l2": 0.33656224664677514
       },
       "rank2": {
-        "sink_logit_rmse": 3.3023779130898987,
-        "sink_mass_mae": 0.08986123861333138,
-        "attention_l1": 0.2066560381002581,
-        "output_rel_l2": 0.19688447555370378
+        "sink_logit_rmse": 3.7310446942932116,
+        "sink_mass_mae": 0.09096388166857902,
+        "attention_l1": 0.23283447318377068,
+        "output_rel_l2": 0.21789564875074302
       },
       "rank4": {
-        "sink_logit_rmse": 2.7866954711767344,
-        "sink_mass_mae": 0.06589492968112476,
-        "attention_l1": 0.16153753187010386,
-        "output_rel_l2": 0.16680795337149623
+        "sink_logit_rmse": 3.169820934821186,
+        "sink_mass_mae": 0.06589256186396514,
+        "attention_l1": 0.18026821463538634,
+        "output_rel_l2": 0.18224692313683125
       },
       "rank8": {
-        "sink_logit_rmse": 2.016867711223089,
-        "sink_mass_mae": 0.04716065570878527,
-        "attention_l1": 0.1222418301968271,
-        "output_rel_l2": 0.13455137027899933
+        "sink_logit_rmse": 2.755426020463767,
+        "sink_mass_mae": 0.05401538798782842,
+        "attention_l1": 0.1551055567825136,
+        "output_rel_l2": 0.15858375740891165
       }
     },
     "1": {
       "static": {
-        "sink_logit_rmse": 368.6417712871845,
-        "sink_mass_mae": 0.22885383757419203,
-        "attention_l1": 0.48658244316524035,
-        "output_rel_l2": 0.44935255971699517
+        "sink_logit_rmse": 357.85890856322067,
+        "sink_mass_mae": 0.20800307879419846,
+        "attention_l1": 0.44696455412730285,
+        "output_rel_l2": 0.43251691839237055
       },
       "position": {
-        "sink_logit_rmse": 354.1478244488056,
-        "sink_mass_mae": 0.2111257625574613,
-        "attention_l1": 0.4413794979551388,
-        "output_rel_l2": 0.43614175669505406
+        "sink_logit_rmse": 343.7673941007699,
+        "sink_mass_mae": 0.19194821152247646,
+        "attention_l1": 0.40897921831391315,
+        "output_rel_l2": 0.4155018051101588
       },
       "rank1": {
-        "sink_logit_rmse": 336.9834940103384,
-        "sink_mass_mae": 0.18921544369772295,
-        "attention_l1": 0.3982030865315906,
-        "output_rel_l2": 0.42540036119098085
+        "sink_logit_rmse": 331.15715153277034,
+        "sink_mass_mae": 0.1655256150013639,
+        "attention_l1": 0.35921544379254544,
+        "output_rel_l2": 0.3979551217275772
       },
       "rank2": {
-        "sink_logit_rmse": 255.68220728360689,
-        "sink_mass_mae": 0.15715784957311035,
-        "attention_l1": 0.3368043286174339,
-        "output_rel_l2": 0.38109393209738557
+        "sink_logit_rmse": 266.2110321103723,
+        "sink_mass_mae": 0.15402751458185315,
+        "attention_l1": 0.33469482793065275,
+        "output_rel_l2": 0.4022495434685159
       },
       "rank4": {
-        "sink_logit_rmse": 221.07573355161227,
-        "sink_mass_mae": 0.1289019396140165,
-        "attention_l1": 0.2808544145682205,
-        "output_rel_l2": 0.32414469698260084
+        "sink_logit_rmse": 235.2706017393138,
+        "sink_mass_mae": 0.12768968545812487,
+        "attention_l1": 0.28389549952796683,
+        "output_rel_l2": 0.3412196551609866
       },
       "rank8": {
-        "sink_logit_rmse": 172.99981937408447,
-        "sink_mass_mae": 0.10247477987168967,
-        "attention_l1": 0.22301482195597966,
-        "output_rel_l2": 0.2650171008681372
+        "sink_logit_rmse": 196.35453527373386,
+        "sink_mass_mae": 0.11791910631176065,
+        "attention_l1": 0.26470977079412455,
+        "output_rel_l2": 0.3125695377630899
       }
     },
     "2": {
       "static": {
-        "sink_logit_rmse": 1501.0831595787636,
-        "sink_mass_mae": 0.02788461625384979,
-        "attention_l1": 0.05608974533286478,
-        "output_rel_l2": 0.09885965837919507
+        "sink_logit_rmse": 1623.992554798751,
+        "sink_mass_mae": 0.018236084406036232,
+        "attention_l1": 0.036472168797142025,
+        "output_rel_l2": 0.07112557984800401
       },
       "position": {
-        "sink_logit_rmse": 1463.692870917687,
-        "sink_mass_mae": 0.02788461625384979,
-        "attention_l1": 0.05608974533286478,
-        "output_rel_l2": 0.09885965837919507
+        "sink_logit_rmse": 1582.2742735875595,
+        "sink_mass_mae": 0.018236084406036232,
+        "attention_l1": 0.036472168797142025,
+        "output_rel_l2": 0.07112557984800401
       },
       "rank1": {
-        "sink_logit_rmse": 1403.8496589073768,
-        "sink_mass_mae": 0.030289365757179887,
-        "attention_l1": 0.06089924433622445,
-        "output_rel_l2": 0.1056539205016385
+        "sink_logit_rmse": 1476.5602808311037,
+        "sink_mass_mae": 0.019600887925530962,
+        "attention_l1": 0.03920177583613149,
+        "output_rel_l2": 0.07485133503972614
       },
       "rank2": {
-        "sink_logit_rmse": 1358.2608179532565,
-        "sink_mass_mae": 0.031410257384563316,
-        "attention_l1": 0.06314102759429163,
-        "output_rel_l2": 0.1090336197274536
+        "sink_logit_rmse": 1428.3408129036081,
+        "sink_mass_mae": 0.019600912009520195,
+        "attention_l1": 0.03920182400660187,
+        "output_rel_l2": 0.07484891615866442
       },
       "rank4": {
-        "sink_logit_rmse": 1153.7381843566895,
-        "sink_mass_mae": 0.024040636133614523,
-        "attention_l1": 0.04840178509418525,
-        "output_rel_l2": 0.0864613920964386
+        "sink_logit_rmse": 1245.1925345624802,
+        "sink_mass_mae": 0.017667021887845608,
+        "attention_l1": 0.035334043759730385,
+        "output_rel_l2": 0.06908437656854818
       },
       "rank8": {
-        "sink_logit_rmse": 952.1125790229211,
-        "sink_mass_mae": 0.02596153927346082,
-        "attention_l1": 0.05224359137220733,
-        "output_rel_l2": 0.0920533539587789
+        "sink_logit_rmse": 998.8060627608401,
+        "sink_mass_mae": 0.01566709085472631,
+        "attention_l1": 0.031334181693491774,
+        "output_rel_l2": 0.06268963754445113
       }
     },
     "3": {
       "static": {
-        "sink_logit_rmse": 1516.3437982412486,
-        "sink_mass_mae": 0.014944889926566528,
-        "attention_l1": 0.029889779824476975,
-        "output_rel_l2": 0.06674363425431343
+        "sink_logit_rmse": 1507.8521292508224,
+        "sink_mass_mae": 0.01861704811310263,
+        "attention_l1": 0.037394661363034945,
+        "output_rel_l2": 0.08443059070261917
       },
       "position": {
-        "sink_logit_rmse": 1424.1125095073994,
-        "sink_mass_mae": 0.015512113239562425,
-        "attention_l1": 0.03102422644599174,
-        "output_rel_l2": 0.06909410285655983
+        "sink_logit_rmse": 1473.1277407901596,
+        "sink_mass_mae": 0.01877761472377853,
+        "attention_l1": 0.03771579458606708,
+        "output_rel_l2": 0.0851207141992188
       },
       "rank1": {
-        "sink_logit_rmse": 1292.5254391009992,
-        "sink_mass_mae": 0.015906668955890033,
-        "attention_l1": 0.03181333788877684,
-        "output_rel_l2": 0.07062993051793176
+        "sink_logit_rmse": 1341.2789391019671,
+        "sink_mass_mae": 0.02014481912699942,
+        "attention_l1": 0.040450203384099076,
+        "output_rel_l2": 0.09071543830786051
       },
       "rank2": {
-        "sink_logit_rmse": 1179.5248901954064,
-        "sink_mass_mae": 0.014862803262300217,
-        "attention_l1": 0.029725606495944353,
-        "output_rel_l2": 0.06586766793177679
+        "sink_logit_rmse": 1247.628011685116,
+        "sink_mass_mae": 0.020621834618297214,
+        "attention_l1": 0.04140423436227492,
+        "output_rel_l2": 0.09263515540073661
       },
       "rank4": {
-        "sink_logit_rmse": 943.4205298790565,
-        "sink_mass_mae": 0.01353157856143658,
-        "attention_l1": 0.02706315709421488,
-        "output_rel_l2": 0.060261593859356186
+        "sink_logit_rmse": 987.5029796093186,
+        "sink_mass_mae": 0.01875130532688081,
+        "attention_l1": 0.037663175788856924,
+        "output_rel_l2": 0.08395645282670944
       },
       "rank8": {
-        "sink_logit_rmse": 746.7402506021353,
-        "sink_mass_mae": 0.009335831724680388,
-        "attention_l1": 0.018671663420704695,
-        "output_rel_l2": 0.041219477484432554
+        "sink_logit_rmse": 814.2553600098126,
+        "sink_mass_mae": 0.012955042310906826,
+        "attention_l1": 0.026070649787021106,
+        "output_rel_l2": 0.05753462758117765
       }
     },
     "4": {
       "static": {
-        "sink_logit_rmse": 1898.074868422288,
-        "sink_mass_mae": 0.012533421601984687,
-        "attention_l1": 0.025067023946445707,
-        "output_rel_l2": 0.034621718307518416
+        "sink_logit_rmse": 1986.256927549035,
+        "sink_mass_mae": 0.01309933094871347,
+        "attention_l1": 0.026359227136002382,
+        "output_rel_l2": 0.03231116193988193
       },
       "position": {
-        "sink_logit_rmse": 1853.1369607778695,
-        "sink_mass_mae": 0.012666249304699876,
-        "attention_l1": 0.02533267937947298,
-        "output_rel_l2": 0.034725595162953836
+        "sink_logit_rmse": 1928.8819185525235,
+        "sink_mass_mae": 0.012716690595113798,
+        "attention_l1": 0.025595864016177163,
+        "output_rel_l2": 0.032102851815067994
       },
       "rank1": {
-        "sink_logit_rmse": 1705.547344149076,
-        "sink_mass_mae": 0.012972685642484605,
-        "attention_l1": 0.02594555204629896,
-        "output_rel_l2": 0.03501550498051216
+        "sink_logit_rmse": 1762.4953476275552,
+        "sink_mass_mae": 0.01282822512573196,
+        "attention_l1": 0.028314041294765908,
+        "output_rel_l2": 0.033037436144840525
       },
       "rank2": {
-        "sink_logit_rmse": 1478.736320906419,
-        "sink_mass_mae": 0.012972685922350763,
-        "attention_l1": 0.025945552603295275,
-        "output_rel_l2": 0.03501472471820116
+        "sink_logit_rmse": 1592.92629293394,
+        "sink_mass_mae": 0.013151592159956585,
+        "attention_l1": 0.02848911424044841,
+        "output_rel_l2": 0.033080095440162
       },
       "rank4": {
-        "sink_logit_rmse": 1162.3325262803298,
-        "sink_mass_mae": 0.01265733985765885,
-        "attention_l1": 0.025314860490207237,
-        "output_rel_l2": 0.0347291355262487
+        "sink_logit_rmse": 1318.5231146251995,
+        "sink_mass_mae": 0.013248989050691039,
+        "attention_l1": 0.028271999509842032,
+        "output_rel_l2": 0.033455570151011214
       },
       "rank8": {
-        "sink_logit_rmse": 926.1130116389348,
-        "sink_mass_mae": 0.011699307298705448,
-        "attention_l1": 0.023398795374359762,
-        "output_rel_l2": 0.03395606378832727
+        "sink_logit_rmse": 1086.5970029445052,
+        "sink_mass_mae": 0.012371284749383473,
+        "attention_l1": 0.025998292071092166,
+        "output_rel_l2": 0.03163411969285837
       }
     },
     "5": {
       "static": {
-        "sink_logit_rmse": 1802.5196691072904,
-        "sink_mass_mae": 0.04160762468998408,
-        "attention_l1": 0.08353576219055947,
-        "output_rel_l2": 0.02012795002743424
+        "sink_logit_rmse": 1890.7705394178915,
+        "sink_mass_mae": 0.03944899241435824,
+        "attention_l1": 0.14964690208782067,
+        "output_rel_l2": 0.02617153433251289
       },
       "position": {
-        "sink_logit_rmse": 1744.2829722477838,
-        "sink_mass_mae": 0.03885934103739594,
-        "attention_l1": 0.07803919485593754,
-        "output_rel_l2": 0.01971395597528495
+        "sink_logit_rmse": 1848.3848175754438,
+        "sink_mass_mae": 0.03958713889888578,
+        "attention_l1": 0.1489294267292851,
+        "output_rel_l2": 0.02606302104500448
       },
       "rank1": {
-        "sink_logit_rmse": 1421.097726557805,
-        "sink_mass_mae": 0.023209682378250017,
-        "attention_l1": 0.04673987759959772,
-        "output_rel_l2": 0.016862488730343652
+        "sink_logit_rmse": 1558.63710936324,
+        "sink_mass_mae": 0.032960623986453975,
+        "attention_l1": 0.13377810298898235,
+        "output_rel_l2": 0.024387772825326472
       },
       "rank2": {
-        "sink_logit_rmse": 1369.728092604417,
-        "sink_mass_mae": 0.02103751127166936,
-        "attention_l1": 0.04239553534621068,
-        "output_rel_l2": 0.016658346692544936
+        "sink_logit_rmse": 1470.1970978077206,
+        "sink_mass_mae": 0.031658703724885544,
+        "attention_l1": 0.13325419980084593,
+        "output_rel_l2": 0.024377670457264272
       },
       "rank4": {
-        "sink_logit_rmse": 1165.391011751615,
-        "sink_mass_mae": 0.01706867594387178,
-        "attention_l1": 0.034457864714707624,
-        "output_rel_l2": 0.013718678498208247
+        "sink_logit_rmse": 1240.261897768818,
+        "sink_mass_mae": 0.02557798087146489,
+        "attention_l1": 0.1248798660867069,
+        "output_rel_l2": 0.02250296693449962
       },
       "rank8": {
-        "sink_logit_rmse": 908.3158598092887,
-        "sink_mass_mae": 0.01479154665961698,
-        "attention_l1": 0.029903606141538735,
-        "output_rel_l2": 0.012140337540177945
+        "sink_logit_rmse": 1096.62480872123,
+        "sink_mass_mae": 0.024830902008304175,
+        "attention_l1": 0.122117639405596,
+        "output_rel_l2": 0.021769218701400254
       }
     }
   },
   "summary": {
     "position": {
-      "sink_logit_rmse": 1141.3059775320382,
-      "sink_mass_mae": 0.08021524181650003,
-      "attention_l1": 0.17010287779943664,
-      "output_rel_l2": 0.1731090171807941
+      "sink_logit_rmse": 1197.3897251727954,
+      "sink_mass_mae": 0.07560698661073285,
+      "attention_l1": 0.17495624830067194,
+      "output_rel_l2": 0.17004402881400815
     },
     "rank1": {
-      "sink_logit_rmse": 1027.9388757872275,
-      "sink_mass_mae": 0.07189271918581698,
-      "attention_l1": 0.15199394972160243,
-      "output_rel_l2": 0.16512866426452644
+      "sink_logit_rmse": 1079.541015406622,
+      "sink_mass_mae": 0.06696479832663116,
+      "attention_l1": 0.15728112463909802,
+      "output_rel_l2": 0.15958489178201765
     },
     "rank2": {
-      "sink_logit_rmse": 940.8724511426993,
-      "sink_mass_mae": 0.05455039100455423,
-      "attention_l1": 0.11744468145957232,
-      "output_rel_l2": 0.13409212778684432
+      "sink_logit_rmse": 1001.5057153558417,
+      "sink_mass_mae": 0.05500407312718195,
+      "attention_l1": 0.13497977892076576,
+      "output_rel_l2": 0.1408478382793477
     },
     "rank4": {
-      "sink_logit_rmse": 774.79078021508,
-      "sink_mass_mae": 0.043682516631953834,
-      "attention_l1": 0.09627160230527324,
-      "output_rel_l2": 0.11435390838905814
+      "sink_logit_rmse": 838.3201582066586,
+      "sink_mass_mae": 0.04480459074316206,
+      "attention_l1": 0.11505213321808157,
+      "output_rel_l2": 0.12207765746309772
     },
     "rank8": {
-      "sink_logit_rmse": 618.0497313597646,
-      "sink_mass_mae": 0.03523727675615643,
-      "attention_l1": 0.07824571807693621,
-      "output_rel_l2": 0.09648961731980886
+      "sink_logit_rmse": 699.2321992884309,
+      "sink_mass_mae": 0.03962646903715164,
+      "attention_l1": 0.10422268175563987,
+      "output_rel_l2": 0.10746348311531483
     },
     "static": {
-      "sink_logit_rmse": 1182.8938548655083,
-      "sink_mass_mae": 0.10307561468592569,
-      "attention_l1": 0.21866056728503144,
-      "output_rel_l2": 0.1980703712752391
+      "sink_logit_rmse": 1229.508775039445,
+      "sink_mass_mae": 0.09542540344404901,
+      "attention_l1": 0.21652481514756597,
+      "output_rel_l2": 0.19268764831262872
     }
   },
   "status": "ALIVE for GPU gate; rank-2 improves output error over position-only with bounded drift."

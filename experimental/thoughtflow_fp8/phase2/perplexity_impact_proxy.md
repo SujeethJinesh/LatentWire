@@ -1,6 +1,6 @@
 # ThoughtFlow-FP8 Retained-Context Perplexity Proxy
 
-Status: **WEAKENED on retained-context NLL proxy; matched-budget proxies score continuation better.**
+Status: **WEAKENED on retained-context NLL proxy via thoughtflow_recent; matched-budget proxies score continuation better.**
 
 - model: `distilgpt2`
 - scored traces: 24
@@ -19,8 +19,9 @@ continuation NLL. Full context is a reference row, not a matched-budget baseline
 | rkv_like | 24 | 0.210 | 3.419 | 1.319 | 38.7 |
 | thin_kv_like | 24 | 0.210 | 3.583 | 1.482 | 44.6 |
 | thoughtflow | 24 | 0.210 | 3.961 | 1.861 | 74.2 |
+| thoughtflow_recent | 24 | 0.210 | 3.562 | 1.461 | 44.2 |
 
 ## Decision
 
-Advance only if ThoughtFlow beats all matched-budget compressed proxies on continuation NLL.
+Advance only if a ThoughtFlow-family policy beats all matched-budget compressed proxies on continuation NLL.
 A tie or loss keeps the current branch mixed/weakened and defers GPU/KV work until a sharper policy exists.

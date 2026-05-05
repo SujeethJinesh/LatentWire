@@ -4,11 +4,12 @@ Status date: 2026-05-05
 
 ## Current Policy Status
 
-**Mixed/weakened.** The current anchor/phase-protected retention policy is not
+**Mixed/weakened.** The current anchor/phase-protected retention family is not
 ready to support a positive-method claim. It preserved synthetic phase markers
-and matched the strongest hidden-saliency proxy on marker recall, but the first
-Mac-local retained-context NLL proxy weakened it: ThoughtFlow tied the
-LongFlow-like selector and lost to the R-KV-like retained-prefix proxy.
+and matched the strongest hidden-saliency proxy on marker recall. A bounded
+successor, `thoughtflow_recent`, improved the retained-context NLL proxy by
+combining phase/anchor protection with a small recent-token reserve, but it
+still loses to the R-KV-like retained-prefix proxy.
 
 This shell is a scoped workshop-paper scaffold, not a submission draft. The
 current evidence is useful for deciding the next method gate, but it is not yet
@@ -35,7 +36,7 @@ quality or perplexity, not just on protected-token recall.
 | `phase2/phase_eviction_analysis.md` | Synthetic traces: ThoughtFlow preserves phase and anchor labels at matched keep rate. | Alive only as synthetic policy evidence. |
 | `phase2/real_trace_retention_sweep.md` | Saved real generated traces: ThoughtFlow never beats the strongest proxy across keep fractions 0.10-0.35. | Weakened. |
 | `phase2/hidden_saliency_retention_probe.md` | Distilgpt2 attention-received saliency: ThoughtFlow beats pure saliency on phase recall but ties LongFlow-like recall. | Mixed. |
-| `phase2/perplexity_impact_proxy.md` | Distilgpt2 retained-context NLL: ThoughtFlow ties LongFlow-like NLL and loses to R-KV-like NLL. | Weakened. |
+| `phase2/perplexity_impact_proxy.md` | Distilgpt2 retained-context NLL: ThoughtFlow-recent beats old ThoughtFlow, LongFlow-like, and ThinKV-like, but loses to R-KV-like. | Weakened but more diagnostic. |
 
 The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
 
@@ -46,11 +47,12 @@ The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
 | ThinKV-like | 3.583 | 1.482 | 44.6 |
 | LongFlow-like | 3.961 | 1.861 | 74.2 |
 | ThoughtFlow | 3.961 | 1.861 | 74.2 |
+| ThoughtFlow-recent | 3.562 | 1.461 | 44.2 |
 
-Interpretation: the current protected phase-marker heuristic does not preserve
-more useful continuation context than matched-budget proxies. It may be keeping
-interpretable labels that are not the tokens `distilgpt2` needs for this local
-continuation objective.
+Interpretation: a simple recent-token reserve repairs part of the failure mode,
+which means pure phase-marker protection was too far from the continuation
+objective. The branch is still not revived because the R-KV-like retained-prefix
+proxy remains stronger at the same keep rate.
 
 ## What Would Revive The Branch
 

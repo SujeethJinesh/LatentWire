@@ -42,11 +42,48 @@ except ImportError:  # pragma: no cover - supports direct script execution.
     from simulate_phase_retention import Token, longflow_like, rkv_like, thin_kv_like, thoughtflow
 
 
+def thoughtflow_recent(trace: list[Token], budget: int) -> set[int]:
+    """Successor policy: protect phase/anchors, but reserve budget for recency.
+
+    Earlier ThoughtFlow kept phase markers but lost continuation NLL to an
+    R-KV-like sink+recent proxy. This bounded successor tests whether adding a
+    recency reserve revives quality without discarding the interpretable
+    anchor/phase constraint entirely.
+    """
+
+    anchors = {idx for idx, token in enumerate(trace) if token.label == "anchor"}
+    phase = {idx for idx, token in enumerate(trace) if token.label == "phase"}
+    recent_budget = max(1, budget // 3)
+    recent = set(range(max(0, len(trace) - recent_budget), len(trace)))
+    kept = anchors | recent
+    remaining = max(0, budget - len(kept))
+    if remaining:
+        phase_sorted = sorted(phase - kept, key=lambda idx: (-trace[idx].importance, idx))
+        kept |= set(phase_sorted[:remaining])
+    remaining = max(0, budget - len(kept))
+    if remaining:
+        filler = sorted(
+            [idx for idx in range(len(trace)) if idx not in kept],
+            key=lambda idx: (-trace[idx].importance, idx),
+        )
+        kept |= set(filler[:remaining])
+    if len(kept) > budget:
+        protected = anchors | (recent & kept)
+        overflow = sorted(
+            [idx for idx in kept if idx not in protected],
+            key=lambda idx: (trace[idx].importance, -idx),
+        )
+        for idx in overflow[: len(kept) - budget]:
+            kept.remove(idx)
+    return kept
+
+
 POLICIES = {
     "longflow_like": longflow_like,
     "thin_kv_like": thin_kv_like,
     "rkv_like": rkv_like,
     "thoughtflow": thoughtflow,
+    "thoughtflow_recent": thoughtflow_recent,
 }
 
 
@@ -166,14 +203,20 @@ def _summary(rows: list[dict[str, object]]) -> dict[str, object]:
 
 def _status(summary: dict[str, object]) -> str:
     compressed = {policy: metrics for policy, metrics in summary.items() if policy != "full_context"}
-    thought = compressed["thoughtflow"]
-    best_other_nll = min(float(metrics["nll"]) for policy, metrics in compressed.items() if policy != "thoughtflow")
-    margin = best_other_nll - float(thought["nll"])
+    thought_policies = {policy: metrics for policy, metrics in compressed.items() if policy.startswith("thoughtflow")}
+    best_thought_policy, best_thought = min(
+        thought_policies.items(),
+        key=lambda item: float(item[1]["nll"]),
+    )
+    best_other_nll = min(
+        float(metrics["nll"]) for policy, metrics in compressed.items() if not policy.startswith("thoughtflow")
+    )
+    margin = best_other_nll - float(best_thought["nll"])
     if margin >= 0.03:
-        return "ALIVE on retained-context NLL proxy; next gate is real sparse-KV or cache-dropping validation."
+        return f"ALIVE on retained-context NLL proxy via {best_thought_policy}; next gate is real sparse-KV or cache-dropping validation."
     if margin >= -0.03:
-        return "MIXED on retained-context NLL proxy; ThoughtFlow ties matched-budget proxies, not enough for GPU claims."
-    return "WEAKENED on retained-context NLL proxy; matched-budget proxies score continuation better."
+        return f"MIXED on retained-context NLL proxy via {best_thought_policy}; successor ties matched-budget proxies, not enough for GPU claims."
+    return f"WEAKENED on retained-context NLL proxy via {best_thought_policy}; matched-budget proxies score continuation better."
 
 
 def _run(
@@ -239,7 +282,7 @@ def _write_markdown(result: dict[str, object]) -> None:
             "",
             "## Decision",
             "",
-            "Advance only if ThoughtFlow beats all matched-budget compressed proxies on continuation NLL.",
+            "Advance only if a ThoughtFlow-family policy beats all matched-budget compressed proxies on continuation NLL.",
             "A tie or loss keeps the current branch mixed/weakened and defers GPU/KV work until a sharper policy exists.",
         ]
     )

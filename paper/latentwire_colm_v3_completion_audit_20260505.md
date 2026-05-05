@@ -6,10 +6,11 @@
 
 ## Submission Status
 
-COLM_v3 is complete enough for reviewer circulation after the latest reviewer
-overclaim fixes are rebuilt into the PDF, then human copyedited and page-budget
-checked. No NVIDIA GPU work is required for the workshop claim as written. The
-paper must not claim GPU throughput, HBM, energy, latency, or C2C superiority.
+COLM_v3 is complete enough for reviewer circulation after human copyediting and
+page-budget checking. The latest reviewer overclaim fixes have been rebuilt into
+`colm_final/paper/latentwire_colm2026.pdf`. No NVIDIA GPU work is required for
+the workshop claim as written. The paper must not claim GPU throughput, HBM,
+energy, latency, or C2C superiority.
 
 ## Current Main Claim
 
@@ -36,6 +37,7 @@ beats explicit source-index communication.
 | artifact manifest | integrated | paper appendix and review packet |
 | reproducibility checklist | integrated | paper appendix |
 | side systems experiments | scoped papers started | `experimental/*/paper/`, phase2 artifacts |
+| human review pointer pack | integrated | `paper/colm_v3_presentability_pack_20260505.md` |
 
 ## Baseline Coverage
 
@@ -81,7 +83,7 @@ All three side projects now have Macbook correctness scaffolds:
 |---|---|---|
 | HybridKernel | weakly alive; pre-GPU threshold model says only profiling can justify the branch after vLLM hybrid layout work | native NVIDIA/vLLM profiling for real boundary conversion/materialization overhead |
 | SinkAware | alive as approximate low-rank sink prior; exact static-prior reuse remains killed | GPU prototype comparing exact attention, exact decomposition, and rank-2 approximate sink-logit prediction |
-| ThoughtFlow-FP8 | weakened; retained-context NLL proxy ties LongFlow-like and loses to R-KV-like at matched budget | design a sharper hidden/KV saliency policy before any GPU/KV work |
+| ThoughtFlow-FP8 | weakened but partially improved; ThoughtFlow-recent beats LongFlow-like and ThinKV-like on retained-context NLL, but still loses to R-KV-like at matched budget | design a sharper hidden/KV saliency policy before any GPU/KV work |
 
 These are not core COLM_v3 evidence today, but each now has a scoped COLM-style
 paper shell so positive future data can be accumulated without contaminating
@@ -89,9 +91,8 @@ the LatentWire claim.
 
 ## Remaining Workshop Work
 
-1. Rebuild the PDF after Reviewer 2 fixes.
-2. Human copyedit the PDF.
-3. Check table widths and page budget.
-4. Ensure abstract, intro, limitations, and claim audit use the same claim
+1. Human copyedit the PDF.
+2. Check table widths and page budget.
+3. Ensure abstract, intro, limitations, and claim audit use the same claim
    boundary.
-5. Keep side systems material in future work or reviewer-pack notes only.
+4. Keep side systems material in future work or reviewer-pack notes only.

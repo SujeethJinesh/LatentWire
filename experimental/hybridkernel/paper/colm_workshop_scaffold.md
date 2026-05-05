@@ -101,6 +101,7 @@ Promotion threshold:
 | `phase2/pre_gpu_threshold_model.md` | Granite needs about 25.0% of boundary traffic to be genuinely avoidable at 60% recovery to clear a 3% proxy gain; Qwen3-Next needs about 10.4%. | Mac-only implementation is not justified. |
 | `phase3/reference/boundary.py` and tests | CPU boundary blend scaffold exists. | Useful for semantics if profiling promotes implementation, but not evidence of speed. |
 | `phase4/kernel/boundary_triton.py` and tests | Triton interpreter scaffold exists but local Triton import is unavailable in `venv_arm64`. | No GPU or Mac performance claim. |
+| `phase2/profiler_driver.py` | Fixed-request OpenAI-compatible driver dry-runs locally. | The native NVIDIA gate is now runnable without ad hoc manual API calls. |
 
 ## 5. Limitations
 
