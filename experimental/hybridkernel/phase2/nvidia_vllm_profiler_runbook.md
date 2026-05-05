@@ -1,0 +1,240 @@
+# HybridKernel NVIDIA/vLLM Profiler Runbook
+
+- date: 2026-05-05
+- status: pre-GPU runbook; no NVIDIA run has been executed from this repo
+- scope: local instructions for a user-operated NVIDIA host; no SSH required
+
+## Gate
+
+HybridKernel is **weakly alive** only as a profiler-driven systems branch. The
+Mac-local evidence says the activation stream is large enough to inspect, but
+the runtime audit found that vLLM already implements important hybrid SSM
+state-layout and transfer machinery. The next gate is therefore not another
+kernel scaffold. It is a native profiler trace that answers:
+
+> Do attention/SSM layer boundaries create a distinct conversion,
+> materialization, launch, or locality overhead of at least 3% end-to-end, or a
+> larger localized overhead with a credible route to a 3% end-to-end gain?
+
+Kill the branch if this run finds no separable boundary overhead after matching
+for sequence length, batch shape, CUDA graph behavior, quantization, and model
+family.
+
+## Source Context
+
+| Source | Why it matters for the run |
+|---|---|
+| vLLM profiling docs: <https://docs.vllm.ai/en/stable/contributing/profiling/> | vLLM recommends Nsight Systems for developer profiling and documents flags including `--trace-fork-before-exec=true` and `--cuda-graph-trace=node`. |
+| vLLM hybrid SSM disaggregated serving blog: <https://vllm.ai/blog/hybrid-ssm-disagg> | vLLM describes HMA shared tensors, dual descriptor views, DS conv layout, and no extra buffers/reshuffling for hybrid SSM transfer, so HybridKernel must not claim those wins. |
+| NVIDIA Nsight Systems get-started page: <https://developer.nvidia.com/nsight-systems/get-started> | Confirms Nsight Systems CLI is the correct timeline tool for CUDA launch/kernel sequencing. |
+| NVIDIA Nsight Compute CLI docs: <https://docs.nvidia.com/nsight-compute/2023.3/NsightComputeCli/index.html> | Confirms `ncu` is the non-interactive per-kernel profiler for hardware counters. |
+
+## Required Machine
+
+Run on a local NVIDIA Linux host with:
+
+- one or more recent NVIDIA GPUs with enough VRAM for the chosen model;
+- recent NVIDIA driver, CUDA runtime, Nsight Systems, and Nsight Compute;
+- Python virtual environment local to this checkout or to a copied benchmark
+  checkout;
+- vLLM installed from a pinned commit or release, recorded in the run log;
+- no SSH invocation from this repository.
+
+Recommended first GPU target: Granite 4.0 H Tiny or Small if supported by the
+local vLLM build. Use Qwen3-Next only as a secondary probe because its
+linear-attention/Gated-DeltaNet boundary is less directly matched to the
+Granite Mamba2 boundary-fusion hypothesis.
+
+## Artifact Layout
+
+Create all generated artifacts under the local HybridKernel tree on the NVIDIA
+host:
+
+```bash
+export HWK_ROOT=/path/to/LatentWire/experimental/hybridkernel
+export HWK_RUN=$HWK_ROOT/phase2/profiler_runs/$(date -u +%Y%m%dT%H%M%SZ)_granite_boundary
+mkdir -p "$HWK_RUN"/{logs,nsys,ncu,metadata}
+```
+
+Record immutable metadata before profiling:
+
+```bash
+{
+  date -u
+  hostname
+  nvidia-smi
+  nsys --version
+  ncu --version
+  python -VV
+  python -m pip freeze
+  python - <<'PY'
+import importlib.metadata as m
+for name in ["vllm", "torch", "triton", "transformers"]:
+    try:
+        print(f"{name}=={m.version(name)}")
+    except Exception as exc:
+        print(f"{name}: unavailable ({exc})")
+PY
+} | tee "$HWK_RUN/metadata/environment.txt"
+```
+
+## Workload Matrix
+
+Keep the first run small and discriminative.
+
+| Row | Model family | Purpose | Prompt/decode shape | Must match |
+|---|---|---|---|---|
+| A | Granite 4.0 H Tiny | primary hybrid target | prefill 128, decode 64, batch 1 and 8 | dtype, quantization, max length |
+| B | Granite 4.0 H Small | scale check if VRAM allows | same as A | same runtime flags |
+| C | same-family non-hybrid or nearest transformer control | launch/materialization control | same as A | same serving path where possible |
+| D | pure or mostly SSM control if available | SSM-internal control | same as A | same dtype and batch |
+
+If C or D is unavailable, do not substitute a cross-family model and call it a
+control. Record it as missing and keep the conclusion limited to a hybrid
+timeline audit.
+
+## Warmup And Determinism
+
+Use fixed prompts, fixed output lengths, and at least three seeds when the
+runner exposes seed control. Run warmup before profiling so setup, compilation,
+weight loading, and CUDA graph capture do not dominate the trace.
+
+```bash
+export MODEL=ibm-granite/granite-4.0-h-tiny
+export CUDA_VISIBLE_DEVICES=0
+export VLLM_LOGGING_LEVEL=INFO
+export VLLM_USE_V1=1
+
+python -m vllm.entrypoints.openai.api_server \
+  --model "$MODEL" \
+  --dtype bfloat16 \
+  --max-model-len 2048 \
+  --disable-log-requests \
+  2>&1 | tee "$HWK_RUN/logs/server_warmup.log"
+```
+
+If the local vLLM version uses a different serving command, record the exact
+replacement in `$HWK_RUN/metadata/command_notes.md`.
+
+## Nsight Systems Timeline Pass
+
+Goal: identify whether attention/SSM boundaries show distinct kernels, gaps,
+CUDA graph nodes, memory copies, synchronization, or host scheduling stalls.
+
+Run one short fixed request stream under `nsys`:
+
+```bash
+nsys profile \
+  --trace=cuda,nvtx,osrt \
+  --trace-fork-before-exec=true \
+  --cuda-graph-trace=node \
+  --force-overwrite=true \
+  --stats=true \
+  --output="$HWK_RUN/nsys/granite_tiny_b1_decode64" \
+  python "$HWK_ROOT/phase2/profiler_driver.py" \
+    --model "$MODEL" \
+    --batch-size 1 \
+    --prefill-tokens 128 \
+    --decode-tokens 64 \
+    --requests 16 \
+    --seed 1 \
+  2>&1 | tee "$HWK_RUN/logs/nsys_b1.log"
+```
+
+If `profiler_driver.py` does not exist on the NVIDIA host, use an equivalent
+fixed-request driver and save it under `$HWK_RUN/metadata/driver.py`. Do not
+interpret ad hoc manual API calls as benchmark evidence.
+
+Repeat for batch 8 if memory allows.
+
+## Boundary Annotation Pass
+
+The timeline must be mapped back to layer types. Produce a local layer map from
+the model config and save it next to the trace:
+
+```bash
+python "$HWK_ROOT/phase2/build_architecture_map.py" \
+  > "$HWK_RUN/metadata/architecture_map_stdout.txt"
+cp "$HWK_ROOT/phase2/architecture_map.json" "$HWK_RUN/metadata/"
+```
+
+For each attention-to-SSM and SSM-to-attention transition, annotate:
+
+- preceding layer type and following layer type;
+- kernels immediately before and after the boundary;
+- any standalone conversion, copy, transpose, reshape, norm, or residual
+  materialization kernel between them;
+- idle gap between adjacent GPU kernels on the main stream;
+- whether CUDA graph capture changes the visible launch structure.
+
+## Nsight Compute Counter Pass
+
+Goal: inspect only the suspicious kernels found by Nsight Systems. Do not start
+with broad `ncu` capture across the full server.
+
+Template:
+
+```bash
+ncu \
+  --force-overwrite \
+  --target-processes all \
+  --set speedOfLight \
+  --metrics dram__bytes_read.sum,dram__bytes_write.sum,lts__t_bytes.sum,sm__throughput.avg.pct_of_peak_sustained_elapsed,dram__throughput.avg.pct_of_peak_sustained_elapsed \
+  --kernel-name '<SUSPICIOUS_KERNEL_REGEX>' \
+  --launch-skip <N> \
+  --launch-count <M> \
+  --export "$HWK_RUN/ncu/suspicious_boundary_kernel" \
+  python "$HWK_ROOT/phase2/profiler_driver.py" \
+    --model "$MODEL" \
+    --batch-size 1 \
+    --prefill-tokens 128 \
+    --decode-tokens 64 \
+    --requests 4 \
+    --seed 1 \
+  2>&1 | tee "$HWK_RUN/logs/ncu_suspicious_boundary_kernel.log"
+```
+
+Capture comparable kernels in non-boundary same-type regions. A boundary kernel
+is interesting only if it has excess bytes, time, launch overhead, or stalls
+relative to matched same-type regions.
+
+## Decision Readout
+
+Write `$HWK_RUN/readout.md` with this table:
+
+| Question | Evidence | Decision |
+|---|---|---|
+| Distinct boundary conversion/materialization kernel? | kernel names and timestamps | yes/no |
+| Boundary idle or launch gap? | median and paired deltas | yes/no |
+| Extra DRAM/L2 traffic near boundary? | NCU bytes vs matched controls | yes/no |
+| End-to-end impact estimate clears 3%? | formula and confidence interval | yes/no |
+| Same-family controls available? | model/control rows | yes/no |
+| Cross-family falsification attempted? | model/control rows | yes/no |
+
+Use paired comparisons across repeated fixed-request runs. Report median,
+interquartile range, and bootstrap confidence intervals. Do not report a single
+trace screenshot as a positive result.
+
+## Promotion Criteria
+
+Promote HybridKernel to implementation only if all are true:
+
+- a boundary-local overhead is visible in Nsight Systems and attributable to
+  attention/SSM transitions rather than warmup, graph capture, batching, or
+  unrelated kernels;
+- Nsight Compute shows avoidable memory traffic or stalls on the same boundary
+  region;
+- the estimated end-to-end gain is at least 3%, or the localized gain is large
+  enough that a concrete fused-kernel design plausibly clears 3%;
+- the result survives at least three repeated runs and one same-family control;
+- the readout separates source communication from target-cache or runtime-cache
+  effects.
+
+Kill or pause if any are true:
+
+- no separable boundary overhead appears;
+- overhead is below 3% and has no credible route to 3%;
+- the only apparent gain is already covered by vLLM HMA/NIXL state-transfer
+  machinery;
+- the signal disappears under CUDA graph capture, batching, or same-family
+  controls.
