@@ -18,6 +18,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="mps")
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--constrain-answer-letters", action="store_true")
     parser.add_argument("--prediction-output", required=True)
     return parser.parse_args()
 
@@ -32,6 +33,7 @@ def main() -> None:
         max_new_tokens=args.max_new_tokens,
         limit=args.limit,
         prediction_output=args.prediction_output,
+        constrain_answer_letters=args.constrain_answer_letters,
     )
     print(json.dumps(payload["metrics"], indent=2, sort_keys=True))
 

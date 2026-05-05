@@ -2158,6 +2158,53 @@ def _generation_match(prediction: str, answers: list[str]) -> bool:
     return pred_numeric is not None and pred_numeric in numeric_answers
 
 
+_CHOICE_LABEL_RE = re.compile(r"(?m)^\s*([A-Z])\.\s+")
+
+
+def answer_labels_from_prompt(prompt: str, answers: list[str] | tuple[str, ...] = ()) -> list[str]:
+    labels = [match.group(1).upper() for match in _CHOICE_LABEL_RE.finditer(prompt)]
+    if labels:
+        return labels
+    fallback: list[str] = []
+    for answer in answers:
+        text = str(answer).strip().upper()
+        if len(text) == 1 and "A" <= text <= "Z" and text not in fallback:
+            fallback.append(text)
+    return fallback or list("ABCD")
+
+
+def answer_letter_token_ids(tokenizer, labels: list[str] | tuple[str, ...]) -> list[int]:
+    allowed: set[int] = set()
+    for label in labels:
+        normalized = str(label).strip().upper()
+        if len(normalized) != 1:
+            continue
+        for variant in (normalized, f" {normalized}"):
+            ids = tokenizer.encode(variant, add_special_tokens=False)
+            if len(ids) == 1:
+                allowed.add(int(ids[0]))
+    if not allowed:
+        raise ValueError(f"No single-token answer labels found for labels={list(labels)!r}")
+    return sorted(allowed)
+
+
+def make_first_token_prefix_allowed_fn(
+    *,
+    tokenizer,
+    labels: list[str] | tuple[str, ...],
+    prompt_length: int,
+):
+    allowed = answer_letter_token_ids(tokenizer, labels)
+    eos = tokenizer.eos_token_id
+
+    def _allowed(_batch_id: int, input_ids) -> list[int]:
+        if int(input_ids.shape[-1]) <= int(prompt_length):
+            return allowed
+        return [int(eos)] if eos is not None else allowed
+
+    return _allowed
+
+
 def _generation_metrics(
     *,
     correct: int,

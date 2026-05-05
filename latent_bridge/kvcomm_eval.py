@@ -23,7 +23,9 @@ from latent_bridge.evaluate import (
     _generation_metrics,
     _normalize_generation_text,
     _source_reasoning_prompt,
+    answer_labels_from_prompt,
     load_generation,
+    make_first_token_prefix_allowed_fn,
     write_prediction_records,
     write_prediction_sidecar,
 )
@@ -326,6 +328,7 @@ def evaluate_kvcomm_generation(
     source_reasoning_mode: str,
     source_control: str = "matched",
     source_control_shuffle_offset: int = 1,
+    constrain_answer_letters: bool = False,
 ) -> dict[str, Any]:
     _ensure_kvcomm_repo_on_path()
     from models import CVCommunicator  # type: ignore
@@ -357,6 +360,18 @@ def evaluate_kvcomm_generation(
         )
         _, target_prompt = _build_prompts(ex, source_reasoning_mode)
         input_ids_B = _chat_input_ids(tokenizer, target_prompt, device)
+        generation_kwargs: dict[str, Any] = {
+            "do_sample": False,
+            "max_new_tokens": 1 if constrain_answer_letters else max_new_tokens,
+            "pad_token_id": tokenizer.eos_token_id,
+        }
+        if constrain_answer_letters:
+            labels = answer_labels_from_prompt(target_prompt, ex.answers)
+            generation_kwargs["prefix_allowed_tokens_fn"] = make_first_token_prefix_allowed_fn(
+                tokenizer=tokenizer,
+                labels=labels,
+                prompt_length=int(input_ids_B.shape[-1]),
+            )
 
         start = time.perf_counter()
         source_cache_bytes = 0
@@ -365,9 +380,7 @@ def evaluate_kvcomm_generation(
             output = model_B.generate(
                 input_ids=input_ids_B,
                 attention_mask=torch.ones_like(input_ids_B),
-                do_sample=False,
-                max_new_tokens=max_new_tokens,
-                pad_token_id=tokenizer.eos_token_id,
+                **generation_kwargs,
             )[0]
         else:
             input_ids_A = _chat_input_ids(tokenizer, source_prompt, device)
@@ -384,10 +397,9 @@ def evaluate_kvcomm_generation(
                 past_key_values = _zero_past_key_values(past_key_values)
             output = communicator.generate(
                 input_ids_B,
+                attention_mask=torch.ones_like(input_ids_B),
                 out_A_past_key_values=past_key_values,
-                do_sample=False,
-                max_new_tokens=max_new_tokens,
-                pad_token_id=tokenizer.eos_token_id,
+                **generation_kwargs,
             )[0]
         elapsed = time.perf_counter() - start
         context_length = int(input_ids_B.shape[-1])
@@ -419,6 +431,7 @@ def evaluate_kvcomm_generation(
                 "generated_tokens": generated_tokens,
                 "latency_sec": float(elapsed),
                 "normalized_prediction": _normalize_generation_text(prediction),
+                "decoding_mode": "constrained_letter" if constrain_answer_letters else "free_generation",
                 "selected_layers": list(selected_layers),
                 "selected_layer_count": len(selected_layers),
                 "source_cache_bytes": int(source_cache_bytes),
@@ -461,6 +474,7 @@ def run_kvcomm_generation_eval(
     calibration_limit: int | None = None,
     eval_limit: int | None = None,
     prediction_output: str | None = None,
+    constrain_answer_letters: bool = False,
 ) -> dict[str, Any]:
     _ensure_kvcomm_repo_on_path()
     calibration_examples = load_generation(calibration_file)
@@ -507,6 +521,7 @@ def run_kvcomm_generation_eval(
             source_reasoning_mode=source_reasoning_mode,
             source_control=calibration_source_control,
             source_control_shuffle_offset=source_control_shuffle_offset,
+            constrain_answer_letters=constrain_answer_letters,
         )
         metric_prefix = _kvcomm_method_name(calibration_source_control)
         accuracy = float(result["metrics"][f"{metric_prefix}_accuracy"])
@@ -537,6 +552,7 @@ def run_kvcomm_generation_eval(
             source_reasoning_mode=source_reasoning_mode,
             source_control=source_control,
             source_control_shuffle_offset=source_control_shuffle_offset,
+            constrain_answer_letters=constrain_answer_letters,
         )
         held_out_records.extend(held_out["records"])
         held_out_metrics.update(held_out["metrics"])
@@ -563,6 +579,7 @@ def run_kvcomm_generation_eval(
         "top_layers_grid": [float(x) for x in top_layers_grid],
         "calibration_limit": calibration_limit,
         "eval_limit": eval_limit,
+        "constrain_answer_letters": bool(constrain_answer_letters),
         "best_top_layers_fraction": float(best_fraction),
         "selected_layers": selected_layers,
         "layer_ranking": layer_ranking,
@@ -606,6 +623,7 @@ def main() -> None:
     parser.add_argument("--source-control-shuffle-offset", type=int, default=1)
     parser.add_argument("--calibration-limit", type=int, default=None)
     parser.add_argument("--eval-limit", type=int, default=None)
+    parser.add_argument("--constrain-answer-letters", action="store_true")
     parser.add_argument("--prediction-output", required=True)
     args = parser.parse_args()
 
@@ -631,6 +649,7 @@ def main() -> None:
         calibration_limit=args.calibration_limit,
         eval_limit=args.eval_limit,
         prediction_output=args.prediction_output,
+        constrain_answer_letters=args.constrain_answer_letters,
     )
     print(json.dumps(payload["metrics"], indent=2, sort_keys=True))
 

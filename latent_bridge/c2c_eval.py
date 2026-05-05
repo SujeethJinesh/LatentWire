@@ -14,8 +14,10 @@ from latent_bridge.evaluate import (
     _generation_match,
     _generation_metrics,
     _normalize_generation_text,
+    answer_labels_from_prompt,
     GenerationExample,
     load_generation,
+    make_first_token_prefix_allowed_fn,
     write_prediction_records,
     write_prediction_sidecar,
 )
@@ -857,6 +859,7 @@ def generate_c2c_text(
     *,
     device: str,
     max_new_tokens: int,
+    constrain_answer_letters: bool = False,
 ) -> tuple[str, int, float]:
     messages = build_c2c_messages(prompt)
     text = tokenizer.apply_chat_template(
@@ -867,13 +870,23 @@ def generate_c2c_text(
     )
     inputs = tokenizer(text, return_tensors="pt").to(device)
     prompt_len = int(inputs["input_ids"].shape[1])
+    generation_kwargs: dict[str, Any] = {
+        "do_sample": False,
+        "max_new_tokens": 1 if constrain_answer_letters else max_new_tokens,
+    }
+    if constrain_answer_letters:
+        labels = answer_labels_from_prompt(prompt)
+        generation_kwargs["prefix_allowed_tokens_fn"] = make_first_token_prefix_allowed_fn(
+            tokenizer=tokenizer,
+            labels=labels,
+            prompt_length=prompt_len,
+        )
 
     start = time.perf_counter()
     outputs = model.generate(
         **inputs,
         kv_cache_index=build_c2c_kv_cache_index(prompt_len, device=device),
-        do_sample=False,
-        max_new_tokens=max_new_tokens,
+        **generation_kwargs,
     )
     elapsed = time.perf_counter() - start
     generated = outputs[0, prompt_len:]
@@ -890,6 +903,7 @@ def run_c2c_generation_eval(
     max_new_tokens: int,
     limit: int | None = None,
     prediction_output: str | None = None,
+    constrain_answer_letters: bool = False,
 ) -> dict[str, Any]:
     examples = load_generation(eval_file)
     if limit is not None:
@@ -913,6 +927,7 @@ def run_c2c_generation_eval(
             ex.prompt,
             device=device,
             max_new_tokens=max_new_tokens,
+            constrain_answer_letters=constrain_answer_letters,
         )
         is_correct = _generation_match(prediction, ex.answers)
         correct += int(is_correct)
@@ -930,6 +945,7 @@ def run_c2c_generation_eval(
                 "generated_tokens": int(generated_tokens),
                 "latency_sec": float(elapsed),
                 "normalized_prediction": _normalize_generation_text(prediction),
+                "decoding_mode": "constrained_letter" if constrain_answer_letters else "free_generation",
             }
         )
 
@@ -949,6 +965,7 @@ def run_c2c_generation_eval(
         "device": device,
         "max_new_tokens": int(max_new_tokens),
         "limit": limit,
+        "constrain_answer_letters": bool(constrain_answer_letters),
         "published_repo_id": artifact.repo_id,
         "published_subdir": artifact.subdir,
         "published_config_path": artifact.config_path,

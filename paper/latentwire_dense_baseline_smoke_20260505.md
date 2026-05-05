@@ -15,6 +15,10 @@ Generated smoke files:
 - `results/dense_baseline_mcqa_smoke_20260505/openbookqa_test_generation_smoke4.jsonl`
 - `results/dense_baseline_mcqa_smoke_20260505/arc_train_generation_smoke8.jsonl`
 - `results/dense_baseline_mcqa_smoke_20260505/arc_test_generation_smoke4.jsonl`
+- `results/dense_baseline_mcqa_smoke_20260505/openbookqa_train_generation_n16.jsonl`
+- `results/dense_baseline_mcqa_smoke_20260505/openbookqa_test_generation_n16.jsonl`
+- `results/dense_baseline_mcqa_smoke_20260505/arc_train_generation_n16.jsonl`
+- `results/dense_baseline_mcqa_smoke_20260505/arc_test_generation_n16.jsonl`
 
 ## C2C Smoke
 
@@ -38,11 +42,24 @@ Local result:
 | OpenBookQA smoke | 4 | 0.000 | 0.250 | 1.300s |
 | ARC-Challenge smoke | 4 | 0.000 | 0.750 | 2.756s |
 
-The exact generation matcher is too strict for MCQA because C2C often emits a
+The exact generation matcher is too strict for MCQA because C2C can emit a
 letter plus candidate text, so `scripts/summarize_mcqa_generation_smoke.py`
-adds an answer-letter parser for this smoke gate. These rows prove that the
-local C2C runtime path can execute on converted matched-task prompts; they are
-not a full C2C head-to-head baseline.
+adds an answer-letter parser for this smoke gate. The current evaluator also
+supports constrained first-token answer-letter decoding via
+`--constrain-answer-letters`, which forces the same letter-only output shape
+used by the target-only KVComm control.
+
+Scaled constrained rows:
+
+| Task | rows | parsed letter accuracy | unparsed | mean latency |
+|---|---:|---:|---:|---:|
+| OpenBookQA n16 | 16 | 0.438 | 0 | 0.789s |
+| ARC-Challenge n16 | 16 | 0.688 | 0 | 0.841s |
+
+These rows prove that the local C2C runtime path can execute on converted
+matched-task prompts beyond n=4. They are still not a full C2C head-to-head
+baseline because they use the available published artifact path and local MPS
+generation surface rather than the original paper's native benchmark harness.
 
 ## KVComm Smoke
 
@@ -54,7 +71,11 @@ added across the dense-baseline pass:
 - `DynamicCache.key_cache` / `value_cache` compatibility shim reuse.
 - current Qwen3 `past_key_values` tracer signature with q/k norm;
 - target-layer-complete, same-length source-cache construction so Qwen3's
-  single causal mask is compatible with selective source layers.
+  single causal mask is compatible with selective source layers;
+- explicit target-side attention masks through `CVCommunicator.forward`, which
+  removes the Qwen3 pad/eos attention-mask warning on constrained reruns;
+- constrained first-token answer-letter decoding for matched, zero-source,
+  shuffled-source, and target-only rows.
 
 The earlier blocker was:
 
@@ -63,21 +84,23 @@ RuntimeError: The size of tensor a (73) must match the size of tensor b (146)
 at non-singleton dimension 3
 ```
 
-That is fixed in the local compatibility shim. The new matched-slice smoke rows
-are correctness/runtime evidence only, not paper-strength baselines:
+That is fixed in the local compatibility shim. The prompt/scoring calibration
+gate is also partly fixed: constrained decoding eliminates unparsed KVComm rows.
+The remaining issue is substantive, not parsing: matched KVComm does not beat
+target-only on the scaled local slices.
 
 | Task | method/control | rows | parsed letter accuracy | unparsed |
 |---|---|---:|---:|---:|
-| OpenBookQA | C2C rerun | 4 | 0.250 | 0 |
-| OpenBookQA | KVComm matched | 4 | 0.000 | 1 |
-| OpenBookQA | KVComm zero-source | 4 | 0.000 | 1 |
-| OpenBookQA | KVComm shuffled-source | 4 | 0.000 | 3 |
-| OpenBookQA | target-only | 4 | 0.250 | 0 |
-| ARC-Challenge | C2C rerun | 4 | 0.750 | 0 |
-| ARC-Challenge | KVComm matched | 4 | 0.000 | 1 |
-| ARC-Challenge | KVComm zero-source | 4 | 0.000 | 1 |
-| ARC-Challenge | KVComm shuffled-source | 4 | 0.000 | 2 |
-| ARC-Challenge | target-only | 4 | 0.750 | 0 |
+| OpenBookQA | C2C constrained | 16 | 0.438 | 0 |
+| OpenBookQA | KVComm matched constrained | 16 | 0.188 | 0 |
+| OpenBookQA | KVComm zero-source constrained | 16 | 0.188 | 0 |
+| OpenBookQA | KVComm shuffled-source constrained | 16 | 0.375 | 0 |
+| OpenBookQA | target-only constrained | 16 | 0.250 | 0 |
+| ARC-Challenge | C2C constrained | 16 | 0.688 | 0 |
+| ARC-Challenge | KVComm matched constrained | 16 | 0.062 | 0 |
+| ARC-Challenge | KVComm zero-source constrained | 16 | 0.062 | 0 |
+| ARC-Challenge | KVComm shuffled-source constrained | 16 | 0.250 | 0 |
+| ARC-Challenge | target-only constrained | 16 | 0.688 | 0 |
 
 Artifacts:
 
@@ -85,8 +108,13 @@ Artifacts:
 - `results/dense_baseline_mcqa_smoke_20260505/c2c_arc_smoke4_rerun_letter_summary.md`
 - `results/dense_baseline_mcqa_smoke_20260505/kvcomm_openbookqa_smoke4_controls_letter_summary.md`
 - `results/dense_baseline_mcqa_smoke_20260505/kvcomm_arc_smoke4_controls_letter_summary.md`
+- `results/dense_baseline_mcqa_smoke_20260505/c2c_openbookqa_n16_constrained_letter_summary.md`
+- `results/dense_baseline_mcqa_smoke_20260505/c2c_arc_n16_constrained_letter_summary.md`
+- `results/dense_baseline_mcqa_smoke_20260505/kvcomm_openbookqa_n16_controls_constrained_letter_summary.md`
+- `results/dense_baseline_mcqa_smoke_20260505/kvcomm_arc_n16_controls_constrained_letter_summary.md`
 
-The next dense-baseline gate is no longer cache/mask construction. It is prompt
-and scoring calibration: make the KVComm decoded continuations valid answer
-letters, then scale C2C and KVComm beyond n=4 with identical target-only and
-parsed-letter scoring.
+The next dense-baseline gate is no longer cache/mask construction or malformed
+answer decoding. It is a stronger matched baseline: either run native C2C/KVComm
+with their paper harnesses on GPU, or diagnose why the local KVComm selected
+source layers damage Qwen3 target predictions relative to target-only and
+shuffled-source controls.

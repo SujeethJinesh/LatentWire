@@ -1,5 +1,5 @@
 diff --git a/model_attn.py b/model_attn.py
-index b41b2f1..5f48bde 100644
+index b41b2f1..9039d97 100644
 --- a/model_attn.py
 +++ b/model_attn.py
 @@ -10,6 +10,8 @@ from transformers.models.llama.configuration_llama import LlamaConfig
@@ -11,7 +11,7 @@ index b41b2f1..5f48bde 100644
  from transformers.models.gemma3.modeling_gemma3 import Gemma3Attention, apply_rotary_pos_emb as apply_rotary_pos_emb_gemma3, eager_attention_forward as eager_attention_forward_gemma3
  from transformers.models.gemma3.configuration_gemma3 import Gemma3TextConfig
  
-@@ -122,6 +124,60 @@ class Qwen2AttentionTracer(Qwen2Attention):
+@@ -122,6 +124,59 @@ class Qwen2AttentionTracer(Qwen2Attention):
          attn_output = self.o_proj(attn_output)
          return attn_output, attn_weights
  
@@ -72,7 +72,7 @@ index b41b2f1..5f48bde 100644
      def __init__(self, config: Gemma3TextConfig, layer_idx: int):
          super().__init__(config, layer_idx)
 diff --git a/models.py b/models.py
-index 944c954..b05d1d1 100644
+index 944c954..9c12b2d 100644
 --- a/models.py
 +++ b/models.py
 @@ -7,9 +7,10 @@ from transformers.generation.utils import GenerationMixin
@@ -87,7 +87,7 @@ index 944c954..b05d1d1 100644
  from transformers.models.gemma3.modeling_gemma3 import Gemma3Attention
  
  def get_layer_map(L_A, L_B):
-@@ -18,6 +19,61 @@ def get_layer_map(L_A, L_B):
+@@ -18,6 +19,73 @@ def get_layer_map(L_A, L_B):
          layer_map[l_a] = round( (l_a + 0.5) * L_B / L_A - 0.5 )
      return layer_map
  
@@ -161,7 +161,7 @@ index 944c954..b05d1d1 100644
  class CVCommunicator(PreTrainedModel, GenerationMixin):
      def __init__(
          self,
-@@ -81,6 +137,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
+@@ -81,6 +149,10 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
                  new = Qwen2AttentionTracer(old.config, old.layer_idx).to(device, dtype)
                  new.load_state_dict(old.state_dict(), strict=True)
                  block.self_attn = new
@@ -172,10 +172,13 @@ index 944c954..b05d1d1 100644
              elif type(old) is LlamaAttention:
                  new = LlamaAttentionTracer(old.config, old.layer_idx).to(device, dtype)
                  new.load_state_dict(old.state_dict(), strict=True)
-@@ -97,13 +157,34 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
+@@ -97,14 +169,29 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
          value_cache = past_key_values.value_cache
          assert len(key_cache) == len(self.layer_map), "key_cache and layer_map must have the same length"
          past_key_values_new = DynamicCache()
+-        for i in range(len(key_cache)): # i is the layer index of model A
+-            if i in self.layers_list or i == 0:
+-                past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
 +        if hasattr(self.B.config, "num_key_value_heads"):
 +            target_num_kv_heads = int(self.B.config.num_key_value_heads)
 +        else:
@@ -184,14 +187,6 @@ index 944c954..b05d1d1 100644
 +            target_head_dim = int(self.B.model.layers[0].self_attn.head_dim)
 +        else:
 +            target_head_dim = int(self.B.model.language_model.layers[0].self_attn.head_dim)
--        for i in range(len(key_cache)): # i is the layer index of model A
--            if i in self.layers_list or i == 0:
--                past_key_values_new.update(key_cache[i], value_cache[i], self.layer_map[i])
--            else:
--                # keep the first token due to attention sink
--                key_cache_i = key_cache[i][:, :, :1, :]
--                value_cache_i = value_cache[i][:, :, :1, :]
--                past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
 +        selected_source_layers = set(int(layer) for layer in self.layers_list)
 +        for target_layer in range(self.B_num_layers):
 +            source_layer = _nearest_source_layer(target_layer, len(key_cache), self.B_num_layers)
@@ -199,7 +194,11 @@ index 944c954..b05d1d1 100644
 +            value_cache_i = _match_kv_shape(value_cache[source_layer], target_num_kv_heads, target_head_dim)
 +            if source_layer in selected_source_layers or source_layer == 0:
 +                past_key_values_new.update(key_cache_i, value_cache_i, target_layer)
-+            else:
+             else:
+-                # keep the first token due to attention sink
+-                key_cache_i = key_cache[i][:, :, :1, :]
+-                value_cache_i = value_cache[i][:, :, :1, :]
+-                past_key_values_new.update(key_cache_i, value_cache_i, self.layer_map[i])
 +                # Keep the attention sink but pad to the same cache length so
 +                # Qwen3's single causal mask matches every target layer.
 +                past_key_values_new.update(
@@ -209,21 +208,40 @@ index 944c954..b05d1d1 100644
 +                )
          return past_key_values_new
  
-@@ -140,6 +210,13 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
+     def forward(
+@@ -130,6 +217,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
+                 out_B = forward_shift_back_llama(
+                     model=self.B,
+                     input_ids=input_ids,
++                    attention_mask=attention_mask,
                      past_key_values=out_A_past_key_values,
                      **kwargs
                  )
+@@ -137,6 +225,15 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
+                 out_B = forward_shift_back_qwen2(
+                     model=self.B,
+                     input_ids=input_ids,
++                    attention_mask=attention_mask,
++                    past_key_values=out_A_past_key_values,
++                    **kwargs
++                )
 +            elif type(self.B.model) == Qwen3Model:
 +                out_B = forward_shift_back_qwen2(
 +                    model=self.B,
 +                    input_ids=input_ids,
-+                    past_key_values=out_A_past_key_values,
-+                    **kwargs
-+                )
-             else:
-                 raise NotImplementedError(f"shift_back is not implemented for model type {type(self.B)}")
++                    attention_mask=attention_mask,
+                     past_key_values=out_A_past_key_values,
+                     **kwargs
+                 )
+@@ -145,6 +242,7 @@ class CVCommunicator(PreTrainedModel, GenerationMixin):
          else:
-@@ -249,7 +326,11 @@ def get_short_past_key_values(past_key_values: DynamicCache):
+             out_B = self.B(
+                 input_ids=input_ids,
++                attention_mask=attention_mask,
+                 past_key_values=out_A_past_key_values,
+                 **kwargs
+             )
+@@ -249,7 +347,11 @@ def get_short_past_key_values(past_key_values: DynamicCache):
      return short_past_key_values, short_length
  
  
@@ -236,7 +254,7 @@ index 944c954..b05d1d1 100644
  def forward_shift_back_llama(
      model: PreTrainedModel,
      input_ids: Optional[torch.LongTensor] = None,
-@@ -257,6 +338,8 @@ def forward_shift_back_llama(
+@@ -257,6 +359,8 @@ def forward_shift_back_llama(
      past_key_values=None,
      **kwargs,
  ):
@@ -245,7 +263,7 @@ index 944c954..b05d1d1 100644
      inputs_embeds = model.get_input_embeddings()(input_ids)
      if past_key_values is None:
          past_key_values = DynamicCache()
-@@ -365,6 +448,8 @@ def forward_shift_back_qwen2(
+@@ -365,6 +469,8 @@ def forward_shift_back_qwen2(
      past_key_values=None,
      **kwargs,
  ):
@@ -254,7 +272,7 @@ index 944c954..b05d1d1 100644
      inputs_embeds = model.get_input_embeddings()(input_ids)
      if past_key_values is None:
          past_key_values = DynamicCache()
-@@ -485,4 +570,3 @@ def forward_shift_back_qwen2(
+@@ -485,4 +591,3 @@ def forward_shift_back_qwen2(
          hidden_states=all_hidden_states,
          attentions=None,
      )
