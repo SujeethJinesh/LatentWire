@@ -47,6 +47,12 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
         recoverable = float(raw.get("recoverable_fraction", 0.60))
         if total <= 0:
             raise ValueError("total_step_ms must be positive")
+        if boundary < 0:
+            raise ValueError("attention_ssm_boundary_ms must be non-negative")
+        if matched < 0:
+            raise ValueError("matched_non_boundary_ms must be non-negative")
+        if not 0.0 <= recoverable <= 1.0:
+            raise ValueError("recoverable_fraction must be between 0 and 1")
         avoidable = max(0.0, boundary - matched)
         rows.append(
             {

@@ -102,6 +102,7 @@ Promotion threshold:
 | `phase3/reference/boundary.py` and tests | CPU boundary blend scaffold exists. | Useful for semantics if profiling promotes implementation, but not evidence of speed. |
 | `phase4/kernel/boundary_triton.py` and tests | Triton interpreter scaffold exists but local Triton import is unavailable in `venv_arm64`. | No GPU or Mac performance claim. |
 | `phase2/profiler_driver.py` | Fixed-request OpenAI-compatible driver dry-runs locally. | The native NVIDIA gate is now runnable without ad hoc manual API calls. |
+| `phase2/check_profiler_run_artifacts.py` | Future native run directories are checked for metadata, Nsight artifacts, logs, readout rows, and repeated metric rows. | GPU evidence must be artifact-complete before the draft cites it. |
 
 ## 5. Limitations
 
@@ -125,6 +126,8 @@ Promotion threshold:
 - [ ] Run Nsight Compute only on suspicious boundary kernels and matched
   same-type controls.
 - [ ] Compute paired uncertainty over repeated fixed-request runs.
+- [ ] Run `phase2/check_profiler_run_artifacts.py --run-dir "$HWK_RUN"` and
+  save `artifact_check.json`.
 - [ ] Decide promote, pause, or kill using the 3% end-to-end threshold.
 - [ ] If promoted, implement only the smallest fused boundary operator needed
   to test the observed overhead.

@@ -8,7 +8,15 @@ dependencies, scratch clones, and generated artifacts under
 
 ## Local Setup
 
-Create a per-project virtual environment:
+Use the repo-local ARM64 virtual environment when available:
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+source ./venv_arm64/bin/activate
+python -m pytest experimental/hybridkernel/phase2/tests
+```
+
+If that environment is unavailable, create a per-project virtual environment:
 
 ```bash
 cd /Users/sujeethjinesh/Desktop/LatentWire

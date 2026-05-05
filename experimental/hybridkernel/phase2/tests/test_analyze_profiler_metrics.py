@@ -49,3 +49,25 @@ def test_kills_when_recoverable_gain_is_tiny() -> None:
     )
 
     assert result["status"].startswith("KILL")
+
+
+def test_rejects_invalid_recoverable_fraction() -> None:
+    try:
+        analyze(
+            {
+                "rows": [
+                    {
+                        "model": "granite",
+                        "run_id": 0,
+                        "total_step_ms": 100.0,
+                        "attention_ssm_boundary_ms": 8.0,
+                        "matched_non_boundary_ms": 2.0,
+                        "recoverable_fraction": 1.5,
+                    }
+                ]
+            }
+        )
+    except ValueError as exc:
+        assert "recoverable_fraction" in str(exc)
+    else:
+        raise AssertionError("expected invalid recoverable_fraction to be rejected")

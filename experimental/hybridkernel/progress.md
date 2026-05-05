@@ -143,3 +143,20 @@ turning reduced Nsight summaries into `profiler_analysis_gate.json`. This makes
 the next GPU run reviewable: the user only needs to fill
 `total_step_ms`, `attention_ssm_boundary_ms`, `matched_non_boundary_ms`, and
 `recoverable_fraction` per repeated run.
+
+## Native Artifact Review Gate
+
+Added a reviewer-facing artifact verifier:
+
+- checker: `phase2/check_profiler_run_artifacts.py`
+- tests: `phase2/tests/test_check_profiler_run_artifacts.py`
+
+The checker validates a future native run directory for environment metadata,
+architecture-map metadata, Nsight Systems and Nsight Compute artifacts,
+profiling logs, the pre-registered readout questions, and at least three valid
+metric rows for one model. This closes a reproducibility gap in the runbook:
+future GPU evidence must be both analytically reduced and artifact-complete
+before the paper can cite it.
+
+Current status remains **PENDING native profiler data**. The verifier is a gate
+for admissible evidence, not a positive result.

@@ -269,6 +269,31 @@ Promotion requires at least three repeated runs where the minimum recoverable
 gain upper bound is at least 3%. If the mean recoverable-gain upper bound is
 below 1%, shelve the branch unless a new profiler anomaly appears.
 
+## Artifact Completeness Check
+
+Before treating the native run as reviewer-facing evidence, run the local
+artifact verifier:
+
+```bash
+python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
+  --run-dir "$HWK_RUN" \
+  | tee "$HWK_RUN/artifact_check.json"
+```
+
+The verifier checks that the run directory contains:
+
+- immutable environment metadata;
+- architecture-map metadata copied beside the trace;
+- Nsight Systems and Nsight Compute artifacts;
+- profiling logs;
+- `readout.md` with the pre-registered decision questions;
+- `profiler_metrics.json` with at least three repeated valid rows for one
+  model.
+
+A `PASS` means the artifact bundle is complete enough for human review. It does
+not mean HybridKernel is promoted, and it does not authorize any speedup claim.
+Promotion still depends on the profiler-analysis gate and the controls below.
+
 ## Promotion Criteria
 
 Promote HybridKernel to implementation only if all are true:
@@ -283,6 +308,8 @@ Promote HybridKernel to implementation only if all are true:
 - the result survives at least three repeated runs and one same-family control;
 - the readout separates source communication from target-cache or runtime-cache
   effects.
+- `check_profiler_run_artifacts.py` passes for the exact run directory being
+  cited.
 
 Kill or pause if any are true:
 
