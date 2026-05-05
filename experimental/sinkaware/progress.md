@@ -5,7 +5,7 @@
 - Phase 0 setup: partial Mac-only source-audit setup
 - Phase 1 literature and code audit: quick-kill audit recorded
 - Phase 2: exact static sink-prior gate failed; approximate low-rank revival
-  probe completed
+  and per-head softmax/output gates completed
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-05
@@ -83,9 +83,18 @@ only current compromise that has nontrivial QK-logit predictability while
 staying below exact four-sink QK cost (`0.531x` estimated multiply-adds,
 `R2=0.420`). Rank-8 is more accurate but too expensive under this simple model.
 
-Current status: **ALIVE as an approximate low-rank SinkAware branch**, not as
-exact static-prior reuse. The next pre-GPU gate is per-head approximation error
-and softmax/output-quality impact.
+`phase2/real_qk_sink_softmax_output_probe.md` runs the next Mac-local quality
+gate. It keeps all non-sink QK scores exact and replaces only fixed sink-token
+logits with per-head predictors on held-out distilgpt2 trace tokens. Rank-2
+improves output relative-L2 over position-only (`0.134` versus `0.173`) and
+reduces sink-mass MAE (`0.055` versus `0.080`). Rank-8 is more accurate
+(`output rel-L2=0.096`) but remains too expensive under the current simple cost
+model.
+
+Current status: **ALIVE for a narrow GPU gate as an approximate low-rank
+SinkAware branch**, not as exact static-prior reuse. The next exact gate is a
+GPU prototype comparing exact attention, exact fixed-sink decomposition that
+still computes `QK_sink`, and rank-2 approximate sink-logit prediction.
 
 ## Macbook Kernel Correctness Scaffold
 

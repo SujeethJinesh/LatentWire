@@ -1,0 +1,276 @@
+{
+  "model_name": "distilgpt2",
+  "n_traces": 24,
+  "n_samples": 9450,
+  "heldout_samples_per_layer": 520,
+  "sink_tokens": 4,
+  "rows": {
+    "0": {
+      "static": {
+        "sink_logit_rmse": 10.699862556274121,
+        "sink_mass_mae": 0.29262929806897703,
+        "attention_l1": 0.6307986492506014,
+        "output_rel_l2": 0.5187167069659784
+      },
+      "position": {
+        "sink_logit_rmse": 8.462727292684407,
+        "sink_mass_mae": 0.17524336850603084,
+        "attention_l1": 0.388751922827214,
+        "output_rel_l2": 0.38011903401571684
+      },
+      "rank1": {
+        "sink_logit_rmse": 7.629591997770163,
+        "sink_mass_mae": 0.15976246868337443,
+        "attention_l1": 0.3483625999271261,
+        "output_rel_l2": 0.33720977966575166
+      },
+      "rank2": {
+        "sink_logit_rmse": 3.3023779130898987,
+        "sink_mass_mae": 0.08986123861333138,
+        "attention_l1": 0.2066560381002581,
+        "output_rel_l2": 0.19688447555370378
+      },
+      "rank4": {
+        "sink_logit_rmse": 2.7866954711767344,
+        "sink_mass_mae": 0.06589492968112476,
+        "attention_l1": 0.16153753187010386,
+        "output_rel_l2": 0.16680795337149623
+      },
+      "rank8": {
+        "sink_logit_rmse": 2.016867711223089,
+        "sink_mass_mae": 0.04716065570878527,
+        "attention_l1": 0.1222418301968271,
+        "output_rel_l2": 0.13455137027899933
+      }
+    },
+    "1": {
+      "static": {
+        "sink_logit_rmse": 368.6417712871845,
+        "sink_mass_mae": 0.22885383757419203,
+        "attention_l1": 0.48658244316524035,
+        "output_rel_l2": 0.44935255971699517
+      },
+      "position": {
+        "sink_logit_rmse": 354.1478244488056,
+        "sink_mass_mae": 0.2111257625574613,
+        "attention_l1": 0.4413794979551388,
+        "output_rel_l2": 0.43614175669505406
+      },
+      "rank1": {
+        "sink_logit_rmse": 336.9834940103384,
+        "sink_mass_mae": 0.18921544369772295,
+        "attention_l1": 0.3982030865315906,
+        "output_rel_l2": 0.42540036119098085
+      },
+      "rank2": {
+        "sink_logit_rmse": 255.68220728360689,
+        "sink_mass_mae": 0.15715784957311035,
+        "attention_l1": 0.3368043286174339,
+        "output_rel_l2": 0.38109393209738557
+      },
+      "rank4": {
+        "sink_logit_rmse": 221.07573355161227,
+        "sink_mass_mae": 0.1289019396140165,
+        "attention_l1": 0.2808544145682205,
+        "output_rel_l2": 0.32414469698260084
+      },
+      "rank8": {
+        "sink_logit_rmse": 172.99981937408447,
+        "sink_mass_mae": 0.10247477987168967,
+        "attention_l1": 0.22301482195597966,
+        "output_rel_l2": 0.2650171008681372
+      }
+    },
+    "2": {
+      "static": {
+        "sink_logit_rmse": 1501.0831595787636,
+        "sink_mass_mae": 0.02788461625384979,
+        "attention_l1": 0.05608974533286478,
+        "output_rel_l2": 0.09885965837919507
+      },
+      "position": {
+        "sink_logit_rmse": 1463.692870917687,
+        "sink_mass_mae": 0.02788461625384979,
+        "attention_l1": 0.05608974533286478,
+        "output_rel_l2": 0.09885965837919507
+      },
+      "rank1": {
+        "sink_logit_rmse": 1403.8496589073768,
+        "sink_mass_mae": 0.030289365757179887,
+        "attention_l1": 0.06089924433622445,
+        "output_rel_l2": 0.1056539205016385
+      },
+      "rank2": {
+        "sink_logit_rmse": 1358.2608179532565,
+        "sink_mass_mae": 0.031410257384563316,
+        "attention_l1": 0.06314102759429163,
+        "output_rel_l2": 0.1090336197274536
+      },
+      "rank4": {
+        "sink_logit_rmse": 1153.7381843566895,
+        "sink_mass_mae": 0.024040636133614523,
+        "attention_l1": 0.04840178509418525,
+        "output_rel_l2": 0.0864613920964386
+      },
+      "rank8": {
+        "sink_logit_rmse": 952.1125790229211,
+        "sink_mass_mae": 0.02596153927346082,
+        "attention_l1": 0.05224359137220733,
+        "output_rel_l2": 0.0920533539587789
+      }
+    },
+    "3": {
+      "static": {
+        "sink_logit_rmse": 1516.3437982412486,
+        "sink_mass_mae": 0.014944889926566528,
+        "attention_l1": 0.029889779824476975,
+        "output_rel_l2": 0.06674363425431343
+      },
+      "position": {
+        "sink_logit_rmse": 1424.1125095073994,
+        "sink_mass_mae": 0.015512113239562425,
+        "attention_l1": 0.03102422644599174,
+        "output_rel_l2": 0.06909410285655983
+      },
+      "rank1": {
+        "sink_logit_rmse": 1292.5254391009992,
+        "sink_mass_mae": 0.015906668955890033,
+        "attention_l1": 0.03181333788877684,
+        "output_rel_l2": 0.07062993051793176
+      },
+      "rank2": {
+        "sink_logit_rmse": 1179.5248901954064,
+        "sink_mass_mae": 0.014862803262300217,
+        "attention_l1": 0.029725606495944353,
+        "output_rel_l2": 0.06586766793177679
+      },
+      "rank4": {
+        "sink_logit_rmse": 943.4205298790565,
+        "sink_mass_mae": 0.01353157856143658,
+        "attention_l1": 0.02706315709421488,
+        "output_rel_l2": 0.060261593859356186
+      },
+      "rank8": {
+        "sink_logit_rmse": 746.7402506021353,
+        "sink_mass_mae": 0.009335831724680388,
+        "attention_l1": 0.018671663420704695,
+        "output_rel_l2": 0.041219477484432554
+      }
+    },
+    "4": {
+      "static": {
+        "sink_logit_rmse": 1898.074868422288,
+        "sink_mass_mae": 0.012533421601984687,
+        "attention_l1": 0.025067023946445707,
+        "output_rel_l2": 0.034621718307518416
+      },
+      "position": {
+        "sink_logit_rmse": 1853.1369607778695,
+        "sink_mass_mae": 0.012666249304699876,
+        "attention_l1": 0.02533267937947298,
+        "output_rel_l2": 0.034725595162953836
+      },
+      "rank1": {
+        "sink_logit_rmse": 1705.547344149076,
+        "sink_mass_mae": 0.012972685642484605,
+        "attention_l1": 0.02594555204629896,
+        "output_rel_l2": 0.03501550498051216
+      },
+      "rank2": {
+        "sink_logit_rmse": 1478.736320906419,
+        "sink_mass_mae": 0.012972685922350763,
+        "attention_l1": 0.025945552603295275,
+        "output_rel_l2": 0.03501472471820116
+      },
+      "rank4": {
+        "sink_logit_rmse": 1162.3325262803298,
+        "sink_mass_mae": 0.01265733985765885,
+        "attention_l1": 0.025314860490207237,
+        "output_rel_l2": 0.0347291355262487
+      },
+      "rank8": {
+        "sink_logit_rmse": 926.1130116389348,
+        "sink_mass_mae": 0.011699307298705448,
+        "attention_l1": 0.023398795374359762,
+        "output_rel_l2": 0.03395606378832727
+      }
+    },
+    "5": {
+      "static": {
+        "sink_logit_rmse": 1802.5196691072904,
+        "sink_mass_mae": 0.04160762468998408,
+        "attention_l1": 0.08353576219055947,
+        "output_rel_l2": 0.02012795002743424
+      },
+      "position": {
+        "sink_logit_rmse": 1744.2829722477838,
+        "sink_mass_mae": 0.03885934103739594,
+        "attention_l1": 0.07803919485593754,
+        "output_rel_l2": 0.01971395597528495
+      },
+      "rank1": {
+        "sink_logit_rmse": 1421.097726557805,
+        "sink_mass_mae": 0.023209682378250017,
+        "attention_l1": 0.04673987759959772,
+        "output_rel_l2": 0.016862488730343652
+      },
+      "rank2": {
+        "sink_logit_rmse": 1369.728092604417,
+        "sink_mass_mae": 0.02103751127166936,
+        "attention_l1": 0.04239553534621068,
+        "output_rel_l2": 0.016658346692544936
+      },
+      "rank4": {
+        "sink_logit_rmse": 1165.391011751615,
+        "sink_mass_mae": 0.01706867594387178,
+        "attention_l1": 0.034457864714707624,
+        "output_rel_l2": 0.013718678498208247
+      },
+      "rank8": {
+        "sink_logit_rmse": 908.3158598092887,
+        "sink_mass_mae": 0.01479154665961698,
+        "attention_l1": 0.029903606141538735,
+        "output_rel_l2": 0.012140337540177945
+      }
+    }
+  },
+  "summary": {
+    "position": {
+      "sink_logit_rmse": 1141.3059775320382,
+      "sink_mass_mae": 0.08021524181650003,
+      "attention_l1": 0.17010287779943664,
+      "output_rel_l2": 0.1731090171807941
+    },
+    "rank1": {
+      "sink_logit_rmse": 1027.9388757872275,
+      "sink_mass_mae": 0.07189271918581698,
+      "attention_l1": 0.15199394972160243,
+      "output_rel_l2": 0.16512866426452644
+    },
+    "rank2": {
+      "sink_logit_rmse": 940.8724511426993,
+      "sink_mass_mae": 0.05455039100455423,
+      "attention_l1": 0.11744468145957232,
+      "output_rel_l2": 0.13409212778684432
+    },
+    "rank4": {
+      "sink_logit_rmse": 774.79078021508,
+      "sink_mass_mae": 0.043682516631953834,
+      "attention_l1": 0.09627160230527324,
+      "output_rel_l2": 0.11435390838905814
+    },
+    "rank8": {
+      "sink_logit_rmse": 618.0497313597646,
+      "sink_mass_mae": 0.03523727675615643,
+      "attention_l1": 0.07824571807693621,
+      "output_rel_l2": 0.09648961731980886
+    },
+    "static": {
+      "sink_logit_rmse": 1182.8938548655083,
+      "sink_mass_mae": 0.10307561468592569,
+      "attention_l1": 0.21866056728503144,
+      "output_rel_l2": 0.1980703712752391
+    }
+  },
+  "status": "ALIVE for GPU gate; rank-2 improves output error over position-only with bounded drift."
+}
