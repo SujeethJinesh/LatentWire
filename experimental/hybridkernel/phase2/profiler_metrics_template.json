@@ -1,0 +1,14 @@
+{
+  "description": "Fill with repeated native NVIDIA/vLLM measurements reduced from Nsight traces.",
+  "rows": [
+    {
+      "model": "ibm-granite-4.0-h-tiny",
+      "run_id": 0,
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": 0.6,
+      "notes": "Replace nulls after native profiling."
+    }
+  ]
+}

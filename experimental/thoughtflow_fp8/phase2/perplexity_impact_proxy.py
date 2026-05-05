@@ -78,12 +78,54 @@ def thoughtflow_recent(trace: list[Token], budget: int) -> set[int]:
     return kept
 
 
+def thoughtflow_saliency_recent(trace: list[Token], budget: int) -> set[int]:
+    """Successor policy: protect anchors, reserve recency, then rank salient states.
+
+    This is a stricter revival attempt than `thoughtflow_recent`: phase markers
+    are no longer always protected. Instead, they receive a bonus and must
+    compete with math-state and high-importance reasoning tokens after anchors
+    and a recent reserve have been kept. If this still loses to the R-KV-like
+    sink+recent proxy, the current phase-aware story is weak.
+    """
+
+    anchors = {idx for idx, token in enumerate(trace) if token.label == "anchor"}
+    recent_budget = max(1, budget // 2)
+    recent = set(range(max(0, len(trace) - recent_budget), len(trace)))
+    kept = anchors | recent
+    remaining = max(0, budget - len(kept))
+    if remaining:
+        def score(idx: int) -> tuple[float, int]:
+            token = trace[idx]
+            label_bonus = 0.0
+            if token.label == "math_state":
+                label_bonus = 0.18
+            elif token.label == "phase":
+                label_bonus = 0.10
+            return (token.importance + label_bonus, -idx)
+
+        filler = sorted(
+            [idx for idx in range(len(trace)) if idx not in kept],
+            key=lambda idx: (-score(idx)[0], score(idx)[1]),
+        )
+        kept |= set(filler[:remaining])
+    if len(kept) > budget:
+        protected = anchors | (recent & kept)
+        overflow = sorted(
+            [idx for idx in kept if idx not in protected],
+            key=lambda idx: (trace[idx].importance, -idx),
+        )
+        for idx in overflow[: len(kept) - budget]:
+            kept.remove(idx)
+    return kept
+
+
 POLICIES = {
     "longflow_like": longflow_like,
     "thin_kv_like": thin_kv_like,
     "rkv_like": rkv_like,
     "thoughtflow": thoughtflow,
     "thoughtflow_recent": thoughtflow_recent,
+    "thoughtflow_saliency_recent": thoughtflow_saliency_recent,
 }
 
 

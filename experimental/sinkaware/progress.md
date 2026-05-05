@@ -117,3 +117,16 @@ collected but skip because `triton` is not installable/importable in
 `./venv_arm64` on this machine. The scaffold checks exact softmax composition
 for synthetic scalar values only; it does not yet prove a full attention kernel
 or a GPU systems win.
+
+## Approximate Attention Reference Gate
+
+Added a Phase 3 reference for the live approximate branch:
+
+- CPU reference: `phase3/reference/approx_sink_attention.py`
+- tests: `phase3/tests/test_approx_sink_attention_reference.py`
+- note: `phase3/approx_sink_attention_reference.md`
+
+This reference keeps all non-sink tail logits exact, replaces only fixed-sink
+logits with a predictor, and then runs the normal softmax denominator. Tests
+verify that exact sink logits reproduce exact attention. This is the operator a
+future Triton/CUDA kernel must match before native timing is meaningful.

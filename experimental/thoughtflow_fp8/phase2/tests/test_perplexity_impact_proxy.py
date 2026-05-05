@@ -5,6 +5,7 @@ from experimental.thoughtflow_fp8.phase2.perplexity_impact_proxy import (
     _status,
     _summary,
     thoughtflow_recent,
+    thoughtflow_saliency_recent,
 )
 from experimental.thoughtflow_fp8.phase2.simulate_phase_retention import Token
 
@@ -76,3 +77,22 @@ def test_thoughtflow_recent_reserves_recent_tokens() -> None:
     assert {0, 1}.issubset(kept)
     assert 5 in kept
     assert len(kept) == 4
+
+
+def test_thoughtflow_saliency_recent_keeps_anchors_recent_and_salient_math() -> None:
+    trace = [
+        Token("a", "anchor", 1.0),
+        Token("b", "anchor", 0.9),
+        Token("phase", "phase", 0.4),
+        Token("math", "math_state", 0.7),
+        Token("low", "reason", 0.1),
+        Token("recent1", "reason", 0.1),
+        Token("recent2", "reason", 0.1),
+    ]
+
+    kept = thoughtflow_saliency_recent(trace, budget=5)
+
+    assert {0, 1}.issubset(kept)
+    assert {5, 6}.issubset(kept)
+    assert 3 in kept
+    assert len(kept) == 5

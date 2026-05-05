@@ -15,6 +15,7 @@
 | review packet | `paper/latentwire_colm_v3_review_packet_20260505.md` | evidence/tables/claims packet |
 | aggregate pkt-src CI | `results/source_private_colm_acceptance_baselines_20260502/aggregate_source_index_ci.md` | reviewer-requested clustered source-index audit |
 | camera-ready figure script | `scripts/build_latentwire_colm_v3_camera_ready_figures.py` | regenerates the main source-index-aware accuracy figure |
+| side-project review | `paper/experimental_projects_workshop_review_20260505.md` | ranking, remaining benchmarks, and completion gates |
 
 ## Current COLM_v3 Decision
 
@@ -38,7 +39,7 @@ Remaining before submission:
 | HybridKernel | `experimental/hybridkernel/paper/hybridkernel_colm2026.pdf` | weakly alive as profiler-driven systems branch |
 | SinkAware | `experimental/sinkaware/paper/sinkaware_colm2026.pdf` | alive as approximate low-rank fixed-sink prior |
 | SinkAware reviewer pack | `experimental/sinkaware/paper/reviewer_pack.md` | presentable narrow review packet |
-| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf` | weakened; successor policy improved but not enough |
+| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf` | mixed; saliency+recent successor nearly ties R-KV-like but does not beat it |
 
 ## Side Project Data Links
 
@@ -46,9 +47,11 @@ Remaining before submission:
 |---|---|---|
 | HybridKernel | `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md` | native NVIDIA/vLLM profiling is the only useful next gate |
 | HybridKernel | `experimental/hybridkernel/phase2/profiler_driver.py` | Mac dry-run validates fixed-request driver plumbing |
+| HybridKernel | `experimental/hybridkernel/phase2/profiler_analysis_gate.md` | pre-registered native profiler promote/kill parser; pending GPU data |
 | SinkAware | `experimental/sinkaware/phase2/real_qk_sink_softmax_output_probe.md` | rank-2 improves output drift vs position-only on distilgpt2 traces |
+| SinkAware | `experimental/sinkaware/phase3/approx_sink_attention_reference.md` | CPU reference for approximate sink-logit attention operator |
 | SinkAware | `experimental/sinkaware/phase2/gpu_gate_runbook.md` | native benchmark plan for exact vs approximate sink handling |
-| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/phase2/perplexity_impact_proxy.md` | ThoughtFlow-recent beats old ThoughtFlow, LongFlow-like, and ThinKV-like, but loses to R-KV-like |
+| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/phase2/perplexity_impact_proxy.md` | ThoughtFlow-saliency-recent NLL 3.434 nearly ties but still loses to R-KV-like 3.419 |
 
 ## Next Exact Gates
 

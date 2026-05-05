@@ -73,6 +73,17 @@
       "ppl": 40.04460101610318
     },
     {
+      "trace_id": 0,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 44,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.20454545454545456,
+      "continuation_tokens": 24,
+      "nll": 3.566042900085449,
+      "delta_nll_vs_full": 2.05072557926178,
+      "ppl": 35.37632814824936
+    },
+    {
       "trace_id": 1,
       "policy": "full_context",
       "prefix_tokens": 36,
@@ -137,6 +148,17 @@
       "nll": 3.615428924560547,
       "delta_nll_vs_full": 0.7353661060333252,
       "ppl": 37.16728446834326
+    },
+    {
+      "trace_id": 1,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 36,
+      "retained_prefix_tokens": 8,
+      "keep_rate": 0.2222222222222222,
+      "continuation_tokens": 24,
+      "nll": 3.640963315963745,
+      "delta_nll_vs_full": 0.7609004974365234,
+      "ppl": 38.128548879668095
     },
     {
       "trace_id": 2,
@@ -205,6 +227,17 @@
       "ppl": 13.975582461699576
     },
     {
+      "trace_id": 2,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 43,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.20930232558139536,
+      "continuation_tokens": 24,
+      "nll": 2.1984317302703857,
+      "delta_nll_vs_full": 1.1618255376815796,
+      "ppl": 9.010870936528852
+    },
+    {
       "trace_id": 3,
       "policy": "full_context",
       "prefix_tokens": 40,
@@ -269,6 +302,17 @@
       "nll": 3.6998367309570312,
       "delta_nll_vs_full": 1.6752073764801025,
       "ppl": 40.44070110646197
+    },
+    {
+      "trace_id": 3,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 40,
+      "retained_prefix_tokens": 8,
+      "keep_rate": 0.2,
+      "continuation_tokens": 24,
+      "nll": 3.73175048828125,
+      "delta_nll_vs_full": 1.7071211338043213,
+      "ppl": 41.75213084847367
     },
     {
       "trace_id": 4,
@@ -337,6 +381,17 @@
       "ppl": 20.328399916133492
     },
     {
+      "trace_id": 4,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 37,
+      "retained_prefix_tokens": 8,
+      "keep_rate": 0.21621621621621623,
+      "continuation_tokens": 24,
+      "nll": 3.399554491043091,
+      "delta_nll_vs_full": 1.3603014945983887,
+      "ppl": 29.950753745609415
+    },
+    {
       "trace_id": 5,
       "policy": "full_context",
       "prefix_tokens": 40,
@@ -401,6 +456,17 @@
       "nll": 3.9393227100372314,
       "delta_nll_vs_full": 1.0014069080352783,
       "ppl": 51.38378778871834
+    },
+    {
+      "trace_id": 5,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 40,
+      "retained_prefix_tokens": 8,
+      "keep_rate": 0.2,
+      "continuation_tokens": 24,
+      "nll": 3.6536810398101807,
+      "delta_nll_vs_full": 0.7157652378082275,
+      "ppl": 38.61655381348124
     },
     {
       "trace_id": 6,
@@ -469,6 +535,17 @@
       "ppl": 22.19218648520713
     },
     {
+      "trace_id": 6,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 34,
+      "retained_prefix_tokens": 7,
+      "keep_rate": 0.20588235294117646,
+      "continuation_tokens": 24,
+      "nll": 3.1264944076538086,
+      "delta_nll_vs_full": 0.47313380241394043,
+      "ppl": 22.793933081934952
+    },
+    {
       "trace_id": 7,
       "policy": "full_context",
       "prefix_tokens": 46,
@@ -533,6 +610,17 @@
       "nll": 2.918429374694824,
       "delta_nll_vs_full": 1.757010579109192,
       "ppl": 18.512188901919536
+    },
+    {
+      "trace_id": 7,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 46,
+      "retained_prefix_tokens": 10,
+      "keep_rate": 0.21739130434782608,
+      "continuation_tokens": 24,
+      "nll": 2.87264084815979,
+      "delta_nll_vs_full": 1.7112220525741577,
+      "ppl": 17.683656442047706
     },
     {
       "trace_id": 8,
@@ -601,6 +689,17 @@
       "ppl": 40.39802004868368
     },
     {
+      "trace_id": 8,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 39,
+      "retained_prefix_tokens": 8,
+      "keep_rate": 0.20512820512820512,
+      "continuation_tokens": 24,
+      "nll": 3.2914505004882812,
+      "delta_nll_vs_full": 1.3885055780410767,
+      "ppl": 26.881827494440223
+    },
+    {
       "trace_id": 9,
       "policy": "full_context",
       "prefix_tokens": 43,
@@ -665,6 +764,17 @@
       "nll": 2.9876134395599365,
       "delta_nll_vs_full": 1.0385810136795044,
       "ppl": 19.838280694532237
+    },
+    {
+      "trace_id": 9,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 43,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.20930232558139536,
+      "continuation_tokens": 24,
+      "nll": 2.8144004344940186,
+      "delta_nll_vs_full": 0.8653680086135864,
+      "ppl": 16.683170127769948
     },
     {
       "trace_id": 10,
@@ -733,6 +843,17 @@
       "ppl": 22.72434752307378
     },
     {
+      "trace_id": 10,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 44,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.20454545454545456,
+      "continuation_tokens": 24,
+      "nll": 3.2362940311431885,
+      "delta_nll_vs_full": 0.8530533313751221,
+      "ppl": 25.439269696039624
+    },
+    {
       "trace_id": 11,
       "policy": "full_context",
       "prefix_tokens": 45,
@@ -797,6 +918,17 @@
       "nll": 4.170525074005127,
       "delta_nll_vs_full": 3.0101388692855835,
       "ppl": 64.74944143170909
+    },
+    {
+      "trace_id": 11,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 45,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.2,
+      "continuation_tokens": 24,
+      "nll": 3.882124662399292,
+      "delta_nll_vs_full": 2.7217384576797485,
+      "ppl": 48.52720955583203
     },
     {
       "trace_id": 12,
@@ -865,6 +997,17 @@
       "ppl": 43.67925826341013
     },
     {
+      "trace_id": 12,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 38,
+      "retained_prefix_tokens": 8,
+      "keep_rate": 0.21052631578947367,
+      "continuation_tokens": 24,
+      "nll": 3.7239840030670166,
+      "delta_nll_vs_full": 1.1968538761138916,
+      "ppl": 41.429119496643075
+    },
+    {
       "trace_id": 13,
       "policy": "full_context",
       "prefix_tokens": 42,
@@ -929,6 +1072,17 @@
       "nll": 3.6400420665740967,
       "delta_nll_vs_full": 1.2325005531311035,
       "ppl": 38.09343915217517
+    },
+    {
+      "trace_id": 13,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 42,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.21428571428571427,
+      "continuation_tokens": 24,
+      "nll": 3.3600234985351562,
+      "delta_nll_vs_full": 0.9524819850921631,
+      "ppl": 28.78986739100516
     },
     {
       "trace_id": 14,
@@ -997,6 +1151,17 @@
       "ppl": 122.79670531853084
     },
     {
+      "trace_id": 14,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 33,
+      "retained_prefix_tokens": 7,
+      "keep_rate": 0.21212121212121213,
+      "continuation_tokens": 24,
+      "nll": 4.6699371337890625,
+      "delta_nll_vs_full": 1.6161088943481445,
+      "ppl": 106.6910349605074
+    },
+    {
       "trace_id": 15,
       "policy": "full_context",
       "prefix_tokens": 51,
@@ -1061,6 +1226,17 @@
       "nll": 3.0533015727996826,
       "delta_nll_vs_full": 1.6650569438934326,
       "ppl": 21.18517347876806
+    },
+    {
+      "trace_id": 15,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 51,
+      "retained_prefix_tokens": 11,
+      "keep_rate": 0.21568627450980393,
+      "continuation_tokens": 24,
+      "nll": 2.8466556072235107,
+      "delta_nll_vs_full": 1.4584109783172607,
+      "ppl": 17.230061281768656
     },
     {
       "trace_id": 16,
@@ -1129,6 +1305,17 @@
       "ppl": 31.030685748809717
     },
     {
+      "trace_id": 16,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 41,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.21951219512195122,
+      "continuation_tokens": 24,
+      "nll": 3.346912145614624,
+      "delta_nll_vs_full": 1.1709284782409668,
+      "ppl": 28.414857097503635
+    },
+    {
       "trace_id": 17,
       "policy": "full_context",
       "prefix_tokens": 36,
@@ -1193,6 +1380,17 @@
       "nll": 4.480685710906982,
       "delta_nll_vs_full": 2.1284751892089844,
       "ppl": 88.29519690176865
+    },
+    {
+      "trace_id": 17,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 36,
+      "retained_prefix_tokens": 8,
+      "keep_rate": 0.2222222222222222,
+      "continuation_tokens": 24,
+      "nll": 3.8658626079559326,
+      "delta_nll_vs_full": 1.5136520862579346,
+      "ppl": 47.74443940794068
     },
     {
       "trace_id": 18,
@@ -1261,6 +1459,17 @@
       "ppl": 33.677933887252344
     },
     {
+      "trace_id": 18,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 33,
+      "retained_prefix_tokens": 7,
+      "keep_rate": 0.21212121212121213,
+      "continuation_tokens": 24,
+      "nll": 3.4459590911865234,
+      "delta_nll_vs_full": 1.2532422542572021,
+      "ppl": 31.3733589338417
+    },
+    {
       "trace_id": 19,
       "policy": "full_context",
       "prefix_tokens": 43,
@@ -1325,6 +1534,17 @@
       "nll": 5.085212707519531,
       "delta_nll_vs_full": 2.1222763061523438,
       "ppl": 161.61431216124126
+    },
+    {
+      "trace_id": 19,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 43,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.20930232558139536,
+      "continuation_tokens": 24,
+      "nll": 4.922397613525391,
+      "delta_nll_vs_full": 1.9594612121582031,
+      "ppl": 137.3314866029891
     },
     {
       "trace_id": 20,
@@ -1393,6 +1613,17 @@
       "ppl": 32.914386302109584
     },
     {
+      "trace_id": 20,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 44,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.20454545454545456,
+      "continuation_tokens": 24,
+      "nll": 3.27786922454834,
+      "delta_nll_vs_full": 1.1975595951080322,
+      "ppl": 26.519205982684387
+    },
+    {
       "trace_id": 21,
       "policy": "full_context",
       "prefix_tokens": 43,
@@ -1457,6 +1688,17 @@
       "nll": 2.2200069427490234,
       "delta_nll_vs_full": 0.8738287687301636,
       "ppl": 9.207394790291534
+    },
+    {
+      "trace_id": 21,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 43,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.20930232558139536,
+      "continuation_tokens": 24,
+      "nll": 2.181419610977173,
+      "delta_nll_vs_full": 0.835241436958313,
+      "ppl": 8.858873490372641
     },
     {
       "trace_id": 22,
@@ -1525,6 +1767,17 @@
       "ppl": 27.53220071015469
     },
     {
+      "trace_id": 22,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 45,
+      "retained_prefix_tokens": 9,
+      "keep_rate": 0.2,
+      "continuation_tokens": 24,
+      "nll": 3.175311803817749,
+      "delta_nll_vs_full": 1.548450231552124,
+      "ppl": 23.934281505379687
+    },
+    {
       "trace_id": 23,
       "policy": "full_context",
       "prefix_tokens": 38,
@@ -1589,6 +1842,17 @@
       "nll": 4.06321382522583,
       "delta_nll_vs_full": 1.4044334888458252,
       "ppl": 58.16093010219001
+    },
+    {
+      "trace_id": 23,
+      "policy": "thoughtflow_saliency_recent",
+      "prefix_tokens": 38,
+      "retained_prefix_tokens": 8,
+      "keep_rate": 0.21052631578947367,
+      "continuation_tokens": 24,
+      "nll": 4.186331748962402,
+      "delta_nll_vs_full": 1.5275514125823975,
+      "ppl": 65.78104644981765
     }
   ],
   "summary": {
@@ -1633,7 +1897,14 @@
       "nll": 3.5618079404036203,
       "delta_nll_vs_full": 1.4611041992902756,
       "ppl": 44.1642682774703
+    },
+    "thoughtflow_saliency_recent": {
+      "n_traces": 24,
+      "keep_rate": 0.20977864286577727,
+      "nll": 3.434020539124807,
+      "delta_nll_vs_full": 1.333316798011462,
+      "ppl": 38.12257855710537
     }
   },
-  "status": "WEAKENED on retained-context NLL proxy via thoughtflow_recent; matched-budget proxies score continuation better."
+  "status": "MIXED on retained-context NLL proxy via thoughtflow_saliency_recent; successor ties matched-budget proxies, not enough for GPU claims."
 }

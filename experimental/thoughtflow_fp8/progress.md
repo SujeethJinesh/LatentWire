@@ -63,6 +63,19 @@ Current status: **MIXED/WEAKENED**. The only pre-GPU route left is a real hidden
 or KV saliency policy that beats the strongest importance proxy and shows a
 quality/perplexity benefit under actual cache dropping.
 
+`phase2/perplexity_impact_proxy.md` now includes a stronger successor,
+ThoughtFlow-saliency-recent. It protects anchors, reserves half the retained
+budget for recent tokens, and lets phase markers compete with math-state and
+high-importance reasoning tokens. On 24 distilgpt2 traces at 0.20 keep
+fraction, it improves the best ThoughtFlow-family NLL from 3.562 to 3.434,
+nearly tying but still losing to the R-KV-like retained-prefix proxy at 3.419.
+
+Status: **MIXED, not revived**. The gap is now small enough to justify one more
+pre-GPU policy search, but not GPU sparse-KV work. The next useful ablation is
+a held-out policy sweep over recent reserve, phase bonus, math-state bonus, and
+anchor budget; promotion requires beating R-KV-like on continuation NLL without
+overfitting to these 24 traces.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:

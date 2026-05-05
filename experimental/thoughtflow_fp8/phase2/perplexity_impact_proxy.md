@@ -1,6 +1,6 @@
 # ThoughtFlow-FP8 Retained-Context Perplexity Proxy
 
-Status: **WEAKENED on retained-context NLL proxy via thoughtflow_recent; matched-budget proxies score continuation better.**
+Status: **MIXED on retained-context NLL proxy via thoughtflow_saliency_recent; successor ties matched-budget proxies, not enough for GPU claims.**
 
 - model: `distilgpt2`
 - scored traces: 24
@@ -20,6 +20,7 @@ continuation NLL. Full context is a reference row, not a matched-budget baseline
 | thin_kv_like | 24 | 0.210 | 3.583 | 1.482 | 44.6 |
 | thoughtflow | 24 | 0.210 | 3.961 | 1.861 | 74.2 |
 | thoughtflow_recent | 24 | 0.210 | 3.562 | 1.461 | 44.2 |
+| thoughtflow_saliency_recent | 24 | 0.210 | 3.434 | 1.333 | 38.1 |
 
 ## Decision
 

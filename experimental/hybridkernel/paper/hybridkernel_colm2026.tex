@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens the broad novelty claim because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. We therefore do not claim a kernel speedup. The contribution is a reproducible profiler gate, a fixed-request vLLM driver, and a promote/kill criterion for future native NVIDIA measurements.
+Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens the broad novelty claim because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. We therefore do not claim a kernel speedup. The contribution is a reproducible profiler gate, a fixed-request vLLM driver, and a pre-registered profiler-analysis parser with a promote/kill criterion for future native NVIDIA measurements.
 \end{abstract}
 
 \section{Hypothesis}
@@ -32,6 +32,7 @@ Architecture map & Granite has 8 boundaries and 20.0\% boundary stream fraction;
 Runtime audit & vLLM already handles hybrid state layout and transfer paths. & Broad novelty weakened. \\
 Threshold model & Granite needs about 25.0\% avoidable boundary traffic at 60\% recovery for a 3\% proxy gain. & Mac kernel work not justified. \\
 Profiler driver & Fixed-request OpenAI-compatible driver dry-runs locally. & Native gate is runnable. \\
+Analysis parser & JSON profiler summaries are reduced into avoidable-boundary share and recoverable-gain upper bound. & Decision rule is pre-registered. \\
 \bottomrule
 \end{tabular}
 \caption{HybridKernel evidence before native GPU profiling.}
@@ -39,7 +40,14 @@ Profiler driver & Fixed-request OpenAI-compatible driver dry-runs locally. & Nat
 
 \section{Profiler Gate}
 
-The next experiment is a native NVIDIA/vLLM run with Nsight Systems and Nsight Compute. It must show a distinct boundary-local overhead attributable to attention/SSM transitions, not warmup, graph capture, batching, or unrelated kernels. Promotion requires a credible path to at least 3\% end-to-end improvement and paired repeated-run stability.
+The next experiment is a native NVIDIA/vLLM run with Nsight Systems and Nsight Compute. It must show a distinct boundary-local overhead attributable to attention/SSM transitions, not warmup, graph capture, batching, or unrelated kernels. Promotion requires at least three repeated runs whose recoverable-gain upper bound clears 3\%. The analysis parser computes
+\[
+\mathrm{gain}_{ub} =
+\frac{\max(\mathrm{boundary\ ms}-\mathrm{matched\ control\ ms}, 0)}
+{\mathrm{total\ step\ ms}}
+\times \mathrm{recoverable\ fraction}.
+\]
+If repeated native summaries show less than 1\% recoverable gain, the branch should be killed or shelved.
 
 \section{Claim Boundary}
 
@@ -50,6 +58,8 @@ Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with 
 \begin{itemize}
 \item \url{experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md}
 \item \url{experimental/hybridkernel/phase2/profiler_driver.py}
+\item \url{experimental/hybridkernel/phase2/analyze_profiler_metrics.py}
+\item \url{experimental/hybridkernel/phase2/profiler_analysis_gate.md}
 \item \url{experimental/hybridkernel/phase2/pre_gpu_threshold_model.md}
 \item \url{experimental/hybridkernel/paper/colm_workshop_scaffold.md}
 \end{itemize}

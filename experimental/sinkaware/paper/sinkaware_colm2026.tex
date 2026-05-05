@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. This is not an end-to-end quality or GPU speed result. It is a bounded native-GPU gate for deciding whether approximate sink prediction is worth implementing.
+Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. We also add a CPU reference for the exact operator a future kernel must implement: replace only sink logits, keep tail logits exact, and verify exact sink logits reproduce exact attention. This is not an end-to-end quality or GPU speed result. It is a bounded native-GPU gate for deciding whether approximate sink prediction is worth implementing.
 \end{abstract}
 
 \section{Problem}
@@ -41,6 +41,10 @@ rank8 & 699.232 & 0.040 & 0.104 & 0.107 \\
 \caption{48-trace distilgpt2 softmax/output probe. Lower is better.}
 \end{table}
 
+\section{Reference Gate}
+
+The Phase 3 reference specifies the exact computation to preserve during kernel work. Given query $q$, keys $K$, values $V$, and predicted fixed-sink logits $\hat{s}$, SinkAware computes all tail logits $qK_{tail}^{\top}$ exactly, replaces only the first sink-token logits with $\hat{s}$, and then runs the ordinary softmax denominator over the concatenated vector. Unit tests verify that when $\hat{s}$ equals exact sink logits, the reference reproduces exact attention to numerical tolerance. This keeps the live branch separate from the killed exact-static-reuse branch.
+
 \section{Decision}
 
 SinkAware is alive only as an approximate low-rank native GPU gate. Exact static reuse remains dead. Promotion requires rank-2 to preserve output quality while improving speed or memory traffic by at least 3\% over exact attention on repeated native runs, and to beat the position-only predictor on quality.
@@ -50,6 +54,7 @@ SinkAware is alive only as an approximate low-rank native GPU gate. Exact static
 \begin{itemize}
 \item \url{experimental/sinkaware/phase2/real_qk_sink_softmax_output_probe.md}
 \item \url{experimental/sinkaware/phase2/qk_sink_cost_model.md}
+\item \url{experimental/sinkaware/phase3/approx_sink_attention_reference.md}
 \item \url{experimental/sinkaware/phase2/gpu_gate_runbook.md}
 \item \url{experimental/sinkaware/paper/reviewer_pack.md}
 \end{itemize}

@@ -122,3 +122,18 @@ matched to the Granite Mamba2 boundary-fusion idea.
 Current status: **WEAKLY ALIVE**. Do not build more Mac-only kernels. The only
 useful pre-NVIDIA work is profiler/runbook preparation and source-line audit of
 whether a distinct boundary conversion/materialization exists.
+
+## Profiler Analysis Gate
+
+Added a pre-registered native-profiler parser:
+
+- input template: `phase2/profiler_metrics_template.json`
+- parser: `phase2/analyze_profiler_metrics.py`
+- output: `phase2/profiler_analysis_gate.md`
+- tests: `phase2/tests/test_analyze_profiler_metrics.py`
+
+The parser computes avoidable boundary share and recoverable-gain upper bound
+from repeated native summaries. Promotion requires at least three repeated runs
+whose recoverable-gain upper bound clears 3%. If native summaries show less
+than 1% recoverable gain, the branch should be killed or shelved. Current
+output is **PENDING native profiler data**, so no speed claim is allowed.
