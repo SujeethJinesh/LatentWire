@@ -45,7 +45,28 @@ OBQA_TEST = pathlib.Path("results/source_private_openbookqa_bridge_contract_2026
 OBQA_ANCHOR = pathlib.Path("results/source_private_openbookqa_fixed_packet_gate_20260501_qwen05_hashed_test_4b/predictions.jsonl")
 
 ARC_SEEDS = (47, 53, 59, 61, 67, 71, 73, 79, 83, 89)
-OBQA_SEEDS = (47, 53, 59, 61, 67)
+OBQA_SEEDS = (
+    47,
+    53,
+    59,
+    61,
+    67,
+    71,
+    73,
+    79,
+    83,
+    89,
+    97,
+    101,
+    103,
+    107,
+    109,
+    113,
+    127,
+    131,
+    137,
+    139,
+)
 RATE_BUDGETS = (2, 3, 4, 8)
 BASELINE_CONDITIONS = (
     "source_index_byte",

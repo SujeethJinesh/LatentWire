@@ -17,15 +17,15 @@ from typing import Any
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = ROOT / "results/source_private_colm_acceptance_baselines_20260502/disagreement_audit"
+DEFAULT_OUTPUT = ROOT / "results/source_private_colm_acceptance_baselines_20260505_obqa20/disagreement_audit"
 DEFAULT_INPUTS = (
     (
         "ARC-Challenge",
-        ROOT / "results/source_private_colm_acceptance_baselines_20260502/arc_test_predictions.jsonl.gz",
+        ROOT / "results/source_private_colm_acceptance_baselines_20260505_obqa20/arc_test_predictions.jsonl.gz",
     ),
     (
         "OpenBookQA",
-        ROOT / "results/source_private_colm_acceptance_baselines_20260502/openbookqa_test_predictions.jsonl.gz",
+        ROOT / "results/source_private_colm_acceptance_baselines_20260505_obqa20/openbookqa_test_predictions.jsonl.gz",
     ),
 )
 

@@ -1,0 +1,48 @@
+{
+  "letter_accuracy": 0.75,
+  "n": 4,
+  "prediction_file": "results/dense_baseline_mcqa_smoke_20260505/c2c_arc_smoke4.jsonl",
+  "rows": [
+    {
+      "example_id": "1503a4b63fe2f792",
+      "generated_tokens": 4,
+      "gold": "C",
+      "index": 0,
+      "latency_sec": 6.656761666992679,
+      "letter_correct": true,
+      "parsed_prediction": "C",
+      "raw_prediction": "C. Planetary"
+    },
+    {
+      "example_id": "912d7070b0c41878",
+      "generated_tokens": 4,
+      "gold": "B",
+      "index": 1,
+      "latency_sec": 1.7420381660340354,
+      "letter_correct": true,
+      "parsed_prediction": "B",
+      "raw_prediction": "B. buildings will"
+    },
+    {
+      "example_id": "d8688ff87469d083",
+      "generated_tokens": 4,
+      "gold": "C",
+      "index": 2,
+      "latency_sec": 1.2013440830633044,
+      "letter_correct": false,
+      "parsed_prediction": "B",
+      "raw_prediction": "B. Light energy"
+    },
+    {
+      "example_id": "3200885a1d565d20",
+      "generated_tokens": 4,
+      "gold": "D",
+      "index": 3,
+      "latency_sec": 1.4253072090214118,
+      "letter_correct": true,
+      "parsed_prediction": "D",
+      "raw_prediction": "D. the independent"
+    }
+  ],
+  "unparsed": 0
+}

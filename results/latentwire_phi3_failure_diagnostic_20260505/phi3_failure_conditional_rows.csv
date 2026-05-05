@@ -1,0 +1,15 @@
+split,condition,category,n_items,accuracy,follows_phi3_source,follows_qwen_source
+test,matched_source_private_packet,both_correct,121,0.987603305785124,0.987603305785124,0.987603305785124
+test,matched_source_private_packet,both_wrong,600,0.0006666666666666666,0.998,0.36283333333333334
+test,matched_source_private_packet,phi3_only_correct,167,0.9970059880239521,0.9970059880239521,0.0011976047904191617
+test,matched_source_private_packet,qwen_only_correct,284,0.0,0.9985915492957746,0.0
+validation,matched_source_private_packet,both_correct,30,0.9966666666666667,0.9966666666666667,0.9966666666666667
+validation,matched_source_private_packet,both_wrong,131,0.0,0.999236641221374,0.35038167938931297
+validation,matched_source_private_packet,phi3_only_correct,52,0.9980769230769231,0.9980769230769231,0.0019230769230769232
+validation,matched_source_private_packet,qwen_only_correct,86,0.012790697674418604,0.9872093023255814,0.012790697674418604
+test,qwen_substituted_packet,both_wrong,382,0.0018324607329842932,0.0005235602094240838,0.9963350785340314
+test,qwen_substituted_packet,phi3_only_correct,167,0.0029940119760479044,0.0029940119760479044,0.9970059880239521
+test,qwen_substituted_packet,qwen_only_correct,284,0.9936619718309859,0.0035211267605633804,0.9936619718309859
+validation,qwen_substituted_packet,both_wrong,85,0.0,0.0,1.0
+validation,qwen_substituted_packet,phi3_only_correct,52,0.0,0.0,1.0
+validation,qwen_substituted_packet,qwen_only_correct,86,0.9918604651162791,0.0034883720930232558,0.9918604651162791

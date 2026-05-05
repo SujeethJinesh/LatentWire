@@ -1,0 +1,33 @@
+{
+  "artifact_sha256": {
+    "aggregate_source_index_ci.csv": "6c6eb0c6e5a4edb7ec2439c9c83718d4c52a6362933769ecbd945bc2c48546b9",
+    "aggregate_source_index_ci.json": "8ec49e05a51e4de53a10fdc49f10346cac5e6d0ef8eb0f5fc1d821daa06fa2ed",
+    "aggregate_source_index_ci.md": "207335311baf98b1636c14f61e5e55db040ae1ceb220f6c6d6d7a861dd4bbd67",
+    "arc_test_predictions.jsonl.gz": "2599dca680591cdb419ec8edb18d2a0b944e77d0b7f5c9146f9b4aacbe28daf2",
+    "arc_validation_predictions.jsonl.gz": "68754ae51199142cfadfd9fb6ab3ac37c929c650250bf30bd6ca0fb7d86c4594",
+    "colm_acceptance_baseline_audit.json": "5696f92975232b8ff67dde84b4b1b5113d3c33a6bb98e215f9f6bf6030e4b551",
+    "colm_acceptance_baseline_audit.md": "1ecddadfbe68df816ead9b7aa84fad1a57b7dbfa1ef8aa024d9eead09c2f9b21",
+    "openbookqa_source_index_cache.jsonl": "cbd3c67f613cd945af307e1039fa04e5a7cd615997c3bb4f10345589f43b1f22",
+    "openbookqa_test_predictions.jsonl.gz": "4d5d9f47349230efd496c041a9844fb776fcce93cc3edb0d816f79af8934830b",
+    "per_seed_baseline_metrics.csv": "36848b9bd28ad8cf65f1523261e3f79877df29e37b26c3bf729cee1bbccdca41",
+    "rate_curve.csv": "9ad26552729ec789997ee6567d6588c271e40e8554e3a51c2da9e48169ed865a"
+  },
+  "artifacts": [
+    "aggregate_source_index_ci.csv",
+    "aggregate_source_index_ci.json",
+    "aggregate_source_index_ci.md",
+    "arc_test_predictions.jsonl.gz",
+    "arc_validation_predictions.jsonl.gz",
+    "colm_acceptance_baseline_audit.json",
+    "colm_acceptance_baseline_audit.md",
+    "manifest.json",
+    "manifest.md",
+    "openbookqa_source_index_cache.jsonl",
+    "openbookqa_test_predictions.jsonl.gz",
+    "per_seed_baseline_metrics.csv",
+    "rate_curve.csv"
+  ],
+  "pass_gate": false,
+  "scoped_colm_gate": false,
+  "strict_positive_beyond_source_index_gate": false
+}

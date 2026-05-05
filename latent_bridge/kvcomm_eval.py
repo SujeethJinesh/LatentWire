@@ -27,6 +27,7 @@ from latent_bridge.evaluate import (
     write_prediction_records,
     write_prediction_sidecar,
 )
+from latent_bridge.c2c_eval import install_c2c_dynamic_cache_compatibility_shim
 
 SOURCE_CONTROLS = ("matched", "zero_source", "shuffled_source", "target_only")
 
@@ -35,6 +36,7 @@ def _ensure_kvcomm_repo_on_path() -> pathlib.Path:
     repo_root = pathlib.Path("references/repos/KVComm").resolve()
     if not repo_root.exists():
         raise FileNotFoundError(f"KVComm repo clone not found at {repo_root}")
+    install_c2c_dynamic_cache_compatibility_shim()
     _ensure_kvcomm_compat_patch(repo_root)
     if str(repo_root) not in sys.path:
         sys.path.insert(0, str(repo_root))
@@ -72,12 +74,15 @@ def _torch_dtype(name: str) -> torch.dtype:
 
 def _chat_input_ids(tokenizer, prompt: str, device: str) -> torch.Tensor:
     messages = [{"role": "user", "content": prompt}]
-    return tokenizer.apply_chat_template(
+    encoded = tokenizer.apply_chat_template(
         messages,
         add_generation_prompt=True,
         return_tensors="pt",
         enable_thinking=False,
-    ).to(device)
+    )
+    if hasattr(encoded, "input_ids"):
+        encoded = encoded.input_ids
+    return encoded.to(device)
 
 
 def _build_prompts(example, source_reasoning_mode: str) -> tuple[str, str]:
@@ -218,6 +223,7 @@ def load_kvcomm_models(
     target_model: str,
     device: str,
     dtype: str,
+    attn_implementation: str = "eager",
 ):
     torch_dtype = _torch_dtype(dtype)
     tokenizer = AutoTokenizer.from_pretrained(target_model)
@@ -227,7 +233,7 @@ def load_kvcomm_models(
     model_kwargs = {
         "device_map": {"": device},
         "torch_dtype": torch_dtype,
-        "attn_implementation": "sdpa",
+        "attn_implementation": attn_implementation,
     }
     model_A = AutoModelForCausalLM.from_pretrained(source_model, **model_kwargs)
     model_B = AutoModelForCausalLM.from_pretrained(target_model, **model_kwargs)
@@ -289,7 +295,6 @@ def rank_layers_from_calibration(
         )
         communicator(
             input_ids=input_ids_B,
-            attention_mask=torch.ones_like(input_ids_B),
             out_A_past_key_values=out_A.past_key_values,
             use_cache=True,
             return_dict=True,
@@ -377,7 +382,6 @@ def evaluate_kvcomm_generation(
                 past_key_values = _zero_past_key_values(past_key_values)
             output = communicator.generate(
                 input_ids_B,
-                attention_mask=torch.ones_like(input_ids_B),
                 out_A_past_key_values=past_key_values,
                 do_sample=False,
                 max_new_tokens=max_new_tokens,
@@ -444,6 +448,7 @@ def run_kvcomm_generation_eval(
     eval_file: str,
     device: str,
     dtype: str,
+    attn_implementation: str,
     max_new_tokens: int,
     source_reasoning_mode: str,
     top_layers_grid: list[float],
@@ -471,6 +476,7 @@ def run_kvcomm_generation_eval(
         target_model=target_model,
         device=device,
         dtype=dtype,
+        attn_implementation=attn_implementation,
     )
     layer_ranking = rank_layers_from_calibration(
         model_A=model_A,
@@ -545,6 +551,7 @@ def run_kvcomm_generation_eval(
         "eval_file": eval_file,
         "device": device,
         "dtype": dtype,
+        "attn_implementation": attn_implementation,
         "max_new_tokens": int(max_new_tokens),
         "source_reasoning_mode": source_reasoning_mode,
         "calibration_source_control": calibration_source_control,
@@ -583,6 +590,7 @@ def main() -> None:
     parser.add_argument("--eval-file", required=True)
     parser.add_argument("--device", default="mps")
     parser.add_argument("--dtype", default="float32")
+    parser.add_argument("--attn-implementation", default="eager")
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--source-reasoning-mode", default="brief_analysis")
     parser.add_argument("--top-layers-grid", default="0.25,0.5,0.75,1.0")
@@ -606,6 +614,7 @@ def main() -> None:
         eval_file=args.eval_file,
         device=args.device,
         dtype=args.dtype,
+        attn_implementation=args.attn_implementation,
         max_new_tokens=args.max_new_tokens,
         source_reasoning_mode=args.source_reasoning_mode,
         top_layers_grid=_parse_grid(args.top_layers_grid),

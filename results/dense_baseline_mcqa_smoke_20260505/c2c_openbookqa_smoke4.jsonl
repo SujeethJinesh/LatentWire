@@ -1,0 +1,4 @@
+{"answer": ["B", "B", "B.", "(B)"], "correct": false, "example_id": "2be9ac10021e518a", "generated_tokens": 4, "index": 0, "latency_sec": 1.501244290964678, "method": "c2c", "normalized_prediction": "c. buy less", "prediction": "C. buy less"}
+{"answer": ["A", "A", "A.", "(A)"], "correct": false, "example_id": "6a0edb2844543812", "generated_tokens": 4, "index": 1, "latency_sec": 1.2380479590501636, "method": "c2c", "normalized_prediction": "a. a marsh", "prediction": "A. a marsh"}
+{"answer": ["C", "C", "C.", "(C)"], "correct": false, "example_id": "0ca98388451683d7", "generated_tokens": 4, "index": 2, "latency_sec": 1.1775315830018371, "method": "c2c", "normalized_prediction": "d. grass", "prediction": "D. grass"}
+{"answer": ["C", "C", "C.", "(C)"], "correct": false, "example_id": "45b9ee76654e345c", "generated_tokens": 4, "index": 3, "latency_sec": 1.2823716250713915, "method": "c2c", "normalized_prediction": "d. roots may", "prediction": "D. roots may"}

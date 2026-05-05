@@ -1,0 +1,32 @@
+{
+  "rows": [
+    {
+      "benchmark": "ARC-Challenge",
+      "bootstrap": "two_stage_seed_item_cluster_bootstrap",
+      "bootstrap_samples": 10000,
+      "ci95_high": -0.00034129692832764505,
+      "ci95_low": -0.0029863481228668944,
+      "interpretation": "Positive values would mean the packet beats explicit source-index communication. The current aggregate is non-positive or has a non-positive lower bound, so the paper should keep the source-choice boundary in the main claim.",
+      "items_per_seed": 1172,
+      "mean": -0.001621160409556314,
+      "paired_units": 11720,
+      "prediction_file": "results/source_private_colm_acceptance_baselines_20260505_obqa20/arc_test_predictions.jsonl.gz",
+      "prediction_sha256": "2599dca680591cdb419ec8edb18d2a0b944e77d0b7f5c9146f9b4aacbe28daf2",
+      "seed_count": 10
+    },
+    {
+      "benchmark": "OpenBookQA",
+      "bootstrap": "two_stage_seed_item_cluster_bootstrap",
+      "bootstrap_samples": 10000,
+      "ci95_high": 0.0007,
+      "ci95_low": -0.0009024999999999977,
+      "interpretation": "Positive values would mean the packet beats explicit source-index communication. The current aggregate is non-positive or has a non-positive lower bound, so the paper should keep the source-choice boundary in the main claim.",
+      "items_per_seed": 500,
+      "mean": -0.0001,
+      "paired_units": 10000,
+      "prediction_file": "results/source_private_colm_acceptance_baselines_20260505_obqa20/openbookqa_test_predictions.jsonl.gz",
+      "prediction_sha256": "4d5d9f47349230efd496c041a9844fb776fcce93cc3edb0d816f79af8934830b",
+      "seed_count": 20
+    }
+  ]
+}

@@ -1,0 +1,592 @@
+{
+  "artifact_dir": "results/source_private_arc_challenge_source_family_cache_falsification_20260502_phi3_cpu_budget8_10seed_b2000",
+  "date": "2026-05-05",
+  "interpretation": "source-choice/family boundary, not decoded-packet corruption",
+  "prediction_summary": {
+    "aggregate": {
+      "test:matched_source_private_packet": {
+        "accuracy_max": 0.24573378839590443,
+        "accuracy_mean": 0.24436860068259386,
+        "accuracy_min": 0.24232081911262798,
+        "follows_phi3_source_mean": 0.9969283276450511,
+        "follows_qwen_source_mean": 0.2878839590443686,
+        "n_per_seed": 1172,
+        "seed_count": 10,
+        "source_name": "phi3_mini_4k"
+      },
+      "test:qwen_substituted_packet": {
+        "accuracy_max": 0.34213685474189676,
+        "accuracy_mean": 0.34021608643457385,
+        "accuracy_min": 0.3385354141656663,
+        "follows_phi3_source_mean": 0.002040816326530612,
+        "follows_qwen_source_mean": 0.9955582232893156,
+        "n_per_seed": 833,
+        "seed_count": 10,
+        "source_name": "phi3_mini_4k"
+      },
+      "validation:matched_source_private_packet": {
+        "accuracy_max": 0.2809364548494983,
+        "accuracy_mean": 0.277257525083612,
+        "accuracy_min": 0.27424749163879597,
+        "follows_phi3_source_mean": 0.9953177257525084,
+        "follows_qwen_source_mean": 0.25752508361204013,
+        "n_per_seed": 299,
+        "seed_count": 10,
+        "source_name": "phi3_mini_4k"
+      },
+      "validation:qwen_substituted_packet": {
+        "accuracy_max": 0.38565022421524664,
+        "accuracy_mean": 0.3825112107623318,
+        "accuracy_min": 0.37668161434977576,
+        "follows_phi3_source_mean": 0.0013452914798206279,
+        "follows_qwen_source_mean": 0.9968609865470851,
+        "n_per_seed": 223,
+        "seed_count": 10,
+        "source_name": "phi3_mini_4k"
+      }
+    },
+    "conditional_rows": [
+      {
+        "accuracy": 0.987603305785124,
+        "category": "both_correct",
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.987603305785124,
+        "follows_qwen_source": 0.987603305785124,
+        "n_items": 121,
+        "n_prediction_rows": 1210,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.0006666666666666666,
+        "category": "both_wrong",
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.998,
+        "follows_qwen_source": 0.36283333333333334,
+        "n_items": 600,
+        "n_prediction_rows": 6000,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.9970059880239521,
+        "category": "phi3_only_correct",
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9970059880239521,
+        "follows_qwen_source": 0.0011976047904191617,
+        "n_items": 167,
+        "n_prediction_rows": 1670,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.0,
+        "category": "qwen_only_correct",
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9985915492957746,
+        "follows_qwen_source": 0.0,
+        "n_items": 284,
+        "n_prediction_rows": 2840,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.9966666666666667,
+        "category": "both_correct",
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9966666666666667,
+        "follows_qwen_source": 0.9966666666666667,
+        "n_items": 30,
+        "n_prediction_rows": 300,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.0,
+        "category": "both_wrong",
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.999236641221374,
+        "follows_qwen_source": 0.35038167938931297,
+        "n_items": 131,
+        "n_prediction_rows": 1310,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.9980769230769231,
+        "category": "phi3_only_correct",
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9980769230769231,
+        "follows_qwen_source": 0.0019230769230769232,
+        "n_items": 52,
+        "n_prediction_rows": 520,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.012790697674418604,
+        "category": "qwen_only_correct",
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9872093023255814,
+        "follows_qwen_source": 0.012790697674418604,
+        "n_items": 86,
+        "n_prediction_rows": 860,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.0018324607329842932,
+        "category": "both_wrong",
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0005235602094240838,
+        "follows_qwen_source": 0.9963350785340314,
+        "n_items": 382,
+        "n_prediction_rows": 3820,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.0029940119760479044,
+        "category": "phi3_only_correct",
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0029940119760479044,
+        "follows_qwen_source": 0.9970059880239521,
+        "n_items": 167,
+        "n_prediction_rows": 1670,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.9936619718309859,
+        "category": "qwen_only_correct",
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0035211267605633804,
+        "follows_qwen_source": 0.9936619718309859,
+        "n_items": 284,
+        "n_prediction_rows": 2840,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.0,
+        "category": "both_wrong",
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 1.0,
+        "n_items": 85,
+        "n_prediction_rows": 850,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.0,
+        "category": "phi3_only_correct",
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 1.0,
+        "n_items": 52,
+        "n_prediction_rows": 520,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.9918604651162791,
+        "category": "qwen_only_correct",
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0034883720930232558,
+        "follows_qwen_source": 0.9918604651162791,
+        "n_items": 86,
+        "n_prediction_rows": 860,
+        "split": "validation"
+      }
+    ],
+    "seed_rows": [
+      {
+        "accuracy": 0.24232081911262798,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9957337883959044,
+        "follows_qwen_source": 0.28668941979522183,
+        "n": 1172,
+        "seed": 47,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.2440273037542662,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9974402730375427,
+        "follows_qwen_source": 0.28924914675767915,
+        "n": 1172,
+        "seed": 53,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.2440273037542662,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9948805460750854,
+        "follows_qwen_source": 0.28754266211604096,
+        "n": 1172,
+        "seed": 59,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.24488054607508533,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9991467576791809,
+        "follows_qwen_source": 0.2883959044368601,
+        "n": 1172,
+        "seed": 61,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.2440273037542662,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9982935153583617,
+        "follows_qwen_source": 0.28924914675767915,
+        "n": 1172,
+        "seed": 67,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.24488054607508533,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9974402730375427,
+        "follows_qwen_source": 0.2883959044368601,
+        "n": 1172,
+        "seed": 71,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.24488054607508533,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9940273037542662,
+        "follows_qwen_source": 0.28668941979522183,
+        "n": 1172,
+        "seed": 73,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.2431740614334471,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9974402730375427,
+        "follows_qwen_source": 0.28754266211604096,
+        "n": 1172,
+        "seed": 79,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.24573378839590443,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9982935153583617,
+        "follows_qwen_source": 0.28754266211604096,
+        "n": 1172,
+        "seed": 83,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.24573378839590443,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9965870307167235,
+        "follows_qwen_source": 0.28754266211604096,
+        "n": 1172,
+        "seed": 89,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.27424749163879597,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9933110367892977,
+        "follows_qwen_source": 0.2608695652173913,
+        "n": 299,
+        "seed": 47,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.2809364548494983,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9933110367892977,
+        "follows_qwen_source": 0.2608695652173913,
+        "n": 299,
+        "seed": 53,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.27759197324414714,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9966555183946488,
+        "follows_qwen_source": 0.25752508361204013,
+        "n": 299,
+        "seed": 59,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.27759197324414714,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9966555183946488,
+        "follows_qwen_source": 0.25752508361204013,
+        "n": 299,
+        "seed": 61,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.27759197324414714,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9966555183946488,
+        "follows_qwen_source": 0.25752508361204013,
+        "n": 299,
+        "seed": 67,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.27759197324414714,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9933110367892977,
+        "follows_qwen_source": 0.25418060200668896,
+        "n": 299,
+        "seed": 71,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.27759197324414714,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9966555183946488,
+        "follows_qwen_source": 0.25752508361204013,
+        "n": 299,
+        "seed": 73,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.27759197324414714,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9966555183946488,
+        "follows_qwen_source": 0.25752508361204013,
+        "n": 299,
+        "seed": 79,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.27759197324414714,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9966555183946488,
+        "follows_qwen_source": 0.25752508361204013,
+        "n": 299,
+        "seed": 83,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.27424749163879597,
+        "condition": "matched_source_private_packet",
+        "follows_phi3_source": 0.9933110367892977,
+        "follows_qwen_source": 0.25418060200668896,
+        "n": 299,
+        "seed": 89,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.3397358943577431,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0012004801920768306,
+        "follows_qwen_source": 0.9987995198079231,
+        "n": 833,
+        "seed": 47,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.34213685474189676,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0012004801920768306,
+        "follows_qwen_source": 0.9939975990396158,
+        "n": 833,
+        "seed": 53,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.3397358943577431,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.003601440576230492,
+        "follows_qwen_source": 0.9891956782713085,
+        "n": 833,
+        "seed": 59,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.34093637454981995,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0024009603841536613,
+        "follows_qwen_source": 0.9963985594237695,
+        "n": 833,
+        "seed": 61,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.3385354141656663,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0024009603841536613,
+        "follows_qwen_source": 0.9939975990396158,
+        "n": 833,
+        "seed": 67,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.3397358943577431,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0024009603841536613,
+        "follows_qwen_source": 0.9939975990396158,
+        "n": 833,
+        "seed": 71,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.3397358943577431,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0012004801920768306,
+        "follows_qwen_source": 0.9987995198079231,
+        "n": 833,
+        "seed": 73,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.3397358943577431,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0012004801920768306,
+        "follows_qwen_source": 0.9987995198079231,
+        "n": 833,
+        "seed": 79,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.34093637454981995,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0024009603841536613,
+        "follows_qwen_source": 0.9963985594237695,
+        "n": 833,
+        "seed": 83,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.34093637454981995,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0024009603841536613,
+        "follows_qwen_source": 0.9951980792316927,
+        "n": 833,
+        "seed": 89,
+        "split": "test"
+      },
+      {
+        "accuracy": 0.3811659192825112,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 0.9955156950672646,
+        "n": 223,
+        "seed": 47,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.38565022421524664,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 1.0,
+        "n": 223,
+        "seed": 53,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.3811659192825112,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.004484304932735426,
+        "follows_qwen_source": 0.9955156950672646,
+        "n": 223,
+        "seed": 59,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.3811659192825112,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.004484304932735426,
+        "follows_qwen_source": 0.9955156950672646,
+        "n": 223,
+        "seed": 61,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.38565022421524664,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 1.0,
+        "n": 223,
+        "seed": 67,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.37668161434977576,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 0.9910313901345291,
+        "n": 223,
+        "seed": 71,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.3811659192825112,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 0.9955156950672646,
+        "n": 223,
+        "seed": 73,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.38565022421524664,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 1.0,
+        "n": 223,
+        "seed": 79,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.38565022421524664,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.0,
+        "follows_qwen_source": 1.0,
+        "n": 223,
+        "seed": 83,
+        "split": "validation"
+      },
+      {
+        "accuracy": 0.3811659192825112,
+        "condition": "qwen_substituted_packet",
+        "follows_phi3_source": 0.004484304932735426,
+        "follows_qwen_source": 0.9955156950672646,
+        "n": 223,
+        "seed": 89,
+        "split": "validation"
+      }
+    ]
+  },
+  "readout": "The Phi-3 failure is primarily a source-choice/family boundary result, not packet corruption: on the ARC test cache Phi-3's source-choice accuracy is 0.246 versus Qwen's 0.346, Phi-3 and Qwen choose the same candidate only 0.289 of the time, and the decoded packet follows the Phi-3 source choice at 0.997. The current packet therefore faithfully transports the alternate source's candidate preference, but that preference is weaker and often different from the same-family Qwen source.",
+  "source_cache_summary": {
+    "test": {
+      "category_counts": {
+        "both_correct": 121,
+        "both_wrong": 600,
+        "phi3_only_correct": 167,
+        "qwen_only_correct": 284
+      },
+      "category_rates": {
+        "both_correct": 0.10324232081911262,
+        "both_wrong": 0.5119453924914675,
+        "phi3_only_correct": 0.14249146757679182,
+        "qwen_only_correct": 0.24232081911262798
+      },
+      "n": 1172,
+      "phi3_qwen_choice_agreement": 0.28924914675767915,
+      "phi3_source_accuracy": 0.24573378839590443,
+      "qwen_source_accuracy": 0.3455631399317406
+    },
+    "validation": {
+      "category_counts": {
+        "both_correct": 30,
+        "both_wrong": 131,
+        "phi3_only_correct": 52,
+        "qwen_only_correct": 86
+      },
+      "category_rates": {
+        "both_correct": 0.10033444816053512,
+        "both_wrong": 0.43812709030100333,
+        "phi3_only_correct": 0.17391304347826086,
+        "qwen_only_correct": 0.28762541806020064
+      },
+      "n": 299,
+      "phi3_qwen_choice_agreement": 0.25418060200668896,
+      "phi3_source_accuracy": 0.27424749163879597,
+      "qwen_source_accuracy": 0.3879598662207358
+    }
+  }
+}

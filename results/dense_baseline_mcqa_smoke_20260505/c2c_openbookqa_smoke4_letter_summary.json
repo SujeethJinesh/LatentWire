@@ -1,0 +1,48 @@
+{
+  "letter_accuracy": 0.25,
+  "n": 4,
+  "prediction_file": "results/dense_baseline_mcqa_smoke_20260505/c2c_openbookqa_smoke4.jsonl",
+  "rows": [
+    {
+      "example_id": "2be9ac10021e518a",
+      "generated_tokens": 4,
+      "gold": "B",
+      "index": 0,
+      "latency_sec": 1.501244290964678,
+      "letter_correct": false,
+      "parsed_prediction": "C",
+      "raw_prediction": "C. buy less"
+    },
+    {
+      "example_id": "6a0edb2844543812",
+      "generated_tokens": 4,
+      "gold": "A",
+      "index": 1,
+      "latency_sec": 1.2380479590501636,
+      "letter_correct": true,
+      "parsed_prediction": "A",
+      "raw_prediction": "A. a marsh"
+    },
+    {
+      "example_id": "0ca98388451683d7",
+      "generated_tokens": 4,
+      "gold": "C",
+      "index": 2,
+      "latency_sec": 1.1775315830018371,
+      "letter_correct": false,
+      "parsed_prediction": "D",
+      "raw_prediction": "D. grass"
+    },
+    {
+      "example_id": "45b9ee76654e345c",
+      "generated_tokens": 4,
+      "gold": "C",
+      "index": 3,
+      "latency_sec": 1.2823716250713915,
+      "letter_correct": false,
+      "parsed_prediction": "D",
+      "raw_prediction": "D. roots may"
+    }
+  ],
+  "unparsed": 0
+}

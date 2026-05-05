@@ -1,0 +1,17 @@
+{
+  "artifact_sha256": {
+    "arc_challenge_seed_stability.json": "e639c454f9646588d3fe2aff684c068c004992e1d95fa15e2cdf71ff5f2d2b26",
+    "arc_challenge_seed_stability.md": "4eac1b14409e39a750c01be2ae769fdf4f4ca40011fe30521d98fedf6b86aa67",
+    "per_seed_metrics.csv": "d67b813172e8c0507cb595eb6d7f174be6f26d275832a9ee7bcce42d48cb1121",
+    "source_prediction_cache.jsonl": "cbd3c67f613cd945af307e1039fa04e5a7cd615997c3bb4f10345589f43b1f22"
+  },
+  "artifacts": [
+    "arc_challenge_seed_stability.json",
+    "arc_challenge_seed_stability.md",
+    "per_seed_metrics.csv",
+    "source_prediction_cache.jsonl",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": true
+}

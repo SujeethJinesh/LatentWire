@@ -27,9 +27,21 @@ paper rather than widening into speculative benchmarks:
 | Qwen2.5-1.5B row looked incomplete | Removed the validation-incomplete Qwen2.5-1.5B diagnostic from the main falsification table and left it out of the workshop claim. |
 | Missing score-quantization boundary | Added a validation-only score-quantization diagnostic and explicitly states it does not beat source-label transfer. |
 
-I did not run new model-heavy benchmark breadth in this pass. OBQA K>=10,
-higher-entropy tasks, and matched C2C/KVComm comparisons remain archival
-blockers, not workshop blockers, after the current paper scope.
+## Caveat-Fix Pass
+
+The next review request was to address three caveats experimentally rather than
+only listing them in limitations. I ran the Mac-feasible gates and updated the
+paper accordingly:
+
+| Caveat | Action taken | New readout |
+|---|---|---|
+| OBQA had only 5 seeds | Expanded OBQA packet/control seed stability to 20 seeds and rebuilt the source-index audit/aggregate CI under `results/source_private_colm_acceptance_baselines_20260505_obqa20`. | OBQA remains stable versus target-only: packet 0.378, target 0.276. It still does not clear same-budget text (`pkt-text` lower bound -0.002) or source-index (aggregate pkt-src mean -0.0001, CI [-0.0009,+0.0007]). |
+| No matched dense-baseline attempt | Added MCQA-to-generation conversion, ran published C2C on same-task ARC/OpenBookQA smoke rows on MPS, and attempted KVComm through local compatibility patches. | C2C runtime path works locally on smoke rows; parsed-letter accuracy is 0.25 on OBQA smoke4 and 0.75 on ARC smoke4. KVComm loads models and source cache but fails at Qwen3 cache/mask compatibility, now recorded as a concrete blocker. |
+| Phi-3 was only a falsification row | Added `scripts/build_latentwire_phi3_failure_diagnostic.py` and generated `results/latentwire_phi3_failure_diagnostic_20260505`. | Phi-3 source accuracy is 0.246 vs Qwen 0.346 on ARC test, Phi-3/Qwen choice agreement is 0.289, and the packet follows Phi-3 at 0.997. Failure is source-choice/family boundary at this interface, not decoded-packet corruption. |
+
+These fixes do not create a stronger headline claim. They make the workshop
+paper more defensible by replacing unresolved caveats with evidence-backed
+boundaries.
 
 ## Reviewer 2 Fixes Integrated
 
@@ -49,7 +61,8 @@ blockers, not workshop blockers, after the current paper scope.
    not reasoning synthesis beyond the source.
 2. Four-way MCQA leaves a low answer-channel ceiling, so reviewers may still ask
    for a higher-entropy task.
-3. OpenBookQA has only 5 seeds and should remain a secondary row.
+3. OpenBookQA now has 20 packet/control seeds, but it still does not beat
+   same-budget text or source-index under lower-bound gates.
 4. Native C2C/KV throughput comparisons remain future work and must not appear
    as a workshop claim.
 
