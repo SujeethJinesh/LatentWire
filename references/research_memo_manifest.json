@@ -2742,5 +2742,12 @@
     "path": "references/749_colm_v2_review_packet_baseline_matrix_refs_20260504.md",
     "status": "local_memo",
     "reason": "Reviewer-facing primary-source baseline matrix memo for COLM_v2, separating dense cache communication, activation/latent communication, prompt/query bottlenecks, sparse/common-basis work, KV compression, serving substrates, and local destructive controls."
+  },
+  {
+    "num": 750,
+    "slug": "colm_v3_experimental_systems_triage_refs_20260505",
+    "path": "references/750_colm_v3_experimental_systems_triage_refs_20260505.md",
+    "status": "local_memo",
+    "reason": "Primary-source triage memo for the COLM_v3 side systems experiments, covering hybrid SSM serving, attention sinks, LongFlow, PM-KVQ, and KV quantization boundaries."
   }
 ]

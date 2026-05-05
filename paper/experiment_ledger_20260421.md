@@ -24474,3 +24474,49 @@ slices produce evidence.
 Lay explanation: we built the test that looks for an earlier C2C hint before
 the final answer appears. The full local Mac run stalled, so the next step is to
 run that test in small chunks or on a more suitable GPU.
+
+## 2026-05-05 COLM_v3 Unified Workshop And Systems Sidecar Setup
+
+Added a COLM_v3 readiness memo and organized the user-provided systems side
+experiments into project-local folders:
+
+- COLM_v3 memo:
+  `paper/latentwire_colm_v3_readiness_20260505.md`;
+- experimental status:
+  `experimental/status_20260505.md`;
+- systems sidecar reference memo:
+  `references/750_colm_v3_experimental_systems_triage_refs_20260505.md`;
+- project scaffolds:
+  `experimental/hybridkernel/`, `experimental/sinkaware/`,
+  `experimental/thoughtflow_fp8/`.
+
+Setup read:
+
+- each side experiment now has a project-local `.venv`;
+- root experimental instructions no longer tell agents to create separate
+  project checkouts or branches;
+- Phase 0 is started for all three side experiments, but not complete;
+- no dependencies, external repos, model weights, GPU runs, or literature audits
+  have been verified yet.
+
+Decision: COLM_v3 should stay focused on LatentWire evidence consolidation, not
+the new systems side experiments. The side experiments are alive only as future
+systems spinouts unless one quickly produces a measured artifact that directly
+strengthens COLM_v3.
+
+Experiment status:
+
+- HybridKernel: alive but detached from LatentWire; first gate is source-backed
+  novelty audit plus transition-overhead map.
+- SinkAware: narrow quick-kill candidate; first gate is a line-numbered kernel
+  audit for static sink-prior handling.
+- ThoughtFlow-FP8: highest systems upside but crowded; first gate is LongFlow
+  forensics plus a competitive matrix against reasoning-KV methods.
+
+Next exact COLM_v3 gate: build the review packet from existing evidence:
+v3 abstract/introduction/contribution bullets, claim audit, artifact manifest,
+measured-vs-estimated systems table, and reviewer-facing claim boundary section.
+
+Lay explanation: we are turning the v1/v2 material into one workshop paper and
+putting the three new systems ideas into safe sandboxes. They are not evidence
+yet; they are candidates for future hard systems numbers.

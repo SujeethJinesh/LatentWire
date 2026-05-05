@@ -2,7 +2,7 @@
 
 ## Status
 
-- Phase 0: not started.
+- Phase 0: started.
 - Phase 1: not started.
 - Current viability: unverified.
 - Current risk: high field crowding; the wedge depends on Phase 1 forensics and
@@ -12,6 +12,7 @@
 
 ### Phase 0
 
+- Created `experimental/thoughtflow_fp8/.venv` (`Python 3.9.13`).
 - `phase0/setup_complete.md`: missing.
 
 ### Phase 1

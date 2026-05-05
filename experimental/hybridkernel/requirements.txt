@@ -1,0 +1,13 @@
+torch
+transformers
+numpy
+pytest
+huggingface-hub
+safetensors
+einops
+sentencepiece
+tiktoken
+matplotlib
+jupyter
+ipython
+triton

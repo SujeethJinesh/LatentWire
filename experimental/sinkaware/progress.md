@@ -2,13 +2,13 @@
 
 ## Status
 
-- Phase 0 setup: not started
+- Phase 0 setup: started
 - Phase 1 literature and code audit: not started
 - Last updated: 2026-05-05
 
 ## Phase 0 Checklist
 
-- [ ] Create `experimental/sinkaware/.venv`
+- [x] Create `experimental/sinkaware/.venv` (`Python 3.9.13`)
 - [ ] Install `requirements.txt`
 - [ ] Create local ignored directories for external repos and artifacts
 - [ ] Record setup verification in `phase0/setup_complete.md`
@@ -42,4 +42,3 @@ as static.
 
 Next gate: complete Phase 0 setup, then perform the Phase 1 source audit before
 any math, implementation, or GPU benchmarking work.
-
