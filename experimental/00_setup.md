@@ -122,7 +122,9 @@ huggingface-cli download open-r1/OpenR1-Math-220k --repo-type dataset
 ### What runs natively
 - PyTorch CPU (everything correct, slow)
 - PyTorch MPS (some ops; `torch.nn.functional.scaled_dot_product_attention` works)
-- Triton CPU backend (compiles kernels, can inspect IR; **does not give GPU perf numbers**)
+- Triton interpreter mode where a local Triton build/wheel is importable
+  (`TRITON_INTERPRET=1`; checks kernel semantics against CPU references and
+  **does not give GPU perf numbers**)
 - HuggingFace transformers with `device_map="mps"` for ≤7B models
 - NumPy / pure-Python reference impls
 
@@ -133,6 +135,24 @@ huggingface-cli download open-r1/OpenR1-Math-220k --repo-type dataset
 - mamba-ssm CUDA selective scan (use CPU fallback for reference only)
 - Real Triton kernel benchmarks
 - Anything FP8 or FP4 native (Mac has no Tensor Cores)
+- Real Triton kernel benchmarks. Interpreter-mode correctness is useful, but it
+  is not evidence about launch overhead, HBM movement, occupancy, Tensor Cores,
+  or latency on NVIDIA GPUs.
+
+## Triton interpreter correctness gates
+
+For Phases 0-4, any project that introduces a Triton kernel must also include a
+plain CPU/PyTorch reference and a correctness test that runs with:
+
+```bash
+TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest <project test path>
+```
+
+The test must compare Triton output to the CPU reference across at least two
+shapes or parameter settings and a fixed random seed. A phase is not complete if
+the Triton dependency cannot be imported locally; in that case record the block
+in `progress.md` and keep the CPU reference tests passing. Do not count
+interpreter-mode execution as a GPU systems result.
 
 ### Agent-friendly conventions
 - Each agent runs in its own tmux window or VS Code window

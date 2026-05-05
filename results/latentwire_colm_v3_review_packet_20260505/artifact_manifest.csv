@@ -7,6 +7,7 @@ systems_measured_vs_estimated.csv,systems rows with measured-vs-estimated labels
 table_figure_inventory.csv,paper table and figure readiness tracker,generated
 submission_checklist.csv,remaining workshop submission blockers,generated
 experiment_scoping.csv,three systems side experiments scoped for COLM_v3,generated
+triton_kernel_scaffolds.csv,Macbook Triton interpreter correctness scaffold tracker,generated
 benchmark_breadth.csv,additional benchmark breadth and claim boundary audit,generated
 latest_model_breadth.csv,newer model source-packet emitter breadth audit,generated
 nvidia_native_runbook.md,future native GPU measurement runbook,generated

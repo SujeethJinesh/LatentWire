@@ -1,7 +1,7 @@
 # 01 — HybridKernel: Fused Attention↔SSM Boundary Kernel
 
 ## TL;DR
-Hybrid LLMs interleave attention layers and SSM layers. Current targets (May 2026): Granite-4.0-H (9 Mamba : 1 attention, Oct 2025), Nemotron-H (8B/47B/56B), Nemotron-3-Nano-30B-A3B (Dec 2025, hybrid MoE with reasoning budget), Mamba-3 (March 2026), Apriel-H1-15B-Thinker (hybrid reasoner), Qwen3-Next-80B-A3B. The transitions involve memory format conversions and separate Triton kernel launches. We build the first kernel that fuses across this boundary.
+Hybrid LLMs interleave attention layers and SSM layers. Current targets (May 2026): Granite-4.0-H (9 Mamba : 1 attention, Oct 2025), Nemotron-H (8B/47B/56B), Nemotron-3-Nano-30B-A3B (Dec 2025, hybrid MoE with reasoning budget), Mamba-3 (March 2026), Apriel-H1-15B-Thinker (hybrid reasoner), Qwen3-Next-80B-A3B. The transitions may involve memory format conversions and separate kernel launches. This project tests whether a narrow boundary-fusion primitive remains novel and useful after source audit and Macbook correctness gates.
 
 ## Hypothesis (testable)
 In Granite-4.0-H-Small and Nemotron-3-Nano-30B-A3B-FP8 decode at typical inference sizes (4K–32K context, 256-token output), ≥5% of decode latency is attributable to layer-type transitions (memory traffic + kernel launch overhead). A fused boundary kernel recovers ≥60% of this overhead, yielding ≥3% end-to-end TPS improvement.
@@ -99,10 +99,12 @@ If the reference implementation diverges from the canonical implementation by >1
 
 ---
 
-## Phase 4: Triton kernel skeleton (1 day, Macbook, $0)
+## Phase 4: Triton interpreter kernel skeleton (1 day, Macbook, $0)
 
 - [ ] Write Triton kernel skeleton for the fused boundary (attention output → SSM input; the dominant case)
-- [ ] Compile with Triton's CPU backend; inspect IR
+- [ ] Add a plain PyTorch CPU reference
+- [ ] Run `TRITON_INTERPRET=1` correctness tests against the CPU reference
+- [ ] If local Triton is unavailable, keep CPU tests passing and mark Phase 4 blocked, not complete
 - [ ] Confirm tile shapes are compatible across attention and SSM portions
 - [ ] Document integration plan with vLLM's attention backend: which file, which class, where the fused kernel slots in
 
@@ -119,7 +121,7 @@ If Triton cannot express the boundary as a single fused kernel without launching
 - [ ] Phase 1: open niche confirmed
 - [ ] Phase 2: theoretical fusion benefit ≥3%
 - [ ] Phase 3: reference passes all tests
-- [ ] Phase 4: Triton skeleton compiles cleanly with documented IR
+- [ ] Phase 4: Triton interpreter skeleton matches the CPU reference or is explicitly blocked by missing local Triton
 - [ ] `experimental/hybridkernel/progress.md` summarizes all of above
 
 **Sign-off**: human review.
@@ -194,7 +196,7 @@ If Triton cannot express the boundary as a single fused kernel without launching
 |---|---|---|
 | Existing fusion subsumes ours | Medium | Phase 1 audit |
 | Boundary too small on 5090 | Medium | Phase 5 pivot test |
-| Triton fusion mechanically infeasible | Low–medium | Phase 4 skeleton |
+| Triton fusion mechanically infeasible | Low-medium | Phase 4 interpreter skeleton |
 | Quality regression from fusion | Low | Phase 7 quality eval |
 | Reviewers want H100 numbers | Medium | Phase 8 H100 burst |
 

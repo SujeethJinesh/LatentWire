@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-05-05T06:15:29.952112+00:00",
+  "created_utc": "2026-05-05T06:29:06.520036+00:00",
   "input_manifest": [
     {
       "key": "benchmark_selection_gate",
@@ -39,7 +39,7 @@
     {
       "key": "experimental_status",
       "path": "experimental/status_20260505.md",
-      "sha256": "726b5fe331cae97ffa046cec22d8a7c6e7ef54d587d62866c70c71824f86c694"
+      "sha256": "61949eb37b9d293e1ca01d512ff148d34ebf9a088aa21a6c376568e7ca5e4b4e"
     },
     {
       "key": "hellaswag_seed_stability",
@@ -85,6 +85,7 @@
     "results/latentwire_colm_v3_review_packet_20260505/submission_checklist.csv",
     "results/latentwire_colm_v3_review_packet_20260505/systems_measured_vs_estimated.csv",
     "results/latentwire_colm_v3_review_packet_20260505/table_figure_inventory.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/triton_kernel_scaffolds.csv",
     "paper/latentwire_colm_v3_review_packet_20260505.md"
   ],
   "packet": "latentwire_colm_v3_review_packet"

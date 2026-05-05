@@ -45,6 +45,8 @@ recorded in `progress.md`.
 - Phase 2: architecture map shows theoretical fusion benefit is plausibly at or
   above the project threshold.
 - Phase 3: CPU reference implementation matches canonical behavior.
-- Phase 4: Triton skeleton compiles/lowers enough to justify GPU profiling.
+- Phase 4: `TRITON_INTERPRET=1` kernel skeleton matches a CPU reference. A
+  missing local Triton dependency blocks Phase 4 completion rather than
+  proving or disproving the systems idea.
 
 Do not proceed to GPU spend until Phase 0-4 deliverables are present and reviewed.

@@ -4,6 +4,9 @@
 
 - Phase 0: partial quick pass.
 - Phase 1: quick forensics pass complete.
+- Phase 2/4: anchor/phase retention reference plus Triton interpreter
+  correctness scaffold added, but Phase 2 trace evidence remains the decision
+  gate.
 - Current viability: pivot/proceed only with narrowed framing.
 - Current risk: high field crowding; ThinKV already occupies much of the
   thought-adaptive quantization/eviction space, and DeepSeek V4 raises the
@@ -35,6 +38,28 @@ Proceed condition: Phase 2 must produce keep-rate/recurrence evidence for a
 specific protected-token class and a policy definition that is portable to
 existing models without retraining. Otherwise pivot to a critique/re-evaluation
 paper or kill the project.
+
+## Macbook Kernel Correctness Scaffold
+
+Added an anchor/phase-protected int8 quantization primitive:
+
+- CPU reference: `phase2/reference/anchor_phase_quant.py`
+- CPU reference test: `phase2/tests/test_anchor_phase_quant_reference.py`
+- Triton interpreter wrapper: `phase4/kernel/anchor_phase_quant_triton.py`
+- Triton interpreter test: `phase4/tests/test_anchor_phase_quant_triton_interpret.py`
+
+Run locally:
+
+```bash
+./venv_arm64/bin/python -m pytest experimental/thoughtflow_fp8/phase2/tests
+TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/thoughtflow_fp8/phase4/tests -rs
+```
+
+Current Mac status: CPU reference test passes. Triton interpreter tests are
+collected but skip because `triton` is not installable/importable in
+`./venv_arm64` on this machine. This does not change the branch decision:
+ThoughtFlow-FP8 still needs the Phase 2 trace/telemetry simulation before any
+reviewer pack or GPU work.
 
 ## Log
 

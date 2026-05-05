@@ -1,6 +1,6 @@
 # LatentWire COLM v3 Review Packet
 
-- created_utc: `2026-05-05T06:15:29.952112+00:00`
+- created_utc: `2026-05-05T06:29:06.520036+00:00`
 - main_claim: LatentWire provides a practical protocol and evaluation framework for source-private candidate-transfer packets, with controlled evidence of narrow fixed-byte packet utility, explicit utility-per-byte accounting, and destructive controls that expose shortcut claims.
 - next_exact_gate: human copyedit, page-budget review, final PDF/table placement, and consistency check between paper, review packet, and artifact manifest
 
@@ -115,6 +115,16 @@
 | SinkAware | separate systems spinout only; mention in COLM_v3 only as future work unless Phase 1-4 produce source-backed novelty plus a reference artifact | CPU-only fixed sink-token decomposition | learned/per-head sink denominator handling is already occupied by FlashInfer/FlashMLA/GPT-OSS-style paths | phase1_quick_audit_complete_narrow_phase2_or_kill |
 | ThoughtFlow-FP8 | separate systems spinout candidate after Phase 1, not current COLM_v3 evidence | Mac-only trace simulation for protected reasoning-token classes | field is crowded by LongFlow, ThinKV, R-KV/R-KVHash, RaaS, LazyEviction, ForesightKV, and PM-KVQ | phase1_forensics_complete_high_upside_phase2_pending |
 
+## Triton Kernel Correctness Scaffolds
+
+These are Macbook-side correctness hooks only. They do not support COLM_v3 GPU systems claims.
+
+| experiment | cpu_reference | triton_kernel | local_status | files_exist | claim_boundary |
+| --- | --- | --- | --- | --- | --- |
+| HybridKernel | experimental/hybridkernel/phase3/reference/boundary.py | experimental/hybridkernel/phase4/kernel/boundary_triton.py | cpu_reference_passes_triton_skips_missing_dependency | true | future correctness scaffold only; not COLM_v3 systems evidence |
+| SinkAware | experimental/sinkaware/phase2/reference/sink_decomposition.py | experimental/sinkaware/phase4/kernel/sink_decomposition_triton.py | cpu_reference_passes_triton_skips_missing_dependency | true | future exact scalar decomposition scaffold only; not COLM_v3 systems evidence |
+| ThoughtFlow-FP8 | experimental/thoughtflow_fp8/phase2/reference/anchor_phase_quant.py | experimental/thoughtflow_fp8/phase4/kernel/anchor_phase_quant_triton.py | cpu_reference_passes_triton_skips_missing_dependency | true | future anchor/phase retention scaffold only; not COLM_v3 systems evidence |
+
 ## Submission Checklist
 
 | item | status | blocker |
@@ -138,7 +148,7 @@
 | colm_v3_tex | colm_final/paper/latentwire_colm2026.tex | cccf7b457962fb6ae17f52a6027f99ab7cbb9f1c83ef4562c768a789c69e4a5e |
 | cpu_systems_frontier | results/source_private_cpu_systems_frontier_20260429/cpu_systems_frontier.json | 1bb52d20072193b61289f3a1592949d6b62361ef2ad747be3ba5d6be1c90eb38 |
 | experiment_ledger | paper/experiment_ledger_20260421.md | f8ff74b198bd5dc38ced80de422cab1477915f4084d390d2701736858ce6cc69 |
-| experimental_status | experimental/status_20260505.md | 726b5fe331cae97ffa046cec22d8a7c6e7ef54d587d62866c70c71824f86c694 |
+| experimental_status | experimental/status_20260505.md | 61949eb37b9d293e1ca01d512ff148d34ebf9a088aa21a6c376568e7ca5e4b4e |
 | hellaswag_seed_stability | results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/arc_challenge_seed_stability.json | 37f0fca016e6c5b17c6a23d9d5b09e17154921cf51d85bed67a9c8f300d548bd |
 | latest_model_matrix | results/source_private_latest_model_matrix_20260428/latest_model_matrix.json | 09694bfd13bb060e146274808994f189b1966e881e3b9c723d91aea513666498 |
 | reviewer_feedback | paper/reviewer_feedback.md | 282ee615ffe970797c695908214088af55b0ae80656ea5c4829aa01c2492198e |

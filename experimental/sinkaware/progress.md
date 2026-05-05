@@ -4,6 +4,8 @@
 
 - Phase 0 setup: partial Mac-only source-audit setup
 - Phase 1 literature and code audit: quick-kill audit recorded
+- Phase 2/4: fixed sink-token decomposition reference plus Triton interpreter
+  correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-05
 
 ## Phase 0 Checklist
@@ -46,3 +48,25 @@ Next gate: CPU-only Phase 2 reference decomposition on synthetic tensors. If the
 fixed sink-token contribution cannot be reused without recomputing `QK_sink`, or
 if the idea reduces to learned denominator-only sinks, kill the branch. No GPU or
 large model work until that gate passes.
+
+## Macbook Kernel Correctness Scaffold
+
+Added a scalar fixed sink-token decomposition primitive:
+
+- CPU reference: `phase2/reference/sink_decomposition.py`
+- CPU reference test: `phase2/tests/test_sink_decomposition_reference.py`
+- Triton interpreter wrapper: `phase4/kernel/sink_decomposition_triton.py`
+- Triton interpreter test: `phase4/tests/test_sink_decomposition_triton_interpret.py`
+
+Run locally:
+
+```bash
+./venv_arm64/bin/python -m pytest experimental/sinkaware/phase2/tests
+TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/sinkaware/phase4/tests -rs
+```
+
+Current Mac status: CPU reference test passes. Triton interpreter tests are
+collected but skip because `triton` is not installable/importable in
+`./venv_arm64` on this machine. The scaffold checks exact softmax composition
+for synthetic scalar values only; it does not yet prove a full attention kernel
+or a GPU systems win.

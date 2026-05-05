@@ -43,3 +43,6 @@ Current required early gates:
 
 The project should be killed or pivoted if Phase 1 cannot identify a concrete
 LongFlow failure mode that ThoughtFlow-FP8 directly addresses.
+
+Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
+reference. Interpreter-mode correctness is not GPU performance evidence.

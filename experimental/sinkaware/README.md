@@ -30,3 +30,6 @@ performs sink-as-precomputed-prior handling.
 
 Kill criterion: an existing kernel implements the sink contribution as a
 precomputed prior/bias and skips score computation for fixed sink positions.
+
+Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
+reference. Interpreter-mode correctness is not GPU performance evidence.

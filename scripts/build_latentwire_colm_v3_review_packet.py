@@ -380,6 +380,45 @@ def _experiment_scoping() -> list[dict[str, str]]:
     ]
 
 
+def _triton_kernel_scaffolds() -> list[dict[str, str]]:
+    rows = [
+        {
+            "experiment": "HybridKernel",
+            "cpu_reference": "experimental/hybridkernel/phase3/reference/boundary.py",
+            "cpu_test": "experimental/hybridkernel/phase3/tests/test_boundary_reference.py",
+            "triton_kernel": "experimental/hybridkernel/phase4/kernel/boundary_triton.py",
+            "triton_test": "experimental/hybridkernel/phase4/tests/test_boundary_triton_interpret.py",
+            "local_status": "cpu_reference_passes_triton_skips_missing_dependency",
+            "claim_boundary": "future correctness scaffold only; not COLM_v3 systems evidence",
+        },
+        {
+            "experiment": "SinkAware",
+            "cpu_reference": "experimental/sinkaware/phase2/reference/sink_decomposition.py",
+            "cpu_test": "experimental/sinkaware/phase2/tests/test_sink_decomposition_reference.py",
+            "triton_kernel": "experimental/sinkaware/phase4/kernel/sink_decomposition_triton.py",
+            "triton_test": "experimental/sinkaware/phase4/tests/test_sink_decomposition_triton_interpret.py",
+            "local_status": "cpu_reference_passes_triton_skips_missing_dependency",
+            "claim_boundary": "future exact scalar decomposition scaffold only; not COLM_v3 systems evidence",
+        },
+        {
+            "experiment": "ThoughtFlow-FP8",
+            "cpu_reference": "experimental/thoughtflow_fp8/phase2/reference/anchor_phase_quant.py",
+            "cpu_test": "experimental/thoughtflow_fp8/phase2/tests/test_anchor_phase_quant_reference.py",
+            "triton_kernel": "experimental/thoughtflow_fp8/phase4/kernel/anchor_phase_quant_triton.py",
+            "triton_test": "experimental/thoughtflow_fp8/phase4/tests/test_anchor_phase_quant_triton_interpret.py",
+            "local_status": "cpu_reference_passes_triton_skips_missing_dependency",
+            "claim_boundary": "future anchor/phase retention scaffold only; not COLM_v3 systems evidence",
+        },
+    ]
+    for row in rows:
+        row["files_exist"] = (
+            "true"
+            if all((ROOT / row[key]).exists() for key in ("cpu_reference", "cpu_test", "triton_kernel", "triton_test"))
+            else "false"
+        )
+    return rows
+
+
 def _benchmark_breadth(paths: dict[str, pathlib.Path]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     if "benchmark_selection_gate" in paths and paths["benchmark_selection_gate"].exists():
@@ -642,6 +681,7 @@ def _artifact_manifest(input_paths: dict[str, pathlib.Path]) -> list[dict[str, s
         ("table_figure_inventory.csv", "paper table and figure readiness tracker"),
         ("submission_checklist.csv", "remaining workshop submission blockers"),
         ("experiment_scoping.csv", "three systems side experiments scoped for COLM_v3"),
+        ("triton_kernel_scaffolds.csv", "Macbook Triton interpreter correctness scaffold tracker"),
         ("benchmark_breadth.csv", "additional benchmark breadth and claim boundary audit"),
         ("latest_model_breadth.csv", "newer model source-packet emitter breadth audit"),
         ("nvidia_native_runbook.md", "future native GPU measurement runbook"),
@@ -753,6 +793,7 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
         "submission_checklist": _submission_checklist(),
         "systems_measured_vs_estimated": systems_rows,
         "experiment_scoping": _experiment_scoping(),
+        "triton_kernel_scaffolds": _triton_kernel_scaffolds(),
         "benchmark_breadth": _benchmark_breadth(paths),
         "latest_model_breadth": _latest_model_breadth(paths),
         "baseline_matrix": v2_packet.get("baseline_matrix", []),
@@ -924,6 +965,21 @@ def render_markdown(packet: dict[str, Any]) -> str:
                 packet["experiment_scoping"],
                 ["experiment", "colm_v3_scope", "highest_value_gate", "novelty_risk", "status"],
             ),
+            "## Triton Kernel Correctness Scaffolds",
+            "",
+            "These are Macbook-side correctness hooks only. They do not support COLM_v3 GPU systems claims.",
+            "",
+            *_markdown_table(
+                packet["triton_kernel_scaffolds"],
+                [
+                    "experiment",
+                    "cpu_reference",
+                    "triton_kernel",
+                    "local_status",
+                    "files_exist",
+                    "claim_boundary",
+                ],
+            ),
             "## Submission Checklist",
             "",
             *_markdown_table(packet["submission_checklist"], ["item", "status", "blocker"]),
@@ -952,6 +1008,7 @@ def write_outputs(packet: dict[str, Any], output_dir: pathlib.Path, paper_path: 
     _write_csv(output_dir / "table_figure_inventory.csv", packet["table_figure_inventory"])
     _write_csv(output_dir / "submission_checklist.csv", packet["submission_checklist"])
     _write_csv(output_dir / "experiment_scoping.csv", packet["experiment_scoping"])
+    _write_csv(output_dir / "triton_kernel_scaffolds.csv", packet["triton_kernel_scaffolds"])
     _write_csv(output_dir / "benchmark_breadth.csv", packet["benchmark_breadth"])
     _write_csv(output_dir / "latest_model_breadth.csv", packet["latest_model_breadth"])
     _write_csv(output_dir / "artifact_manifest.csv", packet["artifact_manifest"])

@@ -1,7 +1,7 @@
 # 03 — ThoughtFlow-FP8: Reasoning KV Eviction with Anchor Protection
 
 ## TL;DR
-Reasoning models generate tens of thousands of tokens; KV cache pressure is the dominant cost. Existing methods (LongFlow, ThinKV, R-KV) compress aggressively but suffer accuracy drops because they evict tokens uniformly across reasoning phases. We build a single fused Triton kernel that combines: (a) FP8 KV quantization, (b) sink-anchor protection, and (c) reasoning-phase-aware eviction. Targets: GPT-OSS-20B, Qwen3.6-27B (thinking mode), Apriel-H1-15B-Thinker, Nemotron-3-Nano.
+Reasoning models generate tens of thousands of tokens; KV cache pressure is the dominant cost. Existing methods (LongFlow, ThinKV, R-KV) compress aggressively and may drop useful reasoning states. This project tests whether a retrofit policy combining low-bit KV quantization, sink/anchor protection, and reasoning-phase-aware eviction survives crowded-baseline review. Targets: GPT-OSS-20B, Qwen3.6-27B (thinking mode), Apriel-H1-15B-Thinker, Nemotron-3-Nano.
 
 ## Hypothesis (testable)
 At iso-throughput vs LongFlow on AIME-2025 long-decode with GPT-OSS-20B (high reasoning effort) or Qwen3.6-27B (thinking mode), ThoughtFlow-FP8 preserves ≥3 percentage points more accuracy. The benefit comes from: (a) FP8 keeps more bytes of context within budget; (b) anchor protection avoids the failure mode behind LongFlow's review issues; (c) phase-aware eviction matches reasoning structure.
@@ -113,13 +113,15 @@ If phase-aware eviction is no better than uniform on cached traces (in terms of 
 
 ---
 
-## Phase 4: Reference impl + Triton skeleton (2 days, Macbook, $0)
+## Phase 4: Reference impl + Triton interpreter skeleton (2 days, Macbook, $0)
 
 - [ ] CPU reference of FP8 quantization (PyTorch float8 dtype on CPU; or simulate via int8 + scale)
 - [ ] CPU reference of anchor + phase-aware eviction policy
 - [ ] CPU reference of full eviction step: importance score → quantize → evict → attention pass
 - [ ] Test on cached labeled traces from Phase 2: which tokens get evicted, what does the resulting context look like
-- [ ] Triton kernel skeleton: fused importance + quantize + eviction; compile and inspect IR
+- [ ] Triton kernel skeleton: fused importance + quantize + eviction
+- [ ] Run `TRITON_INTERPRET=1` correctness tests against the CPU reference
+- [ ] If local Triton is unavailable, keep CPU tests passing and mark Phase 4 blocked, not complete
 
 **Deliverable**: `phase4/reference/eviction.py`, `phase4/kernel/thoughtflow_triton.py`, `phase4/integration_plan.md`.
 
@@ -134,7 +136,7 @@ If the Triton fusion turns out to require multiple kernel launches per step (not
 - [ ] Phase 1: LongFlow failure hypothesis articulated; competitive matrix shows our combination is unique
 - [ ] Phase 2: phase classifier validated; phase-aware eviction shown to differ from uniform on cached traces
 - [ ] Phase 3: eviction policy formally defined
-- [ ] Phase 4: reference passes correctness on cached traces; Triton skeleton compiles
+- [ ] Phase 4: reference passes correctness on cached traces; Triton interpreter skeleton matches the CPU reference or is explicitly blocked by missing local Triton
 
 **Sign-off**: human review. **This gate is the most important decision point** — given the field crowding, only proceed if the wedge is sharp.
 

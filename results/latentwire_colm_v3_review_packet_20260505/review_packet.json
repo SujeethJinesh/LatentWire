@@ -41,6 +41,11 @@
       "status": "generated"
     },
     {
+      "artifact": "triton_kernel_scaffolds.csv",
+      "role": "Macbook Triton interpreter correctness scaffold tracker",
+      "status": "generated"
+    },
+    {
       "artifact": "benchmark_breadth.csv",
       "role": "additional benchmark breadth and claim boundary audit",
       "status": "generated"
@@ -763,7 +768,7 @@
       "still_needs_work": ""
     }
   ],
-  "created_utc": "2026-05-05T06:15:29.952112+00:00",
+  "created_utc": "2026-05-05T06:29:06.520036+00:00",
   "experiment_scoping": [
     {
       "colm_v3_scope": "separate systems spinout; exclude from COLM_v3 claims unless Phase 1 confirms novelty, Phase 2 shows at least 3% theoretical benefit, and native GPU profiling confirms overhead",
@@ -829,7 +834,7 @@
     {
       "key": "experimental_status",
       "path": "experimental/status_20260505.md",
-      "sha256": "726b5fe331cae97ffa046cec22d8a7c6e7ef54d587d62866c70c71824f86c694"
+      "sha256": "61949eb37b9d293e1ca01d512ff148d34ebf9a088aa21a6c376568e7ca5e4b4e"
     },
     {
       "key": "hellaswag_seed_stability",
@@ -1288,7 +1293,7 @@
   },
   "source_text_sanity": {
     "colm_v3_readiness_chars": 7782,
-    "experimental_status_chars": 6933
+    "experimental_status_chars": 8316
   },
   "story": "LatentWire studies whether compact source-private candidate packets can transmit useful model evidence without dense cache transfer, and uses byte accounting plus destructive controls to separate real packet utility from answer-choice and target-cache shortcuts.",
   "strict_controls": [
@@ -1992,6 +1997,38 @@
       "next_action": "use for human copyedit and final reviewer-risk pass",
       "source": "colm_final/audits/colm_v3_10_reviewer_panel_20260505.md",
       "status": "recorded"
+    }
+  ],
+  "triton_kernel_scaffolds": [
+    {
+      "claim_boundary": "future correctness scaffold only; not COLM_v3 systems evidence",
+      "cpu_reference": "experimental/hybridkernel/phase3/reference/boundary.py",
+      "cpu_test": "experimental/hybridkernel/phase3/tests/test_boundary_reference.py",
+      "experiment": "HybridKernel",
+      "files_exist": "true",
+      "local_status": "cpu_reference_passes_triton_skips_missing_dependency",
+      "triton_kernel": "experimental/hybridkernel/phase4/kernel/boundary_triton.py",
+      "triton_test": "experimental/hybridkernel/phase4/tests/test_boundary_triton_interpret.py"
+    },
+    {
+      "claim_boundary": "future exact scalar decomposition scaffold only; not COLM_v3 systems evidence",
+      "cpu_reference": "experimental/sinkaware/phase2/reference/sink_decomposition.py",
+      "cpu_test": "experimental/sinkaware/phase2/tests/test_sink_decomposition_reference.py",
+      "experiment": "SinkAware",
+      "files_exist": "true",
+      "local_status": "cpu_reference_passes_triton_skips_missing_dependency",
+      "triton_kernel": "experimental/sinkaware/phase4/kernel/sink_decomposition_triton.py",
+      "triton_test": "experimental/sinkaware/phase4/tests/test_sink_decomposition_triton_interpret.py"
+    },
+    {
+      "claim_boundary": "future anchor/phase retention scaffold only; not COLM_v3 systems evidence",
+      "cpu_reference": "experimental/thoughtflow_fp8/phase2/reference/anchor_phase_quant.py",
+      "cpu_test": "experimental/thoughtflow_fp8/phase2/tests/test_anchor_phase_quant_reference.py",
+      "experiment": "ThoughtFlow-FP8",
+      "files_exist": "true",
+      "local_status": "cpu_reference_passes_triton_skips_missing_dependency",
+      "triton_kernel": "experimental/thoughtflow_fp8/phase4/kernel/anchor_phase_quant_triton.py",
+      "triton_test": "experimental/thoughtflow_fp8/phase4/tests/test_anchor_phase_quant_triton_interpret.py"
     }
   ]
 }

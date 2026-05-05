@@ -115,11 +115,12 @@ If sink mass variance across queries is high (>20% relative): the static-prior a
 
 ---
 
-## Phase 4: Reference + Triton skeleton (2 days, Macbook, $0)
+## Phase 4: Reference + Triton interpreter skeleton (2 days, Macbook, $0)
 
 - [ ] NumPy reference: sink-prior attention vs standard attention, equivalence (or bounded approximation) test on synthetic data
 - [ ] Triton kernel skeleton: precomputed-bias path + branch-free non-sink path
-- [ ] Compile via Triton CPU backend; inspect IR for tile-shape correctness
+- [ ] Run `TRITON_INTERPRET=1` correctness tests against the CPU reference
+- [ ] If local Triton is unavailable, keep CPU tests passing and mark Phase 4 blocked, not complete
 - [ ] Integration plan with vLLM's FlashInfer backend
 
 **Deliverable**: `phase4/reference/sink_attention.py`, `phase4/kernel/sink_triton.py`, `phase4/integration_plan.md`.
@@ -135,7 +136,7 @@ If the Triton skeleton requires more kernel launches than baseline FlashAttentio
 - [ ] Phase 1: explicit confirmation no existing kernel implements sink-as-static-prior
 - [ ] Phase 2: math shows static prior is exact or has bounded error
 - [ ] Phase 3: empirical sink mass variance is low enough to support static treatment
-- [ ] Phase 4: reference passes equivalence test, Triton skeleton compiles
+- [ ] Phase 4: reference passes equivalence test, Triton interpreter skeleton matches the CPU reference or is explicitly blocked by missing local Triton
 
 **Sign-off**: human review.
 

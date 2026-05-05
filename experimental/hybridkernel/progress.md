@@ -5,6 +5,8 @@
 - Current phase: Phase 1 quick audit complete; Phase 2 pending
 - Phase 0: partial Mac setup complete for audit
 - Phase 1: quick source-backed audit complete, deeper code audit still pending
+- Phase 3/4: interpreter-mode boundary kernel scaffold added for correctness
+  gates, but not phase-complete
 - Last updated: 2026-05-05
 
 This scaffold now has a local environment check, small public config fetches,
@@ -43,6 +45,27 @@ Phase 1 is a quick audit, not a final line-by-line source audit. The current
 finding is that vLLM already narrows the systems story through hybrid state
 layout and transfer work, but no fused attention-to-SSM layer-boundary compute
 kernel was found in this pass.
+
+## Macbook Kernel Correctness Scaffold
+
+Added a minimal attention/SSM boundary blend primitive:
+
+- CPU reference: `phase3/reference/boundary.py`
+- CPU reference test: `phase3/tests/test_boundary_reference.py`
+- Triton interpreter wrapper: `phase4/kernel/boundary_triton.py`
+- Triton interpreter test: `phase4/tests/test_boundary_triton_interpret.py`
+
+Run locally:
+
+```bash
+./venv_arm64/bin/python -m pytest experimental/hybridkernel/phase3/tests
+TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/hybridkernel/phase4/tests -rs
+```
+
+Current Mac status: CPU reference test passes. Triton interpreter tests are
+collected but skip because `triton` is not installable/importable in
+`./venv_arm64` on this machine. This is a correctness scaffold, not a GPU
+performance result and not COLM_v3 evidence.
 
 ## Viability Notes
 

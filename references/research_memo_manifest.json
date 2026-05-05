@@ -2756,5 +2756,12 @@
     "path": "references/751_colm_v3_breadth_audit_refs_20260505.md",
     "status": "local_memo",
     "reason": "Primary-source memo for COLM_v3 benchmark and latest-model breadth audit rows, including HellaSwag, CommonsenseQA, SciQ, Qwen3.5, Gemma 4, Granite 3.3, and OLMo-2 model-card boundaries."
+  },
+  {
+    "num": 752,
+    "slug": "experimental_triton_interpreter_refs_20260505",
+    "path": "references/752_experimental_triton_interpreter_refs_20260505.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for the experimental Macbook Triton interpreter correctness gate, documenting TRITON_INTERPRET=1 as CPU-side kernel debugging/correctness support rather than GPU performance evidence."
   }
 ]

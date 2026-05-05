@@ -24653,3 +24653,40 @@ Reference update:
 Decision: COLM_v3 should mention these only, if at all, as future systems lanes.
 They should not enter claims, tables, or contribution framing until they produce
 measured artifacts.
+## 2026-05-05 COLM_v3 Triton Interpreter Side-System Scaffolds
+
+Goal: respond to the Macbook-side systems request without weakening the COLM_v3
+claim boundary. Added Phase 0-4 instructions that Triton kernels must be tested
+with `TRITON_INTERPRET=1` against CPU/PyTorch references when Triton is
+importable, and must be marked blocked rather than complete when Triton is not
+available.
+
+Artifacts added:
+
+- `experimental/hybridkernel/phase3/reference/boundary.py`
+- `experimental/hybridkernel/phase4/kernel/boundary_triton.py`
+- `experimental/sinkaware/phase2/reference/sink_decomposition.py`
+- `experimental/sinkaware/phase4/kernel/sink_decomposition_triton.py`
+- `experimental/thoughtflow_fp8/phase2/reference/anchor_phase_quant.py`
+- `experimental/thoughtflow_fp8/phase4/kernel/anchor_phase_quant_triton.py`
+- matching CPU and Triton interpreter pytest files under each project
+- `paper/latentwire_colm_v3_completion_audit_20260505.md`
+- `references/752_experimental_triton_interpreter_refs_20260505.md`
+
+Local results:
+
+- `./venv_arm64/bin/python -m pip install triton` failed on this Mac with no
+  compatible distribution.
+- CPU references passed: 3 tests.
+- `TRITON_INTERPRET=1` pytest collected 6 interpreter tests and skipped them
+  cleanly because `triton` is not importable.
+- `scripts/build_latentwire_colm_v3_review_packet.py` now includes a
+  `triton_kernel_scaffolds` table so the reviewer packet can be regenerated
+  without losing this status.
+- `latexmk -pdf -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex`
+  succeeds in `colm_final/paper/` and writes a 12-page PDF; remaining TeX
+  messages are underfull-box/page-budget warnings, not build failures.
+
+Decision: these scaffolds are useful for future systems work but do not change
+COLM_v3 claims. They support only "kernel correctness scaffolds exist", not GPU
+latency, HBM, energy, throughput, or C2C superiority.
