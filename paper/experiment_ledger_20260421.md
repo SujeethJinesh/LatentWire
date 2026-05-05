@@ -24077,3 +24077,53 @@ comparison.
 Lay explanation: we gave the receiver detailed source-token clues, but erasing
 or shuffling those clues made no difference. This version was not truly
 listening to the source model.
+
+## 2026-05-05 ARC Candidate-Local Source-Evidence Repair Preflight
+
+Added and ran the candidate-local follow-up to the failed row-level tokenwise
+readout:
+
+- script:
+  `scripts/build_source_private_arc_candidate_local_source_evidence_repair_preflight.py`;
+- test:
+  `tests/test_build_source_private_arc_candidate_local_source_evidence_repair_preflight.py`;
+- public-innovation artifact:
+  `results/source_private_arc_candidate_local_source_evidence_repair_preflight_20260505_n32_qwen05_to_qwen3/arc_candidate_local_source_evidence_repair_preflight.json`;
+- raw-hidden artifact:
+  `results/source_private_arc_candidate_local_source_evidence_repair_preflight_20260505_n32_qwen05_to_qwen3_no_public_innovation/arc_candidate_local_source_evidence_repair_preflight.json`;
+- memo:
+  `paper/arc_candidate_local_source_evidence_repair_preflight_20260505.md`.
+
+Purpose: preserve one source hidden vector per candidate answer instead of
+flattening the source evidence into a row-level token pool. The gate reused the
+same n32 ARC/OpenBookQA target-score audit and added existing Qwen2.5
+source-rank/source-score controls from the ARC score-fusion cache.
+
+Headline:
+
+- public-innovation candidate-hidden matched accuracy: `0.3750`;
+- raw candidate-hidden matched accuracy: `0.3125`;
+- target-only accuracy: `0.2500`;
+- public candidate readout accuracy: `0.3125`;
+- same-byte visible text accuracy: `0.3750`;
+- source-index/rank/score control accuracy: `0.4375`;
+- public-innovation matched minus best strict control: `-0.0625`;
+- raw matched minus best strict control: `-0.1250`;
+- public-innovation dense diagnostic bytes per row: `14,336`;
+- public-innovation hypothetical top-k sparse proxy bytes per row: `72.0`.
+
+Outcome: fail. Candidate-local source evidence improves over the previous
+row-level token-pool readout but still ties same-byte text and loses to
+source-index/rank/score controls. The no-public-innovation diagnostic is worse,
+so the train-only public innovation step is not the sole cause of failure.
+
+Decision: rule out the current Mac-local Qwen2.5-to-Qwen3 ARC hidden-evidence
+branch as the next ICLR-positive path. Promote
+`svamp32_c2c_teacher_sparse_packet_distillation_preflight`: return to the
+frozen SVAMP32 C2C teacher surface where dense C2C has target-complementary
+headroom, and train a sparse source-private packet against the C2C teacher
+delta with strict source-destroying controls.
+
+Lay explanation: we gave the receiver separate source clues for each answer
+choice. That helped a little, but a simpler baseline that just follows the
+source model's favorite answer still did better.

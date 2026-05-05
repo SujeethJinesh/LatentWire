@@ -168,8 +168,8 @@ Paper-ready systems boundary artifact: LatentWire cached-source rows count the f
 
 | key | path | sha256 |
 | --- | --- | --- |
-| evidence_table | results/latentwire_colm_v2_iclr_evidence_table_20260504/evidence_table.json | b7e7d49c1a9ad4aa93d76a2086421f48dd649ff60be626104c52147fc252129c |
-| live_branch_triage | results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json | 119a89cf69455ea804e4ac48859398749aaea5e5af636b07b6b8e6f82a79c016 |
+| evidence_table | results/latentwire_colm_v2_iclr_evidence_table_20260504/evidence_table.json | 83d38d35ff47ab0de5f8d6293a29ba5316a5dc17bf46686e7fd2726c5f4a9261 |
+| live_branch_triage | results/iclr_colm_v2_live_branch_triage_20260504/live_branch_triage.json | c028dda93dc3dae7ed2773695deb97d509622e1ce985da624f791e0667a77bb4 |
 | conditional_pq_status | results/source_private_conditional_pq_iclr_colm_v2_status_20260504/conditional_pq_iclr_colm_v2_status.json | 3d6d2f760c7695eb91169cb7a3093429a39c12f96542eba25ce35e327f4afdd7 |
 | hellaswag_fixed_hybrid | results/source_private_hellaswag_fixed_hybrid_full_validation_gate_20260503_validation0_10042/hellaswag_fixed_hybrid_full_validation_gate.json | 0fd7d311cec8c8aac0de60de1193246d9cfb86642d407355bd815cb15d82456d |
 | openbookqa_receiver_headroom | results/source_private_openbookqa_receiver_headroom_gate_20260502/openbookqa_receiver_headroom_gate.json | 7b451ba0e16e3793511d0d1e659c2e550ee196745b67134a420b4e7ea7616e8c |
@@ -177,14 +177,14 @@ Paper-ready systems boundary artifact: LatentWire cached-source rows count the f
 
 ## Next Exact Gate
 
-- name: `arc_candidate_local_source_evidence_repair_preflight`
-- primary path: Preserve candidate-local source hidden innovations and test a
-  tiny train-only behavior repair readout. The completed row-level tokenwise
-  repair readout failed: matched `0.3125`, source-index `0.4375`, and matched
-  tied zero-source/wrong-row/source-shuffle/atom-shuffle controls.
-- fallback path: If candidate-local source evidence also fails, move the ICLR
-  path to dense-teacher/C2C-proxy distillation or NVIDIA-backed native KV/C2C
-  comparison.
+- name: `svamp32_c2c_teacher_sparse_packet_distillation_preflight`
+- primary path: Return to the frozen SVAMP32 C2C teacher surface where
+  target-alone is `8/32`, C2C teacher is `16/32`, and C2C-only
+  target-complementary wins are `10`. Treat dense C2C as a teacher and distill
+  its useful behavioral delta into sparse source-private packets.
+- fallback path: If the C2C-teacher proxy also fails, defer broad C2C
+  superiority claims until NVIDIA-backed native KV/C2C comparison or choose a
+  benchmark with clearer dense-transfer headroom.
 - pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
 
 ## Claim Boundaries

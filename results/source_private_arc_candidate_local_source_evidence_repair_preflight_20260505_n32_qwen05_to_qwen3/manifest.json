@@ -1,0 +1,23 @@
+{
+  "created_utc": "2026-05-05T00:16:57Z",
+  "files": {
+    "prediction_audit": {
+      "path": "results/source_private_arc_candidate_local_source_evidence_repair_preflight_20260505_n32_qwen05_to_qwen3/prediction_audit.jsonl",
+      "sha256": "39643828f1b05904d726c6dce8c6881079f2b6e5d6fcf03c29babb212bc15d95"
+    },
+    "report": {
+      "path": "results/source_private_arc_candidate_local_source_evidence_repair_preflight_20260505_n32_qwen05_to_qwen3/arc_candidate_local_source_evidence_repair_preflight.md",
+      "sha256": "a79b312f39a0886e4940e22512fe31d6bf9ecb155ddd98e3101b28f223ec51e7"
+    },
+    "result": {
+      "path": "results/source_private_arc_candidate_local_source_evidence_repair_preflight_20260505_n32_qwen05_to_qwen3/arc_candidate_local_source_evidence_repair_preflight.json",
+      "sha256": "fad0f8095d7a3670a8f8ca5c52d0b39229a0d709669104584d76bf1b8cfd3166"
+    }
+  },
+  "inputs": {
+    "audit_jsonl": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260503_arc_qwen_token_pool_residual_n32_cpu_label_choice/prediction_audit.jsonl",
+    "eval_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+    "source_score_cache": "results/source_private_arc_score_fusion_packet_probe_20260503_qwen05_qwen3_validation/source_scores.json"
+  }
+}

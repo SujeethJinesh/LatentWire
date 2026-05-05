@@ -93,14 +93,14 @@ These rows prevent an ICLR-scale claim until a new source-causal interface clear
 
 ## Next Exact Gate
 
-- name: `arc_candidate_local_source_evidence_repair_preflight`
-- primary path: Preserve candidate-local source hidden innovations and test a
-  tiny train-only behavior repair readout. The completed row-level tokenwise
-  repair readout failed: matched `0.3125`, source-index `0.4375`, and matched
-  tied zero-source/wrong-row/source-shuffle/atom-shuffle controls.
-- fallback path: If candidate-local source evidence also fails, move the ICLR
-  path to dense-teacher/C2C-proxy distillation or NVIDIA-backed native KV/C2C
-  comparison.
+- name: `svamp32_c2c_teacher_sparse_packet_distillation_preflight`
+- primary path: Return to the frozen SVAMP32 C2C teacher surface where
+  target-alone is `8/32`, C2C teacher is `16/32`, and C2C-only
+  target-complementary wins are `10`. Treat dense C2C as a teacher and distill
+  its useful behavioral delta into sparse source-private packets.
+- fallback path: If the C2C-teacher proxy also fails, defer broad C2C
+  superiority claims until NVIDIA-backed native KV/C2C comparison or choose a
+  benchmark with clearer dense-transfer headroom.
 - pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
 
 ## Claim Boundaries

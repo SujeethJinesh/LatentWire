@@ -1,0 +1,23 @@
+{
+  "created_utc": "2026-05-05T00:17:26Z",
+  "files": {
+    "prediction_audit": {
+      "path": "results/source_private_arc_candidate_local_source_evidence_repair_preflight_20260505_n32_qwen05_to_qwen3_no_public_innovation/prediction_audit.jsonl",
+      "sha256": "a51c8603dc0e8858a36369fdaefc12f9ca5e716e22886caa8dfc80da59ef89be"
+    },
+    "report": {
+      "path": "results/source_private_arc_candidate_local_source_evidence_repair_preflight_20260505_n32_qwen05_to_qwen3_no_public_innovation/arc_candidate_local_source_evidence_repair_preflight.md",
+      "sha256": "3c9eafcfde5a350b09f9d27fc262c96a4f7365163fcb3b8119b96007cd7b2b6f"
+    },
+    "result": {
+      "path": "results/source_private_arc_candidate_local_source_evidence_repair_preflight_20260505_n32_qwen05_to_qwen3_no_public_innovation/arc_candidate_local_source_evidence_repair_preflight.json",
+      "sha256": "bdd20821f80e1efdfa6a171a336178cfa894d320745d77037c5955e44a07e15f"
+    }
+  },
+  "inputs": {
+    "audit_jsonl": "results/source_private_arc_openbookqa_soft_prefix_preflight_20260503_arc_qwen_token_pool_residual_n32_cpu_label_choice/prediction_audit.jsonl",
+    "eval_path": "results/source_private_arc_challenge_bridge_contract_20260501/official_splits/arc_challenge_validation.jsonl",
+    "source_cache_path": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_validation/source_prediction_cache.jsonl",
+    "source_score_cache": "results/source_private_arc_score_fusion_packet_probe_20260503_qwen05_qwen3_validation/source_scores.json"
+  }
+}
