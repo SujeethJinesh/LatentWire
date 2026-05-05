@@ -24422,3 +24422,55 @@ Lay explanation: if we let the source model send the final answer, C2C's wins
 are easy to copy. That is not model-to-model communication in the sense we need;
 it is just an answer leak, and even the answer-option index is mostly a
 source-choice shortcut.
+
+## 2026-05-05 C2C Pre-Answer State Gate Implementation
+
+Added a pre-answer C2C state diagnostic gate:
+
+- code:
+  `scripts/analyze_svamp32_c2c_preanswer_state_gate.py`;
+- test:
+  `tests/test_analyze_svamp32_c2c_preanswer_state_gate.py`;
+- memo:
+  `paper/svamp32_c2c_preanswer_state_gate_20260505.md`.
+
+Purpose: test the next C2C-distillation route after generated-answer packets
+were ruled out. The gate locates the final numeric answer onset in C2C
+generation, summarizes C2C projector state plus generation-logit history before
+that onset, and compares it with a post-answer leakage window under the
+existing SVAMP32 syndrome evaluator.
+
+Implementation details:
+
+- `pre_answer_exclusive`: excludes token scores at and after the detected final
+  numeric answer onset;
+- `post_answer_inclusive`: includes the answer span as a leakage-control window;
+- fixed-schema score-window summaries keep feature dimensions stable even when
+  the answer appears immediately or is not detected;
+- `--start-index` and `--limit` allow resumable local slices.
+
+Local validation:
+
+- one-row MPS smoke completed and wrote
+  `.debug/svamp32_c2c_preanswer_state_gate_smoke/preanswer_state_gate.json`;
+- smoke status: `pre_answer_c2c_state_fails_controls`;
+- this smoke is only an implementation check, not a scientific result.
+
+Full n32 attempt:
+
+- command loaded both C2C models on MPS;
+- MPS emitted command-buffer warnings:
+  `kIOGPUCommandBufferCallbackErrorImpactingInteractivity`;
+- after roughly 7.5 minutes, the process was still alive with low CPU and no
+  output artifact, so it was stopped;
+- no full n32 result was produced.
+
+Decision: the pre-answer gate is implemented but not yet run to completion on
+the frozen n32 slice. The next exact gate is to run the same script in small
+local slices, such as `--start-index 0 --limit 4`, or move the full run to
+NVIDIA hardware. No paper claim improves until the full frozen slice or stable
+slices produce evidence.
+
+Lay explanation: we built the test that looks for an earlier C2C hint before
+the final answer appears. The full local Mac run stalled, so the next step is to
+run that test in small chunks or on a more suitable GPU.

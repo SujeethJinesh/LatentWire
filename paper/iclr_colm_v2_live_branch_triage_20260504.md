@@ -6,7 +6,7 @@
 
 ## Current Story
 
-LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The previously caveated OpenBookQA train-only receiver row is now weakened by same-source-choice wrong-row hardening. The local MPS C2C replay now reproduces the archived SVAMP32 dense-teacher surface at `16/32`, which revives C2C distillation as a teacher direction. The teacher-forced full-vocab C2C logit-delta packet gate failed because target-only under the teacher-generated prefix already recovered the same rows as matched. The open-loop C2C candidate-score delta gate removed teacher-prefix leakage, but failed because short-answer C2C likelihood scoring is not faithful to generated C2C behavior. A direct generated-answer value/index packet recovers C2C at `16/32`, but is exactly the same as visible answer text and is nearly matched by same-source-choice wrong-row (`15/32`), so it is an answer-leakage upper bound rather than a method. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, ARC atom packets, OpenBookQA receiver fusion, HellaSwag learned/source-conditioned resonance receivers, the C2C generation-summary trace decoder, teacher-forced full-vocab C2C deltas, open-loop short-answer C2C candidate deltas, and generated-answer value/index packets have not produced a broad positive row beyond packet/source-choice/target-cache controls.
+LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The previously caveated OpenBookQA train-only receiver row is now weakened by same-source-choice wrong-row hardening. The local MPS C2C replay now reproduces the archived SVAMP32 dense-teacher surface at `16/32`, which revives C2C distillation as a teacher direction. The teacher-forced full-vocab C2C logit-delta packet gate failed because target-only under the teacher-generated prefix already recovered the same rows as matched. The open-loop C2C candidate-score delta gate removed teacher-prefix leakage, but failed because short-answer C2C likelihood scoring is not faithful to generated C2C behavior. A direct generated-answer value/index packet recovers C2C at `16/32`, but is exactly the same as visible answer text and is nearly matched by same-source-choice wrong-row (`15/32`), so it is an answer-leakage upper bound rather than a method. The pre-answer C2C state gate is now implemented and smoke-tested, but the full local n32 MPS run stalled after command-buffer warnings before producing an artifact. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, ARC atom packets, OpenBookQA receiver fusion, HellaSwag learned/source-conditioned resonance receivers, the C2C generation-summary trace decoder, teacher-forced full-vocab C2C deltas, open-loop short-answer C2C candidate deltas, and generated-answer value/index packets have not produced a broad positive row beyond packet/source-choice/target-cache controls.
 
 ## Exact Submission Gap
 
@@ -18,7 +18,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - `strict_destructive_controls`: strong; needs paper integration and compact tables.
 - `systems_byte_accounting`: mac_local_ready; needs native dense-KV/C2C measurements before throughput or energy claims.
 - `sparse_resonance_packets`: framing_alive_method_not_yet_positive; needs new mechanism beyond deterministic PQ, PCA/behavior atoms, BatchTopK-style atom banks, chunk encoders, query resamplers, source-to-prefix decoders, and ridge decoders over C2C generation-summary traces.
-- `c2c_distillation_teacher`: local_mps_replay_ready; full-vocab teacher-forced logit deltas ruled out by target-prefix controls, short-answer candidate-score deltas ruled out as unfaithful to generated C2C behavior, and generated-answer value/index packets ruled out as answer leakage/source-choice shortcuts; needs pre-answer hidden/KV or source-side distillation that is not equivalent to revealing the generated answer.
+- `c2c_distillation_teacher`: local_mps_replay_ready; full-vocab teacher-forced logit deltas ruled out by target-prefix controls, short-answer candidate-score deltas ruled out as unfaithful to generated C2C behavior, and generated-answer value/index packets ruled out as answer leakage/source-choice shortcuts; pre-answer state gate implemented but full local n32 MPS run stalled, so it needs sliced local completion or NVIDIA execution.
 - `train_only_packet_target_receiver`: openbookqa_weakened_by_source_choice_control; needs a packet that carries row-specific source evidence beyond same-source-choice wrong-row packets.
 - `target_self_resonance_capacity_probe`: capacity_alive; needs held-out/source-private receiver that beats slots-only, zero-source, wrong-source, source-choice, and candidate-roll controls.
 
@@ -123,21 +123,23 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
   matched `16/32`, same-byte visible answer `16/32`, same-source-choice
   wrong-row `15/32`, and `0` publishable source-necessary clean IDs after
   destructive controls.
+- C2C pre-answer state gate:
+  implementation and one-row smoke are ready, but the full local n32 MPS run
+  stalled after command-buffer warnings and produced no artifact. This branch
+  remains alive as an execution gate, not as positive evidence.
 
 ## Next Exact Gate
 
 - name: `pre_answer_c2c_distillation_gate`
-- primary path: Use repaired local MPS C2C replay to build a packet target from
-  pre-answer hidden/KV/control state or a source-side predictor of the dense
-  teacher behavioral delta, not short-answer continuation likelihood and not
-  the generated answer value/index. The receiver must not condition on the
-  teacher-generated prefix. The smallest implementation should locate the final
-  numeric-answer onset in C2C generation, summarize only state/logit evidence
-  ending before that onset, and include a post-answer extraction control. Test
-  whether a compact packet recovers clean C2C generated-answer wins beyond
-  zero-source, target-only, same-source-choice wrong-row, same-length wrong-row,
-  candidate-roll, label-shuffle, source-index/rank/score, same-byte visible
-  text, answer-token masking, post-answer leakage, and wrong-row controls.
+- primary path: Complete the implemented pre-answer C2C state gate on the
+  frozen n32 surface using small local slices (`--start-index`/`--limit`) or an
+  NVIDIA run. The script locates the final numeric-answer onset, summarizes only
+  pre-answer state/logit evidence, and compares against a post-answer leakage
+  window. Test whether the compact pre-answer readout recovers clean C2C
+  generated-answer wins beyond zero-source, target-only, same-source-choice
+  wrong-row, same-length wrong-row, candidate-roll, label-shuffle,
+  source-index/rank/score, same-byte visible text, answer-token masking,
+  post-answer leakage, and wrong-row controls.
 - fallback path: If local delta capture is too slow or unstable, use COLM_v2
   to report the C2C boundary honestly and promote a non-C2C source-causal
   branch only if it has a fresh information path not already ruled out by
