@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-ThoughtFlow-FP8 tests whether explicit anchor/phase retention plus byte-aware FP8-style budgeting can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality weakens the branch. On 24 distilgpt2 traces at a 0.20 keep fraction, a bounded successor policy, ThoughtFlow-saliency-recent, improves over the original phase-only policy and beats LongFlow-like and ThinKV-like retained-text proxies, but narrowly loses to an R-KV-like proxy on continuation NLL (3.434 vs 3.419). A held-out sweep over recency and saliency weights reaches a tie-range result against R-KV-like (3.480 vs 3.482 NLL). We then ran the closest Mac-local cache-quality gate: prune the actual prefix KV cache on CPU and score the continuation from the sparse cache. The best ThoughtFlow-family policy again ties R-KV-like, with mean paired delta -0.003 NLL and 95\% CI [-0.037,+0.034]. We therefore present this as a mixed workshop gate, not a positive method.
+ThoughtFlow-FP8 tests whether explicit anchor/phase retention plus byte-aware FP8-style budgeting can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality weakens the branch. On 24 distilgpt2 traces at a 0.20 keep fraction, a bounded successor policy, ThoughtFlow-saliency-recent, improves over the original phase-only policy and beats LongFlow-like and ThinKV-like retained-text proxies, but narrowly loses to an R-KV-like proxy on continuation NLL (3.434 vs 3.419). A held-out sweep over recency and saliency weights reaches a tie-range result against R-KV-like (3.480 vs 3.482 NLL). We then ran the closest Mac-local cache-quality gate: prune the actual prefix KV cache on CPU and score the continuation from the sparse cache. The refreshed sparse-cache run makes ThoughtFlow-saliency-recent the best compressed row in mean NLL (3.372 vs 3.389 for ThinKV-like and 3.438 for R-KV-like), but the margin over the strongest non-ThoughtFlow row is only 0.017 NLL and the paired delta versus R-KV-like has a 95\% CI of [-0.151,+0.011]. We therefore present this as a mixed workshop gate, not a positive method.
 \end{abstract}
 
 \section{Policy Family}
@@ -78,20 +78,22 @@ NLL because the model actually receives a sparse cache.
 \toprule
 Policy & Keep rate & NLL & Paired $\Delta$ vs R-KV-like \\
 \midrule
-full cache & 1.000 & 2.085 & -1.350 \\
-ThoughtFlow sweep best & 0.210 & 3.432 & -0.003 [-0.037,+0.034] \\
-R-KV-like & 0.210 & 3.435 & 0.000 \\
-ThoughtFlow-saliency-recent & 0.210 & 3.488 & +0.053 [-0.011,+0.123] \\
-ThinKV-like & 0.210 & 3.624 & +0.189 [+0.047,+0.330] \\
-LongFlow-like & 0.210 & 3.782 & +0.348 [+0.159,+0.552] \\
+full cache & 1.000 & 2.142 & -1.296 [-1.533,-1.066] \\
+ThoughtFlow-saliency-recent & 0.210 & 3.372 & -0.067 [-0.151,+0.011] \\
+ThinKV-like & 0.210 & 3.389 & -0.049 [-0.192,+0.077] \\
+ThoughtFlow-recent & 0.210 & 3.399 & -0.040 [-0.169,+0.074] \\
+ThoughtFlow sweep best & 0.210 & 3.436 & -0.002 [-0.007,+0.000] \\
+R-KV-like & 0.210 & 3.438 & 0.000 \\
+LongFlow-like & 0.210 & 3.588 & +0.150 [-0.016,+0.300] \\
+ThoughtFlow & 0.210 & 3.588 & +0.150 [-0.006,+0.297] \\
 \bottomrule
 \end{tabular}
-\caption{CPU sparse-KV continuation quality on 24 distilgpt2 traces. Negative paired delta is better than R-KV-like. The best ThoughtFlow policy remains in the tie window.}
+\caption{CPU sparse-KV continuation quality on 24 distilgpt2 traces. Negative paired delta is better than R-KV-like. ThoughtFlow-saliency-recent is best in mean NLL, but it clears the strongest non-ThoughtFlow row by only 0.017 NLL and remains below the pre-registered 0.03 promotion margin.}
 \end{table}
 
 \section{Decision}
 
-The branch is mixed but not revived as a positive method. ThoughtFlow-saliency-recent repairs most of the phase-only failure, the held-out sweep reaches a tie-range result against R-KV-like, and the CPU sparse-cache probe confirms the tie under actual cache dropping. This is stronger evidence than the earlier proxies, but it still does not beat the strongest baseline with paired uncertainty. A paper-ready claim would require a train-fixed ThoughtFlow successor to beat R-KV-like, LongFlow-like, and ThinKV-like rows at matched bytes under sparse-KV execution.
+The branch is mixed but not revived as a positive method. ThoughtFlow-saliency-recent repairs most of the phase-only failure and is now the best mean row under actual CPU cache dropping, but its advantage over ThinKV-like is below the 0.03 NLL promotion margin and its paired interval versus R-KV-like crosses zero. A paper-ready claim would require a train-fixed ThoughtFlow successor to beat R-KV-like, LongFlow-like, and ThinKV-like rows at matched bytes under sparse-KV execution with paired uncertainty.
 
 \section{Artifacts}
 

@@ -47,10 +47,14 @@ Current local gate result:
 - rank-2 is the current cost/accuracy compromise: `0.531x` exact four-sink QK
   estimated multiply-adds with `R2=0.420`;
 - rank-8 is much more accurate (`R2=0.712`) but likely not cheaper than exact
-  four-sink QK.
+  four-sink QK;
+- simple validation-selected head gating failed held-out: selected rank-2 heads
+  had output rel-L2 `0.2035`, worse than position-only `0.1724` and all-rank2
+  `0.1419`.
 
 Decision: continue only as approximate low-rank SinkAware. The next pre-GPU
-gate is softmax/output-quality error, not kernel coding.
+gate is a repeatable all-rank2 quality/stability result or a better stability
+mechanism than validation head selection, not kernel coding.
 
 ## ThoughtFlow-FP8
 
@@ -69,7 +73,10 @@ Current local gate result:
 - no keep-rate band from 0.10 to 0.35 beats the strongest proxy;
 - protected markers beat attention-received saliency but still tie the
   LongFlow-like importance proxy;
-- no reviewer pack is justified.
+- CPU sparse-cache dropping now gives ThoughtFlow-saliency-recent the best mean
+  compressed-row NLL (`3.372`), but it clears ThinKV-like by only `0.017` NLL
+  and its paired interval versus R-KV-like crosses zero.
 
 Decision: do not move to GPU until a hidden/KV policy beats the strongest local
-proxy and shows quality impact under actual cache dropping.
+proxy by at least the `0.03` NLL promotion margin and shows quality impact under
+actual cache dropping.

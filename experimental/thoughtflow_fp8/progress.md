@@ -108,6 +108,15 @@ Status: **MIXED/NOT REVIVED**. This probe strengthens the negative/mixed
 conclusion because it uses actual cache dropping rather than retained text, but
 it still fails the pre-registered 0.03 NLL margin over R-KV-like.
 
+The 2026-05-05 rerun of the same CPU sparse-cache quality gate changes the
+best mean row but not the decision. ThoughtFlow-saliency-recent now has the
+lowest compressed-cache NLL (`3.372`) versus ThinKV-like (`3.389`) and R-KV-like
+(`3.438`). The margin over the strongest non-ThoughtFlow row is only `0.017`
+NLL, below the pre-registered `0.03` promotion threshold, and the paired delta
+versus R-KV-like is `-0.067` with 95% CI `[-0.151, +0.011]`. The branch remains
+**MIXED/NOT REVIVED** until a train-fixed policy clears the margin with paired
+uncertainty.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -151,3 +160,7 @@ reviewer pack or GPU work.
 - 2026-05-05: Added CPU sparse-cache quality probe. Result: mixed/not revived.
   Best ThoughtFlow-family policy ties R-KV-like on continuation NLL with paired
   CI crossing zero; no GPU/FP8 performance claim is allowed.
+- 2026-05-05: Reran the CPU sparse-cache quality probe and refreshed the paper.
+  ThoughtFlow-saliency-recent is now the best compressed row in mean NLL, but
+  the margin is below the promotion threshold and the paired interval still
+  crosses zero. Decision remains mixed/not revived.

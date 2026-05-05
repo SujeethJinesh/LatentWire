@@ -166,3 +166,14 @@ The current `./venv_arm64` does not have `triton`, so the tests use
 now ready for a Macbook `TRITON_INTERPRET=1` run once Triton is installed in the
 repo-local venv; native GPU timing should still wait until that interpreter
 gate passes.
+
+## 2026-05-05 Local Validation Rerun
+
+Ran the project-owned Phase 2/3/4 tests in `./venv_arm64`: 16 passed and 4
+Triton interpreter tests skipped because `triton` is not importable in the
+Mac-local venv. Reran the head-selective rank-2 gate; it reproduced the
+weakened decision with 19/72 selected heads and held-out output rel-L2 `0.2035`,
+worse than position-only (`0.1724`) and all-rank2 (`0.1419`). The next useful
+pre-GPU improvement is not another simple validation head selector; it is a
+repeatable all-rank2 quality/stability result or a different stability
+mechanism.

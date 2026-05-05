@@ -162,3 +162,12 @@ artifact-complete before the paper can cite it.
 
 Current status remains **PENDING native profiler data**. The verifier is a gate
 for admissible evidence, not a positive result.
+
+## 2026-05-05 Local Validation Rerun
+
+Ran the project-owned Phase 2/3/4 tests in `./venv_arm64`: 11 passed and 2
+Triton interpreter tests skipped because `triton` is not importable in the
+Mac-local venv. Reran the pre-GPU threshold model; Granite 4.0 H Tiny/Small
+still require roughly 25% genuinely avoidable boundary traffic at 60% recovery,
+and Qwen3-Next still requires 10.4%. This confirms the current decision: no more
+Mac implementation, only native profiler preparation.
