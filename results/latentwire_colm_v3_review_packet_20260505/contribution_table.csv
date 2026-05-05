@@ -1,5 +1,5 @@
 contribution,status,evidence,still_needs_work
-source-private packet protocol,supported_for_colm_v3,packet rows and source-private interface definition,paper prose must avoid broad latent-language claims
+content-private packet protocol,supported_for_colm_v3,packet rows and content-private interface definition,paper prose must avoid broad latent-language claims
 strict destructive controls,supported_for_colm_v3,"wrong-row, same-source-choice, source-index/rank/score, same-byte/text controls",compress into one main table plus appendix
 narrow low-byte packet utility,supported_but_narrow,main_results.csv,state that source-index remains a strong boundary
 systems byte and exposure accounting,supported_as_accounting,systems_measured_vs_estimated.csv,no native GPU/HBM/energy claim until NVIDIA runbook is executed

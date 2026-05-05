@@ -6,18 +6,20 @@
 
 ## Submission Status
 
-COLM_v3 is complete enough for reviewer circulation after human copyedit,
-page-budget review, and final PDF placement. No NVIDIA GPU work is required for
-the workshop claim as written. The paper must not claim GPU throughput, HBM,
-energy, latency, or C2C superiority.
+COLM_v3 is complete enough for reviewer circulation after the latest reviewer
+overclaim fixes are rebuilt into the PDF, then human copyedited and page-budget
+checked. No NVIDIA GPU work is required for the workshop claim as written. The
+paper must not claim GPU throughput, HBM, energy, latency, or C2C superiority.
 
 ## Current Main Claim
 
-LatentWire provides a source-private packet protocol and evaluation framework
-for byte-scale model-to-model candidate transfer. It reports narrow low-byte
-packet positives on ARC-Challenge and OpenBookQA, explicit utility-per-byte and
-systems accounting, and destructive controls that expose source-choice and
-target-cache shortcuts.
+LatentWire provides a content-private, source-state-private packet protocol and
+evaluation framework for byte-scale model-to-model candidate hints. It reports
+narrow low-byte packet positives on ARC-Challenge and OpenBookQA, explicit
+utility-per-byte and systems accounting, and destructive controls that expose
+source-choice and target-cache shortcuts. The OpenBookQA row is not claimed as
+a statistically supported improvement over same-budget text, and neither row
+beats explicit source-index communication.
 
 ## Required Assets
 
@@ -33,7 +35,7 @@ target-cache shortcuts.
 | negative/failure boundaries | integrated | limitations plus claim audit |
 | artifact manifest | integrated | paper appendix and review packet |
 | reproducibility checklist | integrated | paper appendix |
-| side systems experiments | scoped away | `experimental/status_20260505.md` |
+| side systems experiments | scoped papers started | `experimental/*/paper/`, phase2 artifacts |
 
 ## Baseline Coverage
 
@@ -77,17 +79,19 @@ All three side projects now have Macbook correctness scaffolds:
 
 | Experiment | Current local status | Next gate |
 |---|---|---|
-| HybridKernel | CPU boundary reference passes; Triton interpreter test exists but skips due missing Triton package | Phase 2 architecture map and >=3% theoretical benefit estimate |
-| SinkAware | CPU fixed sink decomposition passes; Triton interpreter test exists but skips due missing Triton package | prove fixed sink K/V reuse without recomputing `QK_sink`, or kill |
-| ThoughtFlow-FP8 | CPU anchor/phase quant reference passes; Triton interpreter test exists but skips due missing Triton package | Phase 2 trace/telemetry simulation against LongFlow/ThinKV/R-KV-like policies |
+| HybridKernel | weakly alive; pre-GPU threshold model says only profiling can justify the branch after vLLM hybrid layout work | native NVIDIA/vLLM profiling for real boundary conversion/materialization overhead |
+| SinkAware | alive as approximate low-rank sink prior; exact static-prior reuse remains killed | GPU prototype comparing exact attention, exact decomposition, and rank-2 approximate sink-logit prediction |
+| ThoughtFlow-FP8 | weakened; retained-context NLL proxy ties LongFlow-like and loses to R-KV-like at matched budget | design a sharper hidden/KV saliency policy before any GPU/KV work |
 
-These are not COLM_v3 evidence today.
+These are not core COLM_v3 evidence today, but each now has a scoped COLM-style
+paper shell so positive future data can be accumulated without contaminating
+the LatentWire claim.
 
 ## Remaining Workshop Work
 
-1. Human copyedit the PDF.
-2. Check table widths and page budget.
-3. Ensure abstract, intro, limitations, and claim audit use the same claim
+1. Rebuild the PDF after Reviewer 2 fixes.
+2. Human copyedit the PDF.
+3. Check table widths and page budget.
+4. Ensure abstract, intro, limitations, and claim audit use the same claim
    boundary.
-4. Rebuild the PDF and review packet from tracked artifacts.
 5. Keep side systems material in future work or reviewer-pack notes only.

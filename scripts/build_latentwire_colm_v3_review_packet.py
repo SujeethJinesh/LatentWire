@@ -40,7 +40,7 @@ DEFAULT_PAPER_PATH = ROOT / "paper/latentwire_colm_v3_review_packet_20260505.md"
 
 MAIN_CLAIM = (
     "LatentWire provides a practical protocol and evaluation framework for "
-    "source-private candidate-transfer packets, with controlled evidence of "
+    "content-private, source-state-private candidate-hint packets, with controlled evidence of "
     "narrow fixed-byte packet utility, explicit utility-per-byte accounting, "
     "and destructive controls that expose shortcut claims."
 )
@@ -92,6 +92,41 @@ def _fmt(value: Any) -> str:
 
 def _safe_md(value: Any) -> str:
     return _fmt(value).replace("|", "\\|").replace("\n", " ")
+
+
+def _normalize_claim_wording(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _normalize_claim_wording(inner) for key, inner in value.items()}
+    if isinstance(value, list):
+        return [_normalize_claim_wording(inner) for inner in value]
+    if not isinstance(value, str):
+        return value
+    replacements = [
+        ("source-private candidate-transfer packets", "content-private candidate-hint packets"),
+        ("source-private candidate-transfer packet", "content-private candidate-hint packet"),
+        ("source-private candidate-transfer", "content-private candidate-hint"),
+        ("source-private packet byte/exposure", "content/state exposure and packet-byte"),
+        ("source-private packet accounting", "content/state exposure and packet accounting"),
+        ("source-private packet protocol", "content-private packet protocol"),
+        ("source-private packets", "content-private packets"),
+        ("source-private packet", "content-private packet"),
+        ("source-private task packets", "content-private task packets"),
+        ("source-private model-to-model", "content-private model-to-model"),
+        ("source-private interface", "content-private interface"),
+        ("source-private split/control contract", "content-private split/control contract"),
+        ("source-private transfer", "content-private transfer"),
+        ("source-private controls", "content-private controls"),
+        ("source-private claim", "content/state exposure claim"),
+        ("source-private threat model", "content-private threat model"),
+        ("source-private downstream utility", "content-private downstream utility"),
+        ("source-private low-byte", "content-private low-byte"),
+        ("source-private cross-model", "content-private cross-model"),
+        ("opaque source-private bytes", "opaque content-private bytes"),
+        ("not a source-private method", "not a content-private packet method"),
+    ]
+    for old, new in replacements:
+        value = value.replace(old, new)
+    return value
 
 
 def _systems_classification(row: dict[str, Any]) -> str:
@@ -153,10 +188,10 @@ def _systems_measured_vs_estimated(systems: dict[str, Any]) -> list[dict[str, An
 def _claim_audit() -> list[dict[str, str]]:
     return [
         {
-            "claim": "LatentWire defines a source-private candidate-transfer packet protocol and strict evaluation framework.",
+            "claim": "LatentWire defines a content-private candidate-hint packet protocol and strict evaluation framework.",
             "support_level": "supported",
             "evidence_artifact": "COLM_v2 review packet plus COLM_v3 review packet",
-            "controls_passed": "source-private interface, wrong-row/source-choice controls where available",
+            "controls_passed": "content-private interface, wrong-row/source-choice controls where available",
             "required_wording": "safe as a protocol/evaluation contribution",
         },
         {
@@ -164,7 +199,7 @@ def _claim_audit() -> list[dict[str, str]]:
             "support_level": "supported_but_narrow",
             "evidence_artifact": "main_results.csv; strict_controls.csv; systems_measured_vs_estimated.csv",
             "controls_passed": "target-only and same-byte/text controls on the reported rows; source-index remains a hard boundary",
-            "required_wording": "narrow source-private candidate-transfer utility, not broad latent communication",
+            "required_wording": "narrow content-private candidate-hint utility, not broad latent communication",
         },
         {
             "claim": "The current packet beats source-index communication or selected-candidate codes.",
@@ -709,9 +744,9 @@ def _artifact_manifest(input_paths: dict[str, pathlib.Path]) -> list[dict[str, s
 def _contribution_table(v2_packet: dict[str, Any]) -> list[dict[str, str]]:
     rows = [
         {
-            "contribution": "source-private packet protocol",
+            "contribution": "content-private packet protocol",
             "status": "supported_for_colm_v3",
-            "evidence": "packet rows and source-private interface definition",
+            "evidence": "packet rows and content-private interface definition",
             "still_needs_work": "paper prose must avoid broad latent-language claims",
         },
         {
@@ -764,7 +799,7 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
 
     systems_rows = _systems_measured_vs_estimated(systems)
 
-    return {
+    packet = {
         "packet": "latentwire_colm_v3_review_packet",
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "main_claim": MAIN_CLAIM,
@@ -777,7 +812,7 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
             "iclr": "still blocked by lack of broad source-causal positive method",
         },
         "story": (
-            "LatentWire studies whether compact source-private candidate packets can transmit useful model evidence "
+            "LatentWire studies whether compact content-private candidate packets can transmit useful model evidence "
             "without dense cache transfer, and uses byte accounting plus destructive controls to separate "
             "real packet utility from answer-choice and target-cache shortcuts."
         ),
@@ -807,6 +842,7 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
             "between paper, review packet, and artifact manifest"
         ),
     }
+    return _normalize_claim_wording(packet)
 
 
 def _write_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:

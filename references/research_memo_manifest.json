@@ -2763,5 +2763,12 @@
     "path": "references/752_experimental_triton_interpreter_refs_20260505.md",
     "status": "local_memo",
     "reason": "Primary-source memo for the experimental Macbook Triton interpreter correctness gate, documenting TRITON_INTERPRET=1 as CPU-side kernel debugging/correctness support rather than GPU performance evidence."
+  },
+  {
+    "num": 753,
+    "slug": "colm_v3_reviewer_revision_refs_20260505",
+    "path": "references/753_colm_v3_reviewer_revision_refs_20260505.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for COLM_v3 reviewer-response revisions, covering distributed-source-coding framing, KVCOMM/CIPHER/embedding-stego baselines, destructive-control precedents, and tightened privacy/systems wording."
   }
 ]

@@ -137,7 +137,7 @@
       "byte_regime": "high bandwidth KV/cache state",
       "category": "dense_cache_transfer",
       "included_in_current_eval": "systems-boundary comparator only",
-      "latentwire_distinction": "LatentWire transmits tiny source-private packets and evaluates utility per byte; it does not claim raw-accuracy or native serving wins over C2C.",
+      "latentwire_distinction": "LatentWire transmits tiny content-private packets and evaluates utility per byte; it does not claim raw-accuracy or native serving wins over C2C.",
       "receiver_training": "learned projection/gating",
       "source": "https://openreview.net/forum?id=LeatkxrBCi",
       "source_private": "no, dense source cache state crosses the interface",
@@ -163,7 +163,7 @@
       "byte_regime": "KV/cache state",
       "category": "kv_cache_serving",
       "included_in_current_eval": "related-work and systems-boundary comparator",
-      "latentwire_distinction": "DroidSpeak is cache reuse; LatentWire studies source-private task packets with wrong-row and source-choice controls.",
+      "latentwire_distinction": "DroidSpeak is cache reuse; LatentWire studies content-private task packets with wrong-row and source-choice controls.",
       "receiver_training": "serving/runtime method",
       "source": "https://arxiv.org/abs/2411.02820",
       "source_private": "no, cache state is reused",
@@ -176,7 +176,7 @@
       "byte_regime": "KV/cache state",
       "category": "kv_cache_serving",
       "included_in_current_eval": "related-work and systems-boundary comparator",
-      "latentwire_distinction": "KVCOMM is a high-bandwidth cache communication regime; LatentWire is a low-byte packet protocol with destructive source-private controls.",
+      "latentwire_distinction": "KVCOMM is a high-bandwidth cache communication regime; LatentWire is a low-byte packet protocol with destructive content-private controls.",
       "receiver_training": "training-free cache communication",
       "source": "https://arxiv.org/abs/2510.12872",
       "source_private": "no, cache information crosses the agent boundary",
@@ -215,7 +215,7 @@
       "byte_regime": "dense activations",
       "category": "activation_communication",
       "included_in_current_eval": "related-work boundary",
-      "latentwire_distinction": "LatentWire emphasizes source-private low-byte packets, explicit packet bytes, and destructive controls rather than generic activation exchange.",
+      "latentwire_distinction": "LatentWire emphasizes content-private low-byte packets, explicit packet bytes, and destructive controls rather than generic activation exchange.",
       "receiver_training": "method-dependent",
       "source": "https://arxiv.org/abs/2501.14082",
       "source_private": "limited; activation vectors are exposed",
@@ -228,7 +228,7 @@
       "byte_regime": "embedding vectors or continuous messages",
       "category": "activation_communication",
       "included_in_current_eval": "related-work boundary",
-      "latentwire_distinction": "CIPHER pressures broad latent-message novelty; LatentWire's narrower claim is byte-counted source-private packets with destructive controls.",
+      "latentwire_distinction": "CIPHER pressures broad latent-message novelty; LatentWire's narrower claim is byte-counted content-private packets with destructive controls.",
       "receiver_training": "method-dependent",
       "source": "https://arxiv.org/abs/2310.06272",
       "source_private": "partial; embedding messages are exposed to peers",
@@ -241,7 +241,7 @@
       "byte_regime": "dense vector communication",
       "category": "latent_translation",
       "included_in_current_eval": "related-work boundary",
-      "latentwire_distinction": "LatentWire requires low-byte source-private packet accounting and source-choice destructive controls.",
+      "latentwire_distinction": "LatentWire requires low-byte content/state exposure and packet accounting and source-choice destructive controls.",
       "receiver_training": "translation model",
       "source": "https://arxiv.org/abs/2511.03945",
       "source_private": "partial; dense vectors may expose source state",
@@ -254,7 +254,7 @@
       "byte_regime": "latent vector state",
       "category": "latent_translation",
       "included_in_current_eval": "related-work boundary",
-      "latentwire_distinction": "LatentWire claims only packetized, byte-counted, source-private transfer under destructive controls.",
+      "latentwire_distinction": "LatentWire claims only packetized, byte-counted, content-private transfer under destructive controls.",
       "receiver_training": "method-dependent",
       "source": "https://arxiv.org/abs/2511.09149",
       "source_private": "partial; dense latent state may cross",
@@ -280,7 +280,7 @@
       "byte_regime": "soft/visible compressed context",
       "category": "context_compression",
       "included_in_current_eval": "conceptual baseline",
-      "latentwire_distinction": "Gist compresses a model's context; LatentWire transfers hidden source evidence between models with source-private controls.",
+      "latentwire_distinction": "Gist compresses a model's context; LatentWire transfers hidden source evidence between models with content-private controls.",
       "receiver_training": "trained compression behavior",
       "source": "https://proceedings.neurips.cc/paper_files/paper/2023/hash/3d77c6dcc7f143aa2154e7f4d5e22d68-Abstract-Conference.html",
       "source_private": "no, compression is of visible context",
@@ -293,7 +293,7 @@
       "byte_regime": "compressed text/token context",
       "category": "context_compression",
       "included_in_current_eval": "same-byte visible text is the local control",
-      "latentwire_distinction": "LLMLingua compresses visible context; LatentWire tests whether opaque source-private packets add utility beyond same-byte visible text.",
+      "latentwire_distinction": "LLMLingua compresses visible context; LatentWire tests whether opaque content-private packets add utility beyond same-byte visible text.",
       "receiver_training": "prompt compression model",
       "source": "https://arxiv.org/abs/2310.05736; https://arxiv.org/abs/2310.06839",
       "source_private": "no, visible prompt content is compressed and exposed",
@@ -306,7 +306,7 @@
       "byte_regime": "learned query token bottleneck",
       "category": "query_bottleneck",
       "included_in_current_eval": "architectural precedent",
-      "latentwire_distinction": "LatentWire's novelty is not query bottlenecks; it is packetized source-private model-to-model transfer plus destructive controls.",
+      "latentwire_distinction": "LatentWire's novelty is not query bottlenecks; it is packetized content-private model-to-model transfer plus destructive controls.",
       "receiver_training": "trained Q-Former",
       "source": "https://arxiv.org/abs/2301.12597",
       "source_private": "not a source-to-target LLM communication protocol",
@@ -319,10 +319,10 @@
       "byte_regime": "latent token bottleneck",
       "category": "query_bottleneck",
       "included_in_current_eval": "architectural precedent",
-      "latentwire_distinction": "LatentWire differs by source-private packets, byte accounting, and controls against source-choice artifacts.",
+      "latentwire_distinction": "LatentWire differs by content-private packets, byte accounting, and controls against source-choice artifacts.",
       "receiver_training": "trained multimodal bridge",
       "source": "https://arxiv.org/abs/2204.14198",
-      "source_private": "not source-private model-to-model communication",
+      "source_private": "not content-private model-to-model communication",
       "still_needed": "cite as precedent, not novelty",
       "target_access": "LM cross-attention path",
       "what_transfers": "fixed latent resampler tokens into LM cross-attention"
@@ -345,7 +345,7 @@
       "byte_regime": "sparse feature coordinates if packetized",
       "category": "common_basis",
       "included_in_current_eval": "related-work boundary",
-      "latentwire_distinction": "Common bases alone are not novel; LatentWire must show sparse features cause source-private downstream utility under atom-shuffle and wrong-row controls.",
+      "latentwire_distinction": "Common bases alone are not novel; LatentWire must show sparse features cause content-private downstream utility under atom-shuffle and wrong-row controls.",
       "receiver_training": "trained crosscoder",
       "source": "https://transformer-circuits.pub/2024/crosscoders/",
       "source_private": "feature analysis, not packet transfer",
@@ -436,7 +436,7 @@
       "byte_regime": "pruned KV cache",
       "category": "kv_cache_compression",
       "included_in_current_eval": "related-work boundary",
-      "latentwire_distinction": "H2O reduces one model's cache memory; LatentWire sends source-private cross-model evidence packets.",
+      "latentwire_distinction": "H2O reduces one model's cache memory; LatentWire sends content-private cross-model evidence packets.",
       "receiver_training": "training-free cache policy",
       "source": "https://arxiv.org/abs/2306.14048",
       "source_private": "no, same-model cache retention",
@@ -475,7 +475,7 @@
       "byte_regime": "compressed KV cache",
       "category": "kv_cache_compression",
       "included_in_current_eval": "related-work boundary",
-      "latentwire_distinction": "KVzip is cache storage compression; LatentWire is packetized cross-model communication with source-private controls.",
+      "latentwire_distinction": "KVzip is cache storage compression; LatentWire is packetized cross-model communication with content-private controls.",
       "receiver_training": "compression/reconstruction method",
       "source": "https://arxiv.org/abs/2505.23416",
       "source_private": "no, same-model cache compression",
@@ -540,7 +540,7 @@
       "byte_regime": "same byte budget as packet",
       "category": "local_control",
       "included_in_current_eval": "yes",
-      "latentwire_distinction": "LatentWire packets must justify why opaque source-private bytes are useful relative to visible text at the same byte budget.",
+      "latentwire_distinction": "LatentWire packets must justify why opaque content-private bytes are useful relative to visible text at the same byte budget.",
       "receiver_training": "none or same receiver",
       "source": "internal destructive control",
       "source_private": "no, visible text crosses the boundary",
@@ -634,7 +634,7 @@
     {
       "artifact": "results/source_private_sciq_bridge_contract_20260501/sciq_bridge_contract.json",
       "benchmark": "SciQ",
-      "caveat": "source-private split/control contract is frozen, but no positive packet row exists yet",
+      "caveat": "content-private split/control contract is frozen, but no positive packet row exists yet",
       "ci95_low_vs_target_min": "",
       "examples": "1000/1000",
       "packet_accuracy": "",
@@ -651,8 +651,8 @@
   ],
   "claim_audit": [
     {
-      "claim": "LatentWire defines a source-private candidate-transfer packet protocol and strict evaluation framework.",
-      "controls_passed": "source-private interface, wrong-row/source-choice controls where available",
+      "claim": "LatentWire defines a content-private candidate-hint packet protocol and strict evaluation framework.",
+      "controls_passed": "content-private interface, wrong-row/source-choice controls where available",
       "evidence_artifact": "COLM_v2 review packet plus COLM_v3 review packet",
       "required_wording": "safe as a protocol/evaluation contribution",
       "support_level": "supported"
@@ -661,7 +661,7 @@
       "claim": "Low-byte packets show narrow same-family utility on ARC-style rows.",
       "controls_passed": "target-only and same-byte/text controls on the reported rows; source-index remains a hard boundary",
       "evidence_artifact": "main_results.csv; strict_controls.csv; systems_measured_vs_estimated.csv",
-      "required_wording": "narrow source-private candidate-transfer utility, not broad latent communication",
+      "required_wording": "narrow content-private candidate-hint utility, not broad latent communication",
       "support_level": "supported_but_narrow"
     },
     {
@@ -702,8 +702,8 @@
   ],
   "contribution_table": [
     {
-      "contribution": "source-private packet protocol",
-      "evidence": "packet rows and source-private interface definition",
+      "contribution": "content-private packet protocol",
+      "evidence": "packet rows and content-private interface definition",
       "status": "supported_for_colm_v3",
       "still_needs_work": "paper prose must avoid broad latent-language claims"
     },
@@ -768,7 +768,7 @@
       "still_needs_work": ""
     }
   ],
-  "created_utc": "2026-05-05T06:29:06.520036+00:00",
+  "created_utc": "2026-05-05T19:24:43.587447+00:00",
   "experiment_scoping": [
     {
       "colm_v3_scope": "separate systems spinout; exclude from COLM_v3 claims unless Phase 1 confirms novelty, Phase 2 shows at least 3% theoretical benefit, and native GPU profiling confirms overhead",
@@ -819,7 +819,7 @@
     {
       "key": "colm_v3_tex",
       "path": "colm_final/paper/latentwire_colm2026.tex",
-      "sha256": "cccf7b457962fb6ae17f52a6027f99ab7cbb9f1c83ef4562c768a789c69e4a5e"
+      "sha256": "87ee21677776145786a721bd2b42b9c468c728f9389c9ee68ffaf0310ef636f1"
     },
     {
       "key": "cpu_systems_frontier",
@@ -829,12 +829,12 @@
     {
       "key": "experiment_ledger",
       "path": "paper/experiment_ledger_20260421.md",
-      "sha256": "f8ff74b198bd5dc38ced80de422cab1477915f4084d390d2701736858ce6cc69"
+      "sha256": "404a0fa6864a819d65b989c092fb6c4bd623a689100ecc1b07f2a0d29437ddfa"
     },
     {
       "key": "experimental_status",
       "path": "experimental/status_20260505.md",
-      "sha256": "61949eb37b9d293e1ca01d512ff148d34ebf9a088aa21a6c376568e7ca5e4b4e"
+      "sha256": "7392771afe6701271131fc9de383dbf5bdab72ca534bed2ba10dab15423975a8"
     },
     {
       "key": "hellaswag_seed_stability",
@@ -954,7 +954,7 @@
       "status": "CPU n16/n64 passed; MPS n16/n160 seed repeat and n500 passed after local snapshot download"
     }
   ],
-  "main_claim": "LatentWire provides a practical protocol and evaluation framework for source-private candidate-transfer packets, with controlled evidence of narrow fixed-byte packet utility, explicit utility-per-byte accounting, and destructive controls that expose shortcut claims.",
+  "main_claim": "LatentWire provides a practical protocol and evaluation framework for content-private, source-state-private candidate-hint packets, with controlled evidence of narrow fixed-byte packet utility, explicit utility-per-byte accounting, and destructive controls that expose shortcut claims.",
   "main_results": [
     {
       "artifact": "conditional_pq_status",
@@ -1293,9 +1293,9 @@
   },
   "source_text_sanity": {
     "colm_v3_readiness_chars": 7782,
-    "experimental_status_chars": 8316
+    "experimental_status_chars": 11454
   },
-  "story": "LatentWire studies whether compact source-private candidate packets can transmit useful model evidence without dense cache transfer, and uses byte accounting plus destructive controls to separate real packet utility from answer-choice and target-cache shortcuts.",
+  "story": "LatentWire studies whether compact content-private candidate packets can transmit useful model evidence without dense cache transfer, and uses byte accounting plus destructive controls to separate real packet utility from answer-choice and target-cache shortcuts.",
   "strict_controls": [
     {
       "base_accuracy": 0.21,
@@ -1557,7 +1557,7 @@
   ],
   "systems_headline": {
     "cached_source_packet_row_count": 4,
-    "claim_scope": "Paper-ready systems boundary artifact: LatentWire cached-source rows count the fixed-byte source-private packet object; paired end-to-end rows disclose source scoring separately. KV/cache rows are byte floors or pending native serving baselines. The artifact supports byte/exposure accounting, not a native C2C/KVComm/TurboQuant/QJL/vLLM/SGLang win.",
+    "claim_scope": "Paper-ready systems boundary artifact: LatentWire cached-source rows count the fixed-byte content-private packet object; paired end-to-end rows disclose source scoring separately. KV/cache rows are byte floors or pending native serving baselines. The artifact supports byte/exposure accounting, not a native C2C/KVComm/TurboQuant/QJL/vLLM/SGLang win.",
     "end_to_end_source_scoring_packet_row_count": 4,
     "max_packet_framed_bytes": 11.0,
     "min_packet_framed_bytes": 4.0,
@@ -1573,7 +1573,7 @@
     {
       "batch64_bytes": 704.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-private packet byte/exposure accounting only; source scoring excluded",
+      "claim_allowed": "content/state exposure and packet-byte accounting only; source scoring excluded",
       "communicated_object": "cached-source task-level candidate evidence packet",
       "framed_bytes": 11.0,
       "measured_vs_estimated": "measured_packet_object_bytes",
@@ -1588,7 +1588,7 @@
     {
       "batch64_bytes": 704.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row",
+      "claim_allowed": "content/state exposure and packet-byte accounting with source scoring timing disclosed; not a native GPU serving row",
       "communicated_object": "same packet with source scoring disclosed separately",
       "framed_bytes": 11.0,
       "measured_vs_estimated": "local_partial_measurement_or_missing_phase_trace",
@@ -1603,7 +1603,7 @@
     {
       "batch64_bytes": 384.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-private packet byte/exposure accounting only; source scoring excluded",
+      "claim_allowed": "content/state exposure and packet-byte accounting only; source scoring excluded",
       "communicated_object": "cached-source task-level candidate evidence packet",
       "framed_bytes": 6.0,
       "measured_vs_estimated": "measured_packet_object_bytes",
@@ -1618,7 +1618,7 @@
     {
       "batch64_bytes": 384.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row",
+      "claim_allowed": "content/state exposure and packet-byte accounting with source scoring timing disclosed; not a native GPU serving row",
       "communicated_object": "same packet with source scoring disclosed separately",
       "framed_bytes": 6.0,
       "measured_vs_estimated": "local_partial_measurement_or_missing_phase_trace",
@@ -1633,7 +1633,7 @@
     {
       "batch64_bytes": 320.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-private packet byte/exposure accounting only; source scoring excluded",
+      "claim_allowed": "content/state exposure and packet-byte accounting only; source scoring excluded",
       "communicated_object": "cached-source task-level candidate evidence packet",
       "framed_bytes": 5.0,
       "measured_vs_estimated": "measured_packet_object_bytes",
@@ -1648,7 +1648,7 @@
     {
       "batch64_bytes": 320.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row",
+      "claim_allowed": "content/state exposure and packet-byte accounting with source scoring timing disclosed; not a native GPU serving row",
       "communicated_object": "same packet with source scoring disclosed separately",
       "framed_bytes": 5.0,
       "measured_vs_estimated": "local_partial_measurement_or_missing_phase_trace",
@@ -1663,7 +1663,7 @@
     {
       "batch64_bytes": 256.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-private packet byte/exposure accounting only; source scoring excluded",
+      "claim_allowed": "content/state exposure and packet-byte accounting only; source scoring excluded",
       "communicated_object": "cached-source task-level candidate evidence packet",
       "framed_bytes": 4.0,
       "measured_vs_estimated": "measured_packet_object_bytes",
@@ -1678,7 +1678,7 @@
     {
       "batch64_bytes": 256.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row",
+      "claim_allowed": "content/state exposure and packet-byte accounting with source scoring timing disclosed; not a native GPU serving row",
       "communicated_object": "same packet with source scoring disclosed separately",
       "framed_bytes": 4.0,
       "measured_vs_estimated": "local_partial_measurement_or_missing_phase_trace",
@@ -1693,14 +1693,14 @@
     {
       "batch64_bytes": 704.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "negative/control row only; cannot support source-private claim",
+      "claim_allowed": "negative/control row only; cannot support content/state exposure claim",
       "communicated_object": "text-form control with same packet budget",
       "framed_bytes": 11.0,
       "measured_vs_estimated": "measured_local_control_or_accounting_row",
       "measurement_status": "mac_local_control",
       "method": "Same-byte structured text control (ARC)",
       "native_measured": true,
-      "overclaim_guard": "This row intentionally exposes source text and is not a source-private method.",
+      "overclaim_guard": "This row intentionally exposes source text and is not a content-private packet method.",
       "raw_bytes": 8.0,
       "source_kv_exposed": false,
       "source_private": false
@@ -1708,7 +1708,7 @@
     {
       "batch64_bytes": 512.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-state exposure floor only; not a source-private packet",
+      "claim_allowed": "source-state exposure floor only; not a content-private packet",
       "communicated_object": "source score vector, fp16",
       "framed_bytes": 8.0,
       "measured_vs_estimated": "analytical_or_literature_byte_floor",
@@ -1723,7 +1723,7 @@
     {
       "batch64_bytes": 512.0,
       "cacheline_bytes": 64.0,
-      "claim_allowed": "source-state exposure floor only; not a source-private packet",
+      "claim_allowed": "source-state exposure floor only; not a content-private packet",
       "communicated_object": "source logit vector, fp16",
       "framed_bytes": 8.0,
       "measured_vs_estimated": "analytical_or_literature_byte_floor",
@@ -1790,7 +1790,7 @@
       "measurement_status": "ratio_floor_not_native",
       "method": "Q-KVComm optimistic 6x floor",
       "native_measured": false,
-      "overclaim_guard": "Q-KVComm transmits compressed KV-derived state; do not claim this is a source-private packet.",
+      "overclaim_guard": "Q-KVComm transmits compressed KV-derived state; do not claim this is a content-private packet.",
       "raw_bytes": 2048.0,
       "source_kv_exposed": true,
       "source_private": false
@@ -1915,7 +1915,7 @@
       "status": "draft_integrated"
     },
     {
-      "artifact": "source-private threat model",
+      "artifact": "content-private threat model",
       "next_action": "check against reviewer claim audit",
       "source": "COLM_v2 controls and systems boundary notes",
       "status": "draft_integrated"

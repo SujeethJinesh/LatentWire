@@ -1,7 +1,7 @@
 # LatentWire COLM v3 Review Packet
 
-- created_utc: `2026-05-05T06:29:06.520036+00:00`
-- main_claim: LatentWire provides a practical protocol and evaluation framework for source-private candidate-transfer packets, with controlled evidence of narrow fixed-byte packet utility, explicit utility-per-byte accounting, and destructive controls that expose shortcut claims.
+- created_utc: `2026-05-05T19:24:43.587447+00:00`
+- main_claim: LatentWire provides a practical protocol and evaluation framework for content-private, source-state-private candidate-hint packets, with controlled evidence of narrow fixed-byte packet utility, explicit utility-per-byte accounting, and destructive controls that expose shortcut claims.
 - next_exact_gate: human copyedit, page-budget review, final PDF/table placement, and consistency check between paper, review packet, and artifact manifest
 
 ## Readiness
@@ -14,7 +14,7 @@
 
 | contribution | status | evidence | still_needs_work |
 | --- | --- | --- | --- |
-| source-private packet protocol | supported_for_colm_v3 | packet rows and source-private interface definition | paper prose must avoid broad latent-language claims |
+| content-private packet protocol | supported_for_colm_v3 | packet rows and content-private interface definition | paper prose must avoid broad latent-language claims |
 | strict destructive controls | supported_for_colm_v3 | wrong-row, same-source-choice, source-index/rank/score, same-byte/text controls | compress into one main table plus appendix |
 | narrow low-byte packet utility | supported_but_narrow | main_results.csv | state that source-index remains a strong boundary |
 | systems byte and exposure accounting | supported_as_accounting | systems_measured_vs_estimated.csv | no native GPU/HBM/energy claim until NVIDIA runbook is executed |
@@ -30,8 +30,8 @@
 
 | claim | support_level | evidence_artifact | controls_passed | required_wording |
 | --- | --- | --- | --- | --- |
-| LatentWire defines a source-private candidate-transfer packet protocol and strict evaluation framework. | supported | COLM_v2 review packet plus COLM_v3 review packet | source-private interface, wrong-row/source-choice controls where available | safe as a protocol/evaluation contribution |
-| Low-byte packets show narrow same-family utility on ARC-style rows. | supported_but_narrow | main_results.csv; strict_controls.csv; systems_measured_vs_estimated.csv | target-only and same-byte/text controls on the reported rows; source-index remains a hard boundary | narrow source-private candidate-transfer utility, not broad latent communication |
+| LatentWire defines a content-private candidate-hint packet protocol and strict evaluation framework. | supported | COLM_v2 review packet plus COLM_v3 review packet | content-private interface, wrong-row/source-choice controls where available | safe as a protocol/evaluation contribution |
+| Low-byte packets show narrow same-family utility on ARC-style rows. | supported_but_narrow | main_results.csv; strict_controls.csv; systems_measured_vs_estimated.csv | target-only and same-byte/text controls on the reported rows; source-index remains a hard boundary | narrow content-private candidate-hint utility, not broad latent communication |
 | The current packet beats source-index communication or selected-candidate codes. | not_supported | main_results.csv; source-index audit | packet-source lower bounds remain negative or zero | do not claim; source-index is the main boundary |
 | Many apparent wins collapse into source-choice, source-rank, or target-cache artifacts. | supported | negative_results.csv; source-choice controls; reviewer feedback | same-source-choice wrong-row, source-index/rank/score, and destructive controls where available | use as a reviewer-strengthening result, not as the headline alone |
 | LatentWire beats C2C or dense KV/cache transfer. | not_supported | systems boundary table only | none; no native matched C2C row | do not claim; compare as byte/exposure boundary only |
@@ -44,7 +44,7 @@
 | --- | --- | --- | --- |
 | unified abstract and introduction | draft_integrated | colm_final/paper/latentwire_colm2026.tex | human copyedit and page-budget review |
 | method/protocol definition | draft_integrated | COLM_v1 method intuition plus COLM_v2 packet protocol | verify notation consistency after copyedit |
-| source-private threat model | draft_integrated | COLM_v2 controls and systems boundary notes | check against reviewer claim audit |
+| content-private threat model | draft_integrated | COLM_v2 controls and systems boundary notes | check against reviewer claim audit |
 | strict-control table | draft_integrated | strict_controls.csv | validate table placement in PDF |
 | main positive result table | draft_integrated_source_index_bounded | main_results.csv | keep ARC as narrow same-family positive evidence |
 | uncertainty summary table | draft_integrated | source-index audit lower bounds | verify table placement in final PDF |
@@ -67,7 +67,7 @@
 | ARC-Challenge | test | 1172 | 12 | 0.343686 | 0.265358 | 0.31058 | main_or_secondary_test_row | headline-safe only when paired with source-index and source-choice boundary wording |
 | CommonsenseQA | validation | 1221 | 2 | 0.438329 | 0.205569 | 0.424242 | diagnostic_not_headline | reviewer-pack diagnostic |
 | HellaSwag | hellaswag_validation1024 | 1024 | 2 | 0.461133 | 0.233398 | 0.385742 | reviewer_pack_breadth_not_full_validation_headline | passes validation1024 seed gate; full-validation terminal tail blocks benchmark-complete claim |
-| SciQ | validation/test materialized | 1000/1000 | 12 |  |  |  | future_gate_not_evidence | source-private split/control contract is frozen, but no positive packet row exists yet |
+| SciQ | validation/test materialized | 1000/1000 | 12 |  |  |  | future_gate_not_evidence | content-private split/control contract is frozen, but no positive packet row exists yet |
 
 ## Latest Model Breadth Audit
 
@@ -84,17 +84,17 @@
 
 | method | raw_bytes | framed_bytes | cacheline_bytes | batch64_bytes | measured_vs_estimated | claim_allowed |
 | --- | --- | --- | --- | --- | --- | --- |
-| LatentWire ARC-Challenge test packet (cached source) | 8 | 11 | 64 | 704 | measured_packet_object_bytes | source-private packet byte/exposure accounting only; source scoring excluded |
-| LatentWire ARC-Challenge test packet (source scoring disclosed) | 8 | 11 | 64 | 704 | local_partial_measurement_or_missing_phase_trace | source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row |
-| LatentWire OpenBookQA test packet (cached source) | 3 | 6 | 64 | 384 | measured_packet_object_bytes | source-private packet byte/exposure accounting only; source scoring excluded |
-| LatentWire OpenBookQA test packet (source scoring disclosed) | 3 | 6 | 64 | 384 | local_partial_measurement_or_missing_phase_trace | source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row |
-| LatentWire HellaSwag validation_first1024 packet (cached source) | 2 | 5 | 64 | 320 | measured_packet_object_bytes | source-private packet byte/exposure accounting only; source scoring excluded |
-| LatentWire HellaSwag validation_first1024 packet (source scoring disclosed) | 2 | 5 | 64 | 320 | local_partial_measurement_or_missing_phase_trace | source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row |
-| LatentWire HellaSwag validation_full_compaction packet (cached source) | 1 | 4 | 64 | 256 | measured_packet_object_bytes | source-private packet byte/exposure accounting only; source scoring excluded |
-| LatentWire HellaSwag validation_full_compaction packet (source scoring disclosed) | 1 | 4 | 64 | 256 | local_partial_measurement_or_missing_phase_trace | source-private packet byte/exposure accounting with source scoring timing disclosed; not a native GPU serving row |
-| Same-byte structured text control (ARC) | 8 | 11 | 64 | 704 | measured_local_control_or_accounting_row | negative/control row only; cannot support source-private claim |
-| Four-choice fp16 score-vector relay floor | 8 | 8 | 64 | 512 | analytical_or_literature_byte_floor | source-state exposure floor only; not a source-private packet |
-| Four-choice fp16 logit-vector relay floor | 8 | 8 | 64 | 512 | analytical_or_literature_byte_floor | source-state exposure floor only; not a source-private packet |
+| LatentWire ARC-Challenge test packet (cached source) | 8 | 11 | 64 | 704 | measured_packet_object_bytes | content/state exposure and packet-byte accounting only; source scoring excluded |
+| LatentWire ARC-Challenge test packet (source scoring disclosed) | 8 | 11 | 64 | 704 | local_partial_measurement_or_missing_phase_trace | content/state exposure and packet-byte accounting with source scoring timing disclosed; not a native GPU serving row |
+| LatentWire OpenBookQA test packet (cached source) | 3 | 6 | 64 | 384 | measured_packet_object_bytes | content/state exposure and packet-byte accounting only; source scoring excluded |
+| LatentWire OpenBookQA test packet (source scoring disclosed) | 3 | 6 | 64 | 384 | local_partial_measurement_or_missing_phase_trace | content/state exposure and packet-byte accounting with source scoring timing disclosed; not a native GPU serving row |
+| LatentWire HellaSwag validation_first1024 packet (cached source) | 2 | 5 | 64 | 320 | measured_packet_object_bytes | content/state exposure and packet-byte accounting only; source scoring excluded |
+| LatentWire HellaSwag validation_first1024 packet (source scoring disclosed) | 2 | 5 | 64 | 320 | local_partial_measurement_or_missing_phase_trace | content/state exposure and packet-byte accounting with source scoring timing disclosed; not a native GPU serving row |
+| LatentWire HellaSwag validation_full_compaction packet (cached source) | 1 | 4 | 64 | 256 | measured_packet_object_bytes | content/state exposure and packet-byte accounting only; source scoring excluded |
+| LatentWire HellaSwag validation_full_compaction packet (source scoring disclosed) | 1 | 4 | 64 | 256 | local_partial_measurement_or_missing_phase_trace | content/state exposure and packet-byte accounting with source scoring timing disclosed; not a native GPU serving row |
+| Same-byte structured text control (ARC) | 8 | 11 | 64 | 704 | measured_local_control_or_accounting_row | negative/control row only; cannot support content/state exposure claim |
+| Four-choice fp16 score-vector relay floor | 8 | 8 | 64 | 512 | analytical_or_literature_byte_floor | source-state exposure floor only; not a content-private packet |
+| Four-choice fp16 logit-vector relay floor | 8 | 8 | 64 | 512 | analytical_or_literature_byte_floor | source-state exposure floor only; not a content-private packet |
 | One hidden-vector fp16 relay floor | 1792 | 1792 | 1792 | 114688 | analytical_or_literature_byte_floor | state-exposure lower bound only; not a baseline win |
 | 1-bit/KV-element accounting floor | 768 | 768 | 768 | 49152 | analytical_or_literature_byte_floor | mathematical state-size lower bound only |
 | KIVI 2-bit KV floor | 1536 | 1536 | 1536 | 98304 | analytical_or_literature_byte_floor | KV-cache compression comparator only |
@@ -145,10 +145,10 @@ These are Macbook-side correctness hooks only. They do not support COLM_v3 GPU s
 | colm_v2_review_packet | results/latentwire_colm_v2_review_packet_20260504/review_packet.json | 367ce9562a207b6c813b45951ebd25a395ab5e97a043a7c964cf693e371efe65 |
 | colm_v3_readiness | paper/latentwire_colm_v3_readiness_20260505.md | e10d3b00a18af57dad663b881c5ddda39b60ce38d88b19190e1199eed6902a70 |
 | colm_v3_reviewer_panel | colm_final/audits/colm_v3_10_reviewer_panel_20260505.md | d3e5ded1f81d5d2f705da14f7cc4a6c05b5ea66685cd8c8bfbb4b6de8741d04e |
-| colm_v3_tex | colm_final/paper/latentwire_colm2026.tex | cccf7b457962fb6ae17f52a6027f99ab7cbb9f1c83ef4562c768a789c69e4a5e |
+| colm_v3_tex | colm_final/paper/latentwire_colm2026.tex | 87ee21677776145786a721bd2b42b9c468c728f9389c9ee68ffaf0310ef636f1 |
 | cpu_systems_frontier | results/source_private_cpu_systems_frontier_20260429/cpu_systems_frontier.json | 1bb52d20072193b61289f3a1592949d6b62361ef2ad747be3ba5d6be1c90eb38 |
-| experiment_ledger | paper/experiment_ledger_20260421.md | f8ff74b198bd5dc38ced80de422cab1477915f4084d390d2701736858ce6cc69 |
-| experimental_status | experimental/status_20260505.md | 61949eb37b9d293e1ca01d512ff148d34ebf9a088aa21a6c376568e7ca5e4b4e |
+| experiment_ledger | paper/experiment_ledger_20260421.md | 404a0fa6864a819d65b989c092fb6c4bd623a689100ecc1b07f2a0d29437ddfa |
+| experimental_status | experimental/status_20260505.md | 7392771afe6701271131fc9de383dbf5bdab72ca534bed2ba10dab15423975a8 |
 | hellaswag_seed_stability | results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/arc_challenge_seed_stability.json | 37f0fca016e6c5b17c6a23d9d5b09e17154921cf51d85bed67a9c8f300d548bd |
 | latest_model_matrix | results/source_private_latest_model_matrix_20260428/latest_model_matrix.json | 09694bfd13bb060e146274808994f189b1966e881e3b9c723d91aea513666498 |
 | reviewer_feedback | paper/reviewer_feedback.md | 282ee615ffe970797c695908214088af55b0ae80656ea5c4829aa01c2492198e |

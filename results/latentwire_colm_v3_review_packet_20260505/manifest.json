@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-05-05T06:29:06.520036+00:00",
+  "created_utc": "2026-05-05T19:24:43.587447+00:00",
   "input_manifest": [
     {
       "key": "benchmark_selection_gate",
@@ -24,7 +24,7 @@
     {
       "key": "colm_v3_tex",
       "path": "colm_final/paper/latentwire_colm2026.tex",
-      "sha256": "cccf7b457962fb6ae17f52a6027f99ab7cbb9f1c83ef4562c768a789c69e4a5e"
+      "sha256": "87ee21677776145786a721bd2b42b9c468c728f9389c9ee68ffaf0310ef636f1"
     },
     {
       "key": "cpu_systems_frontier",
@@ -34,12 +34,12 @@
     {
       "key": "experiment_ledger",
       "path": "paper/experiment_ledger_20260421.md",
-      "sha256": "f8ff74b198bd5dc38ced80de422cab1477915f4084d390d2701736858ce6cc69"
+      "sha256": "404a0fa6864a819d65b989c092fb6c4bd623a689100ecc1b07f2a0d29437ddfa"
     },
     {
       "key": "experimental_status",
       "path": "experimental/status_20260505.md",
-      "sha256": "61949eb37b9d293e1ca01d512ff148d34ebf9a088aa21a6c376568e7ca5e4b4e"
+      "sha256": "7392771afe6701271131fc9de383dbf5bdab72ca534bed2ba10dab15423975a8"
     },
     {
       "key": "hellaswag_seed_stability",

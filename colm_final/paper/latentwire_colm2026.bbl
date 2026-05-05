@@ -1,4 +1,4 @@
-\begin{thebibliography}{26}
+\begin{thebibliography}{35}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -12,6 +12,16 @@ Marah Abdin, Jyoti Aneja, Hany Awadalla, Ahmed Awadallah, Ammar~Ahmad Awan,
 \newblock {Phi-3} technical report: A highly capable language model locally on
   your phone, 2024.
 \newblock URL \url{https://arxiv.org/abs/2404.14219}.
+
+\bibitem[Adebayo et~al.(2018)Adebayo, Gilmer, Muelly, Goodfellow, Hardt, and
+  Kim]{Adebayo2018SanityChecks}
+Julius Adebayo, Justin Gilmer, Michael Muelly, Ian Goodfellow, Moritz Hardt,
+  and Been Kim.
+\newblock Sanity checks for saliency maps.
+\newblock In \emph{Advances in Neural Information Processing Systems},
+  volume~31, 2018.
+\newblock URL
+  \url{https://proceedings.neurips.cc/paper/2018/hash/294a8ed24b1ad22ec2e7efea049b8737-Abstract.html}.
 
 \bibitem[Clark et~al.(2018)Clark, Cowhey, Etzioni, Khot, Sabharwal, Schoenick,
   and Tafjord]{Clark2018ARC}
@@ -28,6 +38,11 @@ Tianyu Fu, Zihan Min, Hanling Zhang, Jichao Yan, Guohao Dai, Wanli Ouyang, and
   models.
 \newblock In \emph{International Conference on Learning Representations}, 2026.
 \newblock URL \url{https://openreview.net/forum?id=LeatkxrBCi}.
+
+\bibitem[Hewitt \& Liang(2019)Hewitt and Liang]{Hewitt2019ControlTasks}
+John Hewitt and Percy Liang.
+\newblock Designing and interpreting probes with control tasks, 2019.
+\newblock URL \url{https://arxiv.org/abs/1909.03368}.
 
 \bibitem[Hooper et~al.(2024)Hooper, Kim, Mohammadzadeh, Mahoney, Shao, Keutzer,
   and Gholami]{Hooper2024KVQuant}
@@ -126,6 +141,16 @@ Zirui Liu, Jiayi Yuan, Hongye Jin, Shaochen Zhong, Zhaozhuo Xu, Vladimir
   pp.\  32332--32344. PMLR, 2024.
 \newblock URL \url{https://proceedings.mlr.press/v235/liu24bz.html}.
 
+\bibitem[McCoy et~al.(2019)McCoy, Pavlick, and Linzen]{McCoy2019HANS}
+R.~Thomas McCoy, Ellie Pavlick, and Tal Linzen.
+\newblock Right for the wrong reasons: Diagnosing syntactic heuristics in
+  natural language inference.
+\newblock In \emph{Proceedings of the 57th Annual Meeting of the Association
+  for Computational Linguistics}, pp.\  3428--3448. Association for
+  Computational Linguistics, 2019.
+\newblock \doi{10.18653/v1/P19-1334}.
+\newblock URL \url{https://aclanthology.org/P19-1334/}.
+
 \bibitem[Mihaylov et~al.(2018)Mihaylov, Clark, Khot, and
   Sabharwal]{Mihaylov2018OpenBookQA}
 Todor Mihaylov, Peter Clark, Tushar Khot, and Ashish Sabharwal.
@@ -152,6 +177,30 @@ Jesse Mu, Xiang Li, and Noah Goodman.
   volume~36, 2023.
 \newblock URL
   \url{https://proceedings.neurips.cc/paper_files/paper/2023/hash/3d77c6dcc7f143aa2154e7f4d5e22d68-Abstract-Conference.html}.
+
+\bibitem[{\"O}zy{\i}lkan et~al.(2023){\"O}zy{\i}lkan, Ball{\'e}, and
+  Erkip]{Ozyilkan2023WynerZiv}
+Ezgi {\"O}zy{\i}lkan, Johannes Ball{\'e}, and Elza Erkip.
+\newblock Learned wyner-ziv compressors recover binning, 2023.
+\newblock URL \url{https://arxiv.org/abs/2305.04380}.
+
+\bibitem[Pham et~al.(2024)Pham, Liu, Brohan, Zhang, Shaw, Yang, Le, Lee, and
+  Zhong]{Pham2024CIPHER}
+Chau Pham, Boyi Liu, Anthony Brohan, Yu~Zhang, Peter Shaw, Yuan Yang, Quoc~V.
+  Le, Jason Lee, and Ruixiang Zhong.
+\newblock Let models speak ciphers: Multiagent debate through embeddings.
+\newblock In \emph{International Conference on Learning Representations}, 2024.
+\newblock URL \url{https://openreview.net/forum?id=sehRvaIPQQ}.
+
+\bibitem[Ribeiro et~al.(2020)Ribeiro, Wu, Guestrin, and
+  Singh]{Ribeiro2020CheckList}
+Marco~Tulio Ribeiro, Tongshuang Wu, Carlos Guestrin, and Sameer Singh.
+\newblock Beyond accuracy: Behavioral testing of nlp models with {CheckList}.
+\newblock In \emph{Proceedings of the 58th Annual Meeting of the Association
+  for Computational Linguistics}, pp.\  4902--4912. Association for
+  Computational Linguistics, 2020.
+\newblock \doi{10.18653/v1/2020.acl-main.442}.
+\newblock URL \url{https://aclanthology.org/2020.acl-main.442/}.
 
 \bibitem[Shi et~al.(2026)Shi, Chiesa, Maguire~Jr., and Kostic]{Shi2025KVComm}
 Xiangyu Shi, Marco Chiesa, Gerald~Q. Maguire~Jr., and Dejan Kostic.
@@ -183,6 +232,18 @@ Johannes Welbl, Nelson~F. Liu, and Matt Gardner.
 \newblock Crowdsourcing multiple choice science questions, 2017.
 \newblock URL \url{https://arxiv.org/abs/1707.06209}.
 
+\bibitem[Westphal et~al.(2026)]{Westphal2026EmbeddingStego}
+Maximilian Westphal et~al.
+\newblock Hide and seek in embedding space: Geometry-based steganography and
+  detection in large language models, 2026.
+\newblock URL \url{https://arxiv.org/abs/2601.22818}.
+
+\bibitem[Whang et~al.(2021)Whang, Nagle, Acharya, Kim, and
+  Dimakis]{Whang2021NeuralDSC}
+Jay Whang, Alliot Nagle, Anish Acharya, Hyeji Kim, and Alexandros~G. Dimakis.
+\newblock Neural distributed source coding, 2021.
+\newblock URL \url{https://arxiv.org/abs/2106.02797}.
+
 \bibitem[Wyner \& Ziv(1976)Wyner and Ziv]{Wyner1976RateDistortion}
 Aaron~D. Wyner and Jacob Ziv.
 \newblock The rate-distortion function for source coding with side information
@@ -196,6 +257,12 @@ An~Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo~Zheng, Bowen Yu,
   Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, et~al.
 \newblock {Qwen2.5} technical report, 2025.
 \newblock URL \url{https://arxiv.org/abs/2412.15115}.
+
+\bibitem[Ye et~al.(2025)Ye, Zhuo, et~al.]{Ye2025KVCOMM}
+Jiasheng Ye, Danyang Zhuo, et~al.
+\newblock {KVCOMM}: Online cross-context kv-cache communication for efficient
+  llm-based multi-agent systems, 2025.
+\newblock URL \url{https://arxiv.org/abs/2510.12872}.
 
 \bibitem[Zandieh et~al.(2024)Zandieh, Daliri, and Han]{Zandieh2024QJL}
 Amir Zandieh, Majid Daliri, and Insu Han.

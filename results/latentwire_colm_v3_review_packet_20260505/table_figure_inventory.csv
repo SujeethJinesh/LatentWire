@@ -1,7 +1,7 @@
 artifact,status,source,next_action
 unified abstract and introduction,draft_integrated,colm_final/paper/latentwire_colm2026.tex,human copyedit and page-budget review
 method/protocol definition,draft_integrated,COLM_v1 method intuition plus COLM_v2 packet protocol,verify notation consistency after copyedit
-source-private threat model,draft_integrated,COLM_v2 controls and systems boundary notes,check against reviewer claim audit
+content-private threat model,draft_integrated,COLM_v2 controls and systems boundary notes,check against reviewer claim audit
 strict-control table,draft_integrated,strict_controls.csv,validate table placement in PDF
 main positive result table,draft_integrated_source_index_bounded,main_results.csv,keep ARC as narrow same-family positive evidence
 uncertainty summary table,draft_integrated,source-index audit lower bounds,verify table placement in final PDF
