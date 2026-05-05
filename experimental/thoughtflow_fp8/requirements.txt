@@ -1,0 +1,16 @@
+# Minimal Mac-local analysis scaffold. Keep GPU/runtime-specific deps out until
+# a phase requires them.
+datasets
+einops
+huggingface-hub
+ipython
+jupyter
+matplotlib
+numpy
+pytest
+safetensors
+sentencepiece
+tiktoken
+torch
+transformers
+triton

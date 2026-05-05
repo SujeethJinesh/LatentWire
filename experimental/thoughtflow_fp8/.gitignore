@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Local downloads and generated artifacts
+external/
+data/
+datasets/
+traces/
+results/
+scratch/
+logs/
+*.log
+
+# Large binary/model artifacts
+*.pt
+*.pth
+*.safetensors
+*.bin
+*.gguf
+*.jsonl
+*.parquet
