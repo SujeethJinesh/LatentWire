@@ -5,6 +5,7 @@ import json
 import pathlib
 import re
 from typing import Any
+from collections import defaultdict
 
 
 LETTER_RE = re.compile(r"\b([A-Z])\b|^\s*[\(\[]?([A-Z])[\)\].:]?", re.IGNORECASE)
@@ -53,6 +54,18 @@ def main() -> None:
         "unparsed": sum(int(row["parsed_prediction"] is None) for row in scored),
         "rows": scored,
     }
+    grouped = defaultdict(list)
+    for row, scored_row in zip(rows, scored, strict=True):
+        group_key = row.get("method") or row.get("source_control") or "unknown"
+        grouped[str(group_key)].append(scored_row)
+    payload["groups"] = {
+        name: {
+            "n": len(group_rows),
+            "letter_accuracy": sum(int(row["letter_correct"]) for row in group_rows) / max(len(group_rows), 1),
+            "unparsed": sum(int(row["parsed_prediction"] is None) for row in group_rows),
+        }
+        for name, group_rows in sorted(grouped.items())
+    }
     out_path = pathlib.Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -65,9 +78,24 @@ def main() -> None:
         f"- parsed letter accuracy: `{payload['letter_accuracy']:.3f}`",
         f"- unparsed rows: `{payload['unparsed']}`",
         "",
+        "## By method",
+        "",
+        "| method | rows | parsed letter accuracy | unparsed |",
+        "|---|---:|---:|---:|",
+    ]
+    for name, stats in payload["groups"].items():
+        lines.append(
+            f"| {name} | {stats['n']} | {stats['letter_accuracy']:.3f} | {stats['unparsed']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Rows",
+            "",
         "| idx | gold | parsed | correct | raw prediction |",
         "|---:|---|---|:---:|---|",
-    ]
+        ]
+    )
     for row in scored:
         raw = str(row["raw_prediction"]).replace("|", "\\|")
         lines.append(

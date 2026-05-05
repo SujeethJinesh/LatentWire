@@ -48,7 +48,9 @@ def _ensure_kvcomm_compat_patch(repo_root: pathlib.Path) -> None:
     models_path = repo_root / "models.py"
     marker_ok = (
         "Qwen3AttentionTracer" in model_attn_path.read_text(encoding="utf-8")
-        and "_match_kv_shape" in models_path.read_text(encoding="utf-8")
+        and "past_key_values: Optional[Cache]" in model_attn_path.read_text(encoding="utf-8")
+        and "_nearest_source_layer" in models_path.read_text(encoding="utf-8")
+        and "_sink_only_same_length" in models_path.read_text(encoding="utf-8")
     )
     if marker_ok:
         return
