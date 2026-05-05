@@ -30,20 +30,20 @@
 \maketitle
 
 \begin{abstract}
-Multi-model language systems usually communicate by emitting text or by sharing dense state such as KV caches. We study a narrower interface: can a source endpoint send a byte-scale packet that helps a receiver on public multiple-choice tasks without sending source text, hidden states, KV cache, logits, score vectors, or labels? We present \method, a no-text packet protocol and destructive-control framework with explicit byte accounting. On \arc{}, an 8-byte payload / 11-byte framed packet reaches 0.344 accuracy across 10 seeds, above target-only 0.265 and same-budget structured text 0.300. On \obqa{}, a 3-byte / 6-byte packet reaches 0.378 across 20 seeds, above target-only 0.276 but not above same-budget text under the lower-bound gate. The decisive audit is limiting: explicit source-index communication reaches 0.346 on \arc{} and 0.378 on \obqa{}; an aggregate packet-minus-source-index bootstrap is negative on \arc{} and effectively tied on \obqa{}. A validation-only 3-byte source-score sketch also ties, rather than beats, the source top-label rule. We therefore claim byte-scale same-family candidate transfer under destructive controls, not evidence synthesis beyond the source, formal privacy, solved latent communication, C2C superiority, or native GPU latency/HBM/energy wins.
+Multi-model language systems usually communicate by emitting text or by sharing dense state such as KV caches. We study a narrower interface: can a source endpoint send a byte-scale packet that helps a public candidate decoder on multiple-choice tasks without sending source text, hidden states, KV cache, logits, score vectors, or labels? We present \method, a no-text packet protocol and destructive-control framework with explicit byte accounting. On \arc{}, an 8-byte payload / 11-byte framed packet reaches 0.344 accuracy across 10 seeds, above target-only 0.265 and same-budget structured text 0.300. On \obqa{}, a 3-byte / 6-byte packet reaches 0.378 across 20 seeds, above target-only 0.276 but not above same-budget text under the lower-bound gate. The decisive audit is limiting: explicit source-index communication reaches 0.346 on \arc{} and 0.378 on \obqa{}; an aggregate packet-minus-source-index bootstrap is negative on \arc{} and effectively tied on \obqa{}. A validation-only 3-byte source-score sketch also ties, rather than beats, the source top-label rule. We therefore claim byte-scale same-family candidate transfer under destructive controls, not evidence synthesis beyond the source, formal privacy, solved latent communication, C2C superiority, or native GPU latency/HBM/energy wins.
 \end{abstract}
 
 \section{Introduction}
 
 Future language-model systems will often use more than one model: a cheap model may screen candidates, a specialist may inspect hard cases, and a stronger receiver may combine evidence. The simplest interface is text. Recent cache-level systems instead communicate through model internals, such as fused or selectively shared KV caches~\citep{Fu2025C2C,Shi2025KVComm,Ye2025KVCOMM}. These approaches are powerful, but they couple communication to large hidden-state objects and serving substrates.
 
-This paper asks whether a much smaller interface can carry useful source-side candidate evidence. In our setting, both models see the same public question and answer choices. The source performs private computation over those choices. The only communicated object is a short byte packet; the receiver never sees source text, source logits, source hidden vectors, KV cache, or the answer key. This is a side-information problem in the spirit of distributed source coding~\citep{Slepian1973Noiseless,Wyner1976RateDistortion,Whang2021NeuralDSC,Ozyilkan2023WynerZiv}: the receiver already has the public prompt and its own computation, so the packet should carry only the source evidence that is useful at the decoder. We use that framing as motivation, not as a formal rate-distortion theorem: this paper does not specify a full joint distribution, distortion measure, or converse. The scientific contribution is therefore not just a packet row, but a controlled protocol for asking whether such rows survive the controls that usually create false positives.
+This paper asks whether a much smaller interface can carry useful source-side candidate evidence. In our setting, the source endpoint and receiver/decoder see the same public question and answer choices. The source performs private computation over those choices. The only communicated object is a short byte packet; the receiver/decoder never sees source text, source logits, source hidden vectors, KV cache, score vectors, or the answer key. The headline receiver in this paper is not a live target-model forward pass. It is a public hashed/DCT candidate decoder built from public task features and frozen receiver-side candidate surfaces; ``target-only'' means the same decoder with an empty source packet. This is a side-information problem in the spirit of distributed source coding~\citep{Slepian1973Noiseless,Wyner1976RateDistortion,Whang2021NeuralDSC,Ozyilkan2023WynerZiv}: the receiver already has the public prompt and its own side information, so the packet should carry only the source evidence that is useful at the decoder. We use that framing as motivation, not as a formal rate-distortion theorem: this paper does not specify a full joint distribution, distortion measure, or converse. The scientific contribution is therefore not just a packet row, but a controlled protocol for asking whether such rows survive the controls that usually create false positives.
 
-Our strongest current result is deliberately scoped. On \arc{} and \obqa{}~\citep{Clark2018ARC,Mihaylov2018OpenBookQA}, same-family Qwen2.5 packet transfer~\citep{Yang2025Qwen25} improves over target-only. \arc{} also clears the same-budget text gate, while \obqa{} is statistically indistinguishable from same-budget text under the paired-bootstrap lower-bound gate. A strict Phi-3 source-family replacement~\citep{Abdin2024Phi3} fails, and additional connector repairs fail on the available TinyLlama/Qwen cached artifacts. This boundary matters: the paper is not claiming solved cross-family latent communication.
+Our strongest current result is deliberately scoped. On \arc{} and \obqa{}~\citep{Clark2018ARC,Mihaylov2018OpenBookQA}, same-family Qwen2.5 source-cache-to-public-decoder packet transfer~\citep{Yang2025Qwen25} improves over target-only. \arc{} also clears the same-budget text gate, while \obqa{} is statistically indistinguishable from same-budget text under the paired-bootstrap lower-bound gate. A strict Phi-3 source-family replacement~\citep{Abdin2024Phi3} fails, and additional connector repairs fail on the available TinyLlama/Qwen cached artifacts. This boundary matters: the paper is not claiming solved cross-family latent communication.
 
 The contributions are:
 \begin{itemize}
-\item A byte-scale no-source-text/source-state-private packet protocol and threat model for multiple-choice candidate transfer with no source text, hidden vector, KV cache, source-logit, score-vector, or gold-label exposure.
+\item A byte-scale no-source-text/source-state-private packet protocol and threat model for source-model-to-public-decoder multiple-choice candidate transfer with no source text, hidden vector, KV cache, source-logit, score-vector, or gold-label exposure.
 \item A strict evaluation suite, drawing on control-task and behavioral-testing methodology~\citep{Hewitt2019ControlTasks,Adebayo2018SanityChecks,McCoy2019HANS,Ribeiro2020CheckList}, that combines target-only, same-budget text, source-index/rank, coordinate-shuffle, wrong-row, same-source-choice, cross-family, and cached-connector controls.
 \item Controlled narrow positives on \arc{} and \obqa{} with seed repeats and paired uncertainty, accompanied by an explicit source-index audit showing that the current effect is mostly source-choice preserving.
 \item A failure-boundary analysis showing that Phi-3 cross-family transfer fails because the packet faithfully transports a weaker alternate source choice, not because the decoder corrupts the packet; simple cached connector repairs also fail, so broad latent-language and cross-family claims are unsupported.
@@ -58,13 +58,13 @@ The current method is most plausible for same-family cascades and bandwidth-limi
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.96\linewidth]{figures/protocol_diagram.pdf}
-  \caption{\method{} protocol. Both sides receive the public task. The source privately scores candidates and emits only a fixed-byte packet. The receiver decodes the packet with a public basis and its own side information. Destructive controls scramble the shared coordinate system or candidate relation.}
+  \caption{\method{} protocol. Both sides receive the public task. The source privately scores candidates and emits only a fixed-byte packet. The public receiver/decoder decodes the packet with a public basis and its own side information. Destructive controls scramble the shared coordinate system or candidate relation.}
   \label{fig:protocol}
 \end{figure}
 
 \section{No-text packet transfer}
 
-Let a public multiple-choice instance be $x=(q,c_1,\ldots,c_m)$ with answer choices $c_i$. A source model $S$ and receiver $R$ both observe $x$, but only $S$ computes the source-side private evidence $e_S(x)$. A packet encoder emits
+Let a public multiple-choice instance be $x=(q,c_1,\ldots,c_m)$ with answer choices $c_i$. A source model $S$ and receiver/decoder $R$ both observe $x$, but only $S$ computes the source-side private evidence $e_S(x)$. A packet encoder emits
 \[
 z = E(e_S(x), x), \qquad |z| \leq B \text{ bytes}.
 \]
@@ -73,6 +73,7 @@ The receiver predicts
 \hat{y} = D_R(x,z),
 \]
 where $D_R$ may use public task features and the receiver's own state, but may not access source text, source hidden states, source KV cache, source logits, or answer labels.
+In the reported headline rows, $R$ is instantiated as a public hashed/DCT candidate decoder rather than a live LM endpoint. The target-only row is $D_R(x,\emptyset)$ on the same public decoder with no source packet.
 
 We evaluate a packet only if it beats three surfaces: target-only $D_R(x,\emptyset)$, a same-budget structured text control, and destructive controls that preserve superficial packet size but destroy the intended source-receiver relation. We also audit explicit source-index, source-label-text, source-rank-code, source-score-style, and entropy-matched random-index baselines. The same-budget text control is not the answer label ``A/B/C/D'' and not a direct source-index code: it sends the first $B$ bytes of the source-selected public candidate string and decodes by lexical overlap. Explicit source-index in Table~\ref{tab:main} means the source label alone, without target calibration; richer source/target pair rules are treated as diagnostics. For 4-way multiple choice, the selected-candidate boundary is only 2 bits information-theoretically, although our implementation reports it as a one-byte label channel. This matters because a packet can help while mostly preserving the source's selected candidate; that is no-text candidate transfer, not proof of a shared latent language or compression beyond selected-candidate communication.
 
@@ -107,7 +108,21 @@ Table~\ref{tab:controls} lists the reviewer-facing controls used to interpret th
 
 \section{Public-coordinate packets}
 
-The current \arc{} implementation uses a public train-anchor chart. For each candidate, we compute a public relative-coordinate feature against a frozen set of training anchors, then project that feature into a low-frequency orthonormal DCT-II spectral basis. The packet is a sparse signed syndrome in this shared coordinate system. The receiver scores candidate compatibility with the packet in the same public basis, combining the packet evidence with receiver-side candidate information.
+The current \arc{} implementation uses a public train-anchor chart. For each candidate, we compute a public relative-coordinate feature against a frozen set of training anchors, then project that feature into a low-frequency orthonormal DCT-II spectral basis. The packet is a sparse signed syndrome in this shared coordinate system. The receiver/decoder scores candidate compatibility with the packet in the same public basis, combining the packet evidence with receiver-side candidate information.
+
+Concretely, let $\phi_i(x)\in\mathbb{R}^{d}$ be the public anchor feature for candidate $c_i$, and let
+\[
+r_i=\phi_i(x)-\frac{1}{m}\sum_{\ell=1}^{m}\phi_\ell(x), \qquad u_i = U_k^\top r_i ,
+\]
+where $U_k$ is the low-frequency DCT-II basis. If the source selects candidate $s$, the encoder keeps only the largest signed coordinates,
+\[
+z=\{(j,\operatorname{sign}(u_{s,j}),Q(|u_{s,j}|)) : j\in \operatorname{TopK}(|u_s|)\}.
+\]
+The decoder unpacks $z$ into a sparse vector $\tilde u(z)$ and predicts
+\[
+\hat y=\arg\max_i \cos\!\left(\tilde u(z), u_i^{(R)}\right),
+\]
+with validation-selected packet budget and basis settings fixed before frozen test readout.
 
 \begin{table}[t]
   \centering
@@ -190,10 +205,10 @@ Additional benchmark/model rows remain reviewer-packet diagnostics, not headline
     Benchmark & seeds & pkt-target & pkt-text & pkt-source & provenance \\
     \midrule
     \arc{} & 10 & +0.038 & +0.025 & -0.008 & frozen test, hash-audited \\
-    \obqa{} & 5 & +0.046 & +0.000 & -0.006 & frozen test, hash-audited \\
+    \obqa{} & 20 & +0.046 & -0.002 & -0.006 & frozen test, hash-audited \\
     \bottomrule
   \end{tabular}
-  \caption{Uncertainty summary for the main audit rows. Values are paired-bootstrap 95\% lower bounds for packet accuracy minus the named comparator. The zero lower bound against same-budget text on \obqa{} is intentionally visible: that row is a narrow secondary positive, not a strong text-baseline separation.}
+  \caption{Uncertainty summary for the main audit rows. Values are paired-bootstrap 95\% lower bounds for packet accuracy minus the named comparator. The negative lower bound against same-budget text on \obqa{} is intentionally visible: that row is a narrow secondary positive, not a text-baseline separation.}
   \label{tab:uncertainty}
 \end{table}
 
@@ -295,7 +310,7 @@ The next exact gate for an ICLR-strength claim is a frozen-endpoint tokenwise co
 
 \appendix
 
-\section{Reviewer-facing claim audit}
+\section{Claim-boundary audit}
 
 Table~\ref{tab:claim-audit} states the claim boundary used to write the main paper. The full generated packet is in \url{results/latentwire_colm_v3_review_packet_20260505/}.
 
@@ -318,7 +333,7 @@ Table~\ref{tab:claim-audit} states the claim boundary used to write the main pap
     broad latent/cross-family communication & unsupported & Phi-3 and connector failures & ICLR future goal \\
     \bottomrule
   \end{tabular}
-  \caption{Claim audit used for COLM\_v3 integration. Each main-text claim must map to one supported or supported-but-narrow row.}
+  \caption{Supported and unsupported claim boundaries. Each main-text claim maps to one supported or supported-but-narrow row.}
   \label{tab:claim-audit}
 \end{table}
 
@@ -429,6 +444,6 @@ regenerates the claim audit, table/figure inventory, systems ledger, artifact ma
 
 \section{Lay explanation of the main experiment}
 
-The experiment asks whether one model can send a tiny hint to another model. Both models see the same question and answer choices. The sender chooses a compressed coordinate hint, only a few bytes long. The receiver uses that hint to choose an answer. If both sides agree on the coordinate system, the hint helps. If we scramble the coordinate system, the hint stops helping. That is evidence for a real shared packet interface on the tested same-family setting, while the failed Phi-3 run shows the interface is not yet general across model families.
+The experiment asks whether a source model can send a tiny no-text hint to a public receiver/decoder that also sees the same question and answer choices. The sender chooses a compressed coordinate hint, only a few bytes long. The decoder uses that hint to choose an answer. If both sides agree on the coordinate system, the hint helps. If we scramble the coordinate system, the hint stops helping. That is evidence for a real shared packet interface in the tested same-family source-cache-to-public-decoder setting, while the failed Phi-3 run shows the interface is not yet general across model families.
 
 \end{document}

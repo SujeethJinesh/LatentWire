@@ -29,26 +29,25 @@ def build_accuracy_overview() -> pathlib.Path:
     }
     x = np.arange(len(benchmarks))
     width = 0.18
-    fig, ax = plt.subplots(figsize=(6.4, 3.2))
+    fig, ax = plt.subplots(figsize=(6.4, 3.0))
     offsets = np.linspace(-1.5 * width, 1.5 * width, len(values))
     for offset, (label, vals) in zip(offsets, values.items(), strict=True):
         ax.bar(x + offset, vals, width, label=label, color=colors[label], edgecolor="black", linewidth=0.35)
     ax.set_ylabel("Accuracy")
-    ax.set_ylim(0.0, 0.48)
+    ax.set_ylim(0.0, 0.43)
     ax.set_xticks(x)
     ax.set_xticklabels(benchmarks)
     ax.grid(axis="y", color="#dddddd", linewidth=0.6)
     ax.set_axisbelow(True)
-    ax.legend(ncol=2, frameon=False, loc="upper left")
-    ax.text(
-        0.5,
-        0.455,
-        "Source-index is the decisive boundary: it matches or exceeds the packet.",
-        ha="center",
-        va="top",
-        fontsize=8,
+    ax.legend(
+        ncol=4,
+        frameon=False,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.14),
+        columnspacing=1.1,
+        handletextpad=0.35,
     )
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 1, 0.92))
     out = FIGURE_DIR / "accuracy_overview.pdf"
     fig.savefig(out, bbox_inches="tight")
     plt.close(fig)
