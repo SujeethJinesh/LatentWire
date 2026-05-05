@@ -90,8 +90,13 @@ def _input_paths(tmp_path: Path) -> dict[str, Path]:
 def test_build_review_packet_sets_colm_v3_claim_boundaries(tmp_path: Path) -> None:
     packet = packet_builder.build_review_packet(_input_paths(tmp_path))
 
-    assert packet["readiness"]["colm_v3"] == "draft_paper_integrated_pending_human_review"
-    assert "byte-scale" in packet["main_claim"]
+    assert packet["readiness"]["colm_v3"] == "reviewer_hardened_draft_pending_human_review"
+    assert "candidate-transfer" in packet["main_claim"]
+    assert any(
+        row["claim"] == "The current packet beats source-index communication or selected-candidate codes."
+        and row["support_level"] == "not_supported"
+        for row in packet["claim_audit"]
+    )
     assert any(
         row["claim"] == "LatentWire beats C2C or dense KV/cache transfer."
         and row["support_level"] == "not_supported"

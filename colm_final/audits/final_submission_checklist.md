@@ -29,6 +29,11 @@ Date: 2026-05-05
 - [x] Systems table distinguishes measured/accounted packet objects from
   analytical KV/cache byte floors and native-pending rows.
 - [x] Native NVIDIA runbook exists for future hard systems measurements.
+- [x] Ten-reviewer COLM stress panel is recorded in
+  `audits/colm_v3_10_reviewer_panel_20260505.md`.
+- [x] Reviewer-driven hardening edits are integrated into the PDF draft:
+  candidate-transfer title, practical-use scope, explicit source-index claim
+  boundary, uncertainty summary, and measured-versus-estimated systems language.
 
 ## Not Yet Ready / Must Be Framed Carefully
 
@@ -47,8 +52,9 @@ Date: 2026-05-05
 ## Submission Decision
 
 The bundle is now a COLM_v3 integrated draft suitable for internal/reviewer
-circulation after a human copyedit and page-budget pass. It should be pitched as
-a practical packet protocol and evaluation framework with narrow positives,
-failure boundaries, and byte/exposure systems accounting. It is not ready for an
+circulation after a human copyedit and page-budget pass. The ten-reviewer panel
+rates it as a plausible weak-accept workshop paper when pitched as
+source-private candidate-transfer packets under destructive controls, with
+failure boundaries and byte/exposure systems accounting. It is not ready for an
 ICLR full-paper claim without the next receiver-family/cross-family positive and
 stronger native systems evidence.

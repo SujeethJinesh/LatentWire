@@ -1,4 +1,4 @@
-\begin{thebibliography}{21}
+\begin{thebibliography}{23}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -49,6 +49,21 @@ Robert Huben, Hoagy Cunningham, Logan~Riggs Smith, Aidan Ewart, and Lee
   models.
 \newblock In \emph{International Conference on Learning Representations}, 2024.
 \newblock URL \url{https://openreview.net/forum?id=F76bwRSLeK}.
+
+\bibitem[Jiang et~al.(2023{\natexlab{a}})Jiang, Wu, Lin, Yang, and
+  Qiu]{Jiang2023LLMLingua}
+Huiqiang Jiang, Qianhui Wu, Chin-Yew Lin, Yuqing Yang, and Lili Qiu.
+\newblock {LLMLingua}: Compressing prompts for accelerated inference of large
+  language models, 2023{\natexlab{a}}.
+\newblock URL \url{https://arxiv.org/abs/2310.05736}.
+
+\bibitem[Jiang et~al.(2023{\natexlab{b}})Jiang, Wu, Luo, Li, Lin, Yang, and
+  Qiu]{Jiang2023LongLLMLingua}
+Huiqiang Jiang, Qianhui Wu, Xufang Luo, Dongsheng Li, Chin-Yew Lin, Yuqing
+  Yang, and Lili Qiu.
+\newblock Long{LLM}lingua: Accelerating and enhancing {LLM}s in long context
+  scenarios via prompt compression, 2023{\natexlab{b}}.
+\newblock URL \url{https://arxiv.org/abs/2310.06839}.
 
 \bibitem[Karvonen et~al.(2025)Karvonen, Rager, Lin, Tigges, Bloom, Chanin, Lau,
   Farrell, Mcdougall, Ayonrinde, Till, Wearden, Conmy, Marks, and

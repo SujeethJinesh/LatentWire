@@ -26,6 +26,8 @@ Additional v3-integrated claims:
 | The control suite includes target-only, same-budget text, source-index/rank/score, wrong-row, same-source-choice, coordinate shuffle, candidate derangement, source-family substitution, and cached connector repair controls | `colm_final/paper/latentwire_colm2026.tex`; `results/latentwire_colm_v3_review_packet_20260505/table_figure_inventory.csv` | Supported | Now visible as a main paper table. |
 | Systems rows separate measured/accounted packet objects from analytical KV/cache byte floors and native-pending systems rows | `results/latentwire_colm_v3_review_packet_20260505/systems_measured_vs_estimated.csv`; `colm_final/paper/latentwire_colm2026.tex` | Supported | No native GPU throughput, HBM, energy, latency, or C2C superiority claim is made. |
 | HybridKernel, SinkAware, and ThoughtFlow-FP8 are future systems side lanes, not COLM_v3 evidence | `experimental/status_20260505.md`; `results/latentwire_colm_v3_review_packet_20260505/experiment_scoping.csv` | Supported | They should not enter main claims until measured artifacts exist. |
+| The reviewer-facing claim should be source-private candidate-transfer packets rather than broad latent communication | `colm_final/audits/colm_v3_10_reviewer_panel_20260505.md`; `colm_final/paper/latentwire_colm2026.tex` | Supported | Ten-reviewer panel mean is 6.4/10 under scoped workshop framing; stronger framing is unsupported. |
+| The fragile comparator surfaces are visible in main text | `colm_final/paper/latentwire_colm2026.tex`; `evidence/results/source_private_colm_acceptance_baselines_20260502/colm_acceptance_baseline_audit.md` | Supported | New uncertainty table reports packet-target, packet-text, and packet-source lower bounds. |
 
 ## Headline Claims
 

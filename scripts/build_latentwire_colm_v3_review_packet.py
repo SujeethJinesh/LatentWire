@@ -21,6 +21,8 @@ DEFAULT_INPUT_PATHS = {
     "reviewer_feedback": ROOT / "paper/reviewer_feedback.md",
     "experiment_ledger": ROOT / "paper/experiment_ledger_20260421.md",
     "colm_v3_tex": ROOT / "colm_final/paper/latentwire_colm2026.tex",
+    "colm_v3_reviewer_panel": ROOT
+    / "colm_final/audits/colm_v3_10_reviewer_panel_20260505.md",
 }
 
 DEFAULT_OUTPUT_DIR = ROOT / "results/latentwire_colm_v3_review_packet_20260505"
@@ -28,9 +30,9 @@ DEFAULT_PAPER_PATH = ROOT / "paper/latentwire_colm_v3_review_packet_20260505.md"
 
 MAIN_CLAIM = (
     "LatentWire provides a practical protocol and evaluation framework for "
-    "byte-scale, source-private model-to-model communication, with controlled "
-    "evidence of narrow packet utility, explicit utility-per-byte accounting, "
-    "and strong safeguards against shortcut claims."
+    "source-private candidate-transfer packets, with controlled evidence of "
+    "narrow fixed-byte packet utility, explicit utility-per-byte accounting, "
+    "and destructive controls that expose shortcut claims."
 )
 
 
@@ -141,7 +143,7 @@ def _systems_measured_vs_estimated(systems: dict[str, Any]) -> list[dict[str, An
 def _claim_audit() -> list[dict[str, str]]:
     return [
         {
-            "claim": "LatentWire defines a source-private packet protocol and strict evaluation framework.",
+            "claim": "LatentWire defines a source-private candidate-transfer packet protocol and strict evaluation framework.",
             "support_level": "supported",
             "evidence_artifact": "COLM_v2 review packet plus COLM_v3 review packet",
             "controls_passed": "source-private interface, wrong-row/source-choice controls where available",
@@ -152,7 +154,14 @@ def _claim_audit() -> list[dict[str, str]]:
             "support_level": "supported_but_narrow",
             "evidence_artifact": "main_results.csv; strict_controls.csv; systems_measured_vs_estimated.csv",
             "controls_passed": "target-only and same-byte/text controls on the reported rows; source-index remains a hard boundary",
-            "required_wording": "narrow packet utility, not broad latent communication",
+            "required_wording": "narrow source-private candidate-transfer utility, not broad latent communication",
+        },
+        {
+            "claim": "The current packet beats source-index communication or selected-candidate codes.",
+            "support_level": "not_supported",
+            "evidence_artifact": "main_results.csv; source-index audit",
+            "controls_passed": "packet-source lower bounds remain negative or zero",
+            "required_wording": "do not claim; source-index is the main boundary",
         },
         {
             "claim": "Many apparent wins collapse into source-choice, source-rank, or target-cache artifacts.",
@@ -213,9 +222,15 @@ def _table_figure_inventory() -> list[dict[str, str]]:
         },
         {
             "artifact": "main positive result table",
-            "status": "data_ready",
+            "status": "draft_integrated_source_index_bounded",
             "source": "main_results.csv",
             "next_action": "keep ARC as narrow same-family positive evidence",
+        },
+        {
+            "artifact": "uncertainty summary table",
+            "status": "draft_integrated",
+            "source": "source-index audit lower bounds",
+            "next_action": "verify table placement in final PDF",
         },
         {
             "artifact": "utility-per-byte / packet-byte table",
@@ -259,6 +274,12 @@ def _table_figure_inventory() -> list[dict[str, str]]:
             "source": "nvidia_native_runbook.md",
             "next_action": "run only on native NVIDIA hardware later",
         },
+        {
+            "artifact": "ten-reviewer COLM stress panel",
+            "status": "recorded",
+            "source": "colm_final/audits/colm_v3_10_reviewer_panel_20260505.md",
+            "next_action": "use for human copyedit and final reviewer-risk pass",
+        },
     ]
 
 
@@ -266,7 +287,7 @@ def _submission_checklist() -> list[dict[str, str]]:
     return [
         {
             "item": "Main claim agrees across abstract, intro, results, limitations.",
-            "status": "draft_integrated_pending_human_review",
+            "status": "reviewer_hardened_pending_human_review",
             "blocker": "requires human copyedit and page-budget review",
         },
         {
@@ -288,6 +309,11 @@ def _submission_checklist() -> list[dict[str, str]]:
             "item": "Limitations explicitly cover source-choice artifacts and cross-family failures.",
             "status": "draft_integrated",
             "blocker": "human copyedit",
+        },
+        {
+            "item": "Ten-reviewer stress panel is recorded and actioned.",
+            "status": "ready",
+            "blocker": "remaining panel risks are claim-boundary risks, not missing paper sections",
         },
         {
             "item": "Experimental side projects are scoped away from COLM_v3 claims.",
@@ -427,7 +453,7 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "main_claim": MAIN_CLAIM,
         "readiness": {
-            "colm_v3": "draft_paper_integrated_pending_human_review",
+            "colm_v3": "reviewer_hardened_draft_pending_human_review",
             "workshop_blocker": (
                 "human copyedit, page-budget review, and final PDF/table placement; no new speculative experiment "
                 "is required unless review exposes a missing claim-supporting row"
@@ -435,7 +461,7 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
             "iclr": "still blocked by lack of broad source-causal positive method",
         },
         "story": (
-            "LatentWire studies whether compact source-private packets can transmit useful model evidence "
+            "LatentWire studies whether compact source-private candidate packets can transmit useful model evidence "
             "without dense cache transfer, and uses byte accounting plus destructive controls to separate "
             "real packet utility from answer-choice and target-cache shortcuts."
         ),
@@ -458,8 +484,8 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
         "input_manifest": _input_manifest(paths),
         "artifact_manifest": _artifact_manifest(paths),
         "next_exact_gate": (
-            "edit the COLM_v3 paper around this packet: abstract, intro, method/threat model, "
-            "tables/figures, limitations, and reproducibility checklist"
+            "human copyedit, page-budget review, final PDF/table placement, and consistency check "
+            "between paper, review packet, and artifact manifest"
         ),
     }
 

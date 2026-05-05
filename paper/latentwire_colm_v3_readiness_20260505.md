@@ -6,10 +6,12 @@
 
 ## Current Readiness
 
-COLM_v3 now has a reproducible review-packet artifact and a first integrated
-LaTeX draft in `colm_final/paper/latentwire_colm2026.tex`. It is close to
-reviewer circulation, but not yet final submission-ready. The remaining blocker
-is a human copyedit/page-budget pass plus final PDF/table placement review.
+COLM_v3 now has a reproducible review-packet artifact, an integrated COLM-style
+LaTeX draft in `colm_final/paper/latentwire_colm2026.tex`, and a ten-reviewer
+stress panel in `colm_final/audits/colm_v3_10_reviewer_panel_20260505.md`.
+It is close to reviewer circulation, but not yet final submission-ready. The
+remaining blocker is a human copyedit/page-budget pass plus final PDF/table
+placement review.
 
 ICLR remains blocked by the lack of a broad learned/source-causal receiver that
 survives strict destructive controls.
@@ -50,12 +52,13 @@ shortcuts.
 
 | Required item | Status | Exact next action |
 |---|---|---|
-| Unified abstract and intro | draft integrated | human copyedit and page-budget review |
+| Unified abstract and intro | draft integrated and reviewer-hardened | human copyedit and page-budget review |
 | Method/protocol definition | draft integrated | verify notation consistency after copyedit |
 | Threat model | draft integrated | check against reviewer claim audit |
 | Strict control suite table | draft integrated | validate placement in PDF |
-| Main positive result table | present but split | make ARC primary; mark OBQA as caveated if using it |
-| Utility-per-byte table | present but needs v3 wording | include packet, text, source-index/rank, and dense-KV byte floors |
+| Main positive result table | present and source-index bounded | keep ARC/OBQA caveats visible |
+| Uncertainty summary | integrated | verify placement after PDF build |
+| Utility-per-byte table | present with v3 wording | keep packet, text, source-index/rank, and dense-KV byte floors scoped |
 | Systems boundary table/figure | draft integrated for accounting | validate measured-vs-estimated labels in PDF |
 | Related-work/baseline matrix | draft integrated | check page budget; move overflow to appendix if needed |
 | Negative/failure-boundary table | present but split | include cross-family, source-choice, C2C leakage, and failed learned receivers |
@@ -111,3 +114,11 @@ Review and compress the integrated COLM_v3 paper draft:
 
 Do not run speculative new method experiments until that package exposes a
 specific missing table cell or unsupported claim.
+
+## Ten-Reviewer Panel Read
+
+The internal panel mean score is 6.4/10 with median 6.5/10. The paper is
+plausible for a workshop weak accept if titled and framed as source-private
+candidate-transfer packets under destructive controls. The same panel would
+likely reject any stronger claim that the current method solves latent
+communication, beats source-index transfer, or beats C2C.

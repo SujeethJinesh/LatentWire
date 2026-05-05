@@ -113,6 +113,33 @@ Method priority inside that phase is now:
 Do not return to another simple routed-bank or one-sidecar tweak unless the
 larger-slice campaign shows a real uncertainty-aware reason to reopen it.
 
+## COLM_v3 Integration Gate 2026-05-05
+
+The COLM_v1/COLM_v2 material has been merged into a COLM_v3 workshop draft and
+stress-tested with a ten-reviewer panel. The resulting paper claim is now
+source-private candidate-transfer packets under destructive controls, not broad
+latent model-to-model communication. The panel mean was 6.4/10, with the main
+weaknesses all pointing to the same boundary: the current packet beats
+target-only and same-budget text, but does not beat explicit source-index
+communication and has no strict cross-family positive or native GPU systems
+row.
+
+Reviewer-driven edits made:
+
+1. title and framing changed toward candidate-transfer packets;
+2. practical same-family cascade/router use cases added;
+3. source-index parity surfaced as a main claim boundary;
+4. uncertainty lower-bound table added for packet-target, packet-text, and
+   packet-source surfaces;
+5. source-state privacy separated from source-choice leakage;
+6. systems table language hardened around measured/accounted packet objects
+   versus analytical/native-pending dense-state rows;
+7. related work expanded with prompt-compression and crosscoder/transcoder
+   comparisons.
+
+Do not strengthen COLM_v3 claims unless a new tracked artifact beats
+source-index or provides native systems evidence.
+
 ## Current Evidence Ladder
 
 `paper/ablation_evidence_ladder_20260421.md` is the current anti-loop summary

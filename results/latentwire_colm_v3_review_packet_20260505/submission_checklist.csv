@@ -1,7 +1,8 @@
 item,status,blocker
-"Main claim agrees across abstract, intro, results, limitations.",draft_integrated_pending_human_review,requires human copyedit and page-budget review
+"Main claim agrees across abstract, intro, results, limitations.",reviewer_hardened_pending_human_review,requires human copyedit and page-budget review
 Every table and figure maps to a claim in the claim audit.,draft_integrated,verify final PDF table placement
 Systems claims separate measured packet bytes from analytical KV/cache floors.,ready,native GPU claims remain forbidden
 "Related work distinguishes dense KV/cache transfer, compression, and packet controls.",draft_integrated_compressed,page-budget review may require moving matrix to appendix
 Limitations explicitly cover source-choice artifacts and cross-family failures.,draft_integrated,human copyedit
+Ten-reviewer stress panel is recorded and actioned.,ready,"remaining panel risks are claim-boundary risks, not missing paper sections"
 Experimental side projects are scoped away from COLM_v3 claims.,ready,only future-work wording should remain

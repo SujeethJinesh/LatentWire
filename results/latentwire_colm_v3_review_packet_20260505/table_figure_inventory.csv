@@ -3,7 +3,8 @@ unified abstract and introduction,draft_integrated,colm_final/paper/latentwire_c
 method/protocol definition,draft_integrated,COLM_v1 method intuition plus COLM_v2 packet protocol,verify notation consistency after copyedit
 source-private threat model,draft_integrated,COLM_v2 controls and systems boundary notes,check against reviewer claim audit
 strict-control table,draft_integrated,strict_controls.csv,validate table placement in PDF
-main positive result table,data_ready,main_results.csv,keep ARC as narrow same-family positive evidence
+main positive result table,draft_integrated_source_index_bounded,main_results.csv,keep ARC as narrow same-family positive evidence
+uncertainty summary table,draft_integrated,source-index audit lower bounds,verify table placement in final PDF
 utility-per-byte / packet-byte table,data_ready,systems_measured_vs_estimated.csv,"separate raw, framed, cacheline, and batch64 bytes"
 systems boundary table,draft_integrated,systems_measured_vs_estimated.csv,validate measured-vs-estimated labels in PDF
 baseline/related-work matrix,draft_integrated,baseline_matrix.csv,check for overflow and page-budget pressure
@@ -11,3 +12,4 @@ negative-results / failure-boundary table,data_ready,negative_results.csv,use to
 claim audit table,draft_integrated,claim_audit.csv,keep appendix or move to internal audit depending on page limit
 reproducibility checklist,partial,artifact_manifest.csv and input_manifest,convert to workshop checklist before submission
 NVIDIA native benchmark runbook,generated_future_work,nvidia_native_runbook.md,run only on native NVIDIA hardware later
+ten-reviewer COLM stress panel,recorded,colm_final/audits/colm_v3_10_reviewer_panel_20260505.md,use for human copyedit and final reviewer-risk pass

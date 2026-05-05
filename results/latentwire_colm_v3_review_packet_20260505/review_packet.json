@@ -61,6 +61,11 @@
       "status": "read"
     },
     {
+      "artifact": "colm_final/audits/colm_v3_10_reviewer_panel_20260505.md",
+      "role": "input:colm_v3_reviewer_panel",
+      "status": "read"
+    },
+    {
       "artifact": "colm_final/paper/latentwire_colm2026.tex",
       "role": "input:colm_v3_tex",
       "status": "read"
@@ -519,7 +524,7 @@
   ],
   "claim_audit": [
     {
-      "claim": "LatentWire defines a source-private packet protocol and strict evaluation framework.",
+      "claim": "LatentWire defines a source-private candidate-transfer packet protocol and strict evaluation framework.",
       "controls_passed": "source-private interface, wrong-row/source-choice controls where available",
       "evidence_artifact": "COLM_v2 review packet plus COLM_v3 review packet",
       "required_wording": "safe as a protocol/evaluation contribution",
@@ -529,8 +534,15 @@
       "claim": "Low-byte packets show narrow same-family utility on ARC-style rows.",
       "controls_passed": "target-only and same-byte/text controls on the reported rows; source-index remains a hard boundary",
       "evidence_artifact": "main_results.csv; strict_controls.csv; systems_measured_vs_estimated.csv",
-      "required_wording": "narrow packet utility, not broad latent communication",
+      "required_wording": "narrow source-private candidate-transfer utility, not broad latent communication",
       "support_level": "supported_but_narrow"
+    },
+    {
+      "claim": "The current packet beats source-index communication or selected-candidate codes.",
+      "controls_passed": "packet-source lower bounds remain negative or zero",
+      "evidence_artifact": "main_results.csv; source-index audit",
+      "required_wording": "do not claim; source-index is the main boundary",
+      "support_level": "not_supported"
     },
     {
       "claim": "Many apparent wins collapse into source-choice, source-rank, or target-cache artifacts.",
@@ -629,7 +641,7 @@
       "still_needs_work": ""
     }
   ],
-  "created_utc": "2026-05-05T05:45:55.286703+00:00",
+  "created_utc": "2026-05-05T05:56:43.843573+00:00",
   "experiment_scoping": [
     {
       "colm_v3_scope": "separate systems spinout; exclude from COLM_v3 claims unless Phase 1 confirms novelty, Phase 2 shows at least 3% theoretical benefit, and native GPU profiling confirms overhead",
@@ -665,22 +677,27 @@
     {
       "key": "colm_v3_readiness",
       "path": "paper/latentwire_colm_v3_readiness_20260505.md",
-      "sha256": "963d8a51b234c0901bdb95b85255e3fc45dfc4fce7fead3984c3b1ae980c5163"
+      "sha256": "e10d3b00a18af57dad663b881c5ddda39b60ce38d88b19190e1199eed6902a70"
+    },
+    {
+      "key": "colm_v3_reviewer_panel",
+      "path": "colm_final/audits/colm_v3_10_reviewer_panel_20260505.md",
+      "sha256": "d3e5ded1f81d5d2f705da14f7cc4a6c05b5ea66685cd8c8bfbb4b6de8741d04e"
     },
     {
       "key": "colm_v3_tex",
       "path": "colm_final/paper/latentwire_colm2026.tex",
-      "sha256": "f2b375ff3ab7ab1c3ce1e9f00466dcf1bf37b9a53b7ee60b77f1116d2464abe8"
+      "sha256": "0c4e916172a5588d3b0f296b019897ac8e4d640e843b3a234ee40512ff2bddfc"
     },
     {
       "key": "experiment_ledger",
       "path": "paper/experiment_ledger_20260421.md",
-      "sha256": "e7a923c4ce117ff9d099da03d5a34dd0551ab620167cf6f31a6a78e0c18a248a"
+      "sha256": "f8ff74b198bd5dc38ced80de422cab1477915f4084d390d2701736858ce6cc69"
     },
     {
       "key": "experimental_status",
       "path": "experimental/status_20260505.md",
-      "sha256": "addfb038c6b81bf3e8056a19d4bf2d741bdf0f65a6b8e61468997126001b57e3"
+      "sha256": "7d30cac491acb336057ec0e3ef31dc8063a8c3cce8d4f7c792e9e4d43de1bc68"
     },
     {
       "key": "reviewer_feedback",
@@ -693,7 +710,7 @@
       "sha256": "81a776e985428f6945c22ccc3b7921016afb4f0a2e32d4b4a7af4b04cea9ee49"
     }
   ],
-  "main_claim": "LatentWire provides a practical protocol and evaluation framework for byte-scale, source-private model-to-model communication, with controlled evidence of narrow packet utility, explicit utility-per-byte accounting, and strong safeguards against shortcut claims.",
+  "main_claim": "LatentWire provides a practical protocol and evaluation framework for source-private candidate-transfer packets, with controlled evidence of narrow fixed-byte packet utility, explicit utility-per-byte accounting, and destructive controls that expose shortcut claims.",
   "main_results": [
     {
       "artifact": "conditional_pq_status",
@@ -1023,18 +1040,18 @@
       "status": "ruled_out_cached_policy_packet"
     }
   ],
-  "next_exact_gate": "edit the COLM_v3 paper around this packet: abstract, intro, method/threat model, tables/figures, limitations, and reproducibility checklist",
+  "next_exact_gate": "human copyedit, page-budget review, final PDF/table placement, and consistency check between paper, review packet, and artifact manifest",
   "packet": "latentwire_colm_v3_review_packet",
   "readiness": {
-    "colm_v3": "draft_paper_integrated_pending_human_review",
+    "colm_v3": "reviewer_hardened_draft_pending_human_review",
     "iclr": "still blocked by lack of broad source-causal positive method",
     "workshop_blocker": "human copyedit, page-budget review, and final PDF/table placement; no new speculative experiment is required unless review exposes a missing claim-supporting row"
   },
   "source_text_sanity": {
-    "colm_v3_readiness_chars": 7216,
-    "experimental_status_chars": 4902
+    "colm_v3_readiness_chars": 7782,
+    "experimental_status_chars": 5377
   },
-  "story": "LatentWire studies whether compact source-private packets can transmit useful model evidence without dense cache transfer, and uses byte accounting plus destructive controls to separate real packet utility from answer-choice and target-cache shortcuts.",
+  "story": "LatentWire studies whether compact source-private candidate packets can transmit useful model evidence without dense cache transfer, and uses byte accounting plus destructive controls to separate real packet utility from answer-choice and target-cache shortcuts.",
   "strict_controls": [
     {
       "base_accuracy": 0.21,
@@ -1221,7 +1238,7 @@
     {
       "blocker": "requires human copyedit and page-budget review",
       "item": "Main claim agrees across abstract, intro, results, limitations.",
-      "status": "draft_integrated_pending_human_review"
+      "status": "reviewer_hardened_pending_human_review"
     },
     {
       "blocker": "verify final PDF table placement",
@@ -1242,6 +1259,11 @@
       "blocker": "human copyedit",
       "item": "Limitations explicitly cover source-choice artifacts and cross-family failures.",
       "status": "draft_integrated"
+    },
+    {
+      "blocker": "remaining panel risks are claim-boundary risks, not missing paper sections",
+      "item": "Ten-reviewer stress panel is recorded and actioned.",
+      "status": "ready"
     },
     {
       "blocker": "only future-work wording should remain",
@@ -1664,7 +1686,13 @@
       "artifact": "main positive result table",
       "next_action": "keep ARC as narrow same-family positive evidence",
       "source": "main_results.csv",
-      "status": "data_ready"
+      "status": "draft_integrated_source_index_bounded"
+    },
+    {
+      "artifact": "uncertainty summary table",
+      "next_action": "verify table placement in final PDF",
+      "source": "source-index audit lower bounds",
+      "status": "draft_integrated"
     },
     {
       "artifact": "utility-per-byte / packet-byte table",
@@ -1707,6 +1735,12 @@
       "next_action": "run only on native NVIDIA hardware later",
       "source": "nvidia_native_runbook.md",
       "status": "generated_future_work"
+    },
+    {
+      "artifact": "ten-reviewer COLM stress panel",
+      "next_action": "use for human copyedit and final reviewer-risk pass",
+      "source": "colm_final/audits/colm_v3_10_reviewer_panel_20260505.md",
+      "status": "recorded"
     }
   ]
 }
