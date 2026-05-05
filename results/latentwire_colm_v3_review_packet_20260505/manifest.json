@@ -1,6 +1,11 @@
 {
-  "created_utc": "2026-05-05T05:56:43.843573+00:00",
+  "created_utc": "2026-05-05T06:15:29.952112+00:00",
   "input_manifest": [
+    {
+      "key": "benchmark_selection_gate",
+      "path": "results/source_private_benchmark_selection_gate_20260502/benchmark_selection_gate.json",
+      "sha256": "b27a543034f603517f54d362e556e7d86234a230832575b54f59ce3fb98378bb"
+    },
     {
       "key": "colm_v2_review_packet",
       "path": "results/latentwire_colm_v2_review_packet_20260504/review_packet.json",
@@ -19,7 +24,12 @@
     {
       "key": "colm_v3_tex",
       "path": "colm_final/paper/latentwire_colm2026.tex",
-      "sha256": "0c4e916172a5588d3b0f296b019897ac8e4d640e843b3a234ee40512ff2bddfc"
+      "sha256": "cccf7b457962fb6ae17f52a6027f99ab7cbb9f1c83ef4562c768a789c69e4a5e"
+    },
+    {
+      "key": "cpu_systems_frontier",
+      "path": "results/source_private_cpu_systems_frontier_20260429/cpu_systems_frontier.json",
+      "sha256": "1bb52d20072193b61289f3a1592949d6b62361ef2ad747be3ba5d6be1c90eb38"
     },
     {
       "key": "experiment_ledger",
@@ -29,12 +39,27 @@
     {
       "key": "experimental_status",
       "path": "experimental/status_20260505.md",
-      "sha256": "7d30cac491acb336057ec0e3ef31dc8063a8c3cce8d4f7c792e9e4d43de1bc68"
+      "sha256": "726b5fe331cae97ffa046cec22d8a7c6e7ef54d587d62866c70c71824f86c694"
+    },
+    {
+      "key": "hellaswag_seed_stability",
+      "path": "results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/arc_challenge_seed_stability.json",
+      "sha256": "37f0fca016e6c5b17c6a23d9d5b09e17154921cf51d85bed67a9c8f300d548bd"
+    },
+    {
+      "key": "latest_model_matrix",
+      "path": "results/source_private_latest_model_matrix_20260428/latest_model_matrix.json",
+      "sha256": "09694bfd13bb060e146274808994f189b1966e881e3b9c723d91aea513666498"
     },
     {
       "key": "reviewer_feedback",
       "path": "paper/reviewer_feedback.md",
       "sha256": "282ee615ffe970797c695908214088af55b0ae80656ea5c4829aa01c2492198e"
+    },
+    {
+      "key": "sciq_bridge_contract",
+      "path": "results/source_private_sciq_bridge_contract_20260501/sciq_bridge_contract.json",
+      "sha256": "c5de332f794ac4a7f1942dfb26c956ff90da0ce06c9d665132ba45e2fe7b10ef"
     },
     {
       "key": "systems_boundary",
@@ -45,9 +70,11 @@
   "outputs": [
     "results/latentwire_colm_v3_review_packet_20260505/artifact_manifest.csv",
     "results/latentwire_colm_v3_review_packet_20260505/baseline_matrix.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/benchmark_breadth.csv",
     "results/latentwire_colm_v3_review_packet_20260505/claim_audit.csv",
     "results/latentwire_colm_v3_review_packet_20260505/contribution_table.csv",
     "results/latentwire_colm_v3_review_packet_20260505/experiment_scoping.csv",
+    "results/latentwire_colm_v3_review_packet_20260505/latest_model_breadth.csv",
     "results/latentwire_colm_v3_review_packet_20260505/main_results.csv",
     "results/latentwire_colm_v3_review_packet_20260505/manifest.json",
     "results/latentwire_colm_v3_review_packet_20260505/negative_results.csv",

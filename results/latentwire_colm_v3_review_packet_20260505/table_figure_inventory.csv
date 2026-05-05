@@ -8,6 +8,8 @@ uncertainty summary table,draft_integrated,source-index audit lower bounds,verif
 utility-per-byte / packet-byte table,data_ready,systems_measured_vs_estimated.csv,"separate raw, framed, cacheline, and batch64 bytes"
 systems boundary table,draft_integrated,systems_measured_vs_estimated.csv,validate measured-vs-estimated labels in PDF
 baseline/related-work matrix,draft_integrated,baseline_matrix.csv,check for overflow and page-budget pressure
+benchmark breadth audit,review_packet_integrated,benchmark_breadth.csv,use as reviewer-pack support; do not turn diagnostics into headline claims
+latest model breadth audit,review_packet_integrated,latest_model_breadth.csv,"treat as source-packet emitter smoke, not ARC/OBQA benchmark evidence"
 negative-results / failure-boundary table,data_ready,negative_results.csv,use to define claim boundaries
 claim audit table,draft_integrated,claim_audit.csv,keep appendix or move to internal audit depending on page limit
 reproducibility checklist,partial,artifact_manifest.csv and input_manifest,convert to workshop checklist before submission

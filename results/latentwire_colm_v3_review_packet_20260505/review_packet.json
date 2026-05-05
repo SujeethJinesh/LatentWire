@@ -41,6 +41,16 @@
       "status": "generated"
     },
     {
+      "artifact": "benchmark_breadth.csv",
+      "role": "additional benchmark breadth and claim boundary audit",
+      "status": "generated"
+    },
+    {
+      "artifact": "latest_model_breadth.csv",
+      "role": "newer model source-packet emitter breadth audit",
+      "status": "generated"
+    },
+    {
       "artifact": "nvidia_native_runbook.md",
       "role": "future native GPU measurement runbook",
       "status": "generated"
@@ -49,6 +59,11 @@
       "artifact": "manifest.json",
       "role": "input and output manifest",
       "status": "generated"
+    },
+    {
+      "artifact": "results/source_private_benchmark_selection_gate_20260502/benchmark_selection_gate.json",
+      "role": "input:benchmark_selection_gate",
+      "status": "read"
     },
     {
       "artifact": "results/latentwire_colm_v2_review_packet_20260504/review_packet.json",
@@ -71,6 +86,11 @@
       "status": "read"
     },
     {
+      "artifact": "results/source_private_cpu_systems_frontier_20260429/cpu_systems_frontier.json",
+      "role": "input:cpu_systems_frontier",
+      "status": "read"
+    },
+    {
       "artifact": "paper/experiment_ledger_20260421.md",
       "role": "input:experiment_ledger",
       "status": "read"
@@ -81,8 +101,23 @@
       "status": "read"
     },
     {
+      "artifact": "results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/arc_challenge_seed_stability.json",
+      "role": "input:hellaswag_seed_stability",
+      "status": "read"
+    },
+    {
+      "artifact": "results/source_private_latest_model_matrix_20260428/latest_model_matrix.json",
+      "role": "input:latest_model_matrix",
+      "status": "read"
+    },
+    {
       "artifact": "paper/reviewer_feedback.md",
       "role": "input:reviewer_feedback",
+      "status": "read"
+    },
+    {
+      "artifact": "results/source_private_sciq_bridge_contract_20260501/sciq_bridge_contract.json",
+      "role": "input:sciq_bridge_contract",
       "status": "read"
     },
     {
@@ -522,6 +557,93 @@
       "what_transfers": "noncausal or target-only packet with matched format"
     }
   ],
+  "benchmark_breadth": [
+    {
+      "artifact": "results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b/arc_challenge_seed_stability.json",
+      "benchmark": "OpenBookQA",
+      "caveat": "headline-safe only when paired with source-index and source-choice boundary wording",
+      "ci95_low_vs_target_min": 0.038,
+      "examples": 500,
+      "packet_accuracy": 0.37839999999999996,
+      "packet_bytes": 3,
+      "packet_minus_target_min": 0.10199999999999998,
+      "packet_minus_text_min": 0.028000000000000025,
+      "paper_use": "main_or_secondary_test_row",
+      "role": "receiver_candidate",
+      "same_byte_text_accuracy": 0.35,
+      "seeds": 5,
+      "split": "test",
+      "target_accuracy": 0.276
+    },
+    {
+      "artifact": "results/source_private_arc_challenge_seed_stability_20260501_qwen05_hashed_test/arc_challenge_seed_stability.json",
+      "benchmark": "ARC-Challenge",
+      "caveat": "headline-safe only when paired with source-index and source-choice boundary wording",
+      "ci95_low_vs_target_min": 0.03835324232081912,
+      "examples": 1172,
+      "packet_accuracy": 0.3436860068259386,
+      "packet_bytes": 12,
+      "packet_minus_target_min": 0.07764505119453924,
+      "packet_minus_text_min": 0.03242320819112626,
+      "paper_use": "main_or_secondary_test_row",
+      "role": "receiver_candidate",
+      "same_byte_text_accuracy": 0.310580204778157,
+      "seeds": 5,
+      "split": "test",
+      "target_accuracy": 0.26535836177474403
+    },
+    {
+      "artifact": "results/source_private_commonsenseqa_seed_stability_20260501_qwen05_hashed_validation_2b/arc_challenge_seed_stability.json",
+      "benchmark": "CommonsenseQA",
+      "caveat": "reviewer-pack diagnostic",
+      "ci95_low_vs_target_min": 0.19492219492219492,
+      "examples": 1221,
+      "packet_accuracy": 0.43832923832923837,
+      "packet_bytes": 2,
+      "packet_minus_target_min": 0.23177723177723178,
+      "packet_minus_text_min": 0.013104013104013101,
+      "paper_use": "diagnostic_not_headline",
+      "role": "diagnostic_text_saturated",
+      "same_byte_text_accuracy": 0.42424242424242425,
+      "seeds": 5,
+      "split": "validation",
+      "target_accuracy": 0.20556920556920558
+    },
+    {
+      "artifact": "results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/arc_challenge_seed_stability.json",
+      "benchmark": "HellaSwag",
+      "caveat": "passes validation1024 seed gate; full-validation terminal tail blocks benchmark-complete claim",
+      "ci95_low_vs_target_min": 0.185546875,
+      "examples": 1024,
+      "packet_accuracy": 0.4611328125,
+      "packet_bytes": 2,
+      "packet_minus_target_min": 0.2265625,
+      "packet_minus_text_min": 0.07421875,
+      "paper_use": "reviewer_pack_breadth_not_full_validation_headline",
+      "role": "bounded_validation_breadth",
+      "same_byte_text_accuracy": 0.3857421875,
+      "seeds": 5,
+      "split": "hellaswag_validation1024",
+      "target_accuracy": 0.2333984375
+    },
+    {
+      "artifact": "results/source_private_sciq_bridge_contract_20260501/sciq_bridge_contract.json",
+      "benchmark": "SciQ",
+      "caveat": "source-private split/control contract is frozen, but no positive packet row exists yet",
+      "ci95_low_vs_target_min": "",
+      "examples": "1000/1000",
+      "packet_accuracy": "",
+      "packet_bytes": 12,
+      "packet_minus_target_min": "",
+      "packet_minus_text_min": "",
+      "paper_use": "future_gate_not_evidence",
+      "role": "bridge_contract_only",
+      "same_byte_text_accuracy": "",
+      "seeds": "",
+      "split": "validation/test materialized",
+      "target_accuracy": ""
+    }
+  ],
   "claim_audit": [
     {
       "claim": "LatentWire defines a source-private candidate-transfer packet protocol and strict evaluation framework.",
@@ -641,7 +763,7 @@
       "still_needs_work": ""
     }
   ],
-  "created_utc": "2026-05-05T05:56:43.843573+00:00",
+  "created_utc": "2026-05-05T06:15:29.952112+00:00",
   "experiment_scoping": [
     {
       "colm_v3_scope": "separate systems spinout; exclude from COLM_v3 claims unless Phase 1 confirms novelty, Phase 2 shows at least 3% theoretical benefit, and native GPU profiling confirms overhead",
@@ -649,26 +771,31 @@
       "folder": "experimental/hybridkernel",
       "highest_value_gate": "vLLM hybrid SSM/disaggregated serving source audit",
       "novelty_risk": "boundary fusion may already be covered by vLLM/vendor hybrid serving optimizations",
-      "status": "alive_but_deferred"
+      "status": "phase1_quick_audit_complete_phase2_architecture_map_pending"
     },
     {
       "colm_v3_scope": "separate systems spinout only; mention in COLM_v3 only as future work unless Phase 1-4 produce source-backed novelty plus a reference artifact",
       "experiment": "SinkAware",
       "folder": "experimental/sinkaware",
-      "highest_value_gate": "FlashInfer prefill/decode attention path audit",
-      "novelty_risk": "static sink priors may already be expressible through generic mask or sparse-block APIs",
-      "status": "quick_kill_candidate"
+      "highest_value_gate": "CPU-only fixed sink-token decomposition",
+      "novelty_risk": "learned/per-head sink denominator handling is already occupied by FlashInfer/FlashMLA/GPT-OSS-style paths",
+      "status": "phase1_quick_audit_complete_narrow_phase2_or_kill"
     },
     {
       "colm_v3_scope": "separate systems spinout candidate after Phase 1, not current COLM_v3 evidence",
       "experiment": "ThoughtFlow-FP8",
       "folder": "experimental/thoughtflow_fp8",
-      "highest_value_gate": "LongFlow OpenReview/arXiv forensics and failure-mode audit",
-      "novelty_risk": "could collapse into LongFlow plus FP8/anchor tweaks unless a concrete failure mode is documented",
-      "status": "high_upside_high_crowding"
+      "highest_value_gate": "Mac-only trace simulation for protected reasoning-token classes",
+      "novelty_risk": "field is crowded by LongFlow, ThinKV, R-KV/R-KVHash, RaaS, LazyEviction, ForesightKV, and PM-KVQ",
+      "status": "phase1_forensics_complete_high_upside_phase2_pending"
     }
   ],
   "input_manifest": [
+    {
+      "key": "benchmark_selection_gate",
+      "path": "results/source_private_benchmark_selection_gate_20260502/benchmark_selection_gate.json",
+      "sha256": "b27a543034f603517f54d362e556e7d86234a230832575b54f59ce3fb98378bb"
+    },
     {
       "key": "colm_v2_review_packet",
       "path": "results/latentwire_colm_v2_review_packet_20260504/review_packet.json",
@@ -687,7 +814,12 @@
     {
       "key": "colm_v3_tex",
       "path": "colm_final/paper/latentwire_colm2026.tex",
-      "sha256": "0c4e916172a5588d3b0f296b019897ac8e4d640e843b3a234ee40512ff2bddfc"
+      "sha256": "cccf7b457962fb6ae17f52a6027f99ab7cbb9f1c83ef4562c768a789c69e4a5e"
+    },
+    {
+      "key": "cpu_systems_frontier",
+      "path": "results/source_private_cpu_systems_frontier_20260429/cpu_systems_frontier.json",
+      "sha256": "1bb52d20072193b61289f3a1592949d6b62361ef2ad747be3ba5d6be1c90eb38"
     },
     {
       "key": "experiment_ledger",
@@ -697,7 +829,17 @@
     {
       "key": "experimental_status",
       "path": "experimental/status_20260505.md",
-      "sha256": "7d30cac491acb336057ec0e3ef31dc8063a8c3cce8d4f7c792e9e4d43de1bc68"
+      "sha256": "726b5fe331cae97ffa046cec22d8a7c6e7ef54d587d62866c70c71824f86c694"
+    },
+    {
+      "key": "hellaswag_seed_stability",
+      "path": "results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/arc_challenge_seed_stability.json",
+      "sha256": "37f0fca016e6c5b17c6a23d9d5b09e17154921cf51d85bed67a9c8f300d548bd"
+    },
+    {
+      "key": "latest_model_matrix",
+      "path": "results/source_private_latest_model_matrix_20260428/latest_model_matrix.json",
+      "sha256": "09694bfd13bb060e146274808994f189b1966e881e3b9c723d91aea513666498"
     },
     {
       "key": "reviewer_feedback",
@@ -705,9 +847,106 @@
       "sha256": "282ee615ffe970797c695908214088af55b0ae80656ea5c4829aa01c2492198e"
     },
     {
+      "key": "sciq_bridge_contract",
+      "path": "results/source_private_sciq_bridge_contract_20260501/sciq_bridge_contract.json",
+      "sha256": "c5de332f794ac4a7f1942dfb26c956ff90da0ce06c9d665132ba45e2fe7b10ef"
+    },
+    {
       "key": "systems_boundary",
       "path": "results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_figure_data.json",
       "sha256": "81a776e985428f6945c22ccc3b7921016afb4f0a2e32d4b4a7af4b04cea9ee49"
+    }
+  ],
+  "latest_model_breadth": [
+    {
+      "architecture": "qwen3_5 conditional generation",
+      "caveat": "source-packet emitter smoke on synthetic hidden-repair benchmark, not ARC/OBQA headline evidence",
+      "device": "cpu",
+      "fails": 0,
+      "family": "Qwen3.5 small hybrid",
+      "local_rung": "CPU n160 passed on seeds 29/31",
+      "max_n": 160,
+      "min_valid_rate": 1.0,
+      "model": "Qwen/Qwen3.5-0.8B",
+      "paper_use": "reviewer_pack_emitter_breadth",
+      "params": "0.8B",
+      "passes": 4,
+      "status": "CPU n160 seed repeat passed after Transformers 5.7.0 upgrade; MPS backend fails before generation"
+    },
+    {
+      "architecture": "qwen3_5 conditional generation",
+      "caveat": "source-packet emitter smoke on synthetic hidden-repair benchmark, not ARC/OBQA headline evidence",
+      "device": "cpu",
+      "fails": 0,
+      "family": "Qwen3.5 small hybrid",
+      "local_rung": "CPU n16/n64/n160 passed",
+      "max_n": 160,
+      "min_valid_rate": 1.0,
+      "model": "Qwen/Qwen3.5-2B",
+      "paper_use": "reviewer_pack_emitter_breadth",
+      "params": "2B",
+      "passes": 3,
+      "status": "CPU n16/n64/n160 passed after local download; MPS skipped due Qwen3.5 backend risk"
+    },
+    {
+      "architecture": "qwen3_5 conditional generation",
+      "caveat": "source-packet emitter smoke on synthetic hidden-repair benchmark, not ARC/OBQA headline evidence",
+      "device": "cpu",
+      "fails": 0,
+      "family": "Qwen3.5 small hybrid",
+      "local_rung": "CPU n16/n64 passed; n160 only if needed",
+      "max_n": 64,
+      "min_valid_rate": 1.0,
+      "model": "Qwen/Qwen3.5-4B",
+      "paper_use": "reviewer_pack_emitter_breadth",
+      "params": "4B",
+      "passes": 2,
+      "status": "CPU n16/n64 passed; local CPU latency is high, so n160 is lower priority than MoE"
+    },
+    {
+      "architecture": "dense",
+      "caveat": "source-packet emitter smoke on synthetic hidden-repair benchmark, not ARC/OBQA headline evidence",
+      "device": "mps",
+      "fails": "",
+      "family": "OLMo 2 open instruct",
+      "local_rung": "cross-family local n16",
+      "max_n": "",
+      "min_valid_rate": "",
+      "model": "allenai/OLMo-2-0425-1B-Instruct",
+      "paper_use": "negative_or_unverified",
+      "params": "1B",
+      "passes": "",
+      "status": "n16 MPS failed behaviorally with 0 valid packets; pruned unless prompt contract changes"
+    },
+    {
+      "architecture": "dense",
+      "caveat": "source-packet emitter smoke on synthetic hidden-repair benchmark, not ARC/OBQA headline evidence",
+      "device": "cpu",
+      "fails": 1,
+      "family": "Granite 3.3 instruct",
+      "local_rung": "CPU copied-helper n160 and trace-no-hint n160 passed",
+      "max_n": 160,
+      "min_valid_rate": 0.5375,
+      "model": "ibm-granite/granite-3.3-2b-instruct",
+      "paper_use": "reviewer_pack_emitter_breadth",
+      "params": "2B",
+      "passes": 2,
+      "status": "CPU copied-helper n160 and trace-no-hint n160 seed repeat passed; raw-log/no-trace collapses; MPS backend fails"
+    },
+    {
+      "architecture": "gemma4 conditional generation",
+      "caveat": "source-packet emitter smoke on synthetic hidden-repair benchmark, not ARC/OBQA headline evidence",
+      "device": "mps",
+      "fails": 2,
+      "family": "Gemma 4 dense multimodal/text",
+      "local_rung": "MPS trace-no-hint n500 passed; n160 seed repeat passed",
+      "max_n": 500,
+      "min_valid_rate": 1.0,
+      "model": "google/gemma-4-E2B-it",
+      "paper_use": "reviewer_pack_emitter_breadth",
+      "params": "2.3B effective",
+      "passes": 6,
+      "status": "CPU n16/n64 passed; MPS n16/n160 seed repeat and n500 passed after local snapshot download"
     }
   ],
   "main_claim": "LatentWire provides a practical protocol and evaluation framework for source-private candidate-transfer packets, with controlled evidence of narrow fixed-byte packet utility, explicit utility-per-byte accounting, and destructive controls that expose shortcut claims.",
@@ -1049,7 +1288,7 @@
   },
   "source_text_sanity": {
     "colm_v3_readiness_chars": 7782,
-    "experimental_status_chars": 5377
+    "experimental_status_chars": 6933
   },
   "story": "LatentWire studies whether compact source-private candidate packets can transmit useful model evidence without dense cache transfer, and uses byte accounting plus destructive controls to separate real packet utility from answer-choice and target-cache shortcuts.",
   "strict_controls": [
@@ -1711,6 +1950,18 @@
       "next_action": "check for overflow and page-budget pressure",
       "source": "baseline_matrix.csv",
       "status": "draft_integrated"
+    },
+    {
+      "artifact": "benchmark breadth audit",
+      "next_action": "use as reviewer-pack support; do not turn diagnostics into headline claims",
+      "source": "benchmark_breadth.csv",
+      "status": "review_packet_integrated"
+    },
+    {
+      "artifact": "latest model breadth audit",
+      "next_action": "treat as source-packet emitter smoke, not ARC/OBQA benchmark evidence",
+      "source": "latest_model_breadth.csv",
+      "status": "review_packet_integrated"
     },
     {
       "artifact": "negative-results / failure-boundary table",

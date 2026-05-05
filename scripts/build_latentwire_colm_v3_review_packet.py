@@ -23,6 +23,16 @@ DEFAULT_INPUT_PATHS = {
     "colm_v3_tex": ROOT / "colm_final/paper/latentwire_colm2026.tex",
     "colm_v3_reviewer_panel": ROOT
     / "colm_final/audits/colm_v3_10_reviewer_panel_20260505.md",
+    "benchmark_selection_gate": ROOT
+    / "results/source_private_benchmark_selection_gate_20260502/benchmark_selection_gate.json",
+    "hellaswag_seed_stability": ROOT
+    / "results/source_private_hellaswag_seed_stability_20260501_qwen05_hashed_validation1024_2b_5seed/arc_challenge_seed_stability.json",
+    "sciq_bridge_contract": ROOT
+    / "results/source_private_sciq_bridge_contract_20260501/sciq_bridge_contract.json",
+    "latest_model_matrix": ROOT
+    / "results/source_private_latest_model_matrix_20260428/latest_model_matrix.json",
+    "cpu_systems_frontier": ROOT
+    / "results/source_private_cpu_systems_frontier_20260429/cpu_systems_frontier.json",
 }
 
 DEFAULT_OUTPUT_DIR = ROOT / "results/latentwire_colm_v3_review_packet_20260505"
@@ -251,6 +261,18 @@ def _table_figure_inventory() -> list[dict[str, str]]:
             "next_action": "check for overflow and page-budget pressure",
         },
         {
+            "artifact": "benchmark breadth audit",
+            "status": "review_packet_integrated",
+            "source": "benchmark_breadth.csv",
+            "next_action": "use as reviewer-pack support; do not turn diagnostics into headline claims",
+        },
+        {
+            "artifact": "latest model breadth audit",
+            "status": "review_packet_integrated",
+            "source": "latest_model_breadth.csv",
+            "next_action": "treat as source-packet emitter smoke, not ARC/OBQA benchmark evidence",
+        },
+        {
             "artifact": "negative-results / failure-boundary table",
             "status": "data_ready",
             "source": "negative_results.csv",
@@ -334,7 +356,7 @@ def _experiment_scoping() -> list[dict[str, str]]:
             ),
             "highest_value_gate": "vLLM hybrid SSM/disaggregated serving source audit",
             "novelty_risk": "boundary fusion may already be covered by vLLM/vendor hybrid serving optimizations",
-            "status": "alive_but_deferred",
+            "status": "phase1_quick_audit_complete_phase2_architecture_map_pending",
         },
         {
             "experiment": "SinkAware",
@@ -343,19 +365,271 @@ def _experiment_scoping() -> list[dict[str, str]]:
                 "separate systems spinout only; mention in COLM_v3 only as future work unless Phase 1-4 "
                 "produce source-backed novelty plus a reference artifact"
             ),
-            "highest_value_gate": "FlashInfer prefill/decode attention path audit",
-            "novelty_risk": "static sink priors may already be expressible through generic mask or sparse-block APIs",
-            "status": "quick_kill_candidate",
+            "highest_value_gate": "CPU-only fixed sink-token decomposition",
+            "novelty_risk": "learned/per-head sink denominator handling is already occupied by FlashInfer/FlashMLA/GPT-OSS-style paths",
+            "status": "phase1_quick_audit_complete_narrow_phase2_or_kill",
         },
         {
             "experiment": "ThoughtFlow-FP8",
             "folder": "experimental/thoughtflow_fp8",
             "colm_v3_scope": "separate systems spinout candidate after Phase 1, not current COLM_v3 evidence",
-            "highest_value_gate": "LongFlow OpenReview/arXiv forensics and failure-mode audit",
-            "novelty_risk": "could collapse into LongFlow plus FP8/anchor tweaks unless a concrete failure mode is documented",
-            "status": "high_upside_high_crowding",
+            "highest_value_gate": "Mac-only trace simulation for protected reasoning-token classes",
+            "novelty_risk": "field is crowded by LongFlow, ThinKV, R-KV/R-KVHash, RaaS, LazyEviction, ForesightKV, and PM-KVQ",
+            "status": "phase1_forensics_complete_high_upside_phase2_pending",
         },
     ]
+
+
+def _benchmark_breadth(paths: dict[str, pathlib.Path]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    if "benchmark_selection_gate" in paths and paths["benchmark_selection_gate"].exists():
+        gate = _read_json(paths["benchmark_selection_gate"])
+        for row in gate.get("rows", []):
+            row_id = str(row.get("row_id", ""))
+            if row_id in {"openbookqa_test_3b", "arc_challenge_test_12b"}:
+                paper_use = "main_or_secondary_test_row"
+            elif row.get("packet_text_margin_pass") and row.get("packet_target_pass"):
+                paper_use = "diagnostic_breadth"
+            else:
+                paper_use = "diagnostic_not_headline"
+            rows.append(
+                {
+                    "benchmark": row.get("dataset"),
+                    "split": row.get("split"),
+                    "examples": row.get("eval_rows"),
+                    "packet_bytes": row.get("budget_bytes"),
+                    "seeds": row.get("seed_count"),
+                    "packet_accuracy": row.get("matched_accuracy_mean"),
+                    "target_accuracy": row.get("target_accuracy"),
+                    "same_byte_text_accuracy": row.get("same_byte_text_accuracy"),
+                    "packet_minus_target_min": row.get("matched_minus_target_min"),
+                    "packet_minus_text_min": row.get("matched_minus_same_byte_text_min"),
+                    "ci95_low_vs_target_min": row.get("paired_ci95_low_vs_target_min"),
+                    "role": row.get("selection_role"),
+                    "paper_use": paper_use,
+                    "caveat": (
+                        "headline-safe only when paired with source-index and source-choice boundary wording"
+                        if paper_use == "main_or_secondary_test_row"
+                        else "reviewer-pack diagnostic"
+                    ),
+                    "artifact": row.get("seed_artifact"),
+                }
+            )
+
+    if "hellaswag_seed_stability" in paths and paths["hellaswag_seed_stability"].exists():
+        hellaswag = _read_json(paths["hellaswag_seed_stability"])
+        aggregate = hellaswag.get("aggregate", {})
+        rows.append(
+            {
+                "benchmark": "HellaSwag",
+                "split": hellaswag.get("split_name", "validation1024"),
+                "examples": hellaswag.get("eval_rows"),
+                "packet_bytes": hellaswag.get("budget_bytes"),
+                "seeds": aggregate.get("seed_count") or len(hellaswag.get("seeds", [])),
+                "packet_accuracy": aggregate.get("matched_accuracy_mean"),
+                "target_accuracy": aggregate.get("target_accuracy"),
+                "same_byte_text_accuracy": aggregate.get("same_byte_structured_text_accuracy"),
+                "packet_minus_target_min": aggregate.get("matched_minus_target_min"),
+                "packet_minus_text_min": aggregate.get("matched_minus_same_byte_text_min"),
+                "ci95_low_vs_target_min": aggregate.get("paired_ci95_low_vs_target_min"),
+                "role": "bounded_validation_breadth",
+                "paper_use": "reviewer_pack_breadth_not_full_validation_headline",
+                "caveat": "passes validation1024 seed gate; full-validation terminal tail blocks benchmark-complete claim",
+                "artifact": _repo_path(paths["hellaswag_seed_stability"]),
+            }
+        )
+
+    if "sciq_bridge_contract" in paths and paths["sciq_bridge_contract"].exists():
+        sciq = _read_json(paths["sciq_bridge_contract"])
+        validation = sciq.get("official_summaries", {}).get("validation", {})
+        test = sciq.get("official_summaries", {}).get("test", {})
+        rows.append(
+            {
+                "benchmark": "SciQ",
+                "split": "validation/test materialized",
+                "examples": f"{validation.get('n', '')}/{test.get('n', '')}",
+                "packet_bytes": sciq.get("method_contract", {}).get("fixed_packet_budget_bytes"),
+                "seeds": "",
+                "packet_accuracy": "",
+                "target_accuracy": "",
+                "same_byte_text_accuracy": "",
+                "packet_minus_target_min": "",
+                "packet_minus_text_min": "",
+                "ci95_low_vs_target_min": "",
+                "role": "bridge_contract_only",
+                "paper_use": "future_gate_not_evidence",
+                "caveat": "source-private split/control contract is frozen, but no positive packet row exists yet",
+                "artifact": _repo_path(paths["sciq_bridge_contract"]),
+            }
+        )
+
+    return rows
+
+
+def _summarize_cpu_frontier_models(paths: dict[str, pathlib.Path]) -> dict[str, dict[str, Any]]:
+    if "cpu_systems_frontier" not in paths or not paths["cpu_systems_frontier"].exists():
+        return {}
+    frontier = _read_json(paths["cpu_systems_frontier"])
+    summaries: dict[str, dict[str, Any]] = {}
+    for row in frontier.get("rows", []):
+        if row.get("contribution") != "model-emitted source packet":
+            continue
+        method = str(row.get("method", ""))
+        current = summaries.setdefault(
+            method,
+            {
+                "passes": 0,
+                "fails": 0,
+                "max_n": 0,
+                "min_valid_rate": None,
+                "max_accuracy": None,
+                "surfaces": [],
+            },
+        )
+        if row.get("status") == "pass":
+            current["passes"] += 1
+        else:
+            current["fails"] += 1
+        n = 0
+        note = str(row.get("note", ""))
+        if "n=" in note:
+            try:
+                n = int(note.split("n=", 1)[1].split(";", 1)[0])
+            except ValueError:
+                n = 0
+        current["max_n"] = max(int(current["max_n"]), n)
+        valid_rate = row.get("valid_rate")
+        if valid_rate is not None:
+            current["min_valid_rate"] = (
+                valid_rate
+                if current["min_valid_rate"] is None
+                else min(float(current["min_valid_rate"]), float(valid_rate))
+            )
+        accuracy = row.get("accuracy")
+        if accuracy is not None:
+            current["max_accuracy"] = (
+                accuracy
+                if current["max_accuracy"] is None
+                else max(float(current["max_accuracy"]), float(accuracy))
+            )
+        current["surfaces"].append(str(row.get("surface", "")))
+    return summaries
+
+
+def _summarize_latest_model_artifacts(paths: dict[str, pathlib.Path]) -> dict[str, dict[str, Any]]:
+    if "latest_model_matrix" not in paths or not paths["latest_model_matrix"].exists():
+        return {}
+    root = paths["latest_model_matrix"].parent
+    if not root.exists():
+        return {}
+    prefix_to_model = {
+        "qwen35_0_8b": "Qwen/Qwen3.5-0.8B",
+        "qwen35_2b": "Qwen/Qwen3.5-2B",
+        "qwen35_4b": "Qwen/Qwen3.5-4B",
+        "gemma4_e2b": "google/gemma-4-E2B-it",
+        "granite33_2b": "ibm-granite/granite-3.3-2b-instruct",
+    }
+    summaries: dict[str, dict[str, Any]] = {}
+    for summary_path in root.glob("*/summary.json"):
+        dirname = summary_path.parent.name
+        model_id = None
+        for prefix, candidate in prefix_to_model.items():
+            if dirname.startswith(prefix):
+                model_id = candidate
+                break
+        if model_id is None:
+            continue
+        summary = _read_json(summary_path)
+        current = summaries.setdefault(
+            model_id,
+            {
+                "passes": 0,
+                "fails": 0,
+                "max_n": 0,
+                "min_valid_rate": None,
+                "max_accuracy": None,
+                "artifacts": [],
+            },
+        )
+        if summary.get("pass_gate"):
+            current["passes"] += 1
+        else:
+            current["fails"] += 1
+        current["max_n"] = max(int(current["max_n"]), int(summary.get("n", 0) or 0))
+        valid_rate = summary.get("packet_valid_rate")
+        if valid_rate is not None and summary.get("pass_gate"):
+            current["min_valid_rate"] = (
+                valid_rate
+                if current["min_valid_rate"] is None
+                else min(float(current["min_valid_rate"]), float(valid_rate))
+            )
+        matched = summary.get("metrics", {}).get("matched_model_packet", {})
+        accuracy = matched.get("accuracy")
+        if accuracy is not None and summary.get("pass_gate"):
+            current["max_accuracy"] = (
+                accuracy
+                if current["max_accuracy"] is None
+                else max(float(current["max_accuracy"]), float(accuracy))
+            )
+        current["artifacts"].append(_repo_path(summary_path))
+    return summaries
+
+
+def _latest_model_breadth(paths: dict[str, pathlib.Path]) -> list[dict[str, Any]]:
+    if "latest_model_matrix" not in paths or not paths["latest_model_matrix"].exists():
+        return []
+    matrix = _read_json(paths["latest_model_matrix"])
+    cpu_summaries = _summarize_cpu_frontier_models(paths)
+    artifact_summaries = _summarize_latest_model_artifacts(paths)
+    paper_models = {
+        "Qwen/Qwen3.5-0.8B",
+        "Qwen/Qwen3.5-2B",
+        "Qwen/Qwen3.5-4B",
+        "google/gemma-4-E2B-it",
+        "ibm-granite/granite-3.3-2b-instruct",
+        "allenai/OLMo-2-0425-1B-Instruct",
+    }
+    label_aliases = {
+        "Qwen/Qwen3.5-0.8B": "Qwen3.5-0.8B",
+        "Qwen/Qwen3.5-2B": "Qwen3.5-2B",
+        "Qwen/Qwen3.5-4B": "Qwen3.5-4B",
+        "google/gemma-4-E2B-it": "Gemma 4 E2B",
+        "ibm-granite/granite-3.3-2b-instruct": "Granite 3.3 2B",
+        "allenai/OLMo-2-0425-1B-Instruct": "OLMo-2 1B",
+    }
+    rows = []
+    for model in matrix.get("models", []):
+        model_id = model.get("model")
+        if model_id not in paper_models:
+            continue
+        summary = artifact_summaries.get(
+            str(model_id), cpu_summaries.get(label_aliases.get(model_id, str(model_id)), {})
+        )
+        status = str(model.get("status", ""))
+        if summary.get("passes", 0):
+            paper_use = "reviewer_pack_emitter_breadth"
+        elif "candidate" in status.lower() or "optional" in status.lower():
+            paper_use = "planned_not_evidence"
+        else:
+            paper_use = "negative_or_unverified"
+        rows.append(
+            {
+                "model": model_id,
+                "family": model.get("family"),
+                "params": model.get("params"),
+                "architecture": model.get("architecture"),
+                "device": model.get("expected_device"),
+                "local_rung": model.get("local_rung"),
+                "status": status,
+                "passes": summary.get("passes", ""),
+                "fails": summary.get("fails", ""),
+                "max_n": summary.get("max_n", ""),
+                "min_valid_rate": summary.get("min_valid_rate", ""),
+                "paper_use": paper_use,
+                "caveat": "source-packet emitter smoke on synthetic hidden-repair benchmark, not ARC/OBQA headline evidence",
+            }
+        )
+    return rows
 
 
 def _artifact_manifest(input_paths: dict[str, pathlib.Path]) -> list[dict[str, str]]:
@@ -368,6 +642,8 @@ def _artifact_manifest(input_paths: dict[str, pathlib.Path]) -> list[dict[str, s
         ("table_figure_inventory.csv", "paper table and figure readiness tracker"),
         ("submission_checklist.csv", "remaining workshop submission blockers"),
         ("experiment_scoping.csv", "three systems side experiments scoped for COLM_v3"),
+        ("benchmark_breadth.csv", "additional benchmark breadth and claim boundary audit"),
+        ("latest_model_breadth.csv", "newer model source-packet emitter breadth audit"),
         ("nvidia_native_runbook.md", "future native GPU measurement runbook"),
         ("manifest.json", "input and output manifest"),
     ]
@@ -477,6 +753,8 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
         "submission_checklist": _submission_checklist(),
         "systems_measured_vs_estimated": systems_rows,
         "experiment_scoping": _experiment_scoping(),
+        "benchmark_breadth": _benchmark_breadth(paths),
+        "latest_model_breadth": _latest_model_breadth(paths),
         "baseline_matrix": v2_packet.get("baseline_matrix", []),
         "main_results": v2_packet.get("main_results", []),
         "strict_controls": v2_packet.get("strict_controls", []),
@@ -594,6 +872,38 @@ def render_markdown(packet: dict[str, Any]) -> str:
                 packet["table_figure_inventory"],
                 ["artifact", "status", "source", "next_action"],
             ),
+            "## Benchmark Breadth Audit",
+            "",
+            *_markdown_table(
+                packet["benchmark_breadth"],
+                [
+                    "benchmark",
+                    "split",
+                    "examples",
+                    "packet_bytes",
+                    "packet_accuracy",
+                    "target_accuracy",
+                    "same_byte_text_accuracy",
+                    "paper_use",
+                    "caveat",
+                ],
+            ),
+            "## Latest Model Breadth Audit",
+            "",
+            *_markdown_table(
+                packet["latest_model_breadth"],
+                [
+                    "model",
+                    "params",
+                    "architecture",
+                    "device",
+                    "local_rung",
+                    "passes",
+                    "max_n",
+                    "paper_use",
+                    "caveat",
+                ],
+            ),
             "## Systems Measured Vs Estimated",
             "",
             *_markdown_table(
@@ -642,6 +952,8 @@ def write_outputs(packet: dict[str, Any], output_dir: pathlib.Path, paper_path: 
     _write_csv(output_dir / "table_figure_inventory.csv", packet["table_figure_inventory"])
     _write_csv(output_dir / "submission_checklist.csv", packet["submission_checklist"])
     _write_csv(output_dir / "experiment_scoping.csv", packet["experiment_scoping"])
+    _write_csv(output_dir / "benchmark_breadth.csv", packet["benchmark_breadth"])
+    _write_csv(output_dir / "latest_model_breadth.csv", packet["latest_model_breadth"])
     _write_csv(output_dir / "artifact_manifest.csv", packet["artifact_manifest"])
     _write_csv(output_dir / "baseline_matrix.csv", packet["baseline_matrix"])
     _write_csv(output_dir / "main_results.csv", packet["main_results"])

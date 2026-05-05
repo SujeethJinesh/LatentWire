@@ -1,4 +1,4 @@
-\begin{thebibliography}{23}
+\begin{thebibliography}{26}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -166,6 +166,23 @@ David Slepian and Jack~K. Wolf.
 \newblock \emph{IEEE Transactions on Information Theory}, 19\penalty0
   (4):\penalty0 471--480, 1973.
 
+\bibitem[Talmor et~al.(2019)Talmor, Herzig, Lourie, and
+  Berant]{Talmor2019CommonsenseQA}
+Alon Talmor, Jonathan Herzig, Nicholas Lourie, and Jonathan Berant.
+\newblock {CommonsenseQA}: A question answering challenge targeting commonsense
+  knowledge.
+\newblock In \emph{Proceedings of the 2019 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Human Language
+  Technologies}, pp.\  4149--4158. Association for Computational Linguistics,
+  2019.
+\newblock \doi{10.18653/v1/N19-1421}.
+\newblock URL \url{https://aclanthology.org/N19-1421/}.
+
+\bibitem[Welbl et~al.(2017)Welbl, Liu, and Gardner]{Welbl2017SciQ}
+Johannes Welbl, Nelson~F. Liu, and Matt Gardner.
+\newblock Crowdsourcing multiple choice science questions, 2017.
+\newblock URL \url{https://arxiv.org/abs/1707.06209}.
+
 \bibitem[Wyner \& Ziv(1976)Wyner and Ziv]{Wyner1976RateDistortion}
 Aaron~D. Wyner and Jacob Ziv.
 \newblock The rate-distortion function for source coding with side information
@@ -193,6 +210,16 @@ Amir Zandieh, Majid Daliri, Majid Hadian, and Vahab Mirrokni.
   rate.
 \newblock In \emph{International Conference on Learning Representations}, 2026.
 \newblock URL \url{https://openreview.net/forum?id=tO3ASKZlok}.
+
+\bibitem[Zellers et~al.(2019)Zellers, Holtzman, Bisk, Farhadi, and
+  Choi]{Zellers2019HellaSwag}
+Rowan Zellers, Ari Holtzman, Yonatan Bisk, Ali Farhadi, and Yejin Choi.
+\newblock {HellaSwag}: Can a machine really finish your sentence?
+\newblock In \emph{Proceedings of the 57th Annual Meeting of the Association
+  for Computational Linguistics}, pp.\  4791--4800. Association for
+  Computational Linguistics, 2019.
+\newblock \doi{10.18653/v1/P19-1472}.
+\newblock URL \url{https://aclanthology.org/P19-1472/}.
 
 \bibitem[Zheng et~al.(2024)Zheng, Yin, Xie, Sun, Huang, Yu, Cao, Kozyrakis,
   Stoica, Gonzalez, Barrett, and Sheng]{Zheng2023SGLang}
