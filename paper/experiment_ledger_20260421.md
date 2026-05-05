@@ -24127,3 +24127,56 @@ delta with strict source-destroying controls.
 Lay explanation: we gave the receiver separate source clues for each answer
 choice. That helped a little, but a simpler baseline that just follows the
 source model's favorite answer still did better.
+
+## 2026-05-05 SVAMP32 C2C Teacher Sparse-Packet Distillation Preflight
+
+Added and ran the C2C-teacher sparse-packet boundary aggregator:
+
+- script:
+  `scripts/build_svamp32_c2c_teacher_sparse_packet_distillation_preflight.py`;
+- test:
+  `tests/test_build_svamp32_c2c_teacher_sparse_packet_distillation_preflight.py`;
+- artifact:
+  `results/svamp32_c2c_teacher_sparse_packet_distillation_preflight_20260505/summary.json`;
+- memo:
+  `paper/svamp32_c2c_teacher_sparse_packet_distillation_preflight_20260505.md`.
+
+Purpose: decide whether the existing frozen SVAMP32 C2C surface already
+supports a deployable sparse-packet distillation claim, or only an oracle
+bound. The gate aggregates target/source/text/C2C generation rows, the C2C
+teacher innovation probe, the clean residual target-set split, the 1-byte
+C2C-derived oracle syndrome sidecar, and failed source-hidden/source-token/C2C
+prefill trace predictors.
+
+Headline:
+
+- deployable distillation pass: `False`;
+- oracle sparse sidecar alive: `True`;
+- target-only: `8/32`;
+- dense C2C teacher: `16/32`;
+- C2C teacher-only wins: `10`;
+- clean residual targets: `6`;
+- source-alone: `5/32`, recovers `0/6` clean residual targets;
+- same-byte text-to-text: `2/32`, recovers `0/6` clean residual targets;
+- target/source/text oracle union: `12/32`, recovers `0/6` clean residual targets;
+- oracle C2C syndrome target-pool sidecar: `14/32`, `2/6` clean
+  source-necessary IDs, `1` byte;
+- oracle C2C syndrome augmented-pool sidecar: `15/32`, `3/6` clean
+  source-necessary IDs, `1` byte;
+- best deployable source-hidden/source-token/C2C-prefill predictors:
+  `9-12/32`, `0/6` clean source-necessary IDs.
+
+Outcome: fail as a deployable method, alive as an oracle bound. The dense C2C
+teacher remains the only strong complementary surface, and a compact C2C
+residue can work if the residue is given. The current source-final, source
+hidden, source-token query bottleneck, and C2C prefill-trace predictors do not
+produce that residue under controls.
+
+Decision: do not claim Sparse Resonance Packets beat or solve C2C from this
+evidence. For COLM_v2, use this as a C2C comparison and claim-boundary
+artifact. For ICLR, promote richer generation-time dense-teacher traces or a
+new source-causal residual objective.
+
+Lay explanation: C2C fixes some target mistakes, and a tiny oracle hint can
+sometimes point to the right answer. But our current ways of predicting that
+hint from source-side evidence do not work yet.

@@ -1,0 +1,391 @@
+{
+  "artifacts": {
+    "augmented_oracle": "results/svamp32_syndrome_sidecar_probe_20260424/augmentedpool_syndrome_probe.json",
+    "source": "results/svamp_exactid_baselines32_20260423/source_alone.jsonl",
+    "target": "results/svamp_exactid_baselines32_20260423/target_alone.jsonl",
+    "target_set": "results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json",
+    "targetpool_oracle": "results/svamp32_syndrome_sidecar_probe_20260424/targetpool_syndrome_probe.json",
+    "teacher": "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl",
+    "teacher_probe": "results/svamp_exactid_baselines32_20260423/c2c_teacher_innovation_probe.json",
+    "text": "results/svamp_exactid_baselines32_20260423/text_to_text.jsonl"
+  },
+  "claim_boundary": {
+    "can_claim": [
+      "dense C2C teacher has target-complementary headroom on the frozen SVAMP32 surface",
+      "a compact C2C-derived residue syndrome is an oracle sparse-packet bound",
+      "current deployable source-derived predictors do not recover the oracle bound"
+    ],
+    "cannot_claim": [
+      "Sparse packets beat C2C",
+      "Sparse packets solve latent model-to-model communication",
+      "C2C superiority on latency, HBM, energy, or throughput"
+    ]
+  },
+  "date": "2026-05-05",
+  "evidence_rows": [
+    {
+      "accuracy": 0.25,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct_count": 8,
+      "kind": "observed_generation_baseline",
+      "label": "target_only",
+      "losses_vs_target": 0,
+      "paired_vs_target": {
+        "ci95_high": 0.0,
+        "ci95_low": 0.0,
+        "delta": 0.0,
+        "harms": 0,
+        "helps": 0
+      },
+      "teacher_only_recovered_count": 0,
+      "teacher_only_recovered_ids": [],
+      "wins_vs_target": 0
+    },
+    {
+      "accuracy": 0.15625,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct_count": 5,
+      "kind": "observed_generation_baseline",
+      "label": "source_alone",
+      "losses_vs_target": 6,
+      "paired_vs_target": {
+        "ci95_high": 0.09375,
+        "ci95_low": -0.28125,
+        "delta": -0.09375,
+        "harms": 6,
+        "helps": 3
+      },
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "wins_vs_target": 3
+    },
+    {
+      "accuracy": 0.0625,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct_count": 2,
+      "kind": "observed_generation_baseline",
+      "label": "same_byte_text_to_text",
+      "losses_vs_target": 7,
+      "paired_vs_target": {
+        "ci95_high": -0.03125,
+        "ci95_low": -0.34375,
+        "delta": -0.1875,
+        "harms": 7,
+        "helps": 1
+      },
+      "teacher_only_recovered_count": 0,
+      "teacher_only_recovered_ids": [],
+      "wins_vs_target": 1
+    },
+    {
+      "accuracy": 0.5,
+      "clean_residual_recovered_count": 6,
+      "clean_residual_recovered_ids": [
+        "13cb77b698eeadb5",
+        "1d50b408c8f5cd2c",
+        "2de1549556000830",
+        "6e9745b37ab6fc45",
+        "aee922049c757331",
+        "e3ab8666238a289e"
+      ],
+      "correct_count": 16,
+      "kind": "observed_generation_baseline",
+      "label": "dense_c2c_teacher",
+      "losses_vs_target": 2,
+      "paired_vs_target": {
+        "ci95_high": 0.4375,
+        "ci95_low": 0.09375,
+        "delta": 0.25,
+        "harms": 2,
+        "helps": 10
+      },
+      "teacher_only_recovered_count": 10,
+      "teacher_only_recovered_ids": [
+        "13cb77b698eeadb5",
+        "1d50b408c8f5cd2c",
+        "2de1549556000830",
+        "4c84ebf42812703b",
+        "4d780f825bb8541c",
+        "575d7e83d84c1e67",
+        "6e9745b37ab6fc45",
+        "aee922049c757331",
+        "de1bf4d142544e5b",
+        "e3ab8666238a289e"
+      ],
+      "wins_vs_target": 10
+    },
+    {
+      "accuracy": 0.375,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "correct_count": 12,
+      "kind": "oracle_candidate_union_bound_not_deployable",
+      "label": "target_source_text_oracle_union",
+      "losses_vs_target": 0,
+      "paired_vs_target": {
+        "ci95_high": 0.25,
+        "ci95_low": 0.03125,
+        "delta": 0.125,
+        "harms": 0,
+        "helps": 4
+      },
+      "teacher_only_recovered_count": 1,
+      "teacher_only_recovered_ids": [
+        "575d7e83d84c1e67"
+      ],
+      "wins_vs_target": 4
+    },
+    {
+      "accuracy": 0.4375,
+      "artifact_path": "results/svamp32_syndrome_sidecar_probe_20260424/targetpool_syndrome_probe.json",
+      "cacheline_rounded_bytes": 64,
+      "clean_residual_recovered_count": 2,
+      "clean_residual_recovered_ids": [
+        "1d50b408c8f5cd2c",
+        "aee922049c757331"
+      ],
+      "control_clean_union_count": 0,
+      "control_clean_union_ids": [],
+      "correct_count": 14,
+      "framed_bytes": 1,
+      "kind": "oracle_sparse_packet_bound_not_deployable",
+      "label": "oracle_c2c_syndrome_targetpool",
+      "payload_bytes": 1,
+      "source_necessary_clean_count": 2,
+      "source_necessary_clean_ids": [
+        "1d50b408c8f5cd2c",
+        "aee922049c757331"
+      ],
+      "status": "syndrome_sidecar_bound_clears_gate_not_method",
+      "target_self_correct_count": 3,
+      "teacher_only_recovered_count": 6,
+      "teacher_only_recovered_ids": [
+        "1d50b408c8f5cd2c",
+        "4c84ebf42812703b",
+        "4d780f825bb8541c",
+        "575d7e83d84c1e67",
+        "aee922049c757331",
+        "de1bf4d142544e5b"
+      ]
+    },
+    {
+      "accuracy": 0.46875,
+      "artifact_path": "results/svamp32_syndrome_sidecar_probe_20260424/augmentedpool_syndrome_probe.json",
+      "cacheline_rounded_bytes": 64,
+      "clean_residual_recovered_count": 3,
+      "clean_residual_recovered_ids": [
+        "1d50b408c8f5cd2c",
+        "6e9745b37ab6fc45",
+        "aee922049c757331"
+      ],
+      "control_clean_union_count": 0,
+      "control_clean_union_ids": [],
+      "correct_count": 15,
+      "framed_bytes": 1,
+      "kind": "oracle_sparse_packet_bound_not_deployable",
+      "label": "oracle_c2c_syndrome_augmentedpool",
+      "payload_bytes": 1,
+      "source_necessary_clean_count": 3,
+      "source_necessary_clean_ids": [
+        "1d50b408c8f5cd2c",
+        "6e9745b37ab6fc45",
+        "aee922049c757331"
+      ],
+      "status": "syndrome_sidecar_bound_clears_gate_not_method",
+      "target_self_correct_count": 3,
+      "teacher_only_recovered_count": 7,
+      "teacher_only_recovered_ids": [
+        "1d50b408c8f5cd2c",
+        "4c84ebf42812703b",
+        "4d780f825bb8541c",
+        "575d7e83d84c1e67",
+        "6e9745b37ab6fc45",
+        "aee922049c757331",
+        "de1bf4d142544e5b"
+      ]
+    },
+    {
+      "accuracy": 0.28125,
+      "artifact_path": "results/svamp32_source_latent_syndrome_probe_20260424/qwen25_05b_last_targetpool_probe.json",
+      "cacheline_rounded_bytes": 0,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "control_clean_union_count": 0,
+      "control_clean_union_ids": [],
+      "correct_count": 9,
+      "framed_bytes": 1,
+      "kind": "deployable_source_hidden_probe",
+      "label": "source_latent_syndrome_0",
+      "payload_bytes": 0,
+      "source_necessary_clean_count": 0,
+      "source_necessary_clean_ids": [],
+      "status": "source_latent_syndrome_probe_fails_gate",
+      "target_self_correct_count": 2,
+      "teacher_only_recovered_count": 2,
+      "teacher_only_recovered_ids": [
+        "4c84ebf42812703b",
+        "4d780f825bb8541c"
+      ]
+    },
+    {
+      "accuracy": 0.28125,
+      "artifact_path": "results/svamp32_source_latent_syndrome_probe_20260424/qwen25_05b_mid_last_targetpool_probe.json",
+      "cacheline_rounded_bytes": 0,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "control_clean_union_count": 0,
+      "control_clean_union_ids": [],
+      "correct_count": 9,
+      "framed_bytes": 1,
+      "kind": "deployable_source_hidden_probe",
+      "label": "source_latent_syndrome_1",
+      "payload_bytes": 0,
+      "source_necessary_clean_count": 0,
+      "source_necessary_clean_ids": [],
+      "status": "source_latent_syndrome_probe_fails_gate",
+      "target_self_correct_count": 3,
+      "teacher_only_recovered_count": 3,
+      "teacher_only_recovered_ids": [
+        "4c84ebf42812703b",
+        "4d780f825bb8541c",
+        "de1bf4d142544e5b"
+      ]
+    },
+    {
+      "accuracy": 0.3125,
+      "artifact_path": "results/svamp32_learned_syndrome_probe_20260424/qbottleneck_q4_h16_f8_seed1_targetpool_probe.json",
+      "cacheline_rounded_bytes": 0,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "control_clean_union_count": 0,
+      "control_clean_union_ids": [],
+      "correct_count": 10,
+      "framed_bytes": 1,
+      "kind": "deployable_source_token_probe",
+      "label": "learned_query_syndrome_0",
+      "payload_bytes": 0,
+      "source_necessary_clean_count": 0,
+      "source_necessary_clean_ids": [],
+      "status": "learned_syndrome_probe_fails_gate",
+      "target_self_correct_count": 2,
+      "teacher_only_recovered_count": 2,
+      "teacher_only_recovered_ids": [
+        "4d780f825bb8541c",
+        "de1bf4d142544e5b"
+      ]
+    },
+    {
+      "accuracy": 0.28125,
+      "artifact_path": "results/svamp32_learned_syndrome_probe_20260424/qbottleneck_q8_h64_f8_seed1_targetpool_probe.json",
+      "cacheline_rounded_bytes": 0,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "control_clean_union_count": 0,
+      "control_clean_union_ids": [],
+      "correct_count": 9,
+      "framed_bytes": 1,
+      "kind": "deployable_source_token_probe",
+      "label": "learned_query_syndrome_1",
+      "payload_bytes": 0,
+      "source_necessary_clean_count": 0,
+      "source_necessary_clean_ids": [],
+      "status": "learned_syndrome_probe_fails_gate",
+      "target_self_correct_count": 2,
+      "teacher_only_recovered_count": 2,
+      "teacher_only_recovered_ids": [
+        "4d780f825bb8541c",
+        "de1bf4d142544e5b"
+      ]
+    },
+    {
+      "accuracy": 0.34375,
+      "artifact_path": "results/svamp32_c2c_mechanism_syndrome_probe_20260426/prefill_scalar_trace_targetpool_probe.json",
+      "cacheline_rounded_bytes": 0,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "control_clean_union_count": 0,
+      "control_clean_union_ids": [],
+      "correct_count": 11,
+      "framed_bytes": 1,
+      "kind": "deployable_c2c_trace_probe",
+      "label": "c2c_prefill_trace_syndrome_0",
+      "payload_bytes": 0,
+      "source_necessary_clean_count": 0,
+      "source_necessary_clean_ids": [],
+      "status": "c2c_mechanism_syndrome_probe_fails_gate",
+      "target_self_correct_count": 0,
+      "teacher_only_recovered_count": 0,
+      "teacher_only_recovered_ids": []
+    },
+    {
+      "accuracy": 0.375,
+      "artifact_path": "results/svamp32_c2c_mechanism_syndrome_probe_20260426/prefill_residual_trace_targetpool_probe.json",
+      "cacheline_rounded_bytes": 0,
+      "clean_residual_recovered_count": 0,
+      "clean_residual_recovered_ids": [],
+      "control_clean_union_count": 0,
+      "control_clean_union_ids": [],
+      "correct_count": 12,
+      "framed_bytes": 1,
+      "kind": "deployable_c2c_trace_probe",
+      "label": "c2c_prefill_trace_syndrome_1",
+      "payload_bytes": 0,
+      "source_necessary_clean_count": 0,
+      "source_necessary_clean_ids": [],
+      "status": "c2c_mechanism_syndrome_probe_fails_gate",
+      "target_self_correct_count": 0,
+      "teacher_only_recovered_count": 0,
+      "teacher_only_recovered_ids": []
+    }
+  ],
+  "headline": {
+    "clean_residual_count": 6,
+    "deployable_distillation_pass": false,
+    "n": 32,
+    "oracle_sparse_sidecar_alive": true,
+    "target_correct": 8,
+    "teacher_correct": 16,
+    "teacher_only_count": 10
+  },
+  "next_gate": "Collect or generate richer generation-time dense-teacher traces, then train a source-causal sparse residual packet that must recover at least 2/6 clean C2C residual IDs while preserving target-self wins and passing zero/shuffle/label-shuffle/target-only/slots-only controls.",
+  "reference_ids": [
+    "013133cdef4f637c",
+    "d64f6e35083ffe8c",
+    "3e8a5691f5443495",
+    "316b525a4fcbfb89",
+    "e26bdbcab1449bbe",
+    "aee922049c757331",
+    "1d50b408c8f5cd2c",
+    "b0b71023ae4d233b",
+    "b1200c32546a34a5",
+    "14bfbfc94f2c2e7b",
+    "4c84ebf42812703b",
+    "4ef979ea2bf931df",
+    "13cb77b698eeadb5",
+    "e3ab8666238a289e",
+    "2de1549556000830",
+    "615f9d817cb5be59",
+    "2f80204fc9e0896f",
+    "137ad74218053f8a",
+    "4d780f825bb8541c",
+    "08d3dd8885ffb998",
+    "de1bf4d142544e5b",
+    "f367349ce0604296",
+    "a85be5ec651dac24",
+    "de2a795ab37694af",
+    "47464cc0b064f172",
+    "0d2b4f7681973e19",
+    "33836927fc9f1a8a",
+    "e7dd2efb5ec99a06",
+    "41cce6c6e6bb0058",
+    "6e9745b37ab6fc45",
+    "c042f0a2949ff8e6",
+    "575d7e83d84c1e67"
+  ],
+  "status": "c2c_teacher_sparse_packet_distillation_preflight_fails_deployable_method_oracle_bound_alive"
+}

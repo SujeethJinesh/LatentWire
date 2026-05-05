@@ -1,0 +1,36 @@
+{
+  "artifacts": {
+    "results/svamp32_c2c_teacher_sparse_packet_distillation_preflight_20260505/summary.json": {
+      "sha256": "05d45515435570e32536b34989ec3990566c830d7c6a8ae80cf72ff1ac3785d1"
+    },
+    "results/svamp32_c2c_teacher_sparse_packet_distillation_preflight_20260505/summary.md": {
+      "sha256": "cb44fd9661e5f8487c37a72e55deb0d01a65f8d72e07c49b868355d262d055f9"
+    },
+    "results/svamp32_query_innovation_query_pool_transport_20260423/svamp32_innovation_target_set_20260423.json": {
+      "sha256": "9f9e3faef2a9d7632be65e3ef99e8af8ec2cb0576fa0d4fa926b1f1772daf3f0"
+    },
+    "results/svamp32_syndrome_sidecar_probe_20260424/augmentedpool_syndrome_probe.json": {
+      "sha256": "aa108b5b3ffd2e78acc8010e2f39c45876c79497e7e4944a15f719eecd46dfd5"
+    },
+    "results/svamp32_syndrome_sidecar_probe_20260424/targetpool_syndrome_probe.json": {
+      "sha256": "48f94eb7f14081b7c2b662a207dfdc96a2b81e3df4cfd54e919a2e55e3891ffb"
+    },
+    "results/svamp_exactid_baselines32_20260423/c2c_generate.jsonl": {
+      "sha256": "835ea2993e05046877bf753b6e3ec9d986ce2f7e53c0996a52554fb6a5e2ff90"
+    },
+    "results/svamp_exactid_baselines32_20260423/c2c_teacher_innovation_probe.json": {
+      "sha256": "64f23631439aebceb0b4a7ee25af0dcc7d441f33647bcef06671ba9422f1b0ea"
+    },
+    "results/svamp_exactid_baselines32_20260423/source_alone.jsonl": {
+      "sha256": "90ff9711fd259f13e20acd0027cb24c7c0ffa4d664a04623290214262b290425"
+    },
+    "results/svamp_exactid_baselines32_20260423/target_alone.jsonl": {
+      "sha256": "202336cb3f516afff6633e39f3ecb069a39456f1ff894b47373f93e819e77304"
+    },
+    "results/svamp_exactid_baselines32_20260423/text_to_text.jsonl": {
+      "sha256": "b205c517beaffcfe6412c89adc9324e45df23c80a4aba27d7f7c61ba38fb00f5"
+    }
+  },
+  "date": "2026-05-05",
+  "status": "c2c_teacher_sparse_packet_distillation_preflight_fails_deployable_method_oracle_bound_alive"
+}
