@@ -7,8 +7,8 @@
 
 | Rank | Project | Workshop acceptance likelihood | Distance to completion | Current decision |
 |---:|---|---|---|---|
-| 1 | SinkAware | medium | medium | alive as approximate low-rank fixed-sink prediction |
-| 2 | ThoughtFlow-FP8 | low-medium | medium-long | mixed after a held-out policy sweep ties R-KV-like within 0.03 NLL |
+| 1 | SinkAware | low-medium | medium | weakly alive as approximate low-rank fixed-sink prediction |
+| 2 | ThoughtFlow-FP8 | low-medium | medium-long | mixed after hidden/KV saliency telemetry and held-out sweeps |
 | 3 | HybridKernel | low-medium | long without GPU | weakly alive as a profiler-gate systems paper |
 
 ## SinkAware
@@ -25,15 +25,19 @@ New update:
 - Added the Phase 4 Triton-interpreter scaffold for the same approximate
   operator. It is ready to run once `triton` is installed in the repo-local
   venv; current local tests skip because Triton is unavailable.
+- Added per-head paired evidence: aggregate rank-2 improves output rel-L2
+  `0.1408` vs position-only `0.1700`, but only `20/72` layer-heads improve,
+  so the branch is weakly alive rather than cleanly positive.
 
 Needed for completion:
 
-1. Run Triton interpreter correctness against the Phase 3 reference after
+1. Run split/seed repeats or a head-selective rank-2 gate to show robustness.
+2. Run Triton interpreter correctness against the Phase 3 reference after
    installing `triton` in `venv_arm64`.
-2. Native GPU comparison of exact attention, exact decomposition, rank-2, rank-4,
+3. Native GPU comparison of exact attention, exact decomposition, rank-2, rank-4,
    and rank-8 approximate paths.
-3. At least one larger/newer model family beyond distilgpt2.
-4. Quality drift measured at output, token logprob, and short continuation
+4. At least one larger/newer model family beyond distilgpt2.
+5. Quality drift measured at output, token logprob, and short continuation
    levels.
 
 ## ThoughtFlow-FP8
@@ -51,10 +55,16 @@ New update:
 - Added `phase2/policy_sweep.py`: a 12-trace train / 12-trace held-out sweep.
 - Held-out best ThoughtFlow-family policy reaches NLL 3.480 versus R-KV-like
   3.482, margin +0.001. This is a tie, not a robust win.
+- Added real hidden/KV saliency telemetry with distilgpt2 attention, final
+  hidden norm, key norm, value norm, and combined KV norm retention. ThoughtFlow
+  improves phase recall over value-norm top-k by `+0.508` with positive CI, but
+  math-state recall improves only `+0.073` with CI crossing zero. The branch is
+  still mixed, not revived.
 
 Needed for completion:
 
-1. A real hidden/KV saliency signal, not just text-token heuristics.
+1. Actual cache-dropping or sparse-KV quality validation for a train-fixed
+   successor policy.
 2. More held-out traces and at least one newer model.
 3. Matched-budget continuation NLL win over R-KV-like, ThinKV-like, and
    LongFlow-like before GPU work.
@@ -69,6 +79,9 @@ New update:
 - Added a profiler-summary parser and promote/kill rule.
 - Extended the NVIDIA/vLLM profiler runbook with exact parser input fields and
   the command for generating the paper-facing gate.
+- Added native profiler artifact verification so GPU evidence must include
+  metadata, logs, Nsight artifacts, readout rows, and at least 3 valid repeated
+  metric rows before paper-facing claims.
 - Current output is pending native profiler data, so no speed claim is allowed.
 
 Needed for completion:
@@ -81,7 +94,7 @@ Needed for completion:
 
 ## Current Recommendation
 
-Push SinkAware first. Keep ThoughtFlow alive for one hidden/KV telemetry gate
-because the held-out proxy is now tie-range rather than clearly losing. Do not
-spend more Mac implementation time on HybridKernel until native profiler traces
-exist.
+Push SinkAware first only if the next split/head-selective repeat improves the
+per-head picture. Keep ThoughtFlow alive for one actual cache-dropping quality
+gate, not more proxy-only saliency. Do not spend more Mac implementation time on
+HybridKernel until native profiler traces exist.

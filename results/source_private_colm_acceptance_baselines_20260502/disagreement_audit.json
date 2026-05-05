@@ -1,0 +1,40 @@
+[
+  {
+    "benchmark": "ARC-Challenge",
+    "both_target_source_correct": 0.08020477815699659,
+    "both_wrong": 0.46928327645051193,
+    "n_seed_items": 11720,
+    "packet_accuracy": 0.3439419795221843,
+    "packet_damages_source": 0.0028156996587030718,
+    "packet_damages_target": 0.18515358361774745,
+    "packet_follows_source": 0.995221843003413,
+    "packet_repairs_source": 0.0011945392491467576,
+    "packet_repairs_target": 0.2637372013651877,
+    "prediction_path": "results/source_private_colm_acceptance_baselines_20260502/arc_test_predictions.jsonl.gz",
+    "source_correct_target_wrong_packet_follows_source": 0.26305460750853243,
+    "source_index_accuracy": 0.3455631399317406,
+    "source_only_correct": 0.26535836177474403,
+    "target_accuracy": 0.26535836177474403,
+    "target_correct_source_wrong_packet_follows_source": 0.18455631399317407,
+    "target_only_correct": 0.18515358361774745
+  },
+  {
+    "benchmark": "OpenBookQA",
+    "both_target_source_correct": 0.112,
+    "both_wrong": 0.458,
+    "n_seed_items": 2500,
+    "packet_accuracy": 0.3784,
+    "packet_damages_source": 0.0004,
+    "packet_damages_target": 0.1644,
+    "packet_follows_source": 0.9988,
+    "packet_repairs_source": 0.0008,
+    "packet_repairs_target": 0.2668,
+    "prediction_path": "results/source_private_colm_acceptance_baselines_20260502/openbookqa_test_predictions.jsonl.gz",
+    "source_correct_target_wrong_packet_follows_source": 0.266,
+    "source_index_accuracy": 0.378,
+    "source_only_correct": 0.266,
+    "target_accuracy": 0.276,
+    "target_correct_source_wrong_packet_follows_source": 0.164,
+    "target_only_correct": 0.164
+  }
+]

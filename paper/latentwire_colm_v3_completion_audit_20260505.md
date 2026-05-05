@@ -12,16 +12,17 @@ page-budget checking. The latest reviewer overclaim fixes have been rebuilt into
 the workshop claim as written. The paper must not claim GPU throughput, HBM,
 energy, latency, or C2C superiority.
 
-The second-round camera-ready cleanup is also integrated: the main figure now
-contains the source-index baseline, the method section has an algorithm table,
-the same-budget text control is explicitly separated from source-index/label
-codes, the Qwen2.5-1.5B validation-incomplete row is not in the main table, and
-the paper reports an aggregate seed/item clustered packet-minus-source-index CI.
+The third-round camera-ready cleanup is also integrated: the paper now uses the
+workshop-safer preprint header, removes the internal workshop checklist, avoids
+unqualified "content-private" terminology, gives exact model/checkpoint context
+for source and diagnostic rows, states the 2-bit selected-candidate boundary,
+reports a source/target/packet disagreement audit, mentions the score-sketch
+diagnostic in the abstract, and fits the main text within the 9-page target.
 
 ## Current Main Claim
 
-LatentWire provides a content-private, source-state-private packet protocol and
-evaluation framework for byte-scale model-to-model candidate hints. It reports
+LatentWire provides a no-source-text, source-state-private packet protocol and
+evaluation framework for byte-scale model-to-model candidate transfer. It reports
 narrow low-byte packet positives on ARC-Challenge and OpenBookQA, explicit
 utility-per-byte and systems accounting, and destructive controls that expose
 source-choice and target-cache shortcuts. The OpenBookQA row is not claimed as
@@ -43,6 +44,7 @@ beats explicit source-index communication.
 | artifact manifest | integrated | paper appendix and review packet |
 | reproducibility checklist | integrated | paper appendix |
 | aggregate source-index CI | integrated | `results/source_private_colm_acceptance_baselines_20260502/aggregate_source_index_ci.md` |
+| source/target disagreement audit | integrated | `results/source_private_colm_acceptance_baselines_20260502/disagreement_audit.md` |
 | source-index-aware main figure | integrated | `colm_final/paper/figures/accuracy_overview.pdf` |
 | side systems experiments | scoped papers compiled | `experimental/*/paper/*_colm2026.pdf`, phase2 artifacts |
 | human review pointer pack | integrated | `paper/colm_v3_presentability_pack_20260505.md` |
@@ -89,9 +91,9 @@ All three side projects now have Macbook correctness scaffolds:
 
 | Experiment | Current local status | Next gate |
 |---|---|---|
-| HybridKernel | weakly alive; pre-GPU threshold model says only profiling can justify the branch after vLLM hybrid layout work | native NVIDIA/vLLM profiling for real boundary conversion/materialization overhead |
-| SinkAware | alive as approximate low-rank sink prior; exact static-prior reuse remains killed | GPU prototype comparing exact attention, exact decomposition, and rank-2 approximate sink-logit prediction |
-| ThoughtFlow-FP8 | weakened but partially improved; ThoughtFlow-recent beats LongFlow-like and ThinKV-like on retained-context NLL, but still loses to R-KV-like at matched budget | design a sharper hidden/KV saliency policy before any GPU/KV work |
+| HybridKernel | weakly alive; Mac work now verifies profiler artifact completeness but no speed claim | native NVIDIA/vLLM profiling for real boundary conversion/materialization overhead |
+| SinkAware | weakly alive as approximate low-rank sink prior; aggregate improves, per-head evidence is mixed, exact static-prior reuse remains killed | split/seed repeat or head-selective rank-2 gate before native GPU speed work |
+| ThoughtFlow-FP8 | mixed; real hidden/KV saliency improves phase recall but not math-state recall with a positive CI | actual cache-dropping or sparse-KV quality validation before reviewer-pack promotion |
 
 These are not core COLM_v3 evidence today, but each now has a scoped COLM-style
 paper PDF so positive future data can be accumulated without contaminating the
@@ -100,7 +102,8 @@ LatentWire claim.
 ## Remaining Workshop Work
 
 1. Human copyedit the PDF.
-2. Check table widths and page budget.
+2. Confirm workshop-specific page policy: the current main text fits within 9
+   pages, while the full PDF with references and appendix is 14 pages.
 3. Ensure abstract, intro, limitations, and claim audit use the same claim
    boundary.
 4. Keep side systems material in future work or reviewer-pack notes only.

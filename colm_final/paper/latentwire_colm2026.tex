@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage[submission]{colm2026_conference}
+\usepackage[preprint]{colm2026_conference}
 \usepackage{microtype}
 \usepackage{hyperref}
 \usepackage{url}
@@ -30,7 +30,7 @@
 \maketitle
 
 \begin{abstract}
-Multi-model language systems usually communicate by emitting text or by sharing internal state such as KV caches. Text is portable but exposes source outputs; cache sharing is information-rich but moves and exposes dense model state. We study a deliberately narrower interface: can a frozen source model send a byte-scale packet that helps a frozen receiver on public multiple-choice reasoning tasks without sending source text, hidden states, KV cache, source logits, or labels? We present \method, a packet protocol and evaluation framework with explicit byte accounting and destructive controls for source-choice, wrong-row, coordinate-shuffle, same-budget text, and cross-family shortcuts. On \arc{} test, an 8-byte payload / 11-byte framed packet reaches 0.344 accuracy across 10 seeds, above target-only 0.265 and same-budget structured text 0.300. On \obqa{} test, a 3-byte / 6-byte packet reaches 0.378 across 5 seeds, above target-only 0.276 but statistically indistinguishable from same-budget text under our paired-bootstrap gate. The decisive audit is also limiting: explicit source-index communication reaches 0.346 on \arc{} and 0.378 on \obqa{}, so the current positive is byte-scale candidate-hint transfer, not evidence synthesis beyond the source or a method that beats selected-candidate communication. We also report that a Phi-3 cross-family source fails and that simple cached connector repairs do not close the gap. The workshop contribution is a reproducible shape-restricted task-hint protocol, an unusually strict destructive-control suite, and byte/exposure accounting that separates measured packet objects from dense general-purpose state transfer. We do not claim solved latent communication, formal privacy, Slepian--Wolf/Wyner--Ziv rate-distortion guarantees, C2C superiority, or native GPU latency/HBM/energy wins.
+Multi-model language systems usually communicate by emitting text or by sharing dense state such as KV caches. We study a narrower interface: can a source endpoint send a byte-scale packet that helps a receiver on public multiple-choice tasks without sending source text, hidden states, KV cache, logits, score vectors, or labels? We present \method, a no-text packet protocol and destructive-control framework with explicit byte accounting. On \arc{}, an 8-byte payload / 11-byte framed packet reaches 0.344 accuracy across 10 seeds, above target-only 0.265 and same-budget structured text 0.300. On \obqa{}, a 3-byte / 6-byte packet reaches 0.378 across 5 seeds, above target-only 0.276 but statistically indistinguishable from same-budget text. The decisive audit is limiting: explicit source-index communication reaches 0.346 on \arc{} and 0.378 on \obqa{}; an aggregate packet-minus-source-index bootstrap is negative on \arc{} and indistinguishable on \obqa{}. A validation-only 3-byte source-score sketch also ties, rather than beats, the source top-label rule. We therefore claim byte-scale same-family candidate transfer under destructive controls, not evidence synthesis beyond the source, formal privacy, solved latent communication, C2C superiority, or native GPU latency/HBM/energy wins.
 \end{abstract}
 
 \section{Introduction}
@@ -43,7 +43,7 @@ Our strongest current result is deliberately scoped. On \arc{} and \obqa{}~\cite
 
 The contributions are:
 \begin{itemize}
-\item A byte-scale, content-private packet protocol and threat model for multiple-choice candidate transfer with no source text, hidden vector, KV cache, source-logit, or gold-label exposure.
+\item A byte-scale no-source-text/source-state-private packet protocol and threat model for multiple-choice candidate transfer with no source text, hidden vector, KV cache, source-logit, score-vector, or gold-label exposure.
 \item A strict evaluation suite, drawing on control-task and behavioral-testing methodology~\citep{Hewitt2019ControlTasks,Adebayo2018SanityChecks,McCoy2019HANS,Ribeiro2020CheckList}, that combines target-only, same-budget text, source-index/rank, coordinate-shuffle, wrong-row, same-source-choice, cross-family, and cached-connector controls.
 \item Controlled narrow positives on \arc{} and \obqa{} with seed repeats and paired uncertainty, accompanied by an explicit source-index audit showing that the current effect is mostly source-choice preserving.
 \item A failure-boundary analysis showing that Phi-3 cross-family transfer and simple cached connector repairs fail, so broad latent-language and cross-family claims are unsupported.
@@ -53,7 +53,7 @@ The contributions are:
 This is useful even with a narrow positive because it separates three questions that are often conflated: whether a compact private packet can help, whether it carries more than the source's preferred answer, and whether it is cheaper or less exposing than dense state transfer. The current answer is positive for the first question, negative for the second, and accounting-only for the third. That scoped result is the paper's intended workshop contribution.
 
 \paragraph{Where the current result is useful.}
-The current method is most plausible for same-family cascades, content-private specialist-to-router hints, and bandwidth-limited candidate reranking where sending source generations, logits, hidden states, or KV cache is undesirable. It is not yet a method for open-ended generation, heterogeneous cross-family collaboration, or reasoning synthesis beyond the source model's selected candidate.
+The current method is most plausible for same-family cascades and bandwidth-limited candidate reranking where sending source generations, logits, hidden states, or KV cache is undesirable. It is not yet a method for open-ended generation, heterogeneous cross-family collaboration, or reasoning synthesis beyond the source model's selected candidate.
 
 \begin{figure}[t]
   \centering
@@ -62,7 +62,7 @@ The current method is most plausible for same-family cascades, content-private s
   \label{fig:protocol}
 \end{figure}
 
-\section{Content-private packet transfer}
+\section{No-text packet transfer}
 
 Let a public multiple-choice instance be $x=(q,c_1,\ldots,c_m)$ with answer choices $c_i$. A source model $S$ and receiver $R$ both observe $x$, but only $S$ computes the source-side private evidence $e_S(x)$. A packet encoder emits
 \[
@@ -74,10 +74,10 @@ The receiver predicts
 \]
 where $D_R$ may use public task features and the receiver's own state, but may not access source text, source hidden states, source KV cache, source logits, or answer labels.
 
-We evaluate a packet only if it beats three surfaces: target-only $D_R(x,\emptyset)$, a same-budget structured text control, and destructive controls that preserve superficial packet size but destroy the intended source-receiver relation. We also audit explicit source-index, source-label-text, source-rank-code, and entropy-matched random-index baselines. The same-budget structured text control is not the answer label ``A/B/C/D'' and not a direct source-index code: it sends the first $B$ bytes of the source-selected public candidate string and decodes by lexical overlap with the public choices. Explicit source-index, source-label-text, source-rank, and source-score-style rows are reported separately as shortcut boundaries. We report seed repeats and paired bootstrap lower bounds. This matters because a packet can be useful while mostly preserving the source's selected candidate; such a result is content-private candidate transfer, not proof of a shared latent language, reasoning beyond the source endpoint, or compression beyond a one-byte selected-candidate channel.
+We evaluate a packet only if it beats three surfaces: target-only $D_R(x,\emptyset)$, a same-budget structured text control, and destructive controls that preserve superficial packet size but destroy the intended source-receiver relation. We also audit explicit source-index, source-label-text, source-rank-code, source-score-style, and entropy-matched random-index baselines. The same-budget text control is not the answer label ``A/B/C/D'' and not a direct source-index code: it sends the first $B$ bytes of the source-selected public candidate string and decodes by lexical overlap. Explicit source-index in Table~\ref{tab:main} means the source label alone, without target calibration; richer source/target pair rules are treated as diagnostics. For 4-way multiple choice, the selected-candidate boundary is only 2 bits information-theoretically, although our implementation reports it as a one-byte label channel. This matters because a packet can help while mostly preserving the source's selected candidate; that is no-text candidate transfer, not proof of a shared latent language or compression beyond selected-candidate communication.
 
 \paragraph{Threat model.}
-The packet channel is content-private and source-state-private, but it is not identity-hiding, choice-hiding, or formally private in the differential-privacy, cryptographic, or information-theoretic secrecy sense. The sender may privately compute over the public prompt and answer choices, then transmit only a bounded byte string. The receiver may use that byte string, the public prompt, and its own computation. The receiver may not observe source generations, chain-of-thought, hidden states, KV cache, logits, score vectors, or labels. A passive packet observer sees only the packet bytes and framing, not source internals or text; however, the current packet leaks the source's preferred candidate with 0.995 mean match on \arc{} and 0.999 mean match on \obqa{}. We therefore claim privacy of source content and dense state, not secrecy of source choice. A method fails the current workshop claim if its apparent gain is matched by a target-only cache effect, same-budget visible text, explicit source-index/rank/score communication, wrong-row transfer, or answer leakage.
+The packet channel hides source text and dense source state, but it is not identity-hiding, choice-hiding, or formally private in the differential-privacy, cryptographic, or information-theoretic secrecy sense. The sender may privately compute over the public prompt and choices, then transmit only a bounded byte string. The receiver may use that byte string, the public prompt, and its own computation. It may not observe source generations, chain-of-thought, hidden states, KV cache, logits, score vectors, or labels. A passive packet observer sees only packet bytes and framing, not source internals or text; however, the current packet leaks the source's preferred candidate with 0.995 mean match on \arc{} and 0.999 on \obqa{}. A method fails the workshop claim if its apparent gain is matched by target-only effects, same-budget visible text, explicit source-index/rank/score communication, wrong-row transfer, or answer leakage.
 
 \paragraph{Control suite.}
 Table~\ref{tab:controls} lists the reviewer-facing controls used to interpret the reported rows. The suite is intentionally stronger than the headline claim: several controls are designed to collapse methods that only copy the source's preferred answer choice.
@@ -131,14 +131,14 @@ The current \arc{} implementation uses a public train-anchor chart. For each can
 
 The design is related to relative representations~\citep{Moschella2023Relative}: anchors provide a coordinate system less tied to raw hidden dimensions. Our use is narrower. We do not claim zero-shot latent stitching or global representation alignment; we use a public basis to define a tiny task packet. Random shared anchors work nearly as well as semantic anchors in the current hashed \arc{} implementation, so the correct interpretation is shared coordinate agreement, not semantic anchor names.
 
-\obqa{} uses the same packet-evaluation contract at a smaller 3-byte budget. Across both tasks, the source-choice cache is answer-key-forbidden: the source sees public questions and choices, not labels. The packet is evaluated on frozen test slices after validation selection.
+\obqa{} uses the same packet-evaluation contract at a smaller 3-byte budget. Across both tasks, the source-choice cache is answer-key-forbidden: the source sees public questions and choices, not labels. The headline source cache is from \texttt{Qwen/Qwen2.5-0.5B-Instruct} scored on CPU with mean-normalized choice log-likelihoods; the packet receiver is the public hashed/DCT candidate decoder rather than a live target-model forward. The validation-only score-sketch diagnostic separately uses \texttt{Qwen/Qwen3-0.6B} receiver scores. The source-family falsification uses \texttt{microsoft/Phi-3-mini-4k-instruct}, and the cached connector diagnostic uses \texttt{TinyLlama/TinyLlama-1.1B-Chat-v1.0}. The packet is evaluated on frozen test slices after validation selection.
 
 \section{Main results}
 
 Table~\ref{tab:main} and Figure~\ref{fig:accuracy} summarize the current positive evidence and the source-index audit. The \arc{} row uses 10 packet/control seeds and 2000 paired bootstrap samples per seed on 1172 test examples. The \obqa{} row uses 5 seeds on the 500-example test slice. The source-index audit is generated by reconstructing the same packet rows and adding explicit source-index, source-label-text, source-rank-code, and entropy-matched random-index baselines.
 
 \paragraph{Reproducibility card.}
-All headline rows are frozen test-slice evaluations. The \arc{} row uses Qwen2.5-family source/target caches, 10 seeds, and 2000 bootstrap samples; the \obqa{} row uses the same content-private contract with 5 seeds and 500 bootstrap samples; the source-index audit reruns the same frozen prediction surfaces with explicit index/rank/label baselines. Exact input paths, hashes, scripts, and rerun status are listed in the artifact manifest and regenerated by the COLM\_v3 review-packet script.
+All headline rows are frozen test-slice evaluations. The \arc{} row uses the Qwen2.5 source-choice cache, 10 seeds, and 2000 bootstrap samples; the \obqa{} row uses the same no-source-text contract with 5 seeds and 500 bootstrap samples; the source-index audit reruns the same frozen prediction surfaces with explicit index/rank/label baselines. Exact input paths, hashes, scripts, and rerun status are listed in the artifact manifest and regenerated by the COLM\_v3 review-packet script.
 
 \begin{table}[t]
   \centering
@@ -170,13 +170,16 @@ On \obqa{}, the 3-byte packet reaches 0.378--0.380 across seeds. The explicit so
 The practical readout is an evidence ladder rather than a single win/loss row. The packets beat target-only on both headline rows; \arc{} clears same-budget text, while \obqa{} does not clear the paired lower-bound gate against text. Coordinate and candidate-destructive controls prevent treating the result as random packet regularization; explicit source-index/rank controls prevent overstating the mechanism. In framed-byte terms, the target-only lift is $0.079/11=0.0072$ accuracy per byte on \arc{} and $0.102/6=0.0170$ accuracy per byte on \obqa{}. Those rates are useful for comparing packet regimes, but they are not evidence that the current packet is better than a direct selected-candidate code.
 
 \paragraph{Claim boundary.}
-The current packet does not improve over explicit source-index communication: source-index reaches 0.346 on \arc{} and 0.378 on \obqa{}, while the packet reaches 0.344 and 0.378. A two-stage seed/item cluster bootstrap for packet minus source-index gives \arc{} mean $-0.0016$ with 95\% CI $[-0.0030,-0.0003]$ and \obqa{} mean $+0.0004$ with 95\% CI $[-0.0012,+0.0020]$. We therefore claim content-private fixed-byte candidate transfer under destructive controls, not compression beyond a selected-candidate channel.
+The current packet does not improve over explicit source-index communication: source-index reaches 0.346 on \arc{} and 0.378 on \obqa{}, while the packet reaches 0.344 and 0.378. A two-stage seed/item cluster bootstrap for packet minus source-index gives \arc{} mean $-0.0016$ with 95\% CI $[-0.0030,-0.0003]$ and \obqa{} mean $+0.0004$ with 95\% CI $[-0.0012,+0.0020]$. We therefore claim no-text fixed-byte candidate transfer under destructive controls, not compression beyond a selected-candidate channel.
+
+\paragraph{Disagreement audit.}
+A source/target/packet disagreement audit makes the mechanism visible. On \arc{}, source-only-correct rows account for 0.265 of seed-items and target-only-correct rows for 0.185; the packet follows the source in 0.995 of seed-items, repairs target errors in 0.264, and damages target-correct rows in 0.185. On \obqa{}, the corresponding rates are 0.266, 0.164, 0.999, 0.267, and 0.164. This is useful transfer when the source is right and the target is wrong, but it also confirms that the packet is mostly source-choice transport.
 
 \paragraph{Score-quantization diagnostic.}
 The frozen headline \arc{}/\obqa{} source-choice caches store top choices, not raw calibrated score vectors, so source-score quantization is not a full headline baseline. We include a validation-only \arc{} diagnostic with a 3-byte quantized source score distribution and receiver score side information. It reaches the same held-out accuracy as always using the source top label (0.389) and does not beat the top-label pair rule. This supports the same boundary: simple score sketches do not yet demonstrate information beyond source-choice transfer.
 
 \paragraph{Breadth audits.}
-We keep additional model and benchmark breadth in the reviewer packet rather than turning every diagnostic into a headline claim. A frozen benchmark-selection gate also records HellaSwag validation-1024~\citep{Zellers2019HellaSwag} as a positive bounded validation diagnostic, CommonsenseQA~\citep{Talmor2019CommonsenseQA} as target-positive but same-byte-text saturated, and SciQ~\citep{Welbl2017SciQ} as a content-private bridge contract with no positive packet row yet. A separate latest-model emitter audit covers Qwen3.5, Gemma 4, Granite 3.3, and OLMo-2 source-packet behavior on a synthetic hidden-repair benchmark. These rows improve reviewer visibility into breadth and failure modes, but they are not used to strengthen the main \arc{}/\obqa{} claim.
+Additional benchmark/model rows remain reviewer-packet diagnostics, not headline evidence. They include HellaSwag validation-1024~\citep{Zellers2019HellaSwag}, CommonsenseQA~\citep{Talmor2019CommonsenseQA}, SciQ~\citep{Welbl2017SciQ}, and a latest-model emitter audit. These rows improve visibility into breadth and failure modes, but they do not strengthen the main \arc{}/\obqa{} claim.
 
 \begin{table}[t]
   \centering
@@ -193,13 +196,6 @@ We keep additional model and benchmark breadth in the reviewer packet rather tha
   \caption{Uncertainty summary for the main audit rows. Values are paired-bootstrap 95\% lower bounds for packet accuracy minus the named comparator. The zero lower bound against same-budget text on \obqa{} is intentionally visible: that row is a narrow secondary positive, not a strong text-baseline separation.}
   \label{tab:uncertainty}
 \end{table}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.86\linewidth]{figures/rate_curve.pdf}
-  \caption{Payload-rate curve from the source-index audit. Packet payloads below 2 bytes are unsupported by the current sparse signed encoder; the 1-byte source-index baseline is reported separately in Table~\ref{tab:main}.}
-  \label{fig:rate}
-\end{figure}
 
 \section{Falsification and failure decomposition}
 
@@ -228,16 +224,9 @@ We also tested cached learned repairs on the available local artifacts. A candid
 
 \section{Systems boundary}
 
-The systems contribution is byte/exposure accounting, not native serving throughput. Figure~\ref{fig:systems} compares framed packet bytes with one-token KV/cache-state accounting floors from neighboring systems and quantization methods. \method{} sends 6--11 framed bytes on the two headline rows. A one-token 1-bit-per-KV-element accounting floor is 768 bytes in our model-configuration accounting; the largest headline packet is therefore 69.8x smaller as a message object than that floor. This is not a function-equivalence claim. C2C-style cache transfer, KVComm/KVCOMM-style selective sharing, and serving substrates such as vLLM/PagedAttention and SGLang operate on KV/cache objects rather than shape-restricted task hints~\citep{Fu2025C2C,Shi2025KVComm,Ye2025KVCOMM,Kwon2023vLLM,Zheng2023SGLang}. KV quantization work reduces cache bytes but still communicates or stores model state~\citep{Zandieh2024QJL,Liu2024KIVI,Hooper2024KVQuant,Zandieh2025TurboQuant}.
+The systems contribution is byte/exposure accounting, not native serving throughput. Table~\ref{tab:systems} compares framed packet bytes with one-token KV/cache-state accounting floors from neighboring systems and quantization methods. \method{} sends 6--11 framed bytes on the two headline rows. A one-token 1-bit-per-KV-element accounting floor is 768 bytes in our model-configuration accounting; the largest headline packet is therefore 69.8x smaller as a message object than that floor. This is not a function-equivalence claim. C2C-style cache transfer, KVComm/KVCOMM-style selective sharing, and serving substrates such as vLLM/PagedAttention and SGLang operate on KV/cache objects rather than shape-restricted task hints~\citep{Fu2025C2C,Shi2025KVComm,Ye2025KVCOMM,Kwon2023vLLM,Zheng2023SGLang}. KV quantization work reduces cache bytes but still communicates or stores model state~\citep{Zandieh2024QJL,Liu2024KIVI,Hooper2024KVQuant,Zandieh2025TurboQuant}.
 
 We label packet-object bytes as measured/accounted local artifacts and dense-state rows as analytical or literature-derived byte floors. This distinction is important: the current data support privacy/exposure and byte-budget comparisons, but not claims about GPU latency, HBM traffic, energy, or serving throughput.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.95\linewidth]{figures/systems_boundary.pdf}
-  \caption{Boundary-byte accounting. Packet rows are measured task-packet objects. KV/cache rows are lower-bound floors or neighboring serving substrates, not native speed comparisons.}
-  \label{fig:systems}
-\end{figure}
 
 \begin{table}[t]
   \centering
@@ -281,25 +270,25 @@ We label packet-object bytes as measured/accounted local artifacts and dense-sta
     \midrule
     dense cache fusion & C2C & projected source KV cache & high-bandwidth, source-state exposing \\
     selective KV sharing & KV-cache comm. & selected KV pairs/layers & cache-level, native pending \\
-    KV compression & KV quantizers & compressed KV/cache state & shrinks dense state, not content-private task packets \\
+    KV compression & KV quantizers & compressed KV/cache state & shrinks dense state, not task packets \\
     serving substrate & vLLM/SGLang & KV reuse and memory management & runtime baseline, not communication protocol \\
-    prompt/prefix compression & prefix/gist tokens & prompt-like tokens or parameters & not content-private model-to-model evidence \\
+    prompt/prefix compression & prefix/gist tokens & prompt-like tokens or parameters & not no-text model-to-model evidence \\
     local shortcut baselines & source-index/rank/score & selected answer or score sketch & must be beaten for stronger claims \\
     \bottomrule
   \end{tabular}
-  \caption{Related-work and baseline matrix. \method{} is positioned as low-byte content-private packet transfer with destructive controls, not as a replacement for dense cache fusion or serving-runtime optimization.}
+  \caption{Related-work and baseline matrix. \method{} is positioned as low-byte no-text packet transfer with destructive controls, not as a replacement for dense cache fusion or serving-runtime optimization.}
   \label{tab:baseline-matrix}
 \end{table}
 
 \section{Limitations and next gate}
 
-The main limitation is scope. The positive results are same-family/source-cache results on public multiple-choice tasks, and the packet largely preserves the source's selected candidate. We therefore do not claim to beat explicit source-index communication, source-score quantization, or calibrated source-choice baselines; those are required before a stronger compression claim. \obqa{} uses only 5 seeds, so small separations from same-budget text should be treated as unresolved. More importantly, 4-way multiple-choice tasks have a low answer-channel ceiling: a 1-byte source-index code is already a strong competitor. A higher-entropy task, calibration/abstention metric, or multi-step downstream use is needed to demonstrate packet information beyond selected-candidate transport. Phi-3 cross-family replacement fails, TinyLlama common-feature repair fails, the validation-only score-sketch diagnostic does not beat source-label transfer, and a true cross-family learned query-bottleneck remains future work. We also do not claim formal Slepian--Wolf/Wyner--Ziv guarantees, formal privacy, or superiority over C2C, KVComm/KVCOMM, QJL, KIVI, TurboQuant, vLLM, or SGLang in native serving metrics. Those rows require NVIDIA hardware and matched implementations.
+The main limitation is scope. The positive results are same-family/source-cache results on public multiple-choice tasks, and the packet largely preserves the source's selected candidate. We therefore do not claim to beat explicit source-index communication, source-score quantization, or calibrated source-choice baselines. \obqa{} uses only 5 seeds, so small separations from same-budget text should be treated as unresolved. More importantly, 4-way multiple-choice tasks have a low answer-channel ceiling: a selected-candidate code needs only 2 bits information-theoretically and one byte in our implementation. A higher-entropy task, calibration/abstention metric, or multi-step downstream use is needed to demonstrate packet information beyond selected-candidate transport. Phi-3 cross-family replacement fails, TinyLlama common-feature repair fails, the validation-only score-sketch diagnostic does not beat source-label transfer, and a true cross-family learned query-bottleneck remains future work. We also do not claim formal Slepian--Wolf/Wyner--Ziv guarantees, formal privacy, or superiority over C2C, KVComm/KVCOMM, QJL, KIVI, TurboQuant, vLLM, or SGLang in native serving metrics. Those rows require NVIDIA hardware and matched implementations.
 
-The next exact gate for an ICLR-strength claim is a frozen-endpoint tokenwise connector with an explicit byte or query budget, tested against C2C/KV-style and structured-text baselines, with source-destroying controls and strict same-family versus cross-family separation. The current strongest claim is narrower: fixed-byte content-private packets can transfer useful same-family candidate evidence on \arc{} and \obqa{}, and the accompanying control ladder clarifies where the method stops working.
+The next exact gate for an ICLR-strength claim is a frozen-endpoint tokenwise connector with an explicit byte or query budget, tested against C2C/KV-style and structured-text baselines, with source-destroying controls and strict same-family versus cross-family separation. The current strongest claim is narrower: fixed-byte no-text packets can transfer useful same-family candidate evidence on \arc{} and \obqa{}, and the accompanying control ladder clarifies where the method stops working.
 
 \section{Conclusion}
 
-\method{} shows that a tiny content-private candidate packet can improve frozen receiver decisions on two public QA benchmarks under strict same-family controls. The same evidence also draws a hard boundary: the current method is mostly source-choice preserving, is not a universal latent language, and does not yet solve cross-family communication. This combination of positive packet transfer, negative controls, and systems byte/exposure accounting is the paper's core.
+\method{} shows that a tiny no-text candidate packet can improve receiver decisions on two public QA benchmarks under strict same-family controls. The same evidence draws a hard boundary: the current method is mostly source-choice preserving, is not a universal latent language, and does not yet solve cross-family communication. This combination of positive packet transfer, negative controls, and systems byte/exposure accounting is the paper's core.
 
 \bibliography{latentwire_colm2026}
 \bibliographystyle{colm2026_conference}
@@ -318,7 +307,7 @@ Table~\ref{tab:claim-audit} states the claim boundary used to write the main pap
     \toprule
     Claim & Status & Evidence & Required wording \\
     \midrule
-    content-private packet protocol & supported & packet rows and controls & protocol/evaluation contribution \\
+    no-text packet protocol & supported & packet rows and controls & protocol/evaluation contribution \\
     narrow same-family packet utility & supported but narrow & \arc{} and \obqa{} rows & source-candidate transfer \\
     shortcut collapses are common & supported & source-index and wrong-row audits & claim boundary, not failure-only story \\
     beats C2C or dense KV transfer & unsupported & no native matched C2C row & do not claim \\
@@ -340,6 +329,7 @@ Table~\ref{tab:claim-audit} states the claim boundary used to write the main pap
 \item \obqa{} headline: \url{colm_final/evidence/results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b}.
 \item Source-index audit: \url{colm_final/evidence/results/source_private_colm_acceptance_baselines_20260502}.
 \item Aggregate source-index CI: \url{results/source_private_colm_acceptance_baselines_20260502/aggregate_source_index_ci.md}.
+\item Disagreement audit: \url{results/source_private_colm_acceptance_baselines_20260502/disagreement_audit.md}.
 \item Score-sketch diagnostic: \url{results/source_private_arc_score_fusion_packet_probe_20260503_qwen05_qwen3_validation}.
 \item COLM\_v3 review packet: \url{results/latentwire_colm_v3_review_packet_20260505}.
 \end{itemize}
@@ -366,11 +356,10 @@ Systems & systems boundary table & -- & byte/exposure accounting only \\
 \end{tabular}
 \end{center}
 
-Frozen artifacts are hash-verified. In the final local pass, \obqa{}, systems,
-and failure-decomposition reruns completed; the more expensive full
-\arc{}/Phi-3 reruns are represented by frozen hashes unless rerun offline. Rerun
-JSON files are metric-oriented rather than byte-identical because they contain
-creation times and some artifacts include measured local latencies.
+Headline artifacts are hash-verified frozen outputs, and rerun scripts are
+provided. Exact byte-identical reruns may differ only in timestamped JSON fields
+or local timing measurements; metric rows are regenerated from the tracked
+prediction artifacts.
 
 \section{Per-seed audit rows}
 
@@ -405,12 +394,16 @@ Table~\ref{tab:per-seed} exposes the per-seed test rows behind the main source-i
   \label{tab:per-seed}
 \end{table}
 
-\paragraph{Workshop checklist.}
-The current paper is ready for reviewer circulation only after the generated COLM\_v3 packet and the PDF agree on: (1) the main claim, (2) the content-private threat model, (3) all main table values, (4) measured-versus-estimated systems labels, and (5) unsupported claims. The repository command
+\section{Artifact regeneration}
+
+The repository command
 \begin{verbatim}
 ./venv_arm64/bin/python scripts/build_latentwire_colm_v3_review_packet.py
 \end{verbatim}
-regenerates the claim audit, table/figure inventory, systems ledger, artifact manifest, and NVIDIA native runbook from tracked source artifacts.
+regenerates the claim audit, table/figure inventory, systems ledger, artifact manifest, and NVIDIA native runbook from tracked source artifacts. The disagreement audit is regenerated with
+\begin{verbatim}
+./venv_arm64/bin/python scripts/build_latentwire_colm_v3_disagreement_audit.py
+\end{verbatim}
 
 \section{Lay explanation of the main experiment}
 
