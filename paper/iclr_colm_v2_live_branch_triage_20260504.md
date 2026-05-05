@@ -6,11 +6,11 @@
 
 ## Current Story
 
-LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The previously caveated OpenBookQA train-only receiver row is now weakened by same-source-choice wrong-row hardening. The SVAMP32 C2C-teacher surface shows a useful 1-byte oracle syndrome bound, but current source-final, source-hidden, source-token, and C2C-prefill predictors do not make it deployable. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, ARC atom packets, OpenBookQA receiver fusion, C2C-teacher sparse-packet distillation, and HellaSwag learned/source-conditioned resonance receivers have not produced a broad positive row beyond packet/source-choice/target-cache controls.
+LatentWire_v2 can currently support a scoped COLM_v2 story: byte-scale, source-private packets plus strict destructive controls. The previously caveated OpenBookQA train-only receiver row is now weakened by same-source-choice wrong-row hardening. The SVAMP32 C2C-teacher surface shows a useful 1-byte oracle syndrome bound, but current source-final, source-hidden, source-token, and C2C-prefill predictors do not make it deployable. Generation-time C2C trace collection is now implemented, but the current Mac runtime cannot execute C2C generation: MPS fails in matmul shape inference and CPU hits the vendored C2C/Transformers `DynamicCache` API mismatch. The ICLR story is still blocked because cross-family conditional PQ, deterministic public-basis conditioning, scalar integrity thresholds, ARC atom packets, OpenBookQA receiver fusion, C2C-teacher sparse-packet distillation, and HellaSwag learned/source-conditioned resonance receivers have not produced a broad positive row beyond packet/source-choice/target-cache controls.
 
 ## Exact Submission Gap
 
-ICLR needs a positive learned or broader-benchmark receiver that passes strict destructive controls with per-seed stability and source-choice separation. The immediate C2C-distillation gap is predicting the compact C2C residue from a genuinely source-causal signal rather than from the oracle C2C answer. COLM_v2 can be prepared around the conditional-PQ shared-schema method, the fixed-byte HellaSwag packet row, OpenBookQA hardening as a negative diagnostic, the SVAMP32 C2C oracle-versus-deployable boundary, and the target-resonance capacity-versus-held-out-failure analysis with explicit limitations.
+ICLR needs a positive learned or broader-benchmark receiver that passes strict destructive controls with per-seed stability and source-choice separation. The immediate C2C-distillation gap is predicting the compact C2C residue from a genuinely source-causal signal rather than from the oracle C2C answer. The implementation gap is now either running the generation trace collector on a compatible CUDA/NVIDIA C2C environment or fixing the local vendored C2C cache compatibility. COLM_v2 can be prepared around the conditional-PQ shared-schema method, the fixed-byte HellaSwag packet row, OpenBookQA hardening as a negative diagnostic, the SVAMP32 C2C oracle-versus-deployable boundary, and the target-resonance capacity-versus-held-out-failure analysis with explicit limitations.
 
 ## Current Technical Contributions
 
@@ -44,6 +44,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 | Target self-resonance held-out learned prefix encoders | `ruled_out_current_target_native_encoder_family` | `0.6875` | `0.6875` | `0.0` | `None` | `None` | Do not run more chunk/distill/query-resampler variants without a new information path. |
 | Source-conditioned target-native resonance receivers | `ruled_out_current_source_conditioned_receiver_family` | `0.375` | `0.375` | `0.0` | `None` | `None` | Diagnose complementarity/gating before implementing another source-to-prefix decoder. |
 | SVAMP32 C2C teacher sparse-packet distillation preflight | `oracle_bound_alive_deployable_failed` | `15/32 oracle; <=12/32 deployable` | `16/32 C2C teacher` | `None` | `None` | `1` | Use as C2C boundary evidence; next needs generation-time dense-teacher traces or a new source-causal residual objective. |
+| C2C generation trace hook preflight | `implemented_local_generation_blocked` | `tests_pass` | `mps_cpu_blocked` | `None` | `None` | `None` | Trace collector is ready; run on CUDA/NVIDIA or fix local C2C cache compatibility. |
 | HellaSwag complementarity-frontier selector diagnostic | `headroom_alive_selector_blocked` | `0.467448` | `0.467448` | `0.0` | `0.0` | `4` | Do not train another HellaSwag selector on the same packet fields; require a new information path. |
 | HellaSwag multi-signal source packet frontier | `ruled_out_cached_policy_packet` | `0.455729` | `0.467448` | `-0.011719` | `-0.02347` | `5` | Do not continue cached Qwen policy-prediction packets on this HellaSwag slice. |
 
@@ -68,6 +69,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - `Target self-resonance held-out learned prefix encoders`: 1/5 pass; best agreement delta 0.000000 against slots_only_encoder; worst agreement delta -0.125000.
 - `Source-conditioned target-native resonance receivers`: 0/5 pass; best accuracy delta 0.000000 against zero_source_hidden; source top1/top2 oracle reaches 1.000000.
 - `SVAMP32 C2C teacher sparse-packet distillation preflight`: Dense C2C teacher is 16/32 against target 8/32 with 10 teacher-only wins and 6 clean residual targets. A 1-byte oracle C2C syndrome sidecar reaches 14-15/32 with 2-3 clean source-necessary IDs, but source-final/text outputs recover 0/6 clean residual IDs, target/source/text oracle union recovers 0/6, source-hidden/source-token predictors reach 9-10/32 with 0 clean IDs, and C2C-prefill trace predictors reach 11-12/32 with 0 clean IDs.
+- `C2C generation trace hook preflight`: Implemented projector history plus target-logit history traces and analyzer support via `--feature-family generation_summary_trace`. Unit tests pass. Local C2C generation remains blocked: unmodified and trace-enabled MPS runs both fail with the same Apple MPS matmul shape error; CPU trace smoke fails on the vendored C2C wrapper expecting the older `DynamicCache.key_cache/value_cache` API.
 - `HellaSwag complementarity-frontier selector diagnostic`: Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.
 - `HellaSwag multi-signal source packet frontier`: Selector accuracy 0.455729 vs fixed 0.467448; overrides 30 rows; best destructive control field_shuffle_multisignal_control at 0.430990.
 
@@ -76,6 +78,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - Conditional PQ shared-schema packet as COLM_v2 positive method.
 - HellaSwag fixed hybrid candidate packet as a systems/privacy packet row.
 - SVAMP32 C2C-derived 1-byte syndrome sidecar as an oracle bound and C2C comparison boundary, not as a deployable method.
+- Generation-time C2C trace collector and CUDA/NVIDIA runbook for the next dense-teacher distillation gate.
 
 ## Weakened Or Ruled Out
 
@@ -101,17 +104,21 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - SVAMP32 C2C sparse-packet deployable distillation from source-final/text,
   source-hidden, source-token query, and C2C-prefill traces: all recover `0/6`
   clean C2C residual IDs under the current evidence.
+- Mac-local C2C generation on the current runtime: MPS fails in C2C generation
+  matmul shape inference, and CPU hits the vendored C2C/Transformers
+  `DynamicCache` API mismatch.
 
 ## Next Exact Gate
 
 - name: `generation_time_c2c_residual_trace_sparse_packet_preflight`
-- primary path: Collect or generate richer generation-time dense-teacher traces
-  on the frozen SVAMP32 C2C surface, then train a source-causal sparse residual
-  packet that predicts the compact C2C residue without reading the C2C final
-  answer.
+- primary path: Run the implemented generation-time dense-teacher trace
+  collector on a compatible CUDA/NVIDIA C2C environment for the frozen SVAMP32
+  surface, then train a source-causal sparse residual packet that predicts the
+  compact C2C residue without reading the C2C final answer.
 - fallback path: If generation-time traces are not feasible on the Mac, write a
-  local NVIDIA runbook for native C2C/KV trace collection and shift local work
-  to COLM_v2 packaging plus benchmark/surface search.
+  local C2C cache-compatibility shim for the current Transformers
+  `DynamicCache` API; if that is not tractable, shift local work to COLM_v2
+  packaging plus benchmark/surface search until NVIDIA access is available.
 - pass bar: recover at least `2/6` clean C2C residual IDs, preserve target-self
   wins, reach at least the `14/32` target-self floor, and pass zero-source,
   source-shuffle, label-shuffle, target-only, slots-only, target-derived,

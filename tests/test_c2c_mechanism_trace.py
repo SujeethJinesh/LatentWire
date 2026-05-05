@@ -19,6 +19,22 @@ class _Projector:
         self.last_value_gate_logit = -0.1
 
 
+class _ForwardProjector(_Projector):
+    def __init__(self) -> None:
+        super().__init__()
+        self.offset = 0.0
+
+    def forward(self, source_kv, target_kv):
+        source_key, source_value = source_kv
+        target_key, target_value = target_kv
+        self.offset += 1.0
+        self.last_norm_key_scalar = torch.tensor([[[[self.offset]]]])
+        self.last_norm_value_scalar = torch.tensor([[[[self.offset + 1.0]]]])
+        self.last_key_gate_logit = self.offset
+        self.last_value_gate_logit = -self.offset
+        return target_key + source_key + self.offset, target_value + source_value + self.offset
+
+
 class _Model:
     def __init__(self) -> None:
         self.projector_list = [_Projector()]
@@ -117,6 +133,43 @@ def test_c2c_local_tail_tokens_are_query_probe_compatible() -> None:
     assert tokens.shape == (1, 8, 8)
     assert metadata["token_names"][0] == "projector_00.key.source.tail"
     assert metadata["token_names"][-1] == "projector_00.value.delta.tail"
+
+
+def test_generation_trace_history_records_multiple_calls() -> None:
+    model = _Model()
+    projector = _ForwardProjector()
+    model.projector_list = [projector]
+    c2c_eval.install_c2c_projector_trace_hooks(model, residual_projection_dim=2)
+    c2c_eval.reset_c2c_projector_trace_history(model, enabled=True)
+    source = (torch.ones(1, 1, 2, 2), torch.ones(1, 1, 2, 2) * 2)
+    target = (torch.ones(1, 1, 2, 2) * 3, torch.ones(1, 1, 2, 2) * 4)
+
+    projector.forward(source, target)
+    projector.forward(source, target)
+    c2c_eval.stop_c2c_projector_trace_history(model)
+    features, metadata = c2c_eval.summarize_c2c_projector_generation_history(model)
+
+    assert metadata["feature_family"] == "c2c_generation_projector_trace_history"
+    assert metadata["projectors"][0]["history_length"] == 2
+    assert features.numel() == len(metadata["feature_names"])
+    assert any(name.endswith("key_gate_logit.last") for name in metadata["feature_names"])
+    assert any(name.endswith("key_residual.delta_projection_000.mean") for name in metadata["feature_names"])
+
+
+def test_generation_score_history_summarizes_decode_logits() -> None:
+    scores = [
+        torch.tensor([[0.0, 2.0, 1.0]], dtype=torch.float32),
+        torch.tensor([[3.0, 1.0, 0.0]], dtype=torch.float32),
+    ]
+    generated = torch.tensor([1, 0], dtype=torch.long)
+
+    features, metadata = c2c_eval.summarize_c2c_generation_score_history(scores, generated)
+
+    assert metadata["feature_family"] == "c2c_generation_target_logit_history"
+    assert metadata["step_count"] == 2
+    assert features.numel() == len(metadata["feature_names"])
+    assert "generation_logits.top_margin.mean" in metadata["feature_names"]
+    assert "generation_logits.generated_rank_frac.max" in metadata["feature_names"]
 
 
 def test_c2c_mechanism_probe_relabels_status(tmp_path: pathlib.Path) -> None:

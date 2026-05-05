@@ -24,6 +24,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from latent_bridge.c2c_eval import (
+    extract_c2c_generation_trace_features,
     extract_c2c_prefill_trace_features,
     load_c2c_model,
 )
@@ -70,14 +71,24 @@ def extract_mechanism_features(
     rows: list[torch.Tensor] = []
     metadata: list[dict[str, Any]] = []
     for example in examples:
-        feature, row_meta = extract_c2c_prefill_trace_features(
-            model,
-            tokenizer,
-            example.prompt,
-            device=device,
-            residual_projection_dim=int(residual_projection_dim),
-            feature_family=str(feature_family),
-        )
+        if str(feature_family) == "generation_summary_trace":
+            feature, row_meta = extract_c2c_generation_trace_features(
+                model,
+                tokenizer,
+                example.prompt,
+                device=device,
+                max_new_tokens=int(max_new_tokens),
+                residual_projection_dim=int(residual_projection_dim),
+            )
+        else:
+            feature, row_meta = extract_c2c_prefill_trace_features(
+                model,
+                tokenizer,
+                example.prompt,
+                device=device,
+                residual_projection_dim=int(residual_projection_dim),
+                feature_family=str(feature_family),
+            )
         row_meta = dict(row_meta)
         row_meta["example_id"] = _generation_example_id(example)
         rows.append(feature)
@@ -136,7 +147,9 @@ def analyze_with_c2c_features(
     )
     payload["c2c_run_config"] = dict(c2c_run_config)
     requested_family = str(c2c_run_config.get("feature_family", "summary_trace"))
-    if requested_family == "token_layer_tail_residual":
+    if requested_family == "generation_summary_trace":
+        payload["config"]["feature_family"] = "c2c_generation_projector_and_logit_trace_history"
+    elif requested_family == "token_layer_tail_residual":
         payload["config"]["feature_family"] = "c2c_prefill_token_layer_tail_residual"
     else:
         payload["config"]["feature_family"] = (
@@ -222,7 +235,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--probe-model", choices=["ridge", "query_bottleneck"], default="ridge")
     parser.add_argument(
         "--feature-family",
-        choices=["summary_trace", "token_layer_tail_residual"],
+        choices=["summary_trace", "token_layer_tail_residual", "generation_summary_trace"],
         default="summary_trace",
     )
     parser.add_argument("--shuffle-offset", type=int, default=1)

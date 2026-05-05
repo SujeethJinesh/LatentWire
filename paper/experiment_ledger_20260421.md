@@ -24180,3 +24180,52 @@ new source-causal residual objective.
 Lay explanation: C2C fixes some target mistakes, and a tiny oracle hint can
 sometimes point to the right answer. But our current ways of predicting that
 hint from source-side evidence do not work yet.
+
+## 2026-05-05 C2C Generation Trace Hook Preflight
+
+Implemented the generation-time trace collector for the next C2C-distillation
+gate:
+
+- code:
+  `latent_bridge/c2c_eval.py`;
+- updated analyzer:
+  `scripts/analyze_svamp32_c2c_mechanism_syndrome_probe.py`;
+- smoke script:
+  `scripts/run_c2c_generation_trace_smoke.py`;
+- test:
+  `tests/test_c2c_mechanism_trace.py`;
+- memo:
+  `paper/c2c_generation_trace_hook_preflight_20260505.md`.
+
+Purpose: collect richer no-behavior-change C2C generation traces for the live
+gate `generation_time_c2c_residual_trace_sparse_packet_preflight`. The trace
+now records projector call history and target decode-logit history from the
+published C2C generation path, then exposes it through the existing strict
+SVAMP32 syndrome probe via `--feature-family generation_summary_trace`.
+
+Headline:
+
+- code-level generation trace schema tests: pass;
+- `tests/test_c2c_mechanism_trace.py`: `6 passed`;
+- MPS trace-enabled C2C smoke: blocked by Apple MPS matmul incompatible
+  dimensions error;
+- MPS unmodified C2C generation smoke: blocked by the same Apple MPS matmul
+  error, so the failure is not introduced by the new trace collector;
+- CPU trace-enabled C2C smoke: blocked by vendored C2C expecting old
+  `DynamicCache.key_cache/value_cache` while current Transformers exposes
+  layer-based cache objects.
+
+Outcome: implementation ready, local generation blocked. The next ICLR gate
+needs a compatible CUDA/NVIDIA C2C run or a local compatibility fix for the
+vendored C2C wrapper and current Transformers cache API.
+
+Decision: keep the trace collector and runbook. Do not claim generation-time
+C2C sparse distillation yet. If NVIDIA access appears, run the recorded
+`generation_summary_trace` syndrome probe on the frozen SVAMP32 n32 surface. If
+staying local, the next highest-value engineering gate is a contained C2C cache
+compatibility shim followed by a one-row smoke.
+
+Lay explanation: we added the recorder that should capture C2C's useful
+generation-time behavior, but the local C2C engine currently fails before it
+can drive. The recorder is ready for a compatible machine or a local cache-API
+fix.

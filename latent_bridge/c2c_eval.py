@@ -230,6 +230,50 @@ def _tail_local_tokens(
     }
 
 
+def _projector_scalar_trace(projector) -> dict[str, Any]:
+    out: dict[str, Any] = {}
+    for name, tensor in (
+        ("key_scalar", getattr(projector, "last_norm_key_scalar", None)),
+        ("value_scalar", getattr(projector, "last_norm_value_scalar", None)),
+    ):
+        if tensor is None:
+            values = torch.zeros((1,), dtype=torch.float32)
+            shape: list[int] = []
+        else:
+            values = tensor.detach().float().reshape(-1).cpu()
+            shape = [int(dim) for dim in tensor.shape]
+        std = values.std(unbiased=False) if values.numel() > 1 else torch.tensor(0.0)
+        out[name] = {
+            "mean": float(values.mean().item()),
+            "std": float(std.item()),
+            "min": float(values.min().item()),
+            "max": float(values.max().item()),
+            "shape": shape,
+        }
+    key_gate_logit = float(getattr(projector, "last_key_gate_logit", 0.0))
+    value_gate_logit = float(getattr(projector, "last_value_gate_logit", 0.0))
+    out.update(
+        {
+            "key_gate_logit": key_gate_logit,
+            "value_gate_logit": value_gate_logit,
+            "key_gate_active": bool(key_gate_logit > 0.0),
+            "value_gate_active": bool(value_gate_logit > 0.0),
+        }
+    )
+    return out
+
+
+def reset_c2c_projector_trace_history(model, *, enabled: bool = True) -> None:
+    for projector in getattr(model, "projector_list", []):
+        projector.latentwire_trace_history = []
+        projector._latentwire_record_trace_history = bool(enabled)
+
+
+def stop_c2c_projector_trace_history(model) -> None:
+    for projector in getattr(model, "projector_list", []):
+        projector._latentwire_record_trace_history = False
+
+
 def install_c2c_projector_trace_hooks(model, *, residual_projection_dim: int = 0) -> None:
     for projector_idx, projector in enumerate(getattr(model, "projector_list", [])):
         if (
@@ -280,6 +324,18 @@ def install_c2c_projector_trace_hooks(model, *, residual_projection_dim: int = 0
                         output=output_value,
                     ),
                 }
+                if getattr(_projector, "_latentwire_record_trace_history", False):
+                    history = getattr(_projector, "latentwire_trace_history", [])
+                    entry = {
+                        "call_index": len(history),
+                        "source_seq_len": int(source_key.shape[-2]),
+                        "target_seq_len": int(target_key.shape[-2]),
+                        **_projector_scalar_trace(_projector),
+                        "key_residual": _projector.last_latentwire_trace["key_residual"],
+                        "value_residual": _projector.last_latentwire_trace["value_residual"],
+                    }
+                    history.append(entry)
+                    _projector.latentwire_trace_history = history
             except Exception:
                 _projector.last_latentwire_trace = {}
                 _projector.last_latentwire_local_tokens = {}
@@ -289,6 +345,156 @@ def install_c2c_projector_trace_hooks(model, *, residual_projection_dim: int = 0
         projector.forward = traced_forward
         projector._latentwire_trace_wrapped = True
         projector._latentwire_trace_projection_dim = int(residual_projection_dim)
+
+
+def _flatten_numeric_trace(prefix: str, value: Any, out: dict[str, float]) -> None:
+    if isinstance(value, bool):
+        out[prefix] = float(value)
+        return
+    if isinstance(value, (int, float)):
+        out[prefix] = float(value)
+        return
+    if isinstance(value, list):
+        for idx, item in enumerate(value):
+            if isinstance(item, (int, float, bool)):
+                out[f"{prefix}_{idx:03d}"] = float(item)
+        return
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if key == "shape":
+                continue
+            next_prefix = f"{prefix}.{key}" if prefix else str(key)
+            _flatten_numeric_trace(next_prefix, item, out)
+
+
+def _history_aggregates(values: list[float]) -> dict[str, float]:
+    tensor = torch.tensor(values, dtype=torch.float32)
+    std = tensor.std(unbiased=False) if tensor.numel() > 1 else torch.tensor(0.0)
+    return {
+        "mean": float(tensor.mean().item()),
+        "std": float(std.item()),
+        "min": float(tensor.min().item()),
+        "max": float(tensor.max().item()),
+        "first": float(tensor[0].item()),
+        "last": float(tensor[-1].item()),
+        "delta": float((tensor[-1] - tensor[0]).item()),
+    }
+
+
+def summarize_c2c_projector_generation_history(model) -> tuple[torch.Tensor, dict[str, Any]]:
+    features: list[float] = []
+    feature_names: list[str] = []
+    projector_metadata: list[dict[str, Any]] = []
+    aggregate_names = ("mean", "std", "min", "max", "first", "last", "delta")
+    for idx, projector in enumerate(getattr(model, "projector_list", [])):
+        history = list(getattr(projector, "latentwire_trace_history", []) or [])
+        projector_metadata.append(
+            {
+                "projector_index": int(idx),
+                "history_length": int(len(history)),
+            }
+        )
+        flattened_rows: list[dict[str, float]] = []
+        keys: set[str] = set()
+        for entry in history:
+            flat: dict[str, float] = {}
+            _flatten_numeric_trace("", entry, flat)
+            flattened_rows.append(flat)
+            keys.update(flat)
+        for key in sorted(keys):
+            values = [float(row.get(key, 0.0)) for row in flattened_rows]
+            aggregates = _history_aggregates(values)
+            for aggregate_name in aggregate_names:
+                feature_names.append(f"projector_{idx:02d}.history.{key}.{aggregate_name}")
+                features.append(float(aggregates[aggregate_name]))
+    if not features:
+        raise ValueError("No C2C generation trace history was recorded")
+    tensor = torch.tensor(features, dtype=torch.float32)
+    metadata = {
+        "feature_family": "c2c_generation_projector_trace_history",
+        "feature_dim": int(tensor.numel()),
+        "feature_names": feature_names,
+        "aggregate_names": list(aggregate_names),
+        "projectors": projector_metadata,
+    }
+    return tensor, metadata
+
+
+def _logit_step_stats(logits: torch.Tensor, generated_token: int | None) -> dict[str, float]:
+    values = logits.detach().float().reshape(-1).cpu()
+    if values.numel() == 0:
+        return {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "top1_logit": 0.0,
+            "top2_logit": 0.0,
+            "top1_prob": 0.0,
+            "top2_prob": 0.0,
+            "top_margin": 0.0,
+            "entropy": 0.0,
+            "generated_logit": 0.0,
+            "generated_rank_frac": 1.0,
+        }
+    std = values.std(unbiased=False) if values.numel() > 1 else torch.tensor(0.0)
+    topk = torch.topk(values, k=min(2, int(values.numel())))
+    top1_logit = float(topk.values[0].item())
+    top2_logit = float(topk.values[1].item()) if topk.values.numel() > 1 else top1_logit
+    probs = torch.softmax(values, dim=0)
+    top1_prob = float(probs[int(topk.indices[0].item())].item())
+    top2_prob = float(probs[int(topk.indices[1].item())].item()) if topk.indices.numel() > 1 else top1_prob
+    entropy = float((-(probs * torch.log(probs.clamp_min(1e-30))).sum()).item())
+    generated_logit = 0.0
+    generated_rank_frac = 1.0
+    if generated_token is not None and 0 <= int(generated_token) < values.numel():
+        token = int(generated_token)
+        generated_logit = float(values[token].item())
+        rank = int(torch.sum(values > values[token]).item())
+        generated_rank_frac = float(rank / max(int(values.numel()) - 1, 1))
+    return {
+        "mean": float(values.mean().item()),
+        "std": float(std.item()),
+        "min": float(values.min().item()),
+        "max": float(values.max().item()),
+        "top1_logit": top1_logit,
+        "top2_logit": top2_logit,
+        "top1_prob": top1_prob,
+        "top2_prob": top2_prob,
+        "top_margin": float(top1_logit - top2_logit),
+        "entropy": entropy,
+        "generated_logit": generated_logit,
+        "generated_rank_frac": generated_rank_frac,
+    }
+
+
+def summarize_c2c_generation_score_history(
+    scores: list[torch.Tensor],
+    generated_tokens: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    step_rows: list[dict[str, float]] = []
+    for step_idx, logits in enumerate(scores):
+        token = None
+        if generated_tokens.numel() > step_idx:
+            token = int(generated_tokens.reshape(-1)[step_idx].item())
+        step_rows.append(_logit_step_stats(logits[0], token))
+    feature_names: list[str] = []
+    features: list[float] = []
+    aggregate_names = ("mean", "std", "min", "max", "first", "last", "delta")
+    for key in sorted(step_rows[0]) if step_rows else []:
+        aggregates = _history_aggregates([float(row[key]) for row in step_rows])
+        for aggregate_name in aggregate_names:
+            feature_names.append(f"generation_logits.{key}.{aggregate_name}")
+            features.append(float(aggregates[aggregate_name]))
+    tensor = torch.tensor(features, dtype=torch.float32)
+    metadata = {
+        "feature_family": "c2c_generation_target_logit_history",
+        "feature_dim": int(tensor.numel()),
+        "feature_names": feature_names,
+        "step_count": int(len(step_rows)),
+        "aggregate_names": list(aggregate_names),
+    }
+    return tensor, metadata
 
 
 def summarize_c2c_projector_trace(
@@ -457,6 +663,61 @@ def extract_c2c_prefill_trace_features(
         ),
         "residual_projection_dim": int(residual_projection_dim),
         "projectors": projector_metadata,
+    }
+    return features, metadata
+
+
+@torch.no_grad()
+def extract_c2c_generation_trace_features(
+    model,
+    tokenizer,
+    prompt: str,
+    *,
+    device: str,
+    max_new_tokens: int,
+    residual_projection_dim: int = 0,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    messages = build_c2c_messages(prompt)
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=False,
+    )
+    inputs = tokenizer(text, return_tensors="pt").to(device)
+    prompt_len = int(inputs["input_ids"].shape[1])
+    install_c2c_projector_trace_hooks(model, residual_projection_dim=int(residual_projection_dim))
+    reset_c2c_projector_trace_history(model, enabled=True)
+    outputs = model.generate(
+        **inputs,
+        kv_cache_index=build_c2c_kv_cache_index(prompt_len, device=device),
+        do_sample=False,
+        max_new_tokens=int(max_new_tokens),
+        return_dict_in_generate=True,
+        output_scores=True,
+    )
+    stop_c2c_projector_trace_history(model)
+    sequences = outputs.sequences if hasattr(outputs, "sequences") else outputs["sequences"]
+    score_list = list(outputs.scores or []) if hasattr(outputs, "scores") else list(outputs.get("scores") or [])
+    generated = sequences[0, prompt_len:]
+    projector_features, projector_metadata = summarize_c2c_projector_generation_history(model)
+    score_features, score_metadata = summarize_c2c_generation_score_history(score_list, generated)
+    features = torch.cat([projector_features, score_features], dim=0)
+    metadata = {
+        "formatted_prompt_tokens": prompt_len,
+        "generated_tokens": int(generated.shape[0]),
+        "decoded_prediction": tokenizer.decode(generated, skip_special_tokens=True).strip(),
+        "residual_projection_dim": int(residual_projection_dim),
+        "feature_family": "c2c_generation_projector_and_logit_trace_history",
+        "feature_dim": int(features.numel()),
+        "components": {
+            "projector": projector_metadata,
+            "target_logits": score_metadata,
+        },
+        "feature_names": [
+            *(f"projector::{name}" for name in projector_metadata["feature_names"]),
+            *(f"logits::{name}" for name in score_metadata["feature_names"]),
+        ],
     }
     return features, metadata
 
