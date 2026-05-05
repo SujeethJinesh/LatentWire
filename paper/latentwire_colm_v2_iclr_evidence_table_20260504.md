@@ -93,9 +93,14 @@ These rows prevent an ICLR-scale claim until a new source-causal interface clear
 
 ## Next Exact Gate
 
-- name: `arc_n32_tokenwise_source_evidence_preflight`
-- primary path: Materialize a tiny ARC n32 tokenwise source-evidence cache and run a target-loss connector preflight on source-unique repair rows. Existing ARC/HellaSwag caches are mean-pooled and the OpenBookQA hardening now shows score/choice receiver fusion is not source-causal enough.
-- fallback path: If local model loading is not feasible on the Mac, run a target-side behavior-transcoder feasibility probe from available target traces, then only packetize source atoms after target atoms causally steer margins.
+- name: `arc_candidate_local_source_evidence_repair_preflight`
+- primary path: Preserve candidate-local source hidden innovations and test a
+  tiny train-only behavior repair readout. The completed row-level tokenwise
+  repair readout failed: matched `0.3125`, source-index `0.4375`, and matched
+  tied zero-source/wrong-row/source-shuffle/atom-shuffle controls.
+- fallback path: If candidate-local source evidence also fails, move the ICLR
+  path to dense-teacher/C2C-proxy distillation or NVIDIA-backed native KV/C2C
+  comparison.
 - pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
 
 ## Claim Boundaries

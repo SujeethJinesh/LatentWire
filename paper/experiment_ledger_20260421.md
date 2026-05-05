@@ -24028,3 +24028,52 @@ story.
 Lay explanation: we taught the receiver to ask, "does this tiny packet look
 trustworthy?" before using it. It improved over doing nothing, but it trusted
 fake packet patterns too often and lost to a shuffled-source control.
+
+## 2026-05-04 ARC Tokenwise Repair Readout Preflight
+
+Added and ran a Mac-local source-evidence readout gate:
+
+- script:
+  `scripts/build_source_private_arc_tokenwise_repair_readout_preflight.py`;
+- test:
+  `tests/test_build_source_private_arc_tokenwise_repair_readout_preflight.py`;
+- artifact:
+  `results/source_private_arc_tokenwise_repair_readout_preflight_20260504_n32_qwen05_to_qwen3/arc_tokenwise_repair_readout_preflight.json`;
+- memo:
+  `paper/arc_tokenwise_repair_readout_preflight_20260504.md`.
+
+Purpose: test whether answer-key-forbidden Qwen2.5 token hidden pools contain
+held-out source evidence that a tiny repair readout can use before spending
+more work on another target soft-prefix receiver. The gate reused the existing
+n32 ARC/OpenBookQA target-score audit, extracted source token pools on CPU, fit
+on 16 rows, and evaluated on 16 audit-aligned rows.
+
+Headline:
+
+- pass gate: `False`;
+- matched tokenwise repair readout accuracy: `0.3125`;
+- target-only accuracy: `0.2500`;
+- public candidate readout accuracy: `0.3125`;
+- source-only readout accuracy: `0.1875`;
+- same-byte visible text accuracy: `0.3750`;
+- packet-only source-index accuracy: `0.4375`;
+- matched minus best strict control: `-0.1250`;
+- dense diagnostic feature bytes per row: `57,344`;
+- hypothetical top-k sparse proxy bytes per row: `44.0`.
+
+Outcome: fail. The key diagnostic is that matched, zero-source, wrong-row,
+source-row shuffle, same-source-choice wrong-row, atom-shuffle, and
+coefficient-shuffle all produced identical accuracy and margins. The readout is
+not using row-specific source structure.
+
+Decision: rule out the row-level token hidden pool plus ridge repair readout as
+a source-causal preflight. Keep candidate-local source evidence alive, because
+this gate flattened source traces into a row-level vector. The next exact gate
+is `arc_candidate_local_source_evidence_repair_preflight`; if that also
+collapses, move away from this Mac-local Qwen2.5-to-Qwen3 token-hidden branch
+toward dense-teacher/C2C-proxy distillation or NVIDIA-backed native KV/C2C
+comparison.
+
+Lay explanation: we gave the receiver detailed source-token clues, but erasing
+or shuffling those clues made no difference. This version was not truly
+listening to the source model.

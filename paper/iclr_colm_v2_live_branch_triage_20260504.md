@@ -88,12 +88,23 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - HellaSwag complementarity-frontier selector with current top1/top2 packet fields.
 - HellaSwag cached hidden/score/vote policy-prediction packets as a repair frontier.
 - Conditional PQ scalar integrity thresholds on the public-zscore held-out-family receiver.
+- ARC row-level Qwen2.5 token hidden pool plus ridge repair readout: matched
+  `0.3125`, source-index control `0.4375`, and matched tied zero-source,
+  wrong-row, source-row-shuffle, same-source-choice wrong-row, atom-shuffle,
+  and coefficient-shuffle controls.
 
 ## Next Exact Gate
 
-- name: `arc_n32_tokenwise_source_evidence_preflight`
-- primary path: Materialize a tiny ARC n32 tokenwise source-evidence cache and run a target-loss connector preflight on source-unique repair rows. Existing ARC/HellaSwag caches are mean-pooled and the OpenBookQA hardening now shows score/choice receiver fusion is not source-causal enough.
-- fallback path: If local model loading is not feasible on the Mac, run a target-side behavior-transcoder feasibility probe from available target traces, then only packetize source atoms after target atoms causally steer margins.
+- name: `arc_candidate_local_source_evidence_repair_preflight`
+- primary path: Preserve candidate-local Qwen2.5 source hidden innovations and
+  train a tiny behavior repair readout on ARC rows, rather than flattening a
+  row-level token pool. The previous row-level token pool failed because the
+  receiver made identical decisions under source-erasing and source-shuffling
+  controls.
+- fallback path: If candidate-local evidence also collapses, stop this
+  Mac-local Qwen2.5-to-Qwen3 ARC token-hidden branch and move to a
+  dense-teacher/C2C-proxy distillation surface or NVIDIA-backed native KV/C2C
+  comparison.
 - pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
 - required controls: `target_only`, `answer_masked_source`, `constrained_wrong_row_source`, `same_source_choice_wrong_row`, `candidate_roll_or_deranged_public_basis`, `permuted_codes`, `random_same_byte`, `opaque_slot_or_deranged_basis`, `source_index_rank_score_comparators_when_meaningful`, `same_byte_visible_text`
 

@@ -419,10 +419,10 @@
     }
   ],
   "next_exact_gate": {
-    "fallback_path": "If local model loading is not feasible on the Mac, run a target-side behavior-transcoder feasibility probe from available target traces, then only packetize source atoms after target atoms causally steer margins.",
-    "name": "arc_n32_tokenwise_source_evidence_preflight",
+    "fallback_path": "If candidate-local evidence also collapses, stop this Mac-local Qwen2.5-to-Qwen3 ARC token-hidden branch and move to a dense-teacher/C2C-proxy distillation surface or NVIDIA-backed native KV/C2C comparison.",
+    "name": "arc_candidate_local_source_evidence_repair_preflight",
     "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
-    "primary_path": "Materialize a tiny ARC n32 tokenwise source-evidence cache and run a target-loss connector preflight on source-unique repair rows. Existing ARC/HellaSwag caches are mean-pooled and the OpenBookQA hardening now shows score/choice receiver fusion is not source-causal enough.",
+    "primary_path": "Preserve candidate-local Qwen2.5 source hidden innovations and train a tiny behavior repair readout on ARC rows, rather than flattening a row-level token pool. The previous row-level token pool failed because the receiver made identical decisions under source-erasing and source-shuffling controls.",
     "required_controls": [
       "target_only",
       "answer_masked_source",

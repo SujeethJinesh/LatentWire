@@ -86,14 +86,14 @@ specific receiver is not yet carrying useful source reasoning.
 
 ## Next Exact Gate
 
-Run `arc_tokenwise_repair_readout_preflight`: before another expensive target
-soft-prefix loop, train a lightweight repair readout over tokenwise source
-features and public target features. The gate should ask whether tokenwise
-source traces predict target error repair beyond source-index/rank/score,
-same-byte text, wrong-row, same-source-choice wrong-row, candidate-roll, and
-target-derived controls with positive paired CI.
+Completed in `paper/arc_tokenwise_repair_readout_preflight_20260504.md`.
 
-If that readout shows signal, return to a target-side receiver. If it fails,
-rule out the current token-pool feature representation and move to a richer
-candidate-preserving token lattice or a dense-teacher/C2C proxy distillation
-target.
+The readout failed: matched accuracy was `0.3125`, the source-index control was
+`0.4375`, and matched tied zero-source, wrong-row, source-row shuffle,
+same-source-choice wrong-row, atom-shuffle, and coefficient-shuffle controls.
+This rules out the row-level token-pool repair readout as a source-causal
+preflight.
+
+The next gate is now `arc_candidate_local_source_evidence_repair_preflight`:
+preserve candidate-local source hidden structure rather than flattening a
+row-level token pool.
