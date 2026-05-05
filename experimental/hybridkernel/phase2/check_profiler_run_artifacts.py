@@ -23,6 +23,7 @@ from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
 REQUIRED_FILES = [
     "metadata/environment.txt",
     "metadata/architecture_map.json",
+    "metadata/profile_scope.json",
     "profiler_metrics.json",
     "readout.md",
 ]
@@ -40,6 +41,8 @@ READOUT_MARKERS = [
 
 NSYS_PATTERNS = ["*.nsys-rep", "*.sqlite", "*.qdrep"]
 NCU_PATTERNS = ["*.ncu-rep"]
+
+ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
 
 
 def _has_any(root: Path, patterns: list[str]) -> bool:
@@ -92,6 +95,25 @@ def check_run_artifacts(
         for marker in READOUT_MARKERS:
             if marker not in readout:
                 errors.append(f"readout.md missing decision row: {marker}")
+
+    profile_scope_path = run_dir / "metadata/profile_scope.json"
+    if profile_scope_path.is_file():
+        try:
+            profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
+            profiled_process = str(profile_scope.get("profiled_process", ""))
+            trace_scope = str(profile_scope.get("trace_scope", "")).lower()
+            vllm_command = str(profile_scope.get("vllm_command", ""))
+            if profiled_process not in ALLOWED_PROFILED_PROCESSES:
+                errors.append(
+                    "profile_scope.json must identify the profiled CUDA-serving process, "
+                    "not just an HTTP client"
+                )
+            if "server" not in trace_scope and "single_process" not in trace_scope:
+                errors.append("profile_scope.json trace_scope must cover server-side CUDA work")
+            if "vllm" not in vllm_command.lower():
+                warnings.append("profile_scope.json vllm_command does not mention vLLM")
+        except (json.JSONDecodeError, TypeError) as exc:
+            errors.append(f"profile_scope.json is invalid: {exc}")
 
     metrics_status = "unavailable"
     metrics_rows = 0

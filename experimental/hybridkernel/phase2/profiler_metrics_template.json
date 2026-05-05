@@ -8,6 +8,17 @@
       "attention_ssm_boundary_ms": null,
       "matched_non_boundary_ms": null,
       "recoverable_fraction": 0.6,
+      "profiled_process": "vllm_server_or_single_process_vllm_benchmark",
+      "vllm_command": "record exact command in metadata/profile_scope.json",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": null,
+        "prefill_tokens": null,
+        "decode_tokens": null,
+        "requests": null
+      },
+      "control_model_or_segment": null,
       "notes": "Replace nulls after native profiling."
     }
   ]

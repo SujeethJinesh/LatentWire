@@ -138,11 +138,12 @@ whose recoverable-gain upper bound clears 3%. If native summaries show less
 than 1% recoverable gain, the branch should be killed or shelved. Current
 output is **PENDING native profiler data**, so no speed claim is allowed.
 
-The NVIDIA runbook now includes the exact parser input fields and command for
-turning reduced Nsight summaries into `profiler_analysis_gate.json`. This makes
-the next GPU run reviewable: the user only needs to fill
-`total_step_ms`, `attention_ssm_boundary_ms`, `matched_non_boundary_ms`, and
-`recoverable_fraction` per repeated run.
+The NVIDIA runbook now includes the exact parser input fields and the command
+for turning reduced Nsight summaries into `profiler_analysis_gate.json`. It was
+also tightened to profile the vLLM server process rather than only the HTTP
+client driver. This makes the next GPU run reviewable: the user needs to fill
+`total_step_ms`, `attention_ssm_boundary_ms`, `matched_non_boundary_ms`,
+`recoverable_fraction`, and server-side trace metadata per repeated run.
 
 ## Native Artifact Review Gate
 
@@ -152,11 +153,12 @@ Added a reviewer-facing artifact verifier:
 - tests: `phase2/tests/test_check_profiler_run_artifacts.py`
 
 The checker validates a future native run directory for environment metadata,
-architecture-map metadata, Nsight Systems and Nsight Compute artifacts,
-profiling logs, the pre-registered readout questions, and at least three valid
-metric rows for one model. This closes a reproducibility gap in the runbook:
-future GPU evidence must be both analytically reduced and artifact-complete
-before the paper can cite it.
+architecture-map metadata, server-side profiling scope, Nsight Systems and
+Nsight Compute artifacts, profiling logs, the pre-registered readout questions,
+and at least three valid metric rows for one model. It now rejects a
+client-only profile scope, which closes a concrete reproducibility risk in the
+previous runbook. Future GPU evidence must be both analytically reduced and
+artifact-complete before the paper can cite it.
 
 Current status remains **PENDING native profiler data**. The verifier is a gate
 for admissible evidence, not a positive result.

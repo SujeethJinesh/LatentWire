@@ -5,8 +5,8 @@
 - Phase 0: partial quick pass.
 - Phase 1: quick forensics pass complete.
 - Phase 2: synthetic retention simulation complete; real-trace text proxy gate
-  weakened the branch; hidden/KV saliency telemetry is mixed and does not revive
-  a positive-method claim
+  weakened the branch; hidden/KV saliency telemetry and CPU sparse-cache quality
+  are mixed and do not revive a positive-method claim
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
   scaffold added, but not phase-complete
 - Current viability: pivot/proceed only with narrowed framing.
@@ -97,6 +97,17 @@ positive method. Saturated: synthetic marker-retention and text-prefix-only
 policy tuning. The next exact gate is actual cache-dropping or sparse-KV quality
 validation, not more marker-recall-only sweeps.
 
+`phase2/kv_drop_quality_probe.md` now runs the closest Mac-local sparse-cache
+quality gate: process the full prefix once, prune the returned KV cache by each
+policy, then score the continuation from the sparse cache on CPU. On 24
+distilgpt2 traces at a 0.20 keep fraction, the train-fixed ThoughtFlow sweep
+best has NLL `3.432` versus R-KV-like `3.435`, with paired delta `-0.003` and
+95% CI `[-0.037, +0.034]`. That is a tie-range result, not a win.
+
+Status: **MIXED/NOT REVIVED**. This probe strengthens the negative/mixed
+conclusion because it uses actual cache dropping rather than retained text, but
+it still fails the pre-registered 0.03 NLL margin over R-KV-like.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -137,3 +148,6 @@ reviewer pack or GPU work.
   beats `value_norm_topk` on phase recall but has uncertain math-state margin
   and still ties the local LongFlow-like importance proxy. Next gate is
   cache-dropping or sparse-KV quality validation for a train-fixed successor.
+- 2026-05-05: Added CPU sparse-cache quality probe. Result: mixed/not revived.
+  Best ThoughtFlow-family policy ties R-KV-like on continuation NLL with paired
+  CI crossing zero; no GPU/FP8 performance claim is allowed.

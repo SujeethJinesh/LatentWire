@@ -19,6 +19,17 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         encoding="utf-8",
     )
     (run_dir / "metadata/architecture_map.json").write_text("[]\n", encoding="utf-8")
+    (run_dir / "metadata/profile_scope.json").write_text(
+        json.dumps(
+            {
+                "profiled_process": "vllm_server",
+                "trace_scope": "server-side CUDA kernels under fixed request replay",
+                "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (run_dir / "logs/nsys_b1.log").write_text("profile log\n", encoding="utf-8")
     (run_dir / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
         "placeholder\n", encoding="utf-8"
@@ -79,3 +90,23 @@ def test_requires_three_repeated_rows_for_review_gate(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("at least 3 repeated" in error for error in result["errors"])
+
+
+def test_rejects_client_only_profile_scope(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "metadata/profile_scope.json").write_text(
+        json.dumps(
+            {
+                "profiled_process": "http_client",
+                "trace_scope": "client request replay only",
+                "vllm_command": "python phase2/profiler_driver.py",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("HTTP client" in error for error in result["errors"])

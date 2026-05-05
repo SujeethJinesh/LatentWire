@@ -78,6 +78,20 @@ PY
 } | tee "$HWK_RUN/metadata/environment.txt"
 ```
 
+Record what process the profiler actually observes. A client-only profile is
+not admissible evidence for HybridKernel because the CUDA work lives in the
+vLLM server process:
+
+```bash
+cat > "$HWK_RUN/metadata/profile_scope.json" <<'JSON'
+{
+  "profiled_process": "vllm_server",
+  "trace_scope": "server-side CUDA kernels under fixed request replay",
+  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+}
+JSON
+```
+
 ## Workload Matrix
 
 Keep the first run small and discriminative.
@@ -121,7 +135,9 @@ replacement in `$HWK_RUN/metadata/command_notes.md`.
 Goal: identify whether attention/SSM boundaries show distinct kernels, gaps,
 CUDA graph nodes, memory copies, synchronization, or host scheduling stalls.
 
-Run one short fixed request stream under `nsys`:
+Run the vLLM server under `nsys`; then replay fixed requests from a second
+local terminal. Do **not** profile only `profiler_driver.py`, because that
+would trace the HTTP client rather than the CUDA-serving process.
 
 ```bash
 nsys profile \
@@ -131,14 +147,25 @@ nsys profile \
   --force-overwrite=true \
   --stats=true \
   --output="$HWK_RUN/nsys/granite_tiny_b1_decode64" \
-  python "$HWK_ROOT/phase2/profiler_driver.py" \
+  python -m vllm.entrypoints.openai.api_server \
     --model "$MODEL" \
-    --batch-size 1 \
-    --prefill-tokens 128 \
-    --decode-tokens 64 \
-    --requests 16 \
-    --seed 1 \
-  2>&1 | tee "$HWK_RUN/logs/nsys_b1.log"
+    --dtype bfloat16 \
+    --max-model-len 2048 \
+    --disable-log-requests \
+  2>&1 | tee "$HWK_RUN/logs/nsys_server_b1.log"
+```
+
+In a second local terminal on the same NVIDIA host:
+
+```bash
+python "$HWK_ROOT/phase2/profiler_driver.py" \
+  --model "$MODEL" \
+  --batch-size 1 \
+  --prefill-tokens 128 \
+  --decode-tokens 64 \
+  --requests 16 \
+  --seed 1 \
+  2>&1 | tee "$HWK_RUN/logs/client_b1.log"
 ```
 
 `profiler_driver.py` is tracked in this repository and can be sanity-checked on
@@ -155,7 +182,9 @@ Mac with:
   --dry-run
 ```
 
-Do not interpret ad hoc manual API calls as benchmark evidence.
+Do not interpret ad hoc manual API calls as benchmark evidence, and do not
+submit a run where `metadata/profile_scope.json` says the profiled process was
+only the HTTP client.
 
 Repeat for batch 8 if memory allows.
 

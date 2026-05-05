@@ -103,6 +103,19 @@ prototype comparing exact attention, exact fixed-sink decomposition that still
 computes `QK_sink`, and rank-2 approximate sink-logit prediction; native speed
 claims require NVIDIA hardware.
 
+## Head-Selective Rank-2 Gate
+
+`phase2/head_selective_sink_gate.md` tested the obvious Mac-local rescue for
+the fragile per-head result: fit predictors on a train split, select rank-2
+heads on validation when rank-2 beats position-only on output rel-L2, then
+evaluate the mixed policy on a held-out split. The rule selected 19/72 heads
+but failed held-out: validation-selected rank-2 had output rel-L2 `0.2035`,
+worse than position-only `0.1724` and all-rank2 `0.1419`.
+
+Decision: simple validation head selection is **weakened/ruled out** as a
+pre-GPU rescue. The approximate branch remains alive only as all-rank2 plus a
+future stability mechanism; no paper should claim head-selective robustness.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added a scalar fixed sink-token decomposition primitive:

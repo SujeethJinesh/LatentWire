@@ -25,7 +25,8 @@ claim.
 | real QK sink-logit probe | rank-8 hidden+pos R2 0.712 vs position-only 0.153 | approximate branch alive |
 | cost model | rank-2 cost ratio 0.531x exact four-sink QK with R2 0.420 | rank-2 is viable compromise |
 | softmax/output probe | 48 traces; aggregate rank-2 output rel-L2 0.141 vs position-only 0.170 | weakly positive |
-| layer-head paired probe | rank-2 output rel-L2 improvement +0.0297 +/- 0.0378; 20/72 head wins | fragile; needs repeats or head gating |
+| layer-head paired probe | rank-2 output rel-L2 improvement +0.0297 +/- 0.0378; 20/72 head wins | fragile; needs repeats or better stability |
+| validation head-selective gate | selected 19/72 heads; held-out output rel-L2 0.2035 vs 0.1724 position and 0.1419 all-rank2 | simple head selection weakened |
 | Triton readiness | `TRITON_INTERPRET=1` set, `triton` not importable, CUDA unavailable on Mac | no interpreter pass yet |
 
 ## Reviewer Risks
@@ -40,6 +41,7 @@ claim.
 
 First make the `TRITON_INTERPRET=1` approximate-attention scaffold runnable in
 `./venv_arm64` or in a Linux GPU environment and verify exact-prediction
-correctness. Then repeat the softmax/output probe with split seeds or a
-head-selective rank-2 gate before running the native NVIDIA comparison in
+correctness. Then repeat the all-rank2 softmax/output probe with split seeds or
+a better stability mechanism; simple validation head selection is no longer a
+good rescue. Native NVIDIA comparison remains gated by
 `experimental/sinkaware/phase2/gpu_gate_runbook.md`.

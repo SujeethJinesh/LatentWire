@@ -7,9 +7,9 @@
 
 | Rank | Project | Workshop acceptance likelihood | Distance to completion | Current decision |
 |---:|---|---|---|---|
-| 1 | SinkAware | low-medium | medium | weakly alive as approximate low-rank fixed-sink prediction |
-| 2 | ThoughtFlow-FP8 | low-medium | medium-long | mixed after hidden/KV saliency telemetry and held-out sweeps |
-| 3 | HybridKernel | low-medium | long without GPU | weakly alive as a profiler-gate systems paper |
+| 1 | SinkAware | low-medium | medium | all-rank2 approximate branch weakly alive; simple validation head selection weakened |
+| 2 | ThoughtFlow-FP8 | low-medium | medium-long | mixed after hidden/KV telemetry and CPU sparse-cache quality probe |
+| 3 | HybridKernel | low-medium | long without GPU | weakly alive as a server-side profiler-gate systems paper |
 
 ## SinkAware
 
@@ -28,10 +28,14 @@ New update:
 - Added per-head paired evidence: aggregate rank-2 improves output rel-L2
   `0.1408` vs position-only `0.1700`, but only `20/72` layer-heads improve,
   so the branch is weakly alive rather than cleanly positive.
+- Added the head-selective validation/test gate. It selected 19/72 rank-2
+  heads on validation but failed held-out with output rel-L2 `0.2035`, worse
+  than position-only `0.1724` and all-rank2 `0.1419`.
 
 Needed for completion:
 
-1. Run split/seed repeats or a head-selective rank-2 gate to show robustness.
+1. Run split/seed repeats for the all-rank2 branch or design a better
+   stability mechanism; simple validation head selection is weakened.
 2. Run Triton interpreter correctness against the Phase 3 reference after
    installing `triton` in `venv_arm64`.
 3. Native GPU comparison of exact attention, exact decomposition, rank-2, rank-4,
@@ -60,11 +64,16 @@ New update:
   improves phase recall over value-norm top-k by `+0.508` with positive CI, but
   math-state recall improves only `+0.073` with CI crossing zero. The branch is
   still mixed, not revived.
+- Added CPU sparse-cache quality: process full prefix, prune `past_key_values`,
+  and score continuation from the sparse cache. Best ThoughtFlow-family policy
+  NLL is `3.432` versus R-KV-like `3.435`, paired delta `-0.003` with 95% CI
+  `[-0.037,+0.034]`. This is stronger than retained-text proxy evidence but
+  still a tie-range result.
 
 Needed for completion:
 
-1. Actual cache-dropping or sparse-KV quality validation for a train-fixed
-   successor policy.
+1. A new successor policy with a utility signal closer to future loss than
+   marker/phase protection alone.
 2. More held-out traces and at least one newer model.
 3. Matched-budget continuation NLL win over R-KV-like, ThinKV-like, and
    LongFlow-like before GPU work.
@@ -80,8 +89,9 @@ New update:
 - Extended the NVIDIA/vLLM profiler runbook with exact parser input fields and
   the command for generating the paper-facing gate.
 - Added native profiler artifact verification so GPU evidence must include
-  metadata, logs, Nsight artifacts, readout rows, and at least 3 valid repeated
-  metric rows before paper-facing claims.
+  metadata, server-side profile scope, logs, Nsight artifacts, readout rows, and
+  at least 3 valid repeated metric rows before paper-facing claims. Client-only
+  profiles are now rejected.
 - Current output is pending native profiler data, so no speed claim is allowed.
 
 Needed for completion:
@@ -94,7 +104,8 @@ Needed for completion:
 
 ## Current Recommendation
 
-Push SinkAware first only if the next split/head-selective repeat improves the
-per-head picture. Keep ThoughtFlow alive for one actual cache-dropping quality
-gate, not more proxy-only saliency. Do not spend more Mac implementation time on
-HybridKernel until native profiler traces exist.
+Push SinkAware only if all-rank2 survives repeatability or a better stability
+mechanism. Keep ThoughtFlow alive only for a new loss-oriented policy, since
+the actual CPU sparse-cache gate tied R-KV-like. Do not spend more Mac
+implementation time on HybridKernel beyond profiler artifact semantics until
+native server-side profiler traces exist.

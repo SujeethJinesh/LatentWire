@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. A new layer-head paired analysis weakens the claim: rank-2 improves output relative L2 by only $0.0297 \pm 0.0378$ across 72 layer-head cells and wins 20/72 cells. We also add a CPU reference and Triton-interpreter scaffold for the exact operator a future kernel must implement. This is not an end-to-end quality or GPU speed result. It is a bounded correctness and repeatability gate for deciding whether approximate sink prediction is worth implementing.
+Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. A layer-head paired analysis weakens the claim: rank-2 improves output relative L2 by only $0.0297 \pm 0.0378$ across 72 layer-head cells and wins 20/72 cells. A new validation-selected head gate weakens it further: selecting 19/72 heads on validation raises held-out output relative L2 to 0.204 versus 0.172 for position-only and 0.142 for all-rank2. This is not an end-to-end quality or GPU speed result. It is a bounded correctness and repeatability gate for deciding whether approximate sink prediction is worth implementing.
 \end{abstract}
 
 \section{Problem}
@@ -61,6 +61,13 @@ rank8 & 0.0955 & 0.0805 & 0.347 & 0.0360 \\
 \label{tab:paired}
 \end{table}
 
+We also tested the obvious Mac-local rescue: select rank-2 only for heads where
+rank-2 beats position-only on a validation split, then evaluate that mixed
+policy on held-out tokens. The rule selected 19/72 heads but failed held-out:
+output relative L2 was 0.204 for validation-selected rank-2, compared with
+0.172 for position-only and 0.142 for all-rank2. This rules out simple
+validation head selection as a pre-GPU rescue.
+
 \section{Reference and Kernel Gates}
 
 The Phase 3 reference specifies the exact computation to preserve during kernel work. Given query $q$, keys $K$, values $V$, and predicted fixed-sink logits $\hat{s}$, SinkAware computes all tail logits $qK_{tail}^{\top}$ exactly, replaces only the first sink-token logits with $\hat{s}$, and then runs the ordinary softmax denominator over the concatenated vector. Unit tests verify that when $\hat{s}$ equals exact sink logits, the reference reproduces exact attention to numerical tolerance. This keeps the live branch separate from the killed exact-static-reuse branch.
@@ -69,12 +76,13 @@ The Phase 4 Triton-interpreter scaffold now targets the same operator for a one-
 
 \section{Decision}
 
-SinkAware is weakly alive only as an approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead. Promotion now requires three things before any positive-method claim: rank-2 must survive split or seed repeats, a head-selective variant must explain or remove unstable heads, and native runs must show a real speed or memory-traffic advantage over exact attention while still beating the position-only predictor on quality.
+SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. Promotion now requires a repeatable all-head rank-2 quality result, a better stability mechanism than validation head selection, and native runs that show real speed or memory-traffic advantage over exact attention while still beating the position-only predictor on quality.
 
 \section{Artifacts}
 
 \begin{itemize}
 \item \url{experimental/sinkaware/phase2/real_qk_sink_softmax_output_probe.md}
+\item \url{experimental/sinkaware/phase2/head_selective_sink_gate.md}
 \item \url{experimental/sinkaware/phase2/qk_sink_cost_model.md}
 \item \url{experimental/sinkaware/phase3/approx_sink_attention_reference.md}
 \item \url{experimental/sinkaware/phase4/approx_sink_attention_triton_gate.md}

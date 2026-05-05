@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens the broad novelty claim because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. We therefore do not claim a kernel speedup. The contribution is a reproducible profiler gate, a fixed-request vLLM driver, a pre-registered profiler-analysis parser, and an artifact-completeness verifier with a promote/kill criterion for future native NVIDIA measurements.
+Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens the broad novelty claim because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. We therefore do not claim a kernel speedup. The contribution is a reproducible profiler gate, a fixed-request vLLM driver, a pre-registered profiler-analysis parser, and an artifact-completeness verifier that now rejects client-only traces and requires server-side CUDA profiling metadata before any native result can be cited.
 \end{abstract}
 
 \section{Hypothesis}
@@ -31,9 +31,9 @@ Artifact & Result & Decision \\
 Architecture map & Granite has 8 boundaries and 20.0\% boundary stream fraction; Qwen3-Next has 23 inferred boundaries and 47.9\%. & Inspectable, not speed evidence. \\
 Runtime audit & vLLM already handles hybrid state layout and transfer paths. & Broad novelty weakened. \\
 Threshold model & Granite needs about 25.0\% avoidable boundary traffic at 60\% recovery for a 3\% proxy gain. & Mac kernel work not justified. \\
-Profiler driver & Fixed-request OpenAI-compatible driver dry-runs locally. & Native gate is runnable. \\
+Profiler driver & Fixed-request OpenAI-compatible driver dry-runs locally; runbook now profiles the vLLM server, not just the HTTP client. & Native gate is less likely to be mis-run. \\
 Analysis parser & JSON profiler summaries are reduced into avoidable-boundary share and recoverable-gain upper bound. & Decision rule is pre-registered. \\
-Artifact verifier & Native run directories are checked for metadata, Nsight artifacts, logs, readout rows, and repeated metric rows. & Evidence must be review-complete before citation. \\
+Artifact verifier & Native run directories are checked for metadata, server-side profile scope, Nsight artifacts, logs, readout rows, and repeated metric rows. & Client-only traces are rejected. \\
 \bottomrule
 \end{tabular}
 \caption{HybridKernel evidence before native GPU profiling.}
@@ -48,7 +48,7 @@ The next experiment is a native NVIDIA/vLLM run with Nsight Systems and Nsight C
 {\mathrm{total\ step\ ms}}
 \times \mathrm{recoverable\ fraction}.
 \]
-If repeated native summaries show less than 1\% recoverable gain, the branch should be killed or shelved. Before any run is cited, the artifact verifier must also pass on the exact run directory, confirming environment metadata, Nsight Systems and Nsight Compute artifacts, profiling logs, the pre-registered readout questions, and at least three valid repeated metric rows for one model. This is an admissibility check only; it does not promote the method.
+If repeated native summaries show less than 1\% recoverable gain, the branch should be killed or shelved. Before any run is cited, the artifact verifier must also pass on the exact run directory, confirming environment metadata, server-side profiling scope, Nsight Systems and Nsight Compute artifacts, profiling logs, the pre-registered readout questions, and at least three valid repeated metric rows for one model. This is an admissibility check only; it does not promote the method.
 
 \section{Claim Boundary}
 
