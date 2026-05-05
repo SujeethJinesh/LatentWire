@@ -1,0 +1,14 @@
+{
+  "artifact_sha256": {
+    "generation_trace_probe.json": "5e6990585ef776c9363750c1e6a7d61ad78d6cb335ba43942f6944ba6499b169",
+    "generation_trace_probe.md": "1df3be0b596fd2e250f551ea55714997f3ea6b554bae4bb4d0979cbac57fec6c"
+  },
+  "artifacts": [
+    "generation_trace_probe.json",
+    "generation_trace_probe.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "pass_gate": false,
+  "status": "c2c_mechanism_syndrome_probe_fails_gate"
+}

@@ -78,6 +78,44 @@ def test_dynamic_cache_compatibility_shim_clones_new_cache_api(monkeypatch) -> N
     assert wrapper_module.hybrid_to_dynamic(clone) is clone
 
 
+def test_force_c2c_mps_eager_attention_only_for_mps() -> None:
+    cpu_model = types.SimpleNamespace(
+        model_list=[types.SimpleNamespace(config=types.SimpleNamespace(_attn_implementation="sdpa"))]
+    )
+    mps_model = types.SimpleNamespace(
+        model_list=[types.SimpleNamespace(config=types.SimpleNamespace(_attn_implementation="sdpa"))]
+    )
+
+    c2c_eval.force_c2c_mps_eager_attention(cpu_model, device="cpu")
+    c2c_eval.force_c2c_mps_eager_attention(mps_model, device="mps")
+
+    assert cpu_model.model_list[0].config._attn_implementation == "sdpa"
+    assert mps_model.model_list[0].config._attn_implementation == "eager"
+
+
+def test_install_c2c_decode_attention_mask_source_patch_is_idempotent(tmp_path: pathlib.Path) -> None:
+    wrapper_path = tmp_path / "rosetta" / "model" / "wrapper.py"
+    wrapper_path.parent.mkdir(parents=True)
+    wrapper_path.write_text(
+        "\n".join(
+            [
+                "            prefill_attention_mask = base_attention_mask[:, :end] if base_attention_mask is not None else None",
+                "            prefill_position_ids = position_ids[:, start:end] if position_ids is not None else None",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    c2c_eval.install_c2c_decode_attention_mask_source_patch(tmp_path)
+    once = wrapper_path.read_text(encoding="utf-8")
+    c2c_eval.install_c2c_decode_attention_mask_source_patch(tmp_path)
+
+    assert wrapper_path.read_text(encoding="utf-8") == once
+    assert "past_key_values is not None" in once
+    assert "prefill_attention_mask = base_attention_mask\n" in once
+
+
 def _row(example_id: str, answer: str, pred: str, method: str, correct: bool) -> dict:
     return {
         "example_id": example_id,

@@ -1,0 +1,34 @@
+{
+  "artifact_sha256": {
+    "c2c_generate.jsonl": "c57e99047faafee54f267fbb5cd538baeda83d251d2a26b3cec9117eb5a6653c",
+    "c2c_generate.jsonl.meta.json": "a4e5bf9cd7a8add5049436147c7bc9f67fcb971c73222920e875d28a47d09699",
+    "c2c_replay_target_set.json": "dc44d9d1c073c5e22317354a83826e4004a325306e175a92ca2abf0f722f9f0a",
+    "c2c_replay_target_set.md": "7e37dae727455e997efc8bc8edf26ca7e8204838cc0f0081ccca07bcf3f230c2",
+    "c2c_teacher_innovation_probe.json": "6aa73256f6451311e6a2660ca3b9d1d24b94164de4fb5b72d88e06f4d0450adb",
+    "c2c_teacher_innovation_probe.md": "2cdf9e9edb70247dd6a3cfbe9592a9ed9003744025429d0972ab28e262e3723a"
+  },
+  "artifacts": [
+    "c2c_generate.jsonl",
+    "c2c_generate.jsonl.meta.json",
+    "c2c_replay_target_set.json",
+    "c2c_replay_target_set.md",
+    "c2c_teacher_innovation_probe.json",
+    "c2c_teacher_innovation_probe.md",
+    "manifest.json",
+    "manifest.md"
+  ],
+  "archived_comparison": {
+    "archived_correct": 16,
+    "archived_only_correct": [
+      "575d7e83d84c1e67"
+    ],
+    "correct_overlap": 15,
+    "first4_prediction_fields_match": true,
+    "replay_correct": 16,
+    "replay_only_correct": [
+      "b1200c32546a34a5"
+    ]
+  },
+  "pass_gate": true,
+  "status": "mps_c2c_compat_replay_ready"
+}

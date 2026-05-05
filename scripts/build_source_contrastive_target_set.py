@@ -230,6 +230,7 @@ def build_target_set(
         },
         "ids": {
             "source_only": sorted(source_only),
+            "teacher_only": sorted(source_only),
             "clean_source_only": sorted(clean_source_only),
             "clean_residual_targets": sorted(clean_source_only),
             "target_only": sorted(target_only),

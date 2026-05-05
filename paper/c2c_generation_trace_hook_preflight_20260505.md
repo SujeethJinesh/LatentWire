@@ -1,11 +1,12 @@
 # C2C Generation Trace Hook Preflight
 
 - date: `2026-05-05`
-- status: `trace_collector_implemented_local_generation_blocked`
+- status: `mps_c2c_compat_replay_ready_generation_trace_decoder_failed`
 - COLM_v2 readiness impact: strengthens reproducibility and explains why C2C
   generation-time comparisons remain claim-bounded
-- ICLR readiness impact: next positive-method gate now needs a C2C-compatible
-  generation environment or a native CUDA run
+- ICLR readiness impact: local MPS can now replay the C2C teacher surface, but
+  the current generation-summary trace decoder is ruled out as the positive
+  sparse-packet path
 
 ## Purpose
 
@@ -196,3 +197,53 @@ next ICLR gate should either use a native C2C-compatible runtime for teacher
 traces or move to a teacher-logit/KV-delta distillation artifact captured under
 a runtime that reproduces the archived C2C teacher behavior. Do not claim C2C
 distillation from the local CPU traces.
+
+## 2026-05-05 MPS Compatibility Replay Update
+
+Added two local compatibility repairs:
+
+- force C2C submodels to eager attention on MPS, avoiding the current SDPA/GQA
+  shape failure;
+- keep the full decode attention mask when the vendored C2C wrapper calls the
+  target model with `past_key_values`, avoiding the one-token mask truncation
+  that caused repeated-token degeneration.
+
+The repaired MPS replay now recovers the archived dense-teacher surface well
+enough for local C2C-distillation diagnostics:
+
+- replay C2C: `16/32`;
+- archived C2C: `16/32`;
+- correct-ID overlap: `15/16`;
+- first four prediction fields match the archived C2C artifact exactly;
+- replay teacher-only rows: `10`;
+- replay clean teacher-only rows after source-alone/text-to-text controls:
+  `10`.
+
+Artifacts:
+
+- `results/svamp32_c2c_mps_compat_replay_20260505/c2c_generate.jsonl`
+- `results/svamp32_c2c_mps_compat_replay_20260505/c2c_replay_target_set.json`
+- `results/svamp32_c2c_mps_compat_replay_20260505/c2c_teacher_innovation_probe.json`
+
+Using that replay-aligned target set, the full MPS generation-summary trace
+syndrome probe still fails:
+
+| Condition | Correct | Clean Correct | Teacher-Only Correct |
+|---|---:|---:|---:|
+| matched | 13/32 | 4 | 4 |
+| zero_source | 14/32 | 4 | 4 |
+| shuffled_source | 12/32 | 3 | 3 |
+| label_shuffled | 15/32 | 4 | 4 |
+| target_only | 14/32 | 4 | 4 |
+| slots_only | 8/32 | 0 | 0 |
+
+The clean source-necessary set is empty: every clean row matched by the trace
+decoder is also matched by a destructive or target-only control. This rules out
+the current ridge decoder over `32 x 10080` generation-summary traces as the
+ICLR positive method.
+
+Decision: keep C2C distillation alive as a teacher/upper-bound direction, but
+promote a more direct teacher-delta gate next. The next exact gate should use
+faithful replay to capture teacher logits, target logits, and/or KV/projector
+deltas, then test a packet that predicts C2C's useful behavioral delta rather
+than the current residue-syndrome classifier over coarse generation summaries.

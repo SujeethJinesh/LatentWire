@@ -75,6 +75,7 @@ def test_build_source_contrastive_target_set_excludes_controls_and_baselines(
 
     assert payload["status"] == "source_contrastive_target_set_ready"
     assert payload["ids"]["source_only"] == ["a", "b", "c"]
+    assert payload["ids"]["teacher_only"] == ["a", "b", "c"]
     assert payload["ids"]["clean_source_only"] == ["c"]
     assert payload["ids"]["clean_residual_targets"] == ["c"]
     assert payload["ids"]["target_self_repair"] == ["b"]
@@ -108,5 +109,6 @@ def test_cli_writes_outputs(tmp_path: pathlib.Path) -> None:
     )
 
     assert payload["ids"]["clean_source_only"] == ["a"]
+    assert payload["ids"]["teacher_only"] == ["a"]
     assert json.loads(output_json.read_text())["status"] == "source_contrastive_target_set_ready"
     assert "Source-Contrastive Target Set" in output_md.read_text()

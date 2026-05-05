@@ -101,6 +101,48 @@ def install_c2c_dynamic_cache_compatibility_shim(wrapper_module: Any | None = No
     wrapper_module._latentwire_dynamic_cache_shim = True
 
 
+def force_c2c_mps_eager_attention(model: Any, *, device: str | torch.device) -> None:
+    """Avoid current MPS SDPA grouped-query attention shape failures."""
+    if torch.device(device).type != "mps":
+        return
+    for submodel in getattr(model, "model_list", []) or []:
+        config = getattr(submodel, "config", None)
+        if config is not None and hasattr(config, "_attn_implementation"):
+            config._attn_implementation = "eager"
+
+
+def install_c2c_decode_attention_mask_source_patch(repo_root: pathlib.Path) -> None:
+    """Patch vendored C2C decode masks for current cached generation.
+
+    The vendored wrapper slices the attention mask to the current one-token
+    decode segment even when `past_key_values` already contains the prefix.
+    Current Transformers expects the full cache-length mask in that case. Keep
+    the patch as a tiny idempotent source rewrite because the C2C clone is an
+    ignored external checkout, not a tracked LatentWire module.
+    """
+    wrapper_path = repo_root / "rosetta" / "model" / "wrapper.py"
+    text = wrapper_path.read_text(encoding="utf-8")
+    replacement = (
+        "            prefill_attention_mask = base_attention_mask[:, :end] if base_attention_mask is not None else None\n"
+        "            if (\n"
+        "                past_key_values is not None\n"
+        "                and base_attention_mask is not None\n"
+        "                and base_attention_mask.shape[1] > end\n"
+        "            ):\n"
+        "                prefill_attention_mask = base_attention_mask\n"
+        "            prefill_position_ids = position_ids[:, start:end] if position_ids is not None else None\n"
+    )
+    if replacement in text:
+        return
+    needle = (
+        "            prefill_attention_mask = base_attention_mask[:, :end] if base_attention_mask is not None else None\n"
+        "            prefill_position_ids = position_ids[:, start:end] if position_ids is not None else None\n"
+    )
+    if needle not in text:
+        raise RuntimeError("Could not find C2C decode attention-mask patch point")
+    wrapper_path.write_text(text.replace(needle, replacement, 1), encoding="utf-8")
+
+
 def load_c2c_model(
     *,
     source_model: str,
@@ -111,6 +153,7 @@ def load_c2c_model(
     repo_root = pathlib.Path("references/repos/C2C").resolve()
     if not repo_root.exists():
         raise FileNotFoundError(f"C2C repo clone not found at {repo_root}")
+    install_c2c_decode_attention_mask_source_patch(repo_root)
     sys.path.insert(0, str(repo_root))
 
     from rosetta.utils.evaluate import load_rosetta_model  # type: ignore
@@ -149,6 +192,7 @@ def load_c2c_model(
         device=torch.device(device),
         generation_config=generation_config,
     )
+    force_c2c_mps_eager_attention(model, device=device)
     return model, tokenizer, artifact
 
 
