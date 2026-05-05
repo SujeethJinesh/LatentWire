@@ -118,3 +118,41 @@ answer decoding. It is a stronger matched baseline: either run native C2C/KVComm
 with their paper harnesses on GPU, or diagnose why the local KVComm selected
 source layers damage Qwen3 target predictions relative to target-only and
 shuffled-source controls.
+
+## KVComm Damage Diagnostic
+
+The Mac-feasible diagnosis points away from useful source content and toward the
+cache-injection path. `scripts/summarize_kvcomm_damage_diagnostic.py` compares
+matched KVComm, zero-source KVComm, shuffled-source KVComm, and target-only on
+the same examples.
+
+First n16 run:
+
+| Task | matched | zero-source | target-only | matched = zero predictions | matched damages target | matched repairs target |
+|---|---:|---:|---:|---:|---:|---:|
+| ARC-Challenge | 0.062 | 0.062 | 0.688 | 1.000 | 0.625 | 0.000 |
+| OpenBookQA | 0.188 | 0.188 | 0.250 | 1.000 | 0.188 | 0.125 |
+
+Layer-fraction sweep (`0.04,0.07,0.1,0.25,0.5,1.0`, calibration limit 16):
+
+| Task | best selected layers | matched | zero-source | target-only | matched = zero predictions | matched damages target | matched repairs target |
+|---|---|---:|---:|---:|---:|---:|---:|
+| ARC-Challenge | `[5]` | 0.250 | 0.250 | 0.688 | 1.000 | 0.562 | 0.125 |
+| OpenBookQA | `[5, 7]` | 0.188 | 0.188 | 0.250 | 1.000 | 0.188 | 0.125 |
+
+Artifacts:
+
+- `paper/latentwire_kvcomm_damage_diagnostic_20260505.md`
+- `paper/latentwire_kvcomm_damage_diagnostic_layer_sweep_20260505.md`
+- `results/dense_baseline_mcqa_smoke_20260505/kvcomm_arc_n16_controls_layer_sweep_constrained_letter_summary.md`
+- `results/dense_baseline_mcqa_smoke_20260505/kvcomm_openbookqa_n16_controls_layer_sweep_constrained_letter_summary.md`
+
+Conclusion: prompt/scoring calibration and layer selection do not rescue the
+local KVComm row. Matched and zero-source predictions are identical on every
+paired n16 example in both tasks, including after the broader layer sweep. That
+rules out "the selected source values are useful but noisy" as the local
+failure explanation. The most likely culprit is the cache-prefix/position path:
+feeding Qwen3 through a source-cache-shaped prefix changes the receiver's
+answer distribution before any source content can help. The next useful gate is
+therefore either a native/harness-faithful KVComm replication or a deeper
+position/cache-ablation patch, not more prompt parsing.
