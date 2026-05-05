@@ -1,6 +1,6 @@
 # SinkAware Per-Head Softmax/Output Error Probe
 
-Status: **ALIVE for GPU gate; rank-2 improves output error over position-only with bounded drift.**
+Status: **WEAKLY ALIVE for GPU gate; aggregate rank-2 improves, but paired per-head gains are concentrated.**
 
 - model: `distilgpt2`
 - traces: 48
@@ -21,7 +21,20 @@ It measures softmax drift and attention-output error on held-out tokens. It is n
 | rank4 | 838.3202 | 0.0448 | 0.1151 | 0.1221 |
 | rank8 | 699.2322 | 0.0396 | 0.1042 | 0.1075 |
 
+## Layer-Head Paired Improvement vs Position-Only
+
+Layer-head cells: 72. Positive values are lower error than the position-only predictor.
+
+| Predictor | Output rel-L2 improvement | 95% CI | Output win rate | Sink-mass MAE improvement | Attention L1 improvement |
+|---|---:|---:|---:|---:|---:|
+| static | -0.0463 | +/- 0.0338 | 0.056 | -0.0198 | -0.0416 |
+| rank1 | 0.0257 | +/- 0.0290 | 0.250 | 0.0086 | 0.0177 |
+| rank2 | 0.0297 | +/- 0.0378 | 0.278 | 0.0206 | 0.0400 |
+| rank4 | 0.0596 | +/- 0.0465 | 0.333 | 0.0308 | 0.0599 |
+| rank8 | 0.0955 | +/- 0.0805 | 0.347 | 0.0360 | 0.0707 |
+
 ## Decision
 
 Exact static sink reuse remains killed because sink logits are query-dependent.
-The relevant question is whether a cheap per-head low-rank approximation preserves softmax and output quality well enough to justify a GPU kernel gate.
+Rank-2 is the only current low-rank compromise that stays below exact four-sink QK cost; its aggregate improvement and weak paired per-head gains are the Mac-local evidence for a correctness gate.
+The relevant question is whether a cheap per-head low-rank approximation preserves softmax and output quality well enough to justify a native kernel gate.

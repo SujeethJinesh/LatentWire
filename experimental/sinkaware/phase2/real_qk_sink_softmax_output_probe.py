@@ -14,7 +14,7 @@ import math
 import os
 from collections import defaultdict
 from pathlib import Path
-from statistics import mean
+from statistics import mean, stdev
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -96,6 +96,10 @@ def _predict_sink_logits(models: dict[str, object], q_heads: torch.Tensor, pos: 
     return torch.stack(preds)
 
 
+METRIC_KEYS = ("sink_logit_rmse", "sink_mass_mae", "attention_l1", "output_rel_l2")
+PREDICTOR_MODES = ("static", "position", "rank1", "rank2", "rank4", "rank8")
+
+
 def _attention_error_metrics(
     exact_logits: torch.Tensor,
     approx_sink_logits: torch.Tensor,
@@ -116,6 +120,43 @@ def _attention_error_metrics(
         "attention_l1": float(torch.mean(torch.sum(torch.abs(exact_probs - approx_probs), dim=-1))),
         "output_rel_l2": float(torch.linalg.norm(exact_out - approx_out) / torch.linalg.norm(exact_out).clamp_min(1e-8)),
     }
+
+
+def _attention_error_metrics_by_head(
+    exact_logits: torch.Tensor,
+    approx_sink_logits: torch.Tensor,
+    values: torch.Tensor,
+    sink_tokens: int,
+) -> list[dict[str, float]]:
+    """Return the same drift metrics without averaging across heads."""
+
+    approx_logits = exact_logits.clone()
+    approx_logits[:, :sink_tokens] = approx_sink_logits
+    exact_probs = torch.softmax(exact_logits, dim=-1)
+    approx_probs = torch.softmax(approx_logits, dim=-1)
+    exact_out = torch.einsum("hl,hld->hd", exact_probs, values)
+    approx_out = torch.einsum("hl,hld->hd", approx_probs, values)
+    rows = []
+    for head in range(exact_logits.shape[0]):
+        rows.append(
+            {
+                "sink_logit_rmse": float(
+                    torch.sqrt(torch.mean((exact_logits[head, :sink_tokens] - approx_sink_logits[head]) ** 2))
+                ),
+                "sink_mass_mae": float(
+                    torch.abs(
+                        exact_probs[head, :sink_tokens].sum(dim=-1)
+                        - approx_probs[head, :sink_tokens].sum(dim=-1)
+                    )
+                ),
+                "attention_l1": float(torch.sum(torch.abs(exact_probs[head] - approx_probs[head]), dim=-1)),
+                "output_rel_l2": float(
+                    torch.linalg.norm(exact_out[head] - approx_out[head])
+                    / torch.linalg.norm(exact_out[head]).clamp_min(1e-8)
+                ),
+            }
+        )
+    return rows
 
 
 def _collect_fit_samples(
@@ -174,13 +215,19 @@ def _evaluate_output_errors(
     predictors: dict[int, dict[str, object]],
     splits: dict[int, int],
     modes: tuple[str, ...],
-) -> dict[int, dict[str, dict[str, float]]]:
+) -> tuple[dict[int, dict[str, dict[str, float]]], dict[int, dict[int, dict[str, dict[str, float]]]]]:
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name)
     model.eval()
     layer_offsets = defaultdict(int)
     sums: dict[int, dict[str, dict[str, float]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
     counts: dict[int, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    head_sums: dict[int, dict[int, dict[str, dict[str, float]]]] = defaultdict(
+        lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+    )
+    head_counts: dict[int, dict[int, dict[str, int]]] = defaultdict(
+        lambda: defaultdict(lambda: defaultdict(int))
+    )
     with torch.no_grad():
         for text in texts:
             encoded = tokenizer(text, return_tensors="pt", truncation=True, max_length=max_length)
@@ -214,13 +261,28 @@ def _evaluate_output_errors(
                         for key, value in metrics.items():
                             sums[layer_idx][mode][key] += value
                         counts[layer_idx][mode] += 1
+                        for head, head_metrics in enumerate(
+                            _attention_error_metrics_by_head(exact_logits, approx_sink_logits, values, sink_tokens)
+                        ):
+                            for key, value in head_metrics.items():
+                                head_sums[layer_idx][head][mode][key] += value
+                            head_counts[layer_idx][head][mode] += 1
 
     rows = {}
     for layer, by_mode in sums.items():
         rows[layer] = {}
         for mode, metric_sums in by_mode.items():
             rows[layer][mode] = {key: value / counts[layer][mode] for key, value in metric_sums.items()}
-    return rows
+    head_rows = {}
+    for layer, by_head in head_sums.items():
+        head_rows[layer] = {}
+        for head, by_mode in by_head.items():
+            head_rows[layer][head] = {}
+            for mode, metric_sums in by_mode.items():
+                head_rows[layer][head][mode] = {
+                    key: value / head_counts[layer][head][mode] for key, value in metric_sums.items()
+                }
+    return rows, head_rows
 
 
 def _summarize(rows: dict[int, dict[str, dict[str, float]]]) -> dict[str, dict[str, float]]:
@@ -232,10 +294,80 @@ def _summarize(rows: dict[int, dict[str, dict[str, float]]]) -> dict[str, dict[s
     return summary
 
 
-def _status(summary: dict[str, dict[str, float]]) -> str:
+def _summarize_heads(head_rows: dict[int, dict[int, dict[str, dict[str, float]]]]) -> dict[str, dict[str, float]]:
+    modes = sorted({mode for by_head in head_rows.values() for by_mode in by_head.values() for mode in by_mode})
+    summary = {}
+    for mode in modes:
+        summary[mode] = {
+            metric: mean(
+                head_rows[layer][head][mode][metric]
+                for layer in head_rows
+                for head in head_rows[layer]
+            )
+            for metric in METRIC_KEYS
+        }
+    return summary
+
+
+def _mean_ci95(values: list[float]) -> dict[str, float]:
+    if not values:
+        return {"mean": float("nan"), "ci95": float("nan")}
+    if len(values) == 1:
+        return {"mean": values[0], "ci95": 0.0}
+    return {"mean": mean(values), "ci95": 1.96 * stdev(values) / math.sqrt(len(values))}
+
+
+def _paired_head_improvements(
+    head_rows: dict[int, dict[int, dict[str, dict[str, float]]]],
+    *,
+    baseline: str = "position",
+) -> dict[str, dict[str, float]]:
+    """Summarize layer-head paired improvements over a baseline predictor.
+
+    Positive values are better because all metrics are errors.
+    """
+
+    modes = sorted({mode for by_head in head_rows.values() for by_mode in by_head.values() for mode in by_mode})
+    result = {}
+    for mode in modes:
+        if mode == baseline:
+            continue
+        mode_result: dict[str, float] = {}
+        n_layer_heads = 0
+        for metric in METRIC_KEYS:
+            improvements = []
+            for layer in head_rows:
+                for head in head_rows[layer]:
+                    if baseline not in head_rows[layer][head] or mode not in head_rows[layer][head]:
+                        continue
+                    improvements.append(
+                        head_rows[layer][head][baseline][metric] - head_rows[layer][head][mode][metric]
+                    )
+            stats = _mean_ci95(improvements)
+            wins = sum(value > 0.0 for value in improvements)
+            n_layer_heads = max(n_layer_heads, len(improvements))
+            mode_result[f"{metric}_improvement_mean"] = stats["mean"]
+            mode_result[f"{metric}_improvement_ci95"] = stats["ci95"]
+            mode_result[f"{metric}_win_rate"] = wins / len(improvements) if improvements else float("nan")
+        mode_result["n_layer_heads"] = n_layer_heads
+        result[mode] = mode_result
+    return result
+
+
+def _status(
+    summary: dict[str, dict[str, float]],
+    paired_head_vs_position: dict[str, dict[str, float]] | None = None,
+) -> str:
     rank2 = summary.get("rank2")
     position = summary.get("position")
     if rank2 and position and rank2["output_rel_l2"] < position["output_rel_l2"] and rank2["output_rel_l2"] <= 0.15:
+        if paired_head_vs_position:
+            paired_rank2 = paired_head_vs_position.get("rank2", {})
+            improvement = paired_rank2.get("output_rel_l2_improvement_mean", 0.0)
+            ci95 = paired_rank2.get("output_rel_l2_improvement_ci95", 0.0)
+            win_rate = paired_rank2.get("output_rel_l2_win_rate", 0.0)
+            if improvement <= ci95 or win_rate < 0.5:
+                return "WEAKLY ALIVE for GPU gate; aggregate rank-2 improves, but paired per-head gains are concentrated."
         return "ALIVE for GPU gate; rank-2 improves output error over position-only with bounded drift."
     if rank2 and rank2["output_rel_l2"] <= 0.25:
         return "WEAKLY ALIVE; rank-2 output drift is bounded but not clearly better than position-only."
@@ -262,10 +394,31 @@ def _write_markdown(result: dict[str, object]) -> None:
         "| Predictor | Sink-logit RMSE | Sink-mass MAE | Attention L1 | Output rel-L2 |",
         "|---|---:|---:|---:|---:|",
     ]
-    for mode in ["static", "position", "rank1", "rank2", "rank4", "rank8"]:
+    for mode in PREDICTOR_MODES:
         metrics = summary[mode]
         lines.append(
             "| {mode} | {sink_logit_rmse:.4f} | {sink_mass_mae:.4f} | {attention_l1:.4f} | {output_rel_l2:.4f} |".format(
+                mode=mode,
+                **metrics,
+            )
+        )
+    paired = result["paired_head_vs_position"]
+    rank2 = paired["rank2"]
+    lines.extend(
+        [
+            "",
+            "## Layer-Head Paired Improvement vs Position-Only",
+            "",
+            f"Layer-head cells: {int(rank2['n_layer_heads'])}. Positive values are lower error than the position-only predictor.",
+            "",
+            "| Predictor | Output rel-L2 improvement | 95% CI | Output win rate | Sink-mass MAE improvement | Attention L1 improvement |",
+            "|---|---:|---:|---:|---:|---:|",
+        ]
+    )
+    for mode in ["static", "rank1", "rank2", "rank4", "rank8"]:
+        metrics = paired[mode]
+        lines.append(
+            "| {mode} | {output_rel_l2_improvement_mean:.4f} | +/- {output_rel_l2_improvement_ci95:.4f} | {output_rel_l2_win_rate:.3f} | {sink_mass_mae_improvement_mean:.4f} | {attention_l1_improvement_mean:.4f} |".format(
                 mode=mode,
                 **metrics,
             )
@@ -276,7 +429,8 @@ def _write_markdown(result: dict[str, object]) -> None:
             "## Decision",
             "",
             "Exact static sink reuse remains killed because sink logits are query-dependent.",
-            "The relevant question is whether a cheap per-head low-rank approximation preserves softmax and output quality well enough to justify a GPU kernel gate.",
+            "Rank-2 is the only current low-rank compromise that stays below exact four-sink QK cost; its aggregate improvement and weak paired per-head gains are the Mac-local evidence for a correctness gate.",
+            "The relevant question is whether a cheap per-head low-rank approximation preserves softmax and output quality well enough to justify a native kernel gate.",
         ]
     )
     (OUT_DIR / "real_qk_sink_softmax_output_probe.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -308,9 +462,13 @@ def main() -> None:
             tensors["sink_logits"][:split],
             ranks,
         )
-    modes = ("static", "position", "rank1", "rank2", "rank4", "rank8")
-    rows = _evaluate_output_errors(args.model_name, texts, args.max_length, args.sink_tokens, predictors, splits, modes)
+    modes = PREDICTOR_MODES
+    rows, head_rows = _evaluate_output_errors(
+        args.model_name, texts, args.max_length, args.sink_tokens, predictors, splits, modes
+    )
     summary = _summarize(rows)
+    head_summary = _summarize_heads(head_rows)
+    paired_head_vs_position = _paired_head_improvements(head_rows)
     result = {
         "model_name": args.model_name,
         "n_traces": len(texts),
@@ -318,8 +476,11 @@ def main() -> None:
         "heldout_samples_per_layer": min(int(fit_samples[layer]["q"].shape[0]) - splits[layer] for layer in fit_samples),
         "sink_tokens": args.sink_tokens,
         "rows": rows,
+        "head_rows": head_rows,
         "summary": summary,
-        "status": _status(summary),
+        "head_summary": head_summary,
+        "paired_head_vs_position": paired_head_vs_position,
+        "status": _status(summary, paired_head_vs_position),
     }
     (OUT_DIR / "real_qk_sink_softmax_output_probe.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     _write_markdown(result)

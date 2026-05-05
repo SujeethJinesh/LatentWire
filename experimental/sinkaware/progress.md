@@ -5,7 +5,8 @@
 - Phase 0 setup: partial Mac-only source-audit setup
 - Phase 1 literature and code audit: quick-kill audit recorded
 - Phase 2: exact static sink-prior gate failed; approximate low-rank revival
-  and per-head softmax/output gates completed
+  and per-head softmax/output gates completed with a new paired layer-head
+  caveat
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-05
@@ -85,16 +86,22 @@ staying below exact four-sink QK cost (`0.531x` estimated multiply-adds,
 
 `phase2/real_qk_sink_softmax_output_probe.md` runs the next Mac-local quality
 gate. It keeps all non-sink QK scores exact and replaces only fixed sink-token
-logits with per-head predictors on held-out distilgpt2 trace tokens. Rank-2
-improves output relative-L2 over position-only (`0.134` versus `0.173`) and
-reduces sink-mass MAE (`0.055` versus `0.080`). Rank-8 is more accurate
-(`output rel-L2=0.096`) but remains too expensive under the current simple cost
-model.
+logits with per-head predictors on held-out distilgpt2 trace tokens. Mean
+across layers still favors rank-2 over position-only (`output rel-L2=0.141`
+versus `0.170`, `sink-mass MAE=0.055` versus `0.076`). The new paired
+layer-head readout is weaker: rank-2's output rel-L2 improvement over
+position-only is `+0.0297 +/- 0.0378` across 72 layer-head cells, with only
+20/72 output wins. Rank-8 is more accurate (`output rel-L2=0.107`) but remains
+too expensive under the current simple cost model.
 
-Current status: **ALIVE for a narrow GPU gate as an approximate low-rank
-SinkAware branch**, not as exact static-prior reuse. The next exact gate is a
-GPU prototype comparing exact attention, exact fixed-sink decomposition that
-still computes `QK_sink`, and rank-2 approximate sink-logit prediction.
+Current status: **WEAKLY ALIVE for a narrow GPU/interpreter gate as an
+approximate low-rank SinkAware branch**, not as exact static-prior reuse. The
+rank-2 aggregate improvement is real in the saved probe, but per-head wins are
+concentrated enough that seed/split repeats or head-selective gating should be
+cleared before any strong paper claim. The next exact gate remains a correctness
+prototype comparing exact attention, exact fixed-sink decomposition that still
+computes `QK_sink`, and rank-2 approximate sink-logit prediction; native speed
+claims require NVIDIA hardware.
 
 ## Macbook Kernel Correctness Scaffold
 
@@ -112,11 +119,13 @@ Run locally:
 TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/sinkaware/phase4/tests -rs
 ```
 
-Current Mac status: CPU reference test passes. Triton interpreter tests are
-collected but skip because `triton` is not installable/importable in
-`./venv_arm64` on this machine. The scaffold checks exact softmax composition
-for synthetic scalar values only; it does not yet prove a full attention kernel
-or a GPU systems win.
+Current Mac status: CPU reference test passes. Triton interpreter execution
+tests are collected but skip because `triton` is not importable in
+`./venv_arm64` on this machine. The scaffold now also has a non-skipped
+readiness test that reports `ready=false`, `reason="triton is not importable"`,
+`TRITON_INTERPRET=1`, and `torch_cuda_available=false`. The scaffold checks
+exact softmax composition for synthetic scalar values only; it does not yet
+prove a full attention kernel or a GPU systems win.
 
 ## Approximate Attention Reference Gate
 

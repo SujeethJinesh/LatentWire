@@ -39,7 +39,8 @@ Non-claims:
    - synthetic predictability,
    - real QK sink-logit predictability,
    - cost model,
-   - per-head softmax/output error on 48 distilgpt2 traces.
+   - per-head softmax/output error on 48 distilgpt2 traces,
+   - layer-head paired uncertainty against position-only.
 6. Limitations and threats to validity.
 7. GPU gate and benchmark plan.
 
@@ -52,7 +53,9 @@ Non-claims:
 | Synthetic low-rank prior | Alive only as approximation | Useful for branch selection, not paper evidence. |
 | Real QK-logit prediction | Alive | Hidden+position beats position-only on distilgpt2 traces. |
 | Cost model | Alive only at rank-2 | Higher ranks are too expensive under current estimate. |
-| Softmax/output error | Alive for GPU gate | On 48 distilgpt2 traces, rank-2 reduces held-out output rel-L2 drift to 0.141 versus 0.170 for position-only; not an end-to-end quality result. |
+| Softmax/output error | Weakly alive | On 48 distilgpt2 traces, rank-2 reduces aggregate held-out output rel-L2 drift to 0.141 versus 0.170 for position-only; not an end-to-end quality result. |
+| Layer-head paired error | Fragile | Rank-2 output rel-L2 improvement is +0.0297 +/- 0.0378 over position-only across 72 layer-head cells, with 20/72 head wins. |
+| Triton interpreter readiness | Blocked locally | `TRITON_INTERPRET=1` readiness reports `triton` is not importable in `./venv_arm64`; no interpreter correctness pass yet. |
 
 ## Reviewer-Risk Notes
 
@@ -60,4 +63,6 @@ Non-claims:
   existing systems.
 - If the method only works on distilgpt2 traces, it is not a general method.
 - If rank-2 output drift is large, the branch should be killed before GPU work.
+- If rank-2 only wins a small subset of heads, add a head-selective gate or
+  kill the low-rank path before claiming a general method.
 - If rank-2 is accurate but slower than exact sink QK, the method is not useful.

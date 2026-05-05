@@ -9,7 +9,9 @@
 The Mac-local evidence revived SinkAware only as an approximate low-rank branch:
 rank-2 reduces held-out output relative-L2 versus position-only while staying
 below the estimated multiply-add cost of exact four-sink QK. Exact static sink
-reuse remains killed.
+reuse remains killed. The latest layer-head paired readout is mixed, so a GPU
+run must preserve the per-head drift table instead of reporting only aggregate
+means.
 
 The GPU gate must answer whether the approximation is useful after real kernel
 costs, memory movement, and output drift are measured together.
@@ -44,6 +46,8 @@ if position-only is indistinguishable.
   shapes.
 - `quality_drift.csv`: per-layer and mean output relative-L2, sink-mass MAE,
   attention L1.
+- `quality_drift_by_head.csv`: layer/head paired output relative-L2,
+  sink-mass MAE, and attention L1 versus position-only.
 - `latency.csv`: paired timing for each row, batch, and sequence length.
 - `ncu_summary.csv`: memory bytes, achieved occupancy, register pressure, and
   tensor/core utilization where available.

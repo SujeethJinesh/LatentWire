@@ -14,7 +14,9 @@ score work while preserving attention quality.
 Estimated distance to ICLR readiness: high. The branch still needs a GPU
 implementation gate, larger frozen slices, seed repeats, strict same-family vs
 cross-family separation, and competitor baselines before it can support a
-positive-method paper.
+positive-method paper. The latest per-head readout weakens the claim: aggregate
+rank-2 output drift improves over position-only, but the paired layer-head
+confidence interval still overlaps zero.
 
 ## Approximate Low-Rank Sink Prior
 
@@ -56,9 +58,10 @@ tradeoff.
 - Cost model: rank-2 is the only currently plausible low-rank setting below
   exact four-sink QK multiply-add cost.
 - Softmax/output probe: rank-2 improves held-out distilgpt2 output relative-L2
-  over position-only (`0.134` versus `0.173`) while keeping non-sink scores
-  exact. This promotes the branch only to a GPU gate; it is not end-to-end
-  quality evidence.
+  over position-only (`0.141` versus `0.170`) while keeping non-sink scores
+  exact. The new layer-head paired readout is weaker (`+0.0297 +/- 0.0378`
+  output rel-L2 improvement; 20/72 head wins), so this promotes the branch only
+  to a correctness/repeatability gate; it is not end-to-end quality evidence.
 
 ## Limitations
 
@@ -67,15 +70,18 @@ tradeoff.
 - Current evidence is CPU/Mac-local and does not measure kernel latency.
 - The approximation uses exact non-sink scores, so it isolates sink-logit drift
   but does not prove end-to-end serving speedups.
+- Per-head gains are concentrated; a reviewer can reasonably ask whether a
+  rank-2 path should be head-selective or killed for unstable heads.
 - No cross-family falsification pair has passed.
-- No paired uncertainty, seed repeats, or long-context competitor comparisons
+- No seed repeats, frozen-slice repeats, or long-context competitor comparisons
   are available yet.
 
 ## Next GPU Gate
 
-The Mac-local softmax/output probe shows bounded rank-2 drift on distilgpt2
-traces, so the next gate should be a small GPU implementation or fused-kernel
-prototype that measures:
+The Mac-local softmax/output probe shows bounded aggregate rank-2 drift on
+distilgpt2 traces, but per-head robustness is mixed. The next gate should first
+make the Triton interpreter scaffold runnable, then run a small GPU
+implementation or fused-kernel prototype that measures:
 
 1. exact attention baseline,
 2. exact fixed-sink decomposition that still computes `QK_sink`,

@@ -71,6 +71,28 @@ def _require_interpreter_mode() -> None:
         raise ModuleNotFoundError("triton is not importable in this environment")
 
 
+def triton_interpreter_readiness() -> dict[str, object]:
+    """Report whether the local environment can run the interpreter gate."""
+
+    triton_importable = triton is not None
+    interpret_enabled = os.environ.get("TRITON_INTERPRET") == "1"
+    ready = triton_importable and interpret_enabled
+    if not triton_importable:
+        reason = "triton is not importable"
+    elif not interpret_enabled:
+        reason = "TRITON_INTERPRET is not set to 1"
+    else:
+        reason = "ready for interpreter correctness tests"
+    return {
+        "ready": ready,
+        "reason": reason,
+        "triton_importable": triton_importable,
+        "triton_version": getattr(triton, "__version__", None) if triton_importable else None,
+        "triton_interpret_enabled": interpret_enabled,
+        "torch_cuda_available": torch.cuda.is_available(),
+    }
+
+
 def approx_sink_attention_scalar_triton_interpret(
     query: torch.Tensor,
     keys: torch.Tensor,

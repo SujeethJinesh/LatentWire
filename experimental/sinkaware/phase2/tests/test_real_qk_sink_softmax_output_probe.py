@@ -1,8 +1,11 @@
 import torch
+import pytest
 
 from experimental.sinkaware.phase2.real_qk_sink_softmax_output_probe import (
     _attention_error_metrics,
+    _attention_error_metrics_by_head,
     _fit_layer_predictors,
+    _paired_head_improvements,
     _predict_sink_logits,
 )
 
@@ -43,3 +46,51 @@ def test_attention_error_metrics_are_zero_for_exact_sink_logits() -> None:
     assert metrics["sink_mass_mae"] == 0.0
     assert metrics["attention_l1"] == 0.0
     assert metrics["output_rel_l2"] == 0.0
+
+    per_head = _attention_error_metrics_by_head(exact_logits, exact_logits[:, :2], values, sink_tokens=2)
+    assert len(per_head) == 2
+    assert all(row["sink_logit_rmse"] == 0.0 for row in per_head)
+    assert all(row["sink_mass_mae"] == 0.0 for row in per_head)
+    assert all(row["attention_l1"] == 0.0 for row in per_head)
+    assert all(row["output_rel_l2"] == 0.0 for row in per_head)
+
+
+def test_paired_head_improvements_report_win_rate() -> None:
+    head_rows = {
+        0: {
+            0: {
+                "position": {
+                    "sink_logit_rmse": 3.0,
+                    "sink_mass_mae": 0.3,
+                    "attention_l1": 0.5,
+                    "output_rel_l2": 0.4,
+                },
+                "rank2": {
+                    "sink_logit_rmse": 2.0,
+                    "sink_mass_mae": 0.2,
+                    "attention_l1": 0.4,
+                    "output_rel_l2": 0.2,
+                },
+            },
+            1: {
+                "position": {
+                    "sink_logit_rmse": 1.0,
+                    "sink_mass_mae": 0.1,
+                    "attention_l1": 0.2,
+                    "output_rel_l2": 0.1,
+                },
+                "rank2": {
+                    "sink_logit_rmse": 1.5,
+                    "sink_mass_mae": 0.2,
+                    "attention_l1": 0.3,
+                    "output_rel_l2": 0.2,
+                },
+            },
+        }
+    }
+
+    paired = _paired_head_improvements(head_rows)
+
+    assert paired["rank2"]["n_layer_heads"] == 2
+    assert paired["rank2"]["output_rel_l2_improvement_mean"] == pytest.approx(0.05)
+    assert paired["rank2"]["output_rel_l2_win_rate"] == 0.5

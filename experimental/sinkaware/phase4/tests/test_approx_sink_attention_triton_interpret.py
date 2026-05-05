@@ -8,6 +8,7 @@ import torch
 from experimental.sinkaware.phase4.kernel.approx_sink_attention_triton import (
     approx_sink_attention_scalar_triton_interpret,
     exact_scalar_attention_reference,
+    triton_interpreter_readiness,
 )
 
 
@@ -48,3 +49,21 @@ def test_approx_sink_attention_triton_requires_interpret(monkeypatch: pytest.Mon
             torch.zeros(2),
             sink_tokens=2,
         )
+
+
+def test_triton_interpreter_readiness_reports_dependency_and_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("TRITON_INTERPRET", raising=False)
+    readiness = triton_interpreter_readiness()
+
+    assert readiness["ready"] is False
+    assert readiness["triton_interpret_enabled"] is False
+    assert "reason" in readiness
+
+    monkeypatch.setenv("TRITON_INTERPRET", "1")
+    readiness = triton_interpreter_readiness()
+    if readiness["triton_importable"]:
+        assert readiness["ready"] is True
+        assert readiness["reason"] == "ready for interpreter correctness tests"
+    else:
+        assert readiness["ready"] is False
+        assert readiness["reason"] == "triton is not importable"

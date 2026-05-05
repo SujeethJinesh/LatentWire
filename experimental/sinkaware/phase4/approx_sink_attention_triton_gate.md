@@ -7,11 +7,18 @@ the killed exact-static branch. It computes exact tail logits, substitutes
 predicted fixed-sink logits, and checks that exact predicted sink logits recover
 exact scalar attention.
 
-Current local environment:
+Triton's debugging guide describes interpreter mode as a CPU simulation path
+enabled by `TRITON_INTERPRET=1`, with compilation bypassed for debugging:
+<https://triton-lang.org/main/programming-guide/chapter-3/debugging.html>.
+
+Current local readiness check:
 
 - `triton` is not importable in `./venv_arm64`;
+- `TRITON_INTERPRET=1` was set for the readiness command;
+- `torch.cuda.is_available()` is false on this Mac;
 - tests are written with `pytest.importorskip("triton")`;
-- no GPU or speed claim is made.
+- one non-skipped readiness test now records the missing dependency path;
+- no interpreter, GPU, or speed claim is made.
 
 Next gate:
 
