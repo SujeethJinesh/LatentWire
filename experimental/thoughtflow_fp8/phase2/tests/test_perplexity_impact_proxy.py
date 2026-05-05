@@ -96,3 +96,17 @@ def test_thoughtflow_saliency_recent_keeps_anchors_recent_and_salient_math() -> 
     assert {5, 6}.issubset(kept)
     assert 3 in kept
     assert len(kept) == 5
+
+
+def test_thoughtflow_saliency_recent_never_exceeds_budget() -> None:
+    trace = [
+        Token(f"anchor{i}", "anchor", 1.0 - 0.01 * i)
+        for i in range(4)
+    ] + [
+        Token(f"recent{i}", "reason", 0.1)
+        for i in range(5)
+    ]
+
+    kept = thoughtflow_saliency_recent(trace, budget=3)
+
+    assert len(kept) == 3

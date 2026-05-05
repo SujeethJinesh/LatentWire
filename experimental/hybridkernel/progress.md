@@ -137,3 +137,9 @@ from repeated native summaries. Promotion requires at least three repeated runs
 whose recoverable-gain upper bound clears 3%. If native summaries show less
 than 1% recoverable gain, the branch should be killed or shelved. Current
 output is **PENDING native profiler data**, so no speed claim is allowed.
+
+The NVIDIA runbook now includes the exact parser input fields and command for
+turning reduced Nsight summaries into `profiler_analysis_gate.json`. This makes
+the next GPU run reviewable: the user only needs to fill
+`total_step_ms`, `attention_ssm_boundary_ms`, `matched_non_boundary_ms`, and
+`recoverable_fraction` per repeated run.

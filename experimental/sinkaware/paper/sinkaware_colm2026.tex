@@ -41,9 +41,11 @@ rank8 & 699.232 & 0.040 & 0.104 & 0.107 \\
 \caption{48-trace distilgpt2 softmax/output probe. Lower is better.}
 \end{table}
 
-\section{Reference Gate}
+\section{Reference and Kernel Gates}
 
 The Phase 3 reference specifies the exact computation to preserve during kernel work. Given query $q$, keys $K$, values $V$, and predicted fixed-sink logits $\hat{s}$, SinkAware computes all tail logits $qK_{tail}^{\top}$ exactly, replaces only the first sink-token logits with $\hat{s}$, and then runs the ordinary softmax denominator over the concatenated vector. Unit tests verify that when $\hat{s}$ equals exact sink logits, the reference reproduces exact attention to numerical tolerance. This keeps the live branch separate from the killed exact-static-reuse branch.
+
+The Phase 4 Triton-interpreter scaffold now targets the same operator for a one-head scalar-output synthetic gate. In the current Mac environment \texttt{triton} is not importable in \texttt{venv\_arm64}, so those tests are written but skip locally. This is still useful for human review because the kernel correctness contract is explicit before any native timing work.
 
 \section{Decision}
 
@@ -55,6 +57,7 @@ SinkAware is alive only as an approximate low-rank native GPU gate. Exact static
 \item \url{experimental/sinkaware/phase2/real_qk_sink_softmax_output_probe.md}
 \item \url{experimental/sinkaware/phase2/qk_sink_cost_model.md}
 \item \url{experimental/sinkaware/phase3/approx_sink_attention_reference.md}
+\item \url{experimental/sinkaware/phase4/approx_sink_attention_triton_gate.md}
 \item \url{experimental/sinkaware/phase2/gpu_gate_runbook.md}
 \item \url{experimental/sinkaware/paper/reviewer_pack.md}
 \end{itemize}

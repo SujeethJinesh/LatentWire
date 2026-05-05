@@ -227,6 +227,48 @@ Use paired comparisons across repeated fixed-request runs. Report median,
 interquartile range, and bootstrap confidence intervals. Do not report a single
 trace screenshot as a positive result.
 
+## Parser Input
+
+After reducing the Nsight traces, copy this repository's template and fill one
+row per repeated run:
+
+```bash
+cp "$HWK_ROOT/phase2/profiler_metrics_template.json" \
+  "$HWK_RUN/profiler_metrics.json"
+```
+
+Required fields:
+
+| Field | Meaning |
+|---|---|
+| `model` | exact served model string |
+| `run_id` | repeated-run identifier |
+| `total_step_ms` | matched request-step wall or profiler time used as denominator |
+| `attention_ssm_boundary_ms` | boundary-local cost from annotated Nsight trace |
+| `matched_non_boundary_ms` | same-shape local control cost outside attention/SSM boundaries |
+| `recoverable_fraction` | conservative fraction of avoidable boundary cost a fused operator could recover |
+
+Then run:
+
+```bash
+python "$HWK_ROOT/phase2/analyze_profiler_metrics.py" \
+  --input "$HWK_RUN/profiler_metrics.json" \
+  --output "$HWK_RUN/profiler_analysis_gate.json"
+```
+
+The generated Markdown sidecar is the paper-facing gate. It computes avoidable
+boundary share and recoverable-gain upper bound:
+
+```text
+max(boundary_ms - matched_non_boundary_ms, 0)
+------------------------------------------------ * recoverable_fraction
+                 total_step_ms
+```
+
+Promotion requires at least three repeated runs where the minimum recoverable
+gain upper bound is at least 3%. If the mean recoverable-gain upper bound is
+below 1%, shelve the branch unless a new profiler anomaly appears.
+
 ## Promotion Criteria
 
 Promote HybridKernel to implementation only if all are true:

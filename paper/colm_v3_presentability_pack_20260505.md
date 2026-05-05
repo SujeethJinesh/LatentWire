@@ -39,7 +39,7 @@ Remaining before submission:
 | HybridKernel | `experimental/hybridkernel/paper/hybridkernel_colm2026.pdf` | weakly alive as profiler-driven systems branch |
 | SinkAware | `experimental/sinkaware/paper/sinkaware_colm2026.pdf` | alive as approximate low-rank fixed-sink prior |
 | SinkAware reviewer pack | `experimental/sinkaware/paper/reviewer_pack.md` | presentable narrow review packet |
-| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf` | mixed; saliency+recent successor nearly ties R-KV-like but does not beat it |
+| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf` | mixed; held-out policy sweep ties R-KV-like within 0.03 NLL |
 
 ## Side Project Data Links
 
@@ -52,6 +52,7 @@ Remaining before submission:
 | SinkAware | `experimental/sinkaware/phase3/approx_sink_attention_reference.md` | CPU reference for approximate sink-logit attention operator |
 | SinkAware | `experimental/sinkaware/phase2/gpu_gate_runbook.md` | native benchmark plan for exact vs approximate sink handling |
 | ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/phase2/perplexity_impact_proxy.md` | ThoughtFlow-saliency-recent NLL 3.434 nearly ties but still loses to R-KV-like 3.419 |
+| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/phase2/policy_sweep.md` | train-selected policy ties R-KV-like on held-out traces: 3.480 vs 3.482 NLL |
 
 ## Next Exact Gates
 

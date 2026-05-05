@@ -55,7 +55,10 @@ def thoughtflow_recent(trace: list[Token], budget: int) -> set[int]:
     phase = {idx for idx, token in enumerate(trace) if token.label == "phase"}
     recent_budget = max(1, budget // 3)
     recent = set(range(max(0, len(trace) - recent_budget), len(trace)))
-    kept = anchors | recent
+    kept = set(sorted(anchors, key=lambda idx: idx)[:budget])
+    recent_slots = max(0, budget - len(kept))
+    if recent_slots:
+        kept |= set(sorted(recent)[-recent_slots:])
     remaining = max(0, budget - len(kept))
     if remaining:
         phase_sorted = sorted(phase - kept, key=lambda idx: (-trace[idx].importance, idx))
@@ -67,14 +70,6 @@ def thoughtflow_recent(trace: list[Token], budget: int) -> set[int]:
             key=lambda idx: (-trace[idx].importance, idx),
         )
         kept |= set(filler[:remaining])
-    if len(kept) > budget:
-        protected = anchors | (recent & kept)
-        overflow = sorted(
-            [idx for idx in kept if idx not in protected],
-            key=lambda idx: (trace[idx].importance, -idx),
-        )
-        for idx in overflow[: len(kept) - budget]:
-            kept.remove(idx)
     return kept
 
 
@@ -91,7 +86,10 @@ def thoughtflow_saliency_recent(trace: list[Token], budget: int) -> set[int]:
     anchors = {idx for idx, token in enumerate(trace) if token.label == "anchor"}
     recent_budget = max(1, budget // 2)
     recent = set(range(max(0, len(trace) - recent_budget), len(trace)))
-    kept = anchors | recent
+    kept = set(sorted(anchors, key=lambda idx: idx)[:budget])
+    recent_slots = max(0, budget - len(kept))
+    if recent_slots:
+        kept |= set(sorted(recent)[-recent_slots:])
     remaining = max(0, budget - len(kept))
     if remaining:
         def score(idx: int) -> tuple[float, int]:
@@ -108,14 +106,6 @@ def thoughtflow_saliency_recent(trace: list[Token], budget: int) -> set[int]:
             key=lambda idx: (-score(idx)[0], score(idx)[1]),
         )
         kept |= set(filler[:remaining])
-    if len(kept) > budget:
-        protected = anchors | (recent & kept)
-        overflow = sorted(
-            [idx for idx in kept if idx not in protected],
-            key=lambda idx: (trace[idx].importance, -idx),
-        )
-        for idx in overflow[: len(kept) - budget]:
-            kept.remove(idx)
     return kept
 
 

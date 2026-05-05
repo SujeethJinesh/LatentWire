@@ -130,3 +130,17 @@ This reference keeps all non-sink tail logits exact, replaces only fixed-sink
 logits with a predictor, and then runs the normal softmax denominator. Tests
 verify that exact sink logits reproduce exact attention. This is the operator a
 future Triton/CUDA kernel must match before native timing is meaningful.
+
+## Approximate Triton Interpreter Scaffold
+
+Added a Phase 4 Triton-interpreter scaffold for the live approximate operator:
+
+- wrapper: `phase4/kernel/approx_sink_attention_triton.py`
+- tests: `phase4/tests/test_approx_sink_attention_triton_interpret.py`
+- note: `phase4/approx_sink_attention_triton_gate.md`
+
+The current `./venv_arm64` does not have `triton`, so the tests use
+`pytest.importorskip("triton")` and skip locally. The correctness contract is
+now ready for a Macbook `TRITON_INTERPRET=1` run once Triton is installed in the
+repo-local venv; native GPU timing should still wait until that interpreter
+gate passes.
