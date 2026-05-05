@@ -24282,3 +24282,48 @@ packets from generation traces.
 Lay explanation: the adapter now lets the local C2C car start, but on CPU it
 drives badly and repeats junk tokens. The recorder works, but this local run is
 not the trustworthy teacher we need for ICLR.
+
+## 2026-05-05 C2C Teacher-Forced Full-Vocab Delta Packet Gate
+
+Added and ran a C2C teacher-delta packet-capacity gate:
+
+- code:
+  `scripts/analyze_svamp32_c2c_teacher_delta_packet_gate.py`;
+- test:
+  `tests/test_analyze_svamp32_c2c_teacher_delta_packet_gate.py`;
+- artifact:
+  `results/svamp32_c2c_teacher_delta_packet_gate_mps_20260505/teacher_delta_packet_gate.json`;
+- manifest:
+  `results/svamp32_c2c_teacher_delta_packet_gate_mps_20260505/manifest.md`;
+- memo:
+  `paper/svamp32_c2c_teacher_delta_packet_gate_20260505.md`.
+
+Purpose: test whether sparse top-k C2C teacher-minus-target token-logit deltas
+recover dense C2C behavior beyond destructive controls on the replay-aligned
+SVAMP32 surface.
+
+Outcome:
+
+- status: `teacher_delta_packet_capacity_fails_controls`;
+- matched: `14/32`;
+- target-only under teacher prefix: `14/32`;
+- zero-delta: `14/32`;
+- row-shuffle: `13/32`;
+- atom-shuffle: `14/32`;
+- coefficient-shuffle: `14/32`;
+- clean source-necessary IDs: `0`;
+- exact teacher replay IDs: `0`;
+- average packet bytes per row: `794.22`;
+- cacheline-rounded average bytes per row: `832.00`.
+
+Decision: rule out the teacher-forced full-vocab top-k positive logit-delta
+packet as a source-predictor target. The apparent recovery is explained by
+target-only behavior under the C2C teacher-generated prefix, not by source-causal
+packet information. Promote a tighter candidate-pool or open-loop C2C
+teacher-delta packet gate that removes teacher-prefix leakage and tests 1-8 byte
+packets against same-source-choice wrong-row and candidate-roll controls.
+
+Lay explanation: we tried sending a compact list of next-token nudges copied
+from the full C2C teacher. It did not really help: the target already got the
+same rows right when it was given the teacher's previous generated words, even
+without the packet.

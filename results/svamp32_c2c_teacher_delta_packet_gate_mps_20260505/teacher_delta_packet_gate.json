@@ -1,0 +1,2417 @@
+{
+  "date": "2026-05-05",
+  "decision": "Do not train a source predictor for this exact packet format; the matched packet does not separate from destructive controls.",
+  "headline": {
+    "best_control_clean": 8,
+    "best_control_correct": 14,
+    "capacity_pass": false,
+    "matched_clean": 8,
+    "matched_correct": 14,
+    "source_necessary_clean_count": 0
+  },
+  "packet_contract": {
+    "avg_cacheline_rounded_bytes_per_row": 832.0,
+    "avg_packet_bits_per_row": 6353.75,
+    "avg_packet_bytes_per_row": 794.21875,
+    "coeff_bits": 4,
+    "kind": "teacher_forced_sparse_c2c_minus_target_logit_delta",
+    "not_deployable_reason": "packet is derived from dense C2C teacher logits",
+    "packet_mode": "positive",
+    "source_private": false,
+    "top_k": 4,
+    "vocab_size": 151936
+  },
+  "reference_n": 32,
+  "run": {
+    "condition_summaries": {
+      "atom_shuffle": {
+        "clean_correct_count": 8,
+        "clean_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "condition": "atom_shuffle",
+        "correct_count": 14,
+        "correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "a85be5ec651dac24",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e3ab8666238a289e",
+          "f367349ce0604296"
+        ],
+        "exact_teacher_replay_count": 0,
+        "exact_teacher_replay_ids": [],
+        "teacher_only_correct_count": 8,
+        "teacher_only_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "token_count": 1955,
+        "token_match_count": 1448,
+        "token_match_rate": 0.7406649616368286
+      },
+      "coeff_shuffle": {
+        "clean_correct_count": 8,
+        "clean_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "condition": "coeff_shuffle",
+        "correct_count": 14,
+        "correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "a85be5ec651dac24",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e3ab8666238a289e",
+          "f367349ce0604296"
+        ],
+        "exact_teacher_replay_count": 0,
+        "exact_teacher_replay_ids": [],
+        "teacher_only_correct_count": 8,
+        "teacher_only_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "token_count": 1955,
+        "token_match_count": 1448,
+        "token_match_rate": 0.7406649616368286
+      },
+      "coeff_sign_flip": {
+        "clean_correct_count": 8,
+        "clean_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "condition": "coeff_sign_flip",
+        "correct_count": 14,
+        "correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "a85be5ec651dac24",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e3ab8666238a289e",
+          "f367349ce0604296"
+        ],
+        "exact_teacher_replay_count": 0,
+        "exact_teacher_replay_ids": [],
+        "teacher_only_correct_count": 8,
+        "teacher_only_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "token_count": 1955,
+        "token_match_count": 1442,
+        "token_match_rate": 0.7375959079283887
+      },
+      "matched": {
+        "clean_correct_count": 8,
+        "clean_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "condition": "matched",
+        "correct_count": 14,
+        "correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "a85be5ec651dac24",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e3ab8666238a289e",
+          "f367349ce0604296"
+        ],
+        "exact_teacher_replay_count": 0,
+        "exact_teacher_replay_ids": [],
+        "teacher_only_correct_count": 8,
+        "teacher_only_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "token_count": 1955,
+        "token_match_count": 1448,
+        "token_match_rate": 0.7406649616368286
+      },
+      "row_shuffle": {
+        "clean_correct_count": 7,
+        "clean_correct_ids": [
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "condition": "row_shuffle",
+        "correct_count": 13,
+        "correct_ids": [
+          "2de1549556000830",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "a85be5ec651dac24",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e3ab8666238a289e",
+          "f367349ce0604296"
+        ],
+        "exact_teacher_replay_count": 0,
+        "exact_teacher_replay_ids": [],
+        "teacher_only_correct_count": 7,
+        "teacher_only_correct_ids": [
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "token_count": 1955,
+        "token_match_count": 1441,
+        "token_match_rate": 0.7370843989769821
+      },
+      "target_only": {
+        "clean_correct_count": 8,
+        "clean_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "condition": "target_only",
+        "correct_count": 14,
+        "correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "a85be5ec651dac24",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e3ab8666238a289e",
+          "f367349ce0604296"
+        ],
+        "exact_teacher_replay_count": 0,
+        "exact_teacher_replay_ids": [],
+        "teacher_only_correct_count": 8,
+        "teacher_only_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "token_count": 1955,
+        "token_match_count": 1445,
+        "token_match_rate": 0.7391304347826086
+      },
+      "zero_delta": {
+        "clean_correct_count": 8,
+        "clean_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "condition": "zero_delta",
+        "correct_count": 14,
+        "correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "2f80204fc9e0896f",
+          "316b525a4fcbfb89",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "a85be5ec651dac24",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "c042f0a2949ff8e6",
+          "de1bf4d142544e5b",
+          "de2a795ab37694af",
+          "e3ab8666238a289e",
+          "f367349ce0604296"
+        ],
+        "exact_teacher_replay_count": 0,
+        "exact_teacher_replay_ids": [],
+        "teacher_only_correct_count": 8,
+        "teacher_only_correct_ids": [
+          "1d50b408c8f5cd2c",
+          "2de1549556000830",
+          "4c84ebf42812703b",
+          "6e9745b37ab6fc45",
+          "aee922049c757331",
+          "b1200c32546a34a5",
+          "de1bf4d142544e5b",
+          "e3ab8666238a289e"
+        ],
+        "token_count": 1955,
+        "token_match_count": 1445,
+        "token_match_rate": 0.7391304347826086
+      }
+    },
+    "control_clean_union_ids": [
+      "1d50b408c8f5cd2c",
+      "2de1549556000830",
+      "4c84ebf42812703b",
+      "6e9745b37ab6fc45",
+      "aee922049c757331",
+      "b1200c32546a34a5",
+      "de1bf4d142544e5b",
+      "e3ab8666238a289e"
+    ],
+    "rows": {
+      "atom_shuffle": [
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "013133cdef4f637c",
+          "prediction": "T Monday, Tiffany had **7 bags of cans.\n\nOn the, she found 12 more bags.\n\n cans.\n\n so she had:\n\n total of:\n\n7 + 12 = 19 bags.\n\n cans.\n\nTo the, she had 12 more bags than cans, so she had a total of",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "d64f6e35083ffe8c",
+          "prediction": "We are 15 roses and 62 orchids in the vase initially and the were:\n\n total of:\n\n15 + 62 = **77 flowers.\n\n the vase.\n\nAfter Jessica cut some more roses and orchids, there are now 17 roses and 96 orchids.\n\n the vase",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "3e8a5691f5443495",
+          "prediction": "We are **7 baskets of peaches:\n\n-'s the reasoning:\n\n it:\n\n-. Each are each each basket has:\n4 red peaches and 3 green peaches.\n so each basket has:\n total of:\n4 + 3 = **7 peaches.\n2. The there are a total of 7",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "316b525a4fcbfb89",
+          "prediction": "Ol Olivia had **15 dollars from a supermarket and and has:\n\n78 - 15 = **63 dollars left in her wallet.So Final63 dollarsdoll answer is ** **63.",
+          "token_count": 43,
+          "token_match_count": 26,
+          "token_match_rate": 0.6046511627906976
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e26bdbcab1449bbe",
+          "prediction": "We received:\n\n6 emails in the morning,He received 3 emails in the afternoon.\n and the the:\n\n received:\n\n6 + 3 = **9 emails.\n\n the morning and afternoon.\n\nHe he received a total of 10 emails in the day, then he must have received **10 - 9 =",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "aee922049c757331",
+          "prediction": "Dan has $44.He buys a candy bar for $ 8.\n so he spent $ 4 - $88 = -$44 (.\n\nThen friend gave him $ 5, so he now has $ -444 + $ 5 = $ 1.\n\n.\n\nSo Final1 dollarSo",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "1d50b408c8f5cd2c",
+          "prediction": "We the previous day,  were **703 visitors.\n\nOn the current day, there were 246 visitors.\n\nSo , over were:\n\n703 + 246 = **949 visitors overSo this are 25 days, total year, the were 949",
+          "token_count": 64,
+          "token_match_count": 47,
+          "token_match_rate": 0.734375
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "b0b71023ae4d233b",
+          "prediction": "Wewen received:\n\n5 dollars 7 = **12 dollars from her dad andShe spent 4 dollars, so she has 12 - 4 = 8 dollars left.\n\nThe, the received **8 dollars 5 = 3 dollars dollars from her mom than she did from her dad.\n\nSo Final",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "b1200c32546a34a5",
+          "prediction": "We problem number of fruits is oranges is:\n\n142 + 356 = 498.\n\nThe number number of groups is 47 ( 178 = 225\n\nSo number of each group of oranges is:\n\n498 / 225 = 2.",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "14bfbfc94f2c2e7b",
+          "prediction": "We are **8 different books and 5 different movies in the \"Crazy silly school' series.\n\n and:\n\n are:\n\n total of:\n\n1 + 5 = **13 items and movies.\n\n- you read 19 of the movies and and the have read **19 movies 5 = 14",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "4c84ebf42812703b",
+          "prediction": "We recipe requires for **12 cups of flour and  already put in ** cups. flour.She she still needs **2 more cups of flour, then:\n\n has already put in:\n\n12 - 2 = **10 cups of flour.\n\nSo, the put in **10 cups of flour.So",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4ef979ea2bf931df",
+          "prediction": "We found:\n\n46 wrappers and 50 bottle caps at the park. and the found:\n\n total of:\n\n46 + 50 = **96 items.\n\nNow now has 21 bottle caps and 52 wrappers in his collection.\n\n so he has a total of 21 + 5",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "13cb77b698eeadb5",
+          "prediction": "Luke played **177 rounds of a trivia game, and we scored:\n\n total of:\n\n177 rounds 46 points 8,42 points.\n\n  \n find the how many points he scored in total game, we calculate to calculate up points from gained in each round.\n\n the total number he earned in",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "e3ab8666238a289e",
+          "prediction": "We are initially3 birds and 4 storks sitting on the fence.\n\n- 2 more birds joined to join them, the are:\n\n total of:\n\n3 + 2 = 5 birds.\n\n on the fence.\n\nSo, the are 5 birds 4 = 1 more bird than storks.\n\n on the",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2de1549556000830",
+          "prediction": "We problem jumped **33 inches farther than the grasshopper, so:\n\n frog's:\n\n9 + 33 = **42 inches.\n\nThe mouse jumped 3 inches less than the frog, so the mouse jumped 42 - 3 = 39 inches.\n\nTherefore Final39\nSo mouse",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "615f9d817cb5be59",
+          "prediction": "Weachary did 35 push-ups and 3 crunches.\n\nDavid did 58 more push-ups than Zachary, so:\n did:\n\n35 + 58 = **93 push-ups.\n\nDavid did did 87 less crunches than Zachary, so he did 3 -",
+          "token_count": 64,
+          "token_match_count": 57,
+          "token_match_rate": 0.890625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2f80204fc9e0896f",
+          "prediction": "Jack received:\n\n4 emails in the ** and 8 emails in the evening. so the total:\n\n received:\n\n5 + 8 = **13 emails in the afternoon and evening.  \n Final13 emailsSo answer is ** **13.",
+          "token_count": 50,
+          "token_match_count": 34,
+          "token_match_rate": 0.68
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "137ad74218053f8a",
+          "prediction": "Let had **7 action figures on the shelf.He added ** more, figures, the shelf.\n and now there are 7 + x action figures.\n\n the shelf, where x is the number of action figures he added.\n\nHe then 10 of the old ones figures, so now there are 7 -",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4d780f825bb8541c",
+          "prediction": "Weia played tag with:\n\n12 kids on Monday and 14 kids on Tuesday. for:\n\n played with a total of:\n\n12 +14 = **26 kids.\n\nShe she spent a total of 34 hours on play tag on both days, then the played 34 hours2 =",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "08d3dd8885ffb998",
+          "prediction": "Weell had:\n\n309 baseball cards and 356 Ace cards.\n\n total.\n\nShe giving some cards to Jeff, sheell has 415 baseball cards and Ace056 Ace x459 = 47 Ace cards left.\n\nSo find how how many more baseball cards thanell has",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de1bf4d142544e5b",
+          "prediction": "We  are **97 alligators in total and 40 of them were hiding, then the number of alligators ** hiding is:\n\n97 - 40 = **57.\n\nSo Final57 allSo answer is ** **57 all",
+          "token_count": 53,
+          "token_match_count": 38,
+          "token_match_rate": 0.7169811320754716
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "f367349ce0604296",
+          "prediction": "You have read **8 books from the seriesC silly school ' series. and you still have:\n\n14 - 8 = **6 books left to read.  \n Final6 moreSo answer is: **6.",
+          "token_count": 44,
+          "token_match_count": 30,
+          "token_match_rate": 0.6818181818181818
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "a85be5ec651dac24",
+          "prediction": "Emily made **20 beads and made was able to make 5 necklaces. so the necklace needed:\n\n20 \ufffd5 = **4 beads.\n\n  \n, each necklace needed **4 beads.So Final4 beadsbe answer is  $\\4.",
+          "token_count": 51,
+          "token_match_count": 32,
+          "token_match_rate": 0.6274509803921569
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de2a795ab37694af",
+          "prediction": "Frank put **12 pieces of candy,He he puts **11 pieces in candy in each bag, then:\n\n would have:\n\n22 \ufffd11 = 2 bags.\n\n candy.\n\nSo, he would have **2 bags. candy.So Final2 bagsSo answer is  $\\2.",
+          "token_count": 61,
+          "token_match_count": 37,
+          "token_match_rate": 0.6065573770491803
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "47464cc0b064f172",
+          "prediction": "We problem had **12 customers after,Then some left, he had 12 customers x12 = 2 customers left.\nThen he got 10 new customers.\n\n so now now has:\n\n2 + 10 = **12 customers.\n\nSo Final12 customersSo answer is ** **1",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "0d2b4f7681973e19",
+          "prediction": "The farmer picked:\n\n total of:\n\n154 tomatoes in all.**'s the calculation:\n\n it:\n\n-. He farmer had 154 tomatoes yesterday.\n and far has has 90 - 154 = -64 tomatoes left.\n2. He, the question picked 50 tomatoes today",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "33836927fc9f1a8a",
+          "prediction": "We are:\n\n54 yellow peaches and 6 green peaches in the basket.\n\nSo find the total number of green and yellow peaches:\n\n we add to add them two of green peaches and the number of yellow peaches:\n\nSo, the total number of green and yellow peaches is:\n6 +",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e7dd2efb5ec99a06",
+          "prediction": "We 60 bird families flew away for winter, and the were:\n\n89 - 60 = **29 bird families that behind.\n\n  \n find how how many more families families flew away than winter winter than those that stayed,, we subtract the number of families that stayed from from the number that families that",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "41cce6c6e6bb0058",
+          "prediction": "We are initially9 roses and 6 orchids in the vase initiallyJessica Jessica cut some more roses and orchids, there are now:\n\n13 orchids and 3 roses.\n\n the vase.\n\nSo find how how many more orchids than roses are are now the vase now:\n\n we subtract subtract the number of roses",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "6e9745b37ab6fc45",
+          "prediction": "We there were **600 visitors the previous day, and 661 visitors the on the Buckingham palace on that day, then:\n\n were:\n\n661 - 600 = **61 more visitors on the previous day.\n\nSo Final61 visitorsSo answer is ** **61.",
+          "token_count": 63,
+          "token_match_count": 47,
+          "token_match_rate": 0.746031746031746
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "c042f0a2949ff8e6",
+          "prediction": "We waiter had **12 customers.- left 14 new customers.\n\n so the now has:\n\n12 + 14 = **26 customers.\n\nHe, he15 customers left, so the still has 26 - 15 = **11 customers.\n\nSo Final11 customersSo",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "575d7e83d84c1e67",
+          "prediction": "Emily has 72 friends and and she needs to make neck72 necklaces.\n\nEach necklace requires 3 beads.\n\n and the needs make:\n\n72 \ufffd3 = **24 necklaces.\n\nTherefore Final24####The answer is: **24.",
+          "token_count": 54,
+          "token_match_count": 36,
+          "token_match_rate": 0.6666666666666666
+        }
+      ],
+      "coeff_shuffle": [
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "013133cdef4f637c",
+          "prediction": "T Monday, Tiffany had **7 bags of cans.\n\nOn the, she found 12 more bags.\n\n cans.\n\n so she had:\n\n total of:\n\n7 + 12 = 19 bags.\n\n cans.\n\nTo the, she had 12 more bags than cans, so she had a total of",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "d64f6e35083ffe8c",
+          "prediction": "We are 15 roses and 62 orchids in the vase initially and the were:\n\n total of:\n\n15 + 62 = **77 flowers.\n\n the vase.\n\nAfter Jessica cut some more roses and orchids, there are now 17 roses and 96 orchids.\n\n the vase",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "3e8a5691f5443495",
+          "prediction": "We are **7 baskets of peaches:\n\n-'s the reasoning:\n\n it:\n\n-. Each are each each basket has:\n4 red peaches and 3 green peaches.\n so each basket has:\n total of:\n4 + 3 = **7 peaches.\n2. The there are a total of 7",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "316b525a4fcbfb89",
+          "prediction": "Ol Olivia had **15 dollars from a supermarket and and has:\n\n78 - 15 = **63 dollars left in her wallet.So Final63 dollarsdoll answer is ** **63.",
+          "token_count": 43,
+          "token_match_count": 26,
+          "token_match_rate": 0.6046511627906976
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e26bdbcab1449bbe",
+          "prediction": "We received:\n\n6 emails in the morning,He received 3 emails in the afternoon.\n and the the:\n\n received:\n\n6 + 3 = **9 emails.\n\n the morning and afternoon.\n\nHe he received a total of 10 emails in the day, then he must have received **10 - 9 =",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "aee922049c757331",
+          "prediction": "Dan has $44.He buys a candy bar for $ 8.\n so he spent $ 4 - $88 = -$44 (.\n\nThen friend gave him $ 5, so he now has $ -444 + $ 5 = $ 1.\n\n.\n\nSo Final1 dollarSo",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "1d50b408c8f5cd2c",
+          "prediction": "We the previous day,  were **703 visitors.\n\nOn the current day, there were 246 visitors.\n\nSo , over were:\n\n703 + 246 = **949 visitors overSo this are 25 days, total year, the were 949",
+          "token_count": 64,
+          "token_match_count": 47,
+          "token_match_rate": 0.734375
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "b0b71023ae4d233b",
+          "prediction": "Wewen received:\n\n5 dollars 7 = **12 dollars from her dad andShe spent 4 dollars, so she has 12 - 4 = 8 dollars left.\n\nThe, the received **8 dollars 5 = 3 dollars dollars from her mom than she did from her dad.\n\nSo Final",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "b1200c32546a34a5",
+          "prediction": "We problem number of fruits is oranges is:\n\n142 + 356 = 498.\n\nThe number number of groups is 47 ( 178 = 225\n\nSo number of each group of oranges is:\n\n498 / 225 = 2.",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "14bfbfc94f2c2e7b",
+          "prediction": "We are **8 different books and 5 different movies in the \"Crazy silly school' series.\n\n and:\n\n are:\n\n total of:\n\n1 + 5 = **13 items and movies.\n\n- you read 19 of the movies and and the have read **19 movies 5 = 14",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "4c84ebf42812703b",
+          "prediction": "We recipe requires for **12 cups of flour and  already put in ** cups. flour.She she still needs **2 more cups of flour, then:\n\n has already put in:\n\n12 - 2 = **10 cups of flour.\n\nSo, the put in **10 cups of flour.So",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4ef979ea2bf931df",
+          "prediction": "We found:\n\n46 wrappers and 50 bottle caps at the park. and the found:\n\n total of:\n\n46 + 50 = **96 items.\n\nNow now has 21 bottle caps and 52 wrappers in his collection.\n\n so he has a total of 21 + 5",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "13cb77b698eeadb5",
+          "prediction": "Luke played **177 rounds of a trivia game, and we scored:\n\n total of:\n\n177 rounds 46 points 8,42 points.\n\n  \n find the how many points he scored in total game, we calculate to calculate up points from gained in each round.\n\n the total number he earned in",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "e3ab8666238a289e",
+          "prediction": "We are initially3 birds and 4 storks sitting on the fence.\n\n- 2 more birds joined to join them, the are:\n\n total of:\n\n3 + 2 = 5 birds.\n\n on the fence.\n\nSo, the are 5 birds 4 = 1 more bird than storks.\n\n on the",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2de1549556000830",
+          "prediction": "We problem jumped **33 inches farther than the grasshopper, so:\n\n frog's:\n\n9 + 33 = **42 inches.\n\nThe mouse jumped 3 inches less than the frog, so the mouse jumped 42 - 3 = 39 inches.\n\nTherefore Final39\nSo mouse",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "615f9d817cb5be59",
+          "prediction": "Weachary did 35 push-ups and 3 crunches.\n\nDavid did 58 more push-ups than Zachary, so:\n did:\n\n35 + 58 = **93 push-ups.\n\nDavid did did 87 less crunches than Zachary, so he did 3 -",
+          "token_count": 64,
+          "token_match_count": 57,
+          "token_match_rate": 0.890625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2f80204fc9e0896f",
+          "prediction": "Jack received:\n\n4 emails in the ** and 8 emails in the evening. so the total:\n\n received:\n\n5 + 8 = **13 emails in the afternoon and evening.  \n Final13 emailsSo answer is ** **13.",
+          "token_count": 50,
+          "token_match_count": 34,
+          "token_match_rate": 0.68
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "137ad74218053f8a",
+          "prediction": "Let had **7 action figures on the shelf.He added ** more, figures, the shelf.\n and now there are 7 + x action figures.\n\n the shelf, where x is the number of action figures he added.\n\nHe then 10 of the old ones figures, so now there are 7 -",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4d780f825bb8541c",
+          "prediction": "Weia played tag with:\n\n12 kids on Monday and 14 kids on Tuesday. for:\n\n played with a total of:\n\n12 +14 = **26 kids.\n\nShe she spent a total of 34 hours on play tag on both days, then the played 34 hours2 =",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "08d3dd8885ffb998",
+          "prediction": "Weell had:\n\n309 baseball cards and 356 Ace cards.\n\n total.\n\nShe giving some cards to Jeff, sheell has 415 baseball cards and Ace056 Ace x459 = 47 Ace cards left.\n\nSo find how how many more baseball cards thanell has",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de1bf4d142544e5b",
+          "prediction": "We  are **97 alligators in total and 40 of them were hiding, then the number of alligators ** hiding is:\n\n97 - 40 = **57.\n\nSo Final57 allSo answer is ** **57 all",
+          "token_count": 53,
+          "token_match_count": 38,
+          "token_match_rate": 0.7169811320754716
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "f367349ce0604296",
+          "prediction": "You have read **8 books from the seriesC silly school ' series. and you still have:\n\n14 - 8 = **6 books left to read.  \n Final6 moreSo answer is: **6.",
+          "token_count": 44,
+          "token_match_count": 30,
+          "token_match_rate": 0.6818181818181818
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "a85be5ec651dac24",
+          "prediction": "Emily made **20 beads and made was able to make 5 necklaces. so the necklace needed:\n\n20 \ufffd5 = **4 beads.\n\n  \n, each necklace needed **4 beads.So Final4 beadsbe answer is  $\\4.",
+          "token_count": 51,
+          "token_match_count": 32,
+          "token_match_rate": 0.6274509803921569
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de2a795ab37694af",
+          "prediction": "Frank put **12 pieces of candy,He he puts **11 pieces in candy in each bag, then:\n\n would have:\n\n22 \ufffd11 = 2 bags.\n\n candy.\n\nSo, he would have **2 bags. candy.So Final2 bagsSo answer is  $\\2.",
+          "token_count": 61,
+          "token_match_count": 37,
+          "token_match_rate": 0.6065573770491803
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "47464cc0b064f172",
+          "prediction": "We problem had **12 customers after,Then some left, he had 12 customers x12 = 2 customers left.\nThen he got 10 new customers.\n\n so now now has:\n\n2 + 10 = **12 customers.\n\nSo Final12 customersSo answer is ** **1",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "0d2b4f7681973e19",
+          "prediction": "The farmer picked:\n\n total of:\n\n154 tomatoes in all.**'s the calculation:\n\n it:\n\n-. He farmer had 154 tomatoes yesterday.\n and far has has 90 - 154 = -64 tomatoes left.\n2. He, the question picked 50 tomatoes today",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "33836927fc9f1a8a",
+          "prediction": "We are:\n\n54 yellow peaches and 6 green peaches in the basket.\n\nSo find the total number of green and yellow peaches:\n\n we add to add them two of green peaches and the number of yellow peaches:\n\nSo, the total number of green and yellow peaches is:\n6 +",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e7dd2efb5ec99a06",
+          "prediction": "We 60 bird families flew away for winter, and the were:\n\n89 - 60 = **29 bird families that behind.\n\n  \n find how how many more families families flew away than winter winter than those that stayed,, we subtract the number of families that stayed from from the number that families that",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "41cce6c6e6bb0058",
+          "prediction": "We are initially9 roses and 6 orchids in the vase initiallyJessica Jessica cut some more roses and orchids, there are now:\n\n13 orchids and 3 roses.\n\n the vase.\n\nSo find how how many more orchids than roses are are now the vase now:\n\n we subtract subtract the number of roses",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "6e9745b37ab6fc45",
+          "prediction": "We there were **600 visitors the previous day, and 661 visitors the on the Buckingham palace on that day, then:\n\n were:\n\n661 - 600 = **61 more visitors on the previous day.\n\nSo Final61 visitorsSo answer is ** **61.",
+          "token_count": 63,
+          "token_match_count": 47,
+          "token_match_rate": 0.746031746031746
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "c042f0a2949ff8e6",
+          "prediction": "We waiter had **12 customers.- left 14 new customers.\n\n so the now has:\n\n12 + 14 = **26 customers.\n\nHe, he15 customers left, so the still has 26 - 15 = **11 customers.\n\nSo Final11 customersSo",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "575d7e83d84c1e67",
+          "prediction": "Emily has 72 friends and and she needs to make neck72 necklaces.\n\nEach necklace requires 3 beads.\n\n and the needs make:\n\n72 \ufffd3 = **24 necklaces.\n\nTherefore Final24 neckThe answer is: **24.",
+          "token_count": 54,
+          "token_match_count": 36,
+          "token_match_rate": 0.6666666666666666
+        }
+      ],
+      "coeff_sign_flip": [
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "013133cdef4f637c",
+          "prediction": "T Monday, Tiffany had **7 bags of cans.\n\nOn the, she found 12 more bags.\n\n cans.\n\n so she had:\n\n total of:\n\n7 + 12 = 19 bags.\n\n cans.\n\nTo the, she had 12 more bags than cans, so she had a total of",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "d64f6e35083ffe8c",
+          "prediction": "We are 15 roses and 62 orchids in the vase initially and the were:\n\n total of:\n\n15 + 62 = **77 flowers.\n\n the vase.\n\nAfter Jessica cut some more roses and orchids, there are now 17 roses and 96 orchids.\n\n the vase",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "3e8a5691f5443495",
+          "prediction": "We are **7 baskets of peaches:\n\n-'s the reasoning:\n\n it:\n\n-. Each are each each basket has:\n4 red peaches and 3 green peaches.\n so each basket has:\n total of:\n4 + 3 = **7 peaches.\n2. The there are a total of 7",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "316b525a4fcbfb89",
+          "prediction": "Ol Olivia had **15 dollars from a supermarket and and has:\n\n78 - 15 = **63 dollars left in her wallet.So Final63 dollarsdoll answer is ** **63.",
+          "token_count": 43,
+          "token_match_count": 26,
+          "token_match_rate": 0.6046511627906976
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e26bdbcab1449bbe",
+          "prediction": "We received:\n\n6 emails in the morning,He received 3 emails in the afternoon.\n and the the:\n\n received:\n\n6 + 3 = **9 emails.\n\n the morning and afternoon.\n\nHe he received a total of 10 emails in the day, then he must have received **10 - 9 =",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "aee922049c757331",
+          "prediction": "Dan has $44.He buys a candy bar for $ 8.\n so he spent $ 4 - $88 = -$44 (.\n\nThen friend gave him $ 5, so he now has $ -444 + $ 5 = $ 1.\n\n.\n\nSo Final1 dollarSo",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "1d50b408c8f5cd2c",
+          "prediction": "We the previous day,  were **703 visitors.\n\nOn the current day, there were 246 visitors.\n\nSo , over were:\n\n703 + 246 = **949 visitors overSo this are 25 days, total year, the were 949",
+          "token_count": 64,
+          "token_match_count": 47,
+          "token_match_rate": 0.734375
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "b0b71023ae4d233b",
+          "prediction": "Wewen received:\n\n5 dollars 7 = **12 dollars from her dad andShe spent 4 dollars, so she has 12 - 4 = 8 dollars left.\n\nThe, the received **8 dollars 5 = 3 dollars dollars from her mom than she did from her dad.\n\nSo Final",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "b1200c32546a34a5",
+          "prediction": "We problem number of fruits is oranges is:\n\n142 + 356 = 498.\n\nThe number number of groups is 47 ( 178 = 225\n\nSo number of each group of oranges is:\n\n498 / 225 = 2.",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "14bfbfc94f2c2e7b",
+          "prediction": "We are **8 different books and 5 different movies in the \"Crazy silly school' series.\n\n and:\n\n are:\n\n total of:\n\n1 + 5 = **13 items and movies.\n\n- you read 19 of the movies and and the have read **19 movies 5 = 14",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "4c84ebf42812703b",
+          "prediction": "We recipe requires for **12 cups of flour and  already put in ** cups. flour.She she still needs **2 more cups of flour, then:\n\n has already put in:\n\n12 - 2 = **10 cups of flour.\n\nSo, the put in **10 cups of flour.So",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4ef979ea2bf931df",
+          "prediction": "We found:\n\n46 wrappers and 50 bottle caps at the park. and the found:\n\n total of:\n\n46 + 50 = **96 items.\n\nNow now has 21 bottle caps and 52 wrappers in his collection.\n\n so he has a total of 21 + 5",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "13cb77b698eeadb5",
+          "prediction": "Luke played **177 rounds of a trivia game, and we scored:\n\n total of:\n\n177 rounds 46 points 8,42 points.\n\n  \n find the how many points he scored in total game, we calculate to calculate up points from gained in each round.\n\n the total number he earned in",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "e3ab8666238a289e",
+          "prediction": "We are initially3 birds and 4 storks sitting on the fence.\n\n- 2 more birds joined to join them, the are:\n\n total of:\n\n3 + 2 = 5 birds.\n\n on the fence.\n\nSo, the are 5 birds 4 = 1 more bird than storks.\n\n on the",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2de1549556000830",
+          "prediction": "We problem jumped **33 inches farther than the grasshopper, so:\n\n frog's:\n\n9 + 33 = **42 inches.\n\nThe mouse jumped 3 inches less than the frog, so the mouse jumped 42 - 3 = 39 inches.\n\nTherefore Final39 inchesSo mouse",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "615f9d817cb5be59",
+          "prediction": "Weachary did 35 push-ups and 3 crunches.\n\nDavid did 58 more push-ups than Zachary, so:\n did:\n\n35 + 58 = **93 push-ups.\n\nDavid did did 87 less crunches than Zachary, so he did 3 -",
+          "token_count": 64,
+          "token_match_count": 57,
+          "token_match_rate": 0.890625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2f80204fc9e0896f",
+          "prediction": "Jack received:\n\n4 emails in the ** and 8 emails in the evening. so the total:\n\n received:\n\n5 + 8 = **13 emails in the afternoon and evening.  \n Final13 emailsSo total is ** **13.",
+          "token_count": 50,
+          "token_match_count": 33,
+          "token_match_rate": 0.66
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "137ad74218053f8a",
+          "prediction": "Let had **7 action figures on the shelf.He added ** more, figures, the shelf.\n and now there are 7 + x action figures.\n\n the shelf, where x is the number of action figures he added.\n\nHe then 10 of the old ones figures, so now there are 7 -",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4d780f825bb8541c",
+          "prediction": "Weia played tag with:\n\n12 kids on Monday and 14 kids on Tuesday. for:\n\n played with a total of:\n\n12 +14 = **26 kids.\n\nShe she spent a total of 34 hours on play tag on both days, then the played 34 hours2 =",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "08d3dd8885ffb998",
+          "prediction": "Weell had:\n\n309 baseball cards and 356 Ace cards.\n\n total.\n\nShe giving some cards to Jeff, sheell has 415 baseball cards and Ace056 Ace x459 = 47 Ace cards left.\n\nSo find how how many more baseball cards thanell has",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de1bf4d142544e5b",
+          "prediction": "We  are **97 alligators in total and 40 of them were hiding, then the number of alligators ** hiding is:\n\n97 - 40 = **57.\n\nSo Final57 allSo number is ** **57 all",
+          "token_count": 53,
+          "token_match_count": 37,
+          "token_match_rate": 0.6981132075471698
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "f367349ce0604296",
+          "prediction": "You have read **8 books from the seriesC silly school ' series. and you still have:\n\n14 - 8 = **6 books left to read.  \n Final6 moreSo answer is: **6.",
+          "token_count": 44,
+          "token_match_count": 30,
+          "token_match_rate": 0.6818181818181818
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "a85be5ec651dac24",
+          "prediction": "Emily made **20 beads and made was able to make 5 necklaces. so the necklace needed:\n\n20 \ufffd5 = **4 beads.\n\n  \n, each necklace needed **4 beads.So Final4 beadsbe number is  $\\4.",
+          "token_count": 51,
+          "token_match_count": 31,
+          "token_match_rate": 0.6078431372549019
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de2a795ab37694af",
+          "prediction": "Frank put **12 pieces of candy,He he puts **11 pieces in candy in each bag, then:\n\n would have:\n\n22 \ufffd11 = 2 bags.\n\n candy.\n\nSo, he would have **2 bags. candy.So Final2 bagsSo final is  $\\2.",
+          "token_count": 61,
+          "token_match_count": 36,
+          "token_match_rate": 0.5901639344262295
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "47464cc0b064f172",
+          "prediction": "We problem had **12 customers after,Then some left, he had 12 customers x12 = 2 customers left.\nThen he got 10 new customers.\n\n so now now has:\n\n2 + 10 = **12 customers.\n\nSo Final12 customersSo answer is ** **1",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "0d2b4f7681973e19",
+          "prediction": "The farmer picked:\n\n total of:\n\n154 tomatoes in all.**'s the calculation:\n\n it:\n\n-. He farmer had 154 tomatoes yesterday.\n and far has has 90 - 154 = -64 tomatoes left.\n2. He, the question picked 50 tomatoes today",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "33836927fc9f1a8a",
+          "prediction": "We are:\n\n54 yellow peaches and 6 green peaches in the basket.\n\nSo find the total number of green and yellow peaches:\n\n we add to add them two of green peaches and the number of yellow peaches:\n\nSo, the total number of green and yellow peaches is:\n6 +",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e7dd2efb5ec99a06",
+          "prediction": "We 60 bird families flew away for winter, and the were:\n\n89 - 60 = **29 bird families that behind.\n\n  \n find how how many more families families flew away than winter winter than those that stayed,, we subtract the number of families that stayed from from the number that families that",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "41cce6c6e6bb0058",
+          "prediction": "We are initially9 roses and 6 orchids in the vase initiallyJessica Jessica cut some more roses and orchids, there are now:\n\n13 orchids and 3 roses.\n\n the vase.\n\nSo find how how many more orchids than roses are are now the vase now:\n\n we subtract subtract the number of roses",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "6e9745b37ab6fc45",
+          "prediction": "We there were **600 visitors the previous day, and 661 visitors the on the Buckingham palace on that day, then:\n\n were:\n\n661 - 600 = **61 more visitors on the previous day.\n\nSo Final61 visitorsSo answer is ** **61.",
+          "token_count": 63,
+          "token_match_count": 47,
+          "token_match_rate": 0.746031746031746
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "c042f0a2949ff8e6",
+          "prediction": "We waiter had **12 customers.- left 14 new customers.\n\n so the now has:\n\n12 + 14 = **26 customers.\n\nHe, he15 customers left, so the still has 26 - 15 = **11 customers.\n\nSo Final11 customersSo",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "575d7e83d84c1e67",
+          "prediction": "Emily has 72 friends and and she needs to make neck72 necklaces.\n\nEach necklace requires 3 beads.\n\n and the needs make:\n\n72 \ufffd3 = **24 necklaces.\n\nTherefore Final24 neckSo answer is: **24.",
+          "token_count": 54,
+          "token_match_count": 35,
+          "token_match_rate": 0.6481481481481481
+        }
+      ],
+      "matched": [
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "013133cdef4f637c",
+          "prediction": "T Monday, Tiffany had **7 bags of cans.\n\nOn the, she found 12 more bags.\n\n cans.\n\n so she had:\n\n total of:\n\n7 + 12 = 19 bags.\n\n cans.\n\nTo the, she had 12 more bags than cans, so she had a total of",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "d64f6e35083ffe8c",
+          "prediction": "We are 15 roses and 62 orchids in the vase initially and the were:\n\n total of:\n\n15 + 62 = **77 flowers.\n\n the vase.\n\nAfter Jessica cut some more roses and orchids, there are now 17 roses and 96 orchids.\n\n the vase",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "3e8a5691f5443495",
+          "prediction": "We are **7 baskets of peaches:\n\n-'s the reasoning:\n\n it:\n\n-. Each are each each basket has:\n4 red peaches and 3 green peaches.\n so each basket has:\n total of:\n4 + 3 = **7 peaches.\n2. The there are a total of 7",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "316b525a4fcbfb89",
+          "prediction": "Ol Olivia had **15 dollars from a supermarket and and has:\n\n78 - 15 = **63 dollars left in her wallet.So Final63 dollarsdoll answer is ** **63.",
+          "token_count": 43,
+          "token_match_count": 26,
+          "token_match_rate": 0.6046511627906976
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e26bdbcab1449bbe",
+          "prediction": "We received:\n\n6 emails in the morning,He received 3 emails in the afternoon.\n and the the:\n\n received:\n\n6 + 3 = **9 emails.\n\n the morning and afternoon.\n\nHe he received a total of 10 emails in the day, then he must have received **10 - 9 =",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "aee922049c757331",
+          "prediction": "Dan has $44.He buys a candy bar for $ 8.\n so he spent $ 4 - $88 = -$44 (.\n\nThen friend gave him $ 5, so he now has $ -444 + $ 5 = $ 1.\n\n.\n\nSo Final1 dollarSo",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "1d50b408c8f5cd2c",
+          "prediction": "We the previous day,  were **703 visitors.\n\nOn the current day, there were 246 visitors.\n\nSo , over were:\n\n703 + 246 = **949 visitors overSo this are 25 days, total year, the were 949",
+          "token_count": 64,
+          "token_match_count": 47,
+          "token_match_rate": 0.734375
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "b0b71023ae4d233b",
+          "prediction": "Wewen received:\n\n5 dollars 7 = **12 dollars from her dad andShe spent 4 dollars, so she has 12 - 4 = 8 dollars left.\n\nThe, the received **8 dollars 5 = 3 dollars dollars from her mom than she did from her dad.\n\nSo Final",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "b1200c32546a34a5",
+          "prediction": "We problem number of fruits is oranges is:\n\n142 + 356 = 498.\n\nThe number number of groups is 47 ( 178 = 225\n\nSo number of each group of oranges is:\n\n498 / 225 = 2.",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "14bfbfc94f2c2e7b",
+          "prediction": "We are **8 different books and 5 different movies in the \"Crazy silly school' series.\n\n and:\n\n are:\n\n total of:\n\n1 + 5 = **13 items and movies.\n\n- you read 19 of the movies and and the have read **19 movies 5 = 14",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "4c84ebf42812703b",
+          "prediction": "We recipe requires for **12 cups of flour and  already put in ** cups. flour.She she still needs **2 more cups of flour, then:\n\n has already put in:\n\n12 - 2 = **10 cups of flour.\n\nSo, the put in **10 cups of flour.So",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4ef979ea2bf931df",
+          "prediction": "We found:\n\n46 wrappers and 50 bottle caps at the park. and the found:\n\n total of:\n\n46 + 50 = **96 items.\n\nNow now has 21 bottle caps and 52 wrappers in his collection.\n\n so he has a total of 21 + 5",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "13cb77b698eeadb5",
+          "prediction": "Luke played **177 rounds of a trivia game, and we scored:\n\n total of:\n\n177 rounds 46 points 8,42 points.\n\n  \n find the how many points he scored in total game, we calculate to calculate up points from gained in each round.\n\n the total number he earned in",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "e3ab8666238a289e",
+          "prediction": "We are initially3 birds and 4 storks sitting on the fence.\n\n- 2 more birds joined to join them, the are:\n\n total of:\n\n3 + 2 = 5 birds.\n\n on the fence.\n\nSo, the are 5 birds 4 = 1 more bird than storks.\n\n on the",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2de1549556000830",
+          "prediction": "We problem jumped **33 inches farther than the grasshopper, so:\n\n frog's:\n\n9 + 33 = **42 inches.\n\nThe mouse jumped 3 inches less than the frog, so the mouse jumped 42 - 3 = 39 inches.\n\nTherefore Final39\nSo mouse",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "615f9d817cb5be59",
+          "prediction": "Weachary did 35 push-ups and 3 crunches.\n\nDavid did 58 more push-ups than Zachary, so:\n did:\n\n35 + 58 = **93 push-ups.\n\nDavid did did 87 less crunches than Zachary, so he did 3 -",
+          "token_count": 64,
+          "token_match_count": 57,
+          "token_match_rate": 0.890625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2f80204fc9e0896f",
+          "prediction": "Jack received:\n\n4 emails in the ** and 8 emails in the evening. so the total:\n\n received:\n\n5 + 8 = **13 emails in the afternoon and evening.  \n Final13 emailsSo answer is ** **13.",
+          "token_count": 50,
+          "token_match_count": 34,
+          "token_match_rate": 0.68
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "137ad74218053f8a",
+          "prediction": "Let had **7 action figures on the shelf.He added ** more, figures, the shelf.\n and now there are 7 + x action figures.\n\n the shelf, where x is the number of action figures he added.\n\nHe then 10 of the old ones figures, so now there are 7 -",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4d780f825bb8541c",
+          "prediction": "Weia played tag with:\n\n12 kids on Monday and 14 kids on Tuesday. for:\n\n played with a total of:\n\n12 +14 = **26 kids.\n\nShe she spent a total of 34 hours on play tag on both days, then the played 34 hours2 =",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "08d3dd8885ffb998",
+          "prediction": "Weell had:\n\n309 baseball cards and 356 Ace cards.\n\n total.\n\nShe giving some cards to Jeff, sheell has 415 baseball cards and Ace056 Ace x459 = 47 Ace cards left.\n\nSo find how how many more baseball cards thanell has",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de1bf4d142544e5b",
+          "prediction": "We  are **97 alligators in total and 40 of them were hiding, then the number of alligators ** hiding is:\n\n97 - 40 = **57.\n\nSo Final57 allSo answer is ** **57 all",
+          "token_count": 53,
+          "token_match_count": 38,
+          "token_match_rate": 0.7169811320754716
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "f367349ce0604296",
+          "prediction": "You have read **8 books from the seriesC silly school ' series. and you still have:\n\n14 - 8 = **6 books left to read.  \n Final6 moreSo answer is: **6.",
+          "token_count": 44,
+          "token_match_count": 30,
+          "token_match_rate": 0.6818181818181818
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "a85be5ec651dac24",
+          "prediction": "Emily made **20 beads and made was able to make 5 necklaces. so the necklace needed:\n\n20 \ufffd5 = **4 beads.\n\n  \n, each necklace needed **4 beads.So Final4 beadsbe answer is  $\\4.",
+          "token_count": 51,
+          "token_match_count": 32,
+          "token_match_rate": 0.6274509803921569
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de2a795ab37694af",
+          "prediction": "Frank put **12 pieces of candy,He he puts **11 pieces in candy in each bag, then:\n\n would have:\n\n22 \ufffd11 = 2 bags.\n\n candy.\n\nSo, he would have **2 bags. candy.So Final2 bagsSo answer is  $\\2.",
+          "token_count": 61,
+          "token_match_count": 37,
+          "token_match_rate": 0.6065573770491803
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "47464cc0b064f172",
+          "prediction": "We problem had **12 customers after,Then some left, he had 12 customers x12 = 2 customers left.\nThen he got 10 new customers.\n\n so now now has:\n\n2 + 10 = **12 customers.\n\nSo Final12 customersSo answer is ** **1",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "0d2b4f7681973e19",
+          "prediction": "The farmer picked:\n\n total of:\n\n154 tomatoes in all.**'s the calculation:\n\n it:\n\n-. He farmer had 154 tomatoes yesterday.\n and far has has 90 - 154 = -64 tomatoes left.\n2. He, the question picked 50 tomatoes today",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "33836927fc9f1a8a",
+          "prediction": "We are:\n\n54 yellow peaches and 6 green peaches in the basket.\n\nSo find the total number of green and yellow peaches:\n\n we add to add them two of green peaches and the number of yellow peaches:\n\nSo, the total number of green and yellow peaches is:\n6 +",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e7dd2efb5ec99a06",
+          "prediction": "We 60 bird families flew away for winter, and the were:\n\n89 - 60 = **29 bird families that behind.\n\n  \n find how how many more families families flew away than winter winter than those that stayed,, we subtract the number of families that stayed from from the number that families that",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "41cce6c6e6bb0058",
+          "prediction": "We are initially9 roses and 6 orchids in the vase initiallyJessica Jessica cut some more roses and orchids, there are now:\n\n13 orchids and 3 roses.\n\n the vase.\n\nSo find how how many more orchids than roses are are now the vase now:\n\n we subtract subtract the number of roses",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "6e9745b37ab6fc45",
+          "prediction": "We there were **600 visitors the previous day, and 661 visitors the on the Buckingham palace on that day, then:\n\n were:\n\n661 - 600 = **61 more visitors on the previous day.\n\nSo Final61 visitorsSo answer is ** **61.",
+          "token_count": 63,
+          "token_match_count": 47,
+          "token_match_rate": 0.746031746031746
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "c042f0a2949ff8e6",
+          "prediction": "We waiter had **12 customers.- left 14 new customers.\n\n so the now has:\n\n12 + 14 = **26 customers.\n\nHe, he15 customers left, so the still has 26 - 15 = **11 customers.\n\nSo Final11 customersSo",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "575d7e83d84c1e67",
+          "prediction": "Emily has 72 friends and and she needs to make neck72 necklaces.\n\nEach necklace requires 3 beads.\n\n and the needs make:\n\n72 \ufffd3 = **24 necklaces.\n\nTherefore Final24 neckThe answer is: **24.",
+          "token_count": 54,
+          "token_match_count": 36,
+          "token_match_rate": 0.6666666666666666
+        }
+      ],
+      "row_shuffle": [
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "013133cdef4f637c",
+          "prediction": "T Monday, Tiffany had **7 bags of cans.\n\nOn the, she found 12 more bags.\n\n cans.\n\n so she had:\n\n total of:\n\n7 + 12 = 19 bags.\n\n cans.\n\nTo the, she had 12 more bags than cans, so she had a total of",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "d64f6e35083ffe8c",
+          "prediction": "We are 15 roses and 62 orchids in the vase initially and the were:\n\n total of:\n\n15 + 62 = **77 flowers.\n\n the vase.\n\nAfter Jessica cut some more roses and orchids, there are now 17 roses and 96 orchids.\n\n the vase",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "3e8a5691f5443495",
+          "prediction": "We are **7 baskets of peaches:\n\n-'s the reasoning:\n\n it:\n\n-. Each are each each basket has:\n4 red peaches and 6 green peaches.\n so each basket has:\n total of:\n4 + 3 = **7 peaches.\n2. The there are a total of 7",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "316b525a4fcbfb89",
+          "prediction": "Ol Olivia had **15 dollars from a supermarket and and has:\n\n78 - 15 = **63 dollars left in her wallet.So Final63 dollarsdoll answer is ** **63.",
+          "token_count": 43,
+          "token_match_count": 26,
+          "token_match_rate": 0.6046511627906976
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e26bdbcab1449bbe",
+          "prediction": "We received:\n\n6 emails in the morning,He received 3 emails in the afternoon.\n and the the:\n\n received:\n\n6 + 3 = **9 emails.\n\n the morning and afternoon.\n\nHe he received a total of 10 emails in the day, then he must have received **10 - 9 =",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "aee922049c757331",
+          "prediction": "Dan has $44.He buys a candy bar for $ 8.\n so he spent $ 4 - $88 = -$44 (.\n\nThen friend gave him $ 5, so he now has $ -444 + $ 5 = $ 1.\n\n.\n\nSo Final1 dollarSo",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "1d50b408c8f5cd2c",
+          "prediction": "We the previous day,  were **703 visitors.\n\nOn the current day, there were 246 visitors.\n\nSo , over were:\n\n703 + 246 = **949 visitors overSo this are 25 days, total year, the were 943",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "b0b71023ae4d233b",
+          "prediction": "Wewen received:\n\n5 dollars 7 = **12 dollars from her dad andShe spent 4 dollars, so she has 12 - 4 = 8 dollars left.\n\nThe, the received **8 dollars 5 = 3 dollars dollars from her mom than she did from her dad.\n\nSo Final",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "b1200c32546a34a5",
+          "prediction": "We problem number of fruits is oranges is:\n\n142 + 356 = 498.\n\nThe number number of groups is 47 ( 178 = 225\n\nSo number of each group of oranges is:\n\n498 / 225 = 2.",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "14bfbfc94f2c2e7b",
+          "prediction": "We are **8 different books and 5 different movies in the \"Crazy silly'\n' series.\n\n and:\n\n are:\n\n total of:\n\n1 + 5 = **13 items and movies.\n\n- you read 19 of the movies and and the have read **19 movies 5 = 14",
+          "token_count": 64,
+          "token_match_count": 44,
+          "token_match_rate": 0.6875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "4c84ebf42812703b",
+          "prediction": "We recipe requires for **12 cups of flour and  already put in ** cups. flour.She she still needs **2 more cups of flour, then:\n\n has already put in:\n\n12 - 2 = **10 cups of flour.\n\nSo, the put in **10 cups of flour.So",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4ef979ea2bf931df",
+          "prediction": "We found:\n\n46 wrappers and 50 bottle caps at the park. and the found:\n\n total of:\n\n46 + 50 = **96 items.\n\nNow now has 21 bottle caps and 52 wrappers in his collection.\n\n so he has a total of 21 + 5",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "13cb77b698eeadb5",
+          "prediction": "Luke played **177 rounds of a trivia game, and we scored:\n\n total of:\n\n177 rounds 46 points 8,42 points.\n\n  \n find the how many points he scored in total game, we calculate to calculate up points from gained in each round.\n\n the total number he earned in",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "e3ab8666238a289e",
+          "prediction": "We are initially3 birds and 4 storks sitting on the fence.\n\n- 2 more birds joined to join them, the are:\n\n total of:\n\n3 + 2 = 5 birds.\n\n on the fence.\n\nSo, the are 5 birds 4 = 1 more bird than storks\n on the",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2de1549556000830",
+          "prediction": "We problem jumped **33 inches farther than the grasshopper, so:\n\n frog's:\n\n9 + 33 = **42 inches.\n\nThe mouse jumped 3 inches less than the frog, so the mouse jumped 42 - 3 = 39 inches.\n\nTherefore Final39 inchesSo mouse",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "615f9d817cb5be59",
+          "prediction": "Weachary did 35 push-ups and 3 crunches.\n\nDavid did 58 more push-ups than Zachary, so:\n did:\n\n35 + 58 = **93 push-ups.\n\nDavid did did 87 less crunches than Zachary, so he did 3 -",
+          "token_count": 64,
+          "token_match_count": 57,
+          "token_match_rate": 0.890625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2f80204fc9e0896f",
+          "prediction": "Jack received:\n\n4 emails in the ** and 8 emails in the evening. so the total:\n\n received:\n\n5 + 8 = **13 emails in the afternoon and evening.  \n Final13 emailsSo answer is ** **13.",
+          "token_count": 50,
+          "token_match_count": 34,
+          "token_match_rate": 0.68
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "137ad74218053f8a",
+          "prediction": "Let had **7 action figures on the shelf.He added ** more, figures, the shelf.\n and now there are 7 + x action figures.\n\n the shelf, where x is the number of action figures he added.\n\nHe then 10 of the old ones figures, so now there are 7 -",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4d780f825bb8541c",
+          "prediction": "Weia played tag with:\n\n12 kids on Monday and 14 kids on Tuesday. for:\n\n played with a total of:\n\n12 +14 = **26 kids.\n\nShe she spent a total of 34 hours on play tag on both days, then the played 34 hours2 =",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "08d3dd8885ffb998",
+          "prediction": "Weell had:\n\n309 baseball cards and 356 Ace cards.\n\n total.\n\nShe giving some cards to Jeff, sheell has 415 baseball cards and Ace056 Ace5459 = 47 Ace cards left.\n\nSo find how how many more baseball cards thanell has",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de1bf4d142544e5b",
+          "prediction": "We  are **97 alligators in total and 40 of them were hiding, then the number of alligators ** hiding is:\n\n97 - 46 = **57.\n\nSo Final57 allSo number is ** **57 all",
+          "token_count": 53,
+          "token_match_count": 36,
+          "token_match_rate": 0.6792452830188679
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "f367349ce0604296",
+          "prediction": "You have read **8 books from the seriesC silly school ' series. and you still have:\n\n14 - 8 = **6 books left to read.  \n Final6 moreSo answer is: **6.",
+          "token_count": 44,
+          "token_match_count": 30,
+          "token_match_rate": 0.6818181818181818
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "a85be5ec651dac24",
+          "prediction": "Emily made **20 beads and made was able to make 5 necklaces. so the necklace needed:\n\n20 \ufffd5 = **4 beads.\n\n  \n, each necklace needed **4 beads.So Final4 beadsbe answer is  $\\4.",
+          "token_count": 51,
+          "token_match_count": 32,
+          "token_match_rate": 0.6274509803921569
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de2a795ab37694af",
+          "prediction": "Frank put **12 pieces of candy,He he puts **11 pieces in candy in each bag, then:\n\n would have:\n\n22 \ufffd11 = 2 bags.\n\n candy.\n\nSo, he would have **2 bags. candy.So Final2 bags1 answer is  $\\2.",
+          "token_count": 61,
+          "token_match_count": 37,
+          "token_match_rate": 0.6065573770491803
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "47464cc0b064f172",
+          "prediction": "We problem had **12 customers after,Then some left, he had 12 customers x12 = 2 customers left.\nThen he got 10 new customers.\n\n so now now has:\n\n2 + 10 = **12 customers.\n\nSo Final12 customersSo answer is ** **1",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "0d2b4f7681973e19",
+          "prediction": "The farmer picked:\n\n total of:\n\n154 tomatoes in all.\"\n's the calculation:\n\n it:\n\n-. He farmer had 154 tomatoes yesterday.\n and far has has 90 - 154 = -64 tomatoes left.\n2. He, the question picked 50 tomatoes today",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "33836927fc9f1a8a",
+          "prediction": "We are:\n\n54 yellow peaches and 6 green peaches in the basket.\n\nSo find the total number of green and yellow peaches:\n\n we add to add them two of green peaches and the number of yellow peaches:\n\nSo, the total number of green and yellow peaches is:\n6 +",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e7dd2efb5ec99a06",
+          "prediction": "We 60 bird families flew away for winter, and the were:\n\n89 - 60 = **29 bird families that behind.\n\n  \n find how how many more families families flew away than winter winter than those that stayed,, we subtract the number of families that stayed from from the number that families that",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "41cce6c6e6bb0058",
+          "prediction": "We are initially9 roses and 6 orchids in the vase initiallyJessica Jessica cut some more roses and orchids, there are now:\n\n13 orchids and 3 roses.\n\n the vase.\n\nSo find how how many more orchids than roses are are now the vase now:\n\n we subtract subtract the number of roses",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "6e9745b37ab6fc45",
+          "prediction": "We there were **600 visitors the previous day, and 661 visitors the on the Buckingham palace on that day, then:\n\n were:\n\n661 - 600 = **61 more visitors on the previous day.\n\nSo Final61 visitorsSo answer is ** **61.",
+          "token_count": 63,
+          "token_match_count": 47,
+          "token_match_rate": 0.746031746031746
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "c042f0a2949ff8e6",
+          "prediction": "We waiter had **12 customers.- left 14 new customers.\n\n so the now has:\n\n12 + 14 = **26 customers.\n\nHe, he15 customers left, so the still has 26 - 15 = **11 customers.\n\nSo Final11 customersSo",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "575d7e83d84c1e67",
+          "prediction": "Emily has 72 friends and and she needs to make neck72 necklaces.\n\nEach necklace requires 3 beads.\n\n and the needs make:\n\n72 \ufffd3 = **24 necklaces.\n\nTherefore Final24 neckSo answer is: **24.",
+          "token_count": 54,
+          "token_match_count": 35,
+          "token_match_rate": 0.6481481481481481
+        }
+      ],
+      "target_only": [
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "013133cdef4f637c",
+          "prediction": "T Monday, Tiffany had **7 bags of cans.\n\nOn the, she found 12 more bags.\n\n cans.\n\n so she had:\n\n total of:\n\n7 + 12 = 19 bags.\n\n cans.\n\nTo the, she had 12 more bags than cans, so she had a total of",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "d64f6e35083ffe8c",
+          "prediction": "We are 15 roses and 62 orchids in the vase initially and the were:\n\n total of:\n\n15 + 62 = **77 flowers.\n\n the vase.\n\nAfter Jessica cut some more roses and orchids, there are now 17 roses and 96 orchids.\n\n the vase",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "3e8a5691f5443495",
+          "prediction": "We are **7 baskets of peaches:\n\n-'s the reasoning:\n\n it:\n\n-. Each are each each basket has:\n4 red peaches and 3 green peaches.\n so each basket has:\n total of:\n4 + 3 = **7 peaches.\n2. The there are a total of 7",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "316b525a4fcbfb89",
+          "prediction": "Ol Olivia had **15 dollars from a supermarket and and has:\n\n78 - 15 = **63 dollars left in her wallet.So Final63 dollarsdoll answer is ** **63.",
+          "token_count": 43,
+          "token_match_count": 26,
+          "token_match_rate": 0.6046511627906976
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e26bdbcab1449bbe",
+          "prediction": "We received:\n\n6 emails in the morning,He received 3 emails in the afternoon.\n and the the:\n\n received:\n\n6 + 3 = **9 emails.\n\n the morning and afternoon.\n\nHe he received a total of 10 emails in the day, then he must have received **10 - 9 =",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "aee922049c757331",
+          "prediction": "Dan has $44.He buys a candy bar for $ 8.\n so he spent $ 4 - $88 = -$44 (.\n\nThen friend gave him $ 5, so he now has $ -444 + $ 5 = $ 1.\n\n.\n\nSo Final1 dollarSo",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "1d50b408c8f5cd2c",
+          "prediction": "We the previous day,  were **703 visitors.\n\nOn the current day, there were 246 visitors.\n\nSo , over were:\n\n703 + 246 = **949 visitors overSo this are 25 days, total year, the were 949",
+          "token_count": 64,
+          "token_match_count": 47,
+          "token_match_rate": 0.734375
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "b0b71023ae4d233b",
+          "prediction": "Wewen received:\n\n5 dollars 7 = **12 dollars from her dad andShe spent 4 dollars, so she has 12 - 4 = 8 dollars left.\n\nThe, the received **8 dollars 5 = 3 dollars dollars from her mom than she did from her dad.\n\nSo Final",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "b1200c32546a34a5",
+          "prediction": "We problem number of fruits is oranges is:\n\n142 + 356 = 498.\n\nThe number number of groups is 47 ( 178 = 225\n\nSo number of each group of oranges is:\n\n498 / 225 = 2.",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "14bfbfc94f2c2e7b",
+          "prediction": "We are **8 different books and 5 different movies in the \"Crazy silly school' series.\n\n and:\n\n are:\n\n total of:\n\n1 + 5 = **13 items and movies.\n\n- you read 19 of the movies and and the have read **19 movies 5 = 14",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "4c84ebf42812703b",
+          "prediction": "We recipe requires for **12 cups of flour and  already put in ** cups. flour.She she still needs **2 more cups of flour, then:\n\n has already put in:\n\n12 - 2 = **10 cups of flour.\n\nSo, the put in **10 cups of flour.So",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4ef979ea2bf931df",
+          "prediction": "We found:\n\n46 wrappers and 50 bottle caps at the park. and the found:\n\n total of:\n\n46 + 50 = **96 items.\n\nNow now has 21 bottle caps and 52 wrappers in his collection.\n\n so he has a total of 21 + 5",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "13cb77b698eeadb5",
+          "prediction": "Luke played **177 rounds of a trivia game, and we scored:\n\n total of:\n\n177 rounds 46 points 8,42 points.\n\n  \n find the how many points he scored in total game, we calculate to calculate up points from gained in each round.\n\n the total number he earned in",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "e3ab8666238a289e",
+          "prediction": "We are initially3 birds and 4 storks sitting on the fence.\n\n- 2 more birds joined to join them, the are:\n\n total of:\n\n3 + 2 = 5 birds.\n\n on the fence.\n\nSo, the are 5 birds 4 = 1 more bird than storks.\n\n on the",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2de1549556000830",
+          "prediction": "We problem jumped **33 inches farther than the grasshopper, so:\n\n frog's:\n\n9 + 33 = **42 inches.\n\nThe mouse jumped 3 inches less than the frog, so the mouse jumped 42 - 3 = 39 inches.\n\nTherefore Final39 inchesSo mouse",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "615f9d817cb5be59",
+          "prediction": "Weachary did 35 push-ups and 3 crunches.\n\nDavid did 58 more push-ups than Zachary, so:\n did:\n\n35 + 58 = **93 push-ups.\n\nDavid did did 87 less crunches than Zachary, so he did 3 -",
+          "token_count": 64,
+          "token_match_count": 57,
+          "token_match_rate": 0.890625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2f80204fc9e0896f",
+          "prediction": "Jack received:\n\n4 emails in the ** and 8 emails in the evening. so the total:\n\n received:\n\n5 + 8 = **13 emails in the afternoon and evening.  \n Final13 emailsSo answer is ** **13.",
+          "token_count": 50,
+          "token_match_count": 34,
+          "token_match_rate": 0.68
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "137ad74218053f8a",
+          "prediction": "Let had **7 action figures on the shelf.He added ** more, figures, the shelf.\n and now there are 7 + x action figures.\n\n the shelf, where x is the number of action figures he added.\n\nHe then 10 of the old ones figures, so now there are 7 -",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4d780f825bb8541c",
+          "prediction": "Weia played tag with:\n\n12 kids on Monday and 14 kids on Tuesday. for:\n\n played with a total of:\n\n12 +14 = **26 kids.\n\nShe she spent a total of 34 hours on play tag on both days, then the played 34 hours2 =",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "08d3dd8885ffb998",
+          "prediction": "Weell had:\n\n309 baseball cards and 356 Ace cards.\n\n total.\n\nShe giving some cards to Jeff, sheell has 415 baseball cards and Ace056 Ace x459 = 47 Ace cards left.\n\nSo find how how many more baseball cards thanell has",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de1bf4d142544e5b",
+          "prediction": "We  are **97 alligators in total and 40 of them were hiding, then the number of alligators ** hiding is:\n\n97 - 40 = **57.\n\nSo Final57 allSo number is ** **57 all",
+          "token_count": 53,
+          "token_match_count": 37,
+          "token_match_rate": 0.6981132075471698
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "f367349ce0604296",
+          "prediction": "You have read **8 books from the seriesC silly school ' series. and you still have:\n\n14 - 8 = **6 books left to read.  \n Final6 moreSo answer is: **6.",
+          "token_count": 44,
+          "token_match_count": 30,
+          "token_match_rate": 0.6818181818181818
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "a85be5ec651dac24",
+          "prediction": "Emily made **20 beads and made was able to make 5 necklaces. so the necklace needed:\n\n20 \ufffd5 = **4 beads.\n\n  \n, each necklace needed **4 beads.So Final4 beadsbe answer is  $\\4.",
+          "token_count": 51,
+          "token_match_count": 32,
+          "token_match_rate": 0.6274509803921569
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de2a795ab37694af",
+          "prediction": "Frank put **12 pieces of candy,He he puts **11 pieces in candy in each bag, then:\n\n would have:\n\n22 \ufffd11 = 2 bags.\n\n candy.\n\nSo, he would have **2 bags. candy.So Final2 bagsSo answer is  $\\2.",
+          "token_count": 61,
+          "token_match_count": 37,
+          "token_match_rate": 0.6065573770491803
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "47464cc0b064f172",
+          "prediction": "We problem had **12 customers after,Then some left, he had 12 customers x12 = 2 customers left.\nThen he got 10 new customers.\n\n so now now has:\n\n2 + 10 = **12 customers.\n\nSo Final12 customersSo answer is ** **1",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "0d2b4f7681973e19",
+          "prediction": "The farmer picked:\n\n total of:\n\n154 tomatoes in all.**'s the calculation:\n\n it:\n\n-. He farmer had 154 tomatoes yesterday.\n and far has has 90 - 154 = -64 tomatoes left.\n2. He, the question picked 50 tomatoes today",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "33836927fc9f1a8a",
+          "prediction": "We are:\n\n54 yellow peaches and 6 green peaches in the basket.\n\nSo find the total number of green and yellow peaches:\n\n we add to add them two of green peaches and the number of yellow peaches:\n\nSo, the total number of green and yellow peaches is:\n6 +",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e7dd2efb5ec99a06",
+          "prediction": "We 60 bird families flew away for winter, and the were:\n\n89 - 60 = **29 bird families that behind.\n\n  \n find how how many more families families flew away than winter winter than those that stayed,, we subtract the number of families that stayed from from the number that families that",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "41cce6c6e6bb0058",
+          "prediction": "We are initially9 roses and 6 orchids in the vase initiallyJessica Jessica cut some more roses and orchids, there are now:\n\n13 orchids and 3 roses.\n\n the vase.\n\nSo find how how many more orchids than roses are are now the vase now:\n\n we subtract subtract the number of roses",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "6e9745b37ab6fc45",
+          "prediction": "We there were **600 visitors the previous day, and 661 visitors the on the Buckingham palace on that day, then:\n\n were:\n\n661 - 600 = **61 more visitors on the previous day.\n\nSo Final61 visitorsSo answer is ** **61.",
+          "token_count": 63,
+          "token_match_count": 47,
+          "token_match_rate": 0.746031746031746
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "c042f0a2949ff8e6",
+          "prediction": "We waiter had **12 customers.- left 14 new customers.\n\n so the now has:\n\n12 + 14 = **26 customers.\n\nHe, he15 customers left, so the still has 26 - 15 = **11 customers.\n\nSo Final11 customersSo",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "575d7e83d84c1e67",
+          "prediction": "Emily has 72 friends and and she needs to make neck72 necklaces.\n\nEach necklace requires 3 beads.\n\n and the needs make:\n\n72 \ufffd3 = **24 necklaces.\n\nTherefore Final24 neckSo answer is: **24.",
+          "token_count": 54,
+          "token_match_count": 35,
+          "token_match_rate": 0.6481481481481481
+        }
+      ],
+      "zero_delta": [
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "013133cdef4f637c",
+          "prediction": "T Monday, Tiffany had **7 bags of cans.\n\nOn the, she found 12 more bags.\n\n cans.\n\n so she had:\n\n total of:\n\n7 + 12 = 19 bags.\n\n cans.\n\nTo the, she had 12 more bags than cans, so she had a total of",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "d64f6e35083ffe8c",
+          "prediction": "We are 15 roses and 62 orchids in the vase initially and the were:\n\n total of:\n\n15 + 62 = **77 flowers.\n\n the vase.\n\nAfter Jessica cut some more roses and orchids, there are now 17 roses and 96 orchids.\n\n the vase",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "3e8a5691f5443495",
+          "prediction": "We are **7 baskets of peaches:\n\n-'s the reasoning:\n\n it:\n\n-. Each are each each basket has:\n4 red peaches and 3 green peaches.\n so each basket has:\n total of:\n4 + 3 = **7 peaches.\n2. The there are a total of 7",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "316b525a4fcbfb89",
+          "prediction": "Ol Olivia had **15 dollars from a supermarket and and has:\n\n78 - 15 = **63 dollars left in her wallet.So Final63 dollarsdoll answer is ** **63.",
+          "token_count": 43,
+          "token_match_count": 26,
+          "token_match_rate": 0.6046511627906976
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e26bdbcab1449bbe",
+          "prediction": "We received:\n\n6 emails in the morning,He received 3 emails in the afternoon.\n and the the:\n\n received:\n\n6 + 3 = **9 emails.\n\n the morning and afternoon.\n\nHe he received a total of 10 emails in the day, then he must have received **10 - 9 =",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "aee922049c757331",
+          "prediction": "Dan has $44.He buys a candy bar for $ 8.\n so he spent $ 4 - $88 = -$44 (.\n\nThen friend gave him $ 5, so he now has $ -444 + $ 5 = $ 1.\n\n.\n\nSo Final1 dollarSo",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "1d50b408c8f5cd2c",
+          "prediction": "We the previous day,  were **703 visitors.\n\nOn the current day, there were 246 visitors.\n\nSo , over were:\n\n703 + 246 = **949 visitors overSo this are 25 days, total year, the were 949",
+          "token_count": 64,
+          "token_match_count": 47,
+          "token_match_rate": 0.734375
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "b0b71023ae4d233b",
+          "prediction": "Wewen received:\n\n5 dollars 7 = **12 dollars from her dad andShe spent 4 dollars, so she has 12 - 4 = 8 dollars left.\n\nThe, the received **8 dollars 5 = 3 dollars dollars from her mom than she did from her dad.\n\nSo Final",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "b1200c32546a34a5",
+          "prediction": "We problem number of fruits is oranges is:\n\n142 + 356 = 498.\n\nThe number number of groups is 47 ( 178 = 225\n\nSo number of each group of oranges is:\n\n498 / 225 = 2.",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "14bfbfc94f2c2e7b",
+          "prediction": "We are **8 different books and 5 different movies in the \"Crazy silly school' series.\n\n and:\n\n are:\n\n total of:\n\n1 + 5 = **13 items and movies.\n\n- you read 19 of the movies and and the have read **19 movies 5 = 14",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "4c84ebf42812703b",
+          "prediction": "We recipe requires for **12 cups of flour and  already put in ** cups. flour.She she still needs **2 more cups of flour, then:\n\n has already put in:\n\n12 - 2 = **10 cups of flour.\n\nSo, the put in **10 cups of flour.So",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4ef979ea2bf931df",
+          "prediction": "We found:\n\n46 wrappers and 50 bottle caps at the park. and the found:\n\n total of:\n\n46 + 50 = **96 items.\n\nNow now has 21 bottle caps and 52 wrappers in his collection.\n\n so he has a total of 21 + 5",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "13cb77b698eeadb5",
+          "prediction": "Luke played **177 rounds of a trivia game, and we scored:\n\n total of:\n\n177 rounds 46 points 8,42 points.\n\n  \n find the how many points he scored in total game, we calculate to calculate up points from gained in each round.\n\n the total number he earned in",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "e3ab8666238a289e",
+          "prediction": "We are initially3 birds and 4 storks sitting on the fence.\n\n- 2 more birds joined to join them, the are:\n\n total of:\n\n3 + 2 = 5 birds.\n\n on the fence.\n\nSo, the are 5 birds 4 = 1 more bird than storks.\n\n on the",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2de1549556000830",
+          "prediction": "We problem jumped **33 inches farther than the grasshopper, so:\n\n frog's:\n\n9 + 33 = **42 inches.\n\nThe mouse jumped 3 inches less than the frog, so the mouse jumped 42 - 3 = 39 inches.\n\nTherefore Final39 inchesSo mouse",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "615f9d817cb5be59",
+          "prediction": "Weachary did 35 push-ups and 3 crunches.\n\nDavid did 58 more push-ups than Zachary, so:\n did:\n\n35 + 58 = **93 push-ups.\n\nDavid did did 87 less crunches than Zachary, so he did 3 -",
+          "token_count": 64,
+          "token_match_count": 57,
+          "token_match_rate": 0.890625
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "2f80204fc9e0896f",
+          "prediction": "Jack received:\n\n4 emails in the ** and 8 emails in the evening. so the total:\n\n received:\n\n5 + 8 = **13 emails in the afternoon and evening.  \n Final13 emailsSo answer is ** **13.",
+          "token_count": 50,
+          "token_match_count": 34,
+          "token_match_rate": 0.68
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "137ad74218053f8a",
+          "prediction": "Let had **7 action figures on the shelf.He added ** more, figures, the shelf.\n and now there are 7 + x action figures.\n\n the shelf, where x is the number of action figures he added.\n\nHe then 10 of the old ones figures, so now there are 7 -",
+          "token_count": 64,
+          "token_match_count": 52,
+          "token_match_rate": 0.8125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "4d780f825bb8541c",
+          "prediction": "Weia played tag with:\n\n12 kids on Monday and 14 kids on Tuesday. for:\n\n played with a total of:\n\n12 +14 = **26 kids.\n\nShe she spent a total of 34 hours on play tag on both days, then the played 34 hours2 =",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "08d3dd8885ffb998",
+          "prediction": "Weell had:\n\n309 baseball cards and 356 Ace cards.\n\n total.\n\nShe giving some cards to Jeff, sheell has 415 baseball cards and Ace056 Ace x459 = 47 Ace cards left.\n\nSo find how how many more baseball cards thanell has",
+          "token_count": 64,
+          "token_match_count": 48,
+          "token_match_rate": 0.75
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de1bf4d142544e5b",
+          "prediction": "We  are **97 alligators in total and 40 of them were hiding, then the number of alligators ** hiding is:\n\n97 - 40 = **57.\n\nSo Final57 allSo number is ** **57 all",
+          "token_count": 53,
+          "token_match_count": 37,
+          "token_match_rate": 0.6981132075471698
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "f367349ce0604296",
+          "prediction": "You have read **8 books from the seriesC silly school ' series. and you still have:\n\n14 - 8 = **6 books left to read.  \n Final6 moreSo answer is: **6.",
+          "token_count": 44,
+          "token_match_count": 30,
+          "token_match_rate": 0.6818181818181818
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "a85be5ec651dac24",
+          "prediction": "Emily made **20 beads and made was able to make 5 necklaces. so the necklace needed:\n\n20 \ufffd5 = **4 beads.\n\n  \n, each necklace needed **4 beads.So Final4 beadsbe answer is  $\\4.",
+          "token_count": 51,
+          "token_match_count": 32,
+          "token_match_rate": 0.6274509803921569
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "de2a795ab37694af",
+          "prediction": "Frank put **12 pieces of candy,He he puts **11 pieces in candy in each bag, then:\n\n would have:\n\n22 \ufffd11 = 2 bags.\n\n candy.\n\nSo, he would have **2 bags. candy.So Final2 bagsSo answer is  $\\2.",
+          "token_count": 61,
+          "token_match_count": 37,
+          "token_match_rate": 0.6065573770491803
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "47464cc0b064f172",
+          "prediction": "We problem had **12 customers after,Then some left, he had 12 customers x12 = 2 customers left.\nThen he got 10 new customers.\n\n so now now has:\n\n2 + 10 = **12 customers.\n\nSo Final12 customersSo answer is ** **1",
+          "token_count": 64,
+          "token_match_count": 43,
+          "token_match_rate": 0.671875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "0d2b4f7681973e19",
+          "prediction": "The farmer picked:\n\n total of:\n\n154 tomatoes in all.**'s the calculation:\n\n it:\n\n-. He farmer had 154 tomatoes yesterday.\n and far has has 90 - 154 = -64 tomatoes left.\n2. He, the question picked 50 tomatoes today",
+          "token_count": 64,
+          "token_match_count": 46,
+          "token_match_rate": 0.71875
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "33836927fc9f1a8a",
+          "prediction": "We are:\n\n54 yellow peaches and 6 green peaches in the basket.\n\nSo find the total number of green and yellow peaches:\n\n we add to add them two of green peaches and the number of yellow peaches:\n\nSo, the total number of green and yellow peaches is:\n6 +",
+          "token_count": 64,
+          "token_match_count": 53,
+          "token_match_rate": 0.828125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "e7dd2efb5ec99a06",
+          "prediction": "We 60 bird families flew away for winter, and the were:\n\n89 - 60 = **29 bird families that behind.\n\n  \n find how how many more families families flew away than winter winter than those that stayed,, we subtract the number of families that stayed from from the number that families that",
+          "token_count": 64,
+          "token_match_count": 49,
+          "token_match_rate": 0.765625
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "41cce6c6e6bb0058",
+          "prediction": "We are initially9 roses and 6 orchids in the vase initiallyJessica Jessica cut some more roses and orchids, there are now:\n\n13 orchids and 3 roses.\n\n the vase.\n\nSo find how how many more orchids than roses are are now the vase now:\n\n we subtract subtract the number of roses",
+          "token_count": 64,
+          "token_match_count": 50,
+          "token_match_rate": 0.78125
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "6e9745b37ab6fc45",
+          "prediction": "We there were **600 visitors the previous day, and 661 visitors the on the Buckingham palace on that day, then:\n\n were:\n\n661 - 600 = **61 more visitors on the previous day.\n\nSo Final61 visitorsSo answer is ** **61.",
+          "token_count": 63,
+          "token_match_count": 47,
+          "token_match_rate": 0.746031746031746
+        },
+        {
+          "correct": true,
+          "exact_teacher_replay": false,
+          "example_id": "c042f0a2949ff8e6",
+          "prediction": "We waiter had **12 customers.- left 14 new customers.\n\n so the now has:\n\n12 + 14 = **26 customers.\n\nHe, he15 customers left, so the still has 26 - 15 = **11 customers.\n\nSo Final11 customersSo",
+          "token_count": 64,
+          "token_match_count": 45,
+          "token_match_rate": 0.703125
+        },
+        {
+          "correct": false,
+          "exact_teacher_replay": false,
+          "example_id": "575d7e83d84c1e67",
+          "prediction": "Emily has 72 friends and and she needs to make neck72 necklaces.\n\nEach necklace requires 3 beads.\n\n and the needs make:\n\n72 \ufffd3 = **24 necklaces.\n\nTherefore Final24 neckSo answer is: **24.",
+          "token_count": 54,
+          "token_match_count": 35,
+          "token_match_rate": 0.6481481481481481
+        }
+      ]
+    },
+    "source_necessary_clean_ids": []
+  },
+  "run_config": {
+    "coeff_bits": 4,
+    "device": "mps",
+    "elapsed_sec": 230.7123044159962,
+    "eval_file": "results/svamp_exactid_baselines32_20260423/_artifacts/svamp_eval_70_32.jsonl",
+    "limit": null,
+    "local_root": "/Users/sujeethjinesh/Desktop/LatentWire/.hf_home/hub/models--nics-efc--C2C_Fuser/snapshots/909c76d71cfb946171aa2ab7912dd07c0ba2e995",
+    "max_new_tokens": 64,
+    "packet_mode": "positive",
+    "published_checkpoint_dir": "qwen3_0.6b+qwen2.5_0.5b_Fuser/final",
+    "published_config_path": "qwen3_0.6b+qwen2.5_0.5b_Fuser/config.json",
+    "published_repo_id": "nics-efc/C2C_Fuser",
+    "published_subdir": "qwen3_0.6b+qwen2.5_0.5b_Fuser",
+    "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+    "target_model": "Qwen/Qwen3-0.6B",
+    "top_k": 4
+  },
+  "status": "teacher_delta_packet_capacity_fails_controls",
+  "target_set_json": "results/svamp32_c2c_mps_compat_replay_20260505/c2c_replay_target_set.json"
+}
