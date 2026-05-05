@@ -1,0 +1,57 @@
+\documentclass{article}
+
+\usepackage[submission]{../../../colm_final/paper/colm2026_conference}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{SinkAware: Approximate Low-Rank Fixed-Sink Priors for Attention}
+\author{Anonymous authors\\Paper under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. This is not an end-to-end quality or GPU speed result. It is a bounded native-GPU gate for deciding whether approximate sink prediction is worth implementing.
+\end{abstract}
+
+\section{Problem}
+
+For query $q_t$, sink keys $K_s$, and non-sink keys $K_n$, the sink logits $q_tK_s^\top$ are still query-dependent. Any exact method that skips them changes the softmax denominator or attention weights. SinkAware kills that exact static-prior branch and revives only an approximate one.
+
+\section{Approximate Branch}
+
+The live branch predicts fixed sink-token logits from a low-dimensional query feature. Non-sink logits remain exact. The branch is useful only if the approximation is cheap enough and attention-output drift stays bounded.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Predictor & Sink RMSE & Sink-mass MAE & Attention L1 & Output rel-L2 \\
+\midrule
+static & 1229.509 & 0.095 & 0.217 & 0.193 \\
+position & 1197.390 & 0.076 & 0.175 & 0.170 \\
+rank1 & 1079.541 & 0.067 & 0.157 & 0.160 \\
+rank2 & 1001.506 & 0.055 & 0.135 & 0.141 \\
+rank4 & 838.320 & 0.045 & 0.115 & 0.122 \\
+rank8 & 699.232 & 0.040 & 0.104 & 0.107 \\
+\bottomrule
+\end{tabular}
+\caption{48-trace distilgpt2 softmax/output probe. Lower is better.}
+\end{table}
+
+\section{Decision}
+
+SinkAware is alive only as an approximate low-rank native GPU gate. Exact static reuse remains dead. Promotion requires rank-2 to preserve output quality while improving speed or memory traffic by at least 3\% over exact attention on repeated native runs, and to beat the position-only predictor on quality.
+
+\section{Artifacts}
+
+\begin{itemize}
+\item \url{experimental/sinkaware/phase2/real_qk_sink_softmax_output_probe.md}
+\item \url{experimental/sinkaware/phase2/qk_sink_cost_model.md}
+\item \url{experimental/sinkaware/phase2/gpu_gate_runbook.md}
+\item \url{experimental/sinkaware/paper/reviewer_pack.md}
+\end{itemize}
+
+\end{document}

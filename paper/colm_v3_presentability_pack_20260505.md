@@ -13,6 +13,8 @@
 | completion audit | `paper/latentwire_colm_v3_completion_audit_20260505.md` | current readiness and remaining work |
 | reviewer response memo | `paper/latentwire_colm_v3_reviewer_response_20260505.md` | overclaim fixes and reviewer-risk response |
 | review packet | `paper/latentwire_colm_v3_review_packet_20260505.md` | evidence/tables/claims packet |
+| aggregate pkt-src CI | `results/source_private_colm_acceptance_baselines_20260502/aggregate_source_index_ci.md` | reviewer-requested clustered source-index audit |
+| camera-ready figure script | `scripts/build_latentwire_colm_v3_camera_ready_figures.py` | regenerates the main source-index-aware accuracy figure |
 
 ## Current COLM_v3 Decision
 
@@ -33,10 +35,10 @@ Remaining before submission:
 
 | Project | Paper artifact | Current status |
 |---|---|---|
-| HybridKernel | `experimental/hybridkernel/paper/colm_workshop_scaffold.md` | weakly alive as profiler-driven systems branch |
-| SinkAware | `experimental/sinkaware/paper/outline.md` | alive as approximate low-rank fixed-sink prior |
+| HybridKernel | `experimental/hybridkernel/paper/hybridkernel_colm2026.pdf` | weakly alive as profiler-driven systems branch |
+| SinkAware | `experimental/sinkaware/paper/sinkaware_colm2026.pdf` | alive as approximate low-rank fixed-sink prior |
 | SinkAware reviewer pack | `experimental/sinkaware/paper/reviewer_pack.md` | presentable narrow review packet |
-| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/colm_workshop_shell.md` | weakened; successor policy improved but not enough |
+| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf` | weakened; successor policy improved but not enough |
 
 ## Side Project Data Links
 
@@ -56,6 +58,16 @@ Remaining before submission:
 | HybridKernel | run native vLLM/Nsight boundary profiling | distinct boundary overhead with credible >=3% path |
 | SinkAware | native GPU gate from the runbook | rank-2 preserves output quality while beating exact sink QK/decomposition cost |
 | ThoughtFlow-FP8 | sharper hidden/KV saliency policy | beats R-KV-like retained-prefix proxy on matched-budget continuation NLL |
+
+## Camera-Ready Reviewer Fixes Now Integrated
+
+- Source-index now appears in the main accuracy figure and caption.
+- The main text reports aggregate packet-minus-source-index clustered CIs.
+- The same-budget structured text baseline is defined separately from explicit
+  answer-label/source-index baselines.
+- The method section includes a reconstruction-oriented algorithm table.
+- The validation-incomplete Qwen2.5-1.5B row is removed from the main claim.
+- The score-sketch diagnostic is reported only as a validation boundary.
 
 ## Claim Guardrails
 

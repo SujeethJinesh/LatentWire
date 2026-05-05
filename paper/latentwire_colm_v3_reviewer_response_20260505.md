@@ -11,6 +11,26 @@ answers the main accept/reject question: the packet transfers a candidate hint,
 but does not beat an explicit selected-candidate code on ARC-Challenge or
 OpenBookQA.
 
+## Camera-Ready Follow-Up After Second Review
+
+The second review round shifted the remaining work from reframing to concrete
+reviewer-facing cleanup. I made the accept-critical edits in the main COLM_v3
+paper rather than widening into speculative benchmarks:
+
+| Reviewer issue | Action taken |
+|---|---|
+| Missing aggregate packet-vs-source-index CI | Added `scripts/summarize_colm_source_index_aggregate_ci.py` and the tracked aggregate readout under `results/source_private_colm_acceptance_baselines_20260502/aggregate_source_index_ci.*`. The paper now reports ARC pkt-src mean -0.0016, 95% CI [-0.0030, -0.0003], and OBQA mean +0.0004, 95% CI [-0.0012, +0.0020]. |
+| Source-index not visually prominent | Regenerated `figures/accuracy_overview.pdf` with a source-index bar and a caption stating it is the decisive boundary. |
+| Title still sounded too privacy-forward | Changed the title to "No-Text Candidate-Transfer Packets under Destructive Controls." |
+| Same-budget text baseline was underdefined | Added an explicit definition: it sends the first B bytes of the source-selected public candidate string, not an answer label or source-index code. |
+| Method details too compressed | Added a main-text algorithm table covering source evidence, public chart, DCT projection, packet encoding, receiver decode, validation, and hyperparameters. |
+| Qwen2.5-1.5B row looked incomplete | Removed the validation-incomplete Qwen2.5-1.5B diagnostic from the main falsification table and left it out of the workshop claim. |
+| Missing score-quantization boundary | Added a validation-only score-quantization diagnostic and explicitly states it does not beat source-label transfer. |
+
+I did not run new model-heavy benchmark breadth in this pass. OBQA K>=10,
+higher-entropy tasks, and matched C2C/KVComm comparisons remain archival
+blockers, not workshop blockers, after the current paper scope.
+
 ## Reviewer 2 Fixes Integrated
 
 | Reviewer issue | Action taken in `colm_final/paper/latentwire_colm2026.tex` |
@@ -37,9 +57,9 @@ OpenBookQA.
 
 | Project | Current status | Paper action |
 |---|---|---|
-| HybridKernel | weakly alive; only NVIDIA/vLLM profiling can justify it now | COLM-style scaffold plus profiler runbook added under `experimental/hybridkernel/`. |
-| SinkAware | alive as approximate low-rank sink prior; rank-2 improves held-out output error over position-only | COLM-style shell plus per-head softmax/output probe added under `experimental/sinkaware/`. |
-| ThoughtFlow-FP8 | weakened; retained-context NLL proxy ties LongFlow-like and loses to R-KV-like | COLM-style shell plus perplexity proxy gate added under `experimental/thoughtflow_fp8/`. |
+| HybridKernel | weakly alive; only NVIDIA/vLLM profiling can justify it now | COLM-style PDF generated at `experimental/hybridkernel/paper/hybridkernel_colm2026.pdf`. |
+| SinkAware | alive as approximate low-rank sink prior; rank-2 improves held-out output error over position-only | COLM-style PDF generated at `experimental/sinkaware/paper/sinkaware_colm2026.pdf`. |
+| ThoughtFlow-FP8 | weakened; retained-context NLL proxy improves over some policies but still loses to the strongest retained-prefix proxy | COLM-style PDF generated at `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf`. |
 
 ## Next Gate
 

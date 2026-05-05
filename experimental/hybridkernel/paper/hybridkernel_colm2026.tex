@@ -1,0 +1,57 @@
+\documentclass{article}
+
+\usepackage[submission]{../../../colm_final/paper/colm2026_conference}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{HybridKernel: A Profiler-Driven Boundary-Fusion Gate for Hybrid Attention/SSM Serving}
+\author{Anonymous authors\\Paper under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens the broad novelty claim because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. We therefore do not claim a kernel speedup. The contribution is a reproducible profiler gate, a fixed-request vLLM driver, and a promote/kill criterion for future native NVIDIA measurements.
+\end{abstract}
+
+\section{Hypothesis}
+
+HybridKernel tests whether adjacent attention and SSM layers expose boundary-local overhead not already removed by serving systems. Candidate costs include layout conversion, residual-stream materialization, host launch gaps, cache-locality loss, or redundant memory traffic. The hypothesis is deliberately narrow: a useful kernel must compose with existing vLLM hybrid mechanisms rather than replace them.
+
+\section{Current Evidence}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.30\linewidth}p{0.36\linewidth}p{0.25\linewidth}}
+\toprule
+Artifact & Result & Decision \\
+\midrule
+Architecture map & Granite has 8 boundaries and 20.0\% boundary stream fraction; Qwen3-Next has 23 inferred boundaries and 47.9\%. & Inspectable, not speed evidence. \\
+Runtime audit & vLLM already handles hybrid state layout and transfer paths. & Broad novelty weakened. \\
+Threshold model & Granite needs about 25.0\% avoidable boundary traffic at 60\% recovery for a 3\% proxy gain. & Mac kernel work not justified. \\
+Profiler driver & Fixed-request OpenAI-compatible driver dry-runs locally. & Native gate is runnable. \\
+\bottomrule
+\end{tabular}
+\caption{HybridKernel evidence before native GPU profiling.}
+\end{table}
+
+\section{Profiler Gate}
+
+The next experiment is a native NVIDIA/vLLM run with Nsight Systems and Nsight Compute. It must show a distinct boundary-local overhead attributable to attention/SSM transitions, not warmup, graph capture, batching, or unrelated kernels. Promotion requires a credible path to at least 3\% end-to-end improvement and paired repeated-run stability.
+
+\section{Claim Boundary}
+
+Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with a runnable native measurement plan. Not allowed: throughput, latency, HBM, energy, occupancy, or vLLM speedup claims. If native profiling does not reveal separable boundary overhead, the branch should be killed.
+
+\section{Artifacts}
+
+\begin{itemize}
+\item \url{experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md}
+\item \url{experimental/hybridkernel/phase2/profiler_driver.py}
+\item \url{experimental/hybridkernel/phase2/pre_gpu_threshold_model.md}
+\item \url{experimental/hybridkernel/paper/colm_workshop_scaffold.md}
+\end{itemize}
+
+\end{document}

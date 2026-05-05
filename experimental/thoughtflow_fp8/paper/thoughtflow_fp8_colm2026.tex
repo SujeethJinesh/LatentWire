@@ -1,0 +1,53 @@
+\documentclass{article}
+
+\usepackage[submission]{../../../colm_final/paper/colm2026_conference}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{ThoughtFlow-FP8: A Negative Gate for Phase-Aware KV Retention}
+\author{Anonymous authors\\Paper under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+ThoughtFlow-FP8 tests whether explicit anchor/phase retention plus byte-aware FP8-style budgeting can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality weakens the branch. On 24 distilgpt2 traces at a 0.20 keep fraction, a bounded successor policy, ThoughtFlow-recent, improves over the original phase-only policy and beats LongFlow-like and ThinKV-like proxies, but still loses to an R-KV-like retained-prefix proxy on continuation NLL. We therefore present this as a negative/mixed workshop gate, not a positive method. The next useful step is a sharper hidden/KV saliency policy; GPU sparse-KV work is not justified until that Mac-local proxy clears.
+\end{abstract}
+
+\section{Policy Family}
+
+The original policy protects anchors and phase labels. The successor adds a small recent-token reserve, testing whether the failure was caused by preserving interpretable markers that do not matter for immediate continuation likelihood.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Policy & Keep rate & NLL & $\Delta$ NLL vs full & PPL \\
+\midrule
+full context & 1.000 & 2.101 & 0.000 & 9.7 \\
+R-KV-like & 0.210 & 3.419 & 1.319 & 38.7 \\
+ThinKV-like & 0.210 & 3.583 & 1.482 & 44.6 \\
+LongFlow-like & 0.210 & 3.961 & 1.861 & 74.2 \\
+ThoughtFlow & 0.210 & 3.961 & 1.861 & 74.2 \\
+ThoughtFlow-recent & 0.210 & 3.562 & 1.461 & 44.2 \\
+\bottomrule
+\end{tabular}
+\caption{Retained-context continuation proxy on 24 distilgpt2 traces. Lower NLL is better. Full context is not a matched-budget baseline.}
+\end{table}
+
+\section{Decision}
+
+The branch is weakened. ThoughtFlow-recent repairs part of the phase-only failure, but it does not beat the strongest matched-budget proxy. A paper-ready claim would require a hidden/KV saliency policy that beats R-KV-like, LongFlow-like, and ThinKV-like rows at matched bytes, then validates under real sparse-KV or cache-dropping execution.
+
+\section{Artifacts}
+
+\begin{itemize}
+\item \url{experimental/thoughtflow_fp8/phase2/perplexity_impact_proxy.md}
+\item \url{experimental/thoughtflow_fp8/phase2/hidden_saliency_retention_probe.md}
+\item \url{experimental/thoughtflow_fp8/phase2/real_trace_retention_sweep.md}
+\item \url{experimental/thoughtflow_fp8/paper/colm_workshop_shell.md}
+\end{itemize}
+
+\end{document}

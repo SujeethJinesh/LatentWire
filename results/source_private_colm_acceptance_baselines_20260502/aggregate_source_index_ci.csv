@@ -1,0 +1,3 @@
+benchmark,seed_count,items_per_seed,paired_units,mean,ci95_low,ci95_high,bootstrap_samples,prediction_file
+ARC-Challenge,10,1172,11720,-0.001621160409556314,-0.0029863481228668944,-0.00034129692832764505,10000,results/source_private_colm_acceptance_baselines_20260502/arc_test_predictions.jsonl.gz
+OpenBookQA,5,500,2500,0.0004,-0.0012,0.002,10000,results/source_private_colm_acceptance_baselines_20260502/openbookqa_test_predictions.jsonl.gz

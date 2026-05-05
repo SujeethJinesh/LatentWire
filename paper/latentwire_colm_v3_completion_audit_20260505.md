@@ -12,6 +12,12 @@ page-budget checking. The latest reviewer overclaim fixes have been rebuilt into
 the workshop claim as written. The paper must not claim GPU throughput, HBM,
 energy, latency, or C2C superiority.
 
+The second-round camera-ready cleanup is also integrated: the main figure now
+contains the source-index baseline, the method section has an algorithm table,
+the same-budget text control is explicitly separated from source-index/label
+codes, the Qwen2.5-1.5B validation-incomplete row is not in the main table, and
+the paper reports an aggregate seed/item clustered packet-minus-source-index CI.
+
 ## Current Main Claim
 
 LatentWire provides a content-private, source-state-private packet protocol and
@@ -36,7 +42,9 @@ beats explicit source-index communication.
 | negative/failure boundaries | integrated | limitations plus claim audit |
 | artifact manifest | integrated | paper appendix and review packet |
 | reproducibility checklist | integrated | paper appendix |
-| side systems experiments | scoped papers started | `experimental/*/paper/`, phase2 artifacts |
+| aggregate source-index CI | integrated | `results/source_private_colm_acceptance_baselines_20260502/aggregate_source_index_ci.md` |
+| source-index-aware main figure | integrated | `colm_final/paper/figures/accuracy_overview.pdf` |
+| side systems experiments | scoped papers compiled | `experimental/*/paper/*_colm2026.pdf`, phase2 artifacts |
 | human review pointer pack | integrated | `paper/colm_v3_presentability_pack_20260505.md` |
 
 ## Baseline Coverage
@@ -86,8 +94,8 @@ All three side projects now have Macbook correctness scaffolds:
 | ThoughtFlow-FP8 | weakened but partially improved; ThoughtFlow-recent beats LongFlow-like and ThinKV-like on retained-context NLL, but still loses to R-KV-like at matched budget | design a sharper hidden/KV saliency policy before any GPU/KV work |
 
 These are not core COLM_v3 evidence today, but each now has a scoped COLM-style
-paper shell so positive future data can be accumulated without contaminating
-the LatentWire claim.
+paper PDF so positive future data can be accumulated without contaminating the
+LatentWire claim.
 
 ## Remaining Workshop Work
 
