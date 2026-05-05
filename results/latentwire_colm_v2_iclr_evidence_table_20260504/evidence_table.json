@@ -342,6 +342,18 @@
       "record_bytes": 5,
       "score": 0.455729,
       "status": "ruled_out_cached_policy_packet"
+    },
+    {
+      "artifact": "results/svamp32_c2c_generation_trace_syndrome_probe_20260505/generation_trace_probe.json",
+      "baseline": "14/32",
+      "branch": "SVAMP32 C2C generation-summary trace syndrome probe",
+      "ci95_low": null,
+      "decision": "Do not train packets from current Mac CPU generation traces; require native/faithful C2C teacher-delta capture before continuing C2C-distillation packets.",
+      "delta": "-2/32",
+      "evidence": "Current Transformers cache shim lets CPU traces run, but matched is 12/32, zero-source and target-only are 14/32, and clean C2C-residual recovery is 0. A live CPU C2C smoke degenerates into repeated Korean glyph tokens, so this is a runtime diagnostic rather than faithful dense-teacher evidence.",
+      "record_bytes": null,
+      "score": "12/32",
+      "status": "weakened_generation_trace_runtime_diagnostic"
     }
   ],
   "literature_boundaries": [
@@ -419,10 +431,10 @@
     }
   ],
   "next_exact_gate": {
-    "fallback_path": "If the C2C-teacher proxy also fails, defer broad C2C superiority claims until NVIDIA-backed native KV/C2C comparison or choose a benchmark with clearer dense-transfer headroom.",
-    "name": "svamp32_c2c_teacher_sparse_packet_distillation_preflight",
-    "pass_bar": "A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
-    "primary_path": "Return to the frozen SVAMP32 C2C teacher surface where target-alone is 8/32, C2C teacher is 16/32, and C2C-only target-complementary wins are 10. Treat dense C2C as a teacher, distill its useful behavioral delta into sparse source-private packets, and require recovery of C2C-only wins beyond source-destroying controls.",
+    "fallback_path": "If native C2C capture is not available, use COLM_v2 to report the C2C boundary honestly and promote a non-C2C source-causal branch only if it has a fresh information path not already ruled out by source-choice, target-cache, or same-byte controls.",
+    "name": "native_c2c_teacher_delta_capture_or_compatible_runtime",
+    "pass_bar": "A learned or rule-based packet receiver must recover clean C2C-only wins beyond source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.",
+    "primary_path": "Obtain a C2C runtime that reproduces the archived SVAMP32 dense-teacher behavior (16/32) and capture teacher logits/KV deltas or generation traces from that faithful run. Then rerun the sparse-packet distillation gate from faithful teacher deltas, not current Mac CPU traces.",
     "required_controls": [
       "target_only",
       "source_alone",
@@ -430,9 +442,10 @@
       "zero_source",
       "shuffled_source",
       "label_shuffle",
+      "same_source_choice_wrong_row",
+      "candidate_roll_or_deranged_public_basis",
       "source_index_rank_score_comparators_when_meaningful",
-      "same_byte_visible_text",
-      "teacher_answer_oracle_audit_only"
+      "same_byte_visible_text"
     ]
   },
   "paper_decision": {

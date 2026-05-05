@@ -67,6 +67,7 @@ These rows prevent an ICLR-scale claim until a new source-causal interface clear
 | Source-conditioned target-native resonance receivers | `ruled_out_current_source_conditioned_receiver_family` | 0.375 | 0.375 | 0 |  |  | Diagnose complementarity/gating before implementing another source-to-prefix decoder. |
 | HellaSwag complementarity-frontier selector diagnostic | `headroom_alive_selector_blocked` | 0.467448 | 0.467448 | 0 | 0 | 4 | Do not train another HellaSwag selector on the same packet fields; require a new information path. |
 | HellaSwag multi-signal source packet frontier | `ruled_out_cached_policy_packet` | 0.455729 | 0.467448 | -0.011719 | -0.02347 | 5 | Do not continue cached Qwen policy-prediction packets on this HellaSwag slice. |
+| SVAMP32 C2C generation-summary trace syndrome probe | `weakened_generation_trace_runtime_diagnostic` | 12/32 | 14/32 | -2/32 |  |  | Do not train packets from current Mac CPU generation traces; require native/faithful C2C teacher-delta capture before continuing C2C-distillation packets. |
 
 ## Literature And Novelty Boundaries
 
@@ -87,21 +88,25 @@ These rows prevent an ICLR-scale claim until a new source-causal interface clear
 
 ## Paper Decision
 
-- single highest priority: Backport the live ICLR triage into COLM_v2 tables/figures now, including the OpenBookQA source-choice hardening failure. The next ICLR method branch needs a qualitatively new source-causal interface rather than another deterministic PQ transform, scalar integrity gate, source-score selector, behavior atom, or target-native soft-prefix decoder.
+- single highest priority: Backport the live ICLR triage into COLM_v2 tables/figures now, including the OpenBookQA source-choice hardening failure and the C2C generation-trace runtime caveat. The next ICLR method branch needs faithful dense-teacher deltas or a qualitatively new source-causal interface rather than another deterministic PQ transform, scalar integrity gate, source-score selector, behavior atom, target-native soft-prefix decoder, or current Mac CPU C2C trace.
 - COLM_v2 claim: LatentWire_v2 demonstrates byte-scale source-private packet transfer with strict destructive controls, plus explicit negative gates, including OpenBookQA source-choice hardening, that prevent overclaiming cross-family latent communication.
 - ICLR claim not yet supported: Sparse Resonance Packets as a broad learned cross-model communication method.
 
 ## Next Exact Gate
 
-- name: `svamp32_c2c_teacher_sparse_packet_distillation_preflight`
-- primary path: Return to the frozen SVAMP32 C2C teacher surface where
-  target-alone is `8/32`, C2C teacher is `16/32`, and C2C-only
-  target-complementary wins are `10`. Treat dense C2C as a teacher and distill
-  its useful behavioral delta into sparse source-private packets.
-- fallback path: If the C2C-teacher proxy also fails, defer broad C2C
-  superiority claims until NVIDIA-backed native KV/C2C comparison or choose a
-  benchmark with clearer dense-transfer headroom.
-- pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
+- name: `native_c2c_teacher_delta_capture_or_compatible_runtime`
+- primary path: Obtain a C2C runtime that reproduces the archived SVAMP32
+  dense-teacher behavior (`16/32`) and capture teacher logits/KV deltas or
+  generation traces from that faithful run. Then rerun the sparse-packet
+  distillation gate from faithful teacher deltas, not current Mac CPU traces.
+- fallback path: If native C2C capture is not available, use COLM_v2 to report
+  the C2C boundary honestly and promote a non-C2C source-causal branch only if
+  it has a fresh information path not already ruled out by source-choice,
+  target-cache, or same-byte controls.
+- pass bar: A learned or rule-based packet receiver must recover clean C2C-only
+  wins beyond source-index/rank/score, same-byte text, wrong-source,
+  same-source-choice wrong-row, candidate-roll, and target-derived controls
+  with a positive paired CI95 low on a frozen slice.
 
 ## Claim Boundaries
 

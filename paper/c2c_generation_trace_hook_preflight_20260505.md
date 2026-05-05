@@ -152,3 +152,47 @@ Lay explanation: we added the recording equipment, but the local C2C engine
 cannot currently drive on this Mac runtime. The next step is to run the same
 recorder in an environment where C2C generation works, then see whether the
 new trace can teach a tiny packet to mimic C2C's useful corrections.
+
+## 2026-05-05 Local Cache-Compatibility Update
+
+Added a contained compatibility shim in `latent_bridge/c2c_eval.py` so the
+vendored C2C wrapper can read current Transformers `DynamicCache.layers`
+through the older `key_cache` / `value_cache` interface. This avoids modifying
+the reference C2C clone and lets the CPU generation path run far enough to
+collect traces.
+
+Validation:
+
+- shim unit coverage in `tests/test_c2c_mechanism_trace.py`;
+- `tests/test_c2c_mechanism_trace.py tests/test_c2c_eval.py`: `9 passed`;
+- one-row CPU generation-trace smoke: pass, producing a
+  `10080`-dimensional `c2c_generation_projector_and_logit_trace_history`
+  feature vector with 28 projector histories and 4 target-logit steps;
+- full SVAMP32 CPU generation-trace syndrome probe:
+  `results/svamp32_c2c_generation_trace_syndrome_probe_20260505/generation_trace_probe.json`.
+
+Full probe result:
+
+| Condition | Correct | Clean Correct | Target-Self Correct |
+|---|---:|---:|---:|
+| matched | 12/32 | 0 | 3 |
+| zero_source | 14/32 | 0 | 3 |
+| shuffled_source | 9/32 | 0 | 1 |
+| label_shuffled | 13/32 | 0 | 3 |
+| target_only | 14/32 | 0 | 3 |
+| slots_only | 8/32 | 0 | 0 |
+
+The gate fails: generation-summary traces recover `0` clean C2C-residual IDs
+and underperform zero-source/target-only controls.
+
+Important runtime caveat: a separate local CPU C2C generation smoke with the
+shim runs but degenerates into repeated Korean glyph tokens on the first four
+SVAMP rows (`0/4`, while the archived MPS C2C teacher had `1/4` on those
+rows). The cache shim therefore unblocks instrumentation, but current Mac CPU
+C2C generation should not be treated as faithful native C2C teacher evidence.
+
+Decision: mark the current generation-summary trace branch as weakened. The
+next ICLR gate should either use a native C2C-compatible runtime for teacher
+traces or move to a teacher-logit/KV-delta distillation artifact captured under
+a runtime that reproduces the archived C2C teacher behavior. Do not claim C2C
+distillation from the local CPU traces.

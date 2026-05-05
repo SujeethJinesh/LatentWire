@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import pathlib
+import sys
+import types
 
 import torch
 
@@ -38,6 +40,42 @@ class _ForwardProjector(_Projector):
 class _Model:
     def __init__(self) -> None:
         self.projector_list = [_Projector()]
+
+
+def test_dynamic_cache_compatibility_shim_clones_new_cache_api(monkeypatch) -> None:
+    class _StubDynamicCache:
+        def __init__(self, ddp_cache_data=None):
+            self.layers = []
+            for key, value in ddp_cache_data or []:
+                self.layers.append(types.SimpleNamespace(keys=key, values=value))
+
+    key = torch.arange(12, dtype=torch.float32).view(1, 1, 3, 4)
+    value = key + 100
+    cache = _StubDynamicCache([(key, value)])
+    wrapper_module = types.SimpleNamespace()
+
+    monkeypatch.setitem(
+        sys.modules,
+        "transformers.cache_utils",
+        types.SimpleNamespace(DynamicCache=_StubDynamicCache),
+    )
+
+    c2c_eval.install_c2c_dynamic_cache_compatibility_shim(wrapper_module)
+
+    assert torch.equal(cache.key_cache[0], key)
+    assert torch.equal(cache.value_cache[0], value)
+    assert torch.equal(cache[0][0], key)
+
+    cache.key_cache[0][:, :, 0, :] = -1
+    assert torch.equal(cache[0][0][:, :, 0, :], torch.full((1, 1, 4), -1.0))
+
+    clone = wrapper_module.clone_kv_cache(cache)
+    assert isinstance(clone, _StubDynamicCache)
+    assert torch.equal(clone.key_cache[0], cache.key_cache[0])
+
+    cache.key_cache[0].fill_(7)
+    assert not torch.equal(clone.key_cache[0], cache.key_cache[0])
+    assert wrapper_module.hybrid_to_dynamic(clone) is clone
 
 
 def _row(example_id: str, answer: str, pred: str, method: str, correct: bool) -> dict:

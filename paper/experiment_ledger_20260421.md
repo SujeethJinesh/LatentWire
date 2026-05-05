@@ -24229,3 +24229,56 @@ Lay explanation: we added the recorder that should capture C2C's useful
 generation-time behavior, but the local C2C engine currently fails before it
 can drive. The recorder is ready for a compatible machine or a local cache-API
 fix.
+
+## 2026-05-05 C2C DynamicCache Compatibility Shim and Generation Trace Probe
+
+Added a local C2C cache compatibility shim:
+
+- code:
+  `latent_bridge/c2c_eval.py`;
+- test:
+  `tests/test_c2c_mechanism_trace.py`;
+- artifact:
+  `results/svamp32_c2c_generation_trace_syndrome_probe_20260505/generation_trace_probe.json`;
+- manifest:
+  `results/svamp32_c2c_generation_trace_syndrome_probe_20260505/manifest.md`;
+- memo update:
+  `paper/c2c_generation_trace_hook_preflight_20260505.md`.
+
+Purpose: test whether the richer generation-time C2C projector/logit trace can
+predict the compact C2C residue syndrome on the frozen SVAMP32 surface.
+
+Shim outcome:
+
+- one-row CPU trace smoke now runs successfully;
+- feature family:
+  `c2c_generation_projector_and_logit_trace_history`;
+- smoke feature shape: `10080`;
+- projector history lengths: 28 projectors with one recorded call each;
+- target-logit steps: 4.
+
+Full SVAMP32 generation-trace syndrome probe:
+
+- status: `c2c_mechanism_syndrome_probe_fails_gate`;
+- feature matrix: `32 x 10080`, `float32`;
+- matched: `12/32`;
+- zero-source: `14/32`;
+- target-only: `14/32`;
+- label-shuffled: `13/32`;
+- slots-only: `8/32`;
+- clean C2C-residual IDs recovered: `0`.
+
+Runtime caveat: local shimmed CPU C2C generation also runs but degenerates into
+repeated Korean glyph tokens on a four-row smoke (`0/4`). The archived MPS C2C
+teacher row remains the meaningful dense-teacher evidence; current Mac CPU
+traces are diagnostics, not faithful C2C teacher behavior.
+
+Decision: weaken the generation-summary trace branch as a deployable sparse
+packet path. Keep the shim as infrastructure, but require either a native
+C2C-compatible runtime that reproduces the archived teacher or a direct
+teacher-logit/KV-delta distillation artifact before training more C2C-derived
+packets from generation traces.
+
+Lay explanation: the adapter now lets the local C2C car start, but on CPU it
+drives badly and repeats junk tokens. The recorder works, but this local run is
+not the trustworthy teacher we need for ICLR.

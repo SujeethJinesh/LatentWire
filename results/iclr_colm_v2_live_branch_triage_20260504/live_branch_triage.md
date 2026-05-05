@@ -45,6 +45,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 | Source-conditioned target-native resonance receivers | `ruled_out_current_source_conditioned_receiver_family` | `0.375` | `0.375` | `0.0` | `None` | `None` | Diagnose complementarity/gating before implementing another source-to-prefix decoder. |
 | HellaSwag complementarity-frontier selector diagnostic | `headroom_alive_selector_blocked` | `0.467448` | `0.467448` | `0.0` | `0.0` | `4` | Do not train another HellaSwag selector on the same packet fields; require a new information path. |
 | HellaSwag multi-signal source packet frontier | `ruled_out_cached_policy_packet` | `0.455729` | `0.467448` | `-0.011719` | `-0.02347` | `5` | Do not continue cached Qwen policy-prediction packets on this HellaSwag slice. |
+| SVAMP32 C2C generation-summary trace syndrome probe | `weakened_generation_trace_runtime_diagnostic` | `12/32` | `14/32` | `-2/32` | `None` | `None` | Do not train packets from current Mac CPU generation traces; the shim unblocks instrumentation but live CPU C2C generation is not faithful teacher behavior. |
 
 ## Evidence Notes
 
@@ -68,6 +69,7 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - `Source-conditioned target-native resonance receivers`: 0/5 pass; best accuracy delta 0.000000 against zero_source_hidden; source top1/top2 oracle reaches 1.000000.
 - `HellaSwag complementarity-frontier selector diagnostic`: Fixed+source top1/top2 oracle 0.694010; source top1/top2 covers 174 fixed-hybrid errors, but selected frontier makes 0 overrides.
 - `HellaSwag multi-signal source packet frontier`: Selector accuracy 0.455729 vs fixed 0.467448; overrides 30 rows; best destructive control field_shuffle_multisignal_control at 0.430990.
+- `SVAMP32 C2C generation-summary trace syndrome probe`: Current Transformers cache shim lets CPU traces run, but matched is 12/32, zero-source and target-only are 14/32, and clean C2C-residual recovery is 0. A live CPU C2C smoke degenerates into repeated Korean glyph tokens, so this is a runtime diagnostic rather than faithful dense-teacher evidence.
 
 ## Promoted
 
@@ -95,20 +97,29 @@ ICLR needs a positive learned or broader-benchmark receiver that passes strict d
 - ARC candidate-local Qwen2.5 hidden repair readout: public-innovation matched
   `0.3750`, raw-hidden matched `0.3125`, source-index/rank/score controls
   `0.4375`, and same-byte visible text `0.3750`.
+- C2C generation-summary traces collected on the current shimmed Mac CPU
+  runtime: matched `12/32`, target-only and zero-source controls `14/32`,
+  `0` clean C2C-residual IDs, plus degraded live CPU C2C generation.
 
 ## Next Exact Gate
 
-- name: `svamp32_c2c_teacher_sparse_packet_distillation_preflight`
-- primary path: Return to the frozen SVAMP32 C2C teacher surface where
-  target-alone is `8/32`, C2C teacher is `16/32`, and C2C-only
-  target-complementary wins are `10`. Treat dense C2C as a teacher, distill its
-  useful behavioral delta into sparse source-private packets, and require
-  recovery of C2C-only wins beyond source-destroying controls.
-- fallback path: If the C2C-teacher proxy also fails, defer broad C2C
-  superiority claims until NVIDIA-backed native KV/C2C comparison or choose a
-  benchmark with clearer dense-transfer headroom.
-- pass bar: A learned or rule-based packet receiver must improve over source-index/rank/score, same-byte text, wrong-source, same-source-choice wrong-row, candidate-roll, and target-derived controls with a positive paired CI95 low on a frozen slice.
-- required controls: `target_only`, `answer_masked_source`, `constrained_wrong_row_source`, `same_source_choice_wrong_row`, `candidate_roll_or_deranged_public_basis`, `permuted_codes`, `random_same_byte`, `opaque_slot_or_deranged_basis`, `source_index_rank_score_comparators_when_meaningful`, `same_byte_visible_text`
+- name: `native_c2c_teacher_delta_capture_or_compatible_runtime`
+- primary path: Obtain a C2C runtime that reproduces the archived SVAMP32
+  dense-teacher behavior (`16/32`) and capture teacher logits/KV deltas or
+  generation traces from that faithful run. Then rerun the sparse-packet
+  distillation gate from faithful teacher deltas, not current Mac CPU traces.
+- fallback path: If native C2C capture is not available, use COLM_v2 to report
+  the C2C boundary honestly and promote a non-C2C source-causal branch only if
+  it has a fresh information path not already ruled out by source-choice,
+  target-cache, or same-byte controls.
+- pass bar: A learned or rule-based packet receiver must recover clean C2C-only
+  wins beyond source-index/rank/score, same-byte text, wrong-source,
+  same-source-choice wrong-row, candidate-roll, and target-derived controls
+  with a positive paired CI95 low on a frozen slice.
+- required controls: `target_only`, `source_alone`, `text_to_text`,
+  `zero_source`, `shuffled_source`, `label_shuffle`,
+  `same_source_choice_wrong_row`, `candidate_roll_or_deranged_public_basis`,
+  `source_index_rank_score_comparators_when_meaningful`, `same_byte_visible_text`
 
 ## Claim Boundaries
 

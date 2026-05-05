@@ -21,6 +21,86 @@ from latent_bridge.evaluate import (
 )
 
 
+def _dynamic_cache_layer_pairs(cache: Any) -> list[tuple[torch.Tensor, torch.Tensor]]:
+    """Return populated key/value layer tensors across old and new cache APIs."""
+    if cache is None:
+        return []
+    if hasattr(cache, "layers"):
+        pairs = []
+        for layer in cache.layers:
+            key = getattr(layer, "keys", None)
+            value = getattr(layer, "values", None)
+            if key is not None and value is not None:
+                pairs.append((key, value))
+        return pairs
+    if hasattr(cache, "key_cache") and hasattr(cache, "value_cache"):
+        return [
+            (key, value)
+            for key, value in zip(cache.key_cache, cache.value_cache)
+            if key is not None and value is not None
+        ]
+    return []
+
+
+def install_c2c_dynamic_cache_compatibility_shim(wrapper_module: Any | None = None) -> None:
+    """Adapt vendored C2C's old DynamicCache usage to current Transformers caches.
+
+    The published C2C wrapper was written against a Transformers DynamicCache
+    API with mutable ``key_cache``/``value_cache`` lists. Current Transformers
+    stores tensors in ``cache.layers`` instead. We install a narrow shim here so
+    LatentWire can run the vendored wrapper without editing the reference clone.
+    """
+    from transformers.cache_utils import DynamicCache
+
+    if not getattr(DynamicCache, "_latentwire_old_cache_api_shim", False):
+
+        def _key_cache(self):
+            return [key for key, _ in _dynamic_cache_layer_pairs(self)]
+
+        def _value_cache(self):
+            return [value for _, value in _dynamic_cache_layer_pairs(self)]
+
+        def _getitem(self, layer_idx: int):
+            return _dynamic_cache_layer_pairs(self)[layer_idx]
+
+        DynamicCache.key_cache = property(_key_cache)  # type: ignore[attr-defined]
+        DynamicCache.value_cache = property(_value_cache)  # type: ignore[attr-defined]
+        DynamicCache.__getitem__ = _getitem  # type: ignore[method-assign]
+        DynamicCache._latentwire_old_cache_api_shim = True  # type: ignore[attr-defined]
+
+    if wrapper_module is None:
+        return
+
+    if getattr(wrapper_module, "_latentwire_dynamic_cache_shim", False):
+        return
+
+    def clone_kv_cache(kv_cache: Any):
+        if kv_cache is None:
+            return None
+        pairs = [
+            (key.clone().detach(), value.clone().detach())
+            for key, value in _dynamic_cache_layer_pairs(kv_cache)
+        ]
+        return DynamicCache(pairs)
+
+    def hybrid_to_dynamic(hybrid_cache: Any):
+        if hybrid_cache is None:
+            return None
+        if isinstance(hybrid_cache, DynamicCache):
+            return hybrid_cache
+        pairs = [
+            (key.clone().detach(), value.clone().detach())
+            for key, value in _dynamic_cache_layer_pairs(hybrid_cache)
+        ]
+        if pairs:
+            return DynamicCache(pairs)
+        raise TypeError(f"Unsupported cache type: {type(hybrid_cache)}")
+
+    wrapper_module.clone_kv_cache = clone_kv_cache
+    wrapper_module.hybrid_to_dynamic = hybrid_to_dynamic
+    wrapper_module._latentwire_dynamic_cache_shim = True
+
+
 def load_c2c_model(
     *,
     source_model: str,
@@ -34,6 +114,9 @@ def load_c2c_model(
     sys.path.insert(0, str(repo_root))
 
     from rosetta.utils.evaluate import load_rosetta_model  # type: ignore
+    from rosetta.model import wrapper as rosetta_wrapper  # type: ignore
+
+    install_c2c_dynamic_cache_compatibility_shim(rosetta_wrapper)
 
     artifact = C2CAdapter.prepare_published_artifact(
         source_model,
