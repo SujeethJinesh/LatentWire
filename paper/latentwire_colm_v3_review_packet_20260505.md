@@ -1,6 +1,6 @@
 # LatentWire COLM v3 Review Packet
 
-- created_utc: `2026-05-05T05:36:15.109879+00:00`
+- created_utc: `2026-05-05T05:45:55.286703+00:00`
 - main_claim: LatentWire provides a practical protocol and evaluation framework for byte-scale, source-private model-to-model communication, with controlled evidence of narrow packet utility, explicit utility-per-byte accounting, and strong safeguards against shortcut claims.
 - next_exact_gate: edit the COLM_v3 paper around this packet: abstract, intro, method/threat model, tables/figures, limitations, and reproducibility checklist
 
@@ -8,7 +8,7 @@
 
 | colm_v3 | workshop_blocker | iclr |
 | --- | --- | --- |
-| evidence_package_ready_after_paper_integration | unified prose pass and final table/figure integration; no new speculative experiment is required unless a table row is missing | still blocked by lack of broad source-causal positive method |
+| draft_paper_integrated_pending_human_review | human copyedit, page-budget review, and final PDF/table placement; no new speculative experiment is required unless review exposes a missing claim-supporting row | still blocked by lack of broad source-causal positive method |
 
 ## Contribution Status
 
@@ -41,16 +41,16 @@
 
 | artifact | status | source | next_action |
 | --- | --- | --- | --- |
-| unified abstract and introduction | paper_edit_needed | paper draft | write COLM_v3 prose around the safe main claim |
-| method/protocol definition | partial | COLM_v1 method intuition plus COLM_v2 packet protocol | merge without broad latent-language wording |
-| source-private threat model | partial | COLM_v2 controls and systems boundary notes | define what can cross the interface and what cannot |
-| strict-control table | data_ready | strict_controls.csv | add to paper with caveats per row |
+| unified abstract and introduction | draft_integrated | colm_final/paper/latentwire_colm2026.tex | human copyedit and page-budget review |
+| method/protocol definition | draft_integrated | COLM_v1 method intuition plus COLM_v2 packet protocol | verify notation consistency after copyedit |
+| source-private threat model | draft_integrated | COLM_v2 controls and systems boundary notes | check against reviewer claim audit |
+| strict-control table | draft_integrated | strict_controls.csv | validate table placement in PDF |
 | main positive result table | data_ready | main_results.csv | keep ARC as narrow same-family positive evidence |
 | utility-per-byte / packet-byte table | data_ready | systems_measured_vs_estimated.csv | separate raw, framed, cacheline, and batch64 bytes |
-| systems boundary table | data_ready | systems_measured_vs_estimated.csv | label measured, estimated, and future native rows |
-| baseline/related-work matrix | data_ready | baseline_matrix.csv | compress for main paper and move overflow to appendix |
+| systems boundary table | draft_integrated | systems_measured_vs_estimated.csv | validate measured-vs-estimated labels in PDF |
+| baseline/related-work matrix | draft_integrated | baseline_matrix.csv | check for overflow and page-budget pressure |
 | negative-results / failure-boundary table | data_ready | negative_results.csv | use to define claim boundaries |
-| claim audit table | generated | claim_audit.csv | use as reviewer-facing internal checklist |
+| claim audit table | draft_integrated | claim_audit.csv | keep appendix or move to internal audit depending on page limit |
 | reproducibility checklist | partial | artifact_manifest.csv and input_manifest | convert to workshop checklist before submission |
 | NVIDIA native benchmark runbook | generated_future_work | nvidia_native_runbook.md | run only on native NVIDIA hardware later |
 
@@ -93,11 +93,11 @@
 
 | item | status | blocker |
 | --- | --- | --- |
-| Main claim agrees across abstract, intro, results, limitations. | not_done | requires paper prose pass |
-| Every table and figure maps to a claim in the claim audit. | ready_for_paper_pass | review packet generated; paper still needs integration |
+| Main claim agrees across abstract, intro, results, limitations. | draft_integrated_pending_human_review | requires human copyedit and page-budget review |
+| Every table and figure maps to a claim in the claim audit. | draft_integrated | verify final PDF table placement |
 | Systems claims separate measured packet bytes from analytical KV/cache floors. | ready | native GPU claims remain forbidden |
-| Related work distinguishes dense KV/cache transfer, compression, and packet controls. | ready_for_compression | related-work matrix likely too large for main text |
-| Limitations explicitly cover source-choice artifacts and cross-family failures. | ready | needs prose integration |
+| Related work distinguishes dense KV/cache transfer, compression, and packet controls. | draft_integrated_compressed | page-budget review may require moving matrix to appendix |
+| Limitations explicitly cover source-choice artifacts and cross-family failures. | draft_integrated | human copyedit |
 | Experimental side projects are scoped away from COLM_v3 claims. | ready | only future-work wording should remain |
 
 ## Input Manifest
@@ -105,8 +105,9 @@
 | key | path | sha256 |
 | --- | --- | --- |
 | colm_v2_review_packet | results/latentwire_colm_v2_review_packet_20260504/review_packet.json | 367ce9562a207b6c813b45951ebd25a395ab5e97a043a7c964cf693e371efe65 |
-| colm_v3_readiness | paper/latentwire_colm_v3_readiness_20260505.md | 50135b0bcb08b77a660e848aebcab6ab2ec006869c53833db75d7da2979a73dd |
-| experiment_ledger | paper/experiment_ledger_20260421.md | bc075f619cf53042a22286a27df6e4a258b95b7174db626afdeb0eace0d6f1fb |
-| experimental_status | experimental/status_20260505.md | 242ade8531decd887cace22823e619f9d003ac808989e23983ce5a2c9d15e2ae |
+| colm_v3_readiness | paper/latentwire_colm_v3_readiness_20260505.md | 963d8a51b234c0901bdb95b85255e3fc45dfc4fce7fead3984c3b1ae980c5163 |
+| colm_v3_tex | colm_final/paper/latentwire_colm2026.tex | f2b375ff3ab7ab1c3ce1e9f00466dcf1bf37b9a53b7ee60b77f1116d2464abe8 |
+| experiment_ledger | paper/experiment_ledger_20260421.md | e7a923c4ce117ff9d099da03d5a34dd0551ab620167cf6f31a6a78e0c18a248a |
+| experimental_status | experimental/status_20260505.md | addfb038c6b81bf3e8056a19d4bf2d741bdf0f65a6b8e61468997126001b57e3 |
 | reviewer_feedback | paper/reviewer_feedback.md | 282ee615ffe970797c695908214088af55b0ae80656ea5c4829aa01c2492198e |
 | systems_boundary | results/source_private_systems_boundary_figure_table_split_20260504/systems_boundary_figure_data.json | 81a776e985428f6945c22ccc3b7921016afb4f0a2e32d4b4a7af4b04cea9ee49 |

@@ -79,6 +79,7 @@ def _input_paths(tmp_path: Path) -> dict[str, Path]:
     return {
         "colm_v2_review_packet": _write_json(tmp_path / "v2.json", v2_packet),
         "colm_v3_readiness": _write_text(tmp_path / "readiness.md", "readiness"),
+        "colm_v3_tex": _write_text(tmp_path / "paper.tex", "paper"),
         "experiment_ledger": _write_text(tmp_path / "ledger.md", "ledger"),
         "experimental_status": _write_text(tmp_path / "experimental.md", "experimental"),
         "reviewer_feedback": _write_text(tmp_path / "reviewer.md", "reviewer"),
@@ -89,7 +90,7 @@ def _input_paths(tmp_path: Path) -> dict[str, Path]:
 def test_build_review_packet_sets_colm_v3_claim_boundaries(tmp_path: Path) -> None:
     packet = packet_builder.build_review_packet(_input_paths(tmp_path))
 
-    assert packet["readiness"]["colm_v3"] == "evidence_package_ready_after_paper_integration"
+    assert packet["readiness"]["colm_v3"] == "draft_paper_integrated_pending_human_review"
     assert "byte-scale" in packet["main_claim"]
     assert any(
         row["claim"] == "LatentWire beats C2C or dense KV/cache transfer."

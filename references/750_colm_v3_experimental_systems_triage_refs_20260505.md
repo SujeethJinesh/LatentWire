@@ -18,6 +18,8 @@
 | Source | Link | Relevance |
 |---|---|---|
 | StreamingLLM | https://arxiv.org/abs/2309.17453 | Primary source for attention sinks; establishes that retaining initial-token KV helps streaming. SinkAware must show a kernel-level static-prior path, not merely sink retention. |
+| FlashInfer paper | https://arxiv.org/abs/2501.01005 | Highest-risk implementation baseline for SinkAware. FlashInfer is a customizable attention engine for LLM serving with flexible KV-cache storage and attention-kernel paths; Phase 1 must verify whether generic masks, paged KV, or sparse/block formats already subsume static sink handling. |
+| FlashInfer project/docs | https://flashinfer.ai/ | Implementation source for Phase 1 line-numbered audit of prefill/decode attention paths. |
 | FlashAttention-3 PyTorch blog | https://docs.pytorch.org/blog/flashattention-3/ | Hardware-aware attention baseline. Phase 1 should inspect whether FA3 or downstream kernels special-case fixed sink tokens. |
 | IndexCache / DSA discussion | https://arxiv.org/abs/2603.12201 | Recent sparse-attention context describing DeepSeek Sparse Attention-style lightning indexers; useful for distinguishing static sinks from dynamic top-k indexers. |
 
@@ -27,6 +29,7 @@
 |---|---|---|
 | LongFlow OpenReview | https://openreview.net/forum?id=rz6WybXjgk | Direct reasoning-KV compression competitor; fused attention/importance/eviction makes ThoughtFlow novelty difficult unless Phase 1 finds a concrete failure mode. |
 | LongFlow arXiv | https://arxiv.org/abs/2603.11504 | Paper source for LongFlow method and reported throughput/KV compression claims. |
+| Pitfalls of KV Cache Compression | https://arxiv.org/abs/2510.00231 | Primary source for instruction-following and leakage risks under KV compression. ThoughtFlow-FP8 should use this as a failure-mode lens before claiming reasoning-aware compression novelty. |
 | PM-KVQ OpenReview | https://openreview.net/forum?id=Vem6FQvRvq | Long-CoT KV quantization competitor; directly pressures ThoughtFlow's FP8/mixed-precision angle. |
 | PM-KVQ arXiv | https://arxiv.org/abs/2505.18610 | Public paper source for progressive mixed-precision KV cache quantization. |
 | KIVI OpenReview | https://openreview.net/forum?id=L057s2Rq8O | Established 2-bit KV quantization baseline; useful for the COLM_v3 systems boundary and ThoughtFlow comparisons. |

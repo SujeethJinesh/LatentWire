@@ -11,6 +11,7 @@ nvidia_native_runbook.md,future native GPU measurement runbook,generated
 manifest.json,input and output manifest,generated
 results/latentwire_colm_v2_review_packet_20260504/review_packet.json,input:colm_v2_review_packet,read
 paper/latentwire_colm_v3_readiness_20260505.md,input:colm_v3_readiness,read
+colm_final/paper/latentwire_colm2026.tex,input:colm_v3_tex,read
 paper/experiment_ledger_20260421.md,input:experiment_ledger,read
 experimental/status_20260505.md,input:experimental_status,read
 paper/reviewer_feedback.md,input:reviewer_feedback,read

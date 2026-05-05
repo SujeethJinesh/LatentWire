@@ -61,6 +61,11 @@
       "status": "read"
     },
     {
+      "artifact": "colm_final/paper/latentwire_colm2026.tex",
+      "role": "input:colm_v3_tex",
+      "status": "read"
+    },
+    {
       "artifact": "paper/experiment_ledger_20260421.md",
       "role": "input:experiment_ledger",
       "status": "read"
@@ -624,7 +629,7 @@
       "still_needs_work": ""
     }
   ],
-  "created_utc": "2026-05-05T05:36:15.109879+00:00",
+  "created_utc": "2026-05-05T05:45:55.286703+00:00",
   "experiment_scoping": [
     {
       "colm_v3_scope": "separate systems spinout; exclude from COLM_v3 claims unless Phase 1 confirms novelty, Phase 2 shows at least 3% theoretical benefit, and native GPU profiling confirms overhead",
@@ -660,17 +665,22 @@
     {
       "key": "colm_v3_readiness",
       "path": "paper/latentwire_colm_v3_readiness_20260505.md",
-      "sha256": "50135b0bcb08b77a660e848aebcab6ab2ec006869c53833db75d7da2979a73dd"
+      "sha256": "963d8a51b234c0901bdb95b85255e3fc45dfc4fce7fead3984c3b1ae980c5163"
+    },
+    {
+      "key": "colm_v3_tex",
+      "path": "colm_final/paper/latentwire_colm2026.tex",
+      "sha256": "f2b375ff3ab7ab1c3ce1e9f00466dcf1bf37b9a53b7ee60b77f1116d2464abe8"
     },
     {
       "key": "experiment_ledger",
       "path": "paper/experiment_ledger_20260421.md",
-      "sha256": "bc075f619cf53042a22286a27df6e4a258b95b7174db626afdeb0eace0d6f1fb"
+      "sha256": "e7a923c4ce117ff9d099da03d5a34dd0551ab620167cf6f31a6a78e0c18a248a"
     },
     {
       "key": "experimental_status",
       "path": "experimental/status_20260505.md",
-      "sha256": "242ade8531decd887cace22823e619f9d003ac808989e23983ce5a2c9d15e2ae"
+      "sha256": "addfb038c6b81bf3e8056a19d4bf2d741bdf0f65a6b8e61468997126001b57e3"
     },
     {
       "key": "reviewer_feedback",
@@ -1016,13 +1026,13 @@
   "next_exact_gate": "edit the COLM_v3 paper around this packet: abstract, intro, method/threat model, tables/figures, limitations, and reproducibility checklist",
   "packet": "latentwire_colm_v3_review_packet",
   "readiness": {
-    "colm_v3": "evidence_package_ready_after_paper_integration",
+    "colm_v3": "draft_paper_integrated_pending_human_review",
     "iclr": "still blocked by lack of broad source-causal positive method",
-    "workshop_blocker": "unified prose pass and final table/figure integration; no new speculative experiment is required unless a table row is missing"
+    "workshop_blocker": "human copyedit, page-budget review, and final PDF/table placement; no new speculative experiment is required unless review exposes a missing claim-supporting row"
   },
   "source_text_sanity": {
-    "colm_v3_readiness_chars": 7442,
-    "experimental_status_chars": 3649
+    "colm_v3_readiness_chars": 7216,
+    "experimental_status_chars": 4902
   },
   "story": "LatentWire studies whether compact source-private packets can transmit useful model evidence without dense cache transfer, and uses byte accounting plus destructive controls to separate real packet utility from answer-choice and target-cache shortcuts.",
   "strict_controls": [
@@ -1209,14 +1219,14 @@
   ],
   "submission_checklist": [
     {
-      "blocker": "requires paper prose pass",
+      "blocker": "requires human copyedit and page-budget review",
       "item": "Main claim agrees across abstract, intro, results, limitations.",
-      "status": "not_done"
+      "status": "draft_integrated_pending_human_review"
     },
     {
-      "blocker": "review packet generated; paper still needs integration",
+      "blocker": "verify final PDF table placement",
       "item": "Every table and figure maps to a claim in the claim audit.",
-      "status": "ready_for_paper_pass"
+      "status": "draft_integrated"
     },
     {
       "blocker": "native GPU claims remain forbidden",
@@ -1224,14 +1234,14 @@
       "status": "ready"
     },
     {
-      "blocker": "related-work matrix likely too large for main text",
+      "blocker": "page-budget review may require moving matrix to appendix",
       "item": "Related work distinguishes dense KV/cache transfer, compression, and packet controls.",
-      "status": "ready_for_compression"
+      "status": "draft_integrated_compressed"
     },
     {
-      "blocker": "needs prose integration",
+      "blocker": "human copyedit",
       "item": "Limitations explicitly cover source-choice artifacts and cross-family failures.",
-      "status": "ready"
+      "status": "draft_integrated"
     },
     {
       "blocker": "only future-work wording should remain",
@@ -1628,27 +1638,27 @@
   "table_figure_inventory": [
     {
       "artifact": "unified abstract and introduction",
-      "next_action": "write COLM_v3 prose around the safe main claim",
-      "source": "paper draft",
-      "status": "paper_edit_needed"
+      "next_action": "human copyedit and page-budget review",
+      "source": "colm_final/paper/latentwire_colm2026.tex",
+      "status": "draft_integrated"
     },
     {
       "artifact": "method/protocol definition",
-      "next_action": "merge without broad latent-language wording",
+      "next_action": "verify notation consistency after copyedit",
       "source": "COLM_v1 method intuition plus COLM_v2 packet protocol",
-      "status": "partial"
+      "status": "draft_integrated"
     },
     {
       "artifact": "source-private threat model",
-      "next_action": "define what can cross the interface and what cannot",
+      "next_action": "check against reviewer claim audit",
       "source": "COLM_v2 controls and systems boundary notes",
-      "status": "partial"
+      "status": "draft_integrated"
     },
     {
       "artifact": "strict-control table",
-      "next_action": "add to paper with caveats per row",
+      "next_action": "validate table placement in PDF",
       "source": "strict_controls.csv",
-      "status": "data_ready"
+      "status": "draft_integrated"
     },
     {
       "artifact": "main positive result table",
@@ -1664,15 +1674,15 @@
     },
     {
       "artifact": "systems boundary table",
-      "next_action": "label measured, estimated, and future native rows",
+      "next_action": "validate measured-vs-estimated labels in PDF",
       "source": "systems_measured_vs_estimated.csv",
-      "status": "data_ready"
+      "status": "draft_integrated"
     },
     {
       "artifact": "baseline/related-work matrix",
-      "next_action": "compress for main paper and move overflow to appendix",
+      "next_action": "check for overflow and page-budget pressure",
       "source": "baseline_matrix.csv",
-      "status": "data_ready"
+      "status": "draft_integrated"
     },
     {
       "artifact": "negative-results / failure-boundary table",
@@ -1682,9 +1692,9 @@
     },
     {
       "artifact": "claim audit table",
-      "next_action": "use as reviewer-facing internal checklist",
+      "next_action": "keep appendix or move to internal audit depending on page limit",
       "source": "claim_audit.csv",
-      "status": "generated"
+      "status": "draft_integrated"
     },
     {
       "artifact": "reproducibility checklist",

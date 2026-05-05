@@ -20,6 +20,7 @@ DEFAULT_INPUT_PATHS = {
     "experimental_status": ROOT / "experimental/status_20260505.md",
     "reviewer_feedback": ROOT / "paper/reviewer_feedback.md",
     "experiment_ledger": ROOT / "paper/experiment_ledger_20260421.md",
+    "colm_v3_tex": ROOT / "colm_final/paper/latentwire_colm2026.tex",
 }
 
 DEFAULT_OUTPUT_DIR = ROOT / "results/latentwire_colm_v3_review_packet_20260505"
@@ -188,27 +189,27 @@ def _table_figure_inventory() -> list[dict[str, str]]:
     return [
         {
             "artifact": "unified abstract and introduction",
-            "status": "paper_edit_needed",
-            "source": "paper draft",
-            "next_action": "write COLM_v3 prose around the safe main claim",
+            "status": "draft_integrated",
+            "source": "colm_final/paper/latentwire_colm2026.tex",
+            "next_action": "human copyedit and page-budget review",
         },
         {
             "artifact": "method/protocol definition",
-            "status": "partial",
+            "status": "draft_integrated",
             "source": "COLM_v1 method intuition plus COLM_v2 packet protocol",
-            "next_action": "merge without broad latent-language wording",
+            "next_action": "verify notation consistency after copyedit",
         },
         {
             "artifact": "source-private threat model",
-            "status": "partial",
+            "status": "draft_integrated",
             "source": "COLM_v2 controls and systems boundary notes",
-            "next_action": "define what can cross the interface and what cannot",
+            "next_action": "check against reviewer claim audit",
         },
         {
             "artifact": "strict-control table",
-            "status": "data_ready",
+            "status": "draft_integrated",
             "source": "strict_controls.csv",
-            "next_action": "add to paper with caveats per row",
+            "next_action": "validate table placement in PDF",
         },
         {
             "artifact": "main positive result table",
@@ -224,15 +225,15 @@ def _table_figure_inventory() -> list[dict[str, str]]:
         },
         {
             "artifact": "systems boundary table",
-            "status": "data_ready",
+            "status": "draft_integrated",
             "source": "systems_measured_vs_estimated.csv",
-            "next_action": "label measured, estimated, and future native rows",
+            "next_action": "validate measured-vs-estimated labels in PDF",
         },
         {
             "artifact": "baseline/related-work matrix",
-            "status": "data_ready",
+            "status": "draft_integrated",
             "source": "baseline_matrix.csv",
-            "next_action": "compress for main paper and move overflow to appendix",
+            "next_action": "check for overflow and page-budget pressure",
         },
         {
             "artifact": "negative-results / failure-boundary table",
@@ -242,9 +243,9 @@ def _table_figure_inventory() -> list[dict[str, str]]:
         },
         {
             "artifact": "claim audit table",
-            "status": "generated",
+            "status": "draft_integrated",
             "source": "claim_audit.csv",
-            "next_action": "use as reviewer-facing internal checklist",
+            "next_action": "keep appendix or move to internal audit depending on page limit",
         },
         {
             "artifact": "reproducibility checklist",
@@ -265,13 +266,13 @@ def _submission_checklist() -> list[dict[str, str]]:
     return [
         {
             "item": "Main claim agrees across abstract, intro, results, limitations.",
-            "status": "not_done",
-            "blocker": "requires paper prose pass",
+            "status": "draft_integrated_pending_human_review",
+            "blocker": "requires human copyedit and page-budget review",
         },
         {
             "item": "Every table and figure maps to a claim in the claim audit.",
-            "status": "ready_for_paper_pass",
-            "blocker": "review packet generated; paper still needs integration",
+            "status": "draft_integrated",
+            "blocker": "verify final PDF table placement",
         },
         {
             "item": "Systems claims separate measured packet bytes from analytical KV/cache floors.",
@@ -280,13 +281,13 @@ def _submission_checklist() -> list[dict[str, str]]:
         },
         {
             "item": "Related work distinguishes dense KV/cache transfer, compression, and packet controls.",
-            "status": "ready_for_compression",
-            "blocker": "related-work matrix likely too large for main text",
+            "status": "draft_integrated_compressed",
+            "blocker": "page-budget review may require moving matrix to appendix",
         },
         {
             "item": "Limitations explicitly cover source-choice artifacts and cross-family failures.",
-            "status": "ready",
-            "blocker": "needs prose integration",
+            "status": "draft_integrated",
+            "blocker": "human copyedit",
         },
         {
             "item": "Experimental side projects are scoped away from COLM_v3 claims.",
@@ -426,10 +427,10 @@ def build_review_packet(input_paths: dict[str, pathlib.Path] | None = None) -> d
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "main_claim": MAIN_CLAIM,
         "readiness": {
-            "colm_v3": "evidence_package_ready_after_paper_integration",
+            "colm_v3": "draft_paper_integrated_pending_human_review",
             "workshop_blocker": (
-                "unified prose pass and final table/figure integration; no new speculative experiment is required "
-                "unless a table row is missing"
+                "human copyedit, page-budget review, and final PDF/table placement; no new speculative experiment "
+                "is required unless review exposes a missing claim-supporting row"
             ),
             "iclr": "still blocked by lack of broad source-causal positive method",
         },
@@ -474,7 +475,7 @@ def _write_csv(path: pathlib.Path, rows: list[dict[str, Any]]) -> None:
             if key not in fieldnames:
                 fieldnames.append(key)
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({key: _fmt(row.get(key)) for key in fieldnames})

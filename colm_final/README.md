@@ -9,19 +9,23 @@ audit reports; full reruns still assume the repository root and the local
 
 ## Current Readiness
 
-- COLM workshop: plausible but still borderline. The package is buildable,
-  citation-audited, test-audited, source-index-audited, and evidence-audited,
-  but the story must stay narrow.
+- COLM workshop: integrated COLM_v3 draft ready for internal/reviewer
+  circulation after a human copyedit and page-budget pass. The package is
+  buildable, citation-audited, test-audited, source-index-audited,
+  evidence-audited, and now aligned with the generated COLM_v3 review packet.
 - ICLR full paper: not ready. The positive method is still same-family and the
   systems result is byte/exposure accounting, not native serving throughput.
-- Current paper story: fixed-byte, source-private packets transfer the source
-  model's selected candidate under a tight byte budget on ARC-Challenge and
-  OpenBookQA; strict cross-family Phi-3 replacement and cached learned
-  connector repairs fail.
-- Exact blocker: the direct source-index/source-rank audit shows the current
-  packet does not beat explicit selected-candidate communication. A stronger
-  receiver-family, calibrated source-score, or cross-family positive is still
-  needed for ICLR.
+- Current paper story: source-private byte-scale packets can transfer narrow
+  same-family candidate evidence under strict destructive controls; the paper
+  also shows where apparent wins collapse into source-choice, cross-family, or
+  cached-connector failures.
+- Exact COLM_v3 blocker: human copyedit, page-budget review, final PDF/table
+  placement, and final consistency check against
+  `results/latentwire_colm_v3_review_packet_20260505/`.
+- Exact ICLR blocker: the direct source-index/source-rank audit shows the
+  current packet does not beat explicit selected-candidate communication. A
+  stronger receiver-family, calibrated source-score, or cross-family positive is
+  still needed for ICLR.
 
 ## Folder Layout
 
@@ -64,6 +68,12 @@ pdflatex -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
 
 Expected status is recorded in `audits/test_report.txt`,
 `audits/build_report.txt`, and `audits/reproducibility_report.md`.
+
+The COLM_v3 review packet can be regenerated from the repository root with:
+
+```bash
+./venv_arm64/bin/python scripts/build_latentwire_colm_v3_review_packet.py
+```
 
 ## Submission Caveats
 

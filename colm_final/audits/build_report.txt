@@ -1,33 +1,38 @@
 # COLM Build Report
 
-Date: 2026-05-02
+Date: 2026-05-05
 
 Build command run from `colm_final/paper`:
 
 ```bash
-latexmk -pdf -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
+pdflatex -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
+bibtex latentwire_colm2026
+pdflatex -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
+pdflatex -interaction=nonstopmode -halt-on-error latentwire_colm2026.tex
 ```
 
 Final output:
 
 ```text
-Output written on latentwire_colm2026.pdf (9 pages, 248499 bytes).
-SHA256: 144761c8d2541dc7a85fdc6b22b2a6bc415bd9164c4d626746dc5181fa7bc9f6
+Output written on latentwire_colm2026.pdf (11 pages, 255239 bytes).
+SHA256: 2280380e459398aa0d35e276289f75a23d5980f29ec0800acd0c93e7516077fb
 ```
 
 Final log scan:
 
 ```text
 No natbib warnings, unresolved references, unresolved citations, or overfull
-boxes were found in the final build log.
+boxes were found in the final build log. The only `Rerun` match is the
+`rerunfilecheck` package name.
 ```
 
 Remaining final-log typography notes:
 
 ```text
-Underfull hbox: 7
-Underfull vbox: 1
+Underfull hbox: 19
+Underfull vbox: 3
 ```
 
-These underfull boxes are from bibliography/path wrapping and do not indicate
-unresolved references or submission-breaking build failures.
+These underfull boxes are from compact table cells, bibliography wrapping, and
+artifact-path wrapping. They do not indicate unresolved references or
+submission-breaking build failures.

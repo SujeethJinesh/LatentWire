@@ -24566,3 +24566,63 @@ Lay explanation: the scattered results are now in one reviewer-facing packet.
 It tells us exactly what we can claim, which tables support those claims, which
 systems numbers are measured versus estimated, and which side experiments are
 future work rather than current evidence.
+
+## 2026-05-05 COLM_v3 Paper Integration Pass
+
+Integrated the COLM_v3 review packet into the COLM LaTeX draft:
+
+- paper: `colm_final/paper/latentwire_colm2026.tex`;
+- compiled PDF: `colm_final/paper/latentwire_colm2026.pdf`;
+- regenerated review packet:
+  `results/latentwire_colm_v3_review_packet_20260505/`.
+
+Paper changes:
+
+- retitled the paper around source-private byte-scale packet communication and
+  destructive controls;
+- rewrote the abstract to state the safe v3 claim and explicitly forbid solved
+  latent communication, C2C superiority, and native systems claims;
+- added a source-private threat model;
+- added a reviewer-visible control-suite table;
+- added a compact related-work/baseline matrix;
+- tightened the systems table caption to separate measured packet objects from
+  analytical KV/cache byte floors;
+- added an appendix claim-audit table and v3 review-packet artifact link;
+- updated the generated review-packet checklist so the blocker is now human
+  copyedit/page budget/PDF placement, not first prose integration.
+
+Decision: COLM_v3 has moved from "evidence packet ready" to "integrated draft
+ready for review pass." The submission blocker is now polish: page-budget,
+table placement, final consistency checks, and reproducibility wording. No new
+speculative experiment is needed unless this review exposes an unsupported
+claim or missing table cell.
+
+Lay explanation: the paper now says the same thing as the evidence packet. It
+claims a small, useful, source-private hinting protocol with strong checks, not
+a universal latent language or a GPU systems win.
+
+## 2026-05-05 Experimental Side-Branch Scope Follow-Up
+
+Ran a second subagent scoping pass over the three experimental systems folders.
+The result did not promote any side branch into COLM_v3 evidence:
+
+- HybridKernel: still a separate systems spinout. Next local-only gate is a
+  Phase 1 vLLM hybrid SSM/disaggregated-serving audit to decide whether the
+  boundary cost is already fused, eliminated, or hidden by state-transfer
+  layout/scheduling.
+- SinkAware: still a quick-kill systems spinout. Next local-only gate is a
+  line-numbered FlashInfer prefill/decode attention audit for sink/BOS/static
+  mask handling.
+- ThoughtFlow-FP8: still a high-upside but crowded systems spinout. Next
+  local-only gate is LongFlow OpenReview/arXiv forensics plus a concrete
+  failure-mode hypothesis before implementation.
+
+Reference update:
+
+- added FlashInfer paper/docs to the systems triage memo;
+- added `The Pitfalls of KV Cache Compression` as the failure-mode lens for
+  ThoughtFlow-FP8.
+
+Decision: COLM_v3 should mention these only, if at all, as future systems lanes.
+They should not enter claims, tables, or contribution framing until they produce
+measured artifacts.

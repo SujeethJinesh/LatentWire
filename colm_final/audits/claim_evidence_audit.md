@@ -1,11 +1,31 @@
 # Claim-to-Evidence Audit
 
-Date: 2026-05-02
+Date: 2026-05-05
 
 ## Scope
 
 This audit checks whether the COLM paper claims are supported by tracked code,
 tests, ablations, and frozen result artifacts in `colm_final`.
+
+## COLM_v3 Addendum
+
+The integrated COLM_v3 draft now uses the generated review packet at
+`results/latentwire_colm_v3_review_packet_20260505/` as its source-of-truth
+claim audit. The main paper claim is:
+
+> LatentWire provides a practical protocol and evaluation framework for
+> byte-scale, source-private model-to-model communication, with controlled
+> evidence of narrow packet utility, explicit utility-per-byte accounting, and
+> strong safeguards against shortcut claims.
+
+Additional v3-integrated claims:
+
+| Paper claim | Evidence artifact | Status | Notes |
+|---|---|---|---|
+| The source-private threat model forbids source text, hidden states, KV cache, source logits, score vectors, and labels | `colm_final/paper/latentwire_colm2026.tex`; `results/latentwire_colm_v3_review_packet_20260505/claim_audit.csv` | Supported | Now visible in the main method section. |
+| The control suite includes target-only, same-budget text, source-index/rank/score, wrong-row, same-source-choice, coordinate shuffle, candidate derangement, source-family substitution, and cached connector repair controls | `colm_final/paper/latentwire_colm2026.tex`; `results/latentwire_colm_v3_review_packet_20260505/table_figure_inventory.csv` | Supported | Now visible as a main paper table. |
+| Systems rows separate measured/accounted packet objects from analytical KV/cache byte floors and native-pending systems rows | `results/latentwire_colm_v3_review_packet_20260505/systems_measured_vs_estimated.csv`; `colm_final/paper/latentwire_colm2026.tex` | Supported | No native GPU throughput, HBM, energy, latency, or C2C superiority claim is made. |
+| HybridKernel, SinkAware, and ThoughtFlow-FP8 are future systems side lanes, not COLM_v3 evidence | `experimental/status_20260505.md`; `results/latentwire_colm_v3_review_packet_20260505/experiment_scoping.csv` | Supported | They should not enter main claims until measured artifacts exist. |
 
 ## Headline Claims
 

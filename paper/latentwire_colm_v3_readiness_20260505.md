@@ -6,11 +6,10 @@
 
 ## Current Readiness
 
-COLM_v3 is plausible and now has a reproducible review-packet artifact, but it
-is not yet submission-ready. The remaining blocker is paper integration: a
-unified abstract/introduction, method/threat-model section, final table/figure
-placement, limitations, and reproducibility checklist built from the generated
-packet.
+COLM_v3 now has a reproducible review-packet artifact and a first integrated
+LaTeX draft in `colm_final/paper/latentwire_colm2026.tex`. It is close to
+reviewer circulation, but not yet final submission-ready. The remaining blocker
+is a human copyedit/page-budget pass plus final PDF/table placement review.
 
 ICLR remains blocked by the lack of a broad learned/source-causal receiver that
 survives strict destructive controls.
@@ -51,16 +50,16 @@ shortcuts.
 
 | Required item | Status | Exact next action |
 |---|---|---|
-| Unified abstract and intro | missing | write one claim-disciplined v3 abstract/intro from v1 motivation plus v2 controls |
-| Method/protocol definition | partially present in COLM package | consolidate packet object, source-private interface, receiver, and byte fields |
-| Threat model | partially present | make source exposure, same-byte text, source-choice, and leakage shortcuts explicit |
-| Strict control suite table | present but split | merge ARC/OBQA/C2C controls into one paper-visible table |
+| Unified abstract and intro | draft integrated | human copyedit and page-budget review |
+| Method/protocol definition | draft integrated | verify notation consistency after copyedit |
+| Threat model | draft integrated | check against reviewer claim audit |
+| Strict control suite table | draft integrated | validate placement in PDF |
 | Main positive result table | present but split | make ARC primary; mark OBQA as caveated if using it |
 | Utility-per-byte table | present but needs v3 wording | include packet, text, source-index/rank, and dense-KV byte floors |
-| Systems boundary table/figure | present for accounting | label measured-vs-estimated and native-missing rows explicitly |
-| Related-work/baseline matrix | present in v2 packet | update to v3 and point C2C/KV/cache methods to source-exposure regimes |
+| Systems boundary table/figure | draft integrated for accounting | validate measured-vs-estimated labels in PDF |
+| Related-work/baseline matrix | draft integrated | check page budget; move overflow to appendix if needed |
 | Negative/failure-boundary table | present but split | include cross-family, source-choice, C2C leakage, and failed learned receivers |
-| Claim audit table | generated for v3 | integrate `results/latentwire_colm_v3_review_packet_20260505/claim_audit.csv` into the paper audit/checklist |
+| Claim audit table | draft integrated | keep appendix or move to internal audit depending on page limit |
 | Reproducibility checklist | partial | convert `artifact_manifest.csv`, `manifest.json`, and expected build commands into the workshop checklist |
 | Artifact manifest | generated for v3 | use `results/latentwire_colm_v3_review_packet_20260505/artifact_manifest.csv` and `manifest.json` |
 | Limitations | present but needs v3 consistency | keep strong limits visible in main text |
@@ -102,13 +101,13 @@ The COLM_v3 review packet now exists at
 
 ## Highest-Priority Next Gate
 
-Edit the COLM_v3 paper around the generated review packet:
+Review and compress the integrated COLM_v3 paper draft:
 
-1. v3 abstract/introduction/contribution bullets,
-2. method/protocol and source-private threat model,
-3. main result, strict-control, negative-result, and systems tables,
-4. one reviewer-facing "what we claim / what we do not claim" section,
-5. reproducibility checklist and artifact manifest.
+1. human copyedit for claim discipline and readability,
+2. PDF table/figure placement and page-budget check,
+3. consistency check between paper, review packet, and artifact manifest,
+4. final reproducibility checklist wording,
+5. optional move of claim-audit/baseline matrix from main/appendix depending on workshop page limit.
 
 Do not run speculative new method experiments until that package exposes a
 specific missing table cell or unsupported claim.

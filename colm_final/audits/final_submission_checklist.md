@@ -1,6 +1,6 @@
 # Final Submission Checklist
 
-Date: 2026-05-02
+Date: 2026-05-05
 
 ## Ready
 
@@ -22,9 +22,17 @@ Date: 2026-05-02
 - [x] Explicit source-index/source-rank audit is packaged and included in the
   main PDF table.
 - [x] Packet payload rate curve is packaged and included as a PDF figure.
+- [x] COLM_v3 claim audit is generated and mirrored in the appendix.
+- [x] Source-private threat model is integrated into the PDF.
+- [x] Control-suite table is integrated into the PDF.
+- [x] Related-work/baseline matrix is integrated into the PDF.
+- [x] Systems table distinguishes measured/accounted packet objects from
+  analytical KV/cache byte floors and native-pending rows.
+- [x] Native NVIDIA runbook exists for future hard systems measurements.
 
 ## Not Yet Ready / Must Be Framed Carefully
 
+- [ ] Human copyedit and page-budget review remain before final submission.
 - [ ] No strict cross-family positive is available.
 - [ ] No native systems throughput row is available.
 - [ ] The strict positive-beyond-source-index gate fails; this is acceptable
@@ -33,10 +41,14 @@ Date: 2026-05-02
   the PDF appendix only summarizes it compactly.
 - [ ] Calibrated source-score-vector quantization is not available for the
   headline frozen caches.
+- [ ] The integrated PDF is now 11 pages; final workshop page limits may require
+  moving the claim-audit or baseline matrix out of the main submission.
 
 ## Submission Decision
 
-The bundle is reasonable for a COLM workshop submission if the paper is pitched
-as a narrow positive packet protocol with explicit failure boundaries. It is not
-ready for an ICLR full-paper claim without the next receiver-family/cross-family
-positive and stronger systems evidence.
+The bundle is now a COLM_v3 integrated draft suitable for internal/reviewer
+circulation after a human copyedit and page-budget pass. It should be pitched as
+a practical packet protocol and evaluation framework with narrow positives,
+failure boundaries, and byte/exposure systems accounting. It is not ready for an
+ICLR full-paper claim without the next receiver-family/cross-family positive and
+stronger native systems evidence.

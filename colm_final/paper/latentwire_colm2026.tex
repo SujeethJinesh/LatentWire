@@ -13,7 +13,7 @@
 \hypersetup{colorlinks=true, citecolor=darkblue, linkcolor=darkblue, urlcolor=darkblue}
 \Urlmuskip=0mu plus 2mu\relax
 
-\title{Fixed-Byte Source-Private Candidate Packets for Bounded Model Collaboration}
+\title{\method: Source-Private Byte-Scale Packet Communication with Destructive Controls}
 
 \author{Anonymous authors\\Paper under double-blind review}
 
@@ -30,24 +30,24 @@
 \maketitle
 
 \begin{abstract}
-Multi-model language systems usually communicate by emitting text or by sharing internal state such as KV caches. Text is portable but slow and lossy; cache sharing is information-rich but exposes thousands of bytes of model state per token and requires architecture-specific machinery. We study a narrower question: can a frozen source model send a fixed-byte, source-private candidate packet that improves a frozen receiver on public multiple-choice reasoning tasks, without sending source text, hidden states, KV cache, source logits, or gold labels? We present \method, a public-coordinate packet protocol in which source and receiver agree on an anchor/spectral basis over candidate answers, the source emits a tiny signed packet, and the receiver decodes the packet against its own public side information. On \arc{} test, an 8-byte packet reaches 0.344 accuracy across 10 seeds, above target-only 0.265 and same-budget structured text 0.300; on \obqa{} test, a 3-byte packet reaches 0.378 across 5 seeds, above target-only 0.276 and same-budget text 0.350. The decisive audit is also negative: explicit source-index communication reaches 0.346 on \arc{} and 0.378 on \obqa{}, with packet-minus-source-index paired lower bounds of -0.008 and -0.006. The positive is therefore compact source-candidate transfer, not evidence synthesis beyond the source or a method that beats source-index communication. We also report that a Phi-3 cross-family source fails the same gate, and learned cache/score connectors on available TinyLlama/Qwen cached artifacts do not repair that cached-artifact gap. The contribution is a reproducible fixed-byte source-private transfer result, a falsification protocol for cross-family claims, and a systems accounting boundary showing that task packets are 69.8x smaller than a one-token 1-bit-per-KV-element accounting floor.
+Multi-model language systems usually communicate by emitting text or by sharing internal state such as KV caches. Text is portable but exposes source outputs; cache sharing is information-rich but moves and exposes dense model state. We study a deliberately narrower interface: can a frozen source model send a byte-scale, source-private packet that helps a frozen receiver on public multiple-choice reasoning tasks without sending source text, hidden states, KV cache, source logits, or labels? We present \method, a packet protocol and evaluation framework with explicit byte accounting, a source-private threat model, and destructive controls for source-choice, wrong-row, coordinate-shuffle, same-budget text, and cross-family shortcuts. On \arc{} test, an 8-byte payload / 11-byte framed packet reaches 0.344 accuracy across 10 seeds, above target-only 0.265 and same-budget structured text 0.300; on \obqa{} test, a 3-byte / 6-byte packet reaches 0.378 across 5 seeds, above target-only 0.276 and same-budget text 0.350. The decisive audit is also limiting: explicit source-index communication reaches 0.346 on \arc{} and 0.378 on \obqa{}, so the current positive is narrow source-candidate transfer, not evidence synthesis beyond the source or a method that beats selected-candidate communication. We also report that a Phi-3 cross-family source fails and that simple cached connector repairs do not close the gap. The workshop contribution is a reproducible packet-transfer result, a strict falsification protocol, and a systems boundary artifact: headline packets are 6--11 framed bytes, while dense KV/cache-transfer regimes begin hundreds to thousands of bytes per token under our accounting. We do not claim solved latent communication, C2C superiority, or native GPU latency/HBM/energy wins.
 \end{abstract}
 
 \section{Introduction}
 
 Future language-model systems will often use more than one model: a cheap model may screen candidates, a specialist may inspect hard cases, and a stronger receiver may combine evidence. The simplest interface is text. Recent cache-level systems instead communicate through model internals, such as fused or selectively shared KV caches~\citep{Fu2025C2C,Shi2025KVComm}. These approaches are powerful, but they couple communication to large hidden-state objects and serving substrates.
 
-This paper asks whether a much smaller interface can carry useful source-side candidate evidence. In our setting, both models see the same public question and answer choices. The source performs private computation over those choices. The only communicated object is a short byte packet; the receiver never sees source text, source logits, source hidden vectors, KV cache, or the answer key. This is a side-information problem in the spirit of distributed source coding~\citep{Slepian1973Noiseless,Wyner1976RateDistortion}: the receiver already has the public prompt and its own computation, so the packet should carry only the source evidence that is useful at the decoder.
+This paper asks whether a much smaller interface can carry useful source-side candidate evidence. In our setting, both models see the same public question and answer choices. The source performs private computation over those choices. The only communicated object is a short byte packet; the receiver never sees source text, source logits, source hidden vectors, KV cache, or the answer key. This is a side-information problem in the spirit of distributed source coding~\citep{Slepian1973Noiseless,Wyner1976RateDistortion}: the receiver already has the public prompt and its own computation, so the packet should carry only the source evidence that is useful at the decoder. The scientific contribution is therefore not just a packet row, but a reviewable protocol for asking whether such rows survive the controls that usually create false positives.
 
 Our strongest current result is deliberately scoped. On \arc{} and \obqa{}~\citep{Clark2018ARC,Mihaylov2018OpenBookQA}, same-family Qwen2.5 packet transfer~\citep{Yang2025Qwen25} improves over target-only and same-budget text controls. However, a strict Phi-3 source-family replacement~\citep{Abdin2024Phi3} fails, and additional connector repairs fail on the available TinyLlama/Qwen cached artifacts. This boundary matters: the paper is not claiming solved cross-family latent communication.
 
 The contributions are:
 \begin{itemize}
-\item A fixed-byte, source-private packet protocol for multiple-choice candidate transfer with no source text, hidden vector, KV cache, source-logit, or gold-label exposure.
-\item A public-coordinate anchor/spectral implementation that is positive on \arc{} and \obqa{} under seed repeats, paired uncertainty, same-budget text controls, and destructive coordinate mismatch controls.
-\item An explicit source-index/source-rank audit showing that the current positive is mostly source-choice preserving and should be framed as source-candidate transfer, not compression beyond a selected-candidate code.
-\item A falsification audit showing that the current positive is same-family/source-cache specific: Phi-3 cross-family transfer and cached learned repair connectors fail.
-\item A systems accounting artifact comparing packet bytes and exposure classes against KV/cache communication and KV quantization floors, while explicitly separating byte accounting from native serving-speed claims.
+\item A byte-scale, source-private packet protocol and threat model for multiple-choice candidate transfer with no source text, hidden vector, KV cache, source-logit, or gold-label exposure.
+\item A strict evaluation suite that combines target-only, same-budget text, source-index/rank, coordinate-shuffle, wrong-row, same-source-choice, cross-family, and cached-connector controls.
+\item Controlled narrow positives on \arc{} and \obqa{} with seed repeats and paired uncertainty, accompanied by an explicit source-index audit showing that the current effect is mostly source-choice preserving.
+\item A failure-boundary analysis showing that Phi-3 cross-family transfer and simple cached connector repairs fail, so broad latent-language and cross-family claims are unsupported.
+\item A systems accounting artifact comparing raw, framed, cacheline-rounded, and dense KV/cache byte regimes while separating measured packet objects from analytical byte floors and future native GPU measurements.
 \end{itemize}
 
 \begin{figure}[t]
@@ -70,6 +70,35 @@ The receiver predicts
 where $D_R$ may use public task features and the receiver's own state, but may not access source text, source hidden states, source KV cache, source logits, or answer labels.
 
 We evaluate a packet only if it beats three surfaces: target-only $D_R(x,\emptyset)$, a same-budget structured text control, and destructive controls that preserve superficial packet size but destroy the intended source-receiver relation. We also audit explicit source-index, source-label-text, source-rank-code, and entropy-matched random-index baselines. We report seed repeats and paired bootstrap lower bounds. This matters because a packet can be useful while mostly preserving the source's selected candidate; such a result is source-private transfer, not proof of a shared latent language, reasoning beyond the source endpoint, or compression beyond a one-byte selected-candidate channel.
+
+\paragraph{Threat model.}
+The packet channel is source-private but not source-oblivious. The sender may privately compute over the public prompt and answer choices, then transmit only a bounded byte string. The receiver may use that byte string, the public prompt, and its own computation. The receiver may not observe source generations, chain-of-thought, hidden states, KV cache, logits, score vectors, or labels. A method fails the current workshop claim if its apparent gain is matched by a target-only cache effect, same-budget visible text, explicit source-index/rank/score communication, wrong-row transfer, or answer leakage.
+
+\paragraph{Control suite.}
+Table~\ref{tab:controls} lists the reviewer-facing controls used to interpret the reported rows. The suite is intentionally stronger than the headline claim: several controls are designed to collapse methods that only copy the source's preferred answer choice.
+
+\begin{table}[t]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{p{0.22\linewidth}p{0.36\linewidth}p{0.31\linewidth}}
+    \toprule
+    Control family & What it tests & Current role \\
+    \midrule
+    target-only / zero-source & target-cache or no-packet effects & required baseline \\
+    same-budget visible text & whether text at the same byte budget suffices & required baseline \\
+    source-index / rank / score & selected-candidate shortcuts & main claim boundary \\
+    wrong-row / row shuffle & row-specific source causality & destructive control \\
+    same-source-choice wrong-row & source-choice-only transfer & hardening control \\
+    anchor/bin/coordinate shuffle & shared-coordinate dependence & mechanism control \\
+    candidate roll/derangement & answer-order artifacts & destructive control \\
+    source-family substitution & cross-family generality & falsification control \\
+    cached connector repair & easy learned receiver rescue & negative diagnostic \\
+    \bottomrule
+  \end{tabular}
+  \caption{Control suite. The workshop claim requires packet utility to be interpreted through these controls; the current positive is explicitly bounded by source-index and source-family failures.}
+  \label{tab:controls}
+\end{table}
 
 \section{Public-coordinate packets}
 
@@ -95,7 +124,7 @@ Table~\ref{tab:main} and Figure~\ref{fig:accuracy} summarize the current positiv
     \obqa{} & test, 500 & 3/6 & 5 & 0.378 & 0.378 & 0.276 & 0.350 & -0.006 & +0.000 \\
     \bottomrule
   \end{tabular}
-  \caption{Main audit rows. ``Bytes'' reports payload/framed bytes. ``Src'' is explicit answer-key-forbidden source-index accuracy before packet decoding. ``Text'' is the same-budget structured text control. ``Pkt-src'' and ``pkt-text'' are minimum paired-bootstrap 95\% lower bounds for packet minus source-index and packet minus same-budget text. Packet-minus-target lower bounds are +0.038 on \arc{} and +0.046 on \obqa{}.}
+\caption{Main audit rows. ``Bytes'' reports payload/framed bytes. ``Src'' is explicit answer-key-forbidden source-index accuracy before packet decoding. ``Text'' is the same-budget structured text control. ``Pkt-src'' and ``pkt-text'' are minimum paired-bootstrap 95\% lower bounds for packet minus source-index and packet minus same-budget text. Packet-minus-target lower bounds are +0.038 on \arc{} and +0.046 on \obqa{}.}
   \label{tab:main}
 \end{table}
 
@@ -170,7 +199,7 @@ The systems contribution is byte/exposure accounting, not native serving through
     C2C one-token KV floor & 12288B & 12288B & no & KV & native pending \\
     \bottomrule
   \end{tabular}
-  \caption{Exposure classes. The paper-ready systems claim is that the communicated object is much smaller and less exposing than KV/cache-state objects under this accounting. It is not a GPU throughput, TTFT, TPOT, or HBM claim.}
+\caption{Exposure classes. Packet rows are measured/accounted local communication objects. KV/cache rows are analytical byte floors or native-pending baselines. The paper-ready systems claim is object size and source-exposure accounting, not GPU throughput, TTFT, TPOT, HBM, energy, or C2C superiority.}
   \label{tab:systems}
 \end{table}
 
@@ -180,7 +209,27 @@ The systems contribution is byte/exposure accounting, not native serving through
 
 \textbf{Prompt compression and learned prefixes.} Prefix tuning and gist tokens learn continuous or discrete prompt-like interfaces within language models~\citep{Li2021Prefix,Mu2023Gist}. \method{} differs because the communicated object is a byte packet decoded by a public receiver, not a learned soft prompt injected into one target. Query-bottleneck connectors such as BLIP-2's Q-Former show that learned bottlenecks can bridge frozen model families across modalities~\citep{Li2023BLIP2}; our failed cached hidden/query summaries suggest that a true tokenwise query-bottleneck is the right future branch, but it is not closed here.
 
-\textbf{Cache communication and systems.} Cache-to-cache and selective KV-sharing systems communicate richer internal state and are the closest competitors for model-to-model communication~\citep{Fu2025C2C,Shi2025KVComm}. vLLM and SGLang improve serving through KV-cache management and reuse~\citep{Kwon2023vLLM,Zheng2023SGLang}. KV quantizers such as QJL, KIVI, KVQuant, and TurboQuant reduce state cost but remain state-transfer or state-storage techniques~\citep{Zandieh2024QJL,Liu2024KIVI,Hooper2024KVQuant,Zandieh2025TurboQuant}. Our current systems result is a boundary artifact against these state objects, not a native throughput win.
+\textbf{Cache communication and systems.} Cache-to-cache and selective KV-sharing systems communicate richer internal state and are the closest competitors for model-to-model communication~\citep{Fu2025C2C,Shi2025KVComm}. vLLM and SGLang improve serving through KV-cache management and reuse~\citep{Kwon2023vLLM,Zheng2023SGLang}. KV quantizers such as QJL, KIVI, KVQuant, and TurboQuant reduce state cost but remain state-transfer or state-storage techniques~\citep{Zandieh2024QJL,Liu2024KIVI,Hooper2024KVQuant,Zandieh2025TurboQuant}. Table~\ref{tab:baseline-matrix} summarizes how these baselines differ from \method{}. Our current systems result is a boundary artifact against these state objects, not a native throughput win.
+
+\begin{table}[t]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{p{0.17\linewidth}p{0.17\linewidth}p{0.31\linewidth}p{0.27\linewidth}}
+    \toprule
+    Regime & Example & Object crossing interface & Difference from \method{} \\
+    \midrule
+    dense cache fusion & C2C & projected source KV cache & high-bandwidth, source-state exposing \\
+    selective KV sharing & KVComm & selected KV pairs/layers & cache-level, native pending \\
+    KV compression & KV quantizers & compressed KV/cache state & shrinks dense state, not source-private task packets \\
+    serving substrate & vLLM/SGLang & KV reuse and memory management & runtime baseline, not communication protocol \\
+    prompt/prefix compression & prefix/gist tokens & prompt-like tokens or parameters & not source-private model-to-model evidence \\
+    local shortcut baselines & source-index/rank/score & selected answer or score sketch & must be beaten for stronger claims \\
+    \bottomrule
+  \end{tabular}
+  \caption{Related-work and baseline matrix. \method{} is positioned as low-byte source-private packet transfer with destructive controls, not as a replacement for dense cache fusion or serving-runtime optimization.}
+  \label{tab:baseline-matrix}
+\end{table}
 
 \section{Limitations and next gate}
 
@@ -197,6 +246,30 @@ The next exact gate for an ICLR-strength claim is a frozen-endpoint tokenwise co
 
 \appendix
 
+\section{Reviewer-facing claim audit}
+
+Table~\ref{tab:claim-audit} states the claim boundary used to write the main paper. The full generated packet is in \url{results/latentwire_colm_v3_review_packet_20260505/}.
+
+\begin{table}[h]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{p{0.25\linewidth}p{0.18\linewidth}p{0.26\linewidth}p{0.22\linewidth}}
+    \toprule
+    Claim & Status & Evidence & Required wording \\
+    \midrule
+    source-private packet protocol & supported & packet rows and controls & protocol/evaluation contribution \\
+    narrow same-family packet utility & supported but narrow & \arc{} and \obqa{} rows & source-candidate transfer \\
+    shortcut collapses are common & supported & source-index and wrong-row audits & claim boundary, not failure-only story \\
+    beats C2C or dense KV transfer & unsupported & no native matched C2C row & do not claim \\
+    native GPU/HBM/energy win & unsupported & no native NVIDIA measurement & future runbook only \\
+    broad latent/cross-family communication & unsupported & Phi-3 and connector failures & ICLR future goal \\
+    \bottomrule
+  \end{tabular}
+  \caption{Claim audit used for COLM\_v3 integration. Each main-text claim must map to one supported or supported-but-narrow row.}
+  \label{tab:claim-audit}
+\end{table}
+
 \section{Artifact manifest}
 
 \begin{itemize}
@@ -206,6 +279,7 @@ The next exact gate for an ICLR-strength claim is a frozen-endpoint tokenwise co
 \item Systems boundary: \url{colm_final/evidence/results/source_private_systems_boundary_figure_table_20260502}.
 \item \obqa{} headline: \url{colm_final/evidence/results/source_private_openbookqa_seed_stability_20260501_qwen05_hashed_test_3b}.
 \item Source-index audit: \url{colm_final/evidence/results/source_private_colm_acceptance_baselines_20260502}.
+\item COLM\_v3 review packet: \url{results/latentwire_colm_v3_review_packet_20260505}.
 \end{itemize}
 
 \section{Reproducibility summary}
@@ -234,6 +308,13 @@ and failure-decomposition reruns completed; the more expensive full
 \arc{}/Phi-3 reruns are represented by frozen hashes unless rerun offline. Rerun
 JSON files are metric-oriented rather than byte-identical because they contain
 creation times and some artifacts include measured local latencies.
+
+\paragraph{Workshop checklist.}
+The current paper is ready for reviewer circulation only after the generated COLM\_v3 packet and the PDF agree on: (1) the main claim, (2) the source-private threat model, (3) all main table values, (4) measured-versus-estimated systems labels, and (5) unsupported claims. The repository command
+\begin{verbatim}
+./venv_arm64/bin/python scripts/build_latentwire_colm_v3_review_packet.py
+\end{verbatim}
+regenerates the claim audit, table/figure inventory, systems ledger, artifact manifest, and NVIDIA native runbook from tracked source artifacts.
 
 \section{Lay explanation of the main experiment}
 
