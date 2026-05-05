@@ -4,7 +4,8 @@
 
 - Phase 0 setup: partial Mac-only source-audit setup
 - Phase 1 literature and code audit: quick-kill audit recorded
-- Phase 2/4: fixed sink-token decomposition reference plus Triton interpreter
+- Phase 2: exact static sink-prior gate failed
+- Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-05
 
@@ -44,10 +45,16 @@ learned/per-head attention sink terms in the softmax denominator. Broad
 "sink-aware attention kernel" novelty is therefore occupied. The only remaining
 wedge is fixed early-position/BOS K/V decomposition or precomputation.
 
-Next gate: CPU-only Phase 2 reference decomposition on synthetic tensors. If the
-fixed sink-token contribution cannot be reused without recomputing `QK_sink`, or
-if the idea reduces to learned denominator-only sinks, kill the branch. No GPU or
-large model work until that gate passes.
+## Phase 2 Result
+
+`phase2/decomposition_decision.md` records the decision: **KILL as an exact
+static sink-prior kernel**. The counterexample test shows fixed sink K/V cannot
+be reused exactly while skipping per-query `QK_sink`, because the sink softmax
+logits remain query-dependent.
+
+What remains possible is a pivot to approximate/learned/low-rank sink priors or
+a small fused path that still computes `QK_sink`. The original exact static-prior
+claim should not proceed to GPU work.
 
 ## Macbook Kernel Correctness Scaffold
 

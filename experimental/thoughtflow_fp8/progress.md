@@ -4,9 +4,9 @@
 
 - Phase 0: partial quick pass.
 - Phase 1: quick forensics pass complete.
-- Phase 2/4: anchor/phase retention reference plus Triton interpreter
-  correctness scaffold added, but Phase 2 trace evidence remains the decision
-  gate.
+- Phase 2: synthetic retention simulation complete; real traces still required
+- Phase 4: anchor/phase retention reference plus Triton interpreter correctness
+  scaffold added, but not phase-complete
 - Current viability: pivot/proceed only with narrowed framing.
 - Current risk: high field crowding; ThinKV already occupies much of the
   thought-adaptive quantization/eviction space, and DeepSeek V4 raises the
@@ -27,17 +27,21 @@
 - `phase1/longflow_failure_hypothesis.md`: present.
 - `phase1/v4_differentiation.md`: present.
 
+## Phase 2 Result
+
+`phase2/phase_eviction_analysis.md` and `.json` record a synthetic Mac-local
+simulation. At the same 0.368 keep rate, ThoughtFlow preserves phase markers
+with 1.000 recall, while LongFlow-like, ThinKV-like, and R-KV-like proxies retain
+0.143, 0.286, and 0.286 respectively. Anchor recall stays 1.000.
+
+Status: **ALIVE, but not reviewer-pack-ready**. The result is synthetic policy
+evidence, not accuracy evidence and not a GPU systems result.
+
 ## Next Gate
 
-Do not proceed to kernel implementation yet. The next exact gate is a Mac-only
-Phase 2 trace/telemetry simulation that tests whether anchor/fair-span/phase
-transition protection preserves a concrete token class that LongFlow-like,
-ThinKV-like, R-KV-like, and sink+recent baselines would drop.
-
-Proceed condition: Phase 2 must produce keep-rate/recurrence evidence for a
-specific protected-token class and a policy definition that is portable to
-existing models without retraining. Otherwise pivot to a critique/re-evaluation
-paper or kill the project.
+Rerun the same policy simulator on real cached/current-model reasoning traces.
+If real traces do not show protected-token retention gains at matched keep rate,
+drop or pivot the branch.
 
 ## Macbook Kernel Correctness Scaffold
 

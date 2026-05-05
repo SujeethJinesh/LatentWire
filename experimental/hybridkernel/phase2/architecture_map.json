@@ -1,0 +1,50 @@
+[
+  {
+    "config": "ibm-granite-4.0-h-small.config.json",
+    "architecture": "GraniteMoeHybridForCausalLM",
+    "model_type": "granitemoehybrid",
+    "hidden_size": 4096,
+    "num_layers": 40,
+    "attention_like_layers": 4,
+    "ssm_or_linear_layers": 36,
+    "boundary_transitions": 8,
+    "dtype_bytes": 2,
+    "transition_bytes_per_token": 131072,
+    "all_layer_stream_bytes_per_token": 655360,
+    "activation_stream_fraction": 0.2,
+    "recovered_fraction_if_60pct": 0.12,
+    "phase2_decision": "pass_theoretical_gate"
+  },
+  {
+    "config": "ibm-granite-4.0-h-tiny.config.json",
+    "architecture": "GraniteMoeHybridForCausalLM",
+    "model_type": "granitemoehybrid",
+    "hidden_size": 1536,
+    "num_layers": 40,
+    "attention_like_layers": 4,
+    "ssm_or_linear_layers": 36,
+    "boundary_transitions": 8,
+    "dtype_bytes": 2,
+    "transition_bytes_per_token": 49152,
+    "all_layer_stream_bytes_per_token": 245760,
+    "activation_stream_fraction": 0.2,
+    "recovered_fraction_if_60pct": 0.12,
+    "phase2_decision": "pass_theoretical_gate"
+  },
+  {
+    "config": "qwen3-next-80b-a3b-instruct.config.json",
+    "architecture": "Qwen3NextForCausalLM",
+    "model_type": "qwen3_next",
+    "hidden_size": 2048,
+    "num_layers": 48,
+    "attention_like_layers": 12,
+    "ssm_or_linear_layers": 36,
+    "boundary_transitions": 23,
+    "dtype_bytes": 2,
+    "transition_bytes_per_token": 188416,
+    "all_layer_stream_bytes_per_token": 393216,
+    "activation_stream_fraction": 0.4791666666666667,
+    "recovered_fraction_if_60pct": 0.2875,
+    "phase2_decision": "pass_theoretical_gate"
+  }
+]

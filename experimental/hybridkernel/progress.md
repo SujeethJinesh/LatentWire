@@ -2,7 +2,7 @@
 
 ## Status
 
-- Current phase: Phase 1 quick audit complete; Phase 2 pending
+- Current phase: Phase 2 architecture map complete; Phase 3/4 scaffolds present but not phase-complete
 - Phase 0: partial Mac setup complete for audit
 - Phase 1: quick source-backed audit complete, deeper code audit still pending
 - Phase 3/4: interpreter-mode boundary kernel scaffold added for correctness
@@ -82,8 +82,25 @@ COLM_v3 systems claim.
 - Mac-only phases can validate setup, references, and semantics, but cannot
   provide GPU performance evidence.
 
+## Phase 2 Result
+
+`phase2/architecture_map.md` and `phase2/architecture_map.json` were generated
+from the local Granite 4.0 H Tiny/Small and Qwen3-Next configs. The activation
+stream upper-bound estimate clears the >=3% theoretical gate for all three
+configs:
+
+- Granite 4.0 H Small: 8 boundaries, 131072 boundary bytes/token, 12.0%
+  recovered activation-stream fraction at 60% recovery.
+- Granite 4.0 H Tiny: 8 boundaries, 49152 boundary bytes/token, 12.0%
+  recovered activation-stream fraction at 60% recovery.
+- Qwen3-Next-80B-A3B: 23 inferred boundaries, 188416 boundary bytes/token,
+  28.7% recovered activation-stream fraction at 60% recovery.
+
+Status: **ALIVE as a systems spinout**, but this is an upper-bound map, not
+native latency evidence.
+
 ## Next Gate
 
-Build `phase2/architecture_map.md` from the fetched Granite 4.0 H Tiny/Small
-configs. Count Mamba/attention boundaries and estimate an upper-bound byte/launch
-savings before writing kernel code.
+Perform a deeper implementation audit of vLLM/vendor hybrid paths to determine
+whether the apparent boundary movement survives real runtime layout/scheduling
+or is already hidden/fused.

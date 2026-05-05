@@ -24690,3 +24690,31 @@ Local results:
 Decision: these scaffolds are useful for future systems work but do not change
 COLM_v3 claims. They support only "kernel correctness scaffolds exist", not GPU
 latency, HBM, energy, throughput, or C2C superiority.
+
+## 2026-05-05 Experimental Systems Macbook Gates
+
+Executed the three requested side-system next gates locally.
+
+- HybridKernel Phase 2:
+  `experimental/hybridkernel/phase2/architecture_map.md` and `.json` generated
+  from Granite 4.0 H Tiny/Small and Qwen3-Next configs. All three clear the
+  >=3% theoretical activation-stream upper-bound gate. Status: **alive**, next
+  gate is deeper vLLM/vendor implementation audit.
+- SinkAware Phase 2:
+  `experimental/sinkaware/phase2/decomposition_decision.md` records **kill for
+  the exact static sink-prior branch**. Counterexample test shows fixed sink
+  K/V reuse cannot skip query-dependent `QK_sink` for exact attention. Pivot
+  only to approximate/learned/low-rank sink priors or a fused path that still
+  computes `QK_sink`.
+- ThoughtFlow-FP8 Phase 2:
+  `experimental/thoughtflow_fp8/phase2/phase_eviction_analysis.md` and `.json`
+  generated. Synthetic policy simulation at matched keep rate keeps phase
+  recall at 1.000 for ThoughtFlow versus 0.143/0.286/0.286 for LongFlow-like,
+  ThinKV-like, and R-KV-like proxies. Status: **alive but not reviewer-pack
+  ready**; next gate is real cached/current-model traces.
+
+Tests:
+
+- `./venv_arm64/bin/python -m pytest experimental/sinkaware/phase2/tests
+  experimental/thoughtflow_fp8/phase2/tests experimental/hybridkernel/phase3/tests`
+  passed: 5 tests.
