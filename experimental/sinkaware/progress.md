@@ -4,7 +4,8 @@
 
 - Phase 0 setup: partial Mac-only source-audit setup
 - Phase 1 literature and code audit: quick-kill audit recorded
-- Phase 2: exact static sink-prior gate failed
+- Phase 2: exact static sink-prior gate failed; approximate low-rank revival
+  probe completed
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-05
@@ -55,6 +56,21 @@ logits remain query-dependent.
 What remains possible is a pivot to approximate/learned/low-rank sink priors or
 a small fused path that still computes `QK_sink`. The original exact static-prior
 claim should not proceed to GPU work.
+
+## Approximate Revival Gate
+
+`phase2/sink_predictability_probe.md` checks the weaker approximate question:
+can fixed-sink logits be predicted from a tiny low-rank query representation
+under favorable query geometry?
+
+Result: **REVIVE only as approximate low-rank/clustered query prior**. Static
+R2 remains near zero across synthetic cases, so the exact static-prior branch is
+still dead. Rank-4 query features recover low-rank synthetic sink logits
+(`R2=0.999`), and rank-8 features recover clustered synthetic sink logits
+(`R2=0.976`), while random queries remain poor (`rank8 R2=0.102`).
+
+Next gate: use real Q/K tensors or attention telemetry. Synthetic geometry is
+only a reason to keep the approximate branch alive, not a reviewer-pack result.
 
 ## Macbook Kernel Correctness Scaffold
 

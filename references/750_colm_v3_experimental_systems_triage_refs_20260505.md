@@ -12,6 +12,8 @@
 | Nemotron-H project page | https://research.nvidia.com/labs/adlr/nemotronh/ | Nemotron-H is a hybrid Mamba-Transformer family; useful target and competitor context for hybrid serving. |
 | Nemotron-H paper | https://arxiv.org/abs/2504.03624 | Primary paper for hybrid Mamba-Transformer architecture and efficiency claims. |
 | vLLM hybrid SSM disaggregated serving blog | https://vllm.ai/blog/hybrid-ssm-disagg | Strong systems baseline/risk: vLLM has recent hybrid SSM/FA state-transfer work. Phase 1 must distinguish boundary-kernel fusion from state-transfer layout work. |
+| vLLM `ssm_conv_transfer_utils` docs | https://docs.vllm.ai/en/latest/api/vllm/distributed/kv_transfer/kv_connector/v1/ssm_conv_transfer_utils/ | Primary implementation docs for DS conv layout and 3-descriptor Mamba2 conv-state transfer; weakens any HybridKernel claim about unoptimized hybrid transfer/layout. |
+| vLLM `mamba_mixer2` docs | https://docs.vllm.ai/en/latest/api/vllm/model_executor/layers/mamba/mamba_mixer2/ | Primary implementation docs for Mamba2 backend plumbing; useful for separating optimized SSM internals from the narrower attention-to-SSM boundary-fusion hypothesis. |
 
 ## SinkAware
 

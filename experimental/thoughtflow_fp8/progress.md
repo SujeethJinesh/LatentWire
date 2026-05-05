@@ -4,7 +4,8 @@
 
 - Phase 0: partial quick pass.
 - Phase 1: quick forensics pass complete.
-- Phase 2: synthetic retention simulation complete; real traces still required
+- Phase 2: synthetic retention simulation complete; real-trace text proxy gate weakened
+  the branch
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
   scaffold added, but not phase-complete
 - Current viability: pivot/proceed only with narrowed framing.
@@ -39,9 +40,15 @@ evidence, not accuracy evidence and not a GPU systems result.
 
 ## Next Gate
 
-Rerun the same policy simulator on real cached/current-model reasoning traces.
-If real traces do not show protected-token retention gains at matched keep rate,
-drop or pivot the branch.
+The real generated-trace proxy in
+`phase2/real_trace_retention_analysis.md` did not show a protected-token
+advantage over the LongFlow-like importance proxy. At a matched 0.211 keep
+rate, ThoughtFlow and LongFlow-like both reached 0.941 phase recall, while
+ThoughtFlow did not improve math-state recall.
+
+Status: **WEAKENED**. Do not prepare a reviewer pack from this branch yet. The
+next gate must use real KV/cache telemetry or a sharper hidden-state phase
+signal; text-marker heuristics are not enough.
 
 ## Macbook Kernel Correctness Scaffold
 

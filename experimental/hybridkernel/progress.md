@@ -2,7 +2,8 @@
 
 ## Status
 
-- Current phase: Phase 2 architecture map complete; Phase 3/4 scaffolds present but not phase-complete
+- Current phase: Phase 2 architecture map and runtime boundary audit complete;
+  Phase 3/4 scaffolds present but not phase-complete
 - Phase 0: partial Mac setup complete for audit
 - Phase 1: quick source-backed audit complete, deeper code audit still pending
 - Phase 3/4: interpreter-mode boundary kernel scaffold added for correctness
@@ -101,6 +102,13 @@ native latency evidence.
 
 ## Next Gate
 
-Perform a deeper implementation audit of vLLM/vendor hybrid paths to determine
-whether the apparent boundary movement survives real runtime layout/scheduling
-or is already hidden/fused.
+`phase2/runtime_boundary_audit.md` records the deeper runtime audit decision:
+**ALIVE BUT WEAKENED**. vLLM's current hybrid SSM disaggregated-serving path
+already handles HMA shared tensors, dual descriptor views, DS conv layout, and
+3-descriptor conv transfer without staging buffers or reshuffling. The
+architecture-map bytes are therefore not enough to justify more Mac-only
+implementation.
+
+The next gate is native profiler evidence, not more local code: look for a real
+attention/SSM boundary conversion, launch, or materialization overhead of at
+least 3% end-to-end before implementing a fused boundary kernel.
