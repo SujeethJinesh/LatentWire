@@ -24371,3 +24371,54 @@ pre-answer hidden/KV-state distillation gate instead.
 Lay explanation: we tried scoring possible numeric answers directly with C2C,
 but those scores did not match what C2C actually says when it solves the problem
 step by step. The tiny packet was therefore copying the wrong signal.
+
+## 2026-05-05 C2C Generated-Answer Packet Leakage Audit
+
+Added and ran a generated-answer-aligned C2C packet audit:
+
+- code:
+  `scripts/analyze_svamp32_c2c_generated_answer_packet_audit.py`;
+- test:
+  `tests/test_analyze_svamp32_c2c_generated_answer_packet_audit.py`;
+- artifact:
+  `results/svamp32_c2c_generated_answer_packet_audit_20260505/generated_answer_packet_audit.json`;
+- manifest:
+  `results/svamp32_c2c_generated_answer_packet_audit_20260505/manifest.md`;
+- memo:
+  `paper/svamp32_c2c_generated_answer_packet_audit_20260505.md`.
+
+Purpose: test the tempting generated-answer-aligned shortcut before treating it
+as an ICLR method target. This audit transmits the C2C generated numeric answer
+or its public candidate index and compares it with visible-answer and destructive
+controls.
+
+Outcome:
+
+- status: `generated_answer_packet_is_answer_leak_not_method`;
+- generated-answer value packet: `16/32`;
+- same-byte visible-answer text: `16/32`;
+- generated-answer index packet: `16/32`;
+- target-only: `8/32`;
+- source-alone: `5/32`;
+- text-to-text: `2/32`;
+- wrong-row value packet: `2/32`;
+- index row-shuffle: `6/32`;
+- same-source-choice wrong-row: `15/32`;
+- candidate-roll: `2/32`;
+- candidate-derangement: `2/32`;
+- answer-label clean IDs: `10`;
+- publishable source-necessary clean IDs after destructive controls: `0`;
+- average candidate-index bits per row: `1.688`;
+- average visible-answer text bytes per row: `1.656`;
+- cacheline-rounded average bytes per row: `64.00`.
+
+Decision: do not promote generated-answer value/index packets as LatentWire.
+They exactly match the same-byte visible-answer control, and the
+same-source-choice wrong-row index control recovers `15/32` and `9/10` clean
+rows. The next C2C-distillation gate must use pre-answer state or a source-side
+teacher target that is not equivalent to revealing the generated answer.
+
+Lay explanation: if we let the source model send the final answer, C2C's wins
+are easy to copy. That is not model-to-model communication in the sense we need;
+it is just an answer leak, and even the answer-option index is mostly a
+source-choice shortcut.
