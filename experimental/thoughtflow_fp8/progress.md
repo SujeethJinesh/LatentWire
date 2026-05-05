@@ -50,6 +50,19 @@ Status: **WEAKENED**. Do not prepare a reviewer pack from this branch yet. The
 next gate must use real KV/cache telemetry or a sharper hidden-state phase
 signal; text-marker heuristics are not enough.
 
+`phase2/real_trace_retention_sweep.md` confirms that weakness across keep
+fractions 0.10 to 0.35: ThoughtFlow never beats the strongest proxy on phase
+recall and sometimes trails on math-state recall.
+
+`phase2/hidden_saliency_retention_probe.md` gives a mixed result on distilgpt2
+attention-received saliency: protected phase markers beat the pure
+attention-received proxy, but still tie the strongest importance proxy. This is
+not enough for a reviewer pack or GPU work.
+
+Current status: **MIXED/WEAKENED**. The only pre-GPU route left is a real hidden
+or KV saliency policy that beats the strongest importance proxy and shows a
+quality/perplexity benefit under actual cache dropping.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:

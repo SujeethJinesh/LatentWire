@@ -1,0 +1,46 @@
+{
+  "model_name": "distilgpt2",
+  "hidden_size": 768,
+  "n_heads": 12,
+  "head_dim": 64,
+  "sink_tokens": 4,
+  "rows": [
+    {
+      "rank": 1,
+      "approx_muladds_per_token_layer": 816,
+      "exact_qk_sink_muladds_per_token_layer": 3072,
+      "cost_ratio_vs_exact": 0.265625,
+      "hidden_plus_pos_r2": 0.25686997175216675,
+      "hidden_only_r2": 0.1954648792743683,
+      "passes_pre_gpu_tradeoff": false
+    },
+    {
+      "rank": 2,
+      "approx_muladds_per_token_layer": 1632,
+      "exact_qk_sink_muladds_per_token_layer": 3072,
+      "cost_ratio_vs_exact": 0.53125,
+      "hidden_plus_pos_r2": 0.4202384054660797,
+      "hidden_only_r2": 0.3612857460975647,
+      "passes_pre_gpu_tradeoff": true
+    },
+    {
+      "rank": 4,
+      "approx_muladds_per_token_layer": 3264,
+      "exact_qk_sink_muladds_per_token_layer": 3072,
+      "cost_ratio_vs_exact": 1.0625,
+      "hidden_plus_pos_r2": 0.5124319394429525,
+      "hidden_only_r2": 0.48841458559036255,
+      "passes_pre_gpu_tradeoff": false
+    },
+    {
+      "rank": 8,
+      "approx_muladds_per_token_layer": 6528,
+      "exact_qk_sink_muladds_per_token_layer": 3072,
+      "cost_ratio_vs_exact": 2.125,
+      "hidden_plus_pos_r2": 0.7116783360640208,
+      "hidden_only_r2": 0.7010497649510702,
+      "passes_pre_gpu_tradeoff": false
+    }
+  ],
+  "status": "ALIVE at low rank; rank-2 gives useful QK-sink prediction below exact QK cost."
+}

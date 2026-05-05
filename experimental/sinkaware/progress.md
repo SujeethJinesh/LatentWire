@@ -72,6 +72,21 @@ still dead. Rank-4 query features recover low-rank synthetic sink logits
 Next gate: use real Q/K tensors or attention telemetry. Synthetic geometry is
 only a reason to keep the approximate branch alive, not a reviewer-pack result.
 
+`phase2/real_query_sink_probe.md` and
+`phase2/real_qk_sink_logit_probe.md` then move the branch to real
+distilgpt2 traces. Hidden-query features predict attention sink mass and
+Q/K sink logits better than position-only structure. The QK-logit probe reaches
+rank-8 hidden+position `R2=0.712` versus position-only `R2=0.153`.
+
+`phase2/qk_sink_cost_model.md` keeps the systems claim narrow: rank-2 is the
+only current compromise that has nontrivial QK-logit predictability while
+staying below exact four-sink QK cost (`0.531x` estimated multiply-adds,
+`R2=0.420`). Rank-8 is more accurate but too expensive under this simple model.
+
+Current status: **ALIVE as an approximate low-rank SinkAware branch**, not as
+exact static-prior reuse. The next pre-GPU gate is per-head approximation error
+and softmax/output-quality impact.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added a scalar fixed sink-token decomposition primitive:

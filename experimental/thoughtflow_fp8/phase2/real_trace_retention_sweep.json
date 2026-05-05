@@ -1,0 +1,65 @@
+{
+  "rows": [
+    {
+      "keep_fraction": 0.1,
+      "thoughtflow_phase": 0.2811239811239811,
+      "best_other_phase": 0.2811239811239811,
+      "phase_margin_vs_best_other": 0.0,
+      "thoughtflow_math": 0.23423423423423423,
+      "best_other_math": 0.35151807651807654,
+      "math_margin_vs_best_other": -0.11728384228384231,
+      "thoughtflow_anchor": 0.9864864864864865
+    },
+    {
+      "keep_fraction": 0.15,
+      "thoughtflow_phase": 0.7068264693264693,
+      "best_other_phase": 0.7068264693264693,
+      "phase_margin_vs_best_other": 0.0,
+      "thoughtflow_math": 0.3282779532779533,
+      "best_other_math": 0.39824158574158575,
+      "math_margin_vs_best_other": -0.06996363246363246,
+      "thoughtflow_anchor": 1.0
+    },
+    {
+      "keep_fraction": 0.2,
+      "thoughtflow_phase": 0.9411894036894037,
+      "best_other_phase": 0.9411894036894037,
+      "phase_margin_vs_best_other": 0.0,
+      "thoughtflow_math": 0.48375014625014623,
+      "best_other_math": 0.5567543192543193,
+      "math_margin_vs_best_other": -0.07300417300417306,
+      "thoughtflow_anchor": 1.0
+    },
+    {
+      "keep_fraction": 0.25,
+      "thoughtflow_phase": 0.9884169884169884,
+      "best_other_phase": 0.9884169884169884,
+      "phase_margin_vs_best_other": 0.0,
+      "thoughtflow_math": 0.6772429897429897,
+      "best_other_math": 0.6915438165438166,
+      "math_margin_vs_best_other": -0.014300826800826894,
+      "thoughtflow_anchor": 1.0
+    },
+    {
+      "keep_fraction": 0.3,
+      "thoughtflow_phase": 0.9980694980694981,
+      "best_other_phase": 0.9980694980694981,
+      "phase_margin_vs_best_other": 0.0,
+      "thoughtflow_math": 0.8012216762216762,
+      "best_other_math": 0.8057193557193557,
+      "math_margin_vs_best_other": -0.004497679497679541,
+      "thoughtflow_anchor": 1.0
+    },
+    {
+      "keep_fraction": 0.35,
+      "thoughtflow_phase": 1.0,
+      "best_other_phase": 1.0,
+      "phase_margin_vs_best_other": 0.0,
+      "thoughtflow_math": 0.8767759642759643,
+      "best_other_math": 0.8767759642759643,
+      "math_margin_vs_best_other": 0.0,
+      "thoughtflow_anchor": 1.0
+    }
+  ],
+  "status": "WEAKENED; no keep-rate band beats the strongest proxy on real generated traces."
+}

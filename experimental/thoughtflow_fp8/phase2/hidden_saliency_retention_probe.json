@@ -1,0 +1,1240 @@
+{
+  "model_name": "distilgpt2",
+  "keep_fraction": 0.2,
+  "n_traces": 24,
+  "rows": [
+    {
+      "trace_id": 0,
+      "policy": "longflow_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 0,
+      "policy": "thin_kv_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.6666666666666666
+    },
+    {
+      "trace_id": 0,
+      "policy": "rkv_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 0,
+      "policy": "thoughtflow",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 0,
+      "policy": "attention_received_topk",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 1,
+      "policy": "longflow_like",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 1,
+      "policy": "thin_kv_like",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 1,
+      "policy": "rkv_like",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.5
+    },
+    {
+      "trace_id": 1,
+      "policy": "thoughtflow",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 1,
+      "policy": "attention_received_topk",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 2,
+      "policy": "longflow_like",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 2,
+      "policy": "thin_kv_like",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 2,
+      "policy": "rkv_like",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 2,
+      "policy": "thoughtflow",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 2,
+      "policy": "attention_received_topk",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.5,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 3,
+      "policy": "longflow_like",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.8
+    },
+    {
+      "trace_id": 3,
+      "policy": "thin_kv_like",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.8
+    },
+    {
+      "trace_id": 3,
+      "policy": "rkv_like",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.4
+    },
+    {
+      "trace_id": 3,
+      "policy": "thoughtflow",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.8
+    },
+    {
+      "trace_id": 3,
+      "policy": "attention_received_topk",
+      "tokens": 53,
+      "budget": 11,
+      "keep_rate": 0.20754716981132076,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 4,
+      "policy": "longflow_like",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 4,
+      "policy": "thin_kv_like",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 4,
+      "policy": "rkv_like",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.5
+    },
+    {
+      "trace_id": 4,
+      "policy": "thoughtflow",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 4,
+      "policy": "attention_received_topk",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.3333333333333333,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 5,
+      "policy": "longflow_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.8
+    },
+    {
+      "trace_id": 5,
+      "policy": "thin_kv_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.4
+    },
+    {
+      "trace_id": 5,
+      "policy": "rkv_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 5,
+      "policy": "thoughtflow",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.8
+    },
+    {
+      "trace_id": 5,
+      "policy": "attention_received_topk",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.4
+    },
+    {
+      "trace_id": 6,
+      "policy": "longflow_like",
+      "tokens": 51,
+      "budget": 11,
+      "keep_rate": 0.21568627450980393,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 6,
+      "policy": "thin_kv_like",
+      "tokens": 51,
+      "budget": 11,
+      "keep_rate": 0.21568627450980393,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 6,
+      "policy": "rkv_like",
+      "tokens": 51,
+      "budget": 11,
+      "keep_rate": 0.21568627450980393,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.3333333333333333
+    },
+    {
+      "trace_id": 6,
+      "policy": "thoughtflow",
+      "tokens": 51,
+      "budget": 11,
+      "keep_rate": 0.21568627450980393,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 6,
+      "policy": "attention_received_topk",
+      "tokens": 51,
+      "budget": 11,
+      "keep_rate": 0.21568627450980393,
+      "anchor_recall": 0.75,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 7,
+      "policy": "longflow_like",
+      "tokens": 63,
+      "budget": 13,
+      "keep_rate": 0.20634920634920634,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 7,
+      "policy": "thin_kv_like",
+      "tokens": 63,
+      "budget": 13,
+      "keep_rate": 0.20634920634920634,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 7,
+      "policy": "rkv_like",
+      "tokens": 63,
+      "budget": 13,
+      "keep_rate": 0.20634920634920634,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 7,
+      "policy": "thoughtflow",
+      "tokens": 63,
+      "budget": 13,
+      "keep_rate": 0.20634920634920634,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 7,
+      "policy": "attention_received_topk",
+      "tokens": 63,
+      "budget": 13,
+      "keep_rate": 0.20634920634920634,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 8,
+      "policy": "longflow_like",
+      "tokens": 55,
+      "budget": 11,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 8,
+      "policy": "thin_kv_like",
+      "tokens": 55,
+      "budget": 11,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 8,
+      "policy": "rkv_like",
+      "tokens": 55,
+      "budget": 11,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 8,
+      "policy": "thoughtflow",
+      "tokens": 55,
+      "budget": 11,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 8,
+      "policy": "attention_received_topk",
+      "tokens": 55,
+      "budget": 11,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.5,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 9,
+      "policy": "longflow_like",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 9,
+      "policy": "thin_kv_like",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 9,
+      "policy": "rkv_like",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 9,
+      "policy": "thoughtflow",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 9,
+      "policy": "attention_received_topk",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.5,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 10,
+      "policy": "longflow_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 10,
+      "policy": "thin_kv_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 10,
+      "policy": "rkv_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 10,
+      "policy": "thoughtflow",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 10,
+      "policy": "attention_received_topk",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.5,
+      "math_state_recall": 0.3333333333333333
+    },
+    {
+      "trace_id": 11,
+      "policy": "longflow_like",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 11,
+      "policy": "thin_kv_like",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 11,
+      "policy": "rkv_like",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 11,
+      "policy": "thoughtflow",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 11,
+      "policy": "attention_received_topk",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 12,
+      "policy": "longflow_like",
+      "tokens": 54,
+      "budget": 11,
+      "keep_rate": 0.2037037037037037,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 12,
+      "policy": "thin_kv_like",
+      "tokens": 54,
+      "budget": 11,
+      "keep_rate": 0.2037037037037037,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 12,
+      "policy": "rkv_like",
+      "tokens": 54,
+      "budget": 11,
+      "keep_rate": 0.2037037037037037,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.25
+    },
+    {
+      "trace_id": 12,
+      "policy": "thoughtflow",
+      "tokens": 54,
+      "budget": 11,
+      "keep_rate": 0.2037037037037037,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 12,
+      "policy": "attention_received_topk",
+      "tokens": 54,
+      "budget": 11,
+      "keep_rate": 0.2037037037037037,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.5,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 13,
+      "policy": "longflow_like",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 13,
+      "policy": "thin_kv_like",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.75
+    },
+    {
+      "trace_id": 13,
+      "policy": "rkv_like",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.25
+    },
+    {
+      "trace_id": 13,
+      "policy": "thoughtflow",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 13,
+      "policy": "attention_received_topk",
+      "tokens": 57,
+      "budget": 12,
+      "keep_rate": 0.21052631578947367,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 14,
+      "policy": "longflow_like",
+      "tokens": 45,
+      "budget": 9,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.3333333333333333
+    },
+    {
+      "trace_id": 14,
+      "policy": "thin_kv_like",
+      "tokens": 45,
+      "budget": 9,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.75,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 14,
+      "policy": "rkv_like",
+      "tokens": 45,
+      "budget": 9,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 14,
+      "policy": "thoughtflow",
+      "tokens": 45,
+      "budget": 9,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.3333333333333333
+    },
+    {
+      "trace_id": 14,
+      "policy": "attention_received_topk",
+      "tokens": 45,
+      "budget": 9,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.25,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 15,
+      "policy": "longflow_like",
+      "tokens": 64,
+      "budget": 13,
+      "keep_rate": 0.203125,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 15,
+      "policy": "thin_kv_like",
+      "tokens": 64,
+      "budget": 13,
+      "keep_rate": 0.203125,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 15,
+      "policy": "rkv_like",
+      "tokens": 64,
+      "budget": 13,
+      "keep_rate": 0.203125,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 15,
+      "policy": "thoughtflow",
+      "tokens": 64,
+      "budget": 13,
+      "keep_rate": 0.203125,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 15,
+      "policy": "attention_received_topk",
+      "tokens": 64,
+      "budget": 13,
+      "keep_rate": 0.203125,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 16,
+      "policy": "longflow_like",
+      "tokens": 59,
+      "budget": 12,
+      "keep_rate": 0.2033898305084746,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 16,
+      "policy": "thin_kv_like",
+      "tokens": 59,
+      "budget": 12,
+      "keep_rate": 0.2033898305084746,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 16,
+      "policy": "rkv_like",
+      "tokens": 59,
+      "budget": 12,
+      "keep_rate": 0.2033898305084746,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 16,
+      "policy": "thoughtflow",
+      "tokens": 59,
+      "budget": 12,
+      "keep_rate": 0.2033898305084746,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 16,
+      "policy": "attention_received_topk",
+      "tokens": 59,
+      "budget": 12,
+      "keep_rate": 0.2033898305084746,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.5,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 17,
+      "policy": "longflow_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 17,
+      "policy": "thin_kv_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.5
+    },
+    {
+      "trace_id": 17,
+      "policy": "rkv_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.25
+    },
+    {
+      "trace_id": 17,
+      "policy": "thoughtflow",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 17,
+      "policy": "attention_received_topk",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 18,
+      "policy": "longflow_like",
+      "tokens": 50,
+      "budget": 10,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.6666666666666666
+    },
+    {
+      "trace_id": 18,
+      "policy": "thin_kv_like",
+      "tokens": 50,
+      "budget": 10,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.3333333333333333
+    },
+    {
+      "trace_id": 18,
+      "policy": "rkv_like",
+      "tokens": 50,
+      "budget": 10,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.3333333333333333
+    },
+    {
+      "trace_id": 18,
+      "policy": "thoughtflow",
+      "tokens": 50,
+      "budget": 10,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.6666666666666666
+    },
+    {
+      "trace_id": 18,
+      "policy": "attention_received_topk",
+      "tokens": 50,
+      "budget": 10,
+      "keep_rate": 0.2,
+      "anchor_recall": 0.75,
+      "phase_recall": 0.25,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 19,
+      "policy": "longflow_like",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 19,
+      "policy": "thin_kv_like",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.6666666666666666
+    },
+    {
+      "trace_id": 19,
+      "policy": "rkv_like",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 19,
+      "policy": "thoughtflow",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 19,
+      "policy": "attention_received_topk",
+      "tokens": 60,
+      "budget": 12,
+      "keep_rate": 0.2,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.3333333333333333,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 20,
+      "policy": "longflow_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 20,
+      "policy": "thin_kv_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 20,
+      "policy": "rkv_like",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 20,
+      "policy": "thoughtflow",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 20,
+      "policy": "attention_received_topk",
+      "tokens": 61,
+      "budget": 13,
+      "keep_rate": 0.21311475409836064,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.5,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 21,
+      "policy": "longflow_like",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 21,
+      "policy": "thin_kv_like",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 21,
+      "policy": "rkv_like",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 21,
+      "policy": "thoughtflow",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 21,
+      "policy": "attention_received_topk",
+      "tokens": 58,
+      "budget": 12,
+      "keep_rate": 0.20689655172413793,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 22,
+      "policy": "longflow_like",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 22,
+      "policy": "thin_kv_like",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 22,
+      "policy": "rkv_like",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 22,
+      "policy": "thoughtflow",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 1.0
+    },
+    {
+      "trace_id": 22,
+      "policy": "attention_received_topk",
+      "tokens": 62,
+      "budget": 13,
+      "keep_rate": 0.20967741935483872,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.5,
+      "math_state_recall": 0.0
+    },
+    {
+      "trace_id": 23,
+      "policy": "longflow_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.6
+    },
+    {
+      "trace_id": 23,
+      "policy": "thin_kv_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.75,
+      "math_state_recall": 0.4
+    },
+    {
+      "trace_id": 23,
+      "policy": "rkv_like",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.4
+    },
+    {
+      "trace_id": 23,
+      "policy": "thoughtflow",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.6
+    },
+    {
+      "trace_id": 23,
+      "policy": "attention_received_topk",
+      "tokens": 52,
+      "budget": 11,
+      "keep_rate": 0.21153846153846154,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.2
+    }
+  ],
+  "summary": {
+    "attention_received_topk": {
+      "keep_rate": 0.20731285730588322,
+      "anchor_recall": 0.9791666666666666,
+      "phase_recall": 0.2986111111111111,
+      "math_state_recall": 0.03888888888888889
+    },
+    "longflow_like": {
+      "keep_rate": 0.20731285730588322,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.925
+    },
+    "rkv_like": {
+      "keep_rate": 0.20731285730588322,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.0,
+      "math_state_recall": 0.13402777777777777
+    },
+    "thin_kv_like": {
+      "keep_rate": 0.20731285730588322,
+      "anchor_recall": 1.0,
+      "phase_recall": 0.9791666666666666,
+      "math_state_recall": 0.8131944444444444
+    },
+    "thoughtflow": {
+      "keep_rate": 0.20731285730588322,
+      "anchor_recall": 1.0,
+      "phase_recall": 1.0,
+      "math_state_recall": 0.925
+    }
+  },
+  "status": "MIXED; beats attention-saliency proxy but still ties the strongest importance proxy."
+}

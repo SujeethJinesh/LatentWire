@@ -1,0 +1,370 @@
+{
+  "rows": [
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.0030000000000000005,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.006000000000000001,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.008000000000000002,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.006000000000000001,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.012000000000000002,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.016000000000000004,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.012000000000000002,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.024000000000000004,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.03200000000000001,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.018,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.036,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.048,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.03,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.06,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-small.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.08000000000000002,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.0030000000000000005,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.006000000000000001,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.008000000000000002,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.006000000000000001,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.012000000000000002,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.016000000000000004,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.012000000000000002,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.024000000000000004,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.03200000000000001,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.018,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.036,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.048,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.03,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.06,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "ibm-granite-4.0-h-tiny.config.json",
+      "stream_fraction": 0.2,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.08000000000000002,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.0071875,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.014375,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.05,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.01916666666666667,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.014375,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.02875,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.1,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.03833333333333334,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.02875,
+      "clears_3pct_gate": false
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.0575,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.2,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.07666666666666667,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.043125,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.08625,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.3,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.11499999999999999,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.3,
+      "proxy_end_to_end_gain": 0.071875,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.6,
+      "proxy_end_to_end_gain": 0.14375,
+      "clears_3pct_gate": true
+    },
+    {
+      "config": "qwen3-next-80b-a3b-instruct.config.json",
+      "stream_fraction": 0.4791666666666667,
+      "boundary_overhead_ratio": 0.5,
+      "recovery_ratio": 0.8,
+      "proxy_end_to_end_gain": 0.19166666666666668,
+      "clears_3pct_gate": true
+    }
+  ],
+  "minimum_boundary_overhead_ratio_for_3pct_gain_at_60pct_recovery": {
+    "ibm-granite-4.0-h-small.config.json": 0.25,
+    "ibm-granite-4.0-h-tiny.config.json": 0.25,
+    "qwen3-next-80b-a3b-instruct.config.json": 0.10434782608695653
+  },
+  "status": "WEAKLY ALIVE; needs unusually high avoidable boundary overhead before GPU work is justified."
+}

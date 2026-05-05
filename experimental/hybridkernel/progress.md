@@ -112,3 +112,13 @@ implementation.
 The next gate is native profiler evidence, not more local code: look for a real
 attention/SSM boundary conversion, launch, or materialization overhead of at
 least 3% end-to-end before implementing a fused boundary kernel.
+
+`phase2/pre_gpu_threshold_model.md` quantifies the pre-GPU threshold. At 60%
+recovery, Granite 4.0 H Tiny/Small would need roughly 25% of boundary traffic
+to be genuinely avoidable to clear a 3% proxy gain. Qwen3-Next would need
+roughly 10.4%, but its linear-attention/Gated-DeltaNet style is less directly
+matched to the Granite Mamba2 boundary-fusion idea.
+
+Current status: **WEAKLY ALIVE**. Do not build more Mac-only kernels. The only
+useful pre-NVIDIA work is profiler/runbook preparation and source-line audit of
+whether a distinct boundary conversion/materialization exists.
