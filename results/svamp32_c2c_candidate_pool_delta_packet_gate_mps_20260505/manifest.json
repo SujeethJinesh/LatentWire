@@ -1,0 +1,15 @@
+{
+  "artifacts": {
+    "results/svamp32_c2c_candidate_pool_delta_packet_gate_mps_20260505/candidate_pool_delta_packet_gate.json": {
+      "sha256": "55e08e3e4d56bd0e3623552cf8cd1b5a845aeef48920efb4c3e504c5e8178c11"
+    },
+    "results/svamp32_c2c_candidate_pool_delta_packet_gate_mps_20260505/candidate_pool_delta_packet_gate.md": {
+      "sha256": "e336be14c85817c1cb8fe335d9b5a7503681bc0cfdd34dfccf8bee138e72cc8a"
+    },
+    "results/svamp32_c2c_candidate_pool_delta_packet_gate_mps_20260505/manifest.md": {
+      "sha256": "75848d3468425b8245946ffe7977364b5539588bddc1218ca70e1e510013ba73"
+    }
+  },
+  "date": "2026-05-05",
+  "status": "c2c_candidate_pool_delta_packet_capacity_fails_controls"
+}

@@ -24327,3 +24327,47 @@ Lay explanation: we tried sending a compact list of next-token nudges copied
 from the full C2C teacher. It did not really help: the target already got the
 same rows right when it was given the teacher's previous generated words, even
 without the packet.
+
+## 2026-05-05 Open-Loop C2C Candidate-Pool Delta Packet Gate
+
+Added and ran an open-loop C2C candidate-pool delta packet gate:
+
+- code:
+  `scripts/analyze_svamp32_c2c_candidate_pool_delta_packet_gate.py`;
+- test:
+  `tests/test_analyze_svamp32_c2c_candidate_pool_delta_packet_gate.py`;
+- artifact:
+  `results/svamp32_c2c_candidate_pool_delta_packet_gate_mps_20260505/candidate_pool_delta_packet_gate.json`;
+- manifest:
+  `results/svamp32_c2c_candidate_pool_delta_packet_gate_mps_20260505/manifest.md`;
+- memo:
+  `paper/svamp32_c2c_candidate_pool_delta_packet_gate_20260505.md`.
+
+Purpose: remove teacher-generated-prefix leakage and test whether a
+few-byte C2C-minus-target candidate-score packet can recover C2C-only wins on
+the replay-aligned SVAMP32 surface.
+
+Outcome:
+
+- status: `c2c_candidate_pool_delta_packet_capacity_fails_controls`;
+- matched: `3/32`;
+- target-only: `6/32`;
+- zero-delta: `6/32`;
+- row-shuffle: `7/32`;
+- same-top wrong-row: `6/32`;
+- candidate-roll: `8/32`;
+- coefficient sign-flip: `10/32`;
+- teacher-top index from C2C candidate scores: `3/32`;
+- clean source-necessary IDs: `0`;
+- average packet bytes per row: `2.875`;
+- cacheline-rounded average bytes per row: `64.00`.
+
+Decision: rule out short-answer open-loop C2C candidate likelihood deltas as the
+next C2C-distillation training target. The C2C candidate scorer is not faithful
+to the dense teacher's generated-answer behavior (`3/32` candidate-score
+teacher-top vs `16/32` generated C2C). Promote a generated-answer-aligned or
+pre-answer hidden/KV-state distillation gate instead.
+
+Lay explanation: we tried scoring possible numeric answers directly with C2C,
+but those scores did not match what C2C actually says when it solves the problem
+step by step. The tiny packet was therefore copying the wrong signal.
