@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-ThoughtFlow-FP8 tests whether explicit anchor/phase retention plus byte-aware FP8-style budgeting can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality weakens the branch. On 24 distilgpt2 traces at a 0.20 keep fraction, a bounded successor policy, ThoughtFlow-saliency-recent, improves over the original phase-only policy and beats LongFlow-like and ThinKV-like proxies, but narrowly loses to an R-KV-like retained-prefix proxy on continuation NLL (3.434 vs 3.419). A held-out sweep over recency and saliency weights then finds a matched-budget ThoughtFlow-family policy that ties R-KV-like on held-out traces (3.480 vs 3.482 NLL; positive margin +0.001). We therefore present this as a mixed workshop gate, not a positive method. The next useful step is real hidden/KV saliency telemetry; GPU sparse-KV work is not justified until that gate clears.
+ThoughtFlow-FP8 tests whether explicit anchor/phase retention plus byte-aware FP8-style budgeting can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality weakens the branch. On 24 distilgpt2 traces at a 0.20 keep fraction, a bounded successor policy, ThoughtFlow-saliency-recent, improves over the original phase-only policy and beats LongFlow-like and ThinKV-like proxies, but narrowly loses to an R-KV-like retained-prefix proxy on continuation NLL (3.434 vs 3.419). A held-out sweep over recency and saliency weights then finds a matched-budget ThoughtFlow-family policy that ties R-KV-like on held-out traces (3.480 vs 3.482 NLL; positive margin +0.001). We add real hidden/KV telemetry from distilgpt2 attention, final-hidden norms, key norms, value norms, and combined KV norms. It is diagnostic but still mixed: ThoughtFlow beats the strongest real-saliency proxy on phase recall, while math-state recall has an uncertain paired margin and the local LongFlow-like importance proxy ties it. We therefore present this as a mixed workshop gate, not a positive method. The next useful step is actual cache-dropping or sparse-KV quality validation for a train-fixed successor policy.
 \end{abstract}
 
 \section{Policy Family}
@@ -40,9 +40,32 @@ Held-out sweep best & 0.211 & 3.480 & -- & 43.7 \\
 \caption{Retained-context continuation proxy on distilgpt2 traces. Lower NLL is better. Full context is not a matched-budget baseline. The held-out sweep row is selected on 12 train traces and reported on 12 held-out traces, so its NLL is not directly averaged with the all-trace rows.}
 \end{table}
 
+\section{Hidden/KV Telemetry}
+
+We then ran a Mac-local telemetry gate using real distilgpt2 tensors rather than only text markers. The probe ranks retained tokens by attention received, final-hidden norm, key norm, value norm, or combined KV norm. This is still not sparse-KV decoding, but it checks whether the interpretable phase policy is merely preserving labels that hidden/KV saliency would not select.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Policy & Keep rate & Anchor recall & Phase recall & Math-state recall \\
+\midrule
+ThoughtFlow & 0.207 & 1.000 & 1.000 & 0.918 \\
+LongFlow-like & 0.207 & 1.000 & 1.000 & 0.918 \\
+ThinKV-like & 0.207 & 1.000 & 0.948 & 0.848 \\
+\texttt{value\_norm\_topk} & 0.207 & 0.000 & 0.492 & 0.845 \\
+train-selected ThoughtFlow sweep & 0.207 & 1.000 & 0.430 & 0.956 \\
+\bottomrule
+\end{tabular}
+\caption{Hidden/KV saliency telemetry on 24 distilgpt2 traces. The strongest real-saliency proxy by phase+math recall is \texttt{value\_norm\_topk}. ThoughtFlow beats it on phase recall, but LongFlow-like ties ThoughtFlow under the local importance heuristic.}
+\end{table}
+
+Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +0.508 with 95\% CI [+0.436, +0.579]. The math-state delta is only +0.073 with 95\% CI [-0.078, +0.223]. This rules out a reviewer-facing claim based on phase recall alone: it may be marker preservation rather than useful cache retention.
+
 \section{Decision}
 
-The branch is mixed but not revived as a positive method. ThoughtFlow-saliency-recent repairs most of the phase-only failure, and a small held-out sweep reaches a tie-range result against R-KV-like at matched budget. This is still text-prefix scoring, not real cache dropping. A paper-ready claim would require a hidden/KV saliency policy that beats R-KV-like, LongFlow-like, and ThinKV-like rows at matched bytes, then validates under real sparse-KV or cache-dropping execution.
+The branch is mixed but not revived as a positive method. ThoughtFlow-saliency-recent repairs most of the phase-only failure, and a small held-out sweep reaches a tie-range result against R-KV-like at matched budget. The hidden/KV telemetry is useful for diagnosis, but it does not provide a quality result and does not separate ThoughtFlow from the local LongFlow-like importance proxy. A paper-ready claim would require a train-fixed ThoughtFlow successor to beat R-KV-like, LongFlow-like, and ThinKV-like rows at matched bytes under actual sparse-KV or cache-dropping execution.
 
 \section{Artifacts}
 

@@ -4,8 +4,9 @@
 
 - Phase 0: partial quick pass.
 - Phase 1: quick forensics pass complete.
-- Phase 2: synthetic retention simulation complete; real-trace text proxy gate weakened
-  the branch
+- Phase 2: synthetic retention simulation complete; real-trace text proxy gate
+  weakened the branch; hidden/KV saliency telemetry is mixed and does not revive
+  a positive-method claim
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
   scaffold added, but not phase-complete
 - Current viability: pivot/proceed only with narrowed framing.
@@ -54,10 +55,10 @@ signal; text-marker heuristics are not enough.
 fractions 0.10 to 0.35: ThoughtFlow never beats the strongest proxy on phase
 recall and sometimes trails on math-state recall.
 
-`phase2/hidden_saliency_retention_probe.md` gives a mixed result on distilgpt2
-attention-received saliency: protected phase markers beat the pure
-attention-received proxy, but still tie the strongest importance proxy. This is
-not enough for a reviewer pack or GPU work.
+The first version of `phase2/hidden_saliency_retention_probe.md` gave a mixed
+result on distilgpt2 attention-received saliency: protected phase markers beat
+the pure attention-received proxy, but still tied the strongest importance
+proxy. This was not enough for a reviewer pack or GPU work.
 
 Current status: **MIXED/WEAKENED**. The only pre-GPU route left is a real hidden
 or KV saliency policy that beats the strongest importance proxy and shows a
@@ -76,9 +77,25 @@ held-out traces. The train-selected policy ties R-KV-like on held-out traces
 with NLL 3.480 versus 3.482, margin +0.001 in favor of the ThoughtFlow-family
 policy. This is a tie-range result, not a robust win.
 
-Status: **MIXED, not revived as a positive method**. The next useful gate is
+Status: **MIXED, not revived as a positive method**. The next useful gate was
 real hidden/KV saliency telemetry; GPU sparse-KV work should wait until the
 policy beats R-KV-like by a nontrivial margin on held-out traces.
+
+`phase2/hidden_saliency_retention_probe.md` now uses real distilgpt2 telemetry:
+attention-received mass, final-hidden norms, key norms, value norms, and
+combined KV norms. On the same 24-trace, 0.20 keep-fraction slice, the best
+ThoughtFlow-family policy is the original marker-protecting `thoughtflow` row.
+It beats the strongest real-saliency proxy (`value_norm_topk`) on phase recall
+by +0.508 paired mean, but the math-state margin is only +0.073 with a 95%
+normal CI of [-0.078, +0.223]. It also ties the local LongFlow-like importance
+proxy on phase and math-state recall because both policies preserve the same
+high-importance marker classes.
+
+Status: **MIXED/NOT REVIVED**. Promoted: real hidden/KV telemetry as a useful
+diagnostic. Weakened: the claim that phase-marker preservation alone is a
+positive method. Saturated: synthetic marker-retention and text-prefix-only
+policy tuning. The next exact gate is actual cache-dropping or sparse-KV quality
+validation, not more marker-recall-only sweeps.
 
 ## Macbook Kernel Correctness Scaffold
 
@@ -115,3 +132,8 @@ reviewer pack or GPU work.
   numerical/approximation concerns, and limited efficiency scaling evidence.
   Recommendation: pivot/proceed with a narrowed retrofit + bias-controlled
   retention framing; do not proceed as a generic LongFlow+FP8+phase kernel.
+- 2026-05-05: Added real hidden/KV saliency telemetry to the Phase 2 probe and
+  refreshed the COLM workshop shell. Result: mixed/not revived. ThoughtFlow
+  beats `value_norm_topk` on phase recall but has uncertain math-state margin
+  and still ties the local LongFlow-like importance proxy. Next gate is
+  cache-dropping or sparse-KV quality validation for a train-fixed successor.
