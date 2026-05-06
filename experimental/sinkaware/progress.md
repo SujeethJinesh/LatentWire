@@ -500,3 +500,40 @@ keeps rank 2 as the live systems compromise.
 Decision: **RANK FRONTIER EXPLAINS THE QUALITY/COST TRADEOFF**. Rank4/rank8 are
 better quality controls but lose the current multiply-add wedge against exact
 four-sink QK. Rank2 remains the only plausible pre-GPU systems compromise.
+
+## 2026-05-06 Larger Downstream Rank Frontier Repeat
+
+Reran the downstream frontier in `./venv_arm64` with 48 traces, length 96,
+sink count 4, split seeds 0/1/2, `distilgpt2`, `facebook/opt-125m`, and ranks
+1/2/4/8:
+
+```bash
+HF_HOME="$PWD/experimental/sinkaware/.debug/hf_cache" \
+TRANSFORMERS_CACHE="$PWD/experimental/sinkaware/.debug/hf_cache" \
+./venv_arm64/bin/python -m experimental.sinkaware.phase3.downstream_quality_control_gate \
+  --model-names distilgpt2 facebook/opt-125m \
+  --max-traces 48 --max-length 96 --sink-tokens 4 \
+  --train-fraction 0.67 --seeds 0 1 2 --ranks 1 2 4 8 \
+  --artifact-stem downstream_rank_frontier_traces48_len96_sink4
+```
+
+Result: **RANK FRONTIER REPEATS ON 48 TRACES**. Exact sink-logit replacement
+remains a no-op. Higher ranks again monotonically reduce downstream drift, but
+rank4/rank8 still lose the simple multiply-add wedge against exact four-sink
+QK.
+
+- rank1: abs loss delta `0.137`, loss improvement vs position `+0.031`,
+  KL improvement `+0.029`, top-1 disagreement `0.143`, minimum model
+  improvement `+0.023`.
+- rank2: abs loss delta `0.096`, loss improvement `+0.072`, KL improvement
+  `+0.069`, top-1 disagreement `0.125`, minimum model improvement `+0.038`.
+- rank4: abs loss delta `0.062`, loss improvement `+0.107`, KL improvement
+  `+0.097`, top-1 disagreement `0.095`, minimum model improvement `+0.056`.
+- rank8: abs loss delta `0.044`, loss improvement `+0.125`, KL improvement
+  `+0.114`, top-1 disagreement `0.080`, minimum model improvement `+0.071`.
+
+Decision: this supersedes the 24-trace frontier without changing the claim
+boundary. Better predictors exist, but rank2 remains the live systems
+compromise until native GPU timing/memory traffic shows whether the lower-rank
+path has a real implementation advantage. No GPU speed, benchmark accuracy, or
+cross-model predictor transfer claim is supported.

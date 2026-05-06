@@ -169,11 +169,11 @@ Traces & Max len & Sink tokens & Loss improve & Min model improve \\
 \caption{Larger downstream causal-LM control repeats. Exact sink-logit replacement is a no-op in all rows; rank-2 beats position-only in loss drift and KL for both distilgpt2 and OPT-125M across seeds 0/1/2.}
 \end{table}
 
-As a final Mac-side frontier check, we reran the downstream patch gate on 24
+As a final Mac-side frontier check, we reran the downstream patch gate on 48
 traces at length 96 and sink count 4 with ranks 1, 2, 4, and 8. Higher ranks
 monotonically reduce downstream drift: aggregate absolute loss delta falls from
-0.117 at rank 1 to 0.081 at rank 2, 0.044 at rank 4, and 0.029 at rank 8, while
-top-1 disagreement falls from 0.145 to 0.111, 0.085, and 0.069. The systems
+0.137 at rank 1 to 0.096 at rank 2, 0.062 at rank 4, and 0.044 at rank 8, while
+top-1 disagreement falls from 0.143 to 0.125, 0.095, and 0.080. The systems
 cost model keeps rank 2 as the live compromise because rank 4 and rank 8 are
 estimated at 1.062x and 2.125x exact four-sink QK multiply-adds. Thus the
 frontier strengthens the quality/cost tradeoff: better predictors exist, but
@@ -218,6 +218,7 @@ SinkAware is alive only as an all-head approximate low-rank correctness and nati
 \item \url{experimental/sinkaware/phase3/downstream_quality_control_gate_traces48_len64_sink4.md}
 \item \url{experimental/sinkaware/phase3/downstream_quality_control_gate_traces48_len96_sink4.md}
 \item \url{experimental/sinkaware/phase3/downstream_rank_frontier_traces24_len96_sink4.md}
+\item \url{experimental/sinkaware/phase3/downstream_rank_frontier_traces48_len96_sink4.md}
 \item \url{experimental/sinkaware/phase4/approx_sink_attention_triton_gate.md}
 \item \url{experimental/sinkaware/phase2/gpu_gate_runbook.md}
 \item \url{experimental/triton_cpu_source_install_20260506.md}

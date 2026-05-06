@@ -102,6 +102,10 @@ tradeoff.
   remains a no-op; rank-2 beats position-only by loss drift and KL. Minimum
   model loss improvement is `+0.0263`, and top-1 disagreement remains
   non-negligible, so this is still a quality-control diagnostic.
+- Downstream rank frontier: on 48 traces at length `96` and sink count `4`,
+  ranks `1/2/4/8` monotonically reduce downstream drift, but rank4/rank8 lose
+  the multiply-add wedge against exact four-sink QK. Rank2 remains the live
+  compromise.
 
 ## Limitations
 

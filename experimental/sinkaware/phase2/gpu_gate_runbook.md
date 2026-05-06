@@ -21,7 +21,9 @@ remains a no-op, and rank-2 is closer than position-only in loss drift and KL in
 every model/config row, but top-1 disagreement remains non-negligible. Native
 work should preserve aggregate, per-head, and downstream-control readouts
 because the trace-level head win rate remains a risk and the downstream patch is
-still only a quality-control diagnostic.
+still only a quality-control diagnostic. A 48-trace downstream rank frontier at
+length 96/sink4 shows ranks 1/2/4/8 monotonically reduce drift, but rank4/rank8
+lose the simple multiply-add wedge against exact four-sink QK.
 
 The GPU gate must answer whether the approximation is useful after real kernel
 costs, memory movement, and output drift are measured together.
@@ -76,3 +78,4 @@ if position-only is indistinguishable.
 - `downstream_quality_control_gate_traces48_len96_sink2.md`
 - `downstream_quality_control_gate_traces48_len64_sink4.md`
 - `downstream_quality_control_gate_traces48_len96_sink4.md`
+- `downstream_rank_frontier_traces48_len96_sink4.md`
