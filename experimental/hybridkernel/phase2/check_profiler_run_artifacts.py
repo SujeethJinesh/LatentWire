@@ -47,7 +47,7 @@ MIN_NATIVE_ARTIFACT_BYTES = 1024
 SKELETON_TODO_MARKER = "TODO_NATIVE_PROFILE_FILL"
 PLACEHOLDER_ARTIFACT_MARKERS = [
     b"placeholder",
-    SKELETON_TODO_MARKER.encode("utf-8"),
+    SKELETON_TODO_MARKER.lower().encode("utf-8"),
 ]
 
 ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}

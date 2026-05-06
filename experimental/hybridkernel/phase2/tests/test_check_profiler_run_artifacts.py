@@ -142,6 +142,18 @@ def test_rejects_tiny_or_placeholder_native_profiler_artifacts(tmp_path: Path) -
     assert any("too small" in error for error in result["errors"])
 
 
+def test_rejects_uppercase_todo_marker_inside_native_profiler_artifacts(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
+        "TODO_NATIVE_PROFILE_FILL\n" + ("x" * 2048), encoding="utf-8"
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("placeholder" in error for error in result["errors"])
+
+
 def test_requires_three_repeated_rows_for_review_gate(tmp_path: Path) -> None:
     _write_complete_run(tmp_path, runs=2)
 

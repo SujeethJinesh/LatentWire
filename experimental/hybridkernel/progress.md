@@ -402,3 +402,15 @@ environment is recorded.
 Decision: **MAC HANDOFF IS SATURATED**. This improves traceability for the
 first NVIDIA run, but it does not change the scientific gate: only a native
 NVIDIA/vLLM profiler packet can promote or kill HybridKernel.
+
+## 2026-05-06 Native Artifact TODO-Marker Regression
+
+Fixed a final artifact-admissibility edge case in the native packet checker.
+Profiler artifact bytes are lowercased before placeholder detection, so the
+`TODO_NATIVE_PROFILE_FILL` marker must also be compared in lowercase. Added a
+regression test showing that a large fake Nsight export containing the uppercase
+TODO marker is rejected as placeholder evidence.
+
+Decision: **CHECKER HARDENING ONLY**. This closes a fake-artifact loophole and
+raises the owned Mac suite to 141 passing tests, but it still does not provide
+native profiler evidence.
