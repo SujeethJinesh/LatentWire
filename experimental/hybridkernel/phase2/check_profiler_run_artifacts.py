@@ -59,6 +59,8 @@ PLACEHOLDER_ARTIFACT_MARKERS = [
     b"placeholder",
     SKELETON_TODO_MARKER.lower().encode("utf-8"),
 ]
+SERVER_LOG_EVIDENCE_MARKERS = ["vllm", "nsys", "ncu", "cuda"]
+CLIENT_LOG_EVIDENCE_MARKERS = ['"requests"', '"model"', '"status"']
 
 ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
 PROFILED_PROCESS_FIELDS = ["profiled_process", "nsys_profiled_process", "ncu_profiled_process"]
@@ -85,6 +87,7 @@ def _has_client_replay_log(log_files: list[Path]) -> bool:
 
 def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
     for log_file in log_files:
+        name = log_file.name.lower()
         size = log_file.stat().st_size
         if size < MIN_NATIVE_LOG_BYTES:
             errors.append(
@@ -96,6 +99,16 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
             errors.append(f"profiling log still contains native run-packet TODO markers: {log_file.name}")
         if "placeholder" in text:
             errors.append(f"profiling log appears to be placeholder evidence: {log_file.name}")
+        if "server" in name and ("nsys" in name or "ncu" in name):
+            if not any(marker in text for marker in SERVER_LOG_EVIDENCE_MARKERS):
+                errors.append(
+                    f"server profiler log lacks Nsight/vLLM/CUDA evidence markers: {log_file.name}"
+                )
+        if "client" in name:
+            if not all(marker in text for marker in CLIENT_LOG_EVIDENCE_MARKERS):
+                errors.append(
+                    f"client replay log lacks profiler_driver JSON evidence markers: {log_file.name}"
+                )
 
 
 def _read_text(path: Path) -> str:

@@ -40,10 +40,10 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         encoding="utf-8",
     )
     (run_dir / "logs/nsys_server_b1.log").write_text(
-        "server profiler log\n", encoding="utf-8"
+        "nsys vllm server cuda profiler log\n", encoding="utf-8"
     )
     (run_dir / "logs/client_replay_b1.log").write_text(
-        "client replay log\n", encoding="utf-8"
+        '{"model":"granite","requests":[{"status":"ok"}]}\n', encoding="utf-8"
     )
     (run_dir / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
         "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
@@ -161,6 +161,18 @@ def test_rejects_empty_or_placeholder_native_logs(tmp_path: Path) -> None:
     assert result["status"] == "FAIL"
     assert any("profiling log is too small" in error for error in result["errors"])
     assert any("placeholder evidence" in error for error in result["errors"])
+
+
+def test_rejects_arbitrary_native_log_payloads(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "logs/nsys_server_b1.log").write_text("abcdefgh\n", encoding="utf-8")
+    (tmp_path / "logs/client_replay_b1.log").write_text("abcdefgh\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("server profiler log lacks" in error for error in result["errors"])
+    assert any("client replay log lacks" in error for error in result["errors"])
 
 
 def test_requires_complete_environment_capture(tmp_path: Path) -> None:
