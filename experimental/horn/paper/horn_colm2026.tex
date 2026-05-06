@@ -57,10 +57,12 @@ controls are boundary rows, non-boundary adjacent rows, and permuted-direction
 rows. A valid packet must cover both \texttt{attention->ssm} and
 \texttt{ssm->attention} in boundary rows and in the control rows; each
 permuted-direction row must match an observed boundary tuple with the same
-prompt ID and normalization positions while flipping its direction. It cannot
+prompt ID, layer IDs, normalization positions, and measured metrics while
+flipping its direction label only. It cannot
 pass if the permuted controls preserve the selected high-magnitude direction;
 a faithful label flip may preserve unsigned asymmetry while moving the signal
-to the opposite label. It must also
+to the opposite label. Non-boundary controls must stay below the selected H1
+threshold, not merely below the observed boundary ratio. It must also
 include at least 12 fixed prompt IDs unless
 the packet records an explicit resource limit. Any resource-limited packet must
 use a \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The packet must

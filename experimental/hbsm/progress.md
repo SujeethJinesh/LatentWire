@@ -89,5 +89,10 @@ and activation/outlier baselines. Synthetic B1 remains plumbing only. A real
 packet that lacks those comparators should be treated as mechanism scouting for
 HORN/SSQ-LR rather than as a standalone paper result.
 
+The real-packet checker now enforces those comparator rows explicitly through
+`kl_lens_rank` and `activation_outlier` controls, and it rejects inflated
+"top-decile" sets by requiring exactly `ceil(10% of primary rows)` true flags
+for both measured and random top-decile rows.
+
 Decision: **HBSM NEEDS REAL B1 PLUS KL-LENS/OUTLIER BASELINES TO STAY
 STANDALONE**. The blocker remains a live layer-sensitivity sweep.

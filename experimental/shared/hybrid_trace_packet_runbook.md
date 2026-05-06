@@ -70,7 +70,8 @@ Required `summary.json` fields:
 - `distribution_passing_layer_count`
 - `required_passing_layer_count`, `pass_fraction`, `selected_s1_ratio`
 - `selected_s1_ci_low`, `holm_p_min`
-- `magnitude_gate_pass`, `distribution_gate_pass`
+- `magnitude_gate_pass`, `distribution_effect_floor_pass`,
+  `distribution_gate_pass`
 - `max_abs_ratio_final_minus_128_vs_prefill_end`
 - `std_ratio_final_minus_128_vs_prefill_end`
 - `kurtosis_ratio_final_minus_128_vs_prefill_end`
@@ -81,6 +82,9 @@ fabricated summaries are rejected. The S1 lower bound is computed from
 prompt-level bucket ratios, and the distribution path uses Holm-corrected
 two-sample tests between `prefill_end` and `final_minus_128`, so reduced rows
 must preserve prompt IDs rather than only global layer means.
+Distribution-only promotion also requires the selected S1 ratio to clear the
+1.25x effect-size floor; tiny but statistically significant shifts remain a
+failed S1 packet.
 
 ## HORN Real H1 Packet
 
@@ -101,6 +105,10 @@ Required controls:
 - the non-boundary and permuted controls must erase the selected high-magnitude
   direction label; a faithful label flip may preserve unsigned max/min
   asymmetry while moving the signal to the opposite label;
+- permuted controls must reuse the observed boundary metrics and flip only the
+  direction label;
+- non-boundary controls must stay below the selected H1 threshold, not merely
+  below the measured boundary ratio;
 - matched normalization placement.
 - at least 12 fixed prompts or an explicit resource-limit note.
 
@@ -131,7 +139,8 @@ Minimum admissible row fields:
 - `kl_or_nll_drift`, `cheap_predictor`, `parameter_count`, `weight_norm`
 - `top_decile_flag`, `random_top_decile`, `train_test_split`
 - `control_type` in `perturbation_off`, `random_flags`, `layer_index`,
-  `parameter_count_norm`, or `boundary_only`
+  `parameter_count_norm`, `boundary_only`, `kl_lens_rank`, or
+  `activation_outlier`
 
 Required controls:
 
@@ -140,9 +149,12 @@ Required controls:
 - layer-index baseline;
 - parameter-count/norm baseline;
 - boundary-only baseline;
+- KL-style sensitivity ranking baseline;
+- activation/outlier ranking baseline;
 - `boundary_only` rows with both `boundary_flag=true` and `boundary_flag=false`;
 - every `boundary_only` prompt must include boundary and non-boundary layers;
-- matched counts for `top_decile_flag=true` and `random_top_decile=true`;
+- `top_decile_flag=true` and `random_top_decile=true` counts must each equal
+  `ceil(0.10 * primary_rows)`;
 - random top-decile flags must not reproduce the boundary enrichment;
 - both `train` and `test` split rows, unless a resource-limit note is present;
 - train/test layer split if layer count permits.
@@ -150,6 +162,7 @@ Required controls:
 Required `summary.json` fields:
 
 - `gate_name`, `gate_status`, `gate_pass`
+- `expected_top_decile_count`
 - `top_decile_count`
 - `random_top_decile_count`
 - `train_count`

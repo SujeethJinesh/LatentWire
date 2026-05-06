@@ -62,8 +62,10 @@ The packet must include \texttt{prompt\_ids\_hash},
 \texttt{experimental.shared.check\_gate\_packet --mode real --project hbsm}.
 The checker requires both true and false boundary flags, finite sensitivity and
 predictor fields, all listed controls, and a perturbation-off row whose drift is
-near zero. It also requires matched top-decile/random-flag counts and both
-train and test split rows unless the packet records an explicit resource limit.
+near zero. It also requires exact top-decile cardinality
+\(\lceil 0.10\cdot\mathrm{primary\ rows}\rceil\), an equally sized random baseline
+that is not enriched, KL-style and activation/outlier comparator controls, and
+both train and test split rows unless the packet records an explicit resource limit.
 Any resource-limited packet must use a
 \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
 top-decile count, random top-decile count, train/test counts, and boundary
@@ -98,6 +100,8 @@ Layer-index baseline & Controls depth effects. \\
 Parameter-count baseline & Controls layer size. \\
 Weight-norm baseline & Controls simple magnitude predictors. \\
 Boundary-only baseline & Tests whether HORN already explains the effect. \\
+KL-style ranking baseline & Separates HBSM from forward-sensitivity ranking. \\
+Activation/outlier baseline & Separates boundary sensitivity from generic outlier quantization. \\
 Perturbation-off row & Catches hook and scoring bugs. \\
 Train/test split & Reduces cheap-predictor overfit. \\
 \bottomrule

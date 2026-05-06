@@ -14,6 +14,7 @@ from typing import Any
 
 
 SSQ_LR_POSITION_BUCKETS = {"prefill_end", "2k_or_end", "8k_or_end", "final_minus_128"}
+SSQ_LR_DISTRIBUTION_MIN_RATIO = 1.25
 
 
 def _safe_ratio(numerator: float, denominator: float) -> float:
@@ -191,11 +192,13 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and selected_s1_ratio >= 2.0
         and selected_s1_ci_low > 1.25
     )
+    distribution_effect_floor_pass = selected_s1_ratio >= SSQ_LR_DISTRIBUTION_MIN_RATIO
     distribution_gate_pass = (
         set(buckets) == SSQ_LR_POSITION_BUCKETS
         and ssm_layer_count > 0
         and distribution_passing_layers >= required_passing_layer_count
         and holm_p_min < 0.01
+        and distribution_effect_floor_pass
     )
     gate_pass = magnitude_gate_pass or distribution_gate_pass
     return {
@@ -213,6 +216,7 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "selected_s1_ci_low": selected_s1_ci_low,
         "holm_p_min": holm_p_min,
         "magnitude_gate_pass": magnitude_gate_pass,
+        "distribution_effect_floor_pass": distribution_effect_floor_pass,
         "distribution_gate_pass": distribution_gate_pass,
         **ratios,
     }
@@ -366,8 +370,8 @@ def evaluate_horn_h1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and support_fraction >= 0.6
         and non_boundary_direction_count >= 2
         and permuted_direction_count >= 2
-        and non_boundary_control_ratio < selected_h1_ratio
-        and permuted_direction_ratio < selected_threshold
+        and non_boundary_control_ratio < selected_threshold
+        and permuted_direction_ratio <= 1.0
     )
     return {
         "gate_name": "horn_h1_single_model_directional_asymmetry",
@@ -465,6 +469,7 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
     primary_rows = [row for row in rows if str(row["control_type"]) == "boundary_only"]
     scoring_rows = primary_rows if primary_rows else rows
+    expected_top_decile_count = math.ceil(0.10 * len(scoring_rows)) if scoring_rows else 0
     top_count = sum(1 for row in scoring_rows if row["top_decile_flag"])
     random_count = sum(1 for row in scoring_rows if row["random_top_decile"])
     train_count = sum(1 for row in scoring_rows if str(row["train_test_split"]) == "train")
@@ -505,7 +510,8 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and bool(non_boundary_rows)
         and train_count > 0
         and test_count > 0
-        and top_count == random_count
+        and top_count == expected_top_decile_count
+        and random_count == expected_top_decile_count
         and enrichment > 1.0
         and enrichment > random_enrichment
         and fisher_p < 0.05
@@ -517,6 +523,7 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "gate_status": "PASS_REAL_B1_SENSITIVITY_HETEROGENEITY" if gate_pass else "FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY",
         "primary_row_count": len(primary_rows),
         "prompt_count": prompt_count,
+        "expected_top_decile_count": expected_top_decile_count,
         "top_decile_count": top_count,
         "random_top_decile_count": random_count,
         "train_count": train_count,

@@ -90,6 +90,16 @@ DYLD_LIBRARY_PATH="/opt/homebrew/opt/gcc/lib/gcc/current${DYLD_LIBRARY_PATH:+:$D
   experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -q -rs
 ```
 
+## 2026-05-06 Native Packet Control-Replay Hardening
+
+The profiler packet checker now rejects metric rows for models that do not have
+matching `profiler_driver.py` client replay logs. Same-family and cross-family
+control rows therefore need their own replay evidence with the same
+prefill/decode/request shape before a GPU packet can promote.
+
+Decision: **GPU GATE STILL BLOCKS THE PAPER, BUT CONTROL ROWS MUST BE
+REPLAY-BACKED**. The next exact gate remains the NVIDIA Nsight packet.
+
 This is a kernel-logic correctness check only, not a GPU performance result and
 not COLM_v3 evidence.
 

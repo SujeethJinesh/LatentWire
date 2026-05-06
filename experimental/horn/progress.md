@@ -84,5 +84,10 @@ whether the selected high-magnitude direction is erased by non-boundary and
 permuted controls. Controls that keep the signal on the same selected direction
 label still block H1.
 
+The latest hardening also requires permuted rows to reuse the observed boundary
+metrics, not independently measured tensors, and requires non-boundary controls
+to stay below the selected H1 threshold rather than only below the boundary
+effect size.
+
 Decision: **H1 NULL CONTROLS MUST ERASE THE SELECTED DIRECTION, NOT MERELY
 UNSIGNED ASYMMETRY**. The blocker remains a real prompt-paired boundary dump.

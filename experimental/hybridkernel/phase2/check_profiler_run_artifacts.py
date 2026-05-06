@@ -673,6 +673,10 @@ def check_run_artifacts(
                 for row in rows:
                     model = str(row["model"])
                     if model not in client_models:
+                        errors.append(
+                            "profiler_metrics.json model lacks matching client replay log: "
+                            f"{model}"
+                        )
                         continue
                     replay_shape = (
                         model,

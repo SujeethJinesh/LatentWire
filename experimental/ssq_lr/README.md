@@ -78,10 +78,13 @@ include the recomputed S1 evaluator fields: `gate_status`, `gate_pass`,
 `prompt_count`, `position_buckets`, `ssm_layer_count`, `passing_layer_count`,
 `distribution_passing_layer_count`, `required_passing_layer_count`,
 `pass_fraction`, `selected_s1_ratio`, `selected_s1_ci_low`, `holm_p_min`,
-`magnitude_gate_pass`, `distribution_gate_pass`, and the final-minus-128 versus
+`magnitude_gate_pass`, `distribution_effect_floor_pass`,
+`distribution_gate_pass`, and the final-minus-128 versus
 prefill-end max-abs/std/kurtosis ratios. The checker recomputes these values
 from prompt-level bucket ratios plus Holm-corrected distribution tests and
-rejects stale summaries.
+rejects stale summaries. A distribution-only pass must also clear the
+preregistered 1.25x effect-size floor; tiny statistically significant shifts do
+not promote S1.
 
 ## Output Paths
 

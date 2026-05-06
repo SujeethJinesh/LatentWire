@@ -397,6 +397,10 @@ Promotion also requires at least three same-shape same-family control rows and
 three same-shape cross-family falsification rows, with those controls staying
 below the 3% recoverable-gain gate. A packet where controls preserve the same
 3% signal remains audit-only.
+Every model named in `profiler_metrics.json`, including same-family and
+cross-family controls, must have a matching `profiler_driver.py` client replay
+JSON log under `logs/` with the same prefill/decode/request shape. Metric rows
+without replay evidence now fail the packet checker.
 
 Then run:
 

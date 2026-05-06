@@ -511,3 +511,16 @@ artifact polish only; it does not reopen RDU/PSI/VWAC.
 
 Decision: **THOUGHTFLOW REMAINS DIAGNOSTIC-ONLY**. The next optional packaging
 gate is a provenance packet, not a fifth sparse-cache signal.
+
+## 2026-05-06 Tracked Diagnostic Packet
+
+Added a tracked diagnostic packet at
+`phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/`. It hashes
+the stale positive frozen probe, cached RDU robustness diagnostic, same-surface
+RDU rerun, alternate-surface RDU failure, independent-trace RDU failure, and
+fresh PSI/VWAC kills. The packet also records the generating script hash, git
+state, and local package versions, and the saved-artifact tests now read this
+tracked path rather than ignored `results/`.
+
+Decision: **THE FALSIFICATION LADDER IS NOW PACKAGED AS A TRACKED AUDIT
+ARTIFACT**. This is still paper packaging, not a live method branch.

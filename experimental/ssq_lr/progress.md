@@ -81,6 +81,11 @@ state metrics, applies Holm correction over layer/metric tests, and exposes
 `distribution_passing_layer_count`, `magnitude_gate_pass`, and
 `distribution_gate_pass` in the recomputed summary contract.
 
+Follow-up hardening now requires the distribution-only path to clear a 1.25x
+selected-ratio effect-size floor via `distribution_effect_floor_pass`; a
+near-zero but statistically significant state shift is not enough to promote
+S1.
+
 Decision: **S1 CAN PASS BY MAGNITUDE OR HOLM-CORRECTED DISTRIBUTION SHIFT, BUT
 ONLY FROM RAW REAL STATE ROWS**. The blocker remains the same live hybrid
 SSM-state dump.

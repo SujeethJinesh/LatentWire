@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 
 PHASE2 = Path(__file__).resolve().parents[1]
+DIAGNOSTIC_PACKET = PHASE2 / "diagnostic_packets/thoughtflow_diagnostic_packet_20260506"
 
 
 def _load(name: str) -> dict[str, object]:
@@ -65,3 +67,29 @@ def test_vwac_artifact_locks_fresh_surface_kill() -> None:
     assert summary["vwac_topk"]["nll"] > summary["thin_kv_like"]["nll"]
     assert report["decision"]["paired_delta_vs_rkv_like"]["ci95_low"] > 0.0
     assert report["decision"]["paired_delta_vs_thin_kv_like"]["ci95_low"] > 0.0
+
+
+def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
+    manifest = json.loads((DIAGNOSTIC_PACKET / "manifest.json").read_text(encoding="utf-8"))
+
+    assert "not a positive method claim" in manifest["claim_boundary"]
+    assert manifest["script"]["sha256"].startswith("sha256:")
+    artifacts = manifest["artifacts"]
+    assert {artifact["id"] for artifact in artifacts} == {
+        "frozen_sparse_cache_probe",
+        "rdu_robustness_diagnostic",
+        "rdu_same_surface_rerun",
+        "rdu_alternate_surface",
+        "rdu_independent_surface",
+        "psi_fresh_surface",
+        "vwac_fresh_surface",
+    }
+    for artifact in artifacts:
+        path = PHASE2 / artifact["path"]
+        expected = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        assert artifact["sha256"] == expected
+    table = (DIAGNOSTIC_PACKET / "falsification_table.md").read_text(encoding="utf-8")
+    assert "stale_positive_first_surface" in table
+    assert "historical_positive_same_surface" in table
+    assert "same_family_falsification" in table
+    assert "cross_family_falsification" in table

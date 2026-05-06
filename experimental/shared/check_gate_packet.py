@@ -81,7 +81,15 @@ REAL_ROW_FIELDS = {
 REAL_CONTROL_VALUES = {
     "ssq_lr": {"bf16_no_quant"},
     "horn": {"boundary", "non_boundary", "permuted_direction"},
-    "hbsm": {"perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"},
+    "hbsm": {
+        "perturbation_off",
+        "random_flags",
+        "layer_index",
+        "parameter_count_norm",
+        "boundary_only",
+        "kl_lens_rank",
+        "activation_outlier",
+    },
 }
 SSQ_LR_POSITION_BUCKETS = {"prefill_end", "2k_or_end", "8k_or_end", "final_minus_128"}
 REAL_SUMMARY_FIELDS = {
@@ -100,6 +108,7 @@ REAL_SUMMARY_FIELDS = {
         "selected_s1_ci_low",
         "holm_p_min",
         "magnitude_gate_pass",
+        "distribution_effect_floor_pass",
         "distribution_gate_pass",
         "max_abs_ratio_final_minus_128_vs_prefill_end",
         "std_ratio_final_minus_128_vs_prefill_end",
@@ -130,6 +139,7 @@ REAL_SUMMARY_FIELDS = {
         "gate_pass",
         "primary_row_count",
         "prompt_count",
+        "expected_top_decile_count",
         "top_decile_count",
         "random_top_decile_count",
         "train_count",
@@ -318,6 +328,7 @@ def _validate_real_summary(
             "gate_status",
             "gate_pass",
             "magnitude_gate_pass",
+            "distribution_effect_floor_pass",
             "distribution_gate_pass",
             "required_passing_layer_count",
             "selected_s1_ratio",
@@ -389,6 +400,7 @@ def _validate_real_summary(
         for field in (
             "primary_row_count",
             "prompt_count",
+            "expected_top_decile_count",
             "top_decile_count",
             "random_top_decile_count",
             "train_count",
@@ -407,6 +419,7 @@ def _validate_real_summary(
             "gate_pass",
             "primary_row_count",
             "prompt_count",
+            "expected_top_decile_count",
             "top_decile_count",
             "random_top_decile_count",
             "train_count",
@@ -544,7 +557,7 @@ def _validate_real_coverage(
                 row.get("boundary_index"),
                 row.get("pre_norm_position"),
                 row.get("post_norm_position"),
-            ): str(row.get("direction"))
+            ): row
             for row in boundary_rows
         }
         for row in rows:
@@ -561,8 +574,17 @@ def _validate_real_coverage(
             original = boundary_by_key.get(key)
             if original is None:
                 errors.append("horn permuted_direction row must match an observed boundary tuple")
-            elif str(row.get("direction")) == original:
+            elif str(row.get("direction")) == str(original.get("direction")):
                 errors.append("horn permuted_direction row must flip the observed boundary direction")
+            else:
+                for field in ("max_abs", "rms", "kurtosis"):
+                    value = row.get(field)
+                    original_value = original.get(field)
+                    if _finite_number(value) and _finite_number(original_value):
+                        if abs(float(value) - float(original_value)) > 1e-9:
+                            errors.append(
+                                "horn permuted_direction row must reuse the observed boundary metrics"
+                            )
         for index, row in enumerate(rows):
             _validate_finite_fields(
                 project="horn",
@@ -605,8 +627,15 @@ def _validate_real_coverage(
             errors.append("hbsm boundary_only rows need both train and test splits or config.json resource_limit_note")
         top_decile_count = sum(1 for row in primary_rows if row.get("top_decile_flag") is True)
         random_top_decile_count = sum(1 for row in primary_rows if row.get("random_top_decile") is True)
-        if top_decile_count != random_top_decile_count:
-            errors.append("hbsm boundary_only random_top_decile true count must match top_decile_flag true count")
+        expected_top_decile_count = math.ceil(0.10 * len(primary_rows)) if primary_rows else 0
+        if top_decile_count != expected_top_decile_count:
+            errors.append(
+                "hbsm boundary_only top_decile_flag true count must equal ceil(10% of primary rows)"
+            )
+        if random_top_decile_count != expected_top_decile_count:
+            errors.append(
+                "hbsm boundary_only random_top_decile true count must equal ceil(10% of primary rows)"
+            )
         for index, row in enumerate(rows):
             for field in ("kl_or_nll_drift", "cheap_predictor", "parameter_count", "weight_norm"):
                 if not _finite_number(row.get(field)):

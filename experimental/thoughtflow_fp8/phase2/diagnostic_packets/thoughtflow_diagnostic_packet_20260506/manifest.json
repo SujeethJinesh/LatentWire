@@ -1,0 +1,150 @@
+{
+  "artifacts": [
+    {
+      "claim": "The first frozen sparse-cache surface made rdu_topk look alive.",
+      "id": "frozen_sparse_cache_probe",
+      "path": "frozen_sparse_cache_probe.json",
+      "role": "stale_positive_first_surface",
+      "sha256": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9",
+      "summary": {
+        "n_scored_traces": 74,
+        "rdu_topk_nll": 3.778857429285307,
+        "rkv_like_nll": 3.938916821737547,
+        "status": "ALIVE on frozen sparse-cache probe; rdu_topk clears the preregistered promotion rule with margins 0.160 vs R-KV-like and 0.121 vs ThinKV-like.",
+        "thin_kv_like_nll": 3.8999502143344364
+      }
+    },
+    {
+      "claim": "Cached deterministic splits preserved positive means but not a fresh-surface claim.",
+      "id": "rdu_robustness_diagnostic",
+      "path": "rdu_robustness_diagnostic.json",
+      "role": "stale_positive_robustness_probe",
+      "sha256": "sha256:623b962fd3c98068a59764b31a49a471dbe3b8ca33a4190ed68ac1354b4e4e26",
+      "summary": {
+        "n_scored_traces": 74,
+        "split_mean_margin_passes": 4,
+        "split_paired_mean_passes": 4,
+        "split_promotion_passes": 2,
+        "status": "PROMOTED on cached full gate; deterministic trace splits keep positive margins and paired means, but split CIs are not uniformly below zero."
+      }
+    },
+    {
+      "claim": "rdu_topk reproduced the first frozen sparse-cache gate on the same surface.",
+      "id": "rdu_same_surface_rerun",
+      "path": "rdu_no_retune_reproduction_check.json",
+      "role": "historical_positive_same_surface",
+      "sha256": "sha256:9a6420cf4d2bd18764f5e0e60fcd5964378a27996111b82485b71fcb668accd9",
+      "summary": {
+        "best_compressed_policy": "rdu_topk",
+        "rdu_is_best_compressed": true,
+        "rdu_nll": 3.778857429285307,
+        "reproduction_pass": true,
+        "status": "REPRODUCED on measured no-retuning rerun; rdu_topk remains best compressed and clears the preregistered rule."
+      }
+    },
+    {
+      "claim": "rdu_topk failed strict same-family separation on an alternate surface.",
+      "id": "rdu_alternate_surface",
+      "path": "rdu_alt_surface_reproduction_check.json",
+      "role": "same_family_falsification",
+      "sha256": "sha256:1302ce31ffa666aba02ed0e03fab8bdb01019e37fdd01ad77f234a6a0a1843fd",
+      "summary": {
+        "best_compressed_policy": "tf_sparse_r0.55_p0.05_m0.12_a2",
+        "rdu_is_best_compressed": false,
+        "rdu_nll": 3.594349021780981,
+        "reproduction_pass": false,
+        "status": "NOT REPRODUCED on alternate measured no-retuning surface; inspect measured decision details.",
+        "strict_family_readout": {
+          "cross_family_margin_nll_vs_rdu": {
+            "longflow_like": 0.28703425355153556,
+            "rkv_like": 0.0868108207232332,
+            "thin_kv_like": 0.25637868985737855
+          },
+          "same_family_margin_nll_vs_rdu": {
+            "tf_sparse_r0.55_p0.05_m0.12_a2": -0.00649707774593411,
+            "thoughtflow_saliency_recent": 0.1001258549624926
+          },
+          "win_rate_vs_rkv_like": 0.6438356164383562,
+          "win_rate_vs_thin_kv_like": 0.6438356164383562
+        }
+      }
+    },
+    {
+      "claim": "rdu_topk failed cross-family separation on independent saved traces.",
+      "id": "rdu_independent_surface",
+      "path": "rdu_independent_trace_reproduction_check.json",
+      "role": "cross_family_falsification",
+      "sha256": "sha256:5a568e1c5178ccb55443184aa7d1c8ad521c30f8930ad3c10a11f27722f8c6a1",
+      "summary": {
+        "best_compressed_policy": "rkv_like",
+        "rdu_is_best_compressed": false,
+        "rdu_nll": 4.01354142454233,
+        "reproduction_pass": false,
+        "status": "NOT REPRODUCED on independent saved-trace no-retuning surface; inspect same-family/cross-family decision details.",
+        "strict_family_readout": {
+          "cross_family_min_margin": -0.03235091118330313,
+          "cross_family_positive": false,
+          "same_family_min_margin": 0.006250728214725498,
+          "same_family_positive": true
+        }
+      }
+    },
+    {
+      "claim": "psi_topk failed its preregistered fresh-surface promotion rule.",
+      "id": "psi_fresh_surface",
+      "path": "psi_fresh_sparse_cache_check.json",
+      "role": "fresh_successor_kill",
+      "sha256": "sha256:d0a08035650374a93babeb87845c1540411e12c72d54abfb568a431e345f26d3",
+      "summary": {
+        "n_scored_traces": 70,
+        "policy_name": "psi_topk",
+        "policy_nll": 7.89932542528425,
+        "promotion_pass": false,
+        "rkv_like_nll": 3.960167281968253,
+        "status": "KILLED on one-shot fresh sparse-cache surface; psi_topk fails the preregistered promotion rule.",
+        "thin_kv_like_nll": 3.9055468491145544
+      }
+    },
+    {
+      "claim": "vwac_topk failed its preregistered fresh-surface promotion rule.",
+      "id": "vwac_fresh_surface",
+      "path": "vwac_fresh_sparse_cache_check.json",
+      "role": "fresh_successor_kill",
+      "sha256": "sha256:80a359545dc074f02f699e06a8228bb894d39548422bd47a49ad68ca9999ae0d",
+      "summary": {
+        "n_scored_traces": 64,
+        "policy_name": "vwac_topk",
+        "policy_nll": 4.336302042007446,
+        "promotion_pass": false,
+        "rkv_like_nll": 4.0957472417503595,
+        "status": "KILLED on one-shot fresh sparse-cache surface; vwac_topk fails the preregistered promotion rule.",
+        "thin_kv_like_nll": 4.162138227373362
+      }
+    }
+  ],
+  "claim_boundary": [
+    "diagnostic falsification packet",
+    "not a positive method claim",
+    "not a GPU/FP8/latency claim"
+  ],
+  "environment": {
+    "numpy": "1.26.4",
+    "platform": "macOS-26.4.1-arm64-arm-64bit",
+    "pytest": "9.0.3",
+    "python": "3.11.6",
+    "torch": "2.6.0",
+    "transformers": "5.7.0",
+    "triton": "3.7.0+git270e696d"
+  },
+  "generated_date": "2026-05-06",
+  "git": {
+    "dirty_at_generation": true,
+    "head_at_generation": "86e3378a840cc9015bd288e403f346086f0b2796"
+  },
+  "packet_name": "thoughtflow_diagnostic_packet_20260506",
+  "script": {
+    "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
+    "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
+    "sha256": "sha256:b4aa9d75c93754566301ff51cca5f56a6252987bd8b66b1908423b83c79ef51a"
+  }
+}

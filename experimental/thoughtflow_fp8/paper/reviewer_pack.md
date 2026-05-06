@@ -10,6 +10,8 @@
 - Draft TeX: `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.tex`
 - Current decision manifest:
   `experimental/thoughtflow_fp8/phase2/current_decision_manifest_20260506.md`
+- Tracked diagnostic packet:
+  `experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/`
 
 ## Current Claim
 
