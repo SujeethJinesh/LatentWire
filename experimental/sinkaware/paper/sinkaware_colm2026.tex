@@ -156,14 +156,14 @@ Max len & Sink tokens & Loss improve & KL improve & Min model improve \\
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{rrrrr}
+\begin{tabular}{rrrrrr}
 \toprule
-Traces & Max len & Sink tokens & Loss improve & Min model improve \\
+Traces & Max len & Sink tokens & Loss improve & KL improve & Min model improve \\
 \midrule
-48 & 64 & 4 & $0.0801 \pm 0.0894$ & 0.0345 \\
-48 & 96 & 4 & $0.0721 \pm 0.0676$ & 0.0376 \\
-48 & 64 & 2 & $0.0621 \pm 0.0701$ & 0.0263 \\
-48 & 96 & 2 & $0.0537 \pm 0.0509$ & 0.0277 \\
+48 & 64 & 4 & $0.0801 \pm 0.0894$ & $0.0752 \pm 0.1003$ & 0.0345 \\
+48 & 96 & 4 & $0.0721 \pm 0.0676$ & $0.0694 \pm 0.0823$ & 0.0376 \\
+48 & 64 & 2 & $0.0621 \pm 0.0701$ & $0.0532 \pm 0.0772$ & 0.0263 \\
+48 & 96 & 2 & $0.0537 \pm 0.0509$ & $0.0464 \pm 0.0580$ & 0.0277 \\
 \bottomrule
 \end{tabular}
 \caption{Larger downstream causal-LM control repeats. Exact sink-logit replacement is a no-op in all rows; rank-2 beats position-only in loss drift and KL for both distilgpt2 and OPT-125M across seeds 0/1/2.}

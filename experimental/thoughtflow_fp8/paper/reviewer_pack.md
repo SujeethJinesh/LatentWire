@@ -46,6 +46,16 @@ result, CUDA kernel result, or latency/throughput win.
 | fresh value-weighted attention utility | `vwac_topk` NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162 on 64 fresh C2C SVAMP70 traces | killed |
 | Triton interpreter | anchor/phase int8 primitive matches CPU reference | kernel logic only |
 
+## Stable Owned-Test Command
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest \
+  experimental/thoughtflow_fp8/phase2/tests \
+  experimental/thoughtflow_fp8/phase4/tests -rs
+```
+
 ## Reviewer Risks
 
 - The project name still says FP8, but no real FP8 serving result exists.

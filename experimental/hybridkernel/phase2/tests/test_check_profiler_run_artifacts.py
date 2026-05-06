@@ -164,6 +164,26 @@ def test_requires_complete_environment_capture(tmp_path: Path) -> None:
     )
 
 
+def test_rejects_unfilled_readout_template_cells(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "readout.md").write_text(
+        "| Question | Evidence | Decision |\n"
+        "|---|---|---|\n"
+        "| Distinct boundary conversion/materialization kernel? | kernel names and timestamps | yes/no |\n"
+        "| Boundary idle or launch gap? | median and paired deltas | yes/no |\n"
+        "| Extra DRAM/L2 traffic near boundary? | NCU bytes vs matched controls | yes/no |\n"
+        "| End-to-end impact estimate clears 3%? | formula and confidence interval | yes/no |\n"
+        "| Same-family controls available? | model/control rows | yes/no |\n"
+        "| Cross-family falsification attempted? | model/control rows | yes/no |\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("unfilled template placeholder" in error for error in result["errors"])
+
+
 def test_rejects_tiny_or_placeholder_native_profiler_artifacts(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(

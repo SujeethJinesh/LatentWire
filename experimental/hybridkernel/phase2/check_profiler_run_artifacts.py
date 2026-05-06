@@ -41,6 +41,15 @@ READOUT_MARKERS = [
     "Cross-family falsification attempted?",
 ]
 
+READOUT_TEMPLATE_PLACEHOLDERS = [
+    "kernel names and timestamps",
+    "median and paired deltas",
+    "ncu bytes vs matched controls",
+    "formula and confidence interval",
+    "model/control rows",
+    "yes/no",
+]
+
 NSYS_PATTERNS = ["*.nsys-rep", "*.sqlite", "*.qdrep"]
 NCU_PATTERNS = ["*.ncu-rep"]
 MIN_NATIVE_ARTIFACT_BYTES = 1024
@@ -177,9 +186,15 @@ def check_run_artifacts(
     _reject_skeleton_todo(readout_path, "readout.md", errors)
     if readout_path.is_file():
         readout = _read_text(readout_path)
+        readout_lower = readout.lower()
         for marker in READOUT_MARKERS:
             if marker not in readout:
                 errors.append(f"readout.md missing decision row: {marker}")
+        for placeholder in READOUT_TEMPLATE_PLACEHOLDERS:
+            if placeholder in readout_lower:
+                errors.append(
+                    f"readout.md still contains unfilled template placeholder: {placeholder}"
+                )
 
     profile_scope_path = run_dir / "metadata/profile_scope.json"
     _reject_skeleton_todo(profile_scope_path, "metadata/profile_scope.json", errors)
