@@ -7,7 +7,7 @@ Status: **NOT REPRODUCED on alternate measured no-retuning surface; inspect meas
 - measured label: `measured_alt_surface_len112_cont32`
 - method branch: `rdu_topk`
 
-This check reruns the frozen sparse-cache probe with the same `rdu_topk` rule and no policy retuning. Only the measurement surface changes, and the cached promoted gate is kept as a labeled reference.
+This check reruns the frozen sparse-cache probe with the same `rdu_topk` rule and no policy retuning. Only the measurement surface changes, and the cached first-surface gate is kept as a labeled reference.
 
 ## Surface
 
@@ -21,7 +21,7 @@ This check reruns the frozen sparse-cache probe with the same `rdu_topk` rule an
 
 ## Cached vs Measured Decision
 
-| Label | RDU NLL | Best compressed | Margin vs R-KV | Paired vs R-KV | Margin vs ThinKV | Paired vs ThinKV | Promotion |
+| Label | RDU NLL | Best compressed | Margin vs R-KV | Paired vs R-KV | Margin vs ThinKV | Paired vs ThinKV | RKV/ThinKV rule |
 |---|---:|---|---:|---:|---:|---:|---|
 | cached_promoted_gate | 3.779 | rdu_topk | +0.160 | -0.160 [-0.264,-0.050] | +0.121 | -0.121 [-0.211,-0.037] | pass |
 | measured_alt_surface_len112_cont32 | 3.594 | tf_sparse_r0.55_p0.05_m0.12_a2 | +0.087 | -0.087 [-0.139,-0.028] | +0.256 | -0.256 [-0.465,-0.086] | pass |
@@ -60,5 +60,8 @@ Positive margins mean the measured row is worse than `rdu_topk`.
 - `rdu_topk` oracle hit rate: 0.438
 
 ## Decision
+
+- same-family positive separation: False (min margin -0.006)
+- cross-family positive separation: True (min margin +0.087)
 
 This is an alternate measured reproduction surface, not a policy-tuning surface. The next gate is a larger frozen slice or an independently seeded trace split with the same reporting.

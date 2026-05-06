@@ -1,7 +1,7 @@
-"""Independent-trace no-retuning check for the promoted rdu_topk branch.
+"""Independent-trace no-retuning check for the first-surface rdu_topk branch.
 
 This script keeps the pre-registered rdu_topk rule fixed and changes only the
-saved trace inputs. It writes a separate artifact so the promoted 74-trace gate
+saved trace inputs. It writes a separate artifact so the first-surface 74-trace gate
 remains a cached reference.
 """
 

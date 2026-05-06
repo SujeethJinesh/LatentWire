@@ -1,6 +1,6 @@
 # ThoughtFlow-FP8 RDU No-Retuning Reproduction Check
 
-Status: **REPRODUCED on measured no-retuning rerun; rdu_topk remains best compressed and clears the preregistered rule.**
+Status: **REPRODUCED on the same measured no-retuning surface; later gates still demote rdu_topk.**
 
 - diagnostic type: `measured_no_retuning_rerun_against_cached_frozen_gate`
 - cached label: `cached_promoted_gate`
@@ -10,7 +10,7 @@ Status: **REPRODUCED on measured no-retuning rerun; rdu_topk remains best compre
 - keep fraction: 0.20
 - continuation tokens: 24
 
-This reruns the frozen sparse-cache probe with the existing `rdu_topk` rule and writes a separate measured artifact. It does not retune policy parameters and does not overwrite the cached promoted frozen gate.
+This reruns the frozen sparse-cache probe with the existing `rdu_topk` rule and writes a separate measured artifact. It does not retune policy parameters and does not overwrite the cached first-surface frozen gate.
 
 ## Cached vs Measured Decision
 

@@ -1,8 +1,8 @@
 """Cached robustness diagnostics for the pre-registered rdu_topk result.
 
 This script does not score the model or change the rdu_topk rule. It reads the
-existing frozen sparse-cache probe rows and checks whether the promoted row is
-stable under deterministic trace partitions.
+existing frozen sparse-cache probe rows and checks whether the first-surface
+candidate row is stable under deterministic trace partitions.
 """
 
 from __future__ import annotations
@@ -313,7 +313,7 @@ def _write_markdown(result: dict[str, object], output_path: Path) -> None:
             "",
             "## Decision",
             "",
-            "`rdu_topk` remains promoted on the current frozen sparse-cache decision surface. The next exact gate is still a real reproduction artifact: a larger or seed-repeated frozen slice with no retuning, plus strict same-family versus cross-family reporting and oracle/headroom diagnostics.",
+            "`rdu_topk` remains the best compressed row on the first frozen sparse-cache decision surface. Later alternate-surface and independent-trace gates demote it, so this artifact is historical support only.",
         ]
     )
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")

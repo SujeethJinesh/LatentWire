@@ -1,7 +1,7 @@
-"""Alternate-surface no-retuning check for the promoted rdu_topk branch.
+"""Alternate-surface no-retuning check for the first-surface rdu_topk branch.
 
 This script keeps the pre-registered rdu_topk rule fixed, changes only the
-measurement surface, and writes separate artifacts so the original promoted
+measurement surface, and writes separate artifacts so the original first-surface
 gate remains a cached reference. The default surface uses a longer prefix and
 continuation than frozen_sparse_cache_probe.json.
 """
@@ -69,6 +69,23 @@ def _surface_changes(cached: dict[str, object], measured: dict[str, object]) -> 
     }
 
 
+def _strict_family_pass(family: dict[str, object]) -> dict[str, object]:
+    same_family = {
+        str(policy): float(margin)
+        for policy, margin in family["same_family_margin_nll_vs_rdu"].items()
+    }
+    cross_family = {
+        str(policy): float(margin)
+        for policy, margin in family["cross_family_margin_nll_vs_rdu"].items()
+    }
+    return {
+        "same_family_positive": bool(same_family) and all(margin > 0.0 for margin in same_family.values()),
+        "cross_family_positive": bool(cross_family) and all(margin > 0.0 for margin in cross_family.values()),
+        "same_family_min_margin": min(same_family.values()) if same_family else 0.0,
+        "cross_family_min_margin": min(cross_family.values()) if cross_family else 0.0,
+    }
+
+
 def build_report(
     cached: dict[str, object],
     measured: dict[str, object],
@@ -79,12 +96,15 @@ def build_report(
     measured_decision = _promotion_decision(measured)
     measured_family = _family_separation(measured)
     measured_oracle = _oracle_headroom(measured)
+    strict_family = _strict_family_pass(measured_family)
     surface_changes = _surface_changes(cached, measured)
     reproduction_pass = bool(
         measured_decision["promotion_pass"]
         and measured_decision["rdu_is_best_compressed"]
         and measured_decision["margin_vs_rkv_like"] >= PROMOTION_MARGIN
         and measured_decision["margin_vs_thin_kv_like"] >= PROMOTION_MARGIN
+        and strict_family["same_family_positive"]
+        and strict_family["cross_family_positive"]
     )
     return {
         "status": (
@@ -105,6 +125,7 @@ def build_report(
         "measured_decision": measured_decision,
         "cached_vs_measured": _cached_vs_measured(cached, measured),
         "measured_family_separation": measured_family,
+        "strict_family_pass": strict_family,
         "measured_oracle_headroom": measured_oracle,
         "reproduction_pass": reproduction_pass,
     }
@@ -126,7 +147,7 @@ def _write_markdown(report: dict[str, object], output_path: Path) -> None:
         f"- measured label: `{report['measured_label']}`",
         f"- method branch: `{report['method_branch']}`",
         "",
-        "This check reruns the frozen sparse-cache probe with the same `rdu_topk` rule and no policy retuning. Only the measurement surface changes, and the cached promoted gate is kept as a labeled reference.",
+        "This check reruns the frozen sparse-cache probe with the same `rdu_topk` rule and no policy retuning. Only the measurement surface changes, and the cached first-surface gate is kept as a labeled reference.",
         "",
         "## Surface",
         "",
@@ -141,7 +162,7 @@ def _write_markdown(report: dict[str, object], output_path: Path) -> None:
             "",
             "## Cached vs Measured Decision",
             "",
-            "| Label | RDU NLL | Best compressed | Margin vs R-KV | Paired vs R-KV | Margin vs ThinKV | Paired vs ThinKV | Promotion |",
+            "| Label | RDU NLL | Best compressed | Margin vs R-KV | Paired vs R-KV | Margin vs ThinKV | Paired vs ThinKV | RKV/ThinKV rule |",
             "|---|---:|---|---:|---:|---:|---:|---|",
         ]
     )
@@ -207,6 +228,9 @@ def _write_markdown(report: dict[str, object], output_path: Path) -> None:
             f"- `rdu_topk` oracle hit rate: {oracle['rdu_oracle_hit_rate']:.3f}",
             "",
             "## Decision",
+            "",
+            f"- same-family positive separation: {report['strict_family_pass']['same_family_positive']} (min margin {report['strict_family_pass']['same_family_min_margin']:+.3f})",
+            f"- cross-family positive separation: {report['strict_family_pass']['cross_family_positive']} (min margin {report['strict_family_pass']['cross_family_min_margin']:+.3f})",
             "",
             "This is an alternate measured reproduction surface, not a policy-tuning surface. The next gate is a larger frozen slice or an independently seeded trace split with the same reporting.",
         ]

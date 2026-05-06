@@ -1,8 +1,8 @@
-"""No-retuning reproduction check for the promoted rdu_topk branch.
+"""No-retuning reproduction check for the first-surface rdu_topk branch.
 
 This script runs the frozen sparse-cache probe unchanged, stores the newly
-measured result in a separate artifact, and compares it with the cached promoted
-gate. It does not overwrite frozen_sparse_cache_probe.json and does not change
+measured result in a separate artifact, and compares it with the cached
+first-surface gate. It does not overwrite frozen_sparse_cache_probe.json and does not change
 the rdu_topk scoring rule.
 """
 
@@ -241,7 +241,7 @@ def _write_markdown(report: dict[str, object], output_path: Path) -> None:
         f"- keep fraction: {float(report['measured_reproduction']['keep_fraction']):.2f}",
         f"- continuation tokens: {report['measured_reproduction']['continuation_tokens']}",
         "",
-        "This reruns the frozen sparse-cache probe with the existing `rdu_topk` rule and writes a separate measured artifact. It does not retune policy parameters and does not overwrite the cached promoted frozen gate.",
+        "This reruns the frozen sparse-cache probe with the existing `rdu_topk` rule and writes a separate measured artifact. It does not retune policy parameters and does not overwrite the cached first-surface frozen gate.",
         "",
         "## Cached vs Measured Decision",
         "",

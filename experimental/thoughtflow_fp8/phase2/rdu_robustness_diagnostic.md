@@ -29,4 +29,4 @@ Same-family separation is also preserved on the full cached gate: `rdu_topk` bea
 
 ## Decision
 
-`rdu_topk` remains promoted on the current frozen sparse-cache decision surface. The next exact gate is still a real reproduction artifact: a larger or seed-repeated frozen slice with no retuning, plus strict same-family versus cross-family reporting and oracle/headroom diagnostics.
+`rdu_topk` remains the best compressed row on the first frozen sparse-cache decision surface. Later alternate-surface and independent-trace gates demote it, so this artifact is historical support only.
