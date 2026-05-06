@@ -463,6 +463,30 @@ def _validate_cross_artifact_shape_consistency(
             )
 
 
+def _validate_complete_row_shape_grid(
+    csv_summaries: dict[str, object],
+    errors: list[str],
+) -> None:
+    for relative, summary in csv_summaries.items():
+        if not isinstance(summary, dict):
+            continue
+        rows_by_shape: dict[tuple[str, str, str], set[str]] = {}
+        for shape_key in summary.get("shape_keys", []):
+            parts = str(shape_key).split("|")
+            if len(parts) != 4:
+                continue
+            row_id, model, sequence_length, batch_size = parts
+            rows_by_shape.setdefault((model, sequence_length, batch_size), set()).add(row_id)
+        for (model, sequence_length, batch_size), row_ids in sorted(rows_by_shape.items()):
+            missing_rows = sorted(set(REQUIRED_ROW_IDS) - row_ids)
+            if missing_rows:
+                errors.append(
+                    f"{relative} model={model} sequence_length={sequence_length} "
+                    f"batch_size={batch_size} missing required rows for matched comparison: "
+                    f"{missing_rows}"
+                )
+
+
 def _validate_metadata_shape_consistency(
     metadata_shape_keys: set[str],
     csv_summaries: dict[str, object],
@@ -567,6 +591,7 @@ def check_native_gpu_packet(
             run_dir, relative, min_repeated_runs, errors
         )
     _validate_cross_artifact_shape_consistency(csv_summaries, errors)
+    _validate_complete_row_shape_grid(csv_summaries, errors)
     _validate_metadata_shape_consistency(metadata_shape_keys, csv_summaries, errors)
     _validate_metadata_model_consistency(metadata_model_keys, csv_summaries, errors)
     _validate_decision(run_dir, errors)

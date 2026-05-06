@@ -92,6 +92,8 @@ The checker rejects:
 - `metadata.json` model values that do not match the measured CSV model groups;
 - `metadata.json` sequence shapes that do not match the measured CSV
   sequence_length/batch_size groups;
+- missing required comparison rows within any measured
+  model/sequence_length/batch_size group;
 - fewer than three distinct `run_id` values for any
   row/model/sequence_length/batch_size group in `latency.csv`;
 - mismatched row/model/sequence_length/batch_size groups across quality,

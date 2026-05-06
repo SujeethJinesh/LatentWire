@@ -461,3 +461,19 @@ still include a client replay log.
 Decision: **WARMUP-ONLY LOG PACKETS REJECTED**. This is still handoff
 hardening, not profiling evidence. The next exact gate remains a native
 NVIDIA/vLLM server-side Nsight packet.
+
+## 2026-05-06 Final Client Replay and Map Wording Hardening
+
+Closed the remaining client-log contract loopholes in the native packet
+checker. Client replay logs must now be valid `profiler_driver.py` JSON with a
+non-empty top-level `model`, explicit `dry_run: false`, non-empty requests, and
+all request statuses equal to `ok`. Missing `dry_run`, dry-run logs,
+nested-only model labels, and failed requests are all rejected. The phase-2
+architecture map now also states the current branch correctly: source/control
+audits and integration mapping are complete enough for Mac-local work, and the
+next gate is native NVIDIA/vLLM profiling.
+
+Decision: **MAC-SIDE HYBRIDKERNEL WORK IS SATURATED**. This is packet
+admissibility and stale-wording cleanup only. The scientific gate remains a
+native NVIDIA/vLLM server-side Nsight packet that passes the checker and clears
+the repeated 3% recoverable-gain gate.

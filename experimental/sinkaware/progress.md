@@ -677,3 +677,19 @@ not-CUDA variants even if the `gpu` field names an NVIDIA device.
 
 Decision: **NATIVE CUDA METADATA MUST NAME A CUDA ENVIRONMENT**. This is final
 packet-admissibility hardening, not evidence.
+
+## 2026-05-06 Complete Row/Shape Grid Hardening
+
+Closed the last matched-comparison loophole found by reviewer-style subagent
+audit. The native packet checker now rejects any measured
+model/sequence-length/batch-size group that does not contain every required
+comparison row: exact attention, exact fixed-sink decomposition, rank-2
+sink-logit predictor, and position-only predictor. A packet can no longer pass
+by measuring exact rows at one sequence length and approximate rows at another.
+The GPU runbook now states this requirement explicitly.
+
+Decision: **NATIVE COMPARISONS MUST BE SHAPE-MATCHED**. SinkAware is
+Mac-complete unless a reviewer asks for a new specific local control. The next
+exact gate is a native NVIDIA packet with matched quality drift, downstream
+loss/KL/top-1 behavior, repeated latency for every row/model/shape, and NCU
+memory/HBM counters.
