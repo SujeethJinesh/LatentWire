@@ -21,7 +21,9 @@
       "control_family": "same_family_matched_segment",
       "boundary_direction": "mixed_attention_ssm",
       "nsys_artifact": "nsys/<trace>.nsys-rep",
+      "nsys_artifact_sha256": "sha256:<64 lowercase hex chars>",
       "ncu_artifact": "ncu/<trace>.ncu-rep",
+      "ncu_artifact_sha256": "sha256:<64 lowercase hex chars>",
       "kernel_names": [
         "<kernel name>"
       ],
@@ -32,6 +34,8 @@
         "start": null,
         "end": null
       },
+      "recoverable_fraction_basis": "Explain why this recoverable fraction is conservative.",
+      "reduction_command": "Exact command or script used to reduce Nsight artifacts into this row.",
       "reduction_notes": "Explain how Nsight rows were reduced.",
       "notes": "Replace nulls after native profiling."
     }

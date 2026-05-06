@@ -24,12 +24,13 @@ enabled.
 | runtime/source audit | vLLM hybrid SSM support already handles important layout and transfer paths | broad novelty weakened |
 | threshold model | Granite needs about 25% avoidable boundary traffic at 60% recovery to clear a 3% proxy gain | Mac kernels not justified |
 | fixed-request driver | local dry-run plus optional `/start_profile`/`/stop_profile` bracketing | reduces client-only or startup-trace risk |
-| parser/checker | metric rows require dtype, graph state, batch shape, control segment, three distinct same-config repeats, matching analysis outputs, separate Nsight server logs, and non-dry-run client replay JSON with all request statuses `ok` | stale, mixed-config, warmup-only, dry-run, failed-request, incomplete-log, and placeholder evidence rejected |
+| parser/checker | metric rows require dtype, graph state, batch shape, control segment, reduction command, recoverable-fraction basis, SHA-256 artifact hashes, three distinct same-config repeats, matching analysis outputs, separate Nsight server logs, and non-dry-run client replay JSON with all request statuses `ok` | stale, mixed-config, warmup-only, dry-run, failed-request, shape-mismatched, incomplete-log, hash-mismatched, and placeholder evidence rejected |
 | Triton interpreter | toy boundary primitive matches CPU reference under `TRITON_INTERPRET=1` | indexing/kernel-plumbing only |
 
 The real native row schema also requires row role, control family, boundary
-direction, kernel names, boundary indices, reduction time window, reduction
-notes, and relative in-packet Nsight artifact paths. Nsight Compute artifacts
+direction, kernel names, boundary indices, reduction time window, recoverable
+fraction basis, reduction command, reduction notes, and relative in-packet
+Nsight artifact paths with matching SHA-256 digests. Nsight Compute artifacts
 are optional only for an explicit `no_boundary_signal_kill` packet whose
 readout records no suspicious boundary kernel and whose rows use
 `ncu_artifact: "not_run_no_boundary_signal"`.

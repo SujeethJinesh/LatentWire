@@ -95,6 +95,8 @@
       ],
       "same_family_control_rows": 0,
       "cross_family_falsification_rows": 0,
+      "same_family_control_clear_rows": 0,
+      "cross_family_falsification_clear_rows": 0,
       "mean_avoidable_share": 0.02,
       "mean_recoverable_gain_upper_bound": 0.012,
       "median_recoverable_gain_upper_bound": 0.012,

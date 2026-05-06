@@ -58,7 +58,9 @@ rows. A valid packet must cover both \texttt{attention->ssm} and
 \texttt{ssm->attention} in boundary rows and in the control rows; each
 permuted-direction row must match an observed boundary tuple with the same
 prompt ID and normalization positions while flipping its direction. It cannot
-pass if the permuted controls preserve the selected H1 ratio. It must also
+pass if the permuted controls preserve the selected high-magnitude direction;
+a faithful label flip may preserve unsigned asymmetry while moving the signal
+to the opposite label. It must also
 include at least 12 fixed prompt IDs unless
 the packet records an explicit resource limit. Any resource-limited packet must
 use a \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The packet must

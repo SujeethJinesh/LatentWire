@@ -69,7 +69,9 @@ boundary directions, both-direction non-boundary controls, paired flipped
 `permuted_direction` controls, and finite numeric rows. The flipped controls
 must match an observed boundary by `prompt_id`, boundary index, layer IDs, and
 normalization positions, then invert only the direction label. H1 cannot pass if
-the permuted controls preserve the selected directional ratio. Any
+the permuted controls preserve the selected high-magnitude direction; a faithful
+label flip may preserve unsigned max/min asymmetry while moving the signal to
+the opposite label, which is an acceptable null. Any
 resource-limited packet must set a decision
 beginning `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but
 cannot promote H1.

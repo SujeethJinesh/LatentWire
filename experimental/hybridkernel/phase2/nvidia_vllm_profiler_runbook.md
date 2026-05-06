@@ -368,6 +368,7 @@ Required fields:
 | `attention_ssm_boundary_ms` | boundary-local cost from annotated Nsight trace |
 | `matched_non_boundary_ms` | same-shape local control cost outside attention/SSM boundaries |
 | `recoverable_fraction` | conservative fraction of avoidable boundary cost a fused operator could recover |
+| `recoverable_fraction_basis` | non-placeholder justification for the recoverable-fraction value; cite the observed kernel/traffic rows or use a conservative assumption |
 | `dtype` | exact served dtype, for example `bfloat16`; must be non-empty |
 | `cuda_graph_enabled` | JSON boolean, not a string, recording whether CUDA graphs were enabled |
 | `batch_shape.batch_size` | positive integer batch size used by the fixed replay |
@@ -379,16 +380,23 @@ Required fields:
 | `control_family` | non-empty label for the matched control family, e.g. `same_family_matched_segment` |
 | `boundary_direction` | attention/SSM boundary direction or `mixed_attention_ssm` for an aggregate row |
 | `nsys_artifact` | exact relative path to the Nsight Systems artifact used for the row |
+| `nsys_artifact_sha256` | `sha256:<64 lowercase hex chars>` digest of the `nsys_artifact` file |
 | `ncu_artifact` | exact relative path to the Nsight Compute artifact used for the row |
+| `ncu_artifact_sha256` | `sha256:<64 lowercase hex chars>` digest of the `ncu_artifact` file, or `not_run_no_boundary_signal` only in no-boundary-signal kill packets |
 | `kernel_names` | non-empty list of kernel names reduced into the row |
 | `boundary_indices` | list of architecture-map boundary indices represented by the row |
 | `time_window_ms` | object with numeric `start` and `end` trace-window boundaries |
+| `reduction_command` | exact command or script invocation used to reduce the Nsight artifacts into this row |
 | `reduction_notes` | short non-placeholder explanation of the trace reduction |
 
 Use distinct `run_id` values, `nsys_artifact` paths, `ncu_artifact` paths, and
 `time_window_ms` intervals for independent repeated traces. Duplicating one
 trace into three rows is not admissible evidence and will fail the artifact
 verifier.
+Promotion also requires at least three same-shape same-family control rows and
+three same-shape cross-family falsification rows, with those controls staying
+below the 3% recoverable-gain gate. A packet where controls preserve the same
+3% signal remains audit-only.
 
 Then run:
 

@@ -8,7 +8,9 @@ metrics for a reviewer to inspect the promote/kill decision.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -70,13 +72,18 @@ REQUIRED_METRIC_PROVENANCE_FIELDS = [
     "control_family",
     "boundary_direction",
     "nsys_artifact",
+    "nsys_artifact_sha256",
     "ncu_artifact",
+    "ncu_artifact_sha256",
     "kernel_names",
     "boundary_indices",
     "time_window_ms",
+    "recoverable_fraction_basis",
+    "reduction_command",
     "reduction_notes",
 ]
 ALLOWED_ROW_ROLES = {"primary_hybrid", "same_family_control", "cross_family_falsification"}
+SHA256_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 def _matching_artifacts(root: Path, patterns: list[str]) -> list[Path]:
@@ -188,6 +195,14 @@ def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
+
+
 def _reject_skeleton_todo(path: Path, label: str, errors: list[str]) -> None:
     if path.is_file() and SKELETON_TODO_MARKER in _read_text(path):
         errors.append(f"{label} still contains native run-packet skeleton TODO markers")
@@ -235,6 +250,7 @@ def _validate_metric_artifact_path(
     row_index: int,
     field: str,
     value: str,
+    expected_sha256: str,
     run_dir: Path,
     allowed_suffixes: set[str],
     require_native_artifacts: bool,
@@ -243,6 +259,11 @@ def _validate_metric_artifact_path(
     errors: list[str],
 ) -> None:
     if field == "ncu_artifact" and packet_mode == NO_BOUNDARY_SIGNAL_MODE and value == "not_run_no_boundary_signal":
+        if expected_sha256 != "not_run_no_boundary_signal":
+            errors.append(
+                f"metric row {row_index} ncu_artifact_sha256 must be "
+                "not_run_no_boundary_signal when ncu_artifact is not_run_no_boundary_signal"
+            )
         return
     artifact_path = Path(value)
     if artifact_path.is_absolute():
@@ -264,6 +285,18 @@ def _validate_metric_artifact_path(
     if not resolved.is_file():
         errors.append(f"metric row {row_index} {field} does not exist: {value}")
         return
+    expected_sha256 = expected_sha256.strip().lower()
+    if not SHA256_PATTERN.match(expected_sha256):
+        errors.append(
+            f"metric row {row_index} {field}_sha256 must be sha256:<64 lowercase hex chars>"
+        )
+    else:
+        actual_sha256 = _file_sha256(resolved)
+        if actual_sha256 != expected_sha256:
+            errors.append(
+                f"metric row {row_index} {field}_sha256 mismatch for {value}: "
+                f"expected {expected_sha256}, got {actual_sha256}"
+            )
     size = resolved.stat().st_size
     if size < min_bytes:
         errors.append(
@@ -312,17 +345,28 @@ def _validate_metric_provenance(
             errors.append(
                 f"metric row {idx} row_role must be one of {sorted(ALLOWED_ROW_ROLES)}"
             )
-        for field in ["control_family", "boundary_direction", "nsys_artifact", "ncu_artifact", "reduction_notes"]:
+        for field in [
+            "control_family",
+            "boundary_direction",
+            "nsys_artifact",
+            "ncu_artifact",
+            "recoverable_fraction_basis",
+            "reduction_command",
+            "reduction_notes",
+        ]:
             value = str(row.get(field, "")).strip()
             if not value or "TODO_NATIVE_PROFILE_FILL" in value or "placeholder" in value.lower():
                 errors.append(f"metric row {idx} {field} must be filled with non-placeholder text")
         nsys_value = str(row.get("nsys_artifact", "")).strip()
+        nsys_sha256 = str(row.get("nsys_artifact_sha256", "")).strip()
         ncu_value = str(row.get("ncu_artifact", "")).strip()
+        ncu_sha256 = str(row.get("ncu_artifact_sha256", "")).strip()
         if nsys_value and "TODO_NATIVE_PROFILE_FILL" not in nsys_value and "placeholder" not in nsys_value.lower():
             _validate_metric_artifact_path(
                 row_index=idx,
                 field="nsys_artifact",
                 value=nsys_value,
+                expected_sha256=nsys_sha256,
                 run_dir=run_dir,
                 allowed_suffixes={".nsys-rep", ".sqlite", ".qdrep"},
                 require_native_artifacts=require_native_artifacts,
@@ -335,6 +379,7 @@ def _validate_metric_provenance(
                 row_index=idx,
                 field="ncu_artifact",
                 value=ncu_value,
+                expected_sha256=ncu_sha256,
                 run_dir=run_dir,
                 allowed_suffixes={".ncu-rep"},
                 require_native_artifacts=require_native_artifacts,
@@ -564,6 +609,7 @@ def check_run_artifacts(
     metric_models: set[str] = set()
     metric_roles: set[str] = set()
     client_models: set[str] = set()
+    client_replay_shapes: set[tuple[str, int, int, int]] = set()
     for log_file in log_files:
         if "client" not in log_file.name.lower():
             continue
@@ -572,7 +618,24 @@ def check_run_artifacts(
         except json.JSONDecodeError:
             continue
         if isinstance(payload, dict) and str(payload.get("model", "")).strip():
-            client_models.add(str(payload["model"]).strip())
+            client_model = str(payload["model"]).strip()
+            client_models.add(client_model)
+            requests = payload.get("requests")
+            if isinstance(requests, list) and requests:
+                for request in requests:
+                    if not isinstance(request, dict):
+                        continue
+                    prompt_total = request.get("prompt_token_count_total")
+                    requested_decode = request.get("requested_decode_tokens")
+                    if (
+                        isinstance(prompt_total, int)
+                        and prompt_total > 0
+                        and isinstance(requested_decode, int)
+                        and requested_decode > 0
+                    ):
+                        client_replay_shapes.add(
+                            (client_model, prompt_total, requested_decode, len(requests))
+                        )
     metrics_path = run_dir / "profiler_metrics.json"
     _reject_skeleton_todo(metrics_path, "profiler_metrics.json", errors)
     if metrics_path.is_file():
@@ -606,6 +669,22 @@ def check_run_artifacts(
                     errors=errors,
                 )
             metric_models = {str(row["model"]) for row in rows}
+            if client_replay_shapes:
+                for row in rows:
+                    model = str(row["model"])
+                    if model not in client_models:
+                        continue
+                    replay_shape = (
+                        model,
+                        int(float(row["prefill_tokens"])),
+                        int(float(row["decode_tokens"])),
+                        int(float(row["requests"])),
+                    )
+                    if replay_shape not in client_replay_shapes:
+                        errors.append(
+                            "client replay shape does not match profiler_metrics.json "
+                            f"batch_shape for model {model}: expected {replay_shape}"
+                        )
             counts = Counter(str(row["model"]) for row in rows)
             model_run_counts = dict(counts)
             config_counts = Counter(str(row["config_key"]) for row in rows)

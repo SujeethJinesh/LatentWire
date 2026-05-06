@@ -64,11 +64,25 @@ available hybrid model.
 
 Added `../shared/hybrid_gate_evaluators.py` and wired the HORN real-packet
 checker to recompute H1 directional ratios, selected metric/direction,
-support fraction, non-boundary control ratio, and permuted-direction ratio from
-`raw_rows.jsonl`. A real H1 packet now cannot pass by copying synthetic
-summary fields without matching boundary rows. The shared Mac smoke prompt
+support fraction, non-boundary selected-direction control ratio, and
+permuted-direction selected-direction control ratio from `raw_rows.jsonl`. A
+real H1 packet now cannot pass by copying synthetic summary fields without
+matching boundary rows. The shared Mac smoke prompt
 manifest is `../shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl` with
 SHA-256 `48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
 
 Decision: **NEXT H1 MUST BE GENERATED FROM RAW BOUNDARY ROWS**. The blocker is
 still a live hybrid activation dump.
+
+## 2026-05-06 Permuted-Control Semantics Fix
+
+After COLM-style review, the H1 evaluator no longer treats unsigned max/min
+asymmetry in `permuted_direction` rows as automatic failure. A faithful
+permutation flips only the direction label while preserving the observed
+activation value, so the unsigned ratio can remain large. The gate now checks
+whether the selected high-magnitude direction is erased by non-boundary and
+permuted controls. Controls that keep the signal on the same selected direction
+label still block H1.
+
+Decision: **H1 NULL CONTROLS MUST ERASE THE SELECTED DIRECTION, NOT MERELY
+UNSIGNED ASYMMETRY**. The blocker remains a real prompt-paired boundary dump.

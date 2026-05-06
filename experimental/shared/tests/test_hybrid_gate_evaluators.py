@@ -98,6 +98,46 @@ def test_horn_h1_evaluator_uses_directional_support_and_controls() -> None:
     assert result["permuted_direction_ratio"] == 1.0
 
 
+def test_horn_h1_evaluator_allows_faithful_label_flip_null() -> None:
+    rows = []
+    for prompt_index in range(12):
+        boundary_values = [("attention->ssm", 10.0), ("ssm->attention", 1.0)]
+        for direction, max_abs in boundary_values:
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": 1.0,
+                    "kurtosis": 1.0,
+                    "control_type": "non_boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": "ssm->attention" if direction == "attention->ssm" else "attention->ssm",
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "permuted_direction",
+                }
+            )
+
+    result = evaluate_horn_h1(rows)
+
+    assert result["gate_pass"] is True
+    assert result["selected_h1_direction"] == "attention->ssm"
+    assert result["permuted_direction_ratio"] == 0.1
+
+
 def test_horn_h1_evaluator_fails_when_non_boundary_control_has_same_ratio() -> None:
     rows = []
     for prompt_index in range(12):

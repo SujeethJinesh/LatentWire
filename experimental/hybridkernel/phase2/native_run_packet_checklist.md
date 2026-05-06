@@ -89,6 +89,8 @@ reduced native trace:
 - `attention_ssm_boundary_ms`: non-negative boundary-local measured cost;
 - `matched_non_boundary_ms`: non-negative same-shape control cost;
 - `recoverable_fraction`: value in `[0, 1]`.
+- `recoverable_fraction_basis`: non-placeholder justification for the chosen
+  recoverable fraction;
 - `dtype`: non-empty served dtype string;
 - `cuda_graph_enabled`: JSON boolean, not a string placeholder;
 - `batch_shape.batch_size`: positive integer batch size;
@@ -102,22 +104,35 @@ reduced native trace:
 - `boundary_direction`: non-placeholder boundary direction label;
 - `nsys_artifact`: relative path inside the packet to a `.nsys-rep`, `.sqlite`,
   or `.qdrep` file;
+- `nsys_artifact_sha256`: `sha256:<64 lowercase hex chars>` digest of the
+  referenced Nsight Systems file;
 - `ncu_artifact`: relative path inside the packet to a `.ncu-rep` file, or
   `not_run_no_boundary_signal` only when using `--packet-mode
   no_boundary_signal_kill`;
+- `ncu_artifact_sha256`: `sha256:<64 lowercase hex chars>` digest of the
+  referenced Nsight Compute file, or `not_run_no_boundary_signal` in the
+  no-boundary-signal kill mode;
 - `kernel_names`: non-empty list of kernel names used in the reduction;
 - `boundary_indices`: integer boundary IDs, non-empty for `primary_hybrid`;
 - `time_window_ms`: object with numeric `start` and `end`, with `end > start`;
+- `reduction_command`: exact command or script invocation used to reduce the
+  native artifacts into this row;
 - `reduction_notes`: non-placeholder notes explaining how the row was reduced.
 
 Do not duplicate one trace into multiple rows. Repeated rows for the same
 model/config must have distinct `nsys_artifact`, `ncu_artifact`, and
 `time_window_ms` intervals. Do not mix different model families and call them
 repeated runs for the same gate.
+Promotion requires at least three same-shape same-family control rows and three
+same-shape cross-family falsification rows, and both control families must stay
+below the 3% recoverable-gain gate. Controls that reproduce the same signal do
+not promote the branch.
 
 The artifact checker resolves `nsys_artifact` and `ncu_artifact` against the
 run directory. Missing files, absolute paths, `..` escapes, wrong extensions,
-and placeholder profiler exports are rejected.
+placeholder profiler exports, and SHA-256 mismatches are rejected. It also
+checks the client replay prompt/decode/request shape against metric rows for
+models present in the client logs.
 
 ## Final Local Commands
 

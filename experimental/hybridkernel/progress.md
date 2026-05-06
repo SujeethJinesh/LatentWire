@@ -581,3 +581,24 @@ The runbook and native packet checklist now require top-level `model` in
 Decision: **DUPLICATED TRACE EXPORTS CANNOT PROMOTE HYBRIDKERNEL**. The next
 exact gate remains a native 5090/vLLM packet with distinct repeats and matched
 controls.
+
+## 2026-05-06 Native Packet Provenance Tightening
+
+After COLM-style review, the native GPU packet contract is stricter before any
+5090 run is interpreted:
+
+- `architecture_map.json` now records exact model IDs for generated native
+  packets, so the checker can match `profile_scope.json` and metric rows against
+  the copied real architecture map;
+- metric rows must include `nsys_artifact_sha256`, `ncu_artifact_sha256`,
+  `recoverable_fraction_basis`, and `reduction_command`;
+- the checker recomputes artifact SHA-256 digests and rejects mismatches;
+- client replay prompt/decode/request counts must match metric `batch_shape`
+  for models present in the client logs;
+- promotion now requires three same-shape same-family controls and three
+  same-shape cross-family falsification rows, with both control families below
+  the 3% recoverable-gain gate.
+
+Decision: **NEXT GPU PACKET MUST BE HASHED, SHAPE-MATCHED, AND
+CONTROL-FALSIFIED**. Mac-side packet mechanics are tighter; the blocker is still
+native NVIDIA/vLLM profiling.

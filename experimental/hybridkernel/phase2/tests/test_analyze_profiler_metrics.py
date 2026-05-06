@@ -24,10 +24,14 @@ def _native_row(idx: int, **overrides: object) -> dict[str, object]:
         "control_family": "same_family_matched_segment",
         "boundary_direction": "mixed_attention_ssm",
         "nsys_artifact": "nsys/granite_tiny_b1_decode64.nsys-rep",
+        "nsys_artifact_sha256": "sha256:" + ("1" * 64),
         "ncu_artifact": "ncu/suspicious_boundary_kernel.ncu-rep",
+        "ncu_artifact_sha256": "sha256:" + ("2" * 64),
         "kernel_names": ["synthetic_boundary_kernel"],
         "boundary_indices": [0],
         "time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
+        "recoverable_fraction_basis": "Assume 60% recovery after comparing boundary and matched control windows.",
+        "reduction_command": "python phase2/reduce_nsight_trace.py --row synthetic",
         "reduction_notes": "Reduced from synthetic fixture row.",
     }
     row.update(overrides)
@@ -35,25 +39,30 @@ def _native_row(idx: int, **overrides: object) -> dict[str, object]:
 
 
 def _review_control_rows() -> list[dict[str, object]]:
-    return [
-        _native_row(
-            100,
-            model="granite-transformer-control",
-            row_role="same_family_control",
-            control_family="same_family_transformer_heavy_control",
-            control_model_or_segment="same_family_transformer_heavy_control",
-            attention_ssm_boundary_ms=2.0,
-            matched_non_boundary_ms=2.0,
-        ),
-        _native_row(
-            101,
-            model="qwen-cross-family-falsification",
-            row_role="cross_family_falsification",
-            control_model_or_segment="cross_family_hybrid_control",
-            attention_ssm_boundary_ms=2.0,
-            matched_non_boundary_ms=2.0,
-        ),
-    ]
+    rows: list[dict[str, object]] = []
+    for idx in range(3):
+        rows.append(
+            _native_row(
+                100 + idx,
+                model="granite-transformer-control",
+                row_role="same_family_control",
+                control_family="same_family_transformer_heavy_control",
+                control_model_or_segment="same_family_transformer_heavy_control",
+                attention_ssm_boundary_ms=2.0,
+                matched_non_boundary_ms=2.0,
+            )
+        )
+        rows.append(
+            _native_row(
+                200 + idx,
+                model="qwen-cross-family-falsification",
+                row_role="cross_family_falsification",
+                control_model_or_segment="cross_family_hybrid_control",
+                attention_ssm_boundary_ms=2.0,
+                matched_non_boundary_ms=2.0,
+            )
+        )
+    return rows
 
 
 def test_pending_without_native_rows() -> None:
@@ -77,8 +86,10 @@ def test_promotes_only_when_all_repeated_runs_clear_gate() -> None:
     assert result["status"].startswith("PROMOTE")
     summary_row = next(iter(result["summary"].values()))
     assert summary_row["clears_3pct_gate_all_runs"] is True
-    assert summary_row["same_family_control_rows"] == 1
-    assert summary_row["cross_family_falsification_rows"] == 1
+    assert summary_row["same_family_control_rows"] == 3
+    assert summary_row["cross_family_falsification_rows"] == 3
+    assert summary_row["same_family_control_clear_rows"] == 0
+    assert summary_row["cross_family_falsification_clear_rows"] == 0
     assert summary_row["median_recoverable_gain_upper_bound"] == 0.036
     assert summary_row["bootstrap_ci95_recoverable_gain_upper_bound"]["low"] == 0.036
 
@@ -135,9 +146,23 @@ def test_primary_gate_clear_without_controls_is_not_promoted() -> None:
     )
 
     assert result["status"].startswith("WEAKLY ALIVE")
-    assert "same-family controls" in result["status"]
+    assert "three-run same-family" in result["status"]
     summary_row = next(iter(result["summary"].values()))
     assert summary_row["clears_3pct_gate_all_runs"] is True
+
+
+def test_controls_that_clear_gate_do_not_promote_primary() -> None:
+    clearing_controls = [
+        dict(row, attention_ssm_boundary_ms=8.0, matched_non_boundary_ms=2.0)
+        for row in _review_control_rows()
+    ]
+    result = analyze({"rows": [_native_row(idx) for idx in range(3)] + clearing_controls})
+
+    assert result["status"].startswith("WEAKLY ALIVE")
+    summary_row = next(row for row in result["summary"].values() if row["model"] == "granite")
+    assert summary_row["clears_3pct_gate_all_runs"] is True
+    assert summary_row["same_family_control_clear_rows"] == 3
+    assert summary_row["cross_family_falsification_clear_rows"] == 3
 
 
 def test_duplicate_run_ids_do_not_clear_gate() -> None:

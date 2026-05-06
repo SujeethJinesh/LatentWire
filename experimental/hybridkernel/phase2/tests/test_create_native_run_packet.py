@@ -45,6 +45,8 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
         "repeat-1",
         "repeat-2",
     ]
+    architecture_map = json.loads((run_dir / "metadata/architecture_map.json").read_text())
+    assert "ibm-granite/granite-4.0-h-tiny" in {row["model"] for row in architecture_map}
 
 
 def test_skeleton_is_not_mistaken_for_complete_native_evidence(tmp_path: Path) -> None:

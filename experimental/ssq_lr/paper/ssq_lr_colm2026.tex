@@ -58,12 +58,15 @@ report \texttt{model\_id}, \texttt{model\_revision}, \texttt{prompt\_id},
 valid only if every prompt/layer pair covers \texttt{prefill\_end},
 \texttt{2k\_or\_end}, \texttt{8k\_or\_end}, and
 \texttt{final\_minus\_128} position buckets and at least 12 prompt IDs unless
-\texttt{config.json} records an explicit resource-limit note. Any
+\texttt{config.json} records an explicit resource-limit note. Rows must identify
+an SSM/Mamba \texttt{layer\_kind} and recurrent \texttt{state\_tensor\_kind}, so
+arbitrary activation tensors cannot promote S1. Any
 resource-limited packet must use a
 \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
 the recomputed S1 evaluator fields: gate name/status/pass flag, prompt count,
 position buckets, SSM layer count, required and observed passing-layer counts,
-selected S1 ratio and prompt-level lower bound, Holm-adjusted readout, and
+distribution-passing layer counts, selected S1 ratio and prompt-level lower
+bound, Holm-adjusted two-sample readout, magnitude/distribution pass flags, and
 final-minus-128 versus prefill-end max-abs/std/kurtosis ratios. The checker
 recomputes these fields from raw rows rather than global layer means and rejects
 stale summaries. It must pass

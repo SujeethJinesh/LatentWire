@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import hashlib
 from pathlib import Path
 
 from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
@@ -12,6 +13,14 @@ from experimental.hybridkernel.phase2.check_profiler_run_artifacts import (
 
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures/synthetic_profiler_run_packet"
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
 
 
 def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
@@ -59,6 +68,7 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                         "prompt_token_count_total": 128,
                         "requested_decode_tokens": 64,
                     }
+                    for _ in range(16)
                 ],
             }
         )
@@ -99,10 +109,21 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                 "control_family": "same_family_matched_segment",
                 "boundary_direction": "mixed_attention_ssm",
                 "nsys_artifact": f"nsys/granite_tiny_b1_decode64_run{idx}.nsys-rep",
+                "nsys_artifact_sha256": _sha256(
+                    run_dir / f"nsys/granite_tiny_b1_decode64_run{idx}.nsys-rep"
+                ),
                 "ncu_artifact": f"ncu/suspicious_boundary_kernel_run{idx}.ncu-rep",
+                "ncu_artifact_sha256": _sha256(
+                    run_dir / f"ncu/suspicious_boundary_kernel_run{idx}.ncu-rep"
+                ),
                 "kernel_names": ["synthetic_boundary_kernel"],
                 "boundary_indices": [0],
                 "time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
+                "recoverable_fraction_basis": "Synthetic fixture assumes 60% recovery from a fused boundary operator.",
+                "reduction_command": (
+                    "python experimental/hybridkernel/phase2/tests/"
+                    "test_check_profiler_run_artifacts.py::_write_complete_run"
+                ),
                 "reduction_notes": "Reduced from synthetic fixture row.",
             }
             for idx in range(runs)
@@ -179,6 +200,7 @@ def test_no_boundary_signal_kill_packet_allows_missing_ncu(tmp_path: Path) -> No
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
     for row in payload["rows"]:
         row["ncu_artifact"] = "not_run_no_boundary_signal"
+        row["ncu_artifact_sha256"] = "not_run_no_boundary_signal"
     metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
     result = check_run_artifacts(tmp_path, packet_mode="no_boundary_signal_kill")
@@ -282,6 +304,36 @@ def test_rejects_client_replay_without_explicit_non_dry_run(tmp_path: Path) -> N
 
     assert result["status"] == "FAIL"
     assert any("dry_run=false" in error for error in result["errors"])
+
+
+def test_rejects_client_replay_shape_mismatch(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "logs/client_replay_b1.log").write_text(
+        json.dumps(
+            {
+                "model": "granite",
+                "dry_run": False,
+                "token_counts_required": True,
+                "token_count_source": "test_tokenizer",
+                "requests": [
+                    {
+                        "status": "ok",
+                        "prompt_token_counts": [127],
+                        "prompt_token_count_total": 127,
+                        "requested_decode_tokens": 64,
+                    }
+                    for _ in range(16)
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("client replay shape does not match" in error for error in result["errors"])
 
 
 def test_rejects_dry_run_or_failed_client_replay_logs(tmp_path: Path) -> None:
@@ -457,6 +509,19 @@ def test_rejects_metric_row_missing_artifact_path(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("nsys_artifact does not exist" in error for error in result["errors"])
+
+
+def test_rejects_metric_row_artifact_hash_mismatch(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["nsys_artifact_sha256"] = "sha256:" + ("0" * 64)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("nsys_artifact_sha256 mismatch" in error for error in result["errors"])
 
 
 def test_rejects_metric_row_artifact_path_outside_run_dir(tmp_path: Path) -> None:

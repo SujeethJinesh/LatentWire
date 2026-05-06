@@ -81,6 +81,51 @@ def _bootstrap_mean_low(values: list[float], *, draws: int = 1000, quantile: flo
     return float(means[int(quantile * (draws - 1))])
 
 
+def _ks_2samp_pvalue(first: list[float], second: list[float]) -> float:
+    """Return an asymptotic two-sample KS p-value without requiring scipy."""
+
+    if len(first) < 2 or len(second) < 2:
+        return 1.0
+    first_sorted = sorted(float(value) for value in first)
+    second_sorted = sorted(float(value) for value in second)
+    i = j = 0
+    n_first = len(first_sorted)
+    n_second = len(second_sorted)
+    statistic = 0.0
+    values = sorted(set(first_sorted + second_sorted))
+    for value in values:
+        while i < n_first and first_sorted[i] <= value:
+            i += 1
+        while j < n_second and second_sorted[j] <= value:
+            j += 1
+        statistic = max(statistic, abs(i / n_first - j / n_second))
+    if statistic <= 0.0:
+        return 1.0
+    effective_n = n_first * n_second / (n_first + n_second)
+    lam = (math.sqrt(effective_n) + 0.12 + 0.11 / math.sqrt(effective_n)) * statistic
+    terms = [
+        ((-1) ** (term_index - 1)) * math.exp(-2.0 * (term_index**2) * (lam**2))
+        for term_index in range(1, 101)
+    ]
+    return min(1.0, max(0.0, 2.0 * sum(terms)))
+
+
+def _holm_adjusted_pvalues(tests: list[tuple[int, str, float]]) -> list[tuple[int, str, float]]:
+    """Apply Holm correction and return ``(layer, field, adjusted_p)`` rows."""
+
+    if not tests:
+        return []
+    ordered = sorted(tests, key=lambda item: item[2])
+    adjusted: list[tuple[int, str, float]] = []
+    running = 0.0
+    total = len(ordered)
+    for rank, (layer, field, p_value) in enumerate(ordered):
+        corrected = min(1.0, p_value * (total - rank))
+        running = max(running, corrected)
+        adjusted.append((layer, field, running))
+    return adjusted
+
+
 def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Evaluate the SSQ-LR S1 state-heterogeneity screen from packet rows."""
 
@@ -94,6 +139,7 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
     passing_layers = 0
     selected_layer_lowers: list[float] = []
+    distribution_tests: list[tuple[int, str, float]] = []
     for layer in layers:
         layer_rows = [row for row in rows if int(row["layer"]) == layer]
         max_values = _prompt_bucket_ratios(layer_rows, field="max_abs")
@@ -109,6 +155,18 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         if selected_layer_ratio >= 2.0 and selected_layer_low > 1.25:
             passing_layers += 1
             selected_layer_lowers.append(selected_layer_low)
+        for field in ["max_abs", "std", "kurtosis"]:
+            first_values = [
+                float(row[field])
+                for row in layer_rows
+                if str(row["position_bucket"]) == "prefill_end"
+            ]
+            final_values = [
+                float(row[field])
+                for row in layer_rows
+                if str(row["position_bucket"]) == "final_minus_128"
+            ]
+            distribution_tests.append((layer, field, _ks_2samp_pvalue(first_values, final_values)))
     ssm_layer_count = len(layers)
     required_passing_layer_count = 0
     if ssm_layer_count:
@@ -121,14 +179,25 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         ratios["std_ratio_final_minus_128_vs_prefill_end"],
     )
     selected_s1_ci_low = min(selected_layer_lowers) if selected_layer_lowers else selected_s1_ratio
-    holm_p_min = 1.0
-    gate_pass = (
+    adjusted_tests = _holm_adjusted_pvalues(distribution_tests)
+    holm_p_min = min((p_value for _, _, p_value in adjusted_tests), default=1.0)
+    distribution_passing_layers = len(
+        {layer for layer, _, p_value in adjusted_tests if p_value < 0.01}
+    )
+    magnitude_gate_pass = (
         set(buckets) == SSQ_LR_POSITION_BUCKETS
         and ssm_layer_count > 0
         and passing_layers >= required_passing_layer_count
         and selected_s1_ratio >= 2.0
         and selected_s1_ci_low > 1.25
     )
+    distribution_gate_pass = (
+        set(buckets) == SSQ_LR_POSITION_BUCKETS
+        and ssm_layer_count > 0
+        and distribution_passing_layers >= required_passing_layer_count
+        and holm_p_min < 0.01
+    )
+    gate_pass = magnitude_gate_pass or distribution_gate_pass
     return {
         "gate_name": "ssq_lr_s1_state_distribution_heterogeneity",
         "gate_pass": gate_pass,
@@ -137,11 +206,14 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "position_buckets": buckets,
         "ssm_layer_count": ssm_layer_count,
         "passing_layer_count": passing_layers,
+        "distribution_passing_layer_count": distribution_passing_layers,
         "required_passing_layer_count": required_passing_layer_count,
         "pass_fraction": _safe_ratio(float(passing_layers), float(ssm_layer_count)),
         "selected_s1_ratio": selected_s1_ratio,
         "selected_s1_ci_low": selected_s1_ci_low,
         "holm_p_min": holm_p_min,
+        "magnitude_gate_pass": magnitude_gate_pass,
+        "distribution_gate_pass": distribution_gate_pass,
         **ratios,
     }
 
@@ -170,6 +242,34 @@ def _control_ratio(rows: list[dict[str, Any]], *, control_type: str, field: str)
     if not control_rows:
         return 1.0
     return _direction_ratio(_direction_metric_means(control_rows, field=field))
+
+
+def _selected_direction_control_ratio(
+    rows: list[dict[str, Any]],
+    *,
+    control_type: str,
+    field: str,
+    selected_direction: str,
+) -> float:
+    """Measure whether a control preserves the selected boundary direction.
+
+    A faithful permutation flips direction labels while keeping values tied to
+    the observed tuple. Its max/min asymmetry can therefore remain large even
+    though the selected direction no longer carries the high-magnitude signal.
+    The H1 null should reject only controls that preserve the same selected
+    direction, not controls that merely preserve unsigned asymmetry magnitude.
+    """
+
+    control_rows = [row for row in rows if str(row.get("control_type")) == control_type]
+    if not control_rows or not selected_direction:
+        return 1.0
+    means = _direction_metric_means(control_rows, field=field)
+    if selected_direction not in means or len(means) != 2:
+        return 1.0
+    opposite_values = [value for direction, value in means.items() if direction != selected_direction]
+    if not opposite_values:
+        return 1.0
+    return _safe_ratio(means[selected_direction], opposite_values[0])
 
 
 def _direction_count(rows: list[dict[str, Any]], *, control_type: str) -> int:
@@ -244,15 +344,17 @@ def evaluate_horn_h1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         opposite_mean=opposite_mean,
         threshold=selected_threshold,
     )
-    non_boundary_control_ratio = _control_ratio(
+    non_boundary_control_ratio = _selected_direction_control_ratio(
         rows,
         control_type="non_boundary",
         field=selected_metric,
+        selected_direction=selected_direction,
     )
-    permuted_direction_ratio = _control_ratio(
+    permuted_direction_ratio = _selected_direction_control_ratio(
         rows,
         control_type="permuted_direction",
         field=selected_metric,
+        selected_direction=selected_direction,
     )
     selected_h1_ci_low = _prompt_direction_ratio_low(boundary_rows, field=selected_metric)
     non_boundary_direction_count = _direction_count(rows, control_type="non_boundary")

@@ -25,7 +25,7 @@ TEMPLATE = {
     "description": "Fill with repeated native NVIDIA/vLLM measurements reduced from Nsight traces.",
     "rows": [
         {
-            "model": "ibm-granite-4.0-h-tiny",
+            "model": "ibm-granite/granite-4.0-h-tiny",
             "run_id": 0,
             "total_step_ms": None,
             "attention_ssm_boundary_ms": None,
@@ -44,10 +44,14 @@ TEMPLATE = {
             "control_family": "same_family_matched_segment",
             "boundary_direction": "mixed_attention_ssm",
             "nsys_artifact": "nsys/<trace>.nsys-rep",
+            "nsys_artifact_sha256": "sha256:<64 lowercase hex chars>",
             "ncu_artifact": "ncu/<trace>.ncu-rep",
+            "ncu_artifact_sha256": "sha256:<64 lowercase hex chars>",
             "kernel_names": ["<kernel name>"],
             "boundary_indices": [0],
             "time_window_ms": {"start": None, "end": None},
+            "recoverable_fraction_basis": "Explain why this recoverable fraction is conservative.",
+            "reduction_command": "Exact command or script used to reduce Nsight artifacts into this row.",
             "reduction_notes": "Explain how Nsight rows were reduced.",
             "notes": "Replace nulls after native profiling.",
         }
@@ -190,6 +194,12 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
         control_family = str(_require_present(raw, "control_family")).strip()
         if not control_family:
             raise ValueError("control_family must be explicitly recorded and non-empty")
+        recoverable_fraction_basis = str(_require_present(raw, "recoverable_fraction_basis")).strip()
+        if not recoverable_fraction_basis:
+            raise ValueError("recoverable_fraction_basis must be explicitly recorded and non-empty")
+        reduction_command = str(_require_present(raw, "reduction_command")).strip()
+        if not reduction_command:
+            raise ValueError("reduction_command must be explicitly recorded and non-empty")
         config_key, config = _config_key(raw, model)
         if total <= 0:
             raise ValueError("total_step_ms must be positive")
@@ -268,11 +278,25 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             if str(row["row_role"]) == "same_family_control"
             and str(row["control_family"]).startswith("same_family")
         )
+        same_family_control_clear_rows = sum(
+            1
+            for row in comparable_rows
+            if str(row["row_role"]) == "same_family_control"
+            and str(row["control_family"]).startswith("same_family")
+            and float(row["recoverable_gain_upper_bound"]) >= 0.03
+        )
         cross_family_falsification_rows = sum(
             1
             for row in comparable_rows
             if str(row["row_role"]) == "cross_family_falsification"
             and str(row["model"]) != str(first["model"])
+        )
+        cross_family_falsification_clear_rows = sum(
+            1
+            for row in comparable_rows
+            if str(row["row_role"]) == "cross_family_falsification"
+            and str(row["model"]) != str(first["model"])
+            and float(row["recoverable_gain_upper_bound"]) >= 0.03
         )
         summary[config_key] = {
             "model": str(first["model"]),
@@ -293,6 +317,8 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             "review_row_roles": review_row_roles,
             "same_family_control_rows": same_family_control_rows,
             "cross_family_falsification_rows": cross_family_falsification_rows,
+            "same_family_control_clear_rows": same_family_control_clear_rows,
+            "cross_family_falsification_clear_rows": cross_family_falsification_clear_rows,
             "mean_avoidable_share": mean(avoidable),
             "mean_recoverable_gain_upper_bound": mean(gains),
             "median_recoverable_gain_upper_bound": median(gains),
@@ -311,8 +337,10 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
     ]
     any_primary_clears = bool(clearing_rows)
     has_review_roles_for_clearing = any(
-        int(row["same_family_control_rows"]) > 0
-        and int(row["cross_family_falsification_rows"]) > 0
+        int(row["same_family_control_rows"]) >= 3
+        and int(row["cross_family_falsification_rows"]) >= 3
+        and int(row["same_family_control_clear_rows"]) == 0
+        and int(row["cross_family_falsification_clear_rows"]) == 0
         for row in clearing_rows
     )
     if any_primary_clears and has_review_roles_for_clearing:
@@ -321,11 +349,11 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
     elif any_primary_clears:
         status = (
             "WEAKLY ALIVE: primary profiler rows clear the 3% gate, but "
-            "same-family controls and cross-family falsification rows are missing."
+            "three-run same-family and cross-family controls are missing or do not falsify."
         )
         decision = (
             "Do not prototype until the same packet includes the required "
-            "control/falsification rows."
+            "control/falsification rows and they stay below the 3% gate."
         )
     elif max(row["mean_recoverable_gain_upper_bound"] for row in summary.values()) < 0.01:
         status = "KILL or shelve: native profiler summaries show less than 1% recoverable gain."

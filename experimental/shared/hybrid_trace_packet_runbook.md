@@ -47,13 +47,18 @@ For real packets, `config.json` must record `prompt_ids_hash` and
 
 Minimum admissible row fields:
 
-- `model_id`, `model_revision`, `prompt_id`, `layer`, `position_bucket`
-- `state_shape`, `max_abs`, `rms`, `std`, `kurtosis`, `outlier_mass`
+- `model_id`, `model_revision`, `prompt_id`, `layer`, `layer_kind`,
+  `position_bucket`
+- `state_tensor_kind`, `state_shape`, `max_abs`, `rms`, `std`, `kurtosis`,
+  `outlier_mass`
 - `control_type`, including `bf16_no_quant`
 
 Required controls:
 
 - BF16/no-quant state recording.
+- `layer_kind` must identify an SSM/Mamba recurrent layer, and
+  `state_tensor_kind` must identify recurrent SSM state rather than an arbitrary
+  activation tensor.
 - At least the preregistered `prefill_end`, `2k_or_end`, `8k_or_end`, and `final_minus_128` position buckets.
 - Every `(prompt_id, layer)` pair must cover all four preregistered buckets.
 - At least 12 fixed prompts or an explicit resource-limit note.
@@ -62,8 +67,10 @@ Required `summary.json` fields:
 
 - `gate_name`, `gate_status`, `gate_pass`
 - `prompt_count`, `position_buckets`, `ssm_layer_count`, `passing_layer_count`
+- `distribution_passing_layer_count`
 - `required_passing_layer_count`, `pass_fraction`, `selected_s1_ratio`
 - `selected_s1_ci_low`, `holm_p_min`
+- `magnitude_gate_pass`, `distribution_gate_pass`
 - `max_abs_ratio_final_minus_128_vs_prefill_end`
 - `std_ratio_final_minus_128_vs_prefill_end`
 - `kurtosis_ratio_final_minus_128_vs_prefill_end`
@@ -71,8 +78,9 @@ Required `summary.json` fields:
 The checker recomputes these fields with
 `experimental.shared.hybrid_gate_evaluators.evaluate_ssq_lr_s1`; stale or
 fabricated summaries are rejected. The S1 lower bound is computed from
-prompt-level bucket ratios, so reduced rows must preserve prompt IDs rather
-than only global layer means.
+prompt-level bucket ratios, and the distribution path uses Holm-corrected
+two-sample tests between `prefill_end` and `final_minus_128`, so reduced rows
+must preserve prompt IDs rather than only global layer means.
 
 ## HORN Real H1 Packet
 
@@ -90,7 +98,9 @@ Required controls:
   `prompt_id`, boundary index, layer IDs, and matched normalization positions;
 - at least one `attention->ssm` boundary and one `ssm->attention` boundary;
 - non-boundary and permuted controls must each include both direction labels;
-- the permuted-direction ratio must stay below the selected H1 threshold;
+- the non-boundary and permuted controls must erase the selected high-magnitude
+  direction label; a faithful label flip may preserve unsigned max/min
+  asymmetry while moving the signal to the opposite label;
 - matched normalization placement.
 - at least 12 fixed prompts or an explicit resource-limit note.
 

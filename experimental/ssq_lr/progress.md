@@ -71,3 +71,16 @@ Mac smoke prompt manifest is
 
 Decision: **NEXT S1 MUST BE GENERATED FROM RAW STATE ROWS**. The blocker is
 still live hybrid SSM-state dumps.
+
+## 2026-05-06 S1 Distribution-Test Alignment
+
+After COLM-style review, the shared S1 evaluator now implements the
+preregistered second pass path instead of hard-coding it off. It computes
+per-layer two-sample KS p-values between `prefill_end` and `final_minus_128`
+state metrics, applies Holm correction over layer/metric tests, and exposes
+`distribution_passing_layer_count`, `magnitude_gate_pass`, and
+`distribution_gate_pass` in the recomputed summary contract.
+
+Decision: **S1 CAN PASS BY MAGNITUDE OR HOLM-CORRECTED DISTRIBUTION SHIFT, BUT
+ONLY FROM RAW REAL STATE ROWS**. The blocker remains the same live hybrid
+SSM-state dump.

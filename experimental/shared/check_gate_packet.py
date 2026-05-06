@@ -37,7 +37,9 @@ REAL_ROW_FIELDS = {
         "model_revision",
         "prompt_id",
         "layer",
+        "layer_kind",
         "position_bucket",
+        "state_tensor_kind",
         "state_shape",
         "max_abs",
         "rms",
@@ -91,11 +93,14 @@ REAL_SUMMARY_FIELDS = {
         "position_buckets",
         "ssm_layer_count",
         "passing_layer_count",
+        "distribution_passing_layer_count",
         "required_passing_layer_count",
         "pass_fraction",
         "selected_s1_ratio",
         "selected_s1_ci_low",
         "holm_p_min",
+        "magnitude_gate_pass",
+        "distribution_gate_pass",
         "max_abs_ratio_final_minus_128_vs_prefill_end",
         "std_ratio_final_minus_128_vs_prefill_end",
         "kurtosis_ratio_final_minus_128_vs_prefill_end",
@@ -274,11 +279,12 @@ def _validate_real_summary(
         position_buckets = summary.get("position_buckets")
         if not isinstance(position_buckets, list) or set(map(str, position_buckets)) != SSQ_LR_POSITION_BUCKETS:
             errors.append("ssq_lr summary position_buckets must match preregistered S1 buckets")
-        for field in ("ssm_layer_count", "passing_layer_count"):
+        for field in ("ssm_layer_count", "passing_layer_count", "distribution_passing_layer_count"):
             if not _valid_nonnegative_int(summary.get(field)):
                 errors.append(f"ssq_lr summary {field} must be a nonnegative integer")
         ssm_layer_count = summary.get("ssm_layer_count")
         passing_layer_count = summary.get("passing_layer_count")
+        distribution_passing_layer_count = summary.get("distribution_passing_layer_count")
         if isinstance(ssm_layer_count, int) and ssm_layer_count <= 0:
             errors.append("ssq_lr summary ssm_layer_count must be positive")
         if (
@@ -287,6 +293,12 @@ def _validate_real_summary(
             and passing_layer_count > ssm_layer_count
         ):
             errors.append("ssq_lr summary passing_layer_count cannot exceed ssm_layer_count")
+        if (
+            isinstance(ssm_layer_count, int)
+            and isinstance(distribution_passing_layer_count, int)
+            and distribution_passing_layer_count > ssm_layer_count
+        ):
+            errors.append("ssq_lr summary distribution_passing_layer_count cannot exceed ssm_layer_count")
         pass_fraction = summary.get("pass_fraction")
         if not _finite_number(pass_fraction) or not 0.0 <= float(pass_fraction) <= 1.0:
             errors.append("ssq_lr summary pass_fraction must be in [0, 1]")
@@ -305,6 +317,8 @@ def _validate_real_summary(
         for field in (
             "gate_status",
             "gate_pass",
+            "magnitude_gate_pass",
+            "distribution_gate_pass",
             "required_passing_layer_count",
             "selected_s1_ratio",
         ):
@@ -312,8 +326,10 @@ def _validate_real_summary(
                 errors.append(f"ssq_lr summary {field} must match evaluator output")
         for field in (
             "passing_layer_count",
+            "distribution_passing_layer_count",
             "pass_fraction",
             "selected_s1_ci_low",
+            "holm_p_min",
             "max_abs_ratio_final_minus_128_vs_prefill_end",
             "std_ratio_final_minus_128_vs_prefill_end",
             "kurtosis_ratio_final_minus_128_vs_prefill_end",
@@ -479,6 +495,21 @@ def _validate_real_coverage(
                 errors.append(f"ssq_lr row {index} outlier_mass must be in [0, 1]")
             if not _valid_positive_int_list(row.get("state_shape")):
                 errors.append(f"ssq_lr row {index} state_shape must be a non-empty positive integer list")
+            layer_kind = str(row.get("layer_kind", "")).strip().lower()
+            if layer_kind not in {"ssm", "mamba", "mamba2", "ssm_recurrent"}:
+                errors.append(
+                    f"ssq_lr row {index} layer_kind must identify an SSM/Mamba recurrent layer"
+                )
+            state_tensor_kind = str(row.get("state_tensor_kind", "")).strip().lower()
+            if state_tensor_kind not in {
+                "recurrent_ssm_state",
+                "ssm_recurrent_state",
+                "mamba_recurrent_state",
+                "mamba2_recurrent_state",
+            }:
+                errors.append(
+                    f"ssq_lr row {index} state_tensor_kind must identify recurrent SSM state"
+                )
 
     if project == "horn":
         prompt_ids = {str(row.get("prompt_id")) for row in rows}

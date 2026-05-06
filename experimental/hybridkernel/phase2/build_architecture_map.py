@@ -30,6 +30,15 @@ def _transitions(layer_types: list[str]) -> int:
     return sum(1 for left, right in zip(layer_types, layer_types[1:]) if left != right)
 
 
+def _model_id_from_config_path(config_path: Path) -> str:
+    stem = config_path.name.removesuffix(".config.json")
+    if stem.startswith("ibm-granite-"):
+        return "ibm-granite/" + stem.replace("ibm-granite-", "granite-", 1)
+    if stem == "qwen3-next-80b-a3b-instruct":
+        return "Qwen/Qwen3-Next-80B-A3B-Instruct"
+    return stem
+
+
 def _row(config_path: Path) -> dict[str, Any]:
     config = _read_config(config_path)
     layers = _infer_layer_types(config)
@@ -42,6 +51,7 @@ def _row(config_path: Path) -> dict[str, Any]:
     activation_fraction = transition_bytes_per_token / all_layer_stream_bytes if all_layer_stream_bytes else 0.0
     recovered_fraction_if_60pct = activation_fraction * 0.60
     return {
+        "model": _model_id_from_config_path(config_path),
         "config": config_path.name,
         "architecture": ",".join(config.get("architectures", [])),
         "model_type": config.get("model_type", ""),

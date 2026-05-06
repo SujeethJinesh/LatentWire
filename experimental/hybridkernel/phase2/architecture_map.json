@@ -1,5 +1,6 @@
 [
   {
+    "model": "ibm-granite/granite-4.0-h-small",
     "config": "ibm-granite-4.0-h-small.config.json",
     "architecture": "GraniteMoeHybridForCausalLM",
     "model_type": "granitemoehybrid",
@@ -16,6 +17,7 @@
     "phase2_decision": "pass_theoretical_gate"
   },
   {
+    "model": "ibm-granite/granite-4.0-h-tiny",
     "config": "ibm-granite-4.0-h-tiny.config.json",
     "architecture": "GraniteMoeHybridForCausalLM",
     "model_type": "granitemoehybrid",
@@ -32,6 +34,7 @@
     "phase2_decision": "pass_theoretical_gate"
   },
   {
+    "model": "Qwen/Qwen3-Next-80B-A3B-Instruct",
     "config": "qwen3-next-80b-a3b-instruct.config.json",
     "architecture": "Qwen3NextForCausalLM",
     "model_type": "qwen3_next",

@@ -65,7 +65,9 @@ Validate the first real S1 packet with:
 
 The real checker requires `prefill_end`, `2k_or_end`, `8k_or_end`, and
 `final_minus_128` buckets for every `(prompt_id, layer)` pair plus at least 12
-prompt IDs, unless `config.json` records a resource-limit note. Any
+prompt IDs, unless `config.json` records a resource-limit note. Rows must
+identify an SSM/Mamba `layer_kind` and a recurrent `state_tensor_kind`, so
+arbitrary activation tensors cannot promote S1. Any
 resource-limited packet must set a decision beginning
 `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but cannot
 promote S1.
@@ -74,10 +76,12 @@ Real `config.json` provenance must include `prompt_ids_hash` and
 `architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must
 include the recomputed S1 evaluator fields: `gate_status`, `gate_pass`,
 `prompt_count`, `position_buckets`, `ssm_layer_count`, `passing_layer_count`,
-`required_passing_layer_count`, `pass_fraction`, `selected_s1_ratio`,
-`selected_s1_ci_low`, `holm_p_min`, and the final-minus-128 versus prefill-end
-max-abs/std/kurtosis ratios. The checker recomputes these values from
-prompt-level bucket ratios and rejects stale summaries.
+`distribution_passing_layer_count`, `required_passing_layer_count`,
+`pass_fraction`, `selected_s1_ratio`, `selected_s1_ci_low`, `holm_p_min`,
+`magnitude_gate_pass`, `distribution_gate_pass`, and the final-minus-128 versus
+prefill-end max-abs/std/kurtosis ratios. The checker recomputes these values
+from prompt-level bucket ratios plus Holm-corrected distribution tests and
+rejects stale summaries.
 
 ## Output Paths
 

@@ -80,3 +80,14 @@ coercing strings. The shared Mac smoke prompt manifest is
 
 Decision: **NEXT B1 MUST BE GENERATED FROM RAW SENSITIVITY ROWS**. The blocker
 is still live model weights and forward-sensitivity measurements.
+
+## 2026-05-06 Reviewer Novelty Note
+
+The latest COLM-style review confirmed HBSM is wounded by KL Lens unless the
+first real packet includes a same-table comparison against a KL-style ranking
+and activation/outlier baselines. Synthetic B1 remains plumbing only. A real
+packet that lacks those comparators should be treated as mechanism scouting for
+HORN/SSQ-LR rather than as a standalone paper result.
+
+Decision: **HBSM NEEDS REAL B1 PLUS KL-LENS/OUTLIER BASELINES TO STAY
+STANDALONE**. The blocker remains a live layer-sensitivity sweep.
