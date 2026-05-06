@@ -22,7 +22,8 @@ native systems claim is made yet.
 
 The branch must pass activation-magnitude, quantization-noise propagation, and
 cross-model/control gates before GPU validation.
-H1 first tests directional activation statistics, H2 tests matched
+H1a first screens one live hybrid model for directional activation statistics,
+H1 requires the same selected direction on at least two hybrid models, H2 tests matched
 FP4-equivalent noise propagation, and H3 requires the direction to survive
 hybrid-model repeats while weakening on pure-attention and pure-Mamba controls.
 
@@ -40,15 +41,15 @@ current Mac.
 
 \section{Next Evidence}
 
-The next admissible row is a real boundary activation dump from a hybrid model.
+The next admissible row is a real H1a boundary activation dump from a hybrid model.
 HORN remains a control branch unless real H1/H2/H3 gates show consistent
 directional asymmetry that pure-attention and pure-Mamba controls do not share.
 Pure-architecture controls are an H3 requirement, not a blocker for the first
-H1 boundary-activation packet.
+H1a boundary-activation packet.
 
 \section{Admissible Real Packet}
 
-The real H1 packet must use the shared config-derived architecture maps rather
+The real H1a/H1 packet must use the shared config-derived architecture maps rather
 than substring-only module classification. Each row must report
 \texttt{model\_id}, \texttt{prompt\_id}, adjacent layer IDs, \texttt{direction},
 \texttt{boundary\_index}, normalization placement, \texttt{max\_abs},

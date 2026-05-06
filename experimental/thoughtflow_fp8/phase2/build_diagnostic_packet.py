@@ -66,6 +66,30 @@ ARTIFACTS = [
     },
 ]
 
+ARTIFACT_COMMANDS = {
+    "frozen_sparse_cache_probe": (
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py"
+    ),
+    "rdu_robustness_diagnostic": (
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py"
+    ),
+    "rdu_same_surface_rerun": (
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.py"
+    ),
+    "rdu_alternate_surface": (
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.py"
+    ),
+    "rdu_independent_surface": (
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py"
+    ),
+    "psi_fresh_surface": (
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py"
+    ),
+    "vwac_fresh_surface": (
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py"
+    ),
+}
+
 
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -95,10 +119,66 @@ def _git_metadata() -> dict[str, str | bool]:
 
     try:
         head = run_git("rev-parse", "HEAD")
-        status = run_git("status", "--short")
+        path_status = run_git("status", "--short", "--", "experimental/thoughtflow_fp8")
+        path_tree = run_git("rev-parse", "HEAD:experimental/thoughtflow_fp8")
     except (subprocess.CalledProcessError, FileNotFoundError):
-        return {"head_at_generation": "unavailable", "dirty_at_generation": True}
-    return {"head_at_generation": head, "dirty_at_generation": bool(status)}
+        return {
+            "head_at_generation": "unavailable",
+            "thoughtflow_path_tree_at_generation": "unavailable",
+            "thoughtflow_path_dirty_at_generation": True,
+        }
+    return {
+        "head_at_generation": head,
+        "thoughtflow_path_tree_at_generation": path_tree,
+        "thoughtflow_path_dirty_at_generation": bool(path_status),
+        "thoughtflow_path_status_at_generation": path_status,
+    }
+
+
+def _hash_existing_phase2_paths(paths: list[str]) -> dict[str, str]:
+    hashes: dict[str, str] = {}
+    for raw_path in paths:
+        candidate = Path(raw_path)
+        if not candidate.is_absolute():
+            candidate = PHASE2 / candidate
+        try:
+            resolved = candidate.resolve()
+            resolved.relative_to(REPO_ROOT.resolve())
+        except ValueError:
+            continue
+        if resolved.is_file():
+            hashes[str(resolved.relative_to(REPO_ROOT))] = _sha256(resolved)
+    return hashes
+
+
+def _artifact_provenance(artifact_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    metadata_keys = [
+        "model_name",
+        "model_id",
+        "model_revision",
+        "tokenizer_name",
+        "tokenizer_revision",
+        "keep_fraction",
+        "continuation_tokens",
+        "max_length",
+        "max_traces",
+        "n_scored_traces",
+        "policy_name",
+        "source_artifact",
+    ]
+    source_metadata = {key: payload[key] for key in metadata_keys if key in payload}
+    input_paths: list[str] = []
+    for key in ("source_artifact", "input_paths", "trace_input_paths"):
+        value = payload.get(key)
+        if isinstance(value, str):
+            input_paths.append(value)
+        elif isinstance(value, list):
+            input_paths.extend(str(item) for item in value if isinstance(item, str))
+    return {
+        "command": ARTIFACT_COMMANDS.get(artifact_id, "not_recorded"),
+        "source_metadata": source_metadata,
+        "input_hashes": _hash_existing_phase2_paths(input_paths),
+    }
 
 
 def _artifact_summary(artifact_id: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -166,6 +246,7 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT) -> dict[str, Any]:
                 **spec,
                 "sha256": _sha256(path),
                 "summary": _artifact_summary(str(spec["id"]), payload),
+                "provenance": _artifact_provenance(str(spec["id"]), payload),
             }
         )
 

@@ -138,6 +138,7 @@ REAL_SUMMARY_FIELDS = {
         "gate_status",
         "gate_pass",
         "primary_row_count",
+        "scoring_layer_count",
         "prompt_count",
         "expected_top_decile_count",
         "top_decile_count",
@@ -159,6 +160,8 @@ REAL_SUMMARY_FIELDS = {
         "fisher_p_boundary_top_decile",
         "fisher_p_random_boundary_top_decile",
         "cheap_predictor_spearman",
+        "baseline_spearman",
+        "cheap_predictor_margin_vs_best_baseline",
     ),
 }
 HASH_FIELDS = ("prompt_ids_hash", "architecture_map_hash")
@@ -399,6 +402,7 @@ def _validate_real_summary(
         evaluated = evaluate_hbsm_b1(rows)
         for field in (
             "primary_row_count",
+            "scoring_layer_count",
             "prompt_count",
             "expected_top_decile_count",
             "top_decile_count",
@@ -418,6 +422,7 @@ def _validate_real_summary(
             "gate_status",
             "gate_pass",
             "primary_row_count",
+            "scoring_layer_count",
             "prompt_count",
             "expected_top_decile_count",
             "top_decile_count",
@@ -426,6 +431,7 @@ def _validate_real_summary(
             "test_count",
             "control_types",
             "split_counts",
+            "baseline_spearman",
         ):
             if summary.get(field) != evaluated.get(field):
                 errors.append(f"hbsm summary {field} must match evaluator output")
@@ -443,6 +449,7 @@ def _validate_real_summary(
             "fisher_p_boundary_top_decile",
             "fisher_p_random_boundary_top_decile",
             "cheap_predictor_spearman",
+            "cheap_predictor_margin_vs_best_baseline",
         ):
             value = summary.get(field)
             expected = evaluated.get(field)

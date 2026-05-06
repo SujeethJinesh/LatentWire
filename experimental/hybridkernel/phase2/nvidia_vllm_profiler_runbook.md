@@ -399,8 +399,13 @@ below the 3% recoverable-gain gate. A packet where controls preserve the same
 3% signal remains audit-only.
 Every model named in `profiler_metrics.json`, including same-family and
 cross-family controls, must have a matching `profiler_driver.py` client replay
-JSON log under `logs/` with the same prefill/decode/request shape. Metric rows
-without replay evidence now fail the packet checker.
+JSON log under `logs/` with the same batch size, prefill-token total,
+decode-token count, and request count. Every replay request must record
+`batch_size`, `prompt_token_counts`, `prompt_token_count_total`,
+`requested_decode_tokens`, and `response_usage.completion_tokens`; completion
+tokens must equal requested decode tokens so early-EOS runs cannot satisfy a
+fixed-decode gate. Metric rows without replay evidence now fail the packet
+checker.
 
 Then run:
 
@@ -463,7 +468,9 @@ The verifier checks that the run directory contains:
   client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence
   markers, and client replay logs must be valid `profiler_driver.py` JSON with
   a non-empty top-level `model`, `dry_run: false`, and non-empty `requests`
-  rows whose `status` fields are all `ok`;
+  rows whose `status` fields are all `ok`, whose `batch_size` matches
+  `prompt_token_counts`, and whose `response_usage.completion_tokens` equals
+  `requested_decode_tokens`;
 - `readout.md` with the pre-registered decision questions;
 - `profiler_metrics.json` with at least three repeated valid rows for one
   model and at least three distinct repeated `run_id` values. Repeated rows
@@ -496,8 +503,9 @@ Promote HybridKernel to implementation only if all are true:
   region;
 - the estimated end-to-end gain is at least 3%, or the localized gain is large
   enough that a concrete fused-kernel design plausibly clears 3%;
-- the result survives at least three distinct repeated runs, one same-family
-  control row, and one cross-family falsification row;
+- the result survives at least three distinct repeated runs, three same-shape
+  same-family control rows, and three same-shape cross-family falsification
+  rows;
 - the readout separates source communication from target-cache or runtime-cache
   effects.
 - `check_profiler_run_artifacts.py` passes for the exact run directory being

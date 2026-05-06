@@ -88,6 +88,9 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
         path = PHASE2 / artifact["path"]
         expected = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
         assert artifact["sha256"] == expected
+        assert artifact["provenance"]["command"].startswith("./venv_arm64/bin/python")
+        assert isinstance(artifact["provenance"]["source_metadata"], dict)
+        assert isinstance(artifact["provenance"]["input_hashes"], dict)
     table = (DIAGNOSTIC_PACKET / "falsification_table.md").read_text(encoding="utf-8")
     assert "stale_positive_first_surface" in table
     assert "historical_positive_same_surface" in table

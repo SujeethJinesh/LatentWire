@@ -21,6 +21,10 @@ def _sha256(path: Path) -> str:
     return "sha256:" + digest.hexdigest()
 
 
+def _write_profiler_artifact(path: Path) -> None:
+    path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
+
+
 def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> None:
     run_dir = create_run_packet(
         output_dir=tmp_path / "packet",
@@ -124,9 +128,11 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                     "requests": [
                         {
                             "status": "ok",
+                            "batch_size": 1,
                             "prompt_token_counts": [128],
                             "prompt_token_count_total": 128,
                             "requested_decode_tokens": 64,
+                            "response_usage": {"completion_tokens": 64},
                         }
                         for _ in range(16)
                     ],
@@ -152,8 +158,8 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
             row_id = f"{label}-{repeat}"
             nsys_path = run_dir / f"nsys/{row_id}.nsys-rep"
             ncu_path = run_dir / f"ncu/{row_id}.ncu-rep"
-            nsys_path.write_text("native profiler export bytes\n" + ("x" * 2048), encoding="utf-8")
-            ncu_path.write_text("native profiler export bytes\n" + ("x" * 2048), encoding="utf-8")
+            _write_profiler_artifact(nsys_path)
+            _write_profiler_artifact(ncu_path)
             rows.append(
                 {
                     "model": row_model,

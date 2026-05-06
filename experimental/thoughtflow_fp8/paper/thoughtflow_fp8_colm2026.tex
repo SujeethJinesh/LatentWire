@@ -297,8 +297,9 @@ All reported gates use tracked scripts under
 alternate-surface rerun, independent saved-trace rerun, and fresh-surface
 successor checks each write Markdown and JSON artifacts with promotion
 criteria, paired intervals, oracle/headroom diagnostics, and no-retuning
-decisions. Several older JSON artifacts do not yet record full model revision
-and input-hash provenance, so the current package should be read as a
+decisions. The tracked diagnostic packet hashes the saved JSON artifacts and
+records available model/source metadata plus input hashes where the historical
+artifacts exposed input paths. The current package should still be read as a
 machine-checked falsification note rather than a full artifact-evaluation
 release. The stable local correctness command is:
 \texttt{./venv\_arm64/bin/python -m pytest
@@ -307,10 +308,12 @@ experimental/thoughtflow\_fp8/phase4/tests -q -rs}.
 
 \section{Artifacts}
 
-Key artifacts are the current decision manifest, reviewer pack, workshop shell,
-README/progress handoff, RDU independent reproduction check, PSI/VWAC
-fresh-surface checks, and repo-local Triton interpreter note:
+Key artifacts are the current decision manifest, tracked diagnostic provenance
+packet, reviewer pack, workshop shell, README/progress handoff, RDU independent
+reproduction check, PSI/VWAC fresh-surface checks, and repo-local Triton
+interpreter note:
 \url{experimental/thoughtflow_fp8/phase2/current_decision_manifest_20260506.md},
+\url{experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/manifest.json},
 \url{experimental/thoughtflow_fp8/paper/reviewer_pack.md},
 \url{experimental/thoughtflow_fp8/paper/colm_workshop_shell.md},
 \url{experimental/thoughtflow_fp8/README.md},

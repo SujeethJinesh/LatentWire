@@ -56,13 +56,17 @@ substring-only module classification for real H1 rows.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
 
-Validate the first real H1 packet with:
+Validate the first real H1a screen packet with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/horn/phase2/results/horn_gate_h1_<YYYYMMDD>_<model_slug> \
   --mode real --project horn
 ```
+
+H1a is a single-model screen only. It can justify running H2 and adding more
+models, but H1 promotion requires the same selected direction on at least two
+hybrid models plus the H3 pure-architecture controls.
 
 The real checker requires at least 12 prompt IDs unless resource-limited, both
 boundary directions, both-direction non-boundary controls, paired flipped
@@ -76,7 +80,7 @@ the opposite label, which is an acceptable null. Non-boundary controls must stay
 below the selected H1 threshold rather than merely below the boundary ratio. Any
 resource-limited packet must set a decision
 beginning `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but
-cannot promote H1.
+cannot promote H1a or H1.
 
 Real `config.json` provenance must include `prompt_ids_hash` and
 `architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must

@@ -256,10 +256,12 @@ Expected final packet:
 
 ### 6. Decision Rule
 
-Promote only if the checker passes and repeated same-model/config rows clear
-the 3% recoverable-gain gate. Kill or shelve if no separable boundary overhead
-appears, the mean recoverable gain is below 1%, or the signal is explained by
-existing vLLM hybrid SSM layout/transfer machinery.
+Promote only if the checker passes, repeated same-model/config rows clear the
+3% recoverable-gain gate, and the packet includes three same-shape same-family
+control rows plus three same-shape cross-family falsification rows that do not
+reproduce the signal. Kill or shelve if no separable boundary overhead appears,
+the mean recoverable gain is below 1%, or the signal is explained by existing
+vLLM hybrid SSM layout/transfer machinery.
 
 ## Local Setup
 

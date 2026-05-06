@@ -130,9 +130,11 @@ not promote the branch.
 
 The artifact checker resolves `nsys_artifact` and `ncu_artifact` against the
 run directory. Missing files, absolute paths, `..` escapes, wrong extensions,
-placeholder profiler exports, and SHA-256 mismatches are rejected. It also
-checks the client replay prompt/decode/request shape against metric rows for
-models present in the client logs.
+placeholder profiler exports, UTF-8/plain-text fake profiler files, and SHA-256
+mismatches are rejected. It also checks the client replay batch/prompt/decode/
+request shape against metric rows for models present in the client logs, and it
+requires replay `response_usage.completion_tokens` to equal the requested decode
+length.
 
 ## Final Local Commands
 

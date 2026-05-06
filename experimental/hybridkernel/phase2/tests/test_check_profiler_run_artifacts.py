@@ -23,6 +23,10 @@ def _sha256(path: Path) -> str:
     return "sha256:" + digest.hexdigest()
 
 
+def _write_profiler_artifact(path: Path) -> None:
+    path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
+
+
 def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
     (run_dir / "metadata").mkdir(parents=True)
     (run_dir / "logs").mkdir()
@@ -64,9 +68,11 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                 "requests": [
                     {
                         "status": "ok",
+                        "batch_size": 1,
                         "prompt_token_counts": [128],
                         "prompt_token_count_total": 128,
                         "requested_decode_tokens": 64,
+                        "response_usage": {"completion_tokens": 64},
                     }
                     for _ in range(16)
                 ],
@@ -76,12 +82,8 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         encoding="utf-8",
     )
     for idx in range(runs):
-        (run_dir / f"nsys/granite_tiny_b1_decode64_run{idx}.nsys-rep").write_text(
-            "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
-        )
-        (run_dir / f"ncu/suspicious_boundary_kernel_run{idx}.ncu-rep").write_text(
-            "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
-        )
+        _write_profiler_artifact(run_dir / f"nsys/granite_tiny_b1_decode64_run{idx}.nsys-rep")
+        _write_profiler_artifact(run_dir / f"ncu/suspicious_boundary_kernel_run{idx}.ncu-rep")
     readout_rows = "\n".join(f"| {marker} | evidence | no |" for marker in READOUT_MARKERS)
     (run_dir / "readout.md").write_text(
         "| Question | Evidence | Decision |\n|---|---|---|\n" + readout_rows + "\n",
@@ -318,15 +320,54 @@ def test_rejects_client_replay_shape_mismatch(tmp_path: Path) -> None:
                 "requests": [
                     {
                         "status": "ok",
+                        "batch_size": 1,
                         "prompt_token_counts": [127],
                         "prompt_token_count_total": 127,
                         "requested_decode_tokens": 64,
+                        "response_usage": {"completion_tokens": 64},
                     }
                     for _ in range(16)
                 ],
             }
         )
         + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("client replay shape does not match" in error for error in result["errors"])
+
+
+def test_rejects_client_replay_completion_length_mismatch(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    log_path = tmp_path / "logs/client_replay_b1.log"
+    payload = json.loads(log_path.read_text(encoding="utf-8"))
+    payload["requests"][0]["response_usage"] = {"completion_tokens": 63}
+    log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("completion_tokens must equal requested_decode_tokens" in error for error in result["errors"])
+
+
+def test_rejects_client_replay_batch_size_mismatch(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    for row in payload["rows"]:
+        row["batch_shape"]["batch_size"] = 8
+    analysis = analyze(payload)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "profiler_analysis_gate.md").write_text(
+        "# HybridKernel Profiler Analysis Gate\n\n"
+        f"Status: **{analysis['status']}**\n",
         encoding="utf-8",
     )
 
@@ -412,6 +453,18 @@ def test_rejects_tiny_or_placeholder_native_profiler_artifacts(tmp_path: Path) -
     assert result["status"] == "FAIL"
     assert any("placeholder" in error for error in result["errors"])
     assert any("too small" in error for error in result["errors"])
+
+
+def test_rejects_plain_text_native_profiler_artifacts(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "nsys/granite_tiny_b1_decode64_run0.nsys-rep").write_text(
+        "nsight exported timeline report\n" + ("x" * 2048), encoding="utf-8"
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("plain text" in error for error in result["errors"])
 
 
 def test_rejects_uppercase_todo_marker_inside_native_profiler_artifacts(tmp_path: Path) -> None:

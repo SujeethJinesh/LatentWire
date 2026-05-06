@@ -63,15 +63,17 @@ The packet must include \texttt{prompt\_ids\_hash},
 The checker requires both true and false boundary flags, finite sensitivity and
 predictor fields, all listed controls, and a perturbation-off row whose drift is
 near zero. It also requires exact top-decile cardinality
-\(\lceil 0.10\cdot\mathrm{primary\ rows}\rceil\), an equally sized random baseline
+\(\lceil 0.10\cdot\mathrm{scoring\ layers}\rceil\), where scoring aggregates
+primary prompt rows to one row per \texttt{(model\_id, layer)}, an equally sized random baseline
 that is not enriched, KL-style and activation/outlier comparator controls, and
 both train and test split rows unless the packet records an explicit resource limit.
 Any resource-limited packet must use a
 \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
-top-decile count, random top-decile count, train/test counts, and boundary
-top-decile enrichment, Fisher p-value, and cheap-predictor Spearman
-correlation. The checker recomputes these fields from raw rows and rejects
-stale or hand-filled summaries.
+primary-row, scoring-layer, and prompt counts; top-decile count; random
+top-decile count; train/test counts; boundary top-decile enrichment; Fisher
+p-value; cheap-predictor Spearman correlation; baseline Spearman values; and
+the cheap-predictor margin over the best baseline. The checker recomputes these
+fields from raw rows and rejects stale or hand-filled summaries.
 
 \begin{table}[h]
 \centering

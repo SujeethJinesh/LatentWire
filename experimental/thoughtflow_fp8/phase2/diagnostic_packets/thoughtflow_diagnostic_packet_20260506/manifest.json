@@ -4,6 +4,18 @@
       "claim": "The first frozen sparse-cache surface made rdu_topk look alive.",
       "id": "frozen_sparse_cache_probe",
       "path": "frozen_sparse_cache_probe.json",
+      "provenance": {
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py",
+        "input_hashes": {},
+        "source_metadata": {
+          "continuation_tokens": 24,
+          "keep_fraction": 0.2,
+          "max_length": 96,
+          "max_traces": 74,
+          "model_name": "distilgpt2",
+          "n_scored_traces": 74
+        }
+      },
       "role": "stale_positive_first_surface",
       "sha256": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9",
       "summary": {
@@ -18,6 +30,19 @@
       "claim": "Cached deterministic splits preserved positive means but not a fresh-surface claim.",
       "id": "rdu_robustness_diagnostic",
       "path": "rdu_robustness_diagnostic.json",
+      "provenance": {
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py",
+        "input_hashes": {
+          "experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.json": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9"
+        },
+        "source_metadata": {
+          "continuation_tokens": 24,
+          "keep_fraction": 0.2,
+          "model_name": "distilgpt2",
+          "n_scored_traces": 74,
+          "source_artifact": "frozen_sparse_cache_probe.json"
+        }
+      },
       "role": "stale_positive_robustness_probe",
       "sha256": "sha256:623b962fd3c98068a59764b31a49a471dbe3b8ca33a4190ed68ac1354b4e4e26",
       "summary": {
@@ -32,6 +57,11 @@
       "claim": "rdu_topk reproduced the first frozen sparse-cache gate on the same surface.",
       "id": "rdu_same_surface_rerun",
       "path": "rdu_no_retune_reproduction_check.json",
+      "provenance": {
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.py",
+        "input_hashes": {},
+        "source_metadata": {}
+      },
       "role": "historical_positive_same_surface",
       "sha256": "sha256:9a6420cf4d2bd18764f5e0e60fcd5964378a27996111b82485b71fcb668accd9",
       "summary": {
@@ -46,6 +76,11 @@
       "claim": "rdu_topk failed strict same-family separation on an alternate surface.",
       "id": "rdu_alternate_surface",
       "path": "rdu_alt_surface_reproduction_check.json",
+      "provenance": {
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.py",
+        "input_hashes": {},
+        "source_metadata": {}
+      },
       "role": "same_family_falsification",
       "sha256": "sha256:1302ce31ffa666aba02ed0e03fab8bdb01019e37fdd01ad77f234a6a0a1843fd",
       "summary": {
@@ -73,6 +108,11 @@
       "claim": "rdu_topk failed cross-family separation on independent saved traces.",
       "id": "rdu_independent_surface",
       "path": "rdu_independent_trace_reproduction_check.json",
+      "provenance": {
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py",
+        "input_hashes": {},
+        "source_metadata": {}
+      },
       "role": "cross_family_falsification",
       "sha256": "sha256:5a568e1c5178ccb55443184aa7d1c8ad521c30f8930ad3c10a11f27722f8c6a1",
       "summary": {
@@ -93,6 +133,19 @@
       "claim": "psi_topk failed its preregistered fresh-surface promotion rule.",
       "id": "psi_fresh_surface",
       "path": "psi_fresh_sparse_cache_check.json",
+      "provenance": {
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py",
+        "input_hashes": {},
+        "source_metadata": {
+          "continuation_tokens": 24,
+          "keep_fraction": 0.2,
+          "max_length": 96,
+          "max_traces": 70,
+          "model_name": "distilgpt2",
+          "n_scored_traces": 70,
+          "policy_name": "psi_topk"
+        }
+      },
       "role": "fresh_successor_kill",
       "sha256": "sha256:d0a08035650374a93babeb87845c1540411e12c72d54abfb568a431e345f26d3",
       "summary": {
@@ -109,6 +162,19 @@
       "claim": "vwac_topk failed its preregistered fresh-surface promotion rule.",
       "id": "vwac_fresh_surface",
       "path": "vwac_fresh_sparse_cache_check.json",
+      "provenance": {
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py",
+        "input_hashes": {},
+        "source_metadata": {
+          "continuation_tokens": 24,
+          "keep_fraction": 0.2,
+          "max_length": 96,
+          "max_traces": 70,
+          "model_name": "distilgpt2",
+          "n_scored_traces": 64,
+          "policy_name": "vwac_topk"
+        }
+      },
       "role": "fresh_successor_kill",
       "sha256": "sha256:80a359545dc074f02f699e06a8228bb894d39548422bd47a49ad68ca9999ae0d",
       "summary": {
@@ -138,13 +204,15 @@
   },
   "generated_date": "2026-05-06",
   "git": {
-    "dirty_at_generation": true,
-    "head_at_generation": "86e3378a840cc9015bd288e403f346086f0b2796"
+    "head_at_generation": "7281bb12a2ccb195538a7092c16bf4e17138fbd2",
+    "thoughtflow_path_dirty_at_generation": true,
+    "thoughtflow_path_status_at_generation": "M experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.tex\n M experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py\n M experimental/thoughtflow_fp8/phase2/tests/test_saved_falsification_artifacts.py",
+    "thoughtflow_path_tree_at_generation": "07de13c9d93e4327c783a215213aa84b3f915ca6"
   },
   "packet_name": "thoughtflow_diagnostic_packet_20260506",
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:b4aa9d75c93754566301ff51cca5f56a6252987bd8b66b1908423b83c79ef51a"
+    "sha256": "sha256:b8911bca5192a63d6ccf77908f0416546439d54da510c5b9d85ce23f33675588"
   }
 }

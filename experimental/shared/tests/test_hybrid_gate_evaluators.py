@@ -268,7 +268,9 @@ def test_hbsm_b1_evaluator_requires_boundary_enrichment_over_random() -> None:
         boundary = index < 30
         rows.append(
             {
+                "model_id": "hybrid",
                 "prompt_id": f"p{index % 30}",
+                "layer": index,
                 "boundary_flag": boundary,
                 "top_decile_flag": boundary and index < 6,
                 "random_top_decile": index in {0, 1, 2, 30, 31, 32},
@@ -276,6 +278,8 @@ def test_hbsm_b1_evaluator_requires_boundary_enrichment_over_random() -> None:
                 "control_type": "boundary_only",
                 "cheap_predictor": float(index),
                 "kl_or_nll_drift": float(index),
+                "parameter_count": float(index + 100),
+                "weight_norm": float(index + 1),
             }
         )
     for control in [
@@ -302,8 +306,48 @@ def test_hbsm_b1_evaluator_requires_boundary_enrichment_over_random() -> None:
     result = evaluate_hbsm_b1(rows)
 
     assert result["gate_pass"] is True
+    assert result["scoring_layer_count"] == 60
     assert result["expected_top_decile_count"] == 6
     assert result["boundary_top_decile_enrichment"] > 1.0
     assert result["random_boundary_top_decile_enrichment"] == 1.0
     assert result["fisher_p_boundary_top_decile"] < 0.05
     assert result["cheap_predictor_spearman"] > 0.9
+    assert set(result["baseline_spearman"]) == {
+        "layer_index",
+        "parameter_count_norm",
+        "weight_norm",
+        "boundary_flag",
+        "kl_lens_rank",
+        "activation_outlier",
+    }
+
+
+def test_hbsm_b1_evaluator_aggregates_prompt_rows_by_layer() -> None:
+    rows = []
+    for prompt_index in range(12):
+        for layer in range(20):
+            boundary = layer < 10
+            rows.append(
+                {
+                    "model_id": "hybrid",
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": layer,
+                    "boundary_flag": boundary,
+                    "top_decile_flag": boundary and layer < 2,
+                    "random_top_decile": layer in {0, 10},
+                    "train_test_split": "train" if layer % 2 == 0 else "test",
+                    "control_type": "boundary_only",
+                    "cheap_predictor": float(layer),
+                    "kl_or_nll_drift": float(layer),
+                    "parameter_count": float(100 + layer),
+                    "weight_norm": float(layer),
+                }
+            )
+
+    result = evaluate_hbsm_b1(rows)
+
+    assert result["primary_row_count"] == 240
+    assert result["scoring_layer_count"] == 20
+    assert result["expected_top_decile_count"] == 2
+    assert result["top_decile_count"] == 2
+    assert result["prompt_count"] == 12

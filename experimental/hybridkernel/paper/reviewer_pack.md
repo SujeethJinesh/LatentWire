@@ -53,5 +53,6 @@ Run the user-operated NVIDIA/vLLM packet from
 2. `experimental/hybridkernel/phase2/analyze_profiler_metrics.py`
 
 Promote only if at least three same-model/same-config native rows clear the 3%
-recoverable-gain gate. Kill or shelve if repeated native summaries show less
-than 1% recoverable gain.
+recoverable-gain gate and three same-shape same-family plus three same-shape
+cross-family controls stay below that gate. Kill or shelve if repeated native
+summaries show less than 1% recoverable gain.

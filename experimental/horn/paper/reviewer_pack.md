@@ -56,7 +56,8 @@ is treated as an acceptable null.
 
 ## Next Exact Gate
 
-Run H1 on the smallest available live hybrid model. The first packet must pass:
+Run the H1a single-model screen on the smallest available live hybrid model.
+The first packet must pass:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
@@ -64,7 +65,8 @@ Run H1 on the smallest available live hybrid model. The first packet must pass:
   --mode real --project horn
 ```
 
-Continue only if real boundary-direction asymmetry passes the preregistered H1
-rule.
+Continue only if real boundary-direction asymmetry passes the preregistered H1a
+screen. Do not call this H1 promotion until the same selected direction appears
+on at least two hybrid models and H3 controls are clean.
 If the run is resource-limited, record it with
 `RESOURCE_LIMITED_NOT_PROMOTABLE` and do not treat it as H1 promotion.

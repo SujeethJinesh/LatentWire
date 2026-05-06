@@ -86,7 +86,11 @@ Distribution-only promotion also requires the selected S1 ratio to clear the
 1.25x effect-size floor; tiny but statistically significant shifts remain a
 failed S1 packet.
 
-## HORN Real H1 Packet
+## HORN Real H1a/H1 Packet
+
+The first live hybrid packet is H1a: a single-model screen that validates the
+measurement path and decides whether to continue. H1 promotion requires at least
+two hybrid models with the same selected direction and clean H3 controls.
 
 Minimum admissible row fields:
 
@@ -153,8 +157,10 @@ Required controls:
 - activation/outlier ranking baseline;
 - `boundary_only` rows with both `boundary_flag=true` and `boundary_flag=false`;
 - every `boundary_only` prompt must include boundary and non-boundary layers;
+- B1 scoring aggregates `boundary_only` prompt rows to one row per
+  `(model_id, layer)` before computing top-decile enrichment;
 - `top_decile_flag=true` and `random_top_decile=true` counts must each equal
-  `ceil(0.10 * primary_rows)`;
+  `ceil(0.10 * scoring_layers)`;
 - random top-decile flags must not reproduce the boundary enrichment;
 - both `train` and `test` split rows, unless a resource-limit note is present;
 - train/test layer split if layer count permits.
@@ -162,6 +168,7 @@ Required controls:
 Required `summary.json` fields:
 
 - `gate_name`, `gate_status`, `gate_pass`
+- `primary_row_count`, `scoring_layer_count`, `prompt_count`
 - `expected_top_decile_count`
 - `top_decile_count`
 - `random_top_decile_count`
@@ -172,7 +179,8 @@ Required `summary.json` fields:
 - `boundary_top_decile_rate`, `non_boundary_top_decile_rate`
 - `boundary_top_decile_enrichment`
 - `fisher_p_boundary_top_decile`
-- `cheap_predictor_spearman`
+- `cheap_predictor_spearman`, `baseline_spearman`,
+  `cheap_predictor_margin_vs_best_baseline`
 
 The checker recomputes these fields with
 `experimental.shared.hybrid_gate_evaluators.evaluate_hbsm_b1`; stale

@@ -464,11 +464,49 @@ def _spearman(x: list[float], y: list[float]) -> float:
     return float(numerator / (denom_x * denom_y))
 
 
+def _aggregate_hbsm_primary_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        grouped[(str(row.get("model_id", "")), int(row["layer"]))].append(row)
+    aggregated: list[dict[str, Any]] = []
+    for (model_id, layer), layer_rows in sorted(grouped.items(), key=lambda item: item[0]):
+        aggregated.append(
+            {
+                "model_id": model_id,
+                "layer": layer,
+                "boundary_flag": any(bool(row["boundary_flag"]) for row in layer_rows),
+                "top_decile_flag": any(bool(row["top_decile_flag"]) for row in layer_rows),
+                "random_top_decile": any(bool(row["random_top_decile"]) for row in layer_rows),
+                "train_test_split": (
+                    "test"
+                    if any(str(row["train_test_split"]) == "test" for row in layer_rows)
+                    else str(layer_rows[0]["train_test_split"])
+                ),
+                "cheap_predictor": _mean([float(row["cheap_predictor"]) for row in layer_rows]),
+                "kl_or_nll_drift": _mean([float(row["kl_or_nll_drift"]) for row in layer_rows]),
+                "parameter_count": _mean([float(row.get("parameter_count", 0.0)) for row in layer_rows]),
+                "weight_norm": _mean([float(row.get("weight_norm", 0.0)) for row in layer_rows]),
+                "prompt_count": len({str(row.get("prompt_id")) for row in layer_rows}),
+            }
+        )
+    return aggregated
+
+
+def _hbsm_control_spearman(rows: list[dict[str, Any]], control_type: str) -> float:
+    control_rows = [row for row in rows if str(row.get("control_type")) == control_type]
+    if len(control_rows) < 2:
+        return 0.0
+    return _spearman(
+        [float(row.get("cheap_predictor", 0.0)) for row in control_rows],
+        [float(row["kl_or_nll_drift"]) for row in control_rows],
+    )
+
+
 def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Evaluate the HBSM B1 boundary-sensitivity enrichment screen."""
 
     primary_rows = [row for row in rows if str(row["control_type"]) == "boundary_only"]
-    scoring_rows = primary_rows if primary_rows else rows
+    scoring_rows = _aggregate_hbsm_primary_rows(primary_rows) if primary_rows else rows
     expected_top_decile_count = math.ceil(0.10 * len(scoring_rows)) if scoring_rows else 0
     top_count = sum(1 for row in scoring_rows if row["top_decile_flag"])
     random_count = sum(1 for row in scoring_rows if row["random_top_decile"])
@@ -504,7 +542,28 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         [float(row["cheap_predictor"]) for row in scoring_rows],
         [float(row["kl_or_nll_drift"]) for row in scoring_rows],
     )
-    prompt_count = len({str(row.get("prompt_id")) for row in scoring_rows if "prompt_id" in row})
+    baseline_spearman = {
+        "layer_index": _spearman(
+            [float(row["layer"]) for row in scoring_rows],
+            [float(row["kl_or_nll_drift"]) for row in scoring_rows],
+        ),
+        "parameter_count_norm": _spearman(
+            [float(row.get("parameter_count", 0.0)) for row in scoring_rows],
+            [float(row["kl_or_nll_drift"]) for row in scoring_rows],
+        ),
+        "weight_norm": _spearman(
+            [float(row.get("weight_norm", 0.0)) for row in scoring_rows],
+            [float(row["kl_or_nll_drift"]) for row in scoring_rows],
+        ),
+        "boundary_flag": _spearman(
+            [1.0 if row["boundary_flag"] else 0.0 for row in scoring_rows],
+            [float(row["kl_or_nll_drift"]) for row in scoring_rows],
+        ),
+        "kl_lens_rank": _hbsm_control_spearman(rows, "kl_lens_rank"),
+        "activation_outlier": _hbsm_control_spearman(rows, "activation_outlier"),
+    }
+    prompt_count = len({str(row.get("prompt_id")) for row in primary_rows if "prompt_id" in row})
+    scoring_layer_count = len(scoring_rows)
     gate_pass = (
         bool(boundary_rows)
         and bool(non_boundary_rows)
@@ -522,6 +581,7 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "gate_pass": gate_pass,
         "gate_status": "PASS_REAL_B1_SENSITIVITY_HETEROGENEITY" if gate_pass else "FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY",
         "primary_row_count": len(primary_rows),
+        "scoring_layer_count": scoring_layer_count,
         "prompt_count": prompt_count,
         "expected_top_decile_count": expected_top_decile_count,
         "top_decile_count": top_count,
@@ -543,4 +603,6 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "fisher_p_boundary_top_decile": fisher_p,
         "fisher_p_random_boundary_top_decile": random_fisher_p,
         "cheap_predictor_spearman": cheap_predictor_spearman,
+        "baseline_spearman": baseline_spearman,
+        "cheap_predictor_margin_vs_best_baseline": cheap_predictor_spearman - max(baseline_spearman.values(), default=0.0),
     }

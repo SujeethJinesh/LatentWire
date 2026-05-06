@@ -59,8 +59,10 @@ MIN_NATIVE_LOG_BYTES = 8
 SKELETON_TODO_MARKER = "TODO_NATIVE_PROFILE_FILL"
 PLACEHOLDER_ARTIFACT_MARKERS = [
     b"placeholder",
+    b"native profiler export bytes",
     SKELETON_TODO_MARKER.lower().encode("utf-8"),
 ]
+SQLITE_HEADER = b"SQLite format 3\x00"
 SERVER_LOG_EVIDENCE_MARKERS = ["vllm", "nsys", "ncu", "cuda"]
 CLIENT_LOG_EVIDENCE_MARKERS = ['"requests"', '"model"', '"status"']
 
@@ -171,8 +173,13 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                 else:
                     for index, row in enumerate(requests):
                         prompt_counts = row.get("prompt_token_counts")
+                        batch_size = row.get("batch_size")
                         prompt_total = row.get("prompt_token_count_total")
                         requested_decode = row.get("requested_decode_tokens")
+                        if not isinstance(batch_size, int) or batch_size <= 0:
+                            errors.append(
+                                f"client replay request {index} must contain positive batch_size"
+                            )
                         if (
                             not isinstance(prompt_counts, list)
                             or not prompt_counts
@@ -181,14 +188,39 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                             errors.append(
                                 f"client replay request {index} must contain positive prompt_token_counts"
                             )
+                        elif isinstance(batch_size, int) and len(prompt_counts) != batch_size:
+                            errors.append(
+                                f"client replay request {index} prompt_token_counts length must equal batch_size"
+                            )
                         if not isinstance(prompt_total, int) or prompt_total <= 0:
                             errors.append(
                                 f"client replay request {index} must contain positive prompt_token_count_total"
+                            )
+                        elif isinstance(prompt_counts, list) and all(
+                            isinstance(value, int) for value in prompt_counts
+                        ) and prompt_total != sum(prompt_counts):
+                            errors.append(
+                                f"client replay request {index} prompt_token_count_total must equal sum(prompt_token_counts)"
                             )
                         if not isinstance(requested_decode, int) or requested_decode <= 0:
                             errors.append(
                                 f"client replay request {index} must contain positive requested_decode_tokens"
                             )
+                        response_usage = row.get("response_usage")
+                        if not isinstance(response_usage, dict):
+                            errors.append(
+                                f"client replay request {index} must contain response_usage with completion_tokens"
+                            )
+                        else:
+                            completion_tokens = response_usage.get("completion_tokens")
+                            if not isinstance(completion_tokens, int) or completion_tokens <= 0:
+                                errors.append(
+                                    f"client replay request {index} response_usage.completion_tokens must be positive"
+                                )
+                            elif isinstance(requested_decode, int) and completion_tokens != requested_decode:
+                                errors.append(
+                                    f"client replay request {index} completion_tokens must equal requested_decode_tokens"
+                                )
 
 
 def _read_text(path: Path) -> str:
@@ -216,6 +248,38 @@ def _validate_profiled_process(field: str, value: str, errors: list[str]) -> Non
         )
 
 
+def _is_utf8_text_sample(sample: bytes) -> bool:
+    if not sample:
+        return True
+    try:
+        decoded = sample.decode("utf-8")
+    except UnicodeDecodeError:
+        return False
+    if "\x00" in decoded:
+        return False
+    printable = sum(1 for char in decoded if char.isprintable() or char in "\r\n\t")
+    return printable / max(len(decoded), 1) > 0.95
+
+
+def _validate_profiler_export_bytes(
+    *,
+    path: Path,
+    label: str,
+    relative: Path | str,
+    errors: list[str],
+) -> None:
+    head = path.read_bytes()[:4096]
+    lowered = head.lower()
+    if any(marker in lowered for marker in PLACEHOLDER_ARTIFACT_MARKERS):
+        errors.append(f"{label} artifact appears to be a placeholder, not a native profiler export: {relative}")
+    if path.suffix == ".sqlite":
+        if not head.startswith(SQLITE_HEADER):
+            errors.append(f"{label} SQLite artifact does not have a SQLite header: {relative}")
+        return
+    if _is_utf8_text_sample(head):
+        errors.append(f"{label} artifact appears to be plain text, not a native profiler export: {relative}")
+
+
 def _validate_native_artifacts(
     *,
     label: str,
@@ -237,12 +301,12 @@ def _validate_native_artifacts(
                 f"{artifact.relative_to(root.parent)} has {size} bytes, expected at least "
                 f"{min_bytes}"
             )
-        head = artifact.read_bytes()[:4096].lower()
-        if any(marker in head for marker in PLACEHOLDER_ARTIFACT_MARKERS):
-            errors.append(
-                f"{label} artifact appears to be a placeholder, not a native profiler export: "
-                f"{artifact.relative_to(root.parent)}"
-            )
+        _validate_profiler_export_bytes(
+            path=artifact,
+            label=label,
+            relative=artifact.relative_to(root.parent),
+            errors=errors,
+        )
 
 
 def _validate_metric_artifact_path(
@@ -303,9 +367,15 @@ def _validate_metric_artifact_path(
             f"metric row {row_index} {field} is too small to be native evidence: "
             f"{value} has {size} bytes, expected at least {min_bytes}"
         )
-    head = resolved.read_bytes()[:4096].lower()
-    if any(marker in head for marker in PLACEHOLDER_ARTIFACT_MARKERS):
-        errors.append(f"metric row {row_index} {field} appears to be placeholder evidence: {value}")
+    before = len(errors)
+    _validate_profiler_export_bytes(
+        path=resolved,
+        label=f"metric row {row_index} {field}",
+        relative=value,
+        errors=errors,
+    )
+    if len(errors) > before:
+        return
 
 
 def _is_pending_metric_row(raw: dict[str, object]) -> bool:
@@ -609,7 +679,7 @@ def check_run_artifacts(
     metric_models: set[str] = set()
     metric_roles: set[str] = set()
     client_models: set[str] = set()
-    client_replay_shapes: set[tuple[str, int, int, int]] = set()
+    client_replay_shapes: set[tuple[str, int, int, int, int]] = set()
     for log_file in log_files:
         if "client" not in log_file.name.lower():
             continue
@@ -625,16 +695,21 @@ def check_run_artifacts(
                 for request in requests:
                     if not isinstance(request, dict):
                         continue
+                    batch_size = request.get("batch_size")
                     prompt_total = request.get("prompt_token_count_total")
                     requested_decode = request.get("requested_decode_tokens")
                     if (
+                        isinstance(batch_size, int)
+                        and batch_size > 0
+                        and not isinstance(batch_size, bool)
+                        and
                         isinstance(prompt_total, int)
                         and prompt_total > 0
                         and isinstance(requested_decode, int)
                         and requested_decode > 0
                     ):
                         client_replay_shapes.add(
-                            (client_model, prompt_total, requested_decode, len(requests))
+                            (client_model, batch_size, prompt_total, requested_decode, len(requests))
                         )
     metrics_path = run_dir / "profiler_metrics.json"
     _reject_skeleton_todo(metrics_path, "profiler_metrics.json", errors)
@@ -680,6 +755,7 @@ def check_run_artifacts(
                         continue
                     replay_shape = (
                         model,
+                        int(float(row["batch_size"])),
                         int(float(row["prefill_tokens"])),
                         int(float(row["decode_tokens"])),
                         int(float(row["requests"])),

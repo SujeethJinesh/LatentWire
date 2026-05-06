@@ -4,14 +4,20 @@
 - status: preregistered before measurement
 - branch: directional outlier propagation through hybrid boundaries
 
+## H1a: Single-Model Activation Screen
+
+The first live hybrid packet is only a **single-model screen**. It must target a
+live hybrid model from
+`experimental/shared/results/hybrid_model_eligibility_20260506/`, use the shared
+config-derived boundary IDs, include at least 12 fixed reasoning prompts or an
+explicit blocker if no live hybrid weights are available, and pass the real
+packet checker. A passing H1a packet may promote the branch to H1/H2 follow-up,
+but it cannot by itself support a paper claim.
+
 ## H1: Activation Magnitude Characterization
 
 Measure max-channel magnitude and kurtosis immediately before and after hybrid
 boundaries. Group boundaries into `attention->ssm` and `ssm->attention`.
-The first admissible packet must target a live hybrid model from
-`experimental/shared/results/hybrid_model_eligibility_20260506/`, use the shared
-config-derived boundary IDs, and include at least 12 fixed reasoning prompts or
-an explicit blocker if no live hybrid weights are available.
 
 Pass if max magnitude differs at least 3x or kurtosis differs at least 2x
 between directions on at least 60% of layer pairs in at least two hybrid

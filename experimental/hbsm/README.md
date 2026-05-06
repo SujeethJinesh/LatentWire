@@ -59,10 +59,13 @@ Required real controls are `perturbation_off`, `random_flags`, `layer_index`,
 `parameter_count_norm`, `boundary_only`, `kl_lens_rank`, and
 `activation_outlier`. Real rows must also include
 `prompt_id`, `top_decile_flag`, `random_top_decile`, and `train_test_split`.
-Only `boundary_only` rows are scored for B1 enrichment; they need prompt-level
-boundary/non-boundary layer coverage, true top-decile cardinality
-`ceil(0.10 * primary_rows)`, a same-count random baseline that is not enriched,
-and both train/test split rows unless the packet records a resource-limit note.
+Only `boundary_only` rows are scored for B1 enrichment. The evaluator aggregates
+prompt rows to one score per `(model_id, layer)` before computing top-decile
+enrichment, so prompt count cannot inflate the effective layer count. Primary
+rows still need prompt-level boundary/non-boundary layer coverage, true
+top-decile cardinality `ceil(0.10 * scoring_layers)`, a same-count random
+baseline that is not enriched, and both train/test split rows unless the packet
+records a resource-limit note.
 Convert saved B1 sensitivity rows with
 `experimental.shared.hybrid_trace_packet_builder --project hbsm --row-packet
 ...` before validation.
@@ -72,11 +75,12 @@ Any resource-limited packet must set a decision beginning
 promote B1. Real `config.json` provenance must include `prompt_ids_hash` and
 `architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must
 include the recomputed B1 evaluator fields: `gate_status`, `gate_pass`,
-primary row and prompt counts, expected/top/random/train/test counts,
+primary row, scoring-layer, and prompt counts, expected/top/random/train/test counts,
 split/control summaries, boundary/non-boundary top-decile counts and rates,
 random-baseline counts/rates, `boundary_top_decile_enrichment`,
 `random_boundary_top_decile_enrichment`, Fisher p-values, and
-`cheap_predictor_spearman`. The checker recomputes these values from rows and
+`cheap_predictor_spearman`, `baseline_spearman`, and
+`cheap_predictor_margin_vs_best_baseline`. The checker recomputes these values from rows and
 rejects stale summaries.
 
 Validate the first real B1 packet with:
