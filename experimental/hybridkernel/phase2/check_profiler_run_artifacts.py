@@ -529,6 +529,22 @@ def check_run_artifacts(
                 errors.append("profiler_metrics.json has no valid native rows")
             if "primary_hybrid" not in metric_roles:
                 errors.append("profiler_metrics.json must contain primary_hybrid metric rows")
+            required_review_roles = {"same_family_control", "cross_family_falsification"}
+            missing_review_roles = required_review_roles - metric_roles
+            if (
+                result["status"].startswith("PROMOTE")
+                and missing_review_roles
+            ):
+                errors.append(
+                    "promotion profiler packet must include control/falsification rows: "
+                    + ", ".join(sorted(missing_review_roles))
+                )
+            elif missing_review_roles:
+                warnings.append(
+                    "profiler packet is admissible only as a profiling audit until it includes "
+                    "control/falsification rows: "
+                    + ", ".join(sorted(missing_review_roles))
+                )
             if counts and max(counts.values()) < min_repeated_runs:
                 errors.append(
                     f"no model has at least {min_repeated_runs} repeated native rows"

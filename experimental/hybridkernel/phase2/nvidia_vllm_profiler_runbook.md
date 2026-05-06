@@ -335,9 +335,9 @@ Write `$HWK_RUN/readout.md` with this table:
 | Same-family controls available? | model/control rows | yes/no |
 | Cross-family falsification attempted? | model/control rows | yes/no |
 
-Use paired comparisons across repeated fixed-request runs. Report median,
-interquartile range, and bootstrap confidence intervals. Do not report a single
-trace screenshot as a positive result.
+Use matched comparisons across repeated fixed-request runs. Report median,
+interquartile range, and bootstrap intervals over repeated reduced rows. Do not
+report a single trace screenshot as a positive result.
 
 ## Parser Input
 
@@ -472,7 +472,8 @@ Promote HybridKernel to implementation only if all are true:
   region;
 - the estimated end-to-end gain is at least 3%, or the localized gain is large
   enough that a concrete fused-kernel design plausibly clears 3%;
-- the result survives at least three repeated runs and one same-family control;
+- the result survives at least three distinct repeated runs, one same-family
+  control row, and one cross-family falsification row;
 - the readout separates source communication from target-cache or runtime-cache
   effects.
 - `check_profiler_run_artifacts.py` passes for the exact run directory being

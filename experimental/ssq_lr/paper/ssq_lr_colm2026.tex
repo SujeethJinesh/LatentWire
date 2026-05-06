@@ -49,15 +49,20 @@ state-quantization recipe is tuned.
 \section{Admissible Real Packet}
 
 The real S1 packet must include model and tokenizer revisions, prompt manifest
-hash, seed list, context lengths, dtype, device, command, and the
+hash, \texttt{prompt\_ids\_hash}, seed list, context lengths, dtype, device, command, and the
 \texttt{architecture\_map\_hash} from the shared config-derived maps. Rows must
 report \texttt{model\_id}, \texttt{model\_revision}, \texttt{prompt\_id},
 \texttt{layer}, \texttt{position\_bucket}, \texttt{state\_shape},
 \texttt{max\_abs}, \texttt{rms}, \texttt{std}, \texttt{kurtosis},
 \texttt{outlier\_mass}, and a \texttt{bf16\_no\_quant} control. The packet is
-valid only if it covers \texttt{prefill\_end}, \texttt{2k\_or\_end},
-\texttt{8k\_or\_end}, and \texttt{final\_minus\_128} position buckets and at least 12 prompt IDs unless \texttt{config.json} records an explicit
-resource-limit note. It must pass
+valid only if every prompt/layer pair covers \texttt{prefill\_end},
+\texttt{2k\_or\_end}, \texttt{8k\_or\_end}, and
+\texttt{final\_minus\_128} position buckets and at least 12 prompt IDs unless
+\texttt{config.json} records an explicit resource-limit note. Any
+resource-limited packet must use a
+\texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
+the selected S1 interval, Holm-adjusted readout, passing-layer count, prompt
+count, and final-minus-128 versus prefill-end max-abs/std/kurtosis ratios. It must pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project ssq\_lr}.
 Saved tensor packets should be converted with
 \texttt{experimental.shared.hybrid\_trace\_packet\_builder} before validation.

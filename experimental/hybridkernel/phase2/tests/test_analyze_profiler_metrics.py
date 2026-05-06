@@ -34,6 +34,27 @@ def _native_row(idx: int, **overrides: object) -> dict[str, object]:
     return row
 
 
+def _review_control_rows() -> list[dict[str, object]]:
+    return [
+        _native_row(
+            100,
+            model="granite-same-family-control",
+            row_role="same_family_control",
+            control_model_or_segment="same_family_transformer_heavy_control",
+            attention_ssm_boundary_ms=2.0,
+            matched_non_boundary_ms=2.0,
+        ),
+        _native_row(
+            101,
+            model="qwen-cross-family-falsification",
+            row_role="cross_family_falsification",
+            control_model_or_segment="cross_family_hybrid_control",
+            attention_ssm_boundary_ms=2.0,
+            matched_non_boundary_ms=2.0,
+        ),
+    ]
+
+
 def test_pending_without_native_rows() -> None:
     result = analyze({"rows": [{"total_step_ms": None, "attention_ssm_boundary_ms": None}]})
 
@@ -48,6 +69,7 @@ def test_promotes_only_when_all_repeated_runs_clear_gate() -> None:
                 _native_row(idx)
                 for idx in range(3)
             ]
+            + _review_control_rows()
         }
     )
 
@@ -56,6 +78,39 @@ def test_promotes_only_when_all_repeated_runs_clear_gate() -> None:
     assert summary_row["clears_3pct_gate_all_runs"] is True
     assert summary_row["median_recoverable_gain_upper_bound"] == 0.036
     assert summary_row["bootstrap_ci95_recoverable_gain_upper_bound"]["low"] == 0.036
+
+
+def test_primary_gate_clear_without_controls_is_not_promoted() -> None:
+    result = analyze(
+        {
+            "rows": [
+                _native_row(idx)
+                for idx in range(3)
+            ]
+        }
+    )
+
+    assert result["status"].startswith("WEAKLY ALIVE")
+    assert "same-family controls" in result["status"]
+    summary_row = next(iter(result["summary"].values()))
+    assert summary_row["clears_3pct_gate_all_runs"] is True
+
+
+def test_duplicate_run_ids_do_not_clear_gate() -> None:
+    result = analyze(
+        {
+            "rows": [
+                _native_row(idx, run_id="same_trace")
+                for idx in range(3)
+            ]
+            + _review_control_rows()
+        }
+    )
+
+    summary_row = next(iter(result["summary"].values()))
+    assert summary_row["distinct_run_ids"] == 1
+    assert summary_row["clears_3pct_gate_all_runs"] is False
+    assert not result["status"].startswith("PROMOTE")
 
 
 def test_kills_when_recoverable_gain_is_tiny() -> None:

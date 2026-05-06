@@ -11,11 +11,11 @@ saturated ideas.
 
 | Rank | Project | Readiness | Current story | Exact blocking gap | Next experiment |
 |---:|---|---:|---|---|---|
-| 1 | HybridKernel | 70% if GPU gate passes; 0% as local-only result | Boundary-fusion may recover avoidable attention to SSM overhead in hybrid models, but Mac work is saturated. | User-operated NVIDIA/vLLM Nsight packet with three clean repeats and at least 3% recoverable gain. | Run `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`; verify with `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`. |
-| 2 | SSQ-LR | 15% positive method | Test whether recurrent SSM state in hybrid reasoners can go below FP16 with a stable quantization recipe. Synthetic S1 packet and explicit architecture-map packet validate artifact mechanics/provenance only. | Mac Gate S1 must show state-distribution heterogeneity on real hybrid SSM state dumps. The checker now requires prefill_end, 2k_or_end, 8k_or_end, and final_minus_128 buckets plus at least 12 prompts unless a resource-limit note is present. | Run `experimental/ssq_lr/phase2/preregister_ssq_lr_20260506.md` Gate S1 on the smallest available hybrid state dumps. |
-| 3 | HORN | 15% control branch | Test whether attention-to-SSM and SSM-to-attention boundaries have asymmetric outlier/noise propagation. Synthetic H1 packet and explicit boundary maps validate artifact mechanics/provenance only. | Mac Gate H1 must show directional magnitude or kurtosis asymmetry on real boundary dumps; otherwise HORN stays a control inside SSQ-LR/HBSM. The checker now requires both boundary directions and matched flipped-direction controls. | Run `experimental/horn/phase2/preregister_horn_20260506.md` Gate H1 once shared dumps exist. |
-| 4 | HBSM | 15% wounded branch | KL-Lens-like layer sensitivity is crowded; remaining wedge is frontier hybrid mechanism plus cheaper predictor. Synthetic B1/B2 packet and fixed boundary flags validate artifact mechanics/provenance only. | Gate B1 must replicate sensitivity heterogeneity on current hybrid reasoners, then B2 must show a cheaper predictor. The checker now requires true/false boundary flags, finite metrics, and a near-zero perturbation-off row. | Run `experimental/hbsm/phase2/preregister_hbsm_20260506.md` after shared dumps exist. |
-| 5 | ThoughtFlow-FP8 | 89% falsification paper; 0% positive method | The reusable contribution is the preregistered falsification ladder for sparse-cache signals. The draft now has protocol, RDU demotion, claim-boundary, and related-work citation tables. | Paper polish only; no fifth signal unless a new preregistration and fresh surface exist. | Human review of `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf`. |
+| 1 | HybridKernel | 70% if GPU gate passes; 0% as local-only result | Boundary-fusion may recover avoidable attention to SSM overhead in hybrid models, but Mac work is saturated. | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, at least 3% recoverable gain, same-family control rows, and cross-family falsification rows. | Run `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`; verify with `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`. |
+| 2 | SSQ-LR | 15% positive method | Test whether recurrent SSM state in hybrid reasoners can go below FP16 with a stable quantization recipe. Synthetic S1 packet and explicit architecture-map packet validate artifact mechanics/provenance only. | Mac Gate S1 must show state-distribution heterogeneity on real hybrid SSM state dumps. The checker now requires every prompt/layer pair to cover prefill_end, 2k_or_end, 8k_or_end, and final_minus_128 buckets, decision-grade summary fields, and at least 12 prompts unless the packet is explicitly resource-limited and non-promotable. | Run `experimental/ssq_lr/phase2/preregister_ssq_lr_20260506.md` Gate S1 on the smallest available hybrid state dumps. |
+| 3 | HORN | 15% control branch | Test whether attention-to-SSM and SSM-to-attention boundaries have asymmetric outlier/noise propagation. Synthetic H1 packet and explicit boundary maps validate artifact mechanics/provenance only. | Mac Gate H1 must show directional magnitude or kurtosis asymmetry on real boundary dumps; otherwise HORN stays a control inside SSQ-LR/HBSM. The checker now requires both boundary directions, decision-grade summary fields, and permuted controls paired by prompt, boundary, layer, and norm positions. | Run `experimental/horn/phase2/preregister_horn_20260506.md` Gate H1 once shared dumps exist. |
+| 4 | HBSM | 15% wounded branch | KL-Lens-like layer sensitivity is crowded; remaining wedge is frontier hybrid mechanism plus cheaper predictor. Synthetic B1/B2 packet and fixed boundary flags validate artifact mechanics/provenance only. | Gate B1 must replicate sensitivity heterogeneity on current hybrid reasoners, then B2 must show a cheaper predictor. The checker now requires true/false boundary flags, finite metrics, decision-grade summary fields, matched random/top-decile counts, and a near-zero perturbation-off row. | Run `experimental/hbsm/phase2/preregister_hbsm_20260506.md` after shared dumps exist. |
+| 5 | ThoughtFlow-FP8 | 90% falsification paper; 0% positive method | The reusable contribution is the preregistered falsification ladder for sparse-cache signals. The draft now has protocol, RDU demotion, claim-boundary, related-work citation tables, and saved-artifact tests locking the current negative conclusions. | Paper polish only; no fifth signal unless a new preregistration and fresh surface exist. | Human review of `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf`. |
 
 ## New Shared Infrastructure
 
@@ -66,11 +66,14 @@ The checker now has a stricter real-packet mode:
 ```
 
 Real packets must include provenance, `summary.md`, matching `row_count`,
-project-specific row schemas, required controls, admissible coverage, and an
-`architecture_map_hash`. The stricter checks reject underspecified SSQ-LR
-packets without preregistered S1 state buckets, HORN packets without both
-boundary directions and matched permuted controls, and HBSM packets without
-finite sensitivity rows plus a no-op perturbation control.
+project-specific row schemas, required controls, admissible coverage,
+`prompt_ids_hash`, `architecture_map_hash`, and decision-grade `summary.json`
+aggregates. Resource-limited real packets must use a
+`RESOURCE_LIMITED_NOT_PROMOTABLE` decision and cannot promote a gate. The
+stricter checks reject underspecified SSQ-LR packets without complete
+prompt/layer S1 bucket matrices, HORN packets without both boundary directions
+and prompt-paired permuted controls, and HBSM packets without finite
+sensitivity rows plus a no-op perturbation control.
 
 ## Config-Only Architecture Maps
 
@@ -93,6 +96,9 @@ Compute target.
 Per-row `nsys_artifact` and `ncu_artifact` fields must resolve to reviewable
 files inside the run packet with valid Nsight extensions. This prevents a
 reduced metric row from citing a missing or external artifact.
+The profiler reducer now refuses prototype promotion unless the same metric
+packet includes the required same-family control and cross-family falsification
+row roles; a primary-only packet that clears 3% remains audit-only.
 The optional Triton CPU-backend correctness test passes on this Mac when
 Homebrew GCC library paths are exported, but it remains a correctness-only
 diagnostic.

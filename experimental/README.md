@@ -13,11 +13,11 @@ The current sprint ledger is `project_status_20260506.md`.
 
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
-| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, fixed-request vLLM driver, profiler packet verifier, Triton interpreter toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three clean repeats and at least 3% recoverable boundary overhead |
-| `ssq_lr/` | Mac gate scaffolded | Synthetic S1 packet validates metrics, decision logic, and artifact schema | Real hybrid SSM state dumps showing distribution heterogeneity |
-| `horn/` | Mac gate scaffolded | Synthetic H1 packet validates directional boundary metrics and artifact schema | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry |
-| `hbsm/` | Mac gate scaffolded; novelty is narrow | Synthetic B1/B2 packet validates sensitivity-ranking and cheap-predictor mechanics | Real layer sensitivity packet on current hybrid reasoners |
-| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures | Paper-only camera-ready polish |
+| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, fixed-request vLLM driver, profiler packet verifier, Triton interpreter toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
+| `ssq_lr/` | Mac gate scaffolded | Synthetic S1 packet validates metrics, decision logic, and artifact schema | Real hybrid SSM state dumps showing distribution heterogeneity with complete prompt/layer bucket coverage |
+| `horn/` | Mac gate scaffolded | Synthetic H1 packet validates directional boundary metrics and artifact schema | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry with prompt-paired permuted controls |
+| `hbsm/` | Mac gate scaffolded; novelty is narrow | Synthetic B1/B2 packet validates sensitivity-ranking and cheap-predictor mechanics | Real layer sensitivity packet with matched random/top-decile controls on current hybrid reasoners |
+| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, saved-artifact regression tests | Paper-only camera-ready polish |
 
 ## Shared Infrastructure
 
@@ -33,7 +33,8 @@ Shared Mac-local utilities live in `shared/`:
 - `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
   SSQ-LR/HORN real packets.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
-- `check_gate_packet.py`: generic result-packet validator.
+- `check_gate_packet.py`: generic result-packet validator with strict real
+  SSQ-LR/HORN/HBSM packet contracts.
 - `hybrid_trace_packet_runbook.md`: schema for the first real shared trace
   packet used by SSQ-LR, HORN, and HBSM.
 

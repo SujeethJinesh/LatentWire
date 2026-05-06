@@ -119,6 +119,31 @@ def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     assert max(result["model_config_run_counts"].values()) == 3
 
 
+def test_primary_gate_clear_without_controls_stays_audit_only(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    for row in payload["rows"]:
+        row["attention_ssm_boundary_ms"] = 8.0
+    analysis = analyze(payload)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "profiler_analysis_gate.md").write_text(
+        "# HybridKernel Profiler Analysis Gate\n\n"
+        f"Status: **{analysis['status']}**\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "PASS"
+    assert result["metrics_status"].startswith("WEAKLY ALIVE")
+    assert any("control/falsification rows" in warning for warning in result["warnings"])
+
+
 def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "nsys/granite_tiny_b1_decode64.nsys-rep").unlink()

@@ -63,6 +63,13 @@ records a resource-limit note. Convert saved B1 sensitivity rows with
 `experimental.shared.hybrid_trace_packet_builder --project hbsm --row-packet
 ...` before validation.
 
+Any resource-limited packet must set a decision beginning
+`RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but cannot
+promote B1. Real `config.json` provenance must include `prompt_ids_hash` and
+`architecture_map_hash` as `sha256:<digest>` strings. Real `summary.json` must
+include `top_decile_count`, `random_top_decile_count`, `train_count`,
+`test_count`, and `boundary_top_decile_enrichment`.
+
 Validate the first real B1 packet with:
 
 ```bash

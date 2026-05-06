@@ -551,3 +551,18 @@ reproducibility surface; the old per-project `.venv` setup is historical.
 Decision: **NO ADDITIONAL MAC KERNEL OR BENCHMARK WORK REMAINS**. Remaining
 Mac-local work is limited to doc/schema alignment and packet-readiness tests;
 the next evidence gate is native server-side Nsight evidence or kill/shelve.
+
+## 2026-05-06 Control-Role Promotion Hardening
+
+Tightened the native profiler reducer and artifact checker after COLM-style
+review. Reduced rows now carry explicit `row_role`, and the analyzer will not
+emit a prototype-promotion status unless the same metric packet includes
+same-family control and cross-family falsification row roles. Duplicate run IDs
+also cannot clear the repeated-run gate. The paper now describes bootstrap
+intervals over repeated reduced rows, not paired trace intervals, and records
+`60 passed` for the stable Mac suite with the CPU-backend test skipped by
+default.
+
+Decision: **PRIMARY-ONLY GPU ROWS ARE AUDIT-ONLY EVEN IF THEY CLEAR 3%**. The
+next exact gate remains the user-operated 5090 Nsight packet with three distinct
+repeats plus the required controls.

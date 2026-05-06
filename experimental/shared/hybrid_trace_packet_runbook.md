@@ -37,6 +37,12 @@ The checker rejects real packets without provenance fields, `summary.md`,
 matching `row_count`, project-specific row schemas, required controls, and
 project-specific admissible coverage.
 
+For real packets, `config.json` must record `prompt_ids_hash` and
+`architecture_map_hash` as `sha256:<digest>` strings. A packet that records
+`resource_limit_note` is admissible only as a diagnostic artifact: its
+`summary.json` decision must start with
+`RESOURCE_LIMITED_NOT_PROMOTABLE`, and it cannot promote a gate.
+
 ## SSQ-LR Real S1 Packet
 
 Minimum admissible row fields:
@@ -49,7 +55,16 @@ Required controls:
 
 - BF16/no-quant state recording.
 - At least the preregistered `prefill_end`, `2k_or_end`, `8k_or_end`, and `final_minus_128` position buckets.
+- Every `(prompt_id, layer)` pair must cover all four preregistered buckets.
 - At least 12 fixed prompts or an explicit resource-limit note.
+
+Required `summary.json` fields:
+
+- `prompt_count`, `position_buckets`, `ssm_layer_count`, `passing_layer_count`
+- `pass_fraction`, `selected_s1_ci_low`, `holm_p_min`
+- `max_abs_ratio_final_minus_128_vs_prefill_end`
+- `std_ratio_final_minus_128_vs_prefill_end`
+- `kurtosis_ratio_final_minus_128_vs_prefill_end`
 
 ## HORN Real H1 Packet
 
@@ -63,10 +78,19 @@ Minimum admissible row fields:
 Required controls:
 
 - non-boundary adjacent pairs;
-- direction-label permutation matched to an observed boundary tuple;
+- direction-label permutation matched to an observed boundary tuple, including
+  `prompt_id`, boundary index, layer IDs, and matched normalization positions;
 - at least one `attention->ssm` boundary and one `ssm->attention` boundary;
 - matched normalization placement.
 - at least 12 fixed prompts or an explicit resource-limit note.
+
+Required `summary.json` fields:
+
+- `prompt_count`
+- `boundary_directions`
+- `selected_h1_ratio`
+- `selected_h1_ci_low`
+- `support_fraction`
 
 ## HBSM Real B1 Packet
 
@@ -89,6 +113,14 @@ Required controls:
 - matched counts for `top_decile_flag=true` and `random_top_decile=true`;
 - both `train` and `test` split rows, unless a resource-limit note is present;
 - train/test layer split if layer count permits.
+
+Required `summary.json` fields:
+
+- `top_decile_count`
+- `random_top_decile_count`
+- `train_count`
+- `test_count`
+- `boundary_top_decile_enrichment`
 
 ## Promotion Boundary
 

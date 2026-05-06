@@ -149,6 +149,9 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
         run_id = str(_require_present(raw, "run_id")).strip()
         if not run_id:
             raise ValueError("run_id must be explicitly recorded and non-empty")
+        row_role = str(_require_present(raw, "row_role")).strip()
+        if row_role not in {"primary_hybrid", "same_family_control", "cross_family_falsification"}:
+            raise ValueError("row_role must be primary_hybrid, same_family_control, or cross_family_falsification")
         config_key, config = _config_key(raw, model)
         if total <= 0:
             raise ValueError("total_step_ms must be positive")
@@ -163,6 +166,7 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
             {
                 "model": model,
                 "run_id": run_id,
+                "row_role": row_role,
                 "config_key": config_key,
                 "dtype": str(config["dtype"]),
                 "cuda_graph_enabled": str(config["cuda_graph_enabled"]),
@@ -203,6 +207,8 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
         avoidable = [float(row["avoidable_share"]) for row in config_rows]
         ci = _bootstrap_ci(gains)
         first = config_rows[0]
+        distinct_run_ids = len({str(row["run_id"]) for row in config_rows})
+        row_roles = sorted({str(row["row_role"]) for row in config_rows})
         summary[config_key] = {
             "model": str(first["model"]),
             "config_key": config_key,
@@ -215,17 +221,37 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             "decode_tokens": int(float(first["decode_tokens"])),
             "requests": int(float(first["requests"])),
             "control_model_or_segment": str(first["control_model_or_segment"]),
+            "row_roles": row_roles,
             "mean_avoidable_share": mean(avoidable),
             "mean_recoverable_gain_upper_bound": mean(gains),
             "median_recoverable_gain_upper_bound": median(gains),
             "iqr_recoverable_gain_upper_bound": _iqr(gains),
             "bootstrap_ci95_recoverable_gain_upper_bound": ci,
             "min_recoverable_gain_upper_bound": min(gains),
-            "clears_3pct_gate_all_runs": len(config_rows) >= 3 and min(gains) >= 0.03,
+            "clears_3pct_gate_all_runs": (
+                len(config_rows) >= 3
+                and distinct_run_ids >= 3
+                and "primary_hybrid" in row_roles
+                and min(gains) >= 0.03
+            ),
         }
-    if any(row["clears_3pct_gate_all_runs"] for row in summary.values()):
+    all_row_roles = {str(row["row_role"]) for row in rows}
+    has_review_roles = {"same_family_control", "cross_family_falsification"}.issubset(
+        all_row_roles
+    )
+    any_primary_clears = any(row["clears_3pct_gate_all_runs"] for row in summary.values())
+    if any_primary_clears and has_review_roles:
         status = "PROMOTE to prototype: repeated profiler summaries clear the 3% upper-bound gate."
         decision = "Build the smallest boundary-fusion prototype for the clearing model only."
+    elif any_primary_clears:
+        status = (
+            "WEAKLY ALIVE: primary profiler rows clear the 3% gate, but "
+            "same-family controls and cross-family falsification rows are missing."
+        )
+        decision = (
+            "Do not prototype until the same packet includes the required "
+            "control/falsification rows."
+        )
     elif max(row["mean_recoverable_gain_upper_bound"] for row in summary.values()) < 0.01:
         status = "KILL or shelve: native profiler summaries show less than 1% recoverable gain."
         decision = "Do not spend kernel implementation time without a new profiler anomaly."

@@ -65,8 +65,17 @@ Validate the first real H1 packet with:
 ```
 
 The real checker requires at least 12 prompt IDs unless resource-limited, both
-boundary directions, matched flipped `permuted_direction` controls, and finite
-numeric rows.
+boundary directions, paired flipped `permuted_direction` controls, and finite
+numeric rows. The flipped controls must match an observed boundary by
+`prompt_id`, boundary index, layer IDs, and normalization positions, then invert
+only the direction label. Any resource-limited packet must set a decision
+beginning `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but
+cannot promote H1.
+
+Real `config.json` provenance must include `prompt_ids_hash` and
+`architecture_map_hash` as `sha256:<digest>` strings. Real `summary.json` must
+include `prompt_count`, `boundary_directions`, `selected_h1_ratio`,
+`selected_h1_ci_low`, and `support_fraction`.
 
 ## Output Paths
 
@@ -96,5 +105,6 @@ Expected decision: `SYNTHETIC_PASS_REAL_BOUNDARY_DUMPS_NEXT`.
 
 ## GPU Rule
 
-No GPU validation until H1--H3 pass and a directional precision-allocation
-recipe is frozen.
+No native performance or precision-allocation claim until H1--H3 pass and a
+directional recipe is frozen. GPU execution may still be used to collect the
+same H1--H3 evidence if local hybrid model loading is the only blocker.

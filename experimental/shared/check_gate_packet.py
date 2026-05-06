@@ -75,6 +75,36 @@ REAL_CONTROL_VALUES = {
     "hbsm": {"perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"},
 }
 SSQ_LR_POSITION_BUCKETS = {"prefill_end", "2k_or_end", "8k_or_end", "final_minus_128"}
+REAL_SUMMARY_FIELDS = {
+    "ssq_lr": (
+        "prompt_count",
+        "position_buckets",
+        "ssm_layer_count",
+        "passing_layer_count",
+        "pass_fraction",
+        "selected_s1_ci_low",
+        "holm_p_min",
+        "max_abs_ratio_final_minus_128_vs_prefill_end",
+        "std_ratio_final_minus_128_vs_prefill_end",
+        "kurtosis_ratio_final_minus_128_vs_prefill_end",
+    ),
+    "horn": (
+        "prompt_count",
+        "boundary_directions",
+        "selected_h1_ratio",
+        "selected_h1_ci_low",
+        "support_fraction",
+    ),
+    "hbsm": (
+        "top_decile_count",
+        "random_top_decile_count",
+        "train_count",
+        "test_count",
+        "boundary_top_decile_enrichment",
+    ),
+}
+HASH_FIELDS = ("prompt_ids_hash", "architecture_map_hash")
+RESOURCE_LIMITED_DECISION = "RESOURCE_LIMITED_NOT_PROMOTABLE"
 
 
 def _load_json(path: Path) -> Any:
@@ -132,6 +162,138 @@ def _valid_positive_int_list(value: Any) -> bool:
     )
 
 
+def _valid_nonnegative_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _validate_ratio_field(
+    *,
+    project: str,
+    summary: dict[str, Any],
+    field: str,
+    errors: list[str],
+) -> None:
+    value = summary.get(field)
+    if not _finite_number(value) or float(value) <= 0.0:
+        errors.append(f"{project} summary {field} must be positive finite numeric")
+
+
+def _resource_limited(config: dict[str, Any]) -> bool:
+    return "resource_limit_note" in config
+
+
+def _validate_resource_limit_decision(
+    *,
+    project: str,
+    config: dict[str, Any],
+    summary: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if not _resource_limited(config):
+        return
+    decision = str(summary.get("decision", ""))
+    if not decision.startswith(RESOURCE_LIMITED_DECISION):
+        errors.append(
+            f"{project} resource-limited real packet must use {RESOURCE_LIMITED_DECISION} decision"
+        )
+
+
+def _validate_hash_provenance(config: dict[str, Any], errors: list[str]) -> None:
+    for field in HASH_FIELDS:
+        value = config.get(field)
+        if not isinstance(value, str) or not value.startswith("sha256:") or len(value) <= len("sha256:"):
+            errors.append(f"config.json {field} must be a sha256:<hex-or-token> value")
+
+
+def _validate_real_summary(
+    *,
+    project: str,
+    rows: list[dict[str, Any]],
+    summary: dict[str, Any],
+    config: dict[str, Any],
+    errors: list[str],
+) -> None:
+    required_fields = REAL_SUMMARY_FIELDS.get(project)
+    if required_fields is None:
+        return
+    for field in required_fields:
+        if field not in summary:
+            errors.append(f"{project} summary.json missing {field}")
+
+    if project == "ssq_lr":
+        prompt_count = summary.get("prompt_count")
+        observed_prompt_count = len({str(row.get("prompt_id")) for row in rows})
+        if prompt_count != observed_prompt_count:
+            errors.append("ssq_lr summary prompt_count must match distinct row prompt_id count")
+        if not _resource_limited(config) and isinstance(prompt_count, int) and prompt_count < 12:
+            errors.append("ssq_lr summary prompt_count must be at least 12 unless resource-limited")
+        position_buckets = summary.get("position_buckets")
+        if not isinstance(position_buckets, list) or set(map(str, position_buckets)) != SSQ_LR_POSITION_BUCKETS:
+            errors.append("ssq_lr summary position_buckets must match preregistered S1 buckets")
+        for field in ("ssm_layer_count", "passing_layer_count"):
+            if not _valid_nonnegative_int(summary.get(field)):
+                errors.append(f"ssq_lr summary {field} must be a nonnegative integer")
+        ssm_layer_count = summary.get("ssm_layer_count")
+        passing_layer_count = summary.get("passing_layer_count")
+        if isinstance(ssm_layer_count, int) and ssm_layer_count <= 0:
+            errors.append("ssq_lr summary ssm_layer_count must be positive")
+        if (
+            isinstance(ssm_layer_count, int)
+            and isinstance(passing_layer_count, int)
+            and passing_layer_count > ssm_layer_count
+        ):
+            errors.append("ssq_lr summary passing_layer_count cannot exceed ssm_layer_count")
+        pass_fraction = summary.get("pass_fraction")
+        if not _finite_number(pass_fraction) or not 0.0 <= float(pass_fraction) <= 1.0:
+            errors.append("ssq_lr summary pass_fraction must be in [0, 1]")
+        selected_s1_ci_low = summary.get("selected_s1_ci_low")
+        if not _finite_number(selected_s1_ci_low):
+            errors.append("ssq_lr summary selected_s1_ci_low must be finite numeric")
+        holm_p_min = summary.get("holm_p_min")
+        if not _finite_number(holm_p_min) or not 0.0 <= float(holm_p_min) <= 1.0:
+            errors.append("ssq_lr summary holm_p_min must be in [0, 1]")
+        for field in (
+            "max_abs_ratio_final_minus_128_vs_prefill_end",
+            "std_ratio_final_minus_128_vs_prefill_end",
+            "kurtosis_ratio_final_minus_128_vs_prefill_end",
+        ):
+            _validate_ratio_field(project="ssq_lr", summary=summary, field=field, errors=errors)
+
+    if project == "horn":
+        prompt_count = summary.get("prompt_count")
+        observed_prompt_count = len({str(row.get("prompt_id")) for row in rows})
+        if prompt_count != observed_prompt_count:
+            errors.append("horn summary prompt_count must match distinct row prompt_id count")
+        if not _resource_limited(config) and isinstance(prompt_count, int) and prompt_count < 12:
+            errors.append("horn summary prompt_count must be at least 12 unless resource-limited")
+        directions = summary.get("boundary_directions")
+        if not isinstance(directions, list) or set(map(str, directions)) != {"attention->ssm", "ssm->attention"}:
+            errors.append("horn summary boundary_directions must include attention->ssm and ssm->attention")
+        _validate_ratio_field(project="horn", summary=summary, field="selected_h1_ratio", errors=errors)
+        ci_low = summary.get("selected_h1_ci_low")
+        if not _finite_number(ci_low) or float(ci_low) <= 0.0:
+            errors.append("horn summary selected_h1_ci_low must be positive finite numeric")
+        support_fraction = summary.get("support_fraction")
+        if not _finite_number(support_fraction) or not 0.0 <= float(support_fraction) <= 1.0:
+            errors.append("horn summary support_fraction must be in [0, 1]")
+
+    if project == "hbsm":
+        for field in ("top_decile_count", "random_top_decile_count", "train_count", "test_count"):
+            if not _valid_nonnegative_int(summary.get(field)):
+                errors.append(f"hbsm summary {field} must be a nonnegative integer")
+        if summary.get("top_decile_count") != sum(1 for row in rows if row.get("top_decile_flag") is True):
+            errors.append("hbsm summary top_decile_count must match rows")
+        if summary.get("random_top_decile_count") != sum(1 for row in rows if row.get("random_top_decile") is True):
+            errors.append("hbsm summary random_top_decile_count must match rows")
+        if summary.get("train_count") != sum(1 for row in rows if str(row.get("train_test_split")) == "train"):
+            errors.append("hbsm summary train_count must match rows")
+        if summary.get("test_count") != sum(1 for row in rows if str(row.get("train_test_split")) == "test"):
+            errors.append("hbsm summary test_count must match rows")
+        enrichment = summary.get("boundary_top_decile_enrichment")
+        if not _finite_number(enrichment) or float(enrichment) < 0.0:
+            errors.append("hbsm summary boundary_top_decile_enrichment must be nonnegative finite numeric")
+
+
 def _validate_real_coverage(
     *,
     project: str,
@@ -154,6 +316,15 @@ def _validate_real_coverage(
                 "ssq_lr real packet missing position buckets: "
                 + ", ".join(sorted(missing_buckets))
             )
+        buckets_by_prompt_layer: dict[tuple[str, Any], set[str]] = {}
+        for row in rows:
+            key = (str(row.get("prompt_id")), row.get("layer"))
+            buckets_by_prompt_layer.setdefault(key, set()).add(str(row.get("position_bucket")))
+        missing_matrix = [
+            key for key, observed_buckets in buckets_by_prompt_layer.items() if observed_buckets != SSQ_LR_POSITION_BUCKETS
+        ]
+        if missing_matrix:
+            errors.append("ssq_lr real packet needs every prompt/layer to cover every S1 bucket")
         prompt_ids = {str(row.get("prompt_id")) for row in rows}
         if len(prompt_ids) < 12 and "resource_limit_note" not in config:
             errors.append(
@@ -197,13 +368,27 @@ def _validate_real_coverage(
                 + ", ".join(sorted(missing_directions))
             )
         boundary_by_key = {
-            (row.get("layer_left"), row.get("layer_right"), row.get("boundary_index")): str(row.get("direction"))
+            (
+                row.get("prompt_id"),
+                row.get("layer_left"),
+                row.get("layer_right"),
+                row.get("boundary_index"),
+                row.get("pre_norm_position"),
+                row.get("post_norm_position"),
+            ): str(row.get("direction"))
             for row in boundary_rows
         }
         for row in rows:
             if str(row.get("control_type")) != "permuted_direction":
                 continue
-            key = (row.get("layer_left"), row.get("layer_right"), row.get("boundary_index"))
+            key = (
+                row.get("prompt_id"),
+                row.get("layer_left"),
+                row.get("layer_right"),
+                row.get("boundary_index"),
+                row.get("pre_norm_position"),
+                row.get("post_norm_position"),
+            )
             original = boundary_by_key.get(key)
             if original is None:
                 errors.append("horn permuted_direction row must match an observed boundary tuple")
@@ -296,6 +481,7 @@ def validate_gate_packet(
         for field in REAL_CONFIG_FIELDS:
             if field not in config:
                 errors.append(f"config.json missing provenance field {field}")
+        _validate_hash_provenance(config, errors)
         for boundary in ("synthetic-only", "not model evidence"):
             if boundary in [str(item) for item in summary.get("claim_boundary", [])]:
                 errors.append(f"real packet cannot include claim boundary {boundary!r}")
@@ -335,6 +521,8 @@ def validate_gate_packet(
                 controls = ", ".join(sorted(missing_controls))
                 errors.append(f"missing required controls: {controls}")
             _validate_real_coverage(project=project, rows=raw_rows, config=config, errors=errors)
+            _validate_real_summary(project=project, rows=raw_rows, summary=summary, config=config, errors=errors)
+            _validate_resource_limit_decision(project=project, config=config, summary=summary, errors=errors)
 
     decision_text = (packet_dir / "decision.md").read_text() if (packet_dir / "decision.md").exists() else ""
     if summary and str(summary.get("decision")) not in decision_text:

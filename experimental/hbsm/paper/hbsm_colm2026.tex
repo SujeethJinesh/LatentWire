@@ -63,6 +63,10 @@ The checker requires both true and false boundary flags, finite sensitivity and
 predictor fields, all listed controls, and a perturbation-off row whose drift is
 near zero. It also requires matched top-decile/random-flag counts and both
 train and test split rows unless the packet records an explicit resource limit.
+Any resource-limited packet must use a
+\texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
+top-decile count, random top-decile count, train/test counts, and boundary
+top-decile enrichment.
 
 \begin{table}[h]
 \centering

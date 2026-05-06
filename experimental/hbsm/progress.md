@@ -53,3 +53,16 @@ It now also requires train/test split coverage and matched counts for
 Added `paper/reviewer_pack.md` and wired the stricter B1 packet blocker into the
 COLM shell. The paper now states that HBSM is not camera-ready as a standalone
 paper until B1--B3 separate the mechanism from existing sensitivity tools.
+
+## 2026-05-06 Decision-Grade Packet Hardening
+
+Tightened the real B1 contract after COLM-style review. A real HBSM packet now
+must include hash-shaped prompt and architecture provenance, aggregate
+sensitivity/enrichment fields in `summary.json`, matched top-decile/random
+counts, train/test counts, and the existing no-op plus baseline controls.
+Resource-limited runs are diagnostic only and must use
+`RESOURCE_LIMITED_NOT_PROMOTABLE`.
+
+Decision: **B1 PROMOTION NOW REQUIRES A COMPLETE REAL SENSITIVITY TABLE**. The
+next exact gate remains a live layer-sensitivity sweep on current hybrid
+reasoners.

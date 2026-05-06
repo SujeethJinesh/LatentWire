@@ -486,3 +486,16 @@ zero. Added a paper guard test to keep that language from drifting back to a
 mean-only shorthand.
 
 Decision: **CAMERA-READY WORDING IMPROVED; METHOD WORK STILL STOPPED**.
+
+## 2026-05-06 Saved-Artifact Falsification Tests
+
+Added regression tests over the saved RDU, PSI, and VWAC decision artifacts.
+They lock the current falsification conclusions: independent RDU is not
+reproduced because R-KV-like is best compressed and cross-family separation
+fails; alternate RDU is not reproduced because a stopped same-family row beats
+it; PSI and VWAC remain killed on their fresh sparse-cache surfaces with paired
+CI lows above zero against the relevant baselines.
+
+Decision: **THE FALSIFICATION PAPER IS NOW ARTIFACT-LOCKED AGAINST ACCIDENTAL
+POSITIVE-METHOD DRIFT**. No new ThoughtFlow experiment is planned for this
+branch.

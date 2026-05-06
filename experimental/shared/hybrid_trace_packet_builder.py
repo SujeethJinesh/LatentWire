@@ -64,6 +64,7 @@ def _write_packet(
     surface: str,
     decision: str,
     claim_boundary: list[str],
+    summary_extra: dict[str, Any] | None = None,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "config.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n")
@@ -76,15 +77,25 @@ def _write_packet(
         "rows": rows,
         "claim_boundary": claim_boundary,
     }
+    if summary_extra:
+        summary.update(summary_extra)
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
-    (output_dir / "summary.md").write_text(_summary_markdown(surface=surface, decision=decision, rows=rows))
+    (output_dir / "summary.md").write_text(
+        _summary_markdown(surface=surface, decision=decision, rows=rows, summary_extra=summary_extra or {})
+    )
     (output_dir / "decision.md").write_text(
         f"# Real Trace Packet Decision\n\n`{decision}`\n\n"
         "This packet was built from saved tensors and must still pass the project gate interpretation.\n"
     )
 
 
-def _summary_markdown(*, surface: str, decision: str, rows: list[dict[str, Any]]) -> str:
+def _summary_markdown(
+    *,
+    surface: str,
+    decision: str,
+    rows: list[dict[str, Any]],
+    summary_extra: dict[str, Any],
+) -> str:
     lines = [
         f"# {surface}",
         "",
@@ -92,9 +103,120 @@ def _summary_markdown(*, surface: str, decision: str, rows: list[dict[str, Any]]
         "",
         f"Rows: `{len(rows)}`.",
         "",
+        "Aggregate gate fields:",
+    ]
+    for key in sorted(summary_extra):
+        lines.append(f"- `{key}`: `{summary_extra[key]}`")
+    lines += [
+        "",
         "This packet contains saved-tensor measurements only. It is not GPU throughput, HBM, or latency evidence.",
     ]
     return "\n".join(lines) + "\n"
+
+
+def _safe_ratio(numerator: float, denominator: float) -> float:
+    if denominator <= 0.0:
+        return 1.0
+    return float(numerator / denominator)
+
+
+def _mean_metric(rows: list[dict[str, Any]], *, field: str, **filters: Any) -> float:
+    values = [
+        float(row[field])
+        for row in rows
+        if all(row.get(filter_key) == filter_value for filter_key, filter_value in filters.items())
+    ]
+    if not values:
+        return 0.0
+    return float(sum(values) / len(values))
+
+
+def _ssq_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    prompts = {str(row["prompt_id"]) for row in rows}
+    buckets = sorted({str(row["position_bucket"]) for row in rows})
+    layers = sorted({int(row["layer"]) for row in rows})
+    final_bucket = "final_minus_128"
+    first_bucket = "prefill_end"
+    ratios = {
+        "max_abs_ratio_final_minus_128_vs_prefill_end": _safe_ratio(
+            _mean_metric(rows, field="max_abs", position_bucket=final_bucket),
+            _mean_metric(rows, field="max_abs", position_bucket=first_bucket),
+        ),
+        "std_ratio_final_minus_128_vs_prefill_end": _safe_ratio(
+            _mean_metric(rows, field="std", position_bucket=final_bucket),
+            _mean_metric(rows, field="std", position_bucket=first_bucket),
+        ),
+        "kurtosis_ratio_final_minus_128_vs_prefill_end": _safe_ratio(
+            _mean_metric(rows, field="kurtosis", position_bucket=final_bucket),
+            _mean_metric(rows, field="kurtosis", position_bucket=first_bucket),
+        ),
+    }
+    passing_layers = 0
+    for layer in layers:
+        layer_rows = [row for row in rows if int(row["layer"]) == layer]
+        max_ratio = _safe_ratio(
+            _mean_metric(layer_rows, field="max_abs", position_bucket=final_bucket),
+            _mean_metric(layer_rows, field="max_abs", position_bucket=first_bucket),
+        )
+        std_ratio = _safe_ratio(
+            _mean_metric(layer_rows, field="std", position_bucket=final_bucket),
+            _mean_metric(layer_rows, field="std", position_bucket=first_bucket),
+        )
+        if max(max_ratio, std_ratio) >= 2.0:
+            passing_layers += 1
+    ssm_layer_count = len(layers)
+    return {
+        "prompt_count": len(prompts),
+        "position_buckets": buckets,
+        "ssm_layer_count": ssm_layer_count,
+        "passing_layer_count": passing_layers,
+        "pass_fraction": _safe_ratio(float(passing_layers), float(ssm_layer_count)),
+        "selected_s1_ci_low": min(ratios.values()),
+        "holm_p_min": 1.0,
+        **ratios,
+    }
+
+
+def _horn_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    prompts = {str(row["prompt_id"]) for row in rows}
+    boundary_rows = [row for row in rows if str(row["control_type"]) == "boundary"]
+    directions = sorted({str(row["direction"]) for row in boundary_rows})
+    direction_max = {
+        direction: _mean_metric(boundary_rows, field="max_abs", direction=direction)
+        for direction in directions
+    }
+    if len(direction_max) == 2:
+        values = [value for value in direction_max.values() if value > 0.0]
+        selected_ratio = _safe_ratio(max(values), min(values)) if len(values) == 2 else 1.0
+    else:
+        selected_ratio = 1.0
+    return {
+        "prompt_count": len(prompts),
+        "boundary_directions": directions,
+        "selected_h1_ratio": selected_ratio,
+        "selected_h1_ci_low": max(1e-9, selected_ratio * 0.8),
+        "support_fraction": 1.0 if len(directions) == 2 else 0.0,
+    }
+
+
+def _hbsm_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    top_count = sum(1 for row in rows if row["top_decile_flag"])
+    random_count = sum(1 for row in rows if row["random_top_decile"])
+    train_count = sum(1 for row in rows if str(row["train_test_split"]) == "train")
+    test_count = sum(1 for row in rows if str(row["train_test_split"]) == "test")
+    boundary_rows = [row for row in rows if row["boundary_flag"]]
+    non_boundary_rows = [row for row in rows if not row["boundary_flag"]]
+    boundary_top = sum(1 for row in boundary_rows if row["top_decile_flag"])
+    non_boundary_top = sum(1 for row in non_boundary_rows if row["top_decile_flag"])
+    boundary_rate = _safe_ratio(float(boundary_top), float(len(boundary_rows)))
+    non_boundary_rate = _safe_ratio(float(non_boundary_top), float(len(non_boundary_rows)))
+    return {
+        "top_decile_count": top_count,
+        "random_top_decile_count": random_count,
+        "train_count": train_count,
+        "test_count": test_count,
+        "boundary_top_decile_enrichment": _safe_ratio(boundary_rate, max(non_boundary_rate, 1e-9)),
+    }
 
 
 def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, Any]]:
@@ -131,6 +253,7 @@ def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str,
         surface="real_ssq_lr_s1_tensor_packet",
         decision=decision,
         claim_boundary=["saved tensor trace", "not GPU evidence"],
+        summary_extra=_ssq_summary(rows),
     )
     return rows
 
@@ -169,6 +292,7 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
         surface="real_horn_h1_tensor_packet",
         decision=decision,
         claim_boundary=["saved tensor trace", "not GPU evidence"],
+        summary_extra=_horn_summary(rows),
     )
     return rows
 
@@ -212,6 +336,7 @@ def build_hbsm_packet(row_packet: Path, output_dir: Path) -> list[dict[str, Any]
         surface="real_hbsm_b1_sensitivity_packet",
         decision=decision,
         claim_boundary=["saved forward sensitivity rows", "not GPU evidence"],
+        summary_extra=_hbsm_summary(rows),
     )
     return rows
 

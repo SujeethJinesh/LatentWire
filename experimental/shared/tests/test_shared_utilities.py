@@ -160,6 +160,16 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
                 "row_count": len(rows),
                 "rows": rows,
                 "claim_boundary": ["real model trace", "not GPU evidence"],
+                "prompt_count": 12,
+                "position_buckets": list(SSQ_BUCKETS),
+                "ssm_layer_count": 1,
+                "passing_layer_count": 0,
+                "pass_fraction": 0.0,
+                "selected_s1_ci_low": 1.0,
+                "holm_p_min": 1.0,
+                "max_abs_ratio_final_minus_128_vs_prefill_end": 1.0,
+                "std_ratio_final_minus_128_vs_prefill_end": 1.0,
+                "kurtosis_ratio_final_minus_128_vs_prefill_end": 1.0,
             },
             sort_keys=True,
         )
@@ -172,6 +182,127 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
 
     assert report["ok"]
     assert report["mode"] == "real"
+
+
+def test_gate_packet_checker_rejects_real_ssq_lr_incomplete_prompt_layer_matrix(tmp_path: Path) -> None:
+    packet = tmp_path / "real_ssq_missing_matrix"
+    packet.mkdir()
+    config = _base_trace_metadata()
+    (packet / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
+    rows = []
+    for prompt_index in range(12):
+        buckets = SSQ_BUCKETS if prompt_index != 11 else SSQ_BUCKETS[:-1]
+        for bucket in buckets:
+            rows.append(
+                {
+                    "model_id": "toy-hybrid",
+                    "model_revision": "abc123",
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "position_bucket": bucket,
+                    "state_shape": [1, 4],
+                    "max_abs": 2.0,
+                    "rms": 1.0,
+                    "std": 0.5,
+                    "kurtosis": 3.0,
+                    "outlier_mass": 0.1,
+                    "control_type": "bf16_no_quant",
+                }
+            )
+    (packet / "raw_rows.jsonl").write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
+    )
+    (packet / "summary.json").write_text(
+        json.dumps(
+            {
+                "seed": 1,
+                "surface": "real_ssq_lr_s1",
+                "decision": "CONTINUE_REAL_STATE_DUMPS",
+                "row_count": len(rows),
+                "rows": rows,
+                "claim_boundary": ["real model trace", "not GPU evidence"],
+                "prompt_count": 12,
+                "position_buckets": list(SSQ_BUCKETS),
+                "ssm_layer_count": 1,
+                "passing_layer_count": 0,
+                "pass_fraction": 0.0,
+                "selected_s1_ci_low": 1.0,
+                "holm_p_min": 1.0,
+                "max_abs_ratio_final_minus_128_vs_prefill_end": 1.0,
+                "std_ratio_final_minus_128_vs_prefill_end": 1.0,
+                "kurtosis_ratio_final_minus_128_vs_prefill_end": 1.0,
+            },
+            sort_keys=True,
+        )
+        + "\n"
+    )
+    (packet / "summary.md").write_text("# Summary\n")
+    (packet / "decision.md").write_text("`CONTINUE_REAL_STATE_DUMPS`\n")
+
+    report = validate_gate_packet(packet, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("every prompt/layer" in error for error in report["errors"])
+
+
+def test_gate_packet_checker_rejects_promotable_resource_limited_real_packet(tmp_path: Path) -> None:
+    packet = tmp_path / "real_ssq_resource_limited"
+    packet.mkdir()
+    config = _base_trace_metadata()
+    config["resource_limit_note"] = "only two prompts fit locally"
+    (packet / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
+    rows = [
+        {
+            "model_id": "toy-hybrid",
+            "model_revision": "abc123",
+            "prompt_id": f"p{prompt_index}",
+            "layer": 0,
+            "position_bucket": bucket,
+            "state_shape": [1, 4],
+            "max_abs": 2.0,
+            "rms": 1.0,
+            "std": 0.5,
+            "kurtosis": 3.0,
+            "outlier_mass": 0.1,
+            "control_type": "bf16_no_quant",
+        }
+        for prompt_index in range(2)
+        for bucket in SSQ_BUCKETS
+    ]
+    (packet / "raw_rows.jsonl").write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
+    )
+    (packet / "summary.json").write_text(
+        json.dumps(
+            {
+                "seed": 1,
+                "surface": "real_ssq_lr_s1",
+                "decision": "CONTINUE_REAL_STATE_DUMPS",
+                "row_count": len(rows),
+                "rows": rows,
+                "claim_boundary": ["real model trace", "not GPU evidence"],
+                "prompt_count": 2,
+                "position_buckets": list(SSQ_BUCKETS),
+                "ssm_layer_count": 1,
+                "passing_layer_count": 0,
+                "pass_fraction": 0.0,
+                "selected_s1_ci_low": 1.0,
+                "holm_p_min": 1.0,
+                "max_abs_ratio_final_minus_128_vs_prefill_end": 1.0,
+                "std_ratio_final_minus_128_vs_prefill_end": 1.0,
+                "kurtosis_ratio_final_minus_128_vs_prefill_end": 1.0,
+            },
+            sort_keys=True,
+        )
+        + "\n"
+    )
+    (packet / "summary.md").write_text("# Summary\n")
+    (packet / "decision.md").write_text("`CONTINUE_REAL_STATE_DUMPS`\n")
+
+    report = validate_gate_packet(packet, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("resource-limited real packet" in error for error in report["errors"])
 
 
 def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tmp_path: Path) -> None:
@@ -274,6 +405,45 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
 
     assert not report["ok"]
     assert "missing required controls: non_boundary, permuted_direction" in report["errors"]
+
+
+def test_gate_packet_checker_rejects_unpaired_horn_permuted_prompt(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "horn_bad_pair"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for stem, layer_left, layer_right, direction, boundary_index, control_type, prompt_id in [
+            ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary", f"p{prompt_index}"),
+            ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary", f"p{prompt_index}"),
+            ("non_boundary", 4, 5, "ssm->ssm", 2, "non_boundary", f"p{prompt_index}"),
+            ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction", f"other{prompt_index}"),
+            ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction", f"other{prompt_index}"),
+        ]:
+            tensor_name = f"{stem}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": prompt_id,
+                    "layer_left": layer_left,
+                    "layer_right": layer_right,
+                    "direction": direction,
+                    "boundary_index": boundary_index,
+                    "pre_norm_position": "post_norm",
+                    "post_norm_position": "pre_norm",
+                    "control_type": control_type,
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["horn_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+
+    build_horn_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="horn")
+
+    assert not report["ok"]
+    assert any("must match an observed boundary tuple" in error for error in report["errors"])
 
 
 def test_hybrid_architecture_map_uses_explicit_layer_types(tmp_path: Path) -> None:

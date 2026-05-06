@@ -86,10 +86,13 @@ project packets with:
 ```
 
 Then validate with `check_gate_packet.py --mode real --project ...`. The real
-checker enforces admissible coverage, not just schema shape: SSQ-LR needs
-preregistered S1 buckets and enough prompts, HORN needs both boundary
-directions with matched flipped controls, and HBSM needs both boundary flags
-plus a perturbation-off row with near-zero drift.
+checker enforces admissible coverage, not just schema shape: SSQ-LR needs all
+preregistered S1 buckets for every prompt/layer pair, HORN needs both boundary
+directions with prompt-paired flipped controls, and HBSM needs both boundary
+flags plus a perturbation-off row with near-zero drift. Real packets also need
+`prompt_ids_hash`, `architecture_map_hash`, project-specific aggregate
+`summary.json` fields, and a non-promotable decision whenever
+`resource_limit_note` is present.
 
 ## Claim Boundary
 

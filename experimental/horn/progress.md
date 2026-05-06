@@ -47,3 +47,15 @@ interpreted.
 Added `paper/reviewer_pack.md` and wired the stricter directional packet blocker
 into the COLM shell. The paper now states that HORN is not camera-ready as a
 method or measurement paper until real H1--H3 evidence exists.
+
+## 2026-05-06 Decision-Grade Packet Hardening
+
+Tightened the real H1 contract after COLM-style review. A real HORN packet now
+must include hash-shaped prompt and architecture provenance, aggregate H1 fields
+in `summary.json`, and `permuted_direction` controls paired by prompt ID,
+boundary index, layer IDs, and normalization positions. Resource-limited runs
+are diagnostic only and must use `RESOURCE_LIMITED_NOT_PROMOTABLE`.
+
+Decision: **H1 PROMOTION NOW REQUIRES PROMPT-PAIRED DIRECTIONAL CONTROLS**. The
+next exact gate remains a live boundary-activation dump on the smallest
+available hybrid model.

@@ -45,3 +45,16 @@ real state-distribution gate instead of a one-row schema check.
 Added `paper/reviewer_pack.md` and wired the stricter real-packet blocker into
 the COLM shell. The paper now states that SSQ-LR is not camera-ready as a
 method paper until real S1--S3 evidence exists.
+
+## 2026-05-06 Decision-Grade Packet Hardening
+
+Tightened the real S1 contract after COLM-style review. A real SSQ-LR packet now
+must include `prompt_ids_hash` and `architecture_map_hash` provenance,
+project-specific aggregate fields in `summary.json`, and complete coverage of
+all preregistered buckets for every `(prompt_id, layer)` pair. Resource-limited
+runs are still admissible for diagnosis, but their decision must start with
+`RESOURCE_LIMITED_NOT_PROMOTABLE` and they cannot promote S1.
+
+Decision: **S1 PROMOTION NOW REQUIRES A COMPLETE REAL STATE MATRIX**. The next
+exact gate is unchanged: live hybrid SSM-state dumps on the smallest available
+hybrid model.
