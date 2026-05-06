@@ -271,6 +271,10 @@ def check_run_artifacts(
                         "profiler_analysis_gate.json row count does not match "
                         "profiler_metrics.json"
                     )
+                elif saved_rows != computed_analysis.get("rows"):
+                    errors.append(
+                        "profiler_analysis_gate.json rows do not match profiler_metrics.json"
+                    )
         except (json.JSONDecodeError, TypeError) as exc:
             errors.append(f"profiler_analysis_gate.json is invalid: {exc}")
 

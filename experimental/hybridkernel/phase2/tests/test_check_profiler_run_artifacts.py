@@ -264,6 +264,19 @@ def test_rejects_stale_profiler_analysis_gate_json(tmp_path: Path) -> None:
     assert any("status does not match" in error for error in result["errors"])
 
 
+def test_rejects_stale_profiler_analysis_rows(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    analysis_path = tmp_path / "profiler_analysis_gate.json"
+    analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
+    analysis["rows"][0]["recoverable_gain_upper_bound"] = 0.999
+    analysis_path.write_text(json.dumps(analysis) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("rows do not match" in error for error in result["errors"])
+
+
 def test_synthetic_fixture_documents_complete_packet_shape(tmp_path: Path) -> None:
     packet = tmp_path / "packet"
     shutil.copytree(FIXTURE_DIR, packet)

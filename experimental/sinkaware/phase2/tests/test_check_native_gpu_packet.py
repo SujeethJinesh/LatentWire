@@ -149,6 +149,22 @@ def test_requires_repeated_latency_runs_per_row(tmp_path: Path) -> None:
     assert any("latency.csv row exact_attention has 2 distinct" in error for error in result["errors"])
 
 
+def test_requires_latency_repeats_for_same_shape(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    _complete_packet(packet)
+    rows = list(csv.DictReader((packet / "latency.csv").open(encoding="utf-8")))
+    for row in rows:
+        row["sequence_length"] = str(int(row["sequence_length"]) + int(row["run_id"]))
+    _write_csv(packet / "latency.csv", rows)
+
+    result = check_native_gpu_packet(packet)
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "model/sequence_length/batch_size group" in error for error in result["errors"]
+    )
+
+
 def test_rejects_invalid_metadata_native_scope(tmp_path: Path) -> None:
     packet = tmp_path / "packet"
     _complete_packet(packet)

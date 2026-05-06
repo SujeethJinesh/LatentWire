@@ -600,3 +600,15 @@ synthetic `metadata.json` with `gpu: AMD MI300X` fails admissibility.
 
 Decision: **ADMISSIBILITY HARDENING ONLY**. This keeps returned native packets
 aligned with the runbook and paper scope, but it does not create GPU evidence.
+
+## 2026-05-06 Same-Shape Latency Repeat Hardening
+
+Closed a native timing reproducibility loophole in `latency.csv` validation.
+The validator already required three distinct `run_id` values per canonical
+row. It now also requires those repeats to share the same
+`model`/`sequence_length`/`batch_size` shape, so a packet cannot satisfy the
+repeat gate by mixing sequence lengths or batch shapes. Added a regression test
+that varies `sequence_length` by `run_id` and expects checker failure.
+
+Decision: **TIMING PACKET HARDENED**. This improves future native packet
+admissibility only; native timing/memory data are still required.

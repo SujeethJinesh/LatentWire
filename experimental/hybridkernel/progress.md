@@ -425,3 +425,15 @@ HybridKernel handoff gate.
 
 Decision: **ADMISSIBILITY HARDENING ONLY**. The branch still requires native
 NVIDIA/vLLM Nsight evidence before any systems claim.
+
+## 2026-05-06 Analysis Sidecar Row Cross-Check
+
+Closed another native-packet admissibility loophole: the artifact checker now
+compares `profiler_analysis_gate.json["rows"]` against rows recomputed from the
+exact `profiler_metrics.json`, rather than checking only status, decision,
+summary, and row count. Added a regression test that mutates one saved analysis
+row and expects checker failure.
+
+Decision: **SIDECAR REPRODUCIBILITY HARDENED**. A returned packet now has to
+show that its analysis sidecar was generated from the exact metrics file, but
+the scientific gate remains native NVIDIA/vLLM profiling.

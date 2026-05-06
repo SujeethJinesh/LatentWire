@@ -276,6 +276,7 @@ def _validate_csv_artifact(
 
     covered_rows: set[str] = set()
     run_ids_by_row: dict[str, set[str]] = {}
+    run_ids_by_row_config: dict[tuple[str, str, str, str], set[str]] = {}
     for index, row in enumerate(rows, start=2):
         raw_row_id = _row_value(row, ROW_COLUMN_ALIASES)
         canonical_row_id = _canonical_row_id(raw_row_id)
@@ -286,6 +287,14 @@ def _validate_csv_artifact(
         run_id = str(row.get("run_id", "")).strip()
         if run_id:
             run_ids_by_row.setdefault(canonical_row_id, set()).add(run_id)
+            if relative == "latency.csv":
+                model = str(row.get("model", "")).strip()
+                sequence_length = str(row.get("sequence_length", "")).strip()
+                batch_size = str(row.get("batch_size", "")).strip()
+                run_ids_by_row_config.setdefault(
+                    (canonical_row_id, model, sequence_length, batch_size),
+                    set(),
+                ).add(run_id)
         for column in schema["required_columns"]:
             if column == "row":
                 value = raw_row_id
@@ -308,6 +317,17 @@ def _validate_csv_artifact(
                 errors.append(
                     f"latency.csv row {row_id} has {distinct_runs} distinct run_id values; "
                     f"expected at least {min_repeated_runs}"
+                )
+            same_config_repeats = [
+                len(run_ids)
+                for (config_row_id, _model, _sequence_length, _batch_size), run_ids
+                in run_ids_by_row_config.items()
+                if config_row_id == row_id
+            ]
+            if same_config_repeats and max(same_config_repeats) < min_repeated_runs:
+                errors.append(
+                    f"latency.csv row {row_id} has no model/sequence_length/batch_size "
+                    f"group with at least {min_repeated_runs} distinct run_id values"
                 )
 
     return {
