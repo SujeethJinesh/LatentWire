@@ -53,6 +53,8 @@ Real trace packet requirements are in
 Use the explicit boundary IDs and architecture hashes in
 `../shared/results/hybrid_architecture_maps_20260506/` for boundary-flagged
 layer definitions.
+Model-size/cache eligibility is recorded in
+`../shared/results/hybrid_model_eligibility_20260506/`.
 
 Validate the first real B1 packet with:
 
@@ -67,6 +69,26 @@ Validate the first real B1 packet with:
 ```text
 experimental/hbsm/results/hbsm_gate_<gate>_<YYYYMMDD>_<model_slug>/
 ```
+
+## Local Setup
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+./venv_arm64/bin/python -m pytest experimental/shared/tests -q
+```
+
+Reproduce the current synthetic packet:
+
+```bash
+./venv_arm64/bin/python -m experimental.hbsm.phase2.hbsm_synthetic_b1_gate
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/hbsm/phase2/results/hbsm_synthetic_b1 \
+  --expected-decision-prefix SYNTHETIC
+jq '.decision, .spearman_rho_kurtosis_vs_sensitivity, .boundary_top_decile_hits' \
+  experimental/hbsm/phase2/results/hbsm_synthetic_b1/summary.json
+```
+
+Expected decision: `SYNTHETIC_PASS_REAL_LAYER_SENSITIVITY_NEXT`.
 
 ## GPU Rule
 

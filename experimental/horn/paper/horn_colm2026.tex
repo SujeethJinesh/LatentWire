@@ -30,6 +30,10 @@ It reports SSM-to-attention over attention-to-SSM max ratio 3.775 and kurtosis
 ratio 7.139, producing
 \texttt{SYNTHETIC\_PASS\_REAL\_BOUNDARY\_DUMPS\_NEXT}. This is synthetic-only:
 it is not model evidence, not a quantization-noise result, and not GPU evidence.
+The metadata-only model eligibility packet identifies live hybrid targets and
+records architecture-map hashes for admissible packets, but no target weights
+are cached repo-locally, so HORN has not yet produced real boundary rows on the
+current Mac.
 
 \section{Next Evidence}
 
@@ -47,6 +51,8 @@ than substring-only module classification. Each row must report
 controls are boundary rows, non-boundary adjacent rows, and permuted-direction
 rows. The packet must include \texttt{architecture\_map\_hash} and pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project horn}.
+Saved tensor packets should be converted with
+\texttt{experimental.shared.hybrid\_trace\_packet\_builder} before validation.
 
 \begin{table}[h]
 \centering

@@ -39,7 +39,7 @@ Packet generator & A local script creates the required native run-packet skeleto
 Synthetic packet fixture & A Mac-local fixture documents the packet shape and exercises the checker with placeholder Nsight files. & Fixture is not profiler evidence. \\
 Packet checklist & The native handoff now has a single required packet layout and stop-local-work decision. & Local readiness is saturated until GPU data exists. \\
 Source/control audit & Source-line audit table and control feasibility matrix record what public surfaces were checked and which native controls are still placeholders. & Review hardening only; no proof of absence. \\
-Triton correctness & The toy boundary primitive passes Phase 4 interpreter tests under the repo-local \texttt{triton-cpu} source install across block tails, fp16, non-contiguous inputs, and shape errors. The stable Mac command reports 54 passed and 1 opt-in CPU-backend skip for HybridKernel. Non-interpreter CPU-backend linking is environment-fragile on this Mac. & Kernel logic only; not CUDA or speed evidence. \\
+Triton correctness & The toy boundary primitive passes Phase 4 interpreter tests under the repo-local \texttt{triton-cpu} source install across block tails, fp16, non-contiguous inputs, and shape errors. The stable Mac command reports 54 passed; the opt-in non-interpreter CPU-backend check also passes when Homebrew GCC library paths are made explicit. & Kernel logic only; not CUDA or speed evidence. \\
 \bottomrule
 \end{tabular}
 \caption{HybridKernel evidence before native GPU profiling.}

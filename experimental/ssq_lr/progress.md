@@ -25,3 +25,11 @@ Added shared config-derived architecture maps at
 `../shared/results/hybrid_architecture_maps_20260506/`. Real S1 packets must
 include the corresponding `architecture_map_hash` in `config.json`; this keeps
 state rows tied to an explicit hybrid layer map even before GPU validation.
+
+## 2026-05-06 Model Eligibility Update
+
+Added metadata-only model eligibility at
+`../shared/results/hybrid_model_eligibility_20260506/`. The smallest live target
+found is `ibm-granite/granite-4.0-h-tiny` at 12.93 GB of safetensors, but it is
+not cached repo-locally. SSQ-LR therefore cannot produce a real S1 state packet
+on the current Mac without first downloading/loading a live hybrid model.

@@ -16,6 +16,10 @@ Use them for preregistered Mac gates only.
 - `boundary_inspector.py`: layer-kind and attention/SSM boundary helpers.
 - `hybrid_architecture_maps.py`: explicit config-derived boundary maps used to
   validate real trace packet provenance.
+- `hybrid_model_eligibility.py`: metadata-only Hugging Face size/cache
+  preflight for the live hybrid targets.
+- `hybrid_trace_packet_builder.py`: converts future saved trace tensor packets
+  into strict SSQ-LR/HORN real gate packets.
 - `sensitivity_metrics.py`: quality, drift, and rank-correlation metrics.
 - `check_gate_packet.py`: packet validator for synthetic and real Mac-local
   gate results, with stricter `--mode real --project ...` contracts.
@@ -42,6 +46,40 @@ Regenerate it with:
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.hybrid_architecture_maps
 ```
+
+## Model Eligibility Artifact
+
+The current metadata-only model preflight is:
+
+```text
+experimental/shared/results/hybrid_model_eligibility_20260506/
+```
+
+Regenerate it without downloading weights:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" \
+  ./venv_arm64/bin/python -m experimental.shared.hybrid_model_eligibility
+```
+
+## Real Trace Packet Builder
+
+After a model run writes tensors with `activation_dumper.py`, build strict
+project packets with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
+  --project ssq_lr \
+  --tensor-packet experimental/shared/results/<tensor_packet> \
+  --output-dir experimental/ssq_lr/results/ssq_lr_gate_s1_<date>_<model>
+
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
+  --project horn \
+  --tensor-packet experimental/shared/results/<tensor_packet> \
+  --output-dir experimental/horn/results/horn_gate_h1_<date>_<model>
+```
+
+Then validate with `check_gate_packet.py --mode real --project ...`.
 
 ## Claim Boundary
 

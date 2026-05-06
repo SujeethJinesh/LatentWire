@@ -64,6 +64,18 @@ CLIENT_LOG_EVIDENCE_MARKERS = ['"requests"', '"model"', '"status"']
 
 ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
 PROFILED_PROCESS_FIELDS = ["profiled_process", "nsys_profiled_process", "ncu_profiled_process"]
+REQUIRED_METRIC_PROVENANCE_FIELDS = [
+    "row_role",
+    "control_family",
+    "boundary_direction",
+    "nsys_artifact",
+    "ncu_artifact",
+    "kernel_names",
+    "boundary_indices",
+    "time_window_ms",
+    "reduction_notes",
+]
+ALLOWED_ROW_ROLES = {"primary_hybrid", "same_family_control", "cross_family_falsification"}
 
 
 def _matching_artifacts(root: Path, patterns: list[str]) -> list[Path]:
@@ -186,6 +198,85 @@ def _validate_native_artifacts(
             )
 
 
+def _is_pending_metric_row(raw: dict[str, object]) -> bool:
+    measured_fields = [
+        "total_step_ms",
+        "attention_ssm_boundary_ms",
+        "matched_non_boundary_ms",
+        "recoverable_fraction",
+    ]
+    return all(raw.get(field) is None for field in measured_fields)
+
+
+def _validate_metric_provenance(payload: dict[str, object], errors: list[str]) -> set[str]:
+    roles: set[str] = set()
+    rows = payload.get("rows", [])
+    if not isinstance(rows, list):
+        errors.append("profiler_metrics.json rows must be a list")
+        return roles
+    for idx, row in enumerate(rows):
+        if not isinstance(row, dict) or _is_pending_metric_row(row):
+            continue
+        missing = [field for field in REQUIRED_METRIC_PROVENANCE_FIELDS if field not in row]
+        if missing:
+            errors.append(f"metric row {idx} missing provenance fields: {', '.join(missing)}")
+            continue
+        row_role = str(row.get("row_role", "")).strip()
+        roles.add(row_role)
+        if row_role not in ALLOWED_ROW_ROLES:
+            errors.append(
+                f"metric row {idx} row_role must be one of {sorted(ALLOWED_ROW_ROLES)}"
+            )
+        for field in ["control_family", "boundary_direction", "nsys_artifact", "ncu_artifact", "reduction_notes"]:
+            value = str(row.get(field, "")).strip()
+            if not value or "TODO_NATIVE_PROFILE_FILL" in value or "placeholder" in value.lower():
+                errors.append(f"metric row {idx} {field} must be filled with non-placeholder text")
+        kernel_names = row.get("kernel_names")
+        if not isinstance(kernel_names, list) or not kernel_names or not all(
+            isinstance(name, str) and name.strip() for name in kernel_names
+        ):
+            errors.append(f"metric row {idx} kernel_names must be a non-empty string list")
+        boundary_indices = row.get("boundary_indices")
+        if not isinstance(boundary_indices, list) or not all(
+            isinstance(value, int) and not isinstance(value, bool) for value in boundary_indices
+        ):
+            errors.append(f"metric row {idx} boundary_indices must be a list of integers")
+        elif row_role == "primary_hybrid" and not boundary_indices:
+            errors.append(f"metric row {idx} primary_hybrid rows must name boundary_indices")
+        time_window = row.get("time_window_ms")
+        if not isinstance(time_window, dict):
+            errors.append(f"metric row {idx} time_window_ms must be an object")
+        else:
+            start = time_window.get("start")
+            end = time_window.get("end")
+            if not isinstance(start, (int, float)) or isinstance(start, bool):
+                errors.append(f"metric row {idx} time_window_ms.start must be numeric")
+            if not isinstance(end, (int, float)) or isinstance(end, bool):
+                errors.append(f"metric row {idx} time_window_ms.end must be numeric")
+            if isinstance(start, (int, float)) and isinstance(end, (int, float)) and end <= start:
+                errors.append(f"metric row {idx} time_window_ms.end must exceed start")
+    return roles
+
+
+def _models_from_architecture_map(path: Path, errors: list[str]) -> set[str]:
+    if not path.is_file():
+        return set()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"architecture_map.json is invalid: {exc}")
+        return set()
+    rows = payload if isinstance(payload, list) else payload.get("rows", []) if isinstance(payload, dict) else []
+    models = {
+        str(row.get("model") or row.get("model_id", "")).strip()
+        for row in rows
+        if isinstance(row, dict) and str(row.get("model") or row.get("model_id", "")).strip()
+    }
+    if not models:
+        errors.append("architecture_map.json must contain at least one model/model_id entry")
+    return models
+
+
 def check_run_artifacts(
     run_dir: Path,
     min_repeated_runs: int = 3,
@@ -242,6 +333,10 @@ def check_run_artifacts(
             if marker not in environment:
                 errors.append(f"environment metadata does not mention {marker}")
 
+    architecture_models = _models_from_architecture_map(
+        run_dir / "metadata/architecture_map.json", errors
+    )
+
     readout_path = run_dir / "readout.md"
     _reject_skeleton_todo(readout_path, "readout.md", errors)
     if readout_path.is_file():
@@ -257,10 +352,14 @@ def check_run_artifacts(
                 )
 
     profile_scope_path = run_dir / "metadata/profile_scope.json"
+    profile_model = ""
     _reject_skeleton_todo(profile_scope_path, "metadata/profile_scope.json", errors)
     if profile_scope_path.is_file():
         try:
             profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
+            profile_model = str(profile_scope.get("model", "")).strip()
+            if not profile_model:
+                errors.append("profile_scope.json must contain non-empty model")
             for field in PROFILED_PROCESS_FIELDS:
                 _validate_profiled_process(field, str(profile_scope.get(field, "")), errors)
             trace_scope = str(profile_scope.get("trace_scope", "")).lower()
@@ -285,16 +384,30 @@ def check_run_artifacts(
     model_config_run_counts: dict[str, int] = {}
     model_config_distinct_run_counts: dict[str, int] = {}
     computed_analysis: dict[str, object] | None = None
+    metric_models: set[str] = set()
+    metric_roles: set[str] = set()
+    client_models: set[str] = set()
+    for log_file in log_files:
+        if "client" not in log_file.name.lower():
+            continue
+        try:
+            payload = json.loads(_read_text(log_file))
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict) and str(payload.get("model", "")).strip():
+            client_models.add(str(payload["model"]).strip())
     metrics_path = run_dir / "profiler_metrics.json"
     _reject_skeleton_todo(metrics_path, "profiler_metrics.json", errors)
     if metrics_path.is_file():
         try:
             payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+            metric_roles = _validate_metric_provenance(payload, errors)
             result = analyze(payload)
             computed_analysis = result
             metrics_status = str(result["status"])
             rows = result["rows"]
             metrics_rows = len(rows)
+            metric_models = {str(row["model"]) for row in rows}
             counts = Counter(str(row["model"]) for row in rows)
             model_run_counts = dict(counts)
             config_counts = Counter(str(row["config_key"]) for row in rows)
@@ -312,6 +425,8 @@ def check_run_artifacts(
             }
             if metrics_rows == 0:
                 errors.append("profiler_metrics.json has no valid native rows")
+            if "primary_hybrid" not in metric_roles:
+                errors.append("profiler_metrics.json must contain primary_hybrid metric rows")
             if counts and max(counts.values()) < min_repeated_runs:
                 errors.append(
                     f"no model has at least {min_repeated_runs} repeated native rows"
@@ -335,6 +450,13 @@ def check_run_artifacts(
                 )
         except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
             errors.append(f"profiler_metrics.json is invalid: {exc}")
+
+    if profile_model and metric_models and profile_model not in metric_models:
+        errors.append("profile_scope.json model does not match profiler_metrics.json models")
+    if client_models and metric_models and not client_models.issubset(metric_models):
+        errors.append("client replay model does not match profiler_metrics.json models")
+    if architecture_models and metric_models and not metric_models.issubset(architecture_models):
+        errors.append("architecture_map.json models do not cover profiler_metrics.json models")
 
     analysis_json_path = run_dir / "profiler_analysis_gate.json"
     if analysis_json_path.is_file():

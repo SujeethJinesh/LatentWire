@@ -1,0 +1,185 @@
+"""Build strict real gate packets from saved hybrid trace tensors.
+
+The builder consumes tensor packets written by `activation_dumper.py`. It does
+not run models. This keeps the 5090 workflow short: dump tensors once, then use
+this script locally or on the node to produce checker-compatible SSQ-LR/HORN
+packets.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
+
+import torch
+
+from experimental.shared.activation_dumper import load_tensor_packet
+from experimental.shared.sensitivity_metrics import kurtosis, max_abs
+
+
+def _rms(tensor: torch.Tensor) -> float:
+    values = tensor.float()
+    return float(torch.sqrt(torch.mean(values * values)))
+
+
+def _outlier_mass(tensor: torch.Tensor) -> float:
+    values = tensor.float().reshape(-1).abs()
+    threshold = values.mean() + 3.0 * values.std(unbiased=False)
+    if values.numel() == 0:
+        return 0.0
+    return float(torch.mean((values > threshold).float()))
+
+
+def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
+    required = [
+        "model_id",
+        "model_revision",
+        "tokenizer_revision",
+        "prompt_source",
+        "prompt_ids_hash",
+        "seed_list",
+        "context_lengths",
+        "dtype",
+        "device",
+        "command",
+        "architecture_map_hash",
+    ]
+    missing = [field for field in required if field not in metadata]
+    if missing:
+        raise ValueError(f"metadata missing required fields: {', '.join(missing)}")
+    return {field: metadata[field] for field in required}
+
+
+def _write_packet(
+    output_dir: Path,
+    *,
+    config: dict[str, Any],
+    rows: list[dict[str, Any]],
+    surface: str,
+    decision: str,
+    claim_boundary: list[str],
+) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "config.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n")
+    (output_dir / "raw_rows.jsonl").write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
+    summary = {
+        "seed": config["seed_list"][0] if config["seed_list"] else None,
+        "surface": surface,
+        "decision": decision,
+        "row_count": len(rows),
+        "rows": rows,
+        "claim_boundary": claim_boundary,
+    }
+    (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+    (output_dir / "summary.md").write_text(_summary_markdown(surface=surface, decision=decision, rows=rows))
+    (output_dir / "decision.md").write_text(
+        f"# Real Trace Packet Decision\n\n`{decision}`\n\n"
+        "This packet was built from saved tensors and must still pass the project gate interpretation.\n"
+    )
+
+
+def _summary_markdown(*, surface: str, decision: str, rows: list[dict[str, Any]]) -> str:
+    lines = [
+        f"# {surface}",
+        "",
+        f"Decision: `{decision}`.",
+        "",
+        f"Rows: `{len(rows)}`.",
+        "",
+        "This packet contains saved-tensor measurements only. It is not GPU throughput, HBM, or latency evidence.",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, Any]]:
+    tensors, metadata = load_tensor_packet(tensor_packet)
+    config = _base_config(metadata)
+    entries = metadata.get("ssq_lr_entries")
+    if not isinstance(entries, list):
+        raise ValueError("metadata must contain list field ssq_lr_entries")
+    rows: list[dict[str, Any]] = []
+    for entry in entries:
+        tensor_name = str(entry["tensor"])
+        tensor = tensors[tensor_name]
+        rows.append(
+            {
+                "model_id": config["model_id"],
+                "model_revision": config["model_revision"],
+                "prompt_id": str(entry["prompt_id"]),
+                "layer": int(entry["layer"]),
+                "position_bucket": str(entry["position_bucket"]),
+                "state_shape": list(tensor.shape),
+                "max_abs": max_abs(tensor),
+                "rms": _rms(tensor),
+                "std": float(torch.std(tensor.float(), unbiased=False)),
+                "kurtosis": kurtosis(tensor),
+                "outlier_mass": _outlier_mass(tensor),
+                "control_type": str(entry.get("control_type", "bf16_no_quant")),
+            }
+        )
+    decision = "REAL_PACKET_READY_FOR_S1_INTERPRETATION"
+    _write_packet(
+        output_dir,
+        config=config,
+        rows=rows,
+        surface="real_ssq_lr_s1_tensor_packet",
+        decision=decision,
+        claim_boundary=["saved tensor trace", "not GPU evidence"],
+    )
+    return rows
+
+
+def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, Any]]:
+    tensors, metadata = load_tensor_packet(tensor_packet)
+    config = _base_config(metadata)
+    entries = metadata.get("horn_entries")
+    if not isinstance(entries, list):
+        raise ValueError("metadata must contain list field horn_entries")
+    rows: list[dict[str, Any]] = []
+    for entry in entries:
+        tensor_name = str(entry["tensor"])
+        tensor = tensors[tensor_name]
+        rows.append(
+            {
+                "model_id": config["model_id"],
+                "layer_left": int(entry["layer_left"]),
+                "layer_right": int(entry["layer_right"]),
+                "direction": str(entry["direction"]),
+                "boundary_index": int(entry["boundary_index"]),
+                "pre_norm_position": str(entry["pre_norm_position"]),
+                "post_norm_position": str(entry["post_norm_position"]),
+                "max_abs": max_abs(tensor),
+                "rms": _rms(tensor),
+                "kurtosis": kurtosis(tensor),
+                "control_type": str(entry["control_type"]),
+            }
+        )
+    decision = "REAL_PACKET_READY_FOR_H1_INTERPRETATION"
+    _write_packet(
+        output_dir,
+        config=config,
+        rows=rows,
+        surface="real_horn_h1_tensor_packet",
+        decision=decision,
+        claim_boundary=["saved tensor trace", "not GPU evidence"],
+    )
+    return rows
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--project", choices=("ssq_lr", "horn"), required=True)
+    parser.add_argument("--tensor-packet", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path, required=True)
+    args = parser.parse_args()
+    if args.project == "ssq_lr":
+        rows = build_ssq_lr_packet(args.tensor_packet, args.output_dir)
+    else:
+        rows = build_horn_packet(args.tensor_packet, args.output_dir)
+    print(json.dumps({"output_dir": str(args.output_dir), "rows": len(rows)}, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()

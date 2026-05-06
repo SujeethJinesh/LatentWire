@@ -26,6 +26,10 @@ Shared Mac-local utilities live in `experimental/shared/`:
 - `boundary_inspector.py`: attention/SSM boundary identification.
 - `hybrid_architecture_maps.py`: config-derived explicit boundary maps for
   future real trace packets.
+- `hybrid_model_eligibility.py`: metadata-only HF size/cache preflight for
+  live hybrid targets.
+- `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
+  SSQ-LR/HORN real packets.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
 - `check_gate_packet.py`: generic synthetic-packet validator plus strict
   `--mode real --project ...` contracts for SSQ-LR, HORN, and HBSM.
@@ -66,6 +70,33 @@ Config-only maps now exist for the local Granite and Qwen hybrid configs:
 | Artifact | Use | Claim boundary |
 |---|---|---|
 | `experimental/shared/results/hybrid_architecture_maps_20260506/` | Provides explicit layer kinds, boundary IDs, direction counts, and config hashes for SSQ-LR/HORN/HBSM real trace packets. | Config provenance only; no activations, SSM state, quality, or GPU evidence. |
+
+## HybridKernel Packet Hardening
+
+The native profiler packet now requires per-row reduction provenance:
+`row_role`, `control_family`, `boundary_direction`, `nsys_artifact`,
+`ncu_artifact`, `kernel_names`, `boundary_indices`, `time_window_ms`, and
+`reduction_notes`. The checker also cross-checks model identity across
+`profile_scope.json`, client replay logs, metric rows, and the architecture map.
+The optional Triton CPU-backend correctness test passes on this Mac when
+Homebrew GCC library paths are exported, but it remains a correctness-only
+diagnostic.
+
+## Hybrid Model Eligibility
+
+Metadata-only HF preflight found public live targets but no repo-local cached
+weights:
+
+| Model | Safetensors GB | Local weights | Decision |
+|---|---:|---|---|
+| `ibm-granite/granite-4.0-h-tiny` | 12.93 | no | `BLOCKED_NOT_CACHED` |
+| `ibm-granite/granite-4.0-h-small` | 59.99 | no | `BLOCKED_NOT_CACHED` |
+| `ibm-granite/granite-4.0-h-small-FP8` | 31.19 | no | `BLOCKED_NOT_CACHED` |
+| `Qwen/Qwen3-Next-80B-A3B-Instruct` | 151.49 | no | `BLOCKED_NOT_CACHED` |
+
+Artifact: `experimental/shared/results/hybrid_model_eligibility_20260506/`.
+Large rows remain GPU-sized even though the immediate blocker is the missing
+repo-local weight cache.
 
 ## Killed Branches
 

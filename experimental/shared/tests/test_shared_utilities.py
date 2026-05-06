@@ -13,6 +13,8 @@ from experimental.shared.fp4_simulator import (
 )
 from experimental.shared.hybrid_architecture_maps import build_map, write_maps
 from experimental.shared.check_gate_packet import validate_gate_packet
+from experimental.shared.hybrid_model_eligibility import _architecture_hash, _local_cache_dir, _size_gb
+from experimental.shared.hybrid_trace_packet_builder import build_horn_packet, build_ssq_lr_packet
 from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_rank_correlation
 
 
@@ -250,3 +252,113 @@ def test_hybrid_architecture_map_packet_contains_controls(tmp_path: Path) -> Non
     assert "permuted_direction_control" in rows[0]
     assert "non_boundary_control" in rows[0]
     assert "CONFIG_ONLY_READY_FOR_TRACE_PACKET_PROVENANCE" in (output_dir / "decision.md").read_text()
+
+
+def test_hybrid_model_eligibility_helpers_are_repo_local(tmp_path: Path) -> None:
+    cache = _local_cache_dir(tmp_path / "hf_home", "owner/model-name")
+
+    assert cache == tmp_path / "hf_home/hub/models--owner--model-name"
+    assert _size_gb(1024**3) == 1.0
+
+
+def test_hybrid_model_eligibility_matches_hf_and_fp8_slugs() -> None:
+    small_hash = _architecture_hash("ibm-granite/granite-4.0-h-small")
+    fp8_hash = _architecture_hash("ibm-granite/granite-4.0-h-small-FP8")
+
+    assert small_hash
+    assert fp8_hash == small_hash
+
+
+def _base_trace_metadata() -> dict[str, object]:
+    return {
+        "model_id": "toy-hybrid",
+        "model_revision": "abc123",
+        "tokenizer_revision": "tok123",
+        "prompt_source": "fixed_manifest.json",
+        "prompt_ids_hash": "sha256:prompts",
+        "seed_list": [1],
+        "context_lengths": [16],
+        "dtype": "bf16",
+        "device": "cpu",
+        "command": "python dump.py",
+        "architecture_map_hash": "sha256:map",
+    }
+
+
+def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq"
+    metadata = _base_trace_metadata()
+    metadata["ssq_lr_entries"] = [
+        {
+            "tensor": "state_layer_0_early",
+            "prompt_id": "p0",
+            "layer": 0,
+            "position_bucket": "early",
+            "control_type": "bf16_no_quant",
+        }
+    ]
+    save_tensor_packet(
+        tensor_packet,
+        tensors={"state_layer_0_early": torch.randn(2, 4)},
+        metadata=metadata,
+    )
+
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert report["ok"]
+    assert report["row_count"] == 1
+
+
+def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "horn"
+    metadata = _base_trace_metadata()
+    metadata["horn_entries"] = [
+        {
+            "tensor": "boundary",
+            "layer_left": 0,
+            "layer_right": 1,
+            "direction": "attention->ssm",
+            "boundary_index": 0,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "boundary",
+        },
+        {
+            "tensor": "non_boundary",
+            "layer_left": 1,
+            "layer_right": 2,
+            "direction": "ssm->ssm",
+            "boundary_index": 1,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "non_boundary",
+        },
+        {
+            "tensor": "permuted",
+            "layer_left": 0,
+            "layer_right": 1,
+            "direction": "ssm->attention",
+            "boundary_index": 0,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "permuted_direction",
+        },
+    ]
+    save_tensor_packet(
+        tensor_packet,
+        tensors={
+            "boundary": torch.randn(2, 4),
+            "non_boundary": torch.randn(2, 4),
+            "permuted": torch.randn(2, 4),
+        },
+        metadata=metadata,
+    )
+
+    build_horn_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="horn")
+
+    assert report["ok"]
+    assert report["row_count"] == 3

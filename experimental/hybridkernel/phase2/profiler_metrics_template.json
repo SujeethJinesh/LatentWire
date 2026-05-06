@@ -17,6 +17,22 @@
         "requests": null
       },
       "control_model_or_segment": null,
+      "row_role": "primary_hybrid",
+      "control_family": "same_family_matched_segment",
+      "boundary_direction": "mixed_attention_ssm",
+      "nsys_artifact": "nsys/<trace>.nsys-rep",
+      "ncu_artifact": "ncu/<trace>.ncu-rep",
+      "kernel_names": [
+        "<kernel name>"
+      ],
+      "boundary_indices": [
+        0
+      ],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "reduction_notes": "Explain how Nsight rows were reduced.",
       "notes": "Replace nulls after native profiling."
     }
   ]

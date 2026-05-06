@@ -52,6 +52,8 @@ Real trace packet requirements are in
 
 Use the explicit architecture hashes in
 `../shared/results/hybrid_architecture_maps_20260506/` for packet provenance.
+Model-size/cache eligibility is recorded in
+`../shared/results/hybrid_model_eligibility_20260506/`.
 
 Validate the first real S1 packet with:
 
@@ -75,6 +77,19 @@ experimental/ssq_lr/results/ssq_lr_gate_<gate>_<YYYYMMDD>_<model_slug>/
 cd /Users/sujeethjinesh/Desktop/LatentWire
 ./venv_arm64/bin/python -m pytest experimental/shared/tests -q
 ```
+
+Reproduce the current synthetic packet:
+
+```bash
+./venv_arm64/bin/python -m experimental.ssq_lr.phase2.ssq_lr_synthetic_s1_gate
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/ssq_lr/phase2/results/ssq_lr_synthetic_s1 \
+  --expected-decision-prefix SYNTHETIC
+jq '.decision, .max_abs_ratio_late_vs_early, .std_ratio_late_vs_early' \
+  experimental/ssq_lr/phase2/results/ssq_lr_synthetic_s1/summary.json
+```
+
+Expected decision: `SYNTHETIC_PASS_REAL_STATE_DUMPS_NEXT`.
 
 ## GPU Rule
 

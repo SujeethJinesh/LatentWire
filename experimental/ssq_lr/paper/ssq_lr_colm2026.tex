@@ -30,6 +30,12 @@ hybrid-model state dumps. It reports late/early max-abs ratio 8.461, std ratio
 3.640, and kurtosis ratio 3.141, producing
 \texttt{SYNTHETIC\_PASS\_REAL\_STATE\_DUMPS\_NEXT}. This is synthetic-only:
 it is not model evidence, not a quality result, and not GPU evidence.
+The metadata-only model eligibility packet identifies live hybrid targets
+(\texttt{granite-4.0-h-tiny}, \texttt{granite-4.0-h-small},
+\texttt{granite-4.0-h-small-FP8}, and \texttt{Qwen3-Next-80B-A3B-Instruct})
+and ties them to shared architecture-map hashes, but all remain blocked for
+real S1 on this Mac because no corresponding model weights are cached
+repo-locally.
 
 \section{Next Evidence}
 
@@ -48,6 +54,8 @@ report \texttt{model\_id}, \texttt{model\_revision}, \texttt{prompt\_id},
 \texttt{outlier\_mass}, and a \texttt{bf16\_no\_quant} control. The packet is
 valid only if it passes
 \texttt{experimental.shared.check\_gate\_packet --mode real --project ssq\_lr}.
+Saved tensor packets should be converted with
+\texttt{experimental.shared.hybrid\_trace\_packet\_builder} before validation.
 
 \begin{table}[h]
 \centering

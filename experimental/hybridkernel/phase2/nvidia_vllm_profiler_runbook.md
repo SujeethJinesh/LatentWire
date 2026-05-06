@@ -366,6 +366,15 @@ Required fields:
 | `batch_shape.decode_tokens` | positive integer decode token count |
 | `batch_shape.requests` | positive integer number of fixed replay requests |
 | `control_model_or_segment` | non-empty matched control segment/model label used for the non-boundary comparison |
+| `row_role` | `primary_hybrid`, `same_family_control`, or `cross_family_falsification` |
+| `control_family` | non-empty label for the matched control family, e.g. `same_family_matched_segment` |
+| `boundary_direction` | attention/SSM boundary direction or `mixed_attention_ssm` for an aggregate row |
+| `nsys_artifact` | exact relative path to the Nsight Systems artifact used for the row |
+| `ncu_artifact` | exact relative path to the Nsight Compute artifact used for the row |
+| `kernel_names` | non-empty list of kernel names reduced into the row |
+| `boundary_indices` | list of architecture-map boundary indices represented by the row |
+| `time_window_ms` | object with numeric `start` and `end` trace-window boundaries |
+| `reduction_notes` | short non-placeholder explanation of the trace reduction |
 
 Use distinct `run_id` values for independent repeated traces. Duplicating one
 trace into three rows is not admissible evidence and will fail the artifact

@@ -26,3 +26,10 @@ Added shared config-derived architecture maps at
 these explicit boundary IDs for boundary-flagged layers and include
 `architecture_map_hash`; cheap predictors will be compared against these fixed
 flags plus random/layer-index/size/norm baselines.
+
+## 2026-05-06 Model Eligibility Update
+
+Added metadata-only model eligibility at
+`../shared/results/hybrid_model_eligibility_20260506/`. HBSM can now name the
+frontier-hybrid targets and their approximate weight sizes, but it cannot run B1
+without loaded model weights and forward sensitivity measurements.

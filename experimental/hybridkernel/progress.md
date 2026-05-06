@@ -10,7 +10,8 @@
 - Phase 1: source/control audit is sufficient for Mac-local handoff; any deeper
   source audit is deferred until native profiling shows a real boundary signal
 - Phase 3/4: boundary kernel correctness gates pass under `TRITON_INTERPRET=1`;
-  non-interpreter `TRITON_CPU_BACKEND=1` remains environment-fragile on this Mac
+  non-interpreter `TRITON_CPU_BACKEND=1` passes when Homebrew GCC libraries are
+  exposed through `LIBRARY_PATH`/`DYLD_LIBRARY_PATH`
 - Last updated: 2026-05-06
 
 This scaffold now has a local environment check, small public config fetches,
@@ -76,12 +77,21 @@ TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/hybridkernel/p
 
 Current Mac status: CPU reference and Triton interpreter tests pass under the
 repo-local `triton-cpu` source install with `TRITON_INTERPRET=1` and
-`TRITON_CPU_BACKEND=1`. A fresh non-interpreter CPU-backend attempt is
-environment-fragile: `/usr/bin/gcc` fails with `ld: library 'gcc' not found`,
-while `CC=/opt/homebrew/bin/gcc-14` fails with `ld: library not found for
--lSystem`. Treat CPU-backend execution as an optional diagnostic, not a stable
-paper gate. These are kernel-logic correctness checks only, not a GPU
-performance result and not COLM_v3 evidence.
+`TRITON_CPU_BACKEND=1`. The opt-in non-interpreter CPU backend also passes when
+the Homebrew GCC library directories are provided explicitly:
+
+```bash
+HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 \
+TRITON_CPU_BACKEND=1 \
+TRITON_HOME="$PWD/.debug/triton_home" \
+LIBRARY_PATH="/opt/homebrew/opt/gcc/lib/gcc/current/gcc/aarch64-apple-darwin23/14:/opt/homebrew/opt/gcc/lib/gcc/current${LIBRARY_PATH:+:$LIBRARY_PATH}" \
+DYLD_LIBRARY_PATH="/opt/homebrew/opt/gcc/lib/gcc/current${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}" \
+./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -q -rs
+```
+
+This is a kernel-logic correctness check only, not a GPU performance result and
+not COLM_v3 evidence.
 
 ## Viability Notes
 

@@ -20,6 +20,15 @@ def _native_row(idx: int, **overrides: object) -> dict[str, object]:
             "requests": 16,
         },
         "control_model_or_segment": "matched_transformer_block",
+        "row_role": "primary_hybrid",
+        "control_family": "same_family_matched_segment",
+        "boundary_direction": "mixed_attention_ssm",
+        "nsys_artifact": "nsys/granite_tiny_b1_decode64.nsys-rep",
+        "ncu_artifact": "ncu/suspicious_boundary_kernel.ncu-rep",
+        "kernel_names": ["synthetic_boundary_kernel"],
+        "boundary_indices": [0],
+        "time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
+        "reduction_notes": "Reduced from synthetic fixture row.",
     }
     row.update(overrides)
     return row

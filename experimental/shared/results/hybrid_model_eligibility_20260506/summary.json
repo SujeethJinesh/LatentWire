@@ -1,0 +1,48 @@
+{
+  "claim_boundary": [
+    "metadata-only",
+    "not model evidence",
+    "not GPU evidence"
+  ],
+  "decision": "PREFLIGHT_BLOCKED_NO_LOCAL_WEIGHTS",
+  "row_count": 4,
+  "rows": [
+    {
+      "architecture_map_hash": "bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
+      "blocking_reason": "weights not present in repo-local HF cache",
+      "has_local_snapshot": true,
+      "mac_trace_decision": "BLOCKED_NOT_CACHED",
+      "model_id": "ibm-granite/granite-4.0-h-tiny",
+      "model_type_tag": "granitemoehybrid",
+      "safetensors_gb": 12.925027176737785
+    },
+    {
+      "architecture_map_hash": "8616e9f0b30e6fac9696f7c1e1dbd08f1a850ac4af0de6353f7d6009043702ae",
+      "blocking_reason": "weights not present in repo-local HF cache",
+      "has_local_snapshot": true,
+      "mac_trace_decision": "BLOCKED_NOT_CACHED",
+      "model_id": "ibm-granite/granite-4.0-h-small",
+      "model_type_tag": "granitemoehybrid",
+      "safetensors_gb": 59.99090538173914
+    },
+    {
+      "architecture_map_hash": "8616e9f0b30e6fac9696f7c1e1dbd08f1a850ac4af0de6353f7d6009043702ae",
+      "blocking_reason": "weights not present in repo-local HF cache",
+      "has_local_snapshot": true,
+      "mac_trace_decision": "BLOCKED_NOT_CACHED",
+      "model_id": "ibm-granite/granite-4.0-h-small-FP8",
+      "model_type_tag": "granitemoehybrid",
+      "safetensors_gb": 31.189170390367508
+    },
+    {
+      "architecture_map_hash": "2d483c7cabad7c8704478ed4038fa7e7b2eff840bc00a118eccbe38e2b488303",
+      "blocking_reason": "weights not present in repo-local HF cache",
+      "has_local_snapshot": true,
+      "mac_trace_decision": "BLOCKED_NOT_CACHED",
+      "model_id": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+      "model_type_tag": "qwen3_next",
+      "safetensors_gb": 151.48814909905195
+    }
+  ],
+  "surface": "hf_metadata_hybrid_model_eligibility"
+}

@@ -53,6 +53,8 @@ Real trace packet requirements are in
 Use the explicit boundary IDs and architecture hashes in
 `../shared/results/hybrid_architecture_maps_20260506/`; do not rely on
 substring-only module classification for real H1 rows.
+Model-size/cache eligibility is recorded in
+`../shared/results/hybrid_model_eligibility_20260506/`.
 
 Validate the first real H1 packet with:
 
@@ -74,6 +76,19 @@ experimental/horn/results/horn_gate_<gate>_<YYYYMMDD>_<model_slug>/
 cd /Users/sujeethjinesh/Desktop/LatentWire
 ./venv_arm64/bin/python -m pytest experimental/shared/tests -q
 ```
+
+Reproduce the current synthetic packet:
+
+```bash
+./venv_arm64/bin/python -m experimental.horn.phase2.horn_synthetic_h1_gate
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/horn/phase2/results/horn_synthetic_h1 \
+  --expected-decision-prefix SYNTHETIC
+jq '.decision, .ssm_to_attention_over_attention_to_ssm_max_ratio, .ssm_to_attention_over_attention_to_ssm_kurtosis_ratio' \
+  experimental/horn/phase2/results/horn_synthetic_h1/summary.json
+```
+
+Expected decision: `SYNTHETIC_PASS_REAL_BOUNDARY_DUMPS_NEXT`.
 
 ## GPU Rule
 

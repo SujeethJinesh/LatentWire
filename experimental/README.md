@@ -28,6 +28,10 @@ Shared Mac-local utilities live in `shared/`:
 - `boundary_inspector.py`: attention/SSM boundary identification.
 - `hybrid_architecture_maps.py`: config-derived explicit boundary maps and
   negative-control rows for real trace packet provenance.
+- `hybrid_model_eligibility.py`: metadata-only HF size/cache preflight for the
+  live hybrid targets.
+- `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
+  SSQ-LR/HORN real packets.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
 - `check_gate_packet.py`: generic result-packet validator.
 - `hybrid_trace_packet_runbook.md`: schema for the first real shared trace
@@ -38,6 +42,9 @@ GPU throughput, HBM, latency, energy, or production-packing claims.
 
 Current config-only architecture packet:
 `shared/results/hybrid_architecture_maps_20260506/`.
+
+Current metadata-only model eligibility packet:
+`shared/results/hybrid_model_eligibility_20260506/`.
 
 ## Next Exact Gates
 

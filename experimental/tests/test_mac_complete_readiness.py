@@ -171,7 +171,7 @@ def test_hybridkernel_stop_gate_is_machine_guarded() -> None:
 
     for phrase in [
         "No native NVIDIA/vLLM profile has been run",
-        "54 passed and 1 opt-in CPU-backend skip",
+        "54 passed; the opt-in non-interpreter CPU-backend check also passes",
     ]:
         assert phrase in paper
     assert "colm_workshop_scaffold.md" not in paper

@@ -23,7 +23,9 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         "nvidia-smi\nnsys version\nncu version\npython -VV\n",
         encoding="utf-8",
     )
-    (run_dir / "metadata/architecture_map.json").write_text("[]\n", encoding="utf-8")
+    (run_dir / "metadata/architecture_map.json").write_text(
+        '[{"model":"granite","boundary_count":1}]\n', encoding="utf-8"
+    )
     (run_dir / "metadata/profile_scope.json").write_text(
         json.dumps(
             {
@@ -34,6 +36,7 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                 "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
                 "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
                 "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
+                "model": "granite",
             }
         )
         + "\n",
@@ -75,6 +78,15 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                     "requests": 16,
                 },
                 "control_model_or_segment": "matched_transformer_block",
+                "row_role": "primary_hybrid",
+                "control_family": "same_family_matched_segment",
+                "boundary_direction": "mixed_attention_ssm",
+                "nsys_artifact": "nsys/granite_tiny_b1_decode64.nsys-rep",
+                "ncu_artifact": "ncu/suspicious_boundary_kernel.ncu-rep",
+                "kernel_names": ["synthetic_boundary_kernel"],
+                "boundary_indices": [0],
+                "time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
+                "reduction_notes": "Reduced from synthetic fixture row.",
             }
             for idx in range(runs)
         ]
@@ -361,6 +373,32 @@ def test_requires_vllm_serving_command(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("vllm_command must mention vLLM" in error for error in result["errors"])
+
+
+def test_requires_metric_row_provenance(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    del payload["rows"][0]["kernel_names"]
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("missing provenance fields" in error for error in result["errors"])
+
+
+def test_rejects_packet_model_mismatches(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    profile_scope_path = tmp_path / "metadata/profile_scope.json"
+    profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
+    profile_scope["model"] = "other-model"
+    profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("model does not match" in error for error in result["errors"])
 
 
 def test_requires_distinct_repeated_run_ids(tmp_path: Path) -> None:

@@ -23,10 +23,10 @@ still finds no matching wheel distributions for `triton`, `triton-cpu`, or
 `triton-nightly` in `./venv_arm64`; the working path is the source-install
 readout in `../triton_cpu_source_install_20260506.md`. Local Phase 4 Triton
 interpreter correctness is unblocked. The non-interpreter
-`TRITON_CPU_BACKEND=1` path is environment-fragile in fresh shells on this Mac:
-`/usr/bin/gcc` misses `libgcc`, while Homebrew `gcc-14` reaches a Darwin
-`-lSystem` linker failure. Treat CPU-backend execution as optional diagnostics,
-not a required paper gate.
+`TRITON_CPU_BACKEND=1` path also passes on this Mac when Homebrew GCC libraries
+are made explicit in `LIBRARY_PATH` and `DYLD_LIBRARY_PATH`. Treat CPU-backend
+execution as optional diagnostics, not a required paper gate or GPU performance
+result.
 
 The next exact gate is a user-operated NVIDIA/vLLM packet that passes
 `phase2/check_profiler_run_artifacts.py` and is then reduced by
@@ -62,6 +62,20 @@ What remains:
 Do not add more Mac kernels or paper claims before the native packet exists.
 The consumed Mac-only implementation lane is explicitly marked in
 `KILLED_mac_only_kernel_iteration/`.
+
+### Optional Triton CPU Backend Check
+
+Use this only for Mac-local correctness diagnostics:
+
+```bash
+HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 \
+TRITON_CPU_BACKEND=1 \
+TRITON_HOME="$PWD/.debug/triton_home" \
+LIBRARY_PATH="/opt/homebrew/opt/gcc/lib/gcc/current/gcc/aarch64-apple-darwin23/14:/opt/homebrew/opt/gcc/lib/gcc/current${LIBRARY_PATH:+:$LIBRARY_PATH}" \
+DYLD_LIBRARY_PATH="/opt/homebrew/opt/gcc/lib/gcc/current${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}" \
+./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -q -rs
+```
 
 ## GPU-Node Quickstart
 

@@ -17,7 +17,16 @@
         "decode_tokens": 64,
         "requests": 16
       },
-      "control_model_or_segment": "matched_transformer_block"
+      "control_model_or_segment": "matched_transformer_block",
+      "row_role": "primary_hybrid",
+      "control_family": "same_family_matched_segment",
+      "boundary_direction": "mixed_attention_ssm",
+      "nsys_artifact": "nsys/synthetic_boundary_timeline.nsys-rep",
+      "ncu_artifact": "ncu/synthetic_suspicious_boundary_kernel.ncu-rep",
+      "kernel_names": ["synthetic_boundary_kernel"],
+      "boundary_indices": [0],
+      "time_window_ms": {"start": 0.0, "end": 1.0},
+      "reduction_notes": "Synthetic fixture row; not a native measurement."
     },
     {
       "model": "synthetic-granite-fixture",
@@ -35,7 +44,16 @@
         "decode_tokens": 64,
         "requests": 16
       },
-      "control_model_or_segment": "matched_transformer_block"
+      "control_model_or_segment": "matched_transformer_block",
+      "row_role": "primary_hybrid",
+      "control_family": "same_family_matched_segment",
+      "boundary_direction": "mixed_attention_ssm",
+      "nsys_artifact": "nsys/synthetic_boundary_timeline.nsys-rep",
+      "ncu_artifact": "ncu/synthetic_suspicious_boundary_kernel.ncu-rep",
+      "kernel_names": ["synthetic_boundary_kernel"],
+      "boundary_indices": [0],
+      "time_window_ms": {"start": 1.0, "end": 2.0},
+      "reduction_notes": "Synthetic fixture row; not a native measurement."
     },
     {
       "model": "synthetic-granite-fixture",
@@ -53,7 +71,16 @@
         "decode_tokens": 64,
         "requests": 16
       },
-      "control_model_or_segment": "matched_transformer_block"
+      "control_model_or_segment": "matched_transformer_block",
+      "row_role": "primary_hybrid",
+      "control_family": "same_family_matched_segment",
+      "boundary_direction": "mixed_attention_ssm",
+      "nsys_artifact": "nsys/synthetic_boundary_timeline.nsys-rep",
+      "ncu_artifact": "ncu/synthetic_suspicious_boundary_kernel.ncu-rep",
+      "kernel_names": ["synthetic_boundary_kernel"],
+      "boundary_indices": [0],
+      "time_window_ms": {"start": 2.0, "end": 3.0},
+      "reduction_notes": "Synthetic fixture row; not a native measurement."
     }
   ]
 }

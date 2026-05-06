@@ -150,6 +150,15 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
                     "requests": None,
                 },
                 "control_model_or_segment": None,
+                "row_role": "primary_hybrid",
+                "control_family": "same_family_matched_segment",
+                "boundary_direction": "mixed_attention_ssm",
+                "nsys_artifact": None,
+                "ncu_artifact": None,
+                "kernel_names": [],
+                "boundary_indices": [],
+                "time_window_ms": {"start": None, "end": None},
+                "reduction_notes": None,
                 "notes": f"{SKELETON_TODO_MARKER}: replace nulls after native profiling.",
             }
             for idx in range(min_runs)

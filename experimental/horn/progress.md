@@ -24,3 +24,11 @@ Added shared config-derived architecture maps at
 `../shared/results/hybrid_architecture_maps_20260506/`. Real H1 packets must use
 these explicit boundary IDs and include `architecture_map_hash`; substring-only
 module classification is no longer admissible for promotion.
+
+## 2026-05-06 Model Eligibility Update
+
+Added metadata-only model eligibility at
+`../shared/results/hybrid_model_eligibility_20260506/`. No live hybrid target is
+cached repo-locally, and GPU-sized targets should wait for the 5090. HORN cannot
+produce real boundary activation rows until a live hybrid model is loaded and
+hooked.
