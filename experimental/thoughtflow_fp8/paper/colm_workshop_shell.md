@@ -4,14 +4,15 @@ Status date: 2026-05-06
 
 ## Current Policy Status
 
-**Mixed/weakened.** The current anchor/phase-protected retention family is not
-ready to support a positive-method claim. It preserved synthetic phase markers,
-matched the local LongFlow-like importance proxy, and beat the strongest real
-hidden/KV saliency proxy on phase recall. However, its math-state margin over
-that real-saliency proxy is uncertain, and both retained-context and CPU
-sparse-cache quality evidence has a promising held-out mean row but still fails
-paired uncertainty against ThinKV-like, and the larger frozen no-retuning slice
-weakens the branch.
+**Stopped for the current policy family.** The current anchor/phase-protected
+retention family is not ready to support a positive-method claim. It preserved
+synthetic phase markers, matched the local LongFlow-like importance proxy, and
+beat the strongest real hidden/KV saliency proxy on phase recall. However, its
+math-state margin over that real-saliency proxy is uncertain, and both
+retained-context and CPU sparse-cache quality evidence has a promising held-out
+mean row but still fails paired uncertainty against ThinKV-like. The larger
+frozen no-retuning slice weakens the branch enough to stop further tuning on
+the available saved traces.
 
 This shell is a scoped workshop-paper scaffold, not a submission draft. The
 current evidence is useful for deciding the next method gate, but it is not yet
@@ -42,6 +43,7 @@ quality or perplexity, not just on protected-token recall.
 | `phase2/policy_sweep.md` | Train-selected ThoughtFlow-family policy ties R-KV-like on 12 held-out traces, 3.480 vs 3.482 NLL. | Mixed tie-range result. |
 | `phase2/kv_drop_quality_probe.md` | Actual CPU sparse-cache pruning plus a 24-config train-fixed sparse sweep. The selected row has held-out NLL 3.340 vs ThinKV-like 3.385 and R-KV-like 3.420; paired CI still crosses zero vs ThinKV-like. | Mixed/promising, not revived. |
 | `phase2/frozen_sparse_cache_probe.md` | Larger no-retuning CPU sparse-cache slice on 74 traces: ThinKV-like NLL 3.900, frozen sparse ThoughtFlow 3.908, ThoughtFlow-saliency-recent 3.920, R-KV-like 3.939. | Weakened/not revived. |
+| `phase2/stop_pivot_decision_20260506.md` | Stops current policy-family tuning on the available saved traces; allows only a future pre-registered new utility signal evaluated once. | Stop/pivot gate. |
 
 The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
 
@@ -118,8 +120,14 @@ candidate clears paired evidence versus both main baselines.
 
 ## What Would Revive The Branch
 
-The branch should be revived only if a bounded next policy clears at least one
-of these gates:
+The current anchor/recent/phase/math policy family should not be tuned further
+on the available saved traces. A successor branch should be attempted only after
+pre-registering one genuinely new utility signal, the exact policy
+transformation, the frozen evaluation command, and the promotion threshold. It
+may then be evaluated once.
+
+The branch should be revived only if that pre-registered successor clears at
+least one of these gates:
 
 1. **Quality/perplexity gate:** ThoughtFlow or a successor policy beats
    LongFlow-like, R-KV-like, and ThinKV-like matched-budget proxies by at least
@@ -160,8 +168,9 @@ bias.
 Do not move to a broad GPU benchmark yet. The next exact gate is:
 
 1. Do not tune further on the current saved traces.
-2. Either stop/pivot the current policy family, or pre-register one genuinely
-   new utility signal and evaluate it once in the frozen sparse-cache probe.
+2. Either leave the current policy family as stopped, or pre-register one
+   genuinely new utility signal and evaluate it once in the frozen sparse-cache
+   probe.
 3. Report paired uncertainty, per-span keep telemetry, recurrence misses, and
    FP8 round-trip error separately.
 4. Promote only if the successor policy beats the strongest proxy on quality at

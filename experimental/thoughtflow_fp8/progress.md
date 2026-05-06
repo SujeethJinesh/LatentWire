@@ -9,7 +9,8 @@
   are mixed and do not revive a positive-method claim
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
   scaffold added, but not phase-complete
-- Current viability: pivot/proceed only with narrowed framing.
+- Current viability: stop tuning the current policy family on the available
+  saved traces; pivot only through a pre-registered new utility signal.
 - Current risk: high field crowding; ThinKV already occupies much of the
   thought-adaptive quantization/eviction space, and DeepSeek V4 raises the
   production compressed-attention systems bar.
@@ -152,6 +153,14 @@ infrastructure. The next exact gate is not further policy tuning on these
 traces; it is either a pre-registered new utility signal evaluated once on this
 frozen probe, or a stop/pivot decision for ThoughtFlow-FP8.
 
+`phase2/stop_pivot_decision_20260506.md` records that decision. Further
+anchor/recent/phase/math weight tuning on the current saved traces is stopped.
+The current policy family is ruled out as a robust positive method on this
+Mac-local sparse-cache surface. A future attempt must first pre-register one
+genuinely new utility signal and then evaluate it once on the frozen sparse-cache
+probe; otherwise ThoughtFlow-FP8 should remain a negative/mixed workshop
+artifact.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -206,3 +215,6 @@ reviewer pack or GPU work.
 - 2026-05-06: Ran the larger frozen sparse-cache slice with no retuning.
   ThinKV-like beats both frozen ThoughtFlow candidates in mean NLL on 74 traces.
   Decision weakens to not revived; do not tune more on this trace set.
+- 2026-05-06: Added the stop/pivot decision artifact. Current policy-family
+  tuning is stopped on the available saved traces; any revival must be
+  pre-registered as one new utility signal before a single frozen evaluation.
