@@ -344,10 +344,21 @@ The verifier checks that the run directory contains:
 - `readout.md` with the pre-registered decision questions;
 - `profiler_metrics.json` with at least three repeated valid rows for one
   model and at least three distinct repeated `run_id` values.
+- `profiler_analysis_gate.json` and `.md` generated from that exact
+  `profiler_metrics.json`.
+
+The verifier recomputes the analysis gate from `profiler_metrics.json` and
+rejects stale or copied `profiler_analysis_gate.json`/`.md` outputs whose
+status, decision, summary, or row count no longer match the metric rows.
 
 A `PASS` means the artifact bundle is complete enough for human review. It does
 not mean HybridKernel is promoted, and it does not authorize any speedup claim.
 Promotion still depends on the profiler-analysis gate and the controls below.
+
+A synthetic, non-evidence packet fixture exists at
+`phase2/tests/fixtures/synthetic_profiler_run_packet/` to show the required
+directory shape and keep the checker covered on Mac. It contains placeholder
+Nsight files and must not be cited as profiler data.
 
 ## Promotion Criteria
 

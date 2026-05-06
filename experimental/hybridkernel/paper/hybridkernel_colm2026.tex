@@ -33,7 +33,8 @@ Runtime audit & vLLM already handles hybrid state layout and transfer paths. & B
 Threshold model & Granite needs about 25.0\% avoidable boundary traffic at 60\% recovery for a 3\% proxy gain. & Mac kernel work not justified. \\
 Profiler driver & Fixed-request OpenAI-compatible driver dry-runs locally; runbook now profiles the vLLM server, not just the HTTP client. & Native gate is less likely to be mis-run. \\
 Analysis parser & JSON profiler summaries are reduced into avoidable-boundary share and recoverable-gain upper bound. & Decision rule is pre-registered. \\
-Artifact verifier & Native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, and distinct repeated metric rows. & Client-only and duplicated-trace evidence is rejected. \\
+Artifact verifier & Native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, distinct repeated metric rows, and matching profiler-analysis outputs. & Client-only, duplicated-trace, and stale-analysis evidence is rejected. \\
+Synthetic packet fixture & A Mac-local fixture documents the packet shape and exercises the checker with placeholder Nsight files. & Fixture is not profiler evidence. \\
 Packet checklist & The native handoff now has a single required packet layout and stop-local-work decision. & Local readiness is saturated until GPU data exists. \\
 \bottomrule
 \end{tabular}
@@ -49,7 +50,7 @@ The next experiment is a native NVIDIA/vLLM run with Nsight Systems and Nsight C
 {\mathrm{total\ step\ ms}}
 \times \mathrm{recoverable\ fraction}.
 \]
-If repeated native summaries show less than 1\% recoverable gain, the branch should be killed or shelved. Before any run is cited, the artifact verifier must also pass on the exact run directory, confirming environment metadata, server-side Nsight Systems and Nsight Compute scope, profiler artifacts, profiling logs, the pre-registered readout questions, and at least three distinct repeated metric rows for one model. This is an admissibility check only; it does not promote the method.
+If repeated native summaries show less than 1\% recoverable gain, the branch should be killed or shelved. Before any run is cited, the artifact verifier must also pass on the exact run directory, confirming environment metadata, server-side Nsight Systems and Nsight Compute scope, profiler artifacts, profiling logs, the pre-registered readout questions, at least three distinct repeated metric rows for one model, and profiler-analysis outputs that match the same metric file. This is an admissibility check only; it does not promote the method.
 
 \section{Claim Boundary}
 

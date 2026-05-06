@@ -32,8 +32,11 @@ The packet is incomplete unless all of these exist:
 | `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels |
 | `readout.md` | completed decision table from the runbook |
 | `profiler_metrics.json` | at least three valid rows for one model with distinct repeated `run_id` values |
-| `profiler_analysis_gate.json` and `.md` | output from `analyze_profiler_metrics.py` |
-| `artifact_check.json` | output from `check_profiler_run_artifacts.py` |
+| `profiler_analysis_gate.json` and `.md` | output from `analyze_profiler_metrics.py` for this exact `profiler_metrics.json` |
+
+After the checker command runs, the returned packet should also include
+`artifact_check.json`. The checker validates the files above and then produces
+that final self-report.
 
 ## Required Scope JSON
 
@@ -88,6 +91,10 @@ python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
 
 If the artifact checker fails, stop and fix the packet before interpreting
 results.
+
+For a Mac-local example of the required directory shape, inspect
+`phase2/tests/fixtures/synthetic_profiler_run_packet/`. It is a synthetic
+checker fixture with placeholder Nsight files, not native profiler evidence.
 
 ## Decision
 

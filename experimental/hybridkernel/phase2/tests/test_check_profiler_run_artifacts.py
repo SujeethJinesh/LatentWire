@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
+from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
 from experimental.hybridkernel.phase2.check_profiler_run_artifacts import (
     READOUT_MARKERS,
     check_run_artifacts,
 )
+
+
+FIXTURE_DIR = Path(__file__).parent / "fixtures/synthetic_profiler_run_packet"
 
 
 def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
@@ -46,23 +51,31 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         "| Question | Evidence | Decision |\n|---|---|---|\n" + readout_rows + "\n",
         encoding="utf-8",
     )
-    (run_dir / "profiler_metrics.json").write_text(
-        json.dumps(
+    metrics_payload = {
+        "rows": [
             {
-                "rows": [
-                    {
-                        "model": "granite",
-                        "run_id": idx,
-                        "total_step_ms": 100.0,
-                        "attention_ssm_boundary_ms": 4.0,
-                        "matched_non_boundary_ms": 2.0,
-                        "recoverable_fraction": 0.60,
-                    }
-                    for idx in range(runs)
-                ]
+                "model": "granite",
+                "run_id": idx,
+                "total_step_ms": 100.0,
+                "attention_ssm_boundary_ms": 4.0,
+                "matched_non_boundary_ms": 2.0,
+                "recoverable_fraction": 0.60,
             }
-        )
-        + "\n",
+            for idx in range(runs)
+        ]
+    }
+    analysis = analyze(metrics_payload)
+    (run_dir / "profiler_metrics.json").write_text(
+        json.dumps(metrics_payload) + "\n",
+        encoding="utf-8",
+    )
+    (run_dir / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (run_dir / "profiler_analysis_gate.md").write_text(
+        "# HybridKernel Profiler Analysis Gate\n\n"
+        f"Status: **{analysis['status']}**\n",
         encoding="utf-8",
     )
 
@@ -146,3 +159,37 @@ def test_requires_distinct_repeated_run_ids(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("distinct repeated run_id" in error for error in result["errors"])
+
+
+def test_requires_profiler_analysis_gate_outputs(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "profiler_analysis_gate.json").unlink()
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("profiler_analysis_gate.json" in error for error in result["errors"])
+
+
+def test_rejects_stale_profiler_analysis_gate_json(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    analysis_path = tmp_path / "profiler_analysis_gate.json"
+    analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
+    analysis["status"] = "PROMOTE to prototype: stale copied result"
+    analysis_path.write_text(json.dumps(analysis) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("status does not match" in error for error in result["errors"])
+
+
+def test_synthetic_fixture_documents_complete_packet_shape(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    shutil.copytree(FIXTURE_DIR, packet)
+
+    result = check_run_artifacts(packet)
+
+    assert result["status"] == "PASS"
+    assert result["metrics_rows"] == 3
+    assert result["model_distinct_run_counts"] == {"synthetic-granite-fixture": 3}

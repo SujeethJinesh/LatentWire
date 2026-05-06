@@ -8,7 +8,8 @@
   and per-head softmax/output gates completed with a new paired layer-head
   caveat; simple head selection failed; all-rank2 split repeats and a bounded
   length/sink sweep passed weakly; trace-level frozen split repeat passed
-  as bounded evidence
+  as bounded evidence; a small held-out/cross-family smoke gate passed but is
+  not a promotion result
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-06
@@ -256,3 +257,32 @@ three whole-trace splits are positive, with output rel-L2 improvement
 The head win rate remains low at `0.278 +/- 0.016`, so the stronger slice
 supports aggregate repeatability but does not revive any per-head robustness
 claim.
+
+## 2026-05-06 Triton Recheck and Cross-Family Smoke Fallback
+
+Rechecked `./venv_arm64` directly with `importlib.util.find_spec("triton")`
+and `import triton`; Triton is still not importable
+(`ModuleNotFoundError: No module named 'triton'`). Because the interpreter gate
+is blocked locally, added and ran `phase2/rank2_cross_model_falsification_gate.py`
+with `--model-names distilgpt2 facebook/opt-125m --max-traces 12 --max-length
+64 --sink-tokens 4 --train-fraction 0.67 --seeds 0`.
+
+Result: **ALIVE but bounded** as a smallest Mac-feasible falsification smoke.
+The gate fits all-head rank-2 predictors separately per model on whole-trace
+train splits and evaluates held-out traces against position-only. It is not
+cross-model predictor transfer and makes no GPU speed claim.
+
+Aggregate output rel-L2 improvement across the two model rows was
+`+0.0519 +/- 0.0372`; the minimum model improvement was `+0.0329`.
+Per model:
+
+- `distilgpt2` (`gpt2`): position output rel-L2 `0.1602`, rank-2 `0.1273`,
+  improvement `+0.0329`.
+- `facebook/opt-125m` (`opt`): position output rel-L2 `0.3562`, rank-2
+  `0.2853`, improvement `+0.0709`.
+
+Decision: this keeps the branch alive under a stricter model-family
+falsification attempt, but only as a smoke result. It does not override the
+48-trace per-head fragility caveat. The next exact gate is either Triton
+interpreter correctness once `triton` is available in the repo-local venv, or a
+larger cross-family repeat with more traces and split seeds.

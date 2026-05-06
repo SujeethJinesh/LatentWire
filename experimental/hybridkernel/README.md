@@ -10,15 +10,17 @@ dependencies, scratch clones, and generated artifacts under
 
 Local Mac work is saturated. The project has the config audit, literature/source
 audit, architecture map, pre-GPU threshold model, fixed-request driver,
-profiler-analysis parser, artifact verifier, tests, and native packet checklist.
-Do not add more local kernels, scaffolds, or paper claims until native NVIDIA
-profiler data exists.
+profiler-analysis parser, artifact verifier, synthetic packet fixture, tests,
+and native packet checklist. Do not add more local kernels, scaffolds, or paper
+claims until native NVIDIA profiler data exists.
 
 The next exact gate is a user-operated NVIDIA/vLLM packet that passes
 `phase2/check_profiler_run_artifacts.py` and is then reduced by
-`phase2/analyze_profiler_metrics.py`. Promotion requires repeated server-side
-Nsight evidence of separable attention/SSM boundary overhead clearing the 3%
-recoverable-gain gate. If that evidence is absent, kill or shelve this branch.
+`phase2/analyze_profiler_metrics.py`. The checker requires the saved
+`profiler_analysis_gate.json`/`.md` outputs to match the metric rows being
+checked. Promotion requires repeated server-side Nsight evidence of separable
+attention/SSM boundary overhead clearing the 3% recoverable-gain gate. If that
+evidence is absent, kill or shelve this branch.
 
 ## Local Setup
 

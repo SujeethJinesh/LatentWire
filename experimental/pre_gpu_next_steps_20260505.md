@@ -5,7 +5,7 @@ odds that any later NVIDIA run is worth doing.
 
 ## HybridKernel
 
-Current status: **WEAKLY ALIVE**.
+Current status: **WEAKLY ALIVE; local work saturated until native profiling**.
 
 What can still be done before NVIDIA:
 
@@ -23,6 +23,9 @@ Current local gate result:
   recovery to clear a 3% proxy gain.
 - Qwen3-Next requires about 10.4%, but its boundary type is less directly
   matched to the Granite Mamba2 fusion story.
+- The native packet checker now rejects stale analysis: future packets must
+  include `profiler_analysis_gate.{json,md}` generated from the same
+  `profiler_metrics.json`.
 
 Decision: no more Mac kernel implementation. Move only to profiler preparation.
 
@@ -55,13 +58,23 @@ Current local gate result:
   output rel-L2 improvement `+0.0379 +/- 0.0014`, minimum split `+0.0367`,
   but head win rate remains low at `0.278 +/- 0.016`.
 
+Latest local gate:
+
+- Triton is still unavailable in `./venv_arm64`, so the fallback was a
+  12-trace, one-seed held-out/model-family smoke gate.
+- Rank-2 remained positive on `distilgpt2` (`+0.0329` output rel-L2
+  improvement) and `facebook/opt-125m` (`+0.0709`), for aggregate model-row
+  improvement `+0.0519 +/- 0.0372`.
+- This fits predictors separately per model; it is not cross-model predictor
+  transfer and not promotion evidence.
+
 Decision: continue only as approximate low-rank SinkAware. The next pre-GPU
-gate is Triton-interpreter correctness for the approximate operator or a strict
-cross-family falsification pair, not kernel coding.
+gate is Triton-interpreter correctness for the approximate operator or a larger
+repeated cross-family falsification gate, not kernel coding.
 
 ## ThoughtFlow-FP8
 
-Current status: **MIXED/WEAKENED**.
+Current status: **REVIVED on the pre-registered recurrence-distance gate**.
 
 What can still be done before NVIDIA:
 
@@ -82,7 +95,12 @@ Current local gate result:
 - the larger frozen 74-trace sparse-cache probe weakened the stopped policy
   family: ThinKV-like is best at `3.900` NLL versus frozen sparse ThoughtFlow
   `3.908`.
+- the one allowed successor, `rdu_topk`, was then evaluated once and clears the
+  pre-registered sparse-cache gate: NLL `3.779`, paired delta `-0.121`
+  `[-0.211,-0.037]` versus ThinKV-like and `-0.160` `[-0.264,-0.050]`
+  versus R-KV-like.
 
 Decision: do not tune anchor/recent/phase/math weights further on the current
-saved traces. A future attempt must first pre-register one genuinely new utility
-signal, then run exactly one frozen sparse-cache evaluation.
+saved traces. The live branch is now recurrence-distance utility. The next
+pre-GPU gate is larger frozen/seeded reproduction with strict family separation
+and oracle/headroom diagnostics, not local retuning.

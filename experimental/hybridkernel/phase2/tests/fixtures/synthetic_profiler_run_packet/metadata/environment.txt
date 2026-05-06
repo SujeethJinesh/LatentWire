@@ -1,0 +1,10 @@
+2026-05-05T00:00:00Z
+hostname synthetic-fixture
+nvidia-smi synthetic fixture output
+nsys version synthetic
+ncu version synthetic
+python -VV synthetic
+vllm==synthetic
+torch==synthetic
+triton==synthetic
+transformers==synthetic

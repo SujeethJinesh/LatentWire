@@ -5,19 +5,22 @@
 - Phase 0: partial quick pass.
 - Phase 1: quick forensics pass complete.
 - Phase 2: synthetic retention simulation complete; real-trace text proxy gate
-  weakened the branch; hidden/KV saliency telemetry and CPU sparse-cache quality
-  are mixed and do not revive a positive-method claim
+  weakened the branch; hidden/KV saliency telemetry and the stopped
+  anchor/recent/phase/math sparse-cache family were mixed/negative, but the
+  pre-registered `rdu_topk` successor revived the branch on the frozen
+  sparse-cache quality gate
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
   scaffold added, but not phase-complete
-- Current viability: stop tuning the current policy family on the available
-  saved traces; pivot only through a pre-registered new utility signal.
+- Current viability: the stopped current policy family remains ruled out, but
+  `rdu_topk` is now alive as a pre-registered successor that cleared the first
+  Mac-local frozen sparse-cache gate.
 - Current risk: high field crowding; ThinKV already occupies much of the
   thought-adaptive quantization/eviction space, and DeepSeek V4 raises the
   production compressed-attention systems bar.
-- Current pre-registration: `phase2/preregister_recurrence_distance_utility_20260506.md`
-  defines one new recurrence-distance utility signal for a future one-shot
-  frozen sparse-cache evaluation. The frozen probe has not been run for this
-  signal.
+- Current pre-registration:
+  `phase2/preregister_recurrence_distance_utility_20260506.md` defined one
+  recurrence-distance utility signal and the one-shot frozen evaluation has now
+  been run. No post-result tuning is allowed on this trace set.
 
 ## Deliverables
 
@@ -165,6 +168,23 @@ genuinely new utility signal and then evaluate it once on the frozen sparse-cach
 probe; otherwise ThoughtFlow-FP8 should remain a negative/mixed workshop
 artifact.
 
+`phase2/preregister_recurrence_distance_utility_20260506.md` then registered
+exactly one successor signal, `rdu_topk`, based on recurrence-distance utility
+from prefix self-attention lag buckets. The 2026-05-06 one-shot frozen
+sparse-cache run revived the branch on the current Mac-local distilgpt2
+surface. At the same 0.20 keep fraction and 74 scored traces, `rdu_topk` reaches
+NLL `3.779`, beating ThinKV-like (`3.900`) by `0.121` NLL and R-KV-like
+(`3.939`) by `0.160` NLL. Paired uncertainty clears the pre-registered rule:
+delta versus R-KV-like is `-0.160` with 95% CI `[-0.264, -0.050]`; delta versus
+ThinKV-like is `-0.121` with 95% CI `[-0.211, -0.037]`.
+
+Status: **REVIVED ON THE FIRST FROZEN SUCCESSOR GATE, NOT ICLR-READY**. Alive:
+recurrence-distance utility as a training-free sparse-cache signal. Still
+stopped: all anchor/recent/phase/math tuning on this trace set. Highest-priority
+next gate: reproduce `rdu_topk` on a larger or seed-repeated frozen slice with
+strict same-family versus cross-family separation and oracle/headroom
+diagnostics before widening to competitor or long-context benchmarks.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -225,3 +245,8 @@ reviewer pack or GPU work.
 - 2026-05-06: Added a docs-only pre-registration for `rdu_topk`, a single
   recurrence-distance utility signal based on delayed prefix self-attention
   reuse. No code was changed and no frozen probe was run.
+- 2026-05-06: Implemented the pre-registered `rdu_topk` signal in the frozen
+  sparse-cache probe and ran the one allowed frozen evaluation. Result: revived
+  on this Mac-local decision surface. `rdu_topk` NLL is 3.779 versus ThinKV-like
+  3.900 and R-KV-like 3.939, with paired CIs below zero against both baselines.
+  Do not tune this signal on the same saved traces.

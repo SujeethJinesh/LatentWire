@@ -1,0 +1,51 @@
+{
+  "status": "WEAKLY ALIVE: profiler evidence is nonzero but below the prototype gate.",
+  "rows": [
+    {
+      "model": "synthetic-granite-fixture",
+      "run_id": "repeat-0",
+      "total_step_ms": 100.0,
+      "boundary_ms": 4.0,
+      "matched_non_boundary_ms": 2.0,
+      "avoidable_boundary_ms": 2.0,
+      "recoverable_fraction": 0.6,
+      "boundary_share": 0.04,
+      "avoidable_share": 0.02,
+      "recoverable_gain_upper_bound": 0.012
+    },
+    {
+      "model": "synthetic-granite-fixture",
+      "run_id": "repeat-1",
+      "total_step_ms": 100.0,
+      "boundary_ms": 4.0,
+      "matched_non_boundary_ms": 2.0,
+      "avoidable_boundary_ms": 2.0,
+      "recoverable_fraction": 0.6,
+      "boundary_share": 0.04,
+      "avoidable_share": 0.02,
+      "recoverable_gain_upper_bound": 0.012
+    },
+    {
+      "model": "synthetic-granite-fixture",
+      "run_id": "repeat-2",
+      "total_step_ms": 100.0,
+      "boundary_ms": 4.0,
+      "matched_non_boundary_ms": 2.0,
+      "avoidable_boundary_ms": 2.0,
+      "recoverable_fraction": 0.6,
+      "boundary_share": 0.04,
+      "avoidable_share": 0.02,
+      "recoverable_gain_upper_bound": 0.012
+    }
+  ],
+  "summary": {
+    "synthetic-granite-fixture": {
+      "runs": 3,
+      "mean_avoidable_share": 0.02,
+      "mean_recoverable_gain_upper_bound": 0.012,
+      "min_recoverable_gain_upper_bound": 0.012,
+      "clears_3pct_gate_all_runs": false
+    }
+  },
+  "decision": "Collect more repeated traces or narrow to the largest boundary anomaly."
+}

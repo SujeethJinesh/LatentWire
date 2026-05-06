@@ -1,0 +1,32 @@
+{
+  "description": "Synthetic checker fixture only; not native profiler evidence.",
+  "rows": [
+    {
+      "model": "synthetic-granite-fixture",
+      "run_id": "repeat-0",
+      "total_step_ms": 100.0,
+      "attention_ssm_boundary_ms": 4.0,
+      "matched_non_boundary_ms": 2.0,
+      "recoverable_fraction": 0.6,
+      "notes": "Synthetic fixture row; not a native measurement."
+    },
+    {
+      "model": "synthetic-granite-fixture",
+      "run_id": "repeat-1",
+      "total_step_ms": 100.0,
+      "attention_ssm_boundary_ms": 4.0,
+      "matched_non_boundary_ms": 2.0,
+      "recoverable_fraction": 0.6,
+      "notes": "Synthetic fixture row; not a native measurement."
+    },
+    {
+      "model": "synthetic-granite-fixture",
+      "run_id": "repeat-2",
+      "total_step_ms": 100.0,
+      "attention_ssm_boundary_ms": 4.0,
+      "matched_non_boundary_ms": 2.0,
+      "recoverable_fraction": 0.6,
+      "notes": "Synthetic fixture row; not a native measurement."
+    }
+  ]
+}

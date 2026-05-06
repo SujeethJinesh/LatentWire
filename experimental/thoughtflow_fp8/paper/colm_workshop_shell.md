@@ -4,19 +4,18 @@ Status date: 2026-05-06
 
 ## Current Policy Status
 
-**Stopped for the current policy family.** The current anchor/phase-protected
-retention family is not ready to support a positive-method claim. It preserved
-synthetic phase markers, matched the local LongFlow-like importance proxy, and
-beat the strongest real hidden/KV saliency proxy on phase recall. However, its
-math-state margin over that real-saliency proxy is uncertain, and both
-retained-context and CPU sparse-cache quality evidence has a promising held-out
-mean row but still fails paired uncertainty against ThinKV-like. The larger
-frozen no-retuning slice weakens the branch enough to stop further tuning on
-the available saved traces.
+**Stopped for the current anchor/recent/phase/math policy family; revived for
+the pre-registered `rdu_topk` successor.** The current interpretable retention
+family is not ready to support a positive-method claim and should not be tuned
+further on the available saved traces. The one allowed successor evaluation,
+`rdu_topk`, now clears the frozen sparse-cache gate by using delayed prefix
+self-attention recurrence rather than token labels or recent reserves.
 
 This shell is a scoped workshop-paper scaffold, not a submission draft. The
-current evidence is useful for deciding the next method gate, but it is not yet
-strong enough for an ICLR/COLM positive-method paper.
+new result revives the method branch on the Mac-local distilgpt2 decision
+surface, but it is not yet strong enough for an ICLR/COLM positive-method paper
+without larger frozen slices, seed repeats, family-separated falsification, and
+oracle/headroom diagnostics.
 
 ## Candidate Story If Revived
 
@@ -42,7 +41,7 @@ quality or perplexity, not just on protected-token recall.
 | `phase2/perplexity_impact_proxy.md` | Distilgpt2 retained-context NLL: ThoughtFlow-saliency-recent beats old ThoughtFlow, LongFlow-like, and ThinKV-like, but loses to R-KV-like. | Weakened but more diagnostic. |
 | `phase2/policy_sweep.md` | Train-selected ThoughtFlow-family policy ties R-KV-like on 12 held-out traces, 3.480 vs 3.482 NLL. | Mixed tie-range result. |
 | `phase2/kv_drop_quality_probe.md` | Actual CPU sparse-cache pruning plus a 24-config train-fixed sparse sweep. The selected row has held-out NLL 3.340 vs ThinKV-like 3.385 and R-KV-like 3.420; paired CI still crosses zero vs ThinKV-like. | Mixed/promising, not revived. |
-| `phase2/frozen_sparse_cache_probe.md` | Larger no-retuning CPU sparse-cache slice on 74 traces: ThinKV-like NLL 3.900, frozen sparse ThoughtFlow 3.908, ThoughtFlow-saliency-recent 3.920, R-KV-like 3.939. | Weakened/not revived. |
+| `phase2/frozen_sparse_cache_probe.md` | Larger no-retuning CPU sparse-cache slice on 74 traces. The stopped family still fails, but pre-registered `rdu_topk` reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939, with paired CIs below zero against both. | Revived for `rdu_topk`; stopped family remains ruled out. |
 | `phase2/stop_pivot_decision_20260506.md` | Stops current policy-family tuning on the available saved traces; allows only a future pre-registered new utility signal evaluated once. | Stop/pivot gate. |
 
 The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
@@ -108,53 +107,44 @@ The larger frozen slice was then run without any retuning:
 | Policy | Traces | NLL | Delta vs R-KV-like | Delta vs ThinKV-like |
 |---|---:|---:|---:|---:|
 | full cache | 74 | 2.848 | -1.091 [-1.254,-0.938] | -1.052 [-1.199,-0.919] |
+| rdu_topk | 74 | 3.779 | -0.160 [-0.264,-0.050] | -0.121 [-0.211,-0.037] |
 | ThinKV-like | 74 | 3.900 | -0.039 [-0.100,+0.015] | 0.000 |
 | frozen sparse ThoughtFlow | 74 | 3.908 | -0.031 [-0.078,+0.020] | +0.008 [-0.060,+0.085] |
 | ThoughtFlow-saliency-recent | 74 | 3.920 | -0.019 [-0.048,+0.006] | +0.020 [-0.030,+0.074] |
 | R-KV-like | 74 | 3.939 | 0.000 | +0.039 [-0.015,+0.099] |
 | LongFlow-like | 74 | 4.158 | +0.219 [+0.136,+0.308] | +0.258 [+0.178,+0.337] |
 
-Interpretation: the small held-out win does not survive the larger frozen
-slice. ThinKV-like is the best compressed row, and neither frozen ThoughtFlow
-candidate clears paired evidence versus both main baselines.
+Interpretation: the stopped family remains ruled out, but `rdu_topk` revives
+the branch under the pre-registered successor rule. The signal is not a
+phase-marker policy in disguise: aggregate telemetry retains only 3.1% of
+phase markers and 21.7% of math-state labels, while retaining 56.8% of tokens
+whose strongest recurrence bucket is 16-31 tokens.
 
-## What Would Revive The Branch
+## Revival Result And Next Gate
 
 The current anchor/recent/phase/math policy family should not be tuned further
-on the available saved traces. A successor branch should be attempted only after
-pre-registering one genuinely new utility signal, the exact policy
-transformation, the frozen evaluation command, and the promotion threshold. It
-may then be evaluated once.
+on the available saved traces. The pre-registered recurrence-distance successor
+has now been evaluated once and clears the stated gate:
 
-`phase2/preregister_recurrence_distance_utility_20260506.md` now registers one
-candidate successor signal, `rdu_topk`, based on delayed recurrence-distance
-prefix self-attention. It is not a result. It only bounds a future one-shot
-frozen sparse-cache evaluation and explicitly forbids adding anchor, recent,
-phase, or math-state bonuses to this signal on the current saved traces.
+- `rdu_topk`: NLL 3.779 at keep rate 0.213.
+- Margin versus R-KV-like: 0.160 NLL; paired delta -0.160, 95% CI
+  [-0.264,-0.050].
+- Margin versus ThinKV-like: 0.121 NLL; paired delta -0.121, 95% CI
+  [-0.211,-0.037].
+- Telemetry: anchor retention 0.706, phase retention 0.031, math-state
+  retention 0.217; recurrence-bucket retention is 0.226 for lag 8-15 and
+  0.568 for lag 16-31.
 
-The branch should be revived only if that pre-registered successor clears at
-least one of these gates:
-
-1. **Quality/perplexity gate:** ThoughtFlow or a successor policy beats
-   LongFlow-like, R-KV-like, and ThinKV-like matched-budget proxies by at least
-   0.03 mean continuation NLL on saved traces, with paired per-trace deltas.
-2. **Hidden/KV saliency gate:** The policy beats the strongest hidden/KV
-   retention proxy on phase/control and math-state recall, not merely pure
-   attention-received saliency.
-3. **Bias-control gate:** The policy shows lower eviction bias on anchors,
-   problem spans, phase transitions, and recurring math state at the same byte
-   budget without becoming a sink+recent policy in disguise.
-
-The highest-value method branch is no longer raw phase-marker protection. A
-revival attempt should combine anchor/fair-span protection with a utility signal
-closer to future continuation loss, recurrence, or hidden-state contribution.
+The highest-value method branch is now recurrence-distance utility. It should
+advance only through evaluation-quality gates, not local retuning:
+larger frozen slices, seed repeats, strict same-family versus cross-family
+separation, oracle/headroom diagnostics, and then competitor/long-context
+benchmarks if the result survives.
 
 Saturated: synthetic marker-retention, text-prefix-only policy tuning, and the
-current frozen sparse-cache candidates on the available distilgpt2 trace set.
-Still alive: the sparse-cache probe as diagnostic infrastructure, not the
-current policy family as a positive method. Promoted: real KV/hidden telemetry
-and sparse-cache scoring as diagnostics to explain failure modes and eviction
-bias.
+current anchor/recent/phase/math frozen candidates on the available distilgpt2
+trace set. Still alive: `rdu_topk`, the sparse-cache probe as diagnostic
+infrastructure, and real KV/hidden telemetry to explain eviction bias.
 
 ## Limitations
 

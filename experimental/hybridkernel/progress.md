@@ -8,7 +8,7 @@
 - Phase 1: quick source-backed audit complete, deeper code audit still pending
 - Phase 3/4: interpreter-mode boundary kernel scaffold added for correctness
   gates, but not phase-complete
-- Last updated: 2026-05-05
+- Last updated: 2026-05-06
 
 This scaffold now has a local environment check, small public config fetches,
 and a quick primary-source audit. No external repositories were cloned, no model
@@ -187,3 +187,21 @@ Mac-local venv. Reran the pre-GPU threshold model; Granite 4.0 H Tiny/Small
 still require roughly 25% genuinely avoidable boundary traffic at 60% recovery,
 and Qwen3-Next still requires 10.4%. This confirms the current decision: no more
 Mac implementation, only native profiler preparation.
+
+## 2026-05-06 Native Packet Checker Tightening
+
+Tightened the reviewer-facing artifact verifier so future native packets must
+include `profiler_analysis_gate.json` and `.md` generated from the exact
+`profiler_metrics.json` being checked. The verifier now recomputes the gate and
+rejects stale or copied analysis outputs whose status, decision, summary, row
+count, or Markdown status no longer match the metrics.
+
+Added `phase2/tests/fixtures/synthetic_profiler_run_packet/` as a Mac-local
+schema fixture for the packet layout. It contains placeholder Nsight files and
+synthetic rows only, so it is explicitly not profiler evidence. The runbook,
+packet checklist, and paper scaffold now document this stricter admissibility
+gate.
+
+Status remains **PENDING native profiler data**. HybridKernel is still blocked
+on a user-operated NVIDIA/vLLM packet that passes the checker and then clears or
+fails the 3% native profiler-analysis gate.

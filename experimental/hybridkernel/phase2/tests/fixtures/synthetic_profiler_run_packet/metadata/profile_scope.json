@@ -1,0 +1,10 @@
+{
+  "profiled_process": "vllm_server",
+  "nsys_profiled_process": "vllm_server",
+  "ncu_profiled_process": "vllm_server",
+  "trace_scope": "server-side CUDA kernels under fixed request replay",
+  "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
+  "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
+  "request_driver_process": "profiler_driver_http_client",
+  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model synthetic-granite-fixture"
+}

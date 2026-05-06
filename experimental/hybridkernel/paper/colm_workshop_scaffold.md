@@ -102,7 +102,8 @@ Promotion threshold:
 | `phase3/reference/boundary.py` and tests | CPU boundary blend scaffold exists. | Useful for semantics if profiling promotes implementation, but not evidence of speed. |
 | `phase4/kernel/boundary_triton.py` and tests | Triton interpreter scaffold exists but local Triton import is unavailable in `venv_arm64`. | No GPU or Mac performance claim. |
 | `phase2/profiler_driver.py` | Fixed-request OpenAI-compatible driver dry-runs locally; runbook now profiles the vLLM server and drives it from a second local terminal. | Avoids client-only Nsight traces. |
-| `phase2/check_profiler_run_artifacts.py` | Future native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, and distinct repeated metric rows. | GPU evidence must be artifact-complete, server-side, and independently repeated before the draft cites it. |
+| `phase2/check_profiler_run_artifacts.py` | Future native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, distinct repeated metric rows, and matching profiler-analysis outputs. | GPU evidence must be artifact-complete, server-side, independently repeated, and analytically fresh before the draft cites it. |
+| `phase2/tests/fixtures/synthetic_profiler_run_packet/` | Synthetic packet fixture exercises the checker without GPU access. | Documents packet shape only; it is not profiler evidence. |
 | `phase2/native_run_packet_checklist.md` | Single checklist for the packet a GPU operator must return. | Local Mac readiness is saturated; wait for native data. |
 
 ## 5. Limitations
@@ -131,7 +132,8 @@ Promotion threshold:
   same-type controls.
 - [ ] Compute paired uncertainty over repeated fixed-request runs.
 - [ ] Run `phase2/check_profiler_run_artifacts.py --run-dir "$HWK_RUN"` and
-  save `artifact_check.json`.
+  save `artifact_check.json`; the checker must confirm
+  `profiler_analysis_gate.json`/`.md` were generated from the same metric rows.
 - [ ] Return the full packet described in
   `phase2/native_run_packet_checklist.md`.
 - [ ] Decide promote, pause, or kill using the 3% end-to-end threshold.

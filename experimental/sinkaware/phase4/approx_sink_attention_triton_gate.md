@@ -20,6 +20,12 @@ Current local readiness check:
 - one non-skipped readiness test now records the missing dependency path;
 - no interpreter, GPU, or speed claim is made.
 
+2026-05-06 recheck: `./venv_arm64/bin/python` still reports
+`importlib.util.find_spec("triton") == None`, and `import triton` raises
+`ModuleNotFoundError: No module named 'triton'`. The fallback work for this
+turn is therefore the Phase 2 held-out/cross-family falsification smoke gate,
+not a Triton correctness pass.
+
 Next gate:
 
 ```bash

@@ -30,6 +30,7 @@ claim.
 | split/seed all-rank2 gate | 3 randomized token splits; rank-2 output rel-L2 improvement +0.0368 +/- 0.0006; all seeds positive | all-rank2 repeatable but still per-head fragile |
 | length/sink all-rank2 sweep | lengths 64/96, sinks 2/4, 3 seeds each; mean improvement +0.0366 +/- 0.0024; min config +0.0342 | alive but bounded |
 | trace-level frozen split gate | 48 traces, 3 whole-trace splits; mean improvement +0.0379 +/- 0.0014; min split +0.0367 | stronger repeatability, still bounded |
+| held-out/cross-family smoke | 12 traces, 1 whole-trace split, distilgpt2 plus facebook/opt-125m; output rel-L2 improvements +0.0329 and +0.0709 | alive but bounded; not promotion evidence |
 | Triton readiness | `TRITON_INTERPRET=1` set, `triton` not importable, CUDA unavailable on Mac | no interpreter pass yet |
 
 ## Reviewer Risks
@@ -39,14 +40,16 @@ claim.
   length/sink sweep, and a 48-trace frozen split repeat, but are not robust per
   head.
 - Existing attention-sink systems occupy the broad novelty frame.
-- distilgpt2 is only a Mac-local probe, not a modern benchmark.
+- distilgpt2 is no longer the only model-family probe, but the OPT row is only
+  a 12-trace, one-seed smoke diagnostic and not a benchmark-backed result.
 - No GPU latency or memory claim exists yet.
 
 ## Next Experiment
 
 First make the `TRITON_INTERPRET=1` approximate-attention scaffold runnable in
 `./venv_arm64` or in a Linux GPU environment and verify exact-prediction
-correctness. In parallel, the next evidence gate is a strict cross-family
-falsification pair; simple validation head selection is no longer a good
-rescue. Native NVIDIA comparison remains gated by
+correctness. If that remains blocked locally, scale the cross-family
+falsification from smoke to a larger repeated split, preserving the strict
+same-family versus OPT-family separation. Simple validation head selection is
+no longer a good rescue. Native NVIDIA comparison remains gated by
 `experimental/sinkaware/phase2/gpu_gate_runbook.md`.

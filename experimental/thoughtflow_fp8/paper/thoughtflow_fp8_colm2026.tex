@@ -5,19 +5,19 @@
 \usepackage{hyperref}
 \usepackage{url}
 
-\title{ThoughtFlow-FP8: A Mixed Gate for Phase-Aware KV Retention}
+\title{ThoughtFlow-FP8: A Recurrence-Distance Gate for Sparse KV Retention}
 \author{Anonymous authors\\Paper under double-blind review}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-ThoughtFlow-FP8 tests whether explicit anchor/phase retention plus byte-aware FP8-style budgeting can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality weakens the branch. On 24 distilgpt2 traces at a 0.20 keep fraction, a bounded successor policy, ThoughtFlow-saliency-recent, improves over the original phase-only policy and beats LongFlow-like and ThinKV-like retained-text proxies, but narrowly loses to an R-KV-like proxy on continuation NLL (3.434 vs 3.419). We then ran CPU sparse-cache gates that prune the actual prefix KV cache and score the continuation from the sparse cache. A 24-config train-fixed sparse sweep finds a small held-out mean win, but the larger 74-trace no-retuning slice weakens the branch: ThinKV-like is the best compressed row (3.900 NLL), followed by frozen sparse ThoughtFlow (3.908), ThoughtFlow-saliency-recent (3.920), and R-KV-like (3.939). We therefore present this as a mixed/negative workshop gate, not a positive method.
+ThoughtFlow-FP8 tests whether training-free sparse KV retention can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality and a larger sparse-cache gate rule out further tuning of the original anchor/recent/phase/math family on the available traces. We therefore pre-registered one successor signal, recurrence-distance utility (\texttt{rdu\_topk}), which ranks prefix tokens by delayed self-attention reuse across lag buckets and uses no token labels, recent reserve, or continuation loss. On the frozen 74-trace distilgpt2 sparse-cache gate at a 0.20 keep fraction, \texttt{rdu\_topk} reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939, with paired deltas -0.121 [-0.211,-0.037] and -0.160 [-0.264,-0.050]. This revives the branch on the Mac-local decision surface, but it is not yet an ICLR-ready positive method without larger frozen slices, seed repeats, strict family-separated falsification, and oracle/headroom diagnostics.
 \end{abstract}
 
 \section{Policy Family}
 
-The original policy protects anchors and phase labels. The first successor adds a small recent-token reserve. The second successor protects anchors, reserves half the retained budget for recent tokens, and lets phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. This tests whether the failure was caused by over-preserving interpretable markers that do not matter for immediate continuation likelihood.
+The original policy protects anchors and phase labels. The first successor adds a small recent-token reserve. The second successor protects anchors, reserves half the retained budget for recent tokens, and lets phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The only live successor in this shell is \texttt{rdu\_topk}, a pre-registered recurrence-distance utility policy based solely on prefix self-attention.
 
 \begin{table}[h]
 \centering
@@ -49,13 +49,13 @@ We then ran a Mac-local telemetry gate using real distilgpt2 tensors rather than
 \small
 \begin{tabular}{lrrrr}
 \toprule
-Policy & Keep rate & Anchor recall & Phase recall & Math-state recall \\
+Policy & Keep rate & Anchor & Phase & Math-state \\
 \midrule
 ThoughtFlow & 0.207 & 1.000 & 1.000 & 0.918 \\
 LongFlow-like & 0.207 & 1.000 & 1.000 & 0.918 \\
 ThinKV-like & 0.207 & 1.000 & 0.948 & 0.848 \\
 \texttt{value\_norm\_topk} & 0.207 & 0.000 & 0.492 & 0.845 \\
-train-selected ThoughtFlow sweep & 0.207 & 1.000 & 0.430 & 0.956 \\
+train-selected sweep & 0.207 & 1.000 & 0.430 & 0.956 \\
 \bottomrule
 \end{tabular}
 \caption{Hidden/KV saliency telemetry on 24 distilgpt2 traces. The strongest real-saliency proxy by phase+math recall is \texttt{value\_norm\_topk}. ThoughtFlow beats it on phase recall, but LongFlow-like ties ThoughtFlow under the local importance heuristic.}
@@ -103,15 +103,42 @@ not a positive result.
 
 We then froze \texttt{ThoughtFlow-saliency-recent} and
 \texttt{tf\_sparse\_r0.55\_p0.05\_m0.12\_a2} and ran a larger 74-trace sparse
-cache slice with no retuning. ThinKV-like is the best compressed row at NLL
-3.900. The frozen sparse ThoughtFlow row gets 3.908, with paired delta -0.031
-versus R-KV-like and 95\% CI [-0.078,+0.020], but +0.008 versus ThinKV-like
-with 95\% CI [-0.060,+0.085]. ThoughtFlow-saliency-recent gets 3.920. The
-larger no-retuning gate therefore weakens the branch rather than reviving it.
+cache slice with no retuning. ThinKV-like is the best compressed row among the
+stopped family comparison at NLL 3.900. The frozen sparse ThoughtFlow row gets
+3.908, with paired delta -0.031 versus R-KV-like and 95\% CI
+[-0.078,+0.020], but +0.008 versus ThinKV-like with 95\% CI
+[-0.060,+0.085]. ThoughtFlow-saliency-recent gets 3.920. The larger
+no-retuning gate therefore stops this policy family.
+
+After that stop decision, we pre-registered exactly one successor,
+\texttt{rdu\_topk}. It computes recurrence-distance utility from full-prefix
+prefill attentions using lag buckets [8,15], [16,31], [32,63], and [64,$\infty$],
+then keeps the top budget by utility with ties broken by lower position. It does
+not use continuation tokens, trace labels, recent reserves, anchors, phase
+markers, or math-state bonuses.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Policy & Traces & Keep rate & NLL & Paired $\Delta$ vs ThinKV-like \\
+\midrule
+full cache & 74 & 1.000 & 2.848 & -1.052 [-1.199,-0.919] \\
+\texttt{rdu\_topk} & 74 & 0.213 & 3.779 & -0.121 [-0.211,-0.037] \\
+ThinKV-like & 74 & 0.213 & 3.900 & 0.000 \\
+frozen sparse ThoughtFlow & 74 & 0.213 & 3.908 & +0.008 [-0.060,+0.085] \\
+ThoughtFlow-saliency-recent & 74 & 0.213 & 3.920 & +0.020 [-0.030,+0.074] \\
+R-KV-like & 74 & 0.214 & 3.939 & +0.039 [-0.015,+0.099] \\
+LongFlow-like & 74 & 0.213 & 4.158 & +0.258 [+0.178,+0.337] \\
+\bottomrule
+\end{tabular}
+\caption{One-shot frozen sparse-cache successor evaluation. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050], clearing the pre-registered promotion rule.}
+\end{table}
 
 \section{Decision}
 
-The branch is mixed but not revived as a positive method. ThoughtFlow-saliency-recent repairs most of the phase-only failure, and the bounded train-fixed sparse sweep finds a held-out mean win, but the larger frozen slice does not preserve the advantage over ThinKV-like. A paper-ready claim would require a genuinely new, pre-registered utility signal to beat R-KV-like, LongFlow-like, and ThinKV-like rows at matched bytes under sparse-KV execution with paired uncertainty. Further tuning on the current trace set is not justified.
+The branch is revived only for the pre-registered recurrence-distance successor. The stopped anchor/recent/phase/math policy family remains ruled out on this trace set. A paper-ready claim now requires evaluation-quality work: larger frozen slices, seed repeats, strict same-family versus cross-family separation, oracle/headroom diagnostics, and then competitor and long-context benchmarks if the \texttt{rdu\_topk} signal survives.
 
 \section{Artifacts}
 

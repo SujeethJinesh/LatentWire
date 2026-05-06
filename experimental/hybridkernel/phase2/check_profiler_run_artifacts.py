@@ -25,6 +25,8 @@ REQUIRED_FILES = [
     "metadata/architecture_map.json",
     "metadata/profile_scope.json",
     "profiler_metrics.json",
+    "profiler_analysis_gate.json",
+    "profiler_analysis_gate.md",
     "readout.md",
 ]
 
@@ -130,11 +132,13 @@ def check_run_artifacts(
     metrics_rows = 0
     model_run_counts: dict[str, int] = {}
     model_distinct_run_counts: dict[str, int] = {}
+    computed_analysis: dict[str, object] | None = None
     metrics_path = run_dir / "profiler_metrics.json"
     if metrics_path.is_file():
         try:
             payload = json.loads(metrics_path.read_text(encoding="utf-8"))
             result = analyze(payload)
+            computed_analysis = result
             metrics_status = str(result["status"])
             rows = result["rows"]
             metrics_rows = len(rows)
@@ -158,6 +162,41 @@ def check_run_artifacts(
                 )
         except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
             errors.append(f"profiler_metrics.json is invalid: {exc}")
+
+    analysis_json_path = run_dir / "profiler_analysis_gate.json"
+    if analysis_json_path.is_file():
+        try:
+            saved_analysis = json.loads(analysis_json_path.read_text(encoding="utf-8"))
+            if computed_analysis is None:
+                warnings.append(
+                    "profiler_analysis_gate.json cannot be cross-checked because "
+                    "profiler_metrics.json was missing or invalid"
+                )
+            else:
+                for field in ["status", "decision", "summary"]:
+                    if saved_analysis.get(field) != computed_analysis.get(field):
+                        errors.append(
+                            f"profiler_analysis_gate.json {field} does not match "
+                            "profiler_metrics.json"
+                        )
+                saved_rows = saved_analysis.get("rows")
+                if not isinstance(saved_rows, list):
+                    errors.append("profiler_analysis_gate.json rows must be present")
+                elif len(saved_rows) != metrics_rows:
+                    errors.append(
+                        "profiler_analysis_gate.json row count does not match "
+                        "profiler_metrics.json"
+                    )
+        except (json.JSONDecodeError, TypeError) as exc:
+            errors.append(f"profiler_analysis_gate.json is invalid: {exc}")
+
+    analysis_md_path = run_dir / "profiler_analysis_gate.md"
+    if analysis_md_path.is_file():
+        analysis_md = _read_text(analysis_md_path)
+        if "# HybridKernel Profiler Analysis Gate" not in analysis_md:
+            errors.append("profiler_analysis_gate.md missing gate title")
+        if computed_analysis is not None and str(computed_analysis["status"]) not in analysis_md:
+            errors.append("profiler_analysis_gate.md status does not match profiler_metrics.json")
 
     status = "FAIL" if errors else "PASS"
     return {
