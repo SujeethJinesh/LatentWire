@@ -1,21 +1,24 @@
 # SinkAware Reviewer Pack
 
-- status: presentable only as a narrow, weakly positive systems spinout gate
+- status: Mac-complete for the current branch; presentable only as a narrow,
+  weakly positive systems spinout gate
 - current decision: exact static reuse killed; rank-2 approximate prediction is
-  alive but fragile
+  alive but bounded pending native timing
 
 ## Paper Link
 
+- Draft PDF: `experimental/sinkaware/paper/sinkaware_colm2026.pdf`
+- Draft TeX: `experimental/sinkaware/paper/sinkaware_colm2026.tex`
 - Draft outline: `experimental/sinkaware/paper/outline.md`
 
 ## Current Claim
 
 Fixed early-token sinks cannot be reused exactly without query-dependent
 `QK_sink`. A per-head rank-2 predictor improves aggregate softmax/output drift
-over a position-only predictor on Mac-local distilgpt2 traces, but the new
-layer-head paired readout shows the gains are concentrated rather than
-uniform. This justifies interpreter/readiness work, not a speed or quality
-claim.
+and downstream causal-LM patch drift over a position-only predictor on
+Mac-local distilgpt2/OPT-125M traces. The gains are not uniform per head and
+top-1 disagreement remains non-negligible, so this justifies native timing
+readiness only, not a benchmark, speed, or preservation guarantee.
 
 ## Strongest Evidence
 

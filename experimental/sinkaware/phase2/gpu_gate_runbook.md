@@ -41,8 +41,11 @@ costs, memory movement, and output drift are measured together.
 
 Promote only if all are true:
 
-1. rank-2 output drift remains below the paper threshold selected from the
-   Mac-local probe;
+1. rank-2 preserves the Mac-local quality-control envelope: mean output
+   relative-L2 must be no worse than 0.15, rank-2 must beat position-only in
+   every matched model/shape group on output relative-L2, downstream loss
+   drift, and KL-to-exact, and aggregate top-1 disagreement must stay at or
+   below 0.15;
 2. rank-2 improves speed or memory traffic over exact attention by at least 3%
    on repeated native runs;
 3. rank-2 beats position-only on output drift and any quality proxy;

@@ -4,21 +4,24 @@ Status date: 2026-05-06
 
 ## Current Policy Status
 
-**Stopped for the current anchor/recent/phase/math policy family; demoted for
-the pre-registered `rdu_topk` successor.** The current
+**Stopped for the current anchor/recent/phase/math policy family; demoted or
+killed for the pre-registered `rdu_topk`, `psi_topk`, and `vwac_topk`
+successors.** The current
 interpretable retention family supports a diagnostic/falsification claim only,
-and should not be tuned further on the available saved traces. The one allowed
+and should not be tuned further on the available saved traces. The first
 successor evaluation, `rdu_topk`, clears the original frozen sparse-cache gate
 by using delayed prefix self-attention recurrence rather than token labels or
 recent reserves, but a first alternate-surface reproduction check does not keep
 it separated from a stopped same-family sparse row, and a larger independent
-saved-trace surface fails cross-family separation.
+saved-trace surface fails cross-family separation. Two later successor
+registrations are also consumed: `psi_topk` fails decisively on a fresh C2C GSM
+surface, and `vwac_topk` fails on a fresh C2C SVAMP surface.
 
 This shell is a scoped workshop-paper scaffold, not a positive-method
 submission draft. The current evidence supports a falsification study: a
 promising Mac-local sparse-cache signal was found, reproduced on the same
 surface, and then killed by stricter same-family and cross-family reproduction
-checks.
+checks; two fresh-surface successor signals then failed without retuning.
 
 A cached split diagnostic supports the 0.20 result at the level of mean
 margins, but it is not an independent reproduction: all deterministic half-size
@@ -63,6 +66,8 @@ quality or perplexity, not just on protected-token recall.
 | `phase2/rdu_no_retune_reproduction_check.md` | Measured same-slice rerun of the frozen probe on current Mac hardware. The measured result exactly matches the cached first-surface gate: `rdu_topk` NLL 3.779, margins +0.160 vs R-KV-like and +0.121 vs ThinKV-like, zero measured-cached NLL drift for all policies. Per-trace compressed oracle NLL is 3.634, leaving `rdu_topk` 0.145 above oracle and 0.931 above full cache. | Same-surface bookkeeping only; later independent surfaces demote the branch. |
 | `phase2/rdu_alt_surface_reproduction_check.md` | Measured alternate surface with `max_length=112` and `continuation_tokens=32`. `rdu_topk` NLL is 3.594 and still beats R-KV-like by 0.087 and ThinKV-like by 0.256 with paired CIs below zero, but `tf_sparse_r0.55_p0.05_m0.12_a2` reaches 3.588. | Weakened/not reproduced because strict same-family separation fails. |
 | `phase2/rdu_independent_trace_reproduction_check.md` | Larger independent saved-trace no-retuning surface. The 96-row chat SVAMP input surface yields 89 scored traces; R-KV-like is best compressed at NLL 3.981 and beats `rdu_topk` at 4.014, so cross-family separation fails. | Not reproduced; demote `rdu_topk` to diagnostic. |
+| `phase2/psi_fresh_sparse_cache_check.md` | Fresh C2C GSM surface. `psi_topk` reaches NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960. | Killed. |
+| `phase2/vwac_fresh_sparse_cache_check.md` | Fresh C2C SVAMP surface. `vwac_topk` reaches NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162. | Killed. |
 | `phase2/stop_pivot_decision_20260506.md` | Stops current policy-family tuning on the available saved traces; allows only a future pre-registered new utility signal evaluated once. | Stop/pivot gate. |
 
 The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
@@ -178,16 +183,19 @@ cleared the first gate, then failed reproduction:
   regression bucket (`rdu_topk - R-KV-like = +0.213` NLL), while short-prefix
   low-density rows still favor `rdu_topk` by `-0.049` NLL versus R-KV-like.
 
-The highest-value method branch is no longer recurrence-distance utility as
-implemented here. It should not be retuned on the current traces. Any revival
-requires a genuinely new pre-registered utility signal evaluated once on a
-fresh/larger frozen slice with strict same-family versus cross-family
-separation and oracle/headroom diagnostics.
+The highest-value method branch is no longer recurrence-distance utility,
+prefix-surprisal utility, or value-weighted attention contribution as
+implemented here. These consumed signals should not be retuned on the current
+or fresh surfaces used above. Any revival requires a genuinely new
+pre-registered utility signal evaluated once on a fresh/larger frozen slice
+with strict same-family versus cross-family separation and oracle/headroom
+diagnostics.
 
 Saturated: synthetic marker-retention, text-prefix-only policy tuning, the
-current anchor/recent/phase/math frozen candidates, and `rdu_topk` on the
-available Mac-local surfaces. Still alive: the sparse-cache probe as diagnostic
-infrastructure and real KV/hidden telemetry to explain eviction bias.
+current anchor/recent/phase/math frozen candidates, `rdu_topk`, `psi_topk`, and
+`vwac_topk` on the available Mac-local surfaces. Still alive: the sparse-cache
+probe as diagnostic infrastructure and real KV/hidden telemetry to explain
+eviction bias.
 
 ## Limitations
 
@@ -208,14 +216,15 @@ infrastructure and real KV/hidden telemetry to explain eviction bias.
 
 ## Next Gate
 
-Do not move to a broad GPU benchmark for the current `rdu_topk` branch. The
-next exact gate is either stop/pivot, or one new pre-registered utility signal
-targeting the long-prefix/high-RDU-density failure bucket and evaluated once on
-a fresh/larger frozen sparse-cache surface.
+Do not move to a broad GPU benchmark for the current `rdu_topk`, `psi_topk`, or
+`vwac_topk` branches. The next exact gate is either stop/pivot, or one new
+pre-registered utility signal targeting a specific observed failure bucket and
+evaluated once on a fresh/larger frozen sparse-cache surface.
 
 1. Do not tune further on the current saved traces.
-2. Do not spend GPU time on `rdu_topk` unless a new pre-registered signal first
-   clears same-family and cross-family CPU sparse-cache checks.
+2. Do not spend GPU time on the consumed successor signals unless a new
+   pre-registered signal first clears same-family and cross-family CPU
+   sparse-cache checks.
 3. Report paired uncertainty, per-span keep telemetry, recurrence misses, and
    FP8 round-trip error separately.
 4. Keep promotion only if the new signal beats the strongest proxy on quality

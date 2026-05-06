@@ -179,6 +179,22 @@ estimated at 1.062x and 2.125x exact four-sink QK multiply-adds. Thus the
 frontier strengthens the quality/cost tradeoff: better predictors exist, but
 they no longer preserve the current systems wedge.
 
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrrrr}
+\toprule
+Rank & Cost vs exact sink QK & Abs loss delta & Loss improve & KL improve & Top-1 diff \\
+\midrule
+1 & 0.266x & 0.137 & 0.031 & 0.029 & 0.143 \\
+2 & 0.531x & 0.096 & 0.072 & 0.069 & 0.125 \\
+4 & 1.062x & 0.062 & 0.107 & 0.097 & 0.095 \\
+8 & 2.125x & 0.044 & 0.125 & 0.114 & 0.080 \\
+\bottomrule
+\end{tabular}
+\caption{Rank frontier on 48 traces, length 96, four sinks, distilgpt2/OPT-125M, seeds 0/1/2. Higher rank reduces downstream drift, but rank 4 and rank 8 exceed exact four-sink QK multiply-add cost, so rank 2 remains the only current systems compromise.}
+\end{table}
+
 \section{Not Claimed}
 
 SinkAware does not yet claim benchmark accuracy, cross-model predictor
@@ -188,6 +204,13 @@ model/config/split. The current contribution is a bounded falsification and
 quality-control packet: exact static reuse is killed, all-head rank-2 remains
 alive under Mac-local attention/output/downstream controls, and native timing
 is now the decisive systems gate.
+
+The novelty boundary is intentionally narrow. Existing systems already expose
+learned or synthetic sink terms in the softmax denominator, sparse block
+selection, and retained initial-token caches. SinkAware is not a claim that
+attention sinks are new; it asks whether fixed early-position K/V sink logits
+can be approximated cheaply enough to justify a native operator while keeping
+ordinary non-sink attention exact.
 
 \section{Reference and Kernel Gates}
 

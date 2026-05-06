@@ -3,10 +3,10 @@
 Minimal project scaffold for the ThoughtFlow-FP8 experiment.
 
 Current status: the original anchor/recent/phase/math policy family and the
-pre-registered `rdu_topk` successor are stopped on the available Mac-local
-sparse-cache surfaces. The folder is now a falsification/diagnostic harness
-unless a genuinely new pre-registered signal is evaluated on a fresh frozen
-surface.
+pre-registered `rdu_topk`, `psi_topk`, and `vwac_topk` successors are stopped
+or killed on the available Mac-local sparse-cache surfaces. The folder is now a
+falsification/diagnostic harness unless a genuinely new pre-registered signal
+is evaluated once on a fresh frozen surface.
 
 Use `phase2/current_decision_manifest_20260506.md` and
 `paper/reviewer_pack.md` as the current review entry points. Older artifacts

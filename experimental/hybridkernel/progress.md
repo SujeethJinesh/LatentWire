@@ -106,8 +106,8 @@ configs:
 - Qwen3-Next-80B-A3B: 23 inferred boundaries, 188416 boundary bytes/token,
   28.7% recovered activation-stream fraction at 60% recovery.
 
-Status: **ALIVE as a systems spinout**, but this is an upper-bound map, not
-native latency evidence.
+Status: **WEAKLY ALIVE as a profiler-gated handoff**, but this is an
+upper-bound map, not native latency evidence.
 
 ## Next Gate
 
