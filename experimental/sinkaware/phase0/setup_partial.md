@@ -2,6 +2,9 @@
 
 Date: 2026-05-05
 
+Superseded: see `phase0/setup_complete.md` for the current 2026-05-06
+repo-root `./venv_arm64` setup, import verification, and `pip check` result.
+
 Status: partial Mac-only setup. No SSH, GPU, global installs, large model
 downloads, or dependency installs were used.
 

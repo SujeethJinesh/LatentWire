@@ -12,9 +12,30 @@ take them without changing the scientific question.
 
 | Project | Readiness | What is complete locally | What still requires different evidence |
 |---|---|---|---|
-| HybridKernel | Mac-complete handoff | Source/runtime audit, threshold model, vLLM fixed-request driver, profiler packet generator/checker, toy Triton interpreter correctness, COLM-style draft | Native NVIDIA/vLLM profiler packet with server-side Nsight Systems and Nsight Compute data |
-| SinkAware | Mac-complete pre-GPU candidate | Exact branch killed, approximate rank-2 branch stress-tested on GPT2/OPT controls, downstream patch controls, 48-trace rank frontier, native packet validator, Triton interpreter correctness, COLM-style draft | Native GPU timing/memory traffic and preservation of downstream-control behavior |
-| ThoughtFlow-FP8 | Mac-complete diagnostic note | Sparse-cache falsification ladder, `rdu_topk` demotion on alternate/independent surfaces, `psi_topk` and `vwac_topk` fresh-surface failures, current decision manifest, int8 Triton interpreter primitive, COLM-style draft | A new preregistered utility signal on a fresh/larger frozen sparse-cache surface |
+| HybridKernel | Mac-complete handoff | Source/runtime audit, threshold model, vLLM fixed-request driver, profiler packet generator/checker, toy Triton interpreter correctness, COLM-style draft and reviewer pack | Native NVIDIA/vLLM profiler packet with server-side Nsight Systems and Nsight Compute data |
+| SinkAware | Mac-complete pre-GPU candidate | Exact branch killed, approximate rank-2 branch stress-tested on GPT2/OPT controls, downstream patch controls, 48-trace rank frontier, native packet validator, Triton interpreter correctness, COLM-style draft and reviewer pack | Native GPU timing/memory traffic and preservation of downstream-control behavior |
+| ThoughtFlow-FP8 | Mac-complete diagnostic note | Sparse-cache falsification ladder, `rdu_topk` demotion on alternate/independent surfaces, `psi_topk` and `vwac_topk` fresh-surface failures, current decision manifest, int8 Triton interpreter primitive, COLM-style draft and reviewer pack | A new preregistered utility signal on a fresh/larger frozen sparse-cache surface |
+
+## Final Saturation Review
+
+On 2026-05-06, three project-specific reviewer agents re-audited the papers,
+README/progress handoffs, runbooks, tests, and reviewer packs under the current
+Mac constraints: repo-local `./venv_arm64`, source-built `triton-cpu`/
+`TRITON_INTERPRET=1`, no SSH, and no NVIDIA GPU. All three returned `STOP`.
+
+| Project | Final Mac-feasible review result | Why no more Mac work helps |
+|---|---|---|
+| HybridKernel | `STOP` | The paper now has an explicit no-native-profile limitation, stable Mac test readout, current `./venv_arm64`/`triton-cpu` handoff, and a native-packet verifier. More local kernels would not establish a boundary overhead exists in vLLM. |
+| SinkAware | `STOP` after setup closure | The abstract and tables are caveated, the novelty guardrail points to the source audit, the native packet runbook defines quality/top-1 aggregation, `phase0/setup_complete.md` records a complete `./venv_arm64` requirements install, and the current branch already covers the useful Mac-local quality controls. |
+| ThoughtFlow-FP8 | `STOP` | The draft is correctly framed as a stopped diagnostic; consumed `rdu_topk`, `psi_topk`, and `vwac_topk` branches failed their stricter gates, so further cleanup or Triton scaffolding cannot create a positive method. |
+
+The current PDFs are fresh relative to their TeX sources:
+
+| Project | PDF | Pages | Current role |
+|---|---:|---:|---|
+| HybridKernel | `experimental/hybridkernel/paper/hybridkernel_colm2026.pdf` | 3 | measurement-protocol handoff |
+| SinkAware | `experimental/sinkaware/paper/sinkaware_colm2026.pdf` | 5 | bounded pre-GPU candidate |
+| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf` | 5 | negative/diagnostic workshop note |
 
 ## Stop Conditions
 
@@ -66,6 +87,6 @@ TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
   experimental/thoughtflow_fp8/phase4/tests -rs
 ```
 
-Expected current result after the latest handoff hardening: 168 owned Mac tests
-pass, with only the opt-in non-interpreter Triton CPU-backend gate skipped on
-this Mac.
+Expected current result after the latest camera-ready hardening: 168 owned Mac
+tests pass, with only the opt-in non-interpreter Triton CPU-backend gate skipped
+on this Mac.

@@ -2,7 +2,8 @@
 
 ## Status
 
-- Phase 0 setup: partial Mac-only source-audit setup
+- Phase 0 setup: complete for the repo-root `./venv_arm64` Mac-local
+  reproducibility surface
 - Phase 1 literature and code audit: quick-kill audit recorded
 - Phase 2: exact static sink-prior gate failed; approximate low-rank revival
   and per-head softmax/output gates completed with a new paired layer-head
@@ -19,13 +20,14 @@
 ## Phase 0 Checklist
 
 - [x] Create `experimental/sinkaware/.venv` (`Python 3.9.13`)
-- [ ] Install `requirements.txt`
+- [x] Install `requirements.txt` into repo-root `./venv_arm64`
 - [x] Create local ignored directories for external repos and artifacts
 - [x] Record partial setup verification in `phase0/setup_partial.md`
-- [ ] Record full setup verification in `phase0/setup_complete.md`
+- [x] Record full setup verification in `phase0/setup_complete.md`
 
-Phase 0 is not complete until all checklist items are verified locally and the
-deliverable exists.
+The original per-project `.venv` remains a historical scratch environment. The
+current reproducibility surface is repo-root `./venv_arm64`; `pip check` passes
+and the requirements imports are recorded in `phase0/setup_complete.md`.
 
 ## Phase 1 Checklist
 
