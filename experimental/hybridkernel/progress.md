@@ -5,7 +5,8 @@
 - Current phase: Phase 2 architecture map and runtime boundary audit complete;
   Phase 4 Triton interpreter correctness passes locally
 - Phase 0: partial Mac setup complete for audit
-- Phase 1: quick source-backed audit complete, deeper code audit still pending
+- Phase 1: source/control audit is sufficient for Mac-local handoff; any deeper
+  source audit is deferred until native profiling shows a real boundary signal
 - Phase 3/4: boundary kernel correctness gates pass under `TRITON_INTERPRET=1`;
   non-interpreter `TRITON_CPU_BACKEND=1` remains environment-fragile on this Mac
 - Last updated: 2026-05-06
@@ -47,10 +48,12 @@ Triton interpreter correctness checks.
 - [x] Search for fused attention/SSM boundary kernels
 - [x] Write `phase1/lit_review.md`
 
-Phase 1 is a quick audit, not a final line-by-line source audit. The current
-finding is that vLLM already narrows the systems story through hybrid state
-layout and transfer work, but no fused attention-to-SSM layer-boundary compute
-kernel was found in this pass.
+Phase 1 is a source-backed reviewer-risk audit, not proof of absence. The
+current finding is that vLLM already narrows the systems story through hybrid
+state layout and transfer work, but no fused attention-to-SSM layer-boundary
+compute kernel was found in this pass. This is complete enough for Mac-local
+handoff; further source audit should wait until native profiling shows a real
+boundary signal worth implementing.
 
 ## Macbook Kernel Correctness Scaffold
 
@@ -79,10 +82,11 @@ performance result and not COLM_v3 evidence.
 
 ## Viability Notes
 
-The project remains viable only if a deeper Phase 1 source audit finds no
-existing fused boundary kernel and Phase 2 estimates a meaningful transition
-overhead. The quick audit supports a cautious Granite-focused proceed, but not a
-COLM_v3 systems claim.
+The project remains viable only if native NVIDIA/vLLM profiling finds
+separable boundary-local overhead after existing hybrid serving machinery. The
+Mac source/control audit is complete enough for that handoff, but it is not a
+COLM systems claim and does not prove that no existing fused boundary kernel
+exists.
 
 ## Risks
 

@@ -221,7 +221,8 @@ The Phase 4 Triton-interpreter scaffold now targets the same operator for a one-
 The native GPU handoff now has an admissibility checker. Returned native
 packets must include CUDA/NVIDIA metadata, measured model and sequence-shape metadata, quality drift, per-head drift,
 same-shape latency repeats, NCU memory summaries, and a decision file over the same row/model/shape groups; the checker rejects
-missing rows, placeholder packets, non-NVIDIA metadata, nonnumeric metrics, and
+missing rows, placeholder packets, non-NVIDIA metadata, nonnumeric metrics,
+incomplete row coverage within any measured model/sequence-length/batch-size group, and
 fewer than three distinct latency repeats for any row/model/sequence-length/batch-size group, mismatched quality/latency/NCU shapes, or stale model/shape metadata. This is still not a success
 criterion. It only prevents incomplete native packets from becoming paper
 evidence.
