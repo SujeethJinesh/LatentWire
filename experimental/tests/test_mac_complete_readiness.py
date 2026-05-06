@@ -37,6 +37,7 @@ def test_native_handoff_map_has_project_gates_and_no_thoughtflow_gpu_work() -> N
         "SinkAware rank-2 native timing",
         "HybridKernel profiler packet",
         "ThoughtFlow-FP8",
+        "experimental/sinkaware/phase2/check_native_gpu_packet.py",
         "no GPU work for the current branch",
         "at least a 3% native speed or memory-traffic improvement",
         "recoverable-gain upper bound clears",

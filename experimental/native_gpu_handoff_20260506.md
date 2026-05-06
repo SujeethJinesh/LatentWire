@@ -51,6 +51,8 @@ gain.
 
 Runbook: `experimental/sinkaware/phase2/gpu_gate_runbook.md`
 
+Validator: `experimental/sinkaware/phase2/check_native_gpu_packet.py`
+
 Native rows to measure:
 
 - exact attention;
@@ -66,6 +68,14 @@ Required native outputs:
 - `latency.csv`;
 - `ncu_summary.csv`;
 - `decision.md`.
+
+Before citing any returned native packet, run:
+
+```bash
+./venv_arm64/bin/python experimental/sinkaware/phase2/check_native_gpu_packet.py \
+  "$SINKAWARE_GPU_PACKET" \
+  | tee "$SINKAWARE_GPU_PACKET/artifact_check.json"
+```
 
 Promote only if rank-2 preserves the Mac-local downstream-control behavior and
 shows at least a 3% native speed or memory-traffic improvement over exact

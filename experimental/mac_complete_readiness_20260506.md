@@ -13,7 +13,7 @@ take them without changing the scientific question.
 | Project | Readiness | What is complete locally | What still requires different evidence |
 |---|---|---|---|
 | HybridKernel | Mac-complete handoff | Source/runtime audit, threshold model, vLLM fixed-request driver, profiler packet generator/checker, toy Triton interpreter correctness, COLM-style draft | Native NVIDIA/vLLM profiler packet with server-side Nsight Systems and Nsight Compute data |
-| SinkAware | Mac-complete pre-GPU candidate | Exact branch killed, approximate rank-2 branch stress-tested on GPT2/OPT controls, downstream patch controls, 48-trace rank frontier, Triton interpreter correctness, COLM-style draft | Native GPU timing/memory traffic and preservation of downstream-control behavior |
+| SinkAware | Mac-complete pre-GPU candidate | Exact branch killed, approximate rank-2 branch stress-tested on GPT2/OPT controls, downstream patch controls, 48-trace rank frontier, native packet validator, Triton interpreter correctness, COLM-style draft | Native GPU timing/memory traffic and preservation of downstream-control behavior |
 | ThoughtFlow-FP8 | Mac-complete diagnostic note | Sparse-cache falsification ladder, `rdu_topk` demotion on alternate/independent surfaces, current decision manifest, int8 Triton interpreter primitive, COLM-style draft | A fresh preregistered utility signal on a fresh/larger frozen sparse-cache surface |
 
 ## Stop Conditions
@@ -25,8 +25,8 @@ is intentionally a plumbing check, not the proposed systems kernel.
 SinkAware should not receive more Mac quality sweeps on the current branch
 unless a reviewer asks for a specific missing local control. The current Mac
 surface already covers sink counts 2/4, lengths 64/96, GPT2/OPT families,
-split seeds, downstream patch controls, and a rank frontier. The next evidence
-must be native timing or memory traffic.
+split seeds, downstream patch controls, a rank frontier, and a native packet
+validator. The next evidence must be native timing or memory traffic.
 
 ThoughtFlow-FP8 should not receive more current-branch tuning, GPU work, or
 FP8 claims. Reopening requires a new preregistered utility family before any
