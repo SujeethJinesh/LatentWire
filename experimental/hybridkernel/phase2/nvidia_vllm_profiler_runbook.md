@@ -86,7 +86,12 @@ vLLM server process:
 cat > "$HWK_RUN/metadata/profile_scope.json" <<'JSON'
 {
   "profiled_process": "vllm_server",
+  "nsys_profiled_process": "vllm_server",
+  "ncu_profiled_process": "vllm_server",
   "trace_scope": "server-side CUDA kernels under fixed request replay",
+  "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
+  "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
+  "request_driver_process": "profiler_driver_http_client",
   "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
 }
 JSON
@@ -211,7 +216,9 @@ For each attention-to-SSM and SSM-to-attention transition, annotate:
 ## Nsight Compute Counter Pass
 
 Goal: inspect only the suspicious kernels found by Nsight Systems. Do not start
-with broad `ncu` capture across the full server.
+with broad `ncu` capture across the full server. As with Nsight Systems, the
+profiled process must be the vLLM server or a single-process vLLM benchmark,
+not only `profiler_driver.py`.
 
 Template:
 
@@ -225,14 +232,25 @@ ncu \
   --launch-skip <N> \
   --launch-count <M> \
   --export "$HWK_RUN/ncu/suspicious_boundary_kernel" \
-  python "$HWK_ROOT/phase2/profiler_driver.py" \
+  python -m vllm.entrypoints.openai.api_server \
     --model "$MODEL" \
-    --batch-size 1 \
-    --prefill-tokens 128 \
-    --decode-tokens 64 \
-    --requests 4 \
-    --seed 1 \
-  2>&1 | tee "$HWK_RUN/logs/ncu_suspicious_boundary_kernel.log"
+    --dtype bfloat16 \
+    --max-model-len 2048 \
+    --disable-log-requests \
+  2>&1 | tee "$HWK_RUN/logs/ncu_server_suspicious_boundary_kernel.log"
+```
+
+In a second local terminal, replay the fixed request stream:
+
+```bash
+python "$HWK_ROOT/phase2/profiler_driver.py" \
+  --model "$MODEL" \
+  --batch-size 1 \
+  --prefill-tokens 128 \
+  --decode-tokens 64 \
+  --requests 4 \
+  --seed 1 \
+  2>&1 | tee "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.log"
 ```
 
 Capture comparable kernels in non-boundary same-type regions. A boundary kernel
@@ -277,6 +295,10 @@ Required fields:
 | `matched_non_boundary_ms` | same-shape local control cost outside attention/SSM boundaries |
 | `recoverable_fraction` | conservative fraction of avoidable boundary cost a fused operator could recover |
 
+Use distinct `run_id` values for independent repeated traces. Duplicating one
+trace into three rows is not admissible evidence and will fail the artifact
+verifier.
+
 Then run:
 
 ```bash
@@ -314,10 +336,12 @@ The verifier checks that the run directory contains:
 - immutable environment metadata;
 - architecture-map metadata copied beside the trace;
 - Nsight Systems and Nsight Compute artifacts;
+- server-side Nsight Systems and Nsight Compute profile scope in
+  `metadata/profile_scope.json`;
 - profiling logs;
 - `readout.md` with the pre-registered decision questions;
 - `profiler_metrics.json` with at least three repeated valid rows for one
-  model.
+  model and at least three distinct repeated `run_id` values.
 
 A `PASS` means the artifact bundle is complete enough for human review. It does
 not mean HybridKernel is promoted, and it does not authorize any speedup claim.

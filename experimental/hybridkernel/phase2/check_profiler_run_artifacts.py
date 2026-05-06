@@ -43,6 +43,7 @@ NSYS_PATTERNS = ["*.nsys-rep", "*.sqlite", "*.qdrep"]
 NCU_PATTERNS = ["*.ncu-rep"]
 
 ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
+PROFILED_PROCESS_FIELDS = ["profiled_process", "nsys_profiled_process", "ncu_profiled_process"]
 
 
 def _has_any(root: Path, patterns: list[str]) -> bool:
@@ -51,6 +52,14 @@ def _has_any(root: Path, patterns: list[str]) -> bool:
 
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+def _validate_profiled_process(field: str, value: str, errors: list[str]) -> None:
+    if value not in ALLOWED_PROFILED_PROCESSES:
+        errors.append(
+            f"profile_scope.json {field} must identify the profiled CUDA-serving process, "
+            "not just an HTTP client"
+        )
 
 
 def check_run_artifacts(
@@ -100,16 +109,18 @@ def check_run_artifacts(
     if profile_scope_path.is_file():
         try:
             profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
-            profiled_process = str(profile_scope.get("profiled_process", ""))
+            for field in PROFILED_PROCESS_FIELDS:
+                _validate_profiled_process(field, str(profile_scope.get(field, "")), errors)
             trace_scope = str(profile_scope.get("trace_scope", "")).lower()
+            nsys_trace_scope = str(profile_scope.get("nsys_trace_scope", trace_scope)).lower()
+            ncu_trace_scope = str(profile_scope.get("ncu_trace_scope", trace_scope)).lower()
             vllm_command = str(profile_scope.get("vllm_command", ""))
-            if profiled_process not in ALLOWED_PROFILED_PROCESSES:
-                errors.append(
-                    "profile_scope.json must identify the profiled CUDA-serving process, "
-                    "not just an HTTP client"
-                )
             if "server" not in trace_scope and "single_process" not in trace_scope:
                 errors.append("profile_scope.json trace_scope must cover server-side CUDA work")
+            if "server" not in nsys_trace_scope and "single_process" not in nsys_trace_scope:
+                errors.append("profile_scope.json nsys_trace_scope must cover server-side CUDA work")
+            if "server" not in ncu_trace_scope and "single_process" not in ncu_trace_scope:
+                errors.append("profile_scope.json ncu_trace_scope must cover server-side CUDA work")
             if "vllm" not in vllm_command.lower():
                 warnings.append("profile_scope.json vllm_command does not mention vLLM")
         except (json.JSONDecodeError, TypeError) as exc:
@@ -118,6 +129,7 @@ def check_run_artifacts(
     metrics_status = "unavailable"
     metrics_rows = 0
     model_run_counts: dict[str, int] = {}
+    model_distinct_run_counts: dict[str, int] = {}
     metrics_path = run_dir / "profiler_metrics.json"
     if metrics_path.is_file():
         try:
@@ -128,11 +140,21 @@ def check_run_artifacts(
             metrics_rows = len(rows)
             counts = Counter(str(row["model"]) for row in rows)
             model_run_counts = dict(counts)
+            model_to_run_ids: dict[str, set[str]] = {}
+            for row in rows:
+                model_to_run_ids.setdefault(str(row["model"]), set()).add(str(row["run_id"]))
+            model_distinct_run_counts = {
+                model: len(run_ids) for model, run_ids in model_to_run_ids.items()
+            }
             if metrics_rows == 0:
                 errors.append("profiler_metrics.json has no valid native rows")
             if counts and max(counts.values()) < min_repeated_runs:
                 errors.append(
                     f"no model has at least {min_repeated_runs} repeated native rows"
+                )
+            if model_distinct_run_counts and max(model_distinct_run_counts.values()) < min_repeated_runs:
+                errors.append(
+                    f"no model has at least {min_repeated_runs} distinct repeated run_id values"
                 )
         except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
             errors.append(f"profiler_metrics.json is invalid: {exc}")
@@ -146,6 +168,7 @@ def check_run_artifacts(
         "metrics_status": metrics_status,
         "metrics_rows": metrics_rows,
         "model_run_counts": model_run_counts,
+        "model_distinct_run_counts": model_distinct_run_counts,
         "min_repeated_runs": min_repeated_runs,
         "native_artifacts_required": require_native_artifacts,
     }

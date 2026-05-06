@@ -156,9 +156,12 @@ The checker validates a future native run directory for environment metadata,
 architecture-map metadata, server-side profiling scope, Nsight Systems and
 Nsight Compute artifacts, profiling logs, the pre-registered readout questions,
 and at least three valid metric rows for one model. It now rejects a
-client-only profile scope, which closes a concrete reproducibility risk in the
-previous runbook. Future GPU evidence must be both analytically reduced and
-artifact-complete before the paper can cite it.
+client-only profile scope. It also requires separate server-side scope fields
+for Nsight Systems and Nsight Compute, plus three distinct repeated `run_id`
+values, which closes concrete reproducibility risks from profiling only the
+request client or copying one trace into multiple rows. Future GPU evidence
+must be both analytically reduced and artifact-complete before the paper can
+cite it.
 
 Current status remains **PENDING native profiler data**. The verifier is a gate
 for admissible evidence, not a positive result.

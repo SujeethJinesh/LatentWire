@@ -102,7 +102,7 @@ Promotion threshold:
 | `phase3/reference/boundary.py` and tests | CPU boundary blend scaffold exists. | Useful for semantics if profiling promotes implementation, but not evidence of speed. |
 | `phase4/kernel/boundary_triton.py` and tests | Triton interpreter scaffold exists but local Triton import is unavailable in `venv_arm64`. | No GPU or Mac performance claim. |
 | `phase2/profiler_driver.py` | Fixed-request OpenAI-compatible driver dry-runs locally; runbook now profiles the vLLM server and drives it from a second local terminal. | Avoids client-only Nsight traces. |
-| `phase2/check_profiler_run_artifacts.py` | Future native run directories are checked for metadata, server-side profile scope, Nsight artifacts, logs, readout rows, and repeated metric rows. | GPU evidence must be artifact-complete and server-side before the draft cites it. |
+| `phase2/check_profiler_run_artifacts.py` | Future native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, and distinct repeated metric rows. | GPU evidence must be artifact-complete, server-side, and independently repeated before the draft cites it. |
 
 ## 5. Limitations
 
@@ -123,7 +123,8 @@ Promotion threshold:
 - [ ] Save immutable environment metadata, exact vLLM version, and command
   lines.
 - [ ] Save `metadata/profile_scope.json` showing that Nsight captured the
-  vLLM server or a single-process vLLM benchmark, not only the HTTP client.
+  vLLM server or a single-process vLLM benchmark for both Nsight Systems and
+  Nsight Compute, not only the HTTP client.
 - [ ] Annotate attention/SSM boundaries against the Nsight Systems timeline.
 - [ ] Run Nsight Compute only on suspicious boundary kernels and matched
   same-type controls.

@@ -23,7 +23,11 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         json.dumps(
             {
                 "profiled_process": "vllm_server",
+                "nsys_profiled_process": "vllm_server",
+                "ncu_profiled_process": "vllm_server",
                 "trace_scope": "server-side CUDA kernels under fixed request replay",
+                "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
+                "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
                 "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
             }
         )
@@ -71,6 +75,7 @@ def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     assert result["status"] == "PASS"
     assert result["metrics_rows"] == 3
     assert result["model_run_counts"] == {"granite": 3}
+    assert result["model_distinct_run_counts"] == {"granite": 3}
 
 
 def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
@@ -98,6 +103,8 @@ def test_rejects_client_only_profile_scope(tmp_path: Path) -> None:
         json.dumps(
             {
                 "profiled_process": "http_client",
+                "nsys_profiled_process": "http_client",
+                "ncu_profiled_process": "http_client",
                 "trace_scope": "client request replay only",
                 "vllm_command": "python phase2/profiler_driver.py",
             }
@@ -110,3 +117,32 @@ def test_rejects_client_only_profile_scope(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("HTTP client" in error for error in result["errors"])
+
+
+def test_rejects_client_only_ncu_profile_scope(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    profile_scope_path = tmp_path / "metadata/profile_scope.json"
+    profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
+    profile_scope["ncu_profiled_process"] = "http_client"
+    profile_scope["ncu_trace_scope"] = "client request replay only"
+    profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("ncu_profiled_process" in error for error in result["errors"])
+    assert any("ncu_trace_scope" in error for error in result["errors"])
+
+
+def test_requires_distinct_repeated_run_ids(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    for row in payload["rows"]:
+        row["run_id"] = "same_trace"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("distinct repeated run_id" in error for error in result["errors"])
