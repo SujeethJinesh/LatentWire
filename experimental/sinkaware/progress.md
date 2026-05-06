@@ -8,7 +8,7 @@
   and per-head softmax/output gates completed with a new paired layer-head
   caveat; simple head selection failed; all-rank2 split repeats and a bounded
   length/sink sweep passed weakly; trace-level frozen split repeat passed
-  as bounded evidence; a repeated held-out/model-family gate passed on
+  as bounded evidence; a 48-trace repeated held-out/model-family gate passed on
   distilgpt2 plus OPT-125M but is still not promotion evidence
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
@@ -311,3 +311,33 @@ cross-family falsification pass, but only as bounded Mac-local evidence. The
 method remains below ICLR readiness because there is still no Triton
 interpreter pass, no native GPU timing, no end-to-end quality benchmark, and no
 cross-model predictor transfer result.
+
+## 2026-05-06 48-Trace Repeated Cross-Family Falsification
+
+Reran `phase2/rank2_cross_model_falsification_gate.py` in `./venv_arm64` with
+`--model-names distilgpt2 facebook/opt-125m --max-traces 48 --max-length 64
+--sink-tokens 4 --train-fraction 0.67 --seeds 0 1 2`.
+
+Result: **ALIVE but bounded** as a measured larger held-out/model-family gate.
+The gate still fits predictors separately per model, so it is not cross-model
+predictor transfer. It keeps all non-sink scores exact, reports Mac-local
+attention-output drift only, and makes no GPU speed or end-to-end quality
+claim. Both model families stayed positive across all three whole-trace split
+seeds:
+
+- Aggregate model-row output rel-L2 improvement: `+0.0547 +/- 0.0472`;
+  minimum model-row improvement: `+0.0306`.
+- `distilgpt2` (`gpt2`): measured output rel-L2 improvement
+  `+0.0306 +/- 0.0023`, minimum split `+0.0283`, head win rate
+  `0.986 +/- 0.016`.
+- `facebook/opt-125m` (`opt`): measured output rel-L2 improvement
+  `+0.0788 +/- 0.0069`, minimum split `+0.0731`, head win rate
+  `0.991 +/- 0.009`.
+
+Decision: the prior 24-trace repeated cross-family row is strengthened to a
+48-trace repeat without changing the claim boundary. SinkAware remains below
+ICLR readiness because there is still no Triton interpreter pass, no native GPU
+timing, no downstream quality benchmark, and no cross-model predictor transfer
+result. Focused validation after the run passed:
+`./venv_arm64/bin/python -m pytest experimental/sinkaware/phase2/tests/test_rank2_cross_model_falsification_gate.py experimental/sinkaware/phase2/tests/test_rank2_trace_frozen_split_gate.py experimental/sinkaware/phase3/tests/test_approx_sink_attention_reference.py`
+(`10 passed`, 2 warnings).

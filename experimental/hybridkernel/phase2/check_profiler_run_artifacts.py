@@ -43,14 +43,26 @@ READOUT_MARKERS = [
 
 NSYS_PATTERNS = ["*.nsys-rep", "*.sqlite", "*.qdrep"]
 NCU_PATTERNS = ["*.ncu-rep"]
+MIN_NATIVE_ARTIFACT_BYTES = 1024
+SKELETON_TODO_MARKER = "TODO_NATIVE_PROFILE_FILL"
+PLACEHOLDER_ARTIFACT_MARKERS = [
+    b"placeholder",
+    SKELETON_TODO_MARKER.encode("utf-8"),
+]
 
 ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
 PROFILED_PROCESS_FIELDS = ["profiled_process", "nsys_profiled_process", "ncu_profiled_process"]
-SKELETON_TODO_MARKER = "TODO_NATIVE_PROFILE_FILL"
 
 
 def _has_any(root: Path, patterns: list[str]) -> bool:
     return any(any(root.glob(pattern)) for pattern in patterns)
+
+
+def _matching_artifacts(root: Path, patterns: list[str]) -> list[Path]:
+    artifacts: list[Path] = []
+    for pattern in patterns:
+        artifacts.extend(sorted(root.glob(pattern)))
+    return artifacts
 
 
 def _read_text(path: Path) -> str:
@@ -70,10 +82,40 @@ def _validate_profiled_process(field: str, value: str, errors: list[str]) -> Non
         )
 
 
+def _validate_native_artifacts(
+    *,
+    label: str,
+    root: Path,
+    patterns: list[str],
+    min_bytes: int,
+    errors: list[str],
+) -> None:
+    artifacts = _matching_artifacts(root, patterns)
+    if not artifacts:
+        errors.append(f"missing {label} artifact under {root.name}/")
+        return
+
+    for artifact in artifacts:
+        size = artifact.stat().st_size
+        if size < min_bytes:
+            errors.append(
+                f"{label} artifact is too small to be a reviewable native profiler export: "
+                f"{artifact.relative_to(root.parent)} has {size} bytes, expected at least "
+                f"{min_bytes}"
+            )
+        head = artifact.read_bytes()[:4096].lower()
+        if any(marker in head for marker in PLACEHOLDER_ARTIFACT_MARKERS):
+            errors.append(
+                f"{label} artifact appears to be a placeholder, not a native profiler export: "
+                f"{artifact.relative_to(root.parent)}"
+            )
+
+
 def check_run_artifacts(
     run_dir: Path,
     min_repeated_runs: int = 3,
     require_native_artifacts: bool = True,
+    min_native_artifact_bytes: int = MIN_NATIVE_ARTIFACT_BYTES,
 ) -> dict[str, object]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -94,10 +136,20 @@ def check_run_artifacts(
         errors.append("missing profiling logs under logs/*.log or logs/*.txt")
 
     if require_native_artifacts:
-        if not _has_any(run_dir / "nsys", NSYS_PATTERNS):
-            errors.append("missing Nsight Systems artifact under nsys/")
-        if not _has_any(run_dir / "ncu", NCU_PATTERNS):
-            errors.append("missing Nsight Compute artifact under ncu/")
+        _validate_native_artifacts(
+            label="Nsight Systems",
+            root=run_dir / "nsys",
+            patterns=NSYS_PATTERNS,
+            min_bytes=min_native_artifact_bytes,
+            errors=errors,
+        )
+        _validate_native_artifacts(
+            label="Nsight Compute",
+            root=run_dir / "ncu",
+            patterns=NCU_PATTERNS,
+            min_bytes=min_native_artifact_bytes,
+            errors=errors,
+        )
 
     environment_path = run_dir / "metadata/environment.txt"
     _reject_skeleton_todo(environment_path, "metadata/environment.txt", errors)
@@ -220,6 +272,7 @@ def check_run_artifacts(
         "model_distinct_run_counts": model_distinct_run_counts,
         "min_repeated_runs": min_repeated_runs,
         "native_artifacts_required": require_native_artifacts,
+        "min_native_artifact_bytes": min_native_artifact_bytes,
     }
 
 
@@ -227,6 +280,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--min-repeated-runs", type=int, default=3)
+    parser.add_argument("--min-native-artifact-bytes", type=int, default=MIN_NATIVE_ARTIFACT_BYTES)
     parser.add_argument("--allow-missing-native-artifacts", action="store_true")
     args = parser.parse_args()
 
@@ -234,6 +288,7 @@ def main() -> None:
         args.run_dir,
         min_repeated_runs=args.min_repeated_runs,
         require_native_artifacts=not args.allow_missing_native_artifacts,
+        min_native_artifact_bytes=args.min_native_artifact_bytes,
     )
     print(json.dumps(result, indent=2))
     if result["status"] != "PASS":

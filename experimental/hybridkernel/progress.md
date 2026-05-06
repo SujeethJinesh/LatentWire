@@ -205,3 +205,15 @@ gate.
 Status remains **PENDING native profiler data**. HybridKernel is still blocked
 on a user-operated NVIDIA/vLLM packet that passes the checker and then clears or
 fails the 3% native profiler-analysis gate.
+
+## 2026-05-06 Native Artifact Payload Tightening
+
+Hardened `phase2/check_profiler_run_artifacts.py` so future NVIDIA packets
+cannot pass the artifact gate with filename-only Nsight stand-ins. The checker
+now rejects tiny native profiler exports and files whose payload contains
+placeholder or skeleton markers; the default minimum matched artifact size is
+1024 bytes. The synthetic fixture remains usable only for schema-only tests
+when native artifact validation is explicitly disabled.
+
+Status remains **PENDING native profiler data**. This is handoff hardening, not
+profiler evidence and not a performance claim.

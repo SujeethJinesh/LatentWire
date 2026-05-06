@@ -30,7 +30,7 @@ claim.
 | split/seed all-rank2 gate | 3 randomized token splits; rank-2 output rel-L2 improvement +0.0368 +/- 0.0006; all seeds positive | all-rank2 repeatable but still per-head fragile |
 | length/sink all-rank2 sweep | lengths 64/96, sinks 2/4, 3 seeds each; mean improvement +0.0366 +/- 0.0024; min config +0.0342 | alive but bounded |
 | trace-level frozen split gate | 48 traces, 3 whole-trace splits; mean improvement +0.0379 +/- 0.0014; min split +0.0367 | stronger repeatability, still bounded |
-| held-out/cross-family repeat | 24 traces, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; output rel-L2 improvements +0.0341 +/- 0.0018 and +0.0774 +/- 0.0043 | alive but bounded; not predictor transfer or promotion evidence |
+| held-out/cross-family repeat | measured 48 traces, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; output rel-L2 improvements +0.0306 +/- 0.0023 and +0.0788 +/- 0.0069 | alive but bounded; not predictor transfer, GPU speed, or end-to-end quality evidence |
 | Triton readiness | `TRITON_INTERPRET=1` set, `triton` not importable, CUDA unavailable on Mac | no interpreter pass yet |
 
 ## Reviewer Risks
@@ -41,7 +41,7 @@ claim.
   head.
 - Existing attention-sink systems occupy the broad novelty frame.
 - distilgpt2 is no longer the only model-family probe, and the OPT row now
-  survives a 24-trace, three-seed held-out repeat, but it is still a Mac-local
+  survives a measured 48-trace, three-seed held-out repeat, but it is still a Mac-local
   diagnostic and not a benchmark-backed result.
 - No GPU latency or memory claim exists yet.
 

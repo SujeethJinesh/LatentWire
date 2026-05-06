@@ -63,6 +63,11 @@ not admissible evidence: the artifact checker rejects the
 `TODO_NATIVE_PROFILE_FILL` sentinels until real native profiler metadata,
 readout entries, and metric rows replace them.
 
+Do not replace Nsight exports with empty files, copied README files, or text
+placeholders that only satisfy the expected filename extension. The final
+checker requires reviewable profiler payloads, with default minimum artifact
+size of 1024 bytes and no skeleton placeholder markers.
+
 Record immutable metadata before profiling:
 
 ```bash

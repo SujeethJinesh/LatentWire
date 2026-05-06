@@ -17,10 +17,13 @@ surface, but it is not yet strong enough for an ICLR/COLM positive-method paper
 without larger frozen slices, seed repeats, family-separated falsification, and
 oracle/headroom diagnostics.
 
-A cached split diagnostic now supports the 0.20 result at the level of mean
+A cached split diagnostic supports the 0.20 result at the level of mean
 margins, but it is not an independent reproduction: all deterministic half-size
 partitions keep `rdu_topk` as the best compressed row, while only 2/4 partitions
-clear both paired CI highs below zero.
+clear both paired CI highs below zero. A separate measured no-retuning rerun on
+the same 74-trace surface reproduces the cached result exactly on this
+deterministic local stack and adds same-family/cross-family plus oracle/headroom
+readouts, but it is still same-slice evidence.
 
 ## Candidate Story If Revived
 
@@ -48,6 +51,7 @@ quality or perplexity, not just on protected-token recall.
 | `phase2/kv_drop_quality_probe.md` | Actual CPU sparse-cache pruning plus a 24-config train-fixed sparse sweep. The selected row has held-out NLL 3.340 vs ThinKV-like 3.385 and R-KV-like 3.420; paired CI still crosses zero vs ThinKV-like. | Mixed/promising, not revived. |
 | `phase2/frozen_sparse_cache_probe.md` | Larger no-retuning CPU sparse-cache slice on 74 traces. The stopped family still fails, but pre-registered `rdu_topk` reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939, with paired CIs below zero against both. | Revived for `rdu_topk`; stopped family remains ruled out. |
 | `phase2/rdu_robustness_diagnostic.md` | Cached split/paired diagnostic over the same 74-trace 0.20 rows. `rdu_topk` is best on even, odd, first-half, and second-half partitions, with all split mean margins above 0.03 versus R-KV-like and ThinKV-like; 2/4 split partitions also clear both paired CI highs below zero. | Supports current promotion, but not a fresh reproduction. |
+| `phase2/rdu_no_retune_reproduction_check.md` | Measured same-slice rerun of the frozen probe on current Mac hardware. The measured result exactly matches the cached promoted gate: `rdu_topk` NLL 3.779, margins +0.160 vs R-KV-like and +0.121 vs ThinKV-like, zero measured-cached NLL drift for all policies. Per-trace compressed oracle NLL is 3.634, leaving `rdu_topk` 0.145 above oracle and 0.931 above full cache. | Locally reproduced, but still not a larger or independently seeded reproduction. |
 | `phase2/stop_pivot_decision_20260506.md` | Stops current policy-family tuning on the available saved traces; allows only a future pre-registered new utility signal evaluated once. | Stop/pivot gate. |
 
 The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
@@ -144,6 +148,15 @@ has now been evaluated once and clears the stated gate:
   `rdu_topk` as the best compressed row and preserve >=0.03 mean margins versus
   R-KV-like and ThinKV-like; 2/4 partitions clear both paired CI highs below
   zero.
+- Measured no-retuning same-slice rerun: zero measured-minus-cached NLL drift
+  for all policies; `rdu_topk` remains best compressed with the same margins and
+  paired intervals.
+- Strict measured separation: stopped-family margins versus `rdu_topk` are
+  +0.141 and +0.129 NLL; cross-family margins are +0.160 versus R-KV-like,
+  +0.121 versus ThinKV-like, and +0.379 versus LongFlow-like.
+- Measured oracle/headroom: per-trace compressed oracle NLL is 3.634,
+  `rdu_topk` is 0.145 NLL above that oracle and 0.931 above full cache, and the
+  `rdu_topk` oracle-hit rate is 0.419.
 
 The highest-value method branch is now recurrence-distance utility. It should
 advance only through evaluation-quality gates, not local retuning:
@@ -163,7 +176,8 @@ infrastructure, and real KV/hidden telemetry to explain eviction bias.
   evidence.
 - Distilgpt2 is a small model and not a reasoning model; this is a Mac-local
   falsification proxy, not a benchmark result.
-- Current saved traces are small and not seed-repeated.
+- Current saved traces are small and not seed-repeated; the measured
+  reproduction rerun is same-slice and deterministic, not independent.
 - The split diagnostic reuses the same 74 traces and should not be counted as a
   new independent reproduction.
 - There is no real FP8 numerical drift measurement in this gate.
@@ -176,8 +190,8 @@ infrastructure, and real KV/hidden telemetry to explain eviction bias.
 Do not move to a broad GPU benchmark yet. The next exact gate is:
 
 1. Do not tune further on the current saved traces.
-2. Reproduce `rdu_topk` without retuning on a larger or seed-repeated frozen
-   sparse-cache slice before widening benchmarks.
+2. Reproduce `rdu_topk` without retuning on a larger or independently seeded
+   frozen sparse-cache slice before widening benchmarks.
 3. Report paired uncertainty, per-span keep telemetry, recurrence misses, and
    FP8 round-trip error separately.
 4. Keep promotion only if `rdu_topk` beats the strongest proxy on quality at

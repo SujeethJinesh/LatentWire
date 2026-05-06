@@ -28,6 +28,9 @@ Current local gate result:
   `profiler_metrics.json`.
 - A packet skeleton generator now creates the native run directory shape and
   the checker rejects any unfilled `TODO_NATIVE_PROFILE_FILL` sentinel.
+- The checker also rejects tiny or placeholder Nsight artifacts by default, so
+  synthetic fixtures are schema-only unless native artifact validation is
+  explicitly disabled.
 
 Decision: no more Mac kernel implementation. Move only to profiler preparation.
 
@@ -64,11 +67,12 @@ Latest local gates:
 
 - Triton is still unavailable in `./venv_arm64`, so the fallback was a
   held-out/model-family gate.
-- The earlier 12-trace smoke has now been scaled to 24 traces and split seeds
-  `0,1,2`.
-- Rank-2 remained positive on `distilgpt2` (`+0.0341 +/- 0.0018` output rel-L2
-  improvement) and `facebook/opt-125m` (`+0.0774 +/- 0.0043`), for aggregate
-  model-row improvement `+0.0557 +/- 0.0424`.
+- The earlier 12-trace smoke has now been scaled through 24 traces to 48 traces
+  and split seeds `0,1,2`.
+- Rank-2 remained positive on `distilgpt2` (`+0.0306 +/- 0.0023` output rel-L2
+  improvement) and `facebook/opt-125m` (`+0.0788 +/- 0.0069`), for aggregate
+  model-row improvement `+0.0547 +/- 0.0472` and minimum model-row improvement
+  `+0.0306`.
 - This fits predictors separately per model; it is not cross-model predictor
   transfer and not promotion evidence.
 
@@ -106,6 +110,14 @@ Current local gate result:
 - cached deterministic splits support the mean margin but expose remaining
   uncertainty: 4/4 half-size partitions keep positive mean margins, but only
   2/4 clear both paired CI highs below zero.
+- a measured no-retuning rerun of the same frozen 74-trace gate exactly
+  reproduces the cached promoted row: `rdu_topk` NLL `3.779`, paired deltas
+  `-0.121 [-0.211,-0.037]` versus ThinKV-like and `-0.160 [-0.264,-0.050]`
+  versus R-KV-like, with measured-minus-cached NLL drift `0.000` for every
+  policy.
+- the measured compressed oracle is still better (`3.634` NLL), leaving a
+  `0.145` NLL gap from `rdu_topk` to per-trace compressed oracle and a `0.419`
+  oracle-hit rate.
 
 Decision: do not tune anchor/recent/phase/math weights further on the current
 saved traces. The live branch is now recurrence-distance utility. The next

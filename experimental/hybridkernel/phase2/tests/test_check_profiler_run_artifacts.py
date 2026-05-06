@@ -41,10 +41,10 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
     )
     (run_dir / "logs/nsys_b1.log").write_text("profile log\n", encoding="utf-8")
     (run_dir / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
-        "placeholder\n", encoding="utf-8"
+        "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
     )
     (run_dir / "ncu/suspicious_boundary_kernel.ncu-rep").write_text(
-        "placeholder\n", encoding="utf-8"
+        "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
     )
     readout_rows = "\n".join(f"| {marker} | evidence | no |" for marker in READOUT_MARKERS)
     (run_dir / "readout.md").write_text(
@@ -99,6 +99,22 @@ def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("Nsight Systems" in error for error in result["errors"])
+
+
+def test_rejects_tiny_or_placeholder_native_profiler_artifacts(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
+        "placeholder\n" + ("x" * 2048), encoding="utf-8"
+    )
+    (tmp_path / "ncu/suspicious_boundary_kernel.ncu-rep").write_text(
+        "tiny\n", encoding="utf-8"
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("placeholder" in error for error in result["errors"])
+    assert any("too small" in error for error in result["errors"])
 
 
 def test_requires_three_repeated_rows_for_review_gate(tmp_path: Path) -> None:
@@ -188,8 +204,19 @@ def test_synthetic_fixture_documents_complete_packet_shape(tmp_path: Path) -> No
     packet = tmp_path / "packet"
     shutil.copytree(FIXTURE_DIR, packet)
 
-    result = check_run_artifacts(packet)
+    result = check_run_artifacts(packet, require_native_artifacts=False)
 
     assert result["status"] == "PASS"
     assert result["metrics_rows"] == 3
     assert result["model_distinct_run_counts"] == {"synthetic-granite-fixture": 3}
+
+
+def test_synthetic_fixture_is_not_native_evidence_by_default(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    shutil.copytree(FIXTURE_DIR, packet)
+
+    result = check_run_artifacts(packet)
+
+    assert result["status"] == "FAIL"
+    assert any("placeholder" in error for error in result["errors"])
+    assert any("too small" in error for error in result["errors"])

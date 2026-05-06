@@ -22,6 +22,11 @@ checked. Promotion requires repeated server-side Nsight evidence of separable
 attention/SSM boundary overhead clearing the 3% recoverable-gain gate. If that
 evidence is absent, kill or shelve this branch.
 
+The native artifact checker rejects generated skeleton TODOs, client-only
+profile scopes, stale analyzer outputs, duplicated run IDs, and tiny or
+placeholder Nsight exports. Matching profiler filenames alone are not
+admissible evidence.
+
 ## Local Setup
 
 Use the repo-local ARM64 virtual environment when available:

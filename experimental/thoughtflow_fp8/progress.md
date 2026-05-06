@@ -193,6 +193,27 @@ ThinKV-like in all four partitions. Only 2/4 split partitions clear both paired
 CI highs below zero, so this supports promotion on the existing frozen gate but
 does not replace a true larger or seed-repeated reproduction.
 
+`phase2/rdu_no_retune_reproduction_check.md` adds the cheapest measured
+reproduction-style check on current Mac hardware. It reruns the frozen 74-trace
+distilgpt2 sparse-cache probe with the same pre-registered `rdu_topk` rule,
+writes a separate measured artifact, and compares it against the cached
+promoted gate without overwriting the baseline. The measured rerun reproduces
+the cached result exactly on this deterministic local stack: `rdu_topk` NLL
+3.779, margin +0.160 versus R-KV-like and +0.121 versus ThinKV-like, paired
+deltas -0.160 [-0.264,-0.050] and -0.121 [-0.211,-0.037], with zero measured
+minus cached NLL drift for all policies. Strict separation is preserved:
+`rdu_topk` beats the stopped ThoughtFlow rows by +0.141 and +0.129 NLL and the
+cross-family baselines by +0.160 (R-KV-like), +0.121 (ThinKV-like), and +0.379
+(LongFlow-like). Oracle/headroom remains material: a per-trace compressed
+oracle reaches NLL 3.634, leaving `rdu_topk` 0.145 NLL above that oracle and
+0.931 NLL above full cache, with a 0.419 oracle-hit rate.
+
+Status: **REPRODUCED LOCALLY, STILL NOT ICLR-READY**. This is a measured
+same-slice no-retuning reproduction, not a larger or independently seeded
+reproduction. The exact next gate is a larger or seed-repeated frozen slice
+with the same measured-vs-cached labeling, strict same-family/cross-family
+reporting, and oracle/headroom diagnostics.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -263,3 +284,9 @@ reviewer pack or GPU work.
   margins versus R-KV-like and ThinKV-like, but only 2/4 partitions clear both
   paired CI highs below zero. `rdu_topk` remains promoted on the current frozen
   gate; the next gate remains real reproduction without retuning.
+- 2026-05-06: Added and ran the measured no-retuning reproduction check for
+  `rdu_topk` on the same 74-trace frozen sparse-cache surface. The measured
+  rerun exactly matches the cached promoted gate on this deterministic Mac
+  stack, preserves same-family and cross-family margins, and adds
+  oracle/headroom diagnostics. This strengthens local reproduction status but
+  does not replace a larger or seed-repeated frozen slice.

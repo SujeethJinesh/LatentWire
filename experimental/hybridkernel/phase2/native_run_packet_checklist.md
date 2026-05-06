@@ -35,8 +35,8 @@ The packet is incomplete unless all of these exist:
 | `metadata/profile_scope.json` | server-side scope for both Nsight Systems and Nsight Compute |
 | `metadata/architecture_map.json` | copied HybridKernel architecture map used for boundary annotation |
 | `logs/*.log` or `logs/*.txt` | server profiler logs and client replay logs |
-| `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts |
-| `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels |
+| `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts, not placeholder files |
+| `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels, not placeholder files |
 | `readout.md` | completed decision table from the runbook |
 | `profiler_metrics.json` | at least three valid rows for one model with distinct repeated `run_id` values |
 | `profiler_analysis_gate.json` and `.md` | output from `analyze_profiler_metrics.py` for this exact `profiler_metrics.json` |
@@ -66,6 +66,11 @@ server-side CUDA work:
 Accepted values for profiler process fields are `vllm_server` or
 `single_process_vllm_benchmark`. `http_client`, `profiler_driver`, `curl`, or
 manual API calls are not admissible profiler scopes.
+
+The checker also rejects tiny or placeholder profiler exports. By default each
+matched Nsight artifact must be at least 1024 bytes and must not contain
+skeleton placeholder markers. Use the default threshold for submitted run
+packets.
 
 ## Required Metric Rows
 
@@ -101,7 +106,9 @@ results.
 
 For a Mac-local example of the required directory shape, inspect
 `phase2/tests/fixtures/synthetic_profiler_run_packet/`. It is a synthetic
-checker fixture with placeholder Nsight files, not native profiler evidence.
+checker fixture with placeholder Nsight files, not native profiler evidence;
+the default checker now rejects it unless native artifact validation is
+explicitly disabled for schema-only tests.
 
 ## Decision
 
