@@ -31,7 +31,7 @@ boundary fusion gap."
 | vLLM `ssm_conv_transfer_utils` docs | Source docs show Mamba2 conv/SSM state decomposition for transfer descriptors and explicitly require DS conv state layout for 3-read transfer. Source: <https://docs.vllm.ai/en/latest/api/vllm/distributed/kv_transfer/kv_connector/v1/ssm_conv_transfer_utils/>. | This is transfer/layout plumbing, not the proposed attention-output-to-SSM-input fused compute boundary. It is still the highest-risk related implementation. |
 | vLLM `mamba_mixer2` docs | Source docs describe `MambaMixer2`, `forward_cuda`, `get_attn_backend`, state shape/dtype, and Mamba2 attention backend plumbing. Source: <https://docs.vllm.ai/en/latest/api/vllm/model_executor/layers/mamba/mamba_mixer2/>. | Indicates Mamba2 has its own backend and kernels. Quick audit did not find attention-layer output fused with the next SSM layer. |
 | vLLM SSD chunk scan docs | Source docs expose Triton-style SSD chunk scan operations. Source: <https://vllm.website.cncfstack.com/api/vllm/model_executor/layers/mamba/ops/ssd_chunk_scan/>. | Confirms optimized SSM internals exist; does not establish cross-layer attention/SSM fusion. |
-| FlashInfer README | FlashInfer provides attention, GEMM, MoE, communication, RoPE, normalization, and activation kernels, and powers vLLM/SGLang/TensorRT-LLM/TGI. Source: <https://github.com/flashinfer-ai/flashinfer>. | Strong serving-kernel baseline. The README does not list Mamba/SSM or attention-to-SSM boundary fusion as a core operator, but deeper source audit is still required. |
+| FlashInfer README | FlashInfer provides attention, GEMM, MoE, communication, RoPE, normalization, and activation kernels, and powers vLLM/SGLang/TensorRT-LLM/TGI. Source: <https://github.com/flashinfer-ai/flashinfer>. | Strong serving-kernel baseline. The README does not list Mamba/SSM or attention-to-SSM boundary fusion as a core operator; any deeper source audit should wait until native profiling shows a real boundary signal. |
 | state-spaces/mamba README | Mamba repo lists Mamba, Mamba-2, and Mamba-3 blocks, including CUDA/NVIDIA requirements and source files such as `mamba3.py`; Mamba-3 is installed from source. Source: <https://github.com/state-spaces/mamba>. | Confirms Mamba-3 kernels are a standalone SSM stack. Quick audit did not find hybrid attention-boundary fusion there. |
 | Nemotron-H paper | Nemotron-H replaces most transformer attention layers with Mamba layers and reports inference speed improvements. Source: <https://arxiv.org/abs/2504.03624>. | Confirms hybrid-model motivation. Does not itself claim a boundary-fused compute kernel. |
 | Bamba documentation/blog | Bamba is a hybrid Mamba2 model with vLLM support and reported inference speedups. Sources: <https://huggingface.co/docs/transformers/v5.0.0rc2/en/model_doc/bamba> and <https://huggingface.co/blog/bamba>. | Relevant competitor/model family, but quick audit found no boundary-fusion claim. |
@@ -59,22 +59,24 @@ compute-boundary overhead.
 
 ## Recommendation
 
-Proceed cautiously to Phase 2 on Granite 4.0 H Tiny/Small only. Reframe the
-project as:
+Phase 2 has since completed and this recommendation is now a historical gate.
+The current project framing is:
 
 > Does a per-layer attention/SSM compute-boundary fusion save measurable memory
 > traffic or launch overhead after vLLM's hybrid state-layout work is already in
 > place?
 
-Kill if Phase 2 estimates less than 3% end-to-end theoretical benefit or if a
-deeper vLLM/FlashInfer source audit finds an existing boundary-fused operator.
+Kill if native NVIDIA/vLLM profiling fails to show a separable boundary-local
+signal. Deeper vLLM/FlashInfer source audit is deferred until native profiling
+shows a real boundary signal worth implementing.
 
-## Next Local Gate
+## Current Gate
 
-Build `phase2/architecture_map.md` from the fetched Granite configs:
+`phase2/architecture_map.md` has already been generated from the fetched
+Granite and Qwen3-Next configs. The remaining gate is native NVIDIA/vLLM
+profiling with server-side Nsight traces:
 
-- count Mamba/attention boundaries,
-- estimate activation bytes crossing each boundary at BF16/FP8,
-- separate unavoidable residual stream writes from potentially fusible format
-  conversions,
-- compare the upper bound to the 3% project threshold.
+- pass `phase2/check_profiler_run_artifacts.py`;
+- reduce the exact packet with `phase2/analyze_profiler_metrics.py`;
+- promote only if repeated same-model/config rows clear the 3% recoverable-gain
+  gate.

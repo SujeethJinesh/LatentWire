@@ -26,15 +26,16 @@ No real FP8, CUDA, latency, throughput, or Blackwell result is claimed.
 This project lives inside the main LatentWire repository. Use this single
 checkout for the experiment.
 
-Use a per-project virtual environment:
+Use the repo-local virtual environment that the current paper and reviewer pack
+cite:
 
 ```bash
-cd experimental/thoughtflow_fp8
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+cd /Users/sujeethjinesh/Desktop/LatentWire
+./venv_arm64/bin/python -m pip install -r experimental/thoughtflow_fp8/requirements.txt
 ```
+
+Historical per-project `.venv` notes in older progress entries are superseded
+by the repo-local `./venv_arm64` workflow above.
 
 Keep downloaded papers, cloned competitor repos, caches, generated traces, and
 large outputs out of git. Put scratch artifacts under ignored local directories

@@ -693,3 +693,26 @@ Mac-complete unless a reviewer asks for a new specific local control. The next
 exact gate is a native NVIDIA packet with matched quality drift, downstream
 loss/KL/top-1 behavior, repeated latency for every row/model/shape, and NCU
 memory/HBM counters.
+
+## 2026-05-06 Reference-Gate Wording Alignment
+
+Updated the linked Phase 3 reference note to match the current evidence state.
+It no longer says Triton interpreter implementation is the next gate; that gate
+has passed locally. The note now points to the native NVIDIA packet gate:
+matched quality drift, downstream loss/KL/top-1 checks, repeated same-shape
+latency for every row/model/shape, NCU memory/HBM counters, and a promote/kill
+decision.
+
+Decision: **REFERENCE DOC MATCHES PAPER AND RUNBOOK**. No new Mac experiment is
+needed before native GPU timing and memory evidence.
+
+## 2026-05-06 Cross-Model Gate Wording Alignment
+
+Updated the cross-model falsification gate artifact and its generator so they
+no longer say Triton interpreter correctness is still pending. The note now
+states the current evidence state: interpreter correctness is cleared locally,
+and promotion requires the native NVIDIA packet gate with matched quality drift,
+downstream loss/KL/top-1 checks, repeated latency, and NCU memory/HBM counters.
+
+Decision: **GENERATED CROSS-MODEL ARTIFACT MATCHES CURRENT GATE**. SinkAware
+remains blocked on native GPU evidence, not Mac-local Triton implementation.

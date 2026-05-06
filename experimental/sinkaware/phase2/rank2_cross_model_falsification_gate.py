@@ -457,7 +457,7 @@ def _write_markdown(result: dict[str, Any]) -> None:
             "",
             "## Decision",
             "",
-            "This repeated gate now matches the 48-trace distilgpt2 frozen split size while preserving strict GPT2-family versus OPT-family separation. Passing this gate keeps the branch alive only as bounded Mac-local measured drift evidence; promotion still requires Triton interpreter correctness, native timing evidence, and broader benchmark controls.",
+            "This repeated gate now matches the 48-trace distilgpt2 frozen split size while preserving strict GPT2-family versus OPT-family separation. Passing this gate keeps the branch alive only as bounded Mac-local measured drift evidence. Triton interpreter correctness is already cleared locally; promotion now requires the native NVIDIA packet gate with matched quality drift, downstream loss/KL/top-1 checks, repeated latency, and NCU memory/HBM counters.",
         ]
     )
     (OUT_DIR / "rank2_cross_model_falsification_gate.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

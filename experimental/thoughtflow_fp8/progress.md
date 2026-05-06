@@ -450,3 +450,14 @@ Decision: **NO FURTHER MAC/TRITON METHOD WORK REMAINS FOR THE CURRENT
 RDU/PSI/VWAC BRANCHES**. The remaining blocker is method evidence from a future
 preregistered branch, not local packaging, tests, Triton interpreter correctness,
 `rdu_topk` analysis, `psi_topk` analysis, or `vwac_topk` analysis.
+
+## 2026-05-06 README Environment Alignment
+
+Updated the top-level ThoughtFlow-FP8 README so the current reproducibility
+workflow matches the paper and reviewer pack: use the repo-local
+`./venv_arm64` from the LatentWire root. Older per-project `.venv` commands are
+now explicitly historical and superseded.
+
+Decision: **REPRODUCIBILITY ENTRY POINT MATCHES CURRENT ARTIFACTS**. This is a
+documentation fix only; the method branch remains stopped unless a new
+pre-registered utility family is evaluated on a fresh frozen surface.

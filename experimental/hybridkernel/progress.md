@@ -132,9 +132,10 @@ to be genuinely avoidable to clear a 3% proxy gain. Qwen3-Next would need
 roughly 10.4%, but its linear-attention/Gated-DeltaNet style is less directly
 matched to the Granite Mamba2 boundary-fusion idea.
 
-Current status: **WEAKLY ALIVE**. Do not build more Mac-only kernels. The only
-useful pre-NVIDIA work is profiler/runbook preparation and source-line audit of
-whether a distinct boundary conversion/materialization exists.
+Current status: **WEAKLY ALIVE**. Do not build more Mac-only kernels. The
+remaining gate is native NVIDIA/vLLM profiling with server-side Nsight traces,
+then validation through `check_profiler_run_artifacts.py` and reduction through
+`analyze_profiler_metrics.py`.
 
 ## Profiler Analysis Gate
 
@@ -481,3 +482,27 @@ Decision: **MAC-SIDE HYBRIDKERNEL WORK IS SATURATED**. This is packet
 admissibility and stale-wording cleanup only. The scientific gate remains a
 native NVIDIA/vLLM server-side Nsight packet that passes the checker and clears
 the repeated 3% recoverable-gain gate.
+
+## 2026-05-06 Generator and Literature-Audit Gate Alignment
+
+Closed a reproducibility issue in the architecture-map generator. The checked-in
+`architecture_map.md` already said HybridKernel is alive only for native
+NVIDIA/vLLM profiling, but rerunning `phase2/build_architecture_map.py` would
+have regenerated older wording about deeper Mac source audit work. The generator
+now emits the current native-profiling gate. The Phase 1 FlashInfer note also
+defers deeper source audit until native profiling shows a real boundary signal.
+
+Decision: **REGENERATION NO LONGER REINTRODUCES STALE MAC-WORK LANGUAGE**.
+HybridKernel remains blocked on native NVIDIA/vLLM profiling.
+
+## 2026-05-06 Phase 1 Gate Wording Alignment
+
+Updated the Phase 1 literature review recommendation so it no longer presents
+architecture mapping or deeper Mac source audit as the next local gate. The
+Phase 2 architecture map is complete, source/control audit is sufficient for
+handoff, and deeper vLLM/FlashInfer source audit is deferred until native
+profiling shows a real boundary signal.
+
+Decision: **PHASE 1 NOTES MATCH CURRENT HANDOFF**. The next exact gate remains a
+native NVIDIA/vLLM packet passing the artifact checker and 3% recoverable-gain
+analysis.

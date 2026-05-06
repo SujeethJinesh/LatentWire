@@ -81,8 +81,8 @@ def _write_markdown(rows: list[dict[str, Any]], path: Path) -> None:
             "## Decision",
             "",
             "Granite 4.0 H Tiny/Small and Qwen3-Next clear the >=3% theoretical activation-stream gate under this upper-bound model.",
-            "This keeps HybridKernel alive for a deeper source audit and integration map, but it does not prove an end-to-end GPU speedup.",
-            "The next gate is to determine whether the apparent boundary cost survives actual vLLM/vendor implementation details.",
+            "This keeps HybridKernel alive only for native NVIDIA/vLLM profiling; the source/control audits and integration map are complete enough for Mac-local work.",
+            "This map does not prove an end-to-end GPU speedup, and the next gate is to determine whether the apparent boundary cost survives actual vLLM/vendor implementation details in server-side Nsight traces.",
         ]
     )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
