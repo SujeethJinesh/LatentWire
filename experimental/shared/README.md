@@ -19,7 +19,8 @@ Use them for preregistered Mac gates only.
 - `hybrid_model_eligibility.py`: metadata-only Hugging Face size/cache
   preflight for the live hybrid targets.
 - `hybrid_trace_packet_builder.py`: converts future saved trace tensor packets
-  into strict SSQ-LR/HORN real gate packets.
+  into strict SSQ-LR/HORN real gate packets and converts HBSM sensitivity rows
+  into strict real B1 packets.
 - `sensitivity_metrics.py`: quality, drift, and rank-correlation metrics.
 - `check_gate_packet.py`: packet validator for synthetic and real Mac-local
   gate results, with stricter `--mode real --project ...` contracts.
@@ -77,9 +78,18 @@ project packets with:
   --project horn \
   --tensor-packet experimental/shared/results/<tensor_packet> \
   --output-dir experimental/horn/results/horn_gate_h1_<date>_<model>
+
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
+  --project hbsm \
+  --row-packet experimental/shared/results/<hbsm_rows>.json \
+  --output-dir experimental/hbsm/results/hbsm_gate_b1_<date>_<model>
 ```
 
-Then validate with `check_gate_packet.py --mode real --project ...`.
+Then validate with `check_gate_packet.py --mode real --project ...`. The real
+checker enforces admissible coverage, not just schema shape: SSQ-LR needs
+early/middle/late buckets and enough prompts, HORN needs both boundary
+directions with matched flipped controls, and HBSM needs both boundary flags
+plus a perturbation-off row with near-zero drift.
 
 ## Claim Boundary
 

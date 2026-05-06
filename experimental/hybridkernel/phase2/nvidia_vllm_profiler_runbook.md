@@ -414,6 +414,22 @@ python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
   | tee "$HWK_RUN/artifact_check.json"
 ```
 
+If Nsight Systems shows no plausible boundary-local signal and there is no
+meaningful kernel for Nsight Compute, validate a clean kill packet instead of
+fabricating an NCU row:
+
+```bash
+python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
+  --run-dir "$HWK_RUN" \
+  --packet-mode no_boundary_signal_kill \
+  | tee "$HWK_RUN/artifact_check.json"
+```
+
+This mode still requires server-side Nsight Systems evidence, fixed client
+replay, reduced metric rows, and filled readout decisions. It only makes the
+`.ncu-rep` artifact optional when the readout records no suspicious boundary
+kernel.
+
 The verifier checks that the run directory contains:
 
 - immutable environment metadata;

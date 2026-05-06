@@ -95,9 +95,26 @@ reduced native trace:
 - `batch_shape.decode_tokens`: positive integer decode token count;
 - `batch_shape.requests`: positive integer replay request count;
 - `control_model_or_segment`: non-empty matched control label.
+- `row_role`: `primary_hybrid`, `same_family_control`, or
+  `cross_family_falsification`;
+- `control_family`: non-placeholder control family label;
+- `boundary_direction`: non-placeholder boundary direction label;
+- `nsys_artifact`: relative path inside the packet to a `.nsys-rep`, `.sqlite`,
+  or `.qdrep` file;
+- `ncu_artifact`: relative path inside the packet to a `.ncu-rep` file, or
+  `not_run_no_boundary_signal` only when using `--packet-mode
+  no_boundary_signal_kill`;
+- `kernel_names`: non-empty list of kernel names used in the reduction;
+- `boundary_indices`: integer boundary IDs, non-empty for `primary_hybrid`;
+- `time_window_ms`: object with numeric `start` and `end`, with `end > start`;
+- `reduction_notes`: non-placeholder notes explaining how the row was reduced.
 
 Do not duplicate one trace into multiple rows. Do not mix different model
 families and call them repeated runs for the same gate.
+
+The artifact checker resolves `nsys_artifact` and `ncu_artifact` against the
+run directory. Missing files, absolute paths, `..` escapes, wrong extensions,
+and placeholder profiler exports are rejected.
 
 ## Final Local Commands
 
@@ -110,6 +127,16 @@ python "$HWK_ROOT/phase2/analyze_profiler_metrics.py" \
 
 python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
   --run-dir "$HWK_RUN" \
+  | tee "$HWK_RUN/artifact_check.json"
+```
+
+If the Nsight Systems pass shows no suspicious boundary kernel to target with
+Nsight Compute, run the checker in explicit negative mode instead:
+
+```bash
+python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
+  --run-dir "$HWK_RUN" \
+  --packet-mode no_boundary_signal_kill \
   | tee "$HWK_RUN/artifact_check.json"
 ```
 

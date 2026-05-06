@@ -129,6 +129,21 @@ def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
     assert any("Nsight Systems" in error for error in result["errors"])
 
 
+def test_no_boundary_signal_kill_packet_allows_missing_ncu(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "ncu/suspicious_boundary_kernel.ncu-rep").unlink()
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    for row in payload["rows"]:
+        row["ncu_artifact"] = "not_run_no_boundary_signal"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path, packet_mode="no_boundary_signal_kill")
+
+    assert result["status"] == "PASS"
+    assert any("Nsight Compute artifact is optional" in warning for warning in result["warnings"])
+
+
 def test_requires_server_and_client_logs(tmp_path: Path) -> None:
     server_missing = tmp_path / "server_missing"
     _write_complete_run(server_missing)
@@ -386,6 +401,47 @@ def test_requires_metric_row_provenance(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("missing provenance fields" in error for error in result["errors"])
+
+
+def test_rejects_metric_row_missing_artifact_path(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["nsys_artifact"] = "nsys/missing_trace.nsys-rep"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("nsys_artifact does not exist" in error for error in result["errors"])
+
+
+def test_rejects_metric_row_artifact_path_outside_run_dir(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["nsys_artifact"] = "../outside.nsys-rep"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("must stay inside the run directory" in error for error in result["errors"])
+
+
+def test_rejects_metric_row_artifact_wrong_extension(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    wrong_path = tmp_path / "ncu/suspicious_boundary_kernel.txt"
+    wrong_path.write_text("native profiler export bytes\n" + ("x" * 2048), encoding="utf-8")
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["ncu_artifact"] = "ncu/suspicious_boundary_kernel.txt"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("ncu_artifact must point to one of" in error for error in result["errors"])
 
 
 def test_rejects_packet_model_mismatches(tmp_path: Path) -> None:

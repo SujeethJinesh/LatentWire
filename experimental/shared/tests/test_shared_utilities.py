@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import torch
@@ -14,7 +15,7 @@ from experimental.shared.fp4_simulator import (
 from experimental.shared.hybrid_architecture_maps import build_map, write_maps
 from experimental.shared.check_gate_packet import validate_gate_packet
 from experimental.shared.hybrid_model_eligibility import _architecture_hash, _local_cache_dir, _size_gb
-from experimental.shared.hybrid_trace_packet_builder import build_horn_packet, build_ssq_lr_packet
+from experimental.shared.hybrid_trace_packet_builder import build_hbsm_packet, build_horn_packet, build_ssq_lr_packet
 from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_rank_correlation
 
 
@@ -126,32 +127,40 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
         '"command": "python run_gate.py"'
         "}\n"
     )
-    row = (
-        "{"
-        '"model_id": "toy-hybrid", '
-        '"model_revision": "abc123", '
-        '"prompt_id": "p0", '
-        '"layer": 0, '
-        '"position_bucket": "early", '
-        '"state_shape": [1, 4], '
-        '"max_abs": 2.0, '
-        '"rms": 1.0, '
-        '"std": 0.5, '
-        '"kurtosis": 3.0, '
-        '"outlier_mass": 0.1, '
-        '"control_type": "bf16_no_quant"'
-        "}\n"
+    rows = [
+        {
+            "model_id": "toy-hybrid",
+            "model_revision": "abc123",
+            "prompt_id": f"p{prompt_index}",
+            "layer": 0,
+            "position_bucket": bucket,
+            "state_shape": [1, 4],
+            "max_abs": 2.0,
+            "rms": 1.0,
+            "std": 0.5,
+            "kurtosis": 3.0,
+            "outlier_mass": 0.1,
+            "control_type": "bf16_no_quant",
+        }
+        for prompt_index in range(16)
+        for bucket in ("early", "middle", "late")
+    ]
+    (packet / "raw_rows.jsonl").write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
-    (packet / "raw_rows.jsonl").write_text(row)
     (packet / "summary.json").write_text(
-        "{"
-        '"seed": 1, '
-        '"surface": "real_ssq_lr_s1", '
-        '"decision": "CONTINUE_REAL_STATE_DUMPS", '
-        '"row_count": 1, '
-        '"rows": [{"layer": 0}], '
-        '"claim_boundary": ["real model trace", "not GPU evidence"]'
-        "}\n"
+        json.dumps(
+            {
+                "seed": 1,
+                "surface": "real_ssq_lr_s1",
+                "decision": "CONTINUE_REAL_STATE_DUMPS",
+                "row_count": len(rows),
+                "rows": rows,
+                "claim_boundary": ["real model trace", "not GPU evidence"],
+            },
+            sort_keys=True,
+        )
+        + "\n"
     )
     (packet / "summary.md").write_text("# Summary\n")
     (packet / "decision.md").write_text("`CONTINUE_REAL_STATE_DUMPS`\n")
@@ -160,6 +169,55 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
 
     assert report["ok"]
     assert report["mode"] == "real"
+
+
+def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tmp_path: Path) -> None:
+    packet = tmp_path / "real_ssq_missing_bucket"
+    packet.mkdir()
+    config = _base_trace_metadata()
+    config["device"] = "mps"
+    (packet / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
+    rows = [
+        {
+            "model_id": "toy-hybrid",
+            "model_revision": "abc123",
+            "prompt_id": f"p{prompt_index}",
+            "layer": 0,
+            "position_bucket": "early",
+            "state_shape": [1, 4],
+            "max_abs": 2.0,
+            "rms": 1.0,
+            "std": 0.5,
+            "kurtosis": 3.0,
+            "outlier_mass": 0.1,
+            "control_type": "bf16_no_quant",
+        }
+        for prompt_index in range(16)
+    ]
+    (packet / "raw_rows.jsonl").write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
+    )
+    (packet / "summary.json").write_text(
+        json.dumps(
+            {
+                "seed": 1,
+                "surface": "real_ssq_lr_s1",
+                "decision": "CONTINUE_REAL_STATE_DUMPS",
+                "row_count": len(rows),
+                "rows": rows,
+                "claim_boundary": ["real model trace", "not GPU evidence"],
+            },
+            sort_keys=True,
+        )
+        + "\n"
+    )
+    (packet / "summary.md").write_text("# Summary\n")
+    (packet / "decision.md").write_text("`CONTINUE_REAL_STATE_DUMPS`\n")
+
+    report = validate_gate_packet(packet, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("missing position buckets" in error for error in report["errors"])
 
 
 def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_path: Path) -> None:
@@ -289,18 +347,25 @@ def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: 
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "ssq"
     metadata = _base_trace_metadata()
-    metadata["ssq_lr_entries"] = [
-        {
-            "tensor": "state_layer_0_early",
-            "prompt_id": "p0",
-            "layer": 0,
-            "position_bucket": "early",
-            "control_type": "bf16_no_quant",
-        }
-    ]
+    entries = []
+    tensors = {}
+    for prompt_index in range(16):
+        for bucket in ("early", "middle", "late"):
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "position_bucket": bucket,
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
     save_tensor_packet(
         tensor_packet,
-        tensors={"state_layer_0_early": torch.randn(2, 4)},
+        tensors=tensors,
         metadata=metadata,
     )
 
@@ -308,7 +373,7 @@ def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: 
     report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
 
     assert report["ok"]
-    assert report["row_count"] == 1
+    assert report["row_count"] == 48
 
 
 def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
@@ -317,7 +382,7 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     metadata = _base_trace_metadata()
     metadata["horn_entries"] = [
         {
-            "tensor": "boundary",
+            "tensor": "boundary_attn_ssm",
             "layer_left": 0,
             "layer_right": 1,
             "direction": "attention->ssm",
@@ -327,17 +392,27 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
             "control_type": "boundary",
         },
         {
-            "tensor": "non_boundary",
-            "layer_left": 1,
-            "layer_right": 2,
-            "direction": "ssm->ssm",
+            "tensor": "boundary_ssm_attn",
+            "layer_left": 2,
+            "layer_right": 3,
+            "direction": "ssm->attention",
             "boundary_index": 1,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "boundary",
+        },
+        {
+            "tensor": "non_boundary",
+            "layer_left": 4,
+            "layer_right": 5,
+            "direction": "ssm->ssm",
+            "boundary_index": 2,
             "pre_norm_position": "post_norm",
             "post_norm_position": "pre_norm",
             "control_type": "non_boundary",
         },
         {
-            "tensor": "permuted",
+            "tensor": "permuted_attn_ssm",
             "layer_left": 0,
             "layer_right": 1,
             "direction": "ssm->attention",
@@ -346,13 +421,25 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
             "post_norm_position": "pre_norm",
             "control_type": "permuted_direction",
         },
+        {
+            "tensor": "permuted_ssm_attn",
+            "layer_left": 2,
+            "layer_right": 3,
+            "direction": "attention->ssm",
+            "boundary_index": 1,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "permuted_direction",
+        },
     ]
     save_tensor_packet(
         tensor_packet,
         tensors={
-            "boundary": torch.randn(2, 4),
+            "boundary_attn_ssm": torch.randn(2, 4),
+            "boundary_ssm_attn": torch.randn(2, 4),
             "non_boundary": torch.randn(2, 4),
-            "permuted": torch.randn(2, 4),
+            "permuted_attn_ssm": torch.randn(2, 4),
+            "permuted_ssm_attn": torch.randn(2, 4),
         },
         metadata=metadata,
     )
@@ -361,4 +448,138 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     report = validate_gate_packet(output_dir, mode="real", project="horn")
 
     assert report["ok"]
-    assert report["row_count"] == 3
+    assert report["row_count"] == 5
+
+
+def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_boundary(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "horn_bad"
+    metadata = _base_trace_metadata()
+    metadata["horn_entries"] = [
+        {
+            "tensor": "boundary_attn_ssm",
+            "layer_left": 0,
+            "layer_right": 1,
+            "direction": "attention->ssm",
+            "boundary_index": 0,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "boundary",
+        },
+        {
+            "tensor": "boundary_ssm_attn",
+            "layer_left": 2,
+            "layer_right": 3,
+            "direction": "ssm->attention",
+            "boundary_index": 1,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "boundary",
+        },
+        {
+            "tensor": "non_boundary",
+            "layer_left": 4,
+            "layer_right": 5,
+            "direction": "ssm->ssm",
+            "boundary_index": 2,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "non_boundary",
+        },
+        {
+            "tensor": "permuted_unmatched",
+            "layer_left": 8,
+            "layer_right": 9,
+            "direction": "attention->ssm",
+            "boundary_index": 9,
+            "pre_norm_position": "post_norm",
+            "post_norm_position": "pre_norm",
+            "control_type": "permuted_direction",
+        },
+    ]
+    save_tensor_packet(
+        tensor_packet,
+        tensors={
+            "boundary_attn_ssm": torch.randn(2, 4),
+            "boundary_ssm_attn": torch.randn(2, 4),
+            "non_boundary": torch.randn(2, 4),
+            "permuted_unmatched": torch.randn(2, 4),
+        },
+        metadata=metadata,
+    )
+
+    build_horn_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="horn")
+
+    assert not report["ok"]
+    assert any("must match an observed boundary tuple" in error for error in report["errors"])
+
+
+def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
+    row_packet = tmp_path / "hbsm_rows.json"
+    output_dir = tmp_path / "hbsm"
+    metadata = _base_trace_metadata()
+    controls = ["perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"]
+    row_packet.write_text(
+        json.dumps(
+            {
+                "metadata": metadata,
+                "hbsm_entries": [
+                    {
+                        "layer": index,
+                        "boundary_flag": index % 2 == 0,
+                        "precision_perturbation": "mxfp4_e2m1",
+                        "kl_or_nll_drift": float(index) * 0.01,
+                        "cheap_predictor": float(index + 1),
+                        "parameter_count": 1024 + index,
+                        "weight_norm": 0.5 + index,
+                        "control_type": control,
+                    }
+                    for index, control in enumerate(controls)
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    build_hbsm_packet(row_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="hbsm")
+
+    assert report["ok"]
+    assert report["row_count"] == 5
+
+
+def test_gate_packet_checker_rejects_hbsm_without_true_and_false_boundary_flags(tmp_path: Path) -> None:
+    row_packet = tmp_path / "hbsm_rows.json"
+    output_dir = tmp_path / "hbsm_bad"
+    metadata = _base_trace_metadata()
+    controls = ["perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"]
+    row_packet.write_text(
+        json.dumps(
+            {
+                "metadata": metadata,
+                "hbsm_entries": [
+                    {
+                        "layer": index,
+                        "boundary_flag": True,
+                        "precision_perturbation": "mxfp4_e2m1",
+                        "kl_or_nll_drift": 0.0 if control == "perturbation_off" else float(index) * 0.01,
+                        "cheap_predictor": float(index + 1),
+                        "parameter_count": 1024 + index,
+                        "weight_norm": 0.5 + index,
+                        "control_type": control,
+                    }
+                    for index, control in enumerate(controls)
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    build_hbsm_packet(row_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="hbsm")
+
+    assert not report["ok"]
+    assert any("both boundary_flag=true and boundary_flag=false" in error for error in report["errors"])

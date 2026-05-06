@@ -1,9 +1,10 @@
-"""Build strict real gate packets from saved hybrid trace tensors.
+"""Build strict real gate packets from saved hybrid trace outputs.
 
 The builder consumes tensor packets written by `activation_dumper.py`. It does
 not run models. This keeps the 5090 workflow short: dump tensors once, then use
 this script locally or on the node to produce checker-compatible SSQ-LR/HORN
-packets.
+packets. HBSM consumes a JSON row packet because its first real gate is a
+forward sensitivity table rather than a raw tensor summary.
 """
 
 from __future__ import annotations
@@ -168,16 +169,65 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
     return rows
 
 
+def build_hbsm_packet(row_packet: Path, output_dir: Path) -> list[dict[str, Any]]:
+    payload = json.loads(row_packet.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("HBSM row packet must be a JSON object")
+    metadata = payload.get("metadata")
+    if not isinstance(metadata, dict):
+        raise ValueError("HBSM row packet must contain object field metadata")
+    config = _base_config(metadata)
+    entries = payload.get("hbsm_entries")
+    if not isinstance(entries, list):
+        raise ValueError("HBSM row packet must contain list field hbsm_entries")
+    rows: list[dict[str, Any]] = []
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            raise ValueError(f"HBSM entry {index} must be an object")
+        rows.append(
+            {
+                "model_id": config["model_id"],
+                "layer": int(entry["layer"]),
+                "boundary_flag": bool(entry["boundary_flag"]),
+                "precision_perturbation": str(entry["precision_perturbation"]),
+                "kl_or_nll_drift": float(entry["kl_or_nll_drift"]),
+                "cheap_predictor": float(entry["cheap_predictor"]),
+                "parameter_count": int(entry["parameter_count"]),
+                "weight_norm": float(entry["weight_norm"]),
+                "control_type": str(entry["control_type"]),
+            }
+        )
+    decision = "REAL_PACKET_READY_FOR_B1_INTERPRETATION"
+    _write_packet(
+        output_dir,
+        config=config,
+        rows=rows,
+        surface="real_hbsm_b1_sensitivity_packet",
+        decision=decision,
+        claim_boundary=["saved forward sensitivity rows", "not GPU evidence"],
+    )
+    return rows
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--project", choices=("ssq_lr", "horn"), required=True)
-    parser.add_argument("--tensor-packet", type=Path, required=True)
+    parser.add_argument("--project", choices=("ssq_lr", "horn", "hbsm"), required=True)
+    parser.add_argument("--tensor-packet", type=Path)
+    parser.add_argument("--row-packet", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
     if args.project == "ssq_lr":
+        if args.tensor_packet is None:
+            raise SystemExit("--tensor-packet is required for ssq_lr")
         rows = build_ssq_lr_packet(args.tensor_packet, args.output_dir)
-    else:
+    elif args.project == "horn":
+        if args.tensor_packet is None:
+            raise SystemExit("--tensor-packet is required for horn")
         rows = build_horn_packet(args.tensor_packet, args.output_dir)
+    else:
+        if args.row_packet is None:
+            raise SystemExit("--row-packet is required for hbsm")
+        rows = build_hbsm_packet(args.row_packet, args.output_dir)
     print(json.dumps({"output_dir": str(args.output_dir), "rows": len(rows)}, sort_keys=True))
 
 

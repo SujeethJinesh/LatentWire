@@ -64,6 +64,7 @@ CLIENT_LOG_EVIDENCE_MARKERS = ['"requests"', '"model"', '"status"']
 
 ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
 PROFILED_PROCESS_FIELDS = ["profiled_process", "nsys_profiled_process", "ncu_profiled_process"]
+NO_BOUNDARY_SIGNAL_MODE = "no_boundary_signal_kill"
 REQUIRED_METRIC_PROVENANCE_FIELDS = [
     "row_role",
     "control_family",
@@ -198,6 +199,51 @@ def _validate_native_artifacts(
             )
 
 
+def _validate_metric_artifact_path(
+    *,
+    row_index: int,
+    field: str,
+    value: str,
+    run_dir: Path,
+    allowed_suffixes: set[str],
+    require_native_artifacts: bool,
+    min_bytes: int,
+    packet_mode: str,
+    errors: list[str],
+) -> None:
+    if field == "ncu_artifact" and packet_mode == NO_BOUNDARY_SIGNAL_MODE and value == "not_run_no_boundary_signal":
+        return
+    artifact_path = Path(value)
+    if artifact_path.is_absolute():
+        errors.append(f"metric row {row_index} {field} must be relative to the run directory")
+        return
+    resolved = (run_dir / artifact_path).resolve()
+    try:
+        resolved.relative_to(run_dir)
+    except ValueError:
+        errors.append(f"metric row {row_index} {field} must stay inside the run directory")
+        return
+    if resolved.suffix not in allowed_suffixes:
+        errors.append(
+            f"metric row {row_index} {field} must point to one of "
+            f"{sorted(allowed_suffixes)}"
+        )
+    if not require_native_artifacts:
+        return
+    if not resolved.is_file():
+        errors.append(f"metric row {row_index} {field} does not exist: {value}")
+        return
+    size = resolved.stat().st_size
+    if size < min_bytes:
+        errors.append(
+            f"metric row {row_index} {field} is too small to be native evidence: "
+            f"{value} has {size} bytes, expected at least {min_bytes}"
+        )
+    head = resolved.read_bytes()[:4096].lower()
+    if any(marker in head for marker in PLACEHOLDER_ARTIFACT_MARKERS):
+        errors.append(f"metric row {row_index} {field} appears to be placeholder evidence: {value}")
+
+
 def _is_pending_metric_row(raw: dict[str, object]) -> bool:
     measured_fields = [
         "total_step_ms",
@@ -208,7 +254,15 @@ def _is_pending_metric_row(raw: dict[str, object]) -> bool:
     return all(raw.get(field) is None for field in measured_fields)
 
 
-def _validate_metric_provenance(payload: dict[str, object], errors: list[str]) -> set[str]:
+def _validate_metric_provenance(
+    payload: dict[str, object],
+    *,
+    run_dir: Path,
+    require_native_artifacts: bool,
+    min_native_artifact_bytes: int,
+    packet_mode: str,
+    errors: list[str],
+) -> set[str]:
     roles: set[str] = set()
     rows = payload.get("rows", [])
     if not isinstance(rows, list):
@@ -231,6 +285,32 @@ def _validate_metric_provenance(payload: dict[str, object], errors: list[str]) -
             value = str(row.get(field, "")).strip()
             if not value or "TODO_NATIVE_PROFILE_FILL" in value or "placeholder" in value.lower():
                 errors.append(f"metric row {idx} {field} must be filled with non-placeholder text")
+        nsys_value = str(row.get("nsys_artifact", "")).strip()
+        ncu_value = str(row.get("ncu_artifact", "")).strip()
+        if nsys_value and "TODO_NATIVE_PROFILE_FILL" not in nsys_value and "placeholder" not in nsys_value.lower():
+            _validate_metric_artifact_path(
+                row_index=idx,
+                field="nsys_artifact",
+                value=nsys_value,
+                run_dir=run_dir,
+                allowed_suffixes={".nsys-rep", ".sqlite", ".qdrep"},
+                require_native_artifacts=require_native_artifacts,
+                min_bytes=min_native_artifact_bytes,
+                packet_mode=packet_mode,
+                errors=errors,
+            )
+        if ncu_value and "TODO_NATIVE_PROFILE_FILL" not in ncu_value and "placeholder" not in ncu_value.lower():
+            _validate_metric_artifact_path(
+                row_index=idx,
+                field="ncu_artifact",
+                value=ncu_value,
+                run_dir=run_dir,
+                allowed_suffixes={".ncu-rep"},
+                require_native_artifacts=require_native_artifacts,
+                min_bytes=min_native_artifact_bytes,
+                packet_mode=packet_mode,
+                errors=errors,
+            )
         kernel_names = row.get("kernel_names")
         if not isinstance(kernel_names, list) or not kernel_names or not all(
             isinstance(name, str) and name.strip() for name in kernel_names
@@ -282,6 +362,7 @@ def check_run_artifacts(
     min_repeated_runs: int = 3,
     require_native_artifacts: bool = True,
     min_native_artifact_bytes: int = MIN_NATIVE_ARTIFACT_BYTES,
+    packet_mode: str = "full",
 ) -> dict[str, object]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -317,13 +398,18 @@ def check_run_artifacts(
             min_bytes=min_native_artifact_bytes,
             errors=errors,
         )
-        _validate_native_artifacts(
-            label="Nsight Compute",
-            root=run_dir / "ncu",
-            patterns=NCU_PATTERNS,
-            min_bytes=min_native_artifact_bytes,
-            errors=errors,
-        )
+        if packet_mode == NO_BOUNDARY_SIGNAL_MODE:
+            warnings.append(
+                "Nsight Compute artifact is optional in no_boundary_signal_kill mode"
+            )
+        else:
+            _validate_native_artifacts(
+                label="Nsight Compute",
+                root=run_dir / "ncu",
+                patterns=NCU_PATTERNS,
+                min_bytes=min_native_artifact_bytes,
+                errors=errors,
+            )
 
     environment_path = run_dir / "metadata/environment.txt"
     _reject_skeleton_todo(environment_path, "metadata/environment.txt", errors)
@@ -360,7 +446,12 @@ def check_run_artifacts(
             profile_model = str(profile_scope.get("model", "")).strip()
             if not profile_model:
                 errors.append("profile_scope.json must contain non-empty model")
-            for field in PROFILED_PROCESS_FIELDS:
+            profiled_process_fields = (
+                ["profiled_process", "nsys_profiled_process"]
+                if packet_mode == NO_BOUNDARY_SIGNAL_MODE
+                else PROFILED_PROCESS_FIELDS
+            )
+            for field in profiled_process_fields:
                 _validate_profiled_process(field, str(profile_scope.get(field, "")), errors)
             trace_scope = str(profile_scope.get("trace_scope", "")).lower()
             nsys_trace_scope = str(profile_scope.get("nsys_trace_scope", trace_scope)).lower()
@@ -370,7 +461,11 @@ def check_run_artifacts(
                 errors.append("profile_scope.json trace_scope must cover server-side CUDA work")
             if "server" not in nsys_trace_scope and "single_process" not in nsys_trace_scope:
                 errors.append("profile_scope.json nsys_trace_scope must cover server-side CUDA work")
-            if "server" not in ncu_trace_scope and "single_process" not in ncu_trace_scope:
+            if (
+                packet_mode != NO_BOUNDARY_SIGNAL_MODE
+                and "server" not in ncu_trace_scope
+                and "single_process" not in ncu_trace_scope
+            ):
                 errors.append("profile_scope.json ncu_trace_scope must cover server-side CUDA work")
             if "vllm" not in vllm_command.lower():
                 errors.append("profile_scope.json vllm_command must mention vLLM")
@@ -401,7 +496,14 @@ def check_run_artifacts(
     if metrics_path.is_file():
         try:
             payload = json.loads(metrics_path.read_text(encoding="utf-8"))
-            metric_roles = _validate_metric_provenance(payload, errors)
+            metric_roles = _validate_metric_provenance(
+                payload,
+                run_dir=run_dir,
+                require_native_artifacts=require_native_artifacts,
+                min_native_artifact_bytes=min_native_artifact_bytes,
+                packet_mode=packet_mode,
+                errors=errors,
+            )
             result = analyze(payload)
             computed_analysis = result
             metrics_status = str(result["status"])
@@ -512,6 +614,7 @@ def check_run_artifacts(
         "min_repeated_runs": min_repeated_runs,
         "native_artifacts_required": require_native_artifacts,
         "min_native_artifact_bytes": min_native_artifact_bytes,
+        "packet_mode": packet_mode,
     }
 
 
@@ -521,6 +624,7 @@ def main() -> None:
     parser.add_argument("--min-repeated-runs", type=int, default=3)
     parser.add_argument("--min-native-artifact-bytes", type=int, default=MIN_NATIVE_ARTIFACT_BYTES)
     parser.add_argument("--allow-missing-native-artifacts", action="store_true")
+    parser.add_argument("--packet-mode", choices=("full", NO_BOUNDARY_SIGNAL_MODE), default="full")
     args = parser.parse_args()
 
     result = check_run_artifacts(
@@ -528,6 +632,7 @@ def main() -> None:
         min_repeated_runs=args.min_repeated_runs,
         require_native_artifacts=not args.allow_missing_native_artifacts,
         min_native_artifact_bytes=args.min_native_artifact_bytes,
+        packet_mode=args.packet_mode,
     )
     print(json.dumps(result, indent=2))
     if result["status"] != "PASS":

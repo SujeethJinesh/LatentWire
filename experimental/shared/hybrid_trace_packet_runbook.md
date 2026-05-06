@@ -34,7 +34,8 @@ For real packets, use the stricter project contract:
 ```
 
 The checker rejects real packets without provenance fields, `summary.md`,
-matching `row_count`, project-specific row schemas, and required controls.
+matching `row_count`, project-specific row schemas, required controls, and
+project-specific admissible coverage.
 
 ## SSQ-LR Real S1 Packet
 
@@ -61,7 +62,8 @@ Minimum admissible row fields:
 Required controls:
 
 - non-boundary adjacent pairs;
-- direction-label permutation;
+- direction-label permutation matched to an observed boundary tuple;
+- at least one `attention->ssm` boundary and one `ssm->attention` boundary;
 - matched normalization placement.
 
 ## HBSM Real B1 Packet
@@ -70,15 +72,17 @@ Minimum admissible row fields:
 
 - `model_id`, `layer`, `boundary_flag`, `precision_perturbation`
 - `kl_or_nll_drift`, `cheap_predictor`, `parameter_count`, `weight_norm`
-- `control_type` in `random_flags`, `layer_index`, `parameter_count_norm`, or
-  `boundary_only`
+- `control_type` in `perturbation_off`, `random_flags`, `layer_index`,
+  `parameter_count_norm`, or `boundary_only`
 
 Required controls:
 
+- perturbation-off/no-op row with near-zero drift;
 - random top-decile flags;
 - layer-index baseline;
 - parameter-count/norm baseline;
 - boundary-only baseline;
+- both `boundary_flag=true` and `boundary_flag=false`;
 - train/test layer split if layer count permits.
 
 ## Promotion Boundary

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -67,7 +68,7 @@ REAL_ROW_FIELDS = {
 REAL_CONTROL_VALUES = {
     "ssq_lr": {"bf16_no_quant"},
     "horn": {"boundary", "non_boundary", "permuted_direction"},
-    "hbsm": {"random_flags", "layer_index", "parameter_count_norm", "boundary_only"},
+    "hbsm": {"perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"},
 }
 
 
@@ -85,6 +86,74 @@ def _infer_mode(summary: dict[str, Any], requested: str) -> str:
         return requested
     surface = str(summary.get("surface", ""))
     return "synthetic" if surface.startswith("synthetic") else "real"
+
+
+def _finite_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value))
+
+
+def _validate_real_coverage(
+    *,
+    project: str,
+    rows: list[dict[str, Any]],
+    config: dict[str, Any],
+    errors: list[str],
+) -> None:
+    model_id = str(config.get("model_id", "")).strip()
+    mismatched = [
+        index for index, row in enumerate(rows) if str(row.get("model_id", "")).strip() != model_id
+    ]
+    if mismatched:
+        errors.append("row model_id values must match config.json model_id")
+
+    if project == "ssq_lr":
+        buckets = {str(row.get("position_bucket")) for row in rows}
+        missing_buckets = {"early", "middle", "late"} - buckets
+        if missing_buckets:
+            errors.append(
+                "ssq_lr real packet missing position buckets: "
+                + ", ".join(sorted(missing_buckets))
+            )
+        prompt_ids = {str(row.get("prompt_id")) for row in rows}
+        if len(prompt_ids) < 16 and "resource_limit_note" not in config:
+            errors.append(
+                "ssq_lr real packet needs at least 16 distinct prompt_id values "
+                "or config.json resource_limit_note"
+            )
+
+    if project == "horn":
+        boundary_rows = [row for row in rows if str(row.get("control_type")) == "boundary"]
+        boundary_directions = {str(row.get("direction")) for row in boundary_rows}
+        missing_directions = {"attention->ssm", "ssm->attention"} - boundary_directions
+        if missing_directions:
+            errors.append(
+                "horn real packet missing boundary directions: "
+                + ", ".join(sorted(missing_directions))
+            )
+        boundary_by_key = {
+            (row.get("layer_left"), row.get("layer_right"), row.get("boundary_index")): str(row.get("direction"))
+            for row in boundary_rows
+        }
+        for row in rows:
+            if str(row.get("control_type")) != "permuted_direction":
+                continue
+            key = (row.get("layer_left"), row.get("layer_right"), row.get("boundary_index"))
+            original = boundary_by_key.get(key)
+            if original is None:
+                errors.append("horn permuted_direction row must match an observed boundary tuple")
+            elif str(row.get("direction")) == original:
+                errors.append("horn permuted_direction row must flip the observed boundary direction")
+
+    if project == "hbsm":
+        flags = {bool(row.get("boundary_flag")) for row in rows}
+        if flags != {False, True}:
+            errors.append("hbsm real packet needs both boundary_flag=true and boundary_flag=false")
+        for index, row in enumerate(rows):
+            for field in ("kl_or_nll_drift", "cheap_predictor", "parameter_count", "weight_norm"):
+                if not _finite_number(row.get(field)):
+                    errors.append(f"hbsm row {index} {field} must be finite numeric")
+            if str(row.get("control_type")) == "perturbation_off" and abs(float(row.get("kl_or_nll_drift", 1.0))) > 1e-6:
+                errors.append("hbsm perturbation_off rows must have near-zero drift")
 
 
 def validate_gate_packet(
@@ -163,6 +232,7 @@ def validate_gate_packet(
             if missing_controls:
                 controls = ", ".join(sorted(missing_controls))
                 errors.append(f"missing required controls: {controls}")
+            _validate_real_coverage(project=project, rows=raw_rows, config=config, errors=errors)
 
     decision_text = (packet_dir / "decision.md").read_text() if (packet_dir / "decision.md").exists() else ""
     if summary and str(summary.get("decision")) not in decision_text:

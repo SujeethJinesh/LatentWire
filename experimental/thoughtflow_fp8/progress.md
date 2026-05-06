@@ -477,3 +477,12 @@ handoff artifacts.
 Decision: **NO ADDITIONAL MAC-SIDE THOUGHTFLOW WORK REMAINS FOR CURRENT
 BRANCHES**. Any improvement requires a genuinely new preregistered utility
 signal, not more cleanup or Triton scaffolding.
+
+## 2026-05-06 Paired-Interval Language Cleanup
+
+Tightened the falsification-protocol table so the paired-interval stop rule now
+says promotion requires the preregistered mean margin and paired CI high below
+zero. Added a paper guard test to keep that language from drifting back to a
+mean-only shorthand.
+
+Decision: **CAMERA-READY WORDING IMPROVED; METHOD WORK STILL STOPPED**.

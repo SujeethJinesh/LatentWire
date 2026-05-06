@@ -197,6 +197,18 @@ cite it.
 Current status remains **PENDING native profiler data**. The verifier is a gate
 for admissible evidence, not a positive result.
 
+The verifier also supports `--packet-mode no_boundary_signal_kill`, which keeps
+server-side Nsight Systems, client replay, reduced rows, and readout decisions
+mandatory while making Nsight Compute optional when no suspicious boundary
+kernel exists. This creates a clean negative path rather than forcing a fake NCU
+target.
+
+2026-05-06 hardening: metric-row artifact provenance is now path-checked.
+Every `nsys_artifact` and `ncu_artifact` field must be a relative path that
+stays inside the run packet, uses a valid Nsight export extension, and resolves
+to a reviewable native artifact when native artifacts are required. Missing,
+external, and wrong-extension row references are covered by tests.
+
 ## Native Packet Checklist And Local Stop Decision
 
 Added `phase2/native_run_packet_checklist.md` as the concise handoff artifact

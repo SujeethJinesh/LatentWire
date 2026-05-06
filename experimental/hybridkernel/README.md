@@ -239,7 +239,8 @@ Expected final packet:
 - `logs/nsys_server*.log`
 - `logs/client*.log`
 - `nsys/*.nsys-rep`, `*.sqlite`, or `*.qdrep`
-- `ncu/*.ncu-rep`
+- `ncu/*.ncu-rep` unless `--packet-mode no_boundary_signal_kill` is used after
+  a filled readout records no suspicious boundary kernel
 - `readout.md`
 - `profiler_metrics.json`
 - `profiler_analysis_gate.json`

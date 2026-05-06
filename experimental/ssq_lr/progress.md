@@ -33,3 +33,10 @@ Added metadata-only model eligibility at
 found is `ibm-granite/granite-4.0-h-tiny` at 12.93 GB of safetensors, but it is
 not cached repo-locally. SSQ-LR therefore cannot produce a real S1 state packet
 on the current Mac without first downloading/loading a live hybrid model.
+
+## 2026-05-06 Real Packet Admissibility Update
+
+The shared checker now rejects real SSQ-LR packets unless rows cover early,
+middle, and late position buckets and include at least 16 distinct prompt IDs,
+unless `config.json` explicitly records a resource-limit note. This makes S1 a
+real state-distribution gate instead of a one-row schema check.

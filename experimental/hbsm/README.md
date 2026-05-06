@@ -55,6 +55,10 @@ Use the explicit boundary IDs and architecture hashes in
 layer definitions.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
+Required real controls are `perturbation_off`, `random_flags`, `layer_index`,
+`parameter_count_norm`, and `boundary_only`. Convert saved B1 sensitivity rows
+with `experimental.shared.hybrid_trace_packet_builder --project hbsm
+--row-packet ...` before validation.
 
 Validate the first real B1 packet with:
 

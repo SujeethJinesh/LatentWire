@@ -33,3 +33,15 @@ Added metadata-only model eligibility at
 `../shared/results/hybrid_model_eligibility_20260506/`. HBSM can now name the
 frontier-hybrid targets and their approximate weight sizes, but it cannot run B1
 without loaded model weights and forward sensitivity measurements.
+
+## 2026-05-06 Packet Builder Update
+
+`../shared/hybrid_trace_packet_builder.py` now supports `--project hbsm` from a
+JSON row packet. Real B1 packets must include the perturbation-off no-op plus
+random, layer-index, parameter-count/norm, and boundary-only controls before the
+checker will accept them.
+
+The checker also requires both `boundary_flag=true` and `boundary_flag=false`,
+finite sensitivity/predictor/size/norm fields, and near-zero drift for
+`perturbation_off` rows. This keeps HBSM's first real packet tied to a genuine
+sensitivity table rather than a control-only schema artifact.

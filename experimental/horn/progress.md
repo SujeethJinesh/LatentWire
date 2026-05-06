@@ -32,3 +32,10 @@ Added metadata-only model eligibility at
 cached repo-locally, and GPU-sized targets should wait for the 5090. HORN cannot
 produce real boundary activation rows until a live hybrid model is loaded and
 hooked.
+
+## 2026-05-06 Real Packet Admissibility Update
+
+The shared checker now rejects real HORN packets unless boundary rows cover both
+`attention->ssm` and `ssm->attention`, and every `permuted_direction` control
+matches an observed boundary tuple while flipping its direction. This prevents a
+syntactically valid packet from skipping the directional asymmetry claim.
