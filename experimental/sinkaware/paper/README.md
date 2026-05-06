@@ -74,6 +74,10 @@ tradeoff.
   `max_length={64,96}` and `sink_tokens={2,4}` across three split seeds per
   configuration (`+0.0366 +/- 0.0024` output rel-L2 improvement; minimum config
   `+0.0342`), but layer-head output win rate remained low (`0.286 +/- 0.010`).
+- Trace-level frozen split repeat: all-head rank-2 stayed positive on three
+  whole-trace held-out splits over 24 traces (`+0.0398 +/- 0.0014` output
+  rel-L2 improvement; minimum split `+0.0387`), but layer-head output win rate
+  remained low (`0.287 +/- 0.018`).
 
 ## Limitations
 
@@ -85,16 +89,15 @@ tradeoff.
 - Per-head gains are concentrated; a reviewer can reasonably ask whether a
   rank-2 path should be stabilized or killed for unstable heads.
 - No cross-family falsification pair has passed.
-- No trace-level frozen-slice repeat, larger frozen slice, or long-context
-  competitor comparison is available yet.
+- No larger frozen slice or long-context competitor comparison is available yet.
 
 ## Next GPU Gate
 
 The Mac-local softmax/output probe now shows bounded aggregate rank-2 drift
-under three randomized token split seeds and a small length/sink sweep, but
-per-head robustness is mixed. The next gate should run a trace-level frozen
-split repeat or larger frozen slice, then make the Triton interpreter scaffold
-runnable before any native GPU prototype that measures:
+under three randomized token split seeds, a small length/sink sweep, and a
+trace-level frozen split repeat, but per-head robustness is mixed. The next gate
+should run a larger frozen slice or make the Triton interpreter scaffold runnable
+before any native GPU prototype that measures:
 
 1. exact attention baseline,
 2. exact fixed-sink decomposition that still computes `QK_sink`,

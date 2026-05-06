@@ -35,8 +35,10 @@ repeat kept all-head rank-2 positive across three token splits
 remained low (`0.282 +/- 0.024`). A bounded length/sink sweep over
 `max_length={64,96}` and `sink_tokens={2,4}` kept all-head rank-2 positive
 (`+0.0366 +/- 0.0024`, minimum config `+0.0342`), while preserving the same
-per-head caveat. Treat this as a correctness/repeatability gate, not as a
-quality or speed result.
+per-head caveat. A trace-level frozen split repeat on 24 traces also kept
+all-head rank-2 positive (`+0.0398 +/- 0.0014`, minimum split `+0.0387`), but
+the head win rate stayed low (`0.287 +/- 0.018`). Treat this as a
+correctness/repeatability gate, not as a quality or speed result.
 
 Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
 reference. Interpreter-mode correctness is not GPU performance evidence, and

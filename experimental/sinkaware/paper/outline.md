@@ -42,7 +42,8 @@ Non-claims:
    - per-head softmax/output error on 48 distilgpt2 traces,
    - layer-head paired uncertainty against position-only,
    - all-rank2 split/seed repeat,
-   - bounded sequence-length/sink-token sweep.
+   - bounded sequence-length/sink-token sweep,
+   - trace-level frozen split repeat.
 6. Limitations and threats to validity.
 7. GPU gate and benchmark plan.
 
@@ -60,6 +61,7 @@ Non-claims:
 | Validation head selection | Weakened | Selecting 19/72 heads on validation gives held-out output rel-L2 0.204, worse than position-only 0.172 and all-rank2 0.142. |
 | Split/seed all-rank2 repeat | Alive but weak | Across 3 randomized token splits, all-rank2 beats position-only by +0.0368 +/- 0.0006 output rel-L2, but layer-head win rate is only 0.282 +/- 0.024. |
 | Length/sink all-rank2 sweep | Alive but bounded | Across max lengths 64/96, sink tokens 2/4, and 3 seeds per config, all configs remain positive; mean improvement is +0.0366 +/- 0.0024, min config +0.0342. |
+| Trace-level frozen split repeat | Alive but bounded | Across 3 whole-trace held-out splits on 24 traces, all splits remain positive; mean improvement is +0.0398 +/- 0.0014, min split +0.0387, but head win rate is only 0.287 +/- 0.018. |
 | Triton interpreter readiness | Blocked locally | `TRITON_INTERPRET=1` readiness reports `triton` is not importable in `./venv_arm64`; no interpreter correctness pass yet. |
 
 ## Reviewer-Risk Notes

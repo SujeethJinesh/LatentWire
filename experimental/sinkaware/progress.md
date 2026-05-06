@@ -7,7 +7,8 @@
 - Phase 2: exact static sink-prior gate failed; approximate low-rank revival
   and per-head softmax/output gates completed with a new paired layer-head
   caveat; simple head selection failed; all-rank2 split repeats and a bounded
-  length/sink sweep passed weakly
+  length/sink sweep passed weakly; trace-level frozen split repeat passed
+  as bounded evidence
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-06
@@ -149,6 +150,28 @@ speed. The next exact pre-GPU gate should be a trace-level frozen split repeat
 or a larger frozen slice; head selection should stay ruled out unless a
 different stability signal appears.
 
+## All-Rank2 Trace-Level Frozen Split Gate
+
+`phase2/rank2_trace_frozen_split_gate.md` ran the smallest Mac-feasible
+trace-level repeat: 24 distilgpt2 traces, `max_length=96`, `sink_tokens=4`,
+and three deterministic frozen trace splits. Each split trained on 16 whole
+traces and evaluated on 8 held-out traces, so no text trace appeared in both
+train and held-out sets.
+
+All three splits kept all-head rank-2 positive against position-only. Across
+trace splits, output rel-L2 improvement averaged `+0.0398 +/- 0.0014`;
+sink-mass MAE improvement averaged `+0.0265 +/- 0.0006`; attention-L1
+improvement averaged `+0.0540 +/- 0.0014`; the minimum split improvement was
+`+0.0387`.
+
+Decision: all-head rank-2 is **alive but still bounded** after the trace-level
+frozen repeat. This strengthens repeatability over the previous token-split
+gate, but it remains Mac-local attention-output drift evidence. The layer-head
+output win rate is still low at `0.287 +/- 0.018`, so no paper should claim
+per-head robustness or downstream quality yet. The next exact gate is a larger
+frozen trace slice or the Triton interpreter correctness gate for the approximate
+operator before any native NVIDIA timing claim.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added a scalar fixed sink-token decomposition primitive:
@@ -210,3 +233,14 @@ worse than position-only (`0.1724`) and all-rank2 (`0.1419`). The next useful
 pre-GPU improvement is not another simple validation head selector; it is a
 repeatable all-rank2 quality/stability result or a different stability
 mechanism.
+
+## 2026-05-06 Local Validation Rerun
+
+Added and ran the trace-level frozen split gate in `./venv_arm64`. Targeted
+tests for split stability, length/sink sweep, and trace-level frozen splits
+passed (`9 passed`). The full SinkAware Phase 2/3/4 suite also passed locally
+with Triton skips (`25 passed, 4 skipped`; `triton` is not importable). The new
+trace-level gate produced
+`phase2/rank2_trace_frozen_split_gate.md` and `.json` with status
+**ALIVE but bounded**: all-head rank-2 beat position-only on every held-out
+trace split, but the per-head caveat remained.
