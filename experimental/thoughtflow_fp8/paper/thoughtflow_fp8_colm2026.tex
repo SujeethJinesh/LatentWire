@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-ThoughtFlow-FP8 tests whether training-free sparse KV retention can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality and a larger sparse-cache gate rule out further tuning of the original anchor/recent/phase/math family on the available traces. We therefore pre-registered one successor signal, recurrence-distance utility (\texttt{rdu\_topk}), which ranks prefix tokens by delayed self-attention reuse across lag buckets and uses no token labels, recent reserve, or continuation loss. On the frozen 74-trace distilgpt2 sparse-cache gate at a 0.20 keep fraction, \texttt{rdu\_topk} reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939, with paired deltas -0.121 [-0.211,-0.037] and -0.160 [-0.264,-0.050]. A measured no-retuning same-slice rerun reproduces the cached gate exactly on the current deterministic Mac stack, while cached deterministic half-splits keep positive mean margins in 4/4 partitions but only 2/4 partitions clear both paired confidence intervals below zero. A first alternate-surface measured check preserves cross-family wins but fails same-family separation because a stopped sparse ThoughtFlow row is lower by 0.006 NLL. The anchor/phase quantization primitive now passes Triton interpreter correctness tests against its CPU reference. This leaves the branch alive but weakened, and not yet an ICLR-ready positive method without a larger or independently seeded reproduction.
+ThoughtFlow-FP8 tests whether training-free sparse KV retention can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality and a larger sparse-cache gate rule out further tuning of the original anchor/recent/phase/math family on the available traces. We therefore pre-registered one successor signal, recurrence-distance utility (\texttt{rdu\_topk}), which ranks prefix tokens by delayed self-attention reuse across lag buckets and uses no token labels, recent reserve, or continuation loss. On the frozen 74-trace distilgpt2 sparse-cache gate at a 0.20 keep fraction, \texttt{rdu\_topk} initially reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939. However, reproduction gates now demote the branch. A same-slice rerun reproduces the cached gate exactly, but an alternate-surface check fails same-family separation by 0.006 NLL, and a larger independent saved-trace check fails cross-family separation: on 89 scored traces, R-KV-like is best compressed at NLL 3.981 while \texttt{rdu\_topk} reaches 4.014. The anchor/phase quantization primitive passes Triton interpreter correctness tests against its CPU reference. The method claim is therefore stopped: \texttt{rdu\_topk} is useful as a sparse-cache diagnostic, not as a positive method on the current Mac-local evidence.
 \end{abstract}
 
 \section{Policy Family}
@@ -172,17 +172,30 @@ by 0.006. The measured per-trace compressed oracle reaches NLL 3.460, leaving
 \texttt{rdu\_topk} 0.135 above oracle and 0.847 above full cache, with a 0.438
 oracle-hit rate.
 
+\paragraph{Independent saved-trace reproduction check.}
+The stronger no-retuning check changes the saved trace inputs to a 96-row chat
+SVAMP surface while keeping the same \texttt{rdu\_topk} rule and 0.20 keep
+fraction. It scores 89 traces after token-length filtering. This does not
+reproduce the positive gate. R-KV-like is now the best compressed row at NLL
+3.981, while \texttt{rdu\_topk} reaches 4.014. The paired delta versus
+R-KV-like is +0.032 with 95\% CI [-0.071,+0.137], and ThinKV-like is only
+0.030 NLL worse than \texttt{rdu\_topk} with a confidence interval crossing
+zero. Same-family stopped rows are worse than \texttt{rdu\_topk}, but only by
+0.006 and 0.010 NLL. The compressed per-trace oracle reaches NLL 3.754, leaving
+\texttt{rdu\_topk} 0.260 above oracle and 1.083 above full cache. This rules
+out claiming \texttt{rdu\_topk} as a robust positive method on the available
+surfaces.
+
 \section{Decision}
 
-The branch remains alive only for the pre-registered recurrence-distance
-successor, but the first alternate-surface reproduction weakens it. The stopped
-anchor/recent/phase/math policy family remains ruled out as a tunable branch on
-this trace set, and the stopped sparse row's alternate-surface win blocks a
-positive-method claim. A paper-ready claim now requires evaluation-quality work:
-larger frozen slices, seed repeats, and then competitor and long-context
-benchmarks if the \texttt{rdu\_topk} signal survives the same strict
-same-family, cross-family, and oracle/headroom reporting. The Triton interpreter
-gate is no longer the blocker for the quantization scaffold; method evidence is.
+The branch is now demoted to a diagnostic. The stopped anchor/recent/phase/math
+policy family remains ruled out as a tunable branch on this trace set, the
+alternate-surface check fails same-family separation, and the independent
+saved-trace check fails cross-family separation. A paper-ready claim now
+requires a genuinely new pre-registered utility signal evaluated once on a
+fresh/larger frozen surface with strict same-family, cross-family, and
+oracle/headroom reporting. The Triton interpreter gate is no longer the blocker
+for the quantization scaffold; method evidence is.
 
 \section{Artifacts}
 
@@ -195,6 +208,7 @@ gate is no longer the blocker for the quantization scaffold; method evidence is.
 \item \url{experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.md}
 \item \url{experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.md}
 \item \url{experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.md}
+\item \url{experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.md}
 \item \url{experimental/thoughtflow_fp8/phase2/real_trace_retention_sweep.md}
 \item \url{experimental/triton_cpu_source_install_20260506.md}
 \item \url{experimental/thoughtflow_fp8/paper/colm_workshop_shell.md}

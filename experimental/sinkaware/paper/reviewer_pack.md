@@ -33,6 +33,7 @@ claim.
 | held-out/cross-family repeat | measured 48 traces, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; output rel-L2 improvements +0.0306 +/- 0.0023 and +0.0788 +/- 0.0069 | alive but bounded; not predictor transfer, GPU speed, or end-to-end quality evidence |
 | cross-family length stability | measured 48 traces, lengths 64/96, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; all 4 model/length rows positive; mean output rel-L2 improvement +0.0535 +/- 0.0262; min row +0.0301 | alive but bounded; stronger Mac-local stability, still no downstream or speed claim |
 | Triton readiness | `TRITON_INTERPRET=1`, repo-local `triton-cpu` source install, CUDA unavailable on Mac | interpreter correctness passes; no GPU claim |
+| downstream causal-LM control smoke | distilgpt2 and facebook/opt-125m, 12 traces, one split seed; exact replacement is a no-op; rank-2 improves absolute loss drift over position-only by +0.0414 and +0.1603 | alive but bounded; downstream control only, not benchmark or speed evidence |
 
 ## Reviewer Risks
 
@@ -48,11 +49,8 @@ claim.
 
 ## Next Experiment
 
-The `TRITON_INTERPRET=1` approximate-attention scaffold now runs in
-`./venv_arm64` through the local `triton-cpu` source build and verifies
-exact-prediction correctness. The next Mac-feasible gate is a downstream
-quality/control diagnostic that preserves strict same-family versus OPT-family
-separation and compares exact attention, position-only replacement, and rank-2
-replacement. Simple validation head selection is no longer a good rescue.
-Native NVIDIA comparison remains gated by
+The downstream causal-LM control smoke now runs on distilgpt2 and
+facebook/opt-125m and favors rank-2 over position-only with exact replacement
+as a no-op control. The next Mac-feasible gate is seed/trace expansion of this
+downstream diagnostic. Native NVIDIA comparison remains gated by
 `experimental/sinkaware/phase2/gpu_gate_runbook.md`.

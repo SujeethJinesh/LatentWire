@@ -389,3 +389,31 @@ Decision: **Triton interpreter correctness is no longer the blocking pre-GPU
 gate**. SinkAware is still only bounded and pre-submission because it lacks
 downstream quality controls, predictor transfer, and native GPU speed/memory
 evidence.
+
+## 2026-05-06 Downstream Quality/Control Gate
+
+Added and ran `phase3/downstream_quality_control_gate.py` in `./venv_arm64`
+with `--model-names distilgpt2 facebook/opt-125m --max-traces 12 --max-length
+64 --sink-tokens 4 --train-fraction 0.67 --seeds 0`.
+
+Result: **ALIVE but bounded** as a first downstream causal-LM control smoke.
+The gate patches live GPT2/OPT attention modules during full causal-LM
+forwards and compares exact baseline attention, exact sink-logit replacement
+as a no-op control, position-only replacement, and rank-2 replacement. The
+exact replacement reproduced baseline loss and logits on both models. Rank-2
+was closer than position-only on both downstream loss drift and KL:
+
+- Aggregate rank-2 absolute loss-delta improvement over position-only:
+  `+0.1008 +/- 0.1166`; minimum model improvement `+0.0414`.
+- Aggregate rank-2 KL-to-exact improvement over position-only:
+  `+0.0815 +/- 0.1032`.
+- `distilgpt2`: position loss delta `+0.0941`, rank-2 `+0.0527`;
+  KL improvement `+0.0288`.
+- `facebook/opt-125m`: position loss delta `+0.2673`, rank-2 `+0.1070`;
+  KL improvement `+0.1341`.
+
+Decision: this closes the smallest Mac-feasible downstream-control gap and
+keeps SinkAware alive as an approximate rank-2 branch. It is still not
+benchmark success, predictor transfer, or GPU speed evidence. The next exact
+gate is seed/trace expansion of the downstream control or native NVIDIA timing
+only after the operator remains quality-bounded.

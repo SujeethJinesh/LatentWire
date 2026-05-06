@@ -223,6 +223,7 @@ def _run(
     max_traces: int,
     max_length: int,
     continuation_tokens: int,
+    trace_paths: list[Path] | None = None,
 ) -> dict[str, object]:
     cache_dir = ROOT / "experimental/thoughtflow_fp8/.debug/hf_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -232,7 +233,7 @@ def _run(
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = _load_model_for_prefill_attentions(model_name)
     model.eval()
-    prepared = _prepare_rows(tokenizer, max_traces, max_length, continuation_tokens)
+    prepared = _prepare_rows(tokenizer, max_traces, max_length, continuation_tokens, trace_paths)
     policies = _frozen_policies()
     rows = []
     rdu_per_trace = []
@@ -317,6 +318,10 @@ def _run(
     paired_vs_thin = _paired_deltas(rows, baseline_policy="thin_kv_like")
     return {
         "model_name": model_name,
+        "input_paths": [
+            str(path.relative_to(ROOT)) if path.is_absolute() and path.is_relative_to(ROOT) else str(path)
+            for path in (trace_paths or [])
+        ],
         "keep_fraction": keep_fraction,
         "max_traces": max_traces,
         "max_length": max_length,

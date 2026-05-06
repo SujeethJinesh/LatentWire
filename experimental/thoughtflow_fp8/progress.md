@@ -12,10 +12,11 @@
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
   scaffold added, but not phase-complete
 - Current viability: the stopped current policy family remains ruled out.
-  `rdu_topk` is alive as a pre-registered successor that cleared the first
-  Mac-local frozen sparse-cache gate, but the first alternate-surface
-  no-retuning check weakens the promotion because a stopped same-family sparse
-  row narrowly beats it.
+  `rdu_topk` cleared the first Mac-local frozen sparse-cache gate and reproduced
+  exactly on the same deterministic slice, but it is no longer promoted as a
+  positive method. The first alternate surface failed same-family separation,
+  and the larger independent saved-trace surface failed cross-family
+  separation.
 - Current risk: high field crowding; ThinKV already occupies much of the
   thought-adaptive quantization/eviction space, and DeepSeek V4 raises the
   production compressed-attention systems bar.
@@ -237,6 +238,29 @@ run an independently seeded/larger frozen slice and require both cross-family
 and same-family separation, paired uncertainty, and oracle/headroom before
 claiming a positive method.
 
+`phase2/rdu_independent_trace_reproduction_check.md` runs that larger
+no-retuning saved-trace surface. It keeps the same `rdu_topk` rule and 0.20
+keep fraction, changes only the trace inputs to the 96-row
+`surface_scout_qwen25math_qwen3_svamp32_chat_20260426` source/text/target
+surface, and scores the 89 traces that survive token-length filtering. This
+does not reproduce the positive gate. R-KV-like is the best compressed row with
+NLL `3.981`, while `rdu_topk` reaches `4.014`; the paired delta versus R-KV-like
+is `+0.032` with 95% CI `[-0.071, +0.137]`. ThinKV-like remains only `0.030`
+NLL worse than `rdu_topk`, with paired CI crossing zero (`-0.030`
+`[-0.152, +0.085]`). Same-family stopped rows are worse than `rdu_topk`, but
+only narrowly: `thoughtflow_saliency_recent` by `+0.006` and
+`tf_sparse_r0.55_p0.05_m0.12_a2` by `+0.010`. Oracle/headroom remains material:
+the compressed per-trace oracle reaches NLL `3.754`, leaving `rdu_topk` `0.260`
+above compressed oracle and `1.083` above full cache, with `0.348` oracle-hit
+rate.
+
+Status: **NOT REPRODUCED / DEMOTED TO DIAGNOSTIC**. Ruled out: claiming
+`rdu_topk` as a robust positive method on the available Mac-local sparse-cache
+surfaces. Still alive: the sparse-cache falsification harness and
+oracle/headroom reporting. Highest-priority next gate: do not retune
+`rdu_topk`; either stop/pivot ThoughtFlow-FP8 or pre-register a genuinely new
+utility signal and evaluate it once on a fresh/larger frozen surface.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -318,6 +342,13 @@ latency, throughput, or Blackwell evidence.
   weakened/not reproduced as a strict positive-method gate. `rdu_topk` still
   beats R-KV-like and ThinKV-like with paired CIs below zero, but the stopped
   same-family sparse row beats it by 0.006 NLL, so same-family separation fails.
+- 2026-05-06: Added and ran the independent saved-trace no-retuning check for
+  `rdu_topk` on the larger chat SVAMP surface. Result: not reproduced. The
+  96-row input surface yields 89 scored traces; R-KV-like is best compressed
+  (NLL 3.981) and beats `rdu_topk` (NLL 4.014), so cross-family separation
+  fails. Same-family stopped rows are worse than `rdu_topk` but by only
+  +0.006/+0.010 NLL. Decision: demote `rdu_topk` to diagnostic; no GPU or paper
+  claim without a new pre-registered signal on a fresh/larger surface.
 - 2026-05-06: Installed the experimental `triton-cpu` backend from source into
   `./venv_arm64` and ran the Phase 4 interpreter gate. ThoughtFlow-FP8 Phase 4
   tests pass under `TRITON_INTERPRET=1`; the full owned Phase 0--4 side-project

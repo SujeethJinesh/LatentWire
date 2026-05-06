@@ -49,14 +49,20 @@ class SparseSweepConfig:
         )
 
 
-def _texts(max_traces: int) -> list[str]:
-    trace_items = _load_traces(DEFAULT_TRACES)
+def _texts(max_traces: int, trace_paths: list[Path] | None = None) -> list[str]:
+    trace_items = _load_traces(trace_paths or DEFAULT_TRACES)
     return [" ".join(token.text for token in item["trace"]) for item in trace_items[:max_traces]]
 
 
-def _prepare_rows(tokenizer: AutoTokenizer, max_traces: int, max_length: int, continuation_tokens: int) -> list[dict[str, object]]:
+def _prepare_rows(
+    tokenizer: AutoTokenizer,
+    max_traces: int,
+    max_length: int,
+    continuation_tokens: int,
+    trace_paths: list[Path] | None = None,
+) -> list[dict[str, object]]:
     rows = []
-    for trace_id, text in enumerate(_texts(max_traces)):
+    for trace_id, text in enumerate(_texts(max_traces, trace_paths)):
         encoded = tokenizer(text, add_special_tokens=False, truncation=True, max_length=max_length)
         token_ids = [int(token_id) for token_id in encoded["input_ids"]]
         if len(token_ids) < continuation_tokens + 8:
