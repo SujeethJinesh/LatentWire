@@ -51,14 +51,20 @@ validator. The next evidence must be native timing or memory traffic.
 
 ThoughtFlow-FP8 should not receive more current-branch tuning, GPU work, or
 FP8 claims. Reopening requires a new preregistered utility family before any
-fresh measurement; the consumed `rdu_topk`, `psi_topk`, and `vwac_topk` branches
-should not be retuned.
+fresh measurement; that new branch must run on a fresh/larger frozen
+sparse-cache surface with matched-budget quality wins, same/cross-family separation,
+paired uncertainty, and oracle/headroom diagnostics. The consumed
+`rdu_topk`, `psi_topk`, and `vwac_topk` branches should not be retuned.
 
 ## Reviewer Pack Links
 
 - HybridKernel: `experimental/hybridkernel/paper/reviewer_pack.md`
 - SinkAware: `experimental/sinkaware/paper/reviewer_pack.md`
 - ThoughtFlow-FP8: `experimental/thoughtflow_fp8/paper/reviewer_pack.md`
+
+## Setup Packet Links
+
+- SinkAware: `experimental/sinkaware/phase0/setup_complete.md`
 
 ## Native Handoff Link
 

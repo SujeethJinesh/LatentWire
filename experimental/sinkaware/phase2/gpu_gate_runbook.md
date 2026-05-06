@@ -44,8 +44,7 @@ Promote only if all are true:
 1. rank-2 preserves the Mac-local quality-control envelope: mean output
    relative-L2 must be no worse than 0.15, rank-2 must beat position-only in
    every matched model/shape group on output relative-L2, downstream loss
-   drift, and KL-to-exact, and top-1 disagreement aggregated over all measured
-   rows in the packet must stay at or below 0.15; model/shape subgroup values
+   drift, and KL-to-exact, and top-1 disagreement aggregated over all measured rows in the packet must stay at or below 0.15; model/shape subgroup values
    must also be reported so the global aggregate cannot hide a collapsed row;
 2. rank-2 improves speed or memory traffic over exact attention by at least 3%
    on repeated native runs;
