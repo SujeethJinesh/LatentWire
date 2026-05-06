@@ -34,7 +34,7 @@ traces from the chat SVAMP surface and makes R-KV-like the best compressed row
 at NLL 3.981 versus `rdu_topk` at 4.014. The successor is therefore demoted to
 diagnostic rather than kept alive as a positive branch.
 
-## Candidate Story If Revived
+## Candidate Story Only If Revived
 
 Most deployers need training-free KV compression for already released reasoning
 models, not only new architectures trained around compressed attention. A
@@ -206,17 +206,20 @@ infrastructure and real KV/hidden telemetry to explain eviction bias.
 - Current baselines are local proxies, not faithful implementations of LongFlow,
   R-KV/R-KVHash, ThinKV, PM-KVQ, or RaaS.
 
-## Next GPU/KV Gate
+## Next Gate
 
-Do not move to a broad GPU benchmark yet. The next exact gate is:
+Do not move to a broad GPU benchmark for the current `rdu_topk` branch. The
+next exact gate is either stop/pivot, or one new pre-registered utility signal
+targeting the long-prefix/high-RDU-density failure bucket and evaluated once on
+a fresh/larger frozen sparse-cache surface.
 
 1. Do not tune further on the current saved traces.
-2. Reproduce `rdu_topk` without retuning on a larger or independently seeded
-   frozen sparse-cache slice before widening benchmarks.
+2. Do not spend GPU time on `rdu_topk` unless a new pre-registered signal first
+   clears same-family and cross-family CPU sparse-cache checks.
 3. Report paired uncertainty, per-span keep telemetry, recurrence misses, and
    FP8 round-trip error separately.
-4. Keep promotion only if `rdu_topk` beats the strongest proxy on quality at
-   matched bytes while preserving interpretable keep-rate telemetry.
+4. Keep promotion only if the new signal beats the strongest proxy on quality
+   at matched bytes while preserving interpretable keep-rate telemetry.
 
 Until a new pre-registered signal clears that gate, ThoughtFlow-FP8 should
 remain a diagnostic paper shell rather than a positive-method claim.

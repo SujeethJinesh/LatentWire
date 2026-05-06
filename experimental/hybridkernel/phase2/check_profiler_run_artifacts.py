@@ -193,6 +193,8 @@ def check_run_artifacts(
     metrics_rows = 0
     model_run_counts: dict[str, int] = {}
     model_distinct_run_counts: dict[str, int] = {}
+    model_config_run_counts: dict[str, int] = {}
+    model_config_distinct_run_counts: dict[str, int] = {}
     computed_analysis: dict[str, object] | None = None
     metrics_path = run_dir / "profiler_metrics.json"
     _reject_skeleton_todo(metrics_path, "profiler_metrics.json", errors)
@@ -206,11 +208,18 @@ def check_run_artifacts(
             metrics_rows = len(rows)
             counts = Counter(str(row["model"]) for row in rows)
             model_run_counts = dict(counts)
+            config_counts = Counter(str(row["config_key"]) for row in rows)
+            model_config_run_counts = dict(config_counts)
             model_to_run_ids: dict[str, set[str]] = {}
+            config_to_run_ids: dict[str, set[str]] = {}
             for row in rows:
                 model_to_run_ids.setdefault(str(row["model"]), set()).add(str(row["run_id"]))
+                config_to_run_ids.setdefault(str(row["config_key"]), set()).add(str(row["run_id"]))
             model_distinct_run_counts = {
                 model: len(run_ids) for model, run_ids in model_to_run_ids.items()
+            }
+            model_config_distinct_run_counts = {
+                config: len(run_ids) for config, run_ids in config_to_run_ids.items()
             }
             if metrics_rows == 0:
                 errors.append("profiler_metrics.json has no valid native rows")
@@ -218,9 +227,22 @@ def check_run_artifacts(
                 errors.append(
                     f"no model has at least {min_repeated_runs} repeated native rows"
                 )
+            if config_counts and max(config_counts.values()) < min_repeated_runs:
+                errors.append(
+                    f"no same model/config group has at least {min_repeated_runs} "
+                    "repeated native rows"
+                )
             if model_distinct_run_counts and max(model_distinct_run_counts.values()) < min_repeated_runs:
                 errors.append(
                     f"no model has at least {min_repeated_runs} distinct repeated run_id values"
+                )
+            if (
+                model_config_distinct_run_counts
+                and max(model_config_distinct_run_counts.values()) < min_repeated_runs
+            ):
+                errors.append(
+                    f"no same model/config group has at least {min_repeated_runs} "
+                    "distinct repeated run_id values"
                 )
         except (json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
             errors.append(f"profiler_metrics.json is invalid: {exc}")
@@ -270,6 +292,8 @@ def check_run_artifacts(
         "metrics_rows": metrics_rows,
         "model_run_counts": model_run_counts,
         "model_distinct_run_counts": model_distinct_run_counts,
+        "model_config_run_counts": model_config_run_counts,
+        "model_config_distinct_run_counts": model_config_distinct_run_counts,
         "min_repeated_runs": min_repeated_runs,
         "native_artifacts_required": require_native_artifacts,
         "min_native_artifact_bytes": min_native_artifact_bytes,

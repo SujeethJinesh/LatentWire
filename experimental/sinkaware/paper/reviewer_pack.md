@@ -33,8 +33,9 @@ claim.
 | held-out/cross-family repeat | measured 48 traces, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; output rel-L2 improvements +0.0306 +/- 0.0023 and +0.0788 +/- 0.0069 | alive but bounded; not predictor transfer, GPU speed, or end-to-end quality evidence |
 | cross-family length stability | measured 48 traces, lengths 64/96, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; all 4 model/length rows positive; mean output rel-L2 improvement +0.0535 +/- 0.0262; min row +0.0301 | alive but bounded; stronger Mac-local stability, still no downstream or speed claim |
 | Triton readiness | `TRITON_INTERPRET=1`, repo-local `triton-cpu` source install, CUDA unavailable on Mac | interpreter correctness passes; no GPU claim |
-| downstream causal-LM control smoke | distilgpt2 and facebook/opt-125m, 24 traces, split seeds 0/1/2; exact replacement is a no-op; rank-2 improves absolute loss drift over position-only by +0.0393 +/- 0.0134 and +0.1225 +/- 0.0284 | alive but bounded; downstream control only, not benchmark or speed evidence |
+| downstream causal-LM control smoke | distilgpt2 and facebook/opt-125m, 24 traces, split seeds 0/1/2; exact replacement is a no-op; rank-2 improves absolute loss drift over position-only by +0.0393 +/- 0.0134 and +0.1225 +/- 0.0284 | alive but bounded; superseded by larger downstream repeats |
 | downstream length/sink sweep | lengths 64/96 and sink counts 2/4; all four config rows positive with minimum model loss improvement >= +0.0272 | stronger Mac-local quality-control surface; still no benchmark or speed claim |
+| larger downstream repeats | 48 traces, sink 4, lengths 64/96, split seeds 0/1/2; exact replacement remains no-op; rank-2 beats position-only by loss and KL on distilgpt2 and OPT-125M; min model loss improvement is +0.0345 at length 64 and +0.0376 at length 96 | strongest Mac-local quality-control gate; native timing is next |
 
 ## Reviewer Risks
 
@@ -50,8 +51,7 @@ claim.
 
 ## Next Experiment
 
-The downstream causal-LM control smoke now runs on 24 traces, three split seeds,
-lengths 64/96, and sink counts 2/4 for distilgpt2 and facebook/opt-125m. It
-favors rank-2 over position-only in every model/config row with exact
-replacement as a no-op control. Native NVIDIA comparison remains gated by
-`experimental/sinkaware/phase2/gpu_gate_runbook.md`.
+The downstream causal-LM control now has a larger 48-trace repeat at lengths
+64/96 with sink count 4. It favors rank-2 over position-only in every model row
+with exact replacement as a no-op control. Native NVIDIA comparison remains
+gated by `experimental/sinkaware/phase2/gpu_gate_runbook.md`.

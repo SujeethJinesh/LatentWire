@@ -319,3 +319,28 @@ PAPER GATE**. The stable Mac gate is `TRITON_INTERPRET=1` correctness. This is
 not a speed claim, not CUDA evidence, and not a reason to add speculative
 kernels. The next exact gate remains the native NVIDIA/vLLM profiler packet
 with server-side Nsight Systems and Nsight Compute evidence.
+
+## 2026-05-06 Profiler Gate Config Hardening
+
+Addressed a reviewer-found Mac-local correctness risk in the native profiler
+parser/checker. The analysis parser no longer defaults missing
+`matched_non_boundary_ms` to zero or missing `recoverable_fraction` to 0.60 for
+native rows. Every measured row must explicitly record matched control time,
+recoverable fraction, dtype, CUDA graph state, batch/request shape, and control
+segment. The summary is now grouped by the full model/config key rather than by
+model alone, and reports mean, median, IQR, and deterministic bootstrap 95% CI
+for recoverable-gain upper bound.
+
+The native artifact checker now requires at least three repeated rows and three
+distinct `run_id` values for the same model/config group, preventing mixed
+batch-shape, dtype, graph-state, or control-condition rows from satisfying the
+repeat gate. The vLLM runbook now includes the official dynamic server-capture
+shape with `VLLM_WORKER_MULTIPROC_METHOD=spawn`,
+`--capture-range=cudaProfilerApi`, `--capture-range-end=repeat`, and
+`--profiler-config.profiler cuda`, while preserving the static server-side
+capture fallback.
+
+Decision: **MAC GATE HARDENED; STILL PENDING NATIVE PROFILER DATA**. This closes
+another pre-GPU reviewer-risk item. It does not create speed evidence or change
+the next exact gate: a native NVIDIA/vLLM packet with server-side Nsight traces
+and repeated same-config metric rows.

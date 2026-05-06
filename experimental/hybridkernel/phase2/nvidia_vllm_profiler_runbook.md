@@ -135,6 +135,7 @@ export MODEL=ibm-granite/granite-4.0-h-tiny
 export CUDA_VISIBLE_DEVICES=0
 export VLLM_LOGGING_LEVEL=INFO
 export VLLM_USE_V1=1
+export VLLM_WORKER_MULTIPROC_METHOD=spawn
 
 python -m vllm.entrypoints.openai.api_server \
   --model "$MODEL" \
@@ -155,6 +156,35 @@ CUDA graph nodes, memory copies, synchronization, or host scheduling stalls.
 Run the vLLM server under `nsys`; then replay fixed requests from a second
 local terminal. Do **not** profile only `profiler_driver.py`, because that
 would trace the HTTP client rather than the CUDA-serving process.
+
+vLLM's profiling documentation also supports a dynamic capture path using the
+server-side profiler API. Prefer this path when the installed vLLM build
+supports it, because it lets the fixed request driver start and stop the capture
+after warmup instead of tracing server startup. Keep
+`VLLM_WORKER_MULTIPROC_METHOD=spawn` set in the server environment.
+
+```bash
+nsys profile \
+  --trace=cuda,nvtx,osrt \
+  --trace-fork-before-exec=true \
+  --cuda-graph-trace=node \
+  --capture-range=cudaProfilerApi \
+  --capture-range-end=repeat \
+  --force-overwrite=true \
+  --stats=true \
+  --output="$HWK_RUN/nsys/granite_tiny_b1_decode64_dynamic" \
+  python -m vllm.entrypoints.openai.api_server \
+    --model "$MODEL" \
+    --dtype bfloat16 \
+    --max-model-len 2048 \
+    --disable-log-requests \
+    --profiler-config.profiler cuda \
+  2>&1 | tee "$HWK_RUN/logs/nsys_server_dynamic_b1.log"
+```
+
+If the vLLM build does not expose `--profiler-config.profiler cuda`, use the
+static server-side capture below and record the reason in
+`$HWK_RUN/metadata/command_notes.md`.
 
 ```bash
 nsys profile \

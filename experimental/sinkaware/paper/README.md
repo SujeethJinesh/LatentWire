@@ -17,8 +17,9 @@ cross-family controls, and competitor baselines before it can support a
 positive-method paper. The latest per-head readout weakens the claim: aggregate
 rank-2 output drift improves over position-only and survives randomized
 token-split repeats, a small length/sink sweep, trace-level frozen splits, and
-a repeated OPT-family length diagnostic, but this is still Mac-local and not a
-downstream-quality result.
+a repeated OPT-family length diagnostic. The larger 48-trace downstream control
+repeat now also favors rank-2 over position-only at lengths 64 and 96, but this
+is still Mac-local and not benchmark evidence.
 
 ## Approximate Low-Rank Sink Prior
 
@@ -96,6 +97,10 @@ tradeoff.
   speed evidence.
 - Downstream length/sink sweep: lengths `64/96` and sink counts `2/4` all stay
   positive with minimum model loss improvement at least `+0.0272`.
+- Larger downstream repeat: 48 traces, sink count 4, lengths `64/96`, and split
+  seeds `0,1,2` stay positive on both model rows. Exact replacement remains a
+  no-op; rank-2 beats position-only by loss drift and KL. Minimum model loss
+  improvement is `+0.0345` at length 64 and `+0.0376` at length 96.
 
 ## Limitations
 
@@ -114,9 +119,9 @@ tradeoff.
 
 The Mac-local softmax/output probe now shows bounded aggregate rank-2 drift
 under randomized token splits, a small length/sink sweep, trace-level frozen
-splits, GPT2/OPT-family length stability, Triton interpreter correctness, and a
-small downstream quality/control length/sink sweep. The next gate is either
-larger downstream trace coverage or a native GPU prototype that measures:
+splits, GPT2/OPT-family length stability, Triton interpreter correctness, and
+48-trace downstream quality/control repeats. The next gate is now a native GPU
+prototype that measures:
 
 1. exact attention baseline,
 2. exact fixed-sink decomposition that still computes `QK_sink`,

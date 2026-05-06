@@ -60,6 +60,15 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                 "attention_ssm_boundary_ms": 4.0,
                 "matched_non_boundary_ms": 2.0,
                 "recoverable_fraction": 0.60,
+                "dtype": "bfloat16",
+                "cuda_graph_enabled": True,
+                "batch_shape": {
+                    "batch_size": 1,
+                    "prefill_tokens": 128,
+                    "decode_tokens": 64,
+                    "requests": 16,
+                },
+                "control_model_or_segment": "matched_transformer_block",
             }
             for idx in range(runs)
         ]
@@ -89,6 +98,7 @@ def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     assert result["metrics_rows"] == 3
     assert result["model_run_counts"] == {"granite": 3}
     assert result["model_distinct_run_counts"] == {"granite": 3}
+    assert max(result["model_config_run_counts"].values()) == 3
 
 
 def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
@@ -175,6 +185,20 @@ def test_requires_distinct_repeated_run_ids(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("distinct repeated run_id" in error for error in result["errors"])
+
+
+def test_requires_repeated_rows_for_same_run_config(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    for idx, row in enumerate(payload["rows"]):
+        row["batch_shape"]["decode_tokens"] = 64 + idx
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("same model/config" in error for error in result["errors"])
 
 
 def test_requires_profiler_analysis_gate_outputs(tmp_path: Path) -> None:

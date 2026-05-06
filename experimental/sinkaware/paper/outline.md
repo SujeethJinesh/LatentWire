@@ -46,7 +46,8 @@ Non-claims:
    - trace-level frozen split repeat,
    - repeated held-out/cross-family falsification,
    - cross-family length stability.
-   - downstream causal-LM quality/control smoke.
+   - downstream causal-LM quality/control smoke,
+   - larger 48-trace downstream quality/control repeat.
 6. Limitations and threats to validity.
 7. GPU gate and benchmark plan.
 
@@ -70,6 +71,7 @@ Non-claims:
 | Triton interpreter readiness | Passed locally | `TRITON_INTERPRET=1` with the repo-local `triton-cpu` source install passes the approximate-attention interpreter tests; this is kernel logic only, not GPU speed evidence. |
 | Downstream quality/control smoke | Alive but bounded | On distilgpt2 and facebook/opt-125m, 24 traces, and three split seeds, exact replacement is a no-op and rank-2 is closer than position-only in causal-LM loss drift and KL; aggregate absolute loss-delta improvement is +0.0809 +/- 0.0815. This is small-slice downstream control evidence only. |
 | Downstream length/sink sweep | Alive but bounded | Lengths 64/96 and sink counts 2/4 all stay positive; minimum model loss improvement is +0.0272. This strengthens Mac-local quality control but remains non-benchmark evidence. |
+| Larger downstream repeat | Alive but bounded | 48 traces, sink count 4, lengths 64/96, and split seeds 0/1/2 stay positive on distilgpt2 and OPT-125M; exact replacement remains a no-op and rank-2 beats position-only by loss drift and KL. Native timing is now the decisive gate. |
 
 ## Reviewer-Risk Notes
 

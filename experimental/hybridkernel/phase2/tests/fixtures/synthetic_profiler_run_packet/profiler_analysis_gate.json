@@ -4,6 +4,14 @@
     {
       "model": "synthetic-granite-fixture",
       "run_id": "repeat-0",
+      "config_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}",
+      "dtype": "bfloat16",
+      "cuda_graph_enabled": "True",
+      "batch_size": 1.0,
+      "prefill_tokens": 128.0,
+      "decode_tokens": 64.0,
+      "requests": 16.0,
+      "control_model_or_segment": "matched_transformer_block",
       "total_step_ms": 100.0,
       "boundary_ms": 4.0,
       "matched_non_boundary_ms": 2.0,
@@ -16,6 +24,14 @@
     {
       "model": "synthetic-granite-fixture",
       "run_id": "repeat-1",
+      "config_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}",
+      "dtype": "bfloat16",
+      "cuda_graph_enabled": "True",
+      "batch_size": 1.0,
+      "prefill_tokens": 128.0,
+      "decode_tokens": 64.0,
+      "requests": 16.0,
+      "control_model_or_segment": "matched_transformer_block",
       "total_step_ms": 100.0,
       "boundary_ms": 4.0,
       "matched_non_boundary_ms": 2.0,
@@ -28,6 +44,14 @@
     {
       "model": "synthetic-granite-fixture",
       "run_id": "repeat-2",
+      "config_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}",
+      "dtype": "bfloat16",
+      "cuda_graph_enabled": "True",
+      "batch_size": 1.0,
+      "prefill_tokens": 128.0,
+      "decode_tokens": 64.0,
+      "requests": 16.0,
+      "control_model_or_segment": "matched_transformer_block",
       "total_step_ms": 100.0,
       "boundary_ms": 4.0,
       "matched_non_boundary_ms": 2.0,
@@ -39,10 +63,26 @@
     }
   ],
   "summary": {
-    "synthetic-granite-fixture": {
+    "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}": {
+      "model": "synthetic-granite-fixture",
+      "config_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}",
       "runs": 3,
+      "distinct_run_ids": 3,
+      "dtype": "bfloat16",
+      "cuda_graph_enabled": "True",
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "requests": 16,
+      "control_model_or_segment": "matched_transformer_block",
       "mean_avoidable_share": 0.02,
       "mean_recoverable_gain_upper_bound": 0.012,
+      "median_recoverable_gain_upper_bound": 0.012,
+      "iqr_recoverable_gain_upper_bound": 0.0,
+      "bootstrap_ci95_recoverable_gain_upper_bound": {
+        "low": 0.012,
+        "high": 0.012
+      },
       "min_recoverable_gain_upper_bound": 0.012,
       "clears_3pct_gate_all_runs": false
     }

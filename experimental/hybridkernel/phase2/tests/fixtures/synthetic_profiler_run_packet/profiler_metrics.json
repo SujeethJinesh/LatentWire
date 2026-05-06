@@ -8,7 +8,16 @@
       "attention_ssm_boundary_ms": 4.0,
       "matched_non_boundary_ms": 2.0,
       "recoverable_fraction": 0.6,
-      "notes": "Synthetic fixture row; not a native measurement."
+      "notes": "Synthetic fixture row; not a native measurement.",
+      "dtype": "bfloat16",
+      "cuda_graph_enabled": true,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "matched_transformer_block"
     },
     {
       "model": "synthetic-granite-fixture",
@@ -17,7 +26,16 @@
       "attention_ssm_boundary_ms": 4.0,
       "matched_non_boundary_ms": 2.0,
       "recoverable_fraction": 0.6,
-      "notes": "Synthetic fixture row; not a native measurement."
+      "notes": "Synthetic fixture row; not a native measurement.",
+      "dtype": "bfloat16",
+      "cuda_graph_enabled": true,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "matched_transformer_block"
     },
     {
       "model": "synthetic-granite-fixture",
@@ -26,7 +44,16 @@
       "attention_ssm_boundary_ms": 4.0,
       "matched_non_boundary_ms": 2.0,
       "recoverable_fraction": 0.6,
-      "notes": "Synthetic fixture row; not a native measurement."
+      "notes": "Synthetic fixture row; not a native measurement.",
+      "dtype": "bfloat16",
+      "cuda_graph_enabled": true,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "matched_transformer_block"
     }
   ]
 }

@@ -358,3 +358,18 @@ latency, throughput, or Blackwell evidence.
   tests pass under `TRITON_INTERPRET=1`; the full owned Phase 0--4 side-project
   suite passes (`103 passed, 2 warnings`). This closes Mac kernel-correctness
   blocking, but the branch is still weakened by the alternate-surface result.
+
+## 2026-05-06 Paper Claim Cleanup
+
+Updated the workshop draft to remove the misleading implication that a live
+positive successor remains. `rdu_topk` is now described as a demoted diagnostic,
+not a live method branch. The title drops the headline FP8 claim; the abstract
+and scope section state that current artifacts validate CPU sparse-cache scoring
+and an int8/Triton-interpreter reference primitive only, with no real FP8,
+CUDA, latency, throughput, or Blackwell result.
+
+Decision: **LOCAL METHOD EVIDENCE SATURATED / STOP OR PIVOT**. The current
+Mac-local artifacts are useful as a falsification ladder, not as a positive
+method. A revival requires one genuinely new pre-registered utility signal and
+a one-shot fresh/larger sparse-cache gate; no GPU work should be spent on the
+current `rdu_topk` branch.

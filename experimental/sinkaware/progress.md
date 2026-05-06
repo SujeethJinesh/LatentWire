@@ -433,3 +433,25 @@ length96/sink4. Minimum model improvement remains positive in every config
 Decision: **ALIVE but bounded** after the downstream length/sink sweep. The
 Mac-local quality-control surface is now stronger; the remaining useful gate is
 native timing, unless a reviewer requires a larger trace slice before GPU work.
+
+## 2026-05-06 Larger Downstream Quality/Control Repeat
+
+Ran the reviewer-requested larger downstream control repeat in `./venv_arm64`
+with 48 traces, split seeds 0/1/2, sink count 4, and separately fit predictors
+for `distilgpt2` and `facebook/opt-125m` at lengths 64 and 96. Exact
+sink-logit replacement remained a no-op in both rows. Rank-2 stayed closer than
+position-only on downstream loss drift and KL for both models.
+
+- length 64 / sink 4: aggregate absolute loss-delta improvement
+  `+0.0801 +/- 0.0894`; aggregate KL improvement `+0.0752 +/- 0.1003`;
+  minimum model loss improvement `+0.0345`.
+- length 96 / sink 4: aggregate absolute loss-delta improvement
+  `+0.0721 +/- 0.0676`; aggregate KL improvement `+0.0694 +/- 0.0823`;
+  minimum model loss improvement `+0.0376`.
+
+Decision: **ALIVE but bounded** after the larger downstream repeat. This is the
+strongest Mac-local quality-control surface now available. It still does not
+support benchmark accuracy, cross-model predictor transfer, latency, HBM,
+throughput, or native speed claims. The next exact gate is native GPU timing and
+memory-traffic measurement, not more Mac-local quality controls unless a
+reviewer requires a much larger CPU slice.
