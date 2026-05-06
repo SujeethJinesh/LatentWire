@@ -22,8 +22,11 @@
   production compressed-attention systems bar.
 - Current pre-registration:
   `phase2/preregister_recurrence_distance_utility_20260506.md` defined one
-  recurrence-distance utility signal and the one-shot frozen evaluation has now
-  been run. No post-result tuning is allowed on this trace set.
+  recurrence-distance utility signal, `phase2/preregister_prefix_surprisal_utility_20260506.md`
+  defined one prefix-surprisal signal, and
+  `phase2/preregister_value_weighted_attention_contribution_20260506.md` defined
+  one value-weighted attention-contribution signal. All one-shot evaluations have
+  now been run. No post-result tuning is allowed on any consumed branch.
 
 ## Deliverables
 
@@ -265,6 +268,40 @@ oracle/headroom reporting. Highest-priority next gate: do not retune
 `rdu_topk`; either stop/pivot ThoughtFlow-FP8 or pre-register a genuinely new
 utility signal and evaluate it once on a fresh/larger frozen surface.
 
+`phase2/preregister_prefix_surprisal_utility_20260506.md` then registered one
+different successor, `psi_topk`, which keeps high self-surprisal prefix tokens
+from prefill logits and uses no continuation loss, trace labels, recent reserve,
+RDU lag buckets, or anchor/phase/math bonuses. The one-shot
+`phase2/psi_fresh_sparse_cache_check.md` run uses the fresh
+`results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl` saved-trace surface and scores
+70 traces. It fails decisively: ThinKV-like is best compressed at NLL `3.906`,
+R-KV-like reaches `3.960`, and `psi_topk` reaches NLL `7.899`. The paired delta
+for `psi_topk` versus R-KV-like is `+3.939` with 95% CI `[+3.720,+4.144]`; versus
+ThinKV-like it is `+3.994` with 95% CI `[+3.773,+4.205]`.
+
+Status: **PREFIX-SURPRISAL SUCCESSOR KILLED / NO ACTIVE SUCCESSOR**. Ruled out:
+high-prefix-surprisal retention as a positive method in the current Mac
+sparse-cache harness. Remaining useful state: the falsification harness and
+papers; any further revival now needs a new preregistered utility family, not a
+retune of RDU or PSI.
+
+`phase2/preregister_value_weighted_attention_contribution_20260506.md` then
+registered the subagent-recommended `vwac_topk` successor, which ranks tokens by
+future prefix attention weighted by cached value-vector norm. The one-shot
+`phase2/vwac_fresh_sparse_cache_check.md` run uses the fresh
+`results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl` saved-trace surface and
+scores 64 traces after filtering. It also fails: R-KV-like is best compressed at
+NLL `4.096`, ThinKV-like reaches `4.162`, and `vwac_topk` reaches `4.336`. The
+paired delta for `vwac_topk` versus R-KV-like is `+0.241` with 95% CI
+`[+0.030,+0.530]`; versus ThinKV-like it is `+0.174` with 95% CI
+`[+0.002,+0.392]`.
+
+Status: **VALUE-WEIGHTED ATTENTION SUCCESSOR KILLED / NO ACTIVE SUCCESSOR**.
+Ruled out: this exact cache-state contribution heuristic as a positive method in
+the current Mac sparse-cache harness. Remaining useful state: the falsification
+harness, reviewer pack, and paper; any further revival now needs a new
+preregistered utility family, not a retune of RDU, PSI, or VWAC.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -409,7 +446,7 @@ there is no runnable successor gate. The next valid action is a new
 pre-registration artifact on a fresh/larger frozen surface, not measurement on
 the current traces.
 
-Decision: **NO FURTHER MAC/TRITON METHOD WORK REMAINS FOR THE CURRENT BRANCH**.
-The remaining blocker is method evidence from a future preregistered branch,
-not local packaging, tests, Triton interpreter correctness, or `rdu_topk`
-analysis.
+Decision: **NO FURTHER MAC/TRITON METHOD WORK REMAINS FOR THE CURRENT
+RDU/PSI/VWAC BRANCHES**. The remaining blocker is method evidence from a future
+preregistered branch, not local packaging, tests, Triton interpreter correctness,
+`rdu_topk` analysis, `psi_topk` analysis, or `vwac_topk` analysis.

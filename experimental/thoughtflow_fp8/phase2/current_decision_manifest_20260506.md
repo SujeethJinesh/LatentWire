@@ -7,14 +7,25 @@
 ## Current Decision
 
 The original anchor/recent/phase/math policy family and the pre-registered
-`rdu_topk` successor are stopped on the available Mac-local sparse-cache
-surfaces. `rdu_topk` cleared the first frozen 74-trace gate and reproduced on
-the same deterministic slice, but then failed stricter checks:
+`rdu_topk`, `psi_topk`, and `vwac_topk` successors are stopped on the available
+Mac-local sparse-cache surfaces. `rdu_topk` cleared the first frozen 74-trace
+gate and reproduced on the same deterministic slice, but then failed stricter
+checks:
 
 - alternate surface: a stopped same-family sparse row beat `rdu_topk` by 0.006
   NLL;
 - independent saved traces: R-KV-like was best compressed at NLL 3.981, while
   `rdu_topk` reached 4.014 on 89 scored traces.
+
+The later `psi_topk` prefix-surprisal successor was pre-registered before
+measurement and evaluated once on the fresh C2C GSM70 saved-trace surface. It
+failed decisively: `psi_topk` reached NLL 7.899 versus ThinKV-like 3.906 and
+R-KV-like 3.960 on 70 scored traces.
+
+The later `vwac_topk` value-weighted attention-contribution successor was also
+pre-registered before measurement and evaluated once on the fresh C2C SVAMP70
+surface. It failed: `vwac_topk` reached NLL 4.336 versus R-KV-like 4.096 and
+ThinKV-like 4.162 on 64 scored traces.
 
 ## Current Claim
 
@@ -32,9 +43,10 @@ the demotion recorded here, in `progress.md`, in
 
 ## Allowed Next Work
 
-Current reopen state: **no fresh utility signal is pre-registered, so there is
-no runnable successor gate.** A future gate starts with a new pre-registration
-artifact, not with another measurement on the current traces.
+Current reopen state: **all consumed successor registrations are stopped and no
+fresh utility signal is pre-registered, so there is no runnable successor gate.**
+A future gate starts with a new pre-registration artifact, not with another
+measurement on the current traces or the consumed RDU/PSI/VWAC surfaces.
 
 Allowed:
 
@@ -46,6 +58,10 @@ Allowed:
 Not allowed:
 
 - retuning `rdu_topk` on the current traces;
+- retuning `psi_topk`, adding recency to it, or rerunning it on a new surface
+  after seeing the failure;
+- retuning `vwac_topk`, changing value/attention normalization, or rerunning it
+  on a new surface after seeing the failure;
 - spending GPU time on the current branch;
 - claiming FP8, CUDA, latency, throughput, or Blackwell evidence from the
   current artifacts.

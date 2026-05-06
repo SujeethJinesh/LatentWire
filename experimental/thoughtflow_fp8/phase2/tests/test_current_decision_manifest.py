@@ -14,6 +14,8 @@ def test_current_decision_manifest_demotes_rdu_topk() -> None:
     assert "current live method branch: none" in manifest
     assert "no runnable successor gate" in manifest
     assert "R-KV-like was best compressed" in manifest
+    assert "psi_topk" in manifest
+    assert "vwac_topk" in manifest
     assert "diagnostic, not a positive method" in paper
     assert "LOCAL METHOD EVIDENCE SATURATED / STOP OR PIVOT" in progress
 
@@ -41,4 +43,6 @@ def test_reviewer_pack_covers_colm_review_axes_and_no_active_successor() -> None
         assert f"| {axis} |" in reviewer_pack
 
     assert "No fresh utility signal is currently pre-registered" in reviewer_pack
+    assert "psi_topk" in reviewer_pack
+    assert "vwac_topk" in reviewer_pack
     assert "Until that artifact exists, there is no runnable successor gate" in reviewer_pack

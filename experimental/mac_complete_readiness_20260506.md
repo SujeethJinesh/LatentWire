@@ -14,7 +14,7 @@ take them without changing the scientific question.
 |---|---|---|---|
 | HybridKernel | Mac-complete handoff | Source/runtime audit, threshold model, vLLM fixed-request driver, profiler packet generator/checker, toy Triton interpreter correctness, COLM-style draft | Native NVIDIA/vLLM profiler packet with server-side Nsight Systems and Nsight Compute data |
 | SinkAware | Mac-complete pre-GPU candidate | Exact branch killed, approximate rank-2 branch stress-tested on GPT2/OPT controls, downstream patch controls, 48-trace rank frontier, native packet validator, Triton interpreter correctness, COLM-style draft | Native GPU timing/memory traffic and preservation of downstream-control behavior |
-| ThoughtFlow-FP8 | Mac-complete diagnostic note | Sparse-cache falsification ladder, `rdu_topk` demotion on alternate/independent surfaces, current decision manifest, int8 Triton interpreter primitive, COLM-style draft | A fresh preregistered utility signal on a fresh/larger frozen sparse-cache surface |
+| ThoughtFlow-FP8 | Mac-complete diagnostic note | Sparse-cache falsification ladder, `rdu_topk` demotion on alternate/independent surfaces, `psi_topk` and `vwac_topk` fresh-surface failures, current decision manifest, int8 Triton interpreter primitive, COLM-style draft | A new preregistered utility signal on a fresh/larger frozen sparse-cache surface |
 
 ## Stop Conditions
 
@@ -30,7 +30,8 @@ validator. The next evidence must be native timing or memory traffic.
 
 ThoughtFlow-FP8 should not receive more current-branch tuning, GPU work, or
 FP8 claims. Reopening requires a new preregistered utility family before any
-fresh measurement.
+fresh measurement; the consumed `rdu_topk`, `psi_topk`, and `vwac_topk` branches
+should not be retuned.
 
 ## Reviewer Pack Links
 

@@ -12,9 +12,9 @@
    identifies a concrete implementation candidate.
 2. **HybridKernel profiler packet**: useful only if native vLLM profiling finds
    separable attention/SSM boundary overhead.
-3. **ThoughtFlow-FP8**: no GPU work for the current branch. Reopen only after a
-   new preregistered utility signal exists and passes a fresh/larger frozen
-   sparse-cache surface.
+3. **ThoughtFlow-FP8**: no GPU work for the current branch set (`rdu_topk`,
+   `psi_topk`, or `vwac_topk`). Reopen only after a new preregistered utility
+   signal exists and passes a fresh/larger frozen sparse-cache surface.
 
 ## HybridKernel
 
@@ -89,10 +89,11 @@ position-only.
 Current manifest:
 `experimental/thoughtflow_fp8/phase2/current_decision_manifest_20260506.md`
 
-Do not run GPU experiments for the current `rdu_topk` branch. The only valid
-next step is a new preregistration artifact for a genuinely different utility
-family, followed by one one-shot evaluation on a fresh/larger frozen
-sparse-cache surface.
+Do not run GPU experiments for the current branch set: the consumed `rdu_topk`,
+`psi_topk`, or `vwac_topk` branches.
+The only valid next step is a new preregistration artifact for a genuinely
+different utility family, followed by one one-shot evaluation on a fresh/larger
+frozen sparse-cache surface.
 
 ## Local Readiness Recheck
 

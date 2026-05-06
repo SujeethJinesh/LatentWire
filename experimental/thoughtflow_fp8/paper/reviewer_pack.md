@@ -15,9 +15,10 @@
 
 ThoughtFlow-FP8 shows a sparse-cache falsification ladder: an interpretable
 retention signal can look positive on one frozen surface and then fail stricter
-same-family and cross-family reproduction. The project does not currently claim
-a new KV-compression method, FP8 serving result, CUDA kernel result, or
-latency/throughput win.
+same-family and cross-family reproduction. Later prefix-surprisal and
+value-weighted attention-contribution successors also fail on fresh surfaces. The
+project does not currently claim a new KV-compression method, FP8 serving
+result, CUDA kernel result, or latency/throughput win.
 
 ## COLM Review Readout
 
@@ -41,6 +42,8 @@ latency/throughput win.
 | same-slice rerun | reproduces the cached gate exactly | bookkeeping only |
 | alternate surface | stopped same-family row beats `rdu_topk` by 0.006 NLL | weakened |
 | independent saved traces | R-KV-like is best compressed; `rdu_topk` fails cross-family separation | stopped |
+| fresh prefix-surprisal utility | `psi_topk` NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960 on 70 fresh C2C GSM70 traces | killed |
+| fresh value-weighted attention utility | `vwac_topk` NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162 on 64 fresh C2C SVAMP70 traces | killed |
 | Triton interpreter | anchor/phase int8 primitive matches CPU reference | kernel logic only |
 
 ## Reviewer Risks
@@ -57,16 +60,17 @@ latency/throughput win.
 
 ## Next Exact Gate
 
-Stop local method experimentation on the current branch. Reopen only with a new
-pre-registered utility signal and a one-shot fresh/larger sparse-cache gate with
-same-family, cross-family, paired uncertainty, and oracle/headroom reporting.
+Stop local method experimentation on the current branches. Reopen only with a
+new pre-registered utility signal and a one-shot fresh/larger sparse-cache gate
+with same-family, cross-family, paired uncertainty, and oracle/headroom
+reporting.
 
 ## Fresh Utility Signal Status
 
-No fresh utility signal is currently pre-registered. The consumed
-`rdu_topk` registration cannot be rerun or retuned on the current traces. A
-future Mac-feasible gate must first create a new preregistration artifact that
-specifies:
+No fresh utility signal is currently pre-registered. The consumed `rdu_topk`,
+`psi_topk`, and `vwac_topk` registrations cannot be rerun or retuned on the
+current or fresh surfaces used here. A future Mac-feasible gate must first create a new
+preregistration artifact that specifies:
 
 - the new utility family and exact policy transform;
 - forbidden inputs, including continuation loss and prior frozen outcomes;
