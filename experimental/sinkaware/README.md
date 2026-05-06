@@ -40,6 +40,12 @@ all-head rank-2 positive (`+0.0379 +/- 0.0014`, minimum split `+0.0367`), but
 the head win rate stayed low (`0.278 +/- 0.016`). Treat this as a
 correctness/repeatability gate, not as a quality or speed result.
 
+A repeated held-out/model-family falsification gate on 24 traces with split
+seeds `0,1,2` also stayed positive for separately fit per-model predictors:
+`distilgpt2` improved by `+0.0341 +/- 0.0018` output rel-L2 and
+`facebook/opt-125m` improved by `+0.0774 +/- 0.0043`. This is not cross-model
+predictor transfer and makes no GPU speed claim.
+
 Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
 reference. Interpreter-mode correctness is not GPU performance evidence, and
 native speed claims require NVIDIA hardware.

@@ -26,6 +26,8 @@ Current local gate result:
 - The native packet checker now rejects stale analysis: future packets must
   include `profiler_analysis_gate.{json,md}` generated from the same
   `profiler_metrics.json`.
+- A packet skeleton generator now creates the native run directory shape and
+  the checker rejects any unfilled `TODO_NATIVE_PROFILE_FILL` sentinel.
 
 Decision: no more Mac kernel implementation. Move only to profiler preparation.
 
@@ -58,13 +60,15 @@ Current local gate result:
   output rel-L2 improvement `+0.0379 +/- 0.0014`, minimum split `+0.0367`,
   but head win rate remains low at `0.278 +/- 0.016`.
 
-Latest local gate:
+Latest local gates:
 
 - Triton is still unavailable in `./venv_arm64`, so the fallback was a
-  12-trace, one-seed held-out/model-family smoke gate.
-- Rank-2 remained positive on `distilgpt2` (`+0.0329` output rel-L2
-  improvement) and `facebook/opt-125m` (`+0.0709`), for aggregate model-row
-  improvement `+0.0519 +/- 0.0372`.
+  held-out/model-family gate.
+- The earlier 12-trace smoke has now been scaled to 24 traces and split seeds
+  `0,1,2`.
+- Rank-2 remained positive on `distilgpt2` (`+0.0341 +/- 0.0018` output rel-L2
+  improvement) and `facebook/opt-125m` (`+0.0774 +/- 0.0043`), for aggregate
+  model-row improvement `+0.0557 +/- 0.0424`.
 - This fits predictors separately per model; it is not cross-model predictor
   transfer and not promotion evidence.
 
@@ -99,6 +103,9 @@ Current local gate result:
   pre-registered sparse-cache gate: NLL `3.779`, paired delta `-0.121`
   `[-0.211,-0.037]` versus ThinKV-like and `-0.160` `[-0.264,-0.050]`
   versus R-KV-like.
+- cached deterministic splits support the mean margin but expose remaining
+  uncertainty: 4/4 half-size partitions keep positive mean margins, but only
+  2/4 clear both paired CI highs below zero.
 
 Decision: do not tune anchor/recent/phase/math weights further on the current
 saved traces. The live branch is now recurrence-distance utility. The next

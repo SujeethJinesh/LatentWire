@@ -185,6 +185,14 @@ next gate: reproduce `rdu_topk` on a larger or seed-repeated frozen slice with
 strict same-family versus cross-family separation and oracle/headroom
 diagnostics before widening to competitor or long-context benchmarks.
 
+`phase2/rdu_robustness_diagnostic.md` adds the smallest cached robustness
+artifact around that 0.20 run without retuning or changing the scoring rule.
+On deterministic half-size splits, `rdu_topk` remains the best compressed row
+and keeps positive mean margins of at least 0.03 NLL versus both R-KV-like and
+ThinKV-like in all four partitions. Only 2/4 split partitions clear both paired
+CI highs below zero, so this supports promotion on the existing frozen gate but
+does not replace a true larger or seed-repeated reproduction.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -250,3 +258,8 @@ reviewer pack or GPU work.
   on this Mac-local decision surface. `rdu_topk` NLL is 3.779 versus ThinKV-like
   3.900 and R-KV-like 3.939, with paired CIs below zero against both baselines.
   Do not tune this signal on the same saved traces.
+- 2026-05-06: Added a cached deterministic split/paired diagnostic for the
+  promoted `rdu_topk` row. All four half-size partitions keep positive mean
+  margins versus R-KV-like and ThinKV-like, but only 2/4 partitions clear both
+  paired CI highs below zero. `rdu_topk` remains promoted on the current frozen
+  gate; the next gate remains real reproduction without retuning.

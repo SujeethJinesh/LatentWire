@@ -349,7 +349,7 @@ def _status(aggregate: dict[str, Any]) -> str:
     min_improvement = float(aggregate["min_model_output_rel_l2_improvement"]["value"])
     output = aggregate["output_rel_l2_improvement_across_models"]
     if all_positive and min_improvement > 0.015 and output["mean"] > 0.02:
-        return "ALIVE but bounded; rank-2 survives the small held-out/cross-family falsification smoke gate."
+        return "ALIVE but bounded; rank-2 survives the repeated held-out/cross-family falsification gate."
     if all_positive:
         return "WEAKLY ALIVE; all models are positive, but at least one row is below the promotion margin."
     return "WEAKENED; rank-2 fails at least one held-out/cross-family model row."
@@ -397,7 +397,7 @@ def _write_markdown(result: dict[str, Any]) -> None:
         f"- train fraction: {result['train_fraction']}",
         f"- seeds: {', '.join(str(seed) for seed in result['seeds'])}",
         "",
-        "This is a smallest Mac-feasible falsification gate after the Triton interpreter path was blocked locally. It fits all-head rank-2 predictors separately per model on whole-trace train splits and evaluates held-out traces against a position-only predictor. It does not transfer predictors across models and makes no GPU speed claim.",
+        "This is the larger Mac-feasible repeat after the one-seed smoke gate. It fits all-head rank-2 predictors separately per model on whole-trace train splits and evaluates held-out traces against a position-only predictor. It does not transfer predictors across models and makes no GPU speed claim.",
         "",
         "## Aggregate Across Models",
         "",
@@ -457,7 +457,7 @@ def _write_markdown(result: dict[str, Any]) -> None:
             "",
             "## Decision",
             "",
-            "This smoke gate is weaker than the 48-trace distilgpt2 frozen split because it uses a smaller slice, but it is stronger as a falsification attempt because it includes a held-out OPT-family model. Passing this gate keeps the branch alive only as bounded Mac-local evidence; promotion still requires larger cross-family repeats or Triton interpreter correctness.",
+            "This repeated gate is still smaller than the 48-trace distilgpt2 frozen split, but it is stronger than the prior cross-family smoke because it repeats whole-trace splits and includes an OPT-family model. Passing this gate keeps the branch alive only as bounded Mac-local evidence; promotion still requires Triton interpreter correctness, native timing evidence, and broader benchmark controls.",
         ]
     )
     (OUT_DIR / "rank2_cross_model_falsification_gate.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

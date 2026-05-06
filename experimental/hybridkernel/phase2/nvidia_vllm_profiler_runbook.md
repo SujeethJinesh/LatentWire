@@ -52,9 +52,16 @@ host:
 
 ```bash
 export HWK_ROOT=/path/to/LatentWire/experimental/hybridkernel
-export HWK_RUN=$HWK_ROOT/phase2/profiler_runs/$(date -u +%Y%m%dT%H%M%SZ)_granite_boundary
-mkdir -p "$HWK_RUN"/{logs,nsys,ncu,metadata}
+python "$HWK_ROOT/phase2/create_native_run_packet.py" \
+  --label granite_boundary \
+  --model ibm-granite/granite-4.0-h-tiny
 ```
+
+The command prints a `run_dir`. Export that exact path as `HWK_RUN` before
+running the profiling commands below. The generated skeleton is deliberately
+not admissible evidence: the artifact checker rejects the
+`TODO_NATIVE_PROFILE_FILL` sentinels until real native profiler metadata,
+readout entries, and metric rows replace them.
 
 Record immutable metadata before profiling:
 

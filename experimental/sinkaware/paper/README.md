@@ -12,12 +12,12 @@ an approximate per-head low-rank sink-logit prior that may reduce fixed-sink
 score work while preserving attention quality.
 
 Estimated distance to ICLR readiness: high. The branch still needs a GPU
-implementation gate, larger frozen slices, seed repeats, strict same-family vs
-cross-family separation, and competitor baselines before it can support a
+implementation gate, broader frozen benchmark slices, strict same-family vs
+cross-family controls, and competitor baselines before it can support a
 positive-method paper. The latest per-head readout weakens the claim: aggregate
 rank-2 output drift improves over position-only and survives randomized
-token-split repeats plus a small length/sink sweep, but per-head robustness is
-still poor.
+token-split repeats, a small length/sink sweep, and a repeated OPT-family
+diagnostic, but this is still Mac-local and not per-head robust.
 
 ## Approximate Low-Rank Sink Prior
 
@@ -75,9 +75,13 @@ tradeoff.
   configuration (`+0.0366 +/- 0.0024` output rel-L2 improvement; minimum config
   `+0.0342`), but layer-head output win rate remained low (`0.286 +/- 0.010`).
 - Trace-level frozen split repeat: all-head rank-2 stayed positive on three
-  whole-trace held-out splits over 24 traces (`+0.0398 +/- 0.0014` output
-  rel-L2 improvement; minimum split `+0.0387`), but layer-head output win rate
-  remained low (`0.287 +/- 0.018`).
+  whole-trace held-out splits over 48 traces (`+0.0379 +/- 0.0014` output
+  rel-L2 improvement; minimum split `+0.0367`), but layer-head output win rate
+  remained low (`0.278 +/- 0.016`).
+- Held-out/model-family repeat: separately fit per-model rank-2 predictors
+  stayed positive on 24 traces and split seeds `0,1,2`; distilgpt2 improved by
+  `+0.0341 +/- 0.0018` output rel-L2 and facebook/opt-125m improved by
+  `+0.0774 +/- 0.0043`. This is not cross-model predictor transfer.
 
 ## Limitations
 
@@ -88,8 +92,9 @@ tradeoff.
   but does not prove end-to-end serving speedups.
 - Per-head gains are concentrated; a reviewer can reasonably ask whether a
   rank-2 path should be stabilized or killed for unstable heads.
-- No cross-family falsification pair has passed.
-- No larger frozen slice or long-context competitor comparison is available yet.
+- A small cross-family falsification pair has passed only as a Mac-local,
+  separately fit per-model diagnostic.
+- No long-context competitor comparison or native GPU timing is available yet.
 
 ## Next GPU Gate
 

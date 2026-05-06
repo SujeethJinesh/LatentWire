@@ -12,8 +12,15 @@ Use one directory per independent native run bundle:
 
 ```bash
 export HWK_ROOT=/path/to/LatentWire/experimental/hybridkernel
-export HWK_RUN=$HWK_ROOT/phase2/profiler_runs/YYYYMMDDTHHMMSSZ_granite_boundary
+python "$HWK_ROOT/phase2/create_native_run_packet.py" \
+  --label granite_boundary \
+  --model ibm-granite/granite-4.0-h-tiny
 ```
+
+The command prints the created `run_dir`; export that path as `HWK_RUN` for
+the remaining runbook commands. The generated packet is a skeleton only. It
+contains `TODO_NATIVE_PROFILE_FILL` sentinels that the artifact checker rejects
+until real native metadata, readout evidence, and metric rows replace them.
 
 Do not send partial screenshots, notebook snippets, or client-only logs as
 evidence. Send the whole `$HWK_RUN` directory.

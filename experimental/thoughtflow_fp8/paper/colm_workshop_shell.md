@@ -17,6 +17,11 @@ surface, but it is not yet strong enough for an ICLR/COLM positive-method paper
 without larger frozen slices, seed repeats, family-separated falsification, and
 oracle/headroom diagnostics.
 
+A cached split diagnostic now supports the 0.20 result at the level of mean
+margins, but it is not an independent reproduction: all deterministic half-size
+partitions keep `rdu_topk` as the best compressed row, while only 2/4 partitions
+clear both paired CI highs below zero.
+
 ## Candidate Story If Revived
 
 Most deployers need training-free KV compression for already released reasoning
@@ -42,6 +47,7 @@ quality or perplexity, not just on protected-token recall.
 | `phase2/policy_sweep.md` | Train-selected ThoughtFlow-family policy ties R-KV-like on 12 held-out traces, 3.480 vs 3.482 NLL. | Mixed tie-range result. |
 | `phase2/kv_drop_quality_probe.md` | Actual CPU sparse-cache pruning plus a 24-config train-fixed sparse sweep. The selected row has held-out NLL 3.340 vs ThinKV-like 3.385 and R-KV-like 3.420; paired CI still crosses zero vs ThinKV-like. | Mixed/promising, not revived. |
 | `phase2/frozen_sparse_cache_probe.md` | Larger no-retuning CPU sparse-cache slice on 74 traces. The stopped family still fails, but pre-registered `rdu_topk` reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939, with paired CIs below zero against both. | Revived for `rdu_topk`; stopped family remains ruled out. |
+| `phase2/rdu_robustness_diagnostic.md` | Cached split/paired diagnostic over the same 74-trace 0.20 rows. `rdu_topk` is best on even, odd, first-half, and second-half partitions, with all split mean margins above 0.03 versus R-KV-like and ThinKV-like; 2/4 split partitions also clear both paired CI highs below zero. | Supports current promotion, but not a fresh reproduction. |
 | `phase2/stop_pivot_decision_20260506.md` | Stops current policy-family tuning on the available saved traces; allows only a future pre-registered new utility signal evaluated once. | Stop/pivot gate. |
 
 The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
@@ -134,6 +140,10 @@ has now been evaluated once and clears the stated gate:
 - Telemetry: anchor retention 0.706, phase retention 0.031, math-state
   retention 0.217; recurrence-bucket retention is 0.226 for lag 8-15 and
   0.568 for lag 16-31.
+- Cached deterministic split diagnostic: all four half-size partitions keep
+  `rdu_topk` as the best compressed row and preserve >=0.03 mean margins versus
+  R-KV-like and ThinKV-like; 2/4 partitions clear both paired CI highs below
+  zero.
 
 The highest-value method branch is now recurrence-distance utility. It should
 advance only through evaluation-quality gates, not local retuning:
@@ -154,6 +164,8 @@ infrastructure, and real KV/hidden telemetry to explain eviction bias.
 - Distilgpt2 is a small model and not a reasoning model; this is a Mac-local
   falsification proxy, not a benchmark result.
 - Current saved traces are small and not seed-repeated.
+- The split diagnostic reuses the same 74 traces and should not be counted as a
+  new independent reproduction.
 - There is no real FP8 numerical drift measurement in this gate.
 - There is no latency, throughput, or serving-system result.
 - Current baselines are local proxies, not faithful implementations of LongFlow,
@@ -164,13 +176,12 @@ infrastructure, and real KV/hidden telemetry to explain eviction bias.
 Do not move to a broad GPU benchmark yet. The next exact gate is:
 
 1. Do not tune further on the current saved traces.
-2. Either leave the current policy family as stopped, or pre-register one
-   genuinely new utility signal and evaluate it once in the frozen sparse-cache
-   probe.
+2. Reproduce `rdu_topk` without retuning on a larger or seed-repeated frozen
+   sparse-cache slice before widening benchmarks.
 3. Report paired uncertainty, per-span keep telemetry, recurrence misses, and
    FP8 round-trip error separately.
-4. Promote only if the successor policy beats the strongest proxy on quality at
-   matched bytes while preserving anchor/fair-span telemetry.
+4. Keep promotion only if `rdu_topk` beats the strongest proxy on quality at
+   matched bytes while preserving interpretable keep-rate telemetry.
 
-Until that gate clears, the current policy should remain a negative/mixed
-experiment rather than a paper claim.
+Until that gate clears, `rdu_topk` should remain a promoted Mac-local candidate
+rather than a paper-ready positive method claim.

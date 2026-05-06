@@ -46,6 +46,7 @@ NCU_PATTERNS = ["*.ncu-rep"]
 
 ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
 PROFILED_PROCESS_FIELDS = ["profiled_process", "nsys_profiled_process", "ncu_profiled_process"]
+SKELETON_TODO_MARKER = "TODO_NATIVE_PROFILE_FILL"
 
 
 def _has_any(root: Path, patterns: list[str]) -> bool:
@@ -54,6 +55,11 @@ def _has_any(root: Path, patterns: list[str]) -> bool:
 
 def _read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+def _reject_skeleton_todo(path: Path, label: str, errors: list[str]) -> None:
+    if path.is_file() and SKELETON_TODO_MARKER in _read_text(path):
+        errors.append(f"{label} still contains native run-packet skeleton TODO markers")
 
 
 def _validate_profiled_process(field: str, value: str, errors: list[str]) -> None:
@@ -94,6 +100,7 @@ def check_run_artifacts(
             errors.append("missing Nsight Compute artifact under ncu/")
 
     environment_path = run_dir / "metadata/environment.txt"
+    _reject_skeleton_todo(environment_path, "metadata/environment.txt", errors)
     if environment_path.is_file():
         environment = _read_text(environment_path).lower()
         for marker in ENVIRONMENT_MARKERS:
@@ -101,6 +108,7 @@ def check_run_artifacts(
                 warnings.append(f"environment metadata does not mention {marker}")
 
     readout_path = run_dir / "readout.md"
+    _reject_skeleton_todo(readout_path, "readout.md", errors)
     if readout_path.is_file():
         readout = _read_text(readout_path)
         for marker in READOUT_MARKERS:
@@ -108,6 +116,7 @@ def check_run_artifacts(
                 errors.append(f"readout.md missing decision row: {marker}")
 
     profile_scope_path = run_dir / "metadata/profile_scope.json"
+    _reject_skeleton_todo(profile_scope_path, "metadata/profile_scope.json", errors)
     if profile_scope_path.is_file():
         try:
             profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
@@ -134,6 +143,7 @@ def check_run_artifacts(
     model_distinct_run_counts: dict[str, int] = {}
     computed_analysis: dict[str, object] | None = None
     metrics_path = run_dir / "profiler_metrics.json"
+    _reject_skeleton_todo(metrics_path, "profiler_metrics.json", errors)
     if metrics_path.is_file():
         try:
             payload = json.loads(metrics_path.read_text(encoding="utf-8"))

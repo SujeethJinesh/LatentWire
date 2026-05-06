@@ -8,8 +8,8 @@
   and per-head softmax/output gates completed with a new paired layer-head
   caveat; simple head selection failed; all-rank2 split repeats and a bounded
   length/sink sweep passed weakly; trace-level frozen split repeat passed
-  as bounded evidence; a small held-out/cross-family smoke gate passed but is
-  not a promotion result
+  as bounded evidence; a repeated held-out/model-family gate passed on
+  distilgpt2 plus OPT-125M but is still not promotion evidence
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-06
@@ -286,3 +286,28 @@ falsification attempt, but only as a smoke result. It does not override the
 48-trace per-head fragility caveat. The next exact gate is either Triton
 interpreter correctness once `triton` is available in the repo-local venv, or a
 larger cross-family repeat with more traces and split seeds.
+
+## 2026-05-06 Larger Repeated Cross-Family Falsification
+
+Reran `phase2/rank2_cross_model_falsification_gate.py` in `./venv_arm64` with
+`--model-names distilgpt2 facebook/opt-125m --max-traces 24 --max-length 64
+--sink-tokens 4 --train-fraction 0.67 --seeds 0 1 2`.
+
+Result: **ALIVE but bounded** as a larger repeated held-out/model-family gate.
+The gate still fits predictors separately per model, so it is not cross-model
+predictor transfer and it makes no GPU speed claim. Both model families stayed
+positive across all three whole-trace split seeds:
+
+- Aggregate model-row output rel-L2 improvement: `+0.0557 +/- 0.0424`;
+  minimum model-row improvement: `+0.0341`.
+- `distilgpt2` (`gpt2`): output rel-L2 improvement `+0.0341 +/- 0.0018`,
+  minimum split `+0.0323`, head win rate `0.958 +/- 0.016`.
+- `facebook/opt-125m` (`opt`): output rel-L2 improvement
+  `+0.0774 +/- 0.0043`, minimum split `+0.0742`, head win rate
+  `0.972 +/- 0.016`.
+
+Decision: the prior 12-trace one-seed smoke is promoted to a larger repeated
+cross-family falsification pass, but only as bounded Mac-local evidence. The
+method remains below ICLR readiness because there is still no Triton
+interpreter pass, no native GPU timing, no end-to-end quality benchmark, and no
+cross-model predictor transfer result.
