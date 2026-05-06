@@ -244,9 +244,10 @@ def _validate_metadata(run_dir: Path, errors: list[str], warnings: list[str]) ->
 
     if str(metadata.get("cuda", "")).lower() in {"false", "none", "unavailable", "cpu"}:
         errors.append("metadata.json cuda must describe a native CUDA environment")
-    if str(metadata.get("gpu", "")).lower() in {"", "none", "cpu", "mps"}:
+    gpu = str(metadata.get("gpu", "")).lower()
+    if gpu in {"", "none", "cpu", "mps"} or "nvidia" not in gpu:
         errors.append("metadata.json gpu must describe an NVIDIA GPU")
-    if "mac" in str(metadata.get("gpu", "")).lower():
+    if "mac" in gpu:
         errors.append("metadata.json gpu appears to describe a Mac-local run")
     if not isinstance(metadata.get("sequence_shapes", []), (list, dict)):
         warnings.append("metadata.json sequence_shapes should be a list or object")

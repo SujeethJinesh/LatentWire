@@ -200,6 +200,19 @@ def test_rejects_client_only_ncu_profile_scope(tmp_path: Path) -> None:
     assert any("ncu_trace_scope" in error for error in result["errors"])
 
 
+def test_requires_vllm_serving_command(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    profile_scope_path = tmp_path / "metadata/profile_scope.json"
+    profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
+    profile_scope["vllm_command"] = "python -m other_server --model granite"
+    profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("vllm_command must mention vLLM" in error for error in result["errors"])
+
+
 def test_requires_distinct_repeated_run_ids(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     metrics_path = tmp_path / "profiler_metrics.json"

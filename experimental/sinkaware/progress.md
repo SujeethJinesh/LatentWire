@@ -590,3 +590,13 @@ missing or partial native timing/quality/NCU packets from being cited. It does
 not create GPU evidence or change the method claim. The remaining gate is still
 a native NVIDIA packet that passes the validator and then clears the runbook's
 speed/memory plus quality criteria.
+
+## 2026-05-06 NVIDIA Metadata Scope Hardening
+
+Tightened the native packet validator to enforce the intended NVIDIA gate. The
+checker already rejected CPU/MPS/Mac-local metadata; it now also rejects
+non-NVIDIA accelerators such as AMD GPU metadata. Added a regression test so a
+synthetic `metadata.json` with `gpu: AMD MI300X` fails admissibility.
+
+Decision: **ADMISSIBILITY HARDENING ONLY**. This keeps returned native packets
+aligned with the runbook and paper scope, but it does not create GPU evidence.

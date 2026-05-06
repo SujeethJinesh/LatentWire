@@ -185,7 +185,7 @@ def check_run_artifacts(
             if "server" not in ncu_trace_scope and "single_process" not in ncu_trace_scope:
                 errors.append("profile_scope.json ncu_trace_scope must cover server-side CUDA work")
             if "vllm" not in vllm_command.lower():
-                warnings.append("profile_scope.json vllm_command does not mention vLLM")
+                errors.append("profile_scope.json vllm_command must mention vLLM")
         except (json.JSONDecodeError, TypeError) as exc:
             errors.append(f"profile_scope.json is invalid: {exc}")
 

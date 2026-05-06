@@ -414,3 +414,14 @@ TODO marker is rejected as placeholder evidence.
 Decision: **CHECKER HARDENING ONLY**. This closes a fake-artifact loophole and
 raises the owned Mac suite to 141 passing tests, but it still does not provide
 native profiler evidence.
+
+## 2026-05-06 vLLM Command Scope Hardening
+
+Tightened the native profiler packet checker so `profile_scope.json` must record
+a vLLM serving command, not merely any server-side CUDA command. A packet whose
+`vllm_command` omits `vllm` now fails instead of passing with a warning. Added a
+regression test to prevent non-vLLM native traces from satisfying the
+HybridKernel handoff gate.
+
+Decision: **ADMISSIBILITY HARDENING ONLY**. The branch still requires native
+NVIDIA/vLLM Nsight evidence before any systems claim.
