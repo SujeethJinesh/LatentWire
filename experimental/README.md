@@ -1,7 +1,22 @@
 # COLM 2026 Sprint: Three-Project Triage Plan
 
+## Current Mac-Complete Status (May 6, 2026)
+
+The original sprint plan below is preserved for auditability. The current
+state is narrower:
+
+| Project | Current status | Best Mac-local evidence | Remaining blocker |
+|---|---|---|---|
+| HybridKernel | Weakly alive as a native-profiler handoff only | Source-line/runtime audit, threshold model, fixed-request vLLM profiler driver, packet verifier, Triton interpreter toy-kernel correctness | User-operated NVIDIA/vLLM profiler packet showing at least 3% recoverable boundary overhead |
+| SinkAware | Alive but bounded as an approximate rank-2 sink-logit branch | GPT2/OPT held-out controls, length/sink repeats, downstream causal-LM patch controls, rank/cost frontier, Triton interpreter correctness | Native GPU timing/memory evidence and preservation of downstream-control behavior |
+| ThoughtFlow-FP8 | Stopped as a positive method; useful diagnostic artifact only | Sparse-cache falsification ladder, oracle/headroom readouts, current decision manifest, int8/Triton interpreter primitive | A fresh preregistered utility signal on a fresh/larger frozen surface; no GPU time for the current branch |
+
+Do not treat the Phase 0--4 checklist below as a promotion signal by itself.
+The current papers are review/handoff packets with measured Mac-local evidence
+and explicit claim boundaries, not completed GPU systems papers.
+
 ## Timeline
-- **Today**: May 4, 2026
+- **Original plan date**: May 4, 2026
 - **COLM workshop submission target**: ~June 25, 2026
 - **MLSys / ICLR submission**: September–October 2026
 - **Budget cap**: ~$0.50/hr on GPU; total ~$700–1,000 for the sprint
