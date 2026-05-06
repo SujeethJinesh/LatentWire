@@ -77,9 +77,12 @@ def _config_key(raw: dict[str, object], model: str) -> tuple[str, dict[str, obje
     if not isinstance(batch_shape, dict):
         raise ValueError("batch_shape must be an object with batch/request settings")
     for field in ["batch_size", "prefill_tokens", "decode_tokens", "requests"]:
-        if batch_shape.get(field) is None:
+        value = batch_shape.get(field)
+        if value is None:
             raise ValueError(f"batch_shape.{field} must be explicitly recorded")
-        if int(batch_shape[field]) <= 0:
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise ValueError(f"batch_shape.{field} must be a positive integer")
+        if value <= 0:
             raise ValueError(f"batch_shape.{field} must be positive")
     normalized = {
         "model": model,
@@ -123,6 +126,8 @@ def _bootstrap_ci(values: list[float], *, draws: int = 2000) -> dict[str, float]
 def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
     rows = []
     for raw in payload.get("rows", []):
+        if not isinstance(raw, dict):
+            raise ValueError("every profiler metric row must be a JSON object")
         if _is_pending_row(raw):
             continue
         total = float(_require_present(raw, "total_step_ms"))
@@ -130,6 +135,9 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
         matched = float(_require_present(raw, "matched_non_boundary_ms"))
         recoverable = float(_require_present(raw, "recoverable_fraction"))
         model = str(raw.get("model", "unknown"))
+        run_id = str(_require_present(raw, "run_id")).strip()
+        if not run_id:
+            raise ValueError("run_id must be explicitly recorded and non-empty")
         config_key, config = _config_key(raw, model)
         if total <= 0:
             raise ValueError("total_step_ms must be positive")
@@ -143,7 +151,7 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
         rows.append(
             {
                 "model": model,
-                "run_id": str(raw.get("run_id", len(rows))),
+                "run_id": run_id,
                 "config_key": config_key,
                 "dtype": str(config["dtype"]),
                 "cuda_graph_enabled": str(config["cuda_graph_enabled"]),

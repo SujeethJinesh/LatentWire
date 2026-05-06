@@ -126,3 +126,31 @@ def test_rejects_non_positive_batch_shape_fields() -> None:
         assert "batch_shape.batch_size" in str(exc)
     else:
         raise AssertionError("expected non-positive batch size to be rejected")
+
+
+def test_rejects_missing_or_empty_run_id() -> None:
+    for run_id in [None, "  "]:
+        row = _native_row(0)
+        row["run_id"] = run_id
+        try:
+            analyze({"rows": [row]})
+        except ValueError as exc:
+            assert "run_id" in str(exc)
+        else:
+            raise AssertionError("expected missing or empty run_id to be rejected")
+
+
+def test_rejects_non_integer_batch_shape_fields() -> None:
+    row = _native_row(0)
+    row["batch_shape"] = {
+        "batch_size": 1.5,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16,
+    }
+    try:
+        analyze({"rows": [row]})
+    except ValueError as exc:
+        assert "batch_shape.batch_size" in str(exc)
+    else:
+        raise AssertionError("expected non-integer batch size to be rejected")
