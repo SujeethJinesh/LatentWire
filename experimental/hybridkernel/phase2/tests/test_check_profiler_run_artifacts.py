@@ -201,6 +201,19 @@ def test_rejects_client_replay_without_top_level_model(tmp_path: Path) -> None:
     assert any("top-level model" in error for error in result["errors"])
 
 
+def test_rejects_client_replay_without_explicit_non_dry_run(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "logs/client_replay_b1.log").write_text(
+        '{"model":"granite","requests":[{"status":"ok"}]}\n',
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("dry_run=false" in error for error in result["errors"])
+
+
 def test_rejects_dry_run_or_failed_client_replay_logs(tmp_path: Path) -> None:
     dry_run = tmp_path / "dry_run"
     _write_complete_run(dry_run)
@@ -212,7 +225,7 @@ def test_rejects_dry_run_or_failed_client_replay_logs(tmp_path: Path) -> None:
     dry_result = check_run_artifacts(dry_run)
 
     assert dry_result["status"] == "FAIL"
-    assert any("dry-run" in error for error in dry_result["errors"])
+    assert any("dry_run=false" in error for error in dry_result["errors"])
     assert any("status=ok" in error for error in dry_result["errors"])
 
     failed = tmp_path / "failed"

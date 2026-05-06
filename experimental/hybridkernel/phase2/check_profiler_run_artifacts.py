@@ -120,8 +120,12 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                     errors.append(
                         f"client replay log JSON must contain non-empty top-level model: {log_file.name}"
                     )
-                if payload.get("dry_run") is True:
-                    errors.append(f"client replay log is a dry-run, not native replay evidence: {log_file.name}")
+                dry_run = payload.get("dry_run") if isinstance(payload, dict) else None
+                if dry_run is not False:
+                    errors.append(
+                        f"client replay log JSON must contain dry_run=false for native evidence: "
+                        f"{log_file.name}"
+                    )
                 if not isinstance(requests, list) or not requests:
                     errors.append(
                         f"client replay log JSON must contain non-empty requests list: {log_file.name}"
