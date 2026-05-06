@@ -74,8 +74,12 @@ cannot promote H1.
 
 Real `config.json` provenance must include `prompt_ids_hash` and
 `architecture_map_hash` as `sha256:<digest>` strings. Real `summary.json` must
-include `prompt_count`, `boundary_directions`, `selected_h1_ratio`,
-`selected_h1_ci_low`, and `support_fraction`.
+include the recomputed H1 evaluator fields: `gate_status`, `gate_pass`,
+`prompt_count`, `boundary_directions`, `selected_h1_metric`,
+`selected_h1_direction`, `selected_h1_ratio`, `selected_h1_threshold`,
+`selected_h1_ci_low`, direction ratios, control ratios, and
+`support_fraction`. The checker recomputes these values from rows and rejects
+stale summaries.
 
 ## Output Paths
 

@@ -338,6 +338,57 @@ def _validate_metric_provenance(
     return roles
 
 
+def _validate_repeated_artifact_identity(
+    *,
+    metric_rows: list[dict[str, float | str]],
+    raw_rows: list[dict[str, object]],
+    min_repeated_runs: int,
+    require_native_artifacts: bool,
+    packet_mode: str,
+    errors: list[str],
+) -> None:
+    if not require_native_artifacts:
+        return
+    by_config: dict[str, list[tuple[dict[str, float | str], dict[str, object]]]] = {}
+    for reduced, raw in zip(metric_rows, raw_rows, strict=True):
+        by_config.setdefault(str(reduced["config_key"]), []).append((reduced, raw))
+    for config_key, config_rows in by_config.items():
+        run_ids = {str(reduced["run_id"]) for reduced, _ in config_rows}
+        if len(config_rows) < min_repeated_runs or len(run_ids) < min_repeated_runs:
+            continue
+        nsys_artifacts = {
+            str(raw.get("nsys_artifact", "")).strip()
+            for _, raw in config_rows
+            if str(raw.get("nsys_artifact", "")).strip()
+        }
+        if len(nsys_artifacts) < min_repeated_runs:
+            errors.append(
+                f"same model/config group {config_key} reuses Nsight Systems artifacts; "
+                f"expected at least {min_repeated_runs} distinct nsys_artifact paths"
+            )
+        if packet_mode != NO_BOUNDARY_SIGNAL_MODE:
+            ncu_artifacts = {
+                str(raw.get("ncu_artifact", "")).strip()
+                for _, raw in config_rows
+                if str(raw.get("ncu_artifact", "")).strip()
+            }
+            if len(ncu_artifacts) < min_repeated_runs:
+                errors.append(
+                    f"same model/config group {config_key} reuses Nsight Compute artifacts; "
+                    f"expected at least {min_repeated_runs} distinct ncu_artifact paths"
+                )
+        windows = set()
+        for _, raw in config_rows:
+            time_window = raw.get("time_window_ms")
+            if isinstance(time_window, dict):
+                windows.add((time_window.get("start"), time_window.get("end")))
+        if len(windows) < min_repeated_runs:
+            errors.append(
+                f"same model/config group {config_key} reuses profiler time windows; "
+                f"expected at least {min_repeated_runs} distinct time_window_ms intervals"
+            )
+
+
 def _models_from_architecture_map(path: Path, errors: list[str]) -> set[str]:
     if not path.is_file():
         return set()
@@ -509,6 +560,20 @@ def check_run_artifacts(
             metrics_status = str(result["status"])
             rows = result["rows"]
             metrics_rows = len(rows)
+            raw_native_rows = [
+                row
+                for row in payload.get("rows", [])
+                if isinstance(row, dict) and not _is_pending_metric_row(row)
+            ]
+            if len(raw_native_rows) == len(rows):
+                _validate_repeated_artifact_identity(
+                    metric_rows=rows,
+                    raw_rows=raw_native_rows,
+                    min_repeated_runs=min_repeated_runs,
+                    require_native_artifacts=require_native_artifacts,
+                    packet_mode=packet_mode,
+                    errors=errors,
+                )
             metric_models = {str(row["model"]) for row in rows}
             counts = Counter(str(row["model"]) for row in rows)
             model_run_counts = dict(counts)

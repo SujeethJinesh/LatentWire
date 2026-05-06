@@ -67,8 +67,11 @@ Any resource-limited packet must set a decision beginning
 `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but cannot
 promote B1. Real `config.json` provenance must include `prompt_ids_hash` and
 `architecture_map_hash` as `sha256:<digest>` strings. Real `summary.json` must
-include `top_decile_count`, `random_top_decile_count`, `train_count`,
-`test_count`, and `boundary_top_decile_enrichment`.
+include the recomputed B1 evaluator fields: `gate_status`, `gate_pass`,
+top/random/train/test counts, split/control summaries, boundary/non-boundary
+top-decile counts and rates, `boundary_top_decile_enrichment`,
+`fisher_p_boundary_top_decile`, and `cheap_predictor_spearman`. The checker
+recomputes these values from rows and rejects stale summaries.
 
 Validate the first real B1 packet with:
 

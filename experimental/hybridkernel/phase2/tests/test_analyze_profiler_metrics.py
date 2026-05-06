@@ -38,7 +38,7 @@ def _review_control_rows() -> list[dict[str, object]]:
     return [
         _native_row(
             100,
-            model="granite-same-family-control",
+            model="granite",
             row_role="same_family_control",
             control_model_or_segment="same_family_transformer_heavy_control",
             attention_ssm_boundary_ms=2.0,
@@ -76,8 +76,51 @@ def test_promotes_only_when_all_repeated_runs_clear_gate() -> None:
     assert result["status"].startswith("PROMOTE")
     summary_row = next(iter(result["summary"].values()))
     assert summary_row["clears_3pct_gate_all_runs"] is True
+    assert summary_row["same_family_control_rows"] == 1
+    assert summary_row["cross_family_falsification_rows"] == 1
     assert summary_row["median_recoverable_gain_upper_bound"] == 0.036
     assert summary_row["bootstrap_ci95_recoverable_gain_upper_bound"]["low"] == 0.036
+
+
+def test_unmatched_review_controls_do_not_promote_clearing_primary() -> None:
+    unrelated_controls = [
+        _native_row(
+            100,
+            row_role="same_family_control",
+            control_model_or_segment="same_family_transformer_heavy_control",
+            attention_ssm_boundary_ms=2.0,
+            matched_non_boundary_ms=2.0,
+            batch_shape={
+                "batch_size": 1,
+                "prefill_tokens": 128,
+                "decode_tokens": 65,
+                "requests": 16,
+            },
+        ),
+        _native_row(
+            101,
+            model="qwen-cross-family-falsification",
+            row_role="cross_family_falsification",
+            control_model_or_segment="cross_family_hybrid_control",
+            attention_ssm_boundary_ms=2.0,
+            matched_non_boundary_ms=2.0,
+            batch_shape={
+                "batch_size": 1,
+                "prefill_tokens": 128,
+                "decode_tokens": 65,
+                "requests": 16,
+            },
+        ),
+    ]
+    result = analyze({"rows": [_native_row(idx) for idx in range(3)] + unrelated_controls})
+
+    assert result["status"].startswith("WEAKLY ALIVE")
+    summary_row = next(
+        row for row in result["summary"].values() if row["model"] == "granite"
+    )
+    assert summary_row["clears_3pct_gate_all_runs"] is True
+    assert summary_row["same_family_control_rows"] == 0
+    assert summary_row["cross_family_falsification_rows"] == 0
 
 
 def test_primary_gate_clear_without_controls_is_not_promoted() -> None:
@@ -144,6 +187,40 @@ def test_rejects_invalid_recoverable_fraction() -> None:
         assert "recoverable_fraction" in str(exc)
     else:
         raise AssertionError("expected invalid recoverable_fraction to be rejected")
+
+
+def test_rejects_impossible_local_timings() -> None:
+    invalid_cases = [
+        (
+            _native_row(0, attention_ssm_boundary_ms=101.0),
+            "attention_ssm_boundary_ms cannot exceed total_step_ms",
+        ),
+        (
+            _native_row(0, matched_non_boundary_ms=101.0),
+            "matched_non_boundary_ms cannot exceed total_step_ms",
+        ),
+        (
+            _native_row(0, time_window_ms={"start": 10.0, "end": 9.0}),
+            "time_window_ms.end must exceed start",
+        ),
+        (
+            _native_row(
+                0,
+                total_step_ms=1.0,
+                attention_ssm_boundary_ms=0.5,
+                matched_non_boundary_ms=0.2,
+                time_window_ms={"start": 0.0, "end": 2.0},
+            ),
+            "time_window_ms duration cannot exceed total_step_ms",
+        ),
+    ]
+    for row, expected in invalid_cases:
+        try:
+            analyze({"rows": [row]})
+        except ValueError as exc:
+            assert expected in str(exc)
+        else:
+            raise AssertionError(f"expected {expected} to be rejected")
 
 
 def test_rejects_missing_matched_control_and_run_config() -> None:

@@ -1,0 +1,143 @@
+from __future__ import annotations
+
+from experimental.shared.hybrid_gate_evaluators import (
+    evaluate_hbsm_b1,
+    evaluate_horn_h1,
+    evaluate_ssq_lr_s1,
+)
+
+
+SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
+
+
+def test_ssq_lr_s1_evaluator_requires_enough_passing_layers() -> None:
+    rows = []
+    for prompt_index in range(12):
+        for layer in range(4):
+            for bucket in SSQ_BUCKETS:
+                boosted = bucket == "final_minus_128" and layer < 3
+                rows.append(
+                    {
+                        "prompt_id": f"p{prompt_index}",
+                        "layer": layer,
+                        "position_bucket": bucket,
+                        "max_abs": 3.0 if boosted else 1.0,
+                        "std": 3.0 if boosted else 1.0,
+                        "kurtosis": 1.0,
+                    }
+                )
+
+    result = evaluate_ssq_lr_s1(rows)
+
+    assert result["gate_pass"] is True
+    assert result["passing_layer_count"] == 3
+    assert result["required_passing_layer_count"] == 3
+
+
+def test_ssq_lr_s1_evaluator_fails_without_layer_support() -> None:
+    rows = []
+    for prompt_index in range(12):
+        for layer in range(4):
+            for bucket in SSQ_BUCKETS:
+                boosted = bucket == "final_minus_128" and layer == 0
+                rows.append(
+                    {
+                        "prompt_id": f"p{prompt_index}",
+                        "layer": layer,
+                        "position_bucket": bucket,
+                        "max_abs": 3.0 if boosted else 1.0,
+                        "std": 3.0 if boosted else 1.0,
+                        "kurtosis": 1.0,
+                    }
+                )
+
+    result = evaluate_ssq_lr_s1(rows)
+
+    assert result["gate_pass"] is False
+    assert result["passing_layer_count"] == 1
+
+
+def test_horn_h1_evaluator_uses_directional_support_and_controls() -> None:
+    rows = []
+    for prompt_index in range(12):
+        for direction, max_abs in [("attention->ssm", 10.0), ("ssm->attention", 1.0)]:
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": 1.0,
+                    "kurtosis": 1.0,
+                    "control_type": "non_boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": "ssm->attention" if direction == "attention->ssm" else "attention->ssm",
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "permuted_direction",
+                }
+            )
+
+    result = evaluate_horn_h1(rows)
+
+    assert result["gate_pass"] is True
+    assert result["selected_h1_metric"] == "max_abs"
+    assert result["selected_h1_ratio"] == 10.0
+    assert result["non_boundary_control_ratio"] == 1.0
+
+
+def test_horn_h1_evaluator_fails_when_non_boundary_control_has_same_ratio() -> None:
+    rows = []
+    for prompt_index in range(12):
+        for direction, max_abs in [("attention->ssm", 10.0), ("ssm->attention", 1.0)]:
+            for control_type in ("boundary", "non_boundary", "permuted_direction"):
+                rows.append(
+                    {
+                        "prompt_id": f"p{prompt_index}",
+                        "direction": direction,
+                        "max_abs": max_abs,
+                        "kurtosis": 1.0,
+                        "control_type": control_type,
+                    }
+                )
+
+    result = evaluate_horn_h1(rows)
+
+    assert result["gate_pass"] is False
+    assert result["non_boundary_control_ratio"] == result["selected_h1_ratio"]
+
+
+def test_hbsm_b1_evaluator_requires_boundary_enrichment_over_random() -> None:
+    rows = []
+    controls = ["perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"]
+    for index in range(20):
+        boundary = index < 10
+        rows.append(
+            {
+                "boundary_flag": boundary,
+                "top_decile_flag": boundary,
+                "random_top_decile": not boundary,
+                "train_test_split": "train" if index % 2 == 0 else "test",
+                "control_type": controls[index % len(controls)],
+                "cheap_predictor": float(index),
+                "kl_or_nll_drift": float(index),
+            }
+        )
+
+    result = evaluate_hbsm_b1(rows)
+
+    assert result["gate_pass"] is True
+    assert result["boundary_top_decile_enrichment"] > 1.0
+    assert result["fisher_p_boundary_top_decile"] < 0.05
+    assert result["cheap_predictor_spearman"] > 0.9

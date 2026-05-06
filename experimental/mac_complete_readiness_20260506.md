@@ -35,7 +35,7 @@ The current PDFs are fresh relative to their TeX sources:
 |---|---:|---:|---|
 | HybridKernel | `experimental/hybridkernel/paper/hybridkernel_colm2026.pdf` | 3 | measurement-protocol handoff |
 | SinkAware | `experimental/sinkaware/paper/sinkaware_colm2026.pdf` | 5 | bounded pre-GPU candidate |
-| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf` | 5 | negative/diagnostic workshop note |
+| ThoughtFlow-FP8 | `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf` | 6 | negative/diagnostic workshop note |
 
 ## Stop Conditions
 

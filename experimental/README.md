@@ -32,11 +32,16 @@ Shared Mac-local utilities live in `shared/`:
   live hybrid targets.
 - `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
   SSQ-LR/HORN real packets.
+- `hybrid_gate_evaluators.py`: recomputes SSQ-LR S1, HORN H1, and HBSM B1
+  decision aggregates from raw packet rows.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
 - `check_gate_packet.py`: generic result-packet validator with strict real
   SSQ-LR/HORN/HBSM packet contracts.
 - `hybrid_trace_packet_runbook.md`: schema for the first real shared trace
   packet used by SSQ-LR, HORN, and HBSM.
+- `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt
+  Mac-gate smoke surface, SHA-256
+  `48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
 
 These utilities support Mac-local hypothesis gates. They do not support native
 GPU throughput, HBM, latency, energy, or production-packing claims.

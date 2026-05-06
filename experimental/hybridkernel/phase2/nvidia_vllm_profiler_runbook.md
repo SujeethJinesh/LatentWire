@@ -106,6 +106,7 @@ cat > "$HWK_RUN/metadata/profile_scope.json" <<'JSON'
   "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
   "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
   "request_driver_process": "profiler_driver_http_client",
+  "model": "$MODEL",
   "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
 }
 JSON
@@ -376,7 +377,8 @@ Required fields:
 | `time_window_ms` | object with numeric `start` and `end` trace-window boundaries |
 | `reduction_notes` | short non-placeholder explanation of the trace reduction |
 
-Use distinct `run_id` values for independent repeated traces. Duplicating one
+Use distinct `run_id` values, `nsys_artifact` paths, `ncu_artifact` paths, and
+`time_window_ms` intervals for independent repeated traces. Duplicating one
 trace into three rows is not admissible evidence and will fail the artifact
 verifier.
 
@@ -444,7 +446,9 @@ The verifier checks that the run directory contains:
   rows whose `status` fields are all `ok`;
 - `readout.md` with the pre-registered decision questions;
 - `profiler_metrics.json` with at least three repeated valid rows for one
-  model and at least three distinct repeated `run_id` values.
+  model and at least three distinct repeated `run_id` values. Repeated rows
+  for the same model/config must also point to distinct `nsys_artifact`,
+  `ncu_artifact`, and `time_window_ms` intervals.
 - `profiler_analysis_gate.json` and `.md` generated from that exact
   `profiler_metrics.json`.
 

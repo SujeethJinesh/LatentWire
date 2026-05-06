@@ -59,6 +59,7 @@ server-side CUDA work:
   "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
   "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
   "request_driver_process": "profiler_driver_http_client",
+  "model": "$MODEL",
   "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
 }
 ```
@@ -109,8 +110,10 @@ reduced native trace:
 - `time_window_ms`: object with numeric `start` and `end`, with `end > start`;
 - `reduction_notes`: non-placeholder notes explaining how the row was reduced.
 
-Do not duplicate one trace into multiple rows. Do not mix different model
-families and call them repeated runs for the same gate.
+Do not duplicate one trace into multiple rows. Repeated rows for the same
+model/config must have distinct `nsys_artifact`, `ncu_artifact`, and
+`time_window_ms` intervals. Do not mix different model families and call them
+repeated runs for the same gate.
 
 The artifact checker resolves `nsys_artifact` and `ncu_artifact` against the
 run directory. Missing files, absolute paths, `..` escapes, wrong extensions,

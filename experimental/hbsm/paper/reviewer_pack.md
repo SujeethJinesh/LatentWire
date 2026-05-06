@@ -26,7 +26,7 @@ HORN.
 |---|---|---|
 | Benchmarks | B1 should measure KL/NLL drift on current hybrid reasoners, but no live sensitivity sweep exists yet. | Gate pending. |
 | Ablations | Required baselines are perturbation-off, random flags, layer index, parameter count/norm, boundary-only, and train/test or leave-one-model-out splits. | Adequate before real B1/B2. |
-| Correctness | The checker requires true and false boundary flags, finite metrics, matched top-decile/random counts, train/test coverage, hash-shaped prompt/architecture provenance, decision-grade `summary.json` aggregates, and near-zero drift for perturbation-off rows. | Artifact path is hardened. |
+| Correctness | The checker requires true and false boundary flags, finite metrics, matched top-decile/random counts, train/test coverage, hash-shaped prompt/architecture provenance, recomputed B1 `summary.json` enrichment/p-value/Spearman aggregates, and near-zero drift for perturbation-off rows. | Artifact path is hardened. |
 | Reproducibility | Synthetic B1/B2 packet is deterministic, and shared architecture maps fix boundary flags. | Not model evidence. |
 | Novelty | Broad forward-only sensitivity is crowded; the defensible wedge is mechanism plus cheaper predictor on current hybrid reasoners. | Narrow and fragile. |
 | Camera-readiness | The draft is a preregistration shell. It needs real B1/B2/B3 evidence before submission as a standalone paper. | Not camera-ready. |
@@ -38,7 +38,7 @@ HORN.
 | synthetic B1/B2 | kurtosis-vs-sensitivity Spearman rho 0.657, two boundary top-decile hits | validates readout only |
 | architecture provenance | shared boundary flags and model hashes exist | packet provenance ready |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
-| real-packet checker | rejects missing no-op rows, missing boundary-flag coverage, non-finite metrics, split omissions, promotable resource-limited decisions, and unmatched random/top-decile counts | ready for real B1 |
+| real-packet checker | rejects missing no-op rows, missing boundary-flag coverage, stale summary fields, non-finite metrics, split omissions, promotable resource-limited decisions, and unmatched random/top-decile counts | ready for real B1 |
 
 ## Reviewer Risks
 

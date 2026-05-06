@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-We present a preregistered falsification protocol for training-free sparse KV-retention proposals on reasoning traces. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, require matched-budget wins against R-KV-like and ThinKV-like proxies, separate same-family and cross-family rows, and report paired uncertainty plus oracle/headroom diagnostics. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
+We present a preregistered falsification protocol for training-free sparse KV-retention proposals on saved reasoning-style traces. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, require matched-budget wins against R-KV-like and ThinKV-like proxies, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
 \end{abstract}
 
 \section{Contribution}
@@ -20,7 +20,7 @@ We present a preregistered falsification protocol for training-free sparse KV-re
 The contribution is a reusable stop-rule protocol, not another sparse-cache
 policy. The protocol combines seven checks: no-retune frozen surfaces,
 pre-registered successor utilities, matched-budget proxy baselines,
-same-family and cross-family separation, paired uncertainty,
+stopped-family/proxy-baseline separation, paired uncertainty,
 oracle/headroom diagnostics, and machine-checkable stop artifacts. ThoughtFlow-FP8
 is the case study showing why each check matters: one plausible signal looks
 positive on a frozen surface, then fails to reproduce under stricter reproduction, while
@@ -35,7 +35,7 @@ Protocol check & Purpose & Stop condition \\
 \midrule
 Frozen surface & Prevent post-hoc tuning. & A successor is measured once after preregistration. \\
 Matched budget & Avoid full-cache comparisons. & Must beat R-KV-like and ThinKV-like rows at the same keep rate. \\
-Same/cross-family split & Separate local reuse from generality. & A same-family-only win is diagnostic, not a method claim. \\
+Stopped/proxy split & Separate local family reuse from proxy-baseline robustness. & A stopped-family-only win is diagnostic, not a method claim. \\
 Paired intervals & Avoid mean-only promotion. & Promotion requires the preregistered mean margin and paired CI high below zero. \\
 Oracle/headroom & Show whether a useful policy exists at the budget. & Large oracle gaps block method claims. \\
 Fresh surface & Test robustness. & Failure demotes or kills the signal. \\
@@ -246,7 +246,7 @@ Claimed & Not claimed \\
 \midrule
 Preregistered sparse-cache falsification ladder. & State-of-the-art KV compression. \\
 Matched-budget Mac sparse-cache scoring. & Native FP8 serving quality. \\
-Same-family/cross-family and fresh-surface stop rules. & CUDA kernel speed, latency, throughput, or HBM savings. \\
+Stopped-family/proxy-baseline and fresh-surface stop rules. & CUDA kernel speed, latency, throughput, or HBM savings. \\
 Triton-interpreter parity for an int8 anchor/phase primitive. & A live deployable compression method. \\
 \bottomrule
 \end{tabular}
@@ -271,7 +271,7 @@ policy family remains ruled out as a tunable branch on this trace set,
 \texttt{rdu\_topk} fails reproduction, and \texttt{psi\_topk}/\texttt{vwac\_topk}
 fail their fresh-surface gates. A paper-ready method claim now requires a genuinely new
 pre-registered utility signal evaluated once on a fresh/larger frozen surface
-with strict same-family, cross-family, and oracle/headroom reporting. The Triton
+with strict stopped-family, proxy-baseline, and oracle/headroom reporting. The Triton
 interpreter gate is no longer the blocker for the quantization scaffold; method
 evidence is. This means no real FP8, CUDA, latency, or throughput result is claimed.
 
@@ -297,7 +297,10 @@ All reported gates use tracked scripts under
 alternate-surface rerun, independent saved-trace rerun, and fresh-surface
 successor checks each write Markdown and JSON artifacts with promotion
 criteria, paired intervals, oracle/headroom diagnostics, and no-retuning
-decisions. The stable local correctness command is:
+decisions. Several older JSON artifacts do not yet record full model revision
+and input-hash provenance, so the current package should be read as a
+machine-checked falsification note rather than a full artifact-evaluation
+release. The stable local correctness command is:
 \texttt{./venv\_arm64/bin/python -m pytest
 experimental/thoughtflow\_fp8/phase2/tests
 experimental/thoughtflow\_fp8/phase4/tests -q -rs}.
@@ -320,7 +323,7 @@ fresh-surface checks, and repo-local Triton interpreter note:
 \begin{thebibliography}{9}
 \bibitem[ThinKV(2026)]{thinkv}
 ThinKV: Thought-Adaptive KV Cache Compression for Efficient Reasoning Models.
-ICLR, 2026. \url{https://openreview.net/forum?id=EBn1oD2eqH}.
+ICLR, 2026. \url{https://openreview.net/forum?id=M3CeHnZKNC}.
 \bibitem[LongFlow(2026)]{longflow}
 LongFlow: Efficient KV Cache Compression for Reasoning Models.
 arXiv:2603.11504, 2026. \url{https://arxiv.org/abs/2603.11504}.

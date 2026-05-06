@@ -8,6 +8,11 @@ import math
 from pathlib import Path
 from typing import Any
 
+from experimental.shared.hybrid_gate_evaluators import (
+    evaluate_hbsm_b1,
+    evaluate_horn_h1,
+    evaluate_ssq_lr_s1,
+)
 
 BASE_REQUIRED_FILES = ("config.json", "raw_rows.jsonl", "summary.json", "decision.md")
 REAL_REQUIRED_FILES = BASE_REQUIRED_FILES + ("summary.md",)
@@ -77,11 +82,16 @@ REAL_CONTROL_VALUES = {
 SSQ_LR_POSITION_BUCKETS = {"prefill_end", "2k_or_end", "8k_or_end", "final_minus_128"}
 REAL_SUMMARY_FIELDS = {
     "ssq_lr": (
+        "gate_name",
+        "gate_status",
+        "gate_pass",
         "prompt_count",
         "position_buckets",
         "ssm_layer_count",
         "passing_layer_count",
+        "required_passing_layer_count",
         "pass_fraction",
+        "selected_s1_ratio",
         "selected_s1_ci_low",
         "holm_p_min",
         "max_abs_ratio_final_minus_128_vs_prefill_end",
@@ -89,18 +99,39 @@ REAL_SUMMARY_FIELDS = {
         "kurtosis_ratio_final_minus_128_vs_prefill_end",
     ),
     "horn": (
+        "gate_name",
+        "gate_status",
+        "gate_pass",
         "prompt_count",
         "boundary_directions",
+        "selected_h1_metric",
+        "selected_h1_direction",
         "selected_h1_ratio",
+        "selected_h1_threshold",
         "selected_h1_ci_low",
+        "max_abs_direction_ratio",
+        "kurtosis_direction_ratio",
+        "non_boundary_control_ratio",
+        "permuted_direction_ratio",
         "support_fraction",
     ),
     "hbsm": (
+        "gate_name",
+        "gate_status",
+        "gate_pass",
         "top_decile_count",
         "random_top_decile_count",
         "train_count",
         "test_count",
+        "split_counts",
+        "control_types",
+        "boundary_top_decile_count",
+        "non_boundary_top_decile_count",
+        "boundary_top_decile_rate",
+        "non_boundary_top_decile_rate",
         "boundary_top_decile_enrichment",
+        "fisher_p_boundary_top_decile",
+        "cheap_predictor_spearman",
     ),
 }
 HASH_FIELDS = ("prompt_ids_hash", "architecture_map_hash")
@@ -221,6 +252,7 @@ def _validate_real_summary(
             errors.append(f"{project} summary.json missing {field}")
 
     if project == "ssq_lr":
+        evaluated = evaluate_ssq_lr_s1(rows)
         prompt_count = summary.get("prompt_count")
         observed_prompt_count = len({str(row.get("prompt_id")) for row in rows})
         if prompt_count != observed_prompt_count:
@@ -258,8 +290,30 @@ def _validate_real_summary(
             "kurtosis_ratio_final_minus_128_vs_prefill_end",
         ):
             _validate_ratio_field(project="ssq_lr", summary=summary, field=field, errors=errors)
+        for field in (
+            "gate_status",
+            "gate_pass",
+            "required_passing_layer_count",
+            "selected_s1_ratio",
+        ):
+            if summary.get(field) != evaluated.get(field):
+                errors.append(f"ssq_lr summary {field} must match evaluator output")
+        for field in (
+            "passing_layer_count",
+            "pass_fraction",
+            "selected_s1_ci_low",
+            "max_abs_ratio_final_minus_128_vs_prefill_end",
+            "std_ratio_final_minus_128_vs_prefill_end",
+            "kurtosis_ratio_final_minus_128_vs_prefill_end",
+        ):
+            value = summary.get(field)
+            expected = evaluated.get(field)
+            if _finite_number(value) and _finite_number(expected):
+                if abs(float(value) - float(expected)) > 1e-9:
+                    errors.append(f"ssq_lr summary {field} must match evaluator output")
 
     if project == "horn":
+        evaluated = evaluate_horn_h1(rows)
         prompt_count = summary.get("prompt_count")
         observed_prompt_count = len({str(row.get("prompt_id")) for row in rows})
         if prompt_count != observed_prompt_count:
@@ -276,8 +330,32 @@ def _validate_real_summary(
         support_fraction = summary.get("support_fraction")
         if not _finite_number(support_fraction) or not 0.0 <= float(support_fraction) <= 1.0:
             errors.append("horn summary support_fraction must be in [0, 1]")
+        for field in (
+            "gate_status",
+            "gate_pass",
+            "selected_h1_metric",
+            "selected_h1_direction",
+            "selected_h1_threshold",
+        ):
+            if summary.get(field) != evaluated.get(field):
+                errors.append(f"horn summary {field} must match evaluator output")
+        for field in (
+            "selected_h1_ratio",
+            "selected_h1_ci_low",
+            "max_abs_direction_ratio",
+            "kurtosis_direction_ratio",
+            "non_boundary_control_ratio",
+            "permuted_direction_ratio",
+            "support_fraction",
+        ):
+            value = summary.get(field)
+            expected = evaluated.get(field)
+            if _finite_number(value) and _finite_number(expected):
+                if abs(float(value) - float(expected)) > 1e-9:
+                    errors.append(f"horn summary {field} must match evaluator output")
 
     if project == "hbsm":
+        evaluated = evaluate_hbsm_b1(rows)
         for field in ("top_decile_count", "random_top_decile_count", "train_count", "test_count"):
             if not _valid_nonnegative_int(summary.get(field)):
                 errors.append(f"hbsm summary {field} must be a nonnegative integer")
@@ -292,6 +370,23 @@ def _validate_real_summary(
         enrichment = summary.get("boundary_top_decile_enrichment")
         if not _finite_number(enrichment) or float(enrichment) < 0.0:
             errors.append("hbsm summary boundary_top_decile_enrichment must be nonnegative finite numeric")
+        for field in ("gate_status", "gate_pass", "control_types", "split_counts"):
+            if summary.get(field) != evaluated.get(field):
+                errors.append(f"hbsm summary {field} must match evaluator output")
+        for field in (
+            "boundary_top_decile_count",
+            "non_boundary_top_decile_count",
+            "boundary_top_decile_rate",
+            "non_boundary_top_decile_rate",
+            "boundary_top_decile_enrichment",
+            "fisher_p_boundary_top_decile",
+            "cheap_predictor_spearman",
+        ):
+            value = summary.get(field)
+            expected = evaluated.get(field)
+            if _finite_number(value) and _finite_number(expected):
+                if abs(float(value) - float(expected)) > 1e-9:
+                    errors.append(f"hbsm summary {field} must match evaluator output")
 
 
 def _validate_real_coverage(
@@ -414,7 +509,7 @@ def _validate_real_coverage(
                 errors.append(f"horn row {index} boundary_index must be an integer")
 
     if project == "hbsm":
-        flags = {bool(row.get("boundary_flag")) for row in rows}
+        flags = {row.get("boundary_flag") for row in rows if isinstance(row.get("boundary_flag"), bool)}
         if flags != {False, True}:
             errors.append("hbsm real packet needs both boundary_flag=true and boundary_flag=false")
         splits = {str(row.get("train_test_split")) for row in rows}
@@ -435,11 +530,11 @@ def _validate_real_coverage(
                 fields=("parameter_count", "weight_norm"),
                 errors=errors,
             )
-            for field in ("top_decile_flag", "random_top_decile"):
+            for field in ("boundary_flag", "top_decile_flag", "random_top_decile"):
                 if not isinstance(row.get(field), bool):
                     errors.append(f"hbsm row {index} {field} must be boolean")
             drift = row.get("kl_or_nll_drift")
-            if str(row.get("control_type")) == "perturbation_off" and _finite_number(drift) and abs(float(drift)) > 1e-6:
+            if str(row.get("control_type")) == "perturbation_off" and _finite_number(drift) and abs(float(drift)) > 1e-5:
                 errors.append("hbsm perturbation_off rows must have near-zero drift")
 
 

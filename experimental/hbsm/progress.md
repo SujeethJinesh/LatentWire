@@ -66,3 +66,17 @@ Resource-limited runs are diagnostic only and must use
 Decision: **B1 PROMOTION NOW REQUIRES A COMPLETE REAL SENSITIVITY TABLE**. The
 next exact gate remains a live layer-sensitivity sweep on current hybrid
 reasoners.
+
+## 2026-05-06 Recomputed Gate Evaluator Update
+
+Added `../shared/hybrid_gate_evaluators.py` and wired the HBSM real-packet
+checker to recompute B1 top-decile enrichment, Fisher p-value, split counts,
+control coverage, and cheap-predictor Spearman correlation from
+`raw_rows.jsonl`. The builder now rejects non-boolean
+`boundary_flag`, `top_decile_flag`, and `random_top_decile` values instead of
+coercing strings. The shared Mac smoke prompt manifest is
+`../shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl` with SHA-256
+`48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
+
+Decision: **NEXT B1 MUST BE GENERATED FROM RAW SENSITIVITY ROWS**. The blocker
+is still live model weights and forward-sensitivity measurements.

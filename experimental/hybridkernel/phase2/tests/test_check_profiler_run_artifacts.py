@@ -49,12 +49,13 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         '{"model":"granite","dry_run":false,"requests":[{"status":"ok"}]}\n',
         encoding="utf-8",
     )
-    (run_dir / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
-        "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
-    )
-    (run_dir / "ncu/suspicious_boundary_kernel.ncu-rep").write_text(
-        "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
-    )
+    for idx in range(runs):
+        (run_dir / f"nsys/granite_tiny_b1_decode64_run{idx}.nsys-rep").write_text(
+            "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
+        )
+        (run_dir / f"ncu/suspicious_boundary_kernel_run{idx}.ncu-rep").write_text(
+            "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
+        )
     readout_rows = "\n".join(f"| {marker} | evidence | no |" for marker in READOUT_MARKERS)
     (run_dir / "readout.md").write_text(
         "| Question | Evidence | Decision |\n|---|---|---|\n" + readout_rows + "\n",
@@ -81,8 +82,8 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                 "row_role": "primary_hybrid",
                 "control_family": "same_family_matched_segment",
                 "boundary_direction": "mixed_attention_ssm",
-                "nsys_artifact": "nsys/granite_tiny_b1_decode64.nsys-rep",
-                "ncu_artifact": "ncu/suspicious_boundary_kernel.ncu-rep",
+                "nsys_artifact": f"nsys/granite_tiny_b1_decode64_run{idx}.nsys-rep",
+                "ncu_artifact": f"ncu/suspicious_boundary_kernel_run{idx}.ncu-rep",
                 "kernel_names": ["synthetic_boundary_kernel"],
                 "boundary_indices": [0],
                 "time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
@@ -146,17 +147,18 @@ def test_primary_gate_clear_without_controls_stays_audit_only(tmp_path: Path) ->
 
 def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "nsys/granite_tiny_b1_decode64.nsys-rep").unlink()
+    (tmp_path / "nsys/granite_tiny_b1_decode64_run0.nsys-rep").unlink()
 
     result = check_run_artifacts(tmp_path)
 
     assert result["status"] == "FAIL"
-    assert any("Nsight Systems" in error for error in result["errors"])
+    assert any("nsys_artifact does not exist" in error for error in result["errors"])
 
 
 def test_no_boundary_signal_kill_packet_allows_missing_ncu(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "ncu/suspicious_boundary_kernel.ncu-rep").unlink()
+    for artifact in (tmp_path / "ncu").glob("*.ncu-rep"):
+        artifact.unlink()
     metrics_path = tmp_path / "profiler_metrics.json"
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
     for row in payload["rows"]:
@@ -330,10 +332,10 @@ def test_rejects_unfilled_readout_template_cells(tmp_path: Path) -> None:
 
 def test_rejects_tiny_or_placeholder_native_profiler_artifacts(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
+    (tmp_path / "nsys/granite_tiny_b1_decode64_run0.nsys-rep").write_text(
         "placeholder\n" + ("x" * 2048), encoding="utf-8"
     )
-    (tmp_path / "ncu/suspicious_boundary_kernel.ncu-rep").write_text(
+    (tmp_path / "ncu/suspicious_boundary_kernel_run0.ncu-rep").write_text(
         "tiny\n", encoding="utf-8"
     )
 
@@ -346,7 +348,7 @@ def test_rejects_tiny_or_placeholder_native_profiler_artifacts(tmp_path: Path) -
 
 def test_rejects_uppercase_todo_marker_inside_native_profiler_artifacts(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
+    (tmp_path / "nsys/granite_tiny_b1_decode64_run0.nsys-rep").write_text(
         "TODO_NATIVE_PROFILE_FILL\n" + ("x" * 2048), encoding="utf-8"
     )
 
@@ -494,6 +496,22 @@ def test_requires_distinct_repeated_run_ids(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("distinct repeated run_id" in error for error in result["errors"])
+
+
+def test_rejects_reused_artifacts_for_repeated_rows(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    for row in payload["rows"]:
+        row["nsys_artifact"] = "nsys/granite_tiny_b1_decode64_run0.nsys-rep"
+        row["ncu_artifact"] = "ncu/suspicious_boundary_kernel_run0.ncu-rep"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("distinct nsys_artifact" in error for error in result["errors"])
+    assert any("distinct ncu_artifact" in error for error in result["errors"])
 
 
 def test_requires_repeated_rows_for_same_run_config(tmp_path: Path) -> None:

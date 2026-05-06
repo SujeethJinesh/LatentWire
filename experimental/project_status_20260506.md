@@ -30,11 +30,16 @@ Shared Mac-local utilities live in `experimental/shared/`:
   live hybrid targets.
 - `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
   SSQ-LR/HORN real packets.
+- `hybrid_gate_evaluators.py`: recomputes SSQ-LR S1, HORN H1, and HBSM B1
+  decision fields from raw rows so summaries cannot be hand-filled.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
 - `check_gate_packet.py`: generic synthetic-packet validator plus strict
   `--mode real --project ...` contracts for SSQ-LR, HORN, and HBSM.
 - `hybrid_trace_packet_runbook.md`: required schema for the first real
   SSQ-LR/HORN/HBSM trace packet.
+- `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt Mac
+  gate smoke manifest, SHA-256
+  `48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
 
 These are reference utilities for hypothesis gates only. They do not support
 native GPU throughput, HBM, or production-packing claims.
@@ -97,8 +102,11 @@ Per-row `nsys_artifact` and `ncu_artifact` fields must resolve to reviewable
 files inside the run packet with valid Nsight extensions. This prevents a
 reduced metric row from citing a missing or external artifact.
 The profiler reducer now refuses prototype promotion unless the same metric
-packet includes the required same-family control and cross-family falsification
-row roles; a primary-only packet that clears 3% remains audit-only.
+packet includes matched same-family control and cross-family falsification rows
+on the same request/runtime shape; a primary-only packet that clears 3% remains
+audit-only. The reducer rejects impossible local timings, and the artifact
+checker rejects repeated-row packets that reuse the same Nsight artifacts or
+time windows.
 The optional Triton CPU-backend correctness test passes on this Mac when
 Homebrew GCC library paths are exported, but it remains a correctness-only
 diagnostic.

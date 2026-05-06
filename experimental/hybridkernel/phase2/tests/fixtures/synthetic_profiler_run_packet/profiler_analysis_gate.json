@@ -6,6 +6,7 @@
       "run_id": "repeat-0",
       "row_role": "primary_hybrid",
       "config_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}",
+      "analysis_group_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\"}",
       "dtype": "bfloat16",
       "cuda_graph_enabled": "True",
       "batch_size": 1.0,
@@ -27,6 +28,7 @@
       "run_id": "repeat-1",
       "row_role": "primary_hybrid",
       "config_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}",
+      "analysis_group_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\"}",
       "dtype": "bfloat16",
       "cuda_graph_enabled": "True",
       "batch_size": 1.0,
@@ -48,6 +50,7 @@
       "run_id": "repeat-2",
       "row_role": "primary_hybrid",
       "config_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}",
+      "analysis_group_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\"}",
       "dtype": "bfloat16",
       "cuda_graph_enabled": "True",
       "batch_size": 1.0,
@@ -69,8 +72,11 @@
     "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}": {
       "model": "synthetic-granite-fixture",
       "config_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"matched_transformer_block\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"synthetic-granite-fixture\"}",
+      "analysis_group_key": "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\"}",
       "runs": 3,
       "distinct_run_ids": 3,
+      "primary_runs": 3,
+      "distinct_primary_run_ids": 3,
       "dtype": "bfloat16",
       "cuda_graph_enabled": "True",
       "batch_size": 1,
@@ -81,6 +87,11 @@
       "row_roles": [
         "primary_hybrid"
       ],
+      "review_row_roles": [
+        "primary_hybrid"
+      ],
+      "same_family_control_rows": 0,
+      "cross_family_falsification_rows": 0,
       "mean_avoidable_share": 0.02,
       "mean_recoverable_gain_upper_bound": 0.012,
       "median_recoverable_gain_upper_bound": 0.012,

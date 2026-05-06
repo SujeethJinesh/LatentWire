@@ -58,3 +58,16 @@ runs are still admissible for diagnosis, but their decision must start with
 Decision: **S1 PROMOTION NOW REQUIRES A COMPLETE REAL STATE MATRIX**. The next
 exact gate is unchanged: live hybrid SSM-state dumps on the smallest available
 hybrid model.
+
+## 2026-05-06 Recomputed Gate Evaluator Update
+
+Added `../shared/hybrid_gate_evaluators.py` and wired the SSQ-LR real-packet
+checker to recompute S1 summary fields from `raw_rows.jsonl`. A real packet now
+cannot promote by hand-filling late/early ratios or passing-layer counts in
+`summary.json`; stale or inconsistent S1 summaries are rejected. The shared
+Mac smoke prompt manifest is
+`../shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl` with SHA-256
+`48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
+
+Decision: **NEXT S1 MUST BE GENERATED FROM RAW STATE ROWS**. The blocker is
+still live hybrid SSM-state dumps.

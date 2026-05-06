@@ -21,11 +21,16 @@ Use them for preregistered Mac gates only.
 - `hybrid_trace_packet_builder.py`: converts future saved trace tensor packets
   into strict SSQ-LR/HORN real gate packets and converts HBSM sensitivity rows
   into strict real B1 packets.
+- `hybrid_gate_evaluators.py`: recomputes S1/H1/B1 pass/fail summaries from
+  packet rows so real packets cannot promote from hand-written aggregate labels.
 - `sensitivity_metrics.py`: quality, drift, and rank-correlation metrics.
 - `check_gate_packet.py`: packet validator for synthetic and real Mac-local
   gate results, with stricter `--mode real --project ...` contracts.
 - `hybrid_trace_packet_runbook.md`: required real-packet schema for SSQ-LR,
   HORN, and HBSM.
+- `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt
+  smoke surface for the first real Mac packets. SHA-256:
+  `48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
 
 ## Local Test
 
@@ -92,7 +97,8 @@ directions with prompt-paired flipped controls, and HBSM needs both boundary
 flags plus a perturbation-off row with near-zero drift. Real packets also need
 `prompt_ids_hash`, `architecture_map_hash`, project-specific aggregate
 `summary.json` fields, and a non-promotable decision whenever
-`resource_limit_note` is present.
+`resource_limit_note` is present. The checker recomputes the active S1/H1/B1
+gate summaries from rows and rejects stale or fabricated summary fields.
 
 ## Claim Boundary
 

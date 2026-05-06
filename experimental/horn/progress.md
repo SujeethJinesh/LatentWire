@@ -59,3 +59,16 @@ are diagnostic only and must use `RESOURCE_LIMITED_NOT_PROMOTABLE`.
 Decision: **H1 PROMOTION NOW REQUIRES PROMPT-PAIRED DIRECTIONAL CONTROLS**. The
 next exact gate remains a live boundary-activation dump on the smallest
 available hybrid model.
+
+## 2026-05-06 Recomputed Gate Evaluator Update
+
+Added `../shared/hybrid_gate_evaluators.py` and wired the HORN real-packet
+checker to recompute H1 directional ratios, selected metric/direction,
+support fraction, non-boundary control ratio, and permuted-direction ratio from
+`raw_rows.jsonl`. A real H1 packet now cannot pass by copying synthetic
+summary fields without matching boundary rows. The shared Mac smoke prompt
+manifest is `../shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl` with
+SHA-256 `48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
+
+Decision: **NEXT H1 MUST BE GENERATED FROM RAW BOUNDARY ROWS**. The blocker is
+still a live hybrid activation dump.

@@ -56,8 +56,9 @@ maps. Each row must report \texttt{model\_id}, \texttt{layer},
 \texttt{parameter\_count}, \texttt{weight\_norm},
 \texttt{top\_decile\_flag}, \texttt{random\_top\_decile},
 \texttt{train\_test\_split}, and \texttt{control\_type}.
-The packet must include \texttt{architecture\_map\_hash}, \texttt{summary.md},
-matching \texttt{row\_count}, and pass
+The packet must include \texttt{prompt\_ids\_hash},
+\texttt{architecture\_map\_hash}, \texttt{summary.md}, matching
+\texttt{row\_count}, and pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project hbsm}.
 The checker requires both true and false boundary flags, finite sensitivity and
 predictor fields, all listed controls, and a perturbation-off row whose drift is
@@ -66,12 +67,14 @@ train and test split rows unless the packet records an explicit resource limit.
 Any resource-limited packet must use a
 \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
 top-decile count, random top-decile count, train/test counts, and boundary
-top-decile enrichment.
+top-decile enrichment, Fisher p-value, and cheap-predictor Spearman
+correlation. The checker recomputes these fields from raw rows and rejects
+stale or hand-filled summaries.
 
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{ll}
+\begin{tabular}{p{0.24\linewidth}p{0.66\linewidth}}
 \toprule
 Gate & Promotion threshold \\
 \midrule

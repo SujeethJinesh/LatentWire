@@ -557,12 +557,27 @@ the next evidence gate is native server-side Nsight evidence or kill/shelve.
 Tightened the native profiler reducer and artifact checker after COLM-style
 review. Reduced rows now carry explicit `row_role`, and the analyzer will not
 emit a prototype-promotion status unless the same metric packet includes
-same-family control and cross-family falsification row roles. Duplicate run IDs
-also cannot clear the repeated-run gate. The paper now describes bootstrap
-intervals over repeated reduced rows, not paired trace intervals, and records
-`60 passed` for the stable Mac suite with the CPU-backend test skipped by
-default.
+matched same-family control and cross-family falsification rows on the same
+request/runtime shape. Duplicate run IDs also cannot clear the repeated-run
+gate. The paper now describes bootstrap intervals over repeated reduced rows,
+not paired trace intervals, and records the stable owned Mac suite without
+depending on a stale exact test count.
 
 Decision: **PRIMARY-ONLY GPU ROWS ARE AUDIT-ONLY EVEN IF THEY CLEAR 3%**. The
 next exact gate remains the user-operated 5090 Nsight packet with three distinct
 repeats plus the required controls.
+
+## 2026-05-06 Artifact-Identity and Timing Hardening
+
+Tightened the native profiler reducer and checker again after review. The
+reducer now rejects impossible rows where boundary-local or matched-control
+time exceeds total step time, validates optional `time_window_ms` intervals, and
+ties promotion controls to the clearing request/runtime shape instead of global
+packet roles. The artifact checker now rejects repeated same-model/config rows
+that reuse the same `nsys_artifact`, `ncu_artifact`, or time-window interval.
+The runbook and native packet checklist now require top-level `model` in
+`profile_scope.json`.
+
+Decision: **DUPLICATED TRACE EXPORTS CANNOT PROMOTE HYBRIDKERNEL**. The next
+exact gate remains a native 5090/vLLM packet with distinct repeats and matched
+controls.

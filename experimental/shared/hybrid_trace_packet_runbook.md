@@ -60,11 +60,17 @@ Required controls:
 
 Required `summary.json` fields:
 
+- `gate_name`, `gate_status`, `gate_pass`
 - `prompt_count`, `position_buckets`, `ssm_layer_count`, `passing_layer_count`
-- `pass_fraction`, `selected_s1_ci_low`, `holm_p_min`
+- `required_passing_layer_count`, `pass_fraction`, `selected_s1_ratio`
+- `selected_s1_ci_low`, `holm_p_min`
 - `max_abs_ratio_final_minus_128_vs_prefill_end`
 - `std_ratio_final_minus_128_vs_prefill_end`
 - `kurtosis_ratio_final_minus_128_vs_prefill_end`
+
+The checker recomputes these fields with
+`experimental.shared.hybrid_gate_evaluators.evaluate_ssq_lr_s1`; stale or
+fabricated summaries are rejected.
 
 ## HORN Real H1 Packet
 
@@ -86,11 +92,19 @@ Required controls:
 
 Required `summary.json` fields:
 
+- `gate_name`, `gate_status`, `gate_pass`
 - `prompt_count`
 - `boundary_directions`
+- `selected_h1_metric`, `selected_h1_direction`, `selected_h1_threshold`
 - `selected_h1_ratio`
 - `selected_h1_ci_low`
+- `max_abs_direction_ratio`, `kurtosis_direction_ratio`
+- `non_boundary_control_ratio`, `permuted_direction_ratio`
 - `support_fraction`
+
+The checker recomputes these fields with
+`experimental.shared.hybrid_gate_evaluators.evaluate_horn_h1`; the H1 decision
+is therefore coupled to the non-boundary control ratio, not only boundary rows.
 
 ## HBSM Real B1 Packet
 
@@ -116,11 +130,21 @@ Required controls:
 
 Required `summary.json` fields:
 
+- `gate_name`, `gate_status`, `gate_pass`
 - `top_decile_count`
 - `random_top_decile_count`
 - `train_count`
 - `test_count`
+- `split_counts`, `control_types`
+- `boundary_top_decile_count`, `non_boundary_top_decile_count`
+- `boundary_top_decile_rate`, `non_boundary_top_decile_rate`
 - `boundary_top_decile_enrichment`
+- `fisher_p_boundary_top_decile`
+- `cheap_predictor_spearman`
+
+The checker recomputes these fields with
+`experimental.shared.hybrid_gate_evaluators.evaluate_hbsm_b1`; stale
+sensitivity summaries are rejected.
 
 ## Promotion Boundary
 

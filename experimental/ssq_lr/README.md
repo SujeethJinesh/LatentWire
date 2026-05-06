@@ -72,9 +72,12 @@ promote S1.
 
 Real `config.json` provenance must include `prompt_ids_hash` and
 `architecture_map_hash` as `sha256:<digest>` strings. Real `summary.json` must
-include `prompt_count`, `position_buckets`, `ssm_layer_count`,
-`passing_layer_count`, `pass_fraction`, `selected_s1_ci_low`, `holm_p_min`, and
-the final-minus-128 versus prefill-end max-abs/std/kurtosis ratios.
+include the recomputed S1 evaluator fields: `gate_status`, `gate_pass`,
+`prompt_count`, `position_buckets`, `ssm_layer_count`, `passing_layer_count`,
+`required_passing_layer_count`, `pass_fraction`, `selected_s1_ratio`,
+`selected_s1_ci_low`, `holm_p_min`, and the final-minus-128 versus prefill-end
+max-abs/std/kurtosis ratios. The checker recomputes these values from rows and
+rejects stale summaries.
 
 ## Output Paths
 

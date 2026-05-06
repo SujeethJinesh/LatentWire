@@ -15,7 +15,7 @@
 
 ThoughtFlow-FP8 shows a reusable sparse-cache falsification protocol: freeze a
 quality surface, pre-register each successor signal, require matched-budget
-proxy wins, separate same-family and cross-family rows, and report paired
+proxy wins, separate stopped-family and proxy-baseline rows, and report paired
 uncertainty plus oracle/headroom diagnostics. The case study shows an
 interpretable retention signal looking positive on one frozen surface and then
 failing stricter reproduction. Later prefix-surprisal and value-weighted
@@ -28,7 +28,7 @@ result, or latency/throughput win.
 | Axis | Reviewer read | Current decision |
 |---|---|---|
 | Benchmarks | Mac-local `distilgpt2` sparse-cache scoring is useful for falsification, but it is not a reasoning-model benchmark and does not include faithful LongFlow, ThinKV, R-KV/R-KVHash, PM-KVQ, KVQuant, or RaaS implementations. | Diagnostic only. |
-| Ablations | The project has synthetic retention, retained-text NLL, hidden/KV telemetry, cache-dropping quality, train-fixed sparse sweeps, same-slice RDU reproduction, alternate-surface RDU, independent-trace RDU, and fresh PSI/VWAC successor gates. The decisive ablation set is negative: `rdu_topk` fails independent cross-family separation, while `psi_topk` and `vwac_topk` fail on fresh surfaces. | Sufficient to stop this branch family. |
+| Ablations | The project has synthetic retention, retained-text NLL, hidden/KV telemetry, cache-dropping quality, train-fixed sparse sweeps, same-slice RDU reproduction, alternate-surface RDU, independent-trace RDU, and fresh PSI/VWAC successor gates. The decisive ablation set is negative: `rdu_topk` fails independent proxy-baseline separation, while `psi_topk` and `vwac_topk` fail on fresh surfaces. | Sufficient to stop this branch family. |
 | Correctness | CPU sparse-cache scoring, paired uncertainty, oracle/headroom reporting, RDU telemetry, and int8 anchor/phase Triton-interpreter parity are tested. These do not establish native FP8, CUDA, latency, throughput, or serving correctness. | Correctness scaffold only. |
 | Reproducibility | Markdown and JSON artifacts are tracked for every gate, and the owned test command is stable under `./venv_arm64`. Historical `ALIVE`/`PROMOTED` artifacts are preserved for auditability but superseded by the current decision manifest. | Good enough for a diagnostic note. |
 | Novelty | The method space is crowded by recent sparse/quantized KV-cache work, including LongFlow, ThinKV, R-KV/R-KVHash, LazyEviction/ForesightKV-style future-use signals, PM-KVQ, and KVQuant. The defensible novelty is the falsification ladder and stop rule, not a new compression method. | Do not claim method novelty. |
@@ -44,7 +44,7 @@ result, or latency/throughput win.
 | frozen 74-trace `rdu_topk` | beats ThinKV-like and R-KV-like on first frozen surface | historical candidate only |
 | same-slice rerun | reproduces the cached gate exactly | bookkeeping only |
 | alternate surface | stopped same-family row beats `rdu_topk` by 0.006 NLL | weakened |
-| independent saved traces | R-KV-like is best compressed; `rdu_topk` fails cross-family separation | stopped |
+| independent saved traces | R-KV-like is best compressed; `rdu_topk` fails proxy-baseline separation | stopped |
 | fresh prefix-surprisal utility | `psi_topk` NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960 on 70 fresh C2C GSM70 traces | killed |
 | fresh value-weighted attention utility | `vwac_topk` NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162 on 64 fresh C2C SVAMP70 traces | killed |
 | Triton interpreter | anchor/phase int8 primitive matches CPU reference | kernel logic only |
@@ -75,7 +75,7 @@ TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
 
 Stop local method experimentation on the current branches. Reopen only with a
 new pre-registered utility signal and a one-shot fresh/larger sparse-cache gate
-with same-family, cross-family, paired uncertainty, and oracle/headroom
+with stopped-family, proxy-baseline, paired uncertainty, and oracle/headroom
 reporting.
 
 ## Fresh Utility Signal Status

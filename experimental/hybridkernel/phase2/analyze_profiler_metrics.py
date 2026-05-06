@@ -108,6 +108,41 @@ def _config_key(raw: dict[str, object], model: str) -> tuple[str, dict[str, obje
     return json.dumps(normalized, sort_keys=True), normalized
 
 
+def _analysis_group_key(config: dict[str, object]) -> tuple[str, dict[str, object]]:
+    """Group rows that are comparable controls for one fixed request shape.
+
+    The primary repeated-row gate still uses the full model/config key, including
+    the profiled model and matched control segment. Promotion controls are
+    checked on this narrower request/runtime key so unrelated control rows from
+    another request shape cannot promote a clearing primary group.
+    """
+
+    comparable = {
+        "dtype": config["dtype"],
+        "cuda_graph_enabled": config["cuda_graph_enabled"],
+        "batch_shape": config["batch_shape"],
+    }
+    return json.dumps(comparable, sort_keys=True), comparable
+
+
+def _validate_time_window(raw: dict[str, object], *, total: float) -> None:
+    time_window = raw.get("time_window_ms")
+    if time_window is None:
+        return
+    if not isinstance(time_window, dict):
+        raise ValueError("time_window_ms must be an object when present")
+    start = time_window.get("start")
+    end = time_window.get("end")
+    if isinstance(start, bool) or not isinstance(start, (int, float)):
+        raise ValueError("time_window_ms.start must be numeric")
+    if isinstance(end, bool) or not isinstance(end, (int, float)):
+        raise ValueError("time_window_ms.end must be numeric")
+    if float(end) <= float(start):
+        raise ValueError("time_window_ms.end must exceed start")
+    if float(end) - float(start) > total:
+        raise ValueError("time_window_ms duration cannot exceed total_step_ms")
+
+
 def _iqr(values: list[float]) -> float:
     if len(values) < 2:
         return 0.0
@@ -159,8 +194,14 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
             raise ValueError("attention_ssm_boundary_ms must be non-negative")
         if matched < 0:
             raise ValueError("matched_non_boundary_ms must be non-negative")
+        if boundary > total:
+            raise ValueError("attention_ssm_boundary_ms cannot exceed total_step_ms")
+        if matched > total:
+            raise ValueError("matched_non_boundary_ms cannot exceed total_step_ms")
         if not 0.0 <= recoverable <= 1.0:
             raise ValueError("recoverable_fraction must be between 0 and 1")
+        _validate_time_window(raw, total=total)
+        analysis_group_key, _ = _analysis_group_key(config)
         avoidable = max(0.0, boundary - matched)
         rows.append(
             {
@@ -168,6 +209,7 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
                 "run_id": run_id,
                 "row_role": row_role,
                 "config_key": config_key,
+                "analysis_group_key": analysis_group_key,
                 "dtype": str(config["dtype"]),
                 "cuda_graph_enabled": str(config["cuda_graph_enabled"]),
                 "batch_size": float(config["batch_shape"]["batch_size"]),
@@ -202,18 +244,40 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
     for row in rows:
         by_config.setdefault(str(row["config_key"]), []).append(row)
     summary = {}
+    roles_by_analysis_group: dict[str, list[dict[str, float | str]]] = {}
+    for row in rows:
+        roles_by_analysis_group.setdefault(str(row["analysis_group_key"]), []).append(row)
     for config_key, config_rows in by_config.items():
         gains = [float(row["recoverable_gain_upper_bound"]) for row in config_rows]
         avoidable = [float(row["avoidable_share"]) for row in config_rows]
         ci = _bootstrap_ci(gains)
         first = config_rows[0]
-        distinct_run_ids = len({str(row["run_id"]) for row in config_rows})
+        primary_rows = [row for row in config_rows if str(row["row_role"]) == "primary_hybrid"]
+        primary_gains = [float(row["recoverable_gain_upper_bound"]) for row in primary_rows]
+        distinct_primary_run_ids = len({str(row["run_id"]) for row in primary_rows})
         row_roles = sorted({str(row["row_role"]) for row in config_rows})
+        comparable_rows = roles_by_analysis_group[str(first["analysis_group_key"])]
+        review_row_roles = sorted({str(row["row_role"]) for row in comparable_rows})
+        same_family_control_rows = sum(
+            1
+            for row in comparable_rows
+            if str(row["row_role"]) == "same_family_control"
+            and str(row["model"]) == str(first["model"])
+        )
+        cross_family_falsification_rows = sum(
+            1
+            for row in comparable_rows
+            if str(row["row_role"]) == "cross_family_falsification"
+            and str(row["model"]) != str(first["model"])
+        )
         summary[config_key] = {
             "model": str(first["model"]),
             "config_key": config_key,
+            "analysis_group_key": str(first["analysis_group_key"]),
             "runs": len(config_rows),
             "distinct_run_ids": len({str(row["run_id"]) for row in config_rows}),
+            "primary_runs": len(primary_rows),
+            "distinct_primary_run_ids": distinct_primary_run_ids,
             "dtype": str(first["dtype"]),
             "cuda_graph_enabled": str(first["cuda_graph_enabled"]),
             "batch_size": int(float(first["batch_size"])),
@@ -222,6 +286,9 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             "requests": int(float(first["requests"])),
             "control_model_or_segment": str(first["control_model_or_segment"]),
             "row_roles": row_roles,
+            "review_row_roles": review_row_roles,
+            "same_family_control_rows": same_family_control_rows,
+            "cross_family_falsification_rows": cross_family_falsification_rows,
             "mean_avoidable_share": mean(avoidable),
             "mean_recoverable_gain_upper_bound": mean(gains),
             "median_recoverable_gain_upper_bound": median(gains),
@@ -229,18 +296,22 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             "bootstrap_ci95_recoverable_gain_upper_bound": ci,
             "min_recoverable_gain_upper_bound": min(gains),
             "clears_3pct_gate_all_runs": (
-                len(config_rows) >= 3
-                and distinct_run_ids >= 3
-                and "primary_hybrid" in row_roles
-                and min(gains) >= 0.03
+                len(primary_rows) >= 3
+                and distinct_primary_run_ids >= 3
+                and bool(primary_gains)
+                and min(primary_gains) >= 0.03
             ),
         }
-    all_row_roles = {str(row["row_role"]) for row in rows}
-    has_review_roles = {"same_family_control", "cross_family_falsification"}.issubset(
-        all_row_roles
+    clearing_rows = [
+        row for row in summary.values() if bool(row["clears_3pct_gate_all_runs"])
+    ]
+    any_primary_clears = bool(clearing_rows)
+    has_review_roles_for_clearing = any(
+        int(row["same_family_control_rows"]) > 0
+        and int(row["cross_family_falsification_rows"]) > 0
+        for row in clearing_rows
     )
-    any_primary_clears = any(row["clears_3pct_gate_all_runs"] for row in summary.values())
-    if any_primary_clears and has_review_roles:
+    if any_primary_clears and has_review_roles_for_clearing:
         status = "PROMOTE to prototype: repeated profiler summaries clear the 3% upper-bound gate."
         decision = "Build the smallest boundary-fusion prototype for the clearing model only."
     elif any_primary_clears:

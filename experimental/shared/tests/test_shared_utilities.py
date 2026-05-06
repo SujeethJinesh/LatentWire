@@ -14,6 +14,7 @@ from experimental.shared.fp4_simulator import (
 )
 from experimental.shared.hybrid_architecture_maps import build_map, write_maps
 from experimental.shared.check_gate_packet import validate_gate_packet
+from experimental.shared.hybrid_gate_evaluators import evaluate_ssq_lr_s1
 from experimental.shared.hybrid_model_eligibility import _architecture_hash, _local_cache_dir, _size_gb
 from experimental.shared.hybrid_trace_packet_builder import build_hbsm_packet, build_horn_packet, build_ssq_lr_packet
 from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_rank_correlation
@@ -170,6 +171,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
                 "max_abs_ratio_final_minus_128_vs_prefill_end": 1.0,
                 "std_ratio_final_minus_128_vs_prefill_end": 1.0,
                 "kurtosis_ratio_final_minus_128_vs_prefill_end": 1.0,
+                **evaluate_ssq_lr_s1(rows),
             },
             sort_keys=True,
         )
@@ -231,6 +233,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_incomplete_prompt_layer_matrix(
                 "max_abs_ratio_final_minus_128_vs_prefill_end": 1.0,
                 "std_ratio_final_minus_128_vs_prefill_end": 1.0,
                 "kurtosis_ratio_final_minus_128_vs_prefill_end": 1.0,
+                **evaluate_ssq_lr_s1(rows),
             },
             sort_keys=True,
         )
@@ -291,6 +294,7 @@ def test_gate_packet_checker_rejects_promotable_resource_limited_real_packet(tmp
                 "max_abs_ratio_final_minus_128_vs_prefill_end": 1.0,
                 "std_ratio_final_minus_128_vs_prefill_end": 1.0,
                 "kurtosis_ratio_final_minus_128_vs_prefill_end": 1.0,
+                **evaluate_ssq_lr_s1(rows),
             },
             sort_keys=True,
         )
@@ -671,6 +675,43 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
 
     assert report["ok"]
     assert report["row_count"] == 5
+
+
+def test_hbsm_packet_builder_rejects_string_boolean_flags(tmp_path: Path) -> None:
+    row_packet = tmp_path / "hbsm_rows.json"
+    output_dir = tmp_path / "hbsm_bad_bool"
+    metadata = _base_trace_metadata()
+    row_packet.write_text(
+        json.dumps(
+            {
+                "metadata": metadata,
+                "hbsm_entries": [
+                    {
+                        "layer": 0,
+                        "boundary_flag": "false",
+                        "precision_perturbation": "mxfp4_e2m1",
+                        "kl_or_nll_drift": 0.0,
+                        "cheap_predictor": 1.0,
+                        "parameter_count": 1024,
+                        "weight_norm": 0.5,
+                        "top_decile_flag": False,
+                        "random_top_decile": False,
+                        "train_test_split": "train",
+                        "control_type": "perturbation_off",
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    try:
+        build_hbsm_packet(row_packet, output_dir)
+    except ValueError as exc:
+        assert "boundary_flag must be a boolean" in str(exc)
+    else:
+        raise AssertionError("expected string boolean flag to be rejected")
 
 
 def test_gate_packet_checker_rejects_hbsm_without_true_and_false_boundary_flags(tmp_path: Path) -> None:

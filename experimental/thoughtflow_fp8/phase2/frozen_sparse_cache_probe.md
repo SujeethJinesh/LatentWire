@@ -1,5 +1,11 @@
 # ThoughtFlow-FP8 Frozen Sparse-Cache Probe
 
+> Superseded artifact: this historical first-surface positive is preserved for
+> auditability only. It is superseded by
+> `current_decision_manifest_20260506.md`, which stops the current
+> ThoughtFlow-FP8 positive-method branch after stricter reproduction and fresh
+> successor gates.
+
 Status: **ALIVE on frozen sparse-cache probe; rdu_topk clears the preregistered promotion rule with margins 0.160 vs R-KV-like and 0.121 vs ThinKV-like.**
 
 - model: `distilgpt2`
