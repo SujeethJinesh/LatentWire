@@ -23,6 +23,114 @@ protection, and reasoning-phase-aware eviction, but current tracked evidence is
 CPU sparse-cache scoring plus an int8/Triton-interpreter reference primitive.
 No real FP8, CUDA, latency, throughput, or Blackwell result is claimed.
 
+## Completion Estimate And Roadmap
+
+Estimated completion as a diagnostic workshop note: **90%**.
+
+Estimated completion as a positive method paper: **0% on the current branch**.
+
+What is already complete:
+
+- original anchor/recent/phase/math branch evaluation;
+- `rdu_topk`, `psi_topk`, and `vwac_topk` preregistrations and fresh-surface
+  failures;
+- sparse-cache falsification ladder, decision manifest, reviewer pack,
+  COLM-style draft, and Triton interpreter primitive.
+
+What remains for the diagnostic note:
+
+- **10%**: optional copyediting only after venue/page constraints are known.
+
+What remains for a positive method:
+
+- a genuinely new utility family, preregistered before measurement;
+- one no-retune evaluation on a fresh/larger frozen sparse-cache surface;
+- matched-budget quality wins over R-KV-like and ThinKV-like controls;
+- same-family/cross-family separation, paired uncertainty, and
+  oracle/headroom diagnostics.
+
+Do not spend GPU time on the current branch set.
+
+## Current Stop And Reopen Rules
+
+Status: **STOP / diagnostic only**. There is no live positive method branch.
+The original anchor/recent/phase/math family and the consumed `rdu_topk`,
+`psi_topk`, and `vwac_topk` successors must not be retuned or rerun as revival
+attempts. Historical `ALIVE` or `PROMOTED` artifacts are superseded by
+`phase2/current_decision_manifest_20260506.md`.
+
+Do not run GPU or native FP8 work for:
+
+- `rdu_topk`;
+- `psi_topk`;
+- `vwac_topk`;
+- anchor/recent/phase/math sweeps;
+- latency, throughput, CUDA, or Blackwell claims.
+
+GPU time is only justified after a new preregistered CPU sparse-cache utility
+family clears the reopen gate below.
+
+## Reopen Quickstart
+
+### 1. Write A New Preregistration Before Measurement
+
+Create a new file under `experimental/thoughtflow_fp8/phase2/`:
+
+```text
+preregister_<signal_slug>_utility_<YYYYMMDD>.md
+```
+
+It must define:
+
+- the new utility family and exact policy transform;
+- forbidden inputs, including continuation loss, trace labels, prior frozen
+  outcomes, and any retune after seeing fresh-surface results;
+- the fresh/larger frozen input surface;
+- the one allowed evaluation command;
+- output paths under
+  `experimental/thoughtflow_fp8/results/thoughtflow_fp8_reopen_<YYYYMMDD>_<signal_slug>_<surface_slug>/`;
+- promotion and kill rules.
+
+### 2. Local Preflight Before Any Reopened Run
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest \
+  experimental/thoughtflow_fp8/phase2/tests \
+  experimental/thoughtflow_fp8/phase4/tests \
+  experimental/tests/test_mac_complete_readiness.py -rs
+```
+
+### 3. One-Shot Evaluation Rule
+
+A reopened signal gets exactly one no-retune evaluation on the preregistered
+fresh/larger frozen sparse-cache surface. Store outputs under the result
+directory declared in the preregistration. The result packet must include:
+
+- the preregistration file;
+- frozen input trace manifest and hashes;
+- raw scored outputs;
+- aggregate table against R-KV-like and ThinKV-like controls;
+- same-family/cross-family split;
+- paired uncertainty;
+- oracle/headroom diagnostics;
+- explicit promote/kill decision.
+
+### 4. Promote / Kill
+
+Promote only if the single preregistered run shows matched-budget quality wins
+over both R-KV-like and ThinKV-like, strict same/cross-family separation,
+paired uncertainty supporting the win, and oracle/headroom diagnostics showing
+usable remaining signal.
+
+If any condition fails, kill that exact signal. Do not tune its formula, mix it
+with consumed RDU/PSI/VWAC components, change the surface, rerun on another
+fresh surface, or move to GPU.
+
+If it promotes, the next native gate is limited GPU validation of that exact
+frozen policy only, not GPU-side method search.
+
 ## Local Workflow
 
 This project lives inside the main LatentWire repository. Use this single

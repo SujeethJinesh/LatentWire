@@ -41,6 +41,201 @@ profile scopes, stale analyzer outputs, duplicated run IDs, and tiny or
 placeholder Nsight exports. Matching profiler filenames alone are not
 admissible evidence.
 
+## Completion Estimate And Roadmap
+
+Estimated workshop-paper completion: **70%**.
+
+What is already complete:
+
+- Mac-local source/runtime audit, architecture map, threshold model, fixed
+  request driver, profiler packet generator, analyzer, artifact checker, toy
+  Triton interpreter correctness, COLM-style draft, and reviewer pack.
+
+What remains:
+
+- **20%**: native NVIDIA/vLLM profiler packet with server-side Nsight Systems
+  and Nsight Compute artifacts.
+- **5%**: reduce repeated same-model/config traces into
+  `profiler_metrics.json` and run the analyzer/checker.
+- **5%**: update the paper with a promote, shelve, or kill decision.
+
+Do not add more Mac kernels or paper claims before the native packet exists.
+
+## GPU-Node Quickstart
+
+Use this only on a local NVIDIA Linux host. Do not SSH from this repo. Copy or
+checkout the repository on the GPU node, then run from the repository root.
+
+### 1. Environment
+
+Required system tools:
+
+- `nvidia-smi`
+- `nsys`
+- `ncu`
+- Python 3.10 or newer
+- vLLM installed from a pinned release or commit
+
+Fast setup:
+
+```bash
+cd /path/to/LatentWire
+python3 -m venv .venv_gpu
+source .venv_gpu/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r experimental/hybridkernel/requirements.txt
+python -m pip install vllm
+
+nvidia-smi
+nsys --version
+ncu --version
+python - <<'PY'
+import importlib.metadata as m
+for name in ["vllm", "torch", "triton", "transformers"]:
+    try:
+        print(f"{name}=={m.version(name)}")
+    except Exception as exc:
+        print(f"{name}: unavailable ({exc})")
+PY
+```
+
+If the GPU node already has a working vLLM environment, use that environment
+instead, but record `python -m pip freeze` in the run packet.
+
+### 2. Create The Result Packet
+
+```bash
+export HWK_ROOT="$PWD/experimental/hybridkernel"
+export MODEL=ibm-granite/granite-4.0-h-tiny
+export CUDA_VISIBLE_DEVICES=0
+export VLLM_LOGGING_LEVEL=INFO
+export VLLM_USE_V1=1
+export VLLM_WORKER_MULTIPROC_METHOD=spawn
+
+PACKET_JSON=$(python "$HWK_ROOT/phase2/create_native_run_packet.py" \
+  --label granite_boundary \
+  --model "$MODEL")
+echo "$PACKET_JSON"
+export HWK_RUN=$(python -c 'import json,sys; print(json.load(sys.stdin)["run_dir"])' <<< "$PACKET_JSON")
+```
+
+Expected packet path:
+
+```text
+experimental/hybridkernel/phase2/profiler_runs/YYYYMMDDTHHMMSSZ_granite_boundary
+```
+
+Return the whole `$HWK_RUN` directory after validation. Do not return
+screenshots or notebook snippets.
+
+### 3. Record Metadata
+
+```bash
+{
+  date -u
+  hostname
+  nvidia-smi
+  nsys --version
+  ncu --version
+  python -VV
+  python -m pip freeze
+} | tee "$HWK_RUN/metadata/environment.txt"
+```
+
+If the exact vLLM command differs from the one in
+`$HWK_RUN/metadata/profile_scope.json`, edit that JSON before validation.
+
+### 4. Run The Smallest Admissible Profile
+
+Start the vLLM server under Nsight Systems:
+
+```bash
+nsys profile \
+  --trace=cuda,nvtx,osrt \
+  --trace-fork-before-exec=true \
+  --cuda-graph-trace=node \
+  --capture-range=cudaProfilerApi \
+  --capture-range-end=repeat \
+  --force-overwrite=true \
+  --stats=true \
+  --output="$HWK_RUN/nsys/granite_tiny_b1_decode64_dynamic" \
+  python -m vllm.entrypoints.openai.api_server \
+    --model "$MODEL" \
+    --dtype bfloat16 \
+    --max-model-len 2048 \
+    --disable-log-requests \
+    --profiler-config.profiler cuda \
+  2>&1 | tee "$HWK_RUN/logs/nsys_server_dynamic_b1.log"
+```
+
+In a second terminal on the same GPU node, replay fixed requests:
+
+```bash
+cd /path/to/LatentWire
+source .venv_gpu/bin/activate
+export HWK_ROOT="$PWD/experimental/hybridkernel"
+export HWK_RUN=/path/printed/by/create_native_run_packet
+export MODEL=ibm-granite/granite-4.0-h-tiny
+
+python "$HWK_ROOT/phase2/profiler_driver.py" \
+  --model "$MODEL" \
+  --batch-size 1 \
+  --prefill-tokens 128 \
+  --decode-tokens 64 \
+  --requests 16 \
+  --seed 1 \
+  --profile-bracket \
+  | tee "$HWK_RUN/logs/client_b1_profile_bracket.log"
+```
+
+If `--profiler-config.profiler cuda` is unsupported, use the static capture
+path in `phase2/nvidia_vllm_profiler_runbook.md` and record the change in
+`$HWK_RUN/metadata/command_notes.md`.
+
+After Nsight Systems identifies suspicious boundary kernels, run targeted
+Nsight Compute on the server process, save real `.ncu-rep` files under
+`$HWK_RUN/ncu/`, and save server logs under `$HWK_RUN/logs/`.
+
+### 5. Fill Metrics And Validate
+
+Replace the skeleton `profiler_metrics.json` with at least three independent
+rows for one model/config. Each row needs a distinct `run_id`, positive
+`total_step_ms`, non-negative boundary/control times, dtype, CUDA graph state,
+batch shape, request count, and control label.
+
+Then run:
+
+```bash
+python "$HWK_ROOT/phase2/analyze_profiler_metrics.py" \
+  --input "$HWK_RUN/profiler_metrics.json" \
+  --output "$HWK_RUN/profiler_analysis_gate.json"
+
+python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
+  --run-dir "$HWK_RUN" \
+  | tee "$HWK_RUN/artifact_check.json"
+```
+
+Expected final packet:
+
+- `metadata/environment.txt`
+- `metadata/profile_scope.json`
+- `logs/nsys_server*.log`
+- `logs/client*.log`
+- `nsys/*.nsys-rep`, `*.sqlite`, or `*.qdrep`
+- `ncu/*.ncu-rep`
+- `readout.md`
+- `profiler_metrics.json`
+- `profiler_analysis_gate.json`
+- `profiler_analysis_gate.md`
+- `artifact_check.json`
+
+### 6. Decision Rule
+
+Promote only if the checker passes and repeated same-model/config rows clear
+the 3% recoverable-gain gate. Kill or shelve if no separable boundary overhead
+appears, the mean recoverable gain is below 1%, or the signal is explained by
+existing vLLM hybrid SSM layout/transfer machinery.
+
 ## Local Setup
 
 Use the repo-local ARM64 virtual environment when available:

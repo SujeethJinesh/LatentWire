@@ -8,6 +8,28 @@ virtual environment at `./venv_arm64` from the repository root for current Mac
 work. The older `experimental/sinkaware/.venv` is kept only as local scratch
 state.
 
+## Completion Estimate And Roadmap
+
+Estimated workshop-paper completion: **80%**.
+
+What is already complete:
+
+- exact static-prior counterexample and kill decision;
+- rank-2 approximate branch on GPT2/OPT Mac controls;
+- split, length, sink-count, cross-model-family, downstream patch, and rank
+  frontier diagnostics;
+- Triton interpreter correctness scaffolds;
+- native packet validator, COLM-style draft, and reviewer pack.
+
+What remains:
+
+- **15%**: native NVIDIA packet with matched quality drift, per-head drift,
+  latency, and NCU memory/occupancy counters.
+- **5%**: paper update with the native promote/kill decision.
+
+The next high-value action is the native packet. More Mac-local sweeps on this
+same branch are not expected to change the claim.
+
 ## Local Setup
 
 From the repository root:
@@ -69,3 +91,150 @@ Future native GPU packets must pass
 `phase2/check_native_gpu_packet.py` before the paper cites latency, HBM, or
 quality numbers. The checker is an artifact-completeness guard only; it is not
 performance evidence.
+
+## GPU-Node Quickstart
+
+Use this only on a local NVIDIA/CUDA node. Do not SSH from this repo. Copy or
+checkout the repository on the GPU node, then run from the repository root.
+
+### 1. Environment
+
+```bash
+cd /path/to/LatentWire
+python3 -m venv .venv_gpu
+source .venv_gpu/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r experimental/sinkaware/requirements.txt
+
+nvidia-smi
+python - <<'PY'
+import torch, triton
+print("torch", torch.__version__)
+print("cuda_available", torch.cuda.is_available())
+print("cuda", torch.version.cuda)
+print("gpu", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "NONE")
+print("triton", triton.__version__)
+assert torch.cuda.is_available()
+PY
+```
+
+If the GPU node already has a working CUDA/Torch/Triton environment, use it and
+record the exact package versions in `metadata.json`.
+
+### 2. Result Directory
+
+Create one packet directory per native attempt:
+
+```bash
+export SINKAWARE_ROOT="$PWD/experimental/sinkaware"
+export SINKAWARE_GPU_PACKET="$SINKAWARE_ROOT/artifacts/native_gpu/sinkaware_native_$(date -u +%Y%m%dT%H%M%SZ)_rank2"
+mkdir -p "$SINKAWARE_GPU_PACKET"
+```
+
+Return the whole `$SINKAWARE_GPU_PACKET` directory after validation.
+
+### 3. Required Files
+
+The packet must contain exactly these review artifacts:
+
+- `metadata.json`
+- `quality_drift.csv`
+- `quality_drift_by_head.csv`
+- `latency.csv`
+- `ncu_summary.csv`
+- `decision.md`
+- `artifact_check.json` after validation
+
+Use these canonical row ids in every CSV:
+
+- `exact_attention`
+- `exact_fixed_sink_decomposition`
+- `rank2_sink_logit_predictor`
+- `position_only_predictor`
+
+For limited GPU time, prioritize:
+
+- model: `distilgpt2`;
+- shape: `sequence_length=96`, `batch_size=1`;
+- optional breadth only if time remains: `facebook/opt-125m`,
+  `sequence_length=64`, and sink counts 2/4.
+
+Every measured `model`/`sequence_length`/`batch_size` group must include all
+four row ids. Each latency row/model/shape group must have at least three
+distinct `run_id` values.
+
+### 4. Required Schemas
+
+`metadata.json` must identify a native NVIDIA CUDA environment:
+
+```json
+{
+  "gpu": "NVIDIA ...",
+  "driver": "...",
+  "cuda": "...",
+  "pytorch": "...",
+  "triton": "...",
+  "model": "distilgpt2",
+  "dtype": "bfloat16",
+  "sequence_shapes": [{"sequence_length": 96, "batch_size": 1}]
+}
+```
+
+`quality_drift.csv` columns:
+
+```text
+row,model,sequence_length,batch_size,layer,output_rel_l2,sink_mass_mae,attention_l1
+```
+
+`quality_drift_by_head.csv` columns:
+
+```text
+row,model,sequence_length,batch_size,layer,head,output_rel_l2,sink_mass_mae,attention_l1
+```
+
+`latency.csv` columns:
+
+```text
+row,model,sequence_length,batch_size,run_id,latency_ms
+```
+
+`ncu_summary.csv` columns:
+
+```text
+row,model,sequence_length,batch_size,dram_bytes,l2_bytes,achieved_occupancy,registers_per_thread
+```
+
+`decision.md` must contain an explicit `PROMOTE` or `KILL`, the rank-2 quality
+threshold, and the native speed/memory/HBM evidence.
+
+### 5. Validate Before Leaving The GPU Node
+
+```bash
+python experimental/sinkaware/phase2/check_native_gpu_packet.py \
+  --run-dir "$SINKAWARE_GPU_PACKET" \
+  | tee "$SINKAWARE_GPU_PACKET/artifact_check.json"
+```
+
+Expected validation output:
+
+- JSON `status` is `PASS`;
+- `errors` is empty;
+- `artifact_check.json` is saved in the packet directory.
+
+A validator pass only means the packet is complete enough for review. It is not
+a speed, HBM, quality, or promotion claim.
+
+### 6. Decision Rule
+
+Promote only if all are true:
+
+- rank-2 mean output relative-L2 is no worse than 0.15;
+- rank-2 beats position-only in every matched model/shape group on output
+  relative-L2, downstream loss drift, and KL-to-exact;
+- aggregate top-1 disagreement is at most 0.15, with model/shape subgroup
+  values reported;
+- rank-2 improves speed or memory traffic over exact attention by at least 3%;
+- exact fixed-sink decomposition does not already capture the systems win.
+
+Kill if rank-2 is slower than exact attention, quality drift is unbounded, or
+position-only is indistinguishable from rank-2.
