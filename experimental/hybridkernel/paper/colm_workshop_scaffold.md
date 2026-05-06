@@ -103,6 +103,7 @@ Promotion threshold:
 | `phase4/kernel/boundary_triton.py` and tests | Triton interpreter scaffold exists but local Triton import is unavailable in `venv_arm64`. | No GPU or Mac performance claim. |
 | `phase2/profiler_driver.py` | Fixed-request OpenAI-compatible driver dry-runs locally; runbook now profiles the vLLM server and drives it from a second local terminal. | Avoids client-only Nsight traces. |
 | `phase2/check_profiler_run_artifacts.py` | Future native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, and distinct repeated metric rows. | GPU evidence must be artifact-complete, server-side, and independently repeated before the draft cites it. |
+| `phase2/native_run_packet_checklist.md` | Single checklist for the packet a GPU operator must return. | Local Mac readiness is saturated; wait for native data. |
 
 ## 5. Limitations
 
@@ -131,6 +132,8 @@ Promotion threshold:
 - [ ] Compute paired uncertainty over repeated fixed-request runs.
 - [ ] Run `phase2/check_profiler_run_artifacts.py --run-dir "$HWK_RUN"` and
   save `artifact_check.json`.
+- [ ] Return the full packet described in
+  `phase2/native_run_packet_checklist.md`.
 - [ ] Decide promote, pause, or kill using the 3% end-to-end threshold.
 - [ ] If promoted, implement only the smallest fused boundary operator needed
   to test the observed overhead.

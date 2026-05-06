@@ -34,6 +34,7 @@ Threshold model & Granite needs about 25.0\% avoidable boundary traffic at 60\% 
 Profiler driver & Fixed-request OpenAI-compatible driver dry-runs locally; runbook now profiles the vLLM server, not just the HTTP client. & Native gate is less likely to be mis-run. \\
 Analysis parser & JSON profiler summaries are reduced into avoidable-boundary share and recoverable-gain upper bound. & Decision rule is pre-registered. \\
 Artifact verifier & Native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, and distinct repeated metric rows. & Client-only and duplicated-trace evidence is rejected. \\
+Packet checklist & The native handoff now has a single required packet layout and stop-local-work decision. & Local readiness is saturated until GPU data exists. \\
 \bottomrule
 \end{tabular}
 \caption{HybridKernel evidence before native GPU profiling.}
@@ -61,6 +62,7 @@ Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with 
 \item \url{experimental/hybridkernel/phase2/profiler_driver.py}
 \item \url{experimental/hybridkernel/phase2/analyze_profiler_metrics.py}
 \item \url{experimental/hybridkernel/phase2/check_profiler_run_artifacts.py}
+\item \url{experimental/hybridkernel/phase2/native_run_packet_checklist.md}
 \item \url{experimental/hybridkernel/phase2/profiler_analysis_gate.md}
 \item \url{experimental/hybridkernel/phase2/pre_gpu_threshold_model.md}
 \item \url{experimental/hybridkernel/paper/colm_workshop_scaffold.md}

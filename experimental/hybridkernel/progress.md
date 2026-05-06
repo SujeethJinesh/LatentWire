@@ -166,6 +166,19 @@ cite it.
 Current status remains **PENDING native profiler data**. The verifier is a gate
 for admissible evidence, not a positive result.
 
+## Native Packet Checklist And Local Stop Decision
+
+Added `phase2/native_run_packet_checklist.md` as the concise handoff artifact
+for the NVIDIA host. It lists the exact packet files, required server-side
+profile-scope JSON, valid metric-row conditions, and final analyzer/verifier
+commands needed before any result is cited.
+
+Decision: **STOP local Mac work until native profiler data exists.** The Mac
+side now has the runbook, fixed-request driver, parser, verifier, tests, and
+packet checklist. Further local kernels or paper claims would not improve the
+decision surface. The next work must produce a native packet that passes
+`check_profiler_run_artifacts.py`.
+
 ## 2026-05-05 Local Validation Rerun
 
 Ran the project-owned Phase 2/3/4 tests in `./venv_arm64`: 11 passed and 2

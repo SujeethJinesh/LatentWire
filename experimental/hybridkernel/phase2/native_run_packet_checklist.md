@@ -1,0 +1,97 @@
+# HybridKernel Native Run Packet Checklist
+
+Status: **required before any native profiler result is cited.**
+
+This checklist is for the user-operated NVIDIA host. It is not a benchmark
+claim, and it is not needed for Mac-local development. Its purpose is to make a
+native run packet reviewable before anyone interprets profiler numbers.
+
+## Packet Directory
+
+Use one directory per independent native run bundle:
+
+```bash
+export HWK_ROOT=/path/to/LatentWire/experimental/hybridkernel
+export HWK_RUN=$HWK_ROOT/phase2/profiler_runs/YYYYMMDDTHHMMSSZ_granite_boundary
+```
+
+Do not send partial screenshots, notebook snippets, or client-only logs as
+evidence. Send the whole `$HWK_RUN` directory.
+
+## Required Files
+
+The packet is incomplete unless all of these exist:
+
+| Path | Required content |
+|---|---|
+| `metadata/environment.txt` | timestamp, hostname, `nvidia-smi`, `nsys --version`, `ncu --version`, Python version, package freeze, vLLM/Torch/Triton/Transformers versions |
+| `metadata/profile_scope.json` | server-side scope for both Nsight Systems and Nsight Compute |
+| `metadata/architecture_map.json` | copied HybridKernel architecture map used for boundary annotation |
+| `logs/*.log` or `logs/*.txt` | server profiler logs and client replay logs |
+| `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts |
+| `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels |
+| `readout.md` | completed decision table from the runbook |
+| `profiler_metrics.json` | at least three valid rows for one model with distinct repeated `run_id` values |
+| `profiler_analysis_gate.json` and `.md` | output from `analyze_profiler_metrics.py` |
+| `artifact_check.json` | output from `check_profiler_run_artifacts.py` |
+
+## Required Scope JSON
+
+`metadata/profile_scope.json` must make it clear that both profilers observed
+server-side CUDA work:
+
+```json
+{
+  "profiled_process": "vllm_server",
+  "nsys_profiled_process": "vllm_server",
+  "ncu_profiled_process": "vllm_server",
+  "trace_scope": "server-side CUDA kernels under fixed request replay",
+  "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
+  "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
+  "request_driver_process": "profiler_driver_http_client",
+  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+}
+```
+
+Accepted values for profiler process fields are `vllm_server` or
+`single_process_vllm_benchmark`. `http_client`, `profiler_driver`, `curl`, or
+manual API calls are not admissible profiler scopes.
+
+## Required Metric Rows
+
+Each valid row in `profiler_metrics.json` must represent one independent
+reduced native trace:
+
+- `model`: exact served model string;
+- `run_id`: distinct repeated-run identifier;
+- `total_step_ms`: positive denominator from the matched request-step window;
+- `attention_ssm_boundary_ms`: non-negative boundary-local measured cost;
+- `matched_non_boundary_ms`: non-negative same-shape control cost;
+- `recoverable_fraction`: value in `[0, 1]`.
+
+Do not duplicate one trace into multiple rows. Do not mix different model
+families and call them repeated runs for the same gate.
+
+## Final Local Commands
+
+Run these on the NVIDIA host after reducing traces:
+
+```bash
+python "$HWK_ROOT/phase2/analyze_profiler_metrics.py" \
+  --input "$HWK_RUN/profiler_metrics.json" \
+  --output "$HWK_RUN/profiler_analysis_gate.json"
+
+python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
+  --run-dir "$HWK_RUN" \
+  | tee "$HWK_RUN/artifact_check.json"
+```
+
+If the artifact checker fails, stop and fix the packet before interpreting
+results.
+
+## Decision
+
+Local Mac work is now saturated. Do not add more Mac kernels, scaffolds, or
+paper claims until a native packet passes the artifact checker. The next action
+is to run the NVIDIA/vLLM profiling packet and then decide promote, pause, or
+kill from the profiler-analysis gate.

@@ -323,7 +323,9 @@ below 1%, shelve the branch unless a new profiler anomaly appears.
 ## Artifact Completeness Check
 
 Before treating the native run as reviewer-facing evidence, run the local
-artifact verifier:
+artifact verifier. The shorter packet checklist in
+`phase2/native_run_packet_checklist.md` summarizes the exact directory contents
+that should be sent back for review.
 
 ```bash
 python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
