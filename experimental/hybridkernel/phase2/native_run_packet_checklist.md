@@ -34,7 +34,7 @@ The packet is incomplete unless all of these exist:
 | `metadata/environment.txt` | timestamp, hostname, `nvidia-smi`, `nsys --version`, `ncu --version`, Python version, package freeze, vLLM/Torch/Triton/Transformers versions |
 | `metadata/profile_scope.json` | server-side scope for both Nsight Systems and Nsight Compute |
 | `metadata/architecture_map.json` | copied HybridKernel architecture map used for boundary annotation |
-| `logs/*.log` or `logs/*.txt` | Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence markers; client logs must be valid `profiler_driver.py` JSON with `model` and non-empty `requests` rows containing `status` fields. |
+| `logs/*.log` or `logs/*.txt` | Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence markers; client logs must be valid `profiler_driver.py` JSON with a non-empty top-level `model`, `dry_run: false`, and non-empty `requests` rows whose `status` fields are all `ok`. |
 | `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts, not placeholder files |
 | `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels, not placeholder files |
 | `readout.md` | completed decision table from the runbook |
@@ -72,10 +72,10 @@ matched Nsight artifact must be at least 1024 bytes and must not contain
 skeleton placeholder markers. Use the default threshold for submitted run
 packets.
 
-The checker also rejects empty, placeholder, or arbitrary log payloads. Do not
-replace the server/client logs with screenshots, shell comments, or manually
-written summaries. Keep the raw profiler/server stdout logs and the exact JSON
-printed by `phase2/profiler_driver.py`.
+The checker also rejects empty, placeholder, dry-run, failed, or arbitrary log
+payloads. Do not replace the server/client logs with screenshots, shell
+comments, or manually written summaries. Keep the raw profiler/server stdout
+logs and the exact non-dry-run JSON printed by `phase2/profiler_driver.py`.
 
 ## Required Metric Rows
 

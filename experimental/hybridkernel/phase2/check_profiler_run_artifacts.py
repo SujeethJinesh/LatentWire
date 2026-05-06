@@ -115,6 +115,13 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                 errors.append(f"client replay log is not valid profiler_driver JSON: {log_file.name}")
             else:
                 requests = payload.get("requests") if isinstance(payload, dict) else None
+                model = payload.get("model") if isinstance(payload, dict) else None
+                if not isinstance(model, str) or not model.strip():
+                    errors.append(
+                        f"client replay log JSON must contain non-empty top-level model: {log_file.name}"
+                    )
+                if payload.get("dry_run") is True:
+                    errors.append(f"client replay log is a dry-run, not native replay evidence: {log_file.name}")
                 if not isinstance(requests, list) or not requests:
                     errors.append(
                         f"client replay log JSON must contain non-empty requests list: {log_file.name}"
@@ -122,6 +129,10 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                 elif not all(isinstance(row, dict) and row.get("status") for row in requests):
                     errors.append(
                         f"client replay log requests must contain status fields: {log_file.name}"
+                    )
+                elif not all(str(row.get("status")) == "ok" for row in requests):
+                    errors.append(
+                        f"client replay log requests must all have status=ok for native evidence: {log_file.name}"
                     )
 
 

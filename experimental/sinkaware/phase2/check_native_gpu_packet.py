@@ -405,17 +405,24 @@ def _validate_csv_artifact(
                     f"latency.csv row {row_id} has {distinct_runs} distinct run_id values; "
                     f"expected at least {min_repeated_runs}"
                 )
-            same_config_repeats = [
-                len(run_ids)
-                for (config_row_id, _model, _sequence_length, _batch_size), run_ids
+            same_config_repeats = {
+                (model, sequence_length, batch_size): len(run_ids)
+                for (config_row_id, model, sequence_length, batch_size), run_ids
                 in run_ids_by_row_config.items()
                 if config_row_id == row_id
-            ]
-            if same_config_repeats and max(same_config_repeats) < min_repeated_runs:
+            }
+            if same_config_repeats and max(same_config_repeats.values()) < min_repeated_runs:
                 errors.append(
                     f"latency.csv row {row_id} has no model/sequence_length/batch_size "
                     f"group with at least {min_repeated_runs} distinct run_id values"
                 )
+            for (model, sequence_length, batch_size), repeat_count in sorted(same_config_repeats.items()):
+                if repeat_count < min_repeated_runs:
+                    errors.append(
+                        f"latency.csv row {row_id} model={model} sequence_length={sequence_length} "
+                        f"batch_size={batch_size} has {repeat_count} distinct run_id values; "
+                        f"expected at least {min_repeated_runs}"
+                    )
 
     return {
         "rows": len(rows),

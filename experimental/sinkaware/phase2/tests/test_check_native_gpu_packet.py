@@ -165,6 +165,39 @@ def test_requires_latency_repeats_for_same_shape(tmp_path: Path) -> None:
     )
 
 
+def test_rejects_any_under_repeated_latency_shape_even_with_one_complete_shape(
+    tmp_path: Path,
+) -> None:
+    packet = tmp_path / "packet"
+    _complete_packet(packet)
+    metadata = json.loads((packet / "metadata.json").read_text(encoding="utf-8"))
+    metadata["sequence_shapes"].append({"batch_size": 1, "sequence_length": 128})
+    (packet / "metadata.json").write_text(json.dumps(metadata) + "\n", encoding="utf-8")
+
+    for filename in ["quality_drift.csv", "quality_drift_by_head.csv", "ncu_summary.csv"]:
+        rows = list(csv.DictReader((packet / filename).open(encoding="utf-8")))
+        extra = dict(rows[0])
+        extra["sequence_length"] = "128"
+        rows.append(extra)
+        _write_csv(packet / filename, rows)
+
+    latency_rows = list(csv.DictReader((packet / "latency.csv").open(encoding="utf-8")))
+    extra_latency = dict(latency_rows[0])
+    extra_latency["sequence_length"] = "128"
+    extra_latency["run_id"] = "extra-only"
+    latency_rows.append(extra_latency)
+    _write_csv(packet / "latency.csv", latency_rows)
+
+    result = check_native_gpu_packet(packet)
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "row exact_attention model=distilgpt2 sequence_length=128 batch_size=1 has 1 distinct"
+        in error
+        for error in result["errors"]
+    )
+
+
 def test_requires_same_shapes_across_quality_latency_and_ncu(tmp_path: Path) -> None:
     packet = tmp_path / "packet"
     _complete_packet(packet)

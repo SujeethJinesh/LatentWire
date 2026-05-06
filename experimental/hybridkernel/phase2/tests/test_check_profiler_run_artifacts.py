@@ -43,7 +43,8 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         "nsys vllm server cuda profiler log\n", encoding="utf-8"
     )
     (run_dir / "logs/client_replay_b1.log").write_text(
-        '{"model":"granite","requests":[{"status":"ok"}]}\n', encoding="utf-8"
+        '{"model":"granite","dry_run":false,"requests":[{"status":"ok"}]}\n',
+        encoding="utf-8",
     )
     (run_dir / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
         "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
@@ -185,6 +186,46 @@ def test_rejects_marker_only_client_log_without_profiler_driver_json(tmp_path: P
 
     assert result["status"] == "FAIL"
     assert any("not valid profiler_driver JSON" in error for error in result["errors"])
+
+
+def test_rejects_client_replay_without_top_level_model(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "logs/client_replay_b1.log").write_text(
+        '{"dry_run":false,"requests":[{"model":"nested-only","status":"ok"}]}\n',
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("top-level model" in error for error in result["errors"])
+
+
+def test_rejects_dry_run_or_failed_client_replay_logs(tmp_path: Path) -> None:
+    dry_run = tmp_path / "dry_run"
+    _write_complete_run(dry_run)
+    (dry_run / "logs/client_replay_b1.log").write_text(
+        '{"model":"granite","dry_run":true,"requests":[{"status":"dry_run"}]}\n',
+        encoding="utf-8",
+    )
+
+    dry_result = check_run_artifacts(dry_run)
+
+    assert dry_result["status"] == "FAIL"
+    assert any("dry-run" in error for error in dry_result["errors"])
+    assert any("status=ok" in error for error in dry_result["errors"])
+
+    failed = tmp_path / "failed"
+    _write_complete_run(failed)
+    (failed / "logs/client_replay_b1.log").write_text(
+        '{"model":"granite","dry_run":false,"requests":[{"status":"error:timeout"}]}\n',
+        encoding="utf-8",
+    )
+
+    failed_result = check_run_artifacts(failed)
+
+    assert failed_result["status"] == "FAIL"
+    assert any("status=ok" in error for error in failed_result["errors"])
 
 
 def test_requires_complete_environment_capture(tmp_path: Path) -> None:
