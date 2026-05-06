@@ -6,6 +6,20 @@ This folder is self-contained inside the main LatentWire checkout. Keep local
 dependencies, scratch clones, and generated artifacts under
 `experimental/hybridkernel/` unless a shared repo asset is explicitly needed.
 
+## Current Handoff Status
+
+Local Mac work is saturated. The project has the config audit, literature/source
+audit, architecture map, pre-GPU threshold model, fixed-request driver,
+profiler-analysis parser, artifact verifier, tests, and native packet checklist.
+Do not add more local kernels, scaffolds, or paper claims until native NVIDIA
+profiler data exists.
+
+The next exact gate is a user-operated NVIDIA/vLLM packet that passes
+`phase2/check_profiler_run_artifacts.py` and is then reduced by
+`phase2/analyze_profiler_metrics.py`. Promotion requires repeated server-side
+Nsight evidence of separable attention/SSM boundary overhead clearing the 3%
+recoverable-gain gate. If that evidence is absent, kill or shelve this branch.
+
 ## Local Setup
 
 Use the repo-local ARM64 virtual environment when available:
@@ -57,4 +71,6 @@ recorded in `progress.md`.
   missing local Triton dependency blocks Phase 4 completion rather than
   proving or disproving the systems idea.
 
-Do not proceed to GPU spend until Phase 0-4 deliverables are present and reviewed.
+Phase 0-4 Mac-side deliverables are now review-ready as a pre-GPU handoff, not
+as performance evidence. Do not proceed with implementation until the native
+packet gate clears.
