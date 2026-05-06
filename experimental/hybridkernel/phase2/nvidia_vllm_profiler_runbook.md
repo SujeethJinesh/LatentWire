@@ -215,6 +215,26 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   2>&1 | tee "$HWK_RUN/logs/client_b1.log"
 ```
 
+For the dynamic Nsight capture path above, bracket the replay with vLLM's
+server-side profiling endpoints. This is the preferred command when
+`--profiler-config.profiler cuda` is accepted by the server:
+
+```bash
+python "$HWK_ROOT/phase2/profiler_driver.py" \
+  --model "$MODEL" \
+  --batch-size 1 \
+  --prefill-tokens 128 \
+  --decode-tokens 64 \
+  --requests 16 \
+  --seed 1 \
+  --profile-bracket \
+  2>&1 | tee "$HWK_RUN/logs/client_b1_profile_bracket.log"
+```
+
+The bracketed driver POSTs `/start_profile` before the fixed request replay
+and `/stop_profile` afterward, so `--capture-range=cudaProfilerApi` captures
+the serving process during the benchmark window rather than server startup.
+
 `profiler_driver.py` is tracked in this repository and can be sanity-checked on
 Mac with:
 
@@ -226,6 +246,7 @@ Mac with:
   --decode-tokens 64 \
   --requests 2 \
   --seed 1 \
+  --profile-bracket \
   --dry-run
 ```
 

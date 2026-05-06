@@ -344,3 +344,23 @@ Decision: **MAC GATE HARDENED; STILL PENDING NATIVE PROFILER DATA**. This closes
 another pre-GPU reviewer-risk item. It does not create speed evidence or change
 the next exact gate: a native NVIDIA/vLLM packet with server-side Nsight traces
 and repeated same-config metric rows.
+
+## 2026-05-06 Dynamic Profiling Driver Bracket
+
+Closed a final Mac-local handoff gap in the native profiler runbook. The
+dynamic Nsight path used `--capture-range=cudaProfilerApi`, but the fixed
+request driver did not previously call vLLM's server profiling endpoints. The
+driver now supports `--profile-bracket`, which POSTs `/start_profile` before
+the fixed replay and `/stop_profile` afterward. The stop call is issued in a
+`finally` block so request-level failures still close the dynamic capture.
+
+Added tests for dry-run endpoint reporting, normal start/completion/stop order,
+and stop-after-request-error behavior:
+
+```bash
+./venv_arm64/bin/python -m pytest experimental/hybridkernel/phase2/tests/test_profiler_driver.py -q
+```
+
+Decision: **NATIVE RUNBOOK IS READY FOR USER-OPERATED GPU PROFILING**. This is
+still not speed evidence. It only reduces the chance that the first NVIDIA run
+captures server startup or the HTTP client instead of the vLLM serving window.

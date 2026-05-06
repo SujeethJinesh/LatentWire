@@ -58,46 +58,61 @@ def _post_json(endpoint: str, payload: dict[str, object], timeout_s: float) -> N
 
 
 def run(args: argparse.Namespace) -> dict[str, object]:
-    endpoint = args.endpoint.rstrip("/") + "/v1/completions"
+    base_endpoint = args.endpoint.rstrip("/")
+    endpoint = base_endpoint + "/v1/completions"
+    profile_start_endpoint = base_endpoint + "/start_profile"
+    profile_stop_endpoint = base_endpoint + "/stop_profile"
     rows: list[RequestRow] = []
-    for request_id in range(args.requests):
-        prompts = [
-            _prompt(args.prefill_tokens, request_id * args.batch_size + batch_idx)
-            for batch_idx in range(args.batch_size)
-        ]
-        prompt_payload: str | list[str] = prompts[0] if args.batch_size == 1 else prompts
-        payload = _payload(args.model, prompt_payload, args.decode_tokens, args.seed + request_id)
-        if args.dry_run:
+
+    if args.profile_bracket and not args.dry_run:
+        _post_json(profile_start_endpoint, {}, args.timeout_s)
+
+    try:
+        for request_id in range(args.requests):
+            prompts = [
+                _prompt(args.prefill_tokens, request_id * args.batch_size + batch_idx)
+                for batch_idx in range(args.batch_size)
+            ]
+            prompt_payload: str | list[str] = prompts[0] if args.batch_size == 1 else prompts
+            payload = _payload(args.model, prompt_payload, args.decode_tokens, args.seed + request_id)
+            if args.dry_run:
+                rows.append(
+                    RequestRow(
+                        request_id=request_id,
+                        batch_size=args.batch_size,
+                        prefill_tokens=args.prefill_tokens,
+                        decode_tokens=args.decode_tokens,
+                        elapsed_s=None,
+                        status="dry_run",
+                    )
+                )
+                continue
+            start = time.perf_counter()
+            try:
+                _post_json(endpoint, payload, args.timeout_s)
+                status = "ok"
+            except (urllib.error.URLError, TimeoutError, RuntimeError) as exc:
+                status = f"error:{exc}"
             rows.append(
                 RequestRow(
                     request_id=request_id,
                     batch_size=args.batch_size,
                     prefill_tokens=args.prefill_tokens,
                     decode_tokens=args.decode_tokens,
-                    elapsed_s=None,
-                    status="dry_run",
+                    elapsed_s=time.perf_counter() - start,
+                    status=status,
                 )
             )
-            continue
-        start = time.perf_counter()
-        try:
-            _post_json(endpoint, payload, args.timeout_s)
-            status = "ok"
-        except (urllib.error.URLError, TimeoutError, RuntimeError) as exc:
-            status = f"error:{exc}"
-        rows.append(
-            RequestRow(
-                request_id=request_id,
-                batch_size=args.batch_size,
-                prefill_tokens=args.prefill_tokens,
-                decode_tokens=args.decode_tokens,
-                elapsed_s=time.perf_counter() - start,
-                status=status,
-            )
-        )
+    finally:
+        if args.profile_bracket and not args.dry_run:
+            _post_json(profile_stop_endpoint, {}, args.timeout_s)
+
     return {
         "model": args.model,
         "endpoint": endpoint,
+        "profile_bracket": args.profile_bracket,
+        "profile_start_endpoint": profile_start_endpoint if args.profile_bracket else None,
+        "profile_stop_endpoint": profile_stop_endpoint if args.profile_bracket else None,
         "dry_run": args.dry_run,
         "requests": [asdict(row) for row in rows],
     }
@@ -113,6 +128,11 @@ def main() -> None:
     parser.add_argument("--requests", type=int, default=16)
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--timeout-s", type=float, default=120.0)
+    parser.add_argument(
+        "--profile-bracket",
+        action="store_true",
+        help="POST /start_profile before fixed requests and /stop_profile after them.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     print(json.dumps(run(args), indent=2))

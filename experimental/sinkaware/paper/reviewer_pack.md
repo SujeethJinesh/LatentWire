@@ -35,7 +35,7 @@ claim.
 | Triton readiness | `TRITON_INTERPRET=1`, repo-local `triton-cpu` source install, CUDA unavailable on Mac | interpreter correctness passes; no GPU claim |
 | downstream causal-LM control smoke | distilgpt2 and facebook/opt-125m, 24 traces, split seeds 0/1/2; exact replacement is a no-op; rank-2 improves absolute loss drift over position-only by +0.0393 +/- 0.0134 and +0.1225 +/- 0.0284 | alive but bounded; superseded by larger downstream repeats |
 | downstream length/sink sweep | lengths 64/96 and sink counts 2/4; all four config rows positive with minimum model loss improvement >= +0.0272 | stronger Mac-local quality-control surface; still no benchmark or speed claim |
-| larger downstream repeats | 48 traces, sink 4, lengths 64/96, split seeds 0/1/2; exact replacement remains no-op; rank-2 beats position-only by loss and KL on distilgpt2 and OPT-125M; min model loss improvement is +0.0345 at length 64 and +0.0376 at length 96 | strongest Mac-local quality-control gate; native timing is next |
+| larger downstream repeats | 48 traces, sink counts 2/4, lengths 64/96, split seeds 0/1/2; exact replacement remains no-op; rank-2 beats position-only by loss and KL on distilgpt2 and OPT-125M; min model loss improvement is +0.0263 at sink2/length64 and remains positive in all larger rows | Mac-local downstream control surface saturated; native timing is next |
 
 ## Reviewer Risks
 
@@ -48,10 +48,14 @@ claim.
   survives measured 48-trace, three-seed held-out repeats at lengths 64 and 96,
   but it is still a Mac-local diagnostic and not a benchmark-backed result.
 - No GPU latency or memory claim exists yet.
+- Rank-2 still changes top-1 predictions in the downstream patch gate
+  (roughly 0.07--0.15 in the larger rows), so the paper must describe the
+  result as a quality-control diagnostic rather than a preservation guarantee.
 
 ## Next Experiment
 
-The downstream causal-LM control now has a larger 48-trace repeat at lengths
-64/96 with sink count 4. It favors rank-2 over position-only in every model row
-with exact replacement as a no-op control. Native NVIDIA comparison remains
-gated by `experimental/sinkaware/phase2/gpu_gate_runbook.md`.
+The downstream causal-LM control now has larger 48-trace repeats at lengths
+64/96 with sink counts 2/4. It favors rank-2 over position-only in every model
+row with exact replacement as a no-op control. This saturates the useful
+Mac-local downstream-control work for the current branch. Native NVIDIA
+comparison remains gated by `experimental/sinkaware/phase2/gpu_gate_runbook.md`.

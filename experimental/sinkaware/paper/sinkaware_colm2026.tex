@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. Layer-head and head-selection analyses weaken broad claims, but split/seed, length, trace-level, and GPT2/OPT-family gates keep the all-head rank-2 row positive. The strongest Mac-local stability gate keeps all four model/length rows positive at lengths 64 and 96, with mean output relative-L2 improvement $0.0535 \pm 0.0262$ and minimum row improvement 0.0301. The approximate operator passes Triton interpreter correctness tests against its CPU reference. A larger downstream causal-LM control gate on 48 traces and three split seeds also passes at lengths 64 and 96: exact replacement is a no-op, and rank-2 is closer than position-only in loss drift and KL on both distilgpt2 and OPT-125M. At length 96, aggregate absolute loss-delta improvement is $0.0721 \pm 0.0676$, with minimum model improvement 0.0376. This is not cross-model predictor transfer, benchmark success, or a GPU speed result. It is a bounded correctness, stability, and downstream-control gate for deciding whether approximate sink prediction is worth native implementation.
+Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. Layer-head and head-selection analyses weaken broad claims, but split/seed, length, trace-level, and GPT2/OPT-family gates keep the all-head rank-2 row positive. The strongest Mac-local stability gate keeps all four model/length rows positive at lengths 64 and 96, with mean output relative-L2 improvement $0.0535 \pm 0.0262$ and minimum row improvement 0.0301. The approximate operator passes Triton interpreter correctness tests against its CPU reference. Larger downstream causal-LM control gates on 48 traces and three split seeds now pass for sink counts 2 and 4 at lengths 64 and 96: exact replacement is a no-op, and rank-2 is closer than position-only in loss drift and KL on both distilgpt2 and OPT-125M. At length 96 with two sink tokens, aggregate absolute loss-delta improvement is $0.0537 \pm 0.0509$; with four sink tokens it is $0.0721 \pm 0.0676$. Top-1 disagreement remains non-negligible, so this is not cross-model predictor transfer, benchmark success, or a GPU speed result. It is a bounded correctness, stability, and downstream-control gate for deciding whether approximate sink prediction is worth native implementation.
 \end{abstract}
 
 \section{Problem}
@@ -123,15 +123,19 @@ evaluation. It compares exact baseline attention against exact sink-logit
 replacement, position-only replacement, and rank-2 replacement. Exact
 replacement is the validity control and reproduces baseline loss and logits on
 both tested models. The latest 48-trace repeats keep rank-2 closer than
-position-only on both models and both lengths. At length 64, aggregate
-absolute loss-delta improvement is $0.0801 \pm 0.0894$ and aggregate KL
-improvement is $0.0752 \pm 0.1003$, with minimum model loss improvement 0.0345.
-At length 96, aggregate absolute loss-delta improvement is
-$0.0721 \pm 0.0676$ and aggregate KL improvement is $0.0694 \pm 0.0823$, with
-minimum model loss improvement 0.0376. This keeps the branch alive beyond
-isolated attention-output drift, but only as a downstream-control diagnostic:
-predictors are still fit separately per model/config/split, and no benchmark
-accuracy or GPU speed is measured.
+position-only on both models, both lengths, and sink counts 2 and 4. At length
+64 with two sink tokens, aggregate absolute loss-delta improvement is
+$0.0621 \pm 0.0701$ and aggregate KL improvement is $0.0532 \pm 0.0772$, with
+minimum model loss improvement 0.0263. At length 96 with two sink tokens, the
+corresponding numbers are $0.0537 \pm 0.0509$, $0.0464 \pm 0.0580$, and
+0.0277. Four-sink repeats are larger: length 64 gives $0.0801 \pm 0.0894$
+loss improvement and $0.0752 \pm 0.1003$ KL improvement, with minimum model
+loss improvement 0.0345; length 96 gives $0.0721 \pm 0.0676$ and
+$0.0694 \pm 0.0823$, with minimum model loss improvement 0.0376. This keeps
+the branch alive beyond isolated attention-output drift, but only as a
+downstream-control diagnostic: predictors are still fit separately per
+model/config/split, top-1 disagreement remains around 0.07--0.15 for rank-2 in
+the larger rows, and no benchmark accuracy or GPU speed is measured.
 
 \begin{table}[h]
 \centering
@@ -158,9 +162,11 @@ Traces & Max len & Sink tokens & Loss improve & Min model improve \\
 \midrule
 48 & 64 & 4 & $0.0801 \pm 0.0894$ & 0.0345 \\
 48 & 96 & 4 & $0.0721 \pm 0.0676$ & 0.0376 \\
+48 & 64 & 2 & $0.0621 \pm 0.0701$ & 0.0263 \\
+48 & 96 & 2 & $0.0537 \pm 0.0509$ & 0.0277 \\
 \bottomrule
 \end{tabular}
-\caption{Larger downstream causal-LM control repeats. Exact sink-logit replacement is a no-op in both rows; rank-2 beats position-only in loss drift and KL for both distilgpt2 and OPT-125M across seeds 0/1/2.}
+\caption{Larger downstream causal-LM control repeats. Exact sink-logit replacement is a no-op in all rows; rank-2 beats position-only in loss drift and KL for both distilgpt2 and OPT-125M across seeds 0/1/2.}
 \end{table}
 
 \section{Not Claimed}
@@ -197,6 +203,8 @@ SinkAware is alive only as an all-head approximate low-rank correctness and nati
 \item \url{experimental/sinkaware/phase3/approx_sink_attention_reference.md}
 \item \url{experimental/sinkaware/phase3/downstream_quality_control_gate.md}
 \item \url{experimental/sinkaware/phase3/downstream_quality_control_sweep.md}
+\item \url{experimental/sinkaware/phase3/downstream_quality_control_gate_traces48_len64_sink2.md}
+\item \url{experimental/sinkaware/phase3/downstream_quality_control_gate_traces48_len96_sink2.md}
 \item \url{experimental/sinkaware/phase3/downstream_quality_control_gate_traces48_len64_sink4.md}
 \item \url{experimental/sinkaware/phase3/downstream_quality_control_gate_traces48_len96_sink4.md}
 \item \url{experimental/sinkaware/phase4/approx_sink_attention_triton_gate.md}

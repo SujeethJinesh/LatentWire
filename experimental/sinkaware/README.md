@@ -46,6 +46,14 @@ seeds `0,1,2` also stayed positive for separately fit per-model predictors:
 `facebook/opt-125m` improved by a measured `+0.0788 +/- 0.0069`. This is not cross-model
 predictor transfer and makes no GPU speed claim.
 
+The downstream causal-LM patch control is also Mac-saturated for the current
+branch. On 48 traces, split seeds `0,1,2`, lengths `64,96`, sink counts `2,4`,
+and separately fit `distilgpt2`/`facebook/opt-125m` predictors, exact
+replacement remains a no-op and rank-2 is closer than position-only in loss
+drift and KL for every model/config row. Minimum model loss improvement is
+`+0.0263`. This is still a quality-control diagnostic only: top-1 disagreement
+remains non-negligible and no benchmark or GPU speed result is claimed.
+
 Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
 reference. Interpreter-mode correctness is not GPU performance evidence, and
 native speed claims require NVIDIA hardware.

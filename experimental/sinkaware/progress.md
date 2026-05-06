@@ -455,3 +455,25 @@ support benchmark accuracy, cross-model predictor transfer, latency, HBM,
 throughput, or native speed claims. The next exact gate is native GPU timing and
 memory-traffic measurement, not more Mac-local quality controls unless a
 reviewer requires a much larger CPU slice.
+
+## 2026-05-06 Larger Downstream Sink-2 Repeat
+
+Ran the missing reviewer-requested larger downstream control repeat for sink
+count 2 in `./venv_arm64`, matching the stronger sink-4 setup: 48 traces, split
+seeds 0/1/2, lengths 64 and 96, and separately fit predictors for `distilgpt2`
+and `facebook/opt-125m`. Exact sink-logit replacement remained a no-op in both
+rows. Rank-2 stayed closer than position-only on downstream loss drift and KL
+for both models.
+
+- length 64 / sink 2: aggregate absolute loss-delta improvement
+  `+0.0621 +/- 0.0701`; aggregate KL improvement `+0.0532 +/- 0.0772`;
+  minimum model loss improvement `+0.0263`.
+- length 96 / sink 2: aggregate absolute loss-delta improvement
+  `+0.0537 +/- 0.0509`; aggregate KL improvement `+0.0464 +/- 0.0580`;
+  minimum model loss improvement `+0.0277`.
+
+Decision: **MAC-LOCAL DOWNSTREAM CONTROL SURFACE SATURATED** for the current
+branch. Sink counts 2 and 4, lengths 64 and 96, GPT2/OPT families, 48 traces,
+and three split seeds are now covered. The remaining useful evidence is native
+GPU timing/memory traffic and, for a stronger paper, a true benchmark-quality
+result rather than more Mac-local patch controls.
