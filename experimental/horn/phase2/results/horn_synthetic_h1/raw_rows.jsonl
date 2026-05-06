@@ -1,0 +1,8 @@
+{"direction": "attention->ssm", "kurtosis": 3.220656156539917, "layer": 0, "max_abs": 3.362213134765625}
+{"direction": "ssm->attention", "kurtosis": 23.997438430786133, "layer": 1, "max_abs": 12.612985610961914}
+{"direction": "attention->ssm", "kurtosis": 3.243344306945801, "layer": 2, "max_abs": 3.2269444465637207}
+{"direction": "ssm->attention", "kurtosis": 22.99077606201172, "layer": 3, "max_abs": 12.268274307250977}
+{"direction": "attention->ssm", "kurtosis": 3.3986806869506836, "layer": 4, "max_abs": 3.249965190887451}
+{"direction": "ssm->attention", "kurtosis": 20.54433822631836, "layer": 5, "max_abs": 12.083434104919434}
+{"direction": "attention->ssm", "kurtosis": 3.195836305618286, "layer": 6, "max_abs": 3.2735142707824707}
+{"direction": "ssm->attention", "kurtosis": 23.891088485717773, "layer": 7, "max_abs": 13.659767150878906}

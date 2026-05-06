@@ -24,10 +24,20 @@ HORN asks whether one boundary direction needs higher precision than the other.
 Primary preregistration:
 
 - `phase2/preregister_horn_20260506.md`
+- `phase1/competitor_matrix.md`
 
 H1 measures boundary activation magnitude and kurtosis. H2 injects
 FP4-equivalent noise around each boundary direction. H3 checks cross-model and
 pure-architecture controls.
+
+## Current Mac Packet
+
+Synthetic-only packet:
+
+- `phase2/results/horn_synthetic_h1/`
+- decision: `SYNTHETIC_PASS_REAL_BOUNDARY_DUMPS_NEXT`
+
+This validates artifact mechanics only. It is not model evidence.
 
 ## Output Paths
 

@@ -60,6 +60,8 @@ What remains:
 - **5%**: update the paper with a promote, shelve, or kill decision.
 
 Do not add more Mac kernels or paper claims before the native packet exists.
+The consumed Mac-only implementation lane is explicitly marked in
+`KILLED_mac_only_kernel_iteration/`.
 
 ## GPU-Node Quickstart
 
@@ -84,7 +86,8 @@ python3 -m venv .venv_gpu
 source .venv_gpu/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r experimental/hybridkernel/requirements.txt
-python -m pip install vllm
+export VLLM_VERSION=...  # fill exact release used on the GPU node
+python -m pip install "vllm==${VLLM_VERSION:?set VLLM_VERSION}"
 
 nvidia-smi
 nsys --version

@@ -187,6 +187,7 @@ def test_hybridkernel_stop_gate_is_machine_guarded() -> None:
         "native server-side Nsight evidence or kill/shelve",
         "check_profiler_run_artifacts.py",
         "analyze_profiler_metrics.py",
+        "KILLED_mac_only_kernel_iteration",
     ]:
         assert phrase in progress
 
@@ -209,7 +210,7 @@ def test_reviewer_packs_state_camera_readiness_limits() -> None:
             "No GPU latency or memory claim exists yet",
         ],
         "thoughtflow_fp8/paper/reviewer_pack.md": [
-            "ready only as a negative/mixed workshop diagnostic",
+            "ready as a methodology/negative-results workshop diagnostic",
             "no live positive method branch",
         ],
     }

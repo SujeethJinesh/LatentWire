@@ -1,0 +1,33 @@
+{
+  "claim_boundary": [
+    "synthetic-only",
+    "not model evidence",
+    "not GPU evidence"
+  ],
+  "decision": "SYNTHETIC_PASS_REAL_STATE_DUMPS_NEXT",
+  "kurtosis_ratio_late_vs_early": 3.14063733721093,
+  "max_abs_ratio_late_vs_early": 8.460738325370492,
+  "rows": [
+    {
+      "kurtosis": 2.9987213611602783,
+      "max_abs": 1.860334038734436,
+      "position": "early",
+      "std": 0.45119303464889526
+    },
+    {
+      "kurtosis": 3.997619152069092,
+      "max_abs": 6.434317111968994,
+      "position": "middle",
+      "std": 0.9206553101539612
+    },
+    {
+      "kurtosis": 9.417896270751953,
+      "max_abs": 15.739799499511719,
+      "position": "late",
+      "std": 1.6424341201782227
+    }
+  ],
+  "seed": 20260506,
+  "std_ratio_late_vs_early": 3.640202738183481,
+  "surface": "synthetic_ssm_state_heterogeneity"
+}

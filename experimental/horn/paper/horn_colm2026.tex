@@ -23,4 +23,18 @@ native systems claim is made yet.
 The branch must pass activation-magnitude, quantization-noise propagation, and
 cross-model/control gates before GPU validation.
 
+\section{Mac Artifact Status}
+
+A deterministic synthetic H1 packet validates the directional-boundary readout.
+It reports SSM-to-attention over attention-to-SSM max ratio 3.775 and kurtosis
+ratio 7.139, producing
+\texttt{SYNTHETIC\_PASS\_REAL\_BOUNDARY\_DUMPS\_NEXT}. This is synthetic-only:
+it is not model evidence, not a quantization-noise result, and not GPU evidence.
+
+\section{Next Evidence}
+
+The next admissible row is a real boundary activation dump from a hybrid model.
+HORN remains a control branch unless real H1/H2/H3 gates show consistent
+directional asymmetry that pure-attention and pure-Mamba controls do not share.
+
 \end{document}

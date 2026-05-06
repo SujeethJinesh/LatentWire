@@ -25,9 +25,19 @@ Mamba-Transformer models.
 Primary preregistration:
 
 - `phase2/preregister_ssq_lr_20260506.md`
+- `phase1/competitor_matrix.md`
 
 Gate S1 tests state distribution heterogeneity. Gate S2 tests simulated state
 quantization sensitivity. Gate S3 tests cross-model transfer without retuning.
+
+## Current Mac Packet
+
+Synthetic-only packet:
+
+- `phase2/results/ssq_lr_synthetic_s1/`
+- decision: `SYNTHETIC_PASS_REAL_STATE_DUMPS_NEXT`
+
+This validates artifact mechanics only. It is not model evidence.
 
 ## Output Paths
 

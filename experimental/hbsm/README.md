@@ -25,9 +25,19 @@ quantized forward passes.
 Primary preregistration:
 
 - `phase2/preregister_hbsm_20260506.md`
+- `phase1/competitor_matrix.md`
 
 B1 replicates sensitivity heterogeneity on current hybrids. B2 tests
 no-forward-pass predictors. B3 tests the softmax-amplification mechanism.
+
+## Current Mac Packet
+
+Synthetic-only packet:
+
+- `phase2/results/hbsm_synthetic_b1/`
+- decision: `SYNTHETIC_PASS_REAL_LAYER_SENSITIVITY_NEXT`
+
+This validates artifact mechanics only. It is not model evidence.
 
 ## Output Paths
 

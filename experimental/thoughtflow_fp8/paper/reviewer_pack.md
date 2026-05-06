@@ -1,8 +1,8 @@
 # ThoughtFlow-FP8 Reviewer Pack
 
-- status: diagnostic/falsification workshop note only
+- status: positive falsification-methodology workshop note; no live compression method
 - current decision: no live positive method branch
-- camera-readiness: ready only as a negative/mixed workshop diagnostic
+- camera-readiness: ready as a methodology/negative-results workshop diagnostic after final prose polish
 
 ## Paper Link
 
@@ -13,12 +13,15 @@
 
 ## Current Claim
 
-ThoughtFlow-FP8 shows a sparse-cache falsification ladder: an interpretable
-retention signal can look positive on one frozen surface and then fail stricter
-same-family and cross-family reproduction. Later prefix-surprisal and
-value-weighted attention-contribution successors also fail on fresh surfaces. The
-project does not currently claim a new KV-compression method, FP8 serving
-result, CUDA kernel result, or latency/throughput win.
+ThoughtFlow-FP8 shows a reusable sparse-cache falsification protocol: freeze a
+quality surface, pre-register each successor signal, require matched-budget
+proxy wins, separate same-family and cross-family rows, and report paired
+uncertainty plus oracle/headroom diagnostics. The case study shows an
+interpretable retention signal looking positive on one frozen surface and then
+failing stricter reproduction. Later prefix-surprisal and value-weighted
+attention-contribution successors also fail on fresh surfaces. The project does
+not currently claim a new KV-compression method, FP8 serving result, CUDA kernel
+result, or latency/throughput win.
 
 ## COLM Review Readout
 

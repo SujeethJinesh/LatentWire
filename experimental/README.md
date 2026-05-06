@@ -26,16 +26,18 @@ each README records what was tried, why it died, and what remains salvageable.
 HybridKernel is not killed and is not waiting on more Mac work; it is GPU-gated
 on the native NVIDIA/vLLM packet in `native_gpu_handoff_20260506.md`.
 
-## New Hybrid-Quantization Sprint (May 6, 2026)
+## Relevant Hybrid Sprint (May 6, 2026)
 
-The current active positive-method sprint adds four Mac-gated branches:
+The current relevant sprint has one GPU-gated systems branch, three Mac-gated
+hybrid-quantization branches, and one falsification-methodology paper:
 
 | Project | Status | First gate |
 |---|---|---|
-| `sinkkv/` | Synthetic policy probe passed; real cached Q/K/V gate next | Sink-protected KV quantization at matched memory |
+| `hybridkernel/` | Mac work saturated; native profiler packet next | NVIDIA/vLLM boundary-overhead gate |
 | `ssq_lr/` | Preregistered, no measurements yet | SSM-state distribution heterogeneity |
 | `horn/` | Preregistered, no measurements yet | Directional boundary outlier asymmetry |
 | `hbsm/` | Preregistered, novelty wounded by recent sensitivity work | Frontier-hybrid sensitivity replication and cheaper predictor |
+| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Paper reframing only |
 
 Shared utilities for these gates live in `shared/`. They are Mac-local
 simulation and audit helpers only; they are not native GPU evidence.

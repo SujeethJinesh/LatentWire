@@ -23,4 +23,18 @@ is made yet.
 The branch must pass state-distribution heterogeneity, state-only quantization
 sensitivity, and cross-model transfer gates before any GPU validation.
 
+\section{Mac Artifact Status}
+
+A deterministic synthetic S1 packet validates the readout format before real
+hybrid-model state dumps. It reports late/early max-abs ratio 8.461, std ratio
+3.640, and kurtosis ratio 3.141, producing
+\texttt{SYNTHETIC\_PASS\_REAL\_STATE\_DUMPS\_NEXT}. This is synthetic-only:
+it is not model evidence, not a quality result, and not GPU evidence.
+
+\section{Next Evidence}
+
+The next admissible row is a real SSM-state dump from the smallest available
+hybrid reasoner. Promotion requires S1 heterogeneity on real states before any
+state-quantization recipe is tuned.
+
 \end{document}

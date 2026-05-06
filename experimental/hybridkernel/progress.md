@@ -140,6 +140,10 @@ remaining gate is native NVIDIA/vLLM profiling with server-side Nsight traces,
 then validation through `check_profiler_run_artifacts.py` and reduction through
 `analyze_profiler_metrics.py`.
 
+The Mac-only implementation lane is now marked as killed in
+`KILLED_mac_only_kernel_iteration/`. This does not kill HybridKernel; it kills
+additional local kernels before native profiling.
+
 ## Profiler Analysis Gate
 
 Added a pre-registered native-profiler parser:

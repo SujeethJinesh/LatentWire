@@ -24,4 +24,19 @@ The branch must pass sensitivity heterogeneity, no-forward predictor, and
 mechanism gates. If it overlaps with HORN, it should be folded into a unified
 hybrid-quantization paper.
 
+\section{Mac Artifact Status}
+
+A deterministic synthetic B1/B2 packet validates the layer-sensitivity and cheap
+predictor readout. It reports kurtosis-versus-sensitivity Spearman rho 0.657
+and two boundary-flagged top-decile hits, producing
+\texttt{SYNTHETIC\_PASS\_REAL\_LAYER\_SENSITIVITY\_NEXT}. This is
+synthetic-only: it is not model evidence, not a novelty claim, and not GPU
+evidence.
+
+\section{Next Evidence}
+
+The next admissible row is a real layer-sensitivity sweep on current hybrid
+reasoners. If cheap predictors fail to correlate with forward sensitivity, HBSM
+should be killed or folded into HORN rather than kept as a separate paper.
+
 \end{document}

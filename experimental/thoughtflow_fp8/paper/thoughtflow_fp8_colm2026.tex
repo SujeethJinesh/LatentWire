@@ -5,17 +5,28 @@
 \usepackage{hyperref}
 \usepackage{url}
 
-\title{ThoughtFlow: A Sparse-Cache Falsification Study for Reasoning-Trace Retention}
+\title{ThoughtFlow: A Preregistered Falsification Ladder for Sparse-Cache Retention}
 \author{Anonymous authors\\Paper under double-blind review}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-The ThoughtFlow-FP8 project tests whether training-free sparse KV retention can preserve useful reasoning context better than matched-budget KV-retention proxies. The current contribution is diagnostic, not a positive method, and no real FP8, CUDA, latency, or throughput result is claimed. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality and sparse-cache gates rule out further tuning of the original anchor/recent/phase/math family on the available traces. We then pre-registered three successor signals. Recurrence-distance utility (\texttt{rdu\_topk}) initially reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939 on a frozen 74-trace distilgpt2 gate, but reproduction gates demote it. Prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, reaching NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960. Value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface, reaching NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162. The anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference. The paper therefore reports a sparse-cache falsification ladder and no live method branch.
+We present a preregistered falsification protocol for training-free sparse KV-retention proposals on reasoning traces. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, require matched-budget wins against R-KV-like and ThinKV-like proxies, separate same-family and cross-family rows, and report paired uncertainty plus oracle/headroom diagnostics. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
 \end{abstract}
 
-\section{Policy Family}
+\section{Contribution}
+
+The contribution is a reusable stop-rule protocol, not another sparse-cache
+policy. The protocol combines seven checks: no-retune frozen surfaces,
+pre-registered successor utilities, matched-budget proxy baselines,
+same-family and cross-family separation, paired uncertainty,
+oracle/headroom diagnostics, and machine-checkable stop artifacts. ThoughtFlow-FP8
+is the case study showing why each check matters: one plausible signal looks
+positive on a frozen surface, then fails to reproduce under stricter reproduction, while
+two later signals fail fresh-surface gates outright.
+
+\section{Signals Under Test}
 
 The original policy protects anchors and phase labels. The first successor adds a small recent-token reserve. The second successor protects anchors, reserves half the retained budget for recent tokens, and lets phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The pre-registered \texttt{rdu\_topk} successor is demoted after stricter reproduction; later \texttt{psi\_topk} and \texttt{vwac\_topk} successors are killed by fresh-surface gates.
 
@@ -63,7 +74,7 @@ train-selected sweep & 0.207 & 1.000 & 0.430 & 0.956 \\
 
 Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +0.508 with 95\% CI [+0.436, +0.579]. The math-state delta is only +0.073 with 95\% CI [-0.078, +0.223]. This rules out a positive claim based on phase recall alone: it may be marker preservation rather than useful cache retention.
 
-\section{CPU Sparse-Cache Quality Gate}
+\section{Falsification Protocol}
 
 We next ran a CPU-only sparse-cache probe. The model processes the full
 prefix once, each policy prunes the returned KV cache to the same 0.20 budget,
@@ -223,7 +234,7 @@ NLL 4.096, ThinKV-like reaches 4.162, and \texttt{vwac\_topk} reaches 4.336.
 Paired deltas are +0.241 [+0.030,+0.530] versus R-KV-like and +0.174
 [+0.002,+0.392] versus ThinKV-like.
 
-\section{Decision}
+\section{Stop Rule and Reopen Gate}
 
 The branch is now demoted to a diagnostic. The stopped anchor/recent/phase/math
 policy family remains ruled out as a tunable branch on this trace set,
@@ -232,7 +243,7 @@ fail their fresh-surface gates. A paper-ready positive claim now requires a genu
 pre-registered utility signal evaluated once on a fresh/larger frozen surface
 with strict same-family, cross-family, and oracle/headroom reporting. The Triton
 interpreter gate is no longer the blocker for the quantization scaffold; method
-evidence is.
+evidence is. This means no real FP8, CUDA, latency, or throughput result is claimed.
 
 \section{Related Work and Scope}
 
