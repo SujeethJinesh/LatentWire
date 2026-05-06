@@ -187,7 +187,8 @@ Run locally:
 
 ```bash
 ./venv_arm64/bin/python -m pytest experimental/sinkaware/phase2/tests
-TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/sinkaware/phase4/tests -rs
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest experimental/sinkaware/phase4/tests -rs
 ```
 
 Current Mac status: CPU reference and Triton interpreter execution tests pass
@@ -537,3 +538,27 @@ boundary. Better predictors exist, but rank2 remains the live systems
 compromise until native GPU timing/memory traffic shows whether the lower-rank
 path has a real implementation advantage. No GPU speed, benchmark accuracy, or
 cross-model predictor transfer claim is supported.
+
+## 2026-05-06 Final Mac/Triton Repro Check
+
+Found and fixed a Phase 4 reproducibility bug: setting only
+`TRITON_INTERPRET=1` inside individual tests was too late on this Mac and could
+fall through to the `triton-cpu` linker path, which fails without `libgcc`.
+The Phase 4 pytest suite now sets `TRITON_INTERPRET=1`,
+`TRITON_CPU_BACKEND=1`, and repo-local `TRITON_HOME` during collection.
+
+Validated with:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  experimental/sinkaware/phase4/tests \
+  experimental/sinkaware/phase3/tests/test_downstream_quality_control_rank_frontier.py \
+  experimental/sinkaware/phase3/tests/test_approx_sink_attention_reference.py -rs
+```
+
+Result: `10 passed, 2 warnings`.
+
+Decision: no further Mac/Triton improvement remains before native GPU timing.
+The remaining blocker is native GPU latency/HBM plus benchmark-quality
+downstream evidence; additional local loops would mostly churn the same bounded
+diagnostics.

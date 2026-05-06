@@ -60,6 +60,7 @@ to `0.137`, `0.096`, `0.062`, and `0.044`, respectively, but the cost model
 estimates rank4/rank8 above exact four-sink QK multiply-add cost. Rank2 remains
 the live systems compromise.
 
-Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
-reference. Interpreter-mode correctness is not GPU performance evidence, and
-native speed claims require NVIDIA hardware.
+Phase 4 Macbook kernel work must run through the Triton interpreter with
+`TRITON_INTERPRET=1`, `TRITON_CPU_BACKEND=1`, and a repo-local `TRITON_HOME`
+against a CPU reference. Interpreter-mode correctness is not GPU performance
+evidence, and native speed claims require NVIDIA hardware.

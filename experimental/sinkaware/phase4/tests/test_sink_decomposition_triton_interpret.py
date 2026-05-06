@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 import torch
+
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 
 from experimental.sinkaware.phase2.reference.sink_decomposition import (
     sink_decomposed_scalar_attention_reference,
@@ -11,12 +15,18 @@ from experimental.sinkaware.phase4.kernel.sink_decomposition_triton import (
 )
 
 
+def _enable_repo_local_triton_cpu_interpreter(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TRITON_INTERPRET", "1")
+    monkeypatch.setenv("TRITON_CPU_BACKEND", "1")
+    monkeypatch.setenv("TRITON_HOME", str(_REPO_ROOT / ".debug/triton_home"))
+
+
 @pytest.mark.parametrize("n_tail", [7, 65])
 def test_sink_decomposition_triton_matches_reference(
     monkeypatch: pytest.MonkeyPatch, n_tail: int
 ) -> None:
     pytest.importorskip("triton")
-    monkeypatch.setenv("TRITON_INTERPRET", "1")
+    _enable_repo_local_triton_cpu_interpreter(monkeypatch)
     generator = torch.Generator().manual_seed(103 + n_tail)
     sink_logits = torch.randn(3, generator=generator)
     tail_logits = torch.randn(n_tail, generator=generator)

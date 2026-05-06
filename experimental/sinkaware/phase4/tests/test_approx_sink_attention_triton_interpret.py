@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import pytest
 import torch
+
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 
 from experimental.sinkaware.phase4.kernel.approx_sink_attention_triton import (
     approx_sink_attention_scalar_triton_interpret,
@@ -12,11 +15,17 @@ from experimental.sinkaware.phase4.kernel.approx_sink_attention_triton import (
 )
 
 
+def _enable_repo_local_triton_cpu_interpreter(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("TRITON_INTERPRET", "1")
+    monkeypatch.setenv("TRITON_CPU_BACKEND", "1")
+    monkeypatch.setenv("TRITON_HOME", str(_REPO_ROOT / ".debug/triton_home"))
+
+
 def test_approx_sink_attention_triton_matches_exact_when_prediction_is_exact(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pytest.importorskip("triton")
-    monkeypatch.setenv("TRITON_INTERPRET", "1")
+    _enable_repo_local_triton_cpu_interpreter(monkeypatch)
     generator = torch.Generator().manual_seed(20260505)
     query = torch.randn(8, generator=generator)
     keys = torch.randn(11, 8, generator=generator)
@@ -59,7 +68,7 @@ def test_triton_interpreter_readiness_reports_dependency_and_env(monkeypatch: py
     assert readiness["triton_interpret_enabled"] is False
     assert "reason" in readiness
 
-    monkeypatch.setenv("TRITON_INTERPRET", "1")
+    _enable_repo_local_triton_cpu_interpreter(monkeypatch)
     readiness = triton_interpreter_readiness()
     if readiness["triton_importable"]:
         assert readiness["ready"] is True

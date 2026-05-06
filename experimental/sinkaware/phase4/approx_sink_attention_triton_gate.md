@@ -15,7 +15,8 @@ Current local readiness check:
 
 - `triton==3.7.0+git270e696d` is importable from the local `triton-cpu`
   source build;
-- `TRITON_INTERPRET=1` was set for the readiness command;
+- `TRITON_INTERPRET=1`, `TRITON_CPU_BACKEND=1`, and a repo-local
+  `TRITON_HOME` were set for the readiness command;
 - `torch.cuda.is_available()` is false on this Mac;
 - execution tests pass in interpreter mode;
 - no CUDA, GPU, or speed claim is made.
@@ -28,7 +29,8 @@ shared install note is `experimental/triton_cpu_source_install_20260506.md`.
 Next gate:
 
 ```bash
-TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest \
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest \
   experimental/sinkaware/phase4/tests/test_approx_sink_attention_triton_interpret.py -rs
 ```
 
