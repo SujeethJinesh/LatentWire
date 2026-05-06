@@ -39,6 +39,25 @@ Synthetic-only packet:
 
 This validates artifact mechanics only. It is not model evidence.
 
+Validate packet shape with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/hbsm/phase2/results/hbsm_synthetic_b1 \
+  --expected-decision-prefix SYNTHETIC
+```
+
+Real trace packet requirements are in
+`../shared/hybrid_trace_packet_runbook.md`.
+
+Validate the first real B1 packet with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/hbsm/results/hbsm_gate_b1_<YYYYMMDD>_<model_slug> \
+  --mode real --project hbsm
+```
+
 ## Output Paths
 
 ```text

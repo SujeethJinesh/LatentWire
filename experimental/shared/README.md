@@ -1,7 +1,7 @@
 # Experimental Shared Utilities
 
-Shared Mac-local utilities for the new hybrid-quantization branches:
-SinkKV, SSQ-LR, HORN, and HBSM.
+Shared Mac-local utilities for the relevant hybrid-quantization branches:
+SSQ-LR, HORN, and HBSM.
 
 These helpers are intentionally small and deterministic. They are not GPU
 kernels and they do not support throughput, latency, HBM, or energy claims.
@@ -15,6 +15,10 @@ Use them for preregistered Mac gates only.
   cached traces.
 - `boundary_inspector.py`: layer-kind and attention/SSM boundary helpers.
 - `sensitivity_metrics.py`: quality, drift, and rank-correlation metrics.
+- `check_gate_packet.py`: packet validator for synthetic and real Mac-local
+  gate results, with stricter `--mode real --project ...` contracts.
+- `hybrid_trace_packet_runbook.md`: required real-packet schema for SSQ-LR,
+  HORN, and HBSM.
 
 ## Local Test
 

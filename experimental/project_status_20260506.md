@@ -15,7 +15,7 @@ saturated ideas.
 | 2 | SSQ-LR | 12% positive method | Test whether recurrent SSM state in hybrid reasoners can go below FP16 with a stable quantization recipe. Synthetic S1 packet validates artifact mechanics only. | Mac Gate S1 must show state-distribution heterogeneity on real hybrid SSM state dumps. | Run `experimental/ssq_lr/phase2/preregister_ssq_lr_20260506.md` Gate S1 on the smallest available hybrid state dumps. |
 | 3 | HORN | 12% control branch | Test whether attention-to-SSM and SSM-to-attention boundaries have asymmetric outlier/noise propagation. Synthetic H1 packet validates artifact mechanics only. | Mac Gate H1 must show directional magnitude or kurtosis asymmetry on real boundary dumps; otherwise HORN stays a control inside SSQ-LR/HBSM. | Run `experimental/horn/phase2/preregister_horn_20260506.md` Gate H1 once shared dumps exist. |
 | 4 | HBSM | 12% wounded branch | KL-Lens-like layer sensitivity is crowded; remaining wedge is frontier hybrid mechanism plus cheaper predictor. Synthetic B1/B2 packet validates artifact mechanics only. | Gate B1 must replicate sensitivity heterogeneity on current hybrid reasoners, then B2 must show a cheaper predictor. | Run `experimental/hbsm/phase2/preregister_hbsm_20260506.md` after shared dumps exist. |
-| 5 | ThoughtFlow-FP8 | 85% falsification paper; 0% positive method | The reusable contribution is the preregistered falsification ladder for sparse-cache signals. | Paper framing, not experiments; no fifth signal unless a new preregistration and fresh surface exist. | Reframe `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.tex` as a falsification-methodology note. |
+| 5 | ThoughtFlow-FP8 | 88% falsification paper; 0% positive method | The reusable contribution is the preregistered falsification ladder for sparse-cache signals. The draft now has protocol, RDU demotion, claim-boundary, and related-work citation tables. | Paper polish only; no fifth signal unless a new preregistration and fresh surface exist. | Human review of `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf`. |
 
 ## New Shared Infrastructure
 
@@ -25,6 +25,10 @@ Shared Mac-local utilities live in `experimental/shared/`:
 - `activation_dumper.py`: tensor-packet read/write helpers.
 - `boundary_inspector.py`: attention/SSM boundary identification.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
+- `check_gate_packet.py`: generic synthetic-packet validator plus strict
+  `--mode real --project ...` contracts for SSQ-LR, HORN, and HBSM.
+- `hybrid_trace_packet_runbook.md`: required schema for the first real
+  SSQ-LR/HORN/HBSM trace packet.
 
 These are reference utilities for hypothesis gates only. They do not support
 native GPU throughput, HBM, or production-packing claims.
@@ -40,6 +44,18 @@ they do not promote any branch.
 | SSQ-LR | `experimental/ssq_lr/phase2/results/ssq_lr_synthetic_s1/` | `SYNTHETIC_PASS_REAL_STATE_DUMPS_NEXT` | late/early max-abs ratio `8.461` |
 | HORN | `experimental/horn/phase2/results/horn_synthetic_h1/` | `SYNTHETIC_PASS_REAL_BOUNDARY_DUMPS_NEXT` | directional max ratio `3.775` |
 | HBSM | `experimental/hbsm/phase2/results/hbsm_synthetic_b1/` | `SYNTHETIC_PASS_REAL_LAYER_SENSITIVITY_NEXT` | kurtosis-vs-sensitivity Spearman rho `0.657` |
+
+All three packets pass `experimental.shared.check_gate_packet`.
+
+The checker now has a stricter real-packet mode:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/<project>/results/<packet> --mode real --project <ssq_lr|horn|hbsm>
+```
+
+Real packets must include provenance, `summary.md`, matching `row_count`,
+project-specific row schemas, and required controls.
 
 ## Killed Branches
 

@@ -39,6 +39,25 @@ Synthetic-only packet:
 
 This validates artifact mechanics only. It is not model evidence.
 
+Validate packet shape with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/ssq_lr/phase2/results/ssq_lr_synthetic_s1 \
+  --expected-decision-prefix SYNTHETIC
+```
+
+Real trace packet requirements are in
+`../shared/hybrid_trace_packet_runbook.md`.
+
+Validate the first real S1 packet with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/ssq_lr/results/ssq_lr_gate_s1_<YYYYMMDD>_<model_slug> \
+  --mode real --project ssq_lr
+```
+
 ## Output Paths
 
 Use:

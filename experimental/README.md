@@ -1,131 +1,63 @@
-# COLM 2026 Sprint: Three-Project Triage Plan
+# Experimental Project Control Plane
 
-## Current Mac-Complete Status (May 6, 2026)
+Date: 2026-05-06
 
-The original sprint plan below is preserved for auditability. The current
-state is narrower:
+This folder currently tracks five relevant COLM/ICLR branches only:
+HybridKernel, SSQ-LR, HORN, HBSM, and ThoughtFlow-FP8. The control objective is
+to finish every Mac-local artifact that can be finished before NVIDIA GPU time,
+then move only surviving branches to the 5090 gate.
 
-| Project | Current status | Best Mac-local evidence | Remaining blocker |
+The current sprint ledger is `project_status_20260506.md`.
+
+## Active Branches
+
+| Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
-| HybridKernel | Weakly alive as a native-profiler handoff only | Source-line/runtime audit, threshold model, fixed-request vLLM profiler driver, packet verifier, Triton interpreter toy-kernel correctness | User-operated NVIDIA/vLLM profiler packet showing at least 3% recoverable boundary overhead |
-| SinkAware | Alive but bounded as an approximate rank-2 sink-logit branch | GPT2/OPT held-out controls, length/sink repeats, downstream causal-LM patch controls, rank/cost frontier, Triton interpreter correctness | Native GPU timing/memory evidence and preservation of downstream-control behavior |
-| ThoughtFlow-FP8 | Stopped as a positive method; useful diagnostic artifact only | Sparse-cache falsification ladder, oracle/headroom readouts, current decision manifest, int8/Triton interpreter primitive | A fresh preregistered utility signal on a fresh/larger frozen surface; no GPU time for the current branch |
+| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, fixed-request vLLM driver, profiler packet verifier, Triton interpreter toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three clean repeats and at least 3% recoverable boundary overhead |
+| `ssq_lr/` | Mac gate scaffolded | Synthetic S1 packet validates metrics, decision logic, and artifact schema | Real hybrid SSM state dumps showing distribution heterogeneity |
+| `horn/` | Mac gate scaffolded | Synthetic H1 packet validates directional boundary metrics and artifact schema | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry |
+| `hbsm/` | Mac gate scaffolded; novelty is narrow | Synthetic B1/B2 packet validates sensitivity-ranking and cheap-predictor mechanics | Real layer sensitivity packet on current hybrid reasoners |
+| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures | Paper-only camera-ready polish |
 
-Do not treat the Phase 0--4 checklist below as a promotion signal by itself.
-The current papers are review/handoff packets with measured Mac-local evidence
-and explicit claim boundaries, not completed GPU systems papers.
+## Shared Infrastructure
 
-Current audit packet: `mac_complete_readiness_20260506.md`. Native handoff map:
-`native_gpu_handoff_20260506.md`.
+Shared Mac-local utilities live in `shared/`:
 
-Current sprint ledger: `project_status_20260506.md`.
+- `fp4_simulator.py`: deterministic MXFP4-style and low-bit simulation.
+- `activation_dumper.py`: tensor-packet read/write helpers.
+- `boundary_inspector.py`: attention/SSM boundary identification.
+- `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
+- `check_gate_packet.py`: generic result-packet validator.
+- `hybrid_trace_packet_runbook.md`: schema for the first real shared trace
+  packet used by SSQ-LR, HORN, and HBSM.
 
-Killed-marker convention: `KILLED_*` folders mark consumed sub-branches and
-dead framings. They do not imply every artifact in the source project is useless;
-each README records what was tried, why it died, and what remains salvageable.
-HybridKernel is not killed and is not waiting on more Mac work; it is GPU-gated
-on the native NVIDIA/vLLM packet in `native_gpu_handoff_20260506.md`.
+These utilities support Mac-local hypothesis gates. They do not support native
+GPU throughput, HBM, latency, energy, or production-packing claims.
 
-## Relevant Hybrid Sprint (May 6, 2026)
+## Next Exact Gates
 
-The current relevant sprint has one GPU-gated systems branch, three Mac-gated
-hybrid-quantization branches, and one falsification-methodology paper:
+1. **HybridKernel**: run the 5090 profiler packet in
+   `hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`, then verify with
+   `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`.
+2. **SSQ-LR**: produce the first real hybrid SSM state packet and run Gate S1
+   from `ssq_lr/phase2/preregister_ssq_lr_20260506.md`.
+3. **HORN**: run Gate H1 on the same real trace packet once boundary
+   activations are available.
+4. **HBSM**: run Gate B1 after the shared trace packet exists; continue only if
+   the cheaper predictor has nontrivial rank correlation with forward
+   sensitivity.
+5. **ThoughtFlow-FP8**: continue paper reframing and citation/table polish; do
+   not run a new signal without a fresh preregistered surface.
 
-| Project | Status | First gate |
-|---|---|---|
-| `hybridkernel/` | Mac work saturated; native profiler packet next | NVIDIA/vLLM boundary-overhead gate |
-| `ssq_lr/` | Preregistered, no measurements yet | SSM-state distribution heterogeneity |
-| `horn/` | Preregistered, no measurements yet | Directional boundary outlier asymmetry |
-| `hbsm/` | Preregistered, novelty wounded by recent sensitivity work | Frontier-hybrid sensitivity replication and cheaper predictor |
-| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Paper reframing only |
+## Cost Discipline
 
-Shared utilities for these gates live in `shared/`. They are Mac-local
-simulation and audit helpers only; they are not native GPU evidence.
+Cheap gates come first. Failure at a Macbook phase means stop or fold the result
+into a stronger branch before spending GPU time. HybridKernel is the exception:
+its Mac work is saturated, so the next discriminative bit is the native GPU
+profiler packet.
 
-## Timeline
-- **Original plan date**: May 4, 2026
-- **COLM workshop submission target**: ~June 25, 2026
-- **MLSys / ICLR submission**: September–October 2026
-- **Budget cap**: ~$0.50/hr on GPU; total ~$700–1,000 for the sprint
+## Killed Marker Convention
 
-## Strategy
-Three projects run in parallel inside this single LatentWire checkout through Phase 4. Gates determine which survive to the 5090. **No GPU spend until all pre-GPU gates pass.**
-
-Project docs:
-1. `01_hybridkernel.md` — fused attention↔SSM boundary kernel for hybrid LLMs
-2. `02_sinkaware.md` — attention sink as static precomputed prior
-3. `03_thoughtflow_fp8.md` — fused FP8-KV + sink-anchor + phase-aware eviction for reasoning
-
-Shared setup: `00_setup.md`.
-
-Project folders:
-1. `hybridkernel/`
-2. `sinkaware/`
-3. `thoughtflow_fp8/`
-
-## Model landscape (May 2026, current as of doc creation)
-- **Hybrid LLMs**: Granite-4.0-H (Oct 2025), Nemotron-H-8B/47B/56B, Nemotron-3-Nano-30B-A3B (Dec 2025), Mamba-3 (March 2026), Apriel-H1-15B-Thinker (Nov 2025), Qwen3-Next-80B-A3B
-- **Dense/MoE LLMs**: Qwen3.6-27B (April 2026), GPT-OSS-20B/120B, Llama 4 family, Gemma 4, Mistral Large 3
-- **Reasoning models**: DeepSeek V4-Pro/Flash (April 24 2026), GPT-OSS-20B (configurable reasoning effort), Qwen3.6 thinking mode, Apriel-H1-Thinker, Nemotron-3-Nano (reasoning budget control), GLM-5.1
-- **Production sparse attention now standard**: DeepSeek V3.2/V4 use DSA + c4a/c128a token-wise KV compression; GLM-5.1 also uses DSA. **This raises the bar for SinkAware and ThoughtFlow novelty claims** — both projects must explicitly differentiate vs DSA in Phase 1.
-- **Deprecation alert**: DeepSeek R1 line retires July 24, 2026 — do not anchor experiments on R1 or its distills.
-
-## Gate philosophy
-Cheap → expensive. Each phase has explicit deliverables and kill criteria. Failure at a Macbook phase = pivot or kill *before* spending GPU time.
-
-| Phase | Where | Cost | What |
-|---|---|---|---|
-| 0 | Macbook | $0 | Setup, repos, env |
-| 1 | Macbook | $0 | Literature audit (this is the highest-value gate) |
-| 2 | Macbook | $0 | Theory / architecture mapping |
-| 3 | Macbook | $0 | NumPy/PyTorch CPU reference impl |
-| 4 | Macbook | $0 | Triton kernel skeleton (compiles, doesn't run) |
-| **GATE** | — | — | **All Phase 0–4 deliverables present + reviewed** |
-| 5 | 5090 | ~$5 | Empirical baseline + project-specific pivot test |
-| 6 | 5090 | ~$50 | Prototype kernel |
-| 7 | 5090 | ~$200–300 | Optimization + multi-model eval |
-| 8 | Macbook + H100 burst | ~$100 | Paper draft + final eval |
-
-## Master schedule
-
-| Week | Activity | Parallelism |
-|---|---|---|
-| 1 (May 4–10) | Phase 0–1 all projects | 3 agents in parallel |
-| 2 (May 11–17) | Phase 2–4 all projects | 3 agents in parallel |
-| **End wk 2 (~May 17)** | **GATE DECISION** | Pick survivors |
-| 3 (May 18–24) | Phase 5 + start Phase 6 | Survivors only |
-| 4 (May 25–31) | Phase 6–7 | |
-| 5 (Jun 1–7) | Phase 7 | |
-| 6 (Jun 8–14) | Paper draft + ablations | |
-| 7 (Jun 15–21) | H100 burst + polish | |
-| ~Jun 25 | **Submit COLM** | |
-
-## Decision rules at end of week 2
-- **3 survive**: pick the cleanest story for COLM, queue others as ICLR/MLSys follow-ups.
-- **2 survive**: parallelize on shared 5090 with queue; pick stronger for COLM.
-- **1 survives**: full sprint on it. Bigger paper. Better results.
-- **0 survive**: pivot to backup ideas (SpecKernel reasoning-FPGA, MLA-FPGA — see prior conversation).
-
-## Agent allocation
-3 agents can work on Macbook, one per project folder, inside this single repo checkout. Each agent:
-- Owns its project's Phase 0–4 files under `experimental/<project>/`
-- Has read access to other agents' progress through the shared repo
-- Reports gate status at each phase end in that project's `progress.md`
-- Cannot launch GPU work without explicit gate sign-off
-
-## Cost projections (post-gate, assuming 1–2 projects survive)
-
-| Scenario | Phase 5–7 5090 cost | H100 burst | Total |
-|---|---|---|---|
-| 1 project, conservative | $250 | $80 | ~$330 |
-| 1 project, intensive | $500 | $80 | ~$580 |
-| 2 projects, parallel (shared GPU) | $400 | $120 | ~$520 |
-| 2 projects, sequential | $700 | $120 | ~$820 |
-
-Add ~$70 for storage (500GB × $0.07/GB × 2 months).
-
-## Critical rules
-1. **No GPU spend before gate.** Period.
-2. **Kill criteria are non-negotiable.** If a kill criterion triggers, the project ends. No "let me just try one more thing" — those reflexes burn weeks.
-3. **Macbook phases are timeboxed.** Phase 1 = 2–3 days, Phase 2 = 1 day, Phase 3 = 2 days, Phase 4 = 1 day. If a phase overruns by more than 50%, escalate / kill.
-4. **Deliverables must exist as files in the repo.** Verbal "it's almost done" doesn't count. The gate checks for files.
+`KILLED_*` folders mark consumed sub-branches and dead framings. They do not
+mean every artifact in the source project is useless; each marker README records
+what was tried, why it died, and what remains salvageable.

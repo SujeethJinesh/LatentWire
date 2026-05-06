@@ -24,3 +24,23 @@ pure-attention and pure-SSM controls.
 - Include direction-label permutation and non-boundary adjacent-pair controls.
 - Normalize for RMSNorm/LayerNorm placement and matched activation scale.
 - Require paired CIs for H1 and H2, not only median ratios.
+
+## Executable Baseline Columns
+
+Every real H1/H2 result table must include:
+
+| Column | Meaning |
+|---|---|
+| `boundary_direction` | `attention->ssm` or `ssm->attention`, from an explicit architecture map. |
+| `non_boundary_control` | Adjacent non-boundary transition with matched layer distance. |
+| `permuted_direction` | Direction label permutation; should erase the effect. |
+| `norm_position` | Pre/post RMSNorm or LayerNorm position for scale matching. |
+| `matched_scale_noise` | Same-magnitude noise applied to both directions. |
+| `pure_arch_control` | Pure-attention or pure-SSM control where directional hybrid asymmetry should weaken. |
+
+## Source Anchors Checked
+
+- SmoothQuant: `https://arxiv.org/abs/2211.10438`
+- QuaRot: `https://arxiv.org/abs/2404.00456`
+- KL Lens: `https://arxiv.org/abs/2604.13440`
+- vLLM hybrid model support overview: `https://pytorch.org/blog/hybrid-models-as-first-class-citizens-in-vllm/`

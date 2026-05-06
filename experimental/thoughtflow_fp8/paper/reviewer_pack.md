@@ -1,6 +1,6 @@
 # ThoughtFlow-FP8 Reviewer Pack
 
-- status: positive falsification-methodology workshop note; no live compression method
+- status: falsification-methodology workshop note; no live compression method
 - current decision: no live positive method branch
 - camera-readiness: ready as a methodology/negative-results workshop diagnostic after final prose polish
 
@@ -32,7 +32,7 @@ result, or latency/throughput win.
 | Correctness | CPU sparse-cache scoring, paired uncertainty, oracle/headroom reporting, RDU telemetry, and int8 anchor/phase Triton-interpreter parity are tested. These do not establish native FP8, CUDA, latency, throughput, or serving correctness. | Correctness scaffold only. |
 | Reproducibility | Markdown and JSON artifacts are tracked for every gate, and the owned test command is stable under `./venv_arm64`. Historical `ALIVE`/`PROMOTED` artifacts are preserved for auditability but superseded by the current decision manifest. | Good enough for a diagnostic note. |
 | Novelty | The method space is crowded by recent sparse/quantized KV-cache work, including LongFlow, ThinKV, R-KV/R-KVHash, LazyEviction/ForesightKV-style future-use signals, PM-KVQ, and KVQuant. The defensible novelty is the falsification ladder and stop rule, not a new compression method. | Do not claim method novelty. |
-| Camera-readiness | The current draft is camera-ready only as a negative/mixed workshop diagnostic with the positive-looking RDU table clearly marked as failed-to-reproduce. It is not a mainline method or systems paper. | Workshop diagnostic at most. |
+| Camera-readiness | The current draft is camera-ready only as a negative/mixed workshop diagnostic with the first-surface RDU table clearly marked as failed-to-reproduce. It is not a mainline method or systems paper. | Workshop diagnostic at most. |
 
 ## Strongest Evidence
 
@@ -62,7 +62,7 @@ TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
 ## Reviewer Risks
 
 - The project name still says FP8, but no real FP8 serving result exists.
-- The positive-looking `rdu_topk` table is historical and failed reproduction.
+- The first-surface `rdu_topk` table is historical and failed reproduction.
 - Current evidence is not a positive method result.
 - A useful future branch requires fresh preregistration and a new frozen
   surface, not another retune on current traces.

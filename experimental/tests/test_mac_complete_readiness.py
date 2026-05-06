@@ -9,11 +9,13 @@ EXPERIMENTAL = ROOT / "experimental"
 
 def test_top_level_readiness_index_records_current_stop_conditions() -> None:
     readme = (EXPERIMENTAL / "README.md").read_text()
-    assert "Current Mac-Complete Status" in readme
-    assert "Weakly alive as a native-profiler handoff only" in readme
-    assert "Alive but bounded as an approximate rank-2 sink-logit branch" in readme
-    assert "Stopped as a positive method" in readme
-    assert "not completed GPU systems papers" in readme
+    assert "Experimental Project Control Plane" in readme
+    assert "HybridKernel" in readme
+    assert "SSQ-LR" in readme
+    assert "HORN" in readme
+    assert "HBSM" in readme
+    assert "ThoughtFlow-FP8" in readme
+    assert "These utilities support Mac-local hypothesis gates" in readme
 
 
 def test_mac_complete_audit_links_all_project_packets() -> None:
@@ -128,7 +130,7 @@ def test_colm_style_pdfs_are_present_and_bounded() -> None:
     expected_pages = {
         "hybridkernel/paper/hybridkernel_colm2026.pdf": 3,
         "sinkaware/paper/sinkaware_colm2026.pdf": 5,
-        "thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf": 5,
+        "thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf": 6,
     }
     for relative_path, page_count in expected_pages.items():
         pdf_path = EXPERIMENTAL / relative_path

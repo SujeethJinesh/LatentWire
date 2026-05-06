@@ -24,3 +24,25 @@ KV-cache quantization, or a serving-speed result before native validation.
 - Include BF16 no-op replay, INT8, simulated MXFP4, random same-L2 noise,
   shuffled scales, per-token scales, per-channel scales, and same-byte controls.
 - Require paired uncertainty on quality drift, not only reconstruction metrics.
+
+## Executable Baseline Columns
+
+Every real S2/S3 result table must include:
+
+| Column | Meaning |
+|---|---|
+| `bf16_noop` | Replay/dump path with no quantization; catches hook or serialization bugs. |
+| `int8_state` | Symmetric INT8 state-only simulation. |
+| `fp8_state` | E4M3/E5M2-style state-only simulation if available. |
+| `mxfp4_state` | MXFP4-style state-only simulation with stated block size. |
+| `random_same_l2` | Same-norm random perturbation to separate quantization structure from noise magnitude. |
+| `shuffled_scales` | Same quantized values with mismatched scale assignment. |
+| `byte_accounting` | State bytes plus scale/metadata overhead, separated from KV and weights. |
+
+## Source Anchors Checked
+
+- SmoothQuant: `https://arxiv.org/abs/2211.10438`
+- KIVI: `https://arxiv.org/abs/2402.02750`
+- QuaRot: `https://arxiv.org/abs/2404.00456`
+- KL Lens: `https://arxiv.org/abs/2604.13440`
+- vLLM hybrid SSM state update docs: `https://docs.vllm.ai/en/v0.12.0/api/vllm/model_executor/layers/mamba/ops/mamba_ssm/`

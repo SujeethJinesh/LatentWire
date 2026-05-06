@@ -24,3 +24,25 @@ must fold into HORN if directional-boundary asymmetry explains the same effect.
 - Include random top-decile flags, layer-index baseline, boundary-only baseline,
   parameter-count baseline, and norm baseline.
 - Require Spearman rho with uncertainty and leave-one-model-out validation.
+
+## Executable Baseline Columns
+
+Every real B1/B2 result table must include:
+
+| Column | Meaning |
+|---|---|
+| `forward_sensitivity` | KL or NLL/PPL drift from the frozen perturbation run. |
+| `boundary_flag` | Exact boundary-derived layer flag, not an informal label. |
+| `random_top_decile` | Random layer flags with the same count as the proposed flags. |
+| `layer_index` | Layer-depth baseline. |
+| `parameter_count` | Size baseline for sensitivity. |
+| `weight_norm` | Weight-norm or max-abs baseline. |
+| `cheap_predictor` | No-forward statistic being tested against sensitivity rank. |
+| `train_test_split` | Held-out layer/model split if enough layers exist. |
+
+## Source Anchors Checked
+
+- KL Lens: `https://arxiv.org/abs/2604.13440`
+- SmoothQuant: `https://arxiv.org/abs/2211.10438`
+- QuaRot: `https://arxiv.org/abs/2404.00456`
+- vLLM hybrid SSM disaggregated serving: `https://vllm.ai/blog/hybrid-ssm-disagg`

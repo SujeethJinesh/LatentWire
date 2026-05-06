@@ -26,6 +26,24 @@ is the case study showing why each check matters: one plausible signal looks
 positive on a frozen surface, then fails to reproduce under stricter reproduction, while
 two later signals fail fresh-surface gates outright.
 
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.23\linewidth}p{0.30\linewidth}p{0.35\linewidth}}
+\toprule
+Protocol check & Purpose & Stop condition \\
+\midrule
+Frozen surface & Prevent post-hoc tuning. & A successor is measured once after preregistration. \\
+Matched budget & Avoid full-cache comparisons. & Must beat R-KV-like and ThinKV-like rows at the same keep rate. \\
+Same/cross-family split & Separate local reuse from generality. & A same-family-only win is diagnostic, not a method claim. \\
+Paired intervals & Avoid mean-only promotion. & CIs must clear the preregistered margin. \\
+Oracle/headroom & Show whether a useful policy exists at the budget. & Large oracle gaps block method claims. \\
+Fresh surface & Test robustness. & Failure demotes or kills the signal. \\
+\bottomrule
+\end{tabular}
+\caption{Falsification protocol used for each sparse-cache successor.}
+\end{table}
+
 \section{Signals Under Test}
 
 The original policy protects anchors and phase labels. The first successor adds a small recent-token reserve. The second successor protects anchors, reserves half the retained budget for recent tokens, and lets phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The pre-registered \texttt{rdu\_topk} successor is demoted after stricter reproduction; later \texttt{psi\_topk} and \texttt{vwac\_topk} successors are killed by fresh-surface gates.
@@ -48,7 +66,7 @@ Held-out R-KV-like & 0.211 & 3.482 & -- & 43.7 \\
 Held-out sweep best & 0.211 & 3.480 & -- & 43.7 \\
 \bottomrule
 \end{tabular}
-\caption{Retained-context continuation proxy on distilgpt2 traces. Lower NLL is better. Full context is not a matched-budget baseline. The held-out sweep row is selected on 12 train traces and reported on 12 held-out traces, so its NLL is not directly averaged with the all-trace rows.}
+\caption{Case-study retained-context continuation proxy on distilgpt2 traces. Lower NLL is better. Full context is not a matched-budget baseline. The held-out sweep row is selected on 12 train traces and reported on 12 held-out traces, so its NLL is not directly averaged with the all-trace rows.}
 \end{table}
 
 \section{Hidden/KV Telemetry}
@@ -72,7 +90,7 @@ train-selected sweep & 0.207 & 1.000 & 0.430 & 0.956 \\
 \caption{Hidden/KV saliency telemetry on 24 distilgpt2 traces. The strongest real-saliency proxy by phase+math recall is \texttt{value\_norm\_topk}. ThoughtFlow beats it on phase recall, but LongFlow-like ties ThoughtFlow under the local importance heuristic.}
 \end{table}
 
-Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +0.508 with 95\% CI [+0.436, +0.579]. The math-state delta is only +0.073 with 95\% CI [-0.078, +0.223]. This rules out a positive claim based on phase recall alone: it may be marker preservation rather than useful cache retention.
+Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +0.508 with 95\% CI [+0.436, +0.579]. The math-state delta is only +0.073 with 95\% CI [-0.078, +0.223]. This rules out a method claim based on phase recall alone: it may be marker preservation rather than useful cache retention.
 
 \section{Falsification Protocol}
 
@@ -110,7 +128,7 @@ delta versus R-KV-like is -0.080 with 95\% CI [-0.152,-0.014]. However, the
 paired delta versus ThinKV-like is -0.045 with 95\% CI [-0.226,+0.182]. The
 fixed ThoughtFlow-saliency-recent incumbent has lower held-out mean NLL, 3.304,
 but its paired CIs also cross zero. This is a promising falsification candidate,
-not a positive result.
+not a method result.
 
 We then froze \texttt{ThoughtFlow-saliency-recent} and
 \texttt{tf\_sparse\_r0.55\_p0.05\_m0.12\_a2} and ran a larger 74-trace sparse
@@ -151,7 +169,7 @@ Prefix-surprisal fresh surface & \texttt{psi\_topk} reaches NLL 7.899 versus Thi
 Value-weighted attention fresh surface & \texttt{vwac\_topk} reaches NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162. & Killed. \\
 \bottomrule
 \end{tabular}
-\caption{ThoughtFlow-FP8 evidence ladder. The positive-looking gate is shown as one step that failed to reproduce, not as the headline result.}
+\caption{ThoughtFlow-FP8 evidence ladder. The first-surface pass is shown as one step that failed to reproduce, not as the headline result.}
 \end{table}
 
 \begin{table}[h]
@@ -173,41 +191,30 @@ LongFlow-like & 74 & 0.213 & 4.158 & +0.258 [+0.178,+0.337] \\
 \caption{Historical one-shot frozen sparse-cache successor evaluation. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050] on this first surface, but later alternate-surface and independent-trace gates fail to reproduce the promotion.}
 \end{table}
 
-\paragraph{Cached and same-slice checks.}
-Even/odd and half-split diagnostics on the first 74-trace surface preserve the
-\texttt{rdu\_topk} mean margin, but only 2/4 half-size partitions keep both
-paired CIs below zero. A measured same-slice rerun exactly reproduces the cached
-NLLs on the deterministic Mac stack and adds oracle/headroom diagnostics
-(\texttt{rdu\_topk} is 0.145 NLL above the compressed oracle), but it is not an
-independent reproduction.
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.24\linewidth}p{0.43\linewidth}p{0.22\linewidth}}
+\toprule
+\texttt{rdu\_topk} check & Readout & Decision \\
+\midrule
+First frozen surface & 74 traces, NLL 3.779 versus ThinKV-like 3.900. & First-surface pass. \\
+Same-slice rerun & Exact deterministic reproduction; 0.145 NLL above compressed oracle. & Bookkeeping only. \\
+Alternate surface & Same rule, NLL 3.594; a stopped same-family row reaches 3.588. & Weakened. \\
+Independent traces & 89 SVAMP traces; R-KV-like 3.981, \texttt{rdu\_topk} 4.014. & Killed. \\
+Failure bucket & +0.213 NLL on long-prefix/high-RDU-density rows. & Mechanism target. \\
+\bottomrule
+\end{tabular}
+\caption{\texttt{rdu\_topk} demotion ladder. The first-surface pass is preserved as evidence that the protocol catches tempting positives, not as a live method claim.}
+\end{table}
 
-\paragraph{Measured alternate-surface check.}
-We then changed only the measurement surface, using \texttt{max\_length=112}
-and \texttt{continuation\_tokens=32}, while preserving the same
-\texttt{rdu\_topk} rule, matched 0.20 keep fraction, cached-versus-measured
-labels, same-family/cross-family reporting, and oracle/headroom diagnostics.
-This check is not a clean reproduction. \texttt{rdu\_topk} remains strong
-against cross-family rows, reaching NLL 3.594 versus R-KV-like 3.681 and
-ThinKV-like 3.851, with paired deltas -0.087 [-0.139,-0.028] and -0.256
-[-0.465,-0.086]. However, \texttt{tf\_sparse\_r0.55\_p0.05\_m0.12\_a2}, a
-stopped same-family sparse row, reaches NLL 3.588 and beats \texttt{rdu\_topk}
-by 0.006. The measured per-trace compressed oracle reaches NLL 3.460, leaving
-\texttt{rdu\_topk} 0.135 above oracle and 0.847 above full cache, with a 0.438
-oracle-hit rate.
-
-\paragraph{Independent saved-trace reproduction check.}
-The stronger no-retuning check changes the saved trace inputs to a 96-row chat
-SVAMP surface while keeping the same \texttt{rdu\_topk} rule and 0.20 keep
-fraction. It scores 89 traces after token-length filtering. This does not
-reproduce the positive gate. R-KV-like is now the best compressed row at NLL
-3.981, while \texttt{rdu\_topk} reaches 4.014. The paired delta versus
-R-KV-like is +0.032 with 95\% CI [-0.071,+0.137], and ThinKV-like is only
-0.030 NLL worse than \texttt{rdu\_topk} with a confidence interval crossing
-zero. Same-family stopped rows are worse than \texttt{rdu\_topk}, but only by
-0.006 and 0.010 NLL. The compressed per-trace oracle reaches NLL 3.754, leaving
-\texttt{rdu\_topk} 0.260 above oracle and 1.083 above full cache. This rules
-out claiming \texttt{rdu\_topk} as a robust positive method on the available
-surfaces.
+The independent saved-trace check rules out claiming \texttt{rdu\_topk} as a
+robust method on the available surfaces. A coarse trace-level
+decomposition explains where the reproduction fails: \texttt{rdu\_topk} is
++0.213 NLL worse than R-KV-like on long-prefix/high-RDU-density rows but -0.049
+better on short-prefix/low-density rows. The large-regression buckets are
+exactly the buckets a robust policy would need to handle before any long-context
+claim.
 
 A coarse trace-level decomposition explains where the reproduction fails:
 \texttt{rdu\_topk} is +0.213 NLL worse than R-KV-like on long-prefix/high-RDU-density
@@ -234,12 +241,30 @@ NLL 4.096, ThinKV-like reaches 4.162, and \texttt{vwac\_topk} reaches 4.336.
 Paired deltas are +0.241 [+0.030,+0.530] versus R-KV-like and +0.174
 [+0.002,+0.392] versus ThinKV-like.
 
+\section{Claim Boundary}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.45\linewidth}p{0.45\linewidth}}
+\toprule
+Claimed & Not claimed \\
+\midrule
+Preregistered sparse-cache falsification ladder. & State-of-the-art KV compression. \\
+Matched-budget Mac sparse-cache scoring. & Native FP8 serving quality. \\
+Same-family/cross-family and fresh-surface stop rules. & CUDA kernel speed, latency, throughput, or HBM savings. \\
+Triton-interpreter parity for an int8 anchor/phase primitive. & A live deployable compression method. \\
+\bottomrule
+\end{tabular}
+\caption{Boundary between the workshop claim and the stopped systems-method target.}
+\end{table}
+
 \section{Stop Rule and Reopen Gate}
 
 The branch is now demoted to a diagnostic. The stopped anchor/recent/phase/math
 policy family remains ruled out as a tunable branch on this trace set,
 \texttt{rdu\_topk} fails reproduction, and \texttt{psi\_topk}/\texttt{vwac\_topk}
-fail their fresh-surface gates. A paper-ready positive claim now requires a genuinely new
+fail their fresh-surface gates. A paper-ready method claim now requires a genuinely new
 pre-registered utility signal evaluated once on a fresh/larger frozen surface
 with strict same-family, cross-family, and oracle/headroom reporting. The Triton
 interpreter gate is no longer the blocker for the quantization scaffold; method
@@ -247,7 +272,17 @@ evidence is. This means no real FP8, CUDA, latency, or throughput result is clai
 
 \section{Related Work and Scope}
 
-This draft intentionally does not claim a new state-of-the-art KV-compression method. ThinKV, LongFlow, R-KV/R-KVHash-style retention, LazyEviction/ForesightKV-style future-use ideas, PM-KVQ, and KVQuant already occupy much of the sparse-cache and quantized-cache design space. Our contribution is narrower: a Mac-local falsification ladder that shows how plausible interpretable retention signals can clear one frozen surface, fail stricter reproduction, or collapse on fresh surfaces. The project name retains ``FP8'' because that was the original systems target, but the current artifacts only validate CPU sparse-cache scoring and an int8/Triton-interpreter reference primitive; they do not measure FP8 numerical drift or native FP8 serving.
+This draft intentionally does not claim a new state-of-the-art KV-compression
+method. ThinKV, LongFlow, R-KV/R-KVHash-style retention,
+LazyEviction/ForesightKV-style future-use ideas, PM-KVQ, and KVQuant already
+occupy much of the sparse-cache and quantized-cache design space
+\cite{thinkv,longflow,rkv,lazyeviction,foresightkv,pmkvq,kvquant}. Our
+contribution is narrower: a Mac-local falsification ladder that shows how
+plausible interpretable retention signals can clear one frozen surface, fail
+stricter reproduction, or collapse on fresh surfaces. The project name retains
+``FP8'' because that was the original systems target, but the current artifacts
+only validate CPU sparse-cache scoring and an int8/Triton-interpreter reference
+primitive; they do not measure FP8 numerical drift or native FP8 serving.
 
 \section{Reproducibility}
 
@@ -267,5 +302,29 @@ fresh-surface checks, and Triton install note:
 \url{experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.md},
 \url{experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.md}, and
 \url{experimental/triton_cpu_source_install_20260506.md}.
+
+\begin{thebibliography}{9}
+\bibitem[ThinKV(2026)]{thinkv}
+ThinKV: Thought-Adaptive KV Cache Compression for Efficient Reasoning Models.
+ICLR, 2026.
+\bibitem[LongFlow(2026)]{longflow}
+LongFlow: Efficient KV Cache Compression for Reasoning Models.
+arXiv:2603.11504, 2026.
+\bibitem[R-KV(2025)]{rkv}
+R-KV: Redundancy-aware KV Cache Compression for Training-Free Reasoning Models
+Acceleration. arXiv:2505.24133, 2025.
+\bibitem[LazyEviction(2025)]{lazyeviction}
+LazyEviction: Lagged KV Eviction with Attention Pattern Observation.
+arXiv:2506.15969, 2025.
+\bibitem[ForesightKV(2026)]{foresightkv}
+ForesightKV: Optimizing KV Cache Eviction for Reasoning Models by Learning
+Long-Term Contribution. arXiv:2602.03203, 2026.
+\bibitem[PM-KVQ(2025)]{pmkvq}
+PM-KVQ: Progressive Mixed-precision KV Cache Quantization for Long-CoT LLMs.
+arXiv:2505.18610, 2025.
+\bibitem[KVQuant(2024)]{kvquant}
+KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache
+Quantization. arXiv:2401.18079, 2024.
+\end{thebibliography}
 
 \end{document}

@@ -39,6 +39,25 @@ Synthetic-only packet:
 
 This validates artifact mechanics only. It is not model evidence.
 
+Validate packet shape with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/horn/phase2/results/horn_synthetic_h1 \
+  --expected-decision-prefix SYNTHETIC
+```
+
+Real trace packet requirements are in
+`../shared/hybrid_trace_packet_runbook.md`.
+
+Validate the first real H1 packet with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/horn/results/horn_gate_h1_<YYYYMMDD>_<model_slug> \
+  --mode real --project horn
+```
+
 ## Output Paths
 
 ```text
