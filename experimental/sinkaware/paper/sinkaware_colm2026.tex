@@ -195,9 +195,17 @@ The Phase 3 reference specifies the exact computation to preserve during kernel 
 
 The Phase 4 Triton-interpreter scaffold now targets the same operator for a one-head scalar-output synthetic gate. Triton's official debugging documentation describes interpreter mode as a CPU simulation path enabled by \texttt{TRITON\_INTERPRET=1}, bypassing compilation for debugging.\footnote{\url{https://triton-lang.org/main/programming-guide/chapter-3/debugging.html}} The local Mac environment now uses a repo-local source build of the experimental \texttt{triton-cpu} backend, and the SinkAware Phase 4 interpreter tests pass. This closes the Mac kernel-logic correctness gate before native timing work, but it is not evidence of GPU performance.
 
+The native GPU handoff now has an admissibility checker. Returned native
+packets must include CUDA/NVIDIA metadata, quality drift, per-head drift,
+latency repeats, NCU memory summaries, and a decision file; the checker rejects
+missing rows, placeholder packets, Mac-local metadata, nonnumeric metrics, and
+fewer than three latency repeats per row. This is still not a success
+criterion. It only prevents incomplete native packets from becoming paper
+evidence.
+
 \section{Decision}
 
-SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. The larger trace-level frozen repeat strengthens the all-head row, the repeated OPT-family length gate avoids an immediate model-family or length collapse, the Triton interpreter gate passes, and the 48-trace downstream control repeats favor rank-2 over position-only. Promotion now requires native runs that show real speed or memory-traffic advantage over exact attention while preserving the downstream-control behavior reported here.
+SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. The larger trace-level frozen repeat strengthens the all-head row, the repeated OPT-family length gate avoids an immediate model-family or length collapse, the Triton interpreter gate passes, and the 48-trace downstream control repeats favor rank-2 over position-only. Promotion now requires a native packet that passes \texttt{check\_native\_gpu\_packet.py} and then shows real speed or memory-traffic advantage over exact attention while preserving the downstream-control behavior reported here.
 
 \section{Artifacts}
 
@@ -221,6 +229,7 @@ SinkAware is alive only as an all-head approximate low-rank correctness and nati
 \item \url{experimental/sinkaware/phase3/downstream_rank_frontier_traces48_len96_sink4.md}
 \item \url{experimental/sinkaware/phase4/approx_sink_attention_triton_gate.md}
 \item \url{experimental/sinkaware/phase2/gpu_gate_runbook.md}
+\item \url{experimental/sinkaware/phase2/check_native_gpu_packet.py}
 \item \url{experimental/triton_cpu_source_install_20260506.md}
 \item \url{experimental/sinkaware/paper/reviewer_pack.md}
 \end{itemize}

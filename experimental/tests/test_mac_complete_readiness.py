@@ -68,6 +68,7 @@ def test_project_papers_keep_required_claim_boundaries() -> None:
             "not cross-model predictor transfer, benchmark success, or a GPU speed result",
             "no benchmark accuracy or GPU speed is measured",
             "not evidence of GPU performance",
+            "passes \\texttt{check\\_native\\_gpu\\_packet.py}",
         ],
         "thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.tex": [
             "diagnostic, not a positive method",
