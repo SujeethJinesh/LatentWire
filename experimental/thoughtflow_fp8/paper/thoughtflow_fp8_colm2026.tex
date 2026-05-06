@@ -155,7 +155,7 @@ R-KV-like & 74 & 0.214 & 3.939 & +0.039 [-0.015,+0.099] \\
 LongFlow-like & 74 & 0.213 & 4.158 & +0.258 [+0.178,+0.337] \\
 \bottomrule
 \end{tabular}
-\caption{One-shot frozen sparse-cache successor evaluation. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050], clearing the pre-registered promotion rule.}
+\caption{Historical one-shot frozen sparse-cache successor evaluation. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050] on this first surface, but later alternate-surface and independent-trace gates fail to reproduce the promotion.}
 \end{table}
 
 \paragraph{Cached split diagnostic.}
@@ -164,13 +164,13 @@ the \texttt{rdu\_topk} rule. Even/odd and first-half/second-half partitions all
 keep \texttt{rdu\_topk} as the best compressed row and preserve at least 0.03
 mean NLL margin versus both R-KV-like and ThinKV-like. However, only 2/4
 half-size partitions keep both paired confidence intervals below zero. This
-supports the current promotion decision but does not replace an independent
-larger or seed-repeated reproduction.
+explains why the first surface looked promising, but it does not replace the
+later independent reproduction gates that demote the branch.
 
 \paragraph{Measured no-retuning rerun.}
 We also reran the frozen probe on the same 74 traces and wrote a separate
 measured artifact rather than overwriting the cached gate. On the current
-deterministic Mac stack, all policy NLLs match the cached promoted gate exactly:
+deterministic Mac stack, all policy NLLs match the cached first-surface gate exactly:
 \texttt{rdu\_topk} remains best compressed at NLL 3.779, with zero measured
 minus cached NLL drift. Strict separation is preserved: measured margins versus
 \texttt{rdu\_topk} are +0.141 and +0.129 NLL for the stopped ThoughtFlow rows,

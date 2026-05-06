@@ -111,6 +111,21 @@ def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
     assert any("Nsight Systems" in error for error in result["errors"])
 
 
+def test_requires_complete_environment_capture(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "metadata/environment.txt").write_text(
+        "nvidia-smi\nnsys version\npython -VV\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "environment metadata does not mention ncu" in error for error in result["errors"]
+    )
+
+
 def test_rejects_tiny_or_placeholder_native_profiler_artifacts(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(

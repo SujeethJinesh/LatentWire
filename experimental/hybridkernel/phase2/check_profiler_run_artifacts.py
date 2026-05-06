@@ -157,7 +157,7 @@ def check_run_artifacts(
         environment = _read_text(environment_path).lower()
         for marker in ENVIRONMENT_MARKERS:
             if marker not in environment:
-                warnings.append(f"environment metadata does not mention {marker}")
+                errors.append(f"environment metadata does not mention {marker}")
 
     readout_path = run_dir / "readout.md"
     _reject_skeleton_todo(readout_path, "readout.md", errors)

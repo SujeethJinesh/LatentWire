@@ -67,6 +67,8 @@ Do not replace Nsight exports with empty files, copied README files, or text
 placeholders that only satisfy the expected filename extension. The final
 checker requires reviewable profiler payloads, with default minimum artifact
 size of 1024 bytes and no skeleton placeholder markers.
+It also fails the packet if `metadata/environment.txt` omits `nvidia-smi`,
+`nsys`, `ncu`, or `python` capture lines.
 
 Record immutable metadata before profiling:
 
