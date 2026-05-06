@@ -275,18 +275,38 @@ def _metadata_sequence_shape_keys(
     return shape_keys
 
 
-def _validate_metadata(run_dir: Path, errors: list[str], warnings: list[str]) -> set[str]:
+def _metadata_model_keys(metadata: dict[str, object], errors: list[str]) -> set[str]:
+    model = metadata.get("model", "")
+    if isinstance(model, str):
+        values = [part.strip() for part in model.split(",")]
+    elif isinstance(model, (list, tuple, set)):
+        values = [str(item).strip() for item in model]
+    elif isinstance(model, dict):
+        values = [str(item).strip() for item in model.values()]
+    else:
+        values = [str(model).strip()]
+    model_keys = {value for value in values if _has_value(value)}
+    if not model_keys:
+        errors.append("metadata.json model must identify the measured model")
+    return model_keys
+
+
+def _validate_metadata(
+    run_dir: Path,
+    errors: list[str],
+    warnings: list[str],
+) -> tuple[set[str], set[str]]:
     path = run_dir / "metadata.json"
     if not path.is_file():
-        return set()
+        return set(), set()
     try:
         metadata = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         errors.append(f"metadata.json is invalid JSON: {exc}")
-        return set()
+        return set(), set()
     if not isinstance(metadata, dict):
         errors.append("metadata.json must contain a JSON object")
-        return set()
+        return set(), set()
 
     for field in REQUIRED_METADATA_FIELDS:
         if field not in metadata or not _has_value(metadata[field]):
@@ -297,6 +317,13 @@ def _validate_metadata(run_dir: Path, errors: list[str], warnings: list[str]) ->
         cuda in {"false", "none", "unavailable", "not_available", "cpu", "no_cuda", "0"}
         or "not_available" in cuda
         or "not_installed" in cuda
+        or "not_cuda" in cuda
+        or "rocm" in cuda
+        or "hip" in cuda
+        or "opencl" in cuda
+        or "sycl" in cuda
+        or "metal" in cuda
+        or "mps" in cuda
         or cuda.startswith("no_")
     ):
         errors.append("metadata.json cuda must describe a native CUDA environment")
@@ -305,7 +332,10 @@ def _validate_metadata(run_dir: Path, errors: list[str], warnings: list[str]) ->
         errors.append("metadata.json gpu must describe an NVIDIA GPU")
     if "mac" in gpu:
         errors.append("metadata.json gpu appears to describe a Mac-local run")
-    return _metadata_sequence_shape_keys(metadata, errors, warnings)
+    return (
+        _metadata_sequence_shape_keys(metadata, errors, warnings),
+        _metadata_model_keys(metadata, errors),
+    )
 
 
 def _validate_csv_artifact(
@@ -457,6 +487,34 @@ def _validate_metadata_shape_consistency(
         )
 
 
+def _validate_metadata_model_consistency(
+    metadata_model_keys: set[str],
+    csv_summaries: dict[str, object],
+    errors: list[str],
+) -> None:
+    if not metadata_model_keys:
+        return
+    csv_model_keys: set[str] = set()
+    for summary in csv_summaries.values():
+        if not isinstance(summary, dict):
+            continue
+        for shape_key in summary.get("shape_keys", []):
+            parts = str(shape_key).split("|")
+            if len(parts) == 4 and parts[1]:
+                csv_model_keys.add(parts[1])
+    if not csv_model_keys:
+        return
+    if metadata_model_keys != csv_model_keys:
+        missing = sorted(csv_model_keys - metadata_model_keys)
+        extra = sorted(metadata_model_keys - csv_model_keys)
+        detail = []
+        if missing:
+            detail.append(f"metadata missing measured models {missing[:3]}")
+        if extra:
+            detail.append(f"metadata has unmeasured models {extra[:3]}")
+        errors.append("metadata.json model does not match CSV model groups: " + "; ".join(detail))
+
+
 def _validate_decision(run_dir: Path, errors: list[str]) -> None:
     path = run_dir / "decision.md"
     if not path.is_file():
@@ -496,13 +554,14 @@ def check_native_gpu_packet(
         errors.append(f"run path is not a directory: {run_dir}")
 
     _validate_required_files(run_dir, errors)
-    metadata_shape_keys = _validate_metadata(run_dir, errors, warnings)
+    metadata_shape_keys, metadata_model_keys = _validate_metadata(run_dir, errors, warnings)
     for relative in CSV_SCHEMAS:
         csv_summaries[relative] = _validate_csv_artifact(
             run_dir, relative, min_repeated_runs, errors
         )
     _validate_cross_artifact_shape_consistency(csv_summaries, errors)
     _validate_metadata_shape_consistency(metadata_shape_keys, csv_summaries, errors)
+    _validate_metadata_model_consistency(metadata_model_keys, csv_summaries, errors)
     _validate_decision(run_dir, errors)
 
     return {

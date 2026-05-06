@@ -658,3 +658,22 @@ instead of accepting it because the GPU field says NVIDIA.
 
 Decision: **NON-NATIVE CUDA METADATA REJECTED**. This is admissibility
 hardening only; it does not create GPU evidence.
+
+## 2026-05-06 Metadata Model Consistency Hardening
+
+Closed the matching model-metadata loophole in the native packet validator.
+`metadata.json["model"]` must now match the measured CSV model groups, so a
+packet cannot report timing/quality rows for one model while metadata names a
+different model.
+
+Decision: **NATIVE MODEL METADATA MUST MATCH MEASURED ROWS**. This is the same
+admissibility family as the shape hardening; native evidence is still required.
+
+## 2026-05-06 Non-CUDA Backend Metadata Hardening
+
+Hardened the native CUDA metadata check against non-CUDA backend strings. The
+validator now rejects ROCm, HIP, OpenCL, SYCL, Metal, MPS, and explicit
+not-CUDA variants even if the `gpu` field names an NVIDIA device.
+
+Decision: **NATIVE CUDA METADATA MUST NAME A CUDA ENVIRONMENT**. This is final
+packet-admissibility hardening, not evidence.

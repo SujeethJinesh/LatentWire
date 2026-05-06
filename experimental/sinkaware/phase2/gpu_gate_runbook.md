@@ -86,6 +86,7 @@ The checker rejects:
 - `metadata.json` that does not identify a native CUDA/NVIDIA environment;
 - missing rows for any runbook row in `quality_drift.csv`,
   `quality_drift_by_head.csv`, `latency.csv`, or `ncu_summary.csv`;
+- `metadata.json` model values that do not match the measured CSV model groups;
 - `metadata.json` sequence shapes that do not match the measured CSV
   sequence_length/batch_size groups;
 - fewer than three distinct `run_id` values for any
