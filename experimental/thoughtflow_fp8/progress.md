@@ -252,7 +252,11 @@ only narrowly: `thoughtflow_saliency_recent` by `+0.006` and
 `tf_sparse_r0.55_p0.05_m0.12_a2` by `+0.010`. Oracle/headroom remains material:
 the compressed per-trace oracle reaches NLL `3.754`, leaving `rdu_topk` `0.260`
 above compressed oracle and `1.083` above full cache, with `0.348` oracle-hit
-rate.
+rate. A coarse failure decomposition now shows the largest regression on
+long-prefix/high-RDU-density rows: `rdu_topk - R-KV-like` is `+0.213` NLL there
+versus `-0.049` on short-prefix/low-density rows. When R-KV-like is the
+per-trace compressed oracle, `rdu_topk` is `+0.498` NLL worse; when the stopped
+sparse ThoughtFlow row is oracle, `rdu_topk` is `+0.174` worse.
 
 Status: **NOT REPRODUCED / DEMOTED TO DIAGNOSTIC**. Ruled out: claiming
 `rdu_topk` as a robust positive method on the available Mac-local sparse-cache

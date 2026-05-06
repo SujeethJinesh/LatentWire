@@ -5,14 +5,14 @@
 \usepackage{hyperref}
 \usepackage{url}
 
-\title{HybridKernel: A Profiler-Driven Boundary-Fusion Gate for Hybrid Attention/SSM Serving}
+\title{HybridKernel: A Pre-Registered Profiler Gate for Hybrid Attention/SSM Boundaries}
 \author{Anonymous authors\\Paper under double-blind review}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens the broad novelty claim because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. We therefore do not claim a kernel speedup. The contribution is a reproducible profiler gate, a fixed-request vLLM driver, a native packet skeleton generator, a pre-registered profiler-analysis parser, an artifact-completeness verifier, and Mac-local Triton interpreter plus CPU-backend correctness checks for the boundary primitive.
+Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question, not a speed result. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens broad novelty because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. The contribution is a source-line audit, control feasibility matrix, fixed-request vLLM driver, native packet skeleton generator, pre-registered profiler-analysis parser, artifact-completeness verifier, and Mac-local Triton interpreter correctness for a toy boundary primitive. No throughput, latency, HBM, or GPU speedup claim is made.
 \end{abstract}
 
 \section{Hypothesis}
@@ -37,7 +37,8 @@ Artifact verifier & Native run directories are checked for metadata, server-side
 Packet generator & A local script creates the required native run-packet skeleton with TODO sentinels. & GPU operators get a consistent handoff; skeletons are rejected as evidence until filled. \\
 Synthetic packet fixture & A Mac-local fixture documents the packet shape and exercises the checker with placeholder Nsight files. & Fixture is not profiler evidence. \\
 Packet checklist & The native handoff now has a single required packet layout and stop-local-work decision. & Local readiness is saturated until GPU data exists. \\
-Triton correctness & The boundary primitive passes its Phase 4 interpreter tests under the repo-local \texttt{triton-cpu} source install; an opt-in \texttt{TRITON\_CPU\_BACKEND=1} run also passes with \texttt{TRITON\_INTERPRET} unset when this Mac's existing GCC runtime paths are exposed. & Kernel logic only; not CUDA or speed evidence. \\
+Source/control audit & Source-line audit table and control feasibility matrix record what public surfaces were checked and which native controls are still placeholders. & Review hardening only; no proof of absence. \\
+Triton correctness & The toy boundary primitive passes Phase 4 interpreter tests under the repo-local \texttt{triton-cpu} source install across block tails, fp16, non-contiguous inputs, and shape errors. Non-interpreter CPU-backend linking is environment-fragile on this Mac. & Kernel logic only; not CUDA or speed evidence. \\
 \bottomrule
 \end{tabular}
 \caption{HybridKernel evidence before native GPU profiling.}
@@ -45,7 +46,7 @@ Triton correctness & The boundary primitive passes its Phase 4 interpreter tests
 
 \section{Profiler Gate}
 
-The next experiment is a native NVIDIA/vLLM run with Nsight Systems and Nsight Compute. It must show a distinct boundary-local overhead attributable to attention/SSM transitions, not warmup, graph capture, batching, or unrelated kernels. The runbook now specifies exactly how to reduce Nsight traces into parser fields: total step time, boundary-local time, matched non-boundary control time, and recoverable fraction. Promotion requires at least three repeated runs whose recoverable-gain upper bound clears 3\%. The analysis parser computes
+The next experiment is a native NVIDIA/vLLM run with Nsight Systems and Nsight Compute. It must show a distinct boundary-local overhead attributable to attention/SSM transitions, not warmup, graph capture, batching, or unrelated kernels. The runbook now specifies exactly how to reduce Nsight traces into parser fields: total step time, boundary-local time, matched non-boundary control time, and recoverable fraction. Promotion requires at least three repeated runs whose recoverable-gain upper bound clears 3\%. The native controls are Granite 4.0 H as the closest target, a same-request Transformer-heavy control, a mostly-SSM/Mamba control if available, and warmup/graph-capture rejection. The analysis parser computes
 \[
 \mathrm{gain}_{ub} =
 \frac{\max(\mathrm{boundary\ ms}-\mathrm{matched\ control\ ms}, 0)}
@@ -56,7 +57,7 @@ If repeated native summaries show less than 1\% recoverable gain, the branch sho
 
 \section{Claim Boundary}
 
-Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with a runnable native measurement plan and Mac-local interpreter plus CPU-backend correctness for one boundary primitive. Not allowed: throughput, latency, HBM, energy, occupancy, or vLLM speedup claims. If native profiling does not reveal separable boundary overhead, the branch should be killed.
+Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with a runnable native measurement plan, source/control audit artifacts, and Mac-local interpreter correctness for one toy boundary primitive. Not allowed: throughput, latency, HBM, energy, occupancy, or vLLM speedup claims. The toy primitive is intentionally insufficient as the proposed systems kernel; it only checks indexing and Triton plumbing. If native profiling does not reveal separable boundary overhead, the branch should be killed.
 
 \section{Artifacts}
 
@@ -67,6 +68,9 @@ Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with 
 \item \url{experimental/hybridkernel/phase2/analyze_profiler_metrics.py}
 \item \url{experimental/hybridkernel/phase2/check_profiler_run_artifacts.py}
 \item \url{experimental/hybridkernel/phase2/native_run_packet_checklist.md}
+\item \url{experimental/hybridkernel/phase1/source_line_audit_table.md}
+\item \url{experimental/hybridkernel/phase2/control_feasibility_matrix.md}
+\item \url{experimental/hybridkernel/phase2/mac_reproducibility_command.md}
 \item \url{experimental/hybridkernel/phase2/profiler_analysis_gate.md}
 \item \url{experimental/hybridkernel/phase2/pre_gpu_threshold_model.md}
 \item \url{experimental/triton_cpu_source_install_20260506.md}

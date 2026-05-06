@@ -88,11 +88,14 @@ tradeoff.
   improvement was `+0.0535 +/- 0.0262`, with minimum row `+0.0301` and
   layer-head output win rate `0.982 +/- 0.008`. This is still attention-output
   drift evidence only.
-- Downstream quality/control smoke: on distilgpt2 and facebook/opt-125m, exact
-  replacement is a no-op and rank-2 is closer than position-only in causal-LM
-  loss drift and KL. Aggregate absolute loss-delta improvement is
-  `+0.1008 +/- 0.1166`; minimum model improvement is `+0.0414`. This is a
-  small Mac-local control diagnostic, not benchmark or speed evidence.
+- Downstream quality/control smoke: on distilgpt2 and facebook/opt-125m, 24
+  traces, and split seeds `0,1,2`, exact replacement is a no-op and rank-2 is
+  closer than position-only in causal-LM loss drift and KL. Aggregate absolute
+  loss-delta improvement is `+0.0809 +/- 0.0815`; minimum model improvement is
+  `+0.0393`. This is a small Mac-local control diagnostic, not benchmark or
+  speed evidence.
+- Downstream length/sink sweep: lengths `64/96` and sink counts `2/4` all stay
+  positive with minimum model loss improvement at least `+0.0272`.
 
 ## Limitations
 
@@ -112,8 +115,8 @@ tradeoff.
 The Mac-local softmax/output probe now shows bounded aggregate rank-2 drift
 under randomized token splits, a small length/sink sweep, trace-level frozen
 splits, GPT2/OPT-family length stability, Triton interpreter correctness, and a
-small downstream quality/control smoke. The next gate should expand downstream
-seed/trace coverage before any native GPU prototype that measures:
+small downstream quality/control length/sink sweep. The next gate is either
+larger downstream trace coverage or a native GPU prototype that measures:
 
 1. exact attention baseline,
 2. exact fixed-sink decomposition that still computes `QK_sink`,

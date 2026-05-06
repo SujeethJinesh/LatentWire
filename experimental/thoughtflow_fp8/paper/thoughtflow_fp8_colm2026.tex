@@ -5,14 +5,14 @@
 \usepackage{hyperref}
 \usepackage{url}
 
-\title{ThoughtFlow-FP8: A Recurrence-Distance Gate for Sparse KV Retention}
+\title{ThoughtFlow-FP8: A Sparse-Cache Falsification Study for Reasoning-Trace Retention}
 \author{Anonymous authors\\Paper under double-blind review}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-ThoughtFlow-FP8 tests whether training-free sparse KV retention can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality and a larger sparse-cache gate rule out further tuning of the original anchor/recent/phase/math family on the available traces. We therefore pre-registered one successor signal, recurrence-distance utility (\texttt{rdu\_topk}), which ranks prefix tokens by delayed self-attention reuse across lag buckets and uses no token labels, recent reserve, or continuation loss. On the frozen 74-trace distilgpt2 sparse-cache gate at a 0.20 keep fraction, \texttt{rdu\_topk} initially reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939. However, reproduction gates now demote the branch. A same-slice rerun reproduces the cached gate exactly, but an alternate-surface check fails same-family separation by 0.006 NLL, and a larger independent saved-trace check fails cross-family separation: on 89 scored traces, R-KV-like is best compressed at NLL 3.981 while \texttt{rdu\_topk} reaches 4.014. The anchor/phase quantization primitive passes Triton interpreter correctness tests against its CPU reference. The method claim is therefore stopped: \texttt{rdu\_topk} is useful as a sparse-cache diagnostic, not as a positive method on the current Mac-local evidence.
+ThoughtFlow-FP8 tests whether training-free sparse KV retention can preserve useful reasoning context better than matched-budget KV-retention proxies. The resulting contribution is diagnostic, not a positive method. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality and sparse-cache gates rule out further tuning of the original anchor/recent/phase/math family on the available traces. We pre-registered one successor signal, recurrence-distance utility (\texttt{rdu\_topk}), which ranks prefix tokens by delayed self-attention reuse across lag buckets and uses no token labels, recent reserve, or continuation loss. On the frozen 74-trace distilgpt2 sparse-cache gate, \texttt{rdu\_topk} initially reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939. Reproduction gates demote it: a same-slice rerun reproduces the cached gate exactly, but an alternate-surface check fails same-family separation by 0.006 NLL, and a larger independent saved-trace check fails cross-family separation, with R-KV-like at NLL 3.981 versus \texttt{rdu\_topk} at 4.014 on 89 scored traces. The anchor/phase quantization primitive passes Triton interpreter correctness tests against its CPU reference. The paper therefore reports a sparse-cache falsification ladder and a stopped method branch.
 \end{abstract}
 
 \section{Policy Family}
@@ -117,6 +117,28 @@ then keeps the top budget by utility with ties broken by lower position. It does
 not use continuation tokens, trace labels, recent reserves, anchors, phase
 markers, or math-state bonuses.
 
+\section{Evidence Ladder}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.28\linewidth}p{0.42\linewidth}p{0.20\linewidth}}
+\toprule
+Gate & Readout & Decision \\
+\midrule
+Synthetic retention & Anchor/phase labels can be protected at matched keep rate. & Intuition only. \\
+Retained-text NLL & Original ThoughtFlow rows do not beat the strongest proxy. & Weakened. \\
+Hidden/KV telemetry & Phase recall improves, but math-state impact is not stable and LongFlow-like ties the heuristic. & Diagnostic. \\
+CPU sparse-cache probe & A tuned sparse ThoughtFlow row is promising in mean but not robust against ThinKV-like uncertainty. & Not promoted. \\
+Frozen 74-trace gate & \texttt{rdu\_topk} beats ThinKV-like and R-KV-like on the first frozen surface. & Candidate only. \\
+Same-slice rerun & Cached result reproduces exactly on the deterministic Mac stack. & Repro bookkeeping. \\
+Alternate surface & Cross-family rows still lose, but a stopped same-family row beats \texttt{rdu\_topk} by 0.006 NLL. & Weakened. \\
+Independent saved traces & R-KV-like is best compressed at NLL 3.981; \texttt{rdu\_topk} reaches 4.014. & Killed. \\
+\bottomrule
+\end{tabular}
+\caption{ThoughtFlow-FP8 evidence ladder. The positive-looking gate is shown as one step that failed to reproduce, not as the headline result.}
+\end{table}
+
 \begin{table}[h]
 \centering
 \small
@@ -185,6 +207,14 @@ zero. Same-family stopped rows are worse than \texttt{rdu\_topk}, but only by
 \texttt{rdu\_topk} 0.260 above oracle and 1.083 above full cache. This rules
 out claiming \texttt{rdu\_topk} as a robust positive method on the available
 surfaces.
+
+A coarse trace-level decomposition explains where the reproduction fails. On
+long-prefix/high-RDU-density rows, \texttt{rdu\_topk} is +0.213 NLL worse than
+R-KV-like; on short-prefix/low-density rows it is -0.049 better. When R-KV-like
+is the per-trace compressed oracle, \texttt{rdu\_topk} is +0.498 NLL worse; when
+the stopped sparse ThoughtFlow row is oracle, it is +0.174 worse. The failure is
+therefore not a uniform collapse, but the large-regression buckets are exactly
+the buckets a robust policy would need to handle before any long-context claim.
 
 \section{Decision}
 

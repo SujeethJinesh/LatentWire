@@ -2,6 +2,12 @@
 
 Minimal project scaffold for the ThoughtFlow-FP8 experiment.
 
+Current status: the original anchor/recent/phase/math policy family and the
+pre-registered `rdu_topk` successor are stopped on the available Mac-local
+sparse-cache surfaces. The folder is now a falsification/diagnostic harness
+unless a genuinely new pre-registered signal is evaluated on a fresh frozen
+surface.
+
 ## Scope
 
 ThoughtFlow-FP8 tests whether reasoning-aware KV cache compression can retrofit
@@ -46,3 +52,17 @@ LongFlow failure mode that ThoughtFlow-FP8 directly addresses.
 
 Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
 reference. Interpreter-mode correctness is not GPU performance evidence.
+
+Stable owned-test command:
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest \
+  experimental/thoughtflow_fp8/phase2/tests \
+  experimental/thoughtflow_fp8/phase4/tests -rs
+```
+
+Avoid broad recursive test collection over external/vendor folders. The
+non-interpreter Triton CPU backend can require Homebrew GCC/Darwin linker
+details and is not a stable evidence gate for this project.

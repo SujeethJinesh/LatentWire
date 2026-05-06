@@ -580,7 +580,7 @@ def _run(
     }
 
 
-def _write_markdown(result: dict[str, Any]) -> None:
+def _write_markdown(result: dict[str, Any], output_path: os.PathLike[str] | str | None = None) -> None:
     aggregate = result["aggregate"]
     loss = aggregate["rank2_abs_loss_delta_improvement_across_models"]
     kl = aggregate["rank2_kl_improvement_across_models"]
@@ -665,7 +665,8 @@ def _write_markdown(result: dict[str, Any]) -> None:
         ]
     )
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_DIR / "downstream_quality_control_gate.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    target = OUT_DIR / "downstream_quality_control_gate.md" if output_path is None else Path(output_path)
+    target.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main() -> None:
@@ -676,6 +677,7 @@ def main() -> None:
     parser.add_argument("--sink-tokens", type=int, default=4)
     parser.add_argument("--train-fraction", type=float, default=0.67)
     parser.add_argument("--seeds", type=int, nargs="+", default=[0])
+    parser.add_argument("--artifact-stem", default="downstream_quality_control_gate")
     args = parser.parse_args()
 
     cache_dir = ROOT / ".debug/hf_cache"
@@ -691,10 +693,12 @@ def main() -> None:
         args.train_fraction,
         tuple(args.seeds),
     )
-    (OUT_DIR / "downstream_quality_control_gate.json").write_text(
+    json_path = OUT_DIR / f"{args.artifact_stem}.json"
+    md_path = OUT_DIR / f"{args.artifact_stem}.md"
+    json_path.write_text(
         json.dumps(result, indent=2) + "\n", encoding="utf-8"
     )
-    _write_markdown(result)
+    _write_markdown(result, md_path)
     print(json.dumps({"status": result["status"], "aggregate": result["aggregate"]}, indent=2))
 
 

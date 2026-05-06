@@ -393,8 +393,8 @@ evidence.
 ## 2026-05-06 Downstream Quality/Control Gate
 
 Added and ran `phase3/downstream_quality_control_gate.py` in `./venv_arm64`
-with `--model-names distilgpt2 facebook/opt-125m --max-traces 12 --max-length
-64 --sink-tokens 4 --train-fraction 0.67 --seeds 0`.
+with `--model-names distilgpt2 facebook/opt-125m --max-traces 24 --max-length
+64 --sink-tokens 4 --train-fraction 0.67 --seeds 0 1 2`.
 
 Result: **ALIVE but bounded** as a first downstream causal-LM control smoke.
 The gate patches live GPT2/OPT attention modules during full causal-LM
@@ -404,16 +404,32 @@ exact replacement reproduced baseline loss and logits on both models. Rank-2
 was closer than position-only on both downstream loss drift and KL:
 
 - Aggregate rank-2 absolute loss-delta improvement over position-only:
-  `+0.1008 +/- 0.1166`; minimum model improvement `+0.0414`.
+  `+0.0809 +/- 0.0815`; minimum model improvement `+0.0393`.
 - Aggregate rank-2 KL-to-exact improvement over position-only:
-  `+0.0815 +/- 0.1032`.
-- `distilgpt2`: position loss delta `+0.0941`, rank-2 `+0.0527`;
-  KL improvement `+0.0288`.
-- `facebook/opt-125m`: position loss delta `+0.2673`, rank-2 `+0.1070`;
-  KL improvement `+0.1341`.
+  `+0.0825 +/- 0.1078`.
+- `distilgpt2`: mean position loss delta `+0.0947`, rank-2 `+0.0554`;
+  loss improvement `+0.0393 +/- 0.0134`, KL improvement
+  `+0.0275 +/- 0.0050`.
+- `facebook/opt-125m`: mean position loss delta `+0.2213`, rank-2
+  `+0.0987`; loss improvement `+0.1225 +/- 0.0284`, KL improvement
+  `+0.1375 +/- 0.0180`.
 
-Decision: this closes the smallest Mac-feasible downstream-control gap and
-keeps SinkAware alive as an approximate rank-2 branch. It is still not
-benchmark success, predictor transfer, or GPU speed evidence. The next exact
-gate is seed/trace expansion of the downstream control or native NVIDIA timing
-only after the operator remains quality-bounded.
+Decision: this expands the first downstream-control smoke to a repeated
+24-trace GPT2/OPT-family gate and keeps SinkAware alive as an approximate
+rank-2 branch. It is still not benchmark success, predictor transfer, or GPU
+speed evidence. The next exact Mac gate is length/sink expansion of the
+downstream control; otherwise the remaining systems gate is native NVIDIA
+timing only after the operator remains quality-bounded.
+
+`phase3/downstream_quality_control_sweep.md` runs that length/sink expansion
+over max lengths 64/96 and sink-token counts 2/4, with 24 traces, split seeds
+0/1/2, and both distilgpt2 and facebook/opt-125m. Rank-2 stays closer than
+position-only on every model/config row. Aggregate loss-delta improvements are
+`+0.0544 +/- 0.0505` at length64/sink2, `+0.0809 +/- 0.0815` at length64/sink4,
+`+0.0433 +/- 0.0317` at length96/sink2, and `+0.0728 +/- 0.0619` at
+length96/sink4. Minimum model improvement remains positive in every config
+(`+0.0272` or higher), and exact replacement remains a no-op.
+
+Decision: **ALIVE but bounded** after the downstream length/sink sweep. The
+Mac-local quality-control surface is now stronger; the remaining useful gate is
+native timing, unless a reviewer requires a larger trace slice before GPU work.

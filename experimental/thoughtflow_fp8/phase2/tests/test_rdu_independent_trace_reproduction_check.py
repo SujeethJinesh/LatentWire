@@ -25,6 +25,7 @@ def test_build_report_marks_independent_trace_reproduction() -> None:
     assert report["strict_family_pass"]["same_family_positive"] is True
     assert report["strict_family_pass"]["cross_family_positive"] is True
     assert report["measured_oracle_headroom"]["rdu_gap_to_per_trace_oracle"] == 0.0
+    assert report["measured_failure_decomposition"]["group_summaries"]["all"]["n"] > 0
 
 
 def test_build_report_fails_when_same_family_separation_fails() -> None:

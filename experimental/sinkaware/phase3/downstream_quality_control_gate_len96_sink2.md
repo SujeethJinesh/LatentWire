@@ -4,8 +4,8 @@ Status: **ALIVE but bounded; rank-2 passes the downstream GPT2/OPT control smoke
 
 - models: `distilgpt2`, `facebook/opt-125m`
 - traces: 24
-- max length: 64
-- sink tokens: 4
+- max length: 96
+- sink tokens: 2
 - train fraction: 0.67
 - seeds: 0, 1, 2
 
@@ -15,9 +15,9 @@ This gate patches full model attention during causal-LM evaluation. It compares 
 
 | Metric | Mean | 95% CI |
 |---|---:|---:|
-| rank-2 absolute loss-delta improvement vs position-only | 0.080929 | +/- 0.081535 |
-| rank-2 KL-to-exact improvement vs position-only | 0.082463 | +/- 0.107799 |
-| minimum model loss-delta improvement | 0.039330 | |
+| rank-2 absolute loss-delta improvement vs position-only | 0.043328 | +/- 0.031673 |
+| rank-2 KL-to-exact improvement vs position-only | 0.040809 | +/- 0.054102 |
+| minimum model loss-delta improvement | 0.027168 | |
 
 Positive improvement means rank-2 is closer to exact baseline behavior than position-only.
 
@@ -25,19 +25,19 @@ Positive improvement means rank-2 is closer to exact baseline behavior than posi
 
 | Model | Family | Status | Exact abs loss delta | Position abs loss delta | Rank2 abs loss delta | Rank2 loss improvement | Rank2 KL improvement | Exact no-op ok? |
 |---|---|---|---:|---:|---:|---:|---:|---|
-| distilgpt2 | gpt2 | ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL. | 0.00000000 | 0.09469089 | 0.05536110 | +0.03932979 | +0.02746348 | yes |
-| facebook/opt-125m | opt | ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL. | 0.00000000 | 0.22125434 | 0.09872561 | +0.12252873 | +0.13746250 | yes |
+| distilgpt2 | gpt2 | ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL. | 0.00000000 | 0.05299519 | 0.02582673 | +0.02716846 | +0.01320622 | yes |
+| facebook/opt-125m | opt | ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL. | 0.00000000 | 0.16210150 | 0.10261351 | +0.05948799 | +0.06841226 | yes |
 
 ## Per Seed
 
 | Model | Seed | Held-out traces | Exact loss | Exact replacement loss delta | Position loss delta | Rank2 loss delta | Position KL | Rank2 KL | Position top1 diff | Rank2 top1 diff |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| distilgpt2 | 0 | 8 | 2.941694 | +0.00000000 | +0.10019264 | +0.06391380 | 0.09645936 | 0.06511443 | 0.1426 | 0.1205 |
-| distilgpt2 | 1 | 8 | 2.677648 | +0.00000000 | +0.10993086 | +0.05754080 | 0.09308016 | 0.06467003 | 0.1290 | 0.1171 |
-| distilgpt2 | 2 | 8 | 2.878404 | +0.00000000 | +0.07394916 | +0.04462870 | 0.06253521 | 0.03989983 | 0.1270 | 0.0933 |
-| facebook/opt-125m | 0 | 8 | 2.659699 | +0.00000000 | +0.24015738 | +0.11132993 | 0.23380664 | 0.07941131 | 0.2485 | 0.1323 |
-| facebook/opt-125m | 1 | 8 | 2.431580 | +0.00000000 | +0.23877410 | +0.09490052 | 0.18591960 | 0.05074528 | 0.2063 | 0.0992 |
-| facebook/opt-125m | 2 | 8 | 2.588516 | +0.00000000 | +0.18483153 | +0.08994637 | 0.19890828 | 0.07609042 | 0.1806 | 0.1012 |
+| distilgpt2 | 0 | 8 | 2.824739 | +0.00000000 | +0.04864380 | +0.02349754 | 0.03848918 | 0.02316326 | 0.0871 | 0.0726 |
+| distilgpt2 | 1 | 8 | 2.661540 | +0.00000000 | +0.05831870 | +0.01967767 | 0.03243087 | 0.01984897 | 0.0996 | 0.0797 |
+| distilgpt2 | 2 | 8 | 2.764125 | +0.00000000 | +0.05202307 | +0.03430499 | 0.03133954 | 0.01962871 | 0.0960 | 0.0725 |
+| facebook/opt-125m | 0 | 8 | 2.510296 | +0.00000000 | +0.16293556 | +0.10836617 | 0.15578487 | 0.08929480 | 0.2218 | 0.1610 |
+| facebook/opt-125m | 1 | 8 | 2.355124 | +0.00000000 | +0.17125007 | +0.11024402 | 0.13163522 | 0.06621846 | 0.2071 | 0.1411 |
+| facebook/opt-125m | 2 | 8 | 2.466056 | +0.00000000 | +0.15211887 | +0.08923033 | 0.14789514 | 0.07456521 | 0.1625 | 0.1196 |
 
 ## Decision
 

@@ -4,8 +4,8 @@
     "facebook/opt-125m"
   ],
   "max_traces": 24,
-  "max_length": 64,
-  "sink_tokens": 4,
+  "max_length": 96,
+  "sink_tokens": 2,
   "train_fraction": 0.67,
   "seeds": [
     0,
@@ -52,39 +52,39 @@
             6
           ],
           "exact_baseline": {
-            "loss": 2.941693838341648,
-            "n_tokens": 498.0,
+            "loss": 2.824739099630643,
+            "n_tokens": 551.0,
             "loss_delta_vs_exact": 0.0
           },
           "modes": {
             "exact": {
-              "loss": 2.941693838341648,
-              "n_tokens": 498.0,
+              "loss": 2.824739099630643,
+              "n_tokens": 551.0,
               "loss_delta_vs_exact": 0.0,
               "abs_loss_delta_vs_exact": 0.0,
               "mean_kl_to_exact": 0.0,
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 3.041886479021555,
-              "n_tokens": 498.0,
-              "loss_delta_vs_exact": 0.10019264067990719,
-              "abs_loss_delta_vs_exact": 0.10019264067990719,
-              "mean_kl_to_exact": 0.09645935569901064,
-              "top1_disagreement_rate": 0.142570281124498
+              "loss": 2.8733829006742004,
+              "n_tokens": 551.0,
+              "loss_delta_vs_exact": 0.04864380104355748,
+              "abs_loss_delta_vs_exact": 0.04864380104355748,
+              "mean_kl_to_exact": 0.03848917687653197,
+              "top1_disagreement_rate": 0.08711433756805807
             },
             "rank2": {
-              "loss": 3.0056076356206076,
-              "n_tokens": 498.0,
-              "loss_delta_vs_exact": 0.06391379727895963,
-              "abs_loss_delta_vs_exact": 0.06391379727895963,
-              "mean_kl_to_exact": 0.06511442680435488,
-              "top1_disagreement_rate": 0.12048192771084337
+              "loss": 2.848236637842417,
+              "n_tokens": 551.0,
+              "loss_delta_vs_exact": 0.023497538211774138,
+              "abs_loss_delta_vs_exact": 0.023497538211774138,
+              "mean_kl_to_exact": 0.02316325719040665,
+              "top1_disagreement_rate": 0.07259528130671507
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.03627884340094756,
-          "rank2_kl_improvement_vs_position": 0.03134492889465576,
-          "rank2_top1_improvement_vs_position": 0.022088353413654616
+          "rank2_abs_loss_delta_improvement_vs_position": 0.02514626283178334,
+          "rank2_kl_improvement_vs_position": 0.015325919686125324,
+          "rank2_top1_improvement_vs_position": 0.014519056261343005
         },
         {
           "seed": 1,
@@ -121,39 +121,39 @@
             8
           ],
           "exact_baseline": {
-            "loss": 2.677647847977896,
-            "n_tokens": 504.0,
+            "loss": 2.6615401558254077,
+            "n_tokens": 552.0,
             "loss_delta_vs_exact": 0.0
           },
           "modes": {
             "exact": {
-              "loss": 2.677647847977896,
-              "n_tokens": 504.0,
+              "loss": 2.6615401558254077,
+              "n_tokens": 552.0,
               "loss_delta_vs_exact": 0.0,
               "abs_loss_delta_vs_exact": 0.0,
               "mean_kl_to_exact": 0.0,
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.7875787038651723,
-              "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.10993085588727647,
-              "abs_loss_delta_vs_exact": 0.10993085588727647,
-              "mean_kl_to_exact": 0.09308016442117237,
-              "top1_disagreement_rate": 0.12896825396825398
+              "loss": 2.7198588606240093,
+              "n_tokens": 552.0,
+              "loss_delta_vs_exact": 0.05831870479860157,
+              "abs_loss_delta_vs_exact": 0.05831870479860157,
+              "mean_kl_to_exact": 0.03243087188921113,
+              "top1_disagreement_rate": 0.09963768115942029
             },
             "rank2": {
-              "loss": 2.7351886507064576,
-              "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.05754080272856177,
-              "abs_loss_delta_vs_exact": 0.05754080272856177,
-              "mean_kl_to_exact": 0.06467002630233765,
-              "top1_disagreement_rate": 0.11706349206349206
+              "loss": 2.681217829386393,
+              "n_tokens": 552.0,
+              "loss_delta_vs_exact": 0.019677673560985376,
+              "abs_loss_delta_vs_exact": 0.019677673560985376,
+              "mean_kl_to_exact": 0.019848973206851795,
+              "top1_disagreement_rate": 0.07971014492753623
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.0523900531587147,
-          "rank2_kl_improvement_vs_position": 0.02841013811883472,
-          "rank2_top1_improvement_vs_position": 0.011904761904761918
+          "rank2_abs_loss_delta_improvement_vs_position": 0.0386410312376162,
+          "rank2_kl_improvement_vs_position": 0.012581898682359333,
+          "rank2_top1_improvement_vs_position": 0.019927536231884063
         },
         {
           "seed": 2,
@@ -190,39 +190,39 @@
             2
           ],
           "exact_baseline": {
-            "loss": 2.8784035122583784,
-            "n_tokens": 504.0,
+            "loss": 2.764125409333602,
+            "n_tokens": 552.0,
             "loss_delta_vs_exact": 0.0
           },
           "modes": {
             "exact": {
-              "loss": 2.8784035122583784,
-              "n_tokens": 504.0,
+              "loss": 2.764125409333602,
+              "n_tokens": 552.0,
               "loss_delta_vs_exact": 0.0,
               "abs_loss_delta_vs_exact": 0.0,
               "mean_kl_to_exact": 0.0,
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.9523526751805864,
-              "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.07394916292220799,
-              "abs_loss_delta_vs_exact": 0.07394916292220799,
-              "mean_kl_to_exact": 0.06253521404569111,
-              "top1_disagreement_rate": 0.12698412698412698
+              "loss": 2.8161484815072324,
+              "n_tokens": 552.0,
+              "loss_delta_vs_exact": 0.052023072173630336,
+              "abs_loss_delta_vs_exact": 0.052023072173630336,
+              "mean_kl_to_exact": 0.031339541941449264,
+              "top1_disagreement_rate": 0.09601449275362318
             },
             "rank2": {
-              "loss": 2.923032215663365,
-              "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.04462870340498659,
-              "abs_loss_delta_vs_exact": 0.04462870340498659,
-              "mean_kl_to_exact": 0.03989983480128031,
-              "top1_disagreement_rate": 0.09325396825396826
+              "loss": 2.798430401345958,
+              "n_tokens": 552.0,
+              "loss_delta_vs_exact": 0.03430499201235593,
+              "abs_loss_delta_vs_exact": 0.03430499201235593,
+              "mean_kl_to_exact": 0.019628714824068375,
+              "top1_disagreement_rate": 0.07246376811594203
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.029320459517221398,
-          "rank2_kl_improvement_vs_position": 0.0226353792444108,
-          "rank2_top1_improvement_vs_position": 0.03373015873015872
+          "rank2_abs_loss_delta_improvement_vs_position": 0.017718080161274408,
+          "rank2_kl_improvement_vs_position": 0.01171082711738089,
+          "rank2_top1_improvement_vs_position": 0.023550724637681153
         }
       ],
       "aggregate": {
@@ -235,24 +235,24 @@
           "ci95": 0.0
         },
         "position_abs_loss_delta_vs_baseline": {
-          "mean": 0.09469088649646389,
-          "ci95": 0.021060426688707192
+          "mean": 0.05299519267192979,
+          "ci95": 0.005556372926278184
         },
         "rank2_abs_loss_delta_vs_baseline": {
-          "mean": 0.055361101137502665,
-          "ci95": 0.011118691235198288
+          "mean": 0.02582673459503848,
+          "ci95": 0.008585193640217483
         },
         "rank2_abs_loss_delta_improvement_vs_position": {
-          "mean": 0.03932978535896122,
-          "ci95": 0.013390913685313617
+          "mean": 0.027168458076891316,
+          "ci95": 0.012003002534771488
         },
         "rank2_kl_improvement_vs_position": {
-          "mean": 0.027463482085967095,
-          "ci95": 0.005014457658053779
+          "mean": 0.013206215161955182,
+          "ci95": 0.002134976538859488
         },
         "rank2_top1_disagreement_improvement_vs_position": {
-          "mean": 0.02257442468285842,
-          "ci95": 0.012358064781380011
+          "mean": 0.019332439043636074,
+          "ci95": 0.005143318345412413
         },
         "all_seeds_exact_noop_ok": {
           "value": true,
@@ -267,7 +267,7 @@
           "n": 3
         },
         "min_rank2_abs_loss_delta_improvement_vs_position": {
-          "value": 0.029320459517221398
+          "value": 0.017718080161274408
         }
       },
       "status": "ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL."
@@ -311,39 +311,39 @@
             6
           ],
           "exact_baseline": {
-            "loss": 2.659699189639044,
-            "n_tokens": 499.0,
+            "loss": 2.5102958610957766,
+            "n_tokens": 559.0,
             "loss_delta_vs_exact": 0.0
           },
           "modes": {
             "exact": {
-              "loss": 2.659699189639044,
-              "n_tokens": 499.0,
+              "loss": 2.5102958610957766,
+              "n_tokens": 559.0,
               "loss_delta_vs_exact": 0.0,
               "abs_loss_delta_vs_exact": 0.0,
               "mean_kl_to_exact": 0.0,
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.8998565673828125,
-              "n_tokens": 499.0,
-              "loss_delta_vs_exact": 0.24015737774376866,
-              "abs_loss_delta_vs_exact": 0.24015737774376866,
-              "mean_kl_to_exact": 0.23380663686381553,
-              "top1_disagreement_rate": 0.24849699398797595
+              "loss": 2.6732314217282536,
+              "n_tokens": 559.0,
+              "loss_delta_vs_exact": 0.16293556063247694,
+              "abs_loss_delta_vs_exact": 0.16293556063247694,
+              "mean_kl_to_exact": 0.1557848713692271,
+              "top1_disagreement_rate": 0.22182468694096602
             },
             "rank2": {
-              "loss": 2.771029118784444,
-              "n_tokens": 499.0,
-              "loss_delta_vs_exact": 0.11132992914540019,
-              "abs_loss_delta_vs_exact": 0.11132992914540019,
-              "mean_kl_to_exact": 0.07941131410235633,
-              "top1_disagreement_rate": 0.13226452905811623
+              "loss": 2.618662034036435,
+              "n_tokens": 559.0,
+              "loss_delta_vs_exact": 0.10836617294065842,
+              "abs_loss_delta_vs_exact": 0.10836617294065842,
+              "mean_kl_to_exact": 0.08929479527345496,
+              "top1_disagreement_rate": 0.16100178890876565
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.12882744859836848,
-          "rank2_kl_improvement_vs_position": 0.1543953227614592,
-          "rank2_top1_improvement_vs_position": 0.11623246492985972
+          "rank2_abs_loss_delta_improvement_vs_position": 0.054569387691818516,
+          "rank2_kl_improvement_vs_position": 0.06649007609577215,
+          "rank2_top1_improvement_vs_position": 0.06082289803220037
         },
         {
           "seed": 1,
@@ -380,39 +380,39 @@
             8
           ],
           "exact_baseline": {
-            "loss": 2.431579620119125,
-            "n_tokens": 504.0,
+            "loss": 2.355124146597726,
+            "n_tokens": 560.0,
             "loss_delta_vs_exact": 0.0
           },
           "modes": {
             "exact": {
-              "loss": 2.431579620119125,
-              "n_tokens": 504.0,
+              "loss": 2.355124146597726,
+              "n_tokens": 560.0,
               "loss_delta_vs_exact": 0.0,
               "abs_loss_delta_vs_exact": 0.0,
               "mean_kl_to_exact": 0.0,
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.670353722950769,
-              "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.2387741028316439,
-              "abs_loss_delta_vs_exact": 0.2387741028316439,
-              "mean_kl_to_exact": 0.18591959514315165,
-              "top1_disagreement_rate": 0.20634920634920634
+              "loss": 2.526374217442104,
+              "n_tokens": 560.0,
+              "loss_delta_vs_exact": 0.17125007084437804,
+              "abs_loss_delta_vs_exact": 0.17125007084437804,
+              "mean_kl_to_exact": 0.13163522141320363,
+              "top1_disagreement_rate": 0.20714285714285716
             },
             "rank2": {
-              "loss": 2.5264801449245877,
-              "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.09490052480546263,
-              "abs_loss_delta_vs_exact": 0.09490052480546263,
-              "mean_kl_to_exact": 0.05074528001603626,
-              "top1_disagreement_rate": 0.0992063492063492
+              "loss": 2.465368161882673,
+              "n_tokens": 560.0,
+              "loss_delta_vs_exact": 0.11024401528494687,
+              "abs_loss_delta_vs_exact": 0.11024401528494687,
+              "mean_kl_to_exact": 0.06621846301215036,
+              "top1_disagreement_rate": 0.14107142857142857
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.14387357802618128,
-          "rank2_kl_improvement_vs_position": 0.1351743151271154,
-          "rank2_top1_improvement_vs_position": 0.10714285714285714
+          "rank2_abs_loss_delta_improvement_vs_position": 0.06100605555943117,
+          "rank2_kl_improvement_vs_position": 0.06541675840105328,
+          "rank2_top1_improvement_vs_position": 0.06607142857142859
         },
         {
           "seed": 2,
@@ -449,39 +449,39 @@
             2
           ],
           "exact_baseline": {
-            "loss": 2.5885164018661255,
-            "n_tokens": 504.0,
+            "loss": 2.4660563332693917,
+            "n_tokens": 560.0,
             "loss_delta_vs_exact": 0.0
           },
           "modes": {
             "exact": {
-              "loss": 2.5885164018661255,
-              "n_tokens": 504.0,
+              "loss": 2.4660563332693917,
+              "n_tokens": 560.0,
               "loss_delta_vs_exact": 0.0,
               "abs_loss_delta_vs_exact": 0.0,
               "mean_kl_to_exact": 0.0,
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.7733479303026956,
-              "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.18483152843657003,
-              "abs_loss_delta_vs_exact": 0.18483152843657003,
-              "mean_kl_to_exact": 0.19890828454305257,
-              "top1_disagreement_rate": 0.18055555555555555
+              "loss": 2.6181752068655832,
+              "n_tokens": 560.0,
+              "loss_delta_vs_exact": 0.15211887359619158,
+              "abs_loss_delta_vs_exact": 0.15211887359619158,
+              "mean_kl_to_exact": 0.14789514371326992,
+              "top1_disagreement_rate": 0.1625
             },
             "rank2": {
-              "loss": 2.6784627702501087,
-              "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.08994636838398318,
-              "abs_loss_delta_vs_exact": 0.08994636838398318,
-              "mean_kl_to_exact": 0.07609042336070349,
-              "top1_disagreement_rate": 0.10119047619047619
+              "loss": 2.5552866663251605,
+              "n_tokens": 560.0,
+              "loss_delta_vs_exact": 0.08923033305576888,
+              "abs_loss_delta_vs_exact": 0.08923033305576888,
+              "mean_kl_to_exact": 0.07456520625523158,
+              "top1_disagreement_rate": 0.11964285714285715
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.09488516005258685,
-          "rank2_kl_improvement_vs_position": 0.12281786118234908,
-          "rank2_top1_improvement_vs_position": 0.07936507936507936
+          "rank2_abs_loss_delta_improvement_vs_position": 0.0628885405404227,
+          "rank2_kl_improvement_vs_position": 0.07332993745803834,
+          "rank2_top1_improvement_vs_position": 0.04285714285714286
         }
       ],
       "aggregate": {
@@ -494,24 +494,24 @@
           "ci95": 0.0
         },
         "position_abs_loss_delta_vs_baseline": {
-          "mean": 0.22125433633732752,
-          "ci95": 0.035702931326371735
+          "mean": 0.16210150169101553,
+          "ci95": 0.010855310837355954
         },
         "rank2_abs_loss_delta_vs_baseline": {
-          "mean": 0.09872560744494867,
-          "ci95": 0.012666292339822294
+          "mean": 0.1026135070937914,
+          "ci95": 0.013158476384000648
         },
         "rank2_abs_loss_delta_improvement_vs_position": {
-          "mean": 0.12252872889237887,
-          "ci95": 0.028396823718080524
+          "mean": 0.05948799459722413,
+          "ci95": 0.004936510469653118
         },
         "rank2_kl_improvement_vs_position": {
-          "mean": 0.13746249969030788,
-          "ci95": 0.018006802835979007
+          "mean": 0.06841225731828793,
+          "ci95": 0.0048574381468905374
         },
         "rank2_top1_disagreement_improvement_vs_position": {
-          "mean": 0.10091346714593208,
-          "ci95": 0.02173465332050209
+          "mean": 0.056583823153590604,
+          "ci95": 0.013776029429014229
         },
         "all_seeds_exact_noop_ok": {
           "value": true,
@@ -526,7 +526,7 @@
           "n": 3
         },
         "min_rank2_abs_loss_delta_improvement_vs_position": {
-          "value": 0.09488516005258685
+          "value": 0.054569387691818516
         }
       },
       "status": "ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL."
@@ -534,12 +534,12 @@
   ],
   "aggregate": {
     "rank2_abs_loss_delta_improvement_across_models": {
-      "mean": 0.08092925712567005,
-      "ci95": 0.08153496466274929
+      "mean": 0.04332822633705772,
+      "ci95": 0.031673145789926145
     },
     "rank2_kl_improvement_across_models": {
-      "mean": 0.0824629908881375,
-      "ci95": 0.10779903725225397
+      "mean": 0.04080923624012155,
+      "ci95": 0.05410192131320609
     },
     "all_models_exact_noop_ok": {
       "value": true,
@@ -554,7 +554,7 @@
       "n": 2
     },
     "min_model_rank2_abs_loss_delta_improvement": {
-      "value": 0.03932978535896122
+      "value": 0.027168458076891316
     }
   },
   "status": "ALIVE but bounded; rank-2 passes the downstream GPT2/OPT control smoke."

@@ -4,7 +4,7 @@
 - status: **weakly alive**
 - date: 2026-05-06
 - evidence level: Mac-local config audit, runtime source audit, CPU reference
-  scaffold, Triton interpreter and CPU-backend correctness, and pre-GPU
+  scaffold, Triton interpreter correctness, reviewer-risk hardening, and pre-GPU
   threshold model
 
 ## Abstract
@@ -101,7 +101,9 @@ Promotion threshold:
 | `phase2/runtime_boundary_audit.md` | vLLM already handles important hybrid state-transfer and layout paths. | Broad hybrid-layout novelty is weakened; profiler evidence is mandatory. |
 | `phase2/pre_gpu_threshold_model.md` | Granite needs about 25.0% of boundary traffic to be genuinely avoidable at 60% recovery to clear a 3% proxy gain; Qwen3-Next needs about 10.4%. | Mac-only implementation is not justified. |
 | `phase3/reference/boundary.py` and tests | CPU boundary blend scaffold exists. | Useful for semantics if profiling promotes implementation, but not evidence of speed. |
-| `phase4/kernel/boundary_triton.py` and tests | Triton interpreter tests pass under the repo-local `triton-cpu` source install; an opt-in `TRITON_CPU_BACKEND=1` run also passes with `TRITON_INTERPRET` unset when this Mac's existing Homebrew GCC runtime paths are exposed. | Kernel logic only; no GPU or Mac performance claim. |
+| `phase4/kernel/boundary_triton.py` and tests | Triton interpreter tests pass under the repo-local `triton-cpu` source install across block tails, fp16, non-contiguous inputs, and shape errors. Non-interpreter CPU-backend linking is environment-fragile in fresh shells. | Kernel logic only; no GPU or Mac performance claim. |
+| `phase1/source_line_audit_table.md` | Records exact audited public source/doc surfaces and what each does or does not rule out. | Reviewer-risk hardening; no proof of absence. |
+| `phase2/control_feasibility_matrix.md` | Lists native controls and marks which remain GPU-only placeholders. | Run planning, not benchmark evidence. |
 | `phase0/local_preflight.json` and `.md` | PyTorch 2.6.0 imports with MPS available; CUDA is unavailable; `triton==3.7.0+git270e696d` is importable from source; package-index checks for `triton`, `triton-cpu`, and `triton-nightly` still find no compatible wheel. | Local Phase 4 correctness is unblocked, but native performance evidence is still absent. |
 | `phase2/profiler_driver.py` | Fixed-request OpenAI-compatible driver dry-runs locally; runbook now profiles the vLLM server and drives it from a second local terminal. | Avoids client-only Nsight traces. |
 | `phase2/check_profiler_run_artifacts.py` | Future native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, distinct repeated metric rows, and matching profiler-analysis outputs. | GPU evidence must be artifact-complete, server-side, independently repeated, and analytically fresh before the draft cites it. |
@@ -113,8 +115,9 @@ Promotion threshold:
 - No NVIDIA/vLLM profiling has been run yet.
 - No Mac result can support a GPU performance claim.
 - Triton package-index wheels are unavailable from the current Mac ARM64
-  venv/index, but a source-built `triton-cpu` install now runs the interpreter
-  and opt-in CPU-backend correctness tests locally.
+  venv/index, but a source-built `triton-cpu` install now runs interpreter
+  correctness locally. The non-interpreter CPU-backend path is a linker-fragile
+  optional diagnostic on this Mac.
 - The architecture map counts boundary-crossing hidden-state bytes, many of
   which are ordinary inter-layer traffic rather than avoidable overhead.
 - vLLM already implements sophisticated hybrid state layout and disaggregated
@@ -153,8 +156,7 @@ Allowed now:
 
 - "HybridKernel is a weakly alive profiler-driven systems branch."
 - "Mac-local evidence motivates an NVIDIA/vLLM profiling gate."
-- "The boundary primitive has Mac-local Triton interpreter and CPU-backend
-  correctness checks."
+- "The boundary primitive has Mac-local Triton interpreter correctness checks."
 - "No GPU performance claim has been established."
 
 Not allowed now:

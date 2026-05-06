@@ -14,11 +14,11 @@ recent reserves, but a first alternate-surface reproduction check does not keep
 it separated from a stopped same-family sparse row, and a larger independent
 saved-trace surface fails cross-family separation.
 
-This shell is a scoped workshop-paper scaffold, not a submission draft. The
-new result revives the method branch on the Mac-local distilgpt2 decision
-surface, but it is not yet strong enough for an ICLR/COLM positive-method paper
-without larger frozen slices, seed repeats, family-separated falsification, and
-oracle/headroom diagnostics.
+This shell is a scoped workshop-paper scaffold, not a positive-method
+submission draft. The current evidence supports a falsification study: a
+promising Mac-local sparse-cache signal was found, reproduced on the same
+surface, and then killed by stricter same-family and cross-family reproduction
+checks.
 
 A cached split diagnostic supports the 0.20 result at the level of mean
 margins, but it is not an independent reproduction: all deterministic half-size
@@ -141,11 +141,11 @@ phase-marker policy in disguise: aggregate telemetry retains only 3.1% of
 phase markers and 21.7% of math-state labels, while retaining 56.8% of tokens
 whose strongest recurrence bucket is 16-31 tokens.
 
-## Revival Result And Next Gate
+## Demotion Result And Next Gate
 
 The current anchor/recent/phase/math policy family should not be tuned further
 on the available saved traces. The pre-registered recurrence-distance successor
-has now been evaluated once and clears the stated gate:
+cleared the first gate, then failed reproduction:
 
 - `rdu_topk`: NLL 3.779 at keep rate 0.213.
 - Margin versus R-KV-like: 0.160 NLL; paired delta -0.160, 95% CI
@@ -172,6 +172,11 @@ has now been evaluated once and clears the stated gate:
   `continuation_tokens=32`, `rdu_topk` still beats cross-family rows
   R-KV-like and ThinKV-like, but the stopped sparse ThoughtFlow row reaches
   NLL 3.588 versus `rdu_topk` at 3.594, so same-family separation fails.
+- Independent saved-trace check: R-KV-like is best compressed at NLL 3.981
+  versus `rdu_topk` at 4.014, so cross-family separation fails.
+- Failure decomposition: long-prefix/high-RDU-density rows are the largest
+  regression bucket (`rdu_topk - R-KV-like = +0.213` NLL), while short-prefix
+  low-density rows still favor `rdu_topk` by `-0.049` NLL versus R-KV-like.
 
 The highest-value method branch is no longer recurrence-distance utility as
 implemented here. It should not be retuned on the current traces. Any revival

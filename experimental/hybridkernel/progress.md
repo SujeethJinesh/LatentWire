@@ -3,11 +3,11 @@
 ## Status
 
 - Current phase: Phase 2 architecture map and runtime boundary audit complete;
-  Phase 4 Triton interpreter and opt-in CPU-backend correctness now pass locally
+  Phase 4 Triton interpreter correctness passes locally
 - Phase 0: partial Mac setup complete for audit
 - Phase 1: quick source-backed audit complete, deeper code audit still pending
-- Phase 3/4: boundary kernel correctness gates pass under `TRITON_INTERPRET=1`
-  and under an opt-in `TRITON_CPU_BACKEND=1` run with `TRITON_INTERPRET` unset
+- Phase 3/4: boundary kernel correctness gates pass under `TRITON_INTERPRET=1`;
+  non-interpreter `TRITON_CPU_BACKEND=1` remains environment-fragile on this Mac
 - Last updated: 2026-05-06
 
 This scaffold now has a local environment check, small public config fetches,
@@ -70,11 +70,12 @@ TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/hybridkernel/p
 
 Current Mac status: CPU reference and Triton interpreter tests pass under the
 repo-local `triton-cpu` source install with `TRITON_INTERPRET=1` and
-`TRITON_CPU_BACKEND=1`. An opt-in Triton CPU-backend run also matches the CPU
-reference with `TRITON_CPU_BACKEND=1` and `TRITON_INTERPRET` unset when this
-Mac's existing Homebrew GCC runtime paths are exposed through `LIBRARY_PATH`
-and `DYLD_LIBRARY_PATH`. These are kernel-logic correctness checks only, not a
-GPU performance result and not COLM_v3 evidence.
+`TRITON_CPU_BACKEND=1`. A fresh non-interpreter CPU-backend attempt is
+environment-fragile: `/usr/bin/gcc` fails with `ld: library 'gcc' not found`,
+while `CC=/opt/homebrew/bin/gcc-14` fails with `ld: library not found for
+-lSystem`. Treat CPU-backend execution as an optional diagnostic, not a stable
+paper gate. These are kernel-logic correctness checks only, not a GPU
+performance result and not COLM_v3 evidence.
 
 ## Viability Notes
 
@@ -226,6 +227,22 @@ when native artifact validation is explicitly disabled.
 Status remains **PENDING native profiler data**. This is handoff hardening, not
 profiler evidence and not a performance claim.
 
+## 2026-05-06 Reviewer-Risk Hardening
+
+Added three Mac-only review artifacts:
+
+- `phase1/source_line_audit_table.md`: exact audited source/doc surfaces and
+  what each does or does not rule out.
+- `phase2/control_feasibility_matrix.md`: planned native controls and which
+  are still GPU-only placeholders.
+- `phase2/mac_reproducibility_command.md`: one stable owned-test command and
+  the current CPU-backend linker caveat.
+
+Also expanded the Triton interpreter test over 1D, 2D, 3D, block-tail,
+non-contiguous, fp16, and shape-mismatch cases. This hardens the toy
+correctness preflight but does not change the decision: native profiling is
+still the only path to a real systems result.
+
 ## 2026-05-06 Local Triton Preflight Blocker
 
 Added `phase0/preflight_environment.py` and recorded the current local artifacts
@@ -267,7 +284,7 @@ change the HybridKernel performance decision: the next exact gate remains a
 user-operated NVIDIA/vLLM packet that passes the native artifact checker and
 the 3% profiler-analysis gate.
 
-## 2026-05-06 Triton CPU Backend Non-Interpreter Gate
+## 2026-05-06 Triton CPU Backend Non-Interpreter Caveat
 
 Added a public CPU-backend wrapper around the existing boundary Triton kernel
 and an opt-in pytest gate:
@@ -282,23 +299,23 @@ gate:
 TRITON_INTERPRET=1 TRITON_CPU_BACKEND=1 ./venv_arm64/bin/python -m pytest experimental/hybridkernel/phase3/tests experimental/hybridkernel/phase4/tests -rs
 ```
 
-Local result: `3 passed, 1 skipped`.
+Local result after the later interpreter-test expansion: the stable owned
+command passes and leaves the opt-in CPU-backend gate skipped unless requested.
 
-The non-interpreter CPU-backend gate was then run in a fresh process with
-`TRITON_INTERPRET` unset:
+Fresh non-interpreter CPU-backend attempts remain environment-fragile on this
+Mac. With `/usr/bin/gcc`, Triton CPU backend shared-object linking fails with
+`ld: library 'gcc' not found`. With `CC=/opt/homebrew/bin/gcc-14`, the build
+reaches a different Darwin linker error, `ld: library not found for -lSystem`.
 
 ```bash
-TRITON_CPU_BACKEND=1 HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 LIBRARY_PATH=/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current/gcc/aarch64-apple-darwin23/14:/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current DYLD_LIBRARY_PATH=/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current ./venv_arm64/bin/python -m pytest experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -rs
+env -u TRITON_INTERPRET HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 \
+  TRITON_CPU_BACKEND=1 CC=/opt/homebrew/bin/gcc-14 \
+  ./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -rs
 ```
 
-Local result: `1 passed`.
-
-The first direct non-interpreter attempt without the Homebrew GCC runtime paths
-failed during Triton CPU backend shared-object linking with `ld: library 'gcc'
-not found`. With those existing local paths exposed, the boundary kernel
-compiled and matched `phase3/reference/boundary.py` at `rtol=1e-6, atol=1e-6`.
-
-Decision: **CPU-BACKEND CORRECTNESS ONLY UNBLOCKED ON THIS MAC**. This is not
-a speed claim, not CUDA evidence, and not a reason to add speculative kernels.
-The next exact gate remains the native NVIDIA/vLLM profiler packet with
-server-side Nsight Systems and Nsight Compute evidence.
+Decision: **CPU-BACKEND NON-INTERPRETER EXECUTION IS OPTIONAL AND NOT A STABLE
+PAPER GATE**. The stable Mac gate is `TRITON_INTERPRET=1` correctness. This is
+not a speed claim, not CUDA evidence, and not a reason to add speculative
+kernels. The next exact gate remains the native NVIDIA/vLLM profiler packet
+with server-side Nsight Systems and Nsight Compute evidence.

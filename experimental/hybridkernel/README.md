@@ -22,10 +22,11 @@ importable from a repo-local `triton-cpu` source build. `pip index versions`
 still finds no matching wheel distributions for `triton`, `triton-cpu`, or
 `triton-nightly` in `./venv_arm64`; the working path is the source-install
 readout in `../triton_cpu_source_install_20260506.md`. Local Phase 4 Triton
-interpreter correctness is unblocked. The boundary kernel also passes an opt-in
-non-interpreter `TRITON_CPU_BACKEND=1` correctness gate on this Mac when the
-existing Homebrew GCC runtime paths are exposed, but this is still CPU-backend
-correctness only and not a kernel-performance result.
+interpreter correctness is unblocked. The non-interpreter
+`TRITON_CPU_BACKEND=1` path is environment-fragile in fresh shells on this Mac:
+`/usr/bin/gcc` misses `libgcc`, while Homebrew `gcc-14` reaches a Darwin
+`-lSystem` linker failure. Treat CPU-backend execution as optional diagnostics,
+not a required paper gate.
 
 The next exact gate is a user-operated NVIDIA/vLLM packet that passes
 `phase2/check_profiler_run_artifacts.py` and is then reduced by
@@ -110,18 +111,14 @@ Phase 0-4 Mac-side deliverables are now review-ready as a pre-GPU handoff, not
 as performance evidence. Do not proceed with implementation until the native
 packet gate clears.
 
-Optional CPU-backend correctness gate for the existing boundary kernel:
+Stable local reproducibility command:
 
 ```bash
 cd /Users/sujeethjinesh/Desktop/LatentWire
-TRITON_CPU_BACKEND=1 \
-HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 \
-LIBRARY_PATH=/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current/gcc/aarch64-apple-darwin23/14:/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current \
-DYLD_LIBRARY_PATH=/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current \
-./venv_arm64/bin/python -m pytest \
-  experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -rs
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase0/tests \
+  experimental/hybridkernel/phase2/tests \
+  experimental/hybridkernel/phase3/tests \
+  experimental/hybridkernel/phase4/tests -rs
 ```
-
-Run this from a process where `TRITON_INTERPRET` is unset. Passing this gate
-only means the existing Triton boundary kernel matches the CPU reference through
-the experimental CPU backend.

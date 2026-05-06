@@ -339,6 +339,132 @@
     "win_rate_vs_rkv_like": 0.48314606741573035,
     "win_rate_vs_thin_kv_like": 0.5056179775280899
   },
+  "measured_failure_decomposition": {
+    "status": "coarse_trace_failure_decomposition_from_saved_rows",
+    "available_fields": [
+      "prefix_len",
+      "continuation_tokens",
+      "rdu_nonzero_density",
+      "oracle_policy",
+      "rdu_minus_rkv",
+      "rdu_minus_thin",
+      "rdu_oracle_gap"
+    ],
+    "group_summaries": {
+      "all": {
+        "n": 89,
+        "mean_rdu_minus_rkv": 0.03235091118330366,
+        "mean_rdu_minus_thin": -0.029543116521299553,
+        "mean_rdu_oracle_gap": 0.25968870503848857,
+        "rdu_beats_rkv_rate": 0.48314606741573035,
+        "rdu_oracle_hit_rate": 0.34831460674157305
+      },
+      "high_rdu_density": {
+        "n": 31,
+        "mean_rdu_minus_rkv": 0.21345138934350782,
+        "mean_rdu_minus_thin": 0.13121971584135486,
+        "mean_rdu_oracle_gap": 0.44568725026422934,
+        "rdu_beats_rkv_rate": 0.25806451612903225,
+        "rdu_oracle_hit_rate": 0.22580645161290322
+      },
+      "long_prefix": {
+        "n": 31,
+        "mean_rdu_minus_rkv": 0.21345138934350782,
+        "mean_rdu_minus_thin": 0.13121971584135486,
+        "mean_rdu_oracle_gap": 0.44568725026422934,
+        "rdu_beats_rkv_rate": 0.25806451612903225,
+        "rdu_oracle_hit_rate": 0.22580645161290322
+      },
+      "low_rdu_density": {
+        "n": 34,
+        "mean_rdu_minus_rkv": -0.049113014165092915,
+        "mean_rdu_minus_thin": -0.14711602996377385,
+        "mean_rdu_oracle_gap": 0.16706144108491786,
+        "rdu_beats_rkv_rate": 0.5882352941176471,
+        "rdu_oracle_hit_rate": 0.4117647058823529
+      },
+      "mid_prefix": {
+        "n": 24,
+        "mean_rdu_minus_rkv": -0.08616331219673157,
+        "mean_rdu_minus_thin": -0.07063348094622295,
+        "mean_rdu_oracle_gap": 0.15066254138946533,
+        "rdu_beats_rkv_rate": 0.625,
+        "rdu_oracle_hit_rate": 0.4166666666666667
+      },
+      "mid_rdu_density": {
+        "n": 24,
+        "mean_rdu_minus_rkv": -0.08616331219673157,
+        "mean_rdu_minus_thin": -0.07063348094622295,
+        "mean_rdu_oracle_gap": 0.15066254138946533,
+        "rdu_beats_rkv_rate": 0.625,
+        "rdu_oracle_hit_rate": 0.4166666666666667
+      },
+      "oracle_longflow_like": {
+        "n": 5,
+        "mean_rdu_minus_rkv": -0.023440170288085937,
+        "mean_rdu_minus_thin": -0.13599424362182616,
+        "mean_rdu_oracle_gap": 0.21419992446899414,
+        "rdu_beats_rkv_rate": 0.6,
+        "rdu_oracle_hit_rate": 0.0
+      },
+      "oracle_rdu_topk": {
+        "n": 31,
+        "mean_rdu_minus_rkv": -0.417561081147963,
+        "mean_rdu_minus_thin": -0.37187209052424275,
+        "mean_rdu_oracle_gap": 0.0,
+        "rdu_beats_rkv_rate": 1.0,
+        "rdu_oracle_hit_rate": 1.0
+      },
+      "oracle_rkv_like": {
+        "n": 16,
+        "mean_rdu_minus_rkv": 0.49849463254213333,
+        "mean_rdu_minus_thin": 0.03563141077756882,
+        "mean_rdu_oracle_gap": 0.49849463254213333,
+        "rdu_beats_rkv_rate": 0.0,
+        "rdu_oracle_hit_rate": 0.0
+      },
+      "oracle_tf_sparse_r0.55_p0.05_m0.12_a2": {
+        "n": 22,
+        "mean_rdu_minus_rkv": 0.17368259213187479,
+        "mean_rdu_minus_thin": 0.10724006457762285,
+        "mean_rdu_oracle_gap": 0.3122924837199124,
+        "rdu_beats_rkv_rate": 0.3181818181818182,
+        "rdu_oracle_hit_rate": 0.0
+      },
+      "oracle_thin_kv_like": {
+        "n": 11,
+        "mean_rdu_minus_rkv": 0.10351527820933949,
+        "mean_rdu_minus_thin": 0.3654649257659912,
+        "mean_rdu_oracle_gap": 0.3654649257659912,
+        "rdu_beats_rkv_rate": 0.18181818181818182,
+        "rdu_oracle_hit_rate": 0.0
+      },
+      "oracle_thoughtflow_saliency_recent": {
+        "n": 4,
+        "mean_rdu_minus_rkv": 0.751306563615799,
+        "mean_rdu_minus_thin": 0.6572926193475723,
+        "mean_rdu_oracle_gap": 0.7937080450356007,
+        "rdu_beats_rkv_rate": 0.0,
+        "rdu_oracle_hit_rate": 0.0
+      },
+      "short_continuation": {
+        "n": 89,
+        "mean_rdu_minus_rkv": 0.03235091118330366,
+        "mean_rdu_minus_thin": -0.029543116521299553,
+        "mean_rdu_oracle_gap": 0.25968870503848857,
+        "rdu_beats_rkv_rate": 0.48314606741573035,
+        "rdu_oracle_hit_rate": 0.34831460674157305
+      },
+      "short_prefix": {
+        "n": 34,
+        "mean_rdu_minus_rkv": -0.049113014165092915,
+        "mean_rdu_minus_thin": -0.14711602996377385,
+        "mean_rdu_oracle_gap": 0.16706144108491786,
+        "rdu_beats_rkv_rate": 0.5882352941176471,
+        "rdu_oracle_hit_rate": 0.4117647058823529
+      }
+    }
+  },
   "strict_family_pass": {
     "same_family_positive": true,
     "cross_family_positive": false,

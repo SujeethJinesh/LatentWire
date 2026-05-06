@@ -5,7 +5,7 @@
   ],
   "max_traces": 24,
   "max_length": 64,
-  "sink_tokens": 4,
+  "sink_tokens": 2,
   "train_fraction": 0.67,
   "seeds": [
     0,
@@ -66,25 +66,25 @@
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 3.041886479021555,
+              "loss": 2.992187009757781,
               "n_tokens": 498.0,
-              "loss_delta_vs_exact": 0.10019264067990719,
-              "abs_loss_delta_vs_exact": 0.10019264067990719,
-              "mean_kl_to_exact": 0.09645935569901064,
-              "top1_disagreement_rate": 0.142570281124498
+              "loss_delta_vs_exact": 0.05049317141613319,
+              "abs_loss_delta_vs_exact": 0.05049317141613319,
+              "mean_kl_to_exact": 0.03969168423648819,
+              "top1_disagreement_rate": 0.08835341365461848
             },
             "rank2": {
-              "loss": 3.0056076356206076,
+              "loss": 2.966472579772214,
               "n_tokens": 498.0,
-              "loss_delta_vs_exact": 0.06391379727895963,
-              "abs_loss_delta_vs_exact": 0.06391379727895963,
-              "mean_kl_to_exact": 0.06511442680435488,
-              "top1_disagreement_rate": 0.12048192771084337
+              "loss_delta_vs_exact": 0.024778741430565798,
+              "abs_loss_delta_vs_exact": 0.024778741430565798,
+              "mean_kl_to_exact": 0.02411681150336821,
+              "top1_disagreement_rate": 0.07429718875502007
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.03627884340094756,
-          "rank2_kl_improvement_vs_position": 0.03134492889465576,
-          "rank2_top1_improvement_vs_position": 0.022088353413654616
+          "rank2_abs_loss_delta_improvement_vs_position": 0.02571442998556739,
+          "rank2_kl_improvement_vs_position": 0.015574872733119978,
+          "rank2_top1_improvement_vs_position": 0.014056224899598402
         },
         {
           "seed": 1,
@@ -135,25 +135,25 @@
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.7875787038651723,
+              "loss": 2.7352591317797463,
               "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.10993085588727647,
-              "abs_loss_delta_vs_exact": 0.10993085588727647,
-              "mean_kl_to_exact": 0.09308016442117237,
-              "top1_disagreement_rate": 0.12896825396825398
+              "loss_delta_vs_exact": 0.057611283801850544,
+              "abs_loss_delta_vs_exact": 0.057611283801850544,
+              "mean_kl_to_exact": 0.032361341847313776,
+              "top1_disagreement_rate": 0.10317460317460317
             },
             "rank2": {
-              "loss": 2.7351886507064576,
+              "loss": 2.696090577140687,
               "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.05754080272856177,
-              "abs_loss_delta_vs_exact": 0.05754080272856177,
-              "mean_kl_to_exact": 0.06467002630233765,
-              "top1_disagreement_rate": 0.11706349206349206
+              "loss_delta_vs_exact": 0.018442729162791327,
+              "abs_loss_delta_vs_exact": 0.018442729162791327,
+              "mean_kl_to_exact": 0.020533503048003665,
+              "top1_disagreement_rate": 0.08333333333333333
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.0523900531587147,
-          "rank2_kl_improvement_vs_position": 0.02841013811883472,
-          "rank2_top1_improvement_vs_position": 0.011904761904761918
+          "rank2_abs_loss_delta_improvement_vs_position": 0.039168554639059217,
+          "rank2_kl_improvement_vs_position": 0.011827838799310111,
+          "rank2_top1_improvement_vs_position": 0.01984126984126984
         },
         {
           "seed": 2,
@@ -204,25 +204,25 @@
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.9523526751805864,
+              "loss": 2.929854044838557,
               "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.07394916292220799,
-              "abs_loss_delta_vs_exact": 0.07394916292220799,
-              "mean_kl_to_exact": 0.06253521404569111,
-              "top1_disagreement_rate": 0.12698412698412698
+              "loss_delta_vs_exact": 0.05145053258017862,
+              "abs_loss_delta_vs_exact": 0.05145053258017862,
+              "mean_kl_to_exact": 0.031359977192348905,
+              "top1_disagreement_rate": 0.0992063492063492
             },
             "rank2": {
-              "loss": 2.923032215663365,
+              "loss": 2.90878118787493,
               "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.04462870340498659,
-              "abs_loss_delta_vs_exact": 0.04462870340498659,
-              "mean_kl_to_exact": 0.03989983480128031,
-              "top1_disagreement_rate": 0.09325396825396826
+              "loss_delta_vs_exact": 0.03037767561655169,
+              "abs_loss_delta_vs_exact": 0.03037767561655169,
+              "mean_kl_to_exact": 0.019368928812799,
+              "top1_disagreement_rate": 0.08134920634920635
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.029320459517221398,
-          "rank2_kl_improvement_vs_position": 0.0226353792444108,
-          "rank2_top1_improvement_vs_position": 0.03373015873015872
+          "rank2_abs_loss_delta_improvement_vs_position": 0.02107285696362693,
+          "rank2_kl_improvement_vs_position": 0.011991048379549906,
+          "rank2_top1_improvement_vs_position": 0.01785714285714285
         }
       ],
       "aggregate": {
@@ -235,24 +235,24 @@
           "ci95": 0.0
         },
         "position_abs_loss_delta_vs_baseline": {
-          "mean": 0.09469088649646389,
-          "ci95": 0.021060426688707192
+          "mean": 0.05318499593272078,
+          "ci95": 0.0043714523068416125
         },
         "rank2_abs_loss_delta_vs_baseline": {
-          "mean": 0.055361101137502665,
-          "ci95": 0.011118691235198288
+          "mean": 0.02453304873663627,
+          "ci95": 0.006757122896325834
         },
         "rank2_abs_loss_delta_improvement_vs_position": {
-          "mean": 0.03932978535896122,
-          "ci95": 0.013390913685313617
+          "mean": 0.02865194719608451,
+          "ci95": 0.010635615968803457
         },
         "rank2_kl_improvement_vs_position": {
-          "mean": 0.027463482085967095,
-          "ci95": 0.005014457658053779
+          "mean": 0.013131253303993331,
+          "ci95": 0.0023965268405152463
         },
         "rank2_top1_disagreement_improvement_vs_position": {
-          "mean": 0.02257442468285842,
-          "ci95": 0.012358064781380011
+          "mean": 0.017251545866003696,
+          "ci95": 0.003326566568023293
         },
         "all_seeds_exact_noop_ok": {
           "value": true,
@@ -267,7 +267,7 @@
           "n": 3
         },
         "min_rank2_abs_loss_delta_improvement_vs_position": {
-          "value": 0.029320459517221398
+          "value": 0.02107285696362693
         }
       },
       "status": "ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL."
@@ -325,25 +325,25 @@
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.8998565673828125,
+              "loss": 2.8306373794953186,
               "n_tokens": 499.0,
-              "loss_delta_vs_exact": 0.24015737774376866,
-              "abs_loss_delta_vs_exact": 0.24015737774376866,
-              "mean_kl_to_exact": 0.23380663686381553,
-              "top1_disagreement_rate": 0.24849699398797595
+              "loss_delta_vs_exact": 0.17093818985627474,
+              "abs_loss_delta_vs_exact": 0.17093818985627474,
+              "mean_kl_to_exact": 0.16572331139941016,
+              "top1_disagreement_rate": 0.24248496993987975
             },
             "rank2": {
-              "loss": 2.771029118784444,
+              "loss": 2.764263665269993,
               "n_tokens": 499.0,
-              "loss_delta_vs_exact": 0.11132992914540019,
-              "abs_loss_delta_vs_exact": 0.11132992914540019,
-              "mean_kl_to_exact": 0.07941131410235633,
-              "top1_disagreement_rate": 0.13226452905811623
+              "loss_delta_vs_exact": 0.10456447563094917,
+              "abs_loss_delta_vs_exact": 0.10456447563094917,
+              "mean_kl_to_exact": 0.08471757949951417,
+              "top1_disagreement_rate": 0.1683366733466934
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.12882744859836848,
-          "rank2_kl_improvement_vs_position": 0.1543953227614592,
-          "rank2_top1_improvement_vs_position": 0.11623246492985972
+          "rank2_abs_loss_delta_improvement_vs_position": 0.06637371422532556,
+          "rank2_kl_improvement_vs_position": 0.08100573189989599,
+          "rank2_top1_improvement_vs_position": 0.07414829659318636
         },
         {
           "seed": 1,
@@ -394,25 +394,25 @@
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.670353722950769,
+              "loss": 2.6061850502377464,
               "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.2387741028316439,
-              "abs_loss_delta_vs_exact": 0.2387741028316439,
-              "mean_kl_to_exact": 0.18591959514315165,
+              "loss_delta_vs_exact": 0.17460543011862129,
+              "abs_loss_delta_vs_exact": 0.17460543011862129,
+              "mean_kl_to_exact": 0.13480719782057263,
               "top1_disagreement_rate": 0.20634920634920634
             },
             "rank2": {
-              "loss": 2.5264801449245877,
+              "loss": 2.5240004251873684,
               "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.09490052480546263,
-              "abs_loss_delta_vs_exact": 0.09490052480546263,
-              "mean_kl_to_exact": 0.05074528001603626,
-              "top1_disagreement_rate": 0.0992063492063492
+              "loss_delta_vs_exact": 0.09242080506824335,
+              "abs_loss_delta_vs_exact": 0.09242080506824335,
+              "mean_kl_to_exact": 0.05616897533810328,
+              "top1_disagreement_rate": 0.1111111111111111
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.14387357802618128,
-          "rank2_kl_improvement_vs_position": 0.1351743151271154,
-          "rank2_top1_improvement_vs_position": 0.10714285714285714
+          "rank2_abs_loss_delta_improvement_vs_position": 0.08218462505037794,
+          "rank2_kl_improvement_vs_position": 0.07863822248246935,
+          "rank2_top1_improvement_vs_position": 0.09523809523809523
         },
         {
           "seed": 2,
@@ -463,25 +463,25 @@
               "top1_disagreement_rate": 0.0
             },
             "position": {
-              "loss": 2.7733479303026956,
+              "loss": 2.7537951847863575,
               "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.18483152843657003,
-              "abs_loss_delta_vs_exact": 0.18483152843657003,
-              "mean_kl_to_exact": 0.19890828454305257,
-              "top1_disagreement_rate": 0.18055555555555555
+              "loss_delta_vs_exact": 0.16527878292023201,
+              "abs_loss_delta_vs_exact": 0.16527878292023201,
+              "mean_kl_to_exact": 0.15594592548552014,
+              "top1_disagreement_rate": 0.17063492063492064
             },
             "rank2": {
-              "loss": 2.6784627702501087,
+              "loss": 2.661850066412063,
               "n_tokens": 504.0,
-              "loss_delta_vs_exact": 0.08994636838398318,
-              "abs_loss_delta_vs_exact": 0.08994636838398318,
-              "mean_kl_to_exact": 0.07609042336070349,
-              "top1_disagreement_rate": 0.10119047619047619
+              "loss_delta_vs_exact": 0.07333366454593726,
+              "abs_loss_delta_vs_exact": 0.07333366454593726,
+              "mean_kl_to_exact": 0.06405753843368046,
+              "top1_disagreement_rate": 0.10515873015873016
             }
           },
-          "rank2_abs_loss_delta_improvement_vs_position": 0.09488516005258685,
-          "rank2_kl_improvement_vs_position": 0.12281786118234908,
-          "rank2_top1_improvement_vs_position": 0.07936507936507936
+          "rank2_abs_loss_delta_improvement_vs_position": 0.09194511837429475,
+          "rank2_kl_improvement_vs_position": 0.09188838705183967,
+          "rank2_top1_improvement_vs_position": 0.06547619047619048
         }
       ],
       "aggregate": {
@@ -494,24 +494,24 @@
           "ci95": 0.0
         },
         "position_abs_loss_delta_vs_baseline": {
-          "mean": 0.22125433633732752,
-          "ci95": 0.035702931326371735
+          "mean": 0.170274134298376,
+          "ci95": 0.005317023312765361
         },
         "rank2_abs_loss_delta_vs_baseline": {
-          "mean": 0.09872560744494867,
-          "ci95": 0.012666292339822294
+          "mean": 0.09010631508170992,
+          "ci95": 0.017815474175308404
         },
         "rank2_abs_loss_delta_improvement_vs_position": {
-          "mean": 0.12252872889237887,
-          "ci95": 0.028396823718080524
+          "mean": 0.08016781921666609,
+          "ci95": 0.014602758849558558
         },
         "rank2_kl_improvement_vs_position": {
-          "mean": 0.13746249969030788,
-          "ci95": 0.018006802835979007
+          "mean": 0.08384411381140167,
+          "ci95": 0.007996385585815174
         },
         "rank2_top1_disagreement_improvement_vs_position": {
-          "mean": 0.10091346714593208,
-          "ci95": 0.02173465332050209
+          "mean": 0.07828752743582403,
+          "ci95": 0.017321073026735363
         },
         "all_seeds_exact_noop_ok": {
           "value": true,
@@ -526,7 +526,7 @@
           "n": 3
         },
         "min_rank2_abs_loss_delta_improvement_vs_position": {
-          "value": 0.09488516005258685
+          "value": 0.06637371422532556
         }
       },
       "status": "ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL."
@@ -534,12 +534,12 @@
   ],
   "aggregate": {
     "rank2_abs_loss_delta_improvement_across_models": {
-      "mean": 0.08092925712567005,
-      "ci95": 0.08153496466274929
+      "mean": 0.0544098832063753,
+      "ci95": 0.05048555458016994
     },
     "rank2_kl_improvement_across_models": {
-      "mean": 0.0824629908881375,
-      "ci95": 0.10779903725225397
+      "mean": 0.048487683557697496,
+      "ci95": 0.06929860329726016
     },
     "all_models_exact_noop_ok": {
       "value": true,
@@ -554,7 +554,7 @@
       "n": 2
     },
     "min_model_rank2_abs_loss_delta_improvement": {
-      "value": 0.03932978535896122
+      "value": 0.02865194719608451
     }
   },
   "status": "ALIVE but bounded; rank-2 passes the downstream GPT2/OPT control smoke."

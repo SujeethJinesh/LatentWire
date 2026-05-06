@@ -68,7 +68,8 @@ Non-claims:
 | Held-out/cross-family repeat | Alive but bounded | On a measured 48-trace, three-seed gate, per-model rank-2 predictors beat position-only on distilgpt2 by +0.0306 +/- 0.0023 output rel-L2 and on facebook/opt-125m by +0.0788 +/- 0.0069. This is not cross-model predictor transfer, GPU speed evidence, or end-to-end quality evidence. |
 | Cross-family length stability | Alive but bounded | On 48 traces, lengths 64/96, and three whole-trace split seeds, all four GPT2/OPT model-length rows stay positive; mean output rel-L2 improvement is +0.0535 +/- 0.0262 and the minimum row is +0.0301. This is still Mac-local attention-output drift evidence only. |
 | Triton interpreter readiness | Passed locally | `TRITON_INTERPRET=1` with the repo-local `triton-cpu` source install passes the approximate-attention interpreter tests; this is kernel logic only, not GPU speed evidence. |
-| Downstream quality/control smoke | Alive but bounded | On distilgpt2 and facebook/opt-125m, exact replacement is a no-op and rank-2 is closer than position-only in causal-LM loss drift and KL; aggregate absolute loss-delta improvement is +0.1008 +/- 0.1166. This is small-slice downstream control evidence only. |
+| Downstream quality/control smoke | Alive but bounded | On distilgpt2 and facebook/opt-125m, 24 traces, and three split seeds, exact replacement is a no-op and rank-2 is closer than position-only in causal-LM loss drift and KL; aggregate absolute loss-delta improvement is +0.0809 +/- 0.0815. This is small-slice downstream control evidence only. |
+| Downstream length/sink sweep | Alive but bounded | Lengths 64/96 and sink counts 2/4 all stay positive; minimum model loss improvement is +0.0272. This strengthens Mac-local quality control but remains non-benchmark evidence. |
 
 ## Reviewer-Risk Notes
 
