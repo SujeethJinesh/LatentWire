@@ -86,7 +86,10 @@ The checker rejects:
 - `metadata.json` that does not identify a native CUDA/NVIDIA environment;
 - missing rows for any runbook row in `quality_drift.csv`,
   `quality_drift_by_head.csv`, `latency.csv`, or `ncu_summary.csv`;
-- fewer than three distinct `run_id` values per row in `latency.csv`;
+- fewer than three distinct `run_id` values for any
+  row/model/sequence_length/batch_size group in `latency.csv`;
+- mismatched row/model/sequence_length/batch_size groups across quality,
+  per-head quality, latency, and NCU CSV files;
 - non-numeric quality, latency, or NCU metric cells;
 - `decision.md` without an explicit promote/kill decision, rank-2 quality
   threshold, and speed/memory/HBM evidence discussion.

@@ -612,3 +612,28 @@ that varies `sequence_length` by `run_id` and expects checker failure.
 
 Decision: **TIMING PACKET HARDENED**. This improves future native packet
 admissibility only; native timing/memory data are still required.
+
+## 2026-05-06 Native Runbook Repeat Contract Alignment
+
+Aligned the GPU runbook and paper wording with the stricter validator. Native
+latency evidence now has one written contract everywhere: three distinct
+`run_id` values are required for each row/model/sequence-length/batch-size
+group, not merely three runs for a canonical row with mixed shapes.
+
+Decision: **RUNBOOK/PAPER CONTRACT MATCHES CHECKER**. SinkAware remains
+Mac-complete and blocked on native GPU timing/memory traffic plus quality
+preservation; this edit only prevents ambiguous native packets from being
+cited.
+
+## 2026-05-06 Cross-Artifact Shape Consistency Hardening
+
+Closed the remaining native-packet reviewer loophole found by subagent review.
+The validator now requires the same row/model/sequence-length/batch-size groups
+to appear across `quality_drift.csv`, `quality_drift_by_head.csv`,
+`latency.csv`, and `ncu_summary.csv`. A packet can no longer pass by measuring
+quality at one sequence length, latency at another, and NCU counters at a
+third.
+
+Decision: **NATIVE DECISION SURFACE MUST BE PAIRED**. SinkAware is now
+Mac-complete unless a new reviewer asks for a specific local control. The next
+exact gate is native NVIDIA timing/memory traffic over the paired packet.

@@ -65,6 +65,6 @@ TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
   experimental/thoughtflow_fp8/phase4/tests -rs
 ```
 
-Expected current result after the latest handoff hardening: 145 owned Mac tests
+Expected current result after the latest handoff hardening: 148 owned Mac tests
 pass, with only the opt-in non-interpreter Triton CPU-backend gate skipped on
 this Mac.

@@ -24,7 +24,7 @@ enabled.
 | runtime/source audit | vLLM hybrid SSM support already handles important layout and transfer paths | broad novelty weakened |
 | threshold model | Granite needs about 25% avoidable boundary traffic at 60% recovery to clear a 3% proxy gain | Mac kernels not justified |
 | fixed-request driver | local dry-run plus optional `/start_profile`/`/stop_profile` bracketing | reduces client-only or startup-trace risk |
-| parser/checker | metric rows require dtype, graph state, batch shape, control segment, three distinct same-config repeats, and matching analysis outputs | stale, mixed-config, and placeholder evidence rejected |
+| parser/checker | metric rows require dtype, graph state, batch shape, control segment, three distinct same-config repeats, matching analysis outputs, and separate Nsight server/client replay logs | stale, mixed-config, warmup-only, incomplete-log, and placeholder evidence rejected |
 | Triton interpreter | toy boundary primitive matches CPU reference under `TRITON_INTERPRET=1` | indexing/kernel-plumbing only |
 
 ## Reviewer Risks

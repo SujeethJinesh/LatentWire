@@ -54,15 +54,23 @@ ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
 PROFILED_PROCESS_FIELDS = ["profiled_process", "nsys_profiled_process", "ncu_profiled_process"]
 
 
-def _has_any(root: Path, patterns: list[str]) -> bool:
-    return any(any(root.glob(pattern)) for pattern in patterns)
-
-
 def _matching_artifacts(root: Path, patterns: list[str]) -> list[Path]:
     artifacts: list[Path] = []
     for pattern in patterns:
         artifacts.extend(sorted(root.glob(pattern)))
     return artifacts
+
+
+def _has_server_profiler_log(log_files: list[Path]) -> bool:
+    return any(
+        "server" in path.name.lower()
+        and ("nsys" in path.name.lower() or "ncu" in path.name.lower())
+        for path in log_files
+    )
+
+
+def _has_client_replay_log(log_files: list[Path]) -> bool:
+    return any("client" in path.name.lower() for path in log_files)
 
 
 def _read_text(path: Path) -> str:
@@ -132,8 +140,14 @@ def check_run_artifacts(
             errors.append(f"missing required artifact: {relative}")
 
     logs_dir = run_dir / "logs"
-    if not logs_dir.is_dir() or not _has_any(logs_dir, ["*.log", "*.txt"]):
+    log_files = _matching_artifacts(logs_dir, ["*.log", "*.txt"])
+    if not logs_dir.is_dir() or not log_files:
         errors.append("missing profiling logs under logs/*.log or logs/*.txt")
+    else:
+        if not _has_server_profiler_log(log_files):
+            errors.append("missing Nsight server profiler log under logs/")
+        if not _has_client_replay_log(log_files):
+            errors.append("missing client replay log under logs/")
 
     if require_native_artifacts:
         _validate_native_artifacts(

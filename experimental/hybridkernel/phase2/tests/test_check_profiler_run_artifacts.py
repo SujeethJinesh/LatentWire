@@ -39,7 +39,12 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         + "\n",
         encoding="utf-8",
     )
-    (run_dir / "logs/nsys_b1.log").write_text("profile log\n", encoding="utf-8")
+    (run_dir / "logs/nsys_server_b1.log").write_text(
+        "server profiler log\n", encoding="utf-8"
+    )
+    (run_dir / "logs/client_replay_b1.log").write_text(
+        "client replay log\n", encoding="utf-8"
+    )
     (run_dir / "nsys/granite_tiny_b1_decode64.nsys-rep").write_text(
         "native profiler export bytes\n" + ("x" * 2048), encoding="utf-8"
     )
@@ -109,6 +114,39 @@ def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("Nsight Systems" in error for error in result["errors"])
+
+
+def test_requires_server_and_client_logs(tmp_path: Path) -> None:
+    server_missing = tmp_path / "server_missing"
+    _write_complete_run(server_missing)
+    (server_missing / "logs/nsys_server_b1.log").unlink()
+
+    server_result = check_run_artifacts(server_missing)
+
+    assert server_result["status"] == "FAIL"
+    assert any("server profiler log" in error for error in server_result["errors"])
+
+    client_missing = tmp_path / "client_missing"
+    _write_complete_run(client_missing)
+    (client_missing / "logs/client_replay_b1.log").unlink()
+
+    client_result = check_run_artifacts(client_missing)
+
+    assert client_result["status"] == "FAIL"
+    assert any("client replay log" in error for error in client_result["errors"])
+
+
+def test_rejects_server_warmup_log_without_profiler_log(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "logs/nsys_server_b1.log").unlink()
+    (tmp_path / "logs/server_warmup.log").write_text(
+        "server warmup log, not a profiler log\n", encoding="utf-8"
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("server profiler log" in error for error in result["errors"])
 
 
 def test_requires_complete_environment_capture(tmp_path: Path) -> None:

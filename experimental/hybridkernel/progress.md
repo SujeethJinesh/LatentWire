@@ -437,3 +437,27 @@ row and expects checker failure.
 Decision: **SIDECAR REPRODUCIBILITY HARDENED**. A returned packet now has to
 show that its analysis sidecar was generated from the exact metrics file, but
 the scientific gate remains native NVIDIA/vLLM profiling.
+
+## 2026-05-06 Server/Client Log Contract Hardening
+
+Closed the last checker/runbook mismatch found by subagent review. The native
+artifact checker now requires both Nsight server profiler logs and client replay logs
+under `logs/`, rather than accepting a single generic `.log` file. The
+synthetic packet fixture and HybridKernel paper/reviewer pack now describe the
+same contract.
+
+Decision: **INCOMPLETE-LOG PACKETS REJECTED**. This is admissibility hardening
+only. HybridKernel still cannot improve further on Mac hardware until a native
+NVIDIA/vLLM packet passes the checker and the 3% recoverable-gain gate.
+
+## 2026-05-06 Profiler-Log Name Tightening
+
+Closed the follow-up reviewer loophole in the log contract. A generic
+`server_warmup.log` plus a client replay log no longer satisfies the native
+packet checker. At least one server log must be an Nsight profiler log named
+with `nsys` or `ncu`, matching the GPU runbook commands, and the packet must
+still include a client replay log.
+
+Decision: **WARMUP-ONLY LOG PACKETS REJECTED**. This is still handoff
+hardening, not profiling evidence. The next exact gate remains a native
+NVIDIA/vLLM server-side Nsight packet.

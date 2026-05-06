@@ -195,6 +195,15 @@ def _row_value(row: dict[str, str], names: Iterable[str]) -> str:
     return ""
 
 
+def _shape_key(row_id: str, row: dict[str, str]) -> tuple[str, str, str, str]:
+    return (
+        row_id,
+        str(row.get("model", "")).strip(),
+        str(row.get("sequence_length", "")).strip(),
+        str(row.get("batch_size", "")).strip(),
+    )
+
+
 def _load_csv(path: Path, errors: list[str]) -> list[dict[str, str]]:
     try:
         with path.open(newline="", encoding="utf-8") as handle:
@@ -275,6 +284,7 @@ def _validate_csv_artifact(
         errors.append(f"{relative} missing required column: {column}")
 
     covered_rows: set[str] = set()
+    shape_keys: set[tuple[str, str, str, str]] = set()
     run_ids_by_row: dict[str, set[str]] = {}
     run_ids_by_row_config: dict[tuple[str, str, str, str], set[str]] = {}
     for index, row in enumerate(rows, start=2):
@@ -284,6 +294,7 @@ def _validate_csv_artifact(
             errors.append(f"{relative} row {index} has unknown row id: {raw_row_id!r}")
             continue
         covered_rows.add(canonical_row_id)
+        shape_keys.add(_shape_key(canonical_row_id, row))
         run_id = str(row.get("run_id", "")).strip()
         if run_id:
             run_ids_by_row.setdefault(canonical_row_id, set()).add(run_id)
@@ -333,8 +344,40 @@ def _validate_csv_artifact(
     return {
         "rows": len(rows),
         "covered_rows": sorted(covered_rows),
+        "shape_keys": sorted("|".join(key) for key in shape_keys),
         "row_run_counts": {key: len(value) for key, value in sorted(run_ids_by_row.items())},
     }
+
+
+def _validate_cross_artifact_shape_consistency(
+    csv_summaries: dict[str, object],
+    errors: list[str],
+) -> None:
+    expected: set[str] | None = None
+    expected_relative = ""
+    for relative in CSV_SCHEMAS:
+        summary = csv_summaries.get(relative, {})
+        if not isinstance(summary, dict):
+            continue
+        shape_keys = set(summary.get("shape_keys", []))
+        if not shape_keys:
+            continue
+        if expected is None:
+            expected = shape_keys
+            expected_relative = relative
+            continue
+        if shape_keys != expected:
+            missing = sorted(expected - shape_keys)
+            extra = sorted(shape_keys - expected)
+            detail = []
+            if missing:
+                detail.append(f"missing {missing[:3]} from {expected_relative}")
+            if extra:
+                detail.append(f"extra {extra[:3]} not in {expected_relative}")
+            errors.append(
+                f"{relative} row/model/sequence_length/batch_size groups do not "
+                f"match {expected_relative}: " + "; ".join(detail)
+            )
 
 
 def _validate_decision(run_dir: Path, errors: list[str]) -> None:
@@ -381,6 +424,7 @@ def check_native_gpu_packet(
         csv_summaries[relative] = _validate_csv_artifact(
             run_dir, relative, min_repeated_runs, errors
         )
+    _validate_cross_artifact_shape_consistency(csv_summaries, errors)
     _validate_decision(run_dir, errors)
 
     return {

@@ -165,6 +165,27 @@ def test_requires_latency_repeats_for_same_shape(tmp_path: Path) -> None:
     )
 
 
+def test_requires_same_shapes_across_quality_latency_and_ncu(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    _complete_packet(packet)
+    quality_rows = list(csv.DictReader((packet / "quality_drift.csv").open(encoding="utf-8")))
+    for row in quality_rows:
+        row["sequence_length"] = "64"
+    _write_csv(packet / "quality_drift.csv", quality_rows)
+    ncu_rows = list(csv.DictReader((packet / "ncu_summary.csv").open(encoding="utf-8")))
+    for row in ncu_rows:
+        row["sequence_length"] = "128"
+    _write_csv(packet / "ncu_summary.csv", ncu_rows)
+
+    result = check_native_gpu_packet(packet)
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "row/model/sequence_length/batch_size groups do not match" in error
+        for error in result["errors"]
+    )
+
+
 def test_rejects_invalid_metadata_native_scope(tmp_path: Path) -> None:
     packet = tmp_path / "packet"
     _complete_packet(packet)

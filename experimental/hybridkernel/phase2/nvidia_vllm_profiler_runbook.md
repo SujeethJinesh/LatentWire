@@ -412,7 +412,8 @@ The verifier checks that the run directory contains:
 - Nsight Systems and Nsight Compute artifacts;
 - server-side Nsight Systems and Nsight Compute profile scope in
   `metadata/profile_scope.json`;
-- profiling logs;
+- separate Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and
+  client replay logs;
 - `readout.md` with the pre-registered decision questions;
 - `profiler_metrics.json` with at least three repeated valid rows for one
   model and at least three distinct repeated `run_id` values.
