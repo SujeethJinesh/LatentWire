@@ -12,6 +12,7 @@ def test_current_decision_manifest_demotes_rdu_topk() -> None:
 
     assert "STOP / diagnostic only" in manifest
     assert "current live method branch: none" in manifest
+    assert "no runnable successor gate" in manifest
     assert "R-KV-like was best compressed" in manifest
     assert "diagnostic, not a positive method" in paper
     assert "LOCAL METHOD EVIDENCE SATURATED / STOP OR PIVOT" in progress

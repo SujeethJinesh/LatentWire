@@ -400,3 +400,16 @@ cannot silently drop those review axes or reopen the stopped branch.
 Decision: **REVIEWER PACK READY AS DIAGNOSTIC; METHOD WORK STILL STOPPED**. No
 retuning, GPU work, or additional local method evaluation is justified for
 `rdu_topk`.
+
+## 2026-05-06 Final Manifest Stop Condition
+
+Updated `phase2/current_decision_manifest_20260506.md` to state the final local
+stop condition directly: no fresh utility signal is currently pre-registered, so
+there is no runnable successor gate. The next valid action is a new
+pre-registration artifact on a fresh/larger frozen surface, not measurement on
+the current traces.
+
+Decision: **NO FURTHER MAC/TRITON METHOD WORK REMAINS FOR THE CURRENT BRANCH**.
+The remaining blocker is method evidence from a future preregistered branch,
+not local packaging, tests, Triton interpreter correctness, or `rdu_topk`
+analysis.

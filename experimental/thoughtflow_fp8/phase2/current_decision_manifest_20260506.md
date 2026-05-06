@@ -32,6 +32,10 @@ the demotion recorded here, in `progress.md`, in
 
 ## Allowed Next Work
 
+Current reopen state: **no fresh utility signal is pre-registered, so there is
+no runnable successor gate.** A future gate starts with a new pre-registration
+artifact, not with another measurement on the current traces.
+
 Allowed:
 
 - diagnostic packaging and consistency checks;
