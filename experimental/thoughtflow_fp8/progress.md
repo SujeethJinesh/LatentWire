@@ -10,7 +10,7 @@
   pre-registered `rdu_topk` successor revived the branch on the frozen
   sparse-cache quality gate
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
-  scaffold added, but not phase-complete
+  pass locally; native GPU/FP8 numerical drift and performance remain absent
 - Current viability: the stopped current policy family remains ruled out.
   `rdu_topk` cleared the first Mac-local frozen sparse-cache gate and reproduced
   exactly on the same deterministic slice, but it is no longer promoted as a
@@ -461,3 +461,19 @@ now explicitly historical and superseded.
 Decision: **REPRODUCIBILITY ENTRY POINT MATCHES CURRENT ARTIFACTS**. This is a
 documentation fix only; the method branch remains stopped unless a new
 pre-registered utility family is evaluated on a fresh frozen surface.
+
+## 2026-05-06 Camera-Ready Review Cleanup
+
+Applied the latest COLM-style reviewer pass to the stopped-diagnostic draft.
+The README now describes this as a diagnostic falsification package rather than
+a minimal scaffold and states the true reopen gate: a fresh/larger frozen
+sparse-cache surface with matched-budget quality wins, same/cross-family
+separation, paired uncertainty, and oracle/headroom diagnostics. The status
+block now says Triton interpreter correctness passes locally while native
+GPU/FP8 performance remains absent. The paper no longer calls the sparse-cache
+probe "finally" and lists the workshop shell, README, and progress ledger as
+handoff artifacts.
+
+Decision: **NO ADDITIONAL MAC-SIDE THOUGHTFLOW WORK REMAINS FOR CURRENT
+BRANCHES**. Any improvement requires a genuinely new preregistered utility
+signal, not more cleanup or Triton scaffolding.

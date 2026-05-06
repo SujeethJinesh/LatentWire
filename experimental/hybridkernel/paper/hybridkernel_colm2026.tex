@@ -39,7 +39,7 @@ Packet generator & A local script creates the required native run-packet skeleto
 Synthetic packet fixture & A Mac-local fixture documents the packet shape and exercises the checker with placeholder Nsight files. & Fixture is not profiler evidence. \\
 Packet checklist & The native handoff now has a single required packet layout and stop-local-work decision. & Local readiness is saturated until GPU data exists. \\
 Source/control audit & Source-line audit table and control feasibility matrix record what public surfaces were checked and which native controls are still placeholders. & Review hardening only; no proof of absence. \\
-Triton correctness & The toy boundary primitive passes Phase 4 interpreter tests under the repo-local \texttt{triton-cpu} source install across block tails, fp16, non-contiguous inputs, and shape errors. Non-interpreter CPU-backend linking is environment-fragile on this Mac. & Kernel logic only; not CUDA or speed evidence. \\
+Triton correctness & The toy boundary primitive passes Phase 4 interpreter tests under the repo-local \texttt{triton-cpu} source install across block tails, fp16, non-contiguous inputs, and shape errors. The stable Mac command reports 54 passed and 1 opt-in CPU-backend skip for HybridKernel. Non-interpreter CPU-backend linking is environment-fragile on this Mac. & Kernel logic only; not CUDA or speed evidence. \\
 \bottomrule
 \end{tabular}
 \caption{HybridKernel evidence before native GPU profiling.}
@@ -60,6 +60,10 @@ If repeated native summaries show less than 1\% recoverable gain, the branch sho
 
 Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with a runnable native measurement plan, source/control audit artifacts, and Mac-local interpreter correctness for one toy boundary primitive. Not allowed: throughput, latency, HBM, energy, occupancy, or vLLM speedup claims. The toy primitive is intentionally insufficient as the proposed systems kernel; it only checks indexing and Triton plumbing. If native profiling does not reveal separable boundary overhead, the branch should be killed.
 
+\section{Limitations}
+
+No native NVIDIA/vLLM profile has been run for this draft. The architecture map is an upper-bound traffic screen, the synthetic packet fixture only tests artifact admissibility, and the toy Triton primitive is not a serving kernel. The paper is therefore a measurement protocol and pre-GPU handoff, not evidence that a fused boundary operator improves real workloads.
+
 \section{Artifacts}
 
 \begin{itemize}
@@ -75,7 +79,6 @@ Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with 
 \item \url{experimental/hybridkernel/phase2/profiler_analysis_gate.md}
 \item \url{experimental/hybridkernel/phase2/pre_gpu_threshold_model.md}
 \item \url{experimental/triton_cpu_source_install_20260506.md}
-\item \url{experimental/hybridkernel/paper/colm_workshop_scaffold.md}
 \item \url{experimental/hybridkernel/paper/reviewer_pack.md}
 \end{itemize}
 

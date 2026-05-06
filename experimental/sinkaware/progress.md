@@ -11,8 +11,9 @@
   as bounded evidence; a 48-trace repeated held-out/model-family gate and a
   64/96-token cross-family length stability gate passed on distilgpt2 plus
   OPT-125M but are still not promotion evidence
-- Phase 4: fixed sink-token decomposition reference plus Triton interpreter
-  correctness scaffold added, but not phase-complete
+- Phase 4: fixed sink-token decomposition reference and approximate
+  sink-attention Triton interpreter correctness pass locally; native
+  NVIDIA packet validation remains absent
 - Last updated: 2026-05-06
 
 ## Phase 0 Checklist
@@ -716,3 +717,17 @@ downstream loss/KL/top-1 checks, repeated latency, and NCU memory/HBM counters.
 
 Decision: **GENERATED CROSS-MODEL ARTIFACT MATCHES CURRENT GATE**. SinkAware
 remains blocked on native GPU evidence, not Mac-local Triton implementation.
+
+## 2026-05-06 Camera-Ready Review Cleanup
+
+Applied the latest COLM-style reviewer pass to the paper and native runbook.
+The abstract now avoids saying broad downstream gates "pass" without caveats and
+instead frames rank-2 as positive only in point-estimate and minimum-row checks
+with broad intervals and non-negligible top-1 disagreement. The 24-trace
+downstream table is labeled as supporting evidence superseded by the 48-trace
+decision surface. The paper now points to the Phase 1 source audit as the
+novelty guardrail, and the native GPU runbook defines top-1 disagreement
+aggregation before any native packet arrives.
+
+Decision: **NO ADDITIONAL MAC-SIDE SINKAWARE EXPERIMENT REMAINS**. Promotion is
+blocked on native NVIDIA quality/timing/memory evidence only.

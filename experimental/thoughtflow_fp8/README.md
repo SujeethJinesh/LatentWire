@@ -1,12 +1,14 @@
 # ThoughtFlow-FP8
 
-Minimal project scaffold for the ThoughtFlow-FP8 experiment.
+Diagnostic falsification package for the stopped ThoughtFlow-FP8 experiment.
 
 Current status: the original anchor/recent/phase/math policy family and the
 pre-registered `rdu_topk`, `psi_topk`, and `vwac_topk` successors are stopped
 or killed on the available Mac-local sparse-cache surfaces. The folder is now a
 falsification/diagnostic harness unless a genuinely new pre-registered signal
-is evaluated once on a fresh frozen surface.
+is evaluated once on a fresh/larger frozen sparse-cache surface with
+matched-budget quality wins, same/cross-family separation, paired uncertainty,
+and oracle/headroom diagnostics.
 
 Use `phase2/current_decision_manifest_20260506.md` and
 `paper/reviewer_pack.md` as the current review entry points. Older artifacts

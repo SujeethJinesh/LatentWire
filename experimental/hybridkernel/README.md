@@ -95,17 +95,17 @@ Initial targets:
 
 ## Gates
 
-Phase 0 and Phase 1 are not complete until their deliverables exist and are
-recorded in `progress.md`.
+Phase 0-4 are complete enough for a Mac-local pre-GPU handoff:
 
-- Phase 0: local environment, external references, and model configs available.
-- Phase 1: literature/code audit confirms no existing fused boundary kernel.
-- Phase 2: architecture map shows theoretical fusion benefit is plausibly at or
-  above the project threshold.
+- Phase 0: active reproducibility uses repo-root `./venv_arm64`; the original
+  per-project `.venv` snapshot is historical.
+- Phase 1: literature/source audit is sufficient for handoff; deeper source
+  audit waits for a native profiler signal.
+- Phase 2: architecture map and threshold model define the native gate.
 - Phase 3: CPU reference implementation matches canonical behavior.
-- Phase 4: `TRITON_INTERPRET=1` kernel skeleton matches a CPU reference. A
-  missing local Triton dependency blocks Phase 4 completion rather than
-  proving or disproving the systems idea.
+- Phase 4: `TRITON_INTERPRET=1` kernel skeleton matches a CPU reference using
+  the repo-local `triton-cpu` source install. Non-interpreter CPU backend
+  execution remains optional diagnostics on this Mac.
 
 Phase 0-4 Mac-side deliverables are now review-ready as a pre-GPU handoff, not
 as performance evidence. Do not proceed with implementation until the native

@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. Layer-head and head-selection analyses weaken broad claims, but split/seed, length, trace-level, and GPT2/OPT-family gates keep the all-head rank-2 row positive. The strongest Mac-local stability gate keeps all four model/length rows positive at lengths 64 and 96, with mean output relative-L2 improvement $0.0535 \pm 0.0262$ and minimum row improvement 0.0301. The approximate operator passes Triton interpreter correctness tests against its CPU reference. Larger downstream causal-LM control gates on 48 traces and three split seeds now pass for sink counts 2 and 4 at lengths 64 and 96: exact replacement is a no-op, and rank-2 is closer than position-only in loss drift and KL on both distilgpt2 and OPT-125M. At length 96 with two sink tokens, aggregate absolute loss-delta improvement is $0.0537 \pm 0.0509$; with four sink tokens it is $0.0721 \pm 0.0676$. Top-1 disagreement remains non-negligible, so this is not cross-model predictor transfer, benchmark success, or a GPU speed result. It is a bounded correctness, stability, and downstream-control gate for deciding whether approximate sink prediction is worth native implementation.
+Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. Layer-head and head-selection analyses weaken broad claims, but split/seed, length, trace-level, GPT2/OPT-family, and downstream causal-LM controls keep the all-head rank-2 row positive in point estimate and minimum-row checks. The approximate operator passes Triton interpreter correctness tests against its CPU reference. Top-1 disagreement remains non-negligible and intervals are broad, so this is not cross-model predictor transfer, benchmark success, or a GPU speed result. It is a bounded correctness and downstream-control gate for deciding whether approximate sink prediction is worth native implementation.
 \end{abstract}
 
 \section{Problem}
@@ -150,7 +150,7 @@ Max len & Sink tokens & Loss improve & KL improve & Min model improve \\
 96 & 4 & $0.0728 \pm 0.0619$ & $0.0769 \pm 0.0904$ & 0.0412 \\
 \bottomrule
 \end{tabular}
-\caption{Downstream causal-LM control sweep on 24 traces, seeds 0/1/2, and separately fit distilgpt2/OPT-125M predictors. Positive values mean rank-2 is closer to exact baseline than position-only.}
+\caption{Supporting downstream causal-LM control sweep on 24 traces, seeds 0/1/2, and separately fit distilgpt2/OPT-125M predictors. Positive values mean rank-2 is closer to exact baseline than position-only; the larger 48-trace repeats below are the current decision surface.}
 \end{table}
 
 \begin{table}[h]
@@ -211,6 +211,13 @@ selection, and retained initial-token caches. SinkAware is not a claim that
 attention sinks are new; it asks whether fixed early-position K/V sink logits
 can be approximated cheaply enough to justify a native operator while keeping
 ordinary non-sink attention exact.
+
+The source audit in \url{experimental/sinkaware/phase1/lit_review.md} is the
+paper-facing novelty guardrail. FlashInfer, FlashMLA, and GPT-OSS already cover
+learned denominator sinks; StreamingLLM retains initial sink K/V tokens; sparse
+attention systems select or compress blocks. Those systems make broad
+``sink-aware attention'' wording unsafe. The remaining wedge here is only the
+fixed early-token K/V sink-logit approximation tested by the Mac-local controls.
 
 \section{Reference and Kernel Gates}
 

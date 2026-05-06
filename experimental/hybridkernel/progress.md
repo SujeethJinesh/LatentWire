@@ -4,7 +4,9 @@
 
 - Current phase: Phase 2 architecture map and runtime boundary audit complete;
   Phase 4 Triton interpreter correctness passes locally
-- Phase 0: partial Mac setup complete for audit
+- Phase 0: historical per-project `.venv` setup was partial; active
+  reproducibility now uses repo-root `./venv_arm64` plus the source-built
+  `triton-cpu` readout
 - Phase 1: source/control audit is sufficient for Mac-local handoff; any deeper
   source audit is deferred until native profiling shows a real boundary signal
 - Phase 3/4: boundary kernel correctness gates pass under `TRITON_INTERPRET=1`;
@@ -26,13 +28,14 @@ performed.
 - [x] Fetch or document model configs without downloading full weights
 - [x] Write `phase0/setup_complete.md`
 
-Phase 0 remains partial because the per-project requirements stack is not
-installed and some target configs are gated or unavailable at the public paths
-tried. The package-index Triton route is still unavailable on this Mac ARM64
-`./venv_arm64` surface, but the experimental `triton-cpu` repository now builds
-from source in the repo-local venv. Phase 0 is complete enough for source audit,
-Granite-only architecture mapping, native handoff preparation, and Mac-local
-Triton interpreter correctness checks.
+The original per-project Phase 0 setup remains a historical partial snapshot:
+the per-project requirements stack was not installed and some target configs
+were gated or unavailable at the public paths tried. The active reproducibility
+surface is now repo-root `./venv_arm64`; the package-index Triton route is still
+unavailable on this Mac ARM64 surface, but the experimental `triton-cpu`
+repository builds from source in the repo-local venv. This is complete enough
+for source audit, Granite-only architecture mapping, native handoff preparation,
+and Mac-local Triton interpreter correctness checks.
 
 ## Phase 1 Checklist
 
@@ -506,3 +509,16 @@ profiling shows a real boundary signal.
 Decision: **PHASE 1 NOTES MATCH CURRENT HANDOFF**. The next exact gate remains a
 native NVIDIA/vLLM packet passing the artifact checker and 3% recoverable-gain
 analysis.
+
+## 2026-05-06 Camera-Ready Review Cleanup
+
+Applied the latest COLM-style reviewer pass to the paper and handoff docs. The
+paper now includes an explicit limitations section stating that no native
+NVIDIA/vLLM profile exists yet, records the stable HybridKernel Mac test result
+next to Triton interpreter correctness, and removes the historical workshop
+scaffold from the submitted artifact list. The README and status block now
+describe repo-root `./venv_arm64` plus source-built `triton-cpu` as the active
+reproducibility surface; the old per-project `.venv` setup is historical.
+
+Decision: **NO ADDITIONAL MAC-SIDE HYBRIDKERNEL WORK REMAINS**. The next gate is
+native server-side Nsight evidence or kill/shelve.

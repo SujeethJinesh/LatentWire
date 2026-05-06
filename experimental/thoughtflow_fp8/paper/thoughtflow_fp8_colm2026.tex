@@ -65,7 +65,7 @@ Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +
 
 \section{CPU Sparse-Cache Quality Gate}
 
-Finally, we ran a CPU-only sparse-cache probe. The model processes the full
+We next ran a CPU-only sparse-cache probe. The model processes the full
 prefix once, each policy prunes the returned KV cache to the same 0.20 budget,
 and the continuation is scored from the pruned cache. This is not a Triton,
 CUDA, FP8, latency, or throughput result, but it is stronger than retained-text
@@ -244,10 +244,14 @@ All reported gates use tracked scripts under \url{experimental/thoughtflow_fp8/p
 
 \section{Artifacts}
 
-Key artifacts are the current decision manifest, reviewer pack, RDU independent
-reproduction check, PSI/VWAC fresh-surface checks, and Triton install note:
+Key artifacts are the current decision manifest, reviewer pack, workshop shell,
+README/progress handoff, RDU independent reproduction check, PSI/VWAC
+fresh-surface checks, and Triton install note:
 \url{experimental/thoughtflow_fp8/phase2/current_decision_manifest_20260506.md},
 \url{experimental/thoughtflow_fp8/paper/reviewer_pack.md},
+\url{experimental/thoughtflow_fp8/paper/colm_workshop_shell.md},
+\url{experimental/thoughtflow_fp8/README.md},
+\url{experimental/thoughtflow_fp8/progress.md},
 \url{experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.md},
 \url{experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.md},
 \url{experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.md}, and
