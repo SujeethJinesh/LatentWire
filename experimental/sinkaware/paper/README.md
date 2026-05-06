@@ -16,8 +16,9 @@ implementation gate, broader frozen benchmark slices, strict same-family vs
 cross-family controls, and competitor baselines before it can support a
 positive-method paper. The latest per-head readout weakens the claim: aggregate
 rank-2 output drift improves over position-only and survives randomized
-token-split repeats, a small length/sink sweep, and a repeated OPT-family
-diagnostic, but this is still Mac-local and not per-head robust.
+token-split repeats, a small length/sink sweep, trace-level frozen splits, and
+a repeated OPT-family length diagnostic, but this is still Mac-local and not a
+downstream-quality result.
 
 ## Approximate Low-Rank Sink Prior
 
@@ -79,9 +80,14 @@ tradeoff.
   rel-L2 improvement; minimum split `+0.0367`), but layer-head output win rate
   remained low (`0.278 +/- 0.016`).
 - Held-out/model-family repeat: separately fit per-model rank-2 predictors
-  stayed positive on 24 traces and split seeds `0,1,2`; distilgpt2 improved by
-  `+0.0341 +/- 0.0018` output rel-L2 and facebook/opt-125m improved by
-  `+0.0774 +/- 0.0043`. This is not cross-model predictor transfer.
+  stayed positive on 48 traces and split seeds `0,1,2`; distilgpt2 improved by
+  `+0.0306 +/- 0.0023` output rel-L2 and facebook/opt-125m improved by
+  `+0.0788 +/- 0.0069`. This is not cross-model predictor transfer.
+- Cross-family length stability: the same 48-trace GPT2/OPT-family gate stayed
+  positive at lengths 64 and 96; aggregate model/length output rel-L2
+  improvement was `+0.0535 +/- 0.0262`, with minimum row `+0.0301` and
+  layer-head output win rate `0.982 +/- 0.008`. This is still attention-output
+  drift evidence only.
 
 ## Limitations
 
@@ -92,17 +98,18 @@ tradeoff.
   but does not prove end-to-end serving speedups.
 - Per-head gains are concentrated; a reviewer can reasonably ask whether a
   rank-2 path should be stabilized or killed for unstable heads.
-- A small cross-family falsification pair has passed only as a Mac-local,
-  separately fit per-model diagnostic.
+- Cross-family length stability has passed only as a Mac-local, separately fit
+  per-model diagnostic.
 - No long-context competitor comparison or native GPU timing is available yet.
 
 ## Next GPU Gate
 
 The Mac-local softmax/output probe now shows bounded aggregate rank-2 drift
-under three randomized token split seeds, a small length/sink sweep, and a
-trace-level frozen split repeat, but per-head robustness is mixed. The next gate
-should run a larger frozen slice or make the Triton interpreter scaffold runnable
-before any native GPU prototype that measures:
+under randomized token splits, a small length/sink sweep, trace-level frozen
+splits, and GPT2/OPT-family length stability, but it still lacks downstream
+quality and native timing evidence. The next gate should either add a
+downstream quality/control diagnostic or make the Triton interpreter scaffold
+runnable before any native GPU prototype that measures:
 
 1. exact attention baseline,
 2. exact fixed-sink decomposition that still computes `QK_sink`,

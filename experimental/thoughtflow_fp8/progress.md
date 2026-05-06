@@ -11,9 +11,11 @@
   sparse-cache quality gate
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
   scaffold added, but not phase-complete
-- Current viability: the stopped current policy family remains ruled out, but
-  `rdu_topk` is now alive as a pre-registered successor that cleared the first
-  Mac-local frozen sparse-cache gate.
+- Current viability: the stopped current policy family remains ruled out.
+  `rdu_topk` is alive as a pre-registered successor that cleared the first
+  Mac-local frozen sparse-cache gate, but the first alternate-surface
+  no-retuning check weakens the promotion because a stopped same-family sparse
+  row narrowly beats it.
 - Current risk: high field crowding; ThinKV already occupies much of the
   thought-adaptive quantization/eviction space, and DeepSeek V4 raises the
   production compressed-attention systems bar.
@@ -214,6 +216,27 @@ reproduction. The exact next gate is a larger or seed-repeated frozen slice
 with the same measured-vs-cached labeling, strict same-family/cross-family
 reporting, and oracle/headroom diagnostics.
 
+`phase2/rdu_alt_surface_reproduction_check.md` adds the first measured
+alternate-surface check without retuning: same `rdu_topk` rule and 0.20 keep
+fraction, but longer prefix/continuation settings (`max_length=112`,
+`continuation_tokens=32`) against the cached 74-trace promoted gate. This is
+not a clean reproduction. `rdu_topk` still clears the cross-family baselines:
+NLL `3.594` versus R-KV-like `3.681` and ThinKV-like `3.851`, with paired
+deltas `-0.087` 95% CI `[-0.139, -0.028]` and `-0.256` 95% CI
+`[-0.465, -0.086]`. But strict same-family separation fails: the stopped
+`tf_sparse_r0.55_p0.05_m0.12_a2` row reaches NLL `3.588`, beating `rdu_topk`
+by `0.006`. Oracle/headroom remains material: per-trace compressed oracle NLL
+is `3.460`, `rdu_topk` is `0.135` above that oracle and `0.847` above full
+cache, and the oracle-hit rate is `0.438`.
+
+Status: **WEAKENED, NOT REPRODUCED ON THE FIRST ALTERNATE SURFACE**. Promoted:
+the recurrence-distance signal still beats cross-family local proxies under a
+changed scoring surface. Weakened: `rdu_topk` is not yet separated from the
+stopped same-family sparse row. Highest-priority next gate: do not retune;
+run an independently seeded/larger frozen slice and require both cross-family
+and same-family separation, paired uncertainty, and oracle/headroom before
+claiming a positive method.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -290,3 +313,8 @@ reviewer pack or GPU work.
   stack, preserves same-family and cross-family margins, and adds
   oracle/headroom diagnostics. This strengthens local reproduction status but
   does not replace a larger or seed-repeated frozen slice.
+- 2026-05-06: Added and ran the measured alternate-surface no-retuning check
+  for `rdu_topk` with `max_length=112` and `continuation_tokens=32`. Result:
+  weakened/not reproduced as a strict positive-method gate. `rdu_topk` still
+  beats R-KV-like and ThinKV-like with paired CIs below zero, but the stopped
+  same-family sparse row beats it by 0.006 NLL, so same-family separation fails.

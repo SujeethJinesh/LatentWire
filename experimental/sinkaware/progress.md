@@ -8,8 +8,9 @@
   and per-head softmax/output gates completed with a new paired layer-head
   caveat; simple head selection failed; all-rank2 split repeats and a bounded
   length/sink sweep passed weakly; trace-level frozen split repeat passed
-  as bounded evidence; a 48-trace repeated held-out/model-family gate passed on
-  distilgpt2 plus OPT-125M but is still not promotion evidence
+  as bounded evidence; a 48-trace repeated held-out/model-family gate and a
+  64/96-token cross-family length stability gate passed on distilgpt2 plus
+  OPT-125M but are still not promotion evidence
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-06
@@ -341,3 +342,29 @@ timing, no downstream quality benchmark, and no cross-model predictor transfer
 result. Focused validation after the run passed:
 `./venv_arm64/bin/python -m pytest experimental/sinkaware/phase2/tests/test_rank2_cross_model_falsification_gate.py experimental/sinkaware/phase2/tests/test_rank2_trace_frozen_split_gate.py experimental/sinkaware/phase3/tests/test_approx_sink_attention_reference.py`
 (`10 passed`, 2 warnings).
+
+## 2026-05-06 Cross-Family Length Stability Gate
+
+Added and ran `phase2/rank2_cross_model_length_stability_gate.py` in
+`./venv_arm64` with `--model-names distilgpt2 facebook/opt-125m --max-traces
+48 --max-lengths 64 96 --sink-tokens 4 --train-fraction 0.67 --seeds 0 1 2`.
+
+Result: **ALIVE but bounded** as a stronger non-Triton Mac gate. The gate
+requires both GPT2-family and OPT-family rows to stay positive at lengths 64
+and 96 under whole-trace splits. It still fits predictors separately per model
+and length, keeps non-sink QK scores exact, reports attention-output drift
+only, and makes no GPU speed, downstream-quality, or predictor-transfer claim.
+
+- Aggregate model/length output rel-L2 improvement:
+  `+0.0535 +/- 0.0262`; minimum model/length improvement: `+0.0301`.
+- Layer-head output win rate across model/length rows: `0.982 +/- 0.008`.
+- `distilgpt2` length 64: `+0.0306 +/- 0.0023`; length 96:
+  `+0.0301 +/- 0.0018`.
+- `facebook/opt-125m` length 64: `+0.0788 +/- 0.0069`; length 96:
+  `+0.0744 +/- 0.0040`.
+
+Decision: this strengthens the held-out/model-family evidence because the
+positive row survives the stronger length axis without touching Triton. It
+still does not close the paper blocker: SinkAware needs a downstream quality
+control or a runnable interpreter/native path before any paper-grade positive
+method claim.

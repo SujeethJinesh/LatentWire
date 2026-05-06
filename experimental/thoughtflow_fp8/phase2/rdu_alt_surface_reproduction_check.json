@@ -1,0 +1,386 @@
+{
+  "status": "NOT REPRODUCED on alternate measured no-retuning surface; inspect measured decision details.",
+  "method_branch": "rdu_topk",
+  "diagnostic_type": "measured_no_retuning_alternate_surface_against_cached_frozen_gate",
+  "cached_label": "cached_promoted_gate",
+  "measured_label": "measured_alt_surface_len112_cont32",
+  "surface_changes": {
+    "max_length": {
+      "cached": 96,
+      "measured": 112
+    },
+    "continuation_tokens": {
+      "cached": 24,
+      "measured": 32
+    },
+    "n_scored_traces": {
+      "cached": 74,
+      "measured": 73
+    }
+  },
+  "cached_surface": {
+    "model_name": "distilgpt2",
+    "keep_fraction": 0.2,
+    "max_traces": 74,
+    "max_length": 96,
+    "continuation_tokens": 24,
+    "n_scored_traces": 74
+  },
+  "measured_surface": {
+    "model_name": "distilgpt2",
+    "keep_fraction": 0.2,
+    "max_traces": 74,
+    "max_length": 112,
+    "continuation_tokens": 32,
+    "n_scored_traces": 73
+  },
+  "cached_baseline": {
+    "model_name": "distilgpt2",
+    "keep_fraction": 0.2,
+    "max_traces": 74,
+    "max_length": 96,
+    "continuation_tokens": 24,
+    "n_scored_traces": 74,
+    "summary": {
+      "full_cache": {
+        "n_traces": 74.0,
+        "keep_rate": 1.0,
+        "nll": 2.84759355316291,
+        "delta_nll_vs_full": 0.0
+      },
+      "longflow_like": {
+        "n_traces": 74.0,
+        "keep_rate": 0.2134727615205086,
+        "nll": 4.158260403452693,
+        "delta_nll_vs_full": 1.310666850289783
+      },
+      "rdu_topk": {
+        "n_traces": 74.0,
+        "keep_rate": 0.2134727615205086,
+        "nll": 3.778857429285307,
+        "delta_nll_vs_full": 0.9312638761223974
+      },
+      "rkv_like": {
+        "n_traces": 74.0,
+        "keep_rate": 0.21443801248575955,
+        "nll": 3.938916821737547,
+        "delta_nll_vs_full": 1.0913232685746372
+      },
+      "tf_sparse_r0.55_p0.05_m0.12_a2": {
+        "n_traces": 74.0,
+        "keep_rate": 0.2134727615205086,
+        "nll": 3.9075720841820174,
+        "delta_nll_vs_full": 1.0599785310191077
+      },
+      "thin_kv_like": {
+        "n_traces": 74.0,
+        "keep_rate": 0.2134727615205086,
+        "nll": 3.8999502143344364,
+        "delta_nll_vs_full": 1.0523566611715265
+      },
+      "thoughtflow_saliency_recent": {
+        "n_traces": 74.0,
+        "keep_rate": 0.2134727615205086,
+        "nll": 3.9199960650624455,
+        "delta_nll_vs_full": 1.0724025118995357
+      }
+    },
+    "paired_delta_nll_vs_rkv_like": {
+      "full_cache": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_rkv_like": -1.0913232685746372,
+        "ci95_low": -1.2538197846026033,
+        "ci95_high": -0.9379260813867724
+      },
+      "thin_kv_like": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_rkv_like": -0.038966607403110816,
+        "ci95_low": -0.09983508490227364,
+        "ci95_high": 0.014882572599359462
+      },
+      "longflow_like": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_rkv_like": 0.21934358171514562,
+        "ci95_low": 0.13561977083618576,
+        "ci95_high": 0.3079703804608938
+      },
+      "thoughtflow_saliency_recent": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_rkv_like": -0.018920756675101614,
+        "ci95_low": -0.04822915470277941,
+        "ci95_high": 0.005907232696945603
+      },
+      "tf_sparse_r0.55_p0.05_m0.12_a2": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_rkv_like": -0.03134473755552962,
+        "ci95_low": -0.07823707284154119,
+        "ci95_high": 0.01982036474588755
+      },
+      "rdu_topk": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_rkv_like": -0.16005939245224,
+        "ci95_low": -0.2642616597381798,
+        "ci95_high": -0.050065361164711615
+      }
+    },
+    "paired_delta_nll_vs_thin_kv_like": {
+      "full_cache": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_thin_kv_like": -1.0523566611715265,
+        "ci95_low": -1.1985282084426365,
+        "ci95_high": -0.9193065077871889
+      },
+      "rkv_like": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_thin_kv_like": 0.038966607403110816,
+        "ci95_low": -0.01539531269588986,
+        "ci95_high": 0.09933394676930196
+      },
+      "longflow_like": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_thin_kv_like": 0.25831018911825643,
+        "ci95_low": 0.17752998584025614,
+        "ci95_high": 0.3374494668599722
+      },
+      "thoughtflow_saliency_recent": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_thin_kv_like": 0.0200458507280092,
+        "ci95_low": -0.02972698211669922,
+        "ci95_high": 0.0739988475232511
+      },
+      "tf_sparse_r0.55_p0.05_m0.12_a2": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_thin_kv_like": 0.0076218698475811935,
+        "ci95_low": -0.059820634287756844,
+        "ci95_high": 0.0852727165093293
+      },
+      "rdu_topk": {
+        "n_pairs": 74.0,
+        "mean_delta_nll_minus_thin_kv_like": -0.12109278504912918,
+        "ci95_low": -0.2109737170709146,
+        "ci95_high": -0.03709846090626072
+      }
+    },
+    "status": "ALIVE on frozen sparse-cache probe; rdu_topk clears the preregistered promotion rule with margins 0.160 vs R-KV-like and 0.121 vs ThinKV-like."
+  },
+  "measured_reproduction": {
+    "model_name": "distilgpt2",
+    "keep_fraction": 0.2,
+    "max_traces": 74,
+    "max_length": 112,
+    "continuation_tokens": 32,
+    "n_scored_traces": 73,
+    "summary": {
+      "full_cache": {
+        "n_traces": 73.0,
+        "keep_rate": 1.0,
+        "nll": 2.746909604497152,
+        "delta_nll_vs_full": 0.0
+      },
+      "longflow_like": {
+        "n_traces": 73.0,
+        "keep_rate": 0.21547683119024466,
+        "nll": 3.8813832753325164,
+        "delta_nll_vs_full": 1.1344736708353644
+      },
+      "rdu_topk": {
+        "n_traces": 73.0,
+        "keep_rate": 0.21547683119024466,
+        "nll": 3.594349021780981,
+        "delta_nll_vs_full": 0.847439417283829
+      },
+      "rkv_like": {
+        "n_traces": 73.0,
+        "keep_rate": 0.23053445241224943,
+        "nll": 3.681159842504214,
+        "delta_nll_vs_full": 0.9342502380070621
+      },
+      "tf_sparse_r0.55_p0.05_m0.12_a2": {
+        "n_traces": 73.0,
+        "keep_rate": 0.21547683119024466,
+        "nll": 3.5878519440350467,
+        "delta_nll_vs_full": 0.8409423395378949
+      },
+      "thin_kv_like": {
+        "n_traces": 73.0,
+        "keep_rate": 0.21547683119024466,
+        "nll": 3.8507277116383594,
+        "delta_nll_vs_full": 1.1038181071412074
+      },
+      "thoughtflow_saliency_recent": {
+        "n_traces": 73.0,
+        "keep_rate": 0.21547683119024466,
+        "nll": 3.6944748767434734,
+        "delta_nll_vs_full": 0.9475652722463216
+      }
+    },
+    "paired_delta_nll_vs_rkv_like": {
+      "full_cache": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_rkv_like": -0.9342502380070621,
+        "ci95_low": -1.0481130048020246,
+        "ci95_high": -0.8151043343217406
+      },
+      "thin_kv_like": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_rkv_like": 0.16956786913414523,
+        "ci95_low": -0.008121715833062995,
+        "ci95_high": 0.3823228764207396
+      },
+      "longflow_like": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_rkv_like": 0.20022343282830224,
+        "ci95_low": 0.15322962852373515,
+        "ci95_high": 0.2522765120414838
+      },
+      "thoughtflow_saliency_recent": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_rkv_like": 0.013315034239259485,
+        "ci95_low": 0.0011803744590445741,
+        "ci95_high": 0.028773719317292515
+      },
+      "tf_sparse_r0.55_p0.05_m0.12_a2": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_rkv_like": -0.09330789846916722,
+        "ci95_low": -0.13414998577065665,
+        "ci95_high": -0.055663259062048505
+      },
+      "rdu_topk": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_rkv_like": -0.08681082072323315,
+        "ci95_low": -0.13943168235151734,
+        "ci95_high": -0.027536584906382104
+      }
+    },
+    "paired_delta_nll_vs_thin_kv_like": {
+      "full_cache": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_thin_kv_like": -1.1038181071412074,
+        "ci95_low": -1.3201227669846523,
+        "ci95_high": -0.9194952274022037
+      },
+      "rkv_like": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_thin_kv_like": -0.16956786913414523,
+        "ci95_low": -0.38390609336225956,
+        "ci95_high": 0.007540222716658083
+      },
+      "longflow_like": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_thin_kv_like": 0.030655563694157013,
+        "ci95_low": -0.181884278989818,
+        "ci95_high": 0.2079140650082941
+      },
+      "thoughtflow_saliency_recent": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_thin_kv_like": -0.15625283489488576,
+        "ci95_low": -0.37865949656865366,
+        "ci95_high": 0.005254206592089509
+      },
+      "tf_sparse_r0.55_p0.05_m0.12_a2": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_thin_kv_like": -0.26287576760331244,
+        "ci95_low": -0.4912888677152869,
+        "ci95_high": -0.12291233833522013
+      },
+      "rdu_topk": {
+        "n_pairs": 73.0,
+        "mean_delta_nll_minus_thin_kv_like": -0.2563786898573784,
+        "ci95_low": -0.46541217255265743,
+        "ci95_high": -0.08550536469237445
+      }
+    },
+    "status": "ALIVE on frozen sparse-cache probe; rdu_topk clears the preregistered promotion rule with margins 0.087 vs R-KV-like and 0.256 vs ThinKV-like."
+  },
+  "cached_decision": {
+    "rdu_nll": 3.778857429285307,
+    "best_compressed_policy": "rdu_topk",
+    "best_compressed_nll": 3.778857429285307,
+    "margin_vs_rkv_like": 0.16005939245224,
+    "margin_vs_thin_kv_like": 0.12109278504912924,
+    "paired_delta_vs_rkv_like": {
+      "n_pairs": 74.0,
+      "mean_delta_nll_minus_rkv_like": -0.16005939245224,
+      "ci95_low": -0.2642616597381798,
+      "ci95_high": -0.050065361164711615
+    },
+    "paired_delta_vs_thin_kv_like": {
+      "n_pairs": 74.0,
+      "mean_delta_nll_minus_thin_kv_like": -0.12109278504912918,
+      "ci95_low": -0.2109737170709146,
+      "ci95_high": -0.03709846090626072
+    },
+    "mean_margin_pass": true,
+    "paired_ci_pass": true,
+    "promotion_pass": true,
+    "rdu_is_best_compressed": true
+  },
+  "measured_decision": {
+    "rdu_nll": 3.594349021780981,
+    "best_compressed_policy": "tf_sparse_r0.55_p0.05_m0.12_a2",
+    "best_compressed_nll": 3.5878519440350467,
+    "margin_vs_rkv_like": 0.0868108207232332,
+    "margin_vs_thin_kv_like": 0.25637868985737855,
+    "paired_delta_vs_rkv_like": {
+      "n_pairs": 73.0,
+      "mean_delta_nll_minus_rkv_like": -0.08681082072323315,
+      "ci95_low": -0.13943168235151734,
+      "ci95_high": -0.027536584906382104
+    },
+    "paired_delta_vs_thin_kv_like": {
+      "n_pairs": 73.0,
+      "mean_delta_nll_minus_thin_kv_like": -0.2563786898573784,
+      "ci95_low": -0.46541217255265743,
+      "ci95_high": -0.08550536469237445
+    },
+    "mean_margin_pass": true,
+    "paired_ci_pass": true,
+    "promotion_pass": true,
+    "rdu_is_best_compressed": false
+  },
+  "cached_vs_measured": {
+    "policy_nll_delta_measured_minus_cached": {
+      "full_cache": -0.10068394866575803,
+      "longflow_like": -0.2768771281201765,
+      "rdu_topk": -0.1845084075043264,
+      "rkv_like": -0.2577569792333332,
+      "tf_sparse_r0.55_p0.05_m0.12_a2": -0.3197201401469707,
+      "thin_kv_like": -0.049222502696077086,
+      "thoughtflow_saliency_recent": -0.22552118831897205
+    },
+    "rdu_margin_delta_vs_rkv_like": -0.07324857172900678,
+    "rdu_margin_delta_vs_thin_kv_like": 0.1352859048082493
+  },
+  "measured_family_separation": {
+    "same_family_margin_nll_vs_rdu": {
+      "thoughtflow_saliency_recent": 0.1001258549624926,
+      "tf_sparse_r0.55_p0.05_m0.12_a2": -0.00649707774593411
+    },
+    "cross_family_margin_nll_vs_rdu": {
+      "rkv_like": 0.0868108207232332,
+      "thin_kv_like": 0.25637868985737855,
+      "longflow_like": 0.28703425355153556
+    },
+    "win_rate_vs_rkv_like": 0.6438356164383562,
+    "win_rate_vs_thin_kv_like": 0.6438356164383562
+  },
+  "measured_oracle_headroom": {
+    "oracle_policy_set": [
+      "longflow_like",
+      "rdu_topk",
+      "rkv_like",
+      "tf_sparse_r0.55_p0.05_m0.12_a2",
+      "thin_kv_like",
+      "thoughtflow_saliency_recent"
+    ],
+    "n_traces": 73,
+    "per_trace_oracle_nll": 3.459837114974244,
+    "rdu_topk_nll": 3.594349021780981,
+    "full_cache_nll": 2.746909604497152,
+    "rdu_gap_to_per_trace_oracle": 0.13451190680673664,
+    "oracle_gap_to_full_cache": 0.7129275104770922,
+    "rdu_gap_to_full_cache": 0.8474394172838289,
+    "rdu_oracle_hit_rate": 0.4383561643835616
+  },
+  "reproduction_pass": false
+}

@@ -31,6 +31,10 @@ Current local gate result:
 - The checker also rejects tiny or placeholder Nsight artifacts by default, so
   synthetic fixtures are schema-only unless native artifact validation is
   explicitly disabled.
+- A local preflight artifact now records the attempted Triton unblock:
+  Torch `2.6.0` imports, CUDA is unavailable, MPS is available, and PyPI/index
+  checks for `triton`, `triton-cpu`, and `triton-nightly` report no compatible
+  distribution for this macOS arm64 `venv_arm64`.
 
 Decision: no more Mac kernel implementation. Move only to profiler preparation.
 
@@ -75,10 +79,15 @@ Latest local gates:
   `+0.0306`.
 - This fits predictors separately per model; it is not cross-model predictor
   transfer and not promotion evidence.
+- A cross-family length-stability gate at max lengths `64` and `96` kept all
+  four model/length rows positive, with aggregate output rel-L2 improvement
+  `+0.0535 +/- 0.0262`, minimum model/length row `+0.0301`, and head win rate
+  `0.982 +/- 0.008`.
 
 Decision: continue only as approximate low-rank SinkAware. The next pre-GPU
-gate is Triton-interpreter correctness for the approximate operator or a larger
-repeated cross-family falsification gate, not kernel coding.
+gate is a downstream quality/control diagnostic under the same GPT2/OPT
+separation, or Triton-interpreter correctness if a compatible Triton
+environment becomes available.
 
 ## ThoughtFlow-FP8
 
@@ -118,8 +127,13 @@ Current local gate result:
 - the measured compressed oracle is still better (`3.634` NLL), leaving a
   `0.145` NLL gap from `rdu_topk` to per-trace compressed oracle and a `0.419`
   oracle-hit rate.
+- the harder alternate no-retuning surface (`max_length=112`,
+  `continuation_tokens=32`) weakens the strict claim: `rdu_topk` still beats
+  R-KV-like (`+0.087` NLL margin) and ThinKV-like (`+0.256`), but a stopped
+  same-family sparse row is better by `0.006` NLL (`3.588` versus `3.594`).
 
 Decision: do not tune anchor/recent/phase/math weights further on the current
-saved traces. The live branch is now recurrence-distance utility. The next
-pre-GPU gate is larger frozen/seeded reproduction with strict family separation
-and oracle/headroom diagnostics, not local retuning.
+saved traces. The live branch is recurrence-distance utility, but it is
+weakened by the alternate-surface result. The next pre-GPU gate is a larger or
+independently seeded frozen reproduction that must beat both cross-family
+baselines and stopped same-family rows with oracle/headroom diagnostics.

@@ -2,7 +2,7 @@
 
 - venue target: COLM-style workshop shell, not a submission draft
 - status: **weakly alive**
-- date: 2026-05-05
+- date: 2026-05-06
 - evidence level: Mac-local config audit, runtime source audit, CPU reference
   scaffold, and pre-GPU threshold model
 
@@ -101,6 +101,7 @@ Promotion threshold:
 | `phase2/pre_gpu_threshold_model.md` | Granite needs about 25.0% of boundary traffic to be genuinely avoidable at 60% recovery to clear a 3% proxy gain; Qwen3-Next needs about 10.4%. | Mac-only implementation is not justified. |
 | `phase3/reference/boundary.py` and tests | CPU boundary blend scaffold exists. | Useful for semantics if profiling promotes implementation, but not evidence of speed. |
 | `phase4/kernel/boundary_triton.py` and tests | Triton interpreter scaffold exists but local Triton import is unavailable in `venv_arm64`. | No GPU or Mac performance claim. |
+| `phase0/local_preflight.json` and `.md` | PyTorch 2.6.0 imports with MPS available; CUDA is unavailable; Triton is not importable; `triton`, `triton-cpu`, and `triton-nightly` have no matching pip-index distributions on this Mac ARM64 venv. | Local Phase 4 completion is dependency-blocked; future operator handoff should start from the preflight artifact rather than another install attempt. |
 | `phase2/profiler_driver.py` | Fixed-request OpenAI-compatible driver dry-runs locally; runbook now profiles the vLLM server and drives it from a second local terminal. | Avoids client-only Nsight traces. |
 | `phase2/check_profiler_run_artifacts.py` | Future native run directories are checked for metadata, server-side Nsight Systems and Compute scope, Nsight artifacts, logs, readout rows, distinct repeated metric rows, and matching profiler-analysis outputs. | GPU evidence must be artifact-complete, server-side, independently repeated, and analytically fresh before the draft cites it. |
 | `phase2/tests/fixtures/synthetic_profiler_run_packet/` | Synthetic packet fixture exercises the checker without GPU access. | Documents packet shape only; it is not profiler evidence. |
@@ -110,6 +111,8 @@ Promotion threshold:
 
 - No NVIDIA/vLLM profiling has been run yet.
 - No Mac result can support a GPU performance claim.
+- Triton is unavailable from the current Mac ARM64 venv/index, so Triton
+  interpreter tests skip locally by dependency gate.
 - The architecture map counts boundary-crossing hidden-state bytes, many of
   which are ordinary inter-layer traffic rather than avoidable overhead.
 - vLLM already implements sophisticated hybrid state layout and disaggregated

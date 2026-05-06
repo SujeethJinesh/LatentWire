@@ -11,8 +11,17 @@ dependencies, scratch clones, and generated artifacts under
 Local Mac work is saturated. The project has the config audit, literature/source
 audit, architecture map, pre-GPU threshold model, fixed-request driver,
 profiler-analysis parser, artifact verifier, synthetic packet fixture, tests,
-and native packet checklist. Do not add more local kernels, scaffolds, or paper
-claims until native NVIDIA profiler data exists.
+native packet checklist, and a reproducible local environment preflight. Do not
+add more local kernels, scaffolds, or paper claims until native NVIDIA profiler
+data exists.
+
+The current Mac ARM64 preflight is recorded in
+`phase0/local_preflight.json` and `phase0/local_preflight.md`: PyTorch is
+available with MPS, CUDA is unavailable, Triton is not importable, and
+`pip index versions` finds no matching distributions for `triton`,
+`triton-cpu`, or `triton-nightly` in `./venv_arm64`. This blocks local Phase 4
+Triton completion and should be treated as an explicit dependency gate, not a
+kernel result.
 
 The next exact gate is a user-operated NVIDIA/vLLM packet that passes
 `phase2/check_profiler_run_artifacts.py` and is then reduced by
@@ -50,6 +59,21 @@ python -m pip install -r experimental/hybridkernel/requirements.txt
 Use Mac CPU/MPS for setup, literature audit, architecture mapping, and reference
 tests. Do not run remote GPU work from this repo; write a local runbook for any
 future 5090/H100 gate.
+
+Record the local dependency surface before handoff:
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+PIP_CACHE_DIR=.debug/pip_cache ./venv_arm64/bin/python \
+  experimental/hybridkernel/phase0/preflight_environment.py \
+  --check-pip-index \
+  --output-json experimental/hybridkernel/phase0/local_preflight.json \
+  --output-md experimental/hybridkernel/phase0/local_preflight.md
+```
+
+This command does not install packages. It only records torch/CUDA/MPS/Triton
+availability and whether Triton candidates are visible from the active pip
+index.
 
 ## Scope
 

@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. A layer-head paired analysis weakens the claim: rank-2 improves output relative L2 by only $0.0297 \pm 0.0378$ across 72 layer-head cells and wins 20/72 cells. A validation-selected head gate also fails: selecting 19/72 heads on validation raises held-out output relative L2 to 0.204 versus 0.172 for position-only and 0.142 for all-rank2. Split/seed and length/sink sweeps partly revive the all-head row: across four configurations with max lengths 64/96, sink counts 2/4, and three split seeds each, all-rank2 beats position-only by $0.0366 \pm 0.0024$ output relative L2, with minimum configuration improvement $0.0342$. A larger trace-level frozen split repeat on 48 traces strengthens repeatability: all three whole-trace held-out splits are positive, with mean output relative-L2 improvement $0.0379 \pm 0.0014$ and minimum split improvement $0.0367$. A measured repeated held-out/model-family gate is also positive on 48 traces and three split seeds: separately fit per-model predictors improve distilgpt2 by $0.0306 \pm 0.0023$ output relative-L2 and OPT-125M by $0.0788 \pm 0.0069$. This is not cross-model predictor transfer, end-to-end quality evidence, or a GPU speed result. It is a bounded correctness and repeatability gate for deciding whether approximate sink prediction is worth implementing.
+Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. A layer-head paired analysis weakens the claim: rank-2 improves output relative L2 by only $0.0297 \pm 0.0378$ across 72 layer-head cells and wins 20/72 cells. A validation-selected head gate also fails: selecting 19/72 heads on validation raises held-out output relative L2 to 0.204 versus 0.172 for position-only and 0.142 for all-rank2. Split/seed and length/sink sweeps partly revive the all-head row: across four configurations with max lengths 64/96, sink counts 2/4, and three split seeds each, all-rank2 beats position-only by $0.0366 \pm 0.0024$ output relative L2, with minimum configuration improvement $0.0342$. A larger trace-level frozen split repeat on 48 traces strengthens repeatability: all three whole-trace held-out splits are positive, with mean output relative-L2 improvement $0.0379 \pm 0.0014$ and minimum split improvement $0.0367$. A measured repeated held-out/model-family gate is also positive on 48 traces and three split seeds: separately fit per-model predictors improve distilgpt2 by $0.0306 \pm 0.0023$ output relative-L2 and OPT-125M by $0.0788 \pm 0.0069$. A stronger cross-family length stability gate keeps all four model/length rows positive at lengths 64 and 96, with mean output relative-L2 improvement $0.0535 \pm 0.0262$ and minimum row improvement 0.0301. This is not cross-model predictor transfer, end-to-end quality evidence, or a GPU speed result. It is a bounded correctness and repeatability gate for deciding whether approximate sink prediction is worth implementing.
 \end{abstract}
 
 \section{Problem}
@@ -106,6 +106,17 @@ cross-model predictor transfer and is not promotion evidence, but it is a
 stronger falsification check than the prior one-seed smoke because the rank-2
 row did not collapse under repeated OPT-family held-out splits.
 
+We then broadened that same family gate across sequence length. With 48 traces,
+lengths 64 and 96, sink count 4, and split seeds 0, 1, and 2, every
+model/length row remained positive. The aggregate model/length output
+relative-L2 improvement was $0.0535 \pm 0.0262$, with minimum row improvement
+0.0301 and layer-head output win rate $0.982 \pm 0.008$. The per-row
+improvements were $0.0306 \pm 0.0023$ and $0.0301 \pm 0.0018$ for distilgpt2 at
+lengths 64 and 96, and $0.0788 \pm 0.0069$ and $0.0744 \pm 0.0040$ for
+facebook/opt-125m at lengths 64 and 96. This strengthens the Mac-local
+stability decision surface, but it still does not measure downstream quality,
+predictor transfer, or GPU speed.
+
 \section{Reference and Kernel Gates}
 
 The Phase 3 reference specifies the exact computation to preserve during kernel work. Given query $q$, keys $K$, values $V$, and predicted fixed-sink logits $\hat{s}$, SinkAware computes all tail logits $qK_{tail}^{\top}$ exactly, replaces only the first sink-token logits with $\hat{s}$, and then runs the ordinary softmax denominator over the concatenated vector. Unit tests verify that when $\hat{s}$ equals exact sink logits, the reference reproduces exact attention to numerical tolerance. This keeps the live branch separate from the killed exact-static-reuse branch.
@@ -114,7 +125,7 @@ The Phase 4 Triton-interpreter scaffold now targets the same operator for a one-
 
 \section{Decision}
 
-SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. The larger trace-level frozen repeat strengthens the all-head row, and the repeated OPT-family gate avoids an immediate model-family collapse. Promotion still requires a Triton-interpreter correctness pass, broader benchmark controls, plus native runs that show real speed or memory-traffic advantage over exact attention while still beating the position-only predictor on quality.
+SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. The larger trace-level frozen repeat strengthens the all-head row, and the repeated OPT-family length gate avoids an immediate model-family or length collapse. Promotion still requires a Triton-interpreter correctness pass, downstream benchmark controls, plus native runs that show real speed or memory-traffic advantage over exact attention while still beating the position-only predictor on quality.
 
 \section{Artifacts}
 
@@ -125,6 +136,7 @@ SinkAware is alive only as an all-head approximate low-rank correctness and nati
 \item \url{experimental/sinkaware/phase2/rank2_length_sink_sweep_gate.md}
 \item \url{experimental/sinkaware/phase2/rank2_trace_frozen_split_gate.md}
 \item \url{experimental/sinkaware/phase2/rank2_cross_model_falsification_gate.md}
+\item \url{experimental/sinkaware/phase2/rank2_cross_model_length_stability_gate.md}
 \item \url{experimental/sinkaware/phase2/qk_sink_cost_model.md}
 \item \url{experimental/sinkaware/phase3/approx_sink_attention_reference.md}
 \item \url{experimental/sinkaware/phase4/approx_sink_attention_triton_gate.md}

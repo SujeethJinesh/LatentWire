@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-05-06T04:11:46.450851+00:00",
+  "status": "BLOCKED_TRITON_UNAVAILABLE",
+  "platform": {
+    "system": "Darwin",
+    "machine": "arm64",
+    "platform": "macOS-26.4.1-arm64-arm-64bit",
+    "python_version": "3.11.6",
+    "python_executable": "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python"
+  },
+  "torch": {
+    "importable": true,
+    "version": "2.6.0",
+    "error": null,
+    "cuda_version": null,
+    "cuda_available": false,
+    "cuda_device_count": 0,
+    "mps_built": true,
+    "mps_available": true
+  },
+  "triton": {
+    "import": {
+      "importable": false,
+      "version": null,
+      "error": "module not found"
+    },
+    "pip_index_checked": true,
+    "pip_index": [
+      {
+        "package": "triton",
+        "command": [
+          "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+          "-m",
+          "pip",
+          "index",
+          "versions",
+          "triton"
+        ],
+        "returncode": 1,
+        "available": false,
+        "timed_out": false,
+        "stdout": "",
+        "stderr": "ERROR: No matching distribution found for triton\n\n[notice] A new release of pip is available: 26.0.1 -> 26.1.1\n[notice] To update, run: /Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python -m pip install --upgrade pip\n"
+      },
+      {
+        "package": "triton-cpu",
+        "command": [
+          "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+          "-m",
+          "pip",
+          "index",
+          "versions",
+          "triton-cpu"
+        ],
+        "returncode": 1,
+        "available": false,
+        "timed_out": false,
+        "stdout": "",
+        "stderr": "ERROR: No matching distribution found for triton-cpu\n\n[notice] A new release of pip is available: 26.0.1 -> 26.1.1\n[notice] To update, run: /Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python -m pip install --upgrade pip\n"
+      },
+      {
+        "package": "triton-nightly",
+        "command": [
+          "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python",
+          "-m",
+          "pip",
+          "index",
+          "versions",
+          "triton-nightly"
+        ],
+        "returncode": 1,
+        "available": false,
+        "timed_out": false,
+        "stdout": "",
+        "stderr": "ERROR: No matching distribution found for triton-nightly\n\n[notice] A new release of pip is available: 26.0.1 -> 26.1.1\n[notice] To update, run: /Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python -m pip install --upgrade pip\n"
+      }
+    ],
+    "install_possible_from_current_index": false,
+    "blocker": "Triton is not importable and pip index found no matching package among triton, triton-cpu, and triton-nightly for this environment."
+  },
+  "interpretation": "Mac-local Phase 4 Triton interpreter tests should skip; do not add more kernels or claim performance until a native NVIDIA handoff environment is available. Triton is not importable and pip index found no matching package among triton, triton-cpu, and triton-nightly for this environment."
+}

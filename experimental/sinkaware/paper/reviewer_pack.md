@@ -31,6 +31,7 @@ claim.
 | length/sink all-rank2 sweep | lengths 64/96, sinks 2/4, 3 seeds each; mean improvement +0.0366 +/- 0.0024; min config +0.0342 | alive but bounded |
 | trace-level frozen split gate | 48 traces, 3 whole-trace splits; mean improvement +0.0379 +/- 0.0014; min split +0.0367 | stronger repeatability, still bounded |
 | held-out/cross-family repeat | measured 48 traces, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; output rel-L2 improvements +0.0306 +/- 0.0023 and +0.0788 +/- 0.0069 | alive but bounded; not predictor transfer, GPU speed, or end-to-end quality evidence |
+| cross-family length stability | measured 48 traces, lengths 64/96, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; all 4 model/length rows positive; mean output rel-L2 improvement +0.0535 +/- 0.0262; min row +0.0301 | alive but bounded; stronger Mac-local stability, still no downstream or speed claim |
 | Triton readiness | `TRITON_INTERPRET=1` set, `triton` not importable, CUDA unavailable on Mac | no interpreter pass yet |
 
 ## Reviewer Risks
@@ -41,8 +42,8 @@ claim.
   head.
 - Existing attention-sink systems occupy the broad novelty frame.
 - distilgpt2 is no longer the only model-family probe, and the OPT row now
-  survives a measured 48-trace, three-seed held-out repeat, but it is still a Mac-local
-  diagnostic and not a benchmark-backed result.
+  survives measured 48-trace, three-seed held-out repeats at lengths 64 and 96,
+  but it is still a Mac-local diagnostic and not a benchmark-backed result.
 - No GPU latency or memory claim exists yet.
 
 ## Next Experiment
@@ -50,8 +51,8 @@ claim.
 First make the `TRITON_INTERPRET=1` approximate-attention scaffold runnable in
 `./venv_arm64` or in a Linux GPU environment and verify exact-prediction
 correctness. If that remains blocked locally, the next Mac-feasible gate is a
-broader frozen benchmark/control slice that preserves strict same-family versus
-OPT-family separation and compares against exact-attention and position-only
-controls. Simple validation head selection is no longer a good rescue. Native
-NVIDIA comparison remains gated by
+downstream quality/control diagnostic that preserves strict same-family versus
+OPT-family separation and compares exact attention, position-only replacement,
+and rank-2 replacement. Simple validation head selection is no longer a good
+rescue. Native NVIDIA comparison remains gated by
 `experimental/sinkaware/phase2/gpu_gate_runbook.md`.

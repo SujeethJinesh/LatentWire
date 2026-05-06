@@ -19,14 +19,18 @@ performed.
 
 - [x] Create `experimental/hybridkernel/.venv` (`Python 3.9.13`)
 - [ ] Install `experimental/hybridkernel/requirements.txt`
-- [x] Record Python, PyTorch, and Triton import checks
+- [x] Record Python, PyTorch, CUDA, MPS, Triton import, and Triton package-index
+  checks
 - [x] Create local `phase0/configs/` area for config-only artifacts
 - [x] Fetch or document model configs without downloading full weights
 - [x] Write `phase0/setup_complete.md`
 
 Phase 0 remains partial because the requirements stack is not installed and
-some target configs are gated or unavailable at the public paths tried. It is
-complete enough for source audit and Granite-only architecture mapping.
+some target configs are gated or unavailable at the public paths tried. The
+Triton dependency is now explicitly blocked in the Mac ARM64 `./venv_arm64`
+surface because `triton`, `triton-cpu`, and `triton-nightly` have no matching
+pip-index distributions. Phase 0 is complete enough for source audit,
+Granite-only architecture mapping, and native handoff preparation.
 
 ## Phase 1 Checklist
 
@@ -217,3 +221,25 @@ when native artifact validation is explicitly disabled.
 
 Status remains **PENDING native profiler data**. This is handoff hardening, not
 profiler evidence and not a performance claim.
+
+## 2026-05-06 Local Triton Preflight Blocker
+
+Added `phase0/preflight_environment.py` and recorded the current local artifacts
+at `phase0/local_preflight.json` and `phase0/local_preflight.md`. The preflight
+uses `./venv_arm64` and only queries the active environment/index; it does not
+install packages.
+
+Current local readout:
+
+- PyTorch `2.6.0` imports in `./venv_arm64`.
+- CUDA is unavailable (`cuda_available=false`, `cuda_device_count=0`).
+- MPS is built and available.
+- Triton is not importable.
+- `pip index versions triton`, `triton-cpu`, and `triton-nightly` all return no
+  matching distributions from this Mac ARM64 environment.
+
+Decision: **BLOCKED_TRITON_UNAVAILABLE** for local Phase 4 completion. The
+Phase 4 interpreter tests should continue to skip on this machine. This is a
+dependency/handoff blocker, not performance evidence. The next exact gate
+remains a user-operated NVIDIA/vLLM packet that passes the native artifact
+checker and the 3% profiler-analysis gate.

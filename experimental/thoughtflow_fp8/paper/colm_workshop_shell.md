@@ -4,12 +4,14 @@ Status date: 2026-05-06
 
 ## Current Policy Status
 
-**Stopped for the current anchor/recent/phase/math policy family; revived for
-the pre-registered `rdu_topk` successor.** The current interpretable retention
-family is not ready to support a positive-method claim and should not be tuned
-further on the available saved traces. The one allowed successor evaluation,
-`rdu_topk`, now clears the frozen sparse-cache gate by using delayed prefix
-self-attention recurrence rather than token labels or recent reserves.
+**Stopped for the current anchor/recent/phase/math policy family; revived but
+now weakened for the pre-registered `rdu_topk` successor.** The current
+interpretable retention family is not ready to support a positive-method claim
+and should not be tuned further on the available saved traces. The one allowed
+successor evaluation, `rdu_topk`, clears the original frozen sparse-cache gate
+by using delayed prefix self-attention recurrence rather than token labels or
+recent reserves, but a first alternate-surface reproduction check does not keep
+it separated from a stopped same-family sparse row.
 
 This shell is a scoped workshop-paper scaffold, not a submission draft. The
 new result revives the method branch on the Mac-local distilgpt2 decision
@@ -23,7 +25,10 @@ partitions keep `rdu_topk` as the best compressed row, while only 2/4 partitions
 clear both paired CI highs below zero. A separate measured no-retuning rerun on
 the same 74-trace surface reproduces the cached result exactly on this
 deterministic local stack and adds same-family/cross-family plus oracle/headroom
-readouts, but it is still same-slice evidence.
+readouts, but it is still same-slice evidence. A measured alternate-surface
+check with longer prefix/continuation settings preserves cross-family wins over
+R-KV-like and ThinKV-like, but the stopped sparse ThoughtFlow row is lower than
+`rdu_topk` by 0.006 NLL, so this is a weakened, not reproduced, gate.
 
 ## Candidate Story If Revived
 
@@ -52,6 +57,7 @@ quality or perplexity, not just on protected-token recall.
 | `phase2/frozen_sparse_cache_probe.md` | Larger no-retuning CPU sparse-cache slice on 74 traces. The stopped family still fails, but pre-registered `rdu_topk` reaches NLL 3.779 versus ThinKV-like 3.900 and R-KV-like 3.939, with paired CIs below zero against both. | Revived for `rdu_topk`; stopped family remains ruled out. |
 | `phase2/rdu_robustness_diagnostic.md` | Cached split/paired diagnostic over the same 74-trace 0.20 rows. `rdu_topk` is best on even, odd, first-half, and second-half partitions, with all split mean margins above 0.03 versus R-KV-like and ThinKV-like; 2/4 split partitions also clear both paired CI highs below zero. | Supports current promotion, but not a fresh reproduction. |
 | `phase2/rdu_no_retune_reproduction_check.md` | Measured same-slice rerun of the frozen probe on current Mac hardware. The measured result exactly matches the cached promoted gate: `rdu_topk` NLL 3.779, margins +0.160 vs R-KV-like and +0.121 vs ThinKV-like, zero measured-cached NLL drift for all policies. Per-trace compressed oracle NLL is 3.634, leaving `rdu_topk` 0.145 above oracle and 0.931 above full cache. | Locally reproduced, but still not a larger or independently seeded reproduction. |
+| `phase2/rdu_alt_surface_reproduction_check.md` | Measured alternate surface with `max_length=112` and `continuation_tokens=32`. `rdu_topk` NLL is 3.594 and still beats R-KV-like by 0.087 and ThinKV-like by 0.256 with paired CIs below zero, but `tf_sparse_r0.55_p0.05_m0.12_a2` reaches 3.588. | Weakened/not reproduced because strict same-family separation fails. |
 | `phase2/stop_pivot_decision_20260506.md` | Stops current policy-family tuning on the available saved traces; allows only a future pre-registered new utility signal evaluated once. | Stop/pivot gate. |
 
 The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
@@ -157,6 +163,10 @@ has now been evaluated once and clears the stated gate:
 - Measured oracle/headroom: per-trace compressed oracle NLL is 3.634,
   `rdu_topk` is 0.145 NLL above that oracle and 0.931 above full cache, and the
   `rdu_topk` oracle-hit rate is 0.419.
+- Measured alternate-surface check: with `max_length=112` and
+  `continuation_tokens=32`, `rdu_topk` still beats cross-family rows
+  R-KV-like and ThinKV-like, but the stopped sparse ThoughtFlow row reaches
+  NLL 3.588 versus `rdu_topk` at 3.594, so same-family separation fails.
 
 The highest-value method branch is now recurrence-distance utility. It should
 advance only through evaluation-quality gates, not local retuning:
@@ -177,7 +187,8 @@ infrastructure, and real KV/hidden telemetry to explain eviction bias.
 - Distilgpt2 is a small model and not a reasoning model; this is a Mac-local
   falsification proxy, not a benchmark result.
 - Current saved traces are small and not seed-repeated; the measured
-  reproduction rerun is same-slice and deterministic, not independent.
+  same-slice reproduction rerun is deterministic, and the alternate-surface
+  check weakens `rdu_topk` by failing same-family separation.
 - The split diagnostic reuses the same 74 traces and should not be counted as a
   new independent reproduction.
 - There is no real FP8 numerical drift measurement in this gate.
@@ -197,5 +208,5 @@ Do not move to a broad GPU benchmark yet. The next exact gate is:
 4. Keep promotion only if `rdu_topk` beats the strongest proxy on quality at
    matched bytes while preserving interpretable keep-rate telemetry.
 
-Until that gate clears, `rdu_topk` should remain a promoted Mac-local candidate
+Until that gate clears, `rdu_topk` should remain a weakened Mac-local candidate
 rather than a paper-ready positive method claim.
