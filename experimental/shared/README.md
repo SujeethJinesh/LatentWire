@@ -99,8 +99,9 @@ checker enforces admissible coverage, not just schema shape: SSQ-LR needs all
 preregistered S1 buckets for every prompt/layer pair, HORN needs both boundary
 directions plus both-direction non-boundary and prompt-paired flipped controls,
 and HBSM needs `boundary_only` primary rows with prompt-level boundary/non-
-boundary coverage, a non-enriched random baseline, and perturbation-off rows
-with near-zero drift. Real packets also need 64-hex `prompt_ids_hash` and
+boundary coverage, aggregated scoring-layer top-decile cardinality, a
+non-enriched random baseline, and perturbation-off rows with near-zero drift.
+Real packets also need 64-hex `prompt_ids_hash` and
 `architecture_map_hash` values, project-specific aggregate `summary.json`
 fields, and a non-promotable decision whenever `resource_limit_note` is
 present. The checker recomputes the active S1/H1/B1 gate summaries from rows

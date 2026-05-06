@@ -1,8 +1,18 @@
 {
-  "seed": 20260506,
-  "layers": 12,
-  "shape": [
-    96,
-    96
-  ]
+  "architecture_map_hash": "sha256:8a76d0f3e805c9af9a173571cbe22620d83e396110cee15030ca379d12a78c90",
+  "command": "./venv_arm64/bin/python -m experimental.hbsm.phase2.hbsm_synthetic_b1_gate",
+  "context_lengths": [
+    2048
+  ],
+  "device": "cpu",
+  "dtype": "float32_synthetic_sensitivity",
+  "model_id": "synthetic-hybrid-hbsm-schema-rehearsal",
+  "model_revision": "synthetic-schema-rehearsal",
+  "prompt_ids_hash": "sha256:81bafbff405f707e565b270954f6e03586c8c36b3bbb038b85bbe42dae13f7d0",
+  "prompt_source": "synthetic_hbsm_schema_prompt_ids",
+  "schema_rehearsal": true,
+  "seed_list": [
+    20260506
+  ],
+  "tokenizer_revision": "synthetic-schema-rehearsal"
 }

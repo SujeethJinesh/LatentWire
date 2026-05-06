@@ -30,10 +30,11 @@ must add mechanism beyond HORN's boundary-direction test.
 
 \section{Mac Artifact Status}
 
-A deterministic synthetic B1/B2 packet validates the layer-sensitivity and cheap
-predictor readout. It reports kurtosis-versus-sensitivity Spearman rho 0.657
-and two boundary-flagged top-decile hits, producing
-\texttt{SYNTHETIC\_PASS\_REAL\_LAYER\_SENSITIVITY\_NEXT}. This is
+A deterministic synthetic B1/B2 real-schema rehearsal now validates the
+layer-sensitivity packet contract. It emits 504 rows, including 480 primary
+prompt rows and 24 control rows, and aggregates those primary rows to 40
+scoring layers. The packet passes the real checker in non-promoting mode with
+\texttt{SCHEMA\_REHEARSAL\_NOT\_PROMOTABLE\_SYNTHETIC\_HBSM\_B1}. This is
 synthetic-only: it is not model evidence, not a novelty claim, and not GPU
 evidence.
 The metadata-only model eligibility packet identifies the current live hybrid

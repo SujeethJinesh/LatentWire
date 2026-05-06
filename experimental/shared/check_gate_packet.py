@@ -240,6 +240,27 @@ def _validate_ratio_field(
         errors.append(f"{project} summary {field} must be positive finite numeric")
 
 
+def _hbsm_aggregated_primary_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[tuple[str, int], list[dict[str, Any]]] = {}
+    for row in rows:
+        if str(row.get("control_type")) != "boundary_only":
+            continue
+        key = (str(row.get("model_id", "")), int(row["layer"]))
+        grouped.setdefault(key, []).append(row)
+    aggregated = []
+    for (model_id, layer), layer_rows in sorted(grouped.items(), key=lambda item: item[0]):
+        aggregated.append(
+            {
+                "model_id": model_id,
+                "layer": layer,
+                "boundary_flag": any(bool(row["boundary_flag"]) for row in layer_rows),
+                "top_decile_flag": any(bool(row["top_decile_flag"]) for row in layer_rows),
+                "random_top_decile": any(bool(row["random_top_decile"]) for row in layer_rows),
+            }
+        )
+    return aggregated
+
+
 def _resource_limited(config: dict[str, Any]) -> bool:
     return "resource_limit_note" in config
 
@@ -653,16 +674,17 @@ def _validate_real_coverage(
         splits = {str(row.get("train_test_split")) for row in primary_rows}
         if not {"train", "test"}.issubset(splits) and "resource_limit_note" not in config:
             errors.append("hbsm boundary_only rows need both train and test splits or config.json resource_limit_note")
-        top_decile_count = sum(1 for row in primary_rows if row.get("top_decile_flag") is True)
-        random_top_decile_count = sum(1 for row in primary_rows if row.get("random_top_decile") is True)
-        expected_top_decile_count = math.ceil(0.10 * len(primary_rows)) if primary_rows else 0
+        scoring_rows = _hbsm_aggregated_primary_rows(primary_rows)
+        top_decile_count = sum(1 for row in scoring_rows if row.get("top_decile_flag") is True)
+        random_top_decile_count = sum(1 for row in scoring_rows if row.get("random_top_decile") is True)
+        expected_top_decile_count = math.ceil(0.10 * len(scoring_rows)) if scoring_rows else 0
         if top_decile_count != expected_top_decile_count:
             errors.append(
-                "hbsm boundary_only top_decile_flag true count must equal ceil(10% of primary rows)"
+                "hbsm boundary_only top_decile_flag true count must equal ceil(10% of aggregated primary layers)"
             )
         if random_top_decile_count != expected_top_decile_count:
             errors.append(
-                "hbsm boundary_only random_top_decile true count must equal ceil(10% of primary rows)"
+                "hbsm boundary_only random_top_decile true count must equal ceil(10% of aggregated primary layers)"
             )
         for index, row in enumerate(rows):
             for field in ("kl_or_nll_drift", "cheap_predictor", "parameter_count", "weight_norm"):

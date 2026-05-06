@@ -32,19 +32,23 @@ no-forward-pass predictors. B3 tests the softmax-amplification mechanism.
 
 ## Current Mac Packet
 
-Synthetic-only packet:
+Synthetic-only real-schema rehearsal packet:
 
 - `phase2/results/hbsm_synthetic_b1/`
-- decision: `SYNTHETIC_PASS_REAL_LAYER_SENSITIVITY_NEXT`
+- decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`
+- rows: `504` (`480` primary prompt rows plus `24` control rows)
 
-This validates artifact mechanics only. It is not model evidence.
+This validates the real B1 row schema, prompt-to-layer aggregation, required
+controls, provenance fields, and recomputed evaluator summary. It is not model
+evidence and cannot promote B1.
 
 Validate packet shape with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/hbsm/phase2/results/hbsm_synthetic_b1 \
-  --expected-decision-prefix SYNTHETIC
+  --mode real --project hbsm \
+  --expected-decision-prefix SCHEMA_REHEARSAL_NOT_PROMOTABLE
 ```
 
 Real trace packet requirements are in
@@ -110,12 +114,13 @@ Reproduce the current synthetic packet:
 ./venv_arm64/bin/python -m experimental.hbsm.phase2.hbsm_synthetic_b1_gate
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/hbsm/phase2/results/hbsm_synthetic_b1 \
-  --expected-decision-prefix SYNTHETIC
-jq '.decision, .spearman_rho_kurtosis_vs_sensitivity, .boundary_top_decile_hits' \
+  --mode real --project hbsm \
+  --expected-decision-prefix SCHEMA_REHEARSAL_NOT_PROMOTABLE
+jq '.decision, .row_count, .gate_status, .primary_row_count, .scoring_layer_count' \
   experimental/hbsm/phase2/results/hbsm_synthetic_b1/summary.json
 ```
 
-Expected decision: `SYNTHETIC_PASS_REAL_LAYER_SENSITIVITY_NEXT`.
+Expected decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`.
 
 ## GPU Rule
 

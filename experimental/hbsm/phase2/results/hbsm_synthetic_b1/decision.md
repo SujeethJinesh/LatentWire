@@ -1,8 +1,9 @@
-# HBSM Synthetic B1/B2 Decision
+# HBSM Synthetic B1 Real-Schema Rehearsal
 
-`SYNTHETIC_PASS_REAL_LAYER_SENSITIVITY_NEXT`
+`SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`
 
-- Spearman rho: `0.657`
-- boundary top-decile hits: `2`
+- evaluator gate status: `PASS_REAL_B1_SENSITIVITY_HETEROGENEITY`
+- boundary top-decile enrichment: `400000000.000`
+- cheap-predictor Spearman: `1.000`
 
-Synthetic-only: this validates artifact mechanics and does not promote the branch.
+Synthetic CPU rows validate the real packet schema and checker path only. They do not promote B1 and are not model, GPU, quality, or systems evidence.

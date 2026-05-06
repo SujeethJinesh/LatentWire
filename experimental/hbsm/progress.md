@@ -4,17 +4,20 @@
 
 Status: **NEW / wounded novelty / Mac gates pending**.
 
-Added and ran a deterministic synthetic B1/B2 packet:
+Added and ran a deterministic synthetic B1/B2 packet. It has now been upgraded
+to a real-schema rehearsal:
 
 - script: `phase2/hbsm_synthetic_b1_gate.py`
 - packet: `phase2/results/hbsm_synthetic_b1/`
-- decision: `SYNTHETIC_PASS_REAL_LAYER_SENSITIVITY_NEXT`
-- cheap-predictor Spearman rho: `0.657`
-- boundary top-decile hits: `2`
+- decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`
+- rows: `504` (`480` primary prompt rows plus `24` control rows)
+- scoring layers after prompt aggregation: `40`
+- real checker: passes `--mode real --project hbsm`
 
-Interpretation: synthetic-only artifact validation. It fixes the B1/B2 readout
-format but does not promote the branch or replace real hybrid layer-sensitivity
-measurements.
+Interpretation: synthetic-only schema validation. It exercises the real B1 row
+schema, prompt-to-layer aggregation, controls, provenance fields, and recomputed
+evaluator summary, but does not promote the branch or replace real hybrid
+layer-sensitivity measurements.
 
 Next exact gate: B1 sensitivity heterogeneity replication on current hybrid
 models. Kill or fold into HORN if the mechanism wedge does not differentiate.
@@ -96,3 +99,15 @@ for both measured and random top-decile rows.
 
 Decision: **HBSM NEEDS REAL B1 PLUS KL-LENS/OUTLIER BASELINES TO STAY
 STANDALONE**. The blocker remains a live layer-sensitivity sweep.
+
+## 2026-05-06 B1 Schema-Rehearsal Upgrade
+
+After COLM-style review, the HBSM synthetic packet now validates as a
+non-promoting real-schema rehearsal with `schema_rehearsal: true` and decision
+`SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`. The shared checker now
+counts top-decile and random-top-decile cardinality on aggregated
+`(model_id, layer)` scoring rows, matching the B1 evaluator and paper contract,
+rather than on raw prompt rows.
+
+Decision: **HBSM PACKET PLUMBING IS READY FOR A REAL SENSITIVITY TABLE**. The
+blocker is still a live hybrid forward-sensitivity sweep with the same controls.
