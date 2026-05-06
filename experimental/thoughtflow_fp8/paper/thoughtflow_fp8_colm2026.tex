@@ -205,7 +205,7 @@ buckets are exactly the buckets a robust policy would need to handle before any
 long-context claim.
 
 \paragraph{Prefix-surprisal successor.}
-The final Mac-feasible successor tested whether retaining high self-surprisal
+A later consumed successor tested whether retaining high self-surprisal
 prefix tokens could preserve information that is hard to reconstruct. The signal
 uses only prefill logits, not continuation loss, trace labels, recent reserves,
 or RDU lag buckets. On a fresh 70-trace C2C GSM saved-trace surface,
@@ -216,7 +216,7 @@ ThinKV-like, where positive is worse for \texttt{psi\_topk}. This rules out this
 exact signal in the current Mac sparse-cache harness.
 
 \paragraph{Value-weighted attention successor.}
-The final successor tested a cache-state utility: future prefix attention to a
+The next consumed successor tested a cache-state utility: future prefix attention to a
 token multiplied by the token's cached value-vector norm. On a fresh 64-trace
 C2C SVAMP surface, \texttt{vwac\_topk} also fails. R-KV-like is best compressed at
 NLL 4.096, ThinKV-like reaches 4.162, and \texttt{vwac\_topk} reaches 4.336.

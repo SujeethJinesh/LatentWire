@@ -53,6 +53,7 @@ READOUT_TEMPLATE_PLACEHOLDERS = [
 NSYS_PATTERNS = ["*.nsys-rep", "*.sqlite", "*.qdrep"]
 NCU_PATTERNS = ["*.ncu-rep"]
 MIN_NATIVE_ARTIFACT_BYTES = 1024
+MIN_NATIVE_LOG_BYTES = 8
 SKELETON_TODO_MARKER = "TODO_NATIVE_PROFILE_FILL"
 PLACEHOLDER_ARTIFACT_MARKERS = [
     b"placeholder",
@@ -80,6 +81,21 @@ def _has_server_profiler_log(log_files: list[Path]) -> bool:
 
 def _has_client_replay_log(log_files: list[Path]) -> bool:
     return any("client" in path.name.lower() for path in log_files)
+
+
+def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
+    for log_file in log_files:
+        size = log_file.stat().st_size
+        if size < MIN_NATIVE_LOG_BYTES:
+            errors.append(
+                f"profiling log is too small to be reviewable native evidence: "
+                f"{log_file.name} has {size} bytes"
+            )
+        text = _read_text(log_file).lower()
+        if SKELETON_TODO_MARKER.lower() in text:
+            errors.append(f"profiling log still contains native run-packet TODO markers: {log_file.name}")
+        if "placeholder" in text:
+            errors.append(f"profiling log appears to be placeholder evidence: {log_file.name}")
 
 
 def _read_text(path: Path) -> str:
@@ -157,6 +173,8 @@ def check_run_artifacts(
             errors.append("missing Nsight server profiler log under logs/")
         if not _has_client_replay_log(log_files):
             errors.append("missing client replay log under logs/")
+        if require_native_artifacts:
+            _validate_native_logs(log_files, errors)
 
     if require_native_artifacts:
         _validate_native_artifacts(

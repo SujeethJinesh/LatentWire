@@ -149,6 +149,20 @@ def test_rejects_server_warmup_log_without_profiler_log(tmp_path: Path) -> None:
     assert any("server profiler log" in error for error in result["errors"])
 
 
+def test_rejects_empty_or_placeholder_native_logs(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "logs/nsys_server_b1.log").write_text("", encoding="utf-8")
+    (tmp_path / "logs/client_replay_b1.log").write_text(
+        "placeholder client replay\n", encoding="utf-8"
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("profiling log is too small" in error for error in result["errors"])
+    assert any("placeholder evidence" in error for error in result["errors"])
+
+
 def test_requires_complete_environment_capture(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "metadata/environment.txt").write_text(
