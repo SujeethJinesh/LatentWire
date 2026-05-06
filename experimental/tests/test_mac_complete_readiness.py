@@ -22,12 +22,26 @@ def test_mac_complete_audit_links_all_project_packets() -> None:
         "experimental/hybridkernel/paper/reviewer_pack.md",
         "experimental/sinkaware/paper/reviewer_pack.md",
         "experimental/thoughtflow_fp8/paper/reviewer_pack.md",
+        "experimental/native_gpu_handoff_20260506.md",
         "experimental/hybridkernel/paper/hybridkernel_colm2026.pdf",
         "experimental/sinkaware/paper/sinkaware_colm2026.pdf",
         "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
     ]:
         assert relative_path in audit
         assert (ROOT / relative_path).exists()
+
+
+def test_native_handoff_map_has_project_gates_and_no_thoughtflow_gpu_work() -> None:
+    handoff = (EXPERIMENTAL / "native_gpu_handoff_20260506.md").read_text()
+    for phrase in [
+        "SinkAware rank-2 native timing",
+        "HybridKernel profiler packet",
+        "ThoughtFlow-FP8",
+        "no GPU work for the current branch",
+        "at least a 3% native speed or memory-traffic improvement",
+        "recoverable-gain upper bound clears",
+    ]:
+        assert phrase in handoff
 
 
 def test_colm_style_pdfs_are_present_and_bounded() -> None:

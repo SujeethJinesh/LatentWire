@@ -38,6 +38,10 @@ fresh measurement.
 - SinkAware: `experimental/sinkaware/paper/reviewer_pack.md`
 - ThoughtFlow-FP8: `experimental/thoughtflow_fp8/paper/reviewer_pack.md`
 
+## Native Handoff Link
+
+- `experimental/native_gpu_handoff_20260506.md`
+
 ## PDF Links
 
 - `experimental/hybridkernel/paper/hybridkernel_colm2026.pdf`

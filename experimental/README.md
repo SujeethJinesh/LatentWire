@@ -15,7 +15,8 @@ Do not treat the Phase 0--4 checklist below as a promotion signal by itself.
 The current papers are review/handoff packets with measured Mac-local evidence
 and explicit claim boundaries, not completed GPU systems papers.
 
-Current audit packet: `mac_complete_readiness_20260506.md`.
+Current audit packet: `mac_complete_readiness_20260506.md`. Native handoff map:
+`native_gpu_handoff_20260506.md`.
 
 ## Timeline
 - **Original plan date**: May 4, 2026
