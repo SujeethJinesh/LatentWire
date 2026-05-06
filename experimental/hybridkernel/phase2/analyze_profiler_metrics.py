@@ -134,7 +134,9 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
         boundary = float(_require_present(raw, "attention_ssm_boundary_ms"))
         matched = float(_require_present(raw, "matched_non_boundary_ms"))
         recoverable = float(_require_present(raw, "recoverable_fraction"))
-        model = str(raw.get("model", "unknown"))
+        model = str(_require_present(raw, "model")).strip()
+        if not model:
+            raise ValueError("model must be explicitly recorded and non-empty")
         run_id = str(_require_present(raw, "run_id")).strip()
         if not run_id:
             raise ValueError("run_id must be explicitly recorded and non-empty")

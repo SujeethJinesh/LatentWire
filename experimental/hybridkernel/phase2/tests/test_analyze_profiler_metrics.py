@@ -140,6 +140,18 @@ def test_rejects_missing_or_empty_run_id() -> None:
             raise AssertionError("expected missing or empty run_id to be rejected")
 
 
+def test_rejects_missing_or_empty_model() -> None:
+    for model in [None, "  "]:
+        row = _native_row(0)
+        row["model"] = model
+        try:
+            analyze({"rows": [row]})
+        except ValueError as exc:
+            assert "model" in str(exc)
+        else:
+            raise AssertionError("expected missing or empty model to be rejected")
+
+
 def test_rejects_non_integer_batch_shape_fields() -> None:
     row = _native_row(0)
     row["batch_shape"] = {

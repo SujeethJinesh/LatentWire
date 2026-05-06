@@ -382,8 +382,8 @@ packet that passes the artifact checker and the 3% recoverable-gain analysis.
 
 Closed one last Mac-feasible native-packet loophole: the profiler analyzer no
 longer synthesizes missing `run_id` values. Every native metric row must now
-explicitly record a non-empty `run_id`, and batch-shape fields must be JSON
-positive integers rather than floats, strings, booleans, or placeholders.
+explicitly record a non-empty `model` and `run_id`, and batch-shape fields must
+be JSON positive integers rather than floats, strings, booleans, or placeholders.
 
 Decision: **STOP MAC ITERATION AFTER TESTS PASS**. Further local work cannot
 replace the native NVIDIA/vLLM trace evidence required for benchmarks,
