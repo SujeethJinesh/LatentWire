@@ -13,11 +13,15 @@ reuse remains killed. The latest layer-head paired readout is mixed, so a GPU
 run must preserve the per-head drift table instead of reporting only aggregate
 means. A three-seed randomized token split repeat keeps all-rank2 positive, but
 does not solve per-head fragility. A bounded Mac-local length/sink sweep
-(`max_length={64,96}`, `sink_tokens={2,4}`) also keeps all-rank2 positive, so
-does a trace-level frozen split repeat on 24 traces (`+0.0398 +/- 0.0014`
-output rel-L2 improvement). Native work should preserve both aggregate and
-per-head quality readouts because the trace-level head win rate remains low
-(`0.287 +/- 0.018`).
+(`max_length={64,96}`, `sink_tokens={2,4}`) also keeps all-rank2 positive, as
+does a 48-trace trace-level frozen split repeat. The strongest downstream Mac
+controls now run 48 traces, lengths 64/96, sink counts 2/4, split seeds 0/1/2,
+and separately fit distilgpt2/OPT-125M predictors. Exact sink-logit replacement
+remains a no-op, and rank-2 is closer than position-only in loss drift and KL in
+every model/config row, but top-1 disagreement remains non-negligible. Native
+work should preserve aggregate, per-head, and downstream-control readouts
+because the trace-level head win rate remains a risk and the downstream patch is
+still only a quality-control diagnostic.
 
 The GPU gate must answer whether the approximation is useful after real kernel
 costs, memory movement, and output drift are measured together.
@@ -65,5 +69,10 @@ if position-only is indistinguishable.
 - `rank2_split_stability_gate.md`
 - `rank2_length_sink_sweep_gate.md`
 - `rank2_trace_frozen_split_gate.md`
+- `rank2_cross_model_length_stability_gate.md`
 - `qk_sink_cost_model.md`
 - `decomposition_decision.md`
+- `downstream_quality_control_gate_traces48_len64_sink2.md`
+- `downstream_quality_control_gate_traces48_len96_sink2.md`
+- `downstream_quality_control_gate_traces48_len64_sink4.md`
+- `downstream_quality_control_gate_traces48_len96_sink4.md`

@@ -97,10 +97,11 @@ tradeoff.
   speed evidence.
 - Downstream length/sink sweep: lengths `64/96` and sink counts `2/4` all stay
   positive with minimum model loss improvement at least `+0.0272`.
-- Larger downstream repeat: 48 traces, sink count 4, lengths `64/96`, and split
-  seeds `0,1,2` stay positive on both model rows. Exact replacement remains a
-  no-op; rank-2 beats position-only by loss drift and KL. Minimum model loss
-  improvement is `+0.0345` at length 64 and `+0.0376` at length 96.
+- Larger downstream repeats: 48 traces, sink counts `2/4`, lengths `64/96`,
+  and split seeds `0,1,2` stay positive on both model rows. Exact replacement
+  remains a no-op; rank-2 beats position-only by loss drift and KL. Minimum
+  model loss improvement is `+0.0263`, and top-1 disagreement remains
+  non-negligible, so this is still a quality-control diagnostic.
 
 ## Limitations
 

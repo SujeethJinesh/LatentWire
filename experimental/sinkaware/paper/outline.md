@@ -72,6 +72,7 @@ Non-claims:
 | Downstream quality/control smoke | Alive but bounded | On distilgpt2 and facebook/opt-125m, 24 traces, and three split seeds, exact replacement is a no-op and rank-2 is closer than position-only in causal-LM loss drift and KL; aggregate absolute loss-delta improvement is +0.0809 +/- 0.0815. This is small-slice downstream control evidence only. |
 | Downstream length/sink sweep | Alive but bounded | Lengths 64/96 and sink counts 2/4 all stay positive; minimum model loss improvement is +0.0272. This strengthens Mac-local quality control but remains non-benchmark evidence. |
 | Larger downstream repeats | Alive but bounded | 48 traces, sink counts 2/4, lengths 64/96, and split seeds 0/1/2 stay positive on distilgpt2 and OPT-125M; exact replacement remains a no-op and rank-2 beats position-only by loss drift and KL. Rank-2 still has non-negligible top-1 disagreement, so native timing is now the decisive systems gate. |
+| Downstream rank frontier | Alive but bounded | Ranks 1/2/4/8 monotonically reduce downstream drift, but rank4/rank8 lose the multiply-add wedge against exact four-sink QK. Rank2 remains the live compromise. |
 
 ## Reviewer-Risk Notes
 

@@ -2,6 +2,7 @@
 
 \usepackage[submission]{../../../colm_final/paper/colm2026_conference}
 \usepackage{booktabs}
+\usepackage{float}
 \usepackage{hyperref}
 \usepackage{url}
 
@@ -12,7 +13,7 @@
 \maketitle
 
 \begin{abstract}
-Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question, not a speed result. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens broad novelty because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. The contribution is a source-line audit, control feasibility matrix, fixed-request vLLM driver, native packet skeleton generator, pre-registered profiler-analysis parser, artifact-completeness verifier, and Mac-local Triton interpreter correctness for a toy boundary primitive. No throughput, latency, HBM, or GPU speedup claim is made.
+Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question, not a speed result. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens broad novelty because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. The artifact is a source-line audit, control feasibility matrix, fixed-request vLLM driver, native packet skeleton generator, pre-registered profiler-analysis parser, artifact-completeness verifier, and Mac-local Triton interpreter correctness for a toy boundary primitive. No throughput, latency, HBM, or GPU speedup claim is made.
 \end{abstract}
 
 \section{Hypothesis}
@@ -21,7 +22,7 @@ HybridKernel tests whether adjacent attention and SSM layers expose boundary-loc
 
 \section{Current Evidence}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \begin{tabular}{p{0.30\linewidth}p{0.36\linewidth}p{0.25\linewidth}}
@@ -75,6 +76,7 @@ Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with 
 \item \url{experimental/hybridkernel/phase2/pre_gpu_threshold_model.md}
 \item \url{experimental/triton_cpu_source_install_20260506.md}
 \item \url{experimental/hybridkernel/paper/colm_workshop_scaffold.md}
+\item \url{experimental/hybridkernel/paper/reviewer_pack.md}
 \end{itemize}
 
 \end{document}

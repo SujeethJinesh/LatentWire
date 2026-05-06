@@ -357,6 +357,13 @@ Required fields:
 | `attention_ssm_boundary_ms` | boundary-local cost from annotated Nsight trace |
 | `matched_non_boundary_ms` | same-shape local control cost outside attention/SSM boundaries |
 | `recoverable_fraction` | conservative fraction of avoidable boundary cost a fused operator could recover |
+| `dtype` | exact served dtype, for example `bfloat16`; must be non-empty |
+| `cuda_graph_enabled` | JSON boolean, not a string, recording whether CUDA graphs were enabled |
+| `batch_shape.batch_size` | positive integer batch size used by the fixed replay |
+| `batch_shape.prefill_tokens` | positive integer prompt/prefill token count |
+| `batch_shape.decode_tokens` | positive integer decode token count |
+| `batch_shape.requests` | positive integer number of fixed replay requests |
+| `control_model_or_segment` | non-empty matched control segment/model label used for the non-boundary comparison |
 
 Use distinct `run_id` values for independent repeated traces. Duplicating one
 trace into three rows is not admissible evidence and will fail the artifact

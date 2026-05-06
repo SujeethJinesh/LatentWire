@@ -364,3 +364,16 @@ and stop-after-request-error behavior:
 Decision: **NATIVE RUNBOOK IS READY FOR USER-OPERATED GPU PROFILING**. This is
 still not speed evidence. It only reduces the chance that the first NVIDIA run
 captures server startup or the HTTP client instead of the vLLM serving window.
+
+## 2026-05-06 Parser/Checklist Reviewer Hardening
+
+Addressed the remaining Mac-side reviewer risk in the native metric-row gate.
+The parser now rejects string or numeric placeholders for `cuda_graph_enabled`,
+empty `control_model_or_segment` labels, empty dtype strings, and non-positive
+batch-shape fields. The runbook and native packet checklist now explicitly list
+the required dtype, CUDA graph state, batch shape, request count, and matched
+control label fields. Added `paper/reviewer_pack.md` for a concise handoff.
+
+Decision: **LOCAL HANDOFF HARDENED; NO FURTHER MAC BENCHMARK IS MEANINGFUL**.
+The next exact gate remains a user-operated NVIDIA/vLLM server-side profiler
+packet that passes the artifact checker and the 3% recoverable-gain analysis.

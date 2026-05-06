@@ -92,3 +92,37 @@ def test_rejects_missing_matched_control_and_run_config() -> None:
             assert field in str(exc)
         else:
             raise AssertionError(f"expected missing {field} to be rejected")
+
+
+def test_rejects_string_cuda_graph_state() -> None:
+    try:
+        analyze({"rows": [_native_row(0, cuda_graph_enabled="False")]})
+    except ValueError as exc:
+        assert "cuda_graph_enabled" in str(exc)
+    else:
+        raise AssertionError("expected string cuda_graph_enabled to be rejected")
+
+
+def test_rejects_empty_control_segment() -> None:
+    try:
+        analyze({"rows": [_native_row(0, control_model_or_segment="  ")]})
+    except ValueError as exc:
+        assert "control_model_or_segment" in str(exc)
+    else:
+        raise AssertionError("expected empty control segment to be rejected")
+
+
+def test_rejects_non_positive_batch_shape_fields() -> None:
+    row = _native_row(0)
+    row["batch_shape"] = {
+        "batch_size": 0,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16,
+    }
+    try:
+        analyze({"rows": [row]})
+    except ValueError as exc:
+        assert "batch_shape.batch_size" in str(exc)
+    else:
+        raise AssertionError("expected non-positive batch size to be rejected")

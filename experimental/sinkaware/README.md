@@ -54,6 +54,12 @@ drift and KL for every model/config row. Minimum model loss improvement is
 `+0.0263`. This is still a quality-control diagnostic only: top-1 disagreement
 remains non-negligible and no benchmark or GPU speed result is claimed.
 
+A downstream rank frontier at length 96/sink4 confirms the quality/cost shape:
+rank1, rank2, rank4, and rank8 reduce absolute loss drift to `0.117`, `0.081`,
+`0.044`, and `0.029`, respectively, but the cost model estimates rank4/rank8
+above exact four-sink QK multiply-add cost. Rank2 remains the live systems
+compromise.
+
 Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
 reference. Interpreter-mode correctness is not GPU performance evidence, and
 native speed claims require NVIDIA hardware.

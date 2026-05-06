@@ -7,7 +7,7 @@ compares:
 - exact baseline attention,
 - exact sink-logit replacement through the SinkAware path as a no-op control,
 - position-only sink-logit replacement,
-- rank-2 sink-logit replacement.
+- rank-k sink-logit replacement.
 
 Predictors are still fit separately per model and split. This is not
 cross-model predictor transfer, downstream benchmark success, or GPU evidence.
@@ -66,7 +66,11 @@ except ImportError:  # pragma: no cover - supports direct script execution.
 
 
 OUT_DIR = PHASE2_OUT_DIR.parent / "phase3"
-PATCH_MODES = ("exact", "position", "rank2")
+BASE_PATCH_MODES = ("exact", "position")
+
+
+def _patch_modes(ranks: tuple[int, ...]) -> tuple[str, ...]:
+    return BASE_PATCH_MODES + tuple(f"rank{rank}" for rank in ranks)
 
 
 def _sink_predictions_for_query(
@@ -93,7 +97,7 @@ def _sink_predictions_for_query(
             predictor_q[:, :, query_pos : query_pos + 1, :].float(),
             keys[:, :, :sink_tokens, :].float().transpose(-1, -2),
         ).squeeze(2) * scaling
-    elif mode in {"position", "rank2"}:
+    elif mode == "position" or mode.startswith("rank"):
         denom = max(1, predictor_q.shape[2] - 1)
         pos = torch.tensor([query_pos / denom], dtype=torch.float32, device=predictor_q.device)
         predicted_rows = []
@@ -297,6 +301,7 @@ def _fit_predictors(
     train_texts: list[str],
     max_length: int,
     sink_tokens: int,
+    ranks: tuple[int, ...],
 ) -> dict[int, dict[str, object]]:
     fit_samples, _ = _collect_fit_samples(model_name, train_texts, max_length, sink_tokens)
     return {
@@ -304,7 +309,7 @@ def _fit_predictors(
             tensors["q"],
             tensors["pos"],
             tensors["sink_logits"],
-            ranks=(2,),
+            ranks=ranks,
         )
         for layer, tensors in fit_samples.items()
     }
@@ -386,18 +391,19 @@ def _evaluate_seed(
     sink_tokens: int,
     train_fraction: float,
     seed: int,
+    ranks: tuple[int, ...],
 ) -> dict[str, Any]:
     train_indices, test_indices = _split_trace_indices(len(texts), train_fraction, seed)
     train_texts = [texts[idx] for idx in train_indices]
     test_texts = [texts[idx] for idx in test_indices]
-    predictors = _fit_predictors(model_name, train_texts, max_length, sink_tokens)
+    predictors = _fit_predictors(model_name, train_texts, max_length, sink_tokens, ranks)
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name, attn_implementation="eager").float()
     model.eval()
     family = _model_family(model)
     baseline_totals = _empty_mode_totals()
-    mode_totals = {mode: _empty_mode_totals() for mode in PATCH_MODES}
+    mode_totals = {mode: _empty_mode_totals() for mode in _patch_modes(ranks)}
 
     with torch.no_grad():
         for text in test_texts:
@@ -407,7 +413,7 @@ def _evaluate_seed(
                 continue
             exact_logits = model(**encoded, use_cache=False).logits.detach()
             _accumulate(baseline_totals, _token_metrics(exact_logits, input_ids))
-            for mode in PATCH_MODES:
+            for mode in _patch_modes(ranks):
                 with _sinkaware_attention_patch(model, predictors, mode=mode, sink_tokens=sink_tokens):
                     mode_logits = model(**encoded, use_cache=False).logits.detach()
                 _accumulate(mode_totals[mode], _token_metrics(mode_logits, input_ids, exact_logits=exact_logits))
@@ -417,6 +423,15 @@ def _evaluate_seed(
         mode: _finalize_mode(totals, baseline_loss=baseline["loss"])
         for mode, totals in mode_totals.items()
     }
+    rank2_loss_improvement = float("nan")
+    rank2_kl_improvement = float("nan")
+    rank2_top1_improvement = float("nan")
+    if "rank2" in modes:
+        rank2_loss_improvement = modes["position"]["abs_loss_delta_vs_exact"] - modes["rank2"]["abs_loss_delta_vs_exact"]
+        rank2_kl_improvement = modes["position"]["mean_kl_to_exact"] - modes["rank2"]["mean_kl_to_exact"]
+        rank2_top1_improvement = (
+            modes["position"]["top1_disagreement_rate"] - modes["rank2"]["top1_disagreement_rate"]
+        )
     return {
         "seed": seed,
         "model_name": model_name,
@@ -427,13 +442,10 @@ def _evaluate_seed(
         "heldout_trace_indices": test_indices,
         "exact_baseline": baseline,
         "modes": modes,
-        "rank2_abs_loss_delta_improvement_vs_position": (
-            modes["position"]["abs_loss_delta_vs_exact"] - modes["rank2"]["abs_loss_delta_vs_exact"]
-        ),
-        "rank2_kl_improvement_vs_position": modes["position"]["mean_kl_to_exact"] - modes["rank2"]["mean_kl_to_exact"],
-        "rank2_top1_improvement_vs_position": (
-            modes["position"]["top1_disagreement_rate"] - modes["rank2"]["top1_disagreement_rate"]
-        ),
+        "rank_modes": [f"rank{rank}" for rank in ranks],
+        "rank2_abs_loss_delta_improvement_vs_position": rank2_loss_improvement,
+        "rank2_kl_improvement_vs_position": rank2_kl_improvement,
+        "rank2_top1_improvement_vs_position": rank2_top1_improvement,
     }
 
 
@@ -448,6 +460,36 @@ def _aggregate_seed_rows(seed_rows: list[dict[str, Any]]) -> dict[str, Any]:
     rank2_top1_improvements = [float(row["rank2_top1_improvement_vs_position"]) for row in seed_rows]
     rank2_abs_loss = [float(row["modes"]["rank2"]["abs_loss_delta_vs_exact"]) for row in seed_rows]
     position_abs_loss = [float(row["modes"]["position"]["abs_loss_delta_vs_exact"]) for row in seed_rows]
+    rank_frontier = {}
+    for mode in seed_rows[0].get("rank_modes", ["rank2"]) if seed_rows else ["rank2"]:
+        mode_abs_loss = [float(row["modes"][mode]["abs_loss_delta_vs_exact"]) for row in seed_rows]
+        mode_kl = [float(row["modes"][mode]["mean_kl_to_exact"]) for row in seed_rows]
+        mode_top1 = [float(row["modes"][mode]["top1_disagreement_rate"]) for row in seed_rows]
+        loss_improvement = [
+            float(row["modes"]["position"]["abs_loss_delta_vs_exact"])
+            - float(row["modes"][mode]["abs_loss_delta_vs_exact"])
+            for row in seed_rows
+        ]
+        kl_improvement = [
+            float(row["modes"]["position"]["mean_kl_to_exact"])
+            - float(row["modes"][mode]["mean_kl_to_exact"])
+            for row in seed_rows
+        ]
+        rank_frontier[mode] = {
+            "abs_loss_delta_vs_baseline": _mean_ci95(mode_abs_loss),
+            "mean_kl_to_baseline": _mean_ci95(mode_kl),
+            "top1_disagreement_rate": _mean_ci95(mode_top1),
+            "loss_improvement_vs_position": _mean_ci95(loss_improvement),
+            "kl_improvement_vs_position": _mean_ci95(kl_improvement),
+            "all_seeds_closer_by_loss": {
+                "value": all(value > 0.0 for value in loss_improvement),
+                "n": len(seed_rows),
+            },
+            "all_seeds_closer_by_kl": {
+                "value": all(value > 0.0 for value in kl_improvement),
+                "n": len(seed_rows),
+            },
+        }
     return {
         "exact_abs_loss_delta_vs_baseline": _mean_ci95(exact_abs_loss),
         "exact_mean_kl_to_baseline": _mean_ci95(exact_kl),
@@ -471,6 +513,7 @@ def _aggregate_seed_rows(seed_rows: list[dict[str, Any]]) -> dict[str, Any]:
         "min_rank2_abs_loss_delta_improvement_vs_position": {
             "value": min(rank2_loss_improvements) if rank2_loss_improvements else float("nan"),
         },
+        "rank_frontier": rank_frontier,
     }
 
 
@@ -495,9 +538,10 @@ def _run_model(
     sink_tokens: int,
     train_fraction: float,
     seeds: tuple[int, ...],
+    ranks: tuple[int, ...],
 ) -> dict[str, Any]:
     seed_rows = [
-        _evaluate_seed(model_name, texts, max_length, sink_tokens, train_fraction, seed)
+        _evaluate_seed(model_name, texts, max_length, sink_tokens, train_fraction, seed, ranks)
         for seed in seeds
     ]
     aggregate = _aggregate_seed_rows(seed_rows)
@@ -520,6 +564,34 @@ def _aggregate_models(model_results: list[dict[str, Any]]) -> dict[str, Any]:
         float(row["aggregate"]["rank2_kl_improvement_vs_position"]["mean"])
         for row in model_results
     ]
+    rank_modes = list(model_results[0]["aggregate"].get("rank_frontier", {}).keys()) if model_results else []
+    rank_frontier = {}
+    for mode in rank_modes:
+        abs_losses = [
+            float(row["aggregate"]["rank_frontier"][mode]["abs_loss_delta_vs_baseline"]["mean"])
+            for row in model_results
+        ]
+        top1 = [
+            float(row["aggregate"]["rank_frontier"][mode]["top1_disagreement_rate"]["mean"])
+            for row in model_results
+        ]
+        loss_improvements = [
+            float(row["aggregate"]["rank_frontier"][mode]["loss_improvement_vs_position"]["mean"])
+            for row in model_results
+        ]
+        kl_improvements = [
+            float(row["aggregate"]["rank_frontier"][mode]["kl_improvement_vs_position"]["mean"])
+            for row in model_results
+        ]
+        rank_frontier[mode] = {
+            "abs_loss_delta_vs_baseline_across_models": _mean_ci95(abs_losses),
+            "top1_disagreement_rate_across_models": _mean_ci95(top1),
+            "loss_improvement_vs_position_across_models": _mean_ci95(loss_improvements),
+            "kl_improvement_vs_position_across_models": _mean_ci95(kl_improvements),
+            "min_model_loss_improvement_vs_position": {
+                "value": min(loss_improvements) if loss_improvements else float("nan"),
+            },
+        }
     return {
         "rank2_abs_loss_delta_improvement_across_models": _mean_ci95(model_loss_improvements),
         "rank2_kl_improvement_across_models": _mean_ci95(model_kl_improvements),
@@ -538,6 +610,7 @@ def _aggregate_models(model_results: list[dict[str, Any]]) -> dict[str, Any]:
         "min_model_rank2_abs_loss_delta_improvement": {
             "value": min(model_loss_improvements) if model_loss_improvements else float("nan"),
         },
+        "rank_frontier": rank_frontier,
     }
 
 
@@ -561,10 +634,11 @@ def _run(
     sink_tokens: int,
     train_fraction: float,
     seeds: tuple[int, ...],
+    ranks: tuple[int, ...],
 ) -> dict[str, Any]:
     texts = _load_texts(DEFAULT_TRACES, max_traces)
     model_results = [
-        _run_model(model_name, texts, max_length, sink_tokens, train_fraction, seeds)
+        _run_model(model_name, texts, max_length, sink_tokens, train_fraction, seeds, ranks)
         for model_name in model_names
     ]
     aggregate = _aggregate_models(model_results)
@@ -575,6 +649,7 @@ def _run(
         "sink_tokens": sink_tokens,
         "train_fraction": train_fraction,
         "seeds": list(seeds),
+        "ranks": list(ranks),
         "model_results": model_results,
         "aggregate": aggregate,
         "status": _status(aggregate),
@@ -596,8 +671,9 @@ def _write_markdown(result: dict[str, Any], output_path: os.PathLike[str] | str 
         f"- sink tokens: {result['sink_tokens']}",
         f"- train fraction: {result['train_fraction']}",
         f"- seeds: {', '.join(str(seed) for seed in result['seeds'])}",
+        f"- rank modes: {', '.join(f'`rank{rank}`' for rank in result.get('ranks', [2]))}",
         "",
-        "This gate patches full model attention during causal-LM evaluation. It compares exact baseline attention against an exact-replacement no-op control, a position-only sink-logit replacement, and rank-2 sink-logit replacement. Predictors are fit separately per model and split. This is not cross-model predictor transfer, benchmark success, or GPU speed evidence.",
+        "This gate patches full model attention during causal-LM evaluation. It compares exact baseline attention against an exact-replacement no-op control, a position-only sink-logit replacement, and rank-k sink-logit replacement. Predictors are fit separately per model and split. This is not cross-model predictor transfer, benchmark success, or GPU speed evidence.",
         "",
         "## Aggregate Across Models",
         "",
@@ -629,6 +705,27 @@ def _write_markdown(result: dict[str, Any], output_path: os.PathLike[str] | str 
                 exact_ok="yes" if agg["all_seeds_exact_noop_ok"]["value"] else "no",
             )
         )
+    if aggregate.get("rank_frontier"):
+        lines.extend(
+            [
+                "",
+                "## Rank Frontier Across Models",
+                "",
+                "| Rank mode | Abs loss delta | Loss improvement vs position | KL improvement vs position | Top1 diff | Min model improvement |",
+                "|---|---:|---:|---:|---:|---:|",
+            ]
+        )
+        for mode, metrics in aggregate["rank_frontier"].items():
+            lines.append(
+                "| {mode} | {loss:.6f} | {loss_imp:+.6f} | {kl_imp:+.6f} | {top1:.4f} | {min_imp:+.6f} |".format(
+                    mode=mode,
+                    loss=metrics["abs_loss_delta_vs_baseline_across_models"]["mean"],
+                    loss_imp=metrics["loss_improvement_vs_position_across_models"]["mean"],
+                    kl_imp=metrics["kl_improvement_vs_position_across_models"]["mean"],
+                    top1=metrics["top1_disagreement_rate_across_models"]["mean"],
+                    min_imp=metrics["min_model_loss_improvement_vs_position"]["value"],
+                )
+            )
     lines.extend(
         [
             "",
@@ -678,6 +775,7 @@ def main() -> None:
     parser.add_argument("--sink-tokens", type=int, default=4)
     parser.add_argument("--train-fraction", type=float, default=0.67)
     parser.add_argument("--seeds", type=int, nargs="+", default=[0])
+    parser.add_argument("--ranks", type=int, nargs="+", default=[2])
     parser.add_argument("--artifact-stem", default="downstream_quality_control_gate")
     args = parser.parse_args()
 
@@ -686,6 +784,7 @@ def main() -> None:
     os.environ.setdefault("HF_HOME", str(cache_dir))
     os.environ.setdefault("TRANSFORMERS_CACHE", str(cache_dir))
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    ranks = tuple(sorted(set(args.ranks + [2])))
     result = _run(
         tuple(args.model_names),
         args.max_traces,
@@ -693,6 +792,7 @@ def main() -> None:
         args.sink_tokens,
         args.train_fraction,
         tuple(args.seeds),
+        ranks,
     )
     json_path = OUT_DIR / f"{args.artifact_stem}.json"
     md_path = OUT_DIR / f"{args.artifact_stem}.md"

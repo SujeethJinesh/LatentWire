@@ -477,3 +477,26 @@ branch. Sink counts 2 and 4, lengths 64 and 96, GPT2/OPT families, 48 traces,
 and three split seeds are now covered. The remaining useful evidence is native
 GPU timing/memory traffic and, for a stronger paper, a true benchmark-quality
 result rather than more Mac-local patch controls.
+
+## 2026-05-06 Downstream Rank Frontier
+
+Added rank-frontier support to `phase3/downstream_quality_control_gate.py` and
+ran one bounded downstream frontier in `./venv_arm64` with 24 traces, length 96,
+sink count 4, split seeds 0/1/2, `distilgpt2`, `facebook/opt-125m`, and ranks
+1/2/4/8.
+
+Result: higher ranks monotonically reduce downstream drift, but the cost model
+keeps rank 2 as the live systems compromise.
+
+- rank1: abs loss delta `0.117`, loss improvement vs position `+0.037`, top-1
+  disagreement `0.145`.
+- rank2: abs loss delta `0.081`, loss improvement `+0.073`, top-1 disagreement
+  `0.111`.
+- rank4: abs loss delta `0.044`, loss improvement `+0.110`, top-1 disagreement
+  `0.085`.
+- rank8: abs loss delta `0.029`, loss improvement `+0.125`, top-1 disagreement
+  `0.069`.
+
+Decision: **RANK FRONTIER EXPLAINS THE QUALITY/COST TRADEOFF**. Rank4/rank8 are
+better quality controls but lose the current multiply-add wedge against exact
+four-sink QK. Rank2 remains the only plausible pre-GPU systems compromise.

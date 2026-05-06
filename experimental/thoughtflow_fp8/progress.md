@@ -373,3 +373,16 @@ Mac-local artifacts are useful as a falsification ladder, not as a positive
 method. A revival requires one genuinely new pre-registered utility signal and
 a one-shot fresh/larger sparse-cache gate; no GPU work should be spent on the
 current `rdu_topk` branch.
+
+## 2026-05-06 Current Decision Manifest
+
+Added `phase2/current_decision_manifest_20260506.md` and
+`paper/reviewer_pack.md` to prevent stale historical `ALIVE`/`PROMOTED`
+artifacts from being misread as the current conclusion. The manifest records
+that there is no live method branch, that `rdu_topk` is stopped after the
+alternate-surface and independent-trace failures, and that GPU/FP8 work is not
+allowed for the current branch.
+
+Decision: **PACKAGING HARDENED; METHOD WORK STILL STOPPED**. The only future
+Mac-feasible reopening is a new pre-registered utility family evaluated once on
+a fresh/larger frozen sparse-cache surface.

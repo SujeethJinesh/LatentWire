@@ -10,10 +10,11 @@ surface.
 
 ## Scope
 
-ThoughtFlow-FP8 tests whether reasoning-aware KV cache compression can retrofit
-onto existing open-weight reasoning models without retraining. The proposed
-method combines FP8 KV quantization, sink-anchor protection, and
-reasoning-phase-aware eviction.
+ThoughtFlow-FP8 now reports a stopped diagnostic branch rather than a proposed
+method. The original target combined FP8 KV quantization, sink-anchor
+protection, and reasoning-phase-aware eviction, but current tracked evidence is
+CPU sparse-cache scoring plus an int8/Triton-interpreter reference primitive.
+No real FP8, CUDA, latency, throughput, or Blackwell result is claimed.
 
 ## Local Workflow
 

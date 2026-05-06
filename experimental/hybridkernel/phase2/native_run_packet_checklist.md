@@ -83,6 +83,13 @@ reduced native trace:
 - `attention_ssm_boundary_ms`: non-negative boundary-local measured cost;
 - `matched_non_boundary_ms`: non-negative same-shape control cost;
 - `recoverable_fraction`: value in `[0, 1]`.
+- `dtype`: non-empty served dtype string;
+- `cuda_graph_enabled`: JSON boolean, not a string placeholder;
+- `batch_shape.batch_size`: positive integer batch size;
+- `batch_shape.prefill_tokens`: positive integer prefill token count;
+- `batch_shape.decode_tokens`: positive integer decode token count;
+- `batch_shape.requests`: positive integer replay request count;
+- `control_model_or_segment`: non-empty matched control label.
 
 Do not duplicate one trace into multiple rows. Do not mix different model
 families and call them repeated runs for the same gate.

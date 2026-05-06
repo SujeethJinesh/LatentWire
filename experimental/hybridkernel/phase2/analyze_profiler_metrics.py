@@ -67,16 +67,24 @@ def _config_key(raw: dict[str, object], model: str) -> tuple[str, dict[str, obje
     dtype = str(_require_present(raw, "dtype"))
     cuda_graph_enabled = _require_present(raw, "cuda_graph_enabled")
     batch_shape = _require_present(raw, "batch_shape")
-    control = str(_require_present(raw, "control_model_or_segment"))
+    control = str(_require_present(raw, "control_model_or_segment")).strip()
+    if not dtype.strip():
+        raise ValueError("dtype must be a non-empty string")
+    if not isinstance(cuda_graph_enabled, bool):
+        raise ValueError("cuda_graph_enabled must be a boolean, not a string or numeric placeholder")
+    if not control:
+        raise ValueError("control_model_or_segment must be a non-empty string")
     if not isinstance(batch_shape, dict):
         raise ValueError("batch_shape must be an object with batch/request settings")
     for field in ["batch_size", "prefill_tokens", "decode_tokens", "requests"]:
         if batch_shape.get(field) is None:
             raise ValueError(f"batch_shape.{field} must be explicitly recorded")
+        if int(batch_shape[field]) <= 0:
+            raise ValueError(f"batch_shape.{field} must be positive")
     normalized = {
         "model": model,
         "dtype": dtype,
-        "cuda_graph_enabled": bool(cuda_graph_enabled),
+        "cuda_graph_enabled": cuda_graph_enabled,
         "batch_shape": {
             "batch_size": int(batch_shape["batch_size"]),
             "prefill_tokens": int(batch_shape["prefill_tokens"]),
