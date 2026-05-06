@@ -1,0 +1,36 @@
+\documentclass{article}
+
+\usepackage[submission]{../../../colm_final/paper/colm2026_conference}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{SinkKV: Sink-Protected Mixed-Precision KV Cache}
+\author{Anonymous authors\\Paper under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This is a living paper shell for a preregistered Mac-first experiment. SinkKV
+tests whether protecting the first sink K/V positions while quantizing the rest
+of the KV cache recovers the quality loss of uniform FP4-style KV quantization.
+No positive result, GPU throughput, latency, HBM, or native FP4 claim is made
+yet.
+\end{abstract}
+
+\section{Current Gate}
+
+The preregistered Mac gate compares BF16 K/V, uniform simulated MXFP4 K/V, and
+sink-protected simulated MXFP4 K/V. Promotion requires sink protection to recover
+at least half of the uniform low-precision quality gap on at least two
+model/length surfaces, with confidence intervals excluding the no-recovery
+boundary.
+
+\section{Claim Boundary}
+
+Allowed now: a preregistered method hypothesis and deterministic local
+simulation utilities. Not allowed: native FP4, vLLM integration, speed, memory,
+HBM, or benchmark-quality claims.
+
+\end{document}

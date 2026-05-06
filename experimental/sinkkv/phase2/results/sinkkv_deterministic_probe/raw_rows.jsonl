@@ -1,0 +1,4 @@
+{"attention_output_rel_l2": 0.0, "budget_bits_per_element": 16.0, "protected_positions": [], "row": "full_precision_kv", "sink_mass": 0.08717431873083115, "softmax_attention_l1": 0.0}
+{"attention_output_rel_l2": 0.09724868834018707, "budget_bits_per_element": 4.0, "protected_positions": [], "row": "uniform_mxfp4_kv", "sink_mass": 0.08722054958343506, "softmax_attention_l1": 0.00014721664774697274}
+{"attention_output_rel_l2": 0.06821539998054504, "budget_bits_per_element": 4.0, "protected_positions": [0, 1, 2, 3], "row": "sink_protected_budget_matched_kv", "sink_mass": 0.08724241703748703, "softmax_attention_l1": 0.0002072035422315821}
+{"attention_output_rel_l2": 0.11277393996715546, "budget_bits_per_element": 4.0, "protected_positions": [92, 93, 94, 95], "row": "recent_protected_budget_matched_kv", "sink_mass": 0.08722182363271713, "softmax_attention_l1": 0.00021695511532016098}

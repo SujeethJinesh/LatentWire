@@ -1,0 +1,9 @@
+{
+  "batch": 1,
+  "head_dim": 32,
+  "heads": 4,
+  "seed": 20260506,
+  "seq_len": 96,
+  "sink_count": 4,
+  "uniform_budget_bits_per_element": 4.0
+}

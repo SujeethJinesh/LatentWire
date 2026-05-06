@@ -18,6 +18,28 @@ and explicit claim boundaries, not completed GPU systems papers.
 Current audit packet: `mac_complete_readiness_20260506.md`. Native handoff map:
 `native_gpu_handoff_20260506.md`.
 
+Current sprint ledger: `project_status_20260506.md`.
+
+Killed-marker convention: `KILLED_*` folders mark consumed sub-branches and
+dead framings. They do not imply every artifact in the source project is useless;
+each README records what was tried, why it died, and what remains salvageable.
+HybridKernel is not killed and is not waiting on more Mac work; it is GPU-gated
+on the native NVIDIA/vLLM packet in `native_gpu_handoff_20260506.md`.
+
+## New Hybrid-Quantization Sprint (May 6, 2026)
+
+The current active positive-method sprint adds four Mac-gated branches:
+
+| Project | Status | First gate |
+|---|---|---|
+| `sinkkv/` | Synthetic policy probe passed; real cached Q/K/V gate next | Sink-protected KV quantization at matched memory |
+| `ssq_lr/` | Preregistered, no measurements yet | SSM-state distribution heterogeneity |
+| `horn/` | Preregistered, no measurements yet | Directional boundary outlier asymmetry |
+| `hbsm/` | Preregistered, novelty wounded by recent sensitivity work | Frontier-hybrid sensitivity replication and cheaper predictor |
+
+Shared utilities for these gates live in `shared/`. They are Mac-local
+simulation and audit helpers only; they are not native GPU evidence.
+
 ## Timeline
 - **Original plan date**: May 4, 2026
 - **COLM workshop submission target**: ~June 25, 2026
