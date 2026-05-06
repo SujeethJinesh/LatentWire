@@ -13,6 +13,7 @@ import json
 import math
 import os
 import random
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from statistics import mean
 from typing import Callable
@@ -31,6 +32,21 @@ except ImportError:  # pragma: no cover - supports direct script execution.
     from policy_sweep import SweepConfig, _make_policy
     from run_real_trace_retention import DEFAULT_TRACES, OUT_DIR, ROOT, _load_traces
     from simulate_phase_retention import Token, rkv_like, thin_kv_like
+
+
+@dataclass(frozen=True)
+class SparseSweepConfig:
+    recent_fraction: float
+    phase_bonus: float
+    math_bonus: float
+    protect_anchors: int
+
+    @property
+    def name(self) -> str:
+        return (
+            f"tf_sparse_r{self.recent_fraction:.2f}_p{self.phase_bonus:.2f}_"
+            f"m{self.math_bonus:.2f}_a{self.protect_anchors}"
+        )
 
 
 def _texts(max_traces: int) -> list[str]:
@@ -119,6 +135,151 @@ def _policy_set() -> dict[str, Callable[[list[Token], int], set[int]]]:
     return policies
 
 
+def _sparse_sweep_configs() -> list[SparseSweepConfig]:
+    configs = []
+    for recent_fraction in (0.50, 0.55, 0.60):
+        for phase_bonus in (0.05, 0.10):
+            for math_bonus in (0.12, 0.18):
+                for protect_anchors in (2, 4):
+                    configs.append(
+                        SparseSweepConfig(
+                            recent_fraction=recent_fraction,
+                            phase_bonus=phase_bonus,
+                            math_bonus=math_bonus,
+                            protect_anchors=protect_anchors,
+                        )
+                    )
+    return configs
+
+
+def _make_sparse_sweep_policy(config: SparseSweepConfig) -> Callable[[list[Token], int], set[int]]:
+    def policy(trace: list[Token], budget: int) -> set[int]:
+        anchor_candidates = [idx for idx, token in enumerate(trace) if token.label == "anchor"]
+        kept = set(anchor_candidates[: min(config.protect_anchors, budget)])
+        recent_budget = max(1, int(round(budget * config.recent_fraction)))
+        recent = set(range(max(0, len(trace) - recent_budget), len(trace)))
+        recent_slots = max(0, budget - len(kept))
+        if recent_slots:
+            kept |= set(sorted(recent)[-recent_slots:])
+        remaining = max(0, budget - len(kept))
+
+        def score(idx: int) -> tuple[float, int]:
+            token = trace[idx]
+            bonus = 0.0
+            if token.label == "phase":
+                bonus += config.phase_bonus
+            if token.label == "math_state":
+                bonus += config.math_bonus
+            return token.importance + bonus, -idx
+
+        if remaining:
+            filler = sorted(
+                [idx for idx in range(len(trace)) if idx not in kept],
+                key=lambda idx: (-score(idx)[0], score(idx)[1]),
+            )
+            kept |= set(filler[:remaining])
+        return kept
+
+    return policy
+
+
+def _score_policy_rows(
+    model: AutoModelForCausalLM,
+    prepared_rows: list[dict[str, object]],
+    policy_name: str,
+    policy: Callable[[list[Token], int], set[int]],
+    keep_fraction: float,
+) -> list[dict[str, object]]:
+    rows = []
+    for row in prepared_rows:
+        prefix_ids = row["prefix_ids"]
+        continuation_ids = row["continuation_ids"]
+        trace = row["trace"]
+        assert isinstance(prefix_ids, list)
+        assert isinstance(continuation_ids, list)
+        assert isinstance(trace, list)
+        budget = max(1, math.ceil(len(prefix_ids) * keep_fraction))
+        kept = policy(trace, budget)
+        loss, scored_tokens = _score_continuation_from_cache(model, prefix_ids, continuation_ids, kept)
+        rows.append(
+            {
+                "trace_id": row["trace_id"],
+                "policy": policy_name,
+                "keep_rate": len(kept) / len(prefix_ids),
+                "retained_prefix_tokens": len(kept),
+                "continuation_tokens": scored_tokens,
+                "nll": loss,
+            }
+        )
+    return rows
+
+
+def _train_fixed_sparse_sweep(
+    model: AutoModelForCausalLM,
+    prepared: list[dict[str, object]],
+    keep_fraction: float,
+) -> dict[str, object]:
+    train_rows = [row for idx, row in enumerate(prepared) if idx % 2 == 0]
+    heldout_rows = [row for idx, row in enumerate(prepared) if idx % 2 == 1]
+    configs = _sparse_sweep_configs()
+    train_scored = []
+    for config in configs:
+        train_scored.extend(
+            _score_policy_rows(
+                model,
+                train_rows,
+                config.name,
+                _make_sparse_sweep_policy(config),
+                keep_fraction,
+            )
+        )
+    train_summary = _summary(train_scored)
+    best_name = min((config.name for config in configs), key=lambda name: train_summary[name]["nll"])
+    best_config = next(config for config in configs if config.name == best_name)
+
+    heldout_scored = []
+    baselines = {
+        "rkv_like": rkv_like,
+        "thin_kv_like": thin_kv_like,
+        "thoughtflow_saliency_recent": thoughtflow_saliency_recent,
+        best_name: _make_sparse_sweep_policy(best_config),
+    }
+    for name, policy in baselines.items():
+        heldout_scored.extend(_score_policy_rows(model, heldout_rows, name, policy, keep_fraction))
+
+    heldout_summary = _summary(heldout_scored)
+    paired_vs_rkv = _paired_deltas(heldout_scored, baseline_policy="rkv_like")
+    paired_vs_thin = _paired_deltas(heldout_scored, baseline_policy="thin_kv_like")
+    best_nll = heldout_summary[best_name]["nll"]
+    strongest_other_name, strongest_other = min(
+        ((name, metrics) for name, metrics in heldout_summary.items() if not name.startswith("thoughtflow") and not name.startswith("tf_sparse")),
+        key=lambda item: item[1]["nll"],
+    )
+    margin = strongest_other["nll"] - best_nll
+    rkv_ci_high = paired_vs_rkv.get(best_name, {}).get("ci95_high", float("inf"))
+    thin_ci_high = paired_vs_thin.get(best_name, {}).get("ci95_high", float("inf"))
+    if margin >= 0.03 and rkv_ci_high < 0.0 and thin_ci_high < 0.0:
+        status = "ALIVE on train-fixed sparse sweep; held-out policy clears mean margin and paired CIs."
+    elif margin >= 0.03:
+        status = "MIXED on train-fixed sparse sweep; held-out policy clears mean margin but not paired uncertainty."
+    else:
+        status = "MIXED on train-fixed sparse sweep; held-out policy remains inside the 0.03 NLL margin."
+    return {
+        "n_train_traces": len(train_rows),
+        "n_heldout_traces": len(heldout_rows),
+        "configs": [asdict(config) | {"name": config.name} for config in configs],
+        "best_config": asdict(best_config) | {"name": best_name},
+        "train_summary": train_summary,
+        "heldout_summary": heldout_summary,
+        "heldout_rows": heldout_scored,
+        "paired_delta_nll_vs_rkv_like": paired_vs_rkv,
+        "paired_delta_nll_vs_thin_kv_like": paired_vs_thin,
+        "heldout_margin_vs_strongest_non_thoughtflow": margin,
+        "strongest_non_thoughtflow_policy": strongest_other_name,
+        "status": status,
+    }
+
+
 def _run(model_name: str, keep_fraction: float, max_traces: int, max_length: int, continuation_tokens: int) -> dict[str, object]:
     cache_dir = ROOT / "experimental/thoughtflow_fp8/.debug/hf_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -168,6 +329,8 @@ def _run(model_name: str, keep_fraction: float, max_traces: int, max_length: int
             )
     summary = _summary(rows)
     paired_deltas = _paired_deltas(rows, baseline_policy="rkv_like")
+    paired_deltas_vs_thin = _paired_deltas(rows, baseline_policy="thin_kv_like")
+    sparse_sweep = _train_fixed_sparse_sweep(model, prepared, keep_fraction)
     return {
         "model_name": model_name,
         "keep_fraction": keep_fraction,
@@ -178,6 +341,8 @@ def _run(model_name: str, keep_fraction: float, max_traces: int, max_length: int
         "rows": rows,
         "summary": summary,
         "paired_delta_nll_vs_rkv_like": paired_deltas,
+        "paired_delta_nll_vs_thin_kv_like": paired_deltas_vs_thin,
+        "train_fixed_sparse_sweep": sparse_sweep,
         "status": _status(summary),
     }
 
@@ -190,7 +355,7 @@ def _summary(rows: list[dict[str, object]]) -> dict[str, dict[str, float]]:
             "n_traces": float(len(policy_rows)),
             "keep_rate": mean(float(row["keep_rate"]) for row in policy_rows),
             "nll": mean(float(row["nll"]) for row in policy_rows),
-            "delta_nll_vs_full": mean(float(row["delta_nll_vs_full"]) for row in policy_rows),
+            "delta_nll_vs_full": mean(float(row.get("delta_nll_vs_full", 0.0)) for row in policy_rows),
         }
     return summary
 
@@ -223,7 +388,7 @@ def _paired_deltas(
         boot.sort()
         result[policy] = {
             "n_pairs": float(len(deltas)),
-            "mean_delta_nll_minus_rkv_like": mean(deltas),
+            f"mean_delta_nll_minus_{baseline_policy}": mean(deltas),
             "ci95_low": boot[int(0.025 * (bootstrap_samples - 1))],
             "ci95_high": boot[int(0.975 * (bootstrap_samples - 1))],
         }
@@ -291,6 +456,79 @@ def _write_markdown(result: dict[str, object]) -> None:
                 **metrics,
             )
         )
+    lines.extend(
+        [
+            "",
+            "## Paired Delta vs ThinKV-like",
+            "",
+            "Negative means lower continuation NLL than ThinKV-like on the same trace.",
+            "",
+            "| Policy | Pairs | Mean delta NLL | 95% CI low | 95% CI high |",
+            "|---|---:|---:|---:|---:|",
+        ]
+    )
+    for policy, metrics in sorted(
+        result["paired_delta_nll_vs_thin_kv_like"].items(),
+        key=lambda item: item[1]["mean_delta_nll_minus_thin_kv_like"],
+    ):
+        lines.append(
+            "| {policy} | {n_pairs:.0f} | {mean_delta_nll_minus_thin_kv_like:+.3f} | {ci95_low:+.3f} | {ci95_high:+.3f} |".format(
+                policy=policy,
+                **metrics,
+            )
+        )
+    sweep = result["train_fixed_sparse_sweep"]
+    lines.extend(
+        [
+            "",
+            "## Train-Fixed Sparse Sweep",
+            "",
+            f"Status: **{sweep['status']}**",
+            "",
+            f"- train traces: {sweep['n_train_traces']}",
+            f"- held-out traces: {sweep['n_heldout_traces']}",
+            f"- best train-selected policy: `{sweep['best_config']['name']}`",
+            f"- strongest non-ThoughtFlow held-out baseline: `{sweep['strongest_non_thoughtflow_policy']}`",
+            f"- held-out NLL margin vs strongest non-ThoughtFlow baseline: {sweep['heldout_margin_vs_strongest_non_thoughtflow']:+.3f}",
+            "",
+            "| Policy | Held-out traces | Keep rate | NLL |",
+            "|---|---:|---:|---:|",
+        ]
+    )
+    for policy, metrics in sorted(sweep["heldout_summary"].items(), key=lambda item: item[1]["nll"]):
+        lines.append(
+            "| {policy} | {n_traces:.0f} | {keep_rate:.3f} | {nll:.3f} |".format(
+                policy=policy,
+                **metrics,
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "| Policy | Baseline | Mean delta NLL | 95% CI low | 95% CI high |",
+            "|---|---|---:|---:|---:|",
+        ]
+    )
+    best_name = sweep["best_config"]["name"]
+    reported_sweep_policies = []
+    for policy in ("thoughtflow_saliency_recent", best_name):
+        if policy in sweep["heldout_summary"] and policy not in reported_sweep_policies:
+            reported_sweep_policies.append(policy)
+    for policy in reported_sweep_policies:
+        for baseline_key, baseline_name, metric_name in (
+            ("paired_delta_nll_vs_rkv_like", "rkv_like", "mean_delta_nll_minus_rkv_like"),
+            ("paired_delta_nll_vs_thin_kv_like", "thin_kv_like", "mean_delta_nll_minus_thin_kv_like"),
+        ):
+            metrics = sweep[baseline_key][policy]
+            lines.append(
+                "| {policy} | {baseline} | {mean:+.3f} | {low:+.3f} | {high:+.3f} |".format(
+                    policy=policy,
+                    baseline=baseline_name,
+                    mean=metrics[metric_name],
+                    low=metrics["ci95_low"],
+                    high=metrics["ci95_high"],
+                )
+            )
     lines.extend(
         [
             "",

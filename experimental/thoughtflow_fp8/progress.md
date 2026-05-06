@@ -117,6 +117,24 @@ versus R-KV-like is `-0.067` with 95% CI `[-0.151, +0.011]`. The branch remains
 **MIXED/NOT REVIVED** until a train-fixed policy clears the margin with paired
 uncertainty.
 
+The 2026-05-06 bounded train-fixed sparse-cache sweep tested 24 nearby
+anchor/recent/phase/math configurations on the even-index train traces and
+reported the train-selected row on odd-index held-out traces. It selected
+`tf_sparse_r0.55_p0.05_m0.12_a2`. On held-out traces that row reaches NLL
+`3.340` versus ThinKV-like `3.385` and R-KV-like `3.420`; the mean margin over
+the strongest non-ThoughtFlow held-out baseline is `+0.045`. Paired uncertainty
+is still not enough: the paired delta versus R-KV-like is `-0.080` with 95% CI
+`[-0.152, -0.014]`, but the paired delta versus ThinKV-like is `-0.045` with
+95% CI `[-0.226, +0.182]`. The fixed incumbent
+`thoughtflow_saliency_recent` has the best held-out mean NLL (`3.304`), but its
+paired CIs also cross zero versus both R-KV-like and ThinKV-like.
+
+Status: **MIXED/PROMISING BUT NOT REVIVED**. Promoted: the sparse-cache
+candidate now has a clean held-out mean margin and a paired win over R-KV-like.
+Still blocking: uncertainty versus ThinKV-like, the strongest non-ThoughtFlow
+held-out baseline. The next exact gate is a larger frozen sparse-cache slice
+with the two train-fixed candidates only, no further policy tuning.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -164,3 +182,7 @@ reviewer pack or GPU work.
   ThoughtFlow-saliency-recent is now the best compressed row in mean NLL, but
   the margin is below the promotion threshold and the paired interval still
   crosses zero. Decision remains mixed/not revived.
+- 2026-05-06: Added a bounded train-fixed sparse-cache sweep. The selected
+  sparse policy clears the held-out mean margin and paired R-KV-like comparison
+  but not paired uncertainty versus ThinKV-like. Decision remains mixed/not
+  revived; freeze candidates before any larger slice.
