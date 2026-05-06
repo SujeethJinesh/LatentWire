@@ -1,33 +1,41 @@
 # HybridKernel Phase 0 Setup Check
 
 - date: 2026-05-05
-- status: partial_mac_setup_complete_for_audit
+- status: historical_initial_setup_snapshot_superseded
 - scope: local-only setup and tiny config fetches; no SSH, no GPU, no global installs,
   no model weights, and no large repository clones.
 
+This file records the initial Phase 0 setup snapshot. It is no longer the
+current runtime surface for HybridKernel correctness work. Current Mac
+reproducibility is recorded in `phase0/local_preflight.md` and
+`phase2/mac_reproducibility_command.md`: the repo-local `./venv_arm64` imports
+PyTorch 2.6.0 and Triton from the repo-local `triton-cpu` source checkout, and
+the Phase 3/4 reference plus Triton-interpreter checks pass there.
+
 ## Environment
 
-Project-local environment:
+Initial project-local environment:
 
 ```text
 experimental/hybridkernel/.venv
 Python 3.9.13
 ```
 
-Import check result:
+Initial import check result for `experimental/hybridkernel/.venv`:
 
 ```text
-torch: missing
-transformers: missing
-numpy: missing
-pytest: missing
-huggingface_hub: missing
-triton: missing
+torch: missing in initial per-project venv
+transformers: missing in initial per-project venv
+numpy: missing in initial per-project venv
+pytest: missing in initial per-project venv
+huggingface_hub: missing in initial per-project venv
+triton: missing in initial per-project venv
 ```
 
-I did not install the full requirements stack because the current task only
-needs setup provenance and a quick source audit. Installing Torch/Triton on Mac
-would be slower and is not needed until Phase 3/4 reference work.
+This initial per-project environment was enough for setup provenance and config
+fetching only. It should not be used to judge current HybridKernel readiness.
+Use `./venv_arm64` and the command in `phase2/mac_reproducibility_command.md`
+for the current Mac-local reference, checker, and Triton-interpreter gates.
 
 ## Configs Fetched
 
@@ -62,6 +70,7 @@ Mamba2 boundary surface.
 
 ## Phase 0 Verdict
 
-Phase 0 is not fully complete because dependencies are not installed and several
-target configs require gated or corrected access. It is complete enough for the
-requested quick Phase 1 audit and for a Phase 2 Granite-only architecture map.
+The initial Phase 0 snapshot was partial because dependencies were not installed
+in `experimental/hybridkernel/.venv` and several target configs required gated
+or corrected access. The current repo-level Mac setup supersedes that snapshot
+for correctness work; native GPU performance evidence is still unavailable.
