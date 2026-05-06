@@ -386,3 +386,17 @@ allowed for the current branch.
 Decision: **PACKAGING HARDENED; METHOD WORK STILL STOPPED**. The only future
 Mac-feasible reopening is a new pre-registered utility family evaluated once on
 a fresh/larger frozen sparse-cache surface.
+
+## 2026-05-06 COLM Reviewer Pack Hardening
+
+Expanded `paper/reviewer_pack.md` with a strict COLM-axis readout covering
+benchmarks, ablations, correctness, reproducibility, novelty, and
+camera-readiness. The pack now states that no fresh utility signal is currently
+pre-registered and that there is no runnable successor gate until a new
+pre-registration artifact defines the utility, forbidden inputs, frozen surface,
+one-shot command, and promotion rule. Added a consistency test so future edits
+cannot silently drop those review axes or reopen the stopped branch.
+
+Decision: **REVIEWER PACK READY AS DIAGNOSTIC; METHOD WORK STILL STOPPED**. No
+retuning, GPU work, or additional local method evaluation is justified for
+`rdu_topk`.

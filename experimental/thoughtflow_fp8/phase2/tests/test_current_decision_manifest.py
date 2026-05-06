@@ -24,3 +24,20 @@ def test_current_decision_manifest_blocks_current_gpu_claims() -> None:
     for text in (manifest, reviewer_pack):
         assert "not a real FP8 method" in text or "no real FP8 serving result exists" in text
         assert "spending GPU time on the current branch" in text or "Stop local method experimentation" in text
+
+
+def test_reviewer_pack_covers_colm_review_axes_and_no_active_successor() -> None:
+    reviewer_pack = (PROJECT / "paper/reviewer_pack.md").read_text(encoding="utf-8")
+
+    for axis in (
+        "Benchmarks",
+        "Ablations",
+        "Correctness",
+        "Reproducibility",
+        "Novelty",
+        "Camera-readiness",
+    ):
+        assert f"| {axis} |" in reviewer_pack
+
+    assert "No fresh utility signal is currently pre-registered" in reviewer_pack
+    assert "Until that artifact exists, there is no runnable successor gate" in reviewer_pack

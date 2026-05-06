@@ -8,6 +8,11 @@ sparse-cache surfaces. The folder is now a falsification/diagnostic harness
 unless a genuinely new pre-registered signal is evaluated on a fresh frozen
 surface.
 
+Use `phase2/current_decision_manifest_20260506.md` and
+`paper/reviewer_pack.md` as the current review entry points. Older artifacts
+with `ALIVE` or `PROMOTED` statuses are historical and superseded by the stop
+decision.
+
 ## Scope
 
 ThoughtFlow-FP8 now reports a stopped diagnostic branch rather than a proposed
