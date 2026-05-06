@@ -109,6 +109,20 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                 errors.append(
                     f"client replay log lacks profiler_driver JSON evidence markers: {log_file.name}"
                 )
+            try:
+                payload = json.loads(_read_text(log_file))
+            except json.JSONDecodeError:
+                errors.append(f"client replay log is not valid profiler_driver JSON: {log_file.name}")
+            else:
+                requests = payload.get("requests") if isinstance(payload, dict) else None
+                if not isinstance(requests, list) or not requests:
+                    errors.append(
+                        f"client replay log JSON must contain non-empty requests list: {log_file.name}"
+                    )
+                elif not all(isinstance(row, dict) and row.get("status") for row in requests):
+                    errors.append(
+                        f"client replay log requests must contain status fields: {log_file.name}"
+                    )
 
 
 def _read_text(path: Path) -> str:

@@ -413,7 +413,9 @@ The verifier checks that the run directory contains:
 - server-side Nsight Systems and Nsight Compute profile scope in
   `metadata/profile_scope.json`;
 - separate Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and
-  client replay logs;
+  client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence
+  markers, and client replay logs must be valid `profiler_driver.py` JSON with
+  `model` and non-empty `requests` rows containing `status` fields;
 - `readout.md` with the pre-registered decision questions;
 - `profiler_metrics.json` with at least three repeated valid rows for one
   model and at least three distinct repeated `run_id` values.
