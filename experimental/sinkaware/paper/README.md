@@ -16,7 +16,8 @@ implementation gate, larger frozen slices, seed repeats, strict same-family vs
 cross-family separation, and competitor baselines before it can support a
 positive-method paper. The latest per-head readout weakens the claim: aggregate
 rank-2 output drift improves over position-only and survives randomized
-token-split repeats, but per-head robustness is still poor.
+token-split repeats plus a small length/sink sweep, but per-head robustness is
+still poor.
 
 ## Approximate Low-Rank Sink Prior
 
@@ -69,6 +70,10 @@ tradeoff.
   randomized token-level splits (`+0.0368 +/- 0.0006` output rel-L2
   improvement), but the layer-head output win rate stayed low
   (`0.282 +/- 0.024`).
+- Length/sink sweep: all-head rank-2 stayed positive for
+  `max_length={64,96}` and `sink_tokens={2,4}` across three split seeds per
+  configuration (`+0.0366 +/- 0.0024` output rel-L2 improvement; minimum config
+  `+0.0342`), but layer-head output win rate remained low (`0.286 +/- 0.010`).
 
 ## Limitations
 
@@ -80,16 +85,16 @@ tradeoff.
 - Per-head gains are concentrated; a reviewer can reasonably ask whether a
   rank-2 path should be stabilized or killed for unstable heads.
 - No cross-family falsification pair has passed.
-- No trace-level frozen-slice repeats, sequence/sink-token sweep, or
-  long-context competitor comparisons are available yet.
+- No trace-level frozen-slice repeat, larger frozen slice, or long-context
+  competitor comparison is available yet.
 
 ## Next GPU Gate
 
 The Mac-local softmax/output probe now shows bounded aggregate rank-2 drift
-under three randomized token split seeds, but per-head robustness is mixed. The
-next gate should first run a sequence-length/sink-token sweep or trace-level
-frozen split repeat, then make the Triton interpreter scaffold runnable before
-any native GPU prototype that measures:
+under three randomized token split seeds and a small length/sink sweep, but
+per-head robustness is mixed. The next gate should run a trace-level frozen
+split repeat or larger frozen slice, then make the Triton interpreter scaffold
+runnable before any native GPU prototype that measures:
 
 1. exact attention baseline,
 2. exact fixed-sink decomposition that still computes `QK_sink`,

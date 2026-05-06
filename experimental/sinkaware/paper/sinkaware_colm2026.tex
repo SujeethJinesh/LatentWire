@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. A layer-head paired analysis weakens the claim: rank-2 improves output relative L2 by only $0.0297 \pm 0.0378$ across 72 layer-head cells and wins 20/72 cells. A validation-selected head gate also fails: selecting 19/72 heads on validation raises held-out output relative L2 to 0.204 versus 0.172 for position-only and 0.142 for all-rank2. A new split/seed repeat partly revives the all-head row: across three randomized token splits, all-rank2 beats position-only by $0.0368 \pm 0.0006$ output relative L2, but the layer-head win rate remains only $0.282 \pm 0.024$. This is not an end-to-end quality or GPU speed result. It is a bounded correctness and repeatability gate for deciding whether approximate sink prediction is worth implementing.
+Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. A layer-head paired analysis weakens the claim: rank-2 improves output relative L2 by only $0.0297 \pm 0.0378$ across 72 layer-head cells and wins 20/72 cells. A validation-selected head gate also fails: selecting 19/72 heads on validation raises held-out output relative L2 to 0.204 versus 0.172 for position-only and 0.142 for all-rank2. Split/seed and length/sink sweeps partly revive the all-head row: across four configurations with max lengths 64/96, sink counts 2/4, and three split seeds each, all-rank2 beats position-only by $0.0366 \pm 0.0024$ output relative L2, with minimum configuration improvement $0.0342$. The layer-head win rate remains only $0.286 \pm 0.010$. This is not an end-to-end quality or GPU speed result. It is a bounded correctness and repeatability gate for deciding whether approximate sink prediction is worth implementing.
 \end{abstract}
 
 \section{Problem}
@@ -76,6 +76,14 @@ $0.0435 \pm 0.0004$. This supports the all-head aggregate row enough for
 interpreter work, but not a per-head robustness claim: the output win rate
 across layer-head cells remains $0.282 \pm 0.024$.
 
+We then ran a bounded sequence-length and sink-count sweep. For max lengths
+64 and 96, sink counts 2 and 4, and three token split seeds per configuration,
+all configurations kept rank-2 positive against position-only. Mean output
+relative-L2 improvement across configurations was $0.0366 \pm 0.0024$, and the
+minimum configuration improvement was 0.0342. This makes the all-head row more
+repeatable, but the per-head caveat persists: layer-head output win rate
+averaged only $0.286 \pm 0.010$.
+
 \section{Reference and Kernel Gates}
 
 The Phase 3 reference specifies the exact computation to preserve during kernel work. Given query $q$, keys $K$, values $V$, and predicted fixed-sink logits $\hat{s}$, SinkAware computes all tail logits $qK_{tail}^{\top}$ exactly, replaces only the first sink-token logits with $\hat{s}$, and then runs the ordinary softmax denominator over the concatenated vector. Unit tests verify that when $\hat{s}$ equals exact sink logits, the reference reproduces exact attention to numerical tolerance. This keeps the live branch separate from the killed exact-static-reuse branch.
@@ -84,7 +92,7 @@ The Phase 4 Triton-interpreter scaffold now targets the same operator for a one-
 
 \section{Decision}
 
-SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. Promotion now requires a broader sequence-length/sink-token sweep or trace-level frozen split repeat, a better stability mechanism than validation head selection for unstable heads, and native runs that show real speed or memory-traffic advantage over exact attention while still beating the position-only predictor on quality.
+SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. Promotion now requires a trace-level frozen split repeat or larger frozen slice, a better stability mechanism than validation head selection for unstable heads, and native runs that show real speed or memory-traffic advantage over exact attention while still beating the position-only predictor on quality.
 
 \section{Artifacts}
 
@@ -92,6 +100,7 @@ SinkAware is alive only as an all-head approximate low-rank correctness and nati
 \item \url{experimental/sinkaware/phase2/real_qk_sink_softmax_output_probe.md}
 \item \url{experimental/sinkaware/phase2/head_selective_sink_gate.md}
 \item \url{experimental/sinkaware/phase2/rank2_split_stability_gate.md}
+\item \url{experimental/sinkaware/phase2/rank2_length_sink_sweep_gate.md}
 \item \url{experimental/sinkaware/phase2/qk_sink_cost_model.md}
 \item \url{experimental/sinkaware/phase3/approx_sink_attention_reference.md}
 \item \url{experimental/sinkaware/phase4/approx_sink_attention_triton_gate.md}

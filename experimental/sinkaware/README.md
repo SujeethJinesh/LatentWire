@@ -32,8 +32,11 @@ layer-head granularity (`+0.0297 +/- 0.0378` output rel-L2 improvement, 20/72
 head wins). Simple validation head selection failed. A randomized split/seed
 repeat kept all-head rank-2 positive across three token splits
 (`+0.0368 +/- 0.0006` output rel-L2 improvement), but the layer-head win rate
-remained low (`0.282 +/- 0.024`). Treat this as a correctness/repeatability
-gate, not as a quality or speed result.
+remained low (`0.282 +/- 0.024`). A bounded length/sink sweep over
+`max_length={64,96}` and `sink_tokens={2,4}` kept all-head rank-2 positive
+(`+0.0366 +/- 0.0024`, minimum config `+0.0342`), while preserving the same
+per-head caveat. Treat this as a correctness/repeatability gate, not as a
+quality or speed result.
 
 Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
 reference. Interpreter-mode correctness is not GPU performance evidence, and

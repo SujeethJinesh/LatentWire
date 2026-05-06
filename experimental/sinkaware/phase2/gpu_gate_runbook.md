@@ -12,7 +12,9 @@ below the estimated multiply-add cost of exact four-sink QK. Exact static sink
 reuse remains killed. The latest layer-head paired readout is mixed, so a GPU
 run must preserve the per-head drift table instead of reporting only aggregate
 means. A three-seed randomized token split repeat keeps all-rank2 positive, but
-does not solve per-head fragility.
+does not solve per-head fragility. A bounded Mac-local length/sink sweep
+(`max_length={64,96}`, `sink_tokens={2,4}`) also keeps all-rank2 positive, so
+native work should preserve both aggregate and per-head quality readouts.
 
 The GPU gate must answer whether the approximation is useful after real kernel
 costs, memory movement, and output drift are measured together.
@@ -58,5 +60,6 @@ if position-only is indistinguishable.
 
 - `real_qk_sink_softmax_output_probe.md`
 - `rank2_split_stability_gate.md`
+- `rank2_length_sink_sweep_gate.md`
 - `qk_sink_cost_model.md`
 - `decomposition_decision.md`

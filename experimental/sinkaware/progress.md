@@ -6,7 +6,8 @@
 - Phase 1 literature and code audit: quick-kill audit recorded
 - Phase 2: exact static sink-prior gate failed; approximate low-rank revival
   and per-head softmax/output gates completed with a new paired layer-head
-  caveat; simple head selection failed; all-rank2 split repeats passed weakly
+  caveat; simple head selection failed; all-rank2 split repeats and a bounded
+  length/sink sweep passed weakly
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
 - Last updated: 2026-05-06
@@ -130,6 +131,23 @@ under token split seeds, but it does not solve per-head fragility: the
 layer-head output win rate remains only `0.282 +/- 0.024`. The next exact
 pre-GPU gate should be a broader sequence-length/sink-token sweep or a
 trace-level frozen split repeat, not another simple validation head selector.
+
+## All-Rank2 Length/Sink Sweep
+
+`phase2/rank2_length_sink_sweep_gate.md` ran the smallest Mac-feasible
+sequence/sink sweep: `max_length in {64, 96}`, `sink_tokens in {2, 4}`, three
+token split seeds per configuration, and 48 distilgpt2 traces. All four
+configurations kept rank-2 positive against position-only on every seed. Across
+configurations, output rel-L2 improvement averaged `+0.0366 +/- 0.0024`; the
+minimum configuration improvement was `+0.0342`; layer-head output win rate was
+still low at `0.286 +/- 0.010`.
+
+Decision: all-head rank-2 is **alive but bounded** for interpreter/GPU
+correctness work. This sweep is stronger than the single-config split repeat,
+but it still does not establish end-to-end quality, per-head robustness, or
+speed. The next exact pre-GPU gate should be a trace-level frozen split repeat
+or a larger frozen slice; head selection should stay ruled out unless a
+different stability signal appears.
 
 ## Macbook Kernel Correctness Scaffold
 
