@@ -290,7 +290,7 @@
         "ci95_high": -0.08550536469237445
       }
     },
-    "status": "ALIVE on frozen sparse-cache probe; rdu_topk clears the preregistered promotion rule with margins 0.087 vs R-KV-like and 0.256 vs ThinKV-like."
+    "status": "NOT REPRODUCED on alternate measured no-retuning surface; strict same-family/cross-family reproduction failed."
   },
   "cached_decision": {
     "rdu_nll": 3.778857429285307,

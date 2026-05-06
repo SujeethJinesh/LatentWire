@@ -118,7 +118,7 @@ stability decision surface, but it still does not measure downstream quality,
 predictor transfer, or GPU speed.
 
 \paragraph{Downstream control gate.}
-The next Mac-feasible gate patches full GPT2/OPT attention during causal-LM
+We also patch full GPT2/OPT attention during causal-LM
 evaluation. It compares exact baseline attention against exact sink-logit
 replacement, position-only replacement, and rank-2 replacement. Exact
 replacement is the validity control and reproduces baseline loss and logits on

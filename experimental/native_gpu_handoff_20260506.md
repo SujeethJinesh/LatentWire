@@ -26,6 +26,8 @@ Minimum admissible packet:
 
 - whole packet directory returned, not screenshots;
 - server-side Nsight Systems and Nsight Compute artifacts;
+- immutable environment capture including `nvidia-smi`, `nsys`, `ncu`, and
+  `python` lines;
 - at least three distinct same-model/same-config metric rows;
 - explicit `run_id`, dtype, CUDA graph state, batch shape, request count, and
   matched control label in every row;

@@ -388,3 +388,17 @@ be JSON positive integers rather than floats, strings, booleans, or placeholders
 Decision: **STOP MAC ITERATION AFTER TESTS PASS**. Further local work cannot
 replace the native NVIDIA/vLLM trace evidence required for benchmarks,
 ablations, correctness under CUDA, or a real systems contribution.
+
+## 2026-05-06 Environment Capture Handoff Hardening
+
+Closed a final reproducibility loophole in the native packet admissibility
+checker. `metadata/environment.txt` must now include `nvidia-smi`, `nsys`,
+`ncu`, and `python` capture lines. Missing any of those markers is a hard
+checker failure rather than a warning. The NVIDIA runbook and shared native
+handoff map now state the same requirement, so a returned packet cannot be
+treated as reviewable profiler evidence unless the basic GPU/profiler/Python
+environment is recorded.
+
+Decision: **MAC HANDOFF IS SATURATED**. This improves traceability for the
+first NVIDIA run, but it does not change the scientific gate: only a native
+NVIDIA/vLLM profiler packet can promote or kill HybridKernel.

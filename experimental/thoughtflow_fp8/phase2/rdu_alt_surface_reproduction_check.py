@@ -106,12 +106,15 @@ def build_report(
         and strict_family["same_family_positive"]
         and strict_family["cross_family_positive"]
     )
+    status = (
+        "REPRODUCED on alternate measured no-retuning surface; rdu_topk remains best compressed and clears strict same-family/cross-family reproduction."
+        if reproduction_pass
+        else "NOT REPRODUCED on alternate measured no-retuning surface; strict same-family/cross-family reproduction failed."
+    )
+    measured_reproduction = _compact_result(measured)
+    measured_reproduction["status"] = status
     return {
-        "status": (
-            "REPRODUCED on alternate measured no-retuning surface; rdu_topk remains best compressed and clears the preregistered rule."
-            if reproduction_pass
-            else "NOT REPRODUCED on alternate measured no-retuning surface; inspect measured decision details."
-        ),
+        "status": status,
         "method_branch": RDU_POLICY_NAME,
         "diagnostic_type": "measured_no_retuning_alternate_surface_against_cached_frozen_gate",
         "cached_label": "cached_promoted_gate",
@@ -120,7 +123,7 @@ def build_report(
         "cached_surface": _surface_descriptor(cached),
         "measured_surface": _surface_descriptor(measured),
         "cached_baseline": _compact_result(cached),
-        "measured_reproduction": _compact_result(measured),
+        "measured_reproduction": measured_reproduction,
         "cached_decision": cached_decision,
         "measured_decision": measured_decision,
         "cached_vs_measured": _cached_vs_measured(cached, measured),
