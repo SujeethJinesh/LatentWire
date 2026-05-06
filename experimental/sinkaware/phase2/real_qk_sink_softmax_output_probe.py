@@ -216,6 +216,7 @@ def _evaluate_output_errors(
     splits: dict[int, int],
     modes: tuple[str, ...],
     eval_ranges: dict[int, tuple[int, int | None]] | None = None,
+    eval_indices: dict[int, set[int]] | None = None,
 ) -> tuple[dict[int, dict[str, dict[str, float]]], dict[int, dict[int, dict[str, dict[str, float]]]]]:
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForCausalLM.from_pretrained(model_name)
@@ -249,7 +250,14 @@ def _evaluate_output_errors(
                 for query_pos in query_positions.tolist():
                     sample_idx = layer_offsets[layer_idx]
                     layer_offsets[layer_idx] += 1
-                    start, end = eval_ranges.get(layer_idx, (splits[layer_idx], None)) if eval_ranges else (splits[layer_idx], None)
+                    if eval_indices is not None and sample_idx not in eval_indices[layer_idx]:
+                        continue
+                    if eval_ranges:
+                        start, end = eval_ranges.get(layer_idx, (splits[layer_idx], None))
+                    elif eval_indices is not None:
+                        start, end = 0, None
+                    else:
+                        start, end = splits[layer_idx], None
                     if sample_idx < start or (end is not None and sample_idx >= end):
                         continue
                     q_vec = q_heads[:, query_pos, :]

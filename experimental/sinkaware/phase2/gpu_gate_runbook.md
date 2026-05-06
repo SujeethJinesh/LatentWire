@@ -11,7 +11,8 @@ rank-2 reduces held-out output relative-L2 versus position-only while staying
 below the estimated multiply-add cost of exact four-sink QK. Exact static sink
 reuse remains killed. The latest layer-head paired readout is mixed, so a GPU
 run must preserve the per-head drift table instead of reporting only aggregate
-means.
+means. A three-seed randomized token split repeat keeps all-rank2 positive, but
+does not solve per-head fragility.
 
 The GPU gate must answer whether the approximation is useful after real kernel
 costs, memory movement, and output drift are measured together.
@@ -56,5 +57,6 @@ if position-only is indistinguishable.
 ## Current Mac Inputs
 
 - `real_qk_sink_softmax_output_probe.md`
+- `rank2_split_stability_gate.md`
 - `qk_sink_cost_model.md`
 - `decomposition_decision.md`

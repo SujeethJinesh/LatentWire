@@ -29,8 +29,11 @@ sink-logit prediction while keeping all non-sink scores exact.
 The current 48-trace distilgpt2 probe is weakly positive at the aggregate layer
 level (`rank2 output rel-L2=0.141` versus `position=0.170`) but mixed at
 layer-head granularity (`+0.0297 +/- 0.0378` output rel-L2 improvement, 20/72
-head wins). Treat this as a gate to more rigorous correctness and repeatability
-checks, not as a quality or speed result.
+head wins). Simple validation head selection failed. A randomized split/seed
+repeat kept all-head rank-2 positive across three token splits
+(`+0.0368 +/- 0.0006` output rel-L2 improvement), but the layer-head win rate
+remained low (`0.282 +/- 0.024`). Treat this as a correctness/repeatability
+gate, not as a quality or speed result.
 
 Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
 reference. Interpreter-mode correctness is not GPU performance evidence, and

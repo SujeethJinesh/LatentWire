@@ -6,10 +6,10 @@
 - Phase 1 literature and code audit: quick-kill audit recorded
 - Phase 2: exact static sink-prior gate failed; approximate low-rank revival
   and per-head softmax/output gates completed with a new paired layer-head
-  caveat
+  caveat; simple head selection failed; all-rank2 split repeats passed weakly
 - Phase 4: fixed sink-token decomposition reference plus Triton interpreter
   correctness scaffold added, but not phase-complete
-- Last updated: 2026-05-05
+- Last updated: 2026-05-06
 
 ## Phase 0 Checklist
 
@@ -94,14 +94,12 @@ position-only is `+0.0297 +/- 0.0378` across 72 layer-head cells, with only
 20/72 output wins. Rank-8 is more accurate (`output rel-L2=0.107`) but remains
 too expensive under the current simple cost model.
 
-Current status: **WEAKLY ALIVE for a narrow GPU/interpreter gate as an
-approximate low-rank SinkAware branch**, not as exact static-prior reuse. The
-rank-2 aggregate improvement is real in the saved probe, but per-head wins are
-concentrated enough that seed/split repeats or head-selective gating should be
-cleared before any strong paper claim. The next exact gate remains a correctness
-prototype comparing exact attention, exact fixed-sink decomposition that still
-computes `QK_sink`, and rank-2 approximate sink-logit prediction; native speed
-claims require NVIDIA hardware.
+Current status before the stability gates: **WEAKLY ALIVE for a narrow
+GPU/interpreter gate as an approximate low-rank SinkAware branch**, not as
+exact static-prior reuse. The rank-2 aggregate improvement was real in the
+saved probe, but per-head wins were concentrated enough that repeatability or a
+stability mechanism had to be checked before any strong paper claim. Native
+speed claims still require NVIDIA hardware.
 
 ## Head-Selective Rank-2 Gate
 
@@ -115,6 +113,23 @@ worse than position-only `0.1724` and all-rank2 `0.1419`.
 Decision: simple validation head selection is **weakened/ruled out** as a
 pre-GPU rescue. The approximate branch remains alive only as all-rank2 plus a
 future stability mechanism; no paper should claim head-selective robustness.
+
+## All-Rank2 Split/Seed Stability Gate
+
+`phase2/rank2_split_stability_gate.md` tested the next Mac-feasible question
+after the head-selector failure: does the all-head rank-2 row still beat
+position-only when the token-level train/test split is randomized across seeds?
+On the same 48 distilgpt2 traces with `max_length=96`, `sink_tokens=4`, and
+three split seeds, all-rank2 beat position-only on every split. Mean output
+rel-L2 improvement was `+0.0368 +/- 0.0006`; sink-mass MAE improvement was
+`+0.0203 +/- 0.0003`; attention-L1 improvement was `+0.0435 +/- 0.0004`.
+
+Decision: all-rank2 is **alive but still weak** for a correctness/interpreter
+gate. The result sharpens the branch because the aggregate row is repeatable
+under token split seeds, but it does not solve per-head fragility: the
+layer-head output win rate remains only `0.282 +/- 0.024`. The next exact
+pre-GPU gate should be a broader sequence-length/sink-token sweep or a
+trace-level frozen split repeat, not another simple validation head selector.
 
 ## Macbook Kernel Correctness Scaffold
 

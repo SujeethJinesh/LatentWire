@@ -15,8 +15,8 @@ Estimated distance to ICLR readiness: high. The branch still needs a GPU
 implementation gate, larger frozen slices, seed repeats, strict same-family vs
 cross-family separation, and competitor baselines before it can support a
 positive-method paper. The latest per-head readout weakens the claim: aggregate
-rank-2 output drift improves over position-only, but the paired layer-head
-confidence interval still overlaps zero.
+rank-2 output drift improves over position-only and survives randomized
+token-split repeats, but per-head robustness is still poor.
 
 ## Approximate Low-Rank Sink Prior
 
@@ -62,6 +62,13 @@ tradeoff.
   exact. The new layer-head paired readout is weaker (`+0.0297 +/- 0.0378`
   output rel-L2 improvement; 20/72 head wins), so this promotes the branch only
   to a correctness/repeatability gate; it is not end-to-end quality evidence.
+- Head-selective gate: a simple validation rule selected 19/72 rank-2 heads but
+  failed held-out (`0.204` output rel-L2 versus `0.172` for position-only and
+  `0.142` for all-rank2), so this rescue is ruled out for now.
+- Split/seed stability gate: all-head rank-2 beat position-only on three
+  randomized token-level splits (`+0.0368 +/- 0.0006` output rel-L2
+  improvement), but the layer-head output win rate stayed low
+  (`0.282 +/- 0.024`).
 
 ## Limitations
 
@@ -71,17 +78,18 @@ tradeoff.
 - The approximation uses exact non-sink scores, so it isolates sink-logit drift
   but does not prove end-to-end serving speedups.
 - Per-head gains are concentrated; a reviewer can reasonably ask whether a
-  rank-2 path should be head-selective or killed for unstable heads.
+  rank-2 path should be stabilized or killed for unstable heads.
 - No cross-family falsification pair has passed.
-- No seed repeats, frozen-slice repeats, or long-context competitor comparisons
-  are available yet.
+- No trace-level frozen-slice repeats, sequence/sink-token sweep, or
+  long-context competitor comparisons are available yet.
 
 ## Next GPU Gate
 
-The Mac-local softmax/output probe shows bounded aggregate rank-2 drift on
-distilgpt2 traces, but per-head robustness is mixed. The next gate should first
-make the Triton interpreter scaffold runnable, then run a small GPU
-implementation or fused-kernel prototype that measures:
+The Mac-local softmax/output probe now shows bounded aggregate rank-2 drift
+under three randomized token split seeds, but per-head robustness is mixed. The
+next gate should first run a sequence-length/sink-token sweep or trace-level
+frozen split repeat, then make the Triton interpreter scaffold runnable before
+any native GPU prototype that measures:
 
 1. exact attention baseline,
 2. exact fixed-sink decomposition that still computes `QK_sink`,

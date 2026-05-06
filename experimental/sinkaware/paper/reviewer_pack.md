@@ -27,12 +27,14 @@ claim.
 | softmax/output probe | 48 traces; aggregate rank-2 output rel-L2 0.141 vs position-only 0.170 | weakly positive |
 | layer-head paired probe | rank-2 output rel-L2 improvement +0.0297 +/- 0.0378; 20/72 head wins | fragile; needs repeats or better stability |
 | validation head-selective gate | selected 19/72 heads; held-out output rel-L2 0.2035 vs 0.1724 position and 0.1419 all-rank2 | simple head selection weakened |
+| split/seed all-rank2 gate | 3 randomized token splits; rank-2 output rel-L2 improvement +0.0368 +/- 0.0006; all seeds positive | all-rank2 repeatable but still per-head fragile |
 | Triton readiness | `TRITON_INTERPRET=1` set, `triton` not importable, CUDA unavailable on Mac | no interpreter pass yet |
 
 ## Reviewer Risks
 
 - The method is approximate and may hurt downstream quality.
-- Aggregate output improvements are not yet robust per head.
+- Aggregate output improvements survive token split repeats but are not robust
+  per head.
 - Existing attention-sink systems occupy the broad novelty frame.
 - distilgpt2 is only a Mac-local probe, not a modern benchmark.
 - No GPU latency or memory claim exists yet.
@@ -42,6 +44,6 @@ claim.
 First make the `TRITON_INTERPRET=1` approximate-attention scaffold runnable in
 `./venv_arm64` or in a Linux GPU environment and verify exact-prediction
 correctness. Then repeat the all-rank2 softmax/output probe with split seeds or
-a better stability mechanism; simple validation head selection is no longer a
+a sequence/sink-token sweep; simple validation head selection is no longer a
 good rescue. Native NVIDIA comparison remains gated by
 `experimental/sinkaware/phase2/gpu_gate_runbook.md`.
