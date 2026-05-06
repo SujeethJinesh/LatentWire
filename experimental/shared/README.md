@@ -72,22 +72,22 @@ project packets with:
 ./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
   --project ssq_lr \
   --tensor-packet experimental/shared/results/<tensor_packet> \
-  --output-dir experimental/ssq_lr/results/ssq_lr_gate_s1_<date>_<model>
+  --output-dir experimental/ssq_lr/phase2/results/ssq_lr_gate_s1_<date>_<model>
 
 ./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
   --project horn \
   --tensor-packet experimental/shared/results/<tensor_packet> \
-  --output-dir experimental/horn/results/horn_gate_h1_<date>_<model>
+  --output-dir experimental/horn/phase2/results/horn_gate_h1_<date>_<model>
 
 ./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
   --project hbsm \
   --row-packet experimental/shared/results/<hbsm_rows>.json \
-  --output-dir experimental/hbsm/results/hbsm_gate_b1_<date>_<model>
+  --output-dir experimental/hbsm/phase2/results/hbsm_gate_b1_<date>_<model>
 ```
 
 Then validate with `check_gate_packet.py --mode real --project ...`. The real
 checker enforces admissible coverage, not just schema shape: SSQ-LR needs
-early/middle/late buckets and enough prompts, HORN needs both boundary
+preregistered S1 buckets and enough prompts, HORN needs both boundary
 directions with matched flipped controls, and HBSM needs both boundary flags
 plus a perturbation-off row with near-zero drift.
 

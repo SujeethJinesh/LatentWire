@@ -15,7 +15,8 @@
 This is a living paper shell for a preregistered Mac-first experiment. HBSM
 tests whether sensitivity in frontier hybrid reasoners can be explained and
 predicted cheaply. The broad forward-only sensitivity claim is wounded by
-recent related work, so no novelty or positive result is claimed yet.
+KL Lens-style forward-sensitivity work, so no novelty or positive result is
+claimed yet.
 \end{abstract}
 
 \section{Current Gate}
@@ -23,6 +24,9 @@ recent related work, so no novelty or positive result is claimed yet.
 The branch must pass sensitivity heterogeneity, no-forward predictor, and
 mechanism gates. If it overlaps with HORN, it should be folded into a unified
 hybrid-quantization paper.
+B1 must first reproduce sensitivity heterogeneity on current hybrid reasoners,
+B2 must beat no-forward baselines without overfitting depth or size, and B3
+must add mechanism beyond HORN's boundary-direction test.
 
 \section{Mac Artifact Status}
 
@@ -49,10 +53,31 @@ The real B1 packet must use fixed boundary flags from the shared architecture
 maps. Each row must report \texttt{model\_id}, \texttt{layer},
 \texttt{boundary\_flag}, \texttt{precision\_perturbation},
 \texttt{kl\_or\_nll\_drift}, \texttt{cheap\_predictor},
-\texttt{parameter\_count}, \texttt{weight\_norm}, and \texttt{control\_type}.
+\texttt{parameter\_count}, \texttt{weight\_norm},
+\texttt{top\_decile\_flag}, \texttt{random\_top\_decile},
+\texttt{train\_test\_split}, and \texttt{control\_type}.
 The packet must include \texttt{architecture\_map\_hash}, \texttt{summary.md},
 matching \texttt{row\_count}, and pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project hbsm}.
+The checker requires both true and false boundary flags, finite sensitivity and
+predictor fields, all listed controls, and a perturbation-off row whose drift is
+near zero. It also requires matched top-decile/random-flag counts and both
+train and test split rows unless the packet records an explicit resource limit.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+Gate & Promotion threshold \\
+\midrule
+B1 sensitivity & Top-decile enrichment beats random flags with Fisher $p<0.05$ or bootstrap lower bound $>1.0$. \\
+B2 predictor & Spearman $\rho \ge 0.6$ with bootstrap lower bound $\ge 0.3$. \\
+B3 mechanism & Matched-noise attention drift exceeds SSM drift and aligns with HORN. \\
+\bottomrule
+\end{tabular}
+\caption{Pre-registered HBSM gate thresholds before any standalone claim.}
+\end{table}
 
 \begin{table}[h]
 \centering
@@ -72,5 +97,25 @@ Train/test split & Reduces cheap-predictor overfit. \\
 \end{tabular}
 \caption{Controls required before HBSM can claim a cheaper sensitivity predictor.}
 \end{table}
+
+\section{Reviewer Packet}
+
+The reviewer-facing claim boundary is tracked in
+\url{experimental/hbsm/paper/reviewer_pack.md}. It records that HBSM is not camera-ready as a standalone paper until B1--B3 separate the mechanism from existing sensitivity tools.
+
+\section{Novelty Boundary}
+
+The closest risk is KL Lens-style forward sensitivity for mixed-precision
+hybrid models \cite{kllens}. HBSM can survive only if it shows a cheaper
+no-forward predictor or a boundary mechanism on current hybrid reasoners;
+otherwise it should be folded into HORN or killed.
+
+\begin{thebibliography}{1}
+\bibitem[KL Lens(2026)]{kllens}
+Jason Kong, Nilesh Prasad Pandey, Flavio Ponzina, and Tajana Rosing.
+A KL Lens on Quantization: Fast, Forward-Only Sensitivity for
+Mixed-Precision SSM-Transformer Models. arXiv:2604.13440, 2026.
+\url{https://arxiv.org/abs/2604.13440}.
+\end{thebibliography}
 
 \end{document}

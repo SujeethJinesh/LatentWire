@@ -22,6 +22,9 @@ native systems claim is made yet.
 
 The branch must pass activation-magnitude, quantization-noise propagation, and
 cross-model/control gates before GPU validation.
+H1 first tests directional activation statistics, H2 tests matched
+FP4-equivalent noise propagation, and H3 requires the direction to survive
+hybrid-model repeats while weakening on pure-attention and pure-Mamba controls.
 
 \section{Mac Artifact Status}
 
@@ -40,16 +43,23 @@ current Mac.
 The next admissible row is a real boundary activation dump from a hybrid model.
 HORN remains a control branch unless real H1/H2/H3 gates show consistent
 directional asymmetry that pure-attention and pure-Mamba controls do not share.
+Pure-architecture controls are an H3 requirement, not a blocker for the first
+H1 boundary-activation packet.
 
 \section{Admissible Real Packet}
 
 The real H1 packet must use the shared config-derived architecture maps rather
 than substring-only module classification. Each row must report
-\texttt{model\_id}, adjacent layer IDs, \texttt{direction},
+\texttt{model\_id}, \texttt{prompt\_id}, adjacent layer IDs, \texttt{direction},
 \texttt{boundary\_index}, normalization placement, \texttt{max\_abs},
 \texttt{rms}, \texttt{kurtosis}, and \texttt{control\_type}. The required
 controls are boundary rows, non-boundary adjacent rows, and permuted-direction
-rows. The packet must include \texttt{architecture\_map\_hash} and pass
+rows. A valid packet must cover both \texttt{attention->ssm} and
+\texttt{ssm->attention}; each permuted-direction row must match an observed
+boundary tuple while flipping its direction. It must also include at least 12
+fixed prompt IDs unless the packet records an explicit resource limit. The
+packet must include
+\texttt{architecture\_map\_hash} and pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project horn}.
 Saved tensor packets should be converted with
 \texttt{experimental.shared.hybrid\_trace\_packet\_builder} before validation.
@@ -70,5 +80,10 @@ Pure-architecture control & Prevents generic outlier claims. \\
 \end{tabular}
 \caption{Controls required before HORN can claim directional hybrid asymmetry.}
 \end{table}
+
+\section{Reviewer Packet}
+
+The reviewer-facing claim boundary is tracked in
+\url{experimental/horn/paper/reviewer_pack.md}. It records that HORN is not camera-ready as a method or measurement paper until real H1--H3 evidence exists.
 
 \end{document}

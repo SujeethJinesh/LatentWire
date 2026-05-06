@@ -19,6 +19,9 @@ from experimental.shared.hybrid_trace_packet_builder import build_hbsm_packet, b
 from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_rank_correlation
 
 
+SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
+
+
 def test_fp4_simulator_is_deterministic_and_shape_preserving() -> None:
     tensor = torch.linspace(-3, 3, steps=65).reshape(5, 13)
     first = simulate_mxfp4_e2m1(tensor, block_size=16)
@@ -142,8 +145,8 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
             "outlier_mass": 0.1,
             "control_type": "bf16_no_quant",
         }
-        for prompt_index in range(16)
-        for bucket in ("early", "middle", "late")
+        for prompt_index in range(12)
+        for bucket in SSQ_BUCKETS
     ]
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
@@ -183,7 +186,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tm
             "model_revision": "abc123",
             "prompt_id": f"p{prompt_index}",
             "layer": 0,
-            "position_bucket": "early",
+            "position_bucket": "prefill_end",
             "state_shape": [1, 4],
             "max_abs": 2.0,
             "rms": 1.0,
@@ -192,7 +195,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tm
             "outlier_mass": 0.1,
             "control_type": "bf16_no_quant",
         }
-        for prompt_index in range(16)
+        for prompt_index in range(12)
     ]
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
@@ -241,6 +244,7 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
     (packet / "raw_rows.jsonl").write_text(
         "{"
         '"model_id": "toy-hybrid", '
+        '"prompt_id": "p0", '
         '"layer_left": 0, '
         '"layer_right": 1, '
         '"direction": "attention->ssm", '
@@ -349,8 +353,8 @@ def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: 
     metadata = _base_trace_metadata()
     entries = []
     tensors = {}
-    for prompt_index in range(16):
-        for bucket in ("early", "middle", "late"):
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
             tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
             entries.append(
                 {
@@ -380,67 +384,35 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn"
     metadata = _base_trace_metadata()
-    metadata["horn_entries"] = [
-        {
-            "tensor": "boundary_attn_ssm",
-            "layer_left": 0,
-            "layer_right": 1,
-            "direction": "attention->ssm",
-            "boundary_index": 0,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "boundary",
-        },
-        {
-            "tensor": "boundary_ssm_attn",
-            "layer_left": 2,
-            "layer_right": 3,
-            "direction": "ssm->attention",
-            "boundary_index": 1,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "boundary",
-        },
-        {
-            "tensor": "non_boundary",
-            "layer_left": 4,
-            "layer_right": 5,
-            "direction": "ssm->ssm",
-            "boundary_index": 2,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "non_boundary",
-        },
-        {
-            "tensor": "permuted_attn_ssm",
-            "layer_left": 0,
-            "layer_right": 1,
-            "direction": "ssm->attention",
-            "boundary_index": 0,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "permuted_direction",
-        },
-        {
-            "tensor": "permuted_ssm_attn",
-            "layer_left": 2,
-            "layer_right": 3,
-            "direction": "attention->ssm",
-            "boundary_index": 1,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "permuted_direction",
-        },
-    ]
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for stem, layer_left, layer_right, direction, boundary_index, control_type in [
+            ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary"),
+            ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary"),
+            ("non_boundary", 4, 5, "ssm->ssm", 2, "non_boundary"),
+            ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction"),
+            ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction"),
+        ]:
+            tensor_name = f"{stem}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer_left": layer_left,
+                    "layer_right": layer_right,
+                    "direction": direction,
+                    "boundary_index": boundary_index,
+                    "pre_norm_position": "post_norm",
+                    "post_norm_position": "pre_norm",
+                    "control_type": control_type,
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["horn_entries"] = entries
     save_tensor_packet(
         tensor_packet,
-        tensors={
-            "boundary_attn_ssm": torch.randn(2, 4),
-            "boundary_ssm_attn": torch.randn(2, 4),
-            "non_boundary": torch.randn(2, 4),
-            "permuted_attn_ssm": torch.randn(2, 4),
-            "permuted_ssm_attn": torch.randn(2, 4),
-        },
+        tensors=tensors,
         metadata=metadata,
     )
 
@@ -448,63 +420,41 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     report = validate_gate_packet(output_dir, mode="real", project="horn")
 
     assert report["ok"]
-    assert report["row_count"] == 5
+    assert report["row_count"] == 60
 
 
 def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_boundary(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn_bad"
     metadata = _base_trace_metadata()
-    metadata["horn_entries"] = [
-        {
-            "tensor": "boundary_attn_ssm",
-            "layer_left": 0,
-            "layer_right": 1,
-            "direction": "attention->ssm",
-            "boundary_index": 0,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "boundary",
-        },
-        {
-            "tensor": "boundary_ssm_attn",
-            "layer_left": 2,
-            "layer_right": 3,
-            "direction": "ssm->attention",
-            "boundary_index": 1,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "boundary",
-        },
-        {
-            "tensor": "non_boundary",
-            "layer_left": 4,
-            "layer_right": 5,
-            "direction": "ssm->ssm",
-            "boundary_index": 2,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "non_boundary",
-        },
-        {
-            "tensor": "permuted_unmatched",
-            "layer_left": 8,
-            "layer_right": 9,
-            "direction": "attention->ssm",
-            "boundary_index": 9,
-            "pre_norm_position": "post_norm",
-            "post_norm_position": "pre_norm",
-            "control_type": "permuted_direction",
-        },
-    ]
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for stem, layer_left, layer_right, direction, boundary_index, control_type in [
+            ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary"),
+            ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary"),
+            ("non_boundary", 4, 5, "ssm->ssm", 2, "non_boundary"),
+            ("permuted_unmatched", 8, 9, "attention->ssm", 9, "permuted_direction"),
+        ]:
+            tensor_name = f"{stem}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer_left": layer_left,
+                    "layer_right": layer_right,
+                    "direction": direction,
+                    "boundary_index": boundary_index,
+                    "pre_norm_position": "post_norm",
+                    "post_norm_position": "pre_norm",
+                    "control_type": control_type,
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["horn_entries"] = entries
     save_tensor_packet(
         tensor_packet,
-        tensors={
-            "boundary_attn_ssm": torch.randn(2, 4),
-            "boundary_ssm_attn": torch.randn(2, 4),
-            "non_boundary": torch.randn(2, 4),
-            "permuted_unmatched": torch.randn(2, 4),
-        },
+        tensors=tensors,
         metadata=metadata,
     )
 
@@ -533,6 +483,9 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
                         "cheap_predictor": float(index + 1),
                         "parameter_count": 1024 + index,
                         "weight_norm": 0.5 + index,
+                        "top_decile_flag": control == "boundary_only",
+                        "random_top_decile": control == "random_flags",
+                        "train_test_split": "train" if index % 2 == 0 else "test",
                         "control_type": control,
                     }
                     for index, control in enumerate(controls)
@@ -568,6 +521,9 @@ def test_gate_packet_checker_rejects_hbsm_without_true_and_false_boundary_flags(
                         "cheap_predictor": float(index + 1),
                         "parameter_count": 1024 + index,
                         "weight_norm": 0.5 + index,
+                        "top_decile_flag": control == "boundary_only",
+                        "random_top_decile": control == "random_flags",
+                        "train_test_split": "train" if index % 2 == 0 else "test",
                         "control_type": control,
                     }
                     for index, control in enumerate(controls)

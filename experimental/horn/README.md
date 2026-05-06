@@ -60,14 +60,18 @@ Validate the first real H1 packet with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
-  experimental/horn/results/horn_gate_h1_<YYYYMMDD>_<model_slug> \
+  experimental/horn/phase2/results/horn_gate_h1_<YYYYMMDD>_<model_slug> \
   --mode real --project horn
 ```
+
+The real checker requires at least 12 prompt IDs unless resource-limited, both
+boundary directions, matched flipped `permuted_direction` controls, and finite
+numeric rows.
 
 ## Output Paths
 
 ```text
-experimental/horn/results/horn_gate_<gate>_<YYYYMMDD>_<model_slug>/
+experimental/horn/phase2/results/horn_gate_<gate>_<YYYYMMDD>_<model_slug>/
 ```
 
 ## Local Setup

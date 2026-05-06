@@ -208,6 +208,8 @@ Every `nsys_artifact` and `ncu_artifact` field must be a relative path that
 stays inside the run packet, uses a valid Nsight export extension, and resolves
 to a reviewable native artifact when native artifacts are required. Missing,
 external, and wrong-extension row references are covered by tests.
+The COLM shell now states this row-level provenance rule and the explicit
+`no_boundary_signal_kill` path for reviewable negative Nsight Systems runs.
 
 ## Native Packet Checklist And Local Stop Decision
 
@@ -546,5 +548,6 @@ scaffold from the submitted artifact list. The README and status block now
 describe repo-root `./venv_arm64` plus source-built `triton-cpu` as the active
 reproducibility surface; the old per-project `.venv` setup is historical.
 
-Decision: **NO ADDITIONAL MAC-SIDE HYBRIDKERNEL WORK REMAINS**. The next gate is
-native server-side Nsight evidence or kill/shelve.
+Decision: **NO ADDITIONAL MAC KERNEL OR BENCHMARK WORK REMAINS**. Remaining
+Mac-local work is limited to doc/schema alignment and packet-readiness tests;
+the next evidence gate is native server-side Nsight evidence or kill/shelve.

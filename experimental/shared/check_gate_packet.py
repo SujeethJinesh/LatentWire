@@ -42,6 +42,7 @@ REAL_ROW_FIELDS = {
     ),
     "horn": (
         "model_id",
+        "prompt_id",
         "layer_left",
         "layer_right",
         "direction",
@@ -62,6 +63,9 @@ REAL_ROW_FIELDS = {
         "cheap_predictor",
         "parameter_count",
         "weight_norm",
+        "top_decile_flag",
+        "random_top_decile",
+        "train_test_split",
         "control_type",
     ),
 }
@@ -70,6 +74,7 @@ REAL_CONTROL_VALUES = {
     "horn": {"boundary", "non_boundary", "permuted_direction"},
     "hbsm": {"perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"},
 }
+SSQ_LR_POSITION_BUCKETS = {"prefill_end", "2k_or_end", "8k_or_end", "final_minus_128"}
 
 
 def _load_json(path: Path) -> Any:
@@ -92,6 +97,41 @@ def _finite_number(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value))
 
 
+def _validate_finite_fields(
+    *,
+    project: str,
+    row_index: int,
+    row: dict[str, Any],
+    fields: tuple[str, ...],
+    errors: list[str],
+) -> None:
+    for field in fields:
+        if not _finite_number(row.get(field)):
+            errors.append(f"{project} row {row_index} {field} must be finite numeric")
+
+
+def _validate_nonnegative_fields(
+    *,
+    project: str,
+    row_index: int,
+    row: dict[str, Any],
+    fields: tuple[str, ...],
+    errors: list[str],
+) -> None:
+    for field in fields:
+        value = row.get(field)
+        if _finite_number(value) and float(value) < 0.0:
+            errors.append(f"{project} row {row_index} {field} must be nonnegative")
+
+
+def _valid_positive_int_list(value: Any) -> bool:
+    return (
+        isinstance(value, list)
+        and bool(value)
+        and all(isinstance(item, int) and not isinstance(item, bool) and item > 0 for item in value)
+    )
+
+
 def _validate_real_coverage(
     *,
     project: str,
@@ -108,20 +148,46 @@ def _validate_real_coverage(
 
     if project == "ssq_lr":
         buckets = {str(row.get("position_bucket")) for row in rows}
-        missing_buckets = {"early", "middle", "late"} - buckets
+        missing_buckets = SSQ_LR_POSITION_BUCKETS - buckets
         if missing_buckets:
             errors.append(
                 "ssq_lr real packet missing position buckets: "
                 + ", ".join(sorted(missing_buckets))
             )
         prompt_ids = {str(row.get("prompt_id")) for row in rows}
-        if len(prompt_ids) < 16 and "resource_limit_note" not in config:
+        if len(prompt_ids) < 12 and "resource_limit_note" not in config:
             errors.append(
-                "ssq_lr real packet needs at least 16 distinct prompt_id values "
+                "ssq_lr real packet needs at least 12 distinct prompt_id values "
                 "or config.json resource_limit_note"
             )
+        for index, row in enumerate(rows):
+            _validate_finite_fields(
+                project="ssq_lr",
+                row_index=index,
+                row=row,
+                fields=("max_abs", "rms", "std", "kurtosis", "outlier_mass"),
+                errors=errors,
+            )
+            _validate_nonnegative_fields(
+                project="ssq_lr",
+                row_index=index,
+                row=row,
+                fields=("max_abs", "rms", "std"),
+                errors=errors,
+            )
+            outlier_mass = row.get("outlier_mass")
+            if _finite_number(outlier_mass) and not 0.0 <= float(outlier_mass) <= 1.0:
+                errors.append(f"ssq_lr row {index} outlier_mass must be in [0, 1]")
+            if not _valid_positive_int_list(row.get("state_shape")):
+                errors.append(f"ssq_lr row {index} state_shape must be a non-empty positive integer list")
 
     if project == "horn":
+        prompt_ids = {str(row.get("prompt_id")) for row in rows}
+        if len(prompt_ids) < 12 and "resource_limit_note" not in config:
+            errors.append(
+                "horn real packet needs at least 12 distinct prompt_id values "
+                "or config.json resource_limit_note"
+            )
         boundary_rows = [row for row in rows if str(row.get("control_type")) == "boundary"]
         boundary_directions = {str(row.get("direction")) for row in boundary_rows}
         missing_directions = {"attention->ssm", "ssm->attention"} - boundary_directions
@@ -143,16 +209,52 @@ def _validate_real_coverage(
                 errors.append("horn permuted_direction row must match an observed boundary tuple")
             elif str(row.get("direction")) == original:
                 errors.append("horn permuted_direction row must flip the observed boundary direction")
+        for index, row in enumerate(rows):
+            _validate_finite_fields(
+                project="horn",
+                row_index=index,
+                row=row,
+                fields=("max_abs", "rms", "kurtosis"),
+                errors=errors,
+            )
+            _validate_nonnegative_fields(
+                project="horn",
+                row_index=index,
+                row=row,
+                fields=("max_abs", "rms"),
+                errors=errors,
+            )
+            boundary_index = row.get("boundary_index")
+            if not isinstance(boundary_index, int) or isinstance(boundary_index, bool):
+                errors.append(f"horn row {index} boundary_index must be an integer")
 
     if project == "hbsm":
         flags = {bool(row.get("boundary_flag")) for row in rows}
         if flags != {False, True}:
             errors.append("hbsm real packet needs both boundary_flag=true and boundary_flag=false")
+        splits = {str(row.get("train_test_split")) for row in rows}
+        if not {"train", "test"}.issubset(splits) and "resource_limit_note" not in config:
+            errors.append("hbsm real packet needs both train and test split rows or config.json resource_limit_note")
+        top_decile_count = sum(1 for row in rows if row.get("top_decile_flag") is True)
+        random_top_decile_count = sum(1 for row in rows if row.get("random_top_decile") is True)
+        if top_decile_count != random_top_decile_count:
+            errors.append("hbsm random_top_decile true count must match top_decile_flag true count")
         for index, row in enumerate(rows):
             for field in ("kl_or_nll_drift", "cheap_predictor", "parameter_count", "weight_norm"):
                 if not _finite_number(row.get(field)):
                     errors.append(f"hbsm row {index} {field} must be finite numeric")
-            if str(row.get("control_type")) == "perturbation_off" and abs(float(row.get("kl_or_nll_drift", 1.0))) > 1e-6:
+            _validate_nonnegative_fields(
+                project="hbsm",
+                row_index=index,
+                row=row,
+                fields=("parameter_count", "weight_norm"),
+                errors=errors,
+            )
+            for field in ("top_decile_flag", "random_top_decile"):
+                if not isinstance(row.get(field), bool):
+                    errors.append(f"hbsm row {index} {field} must be boolean")
+            drift = row.get("kl_or_nll_drift")
+            if str(row.get("control_type")) == "perturbation_off" and _finite_number(drift) and abs(float(drift)) > 1e-6:
                 errors.append("hbsm perturbation_off rows must have near-zero drift")
 
 

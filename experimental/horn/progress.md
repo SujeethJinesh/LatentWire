@@ -39,3 +39,11 @@ The shared checker now rejects real HORN packets unless boundary rows cover both
 `attention->ssm` and `ssm->attention`, and every `permuted_direction` control
 matches an observed boundary tuple while flipping its direction. This prevents a
 syntactically valid packet from skipping the directional asymmetry claim.
+It also requires prompt coverage and finite numeric fields before H1 can be
+interpreted.
+
+## 2026-05-06 Reviewer Pack Update
+
+Added `paper/reviewer_pack.md` and wired the stricter directional packet blocker
+into the COLM shell. The paper now states that HORN is not camera-ready as a
+method or measurement paper until real H1--H3 evidence exists.

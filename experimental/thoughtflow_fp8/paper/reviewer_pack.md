@@ -97,7 +97,5 @@ Until that artifact exists, there is no runnable successor gate.
 
 ## Primary Literature Anchors
 
-- LongFlow: `https://openreview.net/forum?id=rz6WybXjgk`
-- ThinKV: `https://arxiv.org/abs/2510.01290`
-- LazyEviction: `https://openreview.net/pdf?id=Mac3RzkEQu`
-- ForesightKV: `https://arxiv.org/abs/2602.03203`
+See the paper bibliography for canonical URLs. Keep this pack as a reviewer
+readout, not a second citation manifest.

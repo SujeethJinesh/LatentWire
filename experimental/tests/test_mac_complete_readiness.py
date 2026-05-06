@@ -185,8 +185,8 @@ def test_hybridkernel_stop_gate_is_machine_guarded() -> None:
         assert phrase in readme
 
     for phrase in [
-        "NO ADDITIONAL MAC-SIDE HYBRIDKERNEL WORK REMAINS",
-        "native server-side Nsight evidence or kill/shelve",
+            "NO ADDITIONAL MAC KERNEL OR BENCHMARK WORK REMAINS",
+            "native server-side Nsight evidence or kill/shelve",
         "check_profiler_run_artifacts.py",
         "analyze_profiler_metrics.py",
         "KILLED_mac_only_kernel_iteration",

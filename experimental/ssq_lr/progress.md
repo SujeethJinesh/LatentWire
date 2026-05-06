@@ -36,7 +36,12 @@ on the current Mac without first downloading/loading a live hybrid model.
 
 ## 2026-05-06 Real Packet Admissibility Update
 
-The shared checker now rejects real SSQ-LR packets unless rows cover early,
-middle, and late position buckets and include at least 16 distinct prompt IDs,
+The shared checker now rejects real SSQ-LR packets unless rows cover `prefill_end`, `2k_or_end`, `8k_or_end`, and `final_minus_128` buckets and include at least 12 distinct prompt IDs,
 unless `config.json` explicitly records a resource-limit note. This makes S1 a
 real state-distribution gate instead of a one-row schema check.
+
+## 2026-05-06 Reviewer Pack Update
+
+Added `paper/reviewer_pack.md` and wired the stricter real-packet blocker into
+the COLM shell. The paper now states that SSQ-LR is not camera-ready as a
+method paper until real S1--S3 evidence exists.

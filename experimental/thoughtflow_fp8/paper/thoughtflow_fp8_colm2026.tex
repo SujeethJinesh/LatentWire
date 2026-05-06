@@ -259,6 +259,10 @@ scoring, not native serving. The trace families are useful falsification
 surfaces, but they do not establish broad task coverage. The stopped signals
 also do not rule out future sparse-cache utilities; they only rule out the
 pre-registered policies under the reported surfaces and budgets.
+The scored surfaces use \texttt{distilgpt2} saved continuations and saved
+prefix/KV telemetry as falsification fixtures; they are not reasoning-model benchmarks
+and not faithful external implementations of ThinKV, R-KV,
+LongFlow, LazyEviction, ForesightKV, PM-KVQ, or KVQuant.
 
 \section{Stop Rule and Reopen Gate}
 
@@ -287,13 +291,22 @@ primitive; they do not measure FP8 numerical drift or native FP8 serving.
 
 \section{Reproducibility}
 
-All reported gates use tracked scripts under \url{experimental/thoughtflow_fp8/phase2/} and the repo-local \texttt{./venv\_arm64}. The frozen sparse-cache probe, same-slice rerun, alternate-surface rerun, independent saved-trace rerun, and fresh-surface successor checks each write Markdown and JSON artifacts with promotion criteria, paired intervals, oracle/headroom diagnostics, and no-retuning decisions. The stable local correctness command is recorded in the reviewer pack.
+All reported gates use tracked scripts under
+\url{experimental/thoughtflow_fp8/phase2/} and the repo-local
+\texttt{./venv\_arm64}. The frozen sparse-cache probe, same-slice rerun,
+alternate-surface rerun, independent saved-trace rerun, and fresh-surface
+successor checks each write Markdown and JSON artifacts with promotion
+criteria, paired intervals, oracle/headroom diagnostics, and no-retuning
+decisions. The stable local correctness command is:
+\texttt{./venv\_arm64/bin/python -m pytest
+experimental/thoughtflow\_fp8/phase2/tests
+experimental/thoughtflow\_fp8/phase4/tests -q -rs}.
 
 \section{Artifacts}
 
 Key artifacts are the current decision manifest, reviewer pack, workshop shell,
 README/progress handoff, RDU independent reproduction check, PSI/VWAC
-fresh-surface checks, and Triton install note:
+fresh-surface checks, and repo-local Triton interpreter note:
 \url{experimental/thoughtflow_fp8/phase2/current_decision_manifest_20260506.md},
 \url{experimental/thoughtflow_fp8/paper/reviewer_pack.md},
 \url{experimental/thoughtflow_fp8/paper/colm_workshop_shell.md},
@@ -302,7 +315,7 @@ fresh-surface checks, and Triton install note:
 \url{experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.md},
 \url{experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.md},
 \url{experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.md}, and
-\url{experimental/triton_cpu_source_install_20260506.md}.
+\url{experimental/thoughtflow_fp8/phase4/triton_interpreter_note_20260506.md}.
 
 \begin{thebibliography}{9}
 \bibitem[ThinKV(2026)]{thinkv}

@@ -50,7 +50,10 @@ def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
     missing = [field for field in required if field not in metadata]
     if missing:
         raise ValueError(f"metadata missing required fields: {', '.join(missing)}")
-    return {field: metadata[field] for field in required}
+    config = {field: metadata[field] for field in required}
+    if "resource_limit_note" in metadata:
+        config["resource_limit_note"] = metadata["resource_limit_note"]
+    return config
 
 
 def _write_packet(
@@ -145,6 +148,7 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
         rows.append(
             {
                 "model_id": config["model_id"],
+                "prompt_id": str(entry["prompt_id"]),
                 "layer_left": int(entry["layer_left"]),
                 "layer_right": int(entry["layer_right"]),
                 "direction": str(entry["direction"]),
@@ -194,6 +198,9 @@ def build_hbsm_packet(row_packet: Path, output_dir: Path) -> list[dict[str, Any]
                 "cheap_predictor": float(entry["cheap_predictor"]),
                 "parameter_count": int(entry["parameter_count"]),
                 "weight_norm": float(entry["weight_norm"]),
+                "top_decile_flag": bool(entry["top_decile_flag"]),
+                "random_top_decile": bool(entry["random_top_decile"]),
+                "train_test_split": str(entry["train_test_split"]),
                 "control_type": str(entry["control_type"]),
             }
         )

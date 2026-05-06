@@ -48,15 +48,16 @@ Minimum admissible row fields:
 Required controls:
 
 - BF16/no-quant state recording.
-- At least early/middle/late position buckets.
-- At least 16 fixed prompts or an explicit resource-limit note.
+- At least the preregistered `prefill_end`, `2k_or_end`, `8k_or_end`, and `final_minus_128` position buckets.
+- At least 12 fixed prompts or an explicit resource-limit note.
 
 ## HORN Real H1 Packet
 
 Minimum admissible row fields:
 
 - `model_id`, `layer_left`, `layer_right`, `direction`, `boundary_index`
-- `pre_norm_position`, `post_norm_position`, `max_abs`, `rms`, `kurtosis`
+- `prompt_id`, `pre_norm_position`, `post_norm_position`, `max_abs`, `rms`,
+  `kurtosis`
 - `control_type` in `boundary`, `non_boundary`, or `permuted_direction`
 
 Required controls:
@@ -65,6 +66,7 @@ Required controls:
 - direction-label permutation matched to an observed boundary tuple;
 - at least one `attention->ssm` boundary and one `ssm->attention` boundary;
 - matched normalization placement.
+- at least 12 fixed prompts or an explicit resource-limit note.
 
 ## HBSM Real B1 Packet
 
@@ -72,6 +74,7 @@ Minimum admissible row fields:
 
 - `model_id`, `layer`, `boundary_flag`, `precision_perturbation`
 - `kl_or_nll_drift`, `cheap_predictor`, `parameter_count`, `weight_norm`
+- `top_decile_flag`, `random_top_decile`, `train_test_split`
 - `control_type` in `perturbation_off`, `random_flags`, `layer_index`,
   `parameter_count_norm`, or `boundary_only`
 
@@ -83,6 +86,8 @@ Required controls:
 - parameter-count/norm baseline;
 - boundary-only baseline;
 - both `boundary_flag=true` and `boundary_flag=false`;
+- matched counts for `top_decile_flag=true` and `random_top_decile=true`;
+- both `train` and `test` split rows, unless a resource-limit note is present;
 - train/test layer split if layer count permits.
 
 ## Promotion Boundary

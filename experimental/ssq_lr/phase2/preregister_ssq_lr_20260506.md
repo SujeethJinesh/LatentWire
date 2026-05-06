@@ -6,8 +6,9 @@
 
 ## S1: State Distribution Heterogeneity
 
-Run a hybrid model on reasoning traces and dump recurrent SSM state at early,
-middle, and late positions.
+Run a hybrid model on reasoning traces and dump recurrent SSM state at the
+preregistered context buckets `prefill_end`, `2k_or_end`, `8k_or_end`, and
+`final_minus_128`.
 
 First admissible target: `ibm-granite/granite-4.0-h-tiny` with the revision
 recorded in `experimental/shared/results/hybrid_model_eligibility_20260506/`.
@@ -18,7 +19,7 @@ context buckets `{prefill_end, 2k_or_end, 8k_or_end, final_minus_128}`, BF16
 reference state, and the shared `architecture_map_hash`.
 
 Pass if state magnitude varies at least 2x across reasoning length with a
-cluster bootstrap 95% lower bound above 1.25, or if early/late state
+cluster bootstrap 95% lower bound above 1.25, or if first/last bucket state
 distributions differ by a two-sample test at Holm-corrected `p < 0.01`.
 At least 25% of SSM layers, or at least three SSM layers when the model has few
 SSM layers, must satisfy the criterion.

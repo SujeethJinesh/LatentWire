@@ -56,22 +56,25 @@ layer definitions.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
 Required real controls are `perturbation_off`, `random_flags`, `layer_index`,
-`parameter_count_norm`, and `boundary_only`. Convert saved B1 sensitivity rows
-with `experimental.shared.hybrid_trace_packet_builder --project hbsm
---row-packet ...` before validation.
+`parameter_count_norm`, and `boundary_only`. Real rows must also include
+`top_decile_flag`, `random_top_decile`, and `train_test_split`, with matched
+top-decile/random counts and both train/test split rows unless the packet
+records a resource-limit note. Convert saved B1 sensitivity rows with
+`experimental.shared.hybrid_trace_packet_builder --project hbsm --row-packet
+...` before validation.
 
 Validate the first real B1 packet with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
-  experimental/hbsm/results/hbsm_gate_b1_<YYYYMMDD>_<model_slug> \
+  experimental/hbsm/phase2/results/hbsm_gate_b1_<YYYYMMDD>_<model_slug> \
   --mode real --project hbsm
 ```
 
 ## Output Paths
 
 ```text
-experimental/hbsm/results/hbsm_gate_<gate>_<YYYYMMDD>_<model_slug>/
+experimental/hbsm/phase2/results/hbsm_gate_<gate>_<YYYYMMDD>_<model_slug>/
 ```
 
 ## Local Setup

@@ -36,7 +36,7 @@ The packet is incomplete unless all of these exist:
 | `metadata/architecture_map.json` | copied HybridKernel architecture map used for boundary annotation |
 | `logs/*.log` or `logs/*.txt` | Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence markers; client logs must be valid `profiler_driver.py` JSON with a non-empty top-level `model`, `dry_run: false`, and non-empty `requests` rows whose `status` fields are all `ok`. |
 | `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts, not placeholder files |
-| `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels, not placeholder files |
+| `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels, not placeholder files. Required for boundary-evidence packets; optional only with explicit `--packet-mode no_boundary_signal_kill` and row `ncu_artifact: "not_run_no_boundary_signal"`. |
 | `readout.md` | completed decision table from the runbook |
 | `profiler_metrics.json` | at least three valid rows for one model with distinct repeated `run_id` values |
 | `profiler_analysis_gate.json` and `.md` | output from `analyze_profiler_metrics.py` for this exact `profiler_metrics.json` |

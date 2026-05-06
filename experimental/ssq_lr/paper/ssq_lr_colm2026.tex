@@ -22,6 +22,9 @@ is made yet.
 
 The branch must pass state-distribution heterogeneity, state-only quantization
 sensitivity, and cross-model transfer gates before any GPU validation.
+S1 must first show real state heterogeneity on a live hybrid model; S2 then
+freezes one state-only quantization recipe; S3 tests that recipe without
+per-model retuning. Failing any gate kills the branch before GPU work.
 
 \section{Mac Artifact Status}
 
@@ -52,7 +55,9 @@ report \texttt{model\_id}, \texttt{model\_revision}, \texttt{prompt\_id},
 \texttt{layer}, \texttt{position\_bucket}, \texttt{state\_shape},
 \texttt{max\_abs}, \texttt{rms}, \texttt{std}, \texttt{kurtosis},
 \texttt{outlier\_mass}, and a \texttt{bf16\_no\_quant} control. The packet is
-valid only if it passes
+valid only if it covers \texttt{prefill\_end}, \texttt{2k\_or\_end},
+\texttt{8k\_or\_end}, and \texttt{final\_minus\_128} position buckets and at least 12 prompt IDs unless \texttt{config.json} records an explicit
+resource-limit note. It must pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project ssq\_lr}.
 Saved tensor packets should be converted with
 \texttt{experimental.shared.hybrid\_trace\_packet\_builder} before validation.
@@ -66,6 +71,7 @@ Required baseline & Purpose \\
 \midrule
 BF16 no-op replay & Catch hook/serialization bugs. \\
 INT8 state-only & Standard low-bit state control. \\
+FP8-style state-only & Checks whether sub-FP16 state can match the likely deployed fallback. \\
 MXFP4 state-only & Candidate sub-FP16 recipe. \\
 Random same-L2 noise & Separate structure from noise magnitude. \\
 Scale shuffle & Test scale assignment sensitivity. \\
@@ -74,5 +80,18 @@ Byte accounting & Include scale/metadata overhead. \\
 \end{tabular}
 \caption{Controls required before SSQ-LR can claim a state-quantization recipe.}
 \end{table}
+
+\section{Reviewer Packet}
+
+The reviewer-facing claim boundary is tracked in
+\url{experimental/ssq_lr/paper/reviewer_pack.md}. It records that SSQ-LR is
+not camera-ready as a method paper until real S1--S3 evidence exists.
+
+\section{Claim Boundary}
+
+SSQ-LR is only about recurrent SSM-state precision in hybrid reasoners. It
+does not claim weight quantization, activation quantization, KV-cache
+quantization, native serving speed, or memory savings until a real state recipe
+and later GPU validation pass their preregistered gates.
 
 \end{document}

@@ -45,3 +45,11 @@ The checker also requires both `boundary_flag=true` and `boundary_flag=false`,
 finite sensitivity/predictor/size/norm fields, and near-zero drift for
 `perturbation_off` rows. This keeps HBSM's first real packet tied to a genuine
 sensitivity table rather than a control-only schema artifact.
+It now also requires train/test split coverage and matched counts for
+`top_decile_flag=true` and `random_top_decile=true`.
+
+## 2026-05-06 Reviewer Pack Update
+
+Added `paper/reviewer_pack.md` and wired the stricter B1 packet blocker into the
+COLM shell. The paper now states that HBSM is not camera-ready as a standalone
+paper until B1--B3 separate the mechanism from existing sensitivity tools.

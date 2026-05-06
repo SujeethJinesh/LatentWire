@@ -216,9 +216,14 @@ Nsight Compute on the server process, save real `.ncu-rep` files under
 ### 5. Fill Metrics And Validate
 
 Replace the skeleton `profiler_metrics.json` with at least three independent
-rows for one model/config. Each row needs a distinct `run_id`, positive
+rows for one model/config. Each row needs the full checklist schema from
+`phase2/native_run_packet_checklist.md`: distinct `run_id`, positive
 `total_step_ms`, non-negative boundary/control times, dtype, CUDA graph state,
-batch shape, request count, and control label.
+batch shape, request count, control label, row role, control family, boundary
+direction, kernel names, boundary indices, time window, reduction notes, and
+relative in-packet Nsight artifact paths. Use `ncu_artifact:
+"not_run_no_boundary_signal"` only when validating an explicit negative packet
+with `--packet-mode no_boundary_signal_kill`.
 
 Then run:
 

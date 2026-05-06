@@ -27,6 +27,13 @@ enabled.
 | parser/checker | metric rows require dtype, graph state, batch shape, control segment, three distinct same-config repeats, matching analysis outputs, separate Nsight server logs, and non-dry-run client replay JSON with all request statuses `ok` | stale, mixed-config, warmup-only, dry-run, failed-request, incomplete-log, and placeholder evidence rejected |
 | Triton interpreter | toy boundary primitive matches CPU reference under `TRITON_INTERPRET=1` | indexing/kernel-plumbing only |
 
+The real native row schema also requires row role, control family, boundary
+direction, kernel names, boundary indices, reduction time window, reduction
+notes, and relative in-packet Nsight artifact paths. Nsight Compute artifacts
+are optional only for an explicit `no_boundary_signal_kill` packet whose
+readout records no suspicious boundary kernel and whose rows use
+`ncu_artifact: "not_run_no_boundary_signal"`.
+
 ## Reviewer Risks
 
 - No NVIDIA/vLLM profile exists yet.

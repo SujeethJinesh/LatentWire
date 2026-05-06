@@ -59,16 +59,20 @@ Validate the first real S1 packet with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
-  experimental/ssq_lr/results/ssq_lr_gate_s1_<YYYYMMDD>_<model_slug> \
+  experimental/ssq_lr/phase2/results/ssq_lr_gate_s1_<YYYYMMDD>_<model_slug> \
   --mode real --project ssq_lr
 ```
+
+The real checker requires `prefill_end`, `2k_or_end`, `8k_or_end`, and
+`final_minus_128` buckets plus at least 12 prompt IDs, unless `config.json`
+records a resource-limit note.
 
 ## Output Paths
 
 Use:
 
 ```text
-experimental/ssq_lr/results/ssq_lr_gate_<gate>_<YYYYMMDD>_<model_slug>/
+experimental/ssq_lr/phase2/results/ssq_lr_gate_<gate>_<YYYYMMDD>_<model_slug>/
 ```
 
 ## Local Setup
