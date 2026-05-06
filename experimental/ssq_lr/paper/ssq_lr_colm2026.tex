@@ -63,9 +63,10 @@ resource-limited packet must use a
 \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
 the recomputed S1 evaluator fields: gate name/status/pass flag, prompt count,
 position buckets, SSM layer count, required and observed passing-layer counts,
-selected S1 ratio and CI lower bound, Holm-adjusted readout, and
+selected S1 ratio and prompt-level lower bound, Holm-adjusted readout, and
 final-minus-128 versus prefill-end max-abs/std/kurtosis ratios. The checker
-recomputes these fields from raw rows and rejects stale summaries. It must pass
+recomputes these fields from raw rows rather than global layer means and rejects
+stale summaries. It must pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project ssq\_lr}.
 Saved tensor packets should be converted with
 \texttt{experimental.shared.hybrid\_trace\_packet\_builder} before validation.

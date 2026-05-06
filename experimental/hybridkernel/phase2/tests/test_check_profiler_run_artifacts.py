@@ -46,7 +46,23 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         "nsys vllm server cuda profiler log\n", encoding="utf-8"
     )
     (run_dir / "logs/client_replay_b1.log").write_text(
-        '{"model":"granite","dry_run":false,"requests":[{"status":"ok"}]}\n',
+        json.dumps(
+            {
+                "model": "granite",
+                "dry_run": False,
+                "token_counts_required": True,
+                "token_count_source": "test_tokenizer",
+                "requests": [
+                    {
+                        "status": "ok",
+                        "prompt_token_counts": [128],
+                        "prompt_token_count_total": 128,
+                        "requested_decode_tokens": 64,
+                    }
+                ],
+            }
+        )
+        + "\n",
         encoding="utf-8",
     )
     for idx in range(runs):

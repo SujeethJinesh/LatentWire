@@ -1,6 +1,7 @@
 # ThoughtFlow-FP8 Pre-Registration: Recurrence-Distance Utility
 
-Status: **PRE-REGISTERED ONLY; frozen probe not run.**
+Status: **SUPERSEDED: frozen probe and reproduction checks were run; current
+decision is diagnostic-only.**
 
 This artifact defines exactly one new utility signal for a future one-shot
 successor evaluation. It is intentionally bounded because the current
@@ -126,12 +127,11 @@ pre-registration.
 
 ## Frozen Evaluation Command
 
-Do not run until the implementation exactly matches this artifact.
+Historical command, retained for reproducibility of the stopped branch:
 
 ```bash
-cd /Users/sujeethjinesh/Desktop/LatentWire/experimental/thoughtflow_fp8
-source .venv/bin/activate
-python phase2/frozen_sparse_cache_probe.py \
+cd /Users/sujeethjinesh/Desktop/LatentWire
+./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py \
   --model-name distilgpt2 \
   --keep-fraction 0.20 \
   --max-traces 74 \

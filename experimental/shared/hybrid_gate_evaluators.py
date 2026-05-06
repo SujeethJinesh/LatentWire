@@ -8,7 +8,8 @@ decision fields that reviewers need to audit.
 from __future__ import annotations
 
 import math
-from collections import Counter
+import random
+from collections import Counter, defaultdict
 from typing import Any
 
 
@@ -49,6 +50,37 @@ def _bucket_ratio(
     )
 
 
+def _prompt_bucket_ratios(
+    rows: list[dict[str, Any]],
+    *,
+    field: str,
+    first_bucket: str = "prefill_end",
+    final_bucket: str = "final_minus_128",
+) -> list[float]:
+    grouped: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+    for row in rows:
+        grouped[str(row["prompt_id"])][str(row["position_bucket"])].append(float(row[field]))
+    ratios: list[float] = []
+    for prompt_buckets in grouped.values():
+        first = _mean(prompt_buckets.get(first_bucket, []))
+        final = _mean(prompt_buckets.get(final_bucket, []))
+        if first > 0.0:
+            ratios.append(final / first)
+    return ratios
+
+
+def _bootstrap_mean_low(values: list[float], *, draws: int = 1000, quantile: float = 0.025) -> float:
+    if not values:
+        return 0.0
+    rng = random.Random(1729)
+    means = []
+    for _ in range(draws):
+        sample = [values[rng.randrange(len(values))] for _ in values]
+        means.append(_mean(sample))
+    means.sort()
+    return float(means[int(quantile * (draws - 1))])
+
+
 def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Evaluate the SSQ-LR S1 state-heterogeneity screen from packet rows."""
 
@@ -64,12 +96,19 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     selected_layer_lowers: list[float] = []
     for layer in layers:
         layer_rows = [row for row in rows if int(row["layer"]) == layer]
-        max_ratio = _bucket_ratio(layer_rows, field="max_abs")
-        std_ratio = _bucket_ratio(layer_rows, field="std")
-        selected_layer_ratio = max(max_ratio, std_ratio)
-        if selected_layer_ratio >= 2.0:
+        max_values = _prompt_bucket_ratios(layer_rows, field="max_abs")
+        std_values = _prompt_bucket_ratios(layer_rows, field="std")
+        max_ratio = _mean(max_values)
+        std_ratio = _mean(std_values)
+        if max_ratio >= std_ratio:
+            selected_layer_ratio = max_ratio
+            selected_layer_low = _bootstrap_mean_low(max_values)
+        else:
+            selected_layer_ratio = std_ratio
+            selected_layer_low = _bootstrap_mean_low(std_values)
+        if selected_layer_ratio >= 2.0 and selected_layer_low > 1.25:
             passing_layers += 1
-            selected_layer_lowers.append(selected_layer_ratio)
+            selected_layer_lowers.append(selected_layer_low)
     ssm_layer_count = len(layers)
     required_passing_layer_count = 0
     if ssm_layer_count:
@@ -133,6 +172,30 @@ def _control_ratio(rows: list[dict[str, Any]], *, control_type: str, field: str)
     return _direction_ratio(_direction_metric_means(control_rows, field=field))
 
 
+def _direction_count(rows: list[dict[str, Any]], *, control_type: str) -> int:
+    return len({str(row.get("direction")) for row in rows if str(row.get("control_type")) == control_type})
+
+
+def _prompt_direction_ratio_low(
+    rows: list[dict[str, Any]],
+    *,
+    field: str,
+) -> float:
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        grouped[str(row["prompt_id"])].append(row)
+    ratios = [
+        _direction_ratio(_direction_metric_means(prompt_rows, field=field))
+        for prompt_rows in grouped.values()
+        if _direction_count(prompt_rows, control_type="boundary") >= 2
+    ]
+    if not ratios:
+        return 0.0
+    ratios = sorted(ratios)
+    index = max(0, math.floor(0.05 * (len(ratios) - 1)))
+    return float(ratios[index])
+
+
 def _support_fraction(
     rows: list[dict[str, Any]],
     *,
@@ -191,13 +254,18 @@ def evaluate_horn_h1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         control_type="permuted_direction",
         field=selected_metric,
     )
-    selected_h1_ci_low = max(0.0, selected_h1_ratio * 0.8)
+    selected_h1_ci_low = _prompt_direction_ratio_low(boundary_rows, field=selected_metric)
+    non_boundary_direction_count = _direction_count(rows, control_type="non_boundary")
+    permuted_direction_count = _direction_count(rows, control_type="permuted_direction")
     gate_pass = (
         set(directions) == {"attention->ssm", "ssm->attention"}
         and selected_h1_ratio >= selected_threshold
         and selected_h1_ci_low > 1.0
         and support_fraction >= 0.6
+        and non_boundary_direction_count >= 2
+        and permuted_direction_count >= 2
         and non_boundary_control_ratio < selected_h1_ratio
+        and permuted_direction_ratio < selected_threshold
     )
     return {
         "gate_name": "horn_h1_single_model_directional_asymmetry",
@@ -214,6 +282,8 @@ def evaluate_horn_h1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "kurtosis_direction_ratio": kurtosis_ratio,
         "non_boundary_control_ratio": non_boundary_control_ratio,
         "permuted_direction_ratio": permuted_direction_ratio,
+        "non_boundary_direction_count": non_boundary_direction_count,
+        "permuted_direction_count": permuted_direction_count,
         "support_fraction": support_fraction,
     }
 
@@ -291,29 +361,43 @@ def _spearman(x: list[float], y: list[float]) -> float:
 def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Evaluate the HBSM B1 boundary-sensitivity enrichment screen."""
 
-    top_count = sum(1 for row in rows if row["top_decile_flag"])
-    random_count = sum(1 for row in rows if row["random_top_decile"])
-    train_count = sum(1 for row in rows if str(row["train_test_split"]) == "train")
-    test_count = sum(1 for row in rows if str(row["train_test_split"]) == "test")
-    boundary_rows = [row for row in rows if row["boundary_flag"]]
-    non_boundary_rows = [row for row in rows if not row["boundary_flag"]]
+    primary_rows = [row for row in rows if str(row["control_type"]) == "boundary_only"]
+    scoring_rows = primary_rows if primary_rows else rows
+    top_count = sum(1 for row in scoring_rows if row["top_decile_flag"])
+    random_count = sum(1 for row in scoring_rows if row["random_top_decile"])
+    train_count = sum(1 for row in scoring_rows if str(row["train_test_split"]) == "train")
+    test_count = sum(1 for row in scoring_rows if str(row["train_test_split"]) == "test")
+    boundary_rows = [row for row in scoring_rows if row["boundary_flag"]]
+    non_boundary_rows = [row for row in scoring_rows if not row["boundary_flag"]]
     boundary_top = sum(1 for row in boundary_rows if row["top_decile_flag"])
     non_boundary_top = sum(1 for row in non_boundary_rows if row["top_decile_flag"])
+    boundary_random_top = sum(1 for row in boundary_rows if row["random_top_decile"])
+    non_boundary_random_top = sum(1 for row in non_boundary_rows if row["random_top_decile"])
     boundary_rate = _safe_ratio(float(boundary_top), float(len(boundary_rows)))
     non_boundary_rate = _safe_ratio(float(non_boundary_top), float(len(non_boundary_rows)))
     enrichment = _safe_ratio(boundary_rate, max(non_boundary_rate, 1e-9))
+    random_boundary_rate = _safe_ratio(float(boundary_random_top), float(len(boundary_rows)))
+    random_non_boundary_rate = _safe_ratio(float(non_boundary_random_top), float(len(non_boundary_rows)))
+    random_enrichment = _safe_ratio(random_boundary_rate, max(random_non_boundary_rate, 1e-9))
     fisher_p = _fisher_one_sided_enrichment(
         boundary_total=len(boundary_rows),
         boundary_top=boundary_top,
         non_boundary_total=len(non_boundary_rows),
         non_boundary_top=non_boundary_top,
     )
-    controls = sorted({str(row["control_type"]) for row in rows})
-    split_counts = dict(Counter(str(row["train_test_split"]) for row in rows))
-    cheap_predictor_spearman = _spearman(
-        [float(row["cheap_predictor"]) for row in rows],
-        [float(row["kl_or_nll_drift"]) for row in rows],
+    random_fisher_p = _fisher_one_sided_enrichment(
+        boundary_total=len(boundary_rows),
+        boundary_top=boundary_random_top,
+        non_boundary_total=len(non_boundary_rows),
+        non_boundary_top=non_boundary_random_top,
     )
+    controls = sorted({str(row["control_type"]) for row in rows})
+    split_counts = dict(Counter(str(row["train_test_split"]) for row in scoring_rows))
+    cheap_predictor_spearman = _spearman(
+        [float(row["cheap_predictor"]) for row in scoring_rows],
+        [float(row["kl_or_nll_drift"]) for row in scoring_rows],
+    )
+    prompt_count = len({str(row.get("prompt_id")) for row in scoring_rows if "prompt_id" in row})
     gate_pass = (
         bool(boundary_rows)
         and bool(non_boundary_rows)
@@ -321,12 +405,16 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and test_count > 0
         and top_count == random_count
         and enrichment > 1.0
+        and enrichment > random_enrichment
         and fisher_p < 0.05
+        and random_fisher_p >= 0.05
     )
     return {
         "gate_name": "hbsm_b1_boundary_sensitivity_enrichment",
         "gate_pass": gate_pass,
         "gate_status": "PASS_REAL_B1_SENSITIVITY_HETEROGENEITY" if gate_pass else "FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY",
+        "primary_row_count": len(primary_rows),
+        "prompt_count": prompt_count,
         "top_decile_count": top_count,
         "random_top_decile_count": random_count,
         "train_count": train_count,
@@ -335,9 +423,15 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "control_types": controls,
         "boundary_top_decile_count": boundary_top,
         "non_boundary_top_decile_count": non_boundary_top,
+        "boundary_random_top_decile_count": boundary_random_top,
+        "non_boundary_random_top_decile_count": non_boundary_random_top,
         "boundary_top_decile_rate": boundary_rate,
         "non_boundary_top_decile_rate": non_boundary_rate,
+        "boundary_random_top_decile_rate": random_boundary_rate,
+        "non_boundary_random_top_decile_rate": random_non_boundary_rate,
         "boundary_top_decile_enrichment": enrichment,
+        "random_boundary_top_decile_enrichment": random_enrichment,
         "fisher_p_boundary_top_decile": fisher_p,
+        "fisher_p_random_boundary_top_decile": random_fisher_p,
         "cheap_predictor_spearman": cheap_predictor_spearman,
     }

@@ -23,6 +23,9 @@ Use them for preregistered Mac gates only.
   into strict real B1 packets.
 - `hybrid_gate_evaluators.py`: recomputes S1/H1/B1 pass/fail summaries from
   packet rows so real packets cannot promote from hand-written aggregate labels.
+  The active evaluators use prompt-level S1 lower bounds, H1 non-boundary and
+  permuted-direction controls, and HBSM primary-row scoring separated from
+  control rows.
 - `sensitivity_metrics.py`: quality, drift, and rank-correlation metrics.
 - `check_gate_packet.py`: packet validator for synthetic and real Mac-local
   gate results, with stricter `--mode real --project ...` contracts.
@@ -93,12 +96,14 @@ project packets with:
 Then validate with `check_gate_packet.py --mode real --project ...`. The real
 checker enforces admissible coverage, not just schema shape: SSQ-LR needs all
 preregistered S1 buckets for every prompt/layer pair, HORN needs both boundary
-directions with prompt-paired flipped controls, and HBSM needs both boundary
-flags plus a perturbation-off row with near-zero drift. Real packets also need
-`prompt_ids_hash`, `architecture_map_hash`, project-specific aggregate
-`summary.json` fields, and a non-promotable decision whenever
-`resource_limit_note` is present. The checker recomputes the active S1/H1/B1
-gate summaries from rows and rejects stale or fabricated summary fields.
+directions plus both-direction non-boundary and prompt-paired flipped controls,
+and HBSM needs `boundary_only` primary rows with prompt-level boundary/non-
+boundary coverage, a non-enriched random baseline, and perturbation-off rows
+with near-zero drift. Real packets also need 64-hex `prompt_ids_hash` and
+`architecture_map_hash` values, project-specific aggregate `summary.json`
+fields, and a non-promotable decision whenever `resource_limit_note` is
+present. The checker recomputes the active S1/H1/B1 gate summaries from rows
+and rejects stale or fabricated summary fields.
 
 ## Claim Boundary
 

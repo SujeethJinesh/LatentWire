@@ -15,7 +15,12 @@ from experimental.shared.fp4_simulator import (
 from experimental.shared.hybrid_architecture_maps import build_map, write_maps
 from experimental.shared.check_gate_packet import validate_gate_packet
 from experimental.shared.hybrid_gate_evaluators import evaluate_ssq_lr_s1
-from experimental.shared.hybrid_model_eligibility import _architecture_hash, _local_cache_dir, _size_gb
+from experimental.shared.hybrid_model_eligibility import (
+    _architecture_hash,
+    _local_cache_dir,
+    _mac_trace_decision,
+    _size_gb,
+)
 from experimental.shared.hybrid_trace_packet_builder import build_hbsm_packet, build_horn_packet, build_ssq_lr_packet
 from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_rank_correlation
 
@@ -122,12 +127,12 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
         '"model_revision": "abc123", '
         '"tokenizer_revision": "tok123", '
         '"prompt_source": "fixed_manifest.json", '
-        '"prompt_ids_hash": "sha256:abc", '
+        '"prompt_ids_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", '
         '"seed_list": [1], '
         '"context_lengths": [128], '
         '"dtype": "bf16", '
         '"device": "mps", '
-        '"architecture_map_hash": "sha256:map", '
+        '"architecture_map_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", '
         '"command": "python run_gate.py"'
         "}\n"
     )
@@ -367,12 +372,12 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
         '"model_revision": "abc123", '
         '"tokenizer_revision": "tok123", '
         '"prompt_source": "fixed_manifest.json", '
-        '"prompt_ids_hash": "sha256:abc", '
+        '"prompt_ids_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", '
         '"seed_list": [1], '
         '"context_lengths": [128], '
         '"dtype": "bf16", '
         '"device": "mps", '
-        '"architecture_map_hash": "sha256:map", '
+        '"architecture_map_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", '
         '"command": "python run_gate.py"'
         "}\n"
     )
@@ -421,7 +426,8 @@ def test_gate_packet_checker_rejects_unpaired_horn_permuted_prompt(tmp_path: Pat
         for stem, layer_left, layer_right, direction, boundary_index, control_type, prompt_id in [
             ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary", f"p{prompt_index}"),
             ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary", f"p{prompt_index}"),
-            ("non_boundary", 4, 5, "ssm->ssm", 2, "non_boundary", f"p{prompt_index}"),
+            ("non_boundary_attn_ssm", 4, 5, "attention->ssm", 2, "non_boundary", f"p{prompt_index}"),
+            ("non_boundary_ssm_attn", 6, 7, "ssm->attention", 3, "non_boundary", f"p{prompt_index}"),
             ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction", f"other{prompt_index}"),
             ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction", f"other{prompt_index}"),
         ]:
@@ -505,19 +511,40 @@ def test_hybrid_model_eligibility_matches_hf_and_fp8_slugs() -> None:
     assert fp8_hash == small_hash
 
 
+def test_hybrid_model_eligibility_preserves_gpu_recommendation_when_not_cached() -> None:
+    assert (
+        _mac_trace_decision(
+            weights_cached=False,
+            estimated_weight_gb=60.0,
+            requires_mamba_ssm=True,
+            mamba_ssm_installed=False,
+        )
+        == "GPU_RECOMMENDED_SIZE_NOT_CACHED"
+    )
+    assert (
+        _mac_trace_decision(
+            weights_cached=False,
+            estimated_weight_gb=8.0,
+            requires_mamba_ssm=False,
+            mamba_ssm_installed=True,
+        )
+        == "BLOCKED_NOT_CACHED"
+    )
+
+
 def _base_trace_metadata() -> dict[str, object]:
     return {
         "model_id": "toy-hybrid",
         "model_revision": "abc123",
         "tokenizer_revision": "tok123",
         "prompt_source": "fixed_manifest.json",
-        "prompt_ids_hash": "sha256:prompts",
+        "prompt_ids_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
         "seed_list": [1],
         "context_lengths": [16],
         "dtype": "bf16",
         "device": "cpu",
         "command": "python dump.py",
-        "architecture_map_hash": "sha256:map",
+        "architecture_map_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     }
 
 
@@ -564,7 +591,8 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
         for stem, layer_left, layer_right, direction, boundary_index, control_type in [
             ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary"),
             ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary"),
-            ("non_boundary", 4, 5, "ssm->ssm", 2, "non_boundary"),
+            ("non_boundary_attn_ssm", 4, 5, "attention->ssm", 2, "non_boundary"),
+            ("non_boundary_ssm_attn", 6, 7, "ssm->attention", 3, "non_boundary"),
             ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction"),
             ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction"),
         ]:
@@ -594,7 +622,7 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     report = validate_gate_packet(output_dir, mode="real", project="horn")
 
     assert report["ok"]
-    assert report["row_count"] == 60
+    assert report["row_count"] == 72
 
 
 def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_boundary(tmp_path: Path) -> None:
@@ -607,7 +635,8 @@ def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_bo
         for stem, layer_left, layer_right, direction, boundary_index, control_type in [
             ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary"),
             ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary"),
-            ("non_boundary", 4, 5, "ssm->ssm", 2, "non_boundary"),
+            ("non_boundary_attn_ssm", 4, 5, "attention->ssm", 2, "non_boundary"),
+            ("non_boundary_ssm_attn", 6, 7, "ssm->attention", 3, "non_boundary"),
             ("permuted_unmatched", 8, 9, "attention->ssm", 9, "permuted_direction"),
         ]:
             tensor_name = f"{stem}_p{prompt_index}"
@@ -643,27 +672,47 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     row_packet = tmp_path / "hbsm_rows.json"
     output_dir = tmp_path / "hbsm"
     metadata = _base_trace_metadata()
-    controls = ["perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"]
+    primary_entries = []
+    for index in range(24):
+        boundary = index < 12
+        primary_entries.append(
+            {
+                "prompt_id": f"p{index % 12}",
+                "layer": index,
+                "boundary_flag": boundary,
+                "precision_perturbation": "mxfp4_e2m1",
+                "kl_or_nll_drift": float(index) * 0.01,
+                "cheap_predictor": float(index + 1),
+                "parameter_count": 1024 + index,
+                "weight_norm": 0.5 + index,
+                "top_decile_flag": boundary and index < 8,
+                "random_top_decile": index in {0, 1, 2, 3, 12, 13, 14, 15},
+                "train_test_split": "train" if index % 2 == 0 else "test",
+                "control_type": "boundary_only",
+            }
+        )
+    control_entries = [
+        {
+            "prompt_id": f"control_{control}",
+            "layer": 100 + index,
+            "boundary_flag": False,
+            "precision_perturbation": "mxfp4_e2m1",
+            "kl_or_nll_drift": 0.0,
+            "cheap_predictor": 0.0,
+            "parameter_count": 1024,
+            "weight_norm": 0.5,
+            "top_decile_flag": False,
+            "random_top_decile": False,
+            "train_test_split": "train",
+            "control_type": control,
+        }
+        for index, control in enumerate(["perturbation_off", "random_flags", "layer_index", "parameter_count_norm"])
+    ]
     row_packet.write_text(
         json.dumps(
             {
                 "metadata": metadata,
-                "hbsm_entries": [
-                    {
-                        "layer": index,
-                        "boundary_flag": index % 2 == 0,
-                        "precision_perturbation": "mxfp4_e2m1",
-                        "kl_or_nll_drift": float(index) * 0.01,
-                        "cheap_predictor": float(index + 1),
-                        "parameter_count": 1024 + index,
-                        "weight_norm": 0.5 + index,
-                        "top_decile_flag": control == "boundary_only",
-                        "random_top_decile": control == "random_flags",
-                        "train_test_split": "train" if index % 2 == 0 else "test",
-                        "control_type": control,
-                    }
-                    for index, control in enumerate(controls)
-                ],
+                "hbsm_entries": primary_entries + control_entries,
             }
         )
         + "\n",
@@ -674,7 +723,7 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     report = validate_gate_packet(output_dir, mode="real", project="hbsm")
 
     assert report["ok"]
-    assert report["row_count"] == 5
+    assert report["row_count"] == 28
 
 
 def test_hbsm_packet_builder_rejects_string_boolean_flags(tmp_path: Path) -> None:
@@ -687,6 +736,7 @@ def test_hbsm_packet_builder_rejects_string_boolean_flags(tmp_path: Path) -> Non
                 "metadata": metadata,
                 "hbsm_entries": [
                     {
+                        "prompt_id": "p0",
                         "layer": 0,
                         "boundary_flag": "false",
                         "precision_perturbation": "mxfp4_e2m1",
@@ -718,15 +768,33 @@ def test_gate_packet_checker_rejects_hbsm_without_true_and_false_boundary_flags(
     row_packet = tmp_path / "hbsm_rows.json"
     output_dir = tmp_path / "hbsm_bad"
     metadata = _base_trace_metadata()
-    controls = ["perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"]
+    controls = ["perturbation_off", "random_flags", "layer_index", "parameter_count_norm"]
+    primary_entries = [
+        {
+            "prompt_id": f"p{index}",
+            "layer": index,
+            "boundary_flag": True,
+            "precision_perturbation": "mxfp4_e2m1",
+            "kl_or_nll_drift": float(index) * 0.01,
+            "cheap_predictor": float(index + 1),
+            "parameter_count": 1024 + index,
+            "weight_norm": 0.5 + index,
+            "top_decile_flag": index < 4,
+            "random_top_decile": index in {4, 5, 6, 7},
+            "train_test_split": "train" if index % 2 == 0 else "test",
+            "control_type": "boundary_only",
+        }
+        for index in range(12)
+    ]
     row_packet.write_text(
         json.dumps(
             {
                 "metadata": metadata,
-                "hbsm_entries": [
+                "hbsm_entries": primary_entries + [
                     {
+                        "prompt_id": f"control_{control}",
                         "layer": index,
-                        "boundary_flag": True,
+                        "boundary_flag": False,
                         "precision_perturbation": "mxfp4_e2m1",
                         "kl_or_nll_drift": 0.0 if control == "perturbation_off" else float(index) * 0.01,
                         "cheap_predictor": float(index + 1),

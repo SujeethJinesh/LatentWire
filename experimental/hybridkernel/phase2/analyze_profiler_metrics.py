@@ -187,6 +187,9 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
         row_role = str(_require_present(raw, "row_role")).strip()
         if row_role not in {"primary_hybrid", "same_family_control", "cross_family_falsification"}:
             raise ValueError("row_role must be primary_hybrid, same_family_control, or cross_family_falsification")
+        control_family = str(_require_present(raw, "control_family")).strip()
+        if not control_family:
+            raise ValueError("control_family must be explicitly recorded and non-empty")
         config_key, config = _config_key(raw, model)
         if total <= 0:
             raise ValueError("total_step_ms must be positive")
@@ -208,6 +211,7 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
                 "model": model,
                 "run_id": run_id,
                 "row_role": row_role,
+                "control_family": control_family,
                 "config_key": config_key,
                 "analysis_group_key": analysis_group_key,
                 "dtype": str(config["dtype"]),
@@ -262,7 +266,7 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             1
             for row in comparable_rows
             if str(row["row_role"]) == "same_family_control"
-            and str(row["model"]) == str(first["model"])
+            and str(row["control_family"]).startswith("same_family")
         )
         cross_family_falsification_rows = sum(
             1

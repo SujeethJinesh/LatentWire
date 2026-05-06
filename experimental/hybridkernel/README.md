@@ -201,6 +201,8 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --decode-tokens 64 \
   --requests 16 \
   --seed 1 \
+  --tokenizer "$MODEL" \
+  --require-token-counts \
   --profile-bracket \
   | tee "$HWK_RUN/logs/client_b1_profile_bracket.log"
 ```

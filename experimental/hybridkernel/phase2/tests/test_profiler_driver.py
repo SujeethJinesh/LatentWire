@@ -14,6 +14,8 @@ def _args(**overrides: object) -> SimpleNamespace:
         "decode_tokens": 2,
         "requests": 2,
         "seed": 1,
+        "tokenizer": None,
+        "require_token_counts": False,
         "timeout_s": 5.0,
         "profile_bracket": False,
         "dry_run": False,
@@ -70,3 +72,26 @@ def test_profile_bracket_stops_after_request_error(monkeypatch) -> None:
         "http://127.0.0.1:8000/stop_profile",
     ]
     assert result["requests"][0]["status"] == "error:synthetic request failure"
+
+
+def test_dry_run_can_log_exact_prompt_token_counts(monkeypatch) -> None:
+    class FakeTokenizer:
+        def encode(self, prompt: str, *, add_special_tokens: bool) -> list[int]:
+            assert add_special_tokens is False
+            return prompt.split()
+
+    monkeypatch.setattr(
+        profiler_driver,
+        "_load_tokenizer",
+        lambda model, tokenizer_name, require: (FakeTokenizer(), "fake-tokenizer", "test"),
+    )
+
+    result = profiler_driver.run(
+        _args(batch_size=2, prefill_tokens=8, tokenizer="fake-tokenizer", require_token_counts=True, dry_run=True)
+    )
+
+    assert result["token_counts_required"] is True
+    assert result["tokenizer"] == "fake-tokenizer"
+    assert result["requests"][0]["prompt_token_counts"] == [8, 8]
+    assert result["requests"][0]["prompt_token_count_total"] == 16
+    assert result["requests"][0]["requested_decode_tokens"] == 2

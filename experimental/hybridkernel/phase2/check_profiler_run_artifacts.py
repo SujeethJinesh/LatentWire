@@ -139,6 +139,16 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                         f"client replay log JSON must contain dry_run=false for native evidence: "
                         f"{log_file.name}"
                     )
+                if payload.get("token_counts_required") is not True:
+                    errors.append(
+                        f"client replay log JSON must contain token_counts_required=true for native evidence: "
+                        f"{log_file.name}"
+                    )
+                token_count_source = payload.get("token_count_source")
+                if not isinstance(token_count_source, str) or not token_count_source.strip():
+                    errors.append(
+                        f"client replay log JSON must contain non-empty token_count_source: {log_file.name}"
+                    )
                 if not isinstance(requests, list) or not requests:
                     errors.append(
                         f"client replay log JSON must contain non-empty requests list: {log_file.name}"
@@ -151,6 +161,27 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                     errors.append(
                         f"client replay log requests must all have status=ok for native evidence: {log_file.name}"
                     )
+                else:
+                    for index, row in enumerate(requests):
+                        prompt_counts = row.get("prompt_token_counts")
+                        prompt_total = row.get("prompt_token_count_total")
+                        requested_decode = row.get("requested_decode_tokens")
+                        if (
+                            not isinstance(prompt_counts, list)
+                            or not prompt_counts
+                            or not all(isinstance(value, int) and value > 0 for value in prompt_counts)
+                        ):
+                            errors.append(
+                                f"client replay request {index} must contain positive prompt_token_counts"
+                            )
+                        if not isinstance(prompt_total, int) or prompt_total <= 0:
+                            errors.append(
+                                f"client replay request {index} must contain positive prompt_token_count_total"
+                            )
+                        if not isinstance(requested_decode, int) or requested_decode <= 0:
+                            errors.append(
+                                f"client replay request {index} must contain positive requested_decode_tokens"
+                            )
 
 
 def _read_text(path: Path) -> str:

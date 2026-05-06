@@ -65,6 +65,22 @@ def _architecture_hash(model_id: str) -> str | None:
     return None
 
 
+def _mac_trace_decision(
+    *,
+    weights_cached: bool,
+    estimated_weight_gb: float | None,
+    requires_mamba_ssm: bool,
+    mamba_ssm_installed: bool,
+) -> str:
+    if estimated_weight_gb is not None and estimated_weight_gb > 24.0:
+        return "GPU_RECOMMENDED_SIZE_NOT_CACHED" if not weights_cached else "GPU_RECOMMENDED_SIZE"
+    if not weights_cached:
+        return "BLOCKED_NOT_CACHED"
+    if requires_mamba_ssm and not mamba_ssm_installed:
+        return "PREFLIGHT_BLOCKED_MISSING_RUNTIME"
+    return "POSSIBLE_LOCAL_CACHE_CHECK_REQUIRED"
+
+
 def _probe_transformers(model_id: str) -> tuple[bool, bool, str]:
     try:
         config = AutoConfig.from_pretrained(model_id, trust_remote_code=False)
@@ -110,23 +126,22 @@ def inspect_model(api: HfApi, model_id: str, cache_root: Path) -> dict[str, Any]
     mamba_ssm_installed = importlib.util.find_spec("mamba_ssm") is not None
     requires_mamba_ssm = model_type in {"granitemoehybrid", "qwen3_next"}
     estimated_weight_gb = _size_gb(safetensor_bytes or total_bytes)
-    mac_trace_decision = "BLOCKED_NOT_CACHED"
-    if weights_cached:
-        mac_trace_decision = "POSSIBLE_LOCAL_CACHE_CHECK_REQUIRED"
-    if estimated_weight_gb is not None and estimated_weight_gb > 24.0:
-        mac_trace_decision = "GPU_RECOMMENDED_SIZE"
-    if not weights_cached:
-        mac_trace_decision = "BLOCKED_NOT_CACHED"
-    elif requires_mamba_ssm and not mamba_ssm_installed:
-        mac_trace_decision = "PREFLIGHT_BLOCKED_MISSING_RUNTIME"
+    mac_trace_decision = _mac_trace_decision(
+        weights_cached=weights_cached,
+        estimated_weight_gb=estimated_weight_gb,
+        requires_mamba_ssm=requires_mamba_ssm,
+        mamba_ssm_installed=mamba_ssm_installed,
+    )
     estimated_mac_feasible = bool(estimated_weight_gb is not None and estimated_weight_gb <= 16.0)
     can_load_weights_local_only = weights_cached
     eligible_for_ssq_lr = weights_cached and config_ok and model_type in {"granitemoehybrid", "qwen3_next"}
     eligible_for_horn = eligible_for_ssq_lr
     eligible_for_hbsm = eligible_for_ssq_lr
     blocking_reason = "none"
-    if not weights_cached:
+    if not weights_cached and mac_trace_decision != "GPU_RECOMMENDED_SIZE_NOT_CACHED":
         blocking_reason = "weights not present in repo-local HF cache"
+    elif mac_trace_decision == "GPU_RECOMMENDED_SIZE_NOT_CACHED":
+        blocking_reason = "weights not present in repo-local HF cache; model size exceeds Mac trace budget"
     elif requires_mamba_ssm and not mamba_ssm_installed:
         blocking_reason = "mamba_ssm runtime not installed"
     elif not config_ok or not tokenizer_ok:
@@ -178,6 +193,8 @@ def write_packet(
     api = HfApi()
     rows = [inspect_model(api, model_id, cache_root) for model_id in model_ids]
     decision = "PREFLIGHT_BLOCKED_NO_LOCAL_WEIGHTS"
+    if any(str(row["mac_trace_decision"]).startswith("GPU_RECOMMENDED_SIZE") for row in rows):
+        decision = "GPU_RECOMMENDED_FOR_LARGE_MODELS"
     if any(row["mac_trace_decision"] == "POSSIBLE_LOCAL_CACHE_CHECK_REQUIRED" for row in rows):
         decision = "LOCAL_CACHE_CANDIDATE_REQUIRES_TRACE_RUN"
     if any(row["mac_trace_decision"] == "PREFLIGHT_BLOCKED_MISSING_RUNTIME" for row in rows):

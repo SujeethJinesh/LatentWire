@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import pytest
 import torch
 
@@ -11,11 +14,29 @@ from experimental.hybridkernel.phase4.kernel.boundary_triton import (
 )
 
 
+def _enable_homebrew_gcc_link_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    gcc_triplet = Path("/opt/homebrew/opt/gcc/lib/gcc/current/gcc/aarch64-apple-darwin23/14")
+    gcc_root = Path("/opt/homebrew/opt/gcc/lib/gcc/current")
+    if not gcc_triplet.exists() or not gcc_root.exists():
+        return
+    library_paths = [str(gcc_triplet), str(gcc_root)]
+    existing_library = os.environ.get("LIBRARY_PATH")
+    if existing_library:
+        library_paths.append(existing_library)
+    monkeypatch.setenv("LIBRARY_PATH", ":".join(library_paths))
+    dyld_paths = [str(gcc_root)]
+    existing_dyld = os.environ.get("DYLD_LIBRARY_PATH")
+    if existing_dyld:
+        dyld_paths.append(existing_dyld)
+    monkeypatch.setenv("DYLD_LIBRARY_PATH", ":".join(dyld_paths))
+
+
 @pytest.mark.parametrize("shape", [(1,), (2, 64), (3, 257), (2, 5, 129)])
 def test_hybrid_boundary_blend_triton_matches_reference(
     monkeypatch: pytest.MonkeyPatch, shape: tuple[int, ...]
 ) -> None:
     pytest.importorskip("triton")
+    _enable_homebrew_gcc_link_paths(monkeypatch)
     monkeypatch.setenv("TRITON_INTERPRET", "1")
     generator = torch.Generator().manual_seed(17 + shape[-1])
     attention_state = torch.randn(shape, generator=generator)
@@ -35,6 +56,7 @@ def test_hybrid_boundary_blend_triton_accepts_noncontiguous_and_fp16(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pytest.importorskip("triton")
+    _enable_homebrew_gcc_link_paths(monkeypatch)
     monkeypatch.setenv("TRITON_INTERPRET", "1")
     generator = torch.Generator().manual_seed(2907)
     base_shape = (4, 19, 2)
@@ -56,6 +78,7 @@ def test_hybrid_boundary_blend_triton_rejects_shape_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pytest.importorskip("triton")
+    _enable_homebrew_gcc_link_paths(monkeypatch)
     monkeypatch.setenv("TRITON_INTERPRET", "1")
     good = torch.zeros((2, 3))
     bad = torch.zeros((2, 4))

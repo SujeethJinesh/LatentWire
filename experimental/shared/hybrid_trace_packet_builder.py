@@ -223,6 +223,7 @@ def build_hbsm_packet(row_packet: Path, output_dir: Path) -> list[dict[str, Any]
         rows.append(
             {
                 "model_id": config["model_id"],
+                "prompt_id": str(entry["prompt_id"]),
                 "layer": int(entry["layer"]),
                 "boundary_flag": _require_bool(entry["boundary_flag"], "boundary_flag"),
                 "precision_perturbation": str(entry["precision_perturbation"]),

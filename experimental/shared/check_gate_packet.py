@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -61,6 +62,7 @@ REAL_ROW_FIELDS = {
     ),
     "hbsm": (
         "model_id",
+        "prompt_id",
         "layer",
         "boundary_flag",
         "precision_perturbation",
@@ -113,12 +115,16 @@ REAL_SUMMARY_FIELDS = {
         "kurtosis_direction_ratio",
         "non_boundary_control_ratio",
         "permuted_direction_ratio",
+        "non_boundary_direction_count",
+        "permuted_direction_count",
         "support_fraction",
     ),
     "hbsm": (
         "gate_name",
         "gate_status",
         "gate_pass",
+        "primary_row_count",
+        "prompt_count",
         "top_decile_count",
         "random_top_decile_count",
         "train_count",
@@ -127,10 +133,16 @@ REAL_SUMMARY_FIELDS = {
         "control_types",
         "boundary_top_decile_count",
         "non_boundary_top_decile_count",
+        "boundary_random_top_decile_count",
+        "non_boundary_random_top_decile_count",
         "boundary_top_decile_rate",
         "non_boundary_top_decile_rate",
+        "boundary_random_top_decile_rate",
+        "non_boundary_random_top_decile_rate",
         "boundary_top_decile_enrichment",
+        "random_boundary_top_decile_enrichment",
         "fisher_p_boundary_top_decile",
+        "fisher_p_random_boundary_top_decile",
         "cheap_predictor_spearman",
     ),
 }
@@ -232,8 +244,8 @@ def _validate_resource_limit_decision(
 def _validate_hash_provenance(config: dict[str, Any], errors: list[str]) -> None:
     for field in HASH_FIELDS:
         value = config.get(field)
-        if not isinstance(value, str) or not value.startswith("sha256:") or len(value) <= len("sha256:"):
-            errors.append(f"config.json {field} must be a sha256:<hex-or-token> value")
+        if not isinstance(value, str) or not re.fullmatch(r"sha256:[0-9a-fA-F]{64}", value):
+            errors.append(f"config.json {field} must be a sha256:<64-hex-digest> value")
 
 
 def _validate_real_summary(
@@ -346,6 +358,8 @@ def _validate_real_summary(
             "kurtosis_direction_ratio",
             "non_boundary_control_ratio",
             "permuted_direction_ratio",
+            "non_boundary_direction_count",
+            "permuted_direction_count",
             "support_fraction",
         ):
             value = summary.get(field)
@@ -356,30 +370,49 @@ def _validate_real_summary(
 
     if project == "hbsm":
         evaluated = evaluate_hbsm_b1(rows)
-        for field in ("top_decile_count", "random_top_decile_count", "train_count", "test_count"):
+        for field in (
+            "primary_row_count",
+            "prompt_count",
+            "top_decile_count",
+            "random_top_decile_count",
+            "train_count",
+            "test_count",
+        ):
             if not _valid_nonnegative_int(summary.get(field)):
                 errors.append(f"hbsm summary {field} must be a nonnegative integer")
-        if summary.get("top_decile_count") != sum(1 for row in rows if row.get("top_decile_flag") is True):
-            errors.append("hbsm summary top_decile_count must match rows")
-        if summary.get("random_top_decile_count") != sum(1 for row in rows if row.get("random_top_decile") is True):
-            errors.append("hbsm summary random_top_decile_count must match rows")
-        if summary.get("train_count") != sum(1 for row in rows if str(row.get("train_test_split")) == "train"):
-            errors.append("hbsm summary train_count must match rows")
-        if summary.get("test_count") != sum(1 for row in rows if str(row.get("train_test_split")) == "test"):
-            errors.append("hbsm summary test_count must match rows")
         enrichment = summary.get("boundary_top_decile_enrichment")
         if not _finite_number(enrichment) or float(enrichment) < 0.0:
             errors.append("hbsm summary boundary_top_decile_enrichment must be nonnegative finite numeric")
-        for field in ("gate_status", "gate_pass", "control_types", "split_counts"):
+        random_enrichment = summary.get("random_boundary_top_decile_enrichment")
+        if not _finite_number(random_enrichment) or float(random_enrichment) < 0.0:
+            errors.append("hbsm summary random_boundary_top_decile_enrichment must be nonnegative finite numeric")
+        for field in (
+            "gate_status",
+            "gate_pass",
+            "primary_row_count",
+            "prompt_count",
+            "top_decile_count",
+            "random_top_decile_count",
+            "train_count",
+            "test_count",
+            "control_types",
+            "split_counts",
+        ):
             if summary.get(field) != evaluated.get(field):
                 errors.append(f"hbsm summary {field} must match evaluator output")
         for field in (
             "boundary_top_decile_count",
             "non_boundary_top_decile_count",
+            "boundary_random_top_decile_count",
+            "non_boundary_random_top_decile_count",
             "boundary_top_decile_rate",
             "non_boundary_top_decile_rate",
+            "boundary_random_top_decile_rate",
+            "non_boundary_random_top_decile_rate",
             "boundary_top_decile_enrichment",
+            "random_boundary_top_decile_enrichment",
             "fisher_p_boundary_top_decile",
+            "fisher_p_random_boundary_top_decile",
             "cheap_predictor_spearman",
         ):
             value = summary.get(field)
@@ -462,6 +495,16 @@ def _validate_real_coverage(
                 "horn real packet missing boundary directions: "
                 + ", ".join(sorted(missing_directions))
             )
+        for control_type in ("non_boundary", "permuted_direction"):
+            control_directions = {
+                str(row.get("direction"))
+                for row in rows
+                if str(row.get("control_type")) == control_type
+            }
+            if not {"attention->ssm", "ssm->attention"}.issubset(control_directions):
+                errors.append(
+                    f"horn {control_type} controls must include both attention->ssm and ssm->attention labels"
+                )
         boundary_by_key = {
             (
                 row.get("prompt_id"),
@@ -509,16 +552,30 @@ def _validate_real_coverage(
                 errors.append(f"horn row {index} boundary_index must be an integer")
 
     if project == "hbsm":
-        flags = {row.get("boundary_flag") for row in rows if isinstance(row.get("boundary_flag"), bool)}
+        primary_rows = [row for row in rows if str(row.get("control_type")) == "boundary_only"]
+        flags = {row.get("boundary_flag") for row in primary_rows if isinstance(row.get("boundary_flag"), bool)}
         if flags != {False, True}:
-            errors.append("hbsm real packet needs both boundary_flag=true and boundary_flag=false")
-        splits = {str(row.get("train_test_split")) for row in rows}
+            errors.append("hbsm real packet needs boundary_only rows with both boundary_flag=true and boundary_flag=false")
+        prompt_ids = {str(row.get("prompt_id")) for row in primary_rows if row.get("prompt_id") is not None}
+        if len(prompt_ids) < 12 and "resource_limit_note" not in config:
+            errors.append(
+                "hbsm real packet needs at least 12 distinct boundary_only prompt_id values "
+                "or config.json resource_limit_note"
+            )
+        prompt_flags: dict[str, set[bool]] = {}
+        for row in primary_rows:
+            if isinstance(row.get("boundary_flag"), bool):
+                prompt_flags.setdefault(str(row.get("prompt_id")), set()).add(bool(row.get("boundary_flag")))
+        incomplete_prompts = [prompt_id for prompt_id, observed in prompt_flags.items() if observed != {False, True}]
+        if incomplete_prompts:
+            errors.append("hbsm real packet needs every boundary_only prompt to include boundary and non-boundary layers")
+        splits = {str(row.get("train_test_split")) for row in primary_rows}
         if not {"train", "test"}.issubset(splits) and "resource_limit_note" not in config:
-            errors.append("hbsm real packet needs both train and test split rows or config.json resource_limit_note")
-        top_decile_count = sum(1 for row in rows if row.get("top_decile_flag") is True)
-        random_top_decile_count = sum(1 for row in rows if row.get("random_top_decile") is True)
+            errors.append("hbsm boundary_only rows need both train and test splits or config.json resource_limit_note")
+        top_decile_count = sum(1 for row in primary_rows if row.get("top_decile_flag") is True)
+        random_top_decile_count = sum(1 for row in primary_rows if row.get("random_top_decile") is True)
         if top_decile_count != random_top_decile_count:
-            errors.append("hbsm random_top_decile true count must match top_decile_flag true count")
+            errors.append("hbsm boundary_only random_top_decile true count must match top_decile_flag true count")
         for index, row in enumerate(rows):
             for field in ("kl_or_nll_drift", "cheap_predictor", "parameter_count", "weight_norm"):
                 if not _finite_number(row.get(field)):
@@ -605,9 +662,11 @@ def validate_gate_packet(
         if expected_fields is None:
             errors.append(f"unknown real-packet project {project!r}")
         else:
+            missing_row_fields = False
             for index, row in enumerate(raw_rows):
                 missing = _missing_fields(row, expected_fields)
                 if missing:
+                    missing_row_fields = True
                     errors.append(f"row {index} missing fields: {', '.join(missing)}")
             required_controls = REAL_CONTROL_VALUES.get(project, set())
             observed_controls = {str(row.get("control_type")) for row in raw_rows}
@@ -615,8 +674,9 @@ def validate_gate_packet(
             if missing_controls:
                 controls = ", ".join(sorted(missing_controls))
                 errors.append(f"missing required controls: {controls}")
-            _validate_real_coverage(project=project, rows=raw_rows, config=config, errors=errors)
-            _validate_real_summary(project=project, rows=raw_rows, summary=summary, config=config, errors=errors)
+            if not missing_row_fields:
+                _validate_real_coverage(project=project, rows=raw_rows, config=config, errors=errors)
+                _validate_real_summary(project=project, rows=raw_rows, summary=summary, config=config, errors=errors)
             _validate_resource_limit_decision(project=project, config=config, summary=summary, errors=errors)
 
     decision_text = (packet_dir / "decision.md").read_text() if (packet_dir / "decision.md").exists() else ""

@@ -97,7 +97,7 @@ not admissible evidence for HybridKernel because the CUDA work lives in the
 vLLM server process:
 
 ```bash
-cat > "$HWK_RUN/metadata/profile_scope.json" <<'JSON'
+cat > "$HWK_RUN/metadata/profile_scope.json" <<JSON
 {
   "profiled_process": "vllm_server",
   "nsys_profiled_process": "vllm_server",
@@ -215,6 +215,8 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --decode-tokens 64 \
   --requests 16 \
   --seed 1 \
+  --tokenizer "$MODEL" \
+  --require-token-counts \
   2>&1 | tee "$HWK_RUN/logs/client_b1.log"
 ```
 
@@ -230,6 +232,8 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --decode-tokens 64 \
   --requests 16 \
   --seed 1 \
+  --tokenizer "$MODEL" \
+  --require-token-counts \
   --profile-bracket \
   2>&1 | tee "$HWK_RUN/logs/client_b1_profile_bracket.log"
 ```
@@ -249,6 +253,8 @@ Mac with:
   --decode-tokens 64 \
   --requests 2 \
   --seed 1 \
+  --tokenizer "$MODEL" \
+  --require-token-counts \
   --profile-bracket \
   --dry-run
 ```
@@ -316,6 +322,8 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --decode-tokens 64 \
   --requests 4 \
   --seed 1 \
+  --tokenizer "$MODEL" \
+  --require-token-counts \
   2>&1 | tee "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.log"
 ```
 

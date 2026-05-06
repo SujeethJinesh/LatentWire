@@ -14,6 +14,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import asdict, dataclass
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,10 @@ class RequestRow:
     batch_size: int
     prefill_tokens: int
     decode_tokens: int
+    prompt_token_counts: list[int] | None
+    prompt_token_count_total: int | None
+    requested_decode_tokens: int
+    response_usage: dict[str, Any] | None
     elapsed_s: float | None
     status: str
 
@@ -43,7 +48,7 @@ def _payload(model: str, prompt: str | list[str], decode_tokens: int, seed: int)
     }
 
 
-def _post_json(endpoint: str, payload: dict[str, object], timeout_s: float) -> None:
+def _post_json(endpoint: str, payload: dict[str, object], timeout_s: float) -> dict[str, Any] | None:
     body = json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(
         endpoint,
@@ -54,7 +59,45 @@ def _post_json(endpoint: str, payload: dict[str, object], timeout_s: float) -> N
     with urllib.request.urlopen(request, timeout=timeout_s) as response:
         if response.status >= 400:
             raise RuntimeError(f"HTTP {response.status}")
-        response.read()
+        response_body = response.read()
+    if not response_body:
+        return None
+    try:
+        parsed = json.loads(response_body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def _load_tokenizer(model: str, tokenizer_name: str | None, require: bool) -> tuple[Any | None, str | None, str]:
+    name = tokenizer_name or (model if require else None)
+    if name is None:
+        return None, None, "not_requested"
+    try:
+        from transformers import AutoTokenizer  # type: ignore
+
+        return (
+            AutoTokenizer.from_pretrained(name, local_files_only=True, trust_remote_code=True),
+            name,
+            "transformers_local_files_only",
+        )
+    except Exception as exc:  # pragma: no cover - exact dependency/cache errors are environment-specific.
+        if require:
+            raise RuntimeError(
+                f"token counting was required but tokenizer {name!r} could not be loaded locally: {exc}"
+            ) from exc
+        return None, name, f"unavailable:{exc}"
+
+
+def _prompt_token_counts(tokenizer: Any | None, prompt_payload: str | list[str]) -> list[int] | None:
+    if tokenizer is None:
+        return None
+    prompts = [prompt_payload] if isinstance(prompt_payload, str) else prompt_payload
+    counts: list[int] = []
+    for prompt in prompts:
+        encoded = tokenizer.encode(prompt, add_special_tokens=False)
+        counts.append(len(encoded))
+    return counts
 
 
 def run(args: argparse.Namespace) -> dict[str, object]:
@@ -63,6 +106,11 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     profile_start_endpoint = base_endpoint + "/start_profile"
     profile_stop_endpoint = base_endpoint + "/stop_profile"
     rows: list[RequestRow] = []
+    tokenizer, tokenizer_name, token_count_source = _load_tokenizer(
+        args.model,
+        getattr(args, "tokenizer", None),
+        bool(getattr(args, "require_token_counts", False)),
+    )
 
     if args.profile_bracket and not args.dry_run:
         _post_json(profile_start_endpoint, {}, args.timeout_s)
@@ -74,6 +122,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                 for batch_idx in range(args.batch_size)
             ]
             prompt_payload: str | list[str] = prompts[0] if args.batch_size == 1 else prompts
+            prompt_token_counts = _prompt_token_counts(tokenizer, prompt_payload)
             payload = _payload(args.model, prompt_payload, args.decode_tokens, args.seed + request_id)
             if args.dry_run:
                 rows.append(
@@ -82,6 +131,10 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                         batch_size=args.batch_size,
                         prefill_tokens=args.prefill_tokens,
                         decode_tokens=args.decode_tokens,
+                        prompt_token_counts=prompt_token_counts,
+                        prompt_token_count_total=sum(prompt_token_counts) if prompt_token_counts else None,
+                        requested_decode_tokens=args.decode_tokens,
+                        response_usage=None,
                         elapsed_s=None,
                         status="dry_run",
                     )
@@ -89,16 +142,24 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                 continue
             start = time.perf_counter()
             try:
-                _post_json(endpoint, payload, args.timeout_s)
+                response = _post_json(endpoint, payload, args.timeout_s)
                 status = "ok"
+                response_usage = response.get("usage") if isinstance(response, dict) else None
+                if not isinstance(response_usage, dict):
+                    response_usage = None
             except (urllib.error.URLError, TimeoutError, RuntimeError) as exc:
                 status = f"error:{exc}"
+                response_usage = None
             rows.append(
                 RequestRow(
                     request_id=request_id,
                     batch_size=args.batch_size,
                     prefill_tokens=args.prefill_tokens,
                     decode_tokens=args.decode_tokens,
+                    prompt_token_counts=prompt_token_counts,
+                    prompt_token_count_total=sum(prompt_token_counts) if prompt_token_counts else None,
+                    requested_decode_tokens=args.decode_tokens,
+                    response_usage=response_usage,
                     elapsed_s=time.perf_counter() - start,
                     status=status,
                 )
@@ -114,6 +175,9 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "profile_start_endpoint": profile_start_endpoint if args.profile_bracket else None,
         "profile_stop_endpoint": profile_stop_endpoint if args.profile_bracket else None,
         "dry_run": args.dry_run,
+        "tokenizer": tokenizer_name,
+        "token_count_source": token_count_source,
+        "token_counts_required": bool(getattr(args, "require_token_counts", False)),
         "requests": [asdict(row) for row in rows],
     }
 
@@ -127,6 +191,15 @@ def main() -> None:
     parser.add_argument("--decode-tokens", type=int, default=64)
     parser.add_argument("--requests", type=int, default=16)
     parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument(
+        "--tokenizer",
+        help="Optional local tokenizer id/path for exact prompt token-count logging.",
+    )
+    parser.add_argument(
+        "--require-token-counts",
+        action="store_true",
+        help="Fail unless the tokenizer can be loaded locally and prompt token counts are logged.",
+    )
     parser.add_argument("--timeout-s", type=float, default=120.0)
     parser.add_argument(
         "--profile-bracket",

@@ -24,7 +24,7 @@ asymmetry.
 |---|---|---|
 | Benchmarks | H1/H2 should use reasoning traces plus WikiText/GSM-style drift controls, but no live hybrid activations have been dumped yet. | Gate pending. |
 | Ablations | Required controls are explicit boundary maps, non-boundary adjacent pairs, matched normalization placement, direction-label permutation, and pure-architecture controls. | Adequate before real H1. |
-| Correctness | The checker now requires at least 12 prompts unless resource-limited, both boundary directions, finite numeric fields, hash-shaped prompt/architecture provenance, recomputed H1 `summary.json` gate aggregates, and each permuted-direction row matching an observed prompt/boundary/norm tuple while flipping direction. | Artifact path is hardened. |
+| Correctness | The checker now requires at least 12 prompts unless resource-limited, both boundary directions, both-direction non-boundary controls, finite numeric fields, 64-hex prompt/architecture provenance, recomputed H1 `summary.json` gate aggregates, and each permuted-direction row matching an observed prompt/boundary/norm tuple while flipping direction. | Artifact path is hardened. |
 | Reproducibility | Synthetic H1 packet is deterministic, and shared architecture maps fix boundary IDs. | Not model evidence. |
 | Novelty | The proposed wedge is directional propagation through hybrid boundaries, not generic activation-outlier measurement. | Plausible only if H1/H2/H3 pass. |
 | Camera-readiness | The draft is a preregistration shell. It needs real H1/H2/H3 tables before submission as a method or measurement paper. | Not camera-ready. |
@@ -36,13 +36,13 @@ asymmetry.
 | synthetic H1 | SSM-to-attention / attention-to-SSM max ratio 3.775, kurtosis ratio 7.139 | validates readout only |
 | architecture provenance | shared boundary IDs and direction counts exist | packet provenance ready |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
-| real-packet checker | rejects missing directions, stale summary fields, too few prompts, non-finite rows, promotable resource-limited decisions, and unpaired permuted controls | ready for real H1 |
+| real-packet checker | rejects missing directions, stale summary fields, too few prompts, non-finite rows, promotable resource-limited decisions, unpaired permuted controls, and permuted controls that preserve the selected directional effect | ready for real H1 |
 
 The required matched flipped controls are the `permuted_direction` rows: they
 must reuse an observed boundary tuple with the same prompt ID and normalization
 positions, then invert only the direction label.
-The H1 evaluator also records a non-boundary control ratio and rejects H1
-promotion when the control has the same ratio as the boundary rows.
+The H1 evaluator also records non-boundary and permuted-direction ratios and
+rejects H1 promotion when either control preserves the selected boundary ratio.
 
 ## Reviewer Risks
 

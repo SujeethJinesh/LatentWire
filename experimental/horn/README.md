@@ -65,21 +65,23 @@ Validate the first real H1 packet with:
 ```
 
 The real checker requires at least 12 prompt IDs unless resource-limited, both
-boundary directions, paired flipped `permuted_direction` controls, and finite
-numeric rows. The flipped controls must match an observed boundary by
-`prompt_id`, boundary index, layer IDs, and normalization positions, then invert
-only the direction label. Any resource-limited packet must set a decision
+boundary directions, both-direction non-boundary controls, paired flipped
+`permuted_direction` controls, and finite numeric rows. The flipped controls
+must match an observed boundary by `prompt_id`, boundary index, layer IDs, and
+normalization positions, then invert only the direction label. H1 cannot pass if
+the permuted controls preserve the selected directional ratio. Any
+resource-limited packet must set a decision
 beginning `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but
 cannot promote H1.
 
 Real `config.json` provenance must include `prompt_ids_hash` and
-`architecture_map_hash` as `sha256:<digest>` strings. Real `summary.json` must
+`architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must
 include the recomputed H1 evaluator fields: `gate_status`, `gate_pass`,
 `prompt_count`, `boundary_directions`, `selected_h1_metric`,
 `selected_h1_direction`, `selected_h1_ratio`, `selected_h1_threshold`,
 `selected_h1_ci_low`, direction ratios, control ratios, and
-`support_fraction`. The checker recomputes these values from rows and rejects
-stale summaries.
+direction-count/support fields. The checker recomputes these values from rows
+and rejects stale summaries.
 
 ## Output Paths
 

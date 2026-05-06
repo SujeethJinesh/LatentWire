@@ -38,8 +38,9 @@ def _review_control_rows() -> list[dict[str, object]]:
     return [
         _native_row(
             100,
-            model="granite",
+            model="granite-transformer-control",
             row_role="same_family_control",
+            control_family="same_family_transformer_heavy_control",
             control_model_or_segment="same_family_transformer_heavy_control",
             attention_ssm_boundary_ms=2.0,
             matched_non_boundary_ms=2.0,

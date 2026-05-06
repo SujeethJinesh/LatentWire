@@ -83,7 +83,7 @@ def test_horn_h1_evaluator_uses_directional_support_and_controls() -> None:
                 {
                     "prompt_id": f"p{prompt_index}",
                     "direction": "ssm->attention" if direction == "attention->ssm" else "attention->ssm",
-                    "max_abs": max_abs,
+                    "max_abs": 1.0,
                     "kurtosis": 1.0,
                     "control_type": "permuted_direction",
                 }
@@ -95,6 +95,7 @@ def test_horn_h1_evaluator_uses_directional_support_and_controls() -> None:
     assert result["selected_h1_metric"] == "max_abs"
     assert result["selected_h1_ratio"] == 10.0
     assert result["non_boundary_control_ratio"] == 1.0
+    assert result["permuted_direction_ratio"] == 1.0
 
 
 def test_horn_h1_evaluator_fails_when_non_boundary_control_has_same_ratio() -> None:
@@ -118,20 +119,71 @@ def test_horn_h1_evaluator_fails_when_non_boundary_control_has_same_ratio() -> N
     assert result["non_boundary_control_ratio"] == result["selected_h1_ratio"]
 
 
+def test_horn_h1_evaluator_fails_when_permuted_control_preserves_signal() -> None:
+    rows = []
+    for prompt_index in range(12):
+        for direction, max_abs in [("attention->ssm", 10.0), ("ssm->attention", 1.0)]:
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": 1.0,
+                    "kurtosis": 1.0,
+                    "control_type": "non_boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "permuted_direction",
+                }
+            )
+
+    result = evaluate_horn_h1(rows)
+
+    assert result["gate_pass"] is False
+    assert result["permuted_direction_ratio"] == result["selected_h1_ratio"]
+
+
 def test_hbsm_b1_evaluator_requires_boundary_enrichment_over_random() -> None:
     rows = []
-    controls = ["perturbation_off", "random_flags", "layer_index", "parameter_count_norm", "boundary_only"]
-    for index in range(20):
-        boundary = index < 10
+    for index in range(24):
+        boundary = index < 12
         rows.append(
             {
+                "prompt_id": f"p{index % 12}",
                 "boundary_flag": boundary,
-                "top_decile_flag": boundary,
-                "random_top_decile": not boundary,
+                "top_decile_flag": boundary and index < 8,
+                "random_top_decile": index in {0, 1, 2, 3, 12, 13, 14, 15},
                 "train_test_split": "train" if index % 2 == 0 else "test",
-                "control_type": controls[index % len(controls)],
+                "control_type": "boundary_only",
                 "cheap_predictor": float(index),
                 "kl_or_nll_drift": float(index),
+            }
+        )
+    for control in ["perturbation_off", "random_flags", "layer_index", "parameter_count_norm"]:
+        rows.append(
+            {
+                "prompt_id": "control",
+                "boundary_flag": False,
+                "top_decile_flag": False,
+                "random_top_decile": False,
+                "train_test_split": "train",
+                "control_type": control,
+                "cheap_predictor": 0.0,
+                "kl_or_nll_drift": 0.0,
             }
         )
 
@@ -139,5 +191,6 @@ def test_hbsm_b1_evaluator_requires_boundary_enrichment_over_random() -> None:
 
     assert result["gate_pass"] is True
     assert result["boundary_top_decile_enrichment"] > 1.0
+    assert result["random_boundary_top_decile_enrichment"] == 1.0
     assert result["fisher_p_boundary_top_decile"] < 0.05
     assert result["cheap_predictor_spearman"] > 0.9

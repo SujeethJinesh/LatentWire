@@ -4,7 +4,7 @@
     "not model evidence",
     "not GPU evidence"
   ],
-  "decision": "PREFLIGHT_BLOCKED_NO_LOCAL_WEIGHTS",
+  "decision": "GPU_RECOMMENDED_FOR_LARGE_MODELS",
   "row_count": 4,
   "rows": [
     {
@@ -18,27 +18,27 @@
     },
     {
       "architecture_map_hash": "8616e9f0b30e6fac9696f7c1e1dbd08f1a850ac4af0de6353f7d6009043702ae",
-      "blocking_reason": "weights not present in repo-local HF cache",
+      "blocking_reason": "weights not present in repo-local HF cache; model size exceeds Mac trace budget",
       "has_local_snapshot": true,
-      "mac_trace_decision": "BLOCKED_NOT_CACHED",
+      "mac_trace_decision": "GPU_RECOMMENDED_SIZE_NOT_CACHED",
       "model_id": "ibm-granite/granite-4.0-h-small",
       "model_type_tag": "granitemoehybrid",
       "safetensors_gb": 59.99090538173914
     },
     {
       "architecture_map_hash": "8616e9f0b30e6fac9696f7c1e1dbd08f1a850ac4af0de6353f7d6009043702ae",
-      "blocking_reason": "weights not present in repo-local HF cache",
+      "blocking_reason": "weights not present in repo-local HF cache; model size exceeds Mac trace budget",
       "has_local_snapshot": true,
-      "mac_trace_decision": "BLOCKED_NOT_CACHED",
+      "mac_trace_decision": "GPU_RECOMMENDED_SIZE_NOT_CACHED",
       "model_id": "ibm-granite/granite-4.0-h-small-FP8",
       "model_type_tag": "granitemoehybrid",
       "safetensors_gb": 31.189170390367508
     },
     {
       "architecture_map_hash": "2d483c7cabad7c8704478ed4038fa7e7b2eff840bc00a118eccbe38e2b488303",
-      "blocking_reason": "weights not present in repo-local HF cache",
+      "blocking_reason": "weights not present in repo-local HF cache; model size exceeds Mac trace budget",
       "has_local_snapshot": true,
-      "mac_trace_decision": "BLOCKED_NOT_CACHED",
+      "mac_trace_decision": "GPU_RECOMMENDED_SIZE_NOT_CACHED",
       "model_id": "Qwen/Qwen3-Next-80B-A3B-Instruct",
       "model_type_tag": "qwen3_next",
       "safetensors_gb": 151.48814909905195

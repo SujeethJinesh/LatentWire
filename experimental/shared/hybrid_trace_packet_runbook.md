@@ -38,7 +38,7 @@ matching `row_count`, project-specific row schemas, required controls, and
 project-specific admissible coverage.
 
 For real packets, `config.json` must record `prompt_ids_hash` and
-`architecture_map_hash` as `sha256:<digest>` strings. A packet that records
+`architecture_map_hash` as `sha256:<64-hex-digest>` strings. A packet that records
 `resource_limit_note` is admissible only as a diagnostic artifact: its
 `summary.json` decision must start with
 `RESOURCE_LIMITED_NOT_PROMOTABLE`, and it cannot promote a gate.
@@ -70,7 +70,9 @@ Required `summary.json` fields:
 
 The checker recomputes these fields with
 `experimental.shared.hybrid_gate_evaluators.evaluate_ssq_lr_s1`; stale or
-fabricated summaries are rejected.
+fabricated summaries are rejected. The S1 lower bound is computed from
+prompt-level bucket ratios, so reduced rows must preserve prompt IDs rather
+than only global layer means.
 
 ## HORN Real H1 Packet
 
@@ -87,6 +89,8 @@ Required controls:
 - direction-label permutation matched to an observed boundary tuple, including
   `prompt_id`, boundary index, layer IDs, and matched normalization positions;
 - at least one `attention->ssm` boundary and one `ssm->attention` boundary;
+- non-boundary and permuted controls must each include both direction labels;
+- the permuted-direction ratio must stay below the selected H1 threshold;
 - matched normalization placement.
 - at least 12 fixed prompts or an explicit resource-limit note.
 
@@ -100,17 +104,20 @@ Required `summary.json` fields:
 - `selected_h1_ci_low`
 - `max_abs_direction_ratio`, `kurtosis_direction_ratio`
 - `non_boundary_control_ratio`, `permuted_direction_ratio`
+- `non_boundary_direction_count`, `permuted_direction_count`
 - `support_fraction`
 
 The checker recomputes these fields with
 `experimental.shared.hybrid_gate_evaluators.evaluate_horn_h1`; the H1 decision
-is therefore coupled to the non-boundary control ratio, not only boundary rows.
+is therefore coupled to the non-boundary and permuted-direction control ratios,
+not only boundary rows.
 
 ## HBSM Real B1 Packet
 
 Minimum admissible row fields:
 
 - `model_id`, `layer`, `boundary_flag`, `precision_perturbation`
+- `prompt_id`
 - `kl_or_nll_drift`, `cheap_predictor`, `parameter_count`, `weight_norm`
 - `top_decile_flag`, `random_top_decile`, `train_test_split`
 - `control_type` in `perturbation_off`, `random_flags`, `layer_index`,
@@ -123,8 +130,10 @@ Required controls:
 - layer-index baseline;
 - parameter-count/norm baseline;
 - boundary-only baseline;
-- both `boundary_flag=true` and `boundary_flag=false`;
+- `boundary_only` rows with both `boundary_flag=true` and `boundary_flag=false`;
+- every `boundary_only` prompt must include boundary and non-boundary layers;
 - matched counts for `top_decile_flag=true` and `random_top_decile=true`;
+- random top-decile flags must not reproduce the boundary enrichment;
 - both `train` and `test` split rows, unless a resource-limit note is present;
 - train/test layer split if layer count permits.
 
