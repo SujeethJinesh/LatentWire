@@ -42,7 +42,7 @@ rank8 & 699.232 & 0.040 & 0.104 & 0.107 \\
 \label{tab:aggregate}
 \end{table}
 
-Table~\ref{tab:paired} is the reviewer-facing caveat. The same probe now reports layer-head paired improvements over the position-only predictor. Positive values mean lower error than position-only. Rank-2's mean output improvement is positive, but the interval overlaps zero and the win rate is only 0.278. This makes the branch weakly alive, not established.
+Table~\ref{tab:paired} is the main caveat. The same probe now reports layer-head paired improvements over the position-only predictor. Positive values mean lower error than position-only. Rank-2's mean output improvement is positive, but the interval overlaps zero and the win rate is only 0.278. This makes the branch weakly alive, not established.
 
 \begin{table}[h]
 \centering
@@ -196,10 +196,10 @@ The Phase 3 reference specifies the exact computation to preserve during kernel 
 The Phase 4 Triton-interpreter scaffold now targets the same operator for a one-head scalar-output synthetic gate. Triton's official debugging documentation describes interpreter mode as a CPU simulation path enabled by \texttt{TRITON\_INTERPRET=1}, bypassing compilation for debugging.\footnote{\url{https://triton-lang.org/main/programming-guide/chapter-3/debugging.html}} The local Mac environment now uses a repo-local source build of the experimental \texttt{triton-cpu} backend, and the SinkAware Phase 4 interpreter tests pass. This closes the Mac kernel-logic correctness gate before native timing work, but it is not evidence of GPU performance.
 
 The native GPU handoff now has an admissibility checker. Returned native
-packets must include CUDA/NVIDIA metadata, quality drift, per-head drift,
+packets must include CUDA/NVIDIA metadata, measured sequence-shape metadata, quality drift, per-head drift,
 same-shape latency repeats, NCU memory summaries, and a decision file over the same row/model/shape groups; the checker rejects
 missing rows, placeholder packets, non-NVIDIA metadata, nonnumeric metrics, and
-fewer than three distinct latency repeats for any row/model/sequence-length/batch-size group or mismatched quality/latency/NCU shapes. This is still not a success
+fewer than three distinct latency repeats for any row/model/sequence-length/batch-size group, mismatched quality/latency/NCU shapes, or stale metadata shapes. This is still not a success
 criterion. It only prevents incomplete native packets from becoming paper
 evidence.
 

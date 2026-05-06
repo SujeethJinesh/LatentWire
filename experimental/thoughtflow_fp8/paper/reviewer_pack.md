@@ -2,7 +2,7 @@
 
 - status: diagnostic/falsification workshop note only
 - current decision: no live positive method branch
-- camera-readiness: not ready as a positive-method paper
+- camera-readiness: ready only as a negative/mixed workshop diagnostic
 
 ## Paper Link
 
@@ -28,7 +28,7 @@ latency/throughput win.
 | Correctness | CPU sparse-cache scoring, paired uncertainty, oracle/headroom reporting, RDU telemetry, and int8 anchor/phase Triton-interpreter parity are tested. These do not establish native FP8, CUDA, latency, throughput, or serving correctness. | Correctness scaffold only. |
 | Reproducibility | Markdown and JSON artifacts are tracked for every gate, and the owned test command is stable under `./venv_arm64`. Historical `ALIVE`/`PROMOTED` artifacts are preserved for auditability but superseded by the current decision manifest. | Good enough for a diagnostic note. |
 | Novelty | The method space is crowded by recent sparse/quantized KV-cache work, including LongFlow, ThinKV, R-KV/R-KVHash, LazyEviction/ForesightKV-style future-use signals, PM-KVQ, and KVQuant. The defensible novelty is the falsification ladder and stop rule, not a new compression method. | Do not claim method novelty. |
-| Camera-readiness | The current draft is only camera-ready if submitted as a negative/mixed workshop diagnostic with the positive-looking RDU table clearly marked as failed-to-reproduce. It is not camera-ready as a mainline method or systems paper. | Workshop diagnostic at most. |
+| Camera-readiness | The current draft is camera-ready only as a negative/mixed workshop diagnostic with the positive-looking RDU table clearly marked as failed-to-reproduce. It is not a mainline method or systems paper. | Workshop diagnostic at most. |
 
 ## Strongest Evidence
 

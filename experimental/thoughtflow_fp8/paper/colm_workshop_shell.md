@@ -6,7 +6,7 @@ Status date: 2026-05-06
 
 **Stopped for the current anchor/recent/phase/math policy family; demoted for
 the pre-registered `rdu_topk` successor.** The current
-interpretable retention family is not ready to support a positive-method claim
+interpretable retention family supports a diagnostic/falsification claim only,
 and should not be tuned further on the available saved traces. The one allowed
 successor evaluation, `rdu_topk`, clears the original frozen sparse-cache gate
 by using delayed prefix self-attention recurrence rather than token labels or
@@ -95,7 +95,7 @@ decision:
 Paired against `value_norm_topk`, the best ThoughtFlow-family row has phase
 recall delta +0.508 with 95% CI [+0.436, +0.579], but math-state recall delta
 +0.073 with 95% CI [-0.078, +0.223]. This rules out using phase-recall telemetry
-alone as a reviewer-facing positive claim.
+alone as a positive claim.
 
 The CPU sparse-cache probe is the strongest Mac-feasible quality gate so far:
 the model first builds the full prefix cache, each policy prunes that cache at

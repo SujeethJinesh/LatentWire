@@ -186,6 +186,22 @@ def test_requires_same_shapes_across_quality_latency_and_ncu(tmp_path: Path) -> 
     )
 
 
+def test_requires_metadata_sequence_shapes_to_match_measured_csv_shapes(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    _complete_packet(packet)
+    metadata = json.loads((packet / "metadata.json").read_text(encoding="utf-8"))
+    metadata["sequence_shapes"] = [{"batch_size": 99, "sequence_length": 999}]
+    (packet / "metadata.json").write_text(json.dumps(metadata) + "\n", encoding="utf-8")
+
+    result = check_native_gpu_packet(packet)
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "metadata.json sequence_shapes do not match" in error
+        for error in result["errors"]
+    )
+
+
 def test_rejects_invalid_metadata_native_scope(tmp_path: Path) -> None:
     packet = tmp_path / "packet"
     _complete_packet(packet)
@@ -201,6 +217,19 @@ def test_rejects_invalid_metadata_native_scope(tmp_path: Path) -> None:
     assert any("metadata.json gpu" in error for error in result["errors"])
     assert any("metadata.json cuda" in error for error in result["errors"])
     assert any("sequence_shapes" in error for error in result["errors"])
+
+
+def test_rejects_not_available_cuda_metadata(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    _complete_packet(packet)
+    metadata = json.loads((packet / "metadata.json").read_text(encoding="utf-8"))
+    metadata["cuda"] = "not available"
+    (packet / "metadata.json").write_text(json.dumps(metadata) + "\n", encoding="utf-8")
+
+    result = check_native_gpu_packet(packet)
+
+    assert result["status"] == "FAIL"
+    assert any("metadata.json cuda" in error for error in result["errors"])
 
 
 def test_rejects_non_nvidia_gpu_metadata(tmp_path: Path) -> None:

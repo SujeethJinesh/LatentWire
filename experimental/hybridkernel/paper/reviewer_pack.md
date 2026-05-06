@@ -1,6 +1,6 @@
 # HybridKernel Reviewer Pack
 
-- status: internal pre-GPU handoff artifact, not a systems result
+- status: pre-GPU handoff artifact, not a systems result
 - current decision: weakly alive only if native profiling finds separable
   attention/SSM boundary overhead
 

@@ -61,7 +61,7 @@ train-selected sweep & 0.207 & 1.000 & 0.430 & 0.956 \\
 \caption{Hidden/KV saliency telemetry on 24 distilgpt2 traces. The strongest real-saliency proxy by phase+math recall is \texttt{value\_norm\_topk}. ThoughtFlow beats it on phase recall, but LongFlow-like ties ThoughtFlow under the local importance heuristic.}
 \end{table}
 
-Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +0.508 with 95\% CI [+0.436, +0.579]. The math-state delta is only +0.073 with 95\% CI [-0.078, +0.223]. This rules out a reviewer-facing claim based on phase recall alone: it may be marker preservation rather than useful cache retention.
+Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +0.508 with 95\% CI [+0.436, +0.579]. The math-state delta is only +0.073 with 95\% CI [-0.078, +0.223]. This rules out a positive claim based on phase recall alone: it may be marker preservation rather than useful cache retention.
 
 \section{CPU Sparse-Cache Quality Gate}
 

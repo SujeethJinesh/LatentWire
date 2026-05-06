@@ -93,7 +93,7 @@ def test_reviewer_packs_state_camera_readiness_limits() -> None:
             "No GPU latency or memory claim exists yet",
         ],
         "thoughtflow_fp8/paper/reviewer_pack.md": [
-            "not ready as a positive-method paper",
+            "ready only as a negative/mixed workshop diagnostic",
             "no live positive method branch",
         ],
     }

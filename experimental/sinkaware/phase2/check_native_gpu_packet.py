@@ -234,32 +234,78 @@ def _validate_required_files(run_dir: Path, errors: list[str]) -> None:
             errors.append(f"required artifact contains placeholder markers: {relative}")
 
 
-def _validate_metadata(run_dir: Path, errors: list[str], warnings: list[str]) -> None:
+def _metadata_sequence_shape_keys(
+    metadata: dict[str, object],
+    errors: list[str],
+    warnings: list[str],
+) -> set[str]:
+    sequence_shapes = metadata.get("sequence_shapes", [])
+    if not isinstance(sequence_shapes, (list, dict)):
+        warnings.append("metadata.json sequence_shapes should be a list or object")
+        return set()
+
+    shape_items: list[object]
+    if isinstance(sequence_shapes, dict):
+        if "sequence_length" in sequence_shapes or "batch_size" in sequence_shapes:
+            shape_items = [sequence_shapes]
+        else:
+            shape_items = list(sequence_shapes.values())
+    else:
+        shape_items = sequence_shapes
+
+    shape_keys: set[str] = set()
+    for index, item in enumerate(shape_items):
+        if not isinstance(item, dict):
+            errors.append(f"metadata.json sequence_shapes entry {index} must be an object")
+            continue
+        sequence_length = item.get("sequence_length")
+        batch_size = item.get("batch_size")
+        if not _has_value(sequence_length) or not _has_value(batch_size):
+            errors.append(
+                f"metadata.json sequence_shapes entry {index} missing sequence_length or batch_size"
+            )
+            continue
+        if not _is_number(sequence_length) or not _is_number(batch_size):
+            errors.append(
+                f"metadata.json sequence_shapes entry {index} has non-numeric sequence_length "
+                "or batch_size"
+            )
+            continue
+        shape_keys.add(f"{str(sequence_length).strip()}|{str(batch_size).strip()}")
+    return shape_keys
+
+
+def _validate_metadata(run_dir: Path, errors: list[str], warnings: list[str]) -> set[str]:
     path = run_dir / "metadata.json"
     if not path.is_file():
-        return
+        return set()
     try:
         metadata = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         errors.append(f"metadata.json is invalid JSON: {exc}")
-        return
+        return set()
     if not isinstance(metadata, dict):
         errors.append("metadata.json must contain a JSON object")
-        return
+        return set()
 
     for field in REQUIRED_METADATA_FIELDS:
         if field not in metadata or not _has_value(metadata[field]):
             errors.append(f"metadata.json missing required field: {field}")
 
-    if str(metadata.get("cuda", "")).lower() in {"false", "none", "unavailable", "cpu"}:
+    cuda = _normalize_token(metadata.get("cuda", ""))
+    if (
+        cuda in {"false", "none", "unavailable", "not_available", "cpu", "no_cuda", "0"}
+        or "not_available" in cuda
+        or "not_installed" in cuda
+        or cuda.startswith("no_")
+    ):
         errors.append("metadata.json cuda must describe a native CUDA environment")
     gpu = str(metadata.get("gpu", "")).lower()
     if gpu in {"", "none", "cpu", "mps"} or "nvidia" not in gpu:
         errors.append("metadata.json gpu must describe an NVIDIA GPU")
     if "mac" in gpu:
         errors.append("metadata.json gpu appears to describe a Mac-local run")
-    if not isinstance(metadata.get("sequence_shapes", []), (list, dict)):
-        warnings.append("metadata.json sequence_shapes should be a list or object")
+    return _metadata_sequence_shape_keys(metadata, errors, warnings)
 
 
 def _validate_csv_artifact(
@@ -380,6 +426,37 @@ def _validate_cross_artifact_shape_consistency(
             )
 
 
+def _validate_metadata_shape_consistency(
+    metadata_shape_keys: set[str],
+    csv_summaries: dict[str, object],
+    errors: list[str],
+) -> None:
+    if not metadata_shape_keys:
+        return
+    csv_shape_keys: set[str] = set()
+    for summary in csv_summaries.values():
+        if not isinstance(summary, dict):
+            continue
+        for shape_key in summary.get("shape_keys", []):
+            parts = str(shape_key).split("|")
+            if len(parts) == 4:
+                csv_shape_keys.add(f"{parts[2]}|{parts[3]}")
+    if not csv_shape_keys:
+        return
+    if metadata_shape_keys != csv_shape_keys:
+        missing = sorted(csv_shape_keys - metadata_shape_keys)
+        extra = sorted(metadata_shape_keys - csv_shape_keys)
+        detail = []
+        if missing:
+            detail.append(f"metadata missing measured shapes {missing[:3]}")
+        if extra:
+            detail.append(f"metadata has unmeasured shapes {extra[:3]}")
+        errors.append(
+            "metadata.json sequence_shapes do not match CSV sequence_length/batch_size "
+            "groups: " + "; ".join(detail)
+        )
+
+
 def _validate_decision(run_dir: Path, errors: list[str]) -> None:
     path = run_dir / "decision.md"
     if not path.is_file():
@@ -419,12 +496,13 @@ def check_native_gpu_packet(
         errors.append(f"run path is not a directory: {run_dir}")
 
     _validate_required_files(run_dir, errors)
-    _validate_metadata(run_dir, errors, warnings)
+    metadata_shape_keys = _validate_metadata(run_dir, errors, warnings)
     for relative in CSV_SCHEMAS:
         csv_summaries[relative] = _validate_csv_artifact(
             run_dir, relative, min_repeated_runs, errors
         )
     _validate_cross_artifact_shape_consistency(csv_summaries, errors)
+    _validate_metadata_shape_consistency(metadata_shape_keys, csv_summaries, errors)
     _validate_decision(run_dir, errors)
 
     return {

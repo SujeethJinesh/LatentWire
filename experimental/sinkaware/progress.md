@@ -637,3 +637,24 @@ third.
 Decision: **NATIVE DECISION SURFACE MUST BE PAIRED**. SinkAware is now
 Mac-complete unless a new reviewer asks for a specific local control. The next
 exact gate is native NVIDIA timing/memory traffic over the paired packet.
+
+## 2026-05-06 Metadata Shape Consistency Hardening
+
+Closed the follow-up metadata loophole in the same native packet validator.
+`metadata.json["sequence_shapes"]` must now match the measured
+sequence-length/batch-size groups in the CSV artifacts. A packet can no longer
+pass with quality, latency, and NCU rows at one shape while metadata claims a
+different shape.
+
+Decision: **NATIVE METADATA MUST MATCH MEASURED SHAPES**. This is
+reproducibility hardening only; the scientific gate remains native NVIDIA
+timing/memory traffic plus quality preservation.
+
+## 2026-05-06 CUDA Metadata Negative-Token Hardening
+
+Closed the final metadata token loophole found by subagent review. The native
+packet validator now treats `cuda: "not available"` as non-native CUDA metadata
+instead of accepting it because the GPU field says NVIDIA.
+
+Decision: **NON-NATIVE CUDA METADATA REJECTED**. This is admissibility
+hardening only; it does not create GPU evidence.
