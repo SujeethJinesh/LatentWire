@@ -3,11 +3,11 @@
 ## Status
 
 - Current phase: Phase 2 architecture map and runtime boundary audit complete;
-  Phase 4 Triton-interpreter correctness now passes locally
+  Phase 4 Triton interpreter and opt-in CPU-backend correctness now pass locally
 - Phase 0: partial Mac setup complete for audit
 - Phase 1: quick source-backed audit complete, deeper code audit still pending
-- Phase 3/4: interpreter-mode boundary kernel correctness gate passes under
-  `TRITON_INTERPRET=1`
+- Phase 3/4: boundary kernel correctness gates pass under `TRITON_INTERPRET=1`
+  and under an opt-in `TRITON_CPU_BACKEND=1` run with `TRITON_INTERPRET` unset
 - Last updated: 2026-05-06
 
 This scaffold now has a local environment check, small public config fetches,
@@ -70,7 +70,10 @@ TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/hybridkernel/p
 
 Current Mac status: CPU reference and Triton interpreter tests pass under the
 repo-local `triton-cpu` source install with `TRITON_INTERPRET=1` and
-`TRITON_CPU_BACKEND=1`. This is kernel-logic correctness evidence only, not a
+`TRITON_CPU_BACKEND=1`. An opt-in Triton CPU-backend run also matches the CPU
+reference with `TRITON_CPU_BACKEND=1` and `TRITON_INTERPRET` unset when this
+Mac's existing Homebrew GCC runtime paths are exposed through `LIBRARY_PATH`
+and `DYLD_LIBRARY_PATH`. These are kernel-logic correctness checks only, not a
 GPU performance result and not COLM_v3 evidence.
 
 ## Viability Notes
@@ -263,3 +266,39 @@ Decision: **LOCAL TRITON INTERPRETER CORRECTNESS UNBLOCKED**. This does not
 change the HybridKernel performance decision: the next exact gate remains a
 user-operated NVIDIA/vLLM packet that passes the native artifact checker and
 the 3% profiler-analysis gate.
+
+## 2026-05-06 Triton CPU Backend Non-Interpreter Gate
+
+Added a public CPU-backend wrapper around the existing boundary Triton kernel
+and an opt-in pytest gate:
+
+- wrapper: `phase4/kernel/boundary_triton.py`
+- test: `phase4/tests/test_boundary_triton_cpu_backend.py`
+
+The default Phase 3/4 command still passes and skips the opt-in CPU-backend
+gate:
+
+```bash
+TRITON_INTERPRET=1 TRITON_CPU_BACKEND=1 ./venv_arm64/bin/python -m pytest experimental/hybridkernel/phase3/tests experimental/hybridkernel/phase4/tests -rs
+```
+
+Local result: `3 passed, 1 skipped`.
+
+The non-interpreter CPU-backend gate was then run in a fresh process with
+`TRITON_INTERPRET` unset:
+
+```bash
+TRITON_CPU_BACKEND=1 HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 LIBRARY_PATH=/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current/gcc/aarch64-apple-darwin23/14:/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current DYLD_LIBRARY_PATH=/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current ./venv_arm64/bin/python -m pytest experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -rs
+```
+
+Local result: `1 passed`.
+
+The first direct non-interpreter attempt without the Homebrew GCC runtime paths
+failed during Triton CPU backend shared-object linking with `ld: library 'gcc'
+not found`. With those existing local paths exposed, the boundary kernel
+compiled and matched `phase3/reference/boundary.py` at `rtol=1e-6, atol=1e-6`.
+
+Decision: **CPU-BACKEND CORRECTNESS ONLY UNBLOCKED ON THIS MAC**. This is not
+a speed claim, not CUDA evidence, and not a reason to add speculative kernels.
+The next exact gate remains the native NVIDIA/vLLM profiler packet with
+server-side Nsight Systems and Nsight Compute evidence.

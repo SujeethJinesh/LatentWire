@@ -22,8 +22,10 @@ importable from a repo-local `triton-cpu` source build. `pip index versions`
 still finds no matching wheel distributions for `triton`, `triton-cpu`, or
 `triton-nightly` in `./venv_arm64`; the working path is the source-install
 readout in `../triton_cpu_source_install_20260506.md`. Local Phase 4 Triton
-interpreter correctness is unblocked, but this is not a kernel-performance
-result.
+interpreter correctness is unblocked. The boundary kernel also passes an opt-in
+non-interpreter `TRITON_CPU_BACKEND=1` correctness gate on this Mac when the
+existing Homebrew GCC runtime paths are exposed, but this is still CPU-backend
+correctness only and not a kernel-performance result.
 
 The next exact gate is a user-operated NVIDIA/vLLM packet that passes
 `phase2/check_profiler_run_artifacts.py` and is then reduced by
@@ -107,3 +109,19 @@ recorded in `progress.md`.
 Phase 0-4 Mac-side deliverables are now review-ready as a pre-GPU handoff, not
 as performance evidence. Do not proceed with implementation until the native
 packet gate clears.
+
+Optional CPU-backend correctness gate for the existing boundary kernel:
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+TRITON_CPU_BACKEND=1 \
+HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 \
+LIBRARY_PATH=/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current/gcc/aarch64-apple-darwin23/14:/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current \
+DYLD_LIBRARY_PATH=/opt/homebrew/Cellar/gcc/14.1.0_2/lib/gcc/current \
+./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -rs
+```
+
+Run this from a process where `TRITON_INTERPRET` is unset. Passing this gate
+only means the existing Triton boundary kernel matches the CPU reference through
+the experimental CPU backend.

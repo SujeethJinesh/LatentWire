@@ -1,7 +1,8 @@
-"""Triton interpreter kernel for the HybridKernel boundary primitive.
+"""Triton kernel helpers for the HybridKernel boundary primitive.
 
-Run only with TRITON_INTERPRET=1 during Macbook phases. This checks the kernel
-math against the CPU reference but does not measure GPU performance.
+Macbook phases use either Triton interpreter mode or the experimental Triton
+CPU backend. Both paths check kernel math against the CPU reference only. They
+do not measure GPU performance or support a speed claim.
 """
 
 from __future__ import annotations
@@ -48,23 +49,38 @@ def _require_interpreter_mode() -> None:
         raise ModuleNotFoundError("triton is not importable in this environment")
 
 
-def hybrid_boundary_blend_triton_interpret(
+def _require_cpu_backend_mode() -> None:
+    if os.environ.get("TRITON_CPU_BACKEND") != "1":
+        raise RuntimeError("Set TRITON_CPU_BACKEND=1 for CPU-backend correctness gates")
+    if os.environ.get("TRITON_INTERPRET") == "1":
+        raise RuntimeError("Unset TRITON_INTERPRET for CPU-backend correctness gates")
+    if triton is None:
+        raise ModuleNotFoundError("triton is not importable in this environment")
+
+
+def _validate_shapes(
     attention_state: torch.Tensor,
     ssm_state: torch.Tensor,
     gate: torch.Tensor,
     bias: torch.Tensor,
-    *,
-    block_size: int = 128,
-) -> torch.Tensor:
-    """Run the boundary blend kernel in Triton interpreter mode."""
-
-    _require_interpreter_mode()
+) -> None:
     if attention_state.shape != ssm_state.shape:
         raise ValueError("attention_state and ssm_state must have the same shape")
     if gate.shape != attention_state.shape:
         raise ValueError("gate must have the same shape as attention_state")
     if bias.shape != attention_state.shape:
         raise ValueError("bias must have the same shape as attention_state")
+
+
+def _run_hybrid_boundary_blend_kernel(
+    attention_state: torch.Tensor,
+    ssm_state: torch.Tensor,
+    gate: torch.Tensor,
+    bias: torch.Tensor,
+    *,
+    block_size: int,
+) -> torch.Tensor:
+    _validate_shapes(attention_state, ssm_state, gate, bias)
 
     attention_flat = attention_state.contiguous().to(torch.float32).flatten()
     ssm_flat = ssm_state.contiguous().to(torch.float32).flatten()
@@ -83,3 +99,48 @@ def hybrid_boundary_blend_triton_interpret(
         BLOCK=block_size,
     )
     return out.reshape_as(attention_state)
+
+
+def hybrid_boundary_blend_triton_interpret(
+    attention_state: torch.Tensor,
+    ssm_state: torch.Tensor,
+    gate: torch.Tensor,
+    bias: torch.Tensor,
+    *,
+    block_size: int = 128,
+) -> torch.Tensor:
+    """Run the boundary blend kernel in Triton interpreter mode."""
+
+    _require_interpreter_mode()
+    return _run_hybrid_boundary_blend_kernel(
+        attention_state,
+        ssm_state,
+        gate,
+        bias,
+        block_size=block_size,
+    )
+
+
+def hybrid_boundary_blend_triton_cpu_backend(
+    attention_state: torch.Tensor,
+    ssm_state: torch.Tensor,
+    gate: torch.Tensor,
+    bias: torch.Tensor,
+    *,
+    block_size: int = 128,
+) -> torch.Tensor:
+    """Run the boundary blend kernel through Triton's CPU backend.
+
+    This is a CPU-backend correctness check only. The path compiles and runs the
+    same Triton kernel without interpreter mode, but it is not a GPU timing or
+    CUDA code-generation result.
+    """
+
+    _require_cpu_backend_mode()
+    return _run_hybrid_boundary_blend_kernel(
+        attention_state,
+        ssm_state,
+        gate,
+        bias,
+        block_size=block_size,
+    )
