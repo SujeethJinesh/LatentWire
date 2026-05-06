@@ -28,7 +28,8 @@ Use them for preregistered Mac gates only.
   control rows.
 - `sensitivity_metrics.py`: quality, drift, and rank-correlation metrics.
 - `check_gate_packet.py`: packet validator for synthetic and real Mac-local
-  gate results, with stricter `--mode real --project ...` contracts.
+  gate results, with stricter `--mode real --project ...` contracts and an
+  explicit non-promoting schema-rehearsal path for checker-path tests.
 - `hybrid_trace_packet_runbook.md`: required real-packet schema for SSQ-LR,
   HORN, and HBSM.
 - `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt

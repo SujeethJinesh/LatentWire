@@ -372,7 +372,7 @@ Required fields:
 | `dtype` | exact served dtype, for example `bfloat16`; must be non-empty |
 | `cuda_graph_enabled` | JSON boolean, not a string, recording whether CUDA graphs were enabled |
 | `batch_shape.batch_size` | positive integer batch size used by the fixed replay |
-| `batch_shape.prefill_tokens` | positive integer prompt/prefill token count |
+| `batch_shape.prefill_tokens` | positive integer per-sample prompt/prefill token count |
 | `batch_shape.decode_tokens` | positive integer decode token count |
 | `batch_shape.requests` | positive integer number of fixed replay requests |
 | `control_model_or_segment` | non-empty matched control segment/model label used for the non-boundary comparison |
@@ -399,8 +399,8 @@ below the 3% recoverable-gain gate. A packet where controls preserve the same
 3% signal remains audit-only.
 Every model named in `profiler_metrics.json`, including same-family and
 cross-family controls, must have a matching `profiler_driver.py` client replay
-JSON log under `logs/` with the same batch size, prefill-token total,
-decode-token count, and request count. Every replay request must record
+JSON log under `logs/` with the same batch size, uniform per-sample prefill
+token count, decode-token count, and request count. Every replay request must record
 `batch_size`, `prompt_token_counts`, `prompt_token_count_total`,
 `requested_decode_tokens`, and `response_usage.completion_tokens`; completion
 tokens must equal requested decode tokens so early-EOS runs cannot satisfy a
@@ -469,7 +469,8 @@ The verifier checks that the run directory contains:
   markers, and client replay logs must be valid `profiler_driver.py` JSON with
   a non-empty top-level `model`, `dry_run: false`, and non-empty `requests`
   rows whose `status` fields are all `ok`, whose `batch_size` matches
-  `prompt_token_counts`, and whose `response_usage.completion_tokens` equals
+  `prompt_token_counts`, whose prompt counts are uniform within each fixed
+  batch, and whose `response_usage.completion_tokens` equals
   `requested_decode_tokens`;
 - `readout.md` with the pre-registered decision questions;
 - `profiler_metrics.json` with at least three repeated valid rows for one

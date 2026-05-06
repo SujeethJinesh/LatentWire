@@ -524,3 +524,16 @@ tracked path rather than ignored `results/`.
 
 Decision: **THE FALSIFICATION LADDER IS NOW PACKAGED AS A TRACKED AUDIT
 ARTIFACT**. This is still paper packaging, not a live method branch.
+
+## 2026-05-06 Diagnostic Packet Input Hashes
+
+After COLM-style review, the tracked diagnostic packet builder now resolves
+input paths relative to the repository root before falling back to the phase
+directory. The manifest records explicit upstream input paths and hashes all
+existing saved-trace inputs for the RDU, PSI, and VWAC falsification artifacts.
+Regression tests now require non-empty input hashes whenever an artifact records
+input paths.
+
+Decision: **THOUGHTFLOW PROVENANCE IS LOCKED FOR THE CURRENT DIAGNOSTIC
+PACKET**. This remains packaging evidence for the falsification paper, not a
+positive-method reopening.

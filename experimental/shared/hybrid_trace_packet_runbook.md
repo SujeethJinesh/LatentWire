@@ -42,6 +42,10 @@ For real packets, `config.json` must record `prompt_ids_hash` and
 `resource_limit_note` is admissible only as a diagnostic artifact: its
 `summary.json` decision must start with
 `RESOURCE_LIMITED_NOT_PROMOTABLE`, and it cannot promote a gate.
+Synthetic schema rehearsals may run the same real validators only when
+`config.json` sets `schema_rehearsal: true` and `summary.json` uses a decision
+beginning `SCHEMA_REHEARSAL_NOT_PROMOTABLE`. These packets are checker-path
+tests, not model evidence.
 
 ## SSQ-LR Real S1 Packet
 
@@ -130,7 +134,7 @@ Required `summary.json` fields:
 - `support_fraction`
 
 The checker recomputes these fields with
-`experimental.shared.hybrid_gate_evaluators.evaluate_horn_h1`; the H1 decision
+`experimental.shared.hybrid_gate_evaluators.evaluate_horn_h1`; the H1a decision
 is therefore coupled to the non-boundary and permuted-direction control ratios,
 not only boundary rows.
 

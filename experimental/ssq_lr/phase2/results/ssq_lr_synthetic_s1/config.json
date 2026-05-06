@@ -1,6 +1,21 @@
 {
-  "seed": 20260506,
-  "layers": 6,
-  "samples": 64,
-  "channels": 128
+  "architecture_map_hash": "sha256:bc51efe9d9115e092fe6108c917f5b5dc649098398c43fbd1cf7808cdcb02522",
+  "command": "./venv_arm64/bin/python -m experimental.ssq_lr.phase2.ssq_lr_synthetic_s1_gate",
+  "context_lengths": [
+    "prefill_end",
+    "2k_or_end",
+    "8k_or_end",
+    "final_minus_128"
+  ],
+  "device": "cpu",
+  "dtype": "float32_synthetic_state",
+  "model_id": "synthetic-hybrid-ssq-lr-schema-rehearsal",
+  "model_revision": "synthetic-schema-rehearsal",
+  "prompt_ids_hash": "sha256:81bafbff405f707e565b270954f6e03586c8c36b3bbb038b85bbe42dae13f7d0",
+  "prompt_source": "synthetic_ssq_lr_schema_prompt_ids",
+  "schema_rehearsal": true,
+  "seed_list": [
+    20260506
+  ],
+  "tokenizer_revision": "synthetic-schema-rehearsal"
 }

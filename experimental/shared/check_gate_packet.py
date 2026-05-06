@@ -166,6 +166,7 @@ REAL_SUMMARY_FIELDS = {
 }
 HASH_FIELDS = ("prompt_ids_hash", "architecture_map_hash")
 RESOURCE_LIMITED_DECISION = "RESOURCE_LIMITED_NOT_PROMOTABLE"
+SCHEMA_REHEARSAL_DECISION = "SCHEMA_REHEARSAL_NOT_PROMOTABLE"
 
 
 def _load_json(path: Path) -> Any:
@@ -243,6 +244,10 @@ def _resource_limited(config: dict[str, Any]) -> bool:
     return "resource_limit_note" in config
 
 
+def _schema_rehearsal(config: dict[str, Any]) -> bool:
+    return config.get("schema_rehearsal") is True
+
+
 def _validate_resource_limit_decision(
     *,
     project: str,
@@ -256,6 +261,22 @@ def _validate_resource_limit_decision(
     if not decision.startswith(RESOURCE_LIMITED_DECISION):
         errors.append(
             f"{project} resource-limited real packet must use {RESOURCE_LIMITED_DECISION} decision"
+        )
+
+
+def _validate_schema_rehearsal_decision(
+    *,
+    project: str,
+    config: dict[str, Any],
+    summary: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if not _schema_rehearsal(config):
+        return
+    decision = str(summary.get("decision", ""))
+    if not decision.startswith(SCHEMA_REHEARSAL_DECISION):
+        errors.append(
+            f"{project} schema-rehearsal packet must use {SCHEMA_REHEARSAL_DECISION} decision"
         )
 
 
@@ -702,7 +723,10 @@ def validate_gate_packet(
                 errors.append(f"config.json missing provenance field {field}")
         _validate_hash_provenance(config, errors)
         for boundary in ("synthetic-only", "not model evidence"):
-            if boundary in [str(item) for item in summary.get("claim_boundary", [])]:
+            if (
+                boundary in [str(item) for item in summary.get("claim_boundary", [])]
+                and not _schema_rehearsal(config)
+            ):
                 errors.append(f"real packet cannot include claim boundary {boundary!r}")
 
     if (packet_dir / "raw_rows.jsonl").exists():
@@ -745,6 +769,7 @@ def validate_gate_packet(
                 _validate_real_coverage(project=project, rows=raw_rows, config=config, errors=errors)
                 _validate_real_summary(project=project, rows=raw_rows, summary=summary, config=config, errors=errors)
             _validate_resource_limit_decision(project=project, config=config, summary=summary, errors=errors)
+            _validate_schema_rehearsal_decision(project=project, config=config, summary=summary, errors=errors)
 
     decision_text = (packet_dir / "decision.md").read_text() if (packet_dir / "decision.md").exists() else ""
     if summary and str(summary.get("decision")) not in decision_text:

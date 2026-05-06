@@ -40,7 +40,7 @@ asymmetry.
 
 The required matched flipped controls are the `permuted_direction` rows: they
 must reuse an observed boundary tuple with the same prompt ID and normalization
-positions, then invert only the direction label. The H1 evaluator records
+positions, then invert only the direction label. The H1a evaluator records
 selected-direction control ratios, so it rejects controls that keep the
 high-magnitude signal on the same direction label. A faithful label flip that
 preserves unsigned max/min asymmetry but moves the signal to the opposite label

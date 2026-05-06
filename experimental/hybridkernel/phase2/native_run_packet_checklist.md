@@ -94,7 +94,7 @@ reduced native trace:
 - `dtype`: non-empty served dtype string;
 - `cuda_graph_enabled`: JSON boolean, not a string placeholder;
 - `batch_shape.batch_size`: positive integer batch size;
-- `batch_shape.prefill_tokens`: positive integer prefill token count;
+- `batch_shape.prefill_tokens`: positive integer per-sample prefill token count;
 - `batch_shape.decode_tokens`: positive integer decode token count;
 - `batch_shape.requests`: positive integer replay request count;
 - `control_model_or_segment`: non-empty matched control label.
@@ -131,8 +131,9 @@ not promote the branch.
 The artifact checker resolves `nsys_artifact` and `ncu_artifact` against the
 run directory. Missing files, absolute paths, `..` escapes, wrong extensions,
 placeholder profiler exports, UTF-8/plain-text fake profiler files, and SHA-256
-mismatches are rejected. It also checks the client replay batch/prompt/decode/
-request shape against metric rows for models present in the client logs, and it
+mismatches are rejected. It also checks the client replay batch/per-sample
+prefill/decode/request shape against metric rows for models present in the
+client logs, requires uniform prompt counts within each fixed batch, and
 requires replay `response_usage.completion_tokens` to equal the requested decode
 length.
 

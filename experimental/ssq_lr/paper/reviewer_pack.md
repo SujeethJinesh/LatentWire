@@ -26,7 +26,7 @@ and kill conditions.
 | Benchmarks | The intended surfaces are AIME/GSM/MATH-style reasoning traces plus continuation NLL, but no live hybrid model has been dumped yet. | Gate pending. |
 | Ablations | BF16 no-op, INT8, FP8-style, MXFP4-style, random same-L2 noise, scale shuffle, and byte accounting are preregistered. | Adequate before real S2. |
 | Correctness | The packet checker now requires prefill_end, 2k_or_end, 8k_or_end, and final_minus_128 buckets for every prompt/layer pair, at least 12 prompts unless resource-limited, matching model IDs, BF16 controls, SSM/Mamba layer-kind and recurrent-state tensor-kind labels, finite row fields, 64-hex prompt/architecture provenance, and recomputed S1 `summary.json` gate aggregates with prompt-level lower bounds plus Holm-corrected distribution tests. Distribution-only significance also needs a 1.25x effect-size floor. | Artifact path is hardened. |
-| Reproducibility | Synthetic S1 packet is reproducible, but real S1 cannot run until hybrid weights are available on the host. | Not model evidence. |
+| Reproducibility | Synthetic S1 now emits a real-schema rehearsal packet that passes the real SSQ-LR checker while remaining non-promotable. Real S1 cannot run until hybrid weights are available on the host. | Not model evidence. |
 | Novelty | The wedge is sub-FP16 recurrent state for hybrid reasoners, not weight-only or KV-cache quantization. | Plausible only if real S2/S3 pass. |
 | Camera-readiness | The draft is a preregistration shell. It needs real S1/S2/S3 tables before submission as a method paper. | Not camera-ready. |
 
@@ -34,7 +34,7 @@ and kill conditions.
 
 | Gate | Result | Decision |
 |---|---|---|
-| synthetic S1 | late/early max-abs ratio 8.461, std ratio 3.640, kurtosis ratio 3.141 | validates readout only |
+| synthetic S1 schema rehearsal | 288 rows, 12 prompts, 6 recurrent layers, 4 buckets; passes `--mode real --project ssq_lr` as `SCHEMA_REHEARSAL_NOT_PROMOTABLE...` | validates checker path only |
 | architecture provenance | shared config-derived hashes exist for live hybrid targets | packet provenance ready |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
 | real-packet checker | rejects missing buckets, incomplete prompt/layer matrices, stale summary fields, too few prompts, promotable resource-limited decisions, mismatched model IDs, and missing controls | ready for real S1 |

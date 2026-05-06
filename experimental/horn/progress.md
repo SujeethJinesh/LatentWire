@@ -91,3 +91,14 @@ effect size.
 
 Decision: **H1 NULL CONTROLS MUST ERASE THE SELECTED DIRECTION, NOT MERELY
 UNSIGNED ASYMMETRY**. The blocker remains a real prompt-paired boundary dump.
+
+## 2026-05-06 H1a Promotion Boundary
+
+After COLM-style review, the shared HORN evaluator now labels a single-model
+directional asymmetry packet as an H1a screen rather than full H1 promotion. A
+real single-model packet can emit `PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN`,
+but the project still needs cross-model consistency before claiming H1.
+
+Decision: **SINGLE-MODEL BOUNDARY ASYMMETRY IS A SCREEN, NOT A PAPER RESULT**.
+The next exact gate remains a real prompt-paired H1a dump, followed by
+cross-model H1 aggregation only if the screen passes.

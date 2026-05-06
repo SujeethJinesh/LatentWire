@@ -1,9 +1,9 @@
-# SSQ-LR Synthetic S1 Decision
+# SSQ-LR Synthetic S1 Real-Schema Rehearsal
 
-`SYNTHETIC_PASS_REAL_STATE_DUMPS_NEXT`
+`SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_SSQ_LR_S1`
 
-- late/early max-abs ratio: `8.461`
-- late/early std ratio: `3.640`
-- late/early kurtosis ratio: `3.141`
+- evaluator gate status: `PASS_REAL_S1_HETEROGENEITY`
+- selected S1 ratio: `3.889`
+- selected S1 CI low: `3.889`
 
-Synthetic-only: this validates artifact mechanics and does not promote the branch.
+Synthetic CPU tensors validate the real packet schema and checker path only. They do not promote S1 and are not model, GPU, quality, or systems evidence.

@@ -32,19 +32,22 @@ quantization sensitivity. Gate S3 tests cross-model transfer without retuning.
 
 ## Current Mac Packet
 
-Synthetic-only packet:
+Synthetic real-schema rehearsal packet:
 
 - `phase2/results/ssq_lr_synthetic_s1/`
-- decision: `SYNTHETIC_PASS_REAL_STATE_DUMPS_NEXT`
+- decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_SSQ_LR_S1`
 
-This validates artifact mechanics only. It is not model evidence.
+This uses the real SSQ-LR S1 row schema, provenance fields, recomputed summary
+fields, and real checker path. It is synthetic CPU data only and cannot promote
+S1.
 
 Validate packet shape with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/ssq_lr/phase2/results/ssq_lr_synthetic_s1 \
-  --expected-decision-prefix SYNTHETIC
+  --mode real --project ssq_lr \
+  --expected-decision-prefix SCHEMA_REHEARSAL_NOT_PROMOTABLE
 ```
 
 Real trace packet requirements are in
@@ -70,7 +73,9 @@ identify an SSM/Mamba `layer_kind` and a recurrent `state_tensor_kind`, so
 arbitrary activation tensors cannot promote S1. Any
 resource-limited packet must set a decision beginning
 `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but cannot
-promote S1.
+promote S1. Schema-rehearsal packets must set `schema_rehearsal: true` in
+`config.json`, use a decision beginning `SCHEMA_REHEARSAL_NOT_PROMOTABLE`, and
+remain non-evidence even when their synthetic rows make the evaluator pass.
 
 Real `config.json` provenance must include `prompt_ids_hash` and
 `architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must
@@ -107,12 +112,13 @@ Reproduce the current synthetic packet:
 ./venv_arm64/bin/python -m experimental.ssq_lr.phase2.ssq_lr_synthetic_s1_gate
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/ssq_lr/phase2/results/ssq_lr_synthetic_s1 \
-  --expected-decision-prefix SYNTHETIC
-jq '.decision, .max_abs_ratio_late_vs_early, .std_ratio_late_vs_early' \
+  --mode real --project ssq_lr \
+  --expected-decision-prefix SCHEMA_REHEARSAL_NOT_PROMOTABLE
+jq '.decision, .row_count, .gate_status, .selected_s1_ratio' \
   experimental/ssq_lr/phase2/results/ssq_lr_synthetic_s1/summary.json
 ```
 
-Expected decision: `SYNTHETIC_PASS_REAL_STATE_DUMPS_NEXT`.
+Expected decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_SSQ_LR_S1`.
 
 ## GPU Rule
 

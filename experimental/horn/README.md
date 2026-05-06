@@ -84,7 +84,7 @@ cannot promote H1a or H1.
 
 Real `config.json` provenance must include `prompt_ids_hash` and
 `architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must
-include the recomputed H1 evaluator fields: `gate_status`, `gate_pass`,
+include the recomputed H1a evaluator fields: `gate_status`, `gate_pass`,
 `prompt_count`, `boundary_directions`, `selected_h1_metric`,
 `selected_h1_direction`, `selected_h1_ratio`, `selected_h1_threshold`,
 `selected_h1_ci_low`, direction ratios, control ratios, and

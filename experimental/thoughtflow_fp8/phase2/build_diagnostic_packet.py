@@ -135,19 +135,27 @@ def _git_metadata() -> dict[str, str | bool]:
     }
 
 
-def _hash_existing_phase2_paths(paths: list[str]) -> dict[str, str]:
-    hashes: dict[str, str] = {}
-    for raw_path in paths:
-        candidate = Path(raw_path)
-        if not candidate.is_absolute():
-            candidate = PHASE2 / candidate
+def _resolve_input_path(raw_path: str) -> Path | None:
+    path = Path(raw_path)
+    candidates = [path] if path.is_absolute() else [REPO_ROOT / path, PHASE2 / path]
+    for candidate in candidates:
+        resolved = candidate.resolve()
         try:
-            resolved = candidate.resolve()
             resolved.relative_to(REPO_ROOT.resolve())
         except ValueError:
             continue
         if resolved.is_file():
-            hashes[str(resolved.relative_to(REPO_ROOT))] = _sha256(resolved)
+            return resolved
+    return None
+
+
+def _hash_existing_input_paths(paths: list[str]) -> dict[str, str]:
+    hashes: dict[str, str] = {}
+    for raw_path in paths:
+        resolved = _resolve_input_path(raw_path)
+        if resolved is None:
+            continue
+        hashes[str(resolved.relative_to(REPO_ROOT))] = _sha256(resolved)
     return hashes
 
 
@@ -176,8 +184,9 @@ def _artifact_provenance(artifact_id: str, payload: dict[str, Any]) -> dict[str,
             input_paths.extend(str(item) for item in value if isinstance(item, str))
     return {
         "command": ARTIFACT_COMMANDS.get(artifact_id, "not_recorded"),
+        "input_paths": input_paths,
         "source_metadata": source_metadata,
-        "input_hashes": _hash_existing_phase2_paths(input_paths),
+        "input_hashes": _hash_existing_input_paths(input_paths),
     }
 
 

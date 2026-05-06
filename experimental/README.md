@@ -13,11 +13,11 @@ The current sprint ledger is `project_status_20260506.md`.
 
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
-| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, fixed-request vLLM driver, profiler packet verifier, Triton interpreter toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
-| `ssq_lr/` | Mac gate scaffolded | Synthetic S1 packet validates metrics, decision logic, and artifact schema | Real hybrid SSM state dumps showing distribution heterogeneity with complete prompt/layer bucket coverage |
-| `horn/` | Mac gate scaffolded | Synthetic H1 packet validates directional boundary metrics and artifact schema | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry with prompt-paired permuted controls |
+| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
+| `ssq_lr/` | Mac gate scaffolded | Non-promoting 288-row synthetic S1 real-schema rehearsal passes the real SSQ-LR checker | Real hybrid SSM state dumps showing distribution heterogeneity with complete prompt/layer bucket coverage |
+| `horn/` | Mac gate scaffolded | Synthetic H1 packet validates directional boundary metrics and artifact schema; evaluator now reports single-model screens as H1a only | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry with prompt-paired permuted controls across enough models for H1 promotion |
 | `hbsm/` | Mac gate scaffolded; novelty is narrow | Synthetic B1/B2 packet validates sensitivity-ranking and cheap-predictor mechanics | Real layer sensitivity packet with matched random/top-decile controls on current hybrid reasoners |
-| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, saved-artifact regression tests | Paper-only camera-ready polish |
+| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes | Paper-only camera-ready polish |
 
 ## Shared Infrastructure
 
@@ -31,12 +31,14 @@ Shared Mac-local utilities live in `shared/`:
 - `hybrid_model_eligibility.py`: metadata-only HF size/cache preflight for the
   live hybrid targets.
 - `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
-  SSQ-LR/HORN real packets.
+  SSQ-LR/HORN real packets and resolves hook names sanitized by tensor-packet
+  storage.
 - `hybrid_gate_evaluators.py`: recomputes SSQ-LR S1, HORN H1, and HBSM B1
   decision aggregates from raw packet rows.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
 - `check_gate_packet.py`: generic result-packet validator with strict real
-  SSQ-LR/HORN/HBSM packet contracts.
+  SSQ-LR/HORN/HBSM packet contracts plus a non-promoting real-schema rehearsal
+  path for synthetic-only scaffolds.
 - `hybrid_trace_packet_runbook.md`: schema for the first real shared trace
   packet used by SSQ-LR, HORN, and HBSM.
 - `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt

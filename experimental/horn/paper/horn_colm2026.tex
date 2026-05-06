@@ -68,11 +68,11 @@ include at least 12 fixed prompt IDs unless
 the packet records an explicit resource limit. Any resource-limited packet must
 use a \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The packet must
 include \texttt{prompt\_ids\_hash}, \texttt{architecture\_map\_hash}, and a
-summary with prompt count, boundary directions, selected H1 ratio, selected H1
+summary with prompt count, boundary directions, selected H1a ratio, selected H1a
 CI lower bound, support fraction, non-boundary control ratio, and
 permuted-direction ratio, then pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project horn}.
-The checker recomputes these H1 fields from raw rows and rejects stale or
+The checker recomputes these H1a fields from raw rows and rejects stale or
 hand-filled summaries.
 Saved tensor packets should be converted with
 \texttt{experimental.shared.hybrid\_trace\_packet\_builder} before validation.

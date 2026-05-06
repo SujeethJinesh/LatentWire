@@ -103,6 +103,25 @@ REPLAY-BACKED**. The next exact gate remains the NVIDIA Nsight packet.
 This is a kernel-logic correctness check only, not a GPU performance result and
 not COLM_v3 evidence.
 
+## 2026-05-06 Batch Replay and Triton CPU-Backend Check
+
+After COLM-style review, the native artifact checker now treats
+`prefill_tokens` as the per-sample prompt length for batch replay and requires
+uniform per-sample prompt counts in the client log. Batch-size 8 replay packets
+therefore no longer get rejected because their total prompt token count is
+larger than the per-row prefill field.
+
+The opt-in Triton CPU-backend correctness gate also passes locally:
+
+```bash
+HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 TRITON_CPU_BACKEND=1 \
+./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py -q -rs
+```
+
+Decision: **MAC-SIDE KERNEL AND PACKET REPLAY CHECKS ARE SATURATED**. The next
+exact gate remains a user-operated NVIDIA/vLLM Nsight packet.
+
 ## Viability Notes
 
 The project remains viable only if native NVIDIA/vLLM profiling finds

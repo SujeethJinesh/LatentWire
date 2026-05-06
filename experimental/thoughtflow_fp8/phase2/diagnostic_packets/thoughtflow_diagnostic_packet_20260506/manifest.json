@@ -7,6 +7,7 @@
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py",
         "input_hashes": {},
+        "input_paths": [],
         "source_metadata": {
           "continuation_tokens": 24,
           "keep_fraction": 0.2,
@@ -35,6 +36,9 @@
         "input_hashes": {
           "experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.json": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9"
         },
+        "input_paths": [
+          "frozen_sparse_cache_probe.json"
+        ],
         "source_metadata": {
           "continuation_tokens": 24,
           "keep_fraction": 0.2,
@@ -60,6 +64,7 @@
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.py",
         "input_hashes": {},
+        "input_paths": [],
         "source_metadata": {}
       },
       "role": "historical_positive_same_surface",
@@ -79,6 +84,7 @@
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.py",
         "input_hashes": {},
+        "input_paths": [],
         "source_metadata": {}
       },
       "role": "same_family_falsification",
@@ -110,7 +116,16 @@
       "path": "rdu_independent_trace_reproduction_check.json",
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py",
-        "input_hashes": {},
+        "input_hashes": {
+          "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/source_alone.jsonl": "sha256:d3781fbe8d6b9f5bd12db298bc8d22ba194e0ce97e9eb4e8047a2cc8bac31e68",
+          "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl": "sha256:202336cb3f516afff6633e39f3ecb069a39456f1ff894b47373f93e819e77304",
+          "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/text_to_text.jsonl": "sha256:1c019d45aa5234baeb8d5bcec073b9a221fb86f8ef1060486487bbe55810c6ea"
+        },
+        "input_paths": [
+          "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/source_alone.jsonl",
+          "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/text_to_text.jsonl",
+          "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl"
+        ],
         "source_metadata": {}
       },
       "role": "cross_family_falsification",
@@ -135,7 +150,12 @@
       "path": "psi_fresh_sparse_cache_check.json",
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py",
-        "input_hashes": {},
+        "input_hashes": {
+          "results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl": "sha256:d9e51779e76ff8c16074150689780ccc3197b0a058e9fa8d8bff472052283f09"
+        },
+        "input_paths": [
+          "results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl"
+        ],
         "source_metadata": {
           "continuation_tokens": 24,
           "keep_fraction": 0.2,
@@ -164,7 +184,12 @@
       "path": "vwac_fresh_sparse_cache_check.json",
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py",
-        "input_hashes": {},
+        "input_hashes": {
+          "results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl": "sha256:a5788e39b4340b90a7f3573c51e3a5bf9f783035382795a7f3f7a1d6e771a134"
+        },
+        "input_paths": [
+          "results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl"
+        ],
         "source_metadata": {
           "continuation_tokens": 24,
           "keep_fraction": 0.2,
@@ -204,15 +229,15 @@
   },
   "generated_date": "2026-05-06",
   "git": {
-    "head_at_generation": "b3980a97bb21a00ced37feeeb8c35a0c28bb3fcc",
-    "thoughtflow_path_dirty_at_generation": false,
-    "thoughtflow_path_status_at_generation": "",
-    "thoughtflow_path_tree_at_generation": "84f7825b327e1b2a980668c3874c83c534b7d004"
+    "head_at_generation": "910c6d1a542cb98d102cca31750587392371785c",
+    "thoughtflow_path_dirty_at_generation": true,
+    "thoughtflow_path_status_at_generation": "M experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py\n M experimental/thoughtflow_fp8/phase2/tests/test_saved_falsification_artifacts.py",
+    "thoughtflow_path_tree_at_generation": "04ed7dac7a495e354ecde644b91ffdf1d4643945"
   },
   "packet_name": "thoughtflow_diagnostic_packet_20260506",
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:b8911bca5192a63d6ccf77908f0416546439d54da510c5b9d85ce23f33675588"
+    "sha256": "sha256:5d3e5e5eafa2bc244254d0178d10ab5dbfd493eb5b9821a97c62e4c6088886cb"
   }
 }

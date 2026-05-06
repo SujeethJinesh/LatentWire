@@ -377,6 +377,38 @@ def test_rejects_client_replay_batch_size_mismatch(tmp_path: Path) -> None:
     assert any("client replay shape does not match" in error for error in result["errors"])
 
 
+def test_accepts_batch_replay_with_per_sample_prefill_tokens(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    log_path = tmp_path / "logs/client_replay_b1.log"
+    log_payload = json.loads(log_path.read_text(encoding="utf-8"))
+    for request in log_payload["requests"]:
+        request["batch_size"] = 8
+        request["prompt_token_counts"] = [128] * 8
+        request["prompt_token_count_total"] = 1024
+    log_path.write_text(json.dumps(log_payload) + "\n", encoding="utf-8")
+
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    for row in payload["rows"]:
+        row["batch_shape"]["batch_size"] = 8
+        row["batch_shape"]["prefill_tokens"] = 128
+    analysis = analyze(payload)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "profiler_analysis_gate.md").write_text(
+        "# HybridKernel Profiler Analysis Gate\n\n"
+        f"Status: **{analysis['status']}**\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "PASS"
+
+
 def test_rejects_dry_run_or_failed_client_replay_logs(tmp_path: Path) -> None:
     dry_run = tmp_path / "dry_run"
     _write_complete_run(dry_run)

@@ -591,6 +591,37 @@ def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: 
     assert report["row_count"] == 48
 
 
+def test_packet_builder_resolves_sanitized_tensor_names(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_sanitized"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"layers/0 state {bucket} p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert report["ok"]
+    assert report["row_count"] == 48
+
+
 def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn"

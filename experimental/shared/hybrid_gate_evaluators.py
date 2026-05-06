@@ -374,9 +374,9 @@ def evaluate_horn_h1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and permuted_direction_ratio <= 1.0
     )
     return {
-        "gate_name": "horn_h1_single_model_directional_asymmetry",
+        "gate_name": "horn_h1a_single_model_directional_asymmetry_screen",
         "gate_pass": gate_pass,
-        "gate_status": "PASS_REAL_H1_DIRECTIONAL_ASYMMETRY" if gate_pass else "FAIL_REAL_H1_DIRECTIONAL_ASYMMETRY",
+        "gate_status": "PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN" if gate_pass else "FAIL_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN",
         "prompt_count": len(prompts),
         "boundary_directions": directions,
         "selected_h1_metric": selected_metric,

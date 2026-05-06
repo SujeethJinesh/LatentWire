@@ -38,6 +38,19 @@ def _outlier_mass(tensor: torch.Tensor) -> float:
     return float(torch.mean((values > threshold).float()))
 
 
+def _tensor_lookup_name(name: str) -> str:
+    return name.replace("/", "_").replace(" ", "_")
+
+
+def _lookup_tensor(tensors: dict[str, torch.Tensor], name: str) -> torch.Tensor:
+    if name in tensors:
+        return tensors[name]
+    safe_name = _tensor_lookup_name(name)
+    if safe_name in tensors:
+        return tensors[safe_name]
+    raise KeyError(f"tensor {name!r} not found in packet")
+
+
 def _require_bool(value: Any, field: str) -> bool:
     if not isinstance(value, bool):
         raise ValueError(f"{field} must be a boolean")
@@ -134,7 +147,7 @@ def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str,
     rows: list[dict[str, Any]] = []
     for entry in entries:
         tensor_name = str(entry["tensor"])
-        tensor = tensors[tensor_name]
+        tensor = _lookup_tensor(tensors, tensor_name)
         rows.append(
             {
                 "model_id": config["model_id"],
@@ -176,7 +189,7 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
     rows: list[dict[str, Any]] = []
     for entry in entries:
         tensor_name = str(entry["tensor"])
-        tensor = tensors[tensor_name]
+        tensor = _lookup_tensor(tensors, tensor_name)
         rows.append(
             {
                 "model_id": config["model_id"],

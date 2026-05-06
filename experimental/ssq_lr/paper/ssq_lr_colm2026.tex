@@ -28,11 +28,12 @@ per-model retuning. Failing any gate kills the branch before GPU work.
 
 \section{Mac Artifact Status}
 
-A deterministic synthetic S1 packet validates the readout format before real
-hybrid-model state dumps. It reports late/early max-abs ratio 8.461, std ratio
-3.640, and kurtosis ratio 3.141, producing
-\texttt{SYNTHETIC\_PASS\_REAL\_STATE\_DUMPS\_NEXT}. This is synthetic-only:
-it is not model evidence, not a quality result, and not GPU evidence.
+A deterministic synthetic S1 packet now validates the real-schema checker path
+before real hybrid-model state dumps. It emits 288 rows covering 12 prompts, 6
+recurrent layers, and the four preregistered buckets, producing
+\texttt{SCHEMA\_REHEARSAL\_NOT\_PROMOTABLE\_SYNTHETIC\_SSQ\_LR\_S1}. This is
+synthetic-only: it is not model evidence, not a quality result, and not GPU
+evidence.
 The metadata-only model eligibility packet identifies live hybrid targets
 (\texttt{granite-4.0-h-tiny}, \texttt{granite-4.0-h-small},
 \texttt{granite-4.0-h-small-FP8}, and \texttt{Qwen3-Next-80B-A3B-Instruct})
@@ -62,7 +63,9 @@ valid only if every prompt/layer pair covers \texttt{prefill\_end},
 an SSM/Mamba \texttt{layer\_kind} and recurrent \texttt{state\_tensor\_kind}, so
 arbitrary activation tensors cannot promote S1. Any
 resource-limited packet must use a
-\texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
+\texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. A schema rehearsal must
+set \texttt{schema\_rehearsal: true} and use a
+\texttt{SCHEMA\_REHEARSAL\_NOT\_PROMOTABLE} decision. The summary must include
 the recomputed S1 evaluator fields: gate name/status/pass flag, prompt count,
 position buckets, SSM layer count, required and observed passing-layer counts,
 distribution-passing layer counts, selected S1 ratio and prompt-level lower

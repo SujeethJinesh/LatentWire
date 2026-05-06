@@ -192,6 +192,10 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                             errors.append(
                                 f"client replay request {index} prompt_token_counts length must equal batch_size"
                             )
+                        elif len(set(prompt_counts)) != 1:
+                            errors.append(
+                                f"client replay request {index} prompt_token_counts must be uniform for fixed-shape replay"
+                            )
                         if not isinstance(prompt_total, int) or prompt_total <= 0:
                             errors.append(
                                 f"client replay request {index} must contain positive prompt_token_count_total"
@@ -696,20 +700,21 @@ def check_run_artifacts(
                     if not isinstance(request, dict):
                         continue
                     batch_size = request.get("batch_size")
-                    prompt_total = request.get("prompt_token_count_total")
+                    prompt_counts = request.get("prompt_token_counts")
                     requested_decode = request.get("requested_decode_tokens")
                     if (
                         isinstance(batch_size, int)
                         and batch_size > 0
                         and not isinstance(batch_size, bool)
-                        and
-                        isinstance(prompt_total, int)
-                        and prompt_total > 0
+                        and isinstance(prompt_counts, list)
+                        and len(prompt_counts) == batch_size
+                        and all(isinstance(value, int) and value > 0 for value in prompt_counts)
+                        and len(set(prompt_counts)) == 1
                         and isinstance(requested_decode, int)
                         and requested_decode > 0
                     ):
                         client_replay_shapes.add(
-                            (client_model, batch_size, prompt_total, requested_decode, len(requests))
+                            (client_model, batch_size, int(prompt_counts[0]), requested_decode, len(requests))
                         )
     metrics_path = run_dir / "profiler_metrics.json"
     _reject_skeleton_todo(metrics_path, "profiler_metrics.json", errors)
