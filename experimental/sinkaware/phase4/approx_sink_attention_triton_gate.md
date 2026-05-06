@@ -1,6 +1,6 @@
 # SinkAware Approximate-Attention Triton Gate
 
-Status: **scaffolded; local execution waits on `triton` in `venv_arm64`**.
+Status: **local interpreter correctness passes in `venv_arm64`**.
 
 The new Phase 4 scaffold targets the actual approximate SinkAware operator, not
 the killed exact-static branch. It computes exact tail logits, substitutes
@@ -13,18 +13,17 @@ enabled by `TRITON_INTERPRET=1`, with compilation bypassed for debugging:
 
 Current local readiness check:
 
-- `triton` is not importable in `./venv_arm64`;
+- `triton==3.7.0+git270e696d` is importable from the local `triton-cpu`
+  source build;
 - `TRITON_INTERPRET=1` was set for the readiness command;
 - `torch.cuda.is_available()` is false on this Mac;
-- tests are written with `pytest.importorskip("triton")`;
-- one non-skipped readiness test now records the missing dependency path;
-- no interpreter, GPU, or speed claim is made.
+- execution tests pass in interpreter mode;
+- no CUDA, GPU, or speed claim is made.
 
-2026-05-06 recheck: `./venv_arm64/bin/python` still reports
-`importlib.util.find_spec("triton") == None`, and `import triton` raises
-`ModuleNotFoundError: No module named 'triton'`. The fallback work for this
-turn is therefore the Phase 2 held-out/cross-family falsification smoke gate,
-not a Triton correctness pass.
+2026-05-06 source install: after checking the official Triton install docs and
+`triton-lang/triton-cpu`, source installation succeeded from `triton-cpu`
+revision `270e696` after initializing the `third_party/sleef` submodule. The
+shared install note is `experimental/triton_cpu_source_install_20260506.md`.
 
 Next gate:
 
@@ -34,4 +33,5 @@ TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest \
 ```
 
 Promotion requires interpreter correctness against the Phase 3 CPU reference
-before any native GPU timing.
+before any native GPU timing. This gate is now cleared locally; promotion still
+requires downstream quality controls and native timing evidence.

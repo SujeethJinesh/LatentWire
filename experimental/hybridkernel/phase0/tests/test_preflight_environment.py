@@ -19,7 +19,13 @@ def test_collect_preflight_marks_triton_index_blocker(monkeypatch) -> None:
                 "mps_built": True,
                 "mps_available": True,
             }
-        return {"importable": False, "version": None, "error": "module not found"}
+        return {
+            "importable": False,
+            "version": None,
+            "origin": None,
+            "module_file": None,
+            "error": "module not found",
+        }
 
     monkeypatch.setattr(preflight_environment, "_torch_status", lambda: fake_import_status("torch"))
     monkeypatch.setattr(
@@ -67,7 +73,13 @@ def test_write_outputs_records_json_and_markdown(tmp_path: Path, monkeypatch) ->
     monkeypatch.setattr(
         preflight_environment,
         "_import_status",
-        lambda module_name: {"importable": True, "version": "test-triton", "error": None},
+        lambda module_name: {
+            "importable": True,
+            "version": "test-triton",
+            "origin": "/tmp/triton/__init__.py",
+            "module_file": "/tmp/triton/__init__.py",
+            "error": None,
+        },
     )
 
     payload = preflight_environment.collect_preflight(check_pip_index=False)
@@ -79,5 +91,6 @@ def test_write_outputs_records_json_and_markdown(tmp_path: Path, monkeypatch) ->
     markdown = markdown_path.read_text(encoding="utf-8")
     assert saved["status"] == "PASS"
     assert saved["triton"]["import"]["version"] == "test-triton"
+    assert saved["triton"]["usable_in_current_env"] is True
     assert "HybridKernel Local Preflight" in markdown
     assert "install possible from current index" in markdown

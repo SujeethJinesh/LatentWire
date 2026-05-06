@@ -1,7 +1,7 @@
 # HybridKernel Local Preflight
 
-- created UTC: `2026-05-06T04:11:46.450851+00:00`
-- status: `BLOCKED_TRITON_UNAVAILABLE`
+- created UTC: `2026-05-06T05:09:17.013763+00:00`
+- status: `PASS`
 - python: `3.11.6`
 - executable: `/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/bin/python`
 - platform: `macOS-26.4.1-arm64-arm-64bit`
@@ -18,11 +18,14 @@
 
 ## Triton
 
-- importable: `False`
-- version: `None`
+- importable: `True`
+- version: `3.7.0`
+- origin: `/Users/sujeethjinesh/Desktop/LatentWire/.debug/triton-cpu-src/python/triton/__init__.py`
+- module file: `/Users/sujeethjinesh/Desktop/LatentWire/.debug/triton-cpu-src/python/triton/__init__.py`
+- usable in current env: `True`
 - pip index checked: `True`
 - install possible from current index: `False`
-- blocker: `Triton is not importable and pip index found no matching package among triton, triton-cpu, and triton-nightly for this environment.`
+- blocker: `None`
 
 ## Pip Index Results
 
@@ -34,4 +37,4 @@
 
 ## Interpretation
 
-Mac-local Phase 4 Triton interpreter tests should skip; do not add more kernels or claim performance until a native NVIDIA handoff environment is available. Triton is not importable and pip index found no matching package among triton, triton-cpu, and triton-nightly for this environment.
+Local runtime preflight passed for correctness work on mps.

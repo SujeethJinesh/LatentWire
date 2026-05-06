@@ -66,7 +66,7 @@ Non-claims:
 | Trace-level frozen split repeat | Alive but bounded | Across 3 whole-trace held-out splits on 48 traces, all splits remain positive; mean improvement is +0.0379 +/- 0.0014, min split +0.0367, but head win rate is only 0.278 +/- 0.016. |
 | Held-out/cross-family repeat | Alive but bounded | On a measured 48-trace, three-seed gate, per-model rank-2 predictors beat position-only on distilgpt2 by +0.0306 +/- 0.0023 output rel-L2 and on facebook/opt-125m by +0.0788 +/- 0.0069. This is not cross-model predictor transfer, GPU speed evidence, or end-to-end quality evidence. |
 | Cross-family length stability | Alive but bounded | On 48 traces, lengths 64/96, and three whole-trace split seeds, all four GPT2/OPT model-length rows stay positive; mean output rel-L2 improvement is +0.0535 +/- 0.0262 and the minimum row is +0.0301. This is still Mac-local attention-output drift evidence only. |
-| Triton interpreter readiness | Blocked locally | `TRITON_INTERPRET=1` readiness reports `triton` is not importable in `./venv_arm64`; no interpreter correctness pass yet. |
+| Triton interpreter readiness | Passed locally | `TRITON_INTERPRET=1` with the repo-local `triton-cpu` source install passes the approximate-attention interpreter tests; this is kernel logic only, not GPU speed evidence. |
 
 ## Reviewer-Risk Notes
 

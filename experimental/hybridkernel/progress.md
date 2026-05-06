@@ -3,11 +3,11 @@
 ## Status
 
 - Current phase: Phase 2 architecture map and runtime boundary audit complete;
-  Phase 3/4 scaffolds present but not phase-complete
+  Phase 4 Triton-interpreter correctness now passes locally
 - Phase 0: partial Mac setup complete for audit
 - Phase 1: quick source-backed audit complete, deeper code audit still pending
-- Phase 3/4: interpreter-mode boundary kernel scaffold added for correctness
-  gates, but not phase-complete
+- Phase 3/4: interpreter-mode boundary kernel correctness gate passes under
+  `TRITON_INTERPRET=1`
 - Last updated: 2026-05-06
 
 This scaffold now has a local environment check, small public config fetches,
@@ -25,12 +25,13 @@ performed.
 - [x] Fetch or document model configs without downloading full weights
 - [x] Write `phase0/setup_complete.md`
 
-Phase 0 remains partial because the requirements stack is not installed and
-some target configs are gated or unavailable at the public paths tried. The
-Triton dependency is now explicitly blocked in the Mac ARM64 `./venv_arm64`
-surface because `triton`, `triton-cpu`, and `triton-nightly` have no matching
-pip-index distributions. Phase 0 is complete enough for source audit,
-Granite-only architecture mapping, and native handoff preparation.
+Phase 0 remains partial because the per-project requirements stack is not
+installed and some target configs are gated or unavailable at the public paths
+tried. The package-index Triton route is still unavailable on this Mac ARM64
+`./venv_arm64` surface, but the experimental `triton-cpu` repository now builds
+from source in the repo-local venv. Phase 0 is complete enough for source audit,
+Granite-only architecture mapping, native handoff preparation, and Mac-local
+Triton interpreter correctness checks.
 
 ## Phase 1 Checklist
 
@@ -67,10 +68,10 @@ Run locally:
 TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/hybridkernel/phase4/tests -rs
 ```
 
-Current Mac status: CPU reference test passes. Triton interpreter tests are
-collected but skip because `triton` is not installable/importable in
-`./venv_arm64` on this machine. This is a correctness scaffold, not a GPU
-performance result and not COLM_v3 evidence.
+Current Mac status: CPU reference and Triton interpreter tests pass under the
+repo-local `triton-cpu` source install with `TRITON_INTERPRET=1` and
+`TRITON_CPU_BACKEND=1`. This is kernel-logic correctness evidence only, not a
+GPU performance result and not COLM_v3 evidence.
 
 ## Viability Notes
 
@@ -185,9 +186,9 @@ decision surface. The next work must produce a native packet that passes
 
 ## 2026-05-05 Local Validation Rerun
 
-Ran the project-owned Phase 2/3/4 tests in `./venv_arm64`: 11 passed and 2
-Triton interpreter tests skipped because `triton` is not importable in the
-Mac-local venv. Reran the pre-GPU threshold model; Granite 4.0 H Tiny/Small
+At that time, the project-owned Phase 2/3/4 tests in `./venv_arm64` reported
+11 passed and 2 Triton interpreter dependency skips because `triton` was not
+importable in the Mac-local venv. Reran the pre-GPU threshold model; Granite 4.0 H Tiny/Small
 still require roughly 25% genuinely avoidable boundary traffic at 60% recovery,
 and Qwen3-Next still requires 10.4%. This confirms the current decision: no more
 Mac implementation, only native profiler preparation.
@@ -229,7 +230,7 @@ at `phase0/local_preflight.json` and `phase0/local_preflight.md`. The preflight
 uses `./venv_arm64` and only queries the active environment/index; it does not
 install packages.
 
-Current local readout:
+Original local readout before the later source build:
 
 - PyTorch `2.6.0` imports in `./venv_arm64`.
 - CUDA is unavailable (`cuda_available=false`, `cuda_device_count=0`).
@@ -238,8 +239,27 @@ Current local readout:
 - `pip index versions triton`, `triton-cpu`, and `triton-nightly` all return no
   matching distributions from this Mac ARM64 environment.
 
-Decision: **BLOCKED_TRITON_UNAVAILABLE** for local Phase 4 completion. The
-Phase 4 interpreter tests should continue to skip on this machine. This is a
-dependency/handoff blocker, not performance evidence. The next exact gate
-remains a user-operated NVIDIA/vLLM packet that passes the native artifact
-checker and the 3% profiler-analysis gate.
+Decision at that moment: **BLOCKED_TRITON_UNAVAILABLE** for local Phase 4
+completion. This was a package-index blocker, not performance evidence.
+
+## 2026-05-06 Triton CPU Source Install
+
+Checked the official Triton installation documentation and the experimental
+`triton-lang/triton-cpu` repository. PyPI/index installs remain unavailable for
+this Mac arm64 venv, but source installation now works after cloning
+`triton-cpu`, initializing the `third_party/sleef` submodule, using the venv
+`ninja`/`cmake`, and setting `SSL_CERT_FILE`/`REQUESTS_CA_BUNDLE` to the venv
+certifi bundle.
+
+Local readout:
+
+- installed package: `triton==3.7.0+git270e696d`
+- source revision: `triton-cpu` `270e696`, `sleef` submodule `93f04d8`
+- preflight status: `PASS`
+- Phase 4 kernel-correctness suite: `9 passed`
+- owned Phase 0--4 project suite: `103 passed, 2 warnings`
+
+Decision: **LOCAL TRITON INTERPRETER CORRECTNESS UNBLOCKED**. This does not
+change the HybridKernel performance decision: the next exact gate remains a
+user-operated NVIDIA/vLLM packet that passes the native artifact checker and
+the 3% profiler-analysis gate.

@@ -190,13 +190,10 @@ Run locally:
 TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/sinkaware/phase4/tests -rs
 ```
 
-Current Mac status: CPU reference test passes. Triton interpreter execution
-tests are collected but skip because `triton` is not importable in
-`./venv_arm64` on this machine. The scaffold now also has a non-skipped
-readiness test that reports `ready=false`, `reason="triton is not importable"`,
-`TRITON_INTERPRET=1`, and `torch_cuda_available=false`. The scaffold checks
-exact softmax composition for synthetic scalar values only; it does not yet
-prove a full attention kernel or a GPU systems win.
+Current Mac status: CPU reference and Triton interpreter execution tests pass
+under the repo-local `triton-cpu` source install with `TRITON_INTERPRET=1` and
+`TRITON_CPU_BACKEND=1`. The scaffold checks exact softmax composition for
+synthetic scalar values only; it does not prove a GPU systems win.
 
 ## Approximate Attention Reference Gate
 
@@ -219,17 +216,17 @@ Added a Phase 4 Triton-interpreter scaffold for the live approximate operator:
 - tests: `phase4/tests/test_approx_sink_attention_triton_interpret.py`
 - note: `phase4/approx_sink_attention_triton_gate.md`
 
-The current `./venv_arm64` does not have `triton`, so the tests use
-`pytest.importorskip("triton")` and skip locally. The correctness contract is
-now ready for a Macbook `TRITON_INTERPRET=1` run once Triton is installed in the
-repo-local venv; native GPU timing should still wait until that interpreter
-gate passes.
+The tests now execute locally in interpreter mode under the repo-local
+`triton-cpu` source install. This closes the Macbook correctness dependency
+gate for the approximate operator. Native GPU timing should still wait for a
+separate CUDA/NVIDIA run because interpreter success is not throughput, HBM, or
+kernel scheduling evidence.
 
 ## 2026-05-05 Local Validation Rerun
 
-Ran the project-owned Phase 2/3/4 tests in `./venv_arm64`: 16 passed and 4
-Triton interpreter tests skipped because `triton` is not importable in the
-Mac-local venv. Reran the head-selective rank-2 gate; it reproduced the
+At that time, the project-owned Phase 2/3/4 tests in `./venv_arm64` reported
+16 passed and 4 Triton interpreter dependency skips because `triton` was not
+importable in the Mac-local venv. Reran the head-selective rank-2 gate; it reproduced the
 weakened decision with 19/72 selected heads and held-out output rel-L2 `0.2035`,
 worse than position-only (`0.1724`) and all-rank2 (`0.1419`). The next useful
 pre-GPU improvement is not another simple validation head selector; it is a
@@ -241,7 +238,7 @@ mechanism.
 Added and ran the trace-level frozen split gate in `./venv_arm64`. Targeted
 tests for split stability, length/sink sweep, and trace-level frozen splits
 passed (`9 passed`). The full SinkAware Phase 2/3/4 suite also passed locally
-with Triton skips (`25 passed, 4 skipped`; `triton` is not importable). The
+at that time with Triton dependency skips (`25 passed, 4 skipped`). The
 trace-level gate initially produced
 `phase2/rank2_trace_frozen_split_gate.md` and `.json` with 24 traces and status
 **ALIVE but bounded**: all-head rank-2 beat position-only on every held-out
@@ -261,10 +258,11 @@ claim.
 
 ## 2026-05-06 Triton Recheck and Cross-Family Smoke Fallback
 
-Rechecked `./venv_arm64` directly with `importlib.util.find_spec("triton")`
-and `import triton`; Triton is still not importable
-(`ModuleNotFoundError: No module named 'triton'`). Because the interpreter gate
-is blocked locally, added and ran `phase2/rank2_cross_model_falsification_gate.py`
+Before the later source build, rechecked `./venv_arm64` directly with
+`importlib.util.find_spec("triton")` and `import triton`; Triton was still not
+importable (`ModuleNotFoundError: No module named 'triton'`). Because the
+interpreter gate was blocked locally, added and ran
+`phase2/rank2_cross_model_falsification_gate.py`
 with `--model-names distilgpt2 facebook/opt-125m --max-traces 12 --max-length
 64 --sink-tokens 4 --train-fraction 0.67 --seeds 0`.
 
@@ -337,9 +335,9 @@ seeds:
 
 Decision: the prior 24-trace repeated cross-family row is strengthened to a
 48-trace repeat without changing the claim boundary. SinkAware remains below
-ICLR readiness because there is still no Triton interpreter pass, no native GPU
-timing, no downstream quality benchmark, and no cross-model predictor transfer
-result. Focused validation after the run passed:
+ICLR readiness because there is still no native GPU timing, no downstream
+quality benchmark, and no cross-model predictor transfer result. Focused
+validation after the run passed:
 `./venv_arm64/bin/python -m pytest experimental/sinkaware/phase2/tests/test_rank2_cross_model_falsification_gate.py experimental/sinkaware/phase2/tests/test_rank2_trace_frozen_split_gate.py experimental/sinkaware/phase3/tests/test_approx_sink_attention_reference.py`
 (`10 passed`, 2 warnings).
 
@@ -368,3 +366,26 @@ positive row survives the stronger length axis without touching Triton. It
 still does not close the paper blocker: SinkAware needs a downstream quality
 control or a runnable interpreter/native path before any paper-grade positive
 method claim.
+
+## 2026-05-06 Triton CPU Interpreter Gate
+
+Checked the official Triton source-install guidance and the experimental
+`triton-lang/triton-cpu` repository. A repo-local source build now installs
+`triton==3.7.0+git270e696d` into `./venv_arm64` from `triton-cpu` revision
+`270e696` with `third_party/sleef` at `93f04d8`.
+
+Validated with:
+
+```bash
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest experimental/sinkaware/phase4/tests -rs
+```
+
+Result: SinkAware Phase 4 interpreter tests pass (`5 passed` as part of the
+`9 passed` cross-project Phase 4 suite). The owned Phase 0--4 project suite
+also passes (`103 passed, 2 warnings`).
+
+Decision: **Triton interpreter correctness is no longer the blocking pre-GPU
+gate**. SinkAware is still only bounded and pre-submission because it lacks
+downstream quality controls, predictor transfer, and native GPU speed/memory
+evidence.

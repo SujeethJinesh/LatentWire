@@ -28,10 +28,18 @@ def _import_status(module_name: str) -> dict[str, Any]:
     try:
         module = __import__(module_name)
     except Exception as exc:  # pragma: no cover - environment-specific
-        return {"importable": False, "version": None, "error": repr(exc)}
+        return {
+            "importable": False,
+            "version": None,
+            "origin": spec.origin,
+            "module_file": None,
+            "error": repr(exc),
+        }
     return {
         "importable": True,
         "version": getattr(module, "__version__", None),
+        "origin": spec.origin,
+        "module_file": getattr(module, "__file__", None),
         "error": None,
     }
 
@@ -105,10 +113,8 @@ def collect_preflight(
         ]
 
     any_triton_candidate_available = any(row["available"] for row in pip_index)
-    if triton_import["importable"]:
-        triton_install_possible: bool | None = True
-    elif check_pip_index:
-        triton_install_possible = any_triton_candidate_available
+    if check_pip_index:
+        triton_install_possible: bool | None = any_triton_candidate_available
     else:
         triton_install_possible = None
     triton_blocker = None
@@ -140,6 +146,7 @@ def collect_preflight(
         "torch": torch,
         "triton": {
             "import": triton_import,
+            "usable_in_current_env": triton_import["importable"],
             "pip_index_checked": check_pip_index,
             "pip_index": pip_index,
             "install_possible_from_current_index": triton_install_possible,
@@ -205,6 +212,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
         f"- importable: `{triton['import']['importable']}`",
         f"- version: `{triton['import'].get('version')}`",
+        f"- origin: `{triton['import'].get('origin')}`",
+        f"- module file: `{triton['import'].get('module_file')}`",
+        f"- usable in current env: `{triton['usable_in_current_env']}`",
         f"- pip index checked: `{triton['pip_index_checked']}`",
         f"- install possible from current index: `{triton['install_possible_from_current_index']}`",
         f"- blocker: `{triton['blocker']}`",

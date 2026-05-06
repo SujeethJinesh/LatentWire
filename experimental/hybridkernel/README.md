@@ -17,11 +17,13 @@ data exists.
 
 The current Mac ARM64 preflight is recorded in
 `phase0/local_preflight.json` and `phase0/local_preflight.md`: PyTorch is
-available with MPS, CUDA is unavailable, Triton is not importable, and
-`pip index versions` finds no matching distributions for `triton`,
-`triton-cpu`, or `triton-nightly` in `./venv_arm64`. This blocks local Phase 4
-Triton completion and should be treated as an explicit dependency gate, not a
-kernel result.
+available with MPS, CUDA is unavailable, and `triton==3.7.0+git270e696d` is
+importable from a repo-local `triton-cpu` source build. `pip index versions`
+still finds no matching wheel distributions for `triton`, `triton-cpu`, or
+`triton-nightly` in `./venv_arm64`; the working path is the source-install
+readout in `../triton_cpu_source_install_20260506.md`. Local Phase 4 Triton
+interpreter correctness is unblocked, but this is not a kernel-performance
+result.
 
 The next exact gate is a user-operated NVIDIA/vLLM packet that passes
 `phase2/check_profiler_run_artifacts.py` and is then reduced by

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "created_utc": "2026-05-06T04:11:46.450851+00:00",
-  "status": "BLOCKED_TRITON_UNAVAILABLE",
+  "created_utc": "2026-05-06T05:09:17.013763+00:00",
+  "status": "PASS",
   "platform": {
     "system": "Darwin",
     "machine": "arm64",
@@ -12,6 +12,8 @@
   "torch": {
     "importable": true,
     "version": "2.6.0",
+    "origin": "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/lib/python3.11/site-packages/torch/__init__.py",
+    "module_file": "/Users/sujeethjinesh/Desktop/LatentWire/venv_arm64/lib/python3.11/site-packages/torch/__init__.py",
     "error": null,
     "cuda_version": null,
     "cuda_available": false,
@@ -21,10 +23,13 @@
   },
   "triton": {
     "import": {
-      "importable": false,
-      "version": null,
-      "error": "module not found"
+      "importable": true,
+      "version": "3.7.0",
+      "origin": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/triton-cpu-src/python/triton/__init__.py",
+      "module_file": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/triton-cpu-src/python/triton/__init__.py",
+      "error": null
     },
+    "usable_in_current_env": true,
     "pip_index_checked": true,
     "pip_index": [
       {
@@ -77,7 +82,7 @@
       }
     ],
     "install_possible_from_current_index": false,
-    "blocker": "Triton is not importable and pip index found no matching package among triton, triton-cpu, and triton-nightly for this environment."
+    "blocker": null
   },
-  "interpretation": "Mac-local Phase 4 Triton interpreter tests should skip; do not add more kernels or claim performance until a native NVIDIA handoff environment is available. Triton is not importable and pip index found no matching package among triton, triton-cpu, and triton-nightly for this environment."
+  "interpretation": "Local runtime preflight passed for correctness work on mps."
 }

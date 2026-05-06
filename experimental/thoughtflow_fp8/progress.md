@@ -253,11 +253,11 @@ Run locally:
 TRITON_INTERPRET=1 ./venv_arm64/bin/python -m pytest experimental/thoughtflow_fp8/phase4/tests -rs
 ```
 
-Current Mac status: CPU reference test passes. Triton interpreter tests are
-collected but skip because `triton` is not installable/importable in
-`./venv_arm64` on this machine. This does not change the branch decision:
-ThoughtFlow-FP8 still needs the Phase 2 trace/telemetry simulation before any
-reviewer pack or GPU work.
+Current Mac status: CPU reference and Triton interpreter tests pass under the
+repo-local `triton-cpu` source install with `TRITON_INTERPRET=1` and
+`TRITON_CPU_BACKEND=1`. This validates the anchor/phase retention and int8
+quantization kernel logic against the CPU reference only; it is not CUDA, FP8,
+latency, throughput, or Blackwell evidence.
 
 ## Log
 
@@ -318,3 +318,8 @@ reviewer pack or GPU work.
   weakened/not reproduced as a strict positive-method gate. `rdu_topk` still
   beats R-KV-like and ThinKV-like with paired CIs below zero, but the stopped
   same-family sparse row beats it by 0.006 NLL, so same-family separation fails.
+- 2026-05-06: Installed the experimental `triton-cpu` backend from source into
+  `./venv_arm64` and ran the Phase 4 interpreter gate. ThoughtFlow-FP8 Phase 4
+  tests pass under `TRITON_INTERPRET=1`; the full owned Phase 0--4 side-project
+  suite passes (`103 passed, 2 warnings`). This closes Mac kernel-correctness
+  blocking, but the branch is still weakened by the alternate-surface result.

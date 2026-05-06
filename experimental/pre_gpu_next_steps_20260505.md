@@ -31,12 +31,18 @@ Current local gate result:
 - The checker also rejects tiny or placeholder Nsight artifacts by default, so
   synthetic fixtures are schema-only unless native artifact validation is
   explicitly disabled.
-- A local preflight artifact now records the attempted Triton unblock:
-  Torch `2.6.0` imports, CUDA is unavailable, MPS is available, and PyPI/index
-  checks for `triton`, `triton-cpu`, and `triton-nightly` report no compatible
-  distribution for this macOS arm64 `venv_arm64`.
+- A local preflight artifact now records the Triton state:
+  Torch `2.6.0` imports, CUDA is unavailable, MPS is available, PyPI/index
+  checks for `triton`, `triton-cpu`, and `triton-nightly` still report no
+  compatible distribution for this macOS arm64 `venv_arm64`, but the
+  experimental `triton-cpu` source build is importable as
+  `triton==3.7.0+git270e696d`.
+- The HybridKernel Phase 4 interpreter tests pass locally under
+  `TRITON_INTERPRET=1`; this is correctness evidence only, not a reason to add
+  more Mac kernels.
 
-Decision: no more Mac kernel implementation. Move only to profiler preparation.
+Decision: no more Mac kernel implementation. Move only to profiler preparation
+and native evidence collection.
 
 ## SinkAware
 
@@ -69,8 +75,8 @@ Current local gate result:
 
 Latest local gates:
 
-- Triton is still unavailable in `./venv_arm64`, so the fallback was a
-  held-out/model-family gate.
+- Before the source build, Triton was unavailable in `./venv_arm64`, so the
+  fallback was a held-out/model-family gate.
 - The earlier 12-trace smoke has now been scaled through 24 traces to 48 traces
   and split seeds `0,1,2`.
 - Rank-2 remained positive on `distilgpt2` (`+0.0306 +/- 0.0023` output rel-L2
@@ -79,6 +85,9 @@ Latest local gates:
   `+0.0306`.
 - This fits predictors separately per model; it is not cross-model predictor
   transfer and not promotion evidence.
+- The Phase 4 approximate attention and sink-decomposition interpreter tests
+  now pass locally under the `triton-cpu` source install. This removes the
+  Mac correctness blocker but does not add downstream quality or speed evidence.
 - A cross-family length-stability gate at max lengths `64` and `96` kept all
   four model/length rows positive, with aggregate output rel-L2 improvement
   `+0.0535 +/- 0.0262`, minimum model/length row `+0.0301`, and head win rate
@@ -86,8 +95,7 @@ Latest local gates:
 
 Decision: continue only as approximate low-rank SinkAware. The next pre-GPU
 gate is a downstream quality/control diagnostic under the same GPT2/OPT
-separation, or Triton-interpreter correctness if a compatible Triton
-environment becomes available.
+separation, followed by native timing only if quality remains bounded.
 
 ## ThoughtFlow-FP8
 
@@ -131,6 +139,10 @@ Current local gate result:
   `continuation_tokens=32`) weakens the strict claim: `rdu_topk` still beats
   R-KV-like (`+0.087` NLL margin) and ThinKV-like (`+0.256`), but a stopped
   same-family sparse row is better by `0.006` NLL (`3.588` versus `3.594`).
+- The Phase 4 anchor/phase quantization interpreter tests now pass locally
+  under the `triton-cpu` source install. This validates kernel logic for the
+  quantization scaffold only; it does not rescue the weakened sparse-cache
+  method claim.
 
 Decision: do not tune anchor/recent/phase/math weights further on the current
 saved traces. The live branch is recurrence-distance utility, but it is

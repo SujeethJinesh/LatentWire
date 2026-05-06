@@ -32,7 +32,7 @@ claim.
 | trace-level frozen split gate | 48 traces, 3 whole-trace splits; mean improvement +0.0379 +/- 0.0014; min split +0.0367 | stronger repeatability, still bounded |
 | held-out/cross-family repeat | measured 48 traces, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; output rel-L2 improvements +0.0306 +/- 0.0023 and +0.0788 +/- 0.0069 | alive but bounded; not predictor transfer, GPU speed, or end-to-end quality evidence |
 | cross-family length stability | measured 48 traces, lengths 64/96, 3 whole-trace split seeds, distilgpt2 plus facebook/opt-125m; all 4 model/length rows positive; mean output rel-L2 improvement +0.0535 +/- 0.0262; min row +0.0301 | alive but bounded; stronger Mac-local stability, still no downstream or speed claim |
-| Triton readiness | `TRITON_INTERPRET=1` set, `triton` not importable, CUDA unavailable on Mac | no interpreter pass yet |
+| Triton readiness | `TRITON_INTERPRET=1`, repo-local `triton-cpu` source install, CUDA unavailable on Mac | interpreter correctness passes; no GPU claim |
 
 ## Reviewer Risks
 
@@ -48,11 +48,11 @@ claim.
 
 ## Next Experiment
 
-First make the `TRITON_INTERPRET=1` approximate-attention scaffold runnable in
-`./venv_arm64` or in a Linux GPU environment and verify exact-prediction
-correctness. If that remains blocked locally, the next Mac-feasible gate is a
-downstream quality/control diagnostic that preserves strict same-family versus
-OPT-family separation and compares exact attention, position-only replacement,
-and rank-2 replacement. Simple validation head selection is no longer a good
-rescue. Native NVIDIA comparison remains gated by
+The `TRITON_INTERPRET=1` approximate-attention scaffold now runs in
+`./venv_arm64` through the local `triton-cpu` source build and verifies
+exact-prediction correctness. The next Mac-feasible gate is a downstream
+quality/control diagnostic that preserves strict same-family versus OPT-family
+separation and compares exact attention, position-only replacement, and rank-2
+replacement. Simple validation head selection is no longer a good rescue.
+Native NVIDIA comparison remains gated by
 `experimental/sinkaware/phase2/gpu_gate_runbook.md`.

@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens the broad novelty claim because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. We therefore do not claim a kernel speedup. The contribution is a reproducible profiler gate, a fixed-request vLLM driver, a native packet skeleton generator, a pre-registered profiler-analysis parser, and an artifact-completeness verifier that rejects client-only traces, unfilled skeletons, and stale analysis before any native result can be cited.
+Hybrid attention/state-space language models invite a systems question: do attention-to-SSM layer boundaries create avoidable conversion, materialization, launch, or locality overhead that a fused boundary operator could remove? We report a Mac-feasible pre-GPU gate for this question. Architecture maps show large boundary-crossing activation streams, but a runtime audit weakens the broad novelty claim because current vLLM hybrid SSM support already handles important state-layout and transfer paths. A threshold model says Granite 4.0 H needs roughly 25\% genuinely avoidable boundary traffic at 60\% recovery to clear a 3\% proxy gain; Qwen3-Next needs 10.4\% but is less directly matched to the Granite Mamba2 hypothesis. We therefore do not claim a kernel speedup. The contribution is a reproducible profiler gate, a fixed-request vLLM driver, a native packet skeleton generator, a pre-registered profiler-analysis parser, an artifact-completeness verifier, and a Mac-local Triton interpreter correctness check for the boundary primitive.
 \end{abstract}
 
 \section{Hypothesis}
@@ -37,6 +37,7 @@ Artifact verifier & Native run directories are checked for metadata, server-side
 Packet generator & A local script creates the required native run-packet skeleton with TODO sentinels. & GPU operators get a consistent handoff; skeletons are rejected as evidence until filled. \\
 Synthetic packet fixture & A Mac-local fixture documents the packet shape and exercises the checker with placeholder Nsight files. & Fixture is not profiler evidence. \\
 Packet checklist & The native handoff now has a single required packet layout and stop-local-work decision. & Local readiness is saturated until GPU data exists. \\
+Triton interpreter & The boundary primitive passes its Phase 4 interpreter tests under the repo-local \texttt{triton-cpu} source install. & Kernel logic only; not CUDA or speed evidence. \\
 \bottomrule
 \end{tabular}
 \caption{HybridKernel evidence before native GPU profiling.}
@@ -55,7 +56,7 @@ If repeated native summaries show less than 1\% recoverable gain, the branch sho
 
 \section{Claim Boundary}
 
-Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with a runnable native measurement plan. Not allowed: throughput, latency, HBM, energy, occupancy, or vLLM speedup claims. If native profiling does not reveal separable boundary overhead, the branch should be killed.
+Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with a runnable native measurement plan and Mac-local interpreter correctness for one boundary primitive. Not allowed: throughput, latency, HBM, energy, occupancy, or vLLM speedup claims. If native profiling does not reveal separable boundary overhead, the branch should be killed.
 
 \section{Artifacts}
 
@@ -68,6 +69,7 @@ Allowed now: HybridKernel is a weakly alive profiler-driven systems branch with 
 \item \url{experimental/hybridkernel/phase2/native_run_packet_checklist.md}
 \item \url{experimental/hybridkernel/phase2/profiler_analysis_gate.md}
 \item \url{experimental/hybridkernel/phase2/pre_gpu_threshold_model.md}
+\item \url{experimental/triton_cpu_source_install_20260506.md}
 \item \url{experimental/hybridkernel/paper/colm_workshop_scaffold.md}
 \end{itemize}
 
