@@ -562,3 +562,31 @@ Decision: no further Mac/Triton improvement remains before native GPU timing.
 The remaining blocker is native GPU latency/HBM plus benchmark-quality
 downstream evidence; additional local loops would mostly churn the same bounded
 diagnostics.
+
+## 2026-05-06 Native GPU Packet Validator
+
+Added a Mac-local admissibility checker for future SinkAware native GPU packets:
+
+- checker: `phase2/check_native_gpu_packet.py`
+- tests: `phase2/tests/test_check_native_gpu_packet.py`
+
+The checker validates required runbook artifacts (`metadata.json`,
+`quality_drift.csv`, `quality_drift_by_head.csv`, `latency.csv`,
+`ncu_summary.csv`, and `decision.md`), rejects placeholder packet files, checks
+all four canonical rows, requires three distinct latency `run_id` values per
+row, and rejects non-native metadata or non-numeric metric cells.
+
+Validated with:
+
+```bash
+./venv_arm64/bin/python -m pytest \
+  experimental/sinkaware/phase2/tests/test_check_native_gpu_packet.py -q
+```
+
+Result: `7 passed`.
+
+Decision: this is a useful final Mac-side improvement because it prevents
+missing or partial native timing/quality/NCU packets from being cited. It does
+not create GPU evidence or change the method claim. The remaining gate is still
+a native NVIDIA packet that passes the validator and then clears the runbook's
+speed/memory plus quality criteria.

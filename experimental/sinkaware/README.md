@@ -64,3 +64,8 @@ Phase 4 Macbook kernel work must run through the Triton interpreter with
 `TRITON_INTERPRET=1`, `TRITON_CPU_BACKEND=1`, and a repo-local `TRITON_HOME`
 against a CPU reference. Interpreter-mode correctness is not GPU performance
 evidence, and native speed claims require NVIDIA hardware.
+
+Future native GPU packets must pass
+`phase2/check_native_gpu_packet.py` before the paper cites latency, HBM, or
+quality numbers. The checker is an artifact-completeness guard only; it is not
+performance evidence.

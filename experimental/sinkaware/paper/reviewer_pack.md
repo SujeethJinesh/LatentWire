@@ -37,6 +37,7 @@ claim.
 | downstream length/sink sweep | lengths 64/96 and sink counts 2/4; all four config rows positive with minimum model loss improvement >= +0.0272 | stronger Mac-local quality-control surface; still no benchmark or speed claim |
 | larger downstream repeats | 48 traces, sink counts 2/4, lengths 64/96, split seeds 0/1/2; exact replacement remains no-op; rank-2 beats position-only by loss and KL on distilgpt2 and OPT-125M; min model loss improvement is +0.0263 at sink2/length64 and remains positive in all larger rows | Mac-local downstream control surface saturated; native timing is next |
 | downstream rank frontier | 48 traces, length 96, sink 4, ranks 1/2/4/8; abs loss deltas 0.137/0.096/0.062/0.044 and top-1 disagreement 0.143/0.125/0.095/0.080 improve monotonically, but rank4/rank8 exceed exact four-sink QK multiply-add cost | rank2 remains the only live systems compromise |
+| native packet validator | `check_native_gpu_packet.py` validates returned native packet metadata, quality drift, per-head drift, latency repeats, NCU summary, and decision file | Mac-side admissibility guard only; not performance evidence |
 
 ## Reviewer Risks
 
@@ -61,4 +62,6 @@ row with exact replacement as a no-op control. The 48-trace downstream rank
 frontier also explains why not to promote rank4/rank8 before GPU timing: they
 improve quality but lose the simple multiply-add wedge. This saturates the
 useful Mac-local downstream-control work for the current branch. Native NVIDIA
-comparison remains gated by `experimental/sinkaware/phase2/gpu_gate_runbook.md`.
+comparison remains gated by `experimental/sinkaware/phase2/gpu_gate_runbook.md`;
+returned packets must pass `experimental/sinkaware/phase2/check_native_gpu_packet.py`
+before any paper claim can cite native timing or HBM numbers.

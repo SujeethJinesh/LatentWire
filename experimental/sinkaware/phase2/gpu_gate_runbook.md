@@ -65,6 +65,39 @@ if position-only is indistinguishable.
   tensor/core utilization where available.
 - `decision.md`: promote/kill decision with the exact threshold.
 
+## Packet Validator
+
+Before citing any native numbers in the paper, run the Mac-local packet
+validator on the returned directory:
+
+```bash
+./venv_arm64/bin/python experimental/sinkaware/phase2/check_native_gpu_packet.py \
+  --run-dir "$SINKAWARE_GPU_PACKET" \
+  | tee "$SINKAWARE_GPU_PACKET/artifact_check.json"
+```
+
+A `PASS` only means the packet is complete enough for review. It is not a speed,
+HBM, quality, or promotion claim.
+
+The checker rejects:
+
+- missing or empty required artifacts;
+- placeholder/TODO-filled packet files;
+- `metadata.json` that does not identify a native CUDA/NVIDIA environment;
+- missing rows for any runbook row in `quality_drift.csv`,
+  `quality_drift_by_head.csv`, `latency.csv`, or `ncu_summary.csv`;
+- fewer than three distinct `run_id` values per row in `latency.csv`;
+- non-numeric quality, latency, or NCU metric cells;
+- `decision.md` without an explicit promote/kill decision, rank-2 quality
+  threshold, and speed/memory/HBM evidence discussion.
+
+Use these canonical row ids in CSV files:
+
+- `exact_attention`
+- `exact_fixed_sink_decomposition`
+- `rank2_sink_logit_predictor`
+- `position_only_predictor`
+
 ## Current Mac Inputs
 
 - `real_qk_sink_softmax_output_probe.md`
