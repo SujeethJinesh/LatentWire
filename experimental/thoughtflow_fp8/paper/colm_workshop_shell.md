@@ -10,7 +10,8 @@ matched the local LongFlow-like importance proxy, and beat the strongest real
 hidden/KV saliency proxy on phase recall. However, its math-state margin over
 that real-saliency proxy is uncertain, and both retained-context and CPU
 sparse-cache quality evidence has a promising held-out mean row but still fails
-paired uncertainty against ThinKV-like.
+paired uncertainty against ThinKV-like, and the larger frozen no-retuning slice
+weakens the branch.
 
 This shell is a scoped workshop-paper scaffold, not a submission draft. The
 current evidence is useful for deciding the next method gate, but it is not yet
@@ -40,6 +41,7 @@ quality or perplexity, not just on protected-token recall.
 | `phase2/perplexity_impact_proxy.md` | Distilgpt2 retained-context NLL: ThoughtFlow-saliency-recent beats old ThoughtFlow, LongFlow-like, and ThinKV-like, but loses to R-KV-like. | Weakened but more diagnostic. |
 | `phase2/policy_sweep.md` | Train-selected ThoughtFlow-family policy ties R-KV-like on 12 held-out traces, 3.480 vs 3.482 NLL. | Mixed tie-range result. |
 | `phase2/kv_drop_quality_probe.md` | Actual CPU sparse-cache pruning plus a 24-config train-fixed sparse sweep. The selected row has held-out NLL 3.340 vs ThinKV-like 3.385 and R-KV-like 3.420; paired CI still crosses zero vs ThinKV-like. | Mixed/promising, not revived. |
+| `phase2/frozen_sparse_cache_probe.md` | Larger no-retuning CPU sparse-cache slice on 74 traces: ThinKV-like NLL 3.900, frozen sparse ThoughtFlow 3.908, ThoughtFlow-saliency-recent 3.920, R-KV-like 3.939. | Weakened/not revived. |
 
 The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
 
@@ -99,6 +101,21 @@ Interpretation: the best train-fixed sparse policy is now a promising
 falsification candidate, not a positive result. It needs a larger frozen
 sparse-cache slice with no further policy tuning.
 
+The larger frozen slice was then run without any retuning:
+
+| Policy | Traces | NLL | Delta vs R-KV-like | Delta vs ThinKV-like |
+|---|---:|---:|---:|---:|
+| full cache | 74 | 2.848 | -1.091 [-1.254,-0.938] | -1.052 [-1.199,-0.919] |
+| ThinKV-like | 74 | 3.900 | -0.039 [-0.100,+0.015] | 0.000 |
+| frozen sparse ThoughtFlow | 74 | 3.908 | -0.031 [-0.078,+0.020] | +0.008 [-0.060,+0.085] |
+| ThoughtFlow-saliency-recent | 74 | 3.920 | -0.019 [-0.048,+0.006] | +0.020 [-0.030,+0.074] |
+| R-KV-like | 74 | 3.939 | 0.000 | +0.039 [-0.015,+0.099] |
+| LongFlow-like | 74 | 4.158 | +0.219 [+0.136,+0.308] | +0.258 [+0.178,+0.337] |
+
+Interpretation: the small held-out win does not survive the larger frozen
+slice. ThinKV-like is the best compressed row, and neither frozen ThoughtFlow
+candidate clears paired evidence versus both main baselines.
+
 ## What Would Revive The Branch
 
 The branch should be revived only if a bounded next policy clears at least one
@@ -118,11 +135,12 @@ The highest-value method branch is no longer raw phase-marker protection. A
 revival attempt should combine anchor/fair-span protection with a utility signal
 closer to future continuation loss, recurrence, or hidden-state contribution.
 
-Saturated: synthetic marker-retention and text-prefix-only policy tuning. Still
-alive: the fixed `thoughtflow_saliency_recent` incumbent and the train-selected
-`tf_sparse_r0.55_p0.05_m0.12_a2` sparse policy, but only as frozen candidates
-for a larger falsification gate. Promoted: real KV/hidden telemetry and
-sparse-cache scoring as diagnostics to explain failure modes and eviction bias.
+Saturated: synthetic marker-retention, text-prefix-only policy tuning, and the
+current frozen sparse-cache candidates on the available distilgpt2 trace set.
+Still alive: the sparse-cache probe as diagnostic infrastructure, not the
+current policy family as a positive method. Promoted: real KV/hidden telemetry
+and sparse-cache scoring as diagnostics to explain failure modes and eviction
+bias.
 
 ## Limitations
 
@@ -141,12 +159,9 @@ sparse-cache scoring as diagnostics to explain failure modes and eviction bias.
 
 Do not move to a broad GPU benchmark yet. The next exact gate is:
 
-1. Freeze `thoughtflow_saliency_recent` and
-   `tf_sparse_r0.55_p0.05_m0.12_a2`; do not tune more on the current 24 traces.
-2. Score paired continuation NLL or task accuracy on a larger frozen sparse-cache
-   slice under full KV, matched
-   sink+recent, LongFlow-like, R-KV-like, ThinKV-like, and ThoughtFlow-successor
-   policies.
+1. Do not tune further on the current saved traces.
+2. Either stop/pivot the current policy family, or pre-register one genuinely
+   new utility signal and evaluate it once in the frozen sparse-cache probe.
 3. Report paired uncertainty, per-span keep telemetry, recurrence misses, and
    FP8 round-trip error separately.
 4. Promote only if the successor policy beats the strongest proxy on quality at

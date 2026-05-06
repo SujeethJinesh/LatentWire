@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-ThoughtFlow-FP8 tests whether explicit anchor/phase retention plus byte-aware FP8-style budgeting can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality weakens the branch. On 24 distilgpt2 traces at a 0.20 keep fraction, a bounded successor policy, ThoughtFlow-saliency-recent, improves over the original phase-only policy and beats LongFlow-like and ThinKV-like retained-text proxies, but narrowly loses to an R-KV-like proxy on continuation NLL (3.434 vs 3.419). We then ran the closest Mac-local cache-quality gate: prune the actual prefix KV cache on CPU and score the continuation from the sparse cache. ThoughtFlow-saliency-recent is the best compressed row in mean NLL on all 24 traces (3.372 vs 3.389 for ThinKV-like and 3.438 for R-KV-like), but the all-trace margin over ThinKV-like is only 0.017 NLL. A new 24-config train-fixed sparse sweep selects a lighter-anchor policy that clears the held-out mean margin versus ThinKV-like and R-KV-like, but its paired CI still crosses zero versus ThinKV-like. We therefore present this as a mixed workshop gate, not a positive method.
+ThoughtFlow-FP8 tests whether explicit anchor/phase retention plus byte-aware FP8-style budgeting can preserve useful reasoning context better than matched-budget KV-retention proxies. Synthetic traces support the intuition that phase markers and anchors can be protected, but real retained-context quality weakens the branch. On 24 distilgpt2 traces at a 0.20 keep fraction, a bounded successor policy, ThoughtFlow-saliency-recent, improves over the original phase-only policy and beats LongFlow-like and ThinKV-like retained-text proxies, but narrowly loses to an R-KV-like proxy on continuation NLL (3.434 vs 3.419). We then ran CPU sparse-cache gates that prune the actual prefix KV cache and score the continuation from the sparse cache. A 24-config train-fixed sparse sweep finds a small held-out mean win, but the larger 74-trace no-retuning slice weakens the branch: ThinKV-like is the best compressed row (3.900 NLL), followed by frozen sparse ThoughtFlow (3.908), ThoughtFlow-saliency-recent (3.920), and R-KV-like (3.939). We therefore present this as a mixed/negative workshop gate, not a positive method.
 \end{abstract}
 
 \section{Policy Family}
@@ -101,9 +101,17 @@ fixed ThoughtFlow-saliency-recent incumbent has lower held-out mean NLL, 3.304,
 but its paired CIs also cross zero. This is a promising falsification candidate,
 not a positive result.
 
+We then froze \texttt{ThoughtFlow-saliency-recent} and
+\texttt{tf\_sparse\_r0.55\_p0.05\_m0.12\_a2} and ran a larger 74-trace sparse
+cache slice with no retuning. ThinKV-like is the best compressed row at NLL
+3.900. The frozen sparse ThoughtFlow row gets 3.908, with paired delta -0.031
+versus R-KV-like and 95\% CI [-0.078,+0.020], but +0.008 versus ThinKV-like
+with 95\% CI [-0.060,+0.085]. ThoughtFlow-saliency-recent gets 3.920. The
+larger no-retuning gate therefore weakens the branch rather than reviving it.
+
 \section{Decision}
 
-The branch is mixed but not revived as a positive method. ThoughtFlow-saliency-recent repairs most of the phase-only failure and is now the best mean row under actual CPU cache dropping, and the bounded train-fixed sparse sweep finds a held-out mean win. The blocker is uncertainty against ThinKV-like, the strongest non-ThoughtFlow held-out baseline. A paper-ready claim would require the frozen candidates to beat R-KV-like, LongFlow-like, and ThinKV-like rows at matched bytes on a larger sparse-KV slice with paired uncertainty.
+The branch is mixed but not revived as a positive method. ThoughtFlow-saliency-recent repairs most of the phase-only failure, and the bounded train-fixed sparse sweep finds a held-out mean win, but the larger frozen slice does not preserve the advantage over ThinKV-like. A paper-ready claim would require a genuinely new, pre-registered utility signal to beat R-KV-like, LongFlow-like, and ThinKV-like rows at matched bytes under sparse-KV execution with paired uncertainty. Further tuning on the current trace set is not justified.
 
 \section{Artifacts}
 
@@ -112,6 +120,7 @@ The branch is mixed but not revived as a positive method. ThoughtFlow-saliency-r
 \item \url{experimental/thoughtflow_fp8/phase2/policy_sweep.md}
 \item \url{experimental/thoughtflow_fp8/phase2/hidden_saliency_retention_probe.md}
 \item \url{experimental/thoughtflow_fp8/phase2/kv_drop_quality_probe.md}
+\item \url{experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.md}
 \item \url{experimental/thoughtflow_fp8/phase2/real_trace_retention_sweep.md}
 \item \url{experimental/thoughtflow_fp8/paper/colm_workshop_shell.md}
 \end{itemize}

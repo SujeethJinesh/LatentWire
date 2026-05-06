@@ -135,6 +135,23 @@ Still blocking: uncertainty versus ThinKV-like, the strongest non-ThoughtFlow
 held-out baseline. The next exact gate is a larger frozen sparse-cache slice
 with the two train-fixed candidates only, no further policy tuning.
 
+`phase2/frozen_sparse_cache_probe.md` executes that larger no-retuning gate. It
+freezes only `thoughtflow_saliency_recent` and
+`tf_sparse_r0.55_p0.05_m0.12_a2`, then scores 74 saved traces with actual CPU
+cache pruning. This weakens the branch: ThinKV-like is the best compressed row
+with NLL `3.900`, followed by `tf_sparse_r0.55_p0.05_m0.12_a2` at `3.908`,
+`thoughtflow_saliency_recent` at `3.920`, and R-KV-like at `3.939`. The frozen
+sparse candidate's paired delta is `-0.031` versus R-KV-like with 95% CI
+`[-0.078, +0.020]`, but `+0.008` versus ThinKV-like with 95% CI
+`[-0.060, +0.085]`.
+
+Status: **WEAKENED/NOT REVIVED**. Ruled out for now: the small-split
+train-selected sparse policy as a robust positive method on the available
+Mac-local distilgpt2 sparse-cache slice. Still alive only as diagnostic
+infrastructure. The next exact gate is not further policy tuning on these
+traces; it is either a pre-registered new utility signal evaluated once on this
+frozen probe, or a stop/pivot decision for ThoughtFlow-FP8.
+
 ## Macbook Kernel Correctness Scaffold
 
 Added an anchor/phase-protected int8 quantization primitive:
@@ -186,3 +203,6 @@ reviewer pack or GPU work.
   sparse policy clears the held-out mean margin and paired R-KV-like comparison
   but not paired uncertainty versus ThinKV-like. Decision remains mixed/not
   revived; freeze candidates before any larger slice.
+- 2026-05-06: Ran the larger frozen sparse-cache slice with no retuning.
+  ThinKV-like beats both frozen ThoughtFlow candidates in mean NLL on 74 traces.
+  Decision weakens to not revived; do not tune more on this trace set.
