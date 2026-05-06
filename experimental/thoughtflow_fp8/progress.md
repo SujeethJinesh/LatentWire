@@ -14,6 +14,10 @@
 - Current risk: high field crowding; ThinKV already occupies much of the
   thought-adaptive quantization/eviction space, and DeepSeek V4 raises the
   production compressed-attention systems bar.
+- Current pre-registration: `phase2/preregister_recurrence_distance_utility_20260506.md`
+  defines one new recurrence-distance utility signal for a future one-shot
+  frozen sparse-cache evaluation. The frozen probe has not been run for this
+  signal.
 
 ## Deliverables
 
@@ -218,3 +222,6 @@ reviewer pack or GPU work.
 - 2026-05-06: Added the stop/pivot decision artifact. Current policy-family
   tuning is stopped on the available saved traces; any revival must be
   pre-registered as one new utility signal before a single frozen evaluation.
+- 2026-05-06: Added a docs-only pre-registration for `rdu_topk`, a single
+  recurrence-distance utility signal based on delayed prefix self-attention
+  reuse. No code was changed and no frozen probe was run.

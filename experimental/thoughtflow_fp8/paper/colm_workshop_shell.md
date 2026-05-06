@@ -126,6 +126,12 @@ pre-registering one genuinely new utility signal, the exact policy
 transformation, the frozen evaluation command, and the promotion threshold. It
 may then be evaluated once.
 
+`phase2/preregister_recurrence_distance_utility_20260506.md` now registers one
+candidate successor signal, `rdu_topk`, based on delayed recurrence-distance
+prefix self-attention. It is not a result. It only bounds a future one-shot
+frozen sparse-cache evaluation and explicitly forbids adding anchor, recent,
+phase, or math-state bonuses to this signal on the current saved traces.
+
 The branch should be revived only if that pre-registered successor clears at
 least one of these gates:
 

@@ -152,25 +152,25 @@ different stability signal appears.
 
 ## All-Rank2 Trace-Level Frozen Split Gate
 
-`phase2/rank2_trace_frozen_split_gate.md` ran the smallest Mac-feasible
-trace-level repeat: 24 distilgpt2 traces, `max_length=96`, `sink_tokens=4`,
-and three deterministic frozen trace splits. Each split trained on 16 whole
-traces and evaluated on 8 held-out traces, so no text trace appeared in both
+`phase2/rank2_trace_frozen_split_gate.md` now records the larger Mac-feasible
+trace-level repeat: 48 distilgpt2 traces, `max_length=96`, `sink_tokens=4`,
+and three deterministic frozen trace splits. Each split trained on 32 whole
+traces and evaluated on 16 held-out traces, so no text trace appeared in both
 train and held-out sets.
 
 All three splits kept all-head rank-2 positive against position-only. Across
-trace splits, output rel-L2 improvement averaged `+0.0398 +/- 0.0014`;
-sink-mass MAE improvement averaged `+0.0265 +/- 0.0006`; attention-L1
-improvement averaged `+0.0540 +/- 0.0014`; the minimum split improvement was
-`+0.0387`.
+trace splits, output rel-L2 improvement averaged `+0.0379 +/- 0.0014`;
+sink-mass MAE improvement averaged `+0.0220 +/- 0.0008`; attention-L1
+improvement averaged `+0.0461 +/- 0.0014`; the minimum split improvement was
+`+0.0367`.
 
 Decision: all-head rank-2 is **alive but still bounded** after the trace-level
-frozen repeat. This strengthens repeatability over the previous token-split
-gate, but it remains Mac-local attention-output drift evidence. The layer-head
-output win rate is still low at `0.287 +/- 0.018`, so no paper should claim
-per-head robustness or downstream quality yet. The next exact gate is a larger
-frozen trace slice or the Triton interpreter correctness gate for the approximate
-operator before any native NVIDIA timing claim.
+frozen repeat. This strengthens repeatability over the prior 24-trace
+whole-trace gate, but it remains Mac-local attention-output drift evidence.
+The layer-head output win rate is still low at `0.278 +/- 0.016`, so no paper
+should claim per-head robustness or downstream quality yet. The next exact gate
+is the Triton interpreter correctness gate for the approximate operator or a
+strict cross-family falsification pair before any native NVIDIA timing claim.
 
 ## Macbook Kernel Correctness Scaffold
 
@@ -239,8 +239,20 @@ mechanism.
 Added and ran the trace-level frozen split gate in `./venv_arm64`. Targeted
 tests for split stability, length/sink sweep, and trace-level frozen splits
 passed (`9 passed`). The full SinkAware Phase 2/3/4 suite also passed locally
-with Triton skips (`25 passed, 4 skipped`; `triton` is not importable). The new
-trace-level gate produced
-`phase2/rank2_trace_frozen_split_gate.md` and `.json` with status
+with Triton skips (`25 passed, 4 skipped`; `triton` is not importable). The
+trace-level gate initially produced
+`phase2/rank2_trace_frozen_split_gate.md` and `.json` with 24 traces and status
 **ALIVE but bounded**: all-head rank-2 beat position-only on every held-out
 trace split, but the per-head caveat remained.
+
+## 2026-05-06 Larger Frozen Trace Slice
+
+Reran `phase2/rank2_trace_frozen_split_gate.py` in `./venv_arm64` with
+`--max-traces 48 --max-length 96 --sink-tokens 4 --train-fraction 0.67 --seeds
+0 1 2`. The larger frozen slice keeps the branch **ALIVE but bounded**: all
+three whole-trace splits are positive, with output rel-L2 improvement
+`+0.0379 +/- 0.0014`, minimum split `+0.0367`, sink-mass MAE improvement
+`+0.0220 +/- 0.0008`, and attention-L1 improvement `+0.0461 +/- 0.0014`.
+The head win rate remains low at `0.278 +/- 0.016`, so the stronger slice
+supports aggregate repeatability but does not revive any per-head robustness
+claim.

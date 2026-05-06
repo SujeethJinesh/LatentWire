@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. A layer-head paired analysis weakens the claim: rank-2 improves output relative L2 by only $0.0297 \pm 0.0378$ across 72 layer-head cells and wins 20/72 cells. A validation-selected head gate also fails: selecting 19/72 heads on validation raises held-out output relative L2 to 0.204 versus 0.172 for position-only and 0.142 for all-rank2. Split/seed and length/sink sweeps partly revive the all-head row: across four configurations with max lengths 64/96, sink counts 2/4, and three split seeds each, all-rank2 beats position-only by $0.0366 \pm 0.0024$ output relative L2, with minimum configuration improvement $0.0342$. A trace-level frozen split repeat on 24 traces strengthens repeatability: all three whole-trace held-out splits are positive, with mean output relative-L2 improvement $0.0398 \pm 0.0014$ and minimum split improvement $0.0387$. The layer-head win rate remains only $0.287 \pm 0.018$. This is not an end-to-end quality or GPU speed result. It is a bounded correctness and repeatability gate for deciding whether approximate sink prediction is worth implementing.
+Attention sinks are fixed early tokens that often receive substantial attention. A tempting systems idea is to precompute or reuse their contribution. We show that exact static reuse is invalid under standard softmax attention because fixed sink-token logits remain query-dependent. We therefore test a narrower approximation: per-head low-rank predictors for fixed sink logits while keeping all non-sink scores exact. On Mac-local distilgpt2 traces, rank-2 prediction reduces aggregate held-out attention-output relative L2 error to 0.141 versus 0.170 for a position-only predictor, while the cost model estimates 0.531x exact four-sink QK multiply-adds. A layer-head paired analysis weakens the claim: rank-2 improves output relative L2 by only $0.0297 \pm 0.0378$ across 72 layer-head cells and wins 20/72 cells. A validation-selected head gate also fails: selecting 19/72 heads on validation raises held-out output relative L2 to 0.204 versus 0.172 for position-only and 0.142 for all-rank2. Split/seed and length/sink sweeps partly revive the all-head row: across four configurations with max lengths 64/96, sink counts 2/4, and three split seeds each, all-rank2 beats position-only by $0.0366 \pm 0.0024$ output relative L2, with minimum configuration improvement $0.0342$. A larger trace-level frozen split repeat on 48 traces strengthens repeatability: all three whole-trace held-out splits are positive, with mean output relative-L2 improvement $0.0379 \pm 0.0014$ and minimum split improvement $0.0367$. The layer-head win rate remains only $0.278 \pm 0.016$. This is not an end-to-end quality or GPU speed result. It is a bounded correctness and repeatability gate for deciding whether approximate sink prediction is worth implementing.
 \end{abstract}
 
 \section{Problem}
@@ -84,15 +84,15 @@ minimum configuration improvement was 0.0342. This makes the all-head row more
 repeatable, but the per-head caveat persists: layer-head output win rate
 averaged only $0.286 \pm 0.010$.
 
-Finally, we ran the smallest trace-level frozen split repeat. Across three
-deterministic splits of 24 traces, each split trained on 16 whole traces and
-evaluated on 8 held-out traces. Rank-2 beat position-only on every split:
-output relative-L2 improvement averaged $0.0398 \pm 0.0014$, sink-mass MAE
-improvement averaged $0.0265 \pm 0.0006$, attention-L1 improvement averaged
-$0.0540 \pm 0.0014$, and the minimum output improvement was 0.0387. This is a
+Finally, we ran a larger trace-level frozen split repeat. Across three
+deterministic splits of 48 traces, each split trained on 32 whole traces and
+evaluated on 16 held-out traces. Rank-2 beat position-only on every split:
+output relative-L2 improvement averaged $0.0379 \pm 0.0014$, sink-mass MAE
+improvement averaged $0.0220 \pm 0.0008$, attention-L1 improvement averaged
+$0.0461 \pm 0.0014$, and the minimum output improvement was 0.0367. This is a
 stronger repeatability check than token-level splitting, but it does not remove
 the per-head caveat because the layer-head output win rate remains only
-$0.287 \pm 0.018$.
+$0.278 \pm 0.016$.
 
 \section{Reference and Kernel Gates}
 
@@ -102,7 +102,7 @@ The Phase 4 Triton-interpreter scaffold now targets the same operator for a one-
 
 \section{Decision}
 
-SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. The trace-level frozen repeat strengthens the all-head row, but promotion still requires a larger frozen slice or stronger stability mechanism for unstable heads, plus native runs that show real speed or memory-traffic advantage over exact attention while still beating the position-only predictor on quality.
+SinkAware is alive only as an all-head approximate low-rank correctness and native-GPU gate. Exact static reuse remains dead, and the simple head-selective rescue is weakened. The larger trace-level frozen repeat strengthens the all-head row, but promotion still requires a Triton-interpreter correctness pass, a strict cross-family falsification pair, or stronger stability mechanism for unstable heads, plus native runs that show real speed or memory-traffic advantage over exact attention while still beating the position-only predictor on quality.
 
 \section{Artifacts}
 

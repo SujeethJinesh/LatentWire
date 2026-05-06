@@ -50,11 +50,14 @@ Current local gate result:
   four-sink QK;
 - simple validation-selected head gating failed held-out: selected rank-2 heads
   had output rel-L2 `0.2035`, worse than position-only `0.1724` and all-rank2
-  `0.1419`.
+  `0.1419`;
+- the larger 48-trace frozen split gate keeps all-head rank-2 positive:
+  output rel-L2 improvement `+0.0379 +/- 0.0014`, minimum split `+0.0367`,
+  but head win rate remains low at `0.278 +/- 0.016`.
 
 Decision: continue only as approximate low-rank SinkAware. The next pre-GPU
-gate is a repeatable all-rank2 quality/stability result or a better stability
-mechanism than validation head selection, not kernel coding.
+gate is Triton-interpreter correctness for the approximate operator or a strict
+cross-family falsification pair, not kernel coding.
 
 ## ThoughtFlow-FP8
 
@@ -75,8 +78,11 @@ Current local gate result:
   LongFlow-like importance proxy;
 - CPU sparse-cache dropping now gives ThoughtFlow-saliency-recent the best mean
   compressed-row NLL (`3.372`), but it clears ThinKV-like by only `0.017` NLL
-  and its paired interval versus R-KV-like crosses zero.
+  and its paired interval versus R-KV-like crosses zero;
+- the larger frozen 74-trace sparse-cache probe weakened the stopped policy
+  family: ThinKV-like is best at `3.900` NLL versus frozen sparse ThoughtFlow
+  `3.908`.
 
-Decision: do not move to GPU until a hidden/KV policy beats the strongest local
-proxy by at least the `0.03` NLL promotion margin and shows quality impact under
-actual cache dropping.
+Decision: do not tune anchor/recent/phase/math weights further on the current
+saved traces. A future attempt must first pre-register one genuinely new utility
+signal, then run exactly one frozen sparse-cache evaluation.
