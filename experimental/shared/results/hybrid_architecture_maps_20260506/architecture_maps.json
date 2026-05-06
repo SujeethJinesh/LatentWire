@@ -1,0 +1,496 @@
+[
+  {
+    "architecture": "GraniteMoeHybridForCausalLM",
+    "boundaries": [
+      {
+        "boundary_index": 0,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 4,
+        "right_kind": "attention",
+        "right_layer": 5
+      },
+      {
+        "boundary_index": 1,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 5,
+        "right_kind": "ssm",
+        "right_layer": 6
+      },
+      {
+        "boundary_index": 2,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 14,
+        "right_kind": "attention",
+        "right_layer": 15
+      },
+      {
+        "boundary_index": 3,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 15,
+        "right_kind": "ssm",
+        "right_layer": 16
+      },
+      {
+        "boundary_index": 4,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 24,
+        "right_kind": "attention",
+        "right_layer": 25
+      },
+      {
+        "boundary_index": 5,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 25,
+        "right_kind": "ssm",
+        "right_layer": 26
+      },
+      {
+        "boundary_index": 6,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 34,
+        "right_kind": "attention",
+        "right_layer": 35
+      },
+      {
+        "boundary_index": 7,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 35,
+        "right_kind": "ssm",
+        "right_layer": 36
+      }
+    ],
+    "boundary_count": 8,
+    "config": "ibm-granite-4.0-h-small.config.json",
+    "config_sha256": "8616e9f0b30e6fac9696f7c1e1dbd08f1a850ac4af0de6353f7d6009043702ae",
+    "direction_counts": {
+      "attention->ssm": 4,
+      "ssm->attention": 4
+    },
+    "hidden_size": 4096,
+    "layer_kinds": [
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm"
+    ],
+    "model_id": "ibm-granite-4.0-h-small",
+    "model_type": "granitemoehybrid",
+    "num_hidden_layers": 40
+  },
+  {
+    "architecture": "GraniteMoeHybridForCausalLM",
+    "boundaries": [
+      {
+        "boundary_index": 0,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 4,
+        "right_kind": "attention",
+        "right_layer": 5
+      },
+      {
+        "boundary_index": 1,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 5,
+        "right_kind": "ssm",
+        "right_layer": 6
+      },
+      {
+        "boundary_index": 2,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 14,
+        "right_kind": "attention",
+        "right_layer": 15
+      },
+      {
+        "boundary_index": 3,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 15,
+        "right_kind": "ssm",
+        "right_layer": 16
+      },
+      {
+        "boundary_index": 4,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 24,
+        "right_kind": "attention",
+        "right_layer": 25
+      },
+      {
+        "boundary_index": 5,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 25,
+        "right_kind": "ssm",
+        "right_layer": 26
+      },
+      {
+        "boundary_index": 6,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 34,
+        "right_kind": "attention",
+        "right_layer": 35
+      },
+      {
+        "boundary_index": 7,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 35,
+        "right_kind": "ssm",
+        "right_layer": 36
+      }
+    ],
+    "boundary_count": 8,
+    "config": "ibm-granite-4.0-h-tiny.config.json",
+    "config_sha256": "bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
+    "direction_counts": {
+      "attention->ssm": 4,
+      "ssm->attention": 4
+    },
+    "hidden_size": 1536,
+    "layer_kinds": [
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "ssm"
+    ],
+    "model_id": "ibm-granite-4.0-h-tiny",
+    "model_type": "granitemoehybrid",
+    "num_hidden_layers": 40
+  },
+  {
+    "architecture": "Qwen3NextForCausalLM",
+    "boundaries": [
+      {
+        "boundary_index": 0,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 2,
+        "right_kind": "attention",
+        "right_layer": 3
+      },
+      {
+        "boundary_index": 1,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 3,
+        "right_kind": "ssm",
+        "right_layer": 4
+      },
+      {
+        "boundary_index": 2,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 6,
+        "right_kind": "attention",
+        "right_layer": 7
+      },
+      {
+        "boundary_index": 3,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 7,
+        "right_kind": "ssm",
+        "right_layer": 8
+      },
+      {
+        "boundary_index": 4,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 10,
+        "right_kind": "attention",
+        "right_layer": 11
+      },
+      {
+        "boundary_index": 5,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 11,
+        "right_kind": "ssm",
+        "right_layer": 12
+      },
+      {
+        "boundary_index": 6,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 14,
+        "right_kind": "attention",
+        "right_layer": 15
+      },
+      {
+        "boundary_index": 7,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 15,
+        "right_kind": "ssm",
+        "right_layer": 16
+      },
+      {
+        "boundary_index": 8,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 18,
+        "right_kind": "attention",
+        "right_layer": 19
+      },
+      {
+        "boundary_index": 9,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 19,
+        "right_kind": "ssm",
+        "right_layer": 20
+      },
+      {
+        "boundary_index": 10,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 22,
+        "right_kind": "attention",
+        "right_layer": 23
+      },
+      {
+        "boundary_index": 11,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 23,
+        "right_kind": "ssm",
+        "right_layer": 24
+      },
+      {
+        "boundary_index": 12,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 26,
+        "right_kind": "attention",
+        "right_layer": 27
+      },
+      {
+        "boundary_index": 13,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 27,
+        "right_kind": "ssm",
+        "right_layer": 28
+      },
+      {
+        "boundary_index": 14,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 30,
+        "right_kind": "attention",
+        "right_layer": 31
+      },
+      {
+        "boundary_index": 15,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 31,
+        "right_kind": "ssm",
+        "right_layer": 32
+      },
+      {
+        "boundary_index": 16,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 34,
+        "right_kind": "attention",
+        "right_layer": 35
+      },
+      {
+        "boundary_index": 17,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 35,
+        "right_kind": "ssm",
+        "right_layer": 36
+      },
+      {
+        "boundary_index": 18,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 38,
+        "right_kind": "attention",
+        "right_layer": 39
+      },
+      {
+        "boundary_index": 19,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 39,
+        "right_kind": "ssm",
+        "right_layer": 40
+      },
+      {
+        "boundary_index": 20,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 42,
+        "right_kind": "attention",
+        "right_layer": 43
+      },
+      {
+        "boundary_index": 21,
+        "direction": "attention->ssm",
+        "left_kind": "attention",
+        "left_layer": 43,
+        "right_kind": "ssm",
+        "right_layer": 44
+      },
+      {
+        "boundary_index": 22,
+        "direction": "ssm->attention",
+        "left_kind": "ssm",
+        "left_layer": 46,
+        "right_kind": "attention",
+        "right_layer": 47
+      }
+    ],
+    "boundary_count": 23,
+    "config": "qwen3-next-80b-a3b-instruct.config.json",
+    "config_sha256": "2d483c7cabad7c8704478ed4038fa7e7b2eff840bc00a118eccbe38e2b488303",
+    "direction_counts": {
+      "attention->ssm": 11,
+      "ssm->attention": 12
+    },
+    "hidden_size": 2048,
+    "layer_kinds": [
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention",
+      "ssm",
+      "ssm",
+      "ssm",
+      "attention"
+    ],
+    "model_id": "qwen3-next-80b-a3b-instruct",
+    "model_type": "qwen3_next",
+    "num_hidden_layers": 48
+  }
+]

@@ -26,6 +26,8 @@ Shared Mac-local utilities live in `shared/`:
 - `fp4_simulator.py`: deterministic MXFP4-style and low-bit simulation.
 - `activation_dumper.py`: tensor-packet read/write helpers.
 - `boundary_inspector.py`: attention/SSM boundary identification.
+- `hybrid_architecture_maps.py`: config-derived explicit boundary maps and
+  negative-control rows for real trace packet provenance.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
 - `check_gate_packet.py`: generic result-packet validator.
 - `hybrid_trace_packet_runbook.md`: schema for the first real shared trace
@@ -33,6 +35,9 @@ Shared Mac-local utilities live in `shared/`:
 
 These utilities support Mac-local hypothesis gates. They do not support native
 GPU throughput, HBM, latency, energy, or production-packing claims.
+
+Current config-only architecture packet:
+`shared/results/hybrid_architecture_maps_20260506/`.
 
 ## Next Exact Gates
 

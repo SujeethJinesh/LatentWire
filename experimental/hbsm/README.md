@@ -50,6 +50,10 @@ Validate packet shape with:
 Real trace packet requirements are in
 `../shared/hybrid_trace_packet_runbook.md`.
 
+Use the explicit boundary IDs and architecture hashes in
+`../shared/results/hybrid_architecture_maps_20260506/` for boundary-flagged
+layer definitions.
+
 Validate the first real B1 packet with:
 
 ```bash

@@ -1,0 +1,14 @@
+{
+  "claim_boundary": [
+    "config-only",
+    "not model evidence",
+    "not GPU evidence"
+  ],
+  "command": "python -m experimental.shared.hybrid_architecture_maps",
+  "config_dir": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/hybridkernel/phase0/configs",
+  "source_configs": [
+    "ibm-granite-4.0-h-small.config.json",
+    "ibm-granite-4.0-h-tiny.config.json",
+    "qwen3-next-80b-a3b-instruct.config.json"
+  ]
+}

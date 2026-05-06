@@ -37,4 +37,34 @@ The next admissible row is a real SSM-state dump from the smallest available
 hybrid reasoner. Promotion requires S1 heterogeneity on real states before any
 state-quantization recipe is tuned.
 
+\section{Admissible Real Packet}
+
+The real S1 packet must include model and tokenizer revisions, prompt manifest
+hash, seed list, context lengths, dtype, device, command, and the
+\texttt{architecture\_map\_hash} from the shared config-derived maps. Rows must
+report \texttt{model\_id}, \texttt{model\_revision}, \texttt{prompt\_id},
+\texttt{layer}, \texttt{position\_bucket}, \texttt{state\_shape},
+\texttt{max\_abs}, \texttt{rms}, \texttt{std}, \texttt{kurtosis},
+\texttt{outlier\_mass}, and a \texttt{bf16\_no\_quant} control. The packet is
+valid only if it passes
+\texttt{experimental.shared.check\_gate\_packet --mode real --project ssq\_lr}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+Required baseline & Purpose \\
+\midrule
+BF16 no-op replay & Catch hook/serialization bugs. \\
+INT8 state-only & Standard low-bit state control. \\
+MXFP4 state-only & Candidate sub-FP16 recipe. \\
+Random same-L2 noise & Separate structure from noise magnitude. \\
+Scale shuffle & Test scale assignment sensitivity. \\
+Byte accounting & Include scale/metadata overhead. \\
+\bottomrule
+\end{tabular}
+\caption{Controls required before SSQ-LR can claim a state-quantization recipe.}
+\end{table}
+
 \end{document}

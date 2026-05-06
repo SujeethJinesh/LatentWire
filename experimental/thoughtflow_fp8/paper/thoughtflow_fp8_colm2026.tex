@@ -36,7 +36,7 @@ Protocol check & Purpose & Stop condition \\
 Frozen surface & Prevent post-hoc tuning. & A successor is measured once after preregistration. \\
 Matched budget & Avoid full-cache comparisons. & Must beat R-KV-like and ThinKV-like rows at the same keep rate. \\
 Same/cross-family split & Separate local reuse from generality. & A same-family-only win is diagnostic, not a method claim. \\
-Paired intervals & Avoid mean-only promotion. & CIs must clear the preregistered margin. \\
+Paired intervals & Avoid mean-only promotion. & Mean margin plus paired CI high must be below zero. \\
 Oracle/headroom & Show whether a useful policy exists at the budget. & Large oracle gaps block method claims. \\
 Fresh surface & Test robustness. & Failure demotes or kills the signal. \\
 \bottomrule
@@ -92,7 +92,7 @@ train-selected sweep & 0.207 & 1.000 & 0.430 & 0.956 \\
 
 Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +0.508 with 95\% CI [+0.436, +0.579]. The math-state delta is only +0.073 with 95\% CI [-0.078, +0.223]. This rules out a method claim based on phase recall alone: it may be marker preservation rather than useful cache retention.
 
-\section{Falsification Protocol}
+\section{Sparse-Cache Case Study Gate}
 
 We next ran a CPU-only sparse-cache probe. The model processes the full
 prefix once, each policy prunes the returned KV cache to the same 0.20 budget,
@@ -216,12 +216,6 @@ better on short-prefix/low-density rows. The large-regression buckets are
 exactly the buckets a robust policy would need to handle before any long-context
 claim.
 
-A coarse trace-level decomposition explains where the reproduction fails:
-\texttt{rdu\_topk} is +0.213 NLL worse than R-KV-like on long-prefix/high-RDU-density
-rows but -0.049 better on short-prefix/low-density rows. The large-regression
-buckets are exactly the buckets a robust policy would need to handle before any
-long-context claim.
-
 \paragraph{Prefix-surprisal successor.}
 A later consumed successor tested whether retaining high self-surprisal
 prefix tokens could preserve information that is hard to reconstruct. The signal
@@ -258,6 +252,13 @@ Triton-interpreter parity for an int8 anchor/phase primitive. & A live deployabl
 \end{tabular}
 \caption{Boundary between the workshop claim and the stopped systems-method target.}
 \end{table}
+
+\paragraph{Limitations.}
+The ladder is demonstrated on Mac-local saved traces and CPU sparse-cache
+scoring, not native serving. The trace families are useful falsification
+surfaces, but they do not establish broad task coverage. The stopped signals
+also do not rule out future sparse-cache utilities; they only rule out the
+pre-registered policies under the reported surfaces and budgets.
 
 \section{Stop Rule and Reopen Gate}
 
@@ -306,25 +307,25 @@ fresh-surface checks, and Triton install note:
 \begin{thebibliography}{9}
 \bibitem[ThinKV(2026)]{thinkv}
 ThinKV: Thought-Adaptive KV Cache Compression for Efficient Reasoning Models.
-ICLR, 2026.
+ICLR, 2026. \url{https://openreview.net/forum?id=EBn1oD2eqH}.
 \bibitem[LongFlow(2026)]{longflow}
 LongFlow: Efficient KV Cache Compression for Reasoning Models.
-arXiv:2603.11504, 2026.
+arXiv:2603.11504, 2026. \url{https://arxiv.org/abs/2603.11504}.
 \bibitem[R-KV(2025)]{rkv}
 R-KV: Redundancy-aware KV Cache Compression for Training-Free Reasoning Models
-Acceleration. arXiv:2505.24133, 2025.
+Acceleration. arXiv:2505.24133, 2025. \url{https://arxiv.org/abs/2505.24133}.
 \bibitem[LazyEviction(2025)]{lazyeviction}
 LazyEviction: Lagged KV Eviction with Attention Pattern Observation.
-arXiv:2506.15969, 2025.
+arXiv:2506.15969, 2025. \url{https://arxiv.org/abs/2506.15969}.
 \bibitem[ForesightKV(2026)]{foresightkv}
 ForesightKV: Optimizing KV Cache Eviction for Reasoning Models by Learning
-Long-Term Contribution. arXiv:2602.03203, 2026.
+Long-Term Contribution. arXiv:2602.03203, 2026. \url{https://arxiv.org/abs/2602.03203}.
 \bibitem[PM-KVQ(2025)]{pmkvq}
 PM-KVQ: Progressive Mixed-precision KV Cache Quantization for Long-CoT LLMs.
-arXiv:2505.18610, 2025.
+arXiv:2505.18610, 2025. \url{https://arxiv.org/abs/2505.18610}.
 \bibitem[KVQuant(2024)]{kvquant}
 KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache
-Quantization. arXiv:2401.18079, 2024.
+Quantization. arXiv:2401.18079, 2024. \url{https://arxiv.org/abs/2401.18079}.
 \end{thebibliography}
 
 \end{document}

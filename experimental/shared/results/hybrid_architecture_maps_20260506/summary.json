@@ -1,0 +1,1765 @@
+{
+  "claim_boundary": [
+    "config-only",
+    "not model evidence",
+    "not GPU evidence"
+  ],
+  "decision": "CONFIG_ONLY_READY_FOR_TRACE_PACKET_PROVENANCE",
+  "model_count": 3,
+  "row_count": 292,
+  "rows": [
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": 0,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 0,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 1,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 1,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 2,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 2,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 3,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 3,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 4,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 4,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 5,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 5,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 6,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 6,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 7,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 7,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-small",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": 0,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 0,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 1,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 1,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 2,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 2,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 3,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 3,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 4,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 4,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 5,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 5,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 6,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 6,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 7,
+      "direction": "attention->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 7,
+      "direction": "ssm->attention",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": null,
+      "direction": null,
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "layer"
+    },
+    {
+      "boundary_index": 0,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 0,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 1,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 1,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 2,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 2,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 3,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 3,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 4,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 4,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 5,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 5,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 6,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 6,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 7,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 7,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 8,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 8,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 9,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 9,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 10,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 10,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 11,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 11,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 12,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 12,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 13,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 13,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 14,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 14,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 15,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 15,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 16,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 16,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 17,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 17,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 18,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 18,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 19,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 19,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 20,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 20,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 21,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 21,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": 22,
+      "direction": "ssm->attention",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "boundary"
+    },
+    {
+      "boundary_index": 22,
+      "direction": "attention->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "permuted_direction_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    },
+    {
+      "boundary_index": null,
+      "direction": "ssm->ssm",
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "row_type": "non_boundary_control"
+    }
+  ],
+  "surface": "config_only_hybrid_architecture_map"
+}

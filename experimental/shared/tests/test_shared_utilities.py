@@ -11,6 +11,7 @@ from experimental.shared.fp4_simulator import (
     simulate_mxfp4_e2m1,
     simulate_symmetric_int,
 )
+from experimental.shared.hybrid_architecture_maps import build_map, write_maps
 from experimental.shared.check_gate_packet import validate_gate_packet
 from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_rank_correlation
 
@@ -119,6 +120,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
         '"context_lengths": [128], '
         '"dtype": "bf16", '
         '"device": "mps", '
+        '"architecture_map_hash": "sha256:map", '
         '"command": "python run_gate.py"'
         "}\n"
     )
@@ -172,6 +174,7 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
         '"context_lengths": [128], '
         '"dtype": "bf16", '
         '"device": "mps", '
+        '"architecture_map_hash": "sha256:map", '
         '"command": "python run_gate.py"'
         "}\n"
     )
@@ -207,3 +210,43 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
 
     assert not report["ok"]
     assert "missing required controls: non_boundary, permuted_direction" in report["errors"]
+
+
+def test_hybrid_architecture_map_uses_explicit_layer_types(tmp_path: Path) -> None:
+    config = tmp_path / "toy.config.json"
+    config.write_text(
+        "{"
+        '"architectures": ["ToyHybrid"], '
+        '"model_type": "toyhybrid", '
+        '"hidden_size": 16, '
+        '"layer_types": ["mamba", "attention", "mamba", "mamba"]'
+        "}\n"
+    )
+
+    row = build_map(config)
+
+    assert row["boundary_count"] == 2
+    assert row["direction_counts"] == {"attention->ssm": 1, "ssm->attention": 1}
+    assert row["boundaries"][0]["left_layer"] == 0
+    assert row["boundaries"][0]["right_layer"] == 1
+
+
+def test_hybrid_architecture_map_packet_contains_controls(tmp_path: Path) -> None:
+    config_dir = tmp_path / "configs"
+    output_dir = tmp_path / "maps"
+    config_dir.mkdir()
+    (config_dir / "toy.config.json").write_text(
+        "{"
+        '"architectures": ["ToyHybrid"], '
+        '"model_type": "toyhybrid", '
+        '"hidden_size": 16, '
+        '"layer_types": ["mamba", "attention", "mamba", "mamba"]'
+        "}\n"
+    )
+
+    write_maps(config_dir=config_dir, output_dir=output_dir)
+
+    rows = [(output_dir / "raw_rows.jsonl").read_text()]
+    assert "permuted_direction_control" in rows[0]
+    assert "non_boundary_control" in rows[0]
+    assert "CONFIG_ONLY_READY_FOR_TRACE_PACKET_PROVENANCE" in (output_dir / "decision.md").read_text()

@@ -18,3 +18,10 @@ format but does not promote the branch or replace real hybrid SSM state dumps.
 
 Next exact gate: S1 state distribution heterogeneity on the smallest available
 hybrid model traces using shared activation/state dump utilities.
+
+## 2026-05-06 Architecture Provenance Update
+
+Added shared config-derived architecture maps at
+`../shared/results/hybrid_architecture_maps_20260506/`. Real S1 packets must
+include the corresponding `architecture_map_hash` in `config.json`; this keeps
+state rows tied to an explicit hybrid layer map even before GPU validation.

@@ -18,3 +18,11 @@ measurements.
 
 Next exact gate: B1 sensitivity heterogeneity replication on current hybrid
 models. Kill or fold into HORN if the mechanism wedge does not differentiate.
+
+## 2026-05-06 Architecture Provenance Update
+
+Added shared config-derived architecture maps at
+`../shared/results/hybrid_architecture_maps_20260506/`. Real B1 packets must use
+these explicit boundary IDs for boundary-flagged layers and include
+`architecture_map_hash`; cheap predictors will be compared against these fixed
+flags plus random/layer-index/size/norm baselines.

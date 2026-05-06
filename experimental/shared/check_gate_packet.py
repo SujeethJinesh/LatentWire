@@ -22,6 +22,7 @@ REAL_CONFIG_FIELDS = (
     "dtype",
     "device",
     "command",
+    "architecture_map_hash",
 )
 REAL_ROW_FIELDS = {
     "ssq_lr": (

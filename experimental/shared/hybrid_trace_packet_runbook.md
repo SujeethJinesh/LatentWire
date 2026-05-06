@@ -9,7 +9,8 @@ Every real packet must contain:
 
 - `config.json`: model id, model revision/hash, tokenizer revision, prompt
   source, prompt ids/hash, seed list, context lengths, dtype, device, and exact
-  command.
+  command. It must also include `architecture_map_hash` from
+  `shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`.
 - `raw_rows.jsonl`: one JSON row per layer/boundary/state measurement.
 - `summary.json`: aggregate readouts, decision, claim boundary, and row count.
 - `summary.md`: human-readable table and interpretation.

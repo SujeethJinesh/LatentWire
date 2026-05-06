@@ -12,9 +12,9 @@ saturated ideas.
 | Rank | Project | Readiness | Current story | Exact blocking gap | Next experiment |
 |---:|---|---:|---|---|---|
 | 1 | HybridKernel | 70% if GPU gate passes; 0% as local-only result | Boundary-fusion may recover avoidable attention to SSM overhead in hybrid models, but Mac work is saturated. | User-operated NVIDIA/vLLM Nsight packet with three clean repeats and at least 3% recoverable gain. | Run `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`; verify with `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`. |
-| 2 | SSQ-LR | 12% positive method | Test whether recurrent SSM state in hybrid reasoners can go below FP16 with a stable quantization recipe. Synthetic S1 packet validates artifact mechanics only. | Mac Gate S1 must show state-distribution heterogeneity on real hybrid SSM state dumps. | Run `experimental/ssq_lr/phase2/preregister_ssq_lr_20260506.md` Gate S1 on the smallest available hybrid state dumps. |
-| 3 | HORN | 12% control branch | Test whether attention-to-SSM and SSM-to-attention boundaries have asymmetric outlier/noise propagation. Synthetic H1 packet validates artifact mechanics only. | Mac Gate H1 must show directional magnitude or kurtosis asymmetry on real boundary dumps; otherwise HORN stays a control inside SSQ-LR/HBSM. | Run `experimental/horn/phase2/preregister_horn_20260506.md` Gate H1 once shared dumps exist. |
-| 4 | HBSM | 12% wounded branch | KL-Lens-like layer sensitivity is crowded; remaining wedge is frontier hybrid mechanism plus cheaper predictor. Synthetic B1/B2 packet validates artifact mechanics only. | Gate B1 must replicate sensitivity heterogeneity on current hybrid reasoners, then B2 must show a cheaper predictor. | Run `experimental/hbsm/phase2/preregister_hbsm_20260506.md` after shared dumps exist. |
+| 2 | SSQ-LR | 15% positive method | Test whether recurrent SSM state in hybrid reasoners can go below FP16 with a stable quantization recipe. Synthetic S1 packet and explicit architecture-map packet validate artifact mechanics/provenance only. | Mac Gate S1 must show state-distribution heterogeneity on real hybrid SSM state dumps. | Run `experimental/ssq_lr/phase2/preregister_ssq_lr_20260506.md` Gate S1 on the smallest available hybrid state dumps. |
+| 3 | HORN | 15% control branch | Test whether attention-to-SSM and SSM-to-attention boundaries have asymmetric outlier/noise propagation. Synthetic H1 packet and explicit boundary maps validate artifact mechanics/provenance only. | Mac Gate H1 must show directional magnitude or kurtosis asymmetry on real boundary dumps; otherwise HORN stays a control inside SSQ-LR/HBSM. | Run `experimental/horn/phase2/preregister_horn_20260506.md` Gate H1 once shared dumps exist. |
+| 4 | HBSM | 15% wounded branch | KL-Lens-like layer sensitivity is crowded; remaining wedge is frontier hybrid mechanism plus cheaper predictor. Synthetic B1/B2 packet and fixed boundary flags validate artifact mechanics/provenance only. | Gate B1 must replicate sensitivity heterogeneity on current hybrid reasoners, then B2 must show a cheaper predictor. | Run `experimental/hbsm/phase2/preregister_hbsm_20260506.md` after shared dumps exist. |
 | 5 | ThoughtFlow-FP8 | 88% falsification paper; 0% positive method | The reusable contribution is the preregistered falsification ladder for sparse-cache signals. The draft now has protocol, RDU demotion, claim-boundary, and related-work citation tables. | Paper polish only; no fifth signal unless a new preregistration and fresh surface exist. | Human review of `experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf`. |
 
 ## New Shared Infrastructure
@@ -24,6 +24,8 @@ Shared Mac-local utilities live in `experimental/shared/`:
 - `fp4_simulator.py`: deterministic MXFP4-style and low-bit simulation.
 - `activation_dumper.py`: tensor-packet read/write helpers.
 - `boundary_inspector.py`: attention/SSM boundary identification.
+- `hybrid_architecture_maps.py`: config-derived explicit boundary maps for
+  future real trace packets.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
 - `check_gate_packet.py`: generic synthetic-packet validator plus strict
   `--mode real --project ...` contracts for SSQ-LR, HORN, and HBSM.
@@ -55,7 +57,15 @@ The checker now has a stricter real-packet mode:
 ```
 
 Real packets must include provenance, `summary.md`, matching `row_count`,
-project-specific row schemas, and required controls.
+project-specific row schemas, required controls, and an `architecture_map_hash`.
+
+## Config-Only Architecture Maps
+
+Config-only maps now exist for the local Granite and Qwen hybrid configs:
+
+| Artifact | Use | Claim boundary |
+|---|---|---|
+| `experimental/shared/results/hybrid_architecture_maps_20260506/` | Provides explicit layer kinds, boundary IDs, direction counts, and config hashes for SSQ-LR/HORN/HBSM real trace packets. | Config provenance only; no activations, SSM state, quality, or GPU evidence. |
 
 ## Killed Branches
 

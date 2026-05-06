@@ -50,6 +50,9 @@ Validate packet shape with:
 Real trace packet requirements are in
 `../shared/hybrid_trace_packet_runbook.md`.
 
+Use the explicit architecture hashes in
+`../shared/results/hybrid_architecture_maps_20260506/` for packet provenance.
+
 Validate the first real S1 packet with:
 
 ```bash

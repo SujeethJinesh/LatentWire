@@ -37,4 +37,32 @@ The next admissible row is a real boundary activation dump from a hybrid model.
 HORN remains a control branch unless real H1/H2/H3 gates show consistent
 directional asymmetry that pure-attention and pure-Mamba controls do not share.
 
+\section{Admissible Real Packet}
+
+The real H1 packet must use the shared config-derived architecture maps rather
+than substring-only module classification. Each row must report
+\texttt{model\_id}, adjacent layer IDs, \texttt{direction},
+\texttt{boundary\_index}, normalization placement, \texttt{max\_abs},
+\texttt{rms}, \texttt{kurtosis}, and \texttt{control\_type}. The required
+controls are boundary rows, non-boundary adjacent rows, and permuted-direction
+rows. The packet must include \texttt{architecture\_map\_hash} and pass
+\texttt{experimental.shared.check\_gate\_packet --mode real --project horn}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+Required control & Reviewer objection addressed \\
+\midrule
+Explicit boundary map & Avoids substring artifacts. \\
+Non-boundary adjacent pair & Separates boundary effects from depth effects. \\
+Permuted direction label & Tests whether direction carries signal. \\
+Matched normalization side & Controls RMSNorm/LayerNorm placement. \\
+Pure-architecture control & Prevents generic outlier claims. \\
+\bottomrule
+\end{tabular}
+\caption{Controls required before HORN can claim directional hybrid asymmetry.}
+\end{table}
+
 \end{document}

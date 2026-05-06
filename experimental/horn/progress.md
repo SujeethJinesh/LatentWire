@@ -17,3 +17,10 @@ format but does not promote the branch or replace real hybrid boundary dumps.
 
 Next exact gate: H1 activation magnitude and kurtosis characterization using
 shared boundary-inspection utilities.
+
+## 2026-05-06 Architecture Provenance Update
+
+Added shared config-derived architecture maps at
+`../shared/results/hybrid_architecture_maps_20260506/`. Real H1 packets must use
+these explicit boundary IDs and include `architecture_map_hash`; substring-only
+module classification is no longer admissible for promotion.
