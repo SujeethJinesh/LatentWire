@@ -18,8 +18,14 @@ Use them for preregistered Mac gates only.
   SSQ-LR/HORN tensor runner. The current dedicated SSQ-LR artifact is
   `results/ssq_lr_local_bucket_capture_20260507/`, decision
   `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`, using
-  bucket-specific 2/4/6/8-token recurrent-state replays. This validates
-  SSQ-LR bucket capture plumbing only; one prompt/layer cannot promote S1.
+  bucket-specific 2/4/6/8-token recurrent-state replays. The current
+  multilayer SSQ-LR artifact is
+  `results/ssq_lr_local_multilayer_capture_20260507/`, decision
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_S1_HETEROGENEITY`, with one
+  prompt and four layers. Only the compact multilayer readout is tracked; the
+  full tensor packet is regenerated on demand before checker replay. These
+  validate SSQ-LR bucket/layer capture plumbing only; neither packet can
+  promote S1.
 - `hybrid_architecture_maps.py`: explicit config-derived boundary maps used to
   validate real trace packet provenance.
 - `hybrid_model_eligibility.py`: metadata-only Hugging Face size/cache

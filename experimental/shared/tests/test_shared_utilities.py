@@ -26,6 +26,7 @@ from experimental.shared.hybrid_manifest_local_capture_runner import (
     _bucket_tokenized,
     _filled_metadata,
     _first_tensor,
+    _first_ssq_layers,
     _horn_tensors,
     _install_horn_right_input_hooks,
     select_horn_entries,
@@ -1163,6 +1164,21 @@ def test_ssq_bucket_tokenized_uses_monotone_short_prefixes() -> None:
     ]
 
     assert lengths == [2, 4, 6, 8]
+
+
+def test_ssq_select_entries_can_select_multiple_layers() -> None:
+    entries = []
+    for layer in range(3):
+        for bucket in SSQ_BUCKETS:
+            entries.append({"prompt_id": "p0", "layer": layer, "position_bucket": bucket})
+    template = {"ssq_lr_entries": entries}
+
+    selected_layers = _first_ssq_layers(template, prompt_id="p0", limit=2)
+    selected = select_ssq_entries(template, prompt_id="p0", layers=selected_layers)
+
+    assert selected_layers == (0, 1)
+    assert len(selected) == 2 * len(SSQ_BUCKETS)
+    assert {row["layer"] for row in selected} == {0, 1}
 
 
 def _base_trace_metadata(project: str = "ssq_lr") -> dict[str, object]:

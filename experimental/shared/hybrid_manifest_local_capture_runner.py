@@ -84,6 +84,21 @@ def _first_horn_boundary_indices(template: dict[str, Any], limit: int) -> tuple[
     return tuple(boundary_indices[:limit])
 
 
+def _first_ssq_layers(template: dict[str, Any], *, prompt_id: str, limit: int) -> tuple[int, ...]:
+    if limit < 1:
+        raise ValueError("--ssq-layer-limit must be at least 1")
+    layers = sorted(
+        {
+            int(entry["layer"])
+            for entry in template["ssq_lr_entries"]
+            if str(entry["prompt_id"]) == prompt_id
+        }
+    )
+    if len(layers) < limit:
+        raise ValueError(f"SSQ-LR template only contains {len(layers)} layers, requested {limit}")
+    return tuple(layers[:limit])
+
+
 def _load_template(manifest_dir: Path, *, project: str, canonical_model_id: str) -> dict[str, Any]:
     filename = f"{project}__{canonical_model_id.replace('.', '-')}__metadata_template.json"
     path = manifest_dir / filename
@@ -149,17 +164,22 @@ def select_ssq_entries(
     *,
     prompt_id: str,
     layer: int = 0,
+    layers: tuple[int, ...] | None = None,
 ) -> list[dict[str, Any]]:
-    entries = [
-        entry
-        for entry in template["ssq_lr_entries"]
-        if str(entry["prompt_id"]) == prompt_id and int(entry["layer"]) == layer
-    ]
-    by_bucket = {str(entry["position_bucket"]): entry for entry in entries}
-    missing = set(SSQ_BUCKETS) - set(by_bucket)
-    if missing:
-        raise ValueError(f"SSQ-LR template missing buckets for layer {layer}: {sorted(missing)}")
-    return [dict(by_bucket[bucket]) for bucket in SSQ_BUCKETS]
+    selected_layers = layers if layers is not None else (layer,)
+    selected_entries: list[dict[str, Any]] = []
+    for selected_layer in selected_layers:
+        entries = [
+            entry
+            for entry in template["ssq_lr_entries"]
+            if str(entry["prompt_id"]) == prompt_id and int(entry["layer"]) == selected_layer
+        ]
+        by_bucket = {str(entry["position_bucket"]): entry for entry in entries}
+        missing = set(SSQ_BUCKETS) - set(by_bucket)
+        if missing:
+            raise ValueError(f"SSQ-LR template missing buckets for layer {selected_layer}: {sorted(missing)}")
+        selected_entries.extend(dict(by_bucket[bucket]) for bucket in SSQ_BUCKETS)
+    return selected_entries
 
 
 def select_horn_entries(
@@ -382,6 +402,7 @@ def run_capture(
     prompt_ids: tuple[str, ...] | None = None,
     prompt_limit: int | None = None,
     ssq_prompt_limit: int | None = None,
+    ssq_layer_limit: int | None = None,
     horn_prompt_limit: int | None = None,
     horn_boundary_limit: int | None = None,
     prompt_path: Path = DEFAULT_PROMPTS,
@@ -413,7 +434,15 @@ def run_capture(
         project_entries["ssq_lr"] = [
             entry
             for selected_prompt_id in project_prompt_ids["ssq_lr"]
-            for entry in select_ssq_entries(ssq_template, prompt_id=selected_prompt_id)
+            for entry in select_ssq_entries(
+                ssq_template,
+                prompt_id=selected_prompt_id,
+                layers=(
+                    _first_ssq_layers(ssq_template, prompt_id=selected_prompt_id, limit=ssq_layer_limit)
+                    if ssq_layer_limit
+                    else None
+                ),
+            )
         ]
     if "horn" in projects:
         horn_template = _load_template(manifest_dir, project="horn", canonical_model_id=DEFAULT_CANONICAL_MODEL_ID)
@@ -598,6 +627,7 @@ def main() -> None:
     parser.add_argument("--prompt-id", default="hrsmoke_0001")
     parser.add_argument("--prompt-limit", type=int)
     parser.add_argument("--ssq-prompt-limit", type=int)
+    parser.add_argument("--ssq-layer-limit", type=int)
     parser.add_argument("--horn-prompt-limit", type=int)
     parser.add_argument("--horn-boundary-limit", type=int)
     parser.add_argument("--prompt-path", type=Path, default=DEFAULT_PROMPTS)
@@ -612,6 +642,7 @@ def main() -> None:
         prompt_id=args.prompt_id,
         prompt_limit=args.prompt_limit,
         ssq_prompt_limit=args.ssq_prompt_limit,
+        ssq_layer_limit=args.ssq_layer_limit,
         horn_prompt_limit=args.horn_prompt_limit,
         horn_boundary_limit=args.horn_boundary_limit,
         prompt_path=args.prompt_path,

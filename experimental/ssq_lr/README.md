@@ -5,13 +5,13 @@ below FP16 without quality loss during long reasoning.
 
 ## Current Readiness
 
-Status: **NEW / weak resource-limited S1 smoke pass**.
+Status: **NEW / weak resource-limited S1 smoke weakened by multilayer check**.
 
 Estimated completion:
 
-- **28%** as a positive-method paper: hypothesis, gates, packet checker,
-  trace-plan handoff, and one corrected resource-limited recurrent-state S1
-  smoke packet are scaffolded.
+- **24%** as a positive-method paper: hypothesis, gates, packet checker,
+  trace-plan handoff, one corrected one-layer S1 smoke pass, and one
+  four-layer S1 smoke failure are scaffolded.
 - **0%** as a systems-result paper: no native GPU state-cache integration or
   benchmark exists.
 
@@ -109,6 +109,21 @@ runner can capture non-identical recurrent states across S1 buckets. It is
 still explicitly non-promoting: one prompt/layer and short-prefix bucket labels
 are not enough for S1.
 
+The current multilayer local capture packet is:
+
+- `../shared/results/ssq_lr_local_multilayer_capture_20260507/ssq_lr_gate_packet/`
+- decision: `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_S1_HETEROGENEITY`
+- checker: passes `check_gate_packet --mode real --project ssq_lr`
+- rows: `16` (one prompt, four layers, four short-prefix bucket replays)
+- S1 readout: `passing_layer_count=1`, `required_passing_layer_count=3`
+- per-layer max-abs ratios: layer `0` = `3.2938`, layer `1` = `1.3736`,
+  layer `2` = `0.8811`, layer `3` = `0.8680`
+
+This weakens SSQ-LR: the one-layer pass appears isolated on this short local
+surface. Do not move SSQ-LR to GPU until either an all-layer/limited-prompt
+scout or a prompt repeat shows broader S1 support. Only the compact readout is
+tracked; regenerate the full local tensor packet before rerunning the checker.
+
 Regenerate it with:
 
 ```bash
@@ -118,6 +133,18 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   --output-dir experimental/shared/results/ssq_lr_local_bucket_capture_20260507
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/shared/results/ssq_lr_local_bucket_capture_20260507/ssq_lr_gate_packet \
+  --mode real --project ssq_lr
+```
+
+Regenerate the multilayer smoke with:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hybrid_manifest_local_capture_runner \
+  --project ssq_lr --max-input-tokens 8 --ssq-layer-limit 4 \
+  --output-dir experimental/shared/results/ssq_lr_local_multilayer_capture_20260507
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/shared/results/ssq_lr_local_multilayer_capture_20260507/ssq_lr_gate_packet \
   --mode real --project ssq_lr
 ```
 

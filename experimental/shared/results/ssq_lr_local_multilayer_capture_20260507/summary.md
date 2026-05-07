@@ -1,0 +1,15 @@
+# Hybrid Manifest Local Capture Runner
+
+Decision: `RESOURCE_LIMITED_CAPTURE_PACKETS_WRITTEN_NOT_PROMOTABLE`
+
+This is a resource-limited local capture packet. It cannot promote SSQ-LR, HORN, or HBSM.
+
+- Model: `ibm-granite/granite-4.0-h-tiny`
+- Prompts: `hrsmoke_0001`
+- Input tokens: `8`
+- Load seconds: `10.44`
+- Forward seconds: `93.53`
+
+| Project | Checker | Gate packet |
+|---|---|---|
+| `ssq_lr` | `PASS` | `experimental/shared/results/ssq_lr_local_multilayer_capture_20260507/ssq_lr_gate_packet` |
