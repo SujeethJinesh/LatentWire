@@ -9,10 +9,11 @@ Status: **DEMOTED CONTROL / H1a and H2 scouts failed**.
 
 Estimated completion:
 
-- **12%** as a positive-method paper: hypothesis, gates, packet checker,
-  trace-plan handoff, one checker-passing resource-limited real H1a packet, and
-  one H2 follow-up scout are scaffolded, but both observed directional signals
-  are weak.
+- **12% scaffold / <=5% active positive-method readiness**: hypothesis, gates,
+  packet checker, trace-plan handoff, one checker-passing resource-limited real
+  H1a packet, and one H2 follow-up scout are scaffolded, but both observed
+  directional signals are weak and the branch is demoted unless reopened with a
+  new preregistered H2/H3 scope.
 - **0%** as a systems-result paper: no precision allocation or native GPU
   validation exists.
 
@@ -149,6 +150,11 @@ Validate the first real H1a screen packet with:
   experimental/horn/phase2/results/horn_gate_h1_<YYYYMMDD>_<model_slug> \
   --mode real --project horn
 ```
+
+The current Granite Tiny resource-limited H1a packet is expected to report
+`RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN`;
+any packet beginning `PASS_REAL_H1A` must be a new preregistered full H1a/H1
+capture, not a relabeling of the current scout.
 
 Validate later H2/H3 follow-up packets only after real H1a/H1 promotes:
 

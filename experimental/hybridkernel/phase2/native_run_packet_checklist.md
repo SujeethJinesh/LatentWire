@@ -82,7 +82,11 @@ Accepted values for profiler process fields are `vllm_server` or
 `single_process_vllm_benchmark`. `http_client`, `profiler_driver`, `curl`, or
 manual API calls are not admissible profiler scopes.
 If `profiler_metrics.json` contains more than one model, `model_scopes` must
-cover every metric model with the actual vLLM command used for that model.
+cover every metric model with the actual vLLM command used for that model. If
+Qwen3-Next is replaced by a preregistered feasible cross-family hybrid, update
+the cross-family `model_scopes` entry, row IDs, metric `model` values,
+client replay logs, and `metadata/native_control_matrix.json` before profiling;
+do not leave the Qwen placeholder in a replacement packet.
 
 The checker also rejects tiny or placeholder profiler exports. By default each
 matched Nsight artifact must be at least 1024 bytes and must not contain
@@ -144,7 +148,10 @@ The row must also be represented in
 artifact, source time window, Nsight Compute artifact when present, reducer
 command, reducer script or worksheet SHA-256, and row role. This manifest does
 not replace `profiler_metrics.json`; it prevents analyst-selected timeline
-windows from being unauditable.
+windows from being unauditable. Copy
+`phase2/reduction_worksheet_template.tsv` into the run packet, fill one row per
+metric row before editing `profiler_metrics.json`, and cite the filled
+worksheet SHA-256 from `metadata/reduction_input_manifest.json`.
 
 Do not duplicate one trace into multiple rows. Every non-pending metric row
 must cite its own `nsys_artifact`, and every boundary-evidence row must cite its
@@ -155,7 +162,11 @@ not mix different model families and call them repeated runs for the same gate.
 Use `metadata/native_control_matrix.json` as the row-role authority. If the
 cross-family falsification model is unavailable, record that fact in the
 readout and treat the packet as audit-only rather than substituting an unmapped
-model.
+model. A substitute cross-family hybrid is admissible only if
+`phase2/cross_family_control_replacement_template.json` is filled before
+profiling, copied into the packet metadata, and its row is added to
+`metadata/native_control_matrix.json` before any metric reduction. A replacement
+chosen after seeing profiler output is not promotion evidence.
 Promotion requires at least three same-shape same-family control rows and three
 same-shape cross-family falsification rows, and both control families must stay
 below the 3% recoverable-gain gate. Controls that reproduce the same signal do

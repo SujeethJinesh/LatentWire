@@ -52,7 +52,7 @@ def test_native_handoff_map_has_only_active_project_gates() -> None:
 def test_colm_style_pdfs_are_present_and_bounded_for_active_projects() -> None:
     expected_pages = {
         "hybridkernel/paper/hybridkernel_colm2026.pdf": 4,
-        "ssq_lr/paper/ssq_lr_colm2026.pdf": 2,
+        "ssq_lr/paper/ssq_lr_colm2026.pdf": 3,
         "horn/paper/horn_colm2026.pdf": 3,
         "hbsm/paper/hbsm_colm2026.pdf": 3,
         "thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf": 8,

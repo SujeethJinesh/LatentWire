@@ -21,10 +21,13 @@ The contribution is a reusable stop-rule protocol, not another sparse-cache
 policy. The protocol combines seven checks: no-retune frozen surfaces,
 pre-registered successor utilities, matched-budget proxy baselines,
 stopped-family/proxy-baseline separation, paired uncertainty,
-oracle/headroom diagnostics for the RDU demotion gates, and machine-checkable stop artifacts. ThoughtFlow-FP8
-is the case study showing why each check matters: one plausible signal appears
-positive on an initial frozen surface, then fails to reproduce under stricter reproduction, while
-two later signals fail fresh-surface gates outright.
+oracle/headroom diagnostics for the RDU demotion gates, and a tracked
+diagnostic packet that hashes the stop artifacts. ThoughtFlow-FP8 is historical
+naming only: this draft evaluates sparse-cache falsification, not an FP8
+serving method. It is the case study showing why each check matters: one
+plausible signal appears positive on an initial frozen surface, then fails to
+reproduce under stricter reproduction, while two later signals fail
+fresh-surface gates outright.
 If older tracked artifacts say \texttt{ALIVE} or \texttt{PROMOTED}, the current
 decision manifest supersedes them.
 
@@ -355,6 +358,8 @@ plausible sparse-cache heuristic is promoted from a narrow frozen slice into
 implementation work before robustness exists. The stopped rows are therefore
 not failed leaderboard entries; they are worked examples of what the ladder is
 meant to prevent.
+The intended contribution is a reusable gate for future proposals, not a
+leaderboard entry for the stopped policies.
 
 \section{Related Work and Scope}
 
@@ -405,12 +410,12 @@ TRITON_HOME="$PWD/.debug/triton_home" \
 \toprule
 Gate artifact & Script & Input surface & Hash prefix \\
 \midrule
-frozen probe & \texttt{frozen\_sparse\_cache\_probe.py} & frozen mixed traces, 74 scored & \texttt{f79c286c} \\
-same-surface RDU & \texttt{rdu\_no\_retune\_check.py} & same frozen traces, 74 scored & \texttt{9a6420cf} \\
-alternate RDU & \texttt{rdu\_alt\_surface\_check.py} & alternate measured surface, 73 scored & \texttt{1302ce31} \\
-independent RDU & \texttt{rdu\_independent\_check.py} & saved chat traces, 89 scored & \texttt{5a568e1c} \\
-\texttt{psi\_topk} & \texttt{psi\_fresh\_check.py} & distilgpt2 C2C GSM, 70 scored & \texttt{d0a08035} \\
-\texttt{vwac\_topk} & \texttt{vwac\_fresh\_check.py} & distilgpt2 C2C SVAMP, 64 scored & \texttt{80a35954} \\
+frozen probe & \path{frozen_sparse_cache_probe.py} & frozen mixed traces, 74 scored & \texttt{f79c286c} \\
+same-surface RDU & \path{rdu_no_retune_reproduction_check.py} & same frozen traces, 74 scored & \texttt{9a6420cf} \\
+alternate RDU & \path{rdu_alt_surface_reproduction_check.py} & alternate measured surface, 73 scored & \texttt{1302ce31} \\
+independent RDU & \path{rdu_independent_trace_reproduction_check.py} & saved chat traces, 89 scored & \texttt{5a568e1c} \\
+\texttt{psi\_topk} & \path{psi_fresh_sparse_cache_check.py} & distilgpt2 C2C GSM, 70 scored & \texttt{d0a08035} \\
+\texttt{vwac\_topk} & \path{vwac_fresh_sparse_cache_check.py} & distilgpt2 C2C SVAMP, 64 scored & \texttt{80a35954} \\
 \bottomrule
 \end{tabular}
 \caption{Diagnostic-packet command map. Full commands, source metadata, and

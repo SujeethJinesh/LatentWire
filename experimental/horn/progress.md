@@ -1,5 +1,14 @@
 # HORN Progress
 
+## Current Supersession Note
+
+Older "next gate" entries below are historical. The controlling evidence as of
+2026-05-07 is the checker-passing but resource-limited H1a scout plus the H2
+noisy-continuation scout; both fail their gates. HORN is demoted to
+control/negative evidence and should not be GPU-promoted unless a new
+preregistered full H2/H3 reopening explains why the current near-null,
+direction-flipping scout should not generalize.
+
 ## 2026-05-06
 
 Status: **NEW / Mac gates pending**.

@@ -1,5 +1,14 @@
 # HBSM Progress
 
+## Current Supersession Note
+
+Older "next B1" entries below are historical. The controlling evidence as of
+2026-05-07 is that both Granite Tiny resource-limited B1 scouts fail and the
+cheap predictor has the wrong sign. Do not scale B1 to a larger Mac sweep or
+GPU validation unless a narrower mechanism hypothesis is preregistered first;
+otherwise HBSM remains demoted/control evidence and any useful mechanism claim
+should be folded into HORN/SSQ-LR context.
+
 ## 2026-05-06
 
 Status: **NEW / wounded novelty / Mac gates pending**.

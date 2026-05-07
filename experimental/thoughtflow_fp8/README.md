@@ -146,8 +146,9 @@ script edits. The fresh C2C input JSONL files referenced by the PSI/VWAC
 artifacts are force-tracked under the root `results/` directory so a clean
 checkout can resolve all hashed packet inputs.
 
-If it promotes, the next native gate is limited GPU validation of that exact
-frozen policy only, not GPU-side method search.
+If a future preregistered sparse-cache signal promotes, the next native gate is
+limited GPU validation of that exact frozen policy only, not GPU-side method
+search.
 
 ## Local Workflow
 
@@ -169,7 +170,11 @@ Keep downloaded papers, cloned competitor repos, caches, generated traces, and
 large outputs out of git. Put scratch artifacts under ignored local directories
 such as `external/`, `data/`, `traces/`, `results/`, or `scratch/`.
 
-## Phase Gates
+## Historical Phase Gates (Superseded)
+
+The phase notes below are retained for auditability. They are no longer live
+project guidance: the current branch is stopped as a positive method and
+positioned only as a falsification-methodology artifact.
 
 Phase completion requires the deliverables listed in
 `../03_thoughtflow_fp8.md`, plus an update to `progress.md`. Do not mark a
@@ -182,8 +187,8 @@ Current required early gates:
 - Phase 1: LongFlow failure hypothesis, competitive matrix, and DeepSeek V4
   retrofit differentiation.
 
-The project should be killed or pivoted if Phase 1 cannot identify a concrete
-LongFlow failure mode that ThoughtFlow-FP8 directly addresses.
+This historical kill/pivot rule has fired for the positive-method branch. It is
+superseded by the current diagnostic-paper stop rule and reopen gate.
 
 Phase 4 Macbook kernel work must run through `TRITON_INTERPRET=1` against a CPU
 reference. Interpreter-mode correctness is not GPU performance evidence.

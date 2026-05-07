@@ -2,7 +2,7 @@
 
 - status: falsification-methodology workshop note; no live compression method
 - current decision: no live positive method branch
-- camera-readiness: not yet camera-ready; can become ready as a methodology/negative-results workshop diagnostic after caveat-forward prose polish
+- camera-readiness: ready as a methodology/negative-results workshop diagnostic after copyedit and venue-specific framing; remaining work is not new experiments
 
 ## Paper Link
 

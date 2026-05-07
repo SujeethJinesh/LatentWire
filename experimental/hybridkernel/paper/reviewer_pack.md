@@ -42,6 +42,12 @@ The runbook now also requires a reduction input manifest tying each reduced row
 to exact Nsight exports, windows, commands, and script hashes; analyst-selected
 timeline windows without that manifest are review risks, not camera-ready
 evidence.
+The GPU packet handoff also includes
+`phase2/reduction_worksheet_template.tsv` and
+`phase2/cross_family_control_replacement_template.json`. The first makes manual
+timeline reduction auditable; the second is the only admissible way to replace
+Qwen3-Next with a smaller cross-family hybrid before profiling. Any
+cross-family replacement chosen after inspecting profiler output is audit-only.
 
 ## Reviewer Risks
 

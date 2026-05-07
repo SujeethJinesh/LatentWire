@@ -1,0 +1,34 @@
+{
+  "status": "TEMPLATE_ONLY_NOT_NATIVE_EVIDENCE",
+  "purpose": "Fill this only if Qwen3-Next cannot be run on the selected NVIDIA host. A replacement must be preregistered before profiling and copied into metadata/native_control_matrix.json before any metric rows are collected.",
+  "allowed_use": "A feasible replacement preserves the full-matrix requirement. If no replacement is preregistered before profiling, the packet remains audit-only.",
+  "architecture_map_requirement": "Before profiling, run or extend the hybrid architecture-map extractor for the replacement model, copy the resulting map into the run packet, and record its SHA-256 here. Boundary indices and directions must come from that map, not from manual layer-name guesses.",
+  "replacement_row": {
+    "row_role": "cross_family_falsification",
+    "model": "TO_FILL_BEFORE_PROFILE",
+    "model_revision": "TO_FILL_BEFORE_PROFILE",
+    "served_dtype": "bfloat16",
+    "control_family": "cross_family_hybrid_control",
+    "control_model_or_segment": "TO_FILL_BOUNDARY_WINDOWS_FROM_ARCHITECTURE_MAP",
+    "boundary_direction": "TO_FILL_BOUNDARY_DIRECTION",
+    "boundary_indices": "TO_FILL_BOUNDARY_INDICES_FROM_METADATA_ARCHITECTURE_MAP",
+    "required_repeats": 3,
+    "request_shape": {
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "requests": 16
+    },
+    "feasibility_reason": "TO_FILL_WHY_THIS_MODEL_FITS_AND_IS_A_HYBRID_CONTROL",
+    "architecture_map_path": "metadata/architecture_map.json",
+    "architecture_map_sha256": "sha256:TO_FILL_BEFORE_PROFILE",
+    "operator_initials": "TO_FILL_BEFORE_PROFILE",
+    "preregistration_timestamp_utc": "TO_FILL_BEFORE_PROFILE"
+  },
+  "must_not_do": [
+    "Do not substitute a pure Transformer or pure SSM model as the cross-family hybrid control.",
+    "Do not choose the replacement after seeing Granite primary rows.",
+    "Do not promote a Granite-only packet.",
+    "Do not change request shape for only the replacement control."
+  ]
+}

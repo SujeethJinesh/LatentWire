@@ -150,6 +150,12 @@ If Qwen3-Next cannot load on the selected 5090, record that in
 `metadata/command_notes.md` and keep the packet audit-only. A Granite-only
 packet can inform a kill/prototype decision, but it cannot satisfy the frozen
 full-matrix promotion gate.
+If a smaller cross-family hybrid control is available, fill
+`experimental/hybridkernel/phase2/cross_family_control_replacement_template.json`
+before any profiling starts and copy the filled row into
+`metadata/native_control_matrix.json`. A replacement chosen after seeing
+Granite rows is not admissible, and a packet without a preregistered
+cross-family hybrid row remains audit-only.
 
 Create a reduction input manifest before reducing any timeline windows. This
 file is the row-reduction audit trail: every row in `profiler_metrics.json`
@@ -190,6 +196,11 @@ The worksheet can be a Markdown file or TSV, but it must be cited by SHA-256 in
 run_id	row_role	model	control_segment	nsys_sqlite	nsys_export_sha256	window_start_ms	window_end_ms	total_step_ms	boundary_ms	matched_non_boundary_ms	ncu_rep	ncu_sha256	ncu_kernel_regex	ncu_launch_skip	ncu_launch_count	reducer_command	notes
 ```
 
+A TSV worksheet template is checked in at
+`experimental/hybridkernel/phase2/reduction_worksheet_template.tsv`. Copy it
+into the run packet, fill one row per independent metric row, and cite its
+SHA-256 in `metadata/reduction_input_manifest.json`.
+
 Do not reuse a worksheet row across repeats. `total_step_ms`, `boundary_ms`,
 and `matched_non_boundary_ms` must come from the same server-side trace window
 and must cite the exact time interval used to compute them.
@@ -229,7 +240,10 @@ JSON
 If you cannot run the cross-family model, leave the metric rows absent and
 record the missing control in `readout.md`; the packet is then audit-only. Do
 not keep a Qwen metric row without a matching `model_scopes` entry and client
-replay log.
+replay log. If you preregister a smaller cross-family replacement, update this
+`profile_scope.json` block before profiling: replace the cross-family
+`model_scopes` entry, use the replacement vLLM command, and make sure the
+client JSON logs and metric `model` fields use the replacement model ID.
 
 ## Workload Matrix
 
@@ -243,7 +257,7 @@ the same request/runtime shape and cite distinct Nsight artifacts.
 |---|---|---|---|---|
 | `primary_hybrid` | Granite 4.0 H Tiny, or Granite 4.0 H Small if VRAM allows | measure Granite attention/SSM boundary windows | prefill 128, decode 64, requests 16, batch 1 unless explicitly changed everywhere | only these rows may clear the 3% positive gate |
 | `same_family_control` | same Granite model | same-model non-boundary SSM/attention-internal windows | exactly same dtype, graph mode, prompt/decode/request shape | must stay below the 3% gate |
-| `cross_family_falsification` | Qwen3-Next hybrid family if available | check whether the same boundary signal appears in a different hybrid family | exactly same dtype, graph mode, prompt/decode/request shape | must stay below the 3% gate |
+| `cross_family_falsification` | Qwen3-Next hybrid family if available, or a separately preregistered feasible hybrid replacement | check whether the same boundary signal appears in a different hybrid family | exactly same dtype, graph mode, prompt/decode/request shape | must stay below the 3% gate |
 
 If either control family is unavailable, record it as missing in the packet and
 keep the conclusion limited to a profiling audit. Do not substitute an unmapped
@@ -267,7 +281,7 @@ and metric row.
 |---|---|---|---|
 | `granite_primary_r1`, `granite_primary_r2`, `granite_primary_r3` | `primary_hybrid` | `$GRANITE_MODEL` | boundary windows |
 | `granite_same_family_r1`, `granite_same_family_r2`, `granite_same_family_r3` | `same_family_control` | `$GRANITE_MODEL` | non-boundary same-type windows |
-| `qwen_cross_family_r1`, `qwen_cross_family_r2`, `qwen_cross_family_r3` | `cross_family_falsification` | `$QWEN_MODEL` | matched boundary windows |
+| `cross_family_r1`, `cross_family_r2`, `cross_family_r3` | `cross_family_falsification` | `$QWEN_MODEL` or `$PREREGISTERED_CROSS_FAMILY_MODEL` | matched boundary windows from that model's architecture map |
 
 For each row in the table, start a fresh profiled server for that model and use
 the run ID in every output path:
@@ -313,9 +327,12 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
 
 Repeat with `RUN_ID=granite_primary_r2` and seed `2`, then
 `RUN_ID=granite_primary_r3` and seed `3`. Repeat the same pattern for
-`granite_same_family_*` and `qwen_cross_family_*`, changing only `RUN_ID`,
-`MODEL`, and seed. Keep `batch-size`, `prefill-tokens`, `decode-tokens`, and
-`requests` fixed across all nine rows unless a new packet is started.
+`granite_same_family_*` and `cross_family_*`, changing only `RUN_ID`, `MODEL`,
+and seed. For a replacement cross-family model, use the preregistered
+replacement model ID consistently in `MODEL`, `profile_scope.json`,
+`native_control_matrix.json`, and client logs. Keep `batch-size`,
+`prefill-tokens`, `decode-tokens`, and `requests` fixed across all nine rows
+unless a new packet is started.
 
 ## Warmup And Determinism
 

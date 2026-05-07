@@ -8,6 +8,8 @@ to finish every Mac-local artifact that can be finished before NVIDIA GPU time,
 then move only surviving branches to the 5090 gate.
 
 The current sprint ledger is `project_status_20260506.md`.
+The latest full local readiness recheck is
+`local_readiness_recheck_20260507.md` (`284 passed, 1 skipped, 2 warnings`).
 
 ## Active Branches
 

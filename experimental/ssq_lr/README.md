@@ -17,9 +17,10 @@ Estimated completion:
   mixed INT3/MXFP4 S2b replay clears the executable local S2 contract, but the
   same recipe fails a longer-window 12-prompt replay. Layer-localization then
   finds a narrower candidate on layers `0` and `30`; a stricter 32-token
-  Granite Tiny prefilter weakens pure INT3 but keeps
-  `mixed_int3_mxfp4_low_error_25pct` alive at `4.192x` counted memory and zero
-  selected argmax drift. The same frozen `0,30` recipe fails a 12-prompt
+  Granite Tiny prefilter weakens pure INT3 and historically selected
+  `mixed_int3_mxfp4_low_error_25pct` at `4.192x` counted memory and zero
+  selected argmax drift. That pre-transfer candidate is now superseded: the
+  same frozen `0,30` recipe fails a 12-prompt
   no-retuning transfer replay on the second complete local hybrid model
   (`ibm-granite/granite-4.0-h-350m`): selected accuracy CI high rises to
   `0.05263`, so S3 does not promote. A layer-localized diagnostic shows layer
@@ -164,7 +165,7 @@ The selected-layer prompt-repeat tensor packet is:
 - distribution passing layers: `4`
 - Holm minimum p-value: `2.775512e-05`
 
-This keeps SSQ-LR alive as a layer-selective hypothesis, but it is still
+This kept SSQ-LR worth testing as a layer-selective hypothesis, but it was
 explicitly non-promoting because the layer subset was selected after the
 all-layer scout. Treat layers `0`, `12`, and `30` as the current frozen primary
 set and layer `18` as a near-miss/control. The next local gate must be either a
@@ -185,9 +186,9 @@ The fresh held-out S1b tensor packet is:
 - Holm minimum p-value: `2.775512e-05`
 
 This is the first non-post-hoc Mac evidence that the layer-selective state
-heterogeneity hypothesis is alive. It still cannot promote SSQ-LR to GPU by
+heterogeneity hypothesis is real. It still cannot promote SSQ-LR to GPU by
 itself because S1 only establishes state distribution heterogeneity, not a
-usable state-quantization recipe.
+usable state-quantization recipe; later S2/S3 replay stops the current recipe.
 
 The current resource-limited S2 continuation replay scouts are:
 
@@ -249,20 +250,20 @@ fails and selects only FP8 at `2.0x`. The combined `0,30` replay passes with
 `--max-input-tokens 32 --prefix-tokens 12` then weakens pure INT3 on `0,30`
 (`accuracy CI high 0.105`) but selects
 `mixed_int3_mxfp4_low_error_25pct` at `4.192x`, zero selected accuracy drift,
-and `0.05044` selected NLL-delta CI high. This keeps SSQ-LR alive only as a
-layer-selective mixed-precision Mac candidate; it is still resource-limited
-simulated replay.
+and `0.05044` selected NLL-delta CI high. This became the frozen pre-transfer
+candidate, but it has since been stopped by the Granite 350M no-retuning
+transfer replay. It is historical narrowing evidence, not a live GPU handoff.
 
-Highest-value next Mac-side S2 move:
+Historical next Mac-side S2/S3 move, now completed and superseded:
 
 1. Freeze the layer-selective candidate
    `mixed_int3_mxfp4_low_error_25pct` on layers `0,30`; do not include
    layer `12`, and do not revive pure INT3 without another held-out pass.
-2. The next admissible Mac gate is S3 transfer/no-retuning replay for that
+2. The next admissible Mac gate was S3 transfer/no-retuning replay for that
    exact layer-selective recipe, with longer continuations, paired uncertainty,
-   and verbosity/length-drift readouts. Do not lower the `>=4x` threshold or
-   treat native MXFP4 scale packing as free metadata without a separate
-   hardware-backed byte-accounting note.
+   and verbosity/length-drift readouts. That replay failed on Granite 350M. Do
+   not lower the `>=4x` threshold or treat native MXFP4 scale packing as free
+   metadata without a separate hardware-backed byte-accounting note.
 
 Regenerate it with:
 
@@ -445,9 +446,9 @@ Historical/general S1 packets can be validated with:
   --mode real --project ssq_lr
 ```
 
-Active gate status: held-out S1b is alive, the all-primary mixed recipe fails
-the longer-window replay, layer-localization excludes layer `12`, and the
-strictest current `0,30` replay selects
+Active gate status: held-out S1b state heterogeneity is real, the all-primary
+mixed recipe fails the longer-window replay, layer-localization excludes layer
+`12`, and the strictest Granite Tiny `0,30` replay historically selected
 `mixed_int3_mxfp4_low_error_25pct`. The cache-only S3 prefilter
 `../shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/`
 freezes that exact recipe and validates cleanly under the S3 checker, but the
@@ -459,6 +460,9 @@ replay for the frozen `0,30` mixed recipe failed:
 `../shared/results/ssq_lr_s3_transfer_granite_350m_12p_layers0_30_20260507/`
 has decision `FAIL_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY`, selected fallback
 `int8_primary_state_block64`, and only `1.984x` memory reduction. The
+transfer attempt fails before promotion because the frozen source recipe does
+not even clear the S2 quality/byte contract on the transfer model; the paired
+layer-0 packets then test and fail the stricter S3 no-retuning contract. The
 diagnostic layer-localized packets show layer `0` passes on 350M but layer `30`
 fails, and the paired local S3 packets
 `../shared/results/ssq_lr_s3_local_transfer_prefilter_mixed25_granite_tiny_350m_layer0_12p_20260507/`

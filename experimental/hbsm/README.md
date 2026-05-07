@@ -139,6 +139,9 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   --mode real --project hbsm
 ```
 
+Expected decision:
+`RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY`.
+
 The exact B1 sensitivity-row checklist is
 `../shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl`;
 regenerate it with:
@@ -264,7 +267,13 @@ Resource-limited Granite Tiny HBSM B1 sensitivity smoke:
 HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   ./venv_arm64/bin/python -m experimental.shared.hbsm_local_sensitivity_runner \
   --max-input-tokens 8 --layer-limit 8 --block-size 32
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/shared/results/hbsm_local_sensitivity_20260507/hbsm_gate_packet \
+  --mode real --project hbsm
 ```
+
+Expected decision:
+`RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY`.
 
 Resource-limited two-prompt prompt-repeat scout:
 
@@ -277,6 +286,9 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   experimental/shared/results/hbsm_prompt2_sensitivity_20260507/hbsm_gate_packet \
   --mode real --project hbsm
 ```
+
+Expected decision:
+`RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY`.
 
 ## GPU Rule
 

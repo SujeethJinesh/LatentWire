@@ -151,6 +151,13 @@ frozen sparse-cache surface.
 
 ## Local Readiness Recheck
 
+Latest recorded result:
+`experimental/local_readiness_recheck_20260507.md`.
+
+```text
+284 passed, 1 skipped, 2 warnings in 6.84s
+```
+
 Before interpreting any new native packet, rerun the owned Mac suite:
 
 ```bash

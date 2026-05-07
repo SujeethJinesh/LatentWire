@@ -31,6 +31,11 @@ executable follow-up contracts in \texttt{experimental/shared/followup\_gate\_co
 they require frozen recipe IDs, byte accounting, BF16 no-op controls, paired
 accuracy and continuation-NLL quality bounds, verbosity/length-drift readouts
 before revival, frozen recipe/source hashes, and no-retuning transfer rows.
+The byte gate is counted as
+\[
+\frac{\mathrm{BF16\ state\ bytes}}{\mathrm{quantized\ state\ bytes} + \mathrm{scale\ bytes} + \mathrm{metadata\ bytes}},
+\]
+so scale tensors, layer masks, and recipe metadata are not free.
 Resource-limited S2 scouts are not current evidence
 for promotion. SSQ-LR makes no quality, byte-savings, transfer, GPU, latency, or
 throughput claim until non-resource-limited S1--S3 packets clear.
@@ -73,10 +78,11 @@ memory, zero selected accuracy drift, and 0.05044 selected NLL-delta CI high.
 The S3 transfer replay then fails on the second complete local hybrid model:
 Granite 350M with the same 12 prompts, layers 0 and 30, 32-token context, and
 no retuning selects an INT8 fallback at only 1.984$\times$ memory. Layer
-localization shows layer 0 can pass on Granite 350M and layer 30 fails, but the
-source Granite Tiny layer-0 replay and Granite 350M layer-0 replay prefer
-different low-bit recipes. Two local S3 packets that freeze either mixed25 or
-INT3 for layer 0 both fail, so there is no current frozen recipe that transfers.
+localization is post-hoc diagnostic evidence only: layer 0 can pass on Granite
+350M and layer 30 fails, but the source Granite Tiny layer-0 replay and Granite
+350M layer-0 replay prefer different low-bit recipes. Two local S3 packets that
+freeze either mixed25 or INT3 for layer 0 both fail, so there is no current
+frozen recipe that transfers.
 
 \begin{table}[h]
 \centering
@@ -151,7 +157,8 @@ NVIDIA documentation treats Mamba SSM cache quantization as a separate
 deployment challenge and selects FP16 with stochastic rounding for the SSM cache,
 with INT16/block-scaled variants discussed as controls. SSQ-LR is therefore not
 novel for noticing SSM cache precision; it must beat this baseline with a
-sub-FP16 recipe and paired quality evidence. The source memo is
+sub-FP16 recipe and paired quality evidence. The current local recipes do not
+beat this baseline. The source memo is
 \url{../../../references/754_ssq_lr_nemotron_state_cache_refs_20260507.md}.
 
 \section{Claim Boundary}
