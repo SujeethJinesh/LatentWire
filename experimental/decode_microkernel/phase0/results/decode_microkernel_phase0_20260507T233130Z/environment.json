@@ -1,0 +1,38 @@
+{
+  "created_at_utc": "2026-05-07T23:31:30Z",
+  "cwd": "/workspace/LatentWire",
+  "platform": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-110-generic-x86_64-with-glibc2.39",
+    "system": "Linux"
+  },
+  "python": {
+    "executable": "/workspace/LatentWire/.venv_gpu/bin/python",
+    "version": "3.12.3"
+  },
+  "schema_version": "dmc_phase0_environment_v1",
+  "source_packet_environment": {
+    "captured_at_utc": "2026-05-07T21:53:51Z",
+    "cuda_visible_devices": "0",
+    "environment_version": "hybridkernel_environment_v1",
+    "gpu": "NVIDIA RTX PRO 6000 Blackwell Server Edition, 580.142, 97887 MiB",
+    "hf_home": "/workspace/hf_cache",
+    "hostname": "eb0478d17530",
+    "ncu_version": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2025 NVIDIA Corporation\nVersion 2025.1.1.0 (build 35528883) (public-release)",
+    "notes": "Pre-profile replacement setup snapshot; refresh after final profiler rows.",
+    "nsys_version": "NVIDIA Nsight Systems version 2024.6.2.225-246235244400v0",
+    "nvidia_smi": "Thu May  7 21:25:57 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.142                Driver Version: 580.142        CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA RTX PRO 6000 Blac...    On  |   00000000:11:00.0 Off |                    0 |\n| N/A   24C    P8             37W /  600W |       0MiB /  97887MiB |      0%      Default |\n|                                         |                        |             Disabled |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|  No running processes found                                                             |\n+-----------------------------------------------------------------------------------------+",
+    "packages": {
+      "accelerate": "1.13.0",
+      "huggingface-hub": "0.36.2",
+      "torch": "2.8.0+cu128",
+      "transformers": "4.57.6",
+      "triton": "3.4.0",
+      "vllm": "0.10.2"
+    },
+    "python_version": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+    "timestamp_utc": "2026-05-07T21:25:57Z"
+  },
+  "source_packet_environment_path": "experimental/hybridkernel/phase2/results/hybridkernel_profiler_gate_20260507T212428Z/metadata/environment.json",
+  "source_packet_environment_sha256": "sha256:5a0fe97c4285648208f0193b4d852cd2d7a433377ac9dbd1ee155942989a2c68"
+}

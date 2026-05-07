@@ -60,8 +60,38 @@ def check_no_prereg_drift(state: dict) -> None:
     for pattern in PREREG_GLOBS:
         for path in REPO_ROOT.glob(pattern):
             rel = path.relative_to(REPO_ROOT)
+            exists_at_start = subprocess.run(
+                ["git", "cat-file", "-e", f"{started_sha}:{rel}"],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+            )
+            diff_base = started_sha
+            if exists_at_start.returncode != 0:
+                added = subprocess.run(
+                    [
+                        "git",
+                        "log",
+                        "--diff-filter=A",
+                        "--format=%H",
+                        "--reverse",
+                        "--",
+                        str(rel),
+                    ],
+                    cwd=REPO_ROOT,
+                    capture_output=True,
+                    text=True,
+                )
+                if added.returncode != 0:
+                    fail(f"git log failed on new preregistration {rel}: {added.stderr}")
+                added_shas = [line.strip() for line in added.stdout.splitlines() if line.strip()]
+                if not added_shas:
+                    fail(
+                        f"new preregistration file is uncommitted and cannot be audited: {rel}"
+                    )
+                diff_base = added_shas[0]
             result = subprocess.run(
-                ["git", "diff", "--name-only", started_sha, "HEAD", "--", str(rel)],
+                ["git", "diff", "--name-only", diff_base, "HEAD", "--", str(rel)],
                 cwd=REPO_ROOT,
                 capture_output=True,
                 text=True,
@@ -69,7 +99,7 @@ def check_no_prereg_drift(state: dict) -> None:
             if result.returncode != 0:
                 fail(f"git diff failed on {rel}: {result.stderr}")
             if result.stdout.strip():
-                fail(f"preregistration file modified during swarm: {rel}")
+                fail(f"preregistration file modified after freeze point: {rel}")
 
 
 def check_results_for_completed_entries(state: dict) -> None:

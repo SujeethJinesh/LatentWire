@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/workspace/LatentWire/.venv_gpu/bin/python",
+    "/workspace/LatentWire/experimental/decode_microkernel/phase0/run_dmc_phase0.py",
+    "--run-id",
+    "decode_microkernel_phase0_20260507T233130Z"
+  ],
+  "cwd": "/workspace/LatentWire",
+  "ended_at_utc": "2026-05-07T23:31:30Z",
+  "environment_variables": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/workspace/hf_cache"
+  },
+  "git_sha": "1498b283f1d8c9941165ce3837f2cca49afb181c",
+  "input_packet": "/workspace/LatentWire/experimental/hybridkernel/phase2/results/hybridkernel_profiler_gate_20260507T212428Z",
+  "no_gpu_inference": true,
+  "path_python": "/usr/local/bin/python",
+  "run_dir": "/workspace/LatentWire/experimental/decode_microkernel/phase0/results/decode_microkernel_phase0_20260507T233130Z",
+  "schema_version": "dmc_phase0_command_v1",
+  "script_path": "experimental/decode_microkernel/phase0/run_dmc_phase0.py",
+  "script_sha256": "sha256:3cbb1e07293a6cbde53b32ced03ca5758f2e9f6dbc648357ab3a367c9a953a47",
+  "started_at_utc": "2026-05-07T23:31:30Z"
+}

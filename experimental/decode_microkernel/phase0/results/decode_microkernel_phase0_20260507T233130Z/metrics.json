@@ -1,0 +1,1287 @@
+{
+  "admitted_rows": [
+    {
+      "candidate_class_breakdown": {
+        "gemv": {
+          "launches": 202624,
+          "time_ms": 1927.607047
+        },
+        "moe": {
+          "launches": 163840,
+          "time_ms": 1458.446917
+        },
+        "selective_scan": {
+          "launches": 36576,
+          "time_ms": 100.882015
+        }
+      },
+      "candidate_classes_present": [
+        "gemv",
+        "moe",
+        "selective_scan"
+      ],
+      "candidate_launch_fraction": 0.3397167902899528,
+      "candidate_time_fraction": 0.7206922446996982,
+      "client_summary": {
+        "ended_at_utc": "2026-05-07T22:23:33.559768Z",
+        "model": "ibm-granite/granite-4.0-h-tiny",
+        "ok_requests": 16,
+        "run_id": "granite_primary_r1",
+        "started_at_utc": "2026-05-07T22:23:17.555487Z",
+        "total_requests": 16
+      },
+      "decode_tokens_total": 1024,
+      "kernel_name_count": 62,
+      "launches_per_decode_token": 1158.59375,
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "row_role": "primary_hybrid",
+      "run_id": "granite_primary_r1",
+      "source_client_log": "logs/client_granite_primary_r1.log",
+      "source_client_log_sha256": "sha256:50b5c5201c95d84ecfc0911d44b6e341a047bec3ae76c0decf0927b314c8f9b1",
+      "source_nsys_artifact": "nsys/granite_primary_r1.sanitized.sqlite",
+      "source_nsys_artifact_sha256": "sha256:16a4ff21cca1bb7aa213ba00f5aa182e837c9c2fcd0ee220dfe3a93aff6ae09b",
+      "top3_time_fraction": 0.6113156106758398,
+      "top5_launch_fraction": 0.34033715441672285,
+      "top_kernels_by_launches": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.956158
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1027.303456
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 333.650889
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.61659
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 336.477774
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.827033
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.665687
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 75.460176
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2",
+          "total_ms": 63.501894
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 60.543627
+        }
+      ],
+      "top_kernels_by_time": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.956158
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1027.303456
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 336.477774
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 333.650889
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.61659
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.827033
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 112.950487
+        },
+        {
+          "launches": 36288,
+          "name": "_selective_scan_update_kernel",
+          "total_ms": 100.532257
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.665687
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 83.659677
+        }
+      ],
+      "total_kernel_launches": 1186400,
+      "total_kernel_time_ms": 4838.314835
+    },
+    {
+      "candidate_class_breakdown": {
+        "gemv": {
+          "launches": 202624,
+          "time_ms": 1926.649242
+        },
+        "moe": {
+          "launches": 163840,
+          "time_ms": 1457.613193
+        },
+        "selective_scan": {
+          "launches": 36576,
+          "time_ms": 100.698459
+        }
+      },
+      "candidate_classes_present": [
+        "gemv",
+        "moe",
+        "selective_scan"
+      ],
+      "candidate_launch_fraction": 0.3397167902899528,
+      "candidate_time_fraction": 0.7207263710694573,
+      "client_summary": {
+        "ended_at_utc": "2026-05-07T22:27:41.335515Z",
+        "model": "ibm-granite/granite-4.0-h-tiny",
+        "ok_requests": 16,
+        "run_id": "granite_primary_r2",
+        "started_at_utc": "2026-05-07T22:27:25.590572Z",
+        "total_requests": 16
+      },
+      "decode_tokens_total": 1024,
+      "kernel_name_count": 62,
+      "launches_per_decode_token": 1158.59375,
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "row_role": "primary_hybrid",
+      "run_id": "granite_primary_r2",
+      "source_client_log": "logs/client_granite_primary_r2.log",
+      "source_client_log_sha256": "sha256:50fd0ef5aa77c06c5f04e802143f2e3b153977a9b9880d901e3c98ca252dd8d1",
+      "source_nsys_artifact": "nsys/granite_primary_r2.sanitized.sqlite",
+      "source_nsys_artifact_sha256": "sha256:86bca506bf72bb6a64cf7ad2980625b49f9e01c645817d579c9a95238ea1f8a0",
+      "top3_time_fraction": 0.6114762357163531,
+      "top5_launch_fraction": 0.34033715441672285,
+      "top_kernels_by_launches": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.604404
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1027.032204
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 333.044838
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.458878
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 336.062154
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.712651
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.518835
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 75.355614
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2",
+          "total_ms": 63.448486
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 60.49854
+        }
+      ],
+      "top_kernels_by_time": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.604404
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1027.032204
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 336.062154
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 333.044838
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.458878
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.712651
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 112.802961
+        },
+        {
+          "launches": 36288,
+          "name": "_selective_scan_update_kernel",
+          "total_ms": 100.349468
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.518835
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 83.618503
+        }
+      ],
+      "total_kernel_launches": 1186400,
+      "total_kernel_time_ms": 4835.345332
+    },
+    {
+      "candidate_class_breakdown": {
+        "gemv": {
+          "launches": 202624,
+          "time_ms": 1926.467265
+        },
+        "moe": {
+          "launches": 163840,
+          "time_ms": 1457.295131
+        },
+        "selective_scan": {
+          "launches": 36576,
+          "time_ms": 100.793697
+        }
+      },
+      "candidate_classes_present": [
+        "gemv",
+        "moe",
+        "selective_scan"
+      ],
+      "candidate_launch_fraction": 0.3397167902899528,
+      "candidate_time_fraction": 0.72079715249392,
+      "client_summary": {
+        "ended_at_utc": "2026-05-07T22:32:25.249828Z",
+        "model": "ibm-granite/granite-4.0-h-tiny",
+        "ok_requests": 16,
+        "run_id": "granite_primary_r3",
+        "started_at_utc": "2026-05-07T22:32:09.415775Z",
+        "total_requests": 16
+      },
+      "decode_tokens_total": 1024,
+      "kernel_name_count": 62,
+      "launches_per_decode_token": 1158.59375,
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "row_role": "primary_hybrid",
+      "run_id": "granite_primary_r3",
+      "source_client_log": "logs/client_granite_primary_r3.log",
+      "source_client_log_sha256": "sha256:f2a6ad89012c921e6f11dfd03116d700fc16510b26c877743ce86580a81fb0da",
+      "source_nsys_artifact": "nsys/granite_primary_r3.sanitized.sqlite",
+      "source_nsys_artifact_sha256": "sha256:746761bd1f702100ac6908e5ade4a93081ce5ea6fa8f93d634f0bd7c8d30c5b8",
+      "top3_time_fraction": 0.6115168672697799,
+      "top5_launch_fraction": 0.34033715441672285,
+      "top_kernels_by_launches": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.422805
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1027.105945
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 333.04446
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.350673
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 335.732687
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.662661
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.456499
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 75.29772
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2",
+          "total_ms": 63.416774
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 60.471817
+        }
+      ],
+      "top_kernels_by_time": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.422805
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1027.105945
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 335.732687
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 333.04446
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.350673
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.662661
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 112.75534
+        },
+        {
+          "launches": 36288,
+          "name": "_selective_scan_update_kernel",
+          "total_ms": 100.444994
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.456499
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 83.541371
+        }
+      ],
+      "total_kernel_launches": 1186400,
+      "total_kernel_time_ms": 4834.308905
+    },
+    {
+      "candidate_class_breakdown": {
+        "gemv": {
+          "launches": 202624,
+          "time_ms": 1927.122054
+        },
+        "moe": {
+          "launches": 163840,
+          "time_ms": 1457.481013
+        },
+        "selective_scan": {
+          "launches": 36576,
+          "time_ms": 100.714912
+        }
+      },
+      "candidate_classes_present": [
+        "gemv",
+        "moe",
+        "selective_scan"
+      ],
+      "candidate_launch_fraction": 0.3397167902899528,
+      "candidate_time_fraction": 0.7207402711959618,
+      "client_summary": {
+        "ended_at_utc": "2026-05-07T22:38:43.720776Z",
+        "model": "ibm-granite/granite-4.0-h-tiny",
+        "ok_requests": 16,
+        "run_id": "granite_same_family_r2",
+        "started_at_utc": "2026-05-07T22:38:28.364946Z",
+        "total_requests": 16
+      },
+      "decode_tokens_total": 1024,
+      "kernel_name_count": 62,
+      "launches_per_decode_token": 1158.59375,
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "row_role": "same_family_control",
+      "run_id": "granite_same_family_r2",
+      "source_client_log": "logs/client_granite_same_family_r2.log",
+      "source_client_log_sha256": "sha256:4be42b1d436bc6f5b6431253f356a9a750090516d1d8cba758f10797dac8e278",
+      "source_nsys_artifact": "nsys/granite_same_family_r2.sanitized.sqlite",
+      "source_nsys_artifact_sha256": "sha256:77cb3b8e9cd2052b329e447802f512e7a4d8ba2a82d7a7b70c2c73afacc6c9d0",
+      "top3_time_fraction": 0.6114263025047263,
+      "top5_launch_fraction": 0.34033715441672285,
+      "top_kernels_by_launches": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.748332
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1026.952429
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 333.373722
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.447723
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 336.002465
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.71335
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.526119
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 75.329275
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2",
+          "total_ms": 63.461956
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 60.489849
+        }
+      ],
+      "top_kernels_by_time": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.748332
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1026.952429
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 336.002465
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 333.373722
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.447723
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.71335
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 112.808619
+        },
+        {
+          "launches": 36288,
+          "name": "_selective_scan_update_kernel",
+          "total_ms": 100.365728
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.526119
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 83.584858
+        }
+      ],
+      "total_kernel_launches": 1186400,
+      "total_kernel_time_ms": 4835.74752
+    },
+    {
+      "candidate_class_breakdown": {
+        "gemv": {
+          "launches": 202624,
+          "time_ms": 1926.482025
+        },
+        "moe": {
+          "launches": 163840,
+          "time_ms": 1457.280183
+        },
+        "selective_scan": {
+          "launches": 36576,
+          "time_ms": 100.646594
+        }
+      },
+      "candidate_classes_present": [
+        "gemv",
+        "moe",
+        "selective_scan"
+      ],
+      "candidate_launch_fraction": 0.3397167902899528,
+      "candidate_time_fraction": 0.7207823086966989,
+      "client_summary": {
+        "ended_at_utc": "2026-05-07T22:42:08.575123Z",
+        "model": "ibm-granite/granite-4.0-h-tiny",
+        "ok_requests": 16,
+        "run_id": "granite_same_family_r3",
+        "started_at_utc": "2026-05-07T22:41:52.894051Z",
+        "total_requests": 16
+      },
+      "decode_tokens_total": 1024,
+      "kernel_name_count": 62,
+      "launches_per_decode_token": 1158.59375,
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "row_role": "same_family_control",
+      "run_id": "granite_same_family_r3",
+      "source_client_log": "logs/client_granite_same_family_r3.log",
+      "source_client_log_sha256": "sha256:8eb1779fabb1def14a2ede131141933db120597be06f81dbb29f215b51dbc0e0",
+      "source_nsys_artifact": "nsys/granite_same_family_r3.sanitized.sqlite",
+      "source_nsys_artifact_sha256": "sha256:c49d369044e3c0ca0204640a387c3ae3d6e430492997ddbc8c6c346c697597dd",
+      "top3_time_fraction": 0.6115642158009218,
+      "top5_launch_fraction": 0.34033715441672285,
+      "top_kernels_by_launches": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.601868
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1026.953271
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 332.880157
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.340033
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 335.871109
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.737795
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.455803
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 75.299798
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2",
+          "total_ms": 63.412638
+        },
+        {
+          "launches": 40960,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 60.478807
+        }
+      ],
+      "top_kernels_by_time": [
+        {
+          "launches": 121984,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 1593.601868
+        },
+        {
+          "launches": 81920,
+          "name": "fused_moe_kernel",
+          "total_ms": 1026.953271
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+          "total_ms": 335.871109
+        },
+        {
+          "launches": 80640,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 332.880157
+        },
+        {
+          "launches": 78272,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 142.340033
+        },
+        {
+          "launches": 40960,
+          "name": "void at::native::reduce_kernel<(int)128, (int)4, at::native::ReduceOp<c10::BFloat16, at::native::func_wrapper_t<c10::BFloat16, at::native::sum_functor<c10::BFloat16, float, c10::BFloat16>::operator ()(at::TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, c10::BFloat16, (int)4, (int)4>>(T3)",
+          "total_ms": 132.737795
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 112.753002
+        },
+        {
+          "launches": 36288,
+          "name": "_selective_scan_update_kernel",
+          "total_ms": 100.298245
+        },
+        {
+          "launches": 40960,
+          "name": "void vllm::moe::topkGatingSoftmax<(int)4, (int)64, (int)4, (int)16, (int)32, int>(const float *, const bool *, float *, int, T6 *, int *, int, int, int)",
+          "total_ms": 94.455803
+        },
+        {
+          "launches": 36864,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 83.490656
+        }
+      ],
+      "total_kernel_launches": 1186400,
+      "total_kernel_time_ms": 4834.204114
+    },
+    {
+      "candidate_class_breakdown": {
+        "gemv": {
+          "launches": 113920,
+          "time_ms": 12257.807326
+        },
+        "moe": {
+          "launches": 0,
+          "time_ms": 0.0
+        },
+        "selective_scan": {
+          "launches": 27440,
+          "time_ms": 92.966674
+        }
+      },
+      "candidate_classes_present": [
+        "gemv",
+        "selective_scan"
+      ],
+      "candidate_launch_fraction": 0.24727120067170444,
+      "candidate_time_fraction": 0.9245678304635507,
+      "client_summary": {
+        "ended_at_utc": "2026-05-07T22:47:19.526934Z",
+        "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+        "ok_requests": 16,
+        "run_id": "cross_family_r1",
+        "started_at_utc": "2026-05-07T22:46:57.233685Z",
+        "total_requests": 16
+      },
+      "decode_tokens_total": 1024,
+      "kernel_name_count": 53,
+      "launches_per_decode_token": 558.28125,
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "row_role": "cross_family_falsification",
+      "run_id": "cross_family_r1",
+      "source_client_log": "logs/client_cross_family_r1.log",
+      "source_client_log_sha256": "sha256:cc75613230dcf83bf186cd8bbb207df275b0af2c7e02d1cea9c24660633cff39",
+      "source_nsys_artifact": "nsys/cross_family_r1.sanitized.sqlite",
+      "source_nsys_artifact_sha256": "sha256:7c27436b821317090f9205ccf236acc0dab4dd3964470d626ec1271157fed1c2",
+      "top3_time_fraction": 0.9283212971218641,
+      "top5_launch_fraction": 0.3920794850265883,
+      "top_kernels_by_launches": [
+        {
+          "launches": 108864,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 11281.219698
+        },
+        {
+          "launches": 31744,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 72.852224
+        },
+        {
+          "launches": 28240,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 68.536745
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 85.443312
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 76.741848
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::<unnamed>::silu_kernel(at::TensorIteratorBase &)::[lambda() (instance 1)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 41.14375
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>>(at::TensorIteratorBase &, const T1 &)::[lambda(int) (instance 1)]>(int, T3)",
+          "total_ms": 38.835538
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, void at::native::<unnamed>::pow_tensor_scalar_kernel_impl<float, float>(at::TensorIteratorBase &, T2)::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 30.975465
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctorOnSelf_add<float>, std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 29.141834
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::rsqrt_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 2)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 28.768946
+        }
+      ],
+      "top_kernels_by_time": [
+        {
+          "launches": 108864,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 11281.219698
+        },
+        {
+          "launches": 5056,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 976.587628
+        },
+        {
+          "launches": 896,
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params)",
+          "total_ms": 143.107093
+        },
+        {
+          "launches": 27216,
+          "name": "_selective_scan_update_kernel",
+          "total_ms": 92.709876
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 85.443312
+        },
+        {
+          "launches": 832,
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_256x64_32x4_tn_align8>(T1::Params)",
+          "total_ms": 78.927067
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 76.741848
+        },
+        {
+          "launches": 31744,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 72.852224
+        },
+        {
+          "launches": 28240,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 68.536745
+        },
+        {
+          "launches": 25600,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2",
+          "total_ms": 64.369578
+        }
+      ],
+      "total_kernel_launches": 571680,
+      "total_kernel_time_ms": 13358.429304
+    },
+    {
+      "candidate_class_breakdown": {
+        "gemv": {
+          "launches": 113920,
+          "time_ms": 12263.522009
+        },
+        "moe": {
+          "launches": 0,
+          "time_ms": 0.0
+        },
+        "selective_scan": {
+          "launches": 27440,
+          "time_ms": 93.23771
+        }
+      },
+      "candidate_classes_present": [
+        "gemv",
+        "selective_scan"
+      ],
+      "candidate_launch_fraction": 0.24727120067170444,
+      "candidate_time_fraction": 0.9242002958795218,
+      "client_summary": {
+        "ended_at_utc": "2026-05-07T22:51:19.852020Z",
+        "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+        "ok_requests": 16,
+        "run_id": "cross_family_r2",
+        "started_at_utc": "2026-05-07T22:50:57.831905Z",
+        "total_requests": 16
+      },
+      "decode_tokens_total": 1024,
+      "kernel_name_count": 53,
+      "launches_per_decode_token": 558.28125,
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "row_role": "cross_family_falsification",
+      "run_id": "cross_family_r2",
+      "source_client_log": "logs/client_cross_family_r2.log",
+      "source_client_log_sha256": "sha256:2791e18440fed31489fcbf970601253c7b1026477edd9e8aceb1381511a9a252",
+      "source_nsys_artifact": "nsys/cross_family_r2.sanitized.sqlite",
+      "source_nsys_artifact_sha256": "sha256:1ebdfe30832be8bbbdca0b26d10980f2868109fd7eba197247b688620058605c",
+      "top3_time_fraction": 0.9279554992600599,
+      "top5_launch_fraction": 0.3920794850265883,
+      "top_kernels_by_launches": [
+        {
+          "launches": 108864,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 11286.320279
+        },
+        {
+          "launches": 31744,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 73.378754
+        },
+        {
+          "launches": 28240,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 69.261717
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 86.014876
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 77.340297
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::<unnamed>::silu_kernel(at::TensorIteratorBase &)::[lambda() (instance 1)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 41.409842
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>>(at::TensorIteratorBase &, const T1 &)::[lambda(int) (instance 1)]>(int, T3)",
+          "total_ms": 39.078527
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, void at::native::<unnamed>::pow_tensor_scalar_kernel_impl<float, float>(at::TensorIteratorBase &, T2)::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 31.134209
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctorOnSelf_add<float>, std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 29.333409
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::rsqrt_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 2)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 28.968286
+        }
+      ],
+      "top_kernels_by_time": [
+        {
+          "launches": 108864,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 11286.320279
+        },
+        {
+          "launches": 5056,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 977.20173
+        },
+        {
+          "launches": 896,
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params)",
+          "total_ms": 143.445599
+        },
+        {
+          "launches": 27216,
+          "name": "_selective_scan_update_kernel",
+          "total_ms": 92.979856
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 86.014876
+        },
+        {
+          "launches": 832,
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_256x64_32x4_tn_align8>(T1::Params)",
+          "total_ms": 78.628331
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 77.340297
+        },
+        {
+          "launches": 31744,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 73.378754
+        },
+        {
+          "launches": 28240,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 69.261717
+        },
+        {
+          "launches": 25600,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2",
+          "total_ms": 64.849345
+        }
+      ],
+      "total_kernel_launches": 571680,
+      "total_kernel_time_ms": 13370.218311
+    },
+    {
+      "candidate_class_breakdown": {
+        "gemv": {
+          "launches": 113920,
+          "time_ms": 12263.824578
+        },
+        "moe": {
+          "launches": 0,
+          "time_ms": 0.0
+        },
+        "selective_scan": {
+          "launches": 27440,
+          "time_ms": 93.2641
+        }
+      },
+      "candidate_classes_present": [
+        "gemv",
+        "selective_scan"
+      ],
+      "candidate_launch_fraction": 0.24727120067170444,
+      "candidate_time_fraction": 0.9241396158343378,
+      "client_summary": {
+        "ended_at_utc": "2026-05-07T22:54:27.843716Z",
+        "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+        "ok_requests": 16,
+        "run_id": "cross_family_r3",
+        "started_at_utc": "2026-05-07T22:54:06.037748Z",
+        "total_requests": 16
+      },
+      "decode_tokens_total": 1024,
+      "kernel_name_count": 53,
+      "launches_per_decode_token": 558.28125,
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "row_role": "cross_family_falsification",
+      "run_id": "cross_family_r3",
+      "source_client_log": "logs/client_cross_family_r3.log",
+      "source_client_log_sha256": "sha256:34a122b0a93013191e641e1665d5e8a61c726018b9f88d47effb467ab9325642",
+      "source_nsys_artifact": "nsys/cross_family_r3.sanitized.sqlite",
+      "source_nsys_artifact_sha256": "sha256:17ac91ed01be4c87f0812b5055d584ef3144ec3487c68aa55f465ae45c85f12d",
+      "top3_time_fraction": 0.9279050813450028,
+      "top5_launch_fraction": 0.3920794850265883,
+      "top_kernels_by_launches": [
+        {
+          "launches": 108864,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 11286.613075
+        },
+        {
+          "launches": 31744,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 73.474354
+        },
+        {
+          "launches": 28240,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 69.371218
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 86.078
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 77.410837
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::<unnamed>::silu_kernel(at::TensorIteratorBase &)::[lambda() (instance 1)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 41.439814
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::elementwise_kernel<(int)128, (int)2, void at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>>(at::TensorIteratorBase &, const T1 &)::[lambda(int) (instance 1)]>(int, T3)",
+          "total_ms": 39.106222
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, void at::native::<unnamed>::pow_tensor_scalar_kernel_impl<float, float>(at::TensorIteratorBase &, T2)::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 31.152278
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctorOnSelf_add<float>, std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 29.354761
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::vectorized_elementwise_kernel<(int)4, at::native::rsqrt_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 2)]::operator ()() const::[lambda() (instance 2)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>>(int, T2, T3)",
+          "total_ms": 28.980827
+        }
+      ],
+      "top_kernels_by_time": [
+        {
+          "launches": 108864,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 11286.613075
+        },
+        {
+          "launches": 5056,
+          "name": "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+          "total_ms": 977.211503
+        },
+        {
+          "launches": 896,
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params)",
+          "total_ms": 143.613842
+        },
+        {
+          "launches": 27216,
+          "name": "_selective_scan_update_kernel",
+          "total_ms": 93.005124
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 86.078
+        },
+        {
+          "launches": 832,
+          "name": "void cutlass::Kernel2<cutlass_80_tensorop_s16816gemm_bf16_256x64_32x4_tn_align8>(T1::Params)",
+          "total_ms": 79.023129
+        },
+        {
+          "launches": 27648,
+          "name": "void at::native::reduce_kernel<(int)512, (int)1, at::native::ReduceOp<float, at::native::MeanOps<float, float, float, float>, unsigned int, float, (int)4, (int)4>>(T3)",
+          "total_ms": 77.410837
+        },
+        {
+          "launches": 31744,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_0",
+          "total_ms": 73.474354
+        },
+        {
+          "launches": 28240,
+          "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)",
+          "total_ms": 69.371218
+        },
+        {
+          "launches": 25600,
+          "name": "triton_red_fused__to_copy_add_mean_mul_pow_rsqrt_2",
+          "total_ms": 64.888155
+        }
+      ],
+      "total_kernel_launches": 571680,
+      "total_kernel_time_ms": 13371.452177
+    }
+  ],
+  "candidate_class_definitions": {
+    "gemv": "kernel name contains gemv",
+    "moe": "kernel name contains moe or expert",
+    "selective_scan": "kernel name contains selective_scan or DeviceScan"
+  },
+  "created_at_utc": "2026-05-07T23:31:30Z",
+  "excluded_rows": [
+    {
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "reason": "KERNEL_SUMMARY is empty",
+      "row_role": "same_family_control",
+      "run_id": "granite_same_family_r1"
+    }
+  ],
+  "interpretation": "Offline Phase 0 candidate gate only. A PASS means launch-density and concentration justify authoring a Phase 1 consolidation method; it is not a latency speedup or paper result.",
+  "role_summary": {
+    "cross_family_falsification": {
+      "candidate_classes_present": [
+        "gemv",
+        "selective_scan"
+      ],
+      "median_candidate_launch_fraction": 0.24727120067170444,
+      "median_candidate_time_fraction": 0.9242002958795218,
+      "median_launches_per_decode_token": 558.28125,
+      "median_top3_time_fraction": 0.9279554992600599,
+      "rows": 3
+    },
+    "primary_hybrid": {
+      "candidate_classes_present": [
+        "gemv",
+        "moe",
+        "selective_scan"
+      ],
+      "median_candidate_launch_fraction": 0.3397167902899528,
+      "median_candidate_time_fraction": 0.7207263710694573,
+      "median_launches_per_decode_token": 1158.59375,
+      "median_top3_time_fraction": 0.6114762357163531,
+      "rows": 3
+    },
+    "same_family_control": {
+      "candidate_classes_present": [
+        "gemv",
+        "moe",
+        "selective_scan"
+      ],
+      "median_candidate_launch_fraction": 0.3397167902899528,
+      "median_candidate_time_fraction": 0.7207612899463304,
+      "median_launches_per_decode_token": 1158.59375,
+      "median_top3_time_fraction": 0.611495259152824,
+      "rows": 2
+    }
+  },
+  "schema_version": "dmc_phase0_metrics_v1",
+  "source_packet": "experimental/hybridkernel/phase2/results/hybridkernel_profiler_gate_20260507T212428Z",
+  "source_packet_id": "hybridkernel_profiler_gate_20260507T212428Z",
+  "source_packet_sha256": "sha256:5a629fe9a7f61e84df574b88891c1f3b988231c8792cb5346f0c6487aa44be6e",
+  "thresholds": {
+    "expected_source_rows": 9,
+    "median_candidate_launch_fraction_min": 0.2,
+    "median_candidate_time_fraction_min": 0.65,
+    "median_launches_per_decode_token_min": {
+      "cross_family_falsification": 300.0,
+      "primary_hybrid": 500.0,
+      "same_family_control": 500.0
+    },
+    "median_top3_time_fraction_min": {
+      "cross_family_falsification": 0.85,
+      "primary_hybrid": 0.6,
+      "same_family_control": 0.6
+    },
+    "min_admitted_rows": 8,
+    "min_rows_by_role": {
+      "cross_family_falsification": 3,
+      "primary_hybrid": 3,
+      "same_family_control": 2
+    },
+    "per_row_launches_per_decode_token_min": 250.0,
+    "required_classes_by_role": {
+      "cross_family_falsification": [
+        "gemv",
+        "selective_scan"
+      ],
+      "primary_hybrid": [
+        "gemv",
+        "moe"
+      ],
+      "same_family_control": [
+        "gemv",
+        "moe"
+      ]
+    }
+  },
+  "upstream_artifact_check_status": "PASS",
+  "upstream_packet_mode": "no_boundary_signal_kill"
+}

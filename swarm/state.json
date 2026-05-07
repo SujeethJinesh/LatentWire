@@ -3,8 +3,27 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": null,
-  "completed_entries": [],
+  "current_entry": "decode_microkernel_phase1",
+  "completed_entries": [
+    {
+      "id": "decode_microkernel_phase0",
+      "project": "decode_microkernel",
+      "phase": 0,
+      "decision": "PASS",
+      "result_dir": "experimental/decode_microkernel/phase0/results/decode_microkernel_phase0_20260507T233130Z",
+      "checker": "experimental/decode_microkernel/phase0/check_dmc_phase0.py",
+      "checker_output": "experimental/decode_microkernel/phase0/results/decode_microkernel_phase0_20260507T233130Z/checker_result.json",
+      "completed_at": "2026-05-07T23:31:30Z",
+      "summary": {
+        "admitted_rows": 8,
+        "excluded_rows": 1,
+        "primary_median_launches_per_decode_token": 1158.59375,
+        "same_family_median_launches_per_decode_token": 1158.59375,
+        "cross_family_median_launches_per_decode_token": 558.28125,
+        "phase1_promoted": true
+      }
+    }
+  ],
   "killed_entries": [
     {
       "id": "hybridkernel_profiler_gate",
@@ -21,10 +40,10 @@
   ],
   "infra_failed_entries": [],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 0.65,
+  "gpu_hours_used": 0.66,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-07T22:56:58Z",
-  "last_commit_sha": "c05de719",
+  "last_audit_at": "2026-05-07T23:31:30Z",
+  "last_commit_sha": "1dae37a98df78e0c1a994ad8d63d77bb399f7a57",
   "papers_camera_ready_candidate": [],
-  "notes": "HybridKernel profiler gate killed cleanly; diagnostic identified decode microkernel consolidation as the highest-priority fresh positive-method pivot candidate."
+  "notes": "HybridKernel killed; Decode Microkernel Phase 0 pivot passed and promoted to a freshly preregistered Phase 1 implementation gate."
 }

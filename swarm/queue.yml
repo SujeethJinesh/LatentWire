@@ -32,6 +32,56 @@ entries:
       criteria than the prereg, runbook wins and prereg must be updated
       BEFORE this entry executes.
 
+  - id: decode_microkernel_phase0
+    project: decode_microkernel
+    phase: 0
+    priority: 2
+    gated_by: hybridkernel_profiler_gate
+    preregistration: experimental/decode_microkernel/phase0/preregister_dmc_phase0.md
+    runner: experimental/decode_microkernel/phase0/run_dmc_phase0.py
+    runner_args: []
+    checker: experimental/decode_microkernel/phase0/check_dmc_phase0.py
+    checker_args: []
+    expected_pass_decision: PASS
+    expected_kill_decision: KILL
+    expected_infra_decision: INFRA
+    on_pass: [decode_microkernel_phase1]
+    on_kill: []
+    estimated_gpu_hours: 0
+    models:
+      source_packet_primary: ibm-granite/granite-4.0-h-tiny
+      source_packet_cross_family: nvidia/NVIDIA-Nemotron-Nano-9B-v2
+    notes: |
+      Fresh positive-method pivot from the killed HybridKernel diagnostic.
+      Offline Phase 0 measurement gate only: consumes the fixed sanitized
+      HybridKernel profiler packet and tests whether decode launch density
+      and kernel-family concentration justify a consolidation implementation.
+      PASS is not a paper speedup result.
+
+  - id: decode_microkernel_phase1
+    project: decode_microkernel
+    phase: 1
+    priority: 2
+    gated_by: decode_microkernel_phase0
+    preregistration: experimental/decode_microkernel/phase1/preregister_dmc_phase1.md
+    runner: experimental/decode_microkernel/phase1/run_dmc_phase1.py
+    runner_args: []
+    checker: experimental/decode_microkernel/phase1/check_dmc_phase1.py
+    checker_args: []
+    expected_pass_decision: PASS_DMC_PHASE1_CONSOLIDATED_REPLAY
+    expected_kill_decision: KILL_DMC_PHASE1_NO_REPLAY_GAIN
+    expected_infra_decision: FAIL_INFRA_DMC_PHASE1
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 6
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+      cross_family: nvidia/NVIDIA-Nemotron-Nano-9B-v2
+    notes: |
+      Conditional implementation gate authored after Decode Microkernel
+      Phase 0 passed. Runner/checker are not authored yet; /goal must author
+      them from preregister_dmc_phase1.md before any Phase 1 timing rows.
+
   - id: thoughtflow_paper_polish
     project: thoughtflow_fp8
     phase: paper
