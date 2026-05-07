@@ -9,6 +9,7 @@ has an executable driver instead of an ad hoc curl loop.  On Mac, use
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import json
 import time
@@ -32,7 +33,16 @@ class RequestRow:
     expected_completion_tokens_total: int
     response_usage: dict[str, Any] | None
     elapsed_s: float | None
+    start_epoch_ns: int | None
+    end_epoch_ns: int | None
+    started_at_utc: str | None
+    ended_at_utc: str | None
     status: str
+
+
+def _utc_now() -> tuple[int, str]:
+    now = dt.datetime.now(dt.UTC)
+    return time.time_ns(), now.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def _prompt(prefill_tokens: int, request_id: int) -> str:
@@ -239,6 +249,7 @@ def _planned_requests(
 
 
 def run(args: argparse.Namespace) -> dict[str, object]:
+    run_start_epoch_ns, run_started_at_utc = _utc_now()
     base_endpoint = args.endpoint.rstrip("/")
     endpoint = base_endpoint + "/v1/completions"
     profile_start_endpoint = base_endpoint + "/start_profile"
@@ -273,10 +284,15 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                         expected_completion_tokens_total=args.batch_size * args.decode_tokens,
                         response_usage=None,
                         elapsed_s=None,
+                        start_epoch_ns=None,
+                        end_epoch_ns=None,
+                        started_at_utc=None,
+                        ended_at_utc=None,
                         status="dry_run",
                     )
                 )
                 continue
+            start_epoch_ns, started_at_utc = _utc_now()
             start = time.perf_counter()
             try:
                 response = _post_json(endpoint, payload, args.timeout_s)
@@ -287,6 +303,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
             except (urllib.error.URLError, TimeoutError, RuntimeError) as exc:
                 status = f"error:{exc}"
                 response_usage = None
+            elapsed_s = time.perf_counter() - start
+            end_epoch_ns, ended_at_utc = _utc_now()
             rows.append(
                 RequestRow(
                     request_id=request_id,
@@ -300,7 +318,11 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                     requested_decode_tokens=args.decode_tokens,
                     expected_completion_tokens_total=args.batch_size * args.decode_tokens,
                     response_usage=response_usage,
-                    elapsed_s=time.perf_counter() - start,
+                    elapsed_s=elapsed_s,
+                    start_epoch_ns=start_epoch_ns,
+                    end_epoch_ns=end_epoch_ns,
+                    started_at_utc=started_at_utc,
+                    ended_at_utc=ended_at_utc,
                     status=status,
                 )
             )
@@ -308,9 +330,14 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         if args.profile_bracket and not args.dry_run:
             _post_json(profile_stop_endpoint, {}, args.timeout_s)
 
+    run_end_epoch_ns, run_ended_at_utc = _utc_now()
     return {
         "model": args.model,
         "run_id": args.run_id,
+        "started_at_utc": run_started_at_utc,
+        "ended_at_utc": run_ended_at_utc,
+        "start_epoch_ns": run_start_epoch_ns,
+        "end_epoch_ns": run_end_epoch_ns,
         "endpoint": endpoint,
         "profile_bracket": args.profile_bracket,
         "profile_start_endpoint": profile_start_endpoint if args.profile_bracket else None,
