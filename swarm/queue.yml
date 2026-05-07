@@ -1,0 +1,318 @@
+version: 0
+description: |
+  COLM 2026 GPU swarm queue. Priority order. Conditional follow-ups defined
+  per entry via on_pass/on_kill. Modified only by /goal during execution to
+  append on_pass entries; never modified to alter prereg references.
+
+entries:
+
+  - id: hybridkernel_profiler_gate
+    project: hybridkernel
+    phase: 2
+    priority: 1
+    preregistration: experimental/hybridkernel/phase2/preregister_profiler_gate.md
+    runner: experimental/hybridkernel/phase2/profiler_driver.py
+    runner_args: ["--full-matrix"]
+    checker: experimental/hybridkernel/phase2/check_profiler_run_artifacts.py
+    checker_args: ["--require-full-matrix"]
+    expected_pass_decision: PROMOTE_HYBRIDKERNEL_PROFILER_GATE
+    expected_kill_decision: KILL_HYBRIDKERNEL_BELOW_SHELF
+    expected_infra_decision: FAIL_INFRA_HYBRIDKERNEL_PROFILER_GATE
+    on_pass: [hybridkernel_kernel_prototype]
+    on_kill: []
+    estimated_gpu_hours: 12
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+      same_family_control: ibm-granite/granite-4.0-h-small
+      cross_family_control: Qwen/Qwen3-Next-80B-A3B-Instruct
+    notes: |
+      Always first; unconditional. Three primary rows, three same-family
+      controls, three cross-family controls. Decision rule per
+      preregister_profiler_gate.md. If the runbook documents stricter
+      criteria than the prereg, runbook wins and prereg must be updated
+      BEFORE this entry executes.
+
+  - id: thoughtflow_paper_polish
+    project: thoughtflow_fp8
+    phase: paper
+    priority: 2
+    preregistration: experimental/thoughtflow_fp8/paper/reviewer_pack.md
+    runner: experimental/thoughtflow_fp8/phase2/run_paper_polish.sh
+    runner_args: []
+    checker: experimental/thoughtflow_fp8/phase2/check_paper_buildable.py
+    checker_args: []
+    expected_pass_decision: PASS_THOUGHTFLOW_PAPER_BUILDABLE
+    expected_kill_decision: FAIL_THOUGHTFLOW_PAPER_BROKEN
+    expected_infra_decision: FAIL_INFRA_THOUGHTFLOW_PAPER_POLISH
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 0
+    models: {}
+    notes: |
+      ThoughtFlow is paper-only per HANDOFF. No new experiments. This
+      entry exists so the swarm enforces buildability and reviewer-pack
+      currency, not to do new science. If runner script or checker do
+      not exist, this entry is satisfied by manual confirmation and
+      can be marked complete by writing a result packet with
+      decision PASS_THOUGHTFLOW_PAPER_BUILDABLE.
+
+  - id: outlier_migrate_phase0
+    project: outlier_migrate
+    phase: 0
+    priority: 3
+    preregistration: experimental/outlier_migrate/phase0/preregister_om_phase0.md
+    runner: experimental/shared/run_phase0_branch.py
+    runner_args: ["--branch", "outlier_migrate"]
+    checker: experimental/shared/check_phase0_gate.py
+    checker_args: ["--branch", "outlier_migrate"]
+    expected_pass_decision: PASS_OM_PHASE0_DECODE_TIME_MIGRATION
+    expected_pass_negative_decision: PASS_OM_PHASE0_STATIC_OUTLIERS
+    expected_kill_decision: KILL_OM_PHASE0_AMBIGUOUS_EFFECT_SIZE
+    expected_infra_decision: FAIL_INFRA_OM_PHASE0
+    on_pass: [outlier_migrate_phase1]
+    on_pass_negative: [outlier_migrate_phase1_negative]
+    on_kill: []
+    estimated_gpu_hours: 4
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+    notes: |
+      Phase 0 runs from shared activation dump on Granite-4.0-H-Tiny.
+      Negative result (static outliers) is also publishable — see
+      preregistration. Both pass paths are scientifically valid.
+
+  - id: residual_migration_phase0
+    project: residual_migration
+    phase: 0
+    priority: 4
+    preregistration: experimental/residual_migration/phase0/preregister_rm_phase0.md
+    runner: experimental/shared/run_phase0_branch.py
+    runner_args: ["--branch", "residual_migration"]
+    checker: experimental/shared/check_phase0_gate.py
+    checker_args: ["--branch", "residual_migration"]
+    expected_pass_decision: PASS_RM_PHASE0_RETHINKING_REPLICATES
+    expected_pass_negative_decision: PASS_RM_PHASE0_HYBRIDS_DEPEND_ON_RESIDUAL
+    expected_kill_decision: KILL_RM_PHASE0_AMBIGUOUS_DROP
+    expected_infra_decision: FAIL_INFRA_RM_PHASE0
+    on_pass: [residual_migration_phase1]
+    on_pass_negative: [residual_migration_phase1_negative]
+    on_kill: []
+    estimated_gpu_hours: 5
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+    notes: |
+      Two valid pass paths: (a) replication of Rethinking-Outlier finding
+      for hybrids (drop <1.5%) → aggressive residual quantization recipe
+      paper; (b) rejection for hybrids (drop >3%) → architectural
+      finding paper. Ambiguous middle (1.5-3%) is a kill.
+
+  - id: ssm_lifecycle_phase0
+    project: ssm_lifecycle
+    phase: 0
+    priority: 5
+    preregistration: experimental/ssm_lifecycle/phase0/preregister_ssml_phase0.md
+    runner: experimental/shared/run_phase0_branch.py
+    runner_args: ["--branch", "ssm_lifecycle"]
+    checker: experimental/shared/check_phase0_gate.py
+    checker_args: ["--branch", "ssm_lifecycle"]
+    expected_pass_decision: PASS_SSML_PHASE0_STATE_AGES
+    expected_kill_decision: KILL_SSML_PHASE0_STATE_STABLE
+    expected_infra_decision: FAIL_INFRA_SSML_PHASE0
+    on_pass: [ssm_lifecycle_phase1]
+    on_kill: []
+    estimated_gpu_hours: 5
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+    notes: |
+      Conceptually adjacent to killed SSQ-LR. If Phase 0 fails, kill
+      cleanly with fresh KILL manifest; do not reopen as SSQ-LR.
+
+  - id: cross_layer_error_theoretical
+    project: cross_layer_error
+    phase: theoretical
+    priority: 6
+    preregistration: experimental/cross_layer_error/preregister_cle_theoretical.md
+    runner: experimental/cross_layer_error/run_cle_validation.py
+    runner_args: []
+    checker: experimental/cross_layer_error/check_cle_bound.py
+    checker_args: []
+    expected_pass_decision: PASS_CLE_BOUND_TIGHT
+    expected_kill_decision: KILL_CLE_BOUND_LOOSE
+    expected_infra_decision: FAIL_INFRA_CLE
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 2
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+    notes: |
+      Mac-feasible but runs here for unified pipeline. GPU validates the
+      theoretical bound against measured BF16-vs-FP4 drift at depths
+      {1, 5, 10, 15}. Bound must be tight to within 2x at all depths.
+
+  # ---- Conditional entries (appended to queue.yml on_pass) ----
+
+  - id: hybridkernel_kernel_prototype
+    project: hybridkernel
+    phase: 3
+    priority: 7
+    gated_by: hybridkernel_profiler_gate
+    preregistration: experimental/hybridkernel/phase2/preregister_profiler_gate.md
+    runner: experimental/hybridkernel/phase3/run_kernel_prototype.sh
+    runner_args: []
+    checker: experimental/hybridkernel/phase3/check_kernel_prototype.py
+    checker_args: []
+    expected_pass_decision: PASS_HK_KERNEL_MATCHES_PREDICTED_GAIN
+    expected_kill_decision: KILL_HK_KERNEL_MISSES_PREDICTED_GAIN
+    expected_infra_decision: FAIL_INFRA_HK_KERNEL
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 30
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+    notes: |
+      Triton implementation must match profiler-predicted gain within
+      ±20%. If runner/checker do not exist yet, runner is responsible
+      for creating them per the runbook, then executing.
+
+  - id: outlier_migrate_phase1
+    project: outlier_migrate
+    phase: 1
+    priority: 8
+    gated_by: outlier_migrate_phase0
+    preregistration: experimental/outlier_migrate/phase1/preregister_om_phase1.md
+    runner: experimental/outlier_migrate/phase1/run_om_phase1.py
+    runner_args: ["--full-scale"]
+    checker: experimental/outlier_migrate/phase1/check_om_phase1.py
+    checker_args: []
+    expected_pass_decision: PASS_OM_PHASE1_REPLICATED_AT_SCALE
+    expected_kill_decision: KILL_OM_PHASE1_FAILED_AT_SCALE
+    expected_infra_decision: FAIL_INFRA_OM_PHASE1
+    on_pass: [cross_model_validation_outlier_migrate]
+    on_kill: []
+    estimated_gpu_hours: 8
+    models:
+      primary: ibm-granite/granite-4.0-h-small
+    notes: |
+      Scales Phase 0 finding to Granite-4.0-H-Small with formal
+      statistical testing.
+
+  - id: outlier_migrate_phase1_negative
+    project: outlier_migrate
+    phase: 1
+    priority: 8
+    gated_by: outlier_migrate_phase0
+    preregistration: experimental/outlier_migrate/phase1/preregister_om_phase1.md
+    runner: experimental/outlier_migrate/phase1/run_om_phase1.py
+    runner_args: ["--full-scale", "--negative-result"]
+    checker: experimental/outlier_migrate/phase1/check_om_phase1.py
+    checker_args: ["--negative-result"]
+    expected_pass_decision: PASS_OM_PHASE1_STATIC_AT_SCALE
+    expected_kill_decision: KILL_OM_PHASE1_NEGATIVE_FAILED
+    expected_infra_decision: FAIL_INFRA_OM_PHASE1_NEGATIVE
+    on_pass: [cross_model_validation_outlier_migrate]
+    on_kill: []
+    estimated_gpu_hours: 8
+
+  - id: residual_migration_phase1
+    project: residual_migration
+    phase: 1
+    priority: 9
+    gated_by: residual_migration_phase0
+    preregistration: experimental/residual_migration/phase1/preregister_rm_phase1.md
+    runner: experimental/residual_migration/phase1/run_rm_phase1.py
+    runner_args: ["--full-scale"]
+    checker: experimental/residual_migration/phase1/check_rm_phase1.py
+    checker_args: []
+    expected_pass_decision: PASS_RM_PHASE1_REPLICATED_AT_SCALE
+    expected_kill_decision: KILL_RM_PHASE1_FAILED_AT_SCALE
+    expected_infra_decision: FAIL_INFRA_RM_PHASE1
+    on_pass: [cross_model_validation_residual_migration]
+    on_kill: []
+    estimated_gpu_hours: 8
+
+  - id: residual_migration_phase1_negative
+    project: residual_migration
+    phase: 1
+    priority: 9
+    gated_by: residual_migration_phase0
+    preregistration: experimental/residual_migration/phase1/preregister_rm_phase1.md
+    runner: experimental/residual_migration/phase1/run_rm_phase1.py
+    runner_args: ["--full-scale", "--negative-result"]
+    checker: experimental/residual_migration/phase1/check_rm_phase1.py
+    checker_args: ["--negative-result"]
+    expected_pass_decision: PASS_RM_PHASE1_HYBRIDS_DEPEND_AT_SCALE
+    expected_kill_decision: KILL_RM_PHASE1_NEGATIVE_FAILED
+    expected_infra_decision: FAIL_INFRA_RM_PHASE1_NEGATIVE
+    on_pass: [cross_model_validation_residual_migration]
+    on_kill: []
+    estimated_gpu_hours: 8
+
+  - id: ssm_lifecycle_phase1
+    project: ssm_lifecycle
+    phase: 1
+    priority: 10
+    gated_by: ssm_lifecycle_phase0
+    preregistration: experimental/ssm_lifecycle/phase1/preregister_ssml_phase1.md
+    runner: experimental/ssm_lifecycle/phase1/run_ssml_phase1.py
+    runner_args: ["--full-scale"]
+    checker: experimental/ssm_lifecycle/phase1/check_ssml_phase1.py
+    checker_args: []
+    expected_pass_decision: PASS_SSML_PHASE1_STATE_AGES_AT_SCALE
+    expected_kill_decision: KILL_SSML_PHASE1_STATE_STABLE_AT_SCALE
+    expected_infra_decision: FAIL_INFRA_SSML_PHASE1
+    on_pass: [cross_model_validation_ssm_lifecycle]
+    on_kill: []
+    estimated_gpu_hours: 10
+
+  - id: cross_model_validation_outlier_migrate
+    project: outlier_migrate
+    phase: 2
+    priority: 11
+    gated_by: outlier_migrate_phase1
+    preregistration: experimental/outlier_migrate/phase1/preregister_om_phase1.md
+    runner: experimental/outlier_migrate/phase2/run_cross_model.py
+    runner_args: []
+    checker: experimental/outlier_migrate/phase2/check_cross_model.py
+    checker_args: []
+    expected_pass_decision: PASS_OM_TRANSFERS_CROSS_MODEL
+    expected_kill_decision: KILL_OM_FAILS_CROSS_MODEL
+    expected_infra_decision: FAIL_INFRA_OM_CROSS_MODEL
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 10
+    models:
+      apriel: ServiceNow/Apriel-H1-15B-Thinker
+      nemotron: nvidia/Nemotron-Nano-9B-v2
+
+  - id: cross_model_validation_residual_migration
+    project: residual_migration
+    phase: 2
+    priority: 12
+    gated_by: residual_migration_phase1
+    preregistration: experimental/residual_migration/phase1/preregister_rm_phase1.md
+    runner: experimental/residual_migration/phase2/run_cross_model.py
+    runner_args: []
+    checker: experimental/residual_migration/phase2/check_cross_model.py
+    checker_args: []
+    expected_pass_decision: PASS_RM_TRANSFERS_CROSS_MODEL
+    expected_kill_decision: KILL_RM_FAILS_CROSS_MODEL
+    expected_infra_decision: FAIL_INFRA_RM_CROSS_MODEL
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 10
+
+  - id: cross_model_validation_ssm_lifecycle
+    project: ssm_lifecycle
+    phase: 2
+    priority: 13
+    gated_by: ssm_lifecycle_phase1
+    preregistration: experimental/ssm_lifecycle/phase1/preregister_ssml_phase1.md
+    runner: experimental/ssm_lifecycle/phase2/run_cross_model.py
+    runner_args: []
+    checker: experimental/ssm_lifecycle/phase2/check_cross_model.py
+    checker_args: []
+    expected_pass_decision: PASS_SSML_TRANSFERS_CROSS_MODEL
+    expected_kill_decision: KILL_SSML_FAILS_CROSS_MODEL
+    expected_infra_decision: FAIL_INFRA_SSML_CROSS_MODEL
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 10

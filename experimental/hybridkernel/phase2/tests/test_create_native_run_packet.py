@@ -347,9 +347,6 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
         f"{model}\tfilled synthetic worksheet\n",
         encoding="utf-8",
     )
-    (run_dir / "logs/nsys_server_b1.log").write_text(
-        "nsys vllm server cuda profiler log\n", encoding="utf-8"
-    )
     readout_rows = "\n".join(f"| {marker} | synthetic evidence | no |" for marker in READOUT_MARKERS)
     (run_dir / "readout.md").write_text(
         "| Question | Evidence | Decision |\n|---|---|---|\n" + readout_rows + "\n",
@@ -459,6 +456,30 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                     "reduction_notes": "Synthetic generated-packet integration row.",
                 }
             )
+    server_log_lines = ["nsys vllm server cuda profiler log"]
+    for row in rows:
+        server_log_lines.append(
+            f"run_id={row['run_id']} model={row['model']} vllm cuda server"
+        )
+    (run_dir / "logs/nsys_server_synthetic_matrix.log").write_text(
+        "\n".join(server_log_lines) + "\n",
+        encoding="utf-8",
+    )
+
+    control_matrix_path = run_dir / "metadata/native_control_matrix.json"
+    control_matrix = json.loads(control_matrix_path.read_text(encoding="utf-8"))
+    for matrix_row in control_matrix["rows"]:
+        if matrix_row.get("row_role") == "same_family_control":
+            matrix_row["control_window_ids"] = [
+                "granite-non-boundary-window-0",
+                "granite-non-boundary-window-1",
+                "granite-non-boundary-window-2",
+            ]
+    control_matrix_path.write_text(
+        json.dumps(control_matrix, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
     metrics_payload = {"description": "Synthetic generated-packet integration test.", "rows": rows}
     analysis = analyze(metrics_payload)
     (run_dir / "profiler_metrics.json").write_text(
