@@ -76,6 +76,11 @@ into a stronger branch before spending GPU time. HybridKernel is the exception:
 its Mac work is saturated, so the next discriminative bit is the native GPU
 profiler packet.
 
+For SSQ-LR, HORN, and HBSM, the first live trace packet builders/checkers are
+S1, H1a/H1, and B1 respectively. The S2/S3, H2/H3, and B2/B3 follow-up
+contracts are now executable through `shared/followup_gate_contracts.py`, but
+they have no model packets yet and cannot be cited as current evidence.
+
 ## Killed Marker Convention
 
 `KILLED_*` folders mark consumed sub-branches and dead framings. They do not

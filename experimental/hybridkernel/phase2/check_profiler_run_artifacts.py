@@ -313,7 +313,40 @@ def _profile_scope_models(profile_scope: dict[str, object], errors: list[str]) -
             errors.append(
                 f"profile_scope.json model_scopes[{index}].vllm_command must mention vLLM"
             )
+        row_roles = scope.get("row_roles")
+        if "row_role" in scope:
+            errors.append(
+                f"profile_scope.json model_scopes[{index}] must use row_roles list, not row_role string"
+            )
+        if not isinstance(row_roles, list) or not row_roles:
+            errors.append(f"profile_scope.json model_scopes[{index}].row_roles must be a non-empty list")
+        else:
+            for role in row_roles:
+                if role not in ALLOWED_ROW_ROLES:
+                    errors.append(
+                        f"profile_scope.json model_scopes[{index}].row_roles contains unknown role {role!r}"
+                    )
     return models
+
+
+def _profile_scope_model_roles(
+    profile_scope: dict[str, object],
+) -> set[tuple[str, str]]:
+    roles: set[tuple[str, str]] = set()
+    model_scopes = profile_scope.get("model_scopes")
+    if not isinstance(model_scopes, list):
+        return roles
+    for scope in model_scopes:
+        if not isinstance(scope, dict):
+            continue
+        model = str(scope.get("model", "")).strip()
+        row_roles = scope.get("row_roles")
+        if not model or not isinstance(row_roles, list):
+            continue
+        for role in row_roles:
+            if isinstance(role, str) and role in ALLOWED_ROW_ROLES:
+                roles.add((model, role))
+    return roles
 
 
 def _is_utf8_text_sample(sample: bytes) -> bool:
@@ -554,6 +587,33 @@ def _validate_metric_provenance(
                 errors.append(f"metric row {idx} time_window_ms.end must be numeric")
             if isinstance(start, (int, float)) and isinstance(end, (int, float)) and end <= start:
                 errors.append(f"metric row {idx} time_window_ms.end must exceed start")
+        if packet_mode != NO_BOUNDARY_SIGNAL_MODE:
+            selection = row.get("ncu_launch_selection")
+            if not isinstance(selection, dict):
+                errors.append(f"metric row {idx} ncu_launch_selection must be an object")
+            else:
+                kernel_regex = str(selection.get("kernel_regex", "")).strip()
+                if not kernel_regex or "TODO_NATIVE_PROFILE_FILL" in kernel_regex:
+                    errors.append(f"metric row {idx} ncu_launch_selection.kernel_regex must be filled")
+                for field in ("launch_skip", "launch_count"):
+                    value = selection.get(field)
+                    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                        errors.append(f"metric row {idx} ncu_launch_selection.{field} must be a nonnegative integer")
+                if isinstance(selection.get("launch_count"), int) and selection.get("launch_count") == 0:
+                    errors.append(f"metric row {idx} ncu_launch_selection.launch_count must be positive")
+                source_artifact = str(selection.get("source_nsys_artifact", "")).strip()
+                if source_artifact != nsys_value:
+                    errors.append(
+                        f"metric row {idx} ncu_launch_selection.source_nsys_artifact must match nsys_artifact"
+                    )
+                source_window = selection.get("source_time_window_ms")
+                if source_window != time_window:
+                    errors.append(
+                        f"metric row {idx} ncu_launch_selection.source_time_window_ms must match time_window_ms"
+                    )
+                notes = str(selection.get("derivation_notes", "")).strip()
+                if not notes or "TODO_NATIVE_PROFILE_FILL" in notes or "placeholder" in notes.lower():
+                    errors.append(f"metric row {idx} ncu_launch_selection.derivation_notes must be filled")
     return roles
 
 
@@ -914,6 +974,7 @@ def check_run_artifacts(
     profile_scope_path = run_dir / "metadata/profile_scope.json"
     profile_model = ""
     profile_models: set[str] = set()
+    profile_model_roles: set[tuple[str, str]] = set()
     _reject_skeleton_todo(profile_scope_path, "metadata/profile_scope.json", errors)
     if profile_scope_path.is_file():
         try:
@@ -923,6 +984,7 @@ def check_run_artifacts(
                 errors.append("profile_scope.json must contain non-empty model")
             if isinstance(profile_scope, dict):
                 profile_models = _profile_scope_models(profile_scope, errors)
+                profile_model_roles = _profile_scope_model_roles(profile_scope)
             profiled_process_fields = (
                 ["profiled_process", "nsys_profiled_process"]
                 if packet_mode == NO_BOUNDARY_SIGNAL_MODE
@@ -957,6 +1019,7 @@ def check_run_artifacts(
     model_config_distinct_run_counts: dict[str, int] = {}
     computed_analysis: dict[str, object] | None = None
     metric_models: set[str] = set()
+    metric_model_roles: set[tuple[str, str]] = set()
     metric_roles: set[str] = set()
     client_models: set[str] = set()
     client_replay_shapes: set[tuple[str, int, int, int, int]] = set()
@@ -1049,6 +1112,11 @@ def check_run_artifacts(
                     errors=errors,
                 )
             metric_models = {str(row["model"]) for row in rows}
+            metric_model_roles = {
+                (str(row["model"]), str(row["row_role"]))
+                for row in rows
+                if str(row.get("row_role", "")) in ALLOWED_ROW_ROLES
+            }
             if client_replay_shapes:
                 for row in rows:
                     model = str(row["model"])
@@ -1137,6 +1205,10 @@ def check_run_artifacts(
         errors.append(
             "multi-model profiler_metrics.json requires profile_scope.json model_scopes "
             "covering every metric model"
+        )
+    if profile_model_roles and metric_model_roles and not metric_model_roles.issubset(profile_model_roles):
+        errors.append(
+            "profile_scope.json model_scopes do not cover profiler_metrics.json model/row_role pairs"
         )
     if client_models and metric_models and not client_models.issubset(metric_models):
         errors.append("client replay model does not match profiler_metrics.json models")

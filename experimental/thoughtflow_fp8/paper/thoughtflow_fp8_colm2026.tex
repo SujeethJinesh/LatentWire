@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-We present a preregistered falsification protocol for training-free sparse KV-retention proposals on saved reasoning-style traces. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, require matched-budget wins against R-KV-like and ThinKV-like proxies, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
+We present a preregistered falsification protocol for training-free sparse KV-retention proposals on saved reasoning-style traces. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, require matched-budget wins against R-KV-like and ThinKV-like proxies, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics where those diagnostics are implemented. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
 \end{abstract}
 
 \section{Contribution}
@@ -21,7 +21,7 @@ The contribution is a reusable stop-rule protocol, not another sparse-cache
 policy. The protocol combines seven checks: no-retune frozen surfaces,
 pre-registered successor utilities, matched-budget proxy baselines,
 stopped-family/proxy-baseline separation, paired uncertainty,
-oracle/headroom diagnostics, and machine-checkable stop artifacts. ThoughtFlow-FP8
+oracle/headroom diagnostics for the RDU demotion gates, and machine-checkable stop artifacts. ThoughtFlow-FP8
 is the case study showing why each check matters: one plausible signal looks
 positive on a frozen surface, then fails to reproduce under stricter reproduction, while
 two later signals fail fresh-surface gates outright.
@@ -43,6 +43,10 @@ Fresh surface & Test robustness. & Failure demotes or kills the signal. \\
 \end{tabular}
 \caption{Falsification protocol used for each sparse-cache successor.}
 \end{table}
+
+The next table is included only to show why the branch looked promising before
+the fresh gates. It is not a current leaderboard: every compressed method row in
+the table is superseded by the demotion ladder that follows.
 
 \begin{table}[h]
 \centering
@@ -356,8 +360,9 @@ All reported gates use tracked scripts under
 \texttt{./venv\_arm64}. The frozen sparse-cache probe, same-slice rerun,
 alternate-surface rerun, independent saved-trace rerun, and fresh-surface
 successor checks each write Markdown and JSON artifacts with promotion
-criteria, paired intervals, oracle/headroom diagnostics, and no-retuning
-decisions. The tracked diagnostic packet hashes the saved JSON artifacts and
+criteria, paired intervals, and no-retuning decisions; oracle/headroom fields
+are present on the RDU demotion gates and are not claimed for the PSI/VWAC fresh
+successor packets. The tracked diagnostic packet hashes the saved JSON artifacts and
 records available model/source metadata plus input hashes for each saved
 artifact where those inputs are explicit. Legacy default trace paths are labeled
 as inferred from \texttt{run\_real\_trace\_retention.DEFAULT\_TRACES}. Its

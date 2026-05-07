@@ -112,7 +112,7 @@ def _profile_scope(model: str) -> dict[str, object]:
         ),
         "model_scopes": [
             {
-                "row_role": "primary_hybrid,same_family_control",
+                "row_roles": ["primary_hybrid", "same_family_control"],
                 "model": model,
                 "vllm_command": (
                     "python -m vllm.entrypoints.openai.api_server "
@@ -121,7 +121,7 @@ def _profile_scope(model: str) -> dict[str, object]:
                 "scope": "Granite primary boundary and same-model non-boundary control rows",
             },
             {
-                "row_role": "cross_family_falsification",
+                "row_roles": ["cross_family_falsification"],
                 "model": qwen_model,
                 "vllm_command": (
                     "python -m vllm.entrypoints.openai.api_server "
@@ -215,6 +215,14 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
                 "kernel_names": [],
                 "boundary_indices": spec["boundary_indices"],
                 "time_window_ms": {"start": None, "end": None},
+                "ncu_launch_selection": {
+                    "kernel_regex": None,
+                    "launch_skip": None,
+                    "launch_count": None,
+                    "source_nsys_artifact": None,
+                    "source_time_window_ms": {"start": None, "end": None},
+                    "derivation_notes": None,
+                },
                 "recoverable_fraction_basis": None,
                 "reduction_command": None,
                 "reduction_notes": None,

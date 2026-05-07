@@ -161,6 +161,14 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                 "kernel_names": ["synthetic_boundary_kernel"],
                 "boundary_indices": [0],
                 "time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
+                "ncu_launch_selection": {
+                    "kernel_regex": "synthetic_boundary_kernel",
+                    "launch_skip": idx,
+                    "launch_count": 1,
+                    "source_nsys_artifact": f"nsys/granite_tiny_b1_decode64_run{idx}.nsys-rep",
+                    "source_time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
+                    "derivation_notes": "Selected from the matching synthetic Nsight Systems window.",
+                },
                 "recoverable_fraction_basis": "Synthetic fixture assumes 60% recovery from a fused boundary operator.",
                 "reduction_command": (
                     "python experimental/hybridkernel/phase2/tests/"
@@ -243,6 +251,24 @@ def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     assert max(result["model_config_run_counts"].values()) == 3
 
 
+def test_rejects_missing_ncu_launch_selection(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0].pop("ncu_launch_selection")
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("ncu_launch_selection must be an object" in error for error in result["errors"])
+
+
 def test_rejects_multi_model_metrics_without_profile_model_scopes(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     _add_qwen_control_rows(tmp_path)
@@ -262,12 +288,12 @@ def test_accepts_multi_model_metrics_with_profile_model_scopes(tmp_path: Path) -
     profile_scope["model_scopes"] = [
         {
             "model": "granite",
-            "row_role": "primary_hybrid,same_family_control",
+            "row_roles": ["primary_hybrid", "same_family_control"],
             "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
         },
         {
             "model": "qwen",
-            "row_role": "cross_family_falsification",
+            "row_roles": ["cross_family_falsification"],
             "vllm_command": "python -m vllm.entrypoints.openai.api_server --model qwen",
         },
     ]

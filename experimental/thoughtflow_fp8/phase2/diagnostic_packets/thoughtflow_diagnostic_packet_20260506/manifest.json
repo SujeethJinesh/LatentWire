@@ -29,6 +29,7 @@
           "n_scored_traces": 74
         }
       },
+      "historical_status": "ALIVE",
       "role": "stale_positive_first_surface",
       "sha256": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9",
       "summary": {
@@ -59,6 +60,7 @@
           "source_artifact": "frozen_sparse_cache_probe.json"
         }
       },
+      "historical_status": "PROMOTED",
       "role": "stale_positive_robustness_probe",
       "sha256": "sha256:623b962fd3c98068a59764b31a49a471dbe3b8ca33a4190ed68ac1354b4e4e26",
       "summary": {
@@ -110,6 +112,7 @@
           }
         }
       },
+      "historical_status": "REPRODUCED",
       "role": "historical_positive_same_surface",
       "sha256": "sha256:9a6420cf4d2bd18764f5e0e60fcd5964378a27996111b82485b71fcb668accd9",
       "summary": {
@@ -365,6 +368,6 @@
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:b6ba7ff87280f26e680ebe62c055eb1431bcfafc120d3e4cd2c6b189de9e79cc"
+    "sha256": "sha256:5790df42a4a663e7f703a41dea965ef75ce31dc7cc820f561bd67853e9443091"
   }
 }

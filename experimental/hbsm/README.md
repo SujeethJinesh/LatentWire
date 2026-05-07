@@ -31,6 +31,13 @@ Primary preregistration:
 B1 replicates sensitivity heterogeneity on current hybrids. B2 tests
 no-forward-pass predictors. B3 tests the softmax-amplification mechanism.
 
+Current executable scope: B1 has the strict real trace packet builder/checker
+path. B2/B3 now have follow-up contract checks in
+`../shared/followup_gate_contracts.py`, but no B2/B3 model packets exist and no
+cheap-predictor, no-forward-pass, or mechanism claim is allowed until real B1
+promotes and those contracts are filled from frozen predictor splits and
+matched-noise mechanism rows.
+
 ## Current Mac Packet
 
 Synthetic-only real-schema rehearsal packet:
@@ -125,6 +132,24 @@ Validate the first real B1 packet with:
   experimental/hbsm/phase2/results/hbsm_gate_b1_<YYYYMMDD>_<model_slug> \
   --mode real --project hbsm
 ```
+
+Validate later B2/B3 follow-up packets only after real B1 promotes:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/hbsm/phase2/results/hbsm_gate_b2_<YYYYMMDD>_<model_slug> \
+  --gate hbsm_b2
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/hbsm/phase2/results/hbsm_gate_b3_<YYYYMMDD>_<model_slug> \
+  --gate hbsm_b3
+```
+
+The B2 contract requires one preregistered predictor registry hash, fixed
+hyperparameter hashes, train-only predictor selection, held-out Spearman and
+baseline-margin fields, and explicit baseline-predictor rows. The B3 contract
+requires matched attention/SSM noise rows, HORN-alignment sign, confidence
+intervals around the mechanism effect, noise-off rows near zero drift, and
+direction-flip controls.
 
 ## Output Paths
 

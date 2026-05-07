@@ -25,6 +25,14 @@ sensitivity, and cross-model transfer gates before any GPU validation.
 S1 must first show real state heterogeneity on a live hybrid model; S2 then
 freezes one state-only quantization recipe; S3 tests that recipe without
 per-model retuning. Failing any gate kills the branch before GPU work.
+The current real trace packet builder/checker covers S1. S2 and S3 now have
+executable follow-up contracts in \texttt{experimental/shared/followup\_gate\_contracts.py}:
+they require frozen recipe IDs, byte accounting, BF16 no-op controls, paired
+confidence intervals, frozen recipe/source hashes, and no-retuning transfer
+rows. These contracts are not model evidence: no quantization-quality,
+byte-savings, or cross-model-transfer claim is allowed until a real S1 packet
+promotes and the S2/S3 contracts are filled from the frozen S1 trace/replay
+surface.
 
 \section{Mac Artifact Status}
 

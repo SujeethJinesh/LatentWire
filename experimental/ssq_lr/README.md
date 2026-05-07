@@ -31,6 +31,13 @@ Primary preregistration:
 Gate S1 tests state distribution heterogeneity. Gate S2 tests simulated state
 quantization sensitivity. Gate S3 tests cross-model transfer without retuning.
 
+Current executable scope: S1 has the strict real trace packet builder/checker
+path. S2/S3 now have follow-up contract checks in
+`../shared/followup_gate_contracts.py`, but no S2/S3 model packets exist and no
+quantization-quality, byte-savings, or cross-model-transfer claim is allowed
+until real S1 promotes and those follow-up contracts are filled from the frozen
+real S1 replay surface.
+
 ## Current Mac Packet
 
 Synthetic real-schema rehearsal packet:
@@ -91,6 +98,23 @@ Validate the first real S1 packet with:
   experimental/ssq_lr/phase2/results/ssq_lr_gate_s1_<YYYYMMDD>_<model_slug> \
   --mode real --project ssq_lr
 ```
+
+Validate later S2/S3 follow-up packets only after real S1 promotes:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/ssq_lr/phase2/results/ssq_lr_gate_s2_<YYYYMMDD>_<model_slug> \
+  --gate ssq_lr_s2
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/ssq_lr/phase2/results/ssq_lr_gate_s3_<YYYYMMDD>_<model_slug> \
+  --gate ssq_lr_s3
+```
+
+The S2 contract requires frozen recipe IDs, effective bits, state/scale/metadata
+bytes, BF16 no-op drift, same-byte controls, paired uncertainty, and a recipe
+that clears both the quality and 4x state-memory gates. The S3 contract requires
+one frozen recipe hash, one source S2 packet hash, no retuning rows, and transfer
+quality within the preregistered tolerance on at least two validation models.
 
 The real checker requires `prefill_end`, `2k_or_end`, `8k_or_end`, and
 `final_minus_128` buckets for every `(prompt_id, layer)` pair plus at least 12

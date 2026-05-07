@@ -342,7 +342,7 @@ def _diagnostic_readout(artifact: dict[str, Any]) -> str:
     status = str(artifact["summary"]["status"])
     role = str(artifact["role"])
     if role.startswith("stale_positive") or role.startswith("historical_positive"):
-        return f"SUPERSEDED historical readout: {status}"
+        return "SUPERSEDED historical readout; later gates demote or kill this row"
     return status
 
 
@@ -362,6 +362,8 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
                 "provenance": _artifact_provenance(str(spec["id"]), payload),
             }
         )
+        if str(spec["role"]).startswith(("stale_positive", "historical_positive")):
+            artifacts[-1]["historical_status"] = artifacts[-1]["summary"]["status"]
     preregistrations = []
     for spec in PREREGISTRATIONS:
         path = PHASE2 / str(spec["path"])

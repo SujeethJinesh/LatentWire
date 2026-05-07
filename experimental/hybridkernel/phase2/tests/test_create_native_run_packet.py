@@ -57,6 +57,9 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
         "ibm-granite/granite-4.0-h-tiny",
         "Qwen/Qwen3-Next-80B-A3B-Instruct",
     }
+    assert {
+        tuple(scope["row_roles"]) for scope in profile_scope["model_scopes"]
+    } == {("primary_hybrid", "same_family_control"), ("cross_family_falsification",)}
 
     metrics = json.loads((run_dir / "profiler_metrics.json").read_text())
     assert len(metrics["rows"]) == 9
@@ -92,6 +95,9 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     assert {row["model"] for row in metrics["rows"] if row["row_role"] == "cross_family_falsification"} == {
         "Qwen/Qwen3-Next-80B-A3B-Instruct"
     }
+    for row in metrics["rows"]:
+        assert "ncu_launch_selection" in row
+        assert row["ncu_launch_selection"]["kernel_regex"] is None
     architecture_map = json.loads((run_dir / "metadata/architecture_map.json").read_text())
     assert "ibm-granite/granite-4.0-h-tiny" in {row["model"] for row in architecture_map}
     control_matrix = json.loads((run_dir / "metadata/native_control_matrix.json").read_text())
@@ -267,6 +273,17 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                     "time_window_ms": {
                         "start": float(spec_index * 10 + repeat),
                         "end": float(spec_index * 10 + repeat) + 1.0,
+                    },
+                    "ncu_launch_selection": {
+                        "kernel_regex": f"synthetic_{label}_kernel",
+                        "launch_skip": repeat,
+                        "launch_count": 1,
+                        "source_nsys_artifact": f"nsys/{row_id}.nsys-rep",
+                        "source_time_window_ms": {
+                            "start": float(spec_index * 10 + repeat),
+                            "end": float(spec_index * 10 + repeat) + 1.0,
+                        },
+                        "derivation_notes": "Selected from the matching synthetic Nsight Systems window.",
                     },
                     "recoverable_fraction_basis": "Synthetic integration test uses fixed 60% recovery for parser plumbing.",
                     "reduction_command": "python -m pytest experimental/hybridkernel/phase2/tests/test_create_native_run_packet.py",

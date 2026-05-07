@@ -31,6 +31,13 @@ H1 measures boundary activation magnitude and kurtosis. H2 injects
 FP4-equivalent noise around each boundary direction. H3 checks cross-model and
 pure-architecture controls.
 
+Current executable scope: H1a/H1 boundary statistics have the strict real trace
+packet builder/checker path. H2/H3 now have follow-up contract checks in
+`../shared/followup_gate_contracts.py`, but no H2/H3 model packets exist and no
+noise-propagation, precision-allocation, or cross-architecture claim is allowed
+until real H1a/H1 promotes and those contracts are filled from matched noisy
+replays plus pure-architecture controls.
+
 ## Current Mac Packet
 
 Synthetic-only real-schema rehearsal packet:
@@ -95,6 +102,23 @@ Validate the first real H1a screen packet with:
   experimental/horn/phase2/results/horn_gate_h1_<YYYYMMDD>_<model_slug> \
   --mode real --project horn
 ```
+
+Validate later H2/H3 follow-up packets only after real H1a/H1 promotes:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/horn/phase2/results/horn_gate_h2_<YYYYMMDD>_<model_slug> \
+  --gate horn_h2
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/horn/phase2/results/horn_gate_h3_<YYYYMMDD>_<model_slug> \
+  --gate horn_h3
+```
+
+The H2 contract requires a fixed H1-selected direction, exact noise side and
+noise standard-deviation basis, paired clean/noisy NLL rows, hook-off controls,
+and a directional drift ratio with paired lower bound. The H3 contract requires
+at least two passing hybrid validation models plus pure-attention and
+pure-Mamba controls that fold under the same directional test.
 
 H1a is a single-model screen only. It can justify running H2 and adding more
 models, but H1 promotion requires the same selected direction on at least two

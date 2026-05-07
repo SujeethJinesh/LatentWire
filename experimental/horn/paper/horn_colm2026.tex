@@ -26,6 +26,15 @@ H1a first screens one live hybrid model for directional activation statistics,
 H1 requires the same selected direction on at least two hybrid models, H2 tests matched
 FP4-equivalent noise propagation, and H3 requires the direction to survive
 hybrid-model repeats while weakening on pure-attention and pure-Mamba controls.
+The current real trace packet builder/checker covers H1a/H1 boundary
+statistics. H2 and H3 now have executable follow-up contracts in
+\texttt{experimental/shared/followup\_gate\_contracts.py}: they require a fixed
+H1-selected direction, exact noise side and noise scale basis, paired
+clean/noisy rows, hook-off controls, and pure-attention plus pure-Mamba control
+rows. These contracts are not model evidence: no noise-propagation,
+precision-allocation, or cross-architecture claim is allowed until real H1a/H1
+promotes and the H2/H3 contracts are filled from matched noisy replays and
+pure-architecture controls.
 
 \section{Mac Artifact Status}
 

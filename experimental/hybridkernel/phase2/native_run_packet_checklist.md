@@ -64,12 +64,12 @@ server-side CUDA work:
   "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests",
   "model_scopes": [
     {
-      "row_role": "primary_hybrid,same_family_control",
+      "row_roles": ["primary_hybrid", "same_family_control"],
       "model": "$MODEL",
       "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
     },
     {
-      "row_role": "cross_family_falsification",
+      "row_roles": ["cross_family_falsification"],
       "model": "Qwen/Qwen3-Next-80B-A3B-Instruct",
       "vllm_command": "python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen3-Next-80B-A3B-Instruct --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
     }
@@ -130,6 +130,9 @@ reduced native trace:
 - `kernel_names`: non-empty list of kernel names used in the reduction;
 - `boundary_indices`: integer boundary IDs, non-empty for `primary_hybrid`;
 - `time_window_ms`: object with numeric `start` and `end`, with `end > start`;
+- `ncu_launch_selection`: object recording `kernel_regex`, `launch_skip`,
+  positive `launch_count`, `source_nsys_artifact`, matching
+  `source_time_window_ms`, and derivation notes for the NCU launch slice;
 - `reduction_command`: exact command or script invocation used to reduce the
   native artifacts into this row;
 - `reduction_notes`: non-placeholder notes explaining how the row was reduced.

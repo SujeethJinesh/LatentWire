@@ -19,13 +19,21 @@ below FP16 without quality loss. The current artifacts do not claim that the
 recipe exists. They define the Mac-first gate, exact packet contract, controls,
 and kill conditions.
 
+## Promotion Ladder Boundary
+
+Only S1 has a real trace packet builder/checker today. S2/S3 now have
+follow-up contract checks in `experimental/shared/followup_gate_contracts.py`,
+but they are not current evidence. A real S1 pass may authorize filling those
+contracts; it does not authorize a quantization recipe, byte-savings claim, or
+transfer claim.
+
 ## COLM Review Readout
 
 | Axis | Reviewer read | Current decision |
 |---|---|---|
 | Benchmarks | The intended surfaces are AIME/GSM/MATH-style reasoning traces plus continuation NLL, but no live hybrid model has been dumped yet. | Gate pending. |
 | Ablations | BF16 no-op, INT8, FP8-style, MXFP4-style, random same-L2 noise, scale shuffle, and byte accounting are preregistered. | Adequate before real S2. |
-| Correctness | The packet checker now requires prefill_end, 2k_or_end, 8k_or_end, and final_minus_128 buckets for every prompt/layer pair, at least 12 prompts unless resource-limited, matching model IDs, BF16 controls, SSM/Mamba layer-kind and recurrent-state tensor-kind labels, finite row fields, prompt hash provenance, architecture-map hash provenance tied to the claimed model, a `trace_plan_path` whose file hash matches the registered `trace_plan_hash`, saved tensor artifact provenance for every referenced tensor, and recomputed S1 `summary.json` gate aggregates with prompt-level lower bounds plus Holm-corrected distribution tests. Non-rehearsal packets must also include the copied `.pt` state tensors; the checker reloads them and recomputes max-abs, RMS, std, kurtosis, and outlier-mass row metrics. Distribution-only significance also needs a 1.25x per-layer effect-size floor for counted layer/metric tests. The shared builder now automatically marks resource-limited packets non-promotable. | Artifact path is hardened. |
+| Correctness | The packet checker now requires prefill_end, 2k_or_end, 8k_or_end, and final_minus_128 buckets for every prompt/layer pair, at least 12 prompts unless resource-limited, matching model IDs, BF16 controls, SSM/Mamba layer-kind and recurrent-state tensor-kind labels, finite row fields, prompt hash provenance, architecture-map hash provenance tied to the claimed model, a `trace_plan_path` whose file hash matches the registered `trace_plan_hash`, saved tensor artifact provenance for every referenced tensor, and recomputed S1 `summary.json` gate aggregates with prompt-level lower bounds plus Holm-corrected distribution tests. Non-rehearsal packets must also include the copied `.pt` state tensors; the checker reloads them and recomputes max-abs, RMS, std, kurtosis, and outlier-mass row metrics. Distribution-only significance also needs a 1.25x per-layer effect-size floor for counted layer/metric tests. The shared builder now automatically marks resource-limited packets non-promotable. S2/S3 follow-up contracts additionally reject missing recipe IDs, byte accounting, BF16 no-op drift, same-byte controls, paired CIs, frozen recipe/source hashes, and retuned transfer rows. | Artifact path is hardened. |
 | Reproducibility | Synthetic S1 now emits a real-schema rehearsal packet that passes the real SSQ-LR checker while remaining non-promotable. Real S1 cannot run until hybrid weights are available on the host. | Not model evidence. |
 | Novelty | The wedge is sub-FP16 recurrent state for hybrid reasoners, not weight-only or KV-cache quantization. | Plausible only if real S2/S3 pass. |
 | Camera-readiness | The draft is a preregistration shell. It needs real S1/S2/S3 tables before submission as a method paper. | Not camera-ready. |
@@ -39,6 +47,7 @@ and kill conditions.
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl` enumerates 5,184 required S1 capture rows | execution checklist only |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
 | real-packet checker | rejects missing buckets, incomplete prompt/layer matrices, stale summary fields, too few prompts, promotable resource-limited decisions, mismatched model IDs, missing controls, missing trace-plan hash pinning, missing tensor artifacts, tensor hash mismatches, and row metrics that do not recompute from saved state tensors | ready for real S1 |
+| follow-up contract checker | `experimental.shared.followup_gate_contracts --gate ssq_lr_s2/ssq_lr_s3` enforces recipe/byte/CI/no-retuning fields before later evidence can be cited | contract ready, no model rows |
 
 ## Reviewer Risks
 

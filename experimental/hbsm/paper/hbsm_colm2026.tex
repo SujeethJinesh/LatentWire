@@ -27,6 +27,15 @@ hybrid-quantization paper.
 B1 must first reproduce sensitivity heterogeneity on current hybrid reasoners,
 B2 must beat no-forward baselines without overfitting depth or size, and B3
 must add mechanism beyond HORN's boundary-direction test.
+The current real trace packet builder/checker covers B1. B2 and B3 now have
+executable follow-up contracts in \texttt{experimental/shared/followup\_gate\_contracts.py}:
+they require predictor registry hashes, fixed hyperparameter hashes, train-only
+selection, held-out Spearman and baseline-margin fields, HORN-alignment signs,
+noise-off controls, and direction-flip controls. These contracts are not model
+evidence: no cheap-predictor, no-forward-pass, or mechanistic claim is allowed
+until real B1 promotes and B2/B3 are filled with train/test or
+leave-one-model-out predictor splits and matched-noise attention-versus-SSM
+controls.
 
 \section{Mac Artifact Status}
 

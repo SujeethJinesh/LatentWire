@@ -127,6 +127,8 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
                 "n_scored_traces",
             ):
                 assert field in measured
+        if artifact["role"].startswith(("stale_positive", "historical_positive")):
+            assert artifact["historical_status"] in {"ALIVE", "PROMOTED", "REPRODUCED"}
     assert {item["id"] for item in preregistrations} == {
         "rdu_preregistration",
         "psi_preregistration",
@@ -140,9 +142,9 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
     table = (DIAGNOSTIC_PACKET / "falsification_table.md").read_text(encoding="utf-8")
     assert "stale_positive_first_surface" in table
     assert "historical_positive_same_surface" in table
-    assert "SUPERSEDED historical readout: ALIVE" in table
-    assert "SUPERSEDED historical readout: PROMOTED" in table
-    assert "SUPERSEDED historical readout: REPRODUCED" in table
+    assert "SUPERSEDED historical readout; later gates demote or kill this row" in table
+    for stale_word in ["ALIVE", "PROMOTED", "REPRODUCED"]:
+        assert f"historical readout: {stale_word}" not in table
     assert "same_family_falsification" in table
     assert "cross_family_falsification" in table
     assert "## Preregistrations" in table

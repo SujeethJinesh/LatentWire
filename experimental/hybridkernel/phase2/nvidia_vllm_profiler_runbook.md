@@ -136,12 +136,12 @@ cat > "$HWK_RUN/metadata/profile_scope.json" <<JSON
   "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests",
   "model_scopes": [
     {
-      "row_role": "primary_hybrid,same_family_control",
+      "row_roles": ["primary_hybrid", "same_family_control"],
       "model": "$MODEL",
       "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
     },
     {
-      "row_role": "cross_family_falsification",
+      "row_roles": ["cross_family_falsification"],
       "model": "Qwen/Qwen3-Next-80B-A3B-Instruct",
       "vllm_command": "python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen3-Next-80B-A3B-Instruct --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
     }
@@ -390,6 +390,12 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   2>&1 | tee "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.log"
 ```
 
+Fill `ncu_launch_selection` for every non-pending metric row from the exact
+Nsight Systems timeline used to choose the NCU slice. The checker requires the
+kernel regex, launch-skip/count values, source Nsight Systems artifact, matching
+source time window, and a short derivation note; manual NCU launch selection
+without that provenance is not admissible evidence.
+
 Capture comparable kernels in non-boundary same-type regions. A boundary kernel
 is interesting only if it has excess bytes, time, launch overhead, or stalls
 relative to matched same-type regions.
@@ -452,6 +458,7 @@ Required fields:
 | `kernel_names` | non-empty list of kernel names reduced into the row |
 | `boundary_indices` | list of architecture-map boundary indices represented by the row |
 | `time_window_ms` | object with numeric `start` and `end` trace-window boundaries |
+| `ncu_launch_selection` | object recording `kernel_regex`, `launch_skip`, positive `launch_count`, `source_nsys_artifact`, matching `source_time_window_ms`, and derivation notes for the NCU launch slice |
 | `reduction_command` | exact command or script invocation used to reduce the Nsight artifacts into this row |
 | `reduction_notes` | short non-placeholder explanation of the trace reduction |
 

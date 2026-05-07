@@ -56,6 +56,21 @@ def test_active_project_reviewer_packs_cover_colm_axes() -> None:
             assert phrase in pack
 
 
+def test_hybrid_quant_later_gates_are_not_claimed_as_current_evidence() -> None:
+    expected = {
+        "ssq_lr": ["S2/S3 now have follow-up contract checks", "not current evidence"],
+        "horn": ["H2/H3 now have follow-up contract checks", "not current evidence"],
+        "hbsm": ["B2/B3 now have follow-up contract checks", "not current evidence"],
+    }
+
+    for project, phrases in expected.items():
+        readme = (EXPERIMENTAL / project / "README.md").read_text()
+        pack = (EXPERIMENTAL / project / "paper/reviewer_pack.md").read_text()
+        paper = next((EXPERIMENTAL / project / "paper").glob("*.tex")).read_text()
+        for phrase in phrases:
+            assert phrase in readme or phrase in pack or phrase in paper
+
+
 def test_active_project_paper_shells_state_real_packet_blockers() -> None:
     required = {
         "ssq_lr/paper/ssq_lr_colm2026.tex": [
