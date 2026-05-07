@@ -670,6 +670,19 @@ def test_rejects_marker_only_client_log_without_profiler_driver_json(tmp_path: P
     assert any("not valid profiler_driver JSON" in error for error in result["errors"])
 
 
+def test_rejects_unregistered_high_recoverable_fraction(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["recoverable_fraction"] = 0.95
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("recoverable_fraction must be in [0, 0.60]" in error for error in result["errors"])
+
+
 def test_rejects_client_replay_without_top_level_model(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "logs/client_replay_b1.log").write_text(

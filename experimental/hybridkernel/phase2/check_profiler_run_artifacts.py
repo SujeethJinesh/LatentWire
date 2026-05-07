@@ -114,6 +114,7 @@ SHA256_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 DEFAULT_CROSS_FAMILY_MODEL = "Qwen/Qwen3-Next-80B-A3B-Instruct"
 MODEL_PROVENANCE_VERSION = "hybridkernel_model_provenance_v1"
 REPLACEMENT_METADATA_PATH = "metadata/cross_family_control_replacement_template.json"
+MAX_RECOVERABLE_FRACTION = 0.60
 
 
 def _matching_artifacts(root: Path, patterns: list[str]) -> list[Path]:
@@ -540,6 +541,17 @@ def _validate_metric_provenance(
         if row_role not in ALLOWED_ROW_ROLES:
             errors.append(
                 f"metric row {idx} row_role must be one of {sorted(ALLOWED_ROW_ROLES)}"
+            )
+        recoverable_fraction = row.get("recoverable_fraction")
+        if (
+            not isinstance(recoverable_fraction, (int, float))
+            or isinstance(recoverable_fraction, bool)
+            or recoverable_fraction < 0
+            or recoverable_fraction > MAX_RECOVERABLE_FRACTION
+        ):
+            errors.append(
+                f"metric row {idx} recoverable_fraction must be in "
+                f"[0, {MAX_RECOVERABLE_FRACTION:.2f}] unless a new gate is preregistered"
             )
         for field in [
             "control_family",

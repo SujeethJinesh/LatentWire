@@ -24,6 +24,8 @@ until real native metadata, readout evidence, and metric rows replace them.
 
 Do not send partial screenshots, notebook snippets, or client-only logs as
 evidence. Send the whole `$HWK_RUN` directory.
+Do not use `--allow-missing-native-artifacts` for submitted packets; that flag
+exists only for schema fixtures and is rejected with `--require-full-matrix`.
 
 ## Required Files
 
@@ -48,6 +50,25 @@ The packet is incomplete unless all of these exist:
 After the checker command runs, the returned packet should also include
 `artifact_check.json`. The checker validates the files above and then produces
 that final self-report.
+
+`metadata/model_provenance.json` must use this shape:
+
+```json
+{
+  "provenance_version": "hybridkernel_model_provenance_v1",
+  "models": [
+    {
+      "model_id": "ibm-granite/granite-4.0-h-tiny",
+      "served_model_id": "ibm-granite/granite-4.0-h-tiny",
+      "model_revision": "<resolved git commit or immutable snapshot>",
+      "tokenizer_revision": "<resolved git commit or immutable snapshot>",
+      "cache_source": "<HF cache path, mounted volume, or download source>",
+      "local_files_only": false,
+      "trust_remote_code": true
+    }
+  ]
+}
+```
 
 ## Required Scope JSON
 
@@ -111,7 +132,8 @@ reduced native trace:
 - `total_step_ms`: positive denominator from the matched request-step window;
 - `attention_ssm_boundary_ms`: non-negative boundary-local measured cost;
 - `matched_non_boundary_ms`: non-negative same-shape control cost;
-- `recoverable_fraction`: value in `[0, 1]`.
+- `recoverable_fraction`: value in `[0, 0.60]`; a larger recovery assumption
+  requires a new preregistered gate rather than an ad-hoc row edit.
 - `recoverable_fraction_basis`: non-placeholder justification for the chosen
   recoverable fraction;
 - `dtype`: non-empty served dtype string;
@@ -210,6 +232,10 @@ python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
   --require-full-matrix \
   | tee "$HWK_RUN/artifact_check.json"
 ```
+
+A primary-only no-boundary packet is allowed only as compute triage to avoid
+profiling unnecessary Nsight Compute launches. It is audit-only and cannot be
+used as the final paper-facing kill without the full matrix above.
 
 If the artifact checker fails, stop and fix the packet before interpreting
 results.

@@ -39,7 +39,7 @@
         "n_scored_traces": 74,
         "rdu_topk_nll": 3.778857429285307,
         "rkv_like_nll": 3.938916821737547,
-        "status": "ALIVE on frozen sparse-cache probe; rdu_topk clears the preregistered promotion rule with margins 0.160 vs R-KV-like and 0.121 vs ThinKV-like.",
+        "status": "HISTORICAL/SUPERSEDED: ALIVE on frozen sparse-cache probe; rdu_topk clears the preregistered promotion rule with margins 0.160 vs R-KV-like and 0.121 vs ThinKV-like.",
         "thin_kv_like_nll": 3.8999502143344364
       }
     },
@@ -74,7 +74,7 @@
         "split_mean_margin_passes": 4,
         "split_paired_mean_passes": 4,
         "split_promotion_passes": 2,
-        "status": "PROMOTED on cached full gate; deterministic trace splits keep positive margins and paired means, but split CIs are not uniformly below zero."
+        "status": "HISTORICAL/SUPERSEDED: PROMOTED on cached full gate; deterministic trace splits keep positive margins and paired means, but split CIs are not uniformly below zero."
       }
     },
     {
@@ -129,7 +129,7 @@
         "rdu_is_best_compressed": true,
         "rdu_nll": 3.778857429285307,
         "reproduction_pass": true,
-        "status": "REPRODUCED on measured no-retuning rerun; rdu_topk remains best compressed and clears the preregistered rule."
+        "status": "HISTORICAL/SUPERSEDED: REPRODUCED on measured no-retuning rerun; rdu_topk remains best compressed and clears the preregistered rule."
       }
     },
     {
@@ -389,6 +389,6 @@
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:89d5e69717f43fa33ccaf0984e9d8064d8e4e22dcffa9cba1111f939c914ae97"
+    "sha256": "sha256:59d436dab9e4b61f770c270d4be5e4cb4dce2ec6157390f0dbcc4e29da62fb84"
   }
 }

@@ -102,6 +102,24 @@ model in the metric rows, including the vLLM served model string, cache source,
 `local_files_only`, and `trust_remote_code` values. The checker rejects a packet
 whose model provenance does not cover the profiler metrics and client replay
 logs.
+Use this schema:
+
+```json
+{
+  "provenance_version": "hybridkernel_model_provenance_v1",
+  "models": [
+    {
+      "model_id": "ibm-granite/granite-4.0-h-tiny",
+      "served_model_id": "ibm-granite/granite-4.0-h-tiny",
+      "model_revision": "<resolved git commit or immutable snapshot>",
+      "tokenizer_revision": "<resolved git commit or immutable snapshot>",
+      "cache_source": "<HF cache path, mounted volume, or download source>",
+      "local_files_only": false,
+      "trust_remote_code": true
+    }
+  ]
+}
+```
 
 Record immutable metadata before profiling:
 
@@ -607,7 +625,7 @@ Required fields:
 | `total_step_ms` | matched request-step wall or profiler time used as denominator |
 | `attention_ssm_boundary_ms` | boundary-local cost from annotated Nsight trace |
 | `matched_non_boundary_ms` | same-shape local control cost outside attention/SSM boundaries |
-| `recoverable_fraction` | conservative fraction of avoidable boundary cost a fused operator could recover |
+| `recoverable_fraction` | conservative fraction of avoidable boundary cost a fused operator could recover; capped at `0.60` by the current gate |
 | `recoverable_fraction_basis` | non-placeholder justification for the recoverable-fraction value; cite the observed kernel/traffic rows or use a conservative assumption |
 | `dtype` | exact served dtype, for example `bfloat16`; must be non-empty |
 | `cuda_graph_enabled` | JSON boolean, not a string, recording whether CUDA graphs were enabled |
@@ -710,6 +728,10 @@ This mode still requires server-side Nsight Systems evidence, fixed client
 replay, reduced metric rows, and filled readout decisions. It only makes the
 `.ncu-rep` artifact optional when the readout records no suspicious boundary
 kernel.
+For compute triage, a primary-only no-boundary packet may be used to stop
+spending GPU time, but it is audit-only. A reviewer-facing clean kill must keep
+`--require-full-matrix` and include the same-family and cross-family rows, so
+the negative result is not just a failed single trace.
 
 The verifier checks that the run directory contains:
 

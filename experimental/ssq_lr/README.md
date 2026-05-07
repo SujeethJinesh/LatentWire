@@ -5,11 +5,13 @@ below FP16 without quality loss during long reasoning.
 
 ## Current Readiness
 
-Status: **WEAKENED / S3 transfer failed on the current frozen recipe**.
+Status: **STOPPED current recipe / diagnostic only unless newly preregistered**.
 
 Estimated completion:
 
-- **20%** as a positive-method paper: hypothesis, gates, packet checker,
+- **0% active positive-method readiness under the current recipe**. The frozen
+  recipe failed S3 transfer, so it cannot move to GPU or paper promotion.
+- **20% reusable scaffold if a new recipe is preregistered**: hypothesis, gates, packet checker,
   trace-plan handoff, one corrected one-layer S1 smoke pass, one four-layer S1
   smoke failure, one all-recurrent-layer metrics-only S1 failure, and one
   checker-passing selected-layer prompt-repeat packet are scaffolded. A fresh

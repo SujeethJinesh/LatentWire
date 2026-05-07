@@ -10,7 +10,9 @@ narrower mechanism is preregistered**.
 
 Estimated completion:
 
-- **12%** as a narrow mechanism paper: hypothesis, gates, packet checker,
+- **0% active mechanism-paper readiness under the current broad hypothesis**:
+  the real Granite Tiny B1 scouts failed and no GPU handoff is admissible.
+- **12% reusable scaffold if a narrower mechanism is preregistered**: hypothesis, gates, packet checker,
   trace-plan handoff, one resource-limited real-model sensitivity packet, and
   one two-prompt prompt-repeat scout are scaffolded. Both real-model packets
   fail B1; the prompt-repeat scout removes the one-prompt boundary-top-decile
@@ -127,6 +129,9 @@ This weakens HBSM beyond the one-prompt smoke: the top sensitivity layer moves
 to a non-boundary layer after the first prompt repeat, and the cheap predictor
 stays negative. Do not spend a long 12-prompt Mac sweep or GPU validation on
 HBSM unless the hypothesis is narrowed or replaced.
+
+The following commands are archival reproduction only. Do not vary prompts,
+layers, perturbations, or scale B1 under the current hypothesis.
 
 Regenerate the one-prompt smoke with:
 
@@ -299,3 +304,6 @@ both fail, and the cheap predictor is negative, so no sensitivity-discovery,
 no-forward-pass predictor, or mechanism claim is allowed. HBSM should now be
 treated as a negative/control branch unless a new, narrower hypothesis is
 pre-registered before any additional Mac or GPU run.
+Allowed Mac-local work is limited to revalidating existing B1 stop packets,
+documentation/tests/runbook hygiene, or writing a new preregistered narrower
+mechanism.

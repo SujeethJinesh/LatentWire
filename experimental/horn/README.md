@@ -9,7 +9,9 @@ Status: **DEMOTED CONTROL / H1a and H2 scouts failed**.
 
 Estimated completion:
 
-- **12% scaffold / <=5% active positive-method readiness**: hypothesis, gates,
+- **0% active positive-method readiness under the current demoted scope**:
+  H1a/H2 failed and no GPU handoff is admissible.
+- **12% reusable scaffold if the branch is deliberately preregistered again**: hypothesis, gates,
   packet checker, trace-plan handoff, one checker-passing resource-limited real
   H1a packet, and one H2 follow-up scout are scaffolded, but both observed
   directional signals are weak and the branch is demoted unless reopened with a

@@ -365,6 +365,10 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
         historical_positive = str(spec["role"]).startswith(
             ("stale_positive", "historical_positive")
         )
+        if historical_positive:
+            original_status = str(artifacts[-1]["summary"]["status"])
+            artifacts[-1]["historical_status"] = original_status.split(maxsplit=1)[0]
+            artifacts[-1]["summary"]["status"] = f"HISTORICAL/SUPERSEDED: {original_status}"
         artifacts[-1]["current_status"] = (
             "superseded_diagnostic_only"
             if historical_positive
@@ -372,10 +376,6 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
         )
         artifacts[-1]["current_claim_allowed"] = not historical_positive
         artifacts[-1]["positive_method_claim_allowed"] = False
-        if historical_positive:
-            artifacts[-1]["historical_status"] = str(artifacts[-1]["summary"]["status"]).split(
-                maxsplit=1
-            )[0]
     preregistrations = []
     for spec in PREREGISTRATIONS:
         path = PHASE2 / str(spec["path"])

@@ -72,9 +72,12 @@ proven.
 
 ## SSQ-LR / HORN / HBSM
 
-These branches do not have a GPU handoff yet. Their next admissible artifacts
-are real shared trace packets built from saved Mac/GPU tensors or sensitivity
-rows and validated with:
+These branches do not have a GPU handoff yet. Under the current evidence,
+admissible Mac work is limited to revalidating existing stop packets,
+documentation/tests/runbook hygiene, or writing a new preregistration before
+any new rows are collected. A newly preregistered reopening would build real
+shared trace packets from saved Mac/GPU tensors or sensitivity rows and validate
+them with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
@@ -91,8 +94,8 @@ As of 2026-05-07, SSQ-LR has no surviving GPU handoff recipe: the frozen
 diagnostics fail two-model S3 because Granite Tiny and Granite 350M prefer
 different frozen recipes.
 
-Before collecting those tensors or sensitivity rows, use the deterministic
-trace plan:
+For a newly preregistered reopening only, use the deterministic trace plan
+before collecting tensors or sensitivity rows:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.hybrid_trace_plan
@@ -157,7 +160,7 @@ Latest recorded result:
 `experimental/local_readiness_recheck_20260507.md`.
 
 ```text
-286 passed, 1 skipped, 2 warnings in 6.97s
+287 passed, 1 skipped, 2 warnings in 12.34s
 ```
 
 Before interpreting any new native packet, rerun the owned Mac suite:

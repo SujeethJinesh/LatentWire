@@ -55,7 +55,7 @@ simulation. At the same 0.368 keep rate, ThoughtFlow preserves phase markers
 with 1.000 recall, while LongFlow-like, ThinKV-like, and R-KV-like proxies retain
 0.143, 0.286, and 0.286 respectively. Anchor recall stays 1.000.
 
-Status: **ALIVE, but not reviewer-pack-ready**. The result is synthetic policy
+Historical status: **ALIVE, but not reviewer-pack-ready**. The result is synthetic policy
 evidence, not accuracy evidence and not a GPU systems result.
 
 ## Next Gate
@@ -66,7 +66,7 @@ advantage over the LongFlow-like importance proxy. At a matched 0.211 keep
 rate, ThoughtFlow and LongFlow-like both reached 0.941 phase recall, while
 ThoughtFlow did not improve math-state recall.
 
-Status: **WEAKENED**. Do not prepare a reviewer pack from this branch yet. The
+Historical status: **WEAKENED**. Do not prepare a reviewer pack from this branch yet. The
 next gate must use real KV/cache telemetry or a sharper hidden-state phase
 signal; text-marker heuristics are not enough.
 
@@ -79,7 +79,7 @@ result on distilgpt2 attention-received saliency: protected phase markers beat
 the pure attention-received proxy, but still tied the strongest importance
 proxy. This was not enough for a reviewer pack or GPU work.
 
-Current status: **MIXED/WEAKENED**. The only pre-GPU route left is a real hidden
+Historical status: **MIXED/WEAKENED**. The only pre-GPU route left was a real hidden
 or KV saliency policy that beats the strongest importance proxy and shows a
 quality/perplexity benefit under actual cache dropping.
 
@@ -96,7 +96,7 @@ held-out traces. The train-selected policy ties R-KV-like on held-out traces
 with NLL 3.480 versus 3.482, margin +0.001 in favor of the ThoughtFlow-family
 policy. This is a tie-range result, not a robust win.
 
-Status: **MIXED, not revived as a positive method**. The next useful gate was
+Historical status: **MIXED, not revived as a positive method**. The next useful gate was
 real hidden/KV saliency telemetry; GPU sparse-KV work should wait until the
 policy beats R-KV-like by a nontrivial margin on held-out traces.
 
@@ -110,7 +110,7 @@ normal CI of [-0.078, +0.223]. It also ties the local LongFlow-like importance
 proxy on phase and math-state recall because both policies preserve the same
 high-importance marker classes.
 
-Status: **MIXED/NOT REVIVED**. Promoted: real hidden/KV telemetry as a useful
+Historical status: **MIXED/NOT REVIVED**. Promoted historically: real hidden/KV telemetry as a useful
 diagnostic. Weakened: the claim that phase-marker preservation alone is a
 positive method. Saturated: synthetic marker-retention and text-prefix-only
 policy tuning. The next exact gate is actual cache-dropping or sparse-KV quality
@@ -148,7 +148,7 @@ is still not enough: the paired delta versus R-KV-like is `-0.080` with 95% CI
 `thoughtflow_saliency_recent` has the best held-out mean NLL (`3.304`), but its
 paired CIs also cross zero versus both R-KV-like and ThinKV-like.
 
-Status: **MIXED/PROMISING BUT NOT REVIVED**. Promoted: the sparse-cache
+Historical status: **MIXED/PROMISING BUT NOT REVIVED**. Promoted historically: the sparse-cache
 candidate now has a clean held-out mean margin and a paired win over R-KV-like.
 Still blocking: uncertainty versus ThinKV-like, the strongest non-ThoughtFlow
 held-out baseline. The next exact gate is a larger frozen sparse-cache slice
@@ -218,7 +218,7 @@ cross-family baselines by +0.160 (R-KV-like), +0.121 (ThinKV-like), and +0.379
 oracle reaches NLL 3.634, leaving `rdu_topk` 0.145 NLL above that oracle and
 0.931 NLL above full cache, with a 0.419 oracle-hit rate.
 
-Status: **REPRODUCED LOCALLY, STILL NOT ICLR-READY**. This is a measured
+Historical status: **REPRODUCED LOCALLY, STILL NOT ICLR-READY**. This is a measured
 same-slice no-retuning reproduction, not a larger or independently seeded
 reproduction. The exact next gate is a larger or seed-repeated frozen slice
 with the same measured-vs-cached labeling, strict same-family/cross-family
@@ -237,7 +237,7 @@ by `0.006`. Oracle/headroom remains material: per-trace compressed oracle NLL
 is `3.460`, `rdu_topk` is `0.135` above that oracle and `0.847` above full
 cache, and the oracle-hit rate is `0.438`.
 
-Status: **WEAKENED, NOT REPRODUCED ON THE FIRST ALTERNATE SURFACE**. Promoted:
+Historical status: **WEAKENED, NOT REPRODUCED ON THE FIRST ALTERNATE SURFACE**. Promoted historically:
 the recurrence-distance signal still beats cross-family local proxies under a
 changed scoring surface. Weakened: `rdu_topk` is not yet separated from the
 stopped same-family sparse row. Highest-priority next gate: do not retune;
@@ -480,9 +480,10 @@ GPU/FP8 performance remains absent. The paper no longer calls the sparse-cache
 probe "finally" and lists the workshop shell, README, and progress ledger as
 handoff artifacts.
 
-Decision: **NO ADDITIONAL MAC-SIDE THOUGHTFLOW WORK REMAINS FOR CURRENT
-BRANCHES**. Any improvement requires a genuinely new preregistered utility
-signal, not more cleanup or Triton scaffolding.
+Decision: **NO ADDITIONAL MAC-SIDE THOUGHTFLOW EXPERIMENTS OR METHOD WORK
+REMAIN FOR CURRENT BRANCHES**. Any evidence improvement requires a genuinely
+new preregistered utility signal, not more cleanup or Triton scaffolding; paper
+artifact hygiene remains allowed.
 
 ## 2026-05-06 Paired-Interval Language Cleanup
 

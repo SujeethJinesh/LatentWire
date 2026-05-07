@@ -374,6 +374,9 @@ stricter reproduction, or collapse on fresh surfaces. The project name retains
 ``FP8'' because that was the original systems target, but the current artifacts
 only validate CPU sparse-cache scoring and an int8/Triton-interpreter reference
 primitive; they do not measure FP8 numerical drift or native FP8 serving.
+The novelty is not preregistration or negative-results methodology in general;
+it is the domain-specific sparse-cache stop ladder with matched-budget proxy
+separation, stopped-family controls, and provenance locking.
 
 \section{Reproducibility}
 
@@ -395,6 +398,11 @@ tracked in the repository despite the root results ignore rule. The current
 package should still be read as a
 machine-checked falsification note rather than a full artifact-evaluation
 release. The stable local correctness command is:
+\begin{verbatim}
+./venv_arm64/bin/python \
+  experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py
+\end{verbatim}
+Then run:
 \begin{verbatim}
 TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 \
 TRITON_HOME="$PWD/.debug/triton_home" \
@@ -419,7 +427,8 @@ independent RDU & \path{rdu_independent_trace_reproduction_check.py} & saved cha
 \bottomrule
 \end{tabular}
 \caption{Diagnostic-packet command map. Full commands, source metadata, and
-input SHA-256 values are in the tracked manifest.}
+input SHA-256 values are in the tracked manifest. All rows are saved-trace
+proxy fixtures, not faithful LongFlow, ThinKV, or R-KV benchmark results.}
 \label{tab:thoughtflow-artifact-commands}
 \end{table}
 
