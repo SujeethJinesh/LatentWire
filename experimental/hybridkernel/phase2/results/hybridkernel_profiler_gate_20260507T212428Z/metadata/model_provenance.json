@@ -1,0 +1,31 @@
+{
+  "provenance_version": "hybridkernel_model_provenance_v1",
+  "models": [
+    {
+      "model_id": "ibm-granite/granite-4.0-h-tiny",
+      "served_model_id": "ibm-granite/granite-4.0-h-tiny",
+      "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+      "tokenizer_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+      "model_revision_is_immutable": true,
+      "tokenizer_revision_is_immutable": true,
+      "cache_source": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/snapshots/791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+      "snapshot_manifest_path": "metadata/granite_tiny_snapshot_manifest.json",
+      "snapshot_manifest_sha256": "sha256:01d0da07d003739873fe4749382b94c9db8850f5a8f01b1a1e35ab347c744d61",
+      "local_files_only": true,
+      "trust_remote_code": true
+    },
+    {
+      "model_id": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "served_model_id": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "model_revision": "6533e8de2c68e4536bf7c411d7a3ce5734111476",
+      "tokenizer_revision": "6533e8de2c68e4536bf7c411d7a3ce5734111476",
+      "model_revision_is_immutable": true,
+      "tokenizer_revision_is_immutable": true,
+      "cache_source": "/workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-Nano-9B-v2/snapshots/6533e8de2c68e4536bf7c411d7a3ce5734111476",
+      "snapshot_manifest_path": "metadata/nemotron_nano_9b_snapshot_manifest.json",
+      "snapshot_manifest_sha256": "sha256:ed0ff692bd99699a2ad374b4930d4f4387e219d613d74294efc72df0999239a9",
+      "local_files_only": true,
+      "trust_remote_code": true
+    }
+  ]
+}

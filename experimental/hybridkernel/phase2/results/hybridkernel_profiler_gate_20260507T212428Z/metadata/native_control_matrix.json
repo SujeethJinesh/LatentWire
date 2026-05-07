@@ -1,0 +1,87 @@
+{
+  "decision": "CONTROL_MATRIX_READY_NOT_NATIVE_EVIDENCE",
+  "claim_boundary": [
+    "run-plan-only",
+    "not profiler evidence",
+    "not GPU evidence"
+  ],
+  "request_shape": {
+    "batch_size": 1,
+    "prefill_tokens": 128,
+    "decode_tokens": 64,
+    "requests": 16,
+    "dtype": "bfloat16",
+    "cuda_graph_enabled": true
+  },
+  "promotion_rule": {
+    "primary_repeats": 3,
+    "same_family_control_repeats": 3,
+    "cross_family_falsification_repeats": 3,
+    "primary_gain_gate": "all primary recoverable_gain_upper_bound rows >= 0.03 and bootstrap CI low over primary rows > 0",
+    "control_gate": "same-family and cross-family rows must stay below the 0.03 promotion gate"
+  },
+  "rows": [
+    {
+      "row_role": "primary_hybrid",
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "fallback_model_if_vram_allows": "ibm-granite/granite-4.0-h-small",
+      "control_family": "same_family_matched_segment",
+      "control_model_or_segment": "granite_hybrid_attention_ssm_boundary_windows",
+      "boundary_direction": "mixed_attention_ssm",
+      "boundary_indices": [
+        4,
+        5,
+        14,
+        15,
+        24,
+        25,
+        34,
+        35
+      ],
+      "boundary_index_rule": "all_boundary_indices_from_architecture_map_for_model",
+      "control_window_ids": [],
+      "required_repeats": 3,
+      "interpretation": "Only these rows can trigger the HybridKernel positive gate."
+    },
+    {
+      "row_role": "same_family_control",
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "fallback_model_if_vram_allows": "ibm-granite/granite-4.0-h-small",
+      "control_family": "same_model_non_boundary_segment_control",
+      "control_model_or_segment": "granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows",
+      "boundary_direction": "non_boundary_same_family",
+      "boundary_indices": [],
+      "control_window_ids": [
+        "granite-non-boundary-window-0",
+        "granite-non-boundary-window-1",
+        "granite-non-boundary-window-2"
+      ],
+      "control_window_id_rule": "fill stable non-boundary window IDs in the copied run packet before profiling; metric control_window_ids must be a subset",
+      "required_repeats": 3,
+      "interpretation": "Controls for generic launch, CUDA graph, SSM-internal, and attention-internal overhead on the same serving path."
+    },
+    {
+      "row_role": "cross_family_falsification",
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "control_family": "cross_family_hybrid_control",
+      "control_model_or_segment": "nemotron_h_attention_adjacent_boundary_windows",
+      "boundary_direction": "attention_adjacent_mamba_mlp_boundary",
+      "boundary_indices": [
+        13,
+        14,
+        20,
+        21,
+        29,
+        30,
+        38,
+        39
+      ],
+      "boundary_index_rule": "all_boundary_indices_from_architecture_map_for_model",
+      "control_window_ids": [],
+      "required_repeats": 3,
+      "interpretation": "Falsifies a Granite-specific claim if the same apparent boundary signal appears in a different Nemotron-H hybrid family.",
+      "model_revision": "6533e8de2c68e4536bf7c411d7a3ce5734111476"
+    }
+  ],
+  "missing_control_policy": "If either control family cannot be run with the same request/runtime shape, the packet is audit-only and cannot promote HybridKernel."
+}

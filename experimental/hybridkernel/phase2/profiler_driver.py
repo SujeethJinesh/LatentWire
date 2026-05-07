@@ -115,6 +115,14 @@ def _exact_prompt_from_tokenizer(tokenizer: Any, prefill_tokens: int, request_id
         if prompt is not None and _count_tokens(tokenizer, prompt) == prefill_tokens:
             return prompt
 
+    # Some BPE tokenizers decode repeated token ids into byte-fallback text that
+    # re-encodes to a different length. Try stable natural-language units before
+    # falling back to the approximate whitespace prompt.
+    for unit in (" token", " the", " hello", " .", "the"):
+        prompt = unit * prefill_tokens
+        if _count_tokens(tokenizer, prompt) == prefill_tokens:
+            return prompt
+
     return None
 
 

@@ -1,0 +1,31 @@
+{
+  "profiled_process": "vllm_server",
+  "nsys_profiled_process": "vllm_server",
+  "ncu_profiled_process": "vllm_server",
+  "trace_scope": "server-side CUDA kernels under fixed request replay",
+  "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
+  "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
+  "request_driver_process": "profiler_driver_http_client",
+  "model": "ibm-granite/granite-4.0-h-tiny",
+  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model ibm-granite/granite-4.0-h-tiny --dtype bfloat16 --max-model-len 2048 --disable-log-requests",
+  "model_scopes": [
+    {
+      "row_roles": [
+        "primary_hybrid",
+        "same_family_control"
+      ],
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model ibm-granite/granite-4.0-h-tiny --dtype bfloat16 --max-model-len 2048 --disable-log-requests",
+      "scope": "Granite primary boundary and same-model non-boundary control rows"
+    },
+    {
+      "row_roles": [
+        "cross_family_falsification"
+      ],
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model /workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-Nano-9B-v2/snapshots/6533e8de2c68e4536bf7c411d7a3ce5734111476 --served-model-name nvidia/NVIDIA-Nemotron-Nano-9B-v2 --dtype bfloat16 --max-model-len 2048 --gpu-memory-utilization 0.90 --disable-log-requests --trust-remote-code",
+      "scope": "Nemotron Nano 9B v2 cross-family hybrid falsification rows"
+    }
+  ],
+  "notes": "Cross-family replacement was filled before profiler rows because Qwen3-Next BF16 is not feasible on this single 96GB node. Use the replacement model ID consistently in server command, client logs, native_control_matrix.json, profiler_metrics.json, and reduction_input_manifest.json."
+}

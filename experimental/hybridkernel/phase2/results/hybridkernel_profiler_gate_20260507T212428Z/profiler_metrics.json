@@ -1,0 +1,503 @@
+{
+  "description": "TODO_NATIVE_PROFILE_FILL: fill one row per independent native NVIDIA/vLLM trace reduced from Nsight artifacts. Promotion requires 3 primary rows, 3 same-family controls, and 3 cross-family falsification rows on the same request/runtime shape.",
+  "rows": [
+    {
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "run_id": "primary-repeat-0",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "granite_hybrid_attention_ssm_boundary_windows",
+      "row_role": "primary_hybrid",
+      "control_family": "same_family_matched_segment",
+      "boundary_direction": "mixed_attention_ssm",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [
+        4,
+        5,
+        14,
+        15,
+        24,
+        25,
+        34,
+        35
+      ],
+      "control_window_ids": [],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    },
+    {
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "run_id": "primary-repeat-1",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "granite_hybrid_attention_ssm_boundary_windows",
+      "row_role": "primary_hybrid",
+      "control_family": "same_family_matched_segment",
+      "boundary_direction": "mixed_attention_ssm",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [
+        4,
+        5,
+        14,
+        15,
+        24,
+        25,
+        34,
+        35
+      ],
+      "control_window_ids": [],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    },
+    {
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "run_id": "primary-repeat-2",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "granite_hybrid_attention_ssm_boundary_windows",
+      "row_role": "primary_hybrid",
+      "control_family": "same_family_matched_segment",
+      "boundary_direction": "mixed_attention_ssm",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [
+        4,
+        5,
+        14,
+        15,
+        24,
+        25,
+        34,
+        35
+      ],
+      "control_window_ids": [],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    },
+    {
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "run_id": "same-family-control-repeat-0",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows",
+      "row_role": "same_family_control",
+      "control_family": "same_model_non_boundary_segment_control",
+      "boundary_direction": "non_boundary_same_family",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [],
+      "control_window_ids": [
+        "granite-non-boundary-window-0",
+        "granite-non-boundary-window-1",
+        "granite-non-boundary-window-2"
+      ],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    },
+    {
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "run_id": "same-family-control-repeat-1",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows",
+      "row_role": "same_family_control",
+      "control_family": "same_model_non_boundary_segment_control",
+      "boundary_direction": "non_boundary_same_family",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [],
+      "control_window_ids": [
+        "granite-non-boundary-window-0",
+        "granite-non-boundary-window-1",
+        "granite-non-boundary-window-2"
+      ],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    },
+    {
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "run_id": "same-family-control-repeat-2",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows",
+      "row_role": "same_family_control",
+      "control_family": "same_model_non_boundary_segment_control",
+      "boundary_direction": "non_boundary_same_family",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [],
+      "control_window_ids": [
+        "granite-non-boundary-window-0",
+        "granite-non-boundary-window-1",
+        "granite-non-boundary-window-2"
+      ],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    },
+    {
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "run_id": "cross-family-falsification-repeat-0",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "nemotron_h_attention_adjacent_boundary_windows",
+      "row_role": "cross_family_falsification",
+      "control_family": "cross_family_hybrid_control",
+      "boundary_direction": "attention_adjacent_mamba_mlp_boundary",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [
+        13,
+        14,
+        20,
+        21,
+        29,
+        30,
+        38,
+        39
+      ],
+      "control_window_ids": [],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    },
+    {
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "run_id": "cross-family-falsification-repeat-1",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "nemotron_h_attention_adjacent_boundary_windows",
+      "row_role": "cross_family_falsification",
+      "control_family": "cross_family_hybrid_control",
+      "boundary_direction": "attention_adjacent_mamba_mlp_boundary",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [
+        13,
+        14,
+        20,
+        21,
+        29,
+        30,
+        38,
+        39
+      ],
+      "control_window_ids": [],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    },
+    {
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "run_id": "cross-family-falsification-repeat-2",
+      "total_step_ms": null,
+      "attention_ssm_boundary_ms": null,
+      "matched_non_boundary_ms": null,
+      "recoverable_fraction": null,
+      "dtype": "bfloat16",
+      "profiled_process": "vllm_server",
+      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
+      "cuda_graph_enabled": null,
+      "batch_shape": {
+        "batch_size": 1,
+        "prefill_tokens": 128,
+        "decode_tokens": 64,
+        "requests": 16
+      },
+      "control_model_or_segment": "nemotron_h_attention_adjacent_boundary_windows",
+      "row_role": "cross_family_falsification",
+      "control_family": "cross_family_hybrid_control",
+      "boundary_direction": "attention_adjacent_mamba_mlp_boundary",
+      "nsys_artifact": null,
+      "nsys_artifact_sha256": null,
+      "ncu_artifact": null,
+      "ncu_artifact_sha256": null,
+      "kernel_names": [],
+      "boundary_indices": [
+        13,
+        14,
+        20,
+        21,
+        29,
+        30,
+        38,
+        39
+      ],
+      "control_window_ids": [],
+      "time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "ncu_launch_selection": {
+        "kernel_regex": null,
+        "launch_skip": null,
+        "launch_count": null,
+        "source_nsys_artifact": null,
+        "source_time_window_ms": {
+          "start": null,
+          "end": null
+        },
+        "derivation_notes": null
+      },
+      "recoverable_fraction_basis": null,
+      "reduction_command": null,
+      "reduction_notes": null,
+      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+    }
+  ]
+}

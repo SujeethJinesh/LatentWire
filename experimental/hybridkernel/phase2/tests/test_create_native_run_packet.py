@@ -354,6 +354,12 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
     )
 
     rows = []
+    architecture_map = json.loads((run_dir / "metadata/architecture_map.json").read_text(encoding="utf-8"))
+    architecture_boundary_indices = {
+        row["model"]: row.get("boundary_indices", [])
+        for row in architecture_map
+        if isinstance(row, dict) and row.get("model")
+    }
     specs = [
         (
             "primary",
@@ -430,7 +436,11 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                     "ncu_artifact": f"ncu/{row_id}.ncu-rep",
                     "ncu_artifact_sha256": _sha256(ncu_path),
                     "kernel_names": [f"synthetic_{label}_kernel"],
-                    "boundary_indices": [spec_index] if role != "same_family_control" else [],
+                    "boundary_indices": (
+                        architecture_boundary_indices[row_model]
+                        if role != "same_family_control"
+                        else []
+                    ),
                     "control_window_ids": (
                         [f"granite-non-boundary-window-{repeat}"]
                         if role == "same_family_control"

@@ -1,0 +1,6 @@
+{
+  "status": "PENDING native profiler data.",
+  "rows": [],
+  "summary": {},
+  "decision": "No native speed or overhead claim is allowed."
+}

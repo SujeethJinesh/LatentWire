@@ -1,0 +1,159 @@
+{
+  "manifest_version": "hybridkernel_reduction_inputs_v1",
+  "description": "TODO_NATIVE_PROFILE_FILL: replace every source artifact, time window, command, script hash, and note with the exact inputs used to reduce profiler_metrics.json.",
+  "rows": [
+    {
+      "run_id": "primary-repeat-0",
+      "row_role": "primary_hybrid",
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    },
+    {
+      "run_id": "primary-repeat-1",
+      "row_role": "primary_hybrid",
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    },
+    {
+      "run_id": "primary-repeat-2",
+      "row_role": "primary_hybrid",
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    },
+    {
+      "run_id": "same-family-control-repeat-0",
+      "row_role": "same_family_control",
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    },
+    {
+      "run_id": "same-family-control-repeat-1",
+      "row_role": "same_family_control",
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    },
+    {
+      "run_id": "same-family-control-repeat-2",
+      "row_role": "same_family_control",
+      "model": "ibm-granite/granite-4.0-h-tiny",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    },
+    {
+      "run_id": "cross-family-falsification-repeat-0",
+      "row_role": "cross_family_falsification",
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    },
+    {
+      "run_id": "cross-family-falsification-repeat-1",
+      "row_role": "cross_family_falsification",
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    },
+    {
+      "run_id": "cross-family-falsification-repeat-2",
+      "row_role": "cross_family_falsification",
+      "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
+      "source_nsys_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_nsys_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {
+        "start": null,
+        "end": null
+      },
+      "source_ncu_artifact": "TODO_NATIVE_PROFILE_FILL",
+      "source_ncu_artifact_sha256": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 {
   "schema_version": 0,
-  "started_at": null,
-  "started_at_sha": null,
-  "status": "READY",
-  "current_entry": null,
+  "started_at": "2026-05-07T21:23:49Z",
+  "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
+  "status": "RUNNING",
+  "current_entry": "hybridkernel_profiler_gate",
   "completed_entries": [],
   "killed_entries": [],
   "infra_failed_entries": [],
@@ -11,7 +11,7 @@
   "gpu_hours_used": 0.0,
   "gpu_hours_budget": 160.0,
   "last_audit_at": null,
-  "last_commit_sha": null,
+  "last_commit_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "papers_camera_ready_candidate": [],
-  "notes": "Initial state. /goal will populate started_at and started_at_sha on first iteration."
+  "notes": "Swarm started on GPU node; first entry is hybridkernel_profiler_gate."
 }
