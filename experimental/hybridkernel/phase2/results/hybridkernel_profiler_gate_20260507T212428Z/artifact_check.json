@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "run_dir": "/workspace/LatentWire/experimental/hybridkernel/phase2/results/hybridkernel_profiler_gate_20260507T212428Z",
+  "errors": [],
+  "warnings": [
+    "Nsight Compute artifact is optional in no_boundary_signal_kill mode"
+  ],
+  "metrics_status": "KILL or shelve: native profiler summaries show less than 1% recoverable gain.",
+  "metrics_rows": 9,
+  "model_run_counts": {
+    "ibm-granite/granite-4.0-h-tiny": 6,
+    "nvidia/NVIDIA-Nemotron-Nano-9B-v2": 3
+  },
+  "model_distinct_run_counts": {
+    "ibm-granite/granite-4.0-h-tiny": 6,
+    "nvidia/NVIDIA-Nemotron-Nano-9B-v2": 3
+  },
+  "model_config_run_counts": {
+    "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"granite_hybrid_attention_ssm_boundary_windows\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"ibm-granite/granite-4.0-h-tiny\"}": 3,
+    "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"ibm-granite/granite-4.0-h-tiny\"}": 3,
+    "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"nemotron_h_attention_adjacent_boundary_windows\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"nvidia/NVIDIA-Nemotron-Nano-9B-v2\"}": 3
+  },
+  "model_config_distinct_run_counts": {
+    "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"granite_hybrid_attention_ssm_boundary_windows\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"ibm-granite/granite-4.0-h-tiny\"}": 3,
+    "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"ibm-granite/granite-4.0-h-tiny\"}": 3,
+    "{\"batch_shape\": {\"batch_size\": 1, \"decode_tokens\": 64, \"prefill_tokens\": 128, \"requests\": 16}, \"control_model_or_segment\": \"nemotron_h_attention_adjacent_boundary_windows\", \"cuda_graph_enabled\": true, \"dtype\": \"bfloat16\", \"model\": \"nvidia/NVIDIA-Nemotron-Nano-9B-v2\"}": 3
+  },
+  "min_repeated_runs": 3,
+  "native_artifacts_required": true,
+  "min_native_artifact_bytes": 1024,
+  "packet_mode": "no_boundary_signal_kill",
+  "require_full_matrix": true
+}

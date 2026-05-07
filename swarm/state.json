@@ -3,15 +3,28 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "hybridkernel_profiler_gate",
+  "current_entry": null,
   "completed_entries": [],
-  "killed_entries": [],
+  "killed_entries": [
+    {
+      "id": "hybridkernel_profiler_gate",
+      "project": "hybridkernel",
+      "phase": 2,
+      "decision": "KILL_HYBRIDKERNEL_BELOW_SHELF",
+      "result_dir": "experimental/hybridkernel/phase2/results/hybridkernel_profiler_gate_20260507T212428Z",
+      "artifact_check": "experimental/hybridkernel/phase2/results/hybridkernel_profiler_gate_20260507T212428Z/artifact_check.json",
+      "killed_manifest": "experimental/KILLED_hybridkernel_below_shelf/README.md",
+      "diagnostic": "experimental/hybridkernel/diagnostic.md",
+      "reason": "native profiler summaries show less than 1% recoverable gain; no distinct boundary-local signal",
+      "completed_at": "2026-05-07T22:56:58Z"
+    }
+  ],
   "infra_failed_entries": [],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 0.0,
+  "gpu_hours_used": 0.65,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": null,
-  "last_commit_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
+  "last_audit_at": "2026-05-07T22:56:58Z",
+  "last_commit_sha": "c05de719",
   "papers_camera_ready_candidate": [],
-  "notes": "Swarm started on GPU node; first entry is hybridkernel_profiler_gate."
+  "notes": "HybridKernel profiler gate killed cleanly; diagnostic identified decode microkernel consolidation as the highest-priority fresh positive-method pivot candidate."
 }

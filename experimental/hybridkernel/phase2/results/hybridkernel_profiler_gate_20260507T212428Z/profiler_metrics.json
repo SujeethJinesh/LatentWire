@@ -1,17 +1,18 @@
 {
-  "description": "TODO_NATIVE_PROFILE_FILL: fill one row per independent native NVIDIA/vLLM trace reduced from Nsight artifacts. Promotion requires 3 primary rows, 3 same-family controls, and 3 cross-family falsification rows on the same request/runtime shape.",
+  "description": "Full-matrix HybridKernel native profiler reduction. Nsight Systems showed no distinct boundary-local conversion/materialization signal, so the packet is reduced under no_boundary_signal_kill.",
+  "packet_mode": "no_boundary_signal_kill",
   "rows": [
     {
       "model": "ibm-granite/granite-4.0-h-tiny",
-      "run_id": "primary-repeat-0",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "granite_primary_r1",
+      "total_step_ms": 7799.060001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -22,11 +23,17 @@
       "row_role": "primary_hybrid",
       "control_family": "same_family_matched_segment",
       "boundary_direction": "mixed_attention_ssm",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/granite_primary_r1.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:16a4ff21cca1bb7aa213ba00f5aa182e837c9c2fcd0ee220dfe3a93aff6ae09b",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "fused_moe_kernel",
+        "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
       "boundary_indices": [
         4,
         5,
@@ -39,36 +46,36 @@
       ],
       "control_window_ids": [],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 174308.878,
+        "end": 182107.938
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/granite_primary_r1.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 174308.878,
+          "end": 182107.938
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 174308.878000-182107.938000 ms was derived from client log logs/client_granite_primary_r1.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/granite_primary_r1.sanitized.sqlite. Top kernels: std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (121984 launches, 1593.956158 ms); fused_moe_kernel (81920 launches, 1027.303456 ms); void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int) (40960 launches, 336.477774 ms); std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (80640 launches, 333.650889 ms); void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7) (78272 launches, 142.61659 ms). Overlapping NVTX: cub::DeviceScan::InclusiveScan (144 events).",
+      "notes": "Seed 1; client top-level run_id granite_primary_r1; row reduced as no_boundary_signal_kill."
     },
     {
       "model": "ibm-granite/granite-4.0-h-tiny",
-      "run_id": "primary-repeat-1",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "granite_primary_r2",
+      "total_step_ms": 7484.316001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -79,11 +86,17 @@
       "row_role": "primary_hybrid",
       "control_family": "same_family_matched_segment",
       "boundary_direction": "mixed_attention_ssm",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/granite_primary_r2.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:86bca506bf72bb6a64cf7ad2980625b49f9e01c645817d579c9a95238ea1f8a0",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "fused_moe_kernel",
+        "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
       "boundary_indices": [
         4,
         5,
@@ -96,36 +109,36 @@
       ],
       "control_window_ids": [],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 145263.865,
+        "end": 152748.181
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/granite_primary_r2.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 145263.865,
+          "end": 152748.181
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 145263.865000-152748.181000 ms was derived from client log logs/client_granite_primary_r2.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/granite_primary_r2.sanitized.sqlite. Top kernels: std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (121984 launches, 1593.604404 ms); fused_moe_kernel (81920 launches, 1027.032204 ms); void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int) (40960 launches, 336.062154 ms); std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (80640 launches, 333.044838 ms); void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7) (78272 launches, 142.458878 ms). Overlapping NVTX: cub::DeviceScan::InclusiveScan (144 events).",
+      "notes": "Seed 2; client top-level run_id granite_primary_r2; row reduced as no_boundary_signal_kill."
     },
     {
       "model": "ibm-granite/granite-4.0-h-tiny",
-      "run_id": "primary-repeat-2",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "granite_primary_r3",
+      "total_step_ms": 7794.126001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -136,11 +149,17 @@
       "row_role": "primary_hybrid",
       "control_family": "same_family_matched_segment",
       "boundary_direction": "mixed_attention_ssm",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/granite_primary_r3.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:746761bd1f702100ac6908e5ade4a93081ce5ea6fa8f93d634f0bd7c8d30c5b8",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "fused_moe_kernel",
+        "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
       "boundary_indices": [
         4,
         5,
@@ -153,36 +172,36 @@
       ],
       "control_window_ids": [],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 174479.942,
+        "end": 182274.068
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/granite_primary_r3.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 174479.942,
+          "end": 182274.068
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 174479.942000-182274.068000 ms was derived from client log logs/client_granite_primary_r3.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/granite_primary_r3.sanitized.sqlite. Top kernels: std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (121984 launches, 1593.422805 ms); fused_moe_kernel (81920 launches, 1027.105945 ms); void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int) (40960 launches, 335.732687 ms); std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (80640 launches, 333.04446 ms); void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7) (78272 launches, 142.350673 ms). Overlapping NVTX: cub::DeviceScan::InclusiveScan (144 events).",
+      "notes": "Seed 3; client top-level run_id granite_primary_r3; row reduced as no_boundary_signal_kill."
     },
     {
       "model": "ibm-granite/granite-4.0-h-tiny",
-      "run_id": "same-family-control-repeat-0",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "granite_same_family_r1",
+      "total_step_ms": 7674.496001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -193,11 +212,13 @@
       "row_role": "same_family_control",
       "control_family": "same_model_non_boundary_segment_control",
       "boundary_direction": "non_boundary_same_family",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/granite_same_family_r1.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:adad4d880a7f70e8ddc71ee19aad94111e72545fc9e3d8a323fc7eeb9c517a82",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "no distinct boundary-local kernel identified"
+      ],
       "boundary_indices": [],
       "control_window_ids": [
         "granite-non-boundary-window-0",
@@ -205,36 +226,36 @@
         "granite-non-boundary-window-2"
       ],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 119679.109,
+        "end": 127353.605
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/granite_same_family_r1.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 119679.109,
+          "end": 127353.605
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 119679.109000-127353.605000 ms was derived from client log logs/client_granite_same_family_r1.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/granite_same_family_r1.sanitized.sqlite. Top kernels: . Overlapping NVTX: cub::DeviceScan::InclusiveScan (144 events).",
+      "notes": "Seed 11; client top-level run_id granite_same_family_r1; row reduced as no_boundary_signal_kill."
     },
     {
       "model": "ibm-granite/granite-4.0-h-tiny",
-      "run_id": "same-family-control-repeat-1",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "granite_same_family_r2",
+      "total_step_ms": 7720.514001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -245,11 +266,17 @@
       "row_role": "same_family_control",
       "control_family": "same_model_non_boundary_segment_control",
       "boundary_direction": "non_boundary_same_family",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/granite_same_family_r2.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:77cb3b8e9cd2052b329e447802f512e7a4d8ba2a82d7a7b70c2c73afacc6c9d0",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "fused_moe_kernel",
+        "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
       "boundary_indices": [],
       "control_window_ids": [
         "granite-non-boundary-window-0",
@@ -257,36 +284,36 @@
         "granite-non-boundary-window-2"
       ],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 93203.896,
+        "end": 100924.41
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/granite_same_family_r2.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 93203.896,
+          "end": 100924.41
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 93203.896000-100924.410000 ms was derived from client log logs/client_granite_same_family_r2.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/granite_same_family_r2.sanitized.sqlite. Top kernels: std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (121984 launches, 1593.748332 ms); fused_moe_kernel (81920 launches, 1026.952429 ms); void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int) (40960 launches, 336.002465 ms); std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (80640 launches, 333.373722 ms); void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7) (78272 launches, 142.447723 ms). Overlapping NVTX: cub::DeviceScan::InclusiveScan (144 events).",
+      "notes": "Seed 12; client top-level run_id granite_same_family_r2; row reduced as no_boundary_signal_kill."
     },
     {
       "model": "ibm-granite/granite-4.0-h-tiny",
-      "run_id": "same-family-control-repeat-2",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "granite_same_family_r3",
+      "total_step_ms": 7467.962001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -297,11 +324,17 @@
       "row_role": "same_family_control",
       "control_family": "same_model_non_boundary_segment_control",
       "boundary_direction": "non_boundary_same_family",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/granite_same_family_r3.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:c49d369044e3c0ca0204640a387c3ae3d6e430492997ddbc8c6c346c697597dd",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "fused_moe_kernel",
+        "void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int)",
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
       "boundary_indices": [],
       "control_window_ids": [
         "granite-non-boundary-window-0",
@@ -309,36 +342,36 @@
         "granite-non-boundary-window-2"
       ],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 96329.843,
+        "end": 103797.805
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/granite_same_family_r3.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 96329.843,
+          "end": 103797.805
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 96329.843000-103797.805000 ms was derived from client log logs/client_granite_same_family_r3.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/granite_same_family_r3.sanitized.sqlite. Top kernels: std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (121984 launches, 1593.601868 ms); fused_moe_kernel (81920 launches, 1026.953271 ms); void vllm::moe::moe_align_block_size_small_batch_expert_kernel<int>(const T1 *, int *, int *, int *, int, int, unsigned long, int) (40960 launches, 335.871109 ms); std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (80640 launches, 332.880157 ms); void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 7)]::operator ()() const::[lambda(float) (instance 1)], std::array<char *, (unsigned long)2>, (int)4, TrivialOffsetCalculator<(int)1, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)1>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7) (78272 launches, 142.340033 ms). Overlapping NVTX: cub::DeviceScan::InclusiveScan (144 events).",
+      "notes": "Seed 13; client top-level run_id granite_same_family_r3; row reduced as no_boundary_signal_kill."
     },
     {
       "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
-      "run_id": "cross-family-falsification-repeat-0",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "cross_family_r1",
+      "total_step_ms": 14818.141001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -349,11 +382,17 @@
       "row_role": "cross_family_falsification",
       "control_family": "cross_family_hybrid_control",
       "boundary_direction": "attention_adjacent_mamba_mlp_boundary",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/cross_family_r1.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:7c27436b821317090f9205ccf236acc0dab4dd3964470d626ec1271157fed1c2",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params)",
+        "_selective_scan_update_kernel",
+        "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
       "boundary_indices": [
         13,
         14,
@@ -366,36 +405,36 @@
       ],
       "control_window_ids": [],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 196767.318,
+        "end": 211585.459
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/cross_family_r1.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 196767.318,
+          "end": 211585.459
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 196767.318000-211585.459000 ms was derived from client log logs/client_cross_family_r1.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/cross_family_r1.sanitized.sqlite. Top kernels: std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (108864 launches, 11281.219698 ms); std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (5056 launches, 976.587628 ms); void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params) (896 launches, 143.107093 ms); _selective_scan_update_kernel (27216 launches, 92.709876 ms); void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7) (27648 launches, 85.443312 ms). Overlapping NVTX: cub::DeviceScan::InclusiveScan (112 events).",
+      "notes": "Seed 21; client top-level run_id cross_family_r1; row reduced as no_boundary_signal_kill."
     },
     {
       "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
-      "run_id": "cross-family-falsification-repeat-1",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "cross_family_r2",
+      "total_step_ms": 15049.040001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -406,11 +445,17 @@
       "row_role": "cross_family_falsification",
       "control_family": "cross_family_hybrid_control",
       "boundary_direction": "attention_adjacent_mamba_mlp_boundary",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/cross_family_r2.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:1ebdfe30832be8bbbdca0b26d10980f2868109fd7eba197247b688620058605c",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params)",
+        "_selective_scan_update_kernel",
+        "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
       "boundary_indices": [
         13,
         14,
@@ -423,36 +468,36 @@
       ],
       "control_window_ids": [],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 169955.791,
+        "end": 185004.831
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/cross_family_r2.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 169955.791,
+          "end": 185004.831
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 169955.791000-185004.831000 ms was derived from client log logs/client_cross_family_r2.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/cross_family_r2.sanitized.sqlite. Top kernels: std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (108864 launches, 11286.320279 ms); std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (5056 launches, 977.20173 ms); void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params) (896 launches, 143.445599 ms); _selective_scan_update_kernel (27216 launches, 92.979856 ms); void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7) (27648 launches, 86.014876 ms). Overlapping NVTX: cub::DeviceScan::InclusiveScan (112 events).",
+      "notes": "Seed 22; client top-level run_id cross_family_r2; row reduced as no_boundary_signal_kill."
     },
     {
       "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
-      "run_id": "cross-family-falsification-repeat-2",
-      "total_step_ms": null,
-      "attention_ssm_boundary_ms": null,
-      "matched_non_boundary_ms": null,
-      "recoverable_fraction": null,
+      "run_id": "cross_family_r3",
+      "total_step_ms": 14836.435001,
+      "attention_ssm_boundary_ms": 0.0,
+      "matched_non_boundary_ms": 0.0,
+      "recoverable_fraction": 0.0,
       "dtype": "bfloat16",
       "profiled_process": "vllm_server",
-      "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
-      "cuda_graph_enabled": null,
+      "trace_scope": "server-side CUDA kernels captured by Nsight Systems during fixed-shape vLLM replay",
+      "cuda_graph_enabled": true,
       "batch_shape": {
         "batch_size": 1,
         "prefill_tokens": 128,
@@ -463,11 +508,17 @@
       "row_role": "cross_family_falsification",
       "control_family": "cross_family_hybrid_control",
       "boundary_direction": "attention_adjacent_mamba_mlp_boundary",
-      "nsys_artifact": null,
-      "nsys_artifact_sha256": null,
-      "ncu_artifact": null,
-      "ncu_artifact_sha256": null,
-      "kernel_names": [],
+      "nsys_artifact": "nsys/cross_family_r3.sanitized.sqlite",
+      "nsys_artifact_sha256": "sha256:17ac91ed01be4c87f0812b5055d584ef3144ec3487c68aa55f465ae45c85f12d",
+      "ncu_artifact": "not_run_no_boundary_signal",
+      "ncu_artifact_sha256": "not_run_no_boundary_signal",
+      "kernel_names": [
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13)",
+        "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params)",
+        "_selective_scan_update_kernel",
+        "void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7)"
+      ],
       "boundary_indices": [
         13,
         14,
@@ -480,24 +531,24 @@
       ],
       "control_window_ids": [],
       "time_window_ms": {
-        "start": null,
-        "end": null
+        "start": 100055.0,
+        "end": 114891.435
       },
       "ncu_launch_selection": {
-        "kernel_regex": null,
-        "launch_skip": null,
-        "launch_count": null,
-        "source_nsys_artifact": null,
+        "kernel_regex": "not_run_no_boundary_signal",
+        "launch_skip": 0,
+        "launch_count": 0,
+        "source_nsys_artifact": "nsys/cross_family_r3.sanitized.sqlite",
         "source_time_window_ms": {
-          "start": null,
-          "end": null
+          "start": 100055.0,
+          "end": 114891.435
         },
-        "derivation_notes": null
+        "derivation_notes": "Nsight Compute skipped because Nsight Systems showed no boundary signal or distinct boundary-local kernel window to profile."
       },
-      "recoverable_fraction_basis": null,
-      "reduction_command": null,
-      "reduction_notes": null,
-      "notes": "TODO_NATIVE_PROFILE_FILL: replace nulls after native profiling."
+      "recoverable_fraction_basis": "No boundary signal: the request-window Nsight Systems trace contains ordinary vLLM CUDA kernels but no distinct boundary-local conversion/materialization kernel or layer-boundary NVTX range that can be isolated as a candidate fused boundary operator.",
+      "reduction_command": "python metadata/no_boundary_reduction.py --run-dir . --packet-mode no_boundary_signal_kill",
+      "reduction_notes": "No boundary-local kernel window was selected. Request window 100055.000000-114891.435000 ms was derived from client log logs/client_cross_family_r3.log and TARGET_INFO_SESSION_START_TIME in sanitized Nsight Systems SQLite export nsys/cross_family_r3.sanitized.sqlite. Top kernels: std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)7, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (108864 launches, 11286.613075 ms); std::enable_if<!T7, void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, (bool)0, (bool)1, (bool)1, (bool)0, (int)6, (bool)0, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<const __nv_bfloat16>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>>(T13) (5056 launches, 977.211503 ms); void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x256_32x4_tn_align8>(T1::Params) (896 launches, 143.613842 ms); _selective_scan_update_kernel (27216 launches, 93.005124 ms); void at::native::unrolled_elementwise_kernel<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float>>, std::array<char *, (unsigned long)3>, (int)4, TrivialOffsetCalculator<(int)2, unsigned int>, TrivialOffsetCalculator<(int)1, unsigned int>, at::native::memory::LoadWithCast<(int)2>, at::native::memory::StoreWithCast<(int)1>>(int, T1, T2, T4, T5, T6, T7) (27648 launches, 86.078 ms). Overlapping NVTX: cub::DeviceScan::InclusiveScan (112 events).",
+      "notes": "Seed 23; client top-level run_id cross_family_r3; row reduced as no_boundary_signal_kill."
     }
   ]
 }

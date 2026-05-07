@@ -1,0 +1,467 @@
+{
+  "model": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+  "run_id": "cross_family_r3",
+  "started_at_utc": "2026-05-07T22:54:06.037748Z",
+  "ended_at_utc": "2026-05-07T22:54:27.843716Z",
+  "start_epoch_ns": 1778194446037751275,
+  "end_epoch_ns": 1778194467843717101,
+  "endpoint": "http://127.0.0.1:18103/v1/completions",
+  "profile_bracket": false,
+  "profile_start_endpoint": null,
+  "profile_stop_endpoint": null,
+  "dry_run": false,
+  "tokenizer": "/workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-Nano-9B-v2/snapshots/6533e8de2c68e4536bf7c411d7a3ce5734111476",
+  "token_count_source": "transformers_local_files_only",
+  "token_counts_required": true,
+  "prefill_token_counts_enforced": true,
+  "requests": [
+    {
+      "request_id": 0,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:6cc97819b34d59f4604695c14f1fd3f66207efeb1626f80cbcf88134c33deb59",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9454625239595771,
+      "start_epoch_ns": 1778194453007245275,
+      "end_epoch_ns": 1778194453952744222,
+      "started_at_utc": "2026-05-07T22:54:13.007239Z",
+      "ended_at_utc": "2026-05-07T22:54:13.952737Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 1,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:18c2e35076ea1cdf5f924bfad6d89229ff88ee3d65f4f2b931d12491a62dbdce",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9286238611675799,
+      "start_epoch_ns": 1778194453952884119,
+      "end_epoch_ns": 1778194454881529111,
+      "started_at_utc": "2026-05-07T22:54:13.952883Z",
+      "ended_at_utc": "2026-05-07T22:54:14.881525Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 2,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:2faad4beeb372c937bd311d2a4e9ae96144fc298b25dd690c35e464330c55c08",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9266640809364617,
+      "start_epoch_ns": 1778194454881657922,
+      "end_epoch_ns": 1778194455808343224,
+      "started_at_utc": "2026-05-07T22:54:14.881656Z",
+      "ended_at_utc": "2026-05-07T22:54:15.808337Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 3,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:9f0720ab4576d2e268fa910077173c879f53c4dd86c3fc74555fc7704c25303b",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9298171859700233,
+      "start_epoch_ns": 1778194455808455511,
+      "end_epoch_ns": 1778194456738284514,
+      "started_at_utc": "2026-05-07T22:54:15.808455Z",
+      "ended_at_utc": "2026-05-07T22:54:16.738281Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 4,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:9d60b8f1a3b82cdd4c9493e943ec0b3fc75d9bdfcf40dd05a028d54cbd9ff0ce",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9270249251276255,
+      "start_epoch_ns": 1778194456738383310,
+      "end_epoch_ns": 1778194457665425201,
+      "started_at_utc": "2026-05-07T22:54:16.738382Z",
+      "ended_at_utc": "2026-05-07T22:54:17.665421Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 5,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:b1c90ec0fd2e67e7c9e57b43c680712e77e6a7c1abf00aa6405042838982ee06",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9247361689340323,
+      "start_epoch_ns": 1778194457665531418,
+      "end_epoch_ns": 1778194458590282509,
+      "started_at_utc": "2026-05-07T22:54:17.665530Z",
+      "ended_at_utc": "2026-05-07T22:54:18.590279Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 6,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:2305a7bc44c4d22370e462236164153feba56788392176b00c71e5bd65786edf",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9258611937984824,
+      "start_epoch_ns": 1778194458590373293,
+      "end_epoch_ns": 1778194459516248337,
+      "started_at_utc": "2026-05-07T22:54:18.590372Z",
+      "ended_at_utc": "2026-05-07T22:54:19.516245Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 7,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:1271e9cd49c6a7edd2a14b9542d723e34007acfd842c117d8a1f26cb4752c5de",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9270567230414599,
+      "start_epoch_ns": 1778194459516351199,
+      "end_epoch_ns": 1778194460443428592,
+      "started_at_utc": "2026-05-07T22:54:19.516350Z",
+      "ended_at_utc": "2026-05-07T22:54:20.443422Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 8,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:c2aee2770f457d45e9a0daeacba6bd3b5d04cf91e4da228a7802a71f6f1c369c"
+      ],
+      "payload_sha256": "sha256:713bd58ea9e4180099ab79764a24832136c39f77c39c70aedf2a02b58f79e953",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9259379771538079,
+      "start_epoch_ns": 1778194460443571803,
+      "end_epoch_ns": 1778194461369526094,
+      "started_at_utc": "2026-05-07T22:54:20.443571Z",
+      "ended_at_utc": "2026-05-07T22:54:21.369523Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 9,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:e59969063eed6556589ab56b0e7bf5e81422b3672811ee1b29d23834ba6e2c8b"
+      ],
+      "payload_sha256": "sha256:c569b8afbf8946b65a096f2b3dd3bb0aff3f907d142c7096a6b4d3557935267b",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9249719779472798,
+      "start_epoch_ns": 1778194461369601736,
+      "end_epoch_ns": 1778194462294591170,
+      "started_at_utc": "2026-05-07T22:54:21.369601Z",
+      "ended_at_utc": "2026-05-07T22:54:22.294584Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 10,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:4ffcbdff07ebe1a7358e6030fa389af9a1b99dc341c2379792272fe62535e275"
+      ],
+      "payload_sha256": "sha256:9085f6ace749c6eb425c46f91902d6257ce1089de94f48d604544181668b52a9",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.926242196932435,
+      "start_epoch_ns": 1778194462294745869,
+      "end_epoch_ns": 1778194463221003919,
+      "started_at_utc": "2026-05-07T22:54:22.294744Z",
+      "ended_at_utc": "2026-05-07T22:54:23.221001Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 11,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:9aaa23d3a8402005162a965a25432ba56f4c93bda9688540fcea70d6e42a1106"
+      ],
+      "payload_sha256": "sha256:81c5e9cf82180c5c40a15730f583f67ed190c9f0c81733f67a3def06dc53d40a",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9245011010207236,
+      "start_epoch_ns": 1778194463221090207,
+      "end_epoch_ns": 1778194464145604217,
+      "started_at_utc": "2026-05-07T22:54:23.221089Z",
+      "ended_at_utc": "2026-05-07T22:54:24.145602Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 12,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:3f79415239fbcbf0c2da2793ba7a1466ca3ad6266246a45e5bfc1613d928629d"
+      ],
+      "payload_sha256": "sha256:719220ca44f8d94b10baadf6d09cc63110efe2060b305986e4443b09b5b92066",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9260909529402852,
+      "start_epoch_ns": 1778194464145687009,
+      "end_epoch_ns": 1778194465071795549,
+      "started_at_utc": "2026-05-07T22:54:24.145686Z",
+      "ended_at_utc": "2026-05-07T22:54:25.071790Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 13,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:755f0e87944d7bfd62d0c43c2fab519a1cac3f73b3fcf24af1578d6112e30f73"
+      ],
+      "payload_sha256": "sha256:8012d9ceed5cd9dad792c8048aa8c64c816890d688958d738f60ff9ca579f6cc",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9245710051618516,
+      "start_epoch_ns": 1778194465071921064,
+      "end_epoch_ns": 1778194465996507932,
+      "started_at_utc": "2026-05-07T22:54:25.071920Z",
+      "ended_at_utc": "2026-05-07T22:54:25.996504Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 14,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:3f0b4fe72500bac9c49d5740598f64b61291a2bdac43032d608c91f7dbecf3ed"
+      ],
+      "payload_sha256": "sha256:edd86cf4af6661e2bc0123ea98022395f767565535eb6045ca701f8ce276ca34",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9246368419844657,
+      "start_epoch_ns": 1778194465996637934,
+      "end_epoch_ns": 1778194466921291281,
+      "started_at_utc": "2026-05-07T22:54:25.996637Z",
+      "ended_at_utc": "2026-05-07T22:54:26.921287Z",
+      "status": "ok"
+    },
+    {
+      "request_id": 15,
+      "batch_size": 1,
+      "prefill_tokens": 128,
+      "decode_tokens": 64,
+      "prompt_sha256": [
+        "sha256:cbe0e9aa24fba80d1645cd1245af9a77d07104c7efa8a2c2a6b42e0425073339"
+      ],
+      "payload_sha256": "sha256:9b6014e943e0b0bfd1d3b481dd704009d1df9d7def43a79c28bc94377504caef",
+      "prompt_token_counts": [
+        128
+      ],
+      "prompt_token_count_total": 128,
+      "requested_decode_tokens": 64,
+      "expected_completion_tokens_total": 64,
+      "response_usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 193,
+        "completion_tokens": 64,
+        "prompt_tokens_details": null
+      },
+      "elapsed_s": 0.9222612481098622,
+      "start_epoch_ns": 1778194466921402085,
+      "end_epoch_ns": 1778194467843679005,
+      "started_at_utc": "2026-05-07T22:54:26.921400Z",
+      "ended_at_utc": "2026-05-07T22:54:27.843675Z",
+      "status": "ok"
+    }
+  ]
+}
