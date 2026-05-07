@@ -80,6 +80,13 @@ def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
     return config
 
 
+def _packet_decision(config: dict[str, Any], gate_status: object) -> str:
+    status = str(gate_status)
+    if "resource_limit_note" in config:
+        return f"RESOURCE_LIMITED_NOT_PROMOTABLE_{status}"
+    return status
+
+
 def _write_packet(
     output_dir: Path,
     *,
@@ -167,7 +174,7 @@ def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str,
             }
         )
     summary_extra = evaluate_ssq_lr_s1(rows)
-    decision = summary_extra["gate_status"]
+    decision = _packet_decision(config, summary_extra["gate_status"])
     _write_packet(
         output_dir,
         config=config,
@@ -210,7 +217,7 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
             }
         )
     summary_extra = evaluate_horn_h1(rows)
-    decision = summary_extra["gate_status"]
+    decision = _packet_decision(config, summary_extra["gate_status"])
     _write_packet(
         output_dir,
         config=config,
@@ -256,7 +263,7 @@ def build_hbsm_packet(row_packet: Path, output_dir: Path) -> list[dict[str, Any]
             }
         )
     summary_extra = evaluate_hbsm_b1(rows)
-    decision = summary_extra["gate_status"]
+    decision = _packet_decision(config, summary_extra["gate_status"])
     _write_packet(
         output_dir,
         config=config,

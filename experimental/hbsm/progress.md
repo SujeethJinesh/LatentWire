@@ -4,7 +4,7 @@
 
 Status: **NEW / wounded novelty / Mac gates pending**.
 
-Added and ran a deterministic synthetic B1/B2 packet. It has now been upgraded
+Added and ran a deterministic synthetic B1 packet. It has now been upgraded
 to a real-schema rehearsal:
 
 - script: `phase2/hbsm_synthetic_b1_gate.py`
@@ -117,3 +117,35 @@ individual `boundary_only` prompt row.
 
 Decision: **HBSM PACKET PLUMBING IS READY FOR A REAL SENSITIVITY TABLE**. The
 blocker is still a live hybrid forward-sensitivity sweep with the same controls.
+
+## 2026-05-07 Resource-Limited Builder Guard
+
+Updated the shared trace packet builder so any HBSM row packet whose metadata
+contains `resource_limit_note` writes a `RESOURCE_LIMITED_NOT_PROMOTABLE_...`
+decision automatically. This keeps partial Mac sensitivity tables useful for
+schema and comparator debugging while preventing a small or incomplete table
+from promoting B1.
+
+Decision: **RESOURCE-LIMITED B1 TABLES CAN DEBUG THE PIPELINE BUT CANNOT PROMOTE
+B1**. The blocker remains a complete real hybrid forward-sensitivity table with
+KL-style and activation/outlier comparators.
+
+## 2026-05-07 Architecture Hash Provenance Guard
+
+The shared real-packet checker now verifies that a non-rehearsal HBSM packet's
+`model_id` and `architecture_map_hash` match the shared architecture map
+artifact. A B1 sensitivity table can no longer pass packet validation by using a
+syntactically valid but unrelated architecture hash.
+
+Decision: **B1 SENSITIVITY ROWS MUST BE TIED TO A KNOWN HYBRID ARCHITECTURE
+MAP**. The blocker remains the same real forward-sensitivity table.
+
+## 2026-05-07 B1/B2 Wording Separation
+
+Cleaned the HBSM paper/reviewer-pack wording so the current synthetic artifact
+is described as a B1 real-schema rehearsal only. It can carry B2-related
+predictor fields for future checks, but it does not rehearse or promote the B2
+cheap-predictor gate.
+
+Decision: **CURRENT HBSM EVIDENCE IS B1 PACKET PLUMBING ONLY**. B2 remains a
+future real-packet gate after sensitivity heterogeneity is established.

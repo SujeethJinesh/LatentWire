@@ -553,3 +553,14 @@ resolve every hashed packet input.
 Decision: **THOUGHTFLOW REPRODUCIBILITY PACKAGING IS CAMERA-READY FOR THE
 DIAGNOSTIC CLAIM**. This still does not create a live positive method or GPU
 claim.
+
+## 2026-05-07 Historical Brief Supersession
+
+Added a supersession banner to `../03_thoughtflow_fp8.md`, which was still
+written as the original live FP8 positive-method plan. The banner points readers
+to the current decision manifest, reviewer pack, and diagnostic packet, and
+states that the historical phases must not be executed without a new
+preregistration and fresh/larger sparse-cache surface.
+
+Decision: **OLD THOUGHTFLOW POSITIVE-METHOD PLANS ARE EXPLICITLY HISTORICAL**.
+The current branch remains diagnostic-only.

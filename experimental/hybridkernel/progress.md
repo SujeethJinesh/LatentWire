@@ -631,3 +631,16 @@ After COLM-style review, the native GPU packet contract is stricter before any
 Decision: **NEXT GPU PACKET MUST BE HASHED, SHAPE-MATCHED, AND
 CONTROL-FALSIFIED**. Mac-side packet mechanics are tighter; the blocker is still
 native NVIDIA/vLLM profiling.
+
+## 2026-05-07 Native Skeleton Control-Row Alignment
+
+Updated `phase2/create_native_run_packet.py` so new GPU handoff skeletons create
+the full nine-row metric shape required by the current promotion gate: three
+primary hybrid repeats, three same-family controls, and three cross-family
+falsification rows. The old skeleton created only primary rows, which was
+audit-only even though the checker would later reject or weaken such a packet.
+The README, native checklist, and top-level native handoff now state the same
+nine-row minimum.
+
+Decision: **GPU OPERATORS NOW START FROM THE CONTROL-FALSIFIED PACKET SHAPE**.
+The blocker remains the user-operated NVIDIA/vLLM Nsight run.

@@ -30,7 +30,9 @@ Shared Mac-local utilities live in `experimental/shared/`:
   live hybrid targets.
 - `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
   SSQ-LR/HORN real packets and resolves hook names sanitized by tensor-packet
-  storage.
+  storage. Resource-limited input metadata now forces a
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_...` packet decision, even if the recomputed
+  smoke-gate status would otherwise pass.
 - `hybrid_gate_evaluators.py`: recomputes SSQ-LR S1, HORN H1, and HBSM B1
   decision fields from raw rows so summaries cannot be hand-filled. SSQ-LR now
   uses prompt-level bootstrap-style lower bounds plus Holm-corrected two-sample
@@ -80,7 +82,10 @@ The checker now has a stricter real-packet mode:
 Real packets must include provenance, `summary.md`, matching `row_count`,
 project-specific row schemas, required controls, admissible coverage,
 `prompt_ids_hash`, `architecture_map_hash`, and decision-grade `summary.json`
-aggregates. Synthetic-only real-schema rehearsals must set `schema_rehearsal:
+aggregates. Non-rehearsal real packets now verify `model_id` and
+`architecture_map_hash` against
+`shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`, not
+just hash syntax. Synthetic-only real-schema rehearsals must set `schema_rehearsal:
 true` and use a `SCHEMA_REHEARSAL_NOT_PROMOTABLE` decision. Resource-limited
 real packets must use a
 `RESOURCE_LIMITED_NOT_PROMOTABLE` decision and cannot promote a gate. The

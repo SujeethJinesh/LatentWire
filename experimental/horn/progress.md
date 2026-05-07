@@ -123,3 +123,24 @@ matched-control metadata field.
 Decision: **HORN PACKET PLUMBING IS READY FOR A REAL BOUNDARY DUMP**. The
 blocker is still live hybrid activations with prompt-paired boundary,
 non-boundary, and permuted controls.
+
+## 2026-05-07 Resource-Limited Builder Guard
+
+Updated the shared trace packet builder so any HORN tensor packet whose metadata
+contains `resource_limit_note` writes a `RESOURCE_LIMITED_NOT_PROMOTABLE_...`
+decision automatically. This lets a small Mac hook smoke validate prompt-paired
+boundary/non-boundary/permuted rows without accidentally looking like an H1a
+promotion if the recomputed directional metric passes on too few prompts.
+
+Decision: **RESOURCE-LIMITED H1A SMOKE PACKETS CAN TEST HOOKS BUT CANNOT
+PROMOTE H1A**. The blocker remains the full prompt-paired real boundary dump.
+
+## 2026-05-07 Architecture Hash Provenance Guard
+
+The shared real-packet checker now verifies that a non-rehearsal HORN packet's
+`model_id` and `architecture_map_hash` match the shared architecture map
+artifact. This prevents a boundary packet from citing a hash-shaped but
+unrelated architecture provenance field.
+
+Decision: **H1A BOUNDARY ROWS MUST BE TIED TO A KNOWN HYBRID ARCHITECTURE MAP**.
+The blocker remains the same prompt-paired real activation dump.

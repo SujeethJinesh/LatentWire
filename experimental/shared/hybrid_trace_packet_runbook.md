@@ -38,10 +38,20 @@ matching `row_count`, project-specific row schemas, required controls, and
 project-specific admissible coverage.
 
 For real packets, `config.json` must record `prompt_ids_hash` and
-`architecture_map_hash` as `sha256:<64-hex-digest>` strings. A packet that records
+`architecture_map_hash` as `sha256:<64-hex-digest>` strings. For non-rehearsal
+real packets, `model_id` and `architecture_map_hash` must match the shared
+architecture map artifact at
+`experimental/shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`;
+a syntactically valid but unrelated hash is rejected. A packet that records
 `resource_limit_note` is admissible only as a diagnostic artifact: its
 `summary.json` decision must start with
 `RESOURCE_LIMITED_NOT_PROMOTABLE`, and it cannot promote a gate.
+The shared packet builder enforces this automatically for SSQ-LR, HORN, and
+HBSM: if the input tensor/row metadata contains `resource_limit_note`, the
+written packet decision is prefixed with `RESOURCE_LIMITED_NOT_PROMOTABLE_`
+even when the recomputed gate status itself would pass. This lets two-prompt or
+small-context smoke traces validate hooks and schema without weakening the
+promotion boundary.
 Synthetic schema rehearsals may run the same real validators only when
 `config.json` sets `schema_rehearsal: true` and `summary.json` uses a decision
 beginning `SCHEMA_REHEARSAL_NOT_PROMOTABLE`. These packets are checker-path

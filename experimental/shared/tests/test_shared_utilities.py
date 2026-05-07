@@ -123,7 +123,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
     packet.mkdir()
     (packet / "config.json").write_text(
         "{"
-        '"model_id": "toy-hybrid", '
+        '"model_id": "ibm-granite-4.0-h-tiny", '
         '"model_revision": "abc123", '
         '"tokenizer_revision": "tok123", '
         '"prompt_source": "fixed_manifest.json", '
@@ -132,13 +132,13 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
         '"context_lengths": [128], '
         '"dtype": "bf16", '
         '"device": "mps", '
-        '"architecture_map_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", '
+        '"architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6", '
         '"command": "python run_gate.py"'
         "}\n"
     )
     rows = [
         {
-            "model_id": "toy-hybrid",
+            "model_id": "ibm-granite-4.0-h-tiny",
             "model_revision": "abc123",
             "prompt_id": f"p{prompt_index}",
             "layer": 0,
@@ -204,7 +204,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_incomplete_prompt_layer_matrix(
         for bucket in buckets:
             rows.append(
                 {
-                    "model_id": "toy-hybrid",
+                    "model_id": "ibm-granite-4.0-h-tiny",
                     "model_revision": "abc123",
                     "prompt_id": f"p{prompt_index}",
                     "layer": 0,
@@ -265,7 +265,7 @@ def test_gate_packet_checker_rejects_promotable_resource_limited_real_packet(tmp
     (packet / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
     rows = [
         {
-            "model_id": "toy-hybrid",
+            "model_id": "ibm-granite-4.0-h-tiny",
             "model_revision": "abc123",
             "prompt_id": f"p{prompt_index}",
             "layer": 0,
@@ -328,7 +328,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tm
     (packet / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
     rows = [
         {
-            "model_id": "toy-hybrid",
+            "model_id": "ibm-granite-4.0-h-tiny",
             "model_revision": "abc123",
             "prompt_id": f"p{prompt_index}",
             "layer": 0,
@@ -376,7 +376,7 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
     packet.mkdir()
     (packet / "config.json").write_text(
         "{"
-        '"model_id": "toy-hybrid", '
+        '"model_id": "ibm-granite-4.0-h-tiny", '
         '"model_revision": "abc123", '
         '"tokenizer_revision": "tok123", '
         '"prompt_source": "fixed_manifest.json", '
@@ -385,13 +385,13 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
         '"context_lengths": [128], '
         '"dtype": "bf16", '
         '"device": "mps", '
-        '"architecture_map_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", '
+        '"architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6", '
         '"command": "python run_gate.py"'
         "}\n"
     )
     (packet / "raw_rows.jsonl").write_text(
         "{"
-        '"model_id": "toy-hybrid", '
+        '"model_id": "ibm-granite-4.0-h-tiny", '
         '"prompt_id": "p0", '
         '"layer_left": 0, '
         '"layer_right": 1, '
@@ -545,7 +545,7 @@ def test_hybrid_model_eligibility_preserves_gpu_recommendation_when_not_cached()
 
 def _base_trace_metadata() -> dict[str, object]:
     return {
-        "model_id": "toy-hybrid",
+        "model_id": "ibm-granite-4.0-h-tiny",
         "model_revision": "abc123",
         "tokenizer_revision": "tok123",
         "prompt_source": "fixed_manifest.json",
@@ -555,7 +555,7 @@ def _base_trace_metadata() -> dict[str, object]:
         "dtype": "bf16",
         "device": "cpu",
         "command": "python dump.py",
-        "architecture_map_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
     }
 
 
@@ -592,6 +592,71 @@ def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: 
 
     assert report["ok"]
     assert report["row_count"] == 48
+
+
+def test_packet_builder_marks_resource_limited_packets_non_promotable(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_resource_limited"
+    metadata = _base_trace_metadata()
+    metadata["resource_limit_note"] = "two-prompt local smoke before full trace packet"
+    entries = []
+    tensors = {}
+    for prompt_index in range(2):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.full((2, 4), float(prompt_index + len(bucket)))
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert summary["decision"].startswith("RESOURCE_LIMITED_NOT_PROMOTABLE_")
+    assert report["ok"]
+
+
+def test_gate_packet_checker_rejects_unknown_architecture_map_hash(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_bad_arch_hash"
+    metadata = _base_trace_metadata()
+    metadata["architecture_map_hash"] = "sha256:" + ("d" * 64)
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("architecture_map_hash must match" in error for error in report["errors"])
 
 
 def test_packet_builder_resolves_sanitized_tensor_names(tmp_path: Path) -> None:

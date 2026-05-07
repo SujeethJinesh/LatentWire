@@ -38,7 +38,7 @@ The packet is incomplete unless all of these exist:
 | `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts, not placeholder files |
 | `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels, not placeholder files. Required for boundary-evidence packets; optional only with explicit `--packet-mode no_boundary_signal_kill` and row `ncu_artifact: "not_run_no_boundary_signal"`. |
 | `readout.md` | completed decision table from the runbook |
-| `profiler_metrics.json` | at least three valid rows for one model with distinct repeated `run_id` values |
+| `profiler_metrics.json` | at least nine valid rows: three primary repeats, three same-shape same-family controls, and three same-shape cross-family falsification rows |
 | `profiler_analysis_gate.json` and `.md` | output from `analyze_profiler_metrics.py` for this exact `profiler_metrics.json` |
 
 After the checker command runs, the returned packet should also include

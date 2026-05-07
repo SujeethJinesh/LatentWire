@@ -217,8 +217,9 @@ Nsight Compute on the server process, save real `.ncu-rep` files under
 
 ### 5. Fill Metrics And Validate
 
-Replace the skeleton `profiler_metrics.json` with at least three independent
-rows for one model/config. Each row needs the full checklist schema from
+Replace the skeleton `profiler_metrics.json` with at least nine independent
+rows: three primary repeats, three same-shape same-family controls, and three
+same-shape cross-family falsification rows. Each row needs the full checklist schema from
 `phase2/native_run_packet_checklist.md`: distinct `run_id`, positive
 `total_step_ms`, non-negative boundary/control times, dtype, CUDA graph state,
 batch shape, request count, control label, row role, control family, boundary

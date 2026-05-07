@@ -168,11 +168,32 @@ REAL_SUMMARY_FIELDS = {
 HASH_FIELDS = ("prompt_ids_hash", "architecture_map_hash")
 RESOURCE_LIMITED_DECISION = "RESOURCE_LIMITED_NOT_PROMOTABLE"
 SCHEMA_REHEARSAL_DECISION = "SCHEMA_REHEARSAL_NOT_PROMOTABLE"
+ARCHITECTURE_MAPS_PATH = (
+    Path(__file__).resolve().parent / "results/hybrid_architecture_maps_20260506/architecture_maps.json"
+)
 
 
 def _load_json(path: Path) -> Any:
     with path.open() as handle:
         return json.load(handle)
+
+
+def _known_architecture_hashes() -> dict[str, str]:
+    try:
+        maps = _load_json(ARCHITECTURE_MAPS_PATH)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+    if not isinstance(maps, list):
+        return {}
+    known: dict[str, str] = {}
+    for row in maps:
+        if not isinstance(row, dict):
+            continue
+        model_id = str(row.get("model_id", "")).strip()
+        config_sha = str(row.get("config_sha256", "")).strip().lower()
+        if model_id and re.fullmatch(r"[0-9a-f]{64}", config_sha):
+            known[model_id] = f"sha256:{config_sha}"
+    return known
 
 
 def _missing_fields(row: dict[str, Any], fields: tuple[str, ...]) -> list[str]:
@@ -331,6 +352,24 @@ def _validate_hash_provenance(config: dict[str, Any], errors: list[str]) -> None
         value = config.get(field)
         if not isinstance(value, str) or not re.fullmatch(r"sha256:[0-9a-fA-F]{64}", value):
             errors.append(f"config.json {field} must be a sha256:<64-hex-digest> value")
+
+
+def _validate_architecture_map_provenance(config: dict[str, Any], errors: list[str]) -> None:
+    if _schema_rehearsal(config):
+        return
+    known = _known_architecture_hashes()
+    model_id = str(config.get("model_id", "")).strip()
+    architecture_map_hash = str(config.get("architecture_map_hash", "")).strip().lower()
+    if not known:
+        errors.append("architecture map provenance artifact is unavailable")
+        return
+    expected = known.get(model_id)
+    if expected is None:
+        errors.append("config.json model_id must match a model in the shared architecture map artifact")
+    elif architecture_map_hash != expected:
+        errors.append(
+            "config.json architecture_map_hash must match shared architecture map config hash for model_id"
+        )
 
 
 def _validate_real_summary(
@@ -820,6 +859,7 @@ def validate_gate_packet(
             if field not in config:
                 errors.append(f"config.json missing provenance field {field}")
         _validate_hash_provenance(config, errors)
+        _validate_architecture_map_provenance(config, errors)
         for boundary in ("synthetic-only", "not model evidence"):
             if (
                 boundary in [str(item) for item in summary.get("claim_boundary", [])]

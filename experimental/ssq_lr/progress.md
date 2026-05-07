@@ -90,3 +90,26 @@ S1.
 Decision: **S1 CAN PASS BY MAGNITUDE OR HOLM-CORRECTED DISTRIBUTION SHIFT, BUT
 ONLY FROM RAW REAL STATE ROWS**. The blocker remains the same live hybrid
 SSM-state dump.
+
+## 2026-05-07 Resource-Limited Builder Guard
+
+Updated the shared trace packet builder so any SSQ-LR tensor packet whose
+metadata contains `resource_limit_note` writes a
+`RESOURCE_LIMITED_NOT_PROMOTABLE_...` decision automatically. This closes a
+pre-GPU failure mode where a two-prompt Mac hook smoke test could inherit a
+passing evaluator status in `summary.json` even though the checker policy says
+resource-limited packets are diagnostic only.
+
+Decision: **RESOURCE-LIMITED S1 SMOKE PACKETS CAN TEST HOOKS BUT CANNOT PROMOTE
+S1**. The blocker remains the full real hybrid SSM-state dump with at least 12
+fixed prompts.
+
+## 2026-05-07 Architecture Hash Provenance Guard
+
+The shared real-packet checker now verifies that a non-rehearsal SSQ-LR packet's
+`model_id` and `architecture_map_hash` match the shared architecture map
+artifact, not just the `sha256:<64-hex>` format. A forged or unrelated
+architecture hash is rejected before S1 interpretation.
+
+Decision: **S1 STATE ROWS MUST BE TIED TO A KNOWN HYBRID ARCHITECTURE MAP**.
+The blocker remains the same real SSM-state dump.

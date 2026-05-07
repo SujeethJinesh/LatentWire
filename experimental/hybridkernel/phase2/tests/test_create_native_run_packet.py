@@ -54,12 +54,21 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     assert "vllm.entrypoints.openai.api_server" in profile_scope["vllm_command"]
 
     metrics = json.loads((run_dir / "profiler_metrics.json").read_text())
-    assert len(metrics["rows"]) == 3
+    assert len(metrics["rows"]) == 9
     assert [row["run_id"] for row in metrics["rows"]] == [
-        "repeat-0",
-        "repeat-1",
-        "repeat-2",
+        "primary-repeat-0",
+        "primary-repeat-1",
+        "primary-repeat-2",
+        "same-family-control-repeat-0",
+        "same-family-control-repeat-1",
+        "same-family-control-repeat-2",
+        "cross-family-falsification-repeat-0",
+        "cross-family-falsification-repeat-1",
+        "cross-family-falsification-repeat-2",
     ]
+    assert [row["row_role"] for row in metrics["rows"]].count("primary_hybrid") == 3
+    assert [row["row_role"] for row in metrics["rows"]].count("same_family_control") == 3
+    assert [row["row_role"] for row in metrics["rows"]].count("cross_family_falsification") == 3
     architecture_map = json.loads((run_dir / "metadata/architecture_map.json").read_text())
     assert "ibm-granite/granite-4.0-h-tiny" in {row["model"] for row in architecture_map}
 

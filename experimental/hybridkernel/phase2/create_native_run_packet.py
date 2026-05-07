@@ -126,15 +126,43 @@ def _readout_template() -> str:
 
 
 def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
+    row_specs = [
+        {
+            "label": "primary",
+            "model": model,
+            "row_role": "primary_hybrid",
+            "control_family": "same_family_matched_segment",
+            "control_model_or_segment": f"{SKELETON_TODO_MARKER}: matched non-boundary segment in {model}",
+            "boundary_indices": [],
+        },
+        {
+            "label": "same-family-control",
+            "model": f"{SKELETON_TODO_MARKER}: same-family control model or segment",
+            "row_role": "same_family_control",
+            "control_family": "same_family_transformer_or_ssm_control",
+            "control_model_or_segment": f"{SKELETON_TODO_MARKER}: matched same-family control",
+            "boundary_indices": [],
+        },
+        {
+            "label": "cross-family-falsification",
+            "model": f"{SKELETON_TODO_MARKER}: cross-family falsification model",
+            "row_role": "cross_family_falsification",
+            "control_family": "cross_family_hybrid_control",
+            "control_model_or_segment": f"{SKELETON_TODO_MARKER}: matched cross-family control",
+            "boundary_indices": [],
+        },
+    ]
     return {
         "description": (
             f"{SKELETON_TODO_MARKER}: fill one row per independent native "
-            "NVIDIA/vLLM trace reduced from Nsight artifacts."
+            "NVIDIA/vLLM trace reduced from Nsight artifacts. Promotion requires "
+            f"{min_runs} primary rows, {min_runs} same-family controls, and "
+            f"{min_runs} cross-family falsification rows on the same request/runtime shape."
         ),
         "rows": [
             {
-                "model": model,
-                "run_id": f"repeat-{idx}",
+                "model": spec["model"],
+                "run_id": f"{spec['label']}-repeat-{idx}",
                 "total_step_ms": None,
                 "attention_ssm_boundary_ms": None,
                 "matched_non_boundary_ms": None,
@@ -149,22 +177,23 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
                     "decode_tokens": 64,
                     "requests": None,
                 },
-                "control_model_or_segment": None,
-                "row_role": "primary_hybrid",
-                "control_family": "same_family_matched_segment",
+                "control_model_or_segment": spec["control_model_or_segment"],
+                "row_role": spec["row_role"],
+                "control_family": spec["control_family"],
                 "boundary_direction": "mixed_attention_ssm",
                 "nsys_artifact": None,
                 "nsys_artifact_sha256": None,
                 "ncu_artifact": None,
                 "ncu_artifact_sha256": None,
                 "kernel_names": [],
-                "boundary_indices": [],
+                "boundary_indices": spec["boundary_indices"],
                 "time_window_ms": {"start": None, "end": None},
                 "recoverable_fraction_basis": None,
                 "reduction_command": None,
                 "reduction_notes": None,
                 "notes": f"{SKELETON_TODO_MARKER}: replace nulls after native profiling.",
             }
+            for spec in row_specs
             for idx in range(min_runs)
         ],
     }

@@ -1,5 +1,15 @@
 # 03 — ThoughtFlow-FP8: Reasoning KV Eviction with Anchor Protection
 
+> **Superseded on 2026-05-06.** This file is a historical positive-method
+> planning brief. The current project decision is
+> `STOP / diagnostic only`: no live ThoughtFlow-FP8 compression method, GPU
+> gate, or FP8 serving claim exists. Use
+> `experimental/thoughtflow_fp8/phase2/current_decision_manifest_20260506.md`,
+> `experimental/thoughtflow_fp8/paper/reviewer_pack.md`, and
+> `experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/`
+> as the current authority. Do not execute the phases below without a new
+> preregistration artifact and a fresh/larger sparse-cache surface.
+
 ## TL;DR
 Reasoning models generate tens of thousands of tokens; KV cache pressure is the dominant cost. Existing methods (LongFlow, ThinKV, R-KV) compress aggressively and may drop useful reasoning states. This project tests whether a retrofit policy combining low-bit KV quantization, sink/anchor protection, and reasoning-phase-aware eviction survives crowded-baseline review. Targets: GPT-OSS-20B, Qwen3.6-27B (thinking mode), Apriel-H1-15B-Thinker, Nemotron-3-Nano.
 

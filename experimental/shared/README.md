@@ -108,11 +108,16 @@ every prompt; permuted controls must flip the actual `direction` label.
 For HBSM, supplied `top_decile_flag` values must match the measured
 `kl_or_nll_drift` top-decile ranking after aggregation on every primary prompt
 row.
-Real packets also need 64-hex `prompt_ids_hash` and
-`architecture_map_hash` values, project-specific aggregate `summary.json`
-fields, and a non-promotable decision whenever `resource_limit_note` is
-present. The checker recomputes the active S1/H1/B1 gate summaries from rows
-and rejects stale or fabricated summary fields.
+Real packets also need 64-hex `prompt_ids_hash` values and an
+`architecture_map_hash` that matches the claimed `model_id` in
+`shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`; a
+random hash-shaped value is rejected. They also need project-specific aggregate
+`summary.json` fields and a non-promotable decision whenever
+`resource_limit_note` is present. The checker recomputes the active S1/H1/B1
+gate summaries from rows and rejects stale or fabricated summary fields. The
+builder now also prefixes resource-limited packet decisions with
+`RESOURCE_LIMITED_NOT_PROMOTABLE_`, so small Mac smoke packets can validate
+hooks without accidentally promoting a gate.
 
 ## Claim Boundary
 

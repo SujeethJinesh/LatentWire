@@ -7,12 +7,15 @@
 
 ## Priority Order
 
-1. **SinkAware rank-2 native timing**: highest expected value because the
-   Mac-local downstream controls are positive and the rank/cost frontier
-   identifies a concrete implementation candidate.
-2. **HybridKernel profiler packet**: useful only if native vLLM profiling finds
+1. **HybridKernel profiler packet**: useful only if native vLLM profiling finds
    separable attention/SSM boundary overhead.
-3. **ThoughtFlow-FP8**: no GPU work for the current branch set (`rdu_topk`,
+2. **SSQ-LR**: no GPU validation until a real Mac/shared trace packet clears
+   S1--S3 without per-model retuning.
+3. **HORN**: no GPU validation until real H1a/H1/H3 boundary controls show
+   cross-model directional asymmetry.
+4. **HBSM**: no GPU validation until real B1/B2/B3 sensitivity and predictor
+   gates survive the KL-style and activation/outlier baselines.
+5. **ThoughtFlow-FP8**: no GPU work for the current branch set (`rdu_topk`,
    `psi_topk`, or `vwac_topk`). Reopen only after a new preregistered utility
    signal exists and passes a fresh/larger frozen sparse-cache surface.
 
@@ -28,7 +31,9 @@ Minimum admissible packet:
 - server-side Nsight Systems and Nsight Compute artifacts;
 - immutable environment capture including `nvidia-smi`, `nsys`, `ncu`, and
   `python` lines;
-- at least three distinct same-model/same-config metric rows;
+- at least three distinct primary metric rows;
+- at least three same-shape same-family control rows;
+- at least three same-shape cross-family falsification rows;
 - explicit `run_id`, dtype, CUDA graph state, batch shape, request count, and
   matched control label in every row;
 - local analyzer and artifact checker both pass.
@@ -45,44 +50,28 @@ python experimental/hybridkernel/phase2/check_profiler_run_artifacts.py \
   | tee "$HWK_RUN/artifact_check.json"
 ```
 
-Promote only if the repeated same-config recoverable-gain upper bound clears
-3%. Kill or shelve if repeated native summaries show less than 1% recoverable
-gain.
+Promote only if the repeated primary recoverable-gain upper bound clears 3% and
+the same packet includes three same-family and three cross-family controls on
+the same request/runtime shape that stay below the 3% gate. A primary-only
+packet is audit-only. Kill or shelve if repeated native summaries show less
+than 1% recoverable gain.
 
-## SinkAware
+## SSQ-LR / HORN / HBSM
 
-Runbook: `experimental/sinkaware/phase2/gpu_gate_runbook.md`
-
-Validator: `experimental/sinkaware/phase2/check_native_gpu_packet.py`
-
-Native rows to measure:
-
-- exact attention;
-- exact fixed-sink decomposition;
-- rank-2 sink-logit predictor;
-- position-only predictor.
-
-Required native outputs:
-
-- `metadata.json`;
-- `quality_drift.csv`;
-- `quality_drift_by_head.csv`;
-- `latency.csv`;
-- `ncu_summary.csv`;
-- `decision.md`.
-
-Before citing any returned native packet, run:
+These branches do not have a GPU handoff yet. Their next admissible artifacts
+are real shared trace packets built from saved Mac/GPU tensors or sensitivity
+rows and validated with:
 
 ```bash
-./venv_arm64/bin/python experimental/sinkaware/phase2/check_native_gpu_packet.py \
-  --run-dir "$SINKAWARE_GPU_PACKET" \
-  | tee "$SINKAWARE_GPU_PACKET/artifact_check.json"
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/<project>/phase2/results/<packet_dir> \
+  --mode real --project <ssq_lr|horn|hbsm>
 ```
 
-Promote only if rank-2 preserves the Mac-local downstream-control behavior and
-shows at least a 3% native speed or memory-traffic improvement over exact
-attention. Kill if rank-2 is slower, unstable, or indistinguishable from
-position-only.
+Resource-limited trace packets are allowed only as hook/schema diagnostics and
+must carry a `RESOURCE_LIMITED_NOT_PROMOTABLE` decision. Full GPU validation is
+blocked until the Mac/shared trace gates identify a surviving recipe or
+mechanism.
 
 ## ThoughtFlow-FP8
 
@@ -107,9 +96,10 @@ TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
   experimental/hybridkernel/phase2/tests \
   experimental/hybridkernel/phase3/tests \
   experimental/hybridkernel/phase4/tests \
-  experimental/sinkaware/phase2/tests \
-  experimental/sinkaware/phase3/tests \
-  experimental/sinkaware/phase4/tests \
+  experimental/ssq_lr/phase2/tests \
+  experimental/horn/phase2/tests \
+  experimental/hbsm/phase2/tests \
+  experimental/shared/tests \
   experimental/thoughtflow_fp8/phase2/tests \
   experimental/thoughtflow_fp8/phase4/tests -rs
 ```
