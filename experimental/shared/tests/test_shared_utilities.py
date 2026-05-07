@@ -29,8 +29,14 @@ from experimental.shared.hybrid_manifest_local_capture_runner import (
     _first_ssq_layers,
     _horn_tensors,
     _install_horn_right_input_hooks,
+    _parse_layer_list,
     select_horn_entries,
     select_ssq_entries,
+)
+from experimental.shared.ssq_lr_all_layer_scout import (
+    _parse_layers,
+    _per_layer_ratios,
+    _scout_decision,
 )
 from experimental.shared.hybrid_model_eligibility import (
     _architecture_hash,
@@ -136,6 +142,80 @@ def test_sensitivity_metrics_are_well_formed() -> None:
     assert rel_l2(reference, candidate) > 0
     assert kurtosis(reference) > 0
     assert spearman_rank_correlation(reference, candidate) > 0.9
+
+
+def test_ssq_all_layer_scout_decision_stays_non_promoting() -> None:
+    evaluation = {
+        "gate_status": "PASS_REAL_S1_HETEROGENEITY",
+    }
+
+    assert _scout_decision(evaluation, layer_count=36) == (
+        "RESOURCE_LIMITED_ALL_LAYER_SCOUT_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY"
+    )
+    assert _scout_decision(evaluation, layer_count=4) == (
+        "RESOURCE_LIMITED_SCOUT_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY"
+    )
+
+
+def test_ssq_all_layer_scout_layer_ratios() -> None:
+    rows = [
+        {
+            "layer": 0,
+            "position_bucket": "prefill_end",
+            "max_abs": 2.0,
+            "std": 1.0,
+            "kurtosis": 4.0,
+        },
+        {
+            "layer": 0,
+            "position_bucket": "final_minus_128",
+            "max_abs": 6.0,
+            "std": 1.5,
+            "kurtosis": 8.0,
+        },
+        {
+            "layer": 1,
+            "position_bucket": "prefill_end",
+            "max_abs": 3.0,
+            "std": 3.0,
+            "kurtosis": 3.0,
+        },
+        {
+            "layer": 1,
+            "position_bucket": "final_minus_128",
+            "max_abs": 3.0,
+            "std": 9.0,
+            "kurtosis": 6.0,
+        },
+    ]
+
+    ratios = _per_layer_ratios(rows)
+
+    assert ratios[0]["max_abs_ratio"] == pytest.approx(3.0)
+    assert ratios[0]["selected_ratio"] == pytest.approx(3.0)
+    assert ratios[0]["local_pass"] is True
+    assert ratios[1]["std_ratio"] == pytest.approx(3.0)
+    assert ratios[1]["selected_ratio"] == pytest.approx(3.0)
+
+
+def test_ssq_all_layer_scout_layer_ratios_average_prompts() -> None:
+    rows = [
+        {"layer": 0, "position_bucket": "prefill_end", "max_abs": 1.0, "std": 1.0, "kurtosis": 1.0},
+        {"layer": 0, "position_bucket": "prefill_end", "max_abs": 3.0, "std": 3.0, "kurtosis": 3.0},
+        {"layer": 0, "position_bucket": "final_minus_128", "max_abs": 4.0, "std": 4.0, "kurtosis": 4.0},
+        {"layer": 0, "position_bucket": "final_minus_128", "max_abs": 8.0, "std": 8.0, "kurtosis": 8.0},
+    ]
+
+    ratios = _per_layer_ratios(rows)
+
+    assert ratios[0]["max_abs_ratio"] == pytest.approx(3.0)
+    assert ratios[0]["std_ratio"] == pytest.approx(3.0)
+
+
+def test_ssq_all_layer_scout_parse_layers_deduplicates() -> None:
+    assert _parse_layers("0, 12,18,12") == (0, 12, 18)
+    with pytest.raises(ValueError, match="non-negative"):
+        _parse_layers("0,-1")
 
 
 def test_tensor_packet_roundtrip(tmp_path: Path) -> None:
@@ -1179,6 +1259,12 @@ def test_ssq_select_entries_can_select_multiple_layers() -> None:
     assert selected_layers == (0, 1)
     assert len(selected) == 2 * len(SSQ_BUCKETS)
     assert {row["layer"] for row in selected} == {0, 1}
+
+
+def test_manifest_runner_parse_layer_list_deduplicates() -> None:
+    assert _parse_layer_list("0, 12,18,12") == (0, 12, 18)
+    with pytest.raises(ValueError, match="non-negative"):
+        _parse_layer_list("0,-1")
 
 
 def _base_trace_metadata(project: str = "ssq_lr") -> dict[str, object]:

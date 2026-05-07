@@ -1,0 +1,365 @@
+{
+  "bucket_runs": [
+    {
+      "forward_seconds": 10.94754979107529,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0001"
+    },
+    {
+      "forward_seconds": 7.043157708016224,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0001"
+    },
+    {
+      "forward_seconds": 6.922729750047438,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0001"
+    },
+    {
+      "forward_seconds": 7.678339040954597,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0001"
+    }
+  ],
+  "claim_boundary": [
+    "metrics-only resource-limited local scout",
+    "not a tensor-provenance gate packet",
+    "not SSQ-LR S1 promotion",
+    "not GPU evidence",
+    "not quality evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_ALL_LAYER_SCOUT_NOT_PROMOTABLE_FAIL_REAL_S1_HETEROGENEITY",
+  "elapsed_seconds": 35.457409667083994,
+  "evaluation": {
+    "distribution_effect_floor_pass": false,
+    "distribution_gate_pass": false,
+    "distribution_passing_layer_count": 0,
+    "gate_name": "ssq_lr_s1_state_distribution_heterogeneity",
+    "gate_pass": false,
+    "gate_status": "FAIL_REAL_S1_HETEROGENEITY",
+    "holm_p_min": 1.0,
+    "kurtosis_ratio_final_minus_128_vs_prefill_end": 0.8182012802824428,
+    "magnitude_gate_pass": false,
+    "max_abs_ratio_final_minus_128_vs_prefill_end": 0.8061526450282117,
+    "pass_fraction": 0.1111111111111111,
+    "passing_layer_count": 4,
+    "position_buckets": [
+      "2k_or_end",
+      "8k_or_end",
+      "final_minus_128",
+      "prefill_end"
+    ],
+    "prompt_count": 1,
+    "required_passing_layer_count": 9,
+    "selected_s1_ci_low": 2.0216621277075157,
+    "selected_s1_ratio": 0.8061526450282117,
+    "ssm_layer_count": 36,
+    "std_ratio_final_minus_128_vs_prefill_end": 0.7971141972856364
+  },
+  "layer_limit": null,
+  "layer_ratios": [
+    {
+      "kurtosis_ratio": 1.37882478818165,
+      "layer": 0,
+      "local_pass": true,
+      "max_abs_ratio": 3.2938470385278897,
+      "selected_ratio": 3.2938470385278897,
+      "std_ratio": 2.340032423040269
+    },
+    {
+      "kurtosis_ratio": 1.1125205716595299,
+      "layer": 1,
+      "local_pass": false,
+      "max_abs_ratio": 1.3735632183908046,
+      "selected_ratio": 1.3735632183908046,
+      "std_ratio": 1.2851379060155717
+    },
+    {
+      "kurtosis_ratio": 1.0299076152373863,
+      "layer": 2,
+      "local_pass": false,
+      "max_abs_ratio": 0.8810572687224669,
+      "selected_ratio": 0.8810572687224669,
+      "std_ratio": 0.8204157881802603
+    },
+    {
+      "kurtosis_ratio": 1.0125096442830268,
+      "layer": 3,
+      "local_pass": false,
+      "max_abs_ratio": 0.8679756262694651,
+      "selected_ratio": 0.9277205341202677,
+      "std_ratio": 0.9277205341202677
+    },
+    {
+      "kurtosis_ratio": 0.8377919627864786,
+      "layer": 4,
+      "local_pass": false,
+      "max_abs_ratio": 0.628476821192053,
+      "selected_ratio": 0.7483139475606352,
+      "std_ratio": 0.7483139475606352
+    },
+    {
+      "kurtosis_ratio": 0.8937192970202597,
+      "layer": 6,
+      "local_pass": false,
+      "max_abs_ratio": 0.6268948655256724,
+      "selected_ratio": 0.6732231425710062,
+      "std_ratio": 0.6732231425710062
+    },
+    {
+      "kurtosis_ratio": 0.890475928015503,
+      "layer": 7,
+      "local_pass": false,
+      "max_abs_ratio": 0.9266129032258065,
+      "selected_ratio": 0.9266129032258065,
+      "std_ratio": 0.9250381293159834
+    },
+    {
+      "kurtosis_ratio": 1.1799163005814903,
+      "layer": 8,
+      "local_pass": false,
+      "max_abs_ratio": 0.9156626506024096,
+      "selected_ratio": 0.9156626506024096,
+      "std_ratio": 0.8037887626818483
+    },
+    {
+      "kurtosis_ratio": 0.3590717602497207,
+      "layer": 9,
+      "local_pass": false,
+      "max_abs_ratio": 0.83166999334664,
+      "selected_ratio": 1.005908576623651,
+      "std_ratio": 1.005908576623651
+    },
+    {
+      "kurtosis_ratio": 1.061613658201208,
+      "layer": 10,
+      "local_pass": false,
+      "max_abs_ratio": 0.9761042722664736,
+      "selected_ratio": 0.9761042722664736,
+      "std_ratio": 0.8146901401090788
+    },
+    {
+      "kurtosis_ratio": 0.13435674544230766,
+      "layer": 11,
+      "local_pass": false,
+      "max_abs_ratio": 0.9655414908579466,
+      "selected_ratio": 1.606967151898926,
+      "std_ratio": 1.606967151898926
+    },
+    {
+      "kurtosis_ratio": 0.31874153384181686,
+      "layer": 12,
+      "local_pass": true,
+      "max_abs_ratio": 1.0518092105263157,
+      "selected_ratio": 2.0216621277075157,
+      "std_ratio": 2.0216621277075157
+    },
+    {
+      "kurtosis_ratio": 0.4643761642689238,
+      "layer": 13,
+      "local_pass": false,
+      "max_abs_ratio": 0.8564356435643564,
+      "selected_ratio": 1.1287722476270425,
+      "std_ratio": 1.1287722476270425
+    },
+    {
+      "kurtosis_ratio": 1.1548911459477509,
+      "layer": 14,
+      "local_pass": false,
+      "max_abs_ratio": 0.9480719794344473,
+      "selected_ratio": 0.9480719794344473,
+      "std_ratio": 0.8930063041600081
+    },
+    {
+      "kurtosis_ratio": 0.9302475238700563,
+      "layer": 16,
+      "local_pass": false,
+      "max_abs_ratio": 0.7218076285240465,
+      "selected_ratio": 0.7218076285240465,
+      "std_ratio": 0.700176191294394
+    },
+    {
+      "kurtosis_ratio": 1.1585906068310754,
+      "layer": 17,
+      "local_pass": false,
+      "max_abs_ratio": 0.8893044128646223,
+      "selected_ratio": 0.8893044128646223,
+      "std_ratio": 0.8239332153218437
+    },
+    {
+      "kurtosis_ratio": 2.2427016692334925,
+      "layer": 18,
+      "local_pass": true,
+      "max_abs_ratio": 3.791446983011131,
+      "selected_ratio": 3.791446983011131,
+      "std_ratio": 2.499292091997274
+    },
+    {
+      "kurtosis_ratio": 1.5237654215155139,
+      "layer": 19,
+      "local_pass": false,
+      "max_abs_ratio": 1.4307692307692308,
+      "selected_ratio": 1.4307692307692308,
+      "std_ratio": 0.9594602908030053
+    },
+    {
+      "kurtosis_ratio": 0.1733762136244274,
+      "layer": 20,
+      "local_pass": false,
+      "max_abs_ratio": 0.2973520249221184,
+      "selected_ratio": 0.6102415479151791,
+      "std_ratio": 0.6102415479151791
+    },
+    {
+      "kurtosis_ratio": 0.5257064647390879,
+      "layer": 21,
+      "local_pass": false,
+      "max_abs_ratio": 0.8974218321448162,
+      "selected_ratio": 1.1288291508746688,
+      "std_ratio": 1.1288291508746688
+    },
+    {
+      "kurtosis_ratio": 1.158246650970364,
+      "layer": 22,
+      "local_pass": false,
+      "max_abs_ratio": 1.5829457364341086,
+      "selected_ratio": 1.5829457364341086,
+      "std_ratio": 1.3877091914548996
+    },
+    {
+      "kurtosis_ratio": 0.35314375823023864,
+      "layer": 23,
+      "local_pass": false,
+      "max_abs_ratio": 0.8521909744931327,
+      "selected_ratio": 1.1546112273675249,
+      "std_ratio": 1.1546112273675249
+    },
+    {
+      "kurtosis_ratio": 1.0791796243235916,
+      "layer": 24,
+      "local_pass": false,
+      "max_abs_ratio": 1.4304548450889913,
+      "selected_ratio": 1.4304548450889913,
+      "std_ratio": 1.318114310406409
+    },
+    {
+      "kurtosis_ratio": 0.6591551467268599,
+      "layer": 26,
+      "local_pass": false,
+      "max_abs_ratio": 1.096215522771007,
+      "selected_ratio": 1.2673475729388524,
+      "std_ratio": 1.2673475729388524
+    },
+    {
+      "kurtosis_ratio": 1.1505837393072305,
+      "layer": 27,
+      "local_pass": false,
+      "max_abs_ratio": 1.3562585969738652,
+      "selected_ratio": 1.3562585969738652,
+      "std_ratio": 1.1080513008239194
+    },
+    {
+      "kurtosis_ratio": 2.0915319173197258,
+      "layer": 28,
+      "local_pass": false,
+      "max_abs_ratio": 1.151414309484193,
+      "selected_ratio": 1.151414309484193,
+      "std_ratio": 0.9138775038506582
+    },
+    {
+      "kurtosis_ratio": 0.6321957076919984,
+      "layer": 29,
+      "local_pass": false,
+      "max_abs_ratio": 0.7170433145009416,
+      "selected_ratio": 0.7170433145009416,
+      "std_ratio": 0.46297499004015175
+    },
+    {
+      "kurtosis_ratio": 0.28595227140520857,
+      "layer": 30,
+      "local_pass": true,
+      "max_abs_ratio": 3.25344212136665,
+      "selected_ratio": 5.035663827374503,
+      "std_ratio": 5.035663827374503
+    },
+    {
+      "kurtosis_ratio": 0.4116655450261494,
+      "layer": 31,
+      "local_pass": false,
+      "max_abs_ratio": 0.7370838117106774,
+      "selected_ratio": 0.7370838117106774,
+      "std_ratio": 0.6321132919917943
+    },
+    {
+      "kurtosis_ratio": 1.2251350041457068,
+      "layer": 32,
+      "local_pass": false,
+      "max_abs_ratio": 0.7695473251028807,
+      "selected_ratio": 0.7695473251028807,
+      "std_ratio": 0.6940807435402987
+    },
+    {
+      "kurtosis_ratio": 1.738920474634803,
+      "layer": 33,
+      "local_pass": false,
+      "max_abs_ratio": 1.3793548387096775,
+      "selected_ratio": 1.3793548387096775,
+      "std_ratio": 1.348181330534508
+    },
+    {
+      "kurtosis_ratio": 2.775246412142869,
+      "layer": 34,
+      "local_pass": false,
+      "max_abs_ratio": 1.5907372400756143,
+      "selected_ratio": 1.5907372400756143,
+      "std_ratio": 0.9641064893232077
+    },
+    {
+      "kurtosis_ratio": 1.7000074466547312,
+      "layer": 36,
+      "local_pass": false,
+      "max_abs_ratio": 0.8266569555717407,
+      "selected_ratio": 0.8266569555717407,
+      "std_ratio": 0.7491573764314637
+    },
+    {
+      "kurtosis_ratio": 0.9704079006930014,
+      "layer": 37,
+      "local_pass": false,
+      "max_abs_ratio": 1.1686217008797655,
+      "selected_ratio": 1.1686217008797655,
+      "std_ratio": 1.1138753161579764
+    },
+    {
+      "kurtosis_ratio": 0.9061253030352838,
+      "layer": 38,
+      "local_pass": false,
+      "max_abs_ratio": 0.8659730722154223,
+      "selected_ratio": 0.8659730722154223,
+      "std_ratio": 0.8558981587796942
+    },
+    {
+      "kurtosis_ratio": 0.7706607320448918,
+      "layer": 39,
+      "local_pass": false,
+      "max_abs_ratio": 1.167192429022082,
+      "selected_ratio": 1.3901155364041866,
+      "std_ratio": 1.3901155364041866
+    }
+  ],
+  "layers": null,
+  "load_seconds": 2.701243208022788,
+  "max_input_tokens": 8,
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "prompt_count": 1,
+  "prompt_ids": [
+    "hrsmoke_0001"
+  ],
+  "row_count": 144,
+  "surface": "ssq_lr_all_layer_scout"
+}

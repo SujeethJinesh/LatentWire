@@ -26,6 +26,21 @@ Use them for preregistered Mac gates only.
   full tensor packet is regenerated on demand before checker replay. These
   validate SSQ-LR bucket/layer capture plumbing only; neither packet can
   promote S1.
+- `ssq_lr_all_layer_scout.py`: metrics-only SSQ-LR scout over recurrent cache
+  layers. Current artifact: `results/ssq_lr_all_layer_scout_20260507/`,
+  decision
+  `RESOURCE_LIMITED_ALL_LAYER_SCOUT_NOT_PROMOTABLE_FAIL_REAL_S1_HETEROGENEITY`.
+  It scanned 36 recurrent layers from one short Granite Tiny prompt and found
+  only 4 local passing layers (`0`, `12`, `18`, `30`) against the 9-layer S1
+  requirement. It writes compact JSON/Markdown rows, not tensor packets, and
+  cannot promote S1.
+- `hybrid_manifest_local_capture_runner.py --ssq-layers`: selected-layer
+  tensor-provenance repeat for SSQ-LR. Current artifact:
+  `results/ssq_lr_prompt_repeat_tensor_capture_20260507/`, decision
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`; it repeats
+  layers `0`, `12`, `18`, and `30` across all 12 frozen prompts, writes saved
+  tensors, and passes the real SSQ-LR checker. It remains non-promoting because
+  those layers were selected after the all-layer scout.
 - `hybrid_architecture_maps.py`: explicit config-derived boundary maps used to
   validate real trace packet provenance.
 - `hybrid_model_eligibility.py`: metadata-only Hugging Face size/cache

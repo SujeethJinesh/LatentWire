@@ -99,6 +99,15 @@ def _first_ssq_layers(template: dict[str, Any], *, prompt_id: str, limit: int) -
     return tuple(layers[:limit])
 
 
+def _parse_layer_list(value: str) -> tuple[int, ...]:
+    layers = tuple(int(part.strip()) for part in value.split(",") if part.strip())
+    if not layers:
+        raise ValueError("layer list must contain at least one layer index")
+    if any(layer < 0 for layer in layers):
+        raise ValueError("layer list must contain non-negative layer indices")
+    return tuple(dict.fromkeys(layers))
+
+
 def _load_template(manifest_dir: Path, *, project: str, canonical_model_id: str) -> dict[str, Any]:
     filename = f"{project}__{canonical_model_id.replace('.', '-')}__metadata_template.json"
     path = manifest_dir / filename
@@ -403,6 +412,7 @@ def run_capture(
     prompt_limit: int | None = None,
     ssq_prompt_limit: int | None = None,
     ssq_layer_limit: int | None = None,
+    ssq_layers: tuple[int, ...] | None = None,
     horn_prompt_limit: int | None = None,
     horn_boundary_limit: int | None = None,
     prompt_path: Path = DEFAULT_PROMPTS,
@@ -438,6 +448,9 @@ def run_capture(
                 ssq_template,
                 prompt_id=selected_prompt_id,
                 layers=(
+                    ssq_layers
+                    if ssq_layers is not None
+                    else
                     _first_ssq_layers(ssq_template, prompt_id=selected_prompt_id, limit=ssq_layer_limit)
                     if ssq_layer_limit
                     else None
@@ -628,6 +641,7 @@ def main() -> None:
     parser.add_argument("--prompt-limit", type=int)
     parser.add_argument("--ssq-prompt-limit", type=int)
     parser.add_argument("--ssq-layer-limit", type=int)
+    parser.add_argument("--ssq-layers", help="Comma-separated SSQ-LR cache-layer indices to capture.")
     parser.add_argument("--horn-prompt-limit", type=int)
     parser.add_argument("--horn-boundary-limit", type=int)
     parser.add_argument("--prompt-path", type=Path, default=DEFAULT_PROMPTS)
@@ -643,6 +657,7 @@ def main() -> None:
         prompt_limit=args.prompt_limit,
         ssq_prompt_limit=args.ssq_prompt_limit,
         ssq_layer_limit=args.ssq_layer_limit,
+        ssq_layers=_parse_layer_list(args.ssq_layers) if args.ssq_layers else None,
         horn_prompt_limit=args.horn_prompt_limit,
         horn_boundary_limit=args.horn_boundary_limit,
         prompt_path=args.prompt_path,

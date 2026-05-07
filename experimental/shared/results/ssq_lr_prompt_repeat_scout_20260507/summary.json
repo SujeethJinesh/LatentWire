@@ -1,0 +1,389 @@
+{
+  "bucket_runs": [
+    {
+      "forward_seconds": 10.332114582997747,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0001"
+    },
+    {
+      "forward_seconds": 6.852331708068959,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0001"
+    },
+    {
+      "forward_seconds": 6.806962833972648,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0001"
+    },
+    {
+      "forward_seconds": 7.08710812497884,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0001"
+    },
+    {
+      "forward_seconds": 6.640613209106959,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0002"
+    },
+    {
+      "forward_seconds": 6.768331167055294,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0002"
+    },
+    {
+      "forward_seconds": 6.851281790994108,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0002"
+    },
+    {
+      "forward_seconds": 7.247194417053834,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0002"
+    },
+    {
+      "forward_seconds": 7.0148785000201315,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0003"
+    },
+    {
+      "forward_seconds": 6.6867376250447705,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0003"
+    },
+    {
+      "forward_seconds": 6.795614165952429,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0003"
+    },
+    {
+      "forward_seconds": 6.792838791036047,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0003"
+    },
+    {
+      "forward_seconds": 6.627571000019088,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0004"
+    },
+    {
+      "forward_seconds": 7.240424165967852,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0004"
+    },
+    {
+      "forward_seconds": 6.561663624946959,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0004"
+    },
+    {
+      "forward_seconds": 6.56641920900438,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0004"
+    },
+    {
+      "forward_seconds": 6.599693083087914,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0005"
+    },
+    {
+      "forward_seconds": 6.814645332982764,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0005"
+    },
+    {
+      "forward_seconds": 6.8269633339950815,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0005"
+    },
+    {
+      "forward_seconds": 6.628552041947842,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0005"
+    },
+    {
+      "forward_seconds": 6.553491416969337,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0006"
+    },
+    {
+      "forward_seconds": 6.779673250042833,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0006"
+    },
+    {
+      "forward_seconds": 6.90514283394441,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0006"
+    },
+    {
+      "forward_seconds": 6.843781749950722,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0006"
+    },
+    {
+      "forward_seconds": 6.8491906659910455,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0007"
+    },
+    {
+      "forward_seconds": 6.7958085420541465,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0007"
+    },
+    {
+      "forward_seconds": 6.8256076669786125,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0007"
+    },
+    {
+      "forward_seconds": 6.770673332968727,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0007"
+    },
+    {
+      "forward_seconds": 6.856340999947861,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0008"
+    },
+    {
+      "forward_seconds": 6.644471209030598,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0008"
+    },
+    {
+      "forward_seconds": 6.799039209028706,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0008"
+    },
+    {
+      "forward_seconds": 6.869009334011935,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0008"
+    },
+    {
+      "forward_seconds": 6.809778249938972,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0009"
+    },
+    {
+      "forward_seconds": 6.920070167048834,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0009"
+    },
+    {
+      "forward_seconds": 7.2752210419857875,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0009"
+    },
+    {
+      "forward_seconds": 6.7628155830316246,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0009"
+    },
+    {
+      "forward_seconds": 6.618651625001803,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0010"
+    },
+    {
+      "forward_seconds": 6.732066416996531,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0010"
+    },
+    {
+      "forward_seconds": 6.6945182079216465,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0010"
+    },
+    {
+      "forward_seconds": 6.962385499966331,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0010"
+    },
+    {
+      "forward_seconds": 6.743882542010397,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0011"
+    },
+    {
+      "forward_seconds": 6.64352245896589,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0011"
+    },
+    {
+      "forward_seconds": 6.786653790972196,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0011"
+    },
+    {
+      "forward_seconds": 6.922695207991637,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0011"
+    },
+    {
+      "forward_seconds": 6.723733708029613,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0012"
+    },
+    {
+      "forward_seconds": 6.675542083918117,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0012"
+    },
+    {
+      "forward_seconds": 6.789761499967426,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0012"
+    },
+    {
+      "forward_seconds": 6.85956154204905,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0012"
+    }
+  ],
+  "claim_boundary": [
+    "metrics-only resource-limited local scout",
+    "not a tensor-provenance gate packet",
+    "not SSQ-LR S1 promotion",
+    "not GPU evidence",
+    "not quality evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_SCOUT_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY",
+  "elapsed_seconds": 333.3066505830502,
+  "evaluation": {
+    "distribution_effect_floor_pass": true,
+    "distribution_gate_pass": true,
+    "distribution_passing_layer_count": 4,
+    "gate_name": "ssq_lr_s1_state_distribution_heterogeneity",
+    "gate_pass": true,
+    "gate_status": "PASS_REAL_S1_HETEROGENEITY",
+    "holm_p_min": 2.7755123914260032e-05,
+    "kurtosis_ratio_final_minus_128_vs_prefill_end": 0.5688171991812818,
+    "magnitude_gate_pass": true,
+    "max_abs_ratio_final_minus_128_vs_prefill_end": 1.8769451523318958,
+    "pass_fraction": 0.75,
+    "passing_layer_count": 3,
+    "position_buckets": [
+      "2k_or_end",
+      "8k_or_end",
+      "final_minus_128",
+      "prefill_end"
+    ],
+    "prompt_count": 12,
+    "required_passing_layer_count": 3,
+    "selected_s1_ci_low": 2.0141313904592413,
+    "selected_s1_ratio": 2.5611133856104824,
+    "ssm_layer_count": 4,
+    "std_ratio_final_minus_128_vs_prefill_end": 2.5611133856104824
+  },
+  "layer_limit": null,
+  "layer_ratios": [
+    {
+      "kurtosis_ratio": 1.8579500365501858,
+      "layer": 0,
+      "local_pass": true,
+      "max_abs_ratio": 2.6714130939483054,
+      "selected_ratio": 2.6714130939483054,
+      "std_ratio": 1.873621464442359
+    },
+    {
+      "kurtosis_ratio": 0.27448964850111585,
+      "layer": 12,
+      "local_pass": true,
+      "max_abs_ratio": 1.0843795019551348,
+      "selected_ratio": 2.181075704217381,
+      "std_ratio": 2.181075704217381
+    },
+    {
+      "kurtosis_ratio": 0.9804900544647462,
+      "layer": 18,
+      "local_pass": false,
+      "max_abs_ratio": 1.770136549959531,
+      "selected_ratio": 1.770136549959531,
+      "std_ratio": 1.6991467361575563
+    },
+    {
+      "kurtosis_ratio": 0.38515329483139615,
+      "layer": 30,
+      "local_pass": true,
+      "max_abs_ratio": 3.038258069462547,
+      "selected_ratio": 4.104264647621254,
+      "std_ratio": 4.104264647621254
+    }
+  ],
+  "layers": [
+    0,
+    12,
+    18,
+    30
+  ],
+  "load_seconds": 2.8761367079569027,
+  "max_input_tokens": 8,
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "prompt_count": 12,
+  "prompt_ids": [
+    "hrsmoke_0001",
+    "hrsmoke_0002",
+    "hrsmoke_0003",
+    "hrsmoke_0004",
+    "hrsmoke_0005",
+    "hrsmoke_0006",
+    "hrsmoke_0007",
+    "hrsmoke_0008",
+    "hrsmoke_0009",
+    "hrsmoke_0010",
+    "hrsmoke_0011",
+    "hrsmoke_0012"
+  ],
+  "row_count": 192,
+  "surface": "ssq_lr_all_layer_scout"
+}
