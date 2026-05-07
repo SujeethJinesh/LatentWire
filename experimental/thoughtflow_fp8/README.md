@@ -7,8 +7,9 @@ pre-registered `rdu_topk`, `psi_topk`, and `vwac_topk` successors are stopped
 or killed on the available Mac-local sparse-cache surfaces. The folder is now a
 falsification/diagnostic harness unless a genuinely new pre-registered signal
 is evaluated once on a fresh/larger frozen sparse-cache surface with
-matched-budget quality wins, stopped-family/proxy-baseline separation, paired
-uncertainty, and oracle/headroom diagnostics.
+nominal-budget quality wins with achieved keep rates reported,
+stopped-family/proxy-baseline separation, paired uncertainty, and
+oracle/headroom diagnostics.
 
 Use `phase2/current_decision_manifest_20260506.md` and
 `paper/reviewer_pack.md` as the current review entry points. Older artifacts
@@ -45,7 +46,8 @@ What remains for a positive method:
 
 - a genuinely new utility family, preregistered before measurement;
 - one no-retune evaluation on a fresh/larger frozen sparse-cache surface;
-- matched-budget quality wins over R-KV-like and ThinKV-like controls;
+- nominal-budget quality wins over R-KV-like and ThinKV-like controls with
+  achieved keep rates reported;
 - stopped-family/proxy-baseline separation, paired uncertainty, and
   oracle/headroom diagnostics.
 
@@ -120,10 +122,10 @@ directory declared in the preregistration. The result packet must include:
 
 ### 4. Promote / Kill
 
-Promote only if the single preregistered run shows matched-budget quality wins
-over both R-KV-like and ThinKV-like, strict stopped-family/proxy-baseline
-separation, paired uncertainty supporting the win, and oracle/headroom
-diagnostics showing usable remaining signal.
+Promote only if the single preregistered run shows nominal-budget quality wins
+over both R-KV-like and ThinKV-like with achieved keep rates reported, strict
+stopped-family/proxy-baseline separation, paired uncertainty supporting the win,
+and oracle/headroom diagnostics showing usable remaining signal.
 
 If any condition fails, kill that exact signal. Do not tune its formula, mix it
 with consumed RDU/PSI/VWAC components, change the surface, rerun on another

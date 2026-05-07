@@ -28,6 +28,34 @@ def _write_profiler_artifact(path: Path) -> None:
     path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
 
 
+def _write_client_replay_log(run_dir: Path, *, model: str, run_id: str) -> None:
+    (run_dir / f"logs/client_replay_{run_id}.log").write_text(
+        json.dumps(
+            {
+                "model": model,
+                "run_id": run_id,
+                "dry_run": False,
+                "token_counts_required": True,
+                "token_count_source": "test_tokenizer",
+                "requests": [
+                    {
+                        "status": "ok",
+                        "batch_size": 1,
+                        "prompt_token_counts": [128],
+                        "prompt_token_count_total": 128,
+                        "requested_decode_tokens": 64,
+                        "expected_completion_tokens_total": 64,
+                        "response_usage": {"completion_tokens": 64},
+                    }
+                    for _ in range(16)
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_snapshot_manifest(run_dir: Path, name: str) -> tuple[str, str]:
     path = run_dir / f"metadata/{name}_snapshot_manifest.json"
     path.write_text(
@@ -310,31 +338,6 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
     (run_dir / "logs/nsys_server_b1.log").write_text(
         "nsys vllm server cuda profiler log\n", encoding="utf-8"
     )
-    for log_index, replay_model in enumerate((model, same_family, cross_family)):
-        (run_dir / f"logs/client_replay_b1_{log_index}.log").write_text(
-            json.dumps(
-                {
-                    "model": replay_model,
-                    "dry_run": False,
-                    "token_counts_required": True,
-                    "token_count_source": "test_tokenizer",
-                    "requests": [
-                        {
-                            "status": "ok",
-                            "batch_size": 1,
-                            "prompt_token_counts": [128],
-                            "prompt_token_count_total": 128,
-                            "requested_decode_tokens": 64,
-                            "expected_completion_tokens_total": 64,
-                            "response_usage": {"completion_tokens": 64},
-                        }
-                        for _ in range(16)
-                    ],
-                }
-            )
-            + "\n",
-            encoding="utf-8",
-        )
     readout_rows = "\n".join(f"| {marker} | synthetic evidence | no |" for marker in READOUT_MARKERS)
     (run_dir / "readout.md").write_text(
         "| Question | Evidence | Decision |\n|---|---|---|\n" + readout_rows + "\n",
@@ -386,6 +389,7 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
     ) in enumerate(specs):
         for repeat in range(3):
             row_id = f"{label}-{repeat}"
+            _write_client_replay_log(run_dir, model=row_model, run_id=row_id)
             nsys_path = run_dir / f"nsys/{row_id}.nsys-rep"
             ncu_path = run_dir / f"ncu/{row_id}.ncu-rep"
             _write_profiler_artifact(nsys_path)

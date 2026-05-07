@@ -9,7 +9,7 @@
 ## Result
 
 ```text
-291 passed, 1 skipped, 2 warnings in 11.63s
+294 passed, 1 skipped, 2 warnings in 7.18s
 ```
 
 The skipped test is the opt-in non-interpreter Triton CPU-backend check for the

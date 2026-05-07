@@ -16,9 +16,10 @@
 ## Current Claim
 
 ThoughtFlow-FP8 shows a reusable sparse-cache falsification protocol: freeze a
-quality surface, pre-register each successor signal, require matched-budget
-proxy wins, separate stopped-family and proxy-baseline rows, and report paired
-uncertainty plus oracle/headroom diagnostics. The case study shows an
+quality surface, pre-register each successor signal, require nominal-budget
+proxy wins with achieved keep rates reported, separate stopped-family and
+proxy-baseline rows, and report paired uncertainty plus oracle/headroom
+diagnostics. The case study shows an
 interpretable retention signal looking positive on one frozen surface and then
 failing stricter reproduction. Later prefix-surprisal and value-weighted
 attention-contribution successors also fail on fresh surfaces. The project does
@@ -46,8 +47,8 @@ reworded around the diagnostic ladder contribution rather than apologizing for
 the lack of a positive method, and the stable TeX test command now matches this
 reviewer pack's Triton interpreter environment.
 The latest polish adds an explicit first-page reviewer takeaway and a final
-paragraph stating why the artifact is positive as methodology: it prevents
-narrow false positives from becoming GPU/kernel work before robustness exists.
+paragraph stating the artifact's methodological value: it prevents narrow false
+positives from becoming GPU/kernel work before robustness exists.
 
 ## Strongest Evidence
 
@@ -105,9 +106,9 @@ preregistration artifact that specifies:
 - forbidden inputs, including continuation loss and prior frozen outcomes;
 - the fresh/larger frozen input surface;
 - the one allowed evaluation command;
-- promotion rules requiring matched-budget quality wins over R-KV-like and
-  ThinKV-like, strict same-family separation, paired uncertainty, and
-  oracle/headroom diagnostics.
+- promotion rules requiring nominal-budget quality wins over R-KV-like and
+  ThinKV-like with achieved keep rates reported, strict same-family separation,
+  paired uncertainty, and oracle/headroom diagnostics.
 
 Until that artifact exists, there is no runnable successor gate.
 

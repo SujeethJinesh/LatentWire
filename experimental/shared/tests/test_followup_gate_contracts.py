@@ -261,7 +261,9 @@ def _hbsm_b3_rows() -> list[dict[str, object]]:
     ]
 
 
-def test_followup_contracts_accept_preregistered_pass_packets(tmp_path: Path) -> None:
+def test_followup_contracts_accept_preregistered_fixture_packets_not_project_evidence(
+    tmp_path: Path,
+) -> None:
     packets = {
         "ssq_lr_s2": (_ssq_lr_s2_rows(), evaluate_ssq_lr_s2),
         "ssq_lr_s3": (_ssq_lr_s3_rows(), evaluate_ssq_lr_s3),
@@ -273,6 +275,9 @@ def test_followup_contracts_accept_preregistered_pass_packets(tmp_path: Path) ->
     for gate, (rows, evaluator) in packets.items():
         assert evaluator(rows)["gate_pass"] is True
         packet_dir = _write_packet(tmp_path, gate, rows)
+        summary = json.loads((packet_dir / "summary.json").read_text(encoding="utf-8"))
+        assert "follow-up contract only" in summary["claim_boundary"]
+        assert "not model evidence" in summary["claim_boundary"]
         report = validate_followup_gate_packet(packet_dir, gate=gate)
         assert report["ok"], report["errors"]
 

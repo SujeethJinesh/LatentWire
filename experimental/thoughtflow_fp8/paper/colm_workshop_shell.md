@@ -48,7 +48,7 @@ revived ThoughtFlow-FP8 story would be:
 > delayed-utility and span-bias failures that pure current-query or redundancy
 > selectors miss.
 
-This story only survives if the policy beats strong matched-budget baselines on
+This story only survives if the policy beats strong nominal-budget baselines on
 quality or perplexity, not just on protected-token recall.
 
 ## Current Evidence

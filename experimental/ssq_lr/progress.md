@@ -324,10 +324,10 @@ Readout:
 | `int3_primary_state_block_scaled` | `5.224x` | `0.105263` | `0.13503` | weakened |
 | `mixed_int3_mxfp4_low_error_25pct` | `4.192x` | `0.000000` | `0.05044` | selected |
 
-Decision: **PURE INT3 IS WEAKENED; MIXED 25% INT3/MXFP4 IS THE LIVE
-RECIPE**. The stricter Granite Tiny replay keeps layers `0,30` but changes the
-recipe to `mixed_int3_mxfp4_low_error_25pct`. This remains resource-limited
-simulated replay and cannot promote by itself.
+Decision: **PURE INT3 WAS WEAKENED; MIXED 25% INT3/MXFP4 WAS THE PRE-TRANSFER
+CANDIDATE, NOW SUPERSEDED**. The stricter Granite Tiny replay kept layers
+`0,30`, but the Granite 350M no-retuning transfer replay below stopped this
+candidate before GPU.
 
 ## 2026-05-07 S3 Transfer Prefilter
 

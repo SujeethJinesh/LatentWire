@@ -279,6 +279,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
 
     return {
         "model": args.model,
+        "run_id": args.run_id,
         "endpoint": endpoint,
         "profile_bracket": args.profile_bracket,
         "profile_start_endpoint": profile_start_endpoint if args.profile_bracket else None,
@@ -296,6 +297,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
+    parser.add_argument("--run-id", required=True)
     parser.add_argument("--endpoint", default="http://127.0.0.1:8000")
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--prefill-tokens", type=int, default=128)

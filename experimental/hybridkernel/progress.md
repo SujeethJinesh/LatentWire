@@ -768,3 +768,34 @@ present.
 Decision: **GPU PROMOTION REQUIRES THE FULL CONTROL MATRIX**. Primary-only
 Nsight evidence can still kill or inform the branch, but it cannot be treated
 as the reviewer-facing promotion packet.
+
+## 2026-05-07 GPU Handoff Provenance Hardening
+
+After COLM-style handoff review, the native packet checker now requires
+structured `metadata/environment.json`, model snapshot manifests with matching
+SHA-256 digests, and explicit same-family `control_window_ids`. This closes the
+remaining Mac-checkable reviewer risk that non-boundary controls or local model
+snapshots could be chosen after seeing profiler traces. The run packet generator,
+native checklist, README, runbook, synthetic fixture, reviewer pack, and COLM
+draft all document the stricter contract.
+
+Decision: **MAC-SIDE HANDOFF CONTRACT SATURATED**. The next admissible evidence
+is still the native NVIDIA/vLLM full-matrix profiler packet; no additional
+Mac-only HybridKernel experiments can substitute for that gate.
+
+## 2026-05-07 Per-Run Replay Provenance Hardening
+
+After another COLM-style handoff audit, the runbook no longer asks operators to
+overwrite the generated nine-row `metadata/reduction_input_manifest.json` with a
+one-row TODO example. Operators must fill every generated manifest row. The
+native `profiler_driver.py` now requires a top-level `--run-id`, and the
+artifact checker requires each non-pending metric row to have a matching client
+replay JSON by `(model, run_id, batch, prefill, decode, requests)`, not only by
+model and request shape. The generated-packet and checker fixtures were updated
+to emit row-specific client logs.
+
+Decision: **HYBRIDKERNEL MAC HANDOFF IS NOW ROW-PROVENANCE LOCKED**. The
+remaining blocker is still the native NVIDIA/vLLM full-matrix profiler packet;
+a Granite-only 5090 packet remains audit/kill-only unless the cross-family row
+is feasible or replaced by a preregistered feasible hybrid control before
+profiling.

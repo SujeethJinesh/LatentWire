@@ -10,6 +10,7 @@ from experimental.hybridkernel.phase2 import profiler_driver
 def _args(**overrides: object) -> SimpleNamespace:
     values = {
         "model": "ibm-granite/granite-4.0-h-tiny",
+        "run_id": "granite_primary_r1",
         "endpoint": "http://127.0.0.1:8000",
         "batch_size": 1,
         "prefill_tokens": 8,
@@ -30,6 +31,7 @@ def _args(**overrides: object) -> SimpleNamespace:
 def test_dry_run_reports_profile_bracket_endpoints_without_network() -> None:
     result = profiler_driver.run(_args(profile_bracket=True, dry_run=True))
 
+    assert result["run_id"] == "granite_primary_r1"
     assert result["profile_bracket"] is True
     assert result["profile_start_endpoint"] == "http://127.0.0.1:8000/start_profile"
     assert result["profile_stop_endpoint"] == "http://127.0.0.1:8000/stop_profile"

@@ -12,7 +12,7 @@ preregistration explicitly reopens the branch.
 
 The current sprint ledger is `project_status_20260506.md`.
 The latest full local readiness recheck is
-`local_readiness_recheck_20260507.md` (`291 passed, 1 skipped, 2 warnings`).
+`local_readiness_recheck_20260507.md` (`294 passed, 1 skipped, 2 warnings`).
 
 ## Current Branch Ledger
 

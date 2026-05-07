@@ -28,6 +28,44 @@ def _write_profiler_artifact(path: Path) -> None:
     path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
 
 
+def _write_client_replay_log(
+    run_dir: Path,
+    filename: str,
+    *,
+    model: str,
+    run_id: str,
+    batch_size: int = 1,
+    prefill_tokens: int = 128,
+    decode_tokens: int = 64,
+    requests: int = 16,
+) -> None:
+    (run_dir / "logs" / filename).write_text(
+        json.dumps(
+            {
+                "model": model,
+                "run_id": str(run_id),
+                "dry_run": False,
+                "token_counts_required": True,
+                "token_count_source": "test_tokenizer",
+                "requests": [
+                    {
+                        "status": "ok",
+                        "batch_size": batch_size,
+                        "prompt_token_counts": [prefill_tokens for _ in range(batch_size)],
+                        "prompt_token_count_total": batch_size * prefill_tokens,
+                        "requested_decode_tokens": decode_tokens,
+                        "expected_completion_tokens_total": batch_size * decode_tokens,
+                        "response_usage": {"completion_tokens": batch_size * decode_tokens},
+                    }
+                    for _ in range(requests)
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_snapshot_manifest(run_dir: Path, name: str) -> tuple[str, str]:
     path = run_dir / f"metadata/{name}_snapshot_manifest.json"
     path.write_text(
@@ -206,31 +244,13 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
     (run_dir / "logs/nsys_server_b1.log").write_text(
         "nsys vllm server cuda profiler log\n", encoding="utf-8"
     )
-    (run_dir / "logs/client_replay_b1.log").write_text(
-        json.dumps(
-            {
-                "model": "granite",
-                "dry_run": False,
-                "token_counts_required": True,
-                "token_count_source": "test_tokenizer",
-                "requests": [
-                    {
-                        "status": "ok",
-                        "batch_size": 1,
-                        "prompt_token_counts": [128],
-                        "prompt_token_count_total": 128,
-                        "requested_decode_tokens": 64,
-                        "expected_completion_tokens_total": 64,
-                        "response_usage": {"completion_tokens": 64},
-                    }
-                    for _ in range(16)
-                ],
-            }
-        )
-        + "\n",
-        encoding="utf-8",
-    )
     for idx in range(runs):
+        _write_client_replay_log(
+            run_dir,
+            f"client_replay_granite_run{idx}.log",
+            model="granite",
+            run_id=str(idx),
+        )
         _write_profiler_artifact(run_dir / f"nsys/granite_tiny_b1_decode64_run{idx}.nsys-rep")
         _write_profiler_artifact(run_dir / f"ncu/suspicious_boundary_kernel_run{idx}.ncu-rep")
     readout_rows = "\n".join(f"| {marker} | evidence | no |" for marker in READOUT_MARKERS)
@@ -317,12 +337,6 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
-    client_payload = json.loads((run_dir / "logs/client_replay_b1.log").read_text(encoding="utf-8"))
-    client_payload["model"] = DEFAULT_CROSS_FAMILY_MODEL
-    (run_dir / "logs/client_replay_qwen.log").write_text(
-        json.dumps(client_payload) + "\n",
-        encoding="utf-8",
-    )
     provenance_path = run_dir / "metadata/model_provenance.json"
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
     qwen_manifest_path, qwen_manifest_sha = _write_snapshot_manifest(run_dir, "qwen")
@@ -344,6 +358,12 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
     qwen_rows = []
     for idx, base in enumerate(payload["rows"]):
+        _write_client_replay_log(
+            run_dir,
+            f"client_replay_qwen_run{idx}.log",
+            model=DEFAULT_CROSS_FAMILY_MODEL,
+            run_id=f"qwen-{idx}",
+        )
         row = dict(base)
         row.update(
             {
@@ -384,6 +404,20 @@ def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     assert result["model_run_counts"] == {"granite": 3}
     assert result["model_distinct_run_counts"] == {"granite": 3}
     assert max(result["model_config_run_counts"].values()) == 3
+
+
+def test_rejects_missing_run_specific_client_replay_log(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "logs/client_replay_granite_run1.log").unlink()
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "client replay log does not match profiler_metrics.json run_id and batch_shape"
+        in error
+        for error in result["errors"]
+    )
 
 
 def test_rejects_missing_ncu_launch_selection(tmp_path: Path) -> None:
@@ -503,9 +537,6 @@ def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None
         },
     ]
     profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
-    client_payload = json.loads((tmp_path / "logs/client_replay_b1.log").read_text(encoding="utf-8"))
-    client_payload["model"] = DEFAULT_CROSS_FAMILY_MODEL
-    (tmp_path / "logs/client_replay_qwen.log").write_text(json.dumps(client_payload) + "\n", encoding="utf-8")
     provenance_path = tmp_path / "metadata/model_provenance.json"
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
     qwen_manifest_path, qwen_manifest_sha = _write_snapshot_manifest(tmp_path, "qwen")
@@ -550,6 +581,12 @@ def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None
             "qwen_hybrid_control",
         ),
     ]:
+        _write_client_replay_log(
+            tmp_path,
+            f"client_replay_{run_id}.log",
+            model=model,
+            run_id=run_id,
+        )
         _write_profiler_artifact(tmp_path / nsys_name)
         _write_profiler_artifact(tmp_path / ncu_name)
         row = dict(base)
@@ -672,7 +709,7 @@ def test_requires_server_and_client_logs(tmp_path: Path) -> None:
 
     client_missing = tmp_path / "client_missing"
     _write_complete_run(client_missing)
-    (client_missing / "logs/client_replay_b1.log").unlink()
+    (client_missing / "logs/client_replay_granite_run0.log").unlink()
 
     client_result = check_run_artifacts(client_missing)
 
@@ -696,7 +733,7 @@ def test_rejects_server_warmup_log_without_profiler_log(tmp_path: Path) -> None:
 def test_rejects_empty_or_placeholder_native_logs(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "logs/nsys_server_b1.log").write_text("", encoding="utf-8")
-    (tmp_path / "logs/client_replay_b1.log").write_text(
+    (tmp_path / "logs/client_replay_granite_run0.log").write_text(
         "placeholder client replay\n", encoding="utf-8"
     )
 
@@ -710,7 +747,7 @@ def test_rejects_empty_or_placeholder_native_logs(tmp_path: Path) -> None:
 def test_rejects_arbitrary_native_log_payloads(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "logs/nsys_server_b1.log").write_text("abcdefgh\n", encoding="utf-8")
-    (tmp_path / "logs/client_replay_b1.log").write_text("abcdefgh\n", encoding="utf-8")
+    (tmp_path / "logs/client_replay_granite_run0.log").write_text("abcdefgh\n", encoding="utf-8")
 
     result = check_run_artifacts(tmp_path)
 
@@ -721,7 +758,7 @@ def test_rejects_arbitrary_native_log_payloads(tmp_path: Path) -> None:
 
 def test_rejects_marker_only_client_log_without_profiler_driver_json(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "logs/client_replay_b1.log").write_text(
+    (tmp_path / "logs/client_replay_granite_run0.log").write_text(
         '"model" "requests" "status"\n', encoding="utf-8"
     )
 
@@ -746,7 +783,7 @@ def test_rejects_unregistered_high_recoverable_fraction(tmp_path: Path) -> None:
 
 def test_rejects_client_replay_without_top_level_model(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "logs/client_replay_b1.log").write_text(
+    (tmp_path / "logs/client_replay_granite_run0.log").write_text(
         '{"dry_run":false,"requests":[{"model":"nested-only","status":"ok"}]}\n',
         encoding="utf-8",
     )
@@ -759,7 +796,7 @@ def test_rejects_client_replay_without_top_level_model(tmp_path: Path) -> None:
 
 def test_rejects_client_replay_without_explicit_non_dry_run(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "logs/client_replay_b1.log").write_text(
+    (tmp_path / "logs/client_replay_granite_run0.log").write_text(
         '{"model":"granite","requests":[{"status":"ok"}]}\n',
         encoding="utf-8",
     )
@@ -772,10 +809,11 @@ def test_rejects_client_replay_without_explicit_non_dry_run(tmp_path: Path) -> N
 
 def test_rejects_client_replay_shape_mismatch(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "logs/client_replay_b1.log").write_text(
+    (tmp_path / "logs/client_replay_granite_run0.log").write_text(
         json.dumps(
             {
                 "model": "granite",
+                "run_id": "0",
                 "dry_run": False,
                 "token_counts_required": True,
                 "token_count_source": "test_tokenizer",
@@ -800,12 +838,12 @@ def test_rejects_client_replay_shape_mismatch(tmp_path: Path) -> None:
     result = check_run_artifacts(tmp_path)
 
     assert result["status"] == "FAIL"
-    assert any("client replay shape does not match" in error for error in result["errors"])
+    assert any("run_id and batch_shape" in error for error in result["errors"])
 
 
 def test_rejects_client_replay_completion_length_mismatch(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    log_path = tmp_path / "logs/client_replay_b1.log"
+    log_path = tmp_path / "logs/client_replay_granite_run0.log"
     payload = json.loads(log_path.read_text(encoding="utf-8"))
     payload["requests"][0]["response_usage"] = {"completion_tokens": 63}
     log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
@@ -818,7 +856,7 @@ def test_rejects_client_replay_completion_length_mismatch(tmp_path: Path) -> Non
 
 def test_rejects_client_replay_expected_completion_total_mismatch(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    log_path = tmp_path / "logs/client_replay_b1.log"
+    log_path = tmp_path / "logs/client_replay_granite_run0.log"
     payload = json.loads(log_path.read_text(encoding="utf-8"))
     payload["requests"][0]["expected_completion_tokens_total"] = 65
     log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
@@ -834,7 +872,7 @@ def test_rejects_client_replay_expected_completion_total_mismatch(tmp_path: Path
 
 def test_rejects_client_replay_without_expected_completion_total(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    log_path = tmp_path / "logs/client_replay_b1.log"
+    log_path = tmp_path / "logs/client_replay_granite_run0.log"
     payload = json.loads(log_path.read_text(encoding="utf-8"))
     del payload["requests"][0]["expected_completion_tokens_total"]
     log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
@@ -847,7 +885,7 @@ def test_rejects_client_replay_without_expected_completion_total(tmp_path: Path)
 
 def test_rejects_client_replay_boolean_integer_fields(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    log_path = tmp_path / "logs/client_replay_b1.log"
+    log_path = tmp_path / "logs/client_replay_granite_run0.log"
     payload = json.loads(log_path.read_text(encoding="utf-8"))
     payload["requests"][0]["batch_size"] = True
     payload["requests"][1]["requested_decode_tokens"] = True
@@ -864,7 +902,7 @@ def test_rejects_client_replay_boolean_integer_fields(tmp_path: Path) -> None:
 
 def test_rejects_client_replay_mixed_request_shapes(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    log_path = tmp_path / "logs/client_replay_b1.log"
+    log_path = tmp_path / "logs/client_replay_granite_run0.log"
     payload = json.loads(log_path.read_text(encoding="utf-8"))
     payload["requests"][1]["batch_size"] = 8
     payload["requests"][1]["prompt_token_counts"] = [128] * 8
@@ -905,15 +943,15 @@ def test_rejects_client_replay_batch_size_mismatch(tmp_path: Path) -> None:
 
 def test_accepts_batch_replay_with_per_sample_prefill_tokens(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    log_path = tmp_path / "logs/client_replay_b1.log"
-    log_payload = json.loads(log_path.read_text(encoding="utf-8"))
-    for request in log_payload["requests"]:
-        request["batch_size"] = 8
-        request["prompt_token_counts"] = [128] * 8
-        request["prompt_token_count_total"] = 1024
-        request["expected_completion_tokens_total"] = 512
-        request["response_usage"] = {"completion_tokens": 512}
-    log_path.write_text(json.dumps(log_payload) + "\n", encoding="utf-8")
+    for log_path in sorted((tmp_path / "logs").glob("client_replay_granite_run*.log")):
+        log_payload = json.loads(log_path.read_text(encoding="utf-8"))
+        for request in log_payload["requests"]:
+            request["batch_size"] = 8
+            request["prompt_token_counts"] = [128] * 8
+            request["prompt_token_count_total"] = 1024
+            request["expected_completion_tokens_total"] = 512
+            request["response_usage"] = {"completion_tokens": 512}
+        log_path.write_text(json.dumps(log_payload) + "\n", encoding="utf-8")
 
     metrics_path = tmp_path / "profiler_metrics.json"
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
@@ -944,7 +982,7 @@ def test_accepts_batch_replay_with_per_sample_prefill_tokens(tmp_path: Path) -> 
 def test_rejects_dry_run_or_failed_client_replay_logs(tmp_path: Path) -> None:
     dry_run = tmp_path / "dry_run"
     _write_complete_run(dry_run)
-    (dry_run / "logs/client_replay_b1.log").write_text(
+    (dry_run / "logs/client_replay_granite_run0.log").write_text(
         '{"model":"granite","dry_run":true,"requests":[{"status":"dry_run"}]}\n',
         encoding="utf-8",
     )
@@ -957,7 +995,7 @@ def test_rejects_dry_run_or_failed_client_replay_logs(tmp_path: Path) -> None:
 
     failed = tmp_path / "failed"
     _write_complete_run(failed)
-    (failed / "logs/client_replay_b1.log").write_text(
+    (failed / "logs/client_replay_granite_run0.log").write_text(
         '{"model":"granite","dry_run":false,"requests":[{"status":"error:timeout"}]}\n',
         encoding="utf-8",
     )
@@ -1334,7 +1372,13 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
     metrics_path = tmp_path / "profiler_metrics.json"
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
     rows = list(payload["rows"])
-    for base in payload["rows"]:
+    for idx, base in enumerate(payload["rows"]):
+        _write_client_replay_log(
+            tmp_path,
+            f"client_replay_qwen_reuse_run{idx}.log",
+            model=DEFAULT_CROSS_FAMILY_MODEL,
+            run_id=str(base["run_id"]),
+        )
         same_family = dict(base)
         same_family.update(
             {

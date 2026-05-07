@@ -237,6 +237,7 @@ export MODEL=ibm-granite/granite-4.0-h-tiny
 
 python "$HWK_ROOT/phase2/profiler_driver.py" \
   --model "$MODEL" \
+  --run-id "granite_primary_r1" \
   --batch-size 1 \
   --prefill-tokens 128 \
   --decode-tokens 64 \
@@ -245,7 +246,7 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --tokenizer "$MODEL" \
   --require-token-counts \
   --profile-bracket \
-  | tee "$HWK_RUN/logs/client_b1_profile_bracket.log"
+  | tee "$HWK_RUN/logs/client_granite_primary_r1.log"
 ```
 
 With `--require-token-counts`, the driver uses the local Hugging Face tokenizer

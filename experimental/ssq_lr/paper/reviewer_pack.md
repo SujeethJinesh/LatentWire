@@ -76,7 +76,7 @@ actual state-cache footprint.
 | S3 repro manifest | `experimental/ssq_lr/phase2/s3_transfer_repro_manifest_20260507.md` records commands, prompt hash, model revisions, packet hashes, frozen recipe hashes, and checker commands for the Granite 350M stop artifact | reproducibility handoff |
 | architecture provenance | shared config-derived hashes exist for live hybrid targets | packet provenance ready |
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl` enumerates 5,184 required S1 capture rows | execution checklist only |
-| model eligibility | Granite Tiny is cached locally and used for real resource-limited S1b/S2 scouts; larger live targets remain uncached or GPU-sized. | Mac smoke path exercised; frontier validation still GPU-sized |
+| model eligibility | Granite Tiny is cached locally and used for real resource-limited S1b/S2 scouts; larger live targets are out of scope unless the branch is newly preregistered and clears the local gates first. | Mac stop path exercised; no GPU handoff |
 | real-packet checker | rejects missing buckets, incomplete prompt/layer matrices, stale summary fields, too few prompts, promotable resource-limited decisions, mismatched model IDs, missing controls, missing trace-plan hash pinning, missing tensor artifacts, tensor hash mismatches, and row metrics that do not recompute from saved state tensors | ready for real S1 |
 | follow-up contract checker | `experimental.shared.followup_gate_contracts --gate ssq_lr_s2/ssq_lr_s3` enforces recipe/byte/CI/no-retuning fields before later evidence can be cited | contract ready; current S3 model rows fail |
 

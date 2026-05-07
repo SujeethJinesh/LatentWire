@@ -117,7 +117,9 @@ Current artifact:
 `TO_FILL_BEFORE_CAPTURE` field from a real capture before building packets.
 Templates are deliberately rejected by the builder.
 
-Build SSQ-LR and HORN packets from saved tensor packets:
+For a newly preregistered local/shared reopening only, build SSQ-LR and HORN
+candidate packets from saved tensors. This is not a GPU handoff and cannot
+create native performance evidence:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
@@ -131,7 +133,9 @@ Build SSQ-LR and HORN packets from saved tensor packets:
   --output-dir experimental/horn/phase2/results/horn_gate_h1_<YYYYMMDD>_<model_slug>
 ```
 
-Build HBSM from saved sensitivity rows:
+For a newly preregistered local/shared reopening only, build HBSM from saved
+sensitivity rows. This is not a GPU handoff and cannot create native
+performance evidence:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
@@ -143,6 +147,10 @@ Build HBSM from saved sensitivity rows:
 Only after a real HBSM B1 packet establishes sensitivity heterogeneity should
 the B2 cheap-predictor rank-correlation gate be run. Do not promote a B2-style
 claim from the synthetic B1 rehearsal.
+
+Do not collect or reduce GPU artifacts for SSQ-LR, HORN, or HBSM from this
+handoff document. A future GPU run requires a separate preregistered runbook
+after the local S1--S3, H1--H3, or B1--B3 gates pass.
 
 ## ThoughtFlow-FP8
 
@@ -161,7 +169,7 @@ Latest recorded result:
 `experimental/local_readiness_recheck_20260507.md`.
 
 ```text
-291 passed, 1 skipped, 2 warnings in 11.63s
+294 passed, 1 skipped, 2 warnings in 7.18s
 ```
 
 Before interpreting any new native packet, rerun the owned Mac suite:

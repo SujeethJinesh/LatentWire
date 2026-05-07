@@ -595,3 +595,17 @@ should avoid reopening RDU/PSI/VWAC as positive methods.
 
 Decision: **THOUGHTFLOW REMAINS PAPER-POLISH ONLY**. The next edit is wording
 and evidence-table tightening, not another sparse-cache signal.
+
+## 2026-05-07 Budget/Packet Claim Boundary Tightening
+
+After COLM-style review, the ThoughtFlow draft and reviewer pack now describe
+the local proxy rows as nominal 0.20-budget controls with achieved keep rates
+reported, rather than exact matched-budget controls. The PSI and VWAC sections
+now state the observed achieved keep rates, and the reproducibility section now
+matches the packet builder: the diagnostic packet hashes saved falsification
+JSON artifacts and preregistrations, while README/progress/reviewer-pack,
+workshop-shell, and Triton-interpreter notes remain separate handoff artifacts.
+
+Decision: **THOUGHTFLOW CLAIMS NOW MATCH THE SAVED ARTIFACTS**. No new sparse
+cache signal or GPU run is justified on the stopped branch; only venue copyedit
+and human review remain.

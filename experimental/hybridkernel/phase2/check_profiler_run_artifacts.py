@@ -1538,6 +1538,7 @@ def check_run_artifacts(
     metric_roles: set[str] = set()
     client_models: set[str] = set()
     client_replay_shapes: set[tuple[str, int, int, int, int]] = set()
+    client_replay_run_shapes: set[tuple[str, str, int, int, int, int]] = set()
     for log_file in log_files:
         if "client" not in log_file.name.lower():
             continue
@@ -1547,7 +1548,13 @@ def check_run_artifacts(
             continue
         if isinstance(payload, dict) and str(payload.get("model", "")).strip():
             client_model = str(payload["model"]).strip()
+            client_run_id = str(payload.get("run_id", "")).strip()
             client_models.add(client_model)
+            if not client_run_id:
+                errors.append(
+                    "client replay log must contain top-level run_id matching "
+                    f"a profiler_metrics.json row: {log_file.name}"
+                )
             requests = payload.get("requests")
             if isinstance(requests, list) and requests:
                 log_shapes: list[tuple[int, int, int]] = []
@@ -1577,6 +1584,17 @@ def check_run_artifacts(
                     client_replay_shapes.add(
                         (client_model, batch_size, prefill_tokens, requested_decode, len(requests))
                     )
+                    if client_run_id:
+                        client_replay_run_shapes.add(
+                            (
+                                client_model,
+                                client_run_id,
+                                batch_size,
+                                prefill_tokens,
+                                requested_decode,
+                                len(requests),
+                            )
+                        )
     metrics_path = run_dir / "profiler_metrics.json"
     _reject_skeleton_todo(metrics_path, "profiler_metrics.json", errors)
     if metrics_path.is_file():
@@ -1665,6 +1683,19 @@ def check_run_artifacts(
                         errors.append(
                             "client replay shape does not match profiler_metrics.json "
                             f"batch_shape for model {model}: expected {replay_shape}"
+                        )
+                    replay_run_shape = (
+                        model,
+                        str(row["run_id"]),
+                        int(float(row["batch_size"])),
+                        int(float(row["prefill_tokens"])),
+                        int(float(row["decode_tokens"])),
+                        int(float(row["requests"])),
+                    )
+                    if replay_run_shape not in client_replay_run_shapes:
+                        errors.append(
+                            "client replay log does not match profiler_metrics.json "
+                            f"run_id and batch_shape: expected {replay_run_shape}"
                         )
             counts = Counter(str(row["model"]) for row in rows)
             model_run_counts = dict(counts)

@@ -125,6 +125,16 @@ def test_hybridkernel_gpu_runbook_pins_post_promotion_quality_smoke() -> None:
         assert "10%" in text
 
 
+def test_hybridkernel_paper_tracks_strict_gpu_packet_provenance() -> None:
+    paper = (EXPERIMENTAL / "hybridkernel/paper/hybridkernel_colm2026.tex").read_text()
+    pack = (EXPERIMENTAL / "hybridkernel/paper/reviewer_pack.md").read_text()
+
+    for text in [paper, pack]:
+        assert "environment.json" in text
+        assert "snapshot manifest" in text.lower() or "snapshot manifests" in text.lower()
+        assert "control_window_ids" in text or "control\\_window\\_ids" in text
+
+
 def test_killed_markers_are_one_page_decision_records() -> None:
     for readme_path in EXPERIMENTAL.glob("KILLED_*/README.md"):
         text = readme_path.read_text()

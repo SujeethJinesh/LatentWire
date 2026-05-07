@@ -33,3 +33,14 @@ def test_paper_has_stable_owned_repro_command_and_local_triton_note() -> None:
     assert "experimental/thoughtflow_fp8/phase4/tests" in paper
     assert "experimental/thoughtflow_fp8/phase4/triton_interpreter_note_20260506.md" in paper
     assert "experimental/triton_cpu_source_install_20260506.md" not in paper
+
+
+def test_paper_reports_nominal_budget_and_packet_boundary() -> None:
+    paper = PAPER.read_text(encoding="utf-8")
+
+    assert "nominal 0.20-budget proxy rows with achieved keep rates reported" in paper
+    assert "Achieved keep rates are\n0.2199" in paper
+    assert "Achieved keep rates are 0.2389" in paper
+    assert "The diagnostic\npacket hashes the saved falsification JSON artifacts and preregistrations" in paper
+    assert "README, progress, reviewer pack, workshop shell" in paper
+    assert "The positive value of the artifact" not in paper

@@ -228,37 +228,15 @@ before any profiling starts and copy the filled row into
 Granite rows is not admissible, and a packet without a preregistered
 cross-family hybrid row remains audit-only.
 
-Create a reduction input manifest before reducing any timeline windows. This
-file is the row-reduction audit trail: every row in `profiler_metrics.json`
-should be traceable to exact Nsight exports, source time windows, commands,
-reducer source paths, and reducer source hashes. If a row is reduced manually,
-record the manual worksheet path inside the packet as `reduction_source_path`
-and its SHA-256 as `reduction_script_sha256`; do not leave analyst-selected
+The packet generator already creates
+`metadata/reduction_input_manifest.json` with one row per expected metric row.
+Do not overwrite it with a one-row TODO manifest. Before reducing any timeline
+windows, fill every generated row so each `profiler_metrics.json` row is
+traceable to exact Nsight exports, source time windows, commands, reducer source
+paths, and reducer source hashes. If a row is reduced manually, record the
+manual worksheet path inside the packet as `reduction_source_path` and the
+worksheet SHA-256 as `reduction_script_sha256`; do not leave analyst-selected
 windows unmanifested.
-
-```bash
-cat > "$HWK_RUN/metadata/reduction_input_manifest.json" <<JSON
-{
-  "manifest_version": "hybridkernel_reduction_inputs_v1",
-  "rows": [
-    {
-      "run_id": "TODO_NATIVE_PROFILE_FILL",
-      "row_role": "primary_hybrid",
-      "model": "$MODEL",
-      "reduction_source_path": "metadata/reduction_worksheet.tsv",
-      "source_nsys_artifact": "nsys/TODO_NATIVE_PROFILE_FILL.sqlite",
-      "source_nsys_artifact_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
-      "source_time_window_ms": {"start": "TODO_NATIVE_PROFILE_FILL", "end": "TODO_NATIVE_PROFILE_FILL"},
-      "source_ncu_artifact": "ncu/TODO_NATIVE_PROFILE_FILL.ncu-rep",
-      "source_ncu_artifact_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
-      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
-      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
-      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
-    }
-  ]
-}
-JSON
-```
 
 Use a row worksheet for every metric row before editing `profiler_metrics.json`.
 The worksheet can be a Markdown file or TSV, but it must be cited by SHA-256 in
@@ -385,6 +363,7 @@ In a second terminal, use the same `RUN_ID`, `MODEL`, and seed:
 ```bash
 python "$HWK_ROOT/phase2/profiler_driver.py" \
   --model "$MODEL" \
+  --run-id "$RUN_ID" \
   --batch-size 1 \
   --prefill-tokens 128 \
   --decode-tokens 64 \
@@ -493,6 +472,7 @@ In a second local terminal on the same NVIDIA host:
 ```bash
 python "$HWK_ROOT/phase2/profiler_driver.py" \
   --model "$MODEL" \
+  --run-id "single_process_b1" \
   --batch-size 1 \
   --prefill-tokens 128 \
   --decode-tokens 64 \
@@ -500,9 +480,9 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --seed 1 \
   --tokenizer "$MODEL" \
   --require-token-counts \
-  > "$HWK_RUN/logs/client_b1.log" \
-  2> "$HWK_RUN/logs/client_b1.stderr.log"
-cat "$HWK_RUN/logs/client_b1.log"
+  > "$HWK_RUN/logs/client_single_process_b1.log" \
+  2> "$HWK_RUN/logs/client_single_process_b1.stderr.log"
+cat "$HWK_RUN/logs/client_single_process_b1.log"
 ```
 
 For the dynamic Nsight capture path above, bracket the replay with vLLM's
@@ -512,6 +492,7 @@ server-side profiling endpoints. This is the preferred command when
 ```bash
 python "$HWK_ROOT/phase2/profiler_driver.py" \
   --model "$MODEL" \
+  --run-id "single_process_b1_profile_bracket" \
   --batch-size 1 \
   --prefill-tokens 128 \
   --decode-tokens 64 \
@@ -520,9 +501,9 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --tokenizer "$MODEL" \
   --require-token-counts \
   --profile-bracket \
-  > "$HWK_RUN/logs/client_b1_profile_bracket.log" \
-  2> "$HWK_RUN/logs/client_b1_profile_bracket.stderr.log"
-cat "$HWK_RUN/logs/client_b1_profile_bracket.log"
+  > "$HWK_RUN/logs/client_single_process_b1_profile_bracket.log" \
+  2> "$HWK_RUN/logs/client_single_process_b1_profile_bracket.stderr.log"
+cat "$HWK_RUN/logs/client_single_process_b1_profile_bracket.log"
 ```
 
 The bracketed driver POSTs `/start_profile` before the fixed request replay
@@ -539,6 +520,7 @@ Mac with:
 ```bash
 ./venv_arm64/bin/python "$HWK_ROOT/phase2/profiler_driver.py" \
   --model "$MODEL" \
+  --run-id "mac_dry_run" \
   --batch-size 1 \
   --prefill-tokens 128 \
   --decode-tokens 64 \
@@ -611,6 +593,7 @@ In a second local terminal, replay the fixed request stream:
 ```bash
 python "$HWK_ROOT/phase2/profiler_driver.py" \
   --model "$MODEL" \
+  --run-id "ncu_suspicious_boundary_kernel" \
   --batch-size 1 \
   --prefill-tokens 128 \
   --decode-tokens 64 \
@@ -710,10 +693,11 @@ three primary rows to clear 3%, and at least three same-shape same-family contro
 three same-shape cross-family falsification rows, with those controls staying
 below the 3% recoverable-gain gate. A packet where controls preserve the same
 3% signal remains audit-only.
-Every model named in `profiler_metrics.json`, including same-family and
+Every row named in `profiler_metrics.json`, including same-family and
 cross-family controls, must have a matching `profiler_driver.py` client replay
-JSON log under `logs/` with the same batch size, uniform per-sample prefill
-token count, decode-token count, and request count. Every replay request must record
+JSON log under `logs/` with the same model, `run_id`, batch size, uniform
+per-sample prefill token count, decode-token count, and request count. Every
+replay request must record
 `batch_size`, `prompt_token_counts`, `prompt_token_count_total`,
 `requested_decode_tokens`, `expected_completion_tokens_total` when available,
 and `response_usage.completion_tokens`; completion tokens must equal
@@ -790,7 +774,7 @@ The verifier checks that the run directory contains:
 - separate Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and
   client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence
   markers, and client replay logs must be valid `profiler_driver.py` JSON with
-  a non-empty top-level `model`, `dry_run: false`, and non-empty `requests`
+  a non-empty top-level `model`, a top-level `run_id`, `dry_run: false`, and non-empty `requests`
   rows whose `status` fields are all `ok`, whose `batch_size` matches
   `prompt_token_counts`, whose prompt counts are uniform within each fixed
   batch, and whose `response_usage.completion_tokens` equals
