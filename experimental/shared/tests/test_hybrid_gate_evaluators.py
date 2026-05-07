@@ -276,8 +276,8 @@ def test_hbsm_b1_evaluator_requires_boundary_enrichment_over_random() -> None:
                 "random_top_decile": index in {0, 1, 2, 30, 31, 32},
                 "train_test_split": "train" if index % 2 == 0 else "test",
                 "control_type": "boundary_only",
-                "cheap_predictor": float(index),
-                "kl_or_nll_drift": float(index),
+                "cheap_predictor": float(100 - index),
+                "kl_or_nll_drift": float(100 - index),
                 "parameter_count": float(index + 100),
                 "weight_norm": float(index + 1),
             }
@@ -337,8 +337,8 @@ def test_hbsm_b1_evaluator_aggregates_prompt_rows_by_layer() -> None:
                     "random_top_decile": layer in {0, 10},
                     "train_test_split": "train" if layer % 2 == 0 else "test",
                     "control_type": "boundary_only",
-                    "cheap_predictor": float(layer),
-                    "kl_or_nll_drift": float(layer),
+                    "cheap_predictor": float(100 - layer),
+                    "kl_or_nll_drift": float(100 - layer),
                     "parameter_count": float(100 + layer),
                     "weight_norm": float(layer),
                 }

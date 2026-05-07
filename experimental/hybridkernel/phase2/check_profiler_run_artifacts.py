@@ -107,6 +107,10 @@ def _has_client_replay_log(log_files: list[Path]) -> bool:
     return any("client" in path.name.lower() for path in log_files)
 
 
+def _positive_int(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+
+
 def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
     for log_file in log_files:
         name = log_file.name.lower()
@@ -176,19 +180,20 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                         batch_size = row.get("batch_size")
                         prompt_total = row.get("prompt_token_count_total")
                         requested_decode = row.get("requested_decode_tokens")
-                        if not isinstance(batch_size, int) or batch_size <= 0:
+                        expected_completion_tokens = row.get("expected_completion_tokens_total")
+                        if not _positive_int(batch_size):
                             errors.append(
                                 f"client replay request {index} must contain positive batch_size"
                             )
                         if (
                             not isinstance(prompt_counts, list)
                             or not prompt_counts
-                            or not all(isinstance(value, int) and value > 0 for value in prompt_counts)
+                            or not all(_positive_int(value) for value in prompt_counts)
                         ):
                             errors.append(
                                 f"client replay request {index} must contain positive prompt_token_counts"
                             )
-                        elif isinstance(batch_size, int) and len(prompt_counts) != batch_size:
+                        elif _positive_int(batch_size) and len(prompt_counts) != batch_size:
                             errors.append(
                                 f"client replay request {index} prompt_token_counts length must equal batch_size"
                             )
@@ -196,20 +201,39 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                             errors.append(
                                 f"client replay request {index} prompt_token_counts must be uniform for fixed-shape replay"
                             )
-                        if not isinstance(prompt_total, int) or prompt_total <= 0:
+                        if not _positive_int(prompt_total):
                             errors.append(
                                 f"client replay request {index} must contain positive prompt_token_count_total"
                             )
                         elif isinstance(prompt_counts, list) and all(
-                            isinstance(value, int) for value in prompt_counts
+                            _positive_int(value) for value in prompt_counts
                         ) and prompt_total != sum(prompt_counts):
                             errors.append(
                                 f"client replay request {index} prompt_token_count_total must equal sum(prompt_token_counts)"
                             )
-                        if not isinstance(requested_decode, int) or requested_decode <= 0:
+                        if not _positive_int(requested_decode):
                             errors.append(
                                 f"client replay request {index} must contain positive requested_decode_tokens"
                             )
+                        if not _positive_int(expected_completion_tokens):
+                            errors.append(
+                                f"client replay request {index} must contain positive expected_completion_tokens_total"
+                            )
+                        if (
+                            _positive_int(batch_size)
+                            and _positive_int(requested_decode)
+                        ):
+                            computed_completion_tokens = batch_size * requested_decode
+                            if (
+                                _positive_int(expected_completion_tokens)
+                                and expected_completion_tokens != computed_completion_tokens
+                            ):
+                                errors.append(
+                                    f"client replay request {index} expected_completion_tokens_total "
+                                    "must equal batch_size * requested_decode_tokens"
+                                )
+                        else:
+                            computed_completion_tokens = None
                         response_usage = row.get("response_usage")
                         if not isinstance(response_usage, dict):
                             errors.append(
@@ -217,13 +241,17 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                             )
                         else:
                             completion_tokens = response_usage.get("completion_tokens")
-                            if not isinstance(completion_tokens, int) or completion_tokens <= 0:
+                            if not _positive_int(completion_tokens):
                                 errors.append(
                                     f"client replay request {index} response_usage.completion_tokens must be positive"
                                 )
-                            elif isinstance(requested_decode, int) and completion_tokens != requested_decode:
+                            elif (
+                                isinstance(computed_completion_tokens, int)
+                                and completion_tokens != computed_completion_tokens
+                            ):
                                 errors.append(
-                                    f"client replay request {index} completion_tokens must equal requested_decode_tokens"
+                                    f"client replay request {index} completion_tokens must equal "
+                                    "batch_size * requested_decode_tokens"
                                 )
 
 
@@ -696,6 +724,7 @@ def check_run_artifacts(
             client_models.add(client_model)
             requests = payload.get("requests")
             if isinstance(requests, list) and requests:
+                log_shapes: list[tuple[int, int, int]] = []
                 for request in requests:
                     if not isinstance(request, dict):
                         continue
@@ -703,19 +732,25 @@ def check_run_artifacts(
                     prompt_counts = request.get("prompt_token_counts")
                     requested_decode = request.get("requested_decode_tokens")
                     if (
-                        isinstance(batch_size, int)
-                        and batch_size > 0
-                        and not isinstance(batch_size, bool)
+                        _positive_int(batch_size)
                         and isinstance(prompt_counts, list)
                         and len(prompt_counts) == batch_size
-                        and all(isinstance(value, int) and value > 0 for value in prompt_counts)
+                        and all(_positive_int(value) for value in prompt_counts)
                         and len(set(prompt_counts)) == 1
-                        and isinstance(requested_decode, int)
-                        and requested_decode > 0
+                        and _positive_int(requested_decode)
                     ):
-                        client_replay_shapes.add(
-                            (client_model, batch_size, int(prompt_counts[0]), requested_decode, len(requests))
-                        )
+                        log_shapes.append((batch_size, int(prompt_counts[0]), requested_decode))
+                distinct_log_shapes = set(log_shapes)
+                if len(distinct_log_shapes) > 1:
+                    errors.append(
+                        "client replay log must use one fixed request shape: "
+                        f"{log_file.name}"
+                    )
+                elif len(log_shapes) == len(requests) and distinct_log_shapes:
+                    batch_size, prefill_tokens, requested_decode = log_shapes[0]
+                    client_replay_shapes.add(
+                        (client_model, batch_size, prefill_tokens, requested_decode, len(requests))
+                    )
     metrics_path = run_dir / "profiler_metrics.json"
     _reject_skeleton_todo(metrics_path, "profiler_metrics.json", errors)
     if metrics_path.is_file():

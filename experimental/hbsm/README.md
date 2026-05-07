@@ -70,6 +70,10 @@ rows still need prompt-level boundary/non-boundary layer coverage, true
 top-decile cardinality `ceil(0.10 * scoring_layers)`, a same-count random
 baseline that is not enriched, and both train/test split rows unless the packet
 records a resource-limit note.
+The B1 evaluator derives measured top-decile membership from aggregated
+`kl_or_nll_drift`; the checker rejects packets whose supplied
+`top_decile_flag` values disagree with that measured ranking, including any
+individual prompt row inside a measured top layer.
 Convert saved B1 sensitivity rows with
 `experimental.shared.hybrid_trace_packet_builder --project hbsm --row-packet
 ...` before validation.

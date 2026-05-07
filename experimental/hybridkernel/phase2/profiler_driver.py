@@ -26,6 +26,7 @@ class RequestRow:
     prompt_token_counts: list[int] | None
     prompt_token_count_total: int | None
     requested_decode_tokens: int
+    expected_completion_tokens_total: int
     response_usage: dict[str, Any] | None
     elapsed_s: float | None
     status: str
@@ -42,6 +43,8 @@ def _payload(model: str, prompt: str | list[str], decode_tokens: int, seed: int)
         "model": model,
         "prompt": prompt,
         "max_tokens": decode_tokens,
+        "min_tokens": decode_tokens,
+        "ignore_eos": True,
         "temperature": 0.0,
         "seed": seed,
         "stream": False,
@@ -134,6 +137,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                         prompt_token_counts=prompt_token_counts,
                         prompt_token_count_total=sum(prompt_token_counts) if prompt_token_counts else None,
                         requested_decode_tokens=args.decode_tokens,
+                        expected_completion_tokens_total=args.batch_size * args.decode_tokens,
                         response_usage=None,
                         elapsed_s=None,
                         status="dry_run",
@@ -159,6 +163,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                     prompt_token_counts=prompt_token_counts,
                     prompt_token_count_total=sum(prompt_token_counts) if prompt_token_counts else None,
                     requested_decode_tokens=args.decode_tokens,
+                    expected_completion_tokens_total=args.batch_size * args.decode_tokens,
                     response_usage=response_usage,
                     elapsed_s=time.perf_counter() - start,
                     status=status,

@@ -134,8 +134,9 @@ placeholder profiler exports, UTF-8/plain-text fake profiler files, and SHA-256
 mismatches are rejected. It also checks the client replay batch/per-sample
 prefill/decode/request shape against metric rows for models present in the
 client logs, requires uniform prompt counts within each fixed batch, and
-requires replay `response_usage.completion_tokens` to equal the requested decode
-length.
+requires replay `response_usage.completion_tokens` to equal
+`batch_size * requested_decode_tokens`, and records
+`expected_completion_tokens_total` when emitted by `profiler_driver.py`.
 
 ## Final Local Commands
 

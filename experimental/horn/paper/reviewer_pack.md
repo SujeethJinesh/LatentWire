@@ -24,8 +24,8 @@ asymmetry.
 |---|---|---|
 | Benchmarks | H1/H2 should use reasoning traces plus WikiText/GSM-style drift controls, but no live hybrid activations have been dumped yet. | Gate pending. |
 | Ablations | Required controls are explicit boundary maps, non-boundary adjacent pairs, matched normalization placement, direction-label permutation, and pure-architecture controls. | Adequate before real H1. |
-| Correctness | The checker now requires at least 12 prompts unless resource-limited, both boundary directions, both-direction non-boundary controls, finite numeric fields, 64-hex prompt/architecture provenance, recomputed H1 `summary.json` gate aggregates, and each permuted-direction row matching an observed prompt/boundary/norm tuple while reusing the same metrics and flipping only the direction label. Near-boundary non-boundary controls block promotion. | Artifact path is hardened. |
-| Reproducibility | Synthetic H1 packet is deterministic, and shared architecture maps fix boundary IDs. | Not model evidence. |
+| Correctness | The checker now requires at least 12 prompts unless resource-limited, both boundary directions, per-prompt both-direction non-boundary controls through `matched_boundary_direction`, finite numeric fields, 64-hex prompt/architecture provenance, recomputed H1a `summary.json` gate aggregates, and each permuted-direction row matching an observed prompt/boundary/norm tuple while reusing the same metrics and flipping the actual `direction` label. Near-boundary non-boundary controls block promotion. | Artifact path is hardened. |
+| Reproducibility | The 72-row synthetic H1a real-schema rehearsal is deterministic, passes the real checker in non-promoting mode, and shared architecture maps fix boundary IDs. | Not model evidence. |
 | Novelty | The proposed wedge is directional propagation through hybrid boundaries, not generic activation-outlier measurement. | Plausible only if H1/H2/H3 pass. |
 | Camera-readiness | The draft is a preregistration shell. It needs real H1/H2/H3 tables before submission as a method or measurement paper. | Not camera-ready. |
 
@@ -33,14 +33,16 @@ asymmetry.
 
 | Gate | Result | Decision |
 |---|---|---|
-| synthetic H1 | SSM-to-attention / attention-to-SSM max ratio 3.775, kurtosis ratio 7.139 | validates readout only |
+| synthetic H1a schema rehearsal | 72 real-schema rows, selected max-abs ratio 4.044, non-boundary control ratio 1.042, permuted control ratio 0.247, real checker passes with `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A` | validates packet contract only |
 | architecture provenance | shared boundary IDs and direction counts exist | packet provenance ready |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
 | real-packet checker | rejects missing directions, stale summary fields, too few prompts, non-finite rows, promotable resource-limited decisions, unpaired or independently measured permuted controls, near-boundary non-boundary controls, and permuted controls that preserve the selected directional effect | ready for real H1 |
 
-The required matched flipped controls are the `permuted_direction` rows: they
+Non-boundary rows may retain their true architecture direction while using
+`matched_boundary_direction` to identify the boundary direction they control
+for, and this pairing is required for both directions on every prompt. The required matched flipped controls are the `permuted_direction` rows: they
 must reuse an observed boundary tuple with the same prompt ID and normalization
-positions, then invert only the direction label. The H1a evaluator records
+positions, then invert the actual `direction` label. The H1a evaluator records
 selected-direction control ratios, so it rejects controls that keep the
 high-magnitude signal on the same direction label. A faithful label flip that
 preserves unsigned max/min asymmetry but moves the signal to the opposite label

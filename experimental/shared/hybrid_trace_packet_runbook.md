@@ -98,7 +98,8 @@ two hybrid models with the same selected direction and clean H3 controls.
 
 Minimum admissible row fields:
 
-- `model_id`, `layer_left`, `layer_right`, `direction`, `boundary_index`
+- `model_id`, `layer_left`, `layer_right`, `direction`,
+  `matched_boundary_direction`, `boundary_index`
 - `prompt_id`, `pre_norm_position`, `post_norm_position`, `max_abs`, `rms`,
   `kurtosis`
 - `control_type` in `boundary`, `non_boundary`, or `permuted_direction`
@@ -109,12 +110,17 @@ Required controls:
 - direction-label permutation matched to an observed boundary tuple, including
   `prompt_id`, boundary index, layer IDs, and matched normalization positions;
 - at least one `attention->ssm` boundary and one `ssm->attention` boundary;
-- non-boundary and permuted controls must each include both direction labels;
+- non-boundary and permuted controls must each match both boundary directions;
+  non-boundary rows may retain their true architecture direction, such as
+  `ssm->ssm`, while `matched_boundary_direction` records the boundary
+  direction they control for, and both matched non-boundary directions are
+  required for every prompt;
 - the non-boundary and permuted controls must erase the selected high-magnitude
   direction label; a faithful label flip may preserve unsigned max/min
   asymmetry while moving the signal to the opposite label;
 - permuted controls must reuse the observed boundary metrics and flip only the
-  direction label;
+  actual `direction` label; for permuted rows `matched_boundary_direction`
+  must be absent or equal to that flipped label;
 - non-boundary controls must stay below the selected H1 threshold, not merely
   below the measured boundary ratio;
 - matched normalization placement.
@@ -163,8 +169,10 @@ Required controls:
 - every `boundary_only` prompt must include boundary and non-boundary layers;
 - B1 scoring aggregates `boundary_only` prompt rows to one row per
   `(model_id, layer)` before computing top-decile enrichment;
-- `top_decile_flag=true` and `random_top_decile=true` counts must each equal
-  `ceil(0.10 * scoring_layers)`;
+- measured `top_decile_flag=true` and `random_top_decile=true` counts must
+  each equal `ceil(0.10 * scoring_layers)`;
+- supplied `top_decile_flag` values must match the top scoring layers derived
+  from aggregated `kl_or_nll_drift` for every `boundary_only` prompt row;
 - random top-decile flags must not reproduce the boundary enrichment;
 - both `train` and `test` split rows, unless a resource-limit note is present;
 - train/test layer split if layer count permits.

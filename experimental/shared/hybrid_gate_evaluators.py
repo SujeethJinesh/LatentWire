@@ -222,14 +222,23 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _horn_direction_label(row: dict[str, Any]) -> str:
+    control_type = str(row.get("control_type", ""))
+    if control_type == "non_boundary":
+        matched = str(row.get("matched_boundary_direction", "")).strip()
+        if matched:
+            return matched
+    return str(row["direction"])
+
+
 def _direction_metric_means(
     rows: list[dict[str, Any]],
     *,
     field: str,
 ) -> dict[str, float]:
-    directions = sorted({str(row["direction"]) for row in rows})
+    directions = sorted({_horn_direction_label(row) for row in rows})
     return {
-        direction: _mean([float(row[field]) for row in rows if str(row["direction"]) == direction])
+        direction: _mean([float(row[field]) for row in rows if _horn_direction_label(row) == direction])
         for direction in directions
     }
 
@@ -277,7 +286,7 @@ def _selected_direction_control_ratio(
 
 
 def _direction_count(rows: list[dict[str, Any]], *, control_type: str) -> int:
-    return len({str(row.get("direction")) for row in rows if str(row.get("control_type")) == control_type})
+    return len({_horn_direction_label(row) for row in rows if str(row.get("control_type")) == control_type})
 
 
 def _prompt_direction_ratio_low(
@@ -492,6 +501,33 @@ def _aggregate_hbsm_primary_rows(rows: list[dict[str, Any]]) -> list[dict[str, A
     return aggregated
 
 
+def _derive_hbsm_top_decile(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if not rows:
+        return []
+    expected_top_decile_count = math.ceil(0.10 * len(rows))
+    ranked = sorted(
+        rows,
+        key=lambda row: (
+            -float(row["kl_or_nll_drift"]),
+            str(row["model_id"]),
+            int(row["layer"]),
+        ),
+    )
+    measured_top_keys = {
+        (str(row["model_id"]), int(row["layer"]))
+        for row in ranked[:expected_top_decile_count]
+    }
+    derived: list[dict[str, Any]] = []
+    for row in rows:
+        copied = dict(row)
+        copied["top_decile_flag"] = (
+            str(row["model_id"]),
+            int(row["layer"]),
+        ) in measured_top_keys
+        derived.append(copied)
+    return derived
+
+
 def _hbsm_control_spearman(rows: list[dict[str, Any]], control_type: str) -> float:
     control_rows = [row for row in rows if str(row.get("control_type")) == control_type]
     if len(control_rows) < 2:
@@ -507,6 +543,7 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
     primary_rows = [row for row in rows if str(row["control_type"]) == "boundary_only"]
     scoring_rows = _aggregate_hbsm_primary_rows(primary_rows) if primary_rows else rows
+    scoring_rows = _derive_hbsm_top_decile(scoring_rows)
     expected_top_decile_count = math.ceil(0.10 * len(scoring_rows)) if scoring_rows else 0
     top_count = sum(1 for row in scoring_rows if row["top_decile_flag"])
     random_count = sum(1 for row in scoring_rows if row["random_top_decile"])

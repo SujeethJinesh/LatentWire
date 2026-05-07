@@ -54,6 +54,7 @@ REAL_ROW_FIELDS = {
         "layer_left",
         "layer_right",
         "direction",
+        "matched_boundary_direction",
         "boundary_index",
         "pre_norm_position",
         "post_norm_position",
@@ -256,9 +257,33 @@ def _hbsm_aggregated_primary_rows(rows: list[dict[str, Any]]) -> list[dict[str, 
                 "boundary_flag": any(bool(row["boundary_flag"]) for row in layer_rows),
                 "top_decile_flag": any(bool(row["top_decile_flag"]) for row in layer_rows),
                 "random_top_decile": any(bool(row["random_top_decile"]) for row in layer_rows),
+                "kl_or_nll_drift": sum(float(row["kl_or_nll_drift"]) for row in layer_rows) / len(layer_rows),
             }
         )
     return aggregated
+
+
+def _hbsm_measured_top_decile_keys(rows: list[dict[str, Any]]) -> set[tuple[str, int]]:
+    expected_top_decile_count = math.ceil(0.10 * len(rows)) if rows else 0
+    ranked = sorted(
+        rows,
+        key=lambda row: (
+            -float(row["kl_or_nll_drift"]),
+            str(row["model_id"]),
+            int(row["layer"]),
+        ),
+    )
+    return {
+        (str(row["model_id"]), int(row["layer"]))
+        for row in ranked[:expected_top_decile_count]
+    }
+
+
+def _horn_matched_direction(row: dict[str, Any]) -> str:
+    control_type = str(row.get("control_type", ""))
+    if control_type == "non_boundary":
+        return str(row.get("matched_boundary_direction", "")).strip()
+    return str(row.get("direction", "")).strip()
 
 
 def _resource_limited(config: dict[str, Any]) -> bool:
@@ -588,16 +613,43 @@ def _validate_real_coverage(
                 "horn real packet missing boundary directions: "
                 + ", ".join(sorted(missing_directions))
             )
+        boundary_prompt_directions: dict[str, set[str]] = {}
+        for row in boundary_rows:
+            boundary_prompt_directions.setdefault(str(row.get("prompt_id")), set()).add(
+                str(row.get("direction"))
+            )
+        incomplete_boundary_prompts = [
+            prompt_id
+            for prompt_id, observed in boundary_prompt_directions.items()
+            if not {"attention->ssm", "ssm->attention"}.issubset(observed)
+        ]
+        if incomplete_boundary_prompts:
+            errors.append("horn boundary rows must include both directions for every prompt")
         for control_type in ("non_boundary", "permuted_direction"):
             control_directions = {
-                str(row.get("direction"))
+                _horn_matched_direction(row)
                 for row in rows
                 if str(row.get("control_type")) == control_type
             }
             if not {"attention->ssm", "ssm->attention"}.issubset(control_directions):
                 errors.append(
-                    f"horn {control_type} controls must include both attention->ssm and ssm->attention labels"
+                    f"horn {control_type} controls must match both attention->ssm and ssm->attention boundary directions"
                 )
+        non_boundary_prompt_directions: dict[str, set[str]] = {}
+        for row in rows:
+            if str(row.get("control_type")) == "non_boundary":
+                non_boundary_prompt_directions.setdefault(str(row.get("prompt_id")), set()).add(
+                    _horn_matched_direction(row)
+                )
+        incomplete_non_boundary_prompts = [
+            prompt_id
+            for prompt_id in boundary_prompt_directions
+            if not {"attention->ssm", "ssm->attention"}.issubset(
+                non_boundary_prompt_directions.get(prompt_id, set())
+            )
+        ]
+        if incomplete_non_boundary_prompts:
+            errors.append("horn non_boundary controls must match both boundary directions for every prompt")
         boundary_by_key = {
             (
                 row.get("prompt_id"),
@@ -623,9 +675,13 @@ def _validate_real_coverage(
             original = boundary_by_key.get(key)
             if original is None:
                 errors.append("horn permuted_direction row must match an observed boundary tuple")
-            elif str(row.get("direction")) == str(original.get("direction")):
-                errors.append("horn permuted_direction row must flip the observed boundary direction")
             else:
+                actual_direction = str(row.get("direction", "")).strip()
+                matched_direction = str(row.get("matched_boundary_direction", actual_direction)).strip()
+                if actual_direction == str(original.get("direction")):
+                    errors.append("horn permuted_direction row must flip the observed boundary direction")
+                if matched_direction and matched_direction != actual_direction:
+                    errors.append("horn permuted_direction matched_boundary_direction must equal flipped direction")
                 for field in ("max_abs", "rms", "kurtosis"):
                     value = row.get(field)
                     original_value = original.get(field)
@@ -678,6 +734,26 @@ def _validate_real_coverage(
         top_decile_count = sum(1 for row in scoring_rows if row.get("top_decile_flag") is True)
         random_top_decile_count = sum(1 for row in scoring_rows if row.get("random_top_decile") is True)
         expected_top_decile_count = math.ceil(0.10 * len(scoring_rows)) if scoring_rows else 0
+        measured_top_keys = _hbsm_measured_top_decile_keys(scoring_rows)
+        supplied_top_keys = {
+            (str(row["model_id"]), int(row["layer"]))
+            for row in scoring_rows
+            if row.get("top_decile_flag") is True
+        }
+        if supplied_top_keys != measured_top_keys:
+            errors.append("hbsm boundary_only top_decile_flag must match measured kl_or_nll_drift top decile")
+        mismatched_prompt_top_flags = [
+            (str(row.get("model_id")), int(row["layer"]), str(row.get("prompt_id")))
+            for row in primary_rows
+            if isinstance(row.get("top_decile_flag"), bool)
+            and bool(row["top_decile_flag"]) != (
+                (str(row.get("model_id")), int(row["layer"])) in measured_top_keys
+            )
+        ]
+        if mismatched_prompt_top_flags:
+            errors.append(
+                "hbsm every boundary_only prompt row top_decile_flag must match measured kl_or_nll_drift top decile"
+            )
         if top_decile_count != expected_top_decile_count:
             errors.append(
                 "hbsm boundary_only top_decile_flag true count must equal ceil(10% of aggregated primary layers)"

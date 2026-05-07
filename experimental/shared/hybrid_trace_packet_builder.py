@@ -197,6 +197,9 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
                 "layer_left": int(entry["layer_left"]),
                 "layer_right": int(entry["layer_right"]),
                 "direction": str(entry["direction"]),
+                "matched_boundary_direction": str(
+                    entry.get("matched_boundary_direction", entry["direction"])
+                ),
                 "boundary_index": int(entry["boundary_index"]),
                 "pre_norm_position": str(entry["pre_norm_position"]),
                 "post_norm_position": str(entry["post_norm_position"]),

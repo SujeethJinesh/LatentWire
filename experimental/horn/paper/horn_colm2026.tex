@@ -29,11 +29,13 @@ hybrid-model repeats while weakening on pure-attention and pure-Mamba controls.
 
 \section{Mac Artifact Status}
 
-A deterministic synthetic H1 packet validates the directional-boundary readout.
-It reports SSM-to-attention over attention-to-SSM max ratio 3.775 and kurtosis
-ratio 7.139, producing
-\texttt{SYNTHETIC\_PASS\_REAL\_BOUNDARY\_DUMPS\_NEXT}. This is synthetic-only:
-it is not model evidence, not a quantization-noise result, and not GPU evidence.
+A deterministic synthetic H1a packet validates the directional-boundary
+real-schema contract. It emits 72 rows, selected max-abs ratio 4.044,
+non-boundary selected-direction control ratio 1.042, and permuted
+selected-direction control ratio 0.247, producing
+\texttt{SCHEMA\_REHEARSAL\_NOT\_PROMOTABLE\_SYNTHETIC\_HORN\_H1A}. This is
+synthetic-only: it is not model evidence, not a quantization-noise result, and
+not GPU evidence.
 The metadata-only model eligibility packet identifies live hybrid targets and
 records architecture-map hashes for admissible packets, but no target weights
 are cached repo-locally, so HORN has not yet produced real boundary rows on the
@@ -52,14 +54,18 @@ H1a boundary-activation packet.
 The real H1a/H1 packet must use the shared config-derived architecture maps rather
 than substring-only module classification. Each row must report
 \texttt{model\_id}, \texttt{prompt\_id}, adjacent layer IDs, \texttt{direction},
-\texttt{boundary\_index}, normalization placement, \texttt{max\_abs},
+\texttt{matched\_boundary\_direction}, \texttt{boundary\_index}, normalization placement, \texttt{max\_abs},
 \texttt{rms}, \texttt{kurtosis}, and \texttt{control\_type}. The required
 controls are boundary rows, non-boundary adjacent rows, and permuted-direction
 rows. A valid packet must cover both \texttt{attention->ssm} and
-\texttt{ssm->attention} in boundary rows and in the control rows; each
+\texttt{ssm->attention} in boundary rows and in matched control labels.
+Non-boundary controls may retain their true architecture direction, such as
+\texttt{ssm->ssm}, while \texttt{matched\_boundary\_direction} records the
+boundary direction they control for, and both matched directions must appear
+for every prompt; each
 permuted-direction row must match an observed boundary tuple with the same
 prompt ID, layer IDs, normalization positions, and measured metrics while
-flipping its direction label only. It cannot
+flipping the actual \texttt{direction} label only. It cannot
 pass if the permuted controls preserve the selected high-magnitude direction;
 a faithful label flip may preserve unsigned asymmetry while moving the signal
 to the opposite label. Non-boundary controls must stay below the selected H1

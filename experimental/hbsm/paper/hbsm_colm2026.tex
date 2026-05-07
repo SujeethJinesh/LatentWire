@@ -37,6 +37,10 @@ scoring layers. The packet passes the real checker in non-promoting mode with
 \texttt{SCHEMA\_REHEARSAL\_NOT\_PROMOTABLE\_SYNTHETIC\_HBSM\_B1}. This is
 synthetic-only: it is not model evidence, not a novelty claim, and not GPU
 evidence.
+The evaluator derives measured top-decile membership from aggregated
+\texttt{kl\_or\_nll\_drift}; supplied \texttt{top\_decile\_flag} values are
+accepted only when they match that measured ranking for every prompt row inside
+each measured layer.
 The metadata-only model eligibility packet identifies the current live hybrid
 targets and architecture hashes, but no corresponding weights are cached
 repo-locally. HBSM therefore has no real forward-sensitivity evidence on this
@@ -63,11 +67,14 @@ The packet must include \texttt{prompt\_ids\_hash},
 \texttt{experimental.shared.check\_gate\_packet --mode real --project hbsm}.
 The checker requires both true and false boundary flags, finite sensitivity and
 predictor fields, all listed controls, and a perturbation-off row whose drift is
-near zero. It also requires exact top-decile cardinality
+near zero. It also requires exact measured top-decile cardinality
 \(\lceil 0.10\cdot\mathrm{scoring\ layers}\rceil\), where scoring aggregates
-primary prompt rows to one row per \texttt{(model\_id, layer)}, an equally sized random baseline
-that is not enriched, KL-style and activation/outlier comparator controls, and
-both train and test split rows unless the packet records an explicit resource limit.
+primary prompt rows to one row per \texttt{(model\_id, layer)}, agreement
+between supplied top-decile labels and measured drift ranking on every prompt
+row, an equally sized
+random baseline that is not enriched, KL-style and activation/outlier comparator
+controls, and both train and test split rows unless the packet records an
+explicit resource limit.
 Any resource-limited packet must use a
 \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The summary must include
 primary-row, scoring-layer, and prompt counts; top-decile count; random

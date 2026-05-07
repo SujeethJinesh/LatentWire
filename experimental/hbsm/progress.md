@@ -94,8 +94,8 @@ HORN/SSQ-LR rather than as a standalone paper result.
 
 The real-packet checker now enforces those comparator rows explicitly through
 `kl_lens_rank` and `activation_outlier` controls, and it rejects inflated
-"top-decile" sets by requiring exactly `ceil(10% of primary rows)` true flags
-for both measured and random top-decile rows.
+"top-decile" sets by requiring exactly `ceil(10% of aggregated scoring layers)`
+true flags for both measured and random top-decile rows.
 
 Decision: **HBSM NEEDS REAL B1 PLUS KL-LENS/OUTLIER BASELINES TO STAY
 STANDALONE**. The blocker remains a live layer-sensitivity sweep.
@@ -108,6 +108,12 @@ non-promoting real-schema rehearsal with `schema_rehearsal: true` and decision
 counts top-decile and random-top-decile cardinality on aggregated
 `(model_id, layer)` scoring rows, matching the B1 evaluator and paper contract,
 rather than on raw prompt rows.
+
+The evaluator now derives B1 measured top-decile membership from aggregated
+`kl_or_nll_drift` rather than trusting caller-supplied labels. The real checker
+still requires supplied `top_decile_flag` fields for auditability, but rejects a
+packet if those fields disagree with the measured drift ranking on any
+individual `boundary_only` prompt row.
 
 Decision: **HBSM PACKET PLUMBING IS READY FOR A REAL SENSITIVITY TABLE**. The
 blocker is still a live hybrid forward-sensitivity sweep with the same controls.

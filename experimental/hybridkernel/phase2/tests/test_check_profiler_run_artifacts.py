@@ -72,6 +72,7 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                         "prompt_token_counts": [128],
                         "prompt_token_count_total": 128,
                         "requested_decode_tokens": 64,
+                        "expected_completion_tokens_total": 64,
                         "response_usage": {"completion_tokens": 64},
                     }
                     for _ in range(16)
@@ -324,6 +325,7 @@ def test_rejects_client_replay_shape_mismatch(tmp_path: Path) -> None:
                         "prompt_token_counts": [127],
                         "prompt_token_count_total": 127,
                         "requested_decode_tokens": 64,
+                        "expected_completion_tokens_total": 64,
                         "response_usage": {"completion_tokens": 64},
                     }
                     for _ in range(16)
@@ -350,7 +352,70 @@ def test_rejects_client_replay_completion_length_mismatch(tmp_path: Path) -> Non
     result = check_run_artifacts(tmp_path)
 
     assert result["status"] == "FAIL"
-    assert any("completion_tokens must equal requested_decode_tokens" in error for error in result["errors"])
+    assert any("completion_tokens must equal batch_size * requested_decode_tokens" in error for error in result["errors"])
+
+
+def test_rejects_client_replay_expected_completion_total_mismatch(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    log_path = tmp_path / "logs/client_replay_b1.log"
+    payload = json.loads(log_path.read_text(encoding="utf-8"))
+    payload["requests"][0]["expected_completion_tokens_total"] = 65
+    log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "expected_completion_tokens_total must equal batch_size * requested_decode_tokens" in error
+        for error in result["errors"]
+    )
+
+
+def test_rejects_client_replay_without_expected_completion_total(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    log_path = tmp_path / "logs/client_replay_b1.log"
+    payload = json.loads(log_path.read_text(encoding="utf-8"))
+    del payload["requests"][0]["expected_completion_tokens_total"]
+    log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("positive expected_completion_tokens_total" in error for error in result["errors"])
+
+
+def test_rejects_client_replay_boolean_integer_fields(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    log_path = tmp_path / "logs/client_replay_b1.log"
+    payload = json.loads(log_path.read_text(encoding="utf-8"))
+    payload["requests"][0]["batch_size"] = True
+    payload["requests"][1]["requested_decode_tokens"] = True
+    payload["requests"][2]["response_usage"] = {"completion_tokens": True}
+    log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("positive batch_size" in error for error in result["errors"])
+    assert any("positive requested_decode_tokens" in error for error in result["errors"])
+    assert any("response_usage.completion_tokens must be positive" in error for error in result["errors"])
+
+
+def test_rejects_client_replay_mixed_request_shapes(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    log_path = tmp_path / "logs/client_replay_b1.log"
+    payload = json.loads(log_path.read_text(encoding="utf-8"))
+    payload["requests"][1]["batch_size"] = 8
+    payload["requests"][1]["prompt_token_counts"] = [128] * 8
+    payload["requests"][1]["prompt_token_count_total"] = 1024
+    payload["requests"][1]["expected_completion_tokens_total"] = 512
+    payload["requests"][1]["response_usage"] = {"completion_tokens": 512}
+    log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("one fixed request shape" in error for error in result["errors"])
 
 
 def test_rejects_client_replay_batch_size_mismatch(tmp_path: Path) -> None:
@@ -385,6 +450,8 @@ def test_accepts_batch_replay_with_per_sample_prefill_tokens(tmp_path: Path) -> 
         request["batch_size"] = 8
         request["prompt_token_counts"] = [128] * 8
         request["prompt_token_count_total"] = 1024
+        request["expected_completion_tokens_total"] = 512
+        request["response_usage"] = {"completion_tokens": 512}
     log_path.write_text(json.dumps(log_payload) + "\n", encoding="utf-8")
 
     metrics_path = tmp_path / "profiler_metrics.json"

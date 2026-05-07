@@ -396,6 +396,7 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
         '"layer_left": 0, '
         '"layer_right": 1, '
         '"direction": "attention->ssm", '
+        '"matched_boundary_direction": "attention->ssm", '
         '"boundary_index": 0, '
         '"pre_norm_position": "post_norm", '
         '"post_norm_position": "pre_norm", '
@@ -439,6 +440,7 @@ def test_gate_packet_checker_rejects_unpaired_horn_permuted_prompt(tmp_path: Pat
             ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction", f"other{prompt_index}"),
             ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction", f"other{prompt_index}"),
         ]:
+            actual_direction = "ssm->ssm" if control_type == "non_boundary" else direction
             tensor_name = f"{stem}_p{prompt_index}"
             entries.append(
                 {
@@ -446,7 +448,8 @@ def test_gate_packet_checker_rejects_unpaired_horn_permuted_prompt(tmp_path: Pat
                     "prompt_id": prompt_id,
                     "layer_left": layer_left,
                     "layer_right": layer_right,
-                    "direction": direction,
+                    "direction": actual_direction,
+                    "matched_boundary_direction": direction,
                     "boundary_index": boundary_index,
                     "pre_norm_position": "post_norm",
                     "post_norm_position": "pre_norm",
@@ -637,6 +640,7 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
             ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction"),
             ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction"),
         ]:
+            actual_direction = "ssm->ssm" if control_type == "non_boundary" else direction
             tensor_name = f"{stem}_p{prompt_index}"
             entries.append(
                 {
@@ -644,7 +648,8 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
                     "prompt_id": f"p{prompt_index}",
                     "layer_left": layer_left,
                     "layer_right": layer_right,
-                    "direction": direction,
+                    "direction": actual_direction,
+                    "matched_boundary_direction": direction,
                     "boundary_index": boundary_index,
                     "pre_norm_position": "post_norm",
                     "post_norm_position": "pre_norm",
@@ -668,6 +673,110 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     assert report["row_count"] == 72
 
 
+def test_gate_packet_checker_rejects_horn_permuted_without_actual_direction_flip(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "horn_fake_flip"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for stem, layer_left, layer_right, direction, boundary_index, control_type in [
+            ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary"),
+            ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary"),
+            ("non_boundary_attn_ssm", 4, 5, "attention->ssm", 2, "non_boundary"),
+            ("non_boundary_ssm_attn", 6, 7, "ssm->attention", 3, "non_boundary"),
+            ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction"),
+            ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction"),
+        ]:
+            actual_direction = "ssm->ssm" if control_type == "non_boundary" else direction
+            tensor_name = f"{stem}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer_left": layer_left,
+                    "layer_right": layer_right,
+                    "direction": actual_direction,
+                    "matched_boundary_direction": direction,
+                    "boundary_index": boundary_index,
+                    "pre_norm_position": "post_norm",
+                    "post_norm_position": "pre_norm",
+                    "control_type": control_type,
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+        tensors[f"permuted_attn_ssm_p{prompt_index}"] = tensors[f"boundary_attn_ssm_p{prompt_index}"].clone()
+        tensors[f"permuted_ssm_attn_p{prompt_index}"] = tensors[f"boundary_ssm_attn_p{prompt_index}"].clone()
+    metadata["horn_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_horn_packet(tensor_packet, output_dir)
+
+    raw_rows_path = output_dir / "raw_rows.jsonl"
+    rows = [json.loads(line) for line in raw_rows_path.read_text(encoding="utf-8").splitlines()]
+    for row in rows:
+        if row["control_type"] == "permuted_direction" and row["boundary_index"] == 0:
+            row["direction"] = "attention->ssm"
+            row["matched_boundary_direction"] = "ssm->attention"
+            break
+    raw_rows_path.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n", encoding="utf-8")
+
+    report = validate_gate_packet(output_dir, mode="real", project="horn")
+
+    assert not report["ok"]
+    assert any("must flip the observed boundary direction" in error for error in report["errors"])
+    assert any("matched_boundary_direction must equal flipped direction" in error for error in report["errors"])
+
+
+def test_gate_packet_checker_rejects_horn_unpaired_non_boundary_prompt(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "horn_bad_non_boundary_pair"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        non_boundary_specs = [
+            ("non_boundary_attn_ssm", 4, 5, "attention->ssm", 2, "non_boundary"),
+        ]
+        if prompt_index != 0:
+            non_boundary_specs.append(
+                ("non_boundary_ssm_attn", 6, 7, "ssm->attention", 3, "non_boundary")
+            )
+        for stem, layer_left, layer_right, direction, boundary_index, control_type in [
+            ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary"),
+            ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary"),
+            *non_boundary_specs,
+            ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction"),
+            ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction"),
+        ]:
+            actual_direction = "ssm->ssm" if control_type == "non_boundary" else direction
+            tensor_name = f"{stem}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer_left": layer_left,
+                    "layer_right": layer_right,
+                    "direction": actual_direction,
+                    "matched_boundary_direction": direction,
+                    "boundary_index": boundary_index,
+                    "pre_norm_position": "post_norm",
+                    "post_norm_position": "pre_norm",
+                    "control_type": control_type,
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+        tensors[f"permuted_attn_ssm_p{prompt_index}"] = tensors[f"boundary_attn_ssm_p{prompt_index}"].clone()
+        tensors[f"permuted_ssm_attn_p{prompt_index}"] = tensors[f"boundary_ssm_attn_p{prompt_index}"].clone()
+    metadata["horn_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+
+    build_horn_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="horn")
+
+    assert not report["ok"]
+    assert any("non_boundary controls must match both boundary directions for every prompt" in error for error in report["errors"])
+
+
 def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_boundary(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn_bad"
@@ -682,6 +791,7 @@ def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_bo
             ("non_boundary_ssm_attn", 6, 7, "ssm->attention", 3, "non_boundary"),
             ("permuted_unmatched", 8, 9, "attention->ssm", 9, "permuted_direction"),
         ]:
+            actual_direction = "ssm->ssm" if control_type == "non_boundary" else direction
             tensor_name = f"{stem}_p{prompt_index}"
             entries.append(
                 {
@@ -689,7 +799,8 @@ def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_bo
                     "prompt_id": f"p{prompt_index}",
                     "layer_left": layer_left,
                     "layer_right": layer_right,
-                    "direction": direction,
+                    "direction": actual_direction,
+                    "matched_boundary_direction": direction,
                     "boundary_index": boundary_index,
                     "pre_norm_position": "post_norm",
                     "post_norm_position": "pre_norm",
@@ -726,6 +837,7 @@ def test_gate_packet_checker_rejects_horn_permuted_direction_with_independent_me
             ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction"),
             ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction"),
         ]:
+            actual_direction = "ssm->ssm" if control_type == "non_boundary" else direction
             tensor_name = f"{stem}_p{prompt_index}"
             entries.append(
                 {
@@ -733,7 +845,8 @@ def test_gate_packet_checker_rejects_horn_permuted_direction_with_independent_me
                     "prompt_id": f"p{prompt_index}",
                     "layer_left": layer_left,
                     "layer_right": layer_right,
-                    "direction": direction,
+                    "direction": actual_direction,
+                    "matched_boundary_direction": direction,
                     "boundary_index": boundary_index,
                     "pre_norm_position": "post_norm",
                     "post_norm_position": "pre_norm",
@@ -769,8 +882,8 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
                 "layer": index,
                 "boundary_flag": boundary,
                 "precision_perturbation": "mxfp4_e2m1",
-                "kl_or_nll_drift": float(index) * 0.01,
-                "cheap_predictor": float(index + 1),
+                "kl_or_nll_drift": float(100 - index) * 0.01,
+                "cheap_predictor": float(100 - index),
                 "parameter_count": 1024 + index,
                 "weight_norm": 0.5 + index,
                 "top_decile_flag": boundary and index < 6,
@@ -844,6 +957,128 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
 
     assert report["ok"]
     assert report["row_count"] == 66
+
+
+def test_hbsm_checker_rejects_top_decile_flags_that_disagree_with_drift(tmp_path: Path) -> None:
+    row_packet = tmp_path / "hbsm_rows.json"
+    output_dir = tmp_path / "hbsm_mismatched_top"
+    metadata = _base_trace_metadata()
+    primary_entries = []
+    for index in range(60):
+        boundary = index < 30
+        primary_entries.append(
+            {
+                "prompt_id": f"p{index % 30}",
+                "layer": index,
+                "boundary_flag": boundary,
+                "precision_perturbation": "mxfp4_e2m1",
+                "kl_or_nll_drift": float(index) * 0.01,
+                "cheap_predictor": float(index + 1),
+                "parameter_count": 1024 + index,
+                "weight_norm": 0.5 + index,
+                "top_decile_flag": boundary and index < 6,
+                "random_top_decile": index in {0, 1, 2, 30, 31, 32},
+                "train_test_split": "train" if index % 2 == 0 else "test",
+                "control_type": "boundary_only",
+            }
+        )
+    controls = [
+        "perturbation_off",
+        "random_flags",
+        "layer_index",
+        "parameter_count_norm",
+        "kl_lens_rank",
+        "activation_outlier",
+    ]
+    control_entries = [
+        {
+            "prompt_id": f"control_{control}",
+            "layer": 100 + index,
+            "boundary_flag": False,
+            "precision_perturbation": "mxfp4_e2m1",
+            "kl_or_nll_drift": 0.0,
+            "cheap_predictor": 0.0,
+            "parameter_count": 1024,
+            "weight_norm": 0.5,
+            "top_decile_flag": False,
+            "random_top_decile": False,
+            "train_test_split": "train",
+            "control_type": control,
+        }
+        for index, control in enumerate(controls)
+    ]
+    row_packet.write_text(
+        json.dumps({"metadata": metadata, "hbsm_entries": primary_entries + control_entries}) + "\n",
+        encoding="utf-8",
+    )
+
+    build_hbsm_packet(row_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="hbsm")
+
+    assert not report["ok"]
+    assert any("top_decile_flag must match measured kl_or_nll_drift" in error for error in report["errors"])
+
+
+def test_hbsm_checker_rejects_prompt_row_top_decile_flag_mismatch(tmp_path: Path) -> None:
+    row_packet = tmp_path / "hbsm_rows.json"
+    output_dir = tmp_path / "hbsm_prompt_mismatched_top"
+    metadata = _base_trace_metadata()
+    primary_entries = []
+    for prompt_index in range(12):
+        for layer in range(20):
+            boundary = layer < 10
+            primary_entries.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": layer,
+                    "boundary_flag": boundary,
+                    "precision_perturbation": "mxfp4_e2m1",
+                    "kl_or_nll_drift": float(100 - layer) * 0.01,
+                    "cheap_predictor": float(100 - layer),
+                    "parameter_count": 1024 + layer,
+                    "weight_norm": 0.5 + layer,
+                    "top_decile_flag": layer < 2,
+                    "random_top_decile": layer in {0, 10},
+                    "train_test_split": "train" if layer % 2 == 0 else "test",
+                    "control_type": "boundary_only",
+                }
+            )
+    primary_entries[0]["top_decile_flag"] = False
+    controls = [
+        "perturbation_off",
+        "random_flags",
+        "layer_index",
+        "parameter_count_norm",
+        "kl_lens_rank",
+        "activation_outlier",
+    ]
+    control_entries = [
+        {
+            "prompt_id": f"control_{control}",
+            "layer": 100 + index,
+            "boundary_flag": False,
+            "precision_perturbation": "mxfp4_e2m1",
+            "kl_or_nll_drift": 0.0,
+            "cheap_predictor": 0.0,
+            "parameter_count": 1024,
+            "weight_norm": 0.5,
+            "top_decile_flag": False,
+            "random_top_decile": False,
+            "train_test_split": "train",
+            "control_type": control,
+        }
+        for index, control in enumerate(controls)
+    ]
+    row_packet.write_text(
+        json.dumps({"metadata": metadata, "hbsm_entries": primary_entries + control_entries}) + "\n",
+        encoding="utf-8",
+    )
+
+    build_hbsm_packet(row_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="hbsm")
+
+    assert not report["ok"]
+    assert any("every boundary_only prompt row top_decile_flag" in error for error in report["errors"])
 
 
 def test_hbsm_packet_builder_rejects_string_boolean_flags(tmp_path: Path) -> None:

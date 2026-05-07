@@ -32,19 +32,23 @@ pure-architecture controls.
 
 ## Current Mac Packet
 
-Synthetic-only packet:
+Synthetic-only real-schema rehearsal packet:
 
 - `phase2/results/horn_synthetic_h1/`
-- decision: `SYNTHETIC_PASS_REAL_BOUNDARY_DUMPS_NEXT`
+- decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A`
+- rows: `72`
 
-This validates artifact mechanics only. It is not model evidence.
+This validates the real H1a row schema, paired controls, summary
+recomputation, and non-promoting schema-rehearsal path. It is not model
+evidence.
 
 Validate packet shape with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/horn/phase2/results/horn_synthetic_h1 \
-  --expected-decision-prefix SYNTHETIC
+  --mode real --project horn \
+  --expected-decision-prefix SCHEMA_REHEARSAL_NOT_PROMOTABLE
 ```
 
 Real trace packet requirements are in
@@ -70,10 +74,15 @@ hybrid models plus the H3 pure-architecture controls.
 
 The real checker requires at least 12 prompt IDs unless resource-limited, both
 boundary directions, both-direction non-boundary controls, paired flipped
-`permuted_direction` controls, and finite numeric rows. The flipped controls
+`permuted_direction` controls, and finite numeric rows. Non-boundary controls
+may keep their true architecture direction, such as `ssm->ssm`, but must carry
+`matched_boundary_direction` so they can be paired against the boundary
+direction they control for, and every prompt must include both matched
+non-boundary directions. The flipped controls
 must match an observed boundary by `prompt_id`, boundary index, layer IDs, and
 normalization positions, reuse the observed boundary metrics, then invert only
-the direction label. H1 cannot pass if
+the actual `direction` label; `matched_boundary_direction` must agree with
+that flipped label for permuted rows. H1 cannot pass if
 the permuted controls preserve the selected high-magnitude direction; a faithful
 label flip may preserve unsigned max/min asymmetry while moving the signal to
 the opposite label, which is an acceptable null. Non-boundary controls must stay
@@ -110,12 +119,13 @@ Reproduce the current synthetic packet:
 ./venv_arm64/bin/python -m experimental.horn.phase2.horn_synthetic_h1_gate
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/horn/phase2/results/horn_synthetic_h1 \
-  --expected-decision-prefix SYNTHETIC
-jq '.decision, .ssm_to_attention_over_attention_to_ssm_max_ratio, .ssm_to_attention_over_attention_to_ssm_kurtosis_ratio' \
+  --mode real --project horn \
+  --expected-decision-prefix SCHEMA_REHEARSAL_NOT_PROMOTABLE
+jq '.decision, .row_count, .gate_status, .selected_h1_ratio, .non_boundary_control_ratio, .permuted_direction_ratio' \
   experimental/horn/phase2/results/horn_synthetic_h1/summary.json
 ```
 
-Expected decision: `SYNTHETIC_PASS_REAL_BOUNDARY_DUMPS_NEXT`.
+Expected decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A`.
 
 ## GPU Rule
 

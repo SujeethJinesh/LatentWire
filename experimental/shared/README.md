@@ -24,8 +24,9 @@ Use them for preregistered Mac gates only.
 - `hybrid_gate_evaluators.py`: recomputes S1/H1/B1 pass/fail summaries from
   packet rows so real packets cannot promote from hand-written aggregate labels.
   The active evaluators use prompt-level S1 lower bounds, H1 non-boundary and
-  permuted-direction controls, and HBSM primary-row scoring separated from
-  control rows.
+  permuted-direction controls through matched boundary labels, and HBSM
+  measured top-decile scoring derived from primary-row drift rather than
+  caller-supplied labels.
 - `sensitivity_metrics.py`: quality, drift, and rank-correlation metrics.
 - `check_gate_packet.py`: packet validator for synthetic and real Mac-local
   gate results, with stricter `--mode real --project ...` contracts and an
@@ -101,6 +102,12 @@ directions plus both-direction non-boundary and prompt-paired flipped controls,
 and HBSM needs `boundary_only` primary rows with prompt-level boundary/non-
 boundary coverage, aggregated scoring-layer top-decile cardinality, a
 non-enriched random baseline, and perturbation-off rows with near-zero drift.
+For HORN, `matched_boundary_direction` lets non-boundary controls keep true
+architecture directions while still pairing against both boundary directions on
+every prompt; permuted controls must flip the actual `direction` label.
+For HBSM, supplied `top_decile_flag` values must match the measured
+`kl_or_nll_drift` top-decile ranking after aggregation on every primary prompt
+row.
 Real packets also need 64-hex `prompt_ids_hash` and
 `architecture_map_hash` values, project-specific aggregate `summary.json`
 fields, and a non-promotable decision whenever `resource_limit_note` is

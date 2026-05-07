@@ -132,6 +132,7 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                             "prompt_token_counts": [128],
                             "prompt_token_count_total": 128,
                             "requested_decode_tokens": 64,
+                            "expected_completion_tokens_total": 64,
                             "response_usage": {"completion_tokens": 64},
                         }
                         for _ in range(16)

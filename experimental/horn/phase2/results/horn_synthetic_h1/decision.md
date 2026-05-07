@@ -1,8 +1,10 @@
-# HORN Synthetic H1 Decision
+# HORN Synthetic H1a Real-Schema Rehearsal
 
-`SYNTHETIC_PASS_REAL_BOUNDARY_DUMPS_NEXT`
+`SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A`
 
-- max ratio: `3.775`
-- kurtosis ratio: `7.139`
+- evaluator gate status: `PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN`
+- selected metric: `max_abs`
+- selected direction: `ssm->attention`
+- selected H1a ratio: `4.044`
 
-Synthetic-only: this validates artifact mechanics and does not promote the branch.
+Synthetic CPU rows validate the real packet schema and checker path only. They do not promote H1a/H1 and are not model, GPU, quality, or systems evidence.

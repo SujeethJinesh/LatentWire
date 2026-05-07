@@ -4,16 +4,21 @@
 
 Status: **NEW / Mac gates pending**.
 
-Added and ran a deterministic synthetic H1 packet:
+Added and ran a deterministic synthetic H1 packet. It has now been upgraded to
+a non-promoting real-schema H1a rehearsal:
 
 - script: `phase2/horn_synthetic_h1_gate.py`
 - packet: `phase2/results/horn_synthetic_h1/`
-- decision: `SYNTHETIC_PASS_REAL_BOUNDARY_DUMPS_NEXT`
-- SSM-to-attention / attention-to-SSM max ratio: `3.775`
-- SSM-to-attention / attention-to-SSM kurtosis ratio: `7.139`
+- decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A`
+- rows: `72`
+- selected H1a max-abs ratio: `4.044`
+- non-boundary selected-direction control ratio: `1.042`
+- permuted selected-direction control ratio: `0.247`
+- real checker: passes `--mode real --project horn`
 
-Interpretation: synthetic-only artifact validation. It fixes the H1 readout
-format but does not promote the branch or replace real hybrid boundary dumps.
+Interpretation: synthetic-only schema validation. It exercises the real H1a
+row schema, paired controls, hash provenance, and recomputed evaluator summary,
+but does not promote the branch or replace real hybrid boundary dumps.
 
 Next exact gate: H1 activation magnitude and kurtosis characterization using
 shared boundary-inspection utilities.
@@ -102,3 +107,19 @@ but the project still needs cross-model consistency before claiming H1.
 Decision: **SINGLE-MODEL BOUNDARY ASYMMETRY IS A SCREEN, NOT A PAPER RESULT**.
 The next exact gate remains a real prompt-paired H1a dump, followed by
 cross-model H1 aggregation only if the screen passes.
+
+## 2026-05-06 H1a Schema-Rehearsal Upgrade
+
+After COLM-style review, the HORN synthetic packet now validates as a
+non-promoting real-schema rehearsal with `schema_rehearsal: true` and decision
+`SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A`. The shared checker now
+requires `matched_boundary_direction` so non-boundary controls can keep their
+true architecture direction while still being paired against both boundary
+directions for H1a scoring.
+It also requires every prompt to have both matched non-boundary directions and
+requires permuted controls to flip the actual `direction` label, not only a
+matched-control metadata field.
+
+Decision: **HORN PACKET PLUMBING IS READY FOR A REAL BOUNDARY DUMP**. The
+blocker is still live hybrid activations with prompt-paired boundary,
+non-boundary, and permuted controls.

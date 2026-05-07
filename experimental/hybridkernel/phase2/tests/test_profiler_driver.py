@@ -35,10 +35,12 @@ def test_dry_run_reports_profile_bracket_endpoints_without_network() -> None:
 
 def test_profile_bracket_wraps_fixed_request_replay(monkeypatch) -> None:
     calls: list[str] = []
+    payloads: list[dict[str, object]] = []
 
     def fake_post_json(endpoint: str, payload: dict[str, object], timeout_s: float) -> None:
-        del payload, timeout_s
+        del timeout_s
         calls.append(endpoint)
+        payloads.append(payload)
 
     monkeypatch.setattr(profiler_driver, "_post_json", fake_post_json)
 
@@ -51,6 +53,9 @@ def test_profile_bracket_wraps_fixed_request_replay(monkeypatch) -> None:
         "http://127.0.0.1:8000/stop_profile",
     ]
     assert [row["status"] for row in result["requests"]] == ["ok", "ok"]
+    completion_payloads = [payload for payload in payloads if payload.get("model")]
+    assert all(payload["min_tokens"] == 2 for payload in completion_payloads)
+    assert all(payload["ignore_eos"] is True for payload in completion_payloads)
 
 
 def test_profile_bracket_stops_after_request_error(monkeypatch) -> None:
@@ -95,3 +100,4 @@ def test_dry_run_can_log_exact_prompt_token_counts(monkeypatch) -> None:
     assert result["requests"][0]["prompt_token_counts"] == [8, 8]
     assert result["requests"][0]["prompt_token_count_total"] == 16
     assert result["requests"][0]["requested_decode_tokens"] == 2
+    assert result["requests"][0]["expected_completion_tokens_total"] == 4
