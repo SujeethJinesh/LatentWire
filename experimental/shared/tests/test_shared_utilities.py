@@ -31,6 +31,7 @@ from experimental.shared.hybrid_manifest_local_capture_runner import (
     _first_ssq_layers,
     _horn_tensors,
     _install_horn_right_input_hooks,
+    _local_snapshot_path,
     _parse_layer_list,
     select_horn_entries,
     select_ssq_entries,
@@ -133,6 +134,18 @@ def test_symmetric_int_quantization_and_protected_positions() -> None:
 def test_gap_recovery_ratio_gate_semantics() -> None:
     ratio = gap_recovery_ratio(bf16_score=1.0, uniform_score=2.0, protected_score=1.4)
     assert ratio == pytest.approx(0.4)
+
+
+def test_local_snapshot_path_resolves_sharded_safetensor_cache(tmp_path: Path) -> None:
+    model_id = "org/model"
+    repo = tmp_path / "hub/models--org--model"
+    snapshot = repo / "snapshots/abc123"
+    snapshot.mkdir(parents=True)
+    (repo / "refs").mkdir()
+    (repo / "refs/main").write_text("abc123", encoding="utf-8")
+    (snapshot / "model.safetensors.index.json").write_text("{}", encoding="utf-8")
+
+    assert _local_snapshot_path(model_id=model_id, hf_home=tmp_path) == str(snapshot)
 
 
 def test_boundary_inspector_finds_directional_hybrid_boundaries() -> None:

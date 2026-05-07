@@ -231,10 +231,11 @@ def _load_tiny_model_and_tokenizer(
 ) -> tuple[Any, Any, float]:
     os.environ.setdefault("HF_HOME", str(hf_home))
     os.environ.setdefault("HF_HUB_CACHE", str(hf_home / "hub"))
-    tokenizer = AutoTokenizer.from_pretrained(model_id, local_files_only=True, trust_remote_code=False)
+    model_source = _local_snapshot_path(model_id=model_id, hf_home=hf_home)
+    tokenizer = AutoTokenizer.from_pretrained(model_source, local_files_only=True, trust_remote_code=False)
     load_started = time.perf_counter()
     model = AutoModelForCausalLM.from_pretrained(
-        model_id,
+        model_source,
         local_files_only=True,
         trust_remote_code=False,
         dtype=torch.float16,
@@ -243,6 +244,30 @@ def _load_tiny_model_and_tokenizer(
     )
     model.eval()
     return tokenizer, model, time.perf_counter() - load_started
+
+
+def _local_snapshot_path(*, model_id: str, hf_home: Path) -> str:
+    """Return a pinned local snapshot path when the HF repo cache is present.
+
+    Some Transformers builds do not discover sharded safetensor indexes through
+    `local_files_only=True` repo IDs. Loading the resolved snapshot directory is
+    equivalent for cached runs and keeps the Mac gates offline/reproducible.
+    """
+
+    repo_cache = hf_home / "hub" / f"models--{model_id.replace('/', '--')}"
+    ref_path = repo_cache / "refs/main"
+    if not ref_path.exists():
+        return model_id
+    revision = ref_path.read_text(encoding="utf-8").strip()
+    snapshot = repo_cache / "snapshots" / revision
+    if not snapshot.exists():
+        return model_id
+    has_weights = (
+        (snapshot / "model.safetensors").exists()
+        or (snapshot / "model.safetensors.index.json").exists()
+        or (snapshot / "pytorch_model.bin").exists()
+    )
+    return str(snapshot) if has_weights else model_id
 
 
 def _tokenize_prompt(tokenizer: Any, prompt: str, max_input_tokens: int) -> dict[str, torch.Tensor]:

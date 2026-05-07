@@ -2770,5 +2770,12 @@
     "path": "references/753_colm_v3_reviewer_revision_refs_20260505.md",
     "status": "local_memo",
     "reason": "Primary-source memo for COLM_v3 reviewer-response revisions, covering distributed-source-coding framing, KVCOMM/CIPHER/embedding-stego baselines, destructive-control precedents, and tightened privacy/systems wording."
+  },
+  {
+    "num": 754,
+    "slug": "ssq_lr_nemotron_state_cache_refs_20260507",
+    "path": "references/754_ssq_lr_nemotron_state_cache_refs_20260507.md",
+    "status": "local_memo",
+    "reason": "Primary-source memo for SSQ-LR novelty boundaries against Nemotron 3 Super recurrent SSM cache precision recipes, including FP16 stochastic rounding and INT16/block-scaled cache baselines."
   }
 ]

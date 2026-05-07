@@ -238,3 +238,25 @@ zero BF16-argmax delta, and `0.00443` NLL-delta CI high. This only proves the
 new scout path is executable and byte-feasible on the current Mac cache; it is
 not promotable evidence. The actual S2b decision requires the frozen 12-prompt
 held-out replay packet.
+
+## 2026-05-07 S2b Held-Out Replay Result
+
+Packet:
+`experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_20260507/`.
+The executable follow-up contract accepts the packet with
+`PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY`, but the packet remains explicitly
+resource-limited and not promotable to GPU.
+
+Selected recipe: `mixed_int3_mxfp4_low_error_25pct`.
+
+- counted state-memory reduction: `4.192x`
+- selected accuracy CI high: `0.000000`
+- selected NLL-delta CI high: `0.03956`
+- prompts: `12`
+- rows: `156`
+
+Decision: **S2 IS REVIVED AS A MAC CANDIDATE, NOT GPU-READY**. Freeze
+`mixed_int3_mxfp4_low_error_25pct` for the next non-resource-limited S2 packet
+with longer continuation windows and the same controls. If the frozen packet
+fails, fall back to single-layer localization rather than changing the S2 byte
+or quality thresholds.
