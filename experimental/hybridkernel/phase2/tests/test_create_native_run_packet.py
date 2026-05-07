@@ -53,6 +53,10 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     assert profile_scope["nsys_profiled_process"] == "vllm_server"
     assert profile_scope["ncu_profiled_process"] == "vllm_server"
     assert "vllm.entrypoints.openai.api_server" in profile_scope["vllm_command"]
+    assert {scope["model"] for scope in profile_scope["model_scopes"]} == {
+        "ibm-granite/granite-4.0-h-tiny",
+        "Qwen/Qwen3-Next-80B-A3B-Instruct",
+    }
 
     metrics = json.loads((run_dir / "profiler_metrics.json").read_text())
     assert len(metrics["rows"]) == 9
@@ -132,7 +136,7 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
         model="ibm-granite/granite-4.0-h-tiny",
     )
     model = "ibm-granite/granite-4.0-h-tiny"
-    same_family = "ibm-granite/granite-4.0-h-small"
+    same_family = model
     cross_family = "Qwen/Qwen3-Next-80B-A3B-Instruct"
     (run_dir / "metadata/environment.txt").write_text(
         "nvidia-smi\nnsys version\nncu version\npython -VV\n", encoding="utf-8"
@@ -174,7 +178,7 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
     rows = []
     specs = [
         ("primary", model, "primary_hybrid", "same_family_matched_segment", 8.0, 2.0),
-        ("same", same_family, "same_family_control", "same_family_transformer_heavy_control", 2.0, 2.0),
+        ("same", same_family, "same_family_control", "same_model_non_boundary_segment_control", 2.0, 2.0),
         ("cross", cross_family, "cross_family_falsification", "cross_family_hybrid_control", 2.0, 2.0),
     ]
     for spec_index, (label, row_model, role, family, boundary_ms, matched_ms) in enumerate(specs):

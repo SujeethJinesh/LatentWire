@@ -28,7 +28,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/ssq_lr__ibm-granite-4-0-h-small__metadata_template.json",
       "planned_entry_count": 1728,
       "project": "ssq_lr",
-      "sha256": "sha256:28fda483dd7fb317906b099b3f4345391f8c4fc35dbc4d950b4b8099a37269e8",
+      "sha256": "sha256:f58972182a56f56e119676384aecc33cdda1f7886bcc747e9a829e939690d9d5",
       "trace_plan_hash": "sha256:659f63b59ba3708d56bcded8ad87428162bbbb668cff3cc999c3159da28b5563"
     },
     {
@@ -36,7 +36,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/ssq_lr__ibm-granite-4-0-h-tiny__metadata_template.json",
       "planned_entry_count": 1728,
       "project": "ssq_lr",
-      "sha256": "sha256:a6596a60791c7df82bbd5dda1d100331f338ae831a336adac98a2907e3ac7639",
+      "sha256": "sha256:bf2c91c431fac334efe79820c9740c6afa3dec92bd656eccbbaa642b1eefd8d5",
       "trace_plan_hash": "sha256:659f63b59ba3708d56bcded8ad87428162bbbb668cff3cc999c3159da28b5563"
     },
     {
@@ -44,7 +44,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/ssq_lr__qwen3-next-80b-a3b-instruct__metadata_template.json",
       "planned_entry_count": 1728,
       "project": "ssq_lr",
-      "sha256": "sha256:22d71e7e564fb33f79e8a3300123e42305fc9ee284d3e7141dd0b02a1e94f5b4",
+      "sha256": "sha256:044e3c9bf87e7364710a5e5c88be5f96dd25288c620c9c9cca623b60aa6fb2ad",
       "trace_plan_hash": "sha256:659f63b59ba3708d56bcded8ad87428162bbbb668cff3cc999c3159da28b5563"
     },
     {
@@ -52,7 +52,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/horn__ibm-granite-4-0-h-small__metadata_template.json",
       "planned_entry_count": 216,
       "project": "horn",
-      "sha256": "sha256:e15af24f9bd6c307aec6c1dd3ef73b60d60217982425fbb49b83e4138ac70736",
+      "sha256": "sha256:22de325fe650c951a66ba04038b8fe7371697139b36f2575b9163f2a18404708",
       "trace_plan_hash": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66"
     },
     {
@@ -60,7 +60,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/horn__ibm-granite-4-0-h-tiny__metadata_template.json",
       "planned_entry_count": 216,
       "project": "horn",
-      "sha256": "sha256:cbbd2febd9f0bda44ba27c6896e349001509301d85644fb3ef256edb8057a1f0",
+      "sha256": "sha256:c3568a3c953567e5a77fd340a3b9ef43765700a769001774617980711b6a55d1",
       "trace_plan_hash": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66"
     },
     {
@@ -68,7 +68,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/horn__qwen3-next-80b-a3b-instruct__metadata_template.json",
       "planned_entry_count": 576,
       "project": "horn",
-      "sha256": "sha256:8dc5ce85747b639baeff4375850bbfb5ff9684e4781a7b28508a5aa4fb1c737e",
+      "sha256": "sha256:f118b9f9ba31d79d4e89c0a6ac00f5b9157d0cc802fcaa5c499fbf7cb0760b22",
       "trace_plan_hash": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66"
     },
     {
@@ -76,7 +76,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/hbsm__ibm-granite-4-0-h-small__row_packet_template.json",
       "planned_entry_count": 486,
       "project": "hbsm",
-      "sha256": "sha256:ccea4ad2b8bec8ae9c6c0218489540940b26e0c641d635c919a54092d85bcc69",
+      "sha256": "sha256:0aeb00f23488024e3968165f73bc5bfde30b170e4ff06c978d9ce500382b220f",
       "trace_plan_hash": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf"
     },
     {
@@ -84,7 +84,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/hbsm__ibm-granite-4-0-h-tiny__row_packet_template.json",
       "planned_entry_count": 486,
       "project": "hbsm",
-      "sha256": "sha256:baac0fec3c64c9fa5b4f96ecd2327f3365c3707bff970a5ca410201a3bd4f093",
+      "sha256": "sha256:fb27b651b71efde2fcd0a3d33e8bb8dbc309d78be33010d6594a96f505a1d025",
       "trace_plan_hash": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf"
     },
     {
@@ -92,7 +92,7 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/hbsm__qwen3-next-80b-a3b-instruct__row_packet_template.json",
       "planned_entry_count": 582,
       "project": "hbsm",
-      "sha256": "sha256:0e37d607b1acc881608710986db515aebbfea82c8424ef93cb969af9ce42931a",
+      "sha256": "sha256:492c79f3cc5653a8a5b1d973141a74794e401f3c92a4fbf6f23141f406767e7e",
       "trace_plan_hash": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf"
     }
   ],

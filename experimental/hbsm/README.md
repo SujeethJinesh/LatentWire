@@ -81,7 +81,10 @@ For HBSM, the current templates live under
 `hbsm__<model_slug>__row_packet_template.json`. They are not model evidence:
 fill every `TO_FILL_BEFORE_CAPTURE` field from a real sensitivity capture
 before using `hybrid_trace_packet_builder --project hbsm --row-packet ...`.
-The builder rejects `_template_only: true` templates and unfilled markers.
+The builder rejects `_template_only: true` templates and unfilled markers. If
+the capture records a served HF model ID, the builder preserves it as
+`served_model_id` and canonicalizes row `model_id` to the shared architecture
+map slug before validation.
 Required real controls are `perturbation_off`, `random_flags`, `layer_index`,
 `parameter_count_norm`, `boundary_only`, `kl_lens_rank`, and
 `activation_outlier`. Real rows must also include

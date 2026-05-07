@@ -82,7 +82,11 @@ For HORN, the current templates live under
 `horn__<model_slug>__metadata_template.json`. They are not model evidence:
 fill every `TO_FILL_BEFORE_CAPTURE` field from a real boundary-activation
 capture before using `hybrid_trace_packet_builder`. The builder rejects
-`_template_only: true` templates and unfilled markers.
+`_template_only: true` templates and unfilled markers. Permuted-direction rows
+use `tensor_alias_of` to reuse the observed boundary tensor; do not capture a
+second tensor for the flipped-label control. If the capture records a served HF
+model ID, the builder preserves it as `served_model_id` and canonicalizes row
+`model_id` to the shared architecture map slug before validation.
 
 Validate the first real H1a screen packet with:
 

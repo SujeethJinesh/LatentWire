@@ -1,6 +1,6 @@
 {
   "architecture_maps": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hybrid_architecture_maps_20260506/architecture_maps.json",
-  "architecture_maps_hash": "sha256:9836be12e8f9bcf6c0e8acb03119f5710f65225b126cf0c3099477c5f1bf1f27",
+  "architecture_maps_hash": "sha256:6ec0e9431e16fbb9092b5ad0669432ba7d4cbd106afe36c8bf7feb4249884eb1",
   "claim_boundary": [
     "trace-plan-only",
     "not model evidence",

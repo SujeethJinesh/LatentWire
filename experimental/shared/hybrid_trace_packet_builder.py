@@ -25,6 +25,9 @@ from experimental.shared.hybrid_gate_evaluators import (
 from experimental.shared.sensitivity_metrics import kurtosis, max_abs
 
 TEMPLATE_MARKERS = ("TO_FILL_BEFORE_CAPTURE", "TEMPLATE_ONLY")
+ARCHITECTURE_MAPS_PATH = (
+    Path(__file__).resolve().parent / "results/hybrid_architecture_maps_20260506/architecture_maps.json"
+)
 
 
 def _rms(tensor: torch.Tensor) -> float:
@@ -59,9 +62,44 @@ def _require_bool(value: Any, field: str) -> bool:
     return value
 
 
+def _contains_template_marker(value: Any) -> bool:
+    if isinstance(value, str):
+        return any(marker in value for marker in TEMPLATE_MARKERS)
+    if isinstance(value, dict):
+        return any(_contains_template_marker(item) for item in value.values())
+    if isinstance(value, list):
+        return any(_contains_template_marker(item) for item in value)
+    return False
+
+
+def _model_aliases() -> dict[str, str]:
+    if not ARCHITECTURE_MAPS_PATH.exists():
+        return {}
+    payload = json.loads(ARCHITECTURE_MAPS_PATH.read_text(encoding="utf-8"))
+    if not isinstance(payload, list):
+        return {}
+    aliases: dict[str, str] = {}
+    for row in payload:
+        if not isinstance(row, dict):
+            continue
+        canonical = str(row.get("model_id", "")).strip()
+        if not canonical:
+            continue
+        aliases[canonical] = canonical
+        row_aliases = row.get("model_id_aliases", [])
+        if isinstance(row_aliases, list):
+            for alias in row_aliases:
+                alias_text = str(alias).strip()
+                if alias_text:
+                    aliases[alias_text] = canonical
+    return aliases
+
+
 def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
     if metadata.get("_template_only") is True:
         raise ValueError("metadata is a capture template; fill it before building a packet")
+    if _contains_template_marker(metadata):
+        raise ValueError("metadata still contains capture template markers")
     required = [
         "model_id",
         "model_revision",
@@ -79,11 +117,18 @@ def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
     missing = [field for field in required if field not in metadata]
     if missing:
         raise ValueError(f"metadata missing required fields: {', '.join(missing)}")
-    for field in required:
-        value = metadata[field]
-        if isinstance(value, str) and any(marker in value for marker in TEMPLATE_MARKERS):
-            raise ValueError(f"metadata field {field} still contains template marker")
     config = {field: metadata[field] for field in required}
+    aliases = _model_aliases()
+    original_model_id = str(config["model_id"])
+    canonical_model_id = aliases.get(original_model_id, original_model_id)
+    if canonical_model_id != original_model_id:
+        config["served_model_id"] = metadata.get("served_model_id", original_model_id)
+        config["model_id"] = canonical_model_id
+    elif "served_model_id" in metadata:
+        config["served_model_id"] = metadata["served_model_id"]
+    config["canonical_model_id"] = canonical_model_id
+    if "trace_plan_path" in metadata:
+        config["trace_plan_path"] = metadata["trace_plan_path"]
     if "resource_limit_note" in metadata:
         config["resource_limit_note"] = metadata["resource_limit_note"]
     return config
@@ -204,7 +249,7 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
         raise ValueError("metadata must contain list field horn_entries")
     rows: list[dict[str, Any]] = []
     for entry in entries:
-        tensor_name = str(entry["tensor"])
+        tensor_name = str(entry.get("tensor_alias_of", entry["tensor"]))
         tensor = _lookup_tensor(tensors, tensor_name)
         rows.append(
             {
@@ -243,6 +288,8 @@ def build_hbsm_packet(row_packet: Path, output_dir: Path) -> list[dict[str, Any]
     payload = json.loads(row_packet.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("HBSM row packet must be a JSON object")
+    if payload.get("_template_only") is True or _contains_template_marker(payload):
+        raise ValueError("HBSM row packet is a capture template; fill it before building a packet")
     metadata = payload.get("metadata")
     if not isinstance(metadata, dict):
         raise ValueError("HBSM row packet must contain object field metadata")

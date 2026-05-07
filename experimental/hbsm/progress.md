@@ -178,3 +178,15 @@ Decision: **B1 CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
 EVIDENCE**. The next exact gate is to fill one HBSM row-packet template from a
 real forward-sensitivity capture, build the packet, and validate it with
 `check_gate_packet --mode real --project hbsm`.
+
+## 2026-05-07 Model-Alias and Template-Sentinel Guard
+
+The shared architecture maps now carry canonical model IDs and registered
+served/HF aliases, so real B1 packets can preserve a served ID as
+`served_model_id` while validating rows against the canonical map ID. The HBSM
+builder now rejects top-level capture templates and recursively rejects
+unfilled `TO_FILL_BEFORE_CAPTURE` markers before attempting to coerce metric
+fields.
+
+Decision: **B1 ROW PACKETS NOW FAIL EARLY ON UNFILLED TEMPLATES OR UNKNOWN
+MODEL IDS**. The blocker remains a real forward-sensitivity table.

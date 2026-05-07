@@ -93,6 +93,24 @@ This writes `ssq_lr_trace_plan.jsonl`, `horn_trace_plan.jsonl`, and
 `hbsm_trace_plan.jsonl`. These files are trace-capture checklists only; they do
 not contain activations, SSM state, quality metrics, or GPU evidence.
 
+Then generate fill-in capture manifests:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_capture_manifest
+```
+
+Current output:
+
+```text
+experimental/shared/results/hybrid_capture_manifests_20260507/
+```
+
+Fill every `TO_FILL_BEFORE_CAPTURE` field before packet building. Builders
+canonicalize registered served/HF model IDs to the shared architecture-map
+`model_id` while preserving `served_model_id` for audit. HORN
+`permuted_direction` rows use `tensor_alias_of` to reuse the observed boundary
+tensor rather than requiring a duplicate tensor capture.
+
 After a model run writes tensors with `activation_dumper.py`, build strict
 project packets with:
 

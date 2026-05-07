@@ -276,13 +276,11 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             1
             for row in comparable_rows
             if str(row["row_role"]) == "same_family_control"
-            and str(row["control_family"]).startswith("same_family")
         )
         same_family_control_clear_rows = sum(
             1
             for row in comparable_rows
             if str(row["row_role"]) == "same_family_control"
-            and str(row["control_family"]).startswith("same_family")
             and float(row["recoverable_gain_upper_bound"]) >= 0.03
         )
         cross_family_falsification_rows = sum(

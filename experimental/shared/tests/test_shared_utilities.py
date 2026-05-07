@@ -876,6 +876,42 @@ def test_packet_builder_resolves_sanitized_tensor_names(tmp_path: Path) -> None:
     assert report["row_count"] == 48
 
 
+def test_packet_builder_canonicalizes_served_hf_model_id(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_hf_alias"
+    metadata = _base_trace_metadata()
+    metadata["model_id"] = "ibm-granite/granite-4.0-h-tiny"
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+    config = json.loads((output_dir / "config.json").read_text(encoding="utf-8"))
+    rows = [json.loads(line) for line in (output_dir / "raw_rows.jsonl").read_text().splitlines()]
+
+    assert report["ok"]
+    assert config["model_id"] == "ibm-granite-4.0-h-tiny"
+    assert config["served_model_id"] == "ibm-granite/granite-4.0-h-tiny"
+    assert {row["model_id"] for row in rows} == {"ibm-granite-4.0-h-tiny"}
+
+
 def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn"
@@ -916,6 +952,51 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
         tensors=tensors,
         metadata=metadata,
     )
+
+    build_horn_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="horn")
+
+    assert report["ok"]
+    assert report["row_count"] == 72
+
+
+def test_horn_packet_builder_uses_tensor_alias_for_permuted_rows(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "horn_alias"
+    metadata = _base_trace_metadata("horn")
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for stem, layer_left, layer_right, direction, boundary_index, control_type in [
+            ("boundary_attn_ssm", 0, 1, "attention->ssm", 0, "boundary"),
+            ("boundary_ssm_attn", 2, 3, "ssm->attention", 1, "boundary"),
+            ("non_boundary_attn_ssm", 4, 5, "attention->ssm", 2, "non_boundary"),
+            ("non_boundary_ssm_attn", 6, 7, "ssm->attention", 3, "non_boundary"),
+            ("permuted_attn_ssm", 0, 1, "ssm->attention", 0, "permuted_direction"),
+            ("permuted_ssm_attn", 2, 3, "attention->ssm", 1, "permuted_direction"),
+        ]:
+            actual_direction = "ssm->ssm" if control_type == "non_boundary" else direction
+            tensor_name = f"{stem}_p{prompt_index}"
+            entry = {
+                "tensor": tensor_name,
+                "prompt_id": f"p{prompt_index}",
+                "layer_left": layer_left,
+                "layer_right": layer_right,
+                "direction": actual_direction,
+                "matched_boundary_direction": direction,
+                "boundary_index": boundary_index,
+                "pre_norm_position": "post_norm",
+                "post_norm_position": "pre_norm",
+                "control_type": control_type,
+            }
+            if control_type == "permuted_direction":
+                source = "boundary_attn_ssm" if boundary_index == 0 else "boundary_ssm_attn"
+                entry["tensor_alias_of"] = f"{source}_p{prompt_index}"
+            else:
+                tensors[tensor_name] = torch.randn(2, 4)
+            entries.append(entry)
+    metadata["horn_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
 
     build_horn_packet(tensor_packet, output_dir)
     report = validate_gate_packet(output_dir, mode="real", project="horn")
@@ -1431,3 +1512,31 @@ def test_gate_packet_checker_rejects_hbsm_without_true_and_false_boundary_flags(
 
     assert not report["ok"]
     assert any("both boundary_flag=true and boundary_flag=false" in error for error in report["errors"])
+
+
+def test_hbsm_packet_builder_rejects_top_level_capture_template(tmp_path: Path) -> None:
+    row_packet = tmp_path / "hbsm_template.json"
+    output_dir = tmp_path / "hbsm_template"
+    metadata = _base_trace_metadata("hbsm")
+    row_packet.write_text(
+        json.dumps(
+            {
+                "_template_only": True,
+                "metadata": metadata,
+                "hbsm_entry_templates": [
+                    {
+                        "prompt_id": "p0",
+                        "layer": 0,
+                        "boundary_flag": True,
+                        "precision_perturbation": "mxfp4_e2m1",
+                        "kl_or_nll_drift": "TO_FILL_BEFORE_CAPTURE",
+                    }
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="capture template"):
+        build_hbsm_packet(row_packet, output_dir)

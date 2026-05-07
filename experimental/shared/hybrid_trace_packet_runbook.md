@@ -41,10 +41,13 @@ project-specific admissible coverage.
 For real packets, `config.json` must record `prompt_ids_hash`,
 `architecture_map_hash`, and, unless it is a schema rehearsal,
 `trace_plan_hash` as `sha256:<64-hex-digest>` strings. For non-rehearsal real
-packets, `model_id` and `architecture_map_hash` must match the shared
-architecture map artifact at
+packets, `model_id` (or a registered `model_id_aliases` entry such as an HF
+repo ID) and `architecture_map_hash` must match the shared architecture map
+artifact at
 `experimental/shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`;
-a syntactically valid but unrelated hash is rejected. A packet that records
+a syntactically valid but unrelated hash is rejected. Packet builders canonicalize
+registered served IDs into the map `model_id` and preserve the original value as
+`served_model_id` in `config.json`. A packet that records
 `resource_limit_note` is admissible only as a diagnostic artifact: its
 `summary.json` decision must start with
 `RESOURCE_LIMITED_NOT_PROMOTABLE`, and it cannot promote a gate.
@@ -88,6 +91,9 @@ tensors, no model outputs, no sensitivity metrics, and no GPU evidence. Fill
 every `TO_FILL_BEFORE_CAPTURE` field from a real capture before invoking the
 packet builder. The shared builders reject templates marked `_template_only:
 true` or containing unfilled template markers.
+For HORN `permuted_direction` entries, capture only the observed boundary
+tensor and leave `tensor_alias_of` pointing to it; the builder reuses that
+tensor while flipping only the metadata direction.
 
 ## SSQ-LR Real S1 Packet
 

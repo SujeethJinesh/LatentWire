@@ -672,3 +672,30 @@ single authority for row roles.
 
 Decision: **NATIVE CONTROLS MUST BE INDEPENDENT PROFILER ARTIFACTS, NOT COPIED
 ROWS**. The blocker remains the user-operated NVIDIA/vLLM Nsight packet.
+
+## 2026-05-07 Multi-Model Profile Scope Guard
+
+The native run-packet skeleton now writes `model_scopes` into
+`metadata/profile_scope.json`, covering the Granite primary/same-family control
+rows and the Qwen3-Next cross-family falsification row. The artifact checker
+now rejects multi-model `profiler_metrics.json` packets unless
+`profile_scope.json` explicitly covers every metric model with a vLLM command.
+This prevents a Granite-only server profile from accidentally being interpreted
+as evidence for a copied or separately served cross-family row.
+
+Decision: **EVERY NATIVE METRIC MODEL NOW NEEDS AN EXPLICIT PROFILE SCOPE**.
+The blocker remains the user-operated NVIDIA/vLLM Nsight packet.
+
+## 2026-05-07 Native Matrix Enforcement
+
+Fixed a promotion accounting bug: same-family controls are now counted by
+`row_role == same_family_control` rather than by a brittle
+`control_family.startswith("same_family")` prefix. This matches the
+predeclared `same_model_non_boundary_segment_control` label in
+`native_control_matrix.json`. The artifact checker also validates native metric
+rows against the copied control matrix, rejecting off-matrix models or control
+families before analysis.
+
+Decision: **HYBRIDKERNEL PROMOTION ROWS NOW HAVE TO MATCH THE PREDECLARED
+CONTROL MATRIX**. The blocker remains the user-operated NVIDIA/vLLM Nsight
+packet.

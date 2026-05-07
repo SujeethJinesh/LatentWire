@@ -281,6 +281,34 @@ def _validate_profiled_process(field: str, value: str, errors: list[str]) -> Non
         )
 
 
+def _profile_scope_models(profile_scope: dict[str, object], errors: list[str]) -> set[str]:
+    models: set[str] = set()
+    top_level_model = str(profile_scope.get("model", "")).strip()
+    if top_level_model:
+        models.add(top_level_model)
+    model_scopes = profile_scope.get("model_scopes")
+    if model_scopes is None:
+        return models
+    if not isinstance(model_scopes, list) or not model_scopes:
+        errors.append("profile_scope.json model_scopes must be a non-empty list when present")
+        return models
+    for index, scope in enumerate(model_scopes):
+        if not isinstance(scope, dict):
+            errors.append(f"profile_scope.json model_scopes[{index}] must be an object")
+            continue
+        model = str(scope.get("model", "")).strip()
+        if not model:
+            errors.append(f"profile_scope.json model_scopes[{index}].model must be non-empty")
+        else:
+            models.add(model)
+        command = str(scope.get("vllm_command", "")).strip()
+        if "vllm" not in command.lower():
+            errors.append(
+                f"profile_scope.json model_scopes[{index}].vllm_command must mention vLLM"
+            )
+    return models
+
+
 def _is_utf8_text_sample(sample: bytes) -> bool:
     if not sample:
         return True
@@ -620,6 +648,67 @@ def _models_from_architecture_map(path: Path, errors: list[str]) -> set[str]:
     return models
 
 
+def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[str, object]]]:
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"native_control_matrix.json is invalid: {exc}")
+        return {}
+    rows = payload.get("rows") if isinstance(payload, dict) else None
+    if not isinstance(rows, list) or not rows:
+        errors.append("native_control_matrix.json must contain non-empty rows")
+        return {}
+    specs: dict[str, list[dict[str, object]]] = {}
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            errors.append(f"native_control_matrix.json row {index} must be an object")
+            continue
+        role = str(row.get("row_role", "")).strip()
+        if role not in ALLOWED_ROW_ROLES:
+            errors.append(f"native_control_matrix.json row {index} has invalid row_role")
+            continue
+        specs.setdefault(role, []).append(row)
+    return specs
+
+
+def _validate_native_control_matrix_rows(
+    *,
+    raw_rows: list[dict[str, object]],
+    control_specs: dict[str, list[dict[str, object]]],
+    errors: list[str],
+) -> None:
+    if not control_specs:
+        return
+    for index, row in enumerate(raw_rows):
+        role = str(row.get("row_role", "")).strip()
+        specs = control_specs.get(role, [])
+        if not specs:
+            errors.append(f"metric row {index} row_role is not predeclared in native_control_matrix.json")
+            continue
+        allowed_models: set[str] = set()
+        allowed_families: set[str] = set()
+        for spec in specs:
+            for field in ("model", "fallback_model_if_vram_allows"):
+                value = str(spec.get(field, "")).strip()
+                if value:
+                    allowed_models.add(value)
+            family = str(spec.get("control_family", "")).strip()
+            if family:
+                allowed_families.add(family)
+        model = str(row.get("model", "")).strip()
+        if allowed_models and model not in allowed_models:
+            errors.append(
+                f"metric row {index} model is not allowed by native_control_matrix.json for {role}"
+            )
+        family = str(row.get("control_family", "")).strip()
+        if allowed_families and family not in allowed_families:
+            errors.append(
+                f"metric row {index} control_family is not allowed by native_control_matrix.json for {role}"
+            )
+
+
 def check_run_artifacts(
     run_dir: Path,
     min_repeated_runs: int = 3,
@@ -685,6 +774,9 @@ def check_run_artifacts(
     architecture_models = _models_from_architecture_map(
         run_dir / "metadata/architecture_map.json", errors
     )
+    control_specs = _native_control_specs(
+        run_dir / "metadata/native_control_matrix.json", errors
+    )
 
     readout_path = run_dir / "readout.md"
     _reject_skeleton_todo(readout_path, "readout.md", errors)
@@ -702,6 +794,7 @@ def check_run_artifacts(
 
     profile_scope_path = run_dir / "metadata/profile_scope.json"
     profile_model = ""
+    profile_models: set[str] = set()
     _reject_skeleton_todo(profile_scope_path, "metadata/profile_scope.json", errors)
     if profile_scope_path.is_file():
         try:
@@ -709,6 +802,8 @@ def check_run_artifacts(
             profile_model = str(profile_scope.get("model", "")).strip()
             if not profile_model:
                 errors.append("profile_scope.json must contain non-empty model")
+            if isinstance(profile_scope, dict):
+                profile_models = _profile_scope_models(profile_scope, errors)
             profiled_process_fields = (
                 ["profiled_process", "nsys_profiled_process"]
                 if packet_mode == NO_BOUNDARY_SIGNAL_MODE
@@ -808,6 +903,11 @@ def check_run_artifacts(
                 for row in payload.get("rows", [])
                 if isinstance(row, dict) and not _is_pending_metric_row(row)
             ]
+            _validate_native_control_matrix_rows(
+                raw_rows=raw_native_rows,
+                control_specs=control_specs,
+                errors=errors,
+            )
             if len(raw_native_rows) == len(rows):
                 _validate_repeated_artifact_identity(
                     metric_rows=rows,
@@ -906,6 +1006,13 @@ def check_run_artifacts(
 
     if profile_model and metric_models and profile_model not in metric_models:
         errors.append("profile_scope.json model does not match profiler_metrics.json models")
+    if profile_models and metric_models and not metric_models.issubset(profile_models):
+        errors.append("profile_scope.json models do not cover profiler_metrics.json models")
+    if len(metric_models) > 1 and not profile_models.issuperset(metric_models):
+        errors.append(
+            "multi-model profiler_metrics.json requires profile_scope.json model_scopes "
+            "covering every metric model"
+        )
     if client_models and metric_models and not client_models.issubset(metric_models):
         errors.append("client replay model does not match profiler_metrics.json models")
     if architecture_models and metric_models and not metric_models.issubset(architecture_models):

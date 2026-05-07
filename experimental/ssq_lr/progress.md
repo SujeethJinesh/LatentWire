@@ -142,3 +142,14 @@ Decision: **S1 CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
 EVIDENCE**. The next exact gate is to fill one SSQ-LR template from a real
 hybrid SSM-state capture, build the packet, and validate it with
 `check_gate_packet --mode real --project ssq_lr`.
+
+## 2026-05-07 Model-Alias Guard
+
+The shared architecture maps now carry canonical model IDs and registered
+served/HF aliases. The packet builder canonicalizes a served ID such as
+`ibm-granite/granite-4.0-h-tiny` to the architecture-map slug while preserving
+the served value as `served_model_id` in `config.json`; the checker accepts only
+registered aliases with the matching architecture hash.
+
+Decision: **S1 PACKETS CAN USE SERVED HF IDS WITHOUT BREAKING PROVENANCE**. The
+blocker remains a real hybrid SSM-state capture.

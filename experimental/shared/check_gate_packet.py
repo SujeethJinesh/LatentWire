@@ -182,21 +182,28 @@ def _load_json(path: Path) -> Any:
         return json.load(handle)
 
 
-def _known_architecture_hashes() -> dict[str, str]:
+def _known_architecture_hashes() -> dict[str, tuple[str, str]]:
     try:
         maps = _load_json(ARCHITECTURE_MAPS_PATH)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
     if not isinstance(maps, list):
         return {}
-    known: dict[str, str] = {}
+    known: dict[str, tuple[str, str]] = {}
     for row in maps:
         if not isinstance(row, dict):
             continue
         model_id = str(row.get("model_id", "")).strip()
         config_sha = str(row.get("config_sha256", "")).strip().lower()
         if model_id and re.fullmatch(r"[0-9a-f]{64}", config_sha):
-            known[model_id] = f"sha256:{config_sha}"
+            expected = (model_id, f"sha256:{config_sha}")
+            known[model_id] = expected
+            aliases = row.get("model_id_aliases", [])
+            if isinstance(aliases, list):
+                for alias in aliases:
+                    alias_text = str(alias).strip()
+                    if alias_text:
+                        known[alias_text] = expected
     return known
 
 
@@ -406,10 +413,10 @@ def _validate_architecture_map_provenance(config: dict[str, Any], errors: list[s
     if not known:
         errors.append("architecture map provenance artifact is unavailable")
         return
-    expected = known.get(model_id)
-    if expected is None:
+    resolved = known.get(model_id)
+    if resolved is None:
         errors.append("config.json model_id must match a model in the shared architecture map artifact")
-    elif architecture_map_hash != expected:
+    elif architecture_map_hash != resolved[1]:
         errors.append(
             "config.json architecture_map_hash must match shared architecture map config hash for model_id"
         )

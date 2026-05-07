@@ -61,13 +61,27 @@ server-side CUDA work:
   "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
   "request_driver_process": "profiler_driver_http_client",
   "model": "$MODEL",
-  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests",
+  "model_scopes": [
+    {
+      "row_role": "primary_hybrid,same_family_control",
+      "model": "$MODEL",
+      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+    },
+    {
+      "row_role": "cross_family_falsification",
+      "model": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen3-Next-80B-A3B-Instruct --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+    }
+  ]
 }
 ```
 
 Accepted values for profiler process fields are `vllm_server` or
 `single_process_vllm_benchmark`. `http_client`, `profiler_driver`, `curl`, or
 manual API calls are not admissible profiler scopes.
+If `profiler_metrics.json` contains more than one model, `model_scopes` must
+cover every metric model with the actual vLLM command used for that model.
 
 The checker also rejects tiny or placeholder profiler exports. By default each
 matched Nsight artifact must be at least 1024 bytes and must not contain

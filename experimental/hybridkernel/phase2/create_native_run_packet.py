@@ -95,7 +95,8 @@ PY
 """
 
 
-def _profile_scope(model: str) -> dict[str, str]:
+def _profile_scope(model: str) -> dict[str, object]:
+    qwen_model = "Qwen/Qwen3-Next-80B-A3B-Instruct"
     return {
         "profiled_process": "vllm_server",
         "nsys_profiled_process": "vllm_server",
@@ -109,6 +110,26 @@ def _profile_scope(model: str) -> dict[str, str]:
             "python -m vllm.entrypoints.openai.api_server "
             f"--model {model} --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
         ),
+        "model_scopes": [
+            {
+                "row_role": "primary_hybrid,same_family_control",
+                "model": model,
+                "vllm_command": (
+                    "python -m vllm.entrypoints.openai.api_server "
+                    f"--model {model} --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+                ),
+                "scope": "Granite primary boundary and same-model non-boundary control rows",
+            },
+            {
+                "row_role": "cross_family_falsification",
+                "model": qwen_model,
+                "vllm_command": (
+                    "python -m vllm.entrypoints.openai.api_server "
+                    f"--model {qwen_model} --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+                ),
+                "scope": "Qwen3-Next cross-family falsification rows",
+            },
+        ],
         "notes": "Update this JSON if the actual server command or profiling scope differs.",
     }
 

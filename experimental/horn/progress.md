@@ -173,3 +173,16 @@ Decision: **H1A CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
 EVIDENCE**. The next exact gate is to fill one HORN template from a real
 boundary-activation capture, build the packet, and validate it with
 `check_gate_packet --mode real --project horn`.
+
+## 2026-05-07 Model-Alias and Permuted-Tensor Guard
+
+The shared architecture maps now carry canonical model IDs and registered
+served/HF aliases, so real H1a packets can preserve a served ID as
+`served_model_id` while validating rows against the canonical map ID. The
+capture manifests also now encode HORN `permuted_direction` rows with
+`tensor_alias_of`, and the builder reuses the observed boundary tensor for the
+flipped-label control. This prevents a real capture from dumping independent
+permuted tensors that the checker would later reject as metric-mismatched.
+
+Decision: **H1A PACKETS NOW REPRESENT PERMUTED CONTROLS AS METADATA ALIASES**.
+The blocker remains a real boundary-activation capture.

@@ -89,6 +89,7 @@ def _base_metadata(
     return {
         "_template_only": True,
         "fill_before_use": [
+            "served_model_id",
             "model_revision",
             "tokenizer_revision",
             "context_lengths",
@@ -97,6 +98,8 @@ def _base_metadata(
             "command",
         ],
         "model_id": model_id,
+        "canonical_model_id": model_id,
+        "served_model_id": TEMPLATE_MARKER,
         "model_revision": TEMPLATE_MARKER,
         "tokenizer_revision": TEMPLATE_MARKER,
         "prompt_source": str(trace_config["prompt_source"]),
@@ -134,8 +137,9 @@ def _ssq_lr_entries(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def _horn_entries(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [
-        {
+    entries = []
+    for row in rows:
+        entry = {
             "tensor": str(row["tensor_name"]),
             "prompt_id": str(row["prompt_id"]),
             "layer_left": int(row["layer_left"]),
@@ -147,8 +151,12 @@ def _horn_entries(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "post_norm_position": str(row["post_norm_position"]),
             "control_type": str(row["control_type"]),
         }
-        for row in rows
-    ]
+        if str(row["control_type"]) == "permuted_direction":
+            entry["tensor_alias_of"] = str(row["tensor_name"]).replace(
+                "/permuted_label", "/observed"
+            )
+        entries.append(entry)
+    return entries
 
 
 def _hbsm_entry_templates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -160,6 +168,12 @@ def _hbsm_entry_templates(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "layer": int(row["layer"]),
                 "boundary_flag": bool(row["boundary_flag"]),
                 "precision_perturbation": str(row["precision_perturbation"]),
+                "kl_or_nll_drift": TEMPLATE_MARKER,
+                "cheap_predictor": TEMPLATE_MARKER,
+                "parameter_count": TEMPLATE_MARKER,
+                "weight_norm": TEMPLATE_MARKER,
+                "top_decile_flag": TEMPLATE_MARKER,
+                "random_top_decile": TEMPLATE_MARKER,
                 "train_test_split": str(row["train_test_split"]),
                 "control_type": str(row["control_type"]),
                 "required_metric_fields": [

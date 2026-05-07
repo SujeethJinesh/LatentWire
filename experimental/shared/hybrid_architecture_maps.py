@@ -24,6 +24,19 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _model_aliases(model_id: str) -> list[str]:
+    aliases = {model_id}
+    lowered = model_id.lower()
+    if lowered.startswith("ibm-granite-"):
+        name = model_id.removeprefix("ibm-granite-")
+        aliases.add(f"ibm-granite/granite-{name}")
+        if name == "4.0-h-small":
+            aliases.add("ibm-granite/granite-4.0-h-small-FP8")
+    if lowered == "qwen3-next-80b-a3b-instruct":
+        aliases.add("Qwen/Qwen3-Next-80B-A3B-Instruct")
+    return sorted(aliases)
+
+
 def _infer_layer_kinds(config: dict[str, Any]) -> list[LayerKind]:
     layer_types = config.get("layer_types")
     if layer_types:
@@ -55,10 +68,13 @@ def build_map(config_path: Path) -> dict[str, Any]:
     for boundary in boundaries:
         direction_counts[boundary.direction] = direction_counts.get(boundary.direction, 0) + 1
 
+    model_id = config_path.name.removesuffix(".config.json")
     return {
         "config": config_path.name,
         "config_sha256": _sha256(config_path),
-        "model_id": config_path.name.removesuffix(".config.json"),
+        "model_id": model_id,
+        "canonical_model_id": model_id,
+        "model_id_aliases": _model_aliases(model_id),
         "architecture": ",".join(config.get("architectures", [])),
         "model_type": config.get("model_type", ""),
         "hidden_size": int(config.get("hidden_size", 0)),

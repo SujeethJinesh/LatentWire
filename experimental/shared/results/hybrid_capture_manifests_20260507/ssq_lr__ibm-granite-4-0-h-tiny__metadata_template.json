@@ -1,6 +1,7 @@
 {
   "_template_only": true,
   "architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
+  "canonical_model_id": "ibm-granite-4.0-h-tiny",
   "capture_manifest_claim_boundary": [
     "capture-manifest-template",
     "not model evidence",
@@ -13,6 +14,7 @@
   "device": "TO_FILL_BEFORE_CAPTURE",
   "dtype": "TO_FILL_BEFORE_CAPTURE",
   "fill_before_use": [
+    "served_model_id",
     "model_revision",
     "tokenizer_revision",
     "context_lengths",
@@ -28,6 +30,7 @@
   "seed_list": [
     1
   ],
+  "served_model_id": "TO_FILL_BEFORE_CAPTURE",
   "ssq_lr_entries": [
     {
       "control_type": "bf16_no_quant",

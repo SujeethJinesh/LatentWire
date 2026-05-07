@@ -11,6 +11,9 @@
 > preregistration artifact and a fresh/larger sparse-cache surface.
 
 ## TL;DR
+Historical positive-method plan below. It is retained only to document what was
+ruled out; do not cite or execute this TL;DR as an active project status.
+
 Reasoning models generate tens of thousands of tokens; KV cache pressure is the dominant cost. Existing methods (LongFlow, ThinKV, R-KV) compress aggressively and may drop useful reasoning states. This project tests whether a retrofit policy combining low-bit KV quantization, sink/anchor protection, and reasoning-phase-aware eviction survives crowded-baseline review. Targets: GPT-OSS-20B, Qwen3.6-27B (thinking mode), Apriel-H1-15B-Thinker, Nemotron-3-Nano.
 
 ## Hypothesis (testable)

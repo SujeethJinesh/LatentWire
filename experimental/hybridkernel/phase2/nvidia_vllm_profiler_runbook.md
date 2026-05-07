@@ -114,10 +114,27 @@ cat > "$HWK_RUN/metadata/profile_scope.json" <<JSON
   "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
   "request_driver_process": "profiler_driver_http_client",
   "model": "$MODEL",
-  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests",
+  "model_scopes": [
+    {
+      "row_role": "primary_hybrid,same_family_control",
+      "model": "$MODEL",
+      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+    },
+    {
+      "row_role": "cross_family_falsification",
+      "model": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen3-Next-80B-A3B-Instruct --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+    }
+  ]
 }
 JSON
 ```
+
+If you cannot run the cross-family model, leave the metric rows absent and
+record the missing control in `readout.md`; the packet is then audit-only. Do
+not keep a Qwen metric row without a matching `model_scopes` entry and client
+replay log.
 
 ## Workload Matrix
 
@@ -360,13 +377,13 @@ report a single trace screenshot as a positive result.
 
 ## Parser Input
 
-After reducing the Nsight traces, copy this repository's template and fill one
-row per repeated run:
-
-```bash
-cp "$HWK_ROOT/phase2/profiler_metrics_template.json" \
-  "$HWK_RUN/profiler_metrics.json"
-```
+After reducing the Nsight traces, fill the generated
+`$HWK_RUN/profiler_metrics.json` skeleton created by
+`create_native_run_packet.py`. Do not copy
+`phase2/profiler_metrics_template.json` for the live GPU run; that file is a
+minimal parser template, while the generated packet already contains the
+predeclared primary, same-family control, and cross-family falsification row
+shape.
 
 Required fields:
 
@@ -518,8 +535,8 @@ Promote HybridKernel to implementation only if all are true:
 - the result survives at least three distinct repeated runs, three same-shape
   same-family control rows, and three same-shape cross-family falsification
   rows;
-- the readout separates source communication from target-cache or runtime-cache
-  effects.
+- the readout separates boundary-local runtime/cache effects from generic
+  CUDA graph, warmup, batching, and unrelated-kernel effects.
 - `check_profiler_run_artifacts.py` passes for the exact run directory being
   cited.
 

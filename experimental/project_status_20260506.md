@@ -25,7 +25,9 @@ Shared Mac-local utilities live in `experimental/shared/`:
 - `activation_dumper.py`: tensor-packet read/write helpers.
 - `boundary_inspector.py`: attention/SSM boundary identification.
 - `hybrid_architecture_maps.py`: config-derived explicit boundary maps for
-  future real trace packets.
+  future real trace packets. The maps now include `canonical_model_id` and
+  `model_id_aliases` so packet builders can preserve served HF IDs while
+  checking rows against the canonical architecture-map ID.
 - `hybrid_model_eligibility.py`: metadata-only HF size/cache preflight for
   live hybrid targets.
 - `hybrid_trace_plan.py`: deterministic SSQ-LR/HORN/HBSM capture plan from the
@@ -45,7 +47,8 @@ Shared Mac-local utilities live in `experimental/shared/`:
   `RESOURCE_LIMITED_NOT_PROMOTABLE_...` packet decision, even if the recomputed
   smoke-gate status would otherwise pass. The builder rejects unfilled capture
   templates marked `_template_only: true` or containing `TO_FILL_BEFORE_CAPTURE`
-  markers.
+  markers, canonicalizes registered served/HF model IDs, and supports HORN
+  `tensor_alias_of` so permuted-direction rows reuse observed boundary tensors.
 - `hybrid_gate_evaluators.py`: recomputes SSQ-LR S1, HORN H1, and HBSM B1
   decision fields from raw rows so summaries cannot be hand-filled. SSQ-LR now
   uses prompt-level bootstrap-style lower bounds plus Holm-corrected two-sample
@@ -95,7 +98,8 @@ The checker now has a stricter real-packet mode:
 Real packets must include provenance, `summary.md`, matching `row_count`,
 project-specific row schemas, required controls, admissible coverage,
 `prompt_ids_hash`, `architecture_map_hash`, `trace_plan_hash`, and
-decision-grade `summary.json` aggregates. Non-rehearsal real packets now verify `model_id` and
+decision-grade `summary.json` aggregates. Non-rehearsal real packets now verify `model_id`
+or a registered model alias and
 `architecture_map_hash` against
 `shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`, not
 just hash syntax, and verify `trace_plan_hash` against the project hash in
@@ -143,6 +147,9 @@ reduced metric row from citing a missing or external artifact.
 The checker also rejects reuse of the same Nsight Systems or Nsight Compute
 artifact across any non-pending metric rows, including across primary,
 same-family control, and cross-family falsification roles.
+It now also rejects metric rows outside the copied `native_control_matrix.json`
+and multi-model metric packets whose `profile_scope.json` lacks per-model
+`model_scopes`.
 The profiler reducer now refuses prototype promotion unless the same metric
 packet includes at least three matched same-family control rows and three
 cross-family falsification rows on the same request/runtime shape, and those

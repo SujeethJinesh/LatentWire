@@ -174,6 +174,49 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
     )
 
 
+def _add_qwen_control_rows(run_dir: Path) -> None:
+    (run_dir / "metadata/architecture_map.json").write_text(
+        '[{"model":"granite","boundary_count":1},{"model":"qwen","boundary_count":1}]\n',
+        encoding="utf-8",
+    )
+    client_payload = json.loads((run_dir / "logs/client_replay_b1.log").read_text(encoding="utf-8"))
+    client_payload["model"] = "qwen"
+    (run_dir / "logs/client_replay_qwen.log").write_text(
+        json.dumps(client_payload) + "\n",
+        encoding="utf-8",
+    )
+    metrics_path = run_dir / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    qwen_rows = []
+    for idx, base in enumerate(payload["rows"]):
+        row = dict(base)
+        row.update(
+            {
+                "model": "qwen",
+                "run_id": f"qwen-{idx}",
+                "row_role": "cross_family_falsification",
+                "control_family": "cross_family_hybrid_control",
+                "control_model_or_segment": "qwen_hybrid_control",
+                "attention_ssm_boundary_ms": 2.0,
+                "matched_non_boundary_ms": 1.9,
+                "boundary_indices": [0],
+            }
+        )
+        qwen_rows.append(row)
+    payload["rows"].extend(qwen_rows)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (run_dir / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (run_dir / "profiler_analysis_gate.md").write_text(
+        "# HybridKernel Profiler Analysis Gate\n\n"
+        f"Status: **{analysis['status']}**\n",
+        encoding="utf-8",
+    )
+
+
 def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
 
@@ -184,6 +227,42 @@ def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     assert result["model_run_counts"] == {"granite": 3}
     assert result["model_distinct_run_counts"] == {"granite": 3}
     assert max(result["model_config_run_counts"].values()) == 3
+
+
+def test_rejects_multi_model_metrics_without_profile_model_scopes(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    _add_qwen_control_rows(tmp_path)
+
+    result = check_run_artifacts(tmp_path, require_native_artifacts=False)
+
+    assert result["status"] == "FAIL"
+    assert any("profile_scope.json models do not cover" in error for error in result["errors"])
+    assert any("multi-model profiler_metrics.json requires" in error for error in result["errors"])
+
+
+def test_accepts_multi_model_metrics_with_profile_model_scopes(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    _add_qwen_control_rows(tmp_path)
+    profile_scope_path = tmp_path / "metadata/profile_scope.json"
+    profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
+    profile_scope["model_scopes"] = [
+        {
+            "model": "granite",
+            "row_role": "primary_hybrid,same_family_control",
+            "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
+        },
+        {
+            "model": "qwen",
+            "row_role": "cross_family_falsification",
+            "vllm_command": "python -m vllm.entrypoints.openai.api_server --model qwen",
+        },
+    ]
+    profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path, require_native_artifacts=False)
+
+    assert result["status"] == "PASS"
+    assert set(result["model_run_counts"]) == {"granite", "qwen"}
 
 
 def test_primary_gate_clear_without_controls_stays_audit_only(tmp_path: Path) -> None:
@@ -821,6 +900,24 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
     assert result["status"] == "FAIL"
     assert any("reuse the same Nsight Systems artifact" in error for error in result["errors"])
     assert any("reuse the same Nsight Compute artifact" in error for error in result["errors"])
+
+
+def test_rejects_metric_rows_outside_native_control_matrix(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["model"] = "off-matrix-granite"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path, require_native_artifacts=False)
+
+    assert result["status"] == "FAIL"
+    assert any("not allowed by native_control_matrix" in error for error in result["errors"])
 
 
 def test_requires_repeated_rows_for_same_run_config(tmp_path: Path) -> None:

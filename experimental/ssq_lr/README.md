@@ -79,7 +79,10 @@ For SSQ-LR, the current templates live under
 `ssq_lr__<model_slug>__metadata_template.json`. They are not model evidence:
 fill every `TO_FILL_BEFORE_CAPTURE` field from a real SSM-state capture before
 using `hybrid_trace_packet_builder`. The builder rejects `_template_only: true`
-templates and unfilled markers.
+templates and unfilled markers. If the capture records a served HF model ID
+such as `ibm-granite/granite-4.0-h-tiny`, the builder preserves it as
+`served_model_id` and canonicalizes row `model_id` to the shared architecture
+map slug before validation.
 
 Validate the first real S1 packet with:
 

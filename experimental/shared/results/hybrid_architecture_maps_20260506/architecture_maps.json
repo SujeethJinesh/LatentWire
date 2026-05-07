@@ -68,6 +68,7 @@
       }
     ],
     "boundary_count": 8,
+    "canonical_model_id": "ibm-granite-4.0-h-small",
     "config": "ibm-granite-4.0-h-small.config.json",
     "config_sha256": "8616e9f0b30e6fac9696f7c1e1dbd08f1a850ac4af0de6353f7d6009043702ae",
     "direction_counts": {
@@ -118,6 +119,11 @@
       "ssm"
     ],
     "model_id": "ibm-granite-4.0-h-small",
+    "model_id_aliases": [
+      "ibm-granite-4.0-h-small",
+      "ibm-granite/granite-4.0-h-small",
+      "ibm-granite/granite-4.0-h-small-FP8"
+    ],
     "model_type": "granitemoehybrid",
     "num_hidden_layers": 40
   },
@@ -190,6 +196,7 @@
       }
     ],
     "boundary_count": 8,
+    "canonical_model_id": "ibm-granite-4.0-h-tiny",
     "config": "ibm-granite-4.0-h-tiny.config.json",
     "config_sha256": "bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
     "direction_counts": {
@@ -240,6 +247,10 @@
       "ssm"
     ],
     "model_id": "ibm-granite-4.0-h-tiny",
+    "model_id_aliases": [
+      "ibm-granite-4.0-h-tiny",
+      "ibm-granite/granite-4.0-h-tiny"
+    ],
     "model_type": "granitemoehybrid",
     "num_hidden_layers": 40
   },
@@ -432,6 +443,7 @@
       }
     ],
     "boundary_count": 23,
+    "canonical_model_id": "qwen3-next-80b-a3b-instruct",
     "config": "qwen3-next-80b-a3b-instruct.config.json",
     "config_sha256": "2d483c7cabad7c8704478ed4038fa7e7b2eff840bc00a118eccbe38e2b488303",
     "direction_counts": {
@@ -490,6 +502,10 @@
       "attention"
     ],
     "model_id": "qwen3-next-80b-a3b-instruct",
+    "model_id_aliases": [
+      "Qwen/Qwen3-Next-80B-A3B-Instruct",
+      "qwen3-next-80b-a3b-instruct"
+    ],
     "model_type": "qwen3_next",
     "num_hidden_layers": 48
   }
