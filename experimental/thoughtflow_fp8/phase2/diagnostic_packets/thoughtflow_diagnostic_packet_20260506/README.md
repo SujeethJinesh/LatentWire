@@ -22,9 +22,9 @@ Then inspect:
   claim boundary.
 
 This tracked packet lives outside ignored `results/` directories so
-clean checkouts can run the saved-artifact tests. The manifest's git head is
-the historical packet-generation commit; its script SHA is the current builder
-file hash used by the verifier to detect drift.
+clean checkouts can run the saved-artifact tests. The manifest's git
+head is the historical packet-generation commit; its script SHA is
+the current builder file hash used by the verifier to detect drift.
 This packet does not reopen the stopped RDU/PSI/VWAC branches.
 
 Local correctness command:

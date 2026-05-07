@@ -54,7 +54,7 @@
       "path": "rdu_robustness_diagnostic.json",
       "positive_method_claim_allowed": false,
       "provenance": {
-        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py",
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py --json-output .debug/thoughtflow_replay/rdu_robustness_diagnostic.json --md-output .debug/thoughtflow_replay/rdu_robustness_diagnostic.md",
         "input_hashes": {
           "experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.json": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9"
         },
@@ -88,7 +88,7 @@
       "path": "rdu_no_retune_reproduction_check.json",
       "positive_method_claim_allowed": false,
       "provenance": {
-        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.py",
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.py --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --json-output .debug/thoughtflow_replay/rdu_no_retune_reproduction_check.json --md-output .debug/thoughtflow_replay/rdu_no_retune_reproduction_check.md",
         "input_hashes": {
           "experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.json": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9",
           "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl": "sha256:5e43164b8f6afc55abacff6e183d96eb859f8af4521a8ed142915329498d0d6c",
@@ -112,7 +112,9 @@
             "max_length": 96,
             "max_traces": 74,
             "model_name": "distilgpt2",
-            "n_scored_traces": 74
+            "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+            "n_scored_traces": 74,
+            "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
           },
           "measured_reproduction": {
             "continuation_tokens": 24,
@@ -120,8 +122,12 @@
             "max_length": 96,
             "max_traces": 74,
             "model_name": "distilgpt2",
-            "n_scored_traces": 74
-          }
+            "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+            "n_scored_traces": 74,
+            "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
+          },
+          "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+          "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
         }
       },
       "role": "historical_positive_same_surface",
@@ -142,7 +148,7 @@
       "path": "rdu_alt_surface_reproduction_check.json",
       "positive_method_claim_allowed": false,
       "provenance": {
-        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.py",
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.py --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --json-output .debug/thoughtflow_replay/rdu_alt_surface_reproduction_check.json --md-output .debug/thoughtflow_replay/rdu_alt_surface_reproduction_check.md",
         "input_hashes": {
           "experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.json": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9",
           "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl": "sha256:5e43164b8f6afc55abacff6e183d96eb859f8af4521a8ed142915329498d0d6c",
@@ -166,7 +172,9 @@
             "max_length": 96,
             "max_traces": 74,
             "model_name": "distilgpt2",
-            "n_scored_traces": 74
+            "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+            "n_scored_traces": 74,
+            "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
           },
           "cached_surface": {
             "continuation_tokens": 24,
@@ -174,7 +182,9 @@
             "max_length": 96,
             "max_traces": 74,
             "model_name": "distilgpt2",
-            "n_scored_traces": 74
+            "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+            "n_scored_traces": 74,
+            "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
           },
           "measured_reproduction": {
             "continuation_tokens": 32,
@@ -182,7 +192,9 @@
             "max_length": 112,
             "max_traces": 74,
             "model_name": "distilgpt2",
-            "n_scored_traces": 73
+            "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+            "n_scored_traces": 73,
+            "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
           },
           "measured_surface": {
             "continuation_tokens": 32,
@@ -190,8 +202,12 @@
             "max_length": 112,
             "max_traces": 74,
             "model_name": "distilgpt2",
-            "n_scored_traces": 73
-          }
+            "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+            "n_scored_traces": 73,
+            "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
+          },
+          "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+          "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
         }
       },
       "role": "same_family_falsification",
@@ -225,7 +241,7 @@
       "path": "rdu_independent_trace_reproduction_check.json",
       "positive_method_claim_allowed": false,
       "provenance": {
-        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py",
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --input-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/source_alone.jsonl --input-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/text_to_text.jsonl --input-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl --json-output .debug/thoughtflow_replay/rdu_independent_trace_reproduction_check.json --md-output .debug/thoughtflow_replay/rdu_independent_trace_reproduction_check.md",
         "input_hashes": {
           "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/source_alone.jsonl": "sha256:d3781fbe8d6b9f5bd12db298bc8d22ba194e0ce97e9eb4e8047a2cc8bac31e68",
           "results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl": "sha256:202336cb3f516afff6633e39f3ecb069a39456f1ff894b47373f93e819e77304",
@@ -243,7 +259,9 @@
             "max_length": 96,
             "max_traces": 74,
             "model_name": "distilgpt2",
-            "n_scored_traces": 74
+            "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+            "n_scored_traces": 74,
+            "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
           },
           "measured_reproduction": {
             "continuation_tokens": 24,
@@ -251,8 +269,12 @@
             "max_length": 96,
             "max_traces": 96,
             "model_name": "distilgpt2",
-            "n_scored_traces": 89
-          }
+            "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+            "n_scored_traces": 89,
+            "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
+          },
+          "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+          "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
         }
       },
       "role": "cross_family_falsification",
@@ -366,10 +388,10 @@
   },
   "generated_date": "2026-05-06",
   "git": {
-    "head_at_generation": "8d8e6f440994434ad4f3f6e68e73eca561e570a5",
+    "head_at_generation": "6c0f6e886249acfd3e66bedec0e006d21af3fe1a",
     "thoughtflow_path_dirty_at_generation": false,
     "thoughtflow_path_status_at_generation": "",
-    "thoughtflow_path_tree_at_generation": "a0e755290a60ff3233be0516362ace222d9f4b6d"
+    "thoughtflow_path_tree_at_generation": "556cd771b912725978df883e9880c0c111643d8f"
   },
   "packet_name": "thoughtflow_diagnostic_packet_20260506",
   "preregistrations": [
@@ -395,7 +417,9 @@
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py --output .debug/thoughtflow_diagnostic_packet_check",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:7ec9548fcbd7d12af7a9fcf13e3c881f6da3ba85fcf4ee5a362d9de0a5938b49",
+    "sha256": "sha256:068b4a941e9f9d96a40e890ef3106afe97c498959e8974fb6eea0f09fb31db90",
     "sha256_role": "current builder-file integrity hash for verifier drift detection; git.head_at_generation records the historical packet generation commit"
-  }
+  },
+  "tracked_input_paths_clean_at_generation": true,
+  "tracked_input_paths_status_at_generation": ""
 }
