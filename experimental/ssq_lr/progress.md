@@ -1,5 +1,17 @@
 # SSQ-LR Progress
 
+## 2026-05-07 Kill Decision
+
+Status: **KILLED as an active COLM positive-method branch under the current
+recipe**.
+
+Kill marker: `../KILLED_ssq_lr_cross_model_transfer/`
+
+Reason: the frozen `mixed_int3_mxfp4_low_error_25pct` recipe on layers `0,30`
+fails no-retuning S3 transfer to Granite 350M, and layer-0 rescue diagnostics
+also fail two-model S3. No GPU handoff is admissible under the current
+preregistered hypothesis.
+
 ## Current Supersession Note
 
 The current SSQ-LR recipe is stopped by the 2026-05-07 no-retuning S3 transfer
@@ -387,7 +399,7 @@ different low-bit recipes, so no single frozen recipe passes both models under
 the current S3 contract. Do not GPU-promote SSQ-LR without a new
 preregistered recipe/layer rule.
 
-Current recipe status: **DEMOTED / STOPPED FOR GPU HANDOFF**. The stopped
+Current recipe status: **KILLED FOR COLM / STOPPED FOR GPU HANDOFF**. The stopped
 recipe is `mixed_int3_mxfp4_low_error_25pct` on layers `0,30`; the layer-0
 mixed25 and INT3 follow-ups are post-hoc diagnostics and cannot be converted
 into promotion rows.

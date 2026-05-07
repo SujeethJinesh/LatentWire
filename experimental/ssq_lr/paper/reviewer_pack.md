@@ -1,6 +1,10 @@
 # SSQ-LR Reviewer Pack
 
-- status: stopped current recipe; diagnostic only unless newly preregistered.
+- status: killed as an active COLM positive-method branch under the current
+  recipe.
+- kill marker: `experimental/KILLED_ssq_lr_cross_model_transfer/`
+- stop manifest: `experimental/ssq_lr/phase2/s3_transfer_repro_manifest_20260507.md`
+- stopped-recipe note: diagnostic only unless newly preregistered.
   S1b state heterogeneity is real but the current frozen state-quantization
   recipe fails transfer
 - current decision: no GPU handoff under the current recipe; Granite 350M

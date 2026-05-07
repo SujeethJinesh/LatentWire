@@ -9,17 +9,18 @@
 
 1. **HybridKernel profiler packet**: useful only if native vLLM profiling finds
    separable attention/SSM boundary overhead.
-2. **SSQ-LR**: current recipe failed 12-prompt no-retuning transfer to Granite
-   350M; no GPU validation until a newly preregistered recipe clears S1--S3
-   without per-model retuning.
-3. **HORN**: no GPU validation until a newly preregistered reopening produces
-   real H1a/H1/H2/H3 boundary controls with cross-model directional asymmetry
-   and noise-propagation sensitivity.
-4. **HBSM**: no GPU validation until a newly preregistered B1/B2/B3 mechanism
-   hypothesis survives the KL-style and activation/outlier baselines.
-5. **ThoughtFlow-FP8**: no GPU work for the current branch set (`rdu_topk`,
+2. **ThoughtFlow-FP8**: no GPU work for the current branch set (`rdu_topk`,
    `psi_topk`, or `vwac_topk`). Reopen only after a new preregistered utility
    signal exists and passes a fresh/larger frozen sparse-cache surface.
+
+Killed, no GPU handoff under current hypotheses:
+
+- **SSQ-LR**: killed by S3 no-retuning transfer failure. See
+  `experimental/KILLED_ssq_lr_cross_model_transfer/`.
+- **HORN**: killed by weak H2 directional noise propagation. See
+  `experimental/KILLED_horn_directional_noise_propagation/`.
+- **HBSM**: killed by failed B1 sensitivity heterogeneity. See
+  `experimental/KILLED_hbsm_sensitivity_heterogeneity/`.
 
 ## HybridKernel
 
@@ -83,14 +84,14 @@ speed table:
   "$QUALITY_SMOKE_JSON" --repo-root "$PWD"
 ```
 
-## SSQ-LR / HORN / HBSM
+## Killed Branches: SSQ-LR / HORN / HBSM
 
-These branches do not have a GPU handoff yet. Under the current evidence,
-admissible Mac work is limited to revalidating existing stop packets,
-documentation/tests/runbook hygiene, or writing a new preregistration before
-any new rows are collected. A newly preregistered reopening would build real
-shared trace packets from saved Mac/GPU tensors or sensitivity rows and validate
-them with:
+These branches are killed as active COLM positive-method branches under their
+current preregistered hypotheses. Under the current evidence, admissible work is
+limited to revalidating existing stop packets, documentation/tests/runbook
+hygiene, or writing a new preregistration before any new rows are collected. A
+newly preregistered reopening would build real shared trace packets from saved
+Mac/GPU tensors or sensitivity rows and validate them with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
@@ -100,12 +101,19 @@ them with:
 
 Resource-limited trace packets are allowed only as hook/schema diagnostics and
 must carry a `RESOURCE_LIMITED_NOT_PROMOTABLE` decision. Full GPU validation is
-blocked until the Mac/shared trace gates identify a surviving recipe or
-mechanism.
-As of 2026-05-07, SSQ-LR has no surviving GPU handoff recipe: the frozen
-`0,30` mixed INT3/MXFP4 recipe fails Granite 350M transfer, and layer-0 rescue
-diagnostics fail two-model S3 because Granite Tiny and Granite 350M prefer
-different frozen recipes.
+blocked until a new preregistered Mac/shared trace gate identifies a surviving
+recipe or mechanism.
+
+As of 2026-05-07:
+
+- SSQ-LR has no surviving GPU handoff recipe: the frozen `0,30` mixed
+  INT3/MXFP4 recipe fails Granite 350M transfer, and layer-0 rescue diagnostics
+  fail two-model S3 because Granite Tiny and Granite 350M prefer different
+  frozen recipes.
+- HORN has no surviving GPU handoff: H2 directional noise propagation is
+  near-null (`1.037` ratio, lower `0.324`, support `0.5`).
+- HBSM has no surviving GPU handoff: B1 sensitivity heterogeneity fails with
+  boundary top-decile count `0` and cheap-predictor Spearman `-0.667`.
 
 For a newly preregistered reopening only, use the deterministic trace plan
 before collecting tensors or sensitivity rows:

@@ -5,7 +5,12 @@ below FP16 without quality loss during long reasoning.
 
 ## Current Readiness
 
-Status: **STOPPED current recipe / diagnostic only unless newly preregistered**.
+Status: **KILLED as an active COLM positive-method branch under the current
+recipe**.
+
+Kill marker: `../KILLED_ssq_lr_cross_model_transfer/`
+
+Stop manifest: `phase2/s3_transfer_repro_manifest_20260507.md`
 
 Estimated completion:
 
@@ -47,8 +52,8 @@ Primary preregistration:
 Gate S1 tests state distribution heterogeneity. Gate S2 tests simulated state
 quantization sensitivity. Gate S3 tests cross-model transfer without retuning.
 
-Current executable scope: S1 has the strict real trace packet builder/checker
-path. S2/S3 now have follow-up contract checks in
+Current executable scope is historical/audit-only. S1 has the strict real trace
+packet builder/checker path. S2/S3 now have follow-up contract checks in
 `../shared/followup_gate_contracts.py`, and resource-limited S2 scouts exist.
 They are not current evidence for promotion: no
 quantization-quality, byte-savings, or cross-model-transfer claim is allowed

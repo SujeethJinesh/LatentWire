@@ -1,6 +1,9 @@
 # HORN Reviewer Pack
 
-- status: demoted Mac-gate control branch; no positive asymmetry result
+- status: killed as an active COLM positive-method branch; no positive
+  asymmetry result
+- kill marker: `experimental/KILLED_horn_directional_noise_propagation/`
+- stop manifest: `experimental/horn/phase2/h2_noise_replay_repro_manifest_20260507.md`
 - current decision: H1a and H2 scouts both fail on Granite Tiny
 - camera-readiness: Not camera-ready; needs real H1/H2/H3 tables before any
   standalone method or measurement submission

@@ -5,8 +5,12 @@ explained and predicted more cheaply than full forward-pass KL sweeps.
 
 ## Current Readiness
 
-Status: **DEMOTED CONTROL / resource-limited B1 scouts failed unless a new
-narrower mechanism is preregistered**.
+Status: **KILLED as an active COLM positive-method branch under the current
+broad sensitivity-heterogeneity hypothesis**.
+
+Kill marker: `../KILLED_hbsm_sensitivity_heterogeneity/`
+
+Stop manifest: `phase2/b1_prompt2_repro_manifest_20260507.md`
 
 Estimated completion:
 
@@ -37,7 +41,7 @@ Primary preregistration:
 B1 replicates sensitivity heterogeneity on current hybrids. B2 tests
 no-forward-pass predictors. B3 tests the softmax-amplification mechanism.
 
-Current executable scope: B1 has the strict real trace packet builder/checker
+Current executable scope is historical/audit-only. B1 has the strict real trace packet builder/checker
 path. B2/B3 now have follow-up contract checks in
 `../shared/followup_gate_contracts.py`, but no B2/B3 model packets exist and no
 cheap-predictor, no-forward-pass, or mechanism claim is allowed until real B1

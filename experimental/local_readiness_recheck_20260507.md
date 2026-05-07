@@ -105,7 +105,13 @@ avoid overclaiming independent preregistration timestamp ordering.
   later implemented, its quality smoke must pass
   `experimental.hybridkernel.phase2.check_quality_smoke_artifacts` before any
   speed table is cited.
-- SSQ-LR: a newly preregistered Mac rescue recipe/layer rule, if pursued.
-- HORN: no work unless a new full H2/H3 preregistration exists.
-- HBSM: no work unless a new narrower mechanism preregistration exists.
+- SSQ-LR: killed as active COLM branch; preserve
+  `KILLED_ssq_lr_cross_model_transfer/`. No work unless a new
+  preregistered recipe/layer rule exists before any new rows.
+- HORN: killed as active COLM branch; preserve
+  `KILLED_horn_directional_noise_propagation/`. No work unless a new full
+  H2/H3 preregistration exists before any new rows.
+- HBSM: killed as active COLM branch; preserve
+  `KILLED_hbsm_sensitivity_heterogeneity/`. No work unless a new narrower
+  mechanism preregistration exists before any new rows.
 - ThoughtFlow-FP8: paper-only copyedit/human review.

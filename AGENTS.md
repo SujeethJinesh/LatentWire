@@ -46,6 +46,27 @@ into paper-writing mode until the evidence is strong enough.
   strong enough for an ICLR paper.
 - We are not allowed to settle for a non-positive-method paper.
 
+### Current experimental project state (2026-05-07)
+
+For `experimental/`, the live action surface is now deliberately narrow:
+
+- **HybridKernel is the only active positive-method branch.** Its next gate is
+  the user-operated NVIDIA 5090/vLLM/Nsight profiler packet in
+  `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`.
+- **ThoughtFlow-FP8 is active only as a falsification-methodology paper.** Do
+  not run a fifth sparse-cache signal without a fresh preregistration and a new
+  surface.
+- **SSQ-LR, HORN, and HBSM are killed as active COLM positive-method branches**
+  under their current preregistered hypotheses. Their stop markers are:
+  `experimental/KILLED_ssq_lr_cross_model_transfer/`,
+  `experimental/KILLED_horn_directional_noise_propagation/`, and
+  `experimental/KILLED_hbsm_sensitivity_heterogeneity/`.
+
+Do not spend GPU time or new Mac experiment time on the killed branches unless
+the user explicitly asks to reopen one and a new preregistration is written
+before any new rows are inspected. Killed means stopped with preserved audit
+artifacts, not deleted.
+
 ### Execution requirements each turn
 
 - Do not SSH into any machine or run commands through SSH under any

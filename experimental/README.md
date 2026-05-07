@@ -6,9 +6,18 @@ This folder currently tracks five relevant COLM/ICLR branches only:
 HybridKernel, SSQ-LR, HORN, HBSM, and ThoughtFlow-FP8. The control objective is
 to finish every Mac-local artifact that can be finished before NVIDIA GPU time,
 then move only surviving branches to the 5090 gate.
-For SSQ-LR, HORN, and HBSM, "finish" now means existing-packet
-reproducibility, documentation, and validator checks only unless a new
-preregistration explicitly reopens the branch.
+For SSQ-LR, HORN, and HBSM, the current decision is stronger: they are killed
+as active COLM positive-method branches under their current preregistered
+hypotheses. "Finish" now means preserving stop artifacts, documentation, and
+validator checks only unless a new preregistration explicitly reopens a branch.
+
+Current live surface:
+
+- `hybridkernel/`: alive positive-method branch, GPU-gated.
+- `thoughtflow_fp8/`: alive paper-only falsification-methodology branch.
+- `KILLED_ssq_lr_cross_model_transfer/`: SSQ-LR stopped by S3 transfer failure.
+- `KILLED_horn_directional_noise_propagation/`: HORN stopped by weak H2.
+- `KILLED_hbsm_sensitivity_heterogeneity/`: HBSM stopped by B1 failure.
 
 The current sprint ledger is `project_status_20260506.md`.
 The latest full local readiness recheck is
@@ -19,9 +28,9 @@ The latest full local readiness recheck is
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
 | `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker with prompt/payload hashes, immutable model-provenance attestation, CUDA-graph-matched control matrix checks, mandatory reduction-input manifest checker, quality-smoke artifact checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, row-level reduction provenance, and at least 3% recoverable boundary overhead |
-| `ssq_lr/` | Stopped current recipe; diagnostic scaffold only unless newly preregistered | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. Uniform S2 scouts split the blocker, and the strictest Granite Tiny `0,30` prefilter replay selected `mixed_int3_mxfp4_low_error_25pct` at `4.192x`, zero selected accuracy drift, and `0.05044` selected NLL-delta CI high. After adding Granite 350M as a second complete local hybrid model, the frozen `0,30` recipe fails the 12-prompt transfer replay; layer `0` passes on 350M and layer `30` fails, but local two-model S3 packets for layer-0 mixed25 and INT3 both fail because the recipe that passes one Granite model does not pass the other | Do not GPU-promote SSQ-LR under the current recipe. The next admissible evidence is a newly preregistered recipe/layer rule that clears Mac S2/S3 without retuning |
-| `horn/` | 0% active; demoted control scaffold | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06`. The H2 scout `shared/results/horn_h2_noise_replay_scout_20260507/` now fails under the signed-direction contract: directional drift ratio `1.037`, signed selected-direction lower bound `0.324`, support `0.5`, paired units `6/6`, hook-off max delta `0.0` | Do not GPU-promote HORN standalone. Keep it as negative/control evidence unless a deliberately reopened full H2/H3 run has new preregistered scope |
-| `hbsm/` | 0% active; demoted control scaffold | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, controls, and per-prompt measured-drift top-decile derivation. `shared/results/hbsm_local_sensitivity_20260507/` is a checker-passing 56-row one-prompt Granite Tiny B1 failure (`fisher_p=0.375`, cheap-predictor Spearman `-0.476`). `shared/results/hbsm_prompt2_sensitivity_20260507/` is a checker-passing 64-row two-prompt B1 failure (`fisher_p=1.0`, boundary top-decile count `0`, cheap-predictor Spearman `-0.667`) | Do not GPU-promote HBSM. Continue only with a new preregistered mechanism hypothesis; otherwise fold into negative/control evidence |
+| `ssq_lr/` | **KILLED as active COLM branch**; diagnostic scaffold only | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; held-out S1b and S2 scouts were useful, but the frozen `0,30` recipe fails S3 transfer to Granite 350M. Layer-0 rescue diagnostics also fail two-model S3 because Granite Tiny and Granite 350M prefer different frozen recipes. Kill marker: `KILLED_ssq_lr_cross_model_transfer/` | No GPU work. Reopen only with a new preregistered recipe/layer rule on a fresh surface |
+| `horn/` | **KILLED as active COLM branch**; negative/control scaffold only | H1a real screen is weak (`1.06` with low `1.06`), and H2 fails under the signed-direction contract: directional drift ratio `1.037`, lower `0.324`, support `0.5`, paired units `6/6`, hook-off max delta `0.0`. Kill marker: `KILLED_horn_directional_noise_propagation/` | No GPU work. Reopen only with new preregistered full H2/H3 scope and a concrete reversal rationale |
+| `hbsm/` | **KILLED as active COLM branch**; negative/control scaffold only | B1 scouts fail and point the wrong way: one-prompt Spearman `-0.476`; two-prompt Fisher p `1.0`, boundary top-decile count `0`, cheap-predictor Spearman `-0.667`. Kill marker: `KILLED_hbsm_sensitivity_heterogeneity/` | No GPU work. Reopen only with a new preregistered narrower mechanism hypothesis |
 | `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with local-workspace input hashes, clean-path generation guard, and `.debug` rebuild instructions | Paper-only camera-ready polish |
 
 ## Shared Infrastructure
@@ -200,17 +209,15 @@ Current resource-limited local capture packet:
 1. **HybridKernel**: run the 5090 profiler packet in
    `hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`, then verify with
    `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`.
-2. **SSQ-LR**: S1b now clears on a held-out prompt split, and S2b localizes to
-   mixed INT3/MXFP4 on layers `0,30` only, but that frozen recipe now fails
-   no-retuning transfer to Granite 350M. Layer-0 rescue diagnostics also fail
-   as S3 packets. No SSQ-LR GPU work until a new preregistered recipe/layer rule
-   clears Mac S2/S3 first.
-3. **HORN**: demoted as a standalone branch after weak H1a and H2 scouts. Do
-   not spend GPU on HORN unless a future full H2/H3 reopening has a new reason
-   and preregistered scope.
-4. **HBSM**: do not scale B1 under the current hypothesis. Continue only if a
-   narrower mechanism hypothesis is preregistered; otherwise keep HBSM as
-   negative/control evidence for the active hybrid-quantization story.
+2. **SSQ-LR**: killed as an active COLM branch. Preserve
+   `KILLED_ssq_lr_cross_model_transfer/`; no GPU work without a new
+   preregistration.
+3. **HORN**: killed as an active COLM branch. Preserve
+   `KILLED_horn_directional_noise_propagation/`; no GPU work without a new
+   preregistration.
+4. **HBSM**: killed as an active COLM branch. Preserve
+   `KILLED_hbsm_sensitivity_heterogeneity/`; no GPU work without a new
+   preregistration.
 5. **ThoughtFlow-FP8**: continue paper reframing and citation/table polish; do
    not run a new signal without a fresh preregistered surface.
 

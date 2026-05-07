@@ -1,5 +1,17 @@
 # HORN Progress
 
+## 2026-05-07 Kill Decision
+
+Status: **KILLED as an active COLM positive-method branch under the current
+directional-noise hypothesis**.
+
+Kill marker: `../KILLED_horn_directional_noise_propagation/`
+
+Reason: H1a is near-null, and the H2 noisy-continuation scout fails with
+directional drift ratio `1.037`, signed selected-direction lower bound `0.324`,
+support `0.5`, paired units `6/6`, and hook-off max delta `0.0`. No GPU handoff
+is admissible under the current preregistered hypothesis.
+
 ## Current Supersession Note
 
 Older "next gate" entries below are historical. The controlling evidence as of
@@ -287,7 +299,7 @@ The packet is contract-valid but its decision is
 `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`
 with raw gate status `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`.
 
-Decision: **HORN IS A DEMOTED CONTROL BRANCH**. Do not spend GPU time on a
-standalone HORN claim. Reopen only with a new preregistered full H2/H3 scope
+Decision: **HORN IS KILLED AS AN ACTIVE COLM BRANCH**. Do not spend GPU time on
+a standalone HORN claim. Reopen only with a new preregistered full H2/H3 scope
 and a concrete reason the current near-null, direction-flipping H2 scout should
 reverse.

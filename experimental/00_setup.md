@@ -1,6 +1,13 @@
 # 00 — Shared Setup (Macbook)
 
-This applies to all three projects. Do this in week 1, day 1.
+> **Current 2026-05-07 authority.** This is a historical setup scaffold. The
+> current live experimental surface is HybridKernel plus ThoughtFlow paper
+> polish. SSQ-LR, HORN, and HBSM are killed as active COLM branches under their
+> current hypotheses; use the `experimental/KILLED_*` marker folders and
+> `experimental/README.md` before running any setup from this file.
+
+This originally applied to the first three side projects. Do not use it as the
+current active-project list.
 
 ## Hardware assumed
 - Macbook (Apple Silicon M-series)
@@ -14,7 +21,7 @@ artifacts inside ignored project-local directories.
 
 ```bash
 cd /Users/sujeethjinesh/Desktop/LatentWire
-mkdir -p experimental/hybridkernel experimental/sinkaware experimental/thoughtflow_fp8
+mkdir -p experimental/hybridkernel experimental/thoughtflow_fp8
 ```
 
 Shared HuggingFace cache:

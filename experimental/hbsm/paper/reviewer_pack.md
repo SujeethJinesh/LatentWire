@@ -1,8 +1,11 @@
 # HBSM Reviewer Pack
 
-- status: demoted control branch after resource-limited real-model B1 scouts
-- current decision: do not GPU-promote; treat as negative/control unless a new
-  narrower hypothesis is preregistered
+- status: killed as an active COLM positive-method branch after
+  resource-limited real-model B1 scouts
+- kill marker: `experimental/KILLED_hbsm_sensitivity_heterogeneity/`
+- stop manifest: `experimental/hbsm/phase2/b1_prompt2_repro_manifest_20260507.md`
+- current decision: killed for COLM under the current broad hypothesis; treat
+  as negative/control unless a new narrower hypothesis is preregistered
 - camera-readiness: not submittable as a standalone paper until B1--B3 separate
   the mechanism from existing sensitivity tools
 

@@ -1,5 +1,18 @@
 # HBSM Progress
 
+## 2026-05-07 Kill Decision
+
+Status: **KILLED as an active COLM positive-method branch under the current
+broad sensitivity-heterogeneity hypothesis**.
+
+Kill marker: `../KILLED_hbsm_sensitivity_heterogeneity/`
+
+Reason: the two-prompt B1 scout fails with Fisher p `1.0`, boundary top-decile
+count `0`, non-boundary top-decile count `1`, and cheap-predictor Spearman
+`-0.667`; the one-prompt smoke also points the wrong way with Spearman
+`-0.476`. No GPU handoff or broader B1 sweep is admissible under the current
+preregistered hypothesis.
+
 ## Current Supersession Note
 
 Older "next B1" entries below are historical. The controlling evidence as of

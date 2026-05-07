@@ -5,7 +5,12 @@ attention/SSM boundaries.
 
 ## Current Readiness
 
-Status: **DEMOTED CONTROL / H1a and H2 scouts failed**.
+Status: **KILLED as an active COLM positive-method branch under the current
+directional-noise hypothesis**.
+
+Kill marker: `../KILLED_horn_directional_noise_propagation/`
+
+Stop manifest: `phase2/h2_noise_replay_repro_manifest_20260507.md`
 
 Estimated completion:
 
@@ -36,7 +41,7 @@ H1 measures boundary activation magnitude and kurtosis. H2 injects
 FP4-equivalent noise around each boundary direction. H3 checks cross-model and
 pure-architecture controls.
 
-Current executable scope: H1a/H1 boundary statistics have the strict real trace
+Current executable scope is historical/audit-only. H1a/H1 boundary statistics have the strict real trace
 packet builder/checker path. H2/H3 now have follow-up contract checks in
 `../shared/followup_gate_contracts.py`. A resource-limited H2 scout exists and
 fails; it is not current evidence for a positive H2/H3 claim. No
