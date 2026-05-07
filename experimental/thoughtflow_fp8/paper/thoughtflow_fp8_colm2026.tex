@@ -65,6 +65,15 @@ and its failure modes, not a live sparse-cache method.}
 
 The original policy protects anchors and phase labels. The first successor adds a small recent-token reserve. The second successor protects anchors, reserves half the retained budget for recent tokens, and lets phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The pre-registered \texttt{rdu\_topk} successor is demoted after stricter reproduction; later \texttt{psi\_topk} and \texttt{vwac\_topk} successors are killed by fresh-surface gates.
 
+The proxy rows in Table~\ref{tab:case-study-retention} are deliberately simple
+matched-budget controls, not faithful reimplementations of the cited systems:
+\texttt{R-KV-like} keeps the first four anchor tokens plus the most recent tail,
+\texttt{ThinKV-like} keeps a recent reserve plus a math-state importance bonus,
+and \texttt{LongFlow-like} is an importance top-$k$ retention rule. The local
+definitions live in
+\url{experimental/thoughtflow_fp8/phase2/simulate_phase_retention.py}; the
+paper uses them only as falsification controls for the stopped signal family.
+
 \begin{table}[h]
 \centering
 \small
@@ -84,6 +93,7 @@ Held-out sweep best & 0.211 & 3.480 & -- & 43.7 \\
 \bottomrule
 \end{tabular}
 \caption{Case-study retained-context continuation proxy on distilgpt2 traces. Lower NLL is better. Full context is not a matched-budget baseline. The held-out sweep row is selected on 12 train traces and reported on 12 held-out traces, so its NLL is not directly averaged with the all-trace rows.}
+\label{tab:case-study-retention}
 \end{table}
 
 \section{Hidden/KV Telemetry}
@@ -365,6 +375,26 @@ TRITON_HOME="$PWD/.debug/triton_home" \
   experimental/thoughtflow_fp8/phase2/tests \
   experimental/thoughtflow_fp8/phase4/tests -q -rs
 \end{verbatim}
+
+\begin{table}[h]
+\centering
+\scriptsize
+\begin{tabular}{p{0.20\linewidth}p{0.35\linewidth}p{0.18\linewidth}p{0.15\linewidth}}
+\toprule
+Gate artifact & Rebuild command & Input surface & Hash prefix \\
+\midrule
+frozen probe & \texttt{phase2/frozen\_sparse\_cache\_probe.py} & frozen mixed traces, 74 scored & \texttt{f79c286c} \\
+same-surface RDU & \texttt{phase2/rdu\_no\_retune\_reproduction\_check.py} & same frozen traces, 74 scored & \texttt{9a6420cf} \\
+alternate RDU & \texttt{phase2/rdu\_alt\_surface\_reproduction\_check.py} & alternate measured surface, 73 scored & \texttt{1302ce31} \\
+independent RDU & \texttt{phase2/rdu\_independent\_trace\_reproduction\_check.py} & saved chat traces, 89 scored & \texttt{5a568e1c} \\
+\texttt{psi\_topk} & \texttt{phase2/psi\_fresh\_sparse\_cache\_check.py} & C2C GSM, 70 scored & \texttt{d0a08035} \\
+\texttt{vwac\_topk} & \texttt{phase2/vwac\_fresh\_sparse\_cache\_check.py} & C2C SVAMP, 64 scored & \texttt{80a35954} \\
+\bottomrule
+\end{tabular}
+\caption{Diagnostic-packet command map. Full commands, source metadata, and
+input SHA-256 values are in the tracked manifest.}
+\label{tab:thoughtflow-artifact-commands}
+\end{table}
 
 \section{Artifacts}
 

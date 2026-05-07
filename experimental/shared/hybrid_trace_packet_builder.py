@@ -319,6 +319,7 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
         row = {
             "model_id": config["model_id"],
             "prompt_id": str(entry["prompt_id"]),
+            "prompt_cluster_id": str(entry.get("prompt_cluster_id") or entry["prompt_id"]),
             "layer_left": int(entry["layer_left"]),
             "layer_right": int(entry["layer_right"]),
             "direction": str(entry["direction"]),

@@ -83,9 +83,9 @@ state metrics, applies Holm correction over layer/metric tests, and exposes
 `distribution_gate_pass` in the recomputed summary contract.
 
 Follow-up hardening now requires the distribution-only path to clear a 1.25x
-selected-ratio effect-size floor via `distribution_effect_floor_pass`; a
-near-zero but statistically significant state shift is not enough to promote
-S1.
+per-layer effect-size floor on the Holm-significant layer/metric tests counted
+by `distribution_passing_layer_count`; a global selected-ratio spike in one
+layer cannot rescue near-zero but statistically significant shifts elsewhere.
 
 Decision: **S1 CAN PASS BY MAGNITUDE OR HOLM-CORRECTED DISTRIBUTION SHIFT, BUT
 ONLY FROM RAW REAL STATE ROWS**. The blocker remains the same live hybrid

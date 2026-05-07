@@ -124,6 +124,19 @@ Decision: **HORN PACKET PLUMBING IS READY FOR A REAL BOUNDARY DUMP**. The
 blocker is still live hybrid activations with prompt-paired boundary,
 non-boundary, and permuted controls.
 
+## 2026-05-07 Prompt-Cluster Bootstrap Alignment
+
+The H1a evaluator now computes `selected_h1_ci_low` and
+`selected_h1_cluster_bootstrap_low` with the same deterministic prompt-cluster
+bootstrap implied by the preregistration, rather than a raw prompt-ratio order
+statistic. Real H1a rows must carry `prompt_cluster_id`; the trace plan derives
+it from the prompt manifest's task/cluster metadata. This keeps the uncertainty
+unit at the prompt cluster and prevents aggregate-only packets from
+hand-filling the lower bound.
+
+Decision: **H1A LOWER BOUNDS ARE NOW PROMPT-CLUSTER BOOTSTRAP READOUTS**. The
+blocker remains the real prompt-paired hybrid activation dump.
+
 ## 2026-05-07 Resource-Limited Builder Guard
 
 Updated the shared trace packet builder so any HORN tensor packet whose metadata

@@ -170,6 +170,7 @@ python "$HWK_ROOT/phase2/analyze_profiler_metrics.py" \
 
 python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
   --run-dir "$HWK_RUN" \
+  --require-full-matrix \
   | tee "$HWK_RUN/artifact_check.json"
 ```
 
@@ -180,6 +181,7 @@ Nsight Compute, run the checker in explicit negative mode instead:
 python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
   --run-dir "$HWK_RUN" \
   --packet-mode no_boundary_signal_kill \
+  --require-full-matrix \
   | tee "$HWK_RUN/artifact_check.json"
 ```
 

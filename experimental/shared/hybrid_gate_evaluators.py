@@ -141,6 +141,7 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     passing_layers = 0
     selected_layer_lowers: list[float] = []
     distribution_tests: list[tuple[int, str, float]] = []
+    distribution_effect_ratios: dict[tuple[int, str], float] = {}
     for layer in layers:
         layer_rows = [row for row in rows if int(row["layer"]) == layer]
         max_values = _prompt_bucket_ratios(layer_rows, field="max_abs")
@@ -167,6 +168,10 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 for row in layer_rows
                 if str(row["position_bucket"]) == "final_minus_128"
             ]
+            distribution_effect_ratios[(layer, field)] = _safe_ratio(
+                _mean(final_values),
+                _mean(first_values),
+            )
             distribution_tests.append((layer, field, _ks_2samp_pvalue(first_values, final_values)))
     ssm_layer_count = len(layers)
     required_passing_layer_count = 0
@@ -183,7 +188,13 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
     adjusted_tests = _holm_adjusted_pvalues(distribution_tests)
     holm_p_min = min((p_value for _, _, p_value in adjusted_tests), default=1.0)
     distribution_passing_layers = len(
-        {layer for layer, _, p_value in adjusted_tests if p_value < 0.01}
+        {
+            layer
+            for layer, field, p_value in adjusted_tests
+            if p_value < 0.01
+            and distribution_effect_ratios.get((layer, field), 1.0)
+            >= SSQ_LR_DISTRIBUTION_MIN_RATIO
+        }
     )
     magnitude_gate_pass = (
         set(buckets) == SSQ_LR_POSITION_BUCKETS
@@ -192,7 +203,7 @@ def evaluate_ssq_lr_s1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and selected_s1_ratio >= 2.0
         and selected_s1_ci_low > 1.25
     )
-    distribution_effect_floor_pass = selected_s1_ratio >= SSQ_LR_DISTRIBUTION_MIN_RATIO
+    distribution_effect_floor_pass = distribution_passing_layers >= required_passing_layer_count
     distribution_gate_pass = (
         set(buckets) == SSQ_LR_POSITION_BUCKETS
         and ssm_layer_count > 0
@@ -289,24 +300,21 @@ def _direction_count(rows: list[dict[str, Any]], *, control_type: str) -> int:
     return len({_horn_direction_label(row) for row in rows if str(row.get("control_type")) == control_type})
 
 
-def _prompt_direction_ratio_low(
+def _prompt_cluster_direction_ratio_low(
     rows: list[dict[str, Any]],
     *,
     field: str,
 ) -> float:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        grouped[str(row["prompt_id"])].append(row)
+        cluster_id = str(row.get("prompt_cluster_id") or row["prompt_id"])
+        grouped[cluster_id].append(row)
     ratios = [
         _direction_ratio(_direction_metric_means(prompt_rows, field=field))
         for prompt_rows in grouped.values()
         if _direction_count(prompt_rows, control_type="boundary") >= 2
     ]
-    if not ratios:
-        return 0.0
-    ratios = sorted(ratios)
-    index = max(0, math.floor(0.05 * (len(ratios) - 1)))
-    return float(ratios[index])
+    return _bootstrap_mean_low(ratios)
 
 
 def _support_fraction(
@@ -369,7 +377,7 @@ def evaluate_horn_h1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         field=selected_metric,
         selected_direction=selected_direction,
     )
-    selected_h1_ci_low = _prompt_direction_ratio_low(boundary_rows, field=selected_metric)
+    selected_h1_ci_low = _prompt_cluster_direction_ratio_low(boundary_rows, field=selected_metric)
     non_boundary_direction_count = _direction_count(rows, control_type="non_boundary")
     permuted_direction_count = _direction_count(rows, control_type="permuted_direction")
     gate_pass = (
@@ -393,6 +401,7 @@ def evaluate_horn_h1(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "selected_h1_ratio": selected_h1_ratio,
         "selected_h1_threshold": selected_threshold,
         "selected_h1_ci_low": selected_h1_ci_low,
+        "selected_h1_cluster_bootstrap_low": selected_h1_ci_low,
         "max_abs_direction_ratio": max_ratio,
         "kurtosis_direction_ratio": kurtosis_ratio,
         "non_boundary_control_ratio": non_boundary_control_ratio,

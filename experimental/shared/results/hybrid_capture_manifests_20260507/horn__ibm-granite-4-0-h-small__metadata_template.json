@@ -3586,6 +3586,6 @@
   ],
   "served_model_id": "TO_FILL_BEFORE_CAPTURE",
   "tokenizer_revision": "TO_FILL_BEFORE_CAPTURE",
-  "trace_plan_hash": "sha256:d4049d19005c6e6111c6b1c9aefb6f0c4db2ea7b19a9149317fde051f165fcc4",
+  "trace_plan_hash": "sha256:80b292065389e30454ef08f1a8c579702f48b2f03ecd2d5d3633dfaf8c431453",
   "trace_plan_path": "experimental/shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl"
 }

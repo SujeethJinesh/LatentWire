@@ -150,9 +150,10 @@ fabricated summaries are rejected. The S1 lower bound is computed from
 prompt-level bucket ratios, and the distribution path uses Holm-corrected
 two-sample tests between `prefill_end` and `final_minus_128`, so reduced rows
 must preserve prompt IDs rather than only global layer means.
-Distribution-only promotion also requires the selected S1 ratio to clear the
-1.25x effect-size floor; tiny but statistically significant shifts remain a
-failed S1 packet.
+Distribution-only promotion also requires enough Holm-significant layer/metric
+tests to clear the 1.25x per-layer effect-size floor; a large global mean in one
+layer cannot rescue tiny but statistically significant shifts in the remaining
+layers.
 For non-rehearsal real packets, the checker also loads every cited state tensor
 from `tensors/` and recomputes `max_abs`, `rms`, `std`, `kurtosis`, and
 `outlier_mass`; row values that do not match the saved tensor bytes are
@@ -202,6 +203,7 @@ Required `summary.json` fields:
 - `selected_h1_metric`, `selected_h1_direction`, `selected_h1_threshold`
 - `selected_h1_ratio`
 - `selected_h1_ci_low`
+- `selected_h1_cluster_bootstrap_low`
 - `max_abs_direction_ratio`, `kurtosis_direction_ratio`
 - `non_boundary_control_ratio`, `permuted_direction_ratio`
 - `non_boundary_direction_count`, `permuted_direction_count`
@@ -210,7 +212,9 @@ Required `summary.json` fields:
 The checker recomputes these fields with
 `experimental.shared.hybrid_gate_evaluators.evaluate_horn_h1`; the H1a decision
 is therefore coupled to the non-boundary and permuted-direction control ratios,
-not only boundary rows.
+not only boundary rows. The selected H1a lower bound is a deterministic
+prompt-cluster bootstrap over cluster-level directional ratios, so a packet
+must retain `prompt_cluster_id` rather than only aggregate boundary means.
 For non-rehearsal real packets, the checker also loads every cited activation
 tensor from `tensors/` and recomputes `max_abs`, `rms`, and `kurtosis`;
 permuted rows must still reuse the observed boundary tensor source, hash, and

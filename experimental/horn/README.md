@@ -125,9 +125,11 @@ strings. Real `summary.json` must
 include the recomputed H1a evaluator fields: `gate_status`, `gate_pass`,
 `prompt_count`, `boundary_directions`, `selected_h1_metric`,
 `selected_h1_direction`, `selected_h1_ratio`, `selected_h1_threshold`,
-`selected_h1_ci_low`, direction ratios, control ratios, and
-direction-count/support fields. The checker recomputes these values from rows
-and rejects stale summaries.
+`selected_h1_ci_low`, `selected_h1_cluster_bootstrap_low`, direction ratios,
+control ratios, and direction-count/support fields. The checker recomputes
+these values from rows and rejects stale summaries. The lower bound is a
+deterministic prompt-cluster bootstrap over cluster-level directional ratios, so
+`prompt_cluster_id` must be preserved through reduction.
 
 ## Output Paths
 

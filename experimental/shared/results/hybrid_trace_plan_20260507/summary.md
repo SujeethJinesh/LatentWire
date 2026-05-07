@@ -6,7 +6,7 @@ It is not model evidence; it is an execution checklist for producing real packet
 | Project | Planned rows | Trace-plan hash |
 |---|---:|---|
 | `hbsm` | 2304 | `sha256:015e28d426aa...` |
-| `horn` | 1404 | `sha256:d4049d19005c...` |
+| `horn` | 1404 | `sha256:80b292065389...` |
 | `ssq_lr` | 5184 | `sha256:a05dab6ad3b8...` |
 
 ## Use

@@ -81,6 +81,38 @@ def test_ssq_lr_s1_evaluator_rejects_tiny_distribution_only_shift() -> None:
     assert result["selected_s1_ratio"] < 1.25
 
 
+def test_ssq_lr_s1_evaluator_requires_per_layer_distribution_effect_floor() -> None:
+    rows = []
+    for prompt_index in range(12):
+        for layer in range(4):
+            for bucket in SSQ_BUCKETS:
+                if bucket == "final_minus_128" and layer == 0:
+                    value = 10.0
+                elif bucket == "final_minus_128":
+                    value = 1.01
+                else:
+                    value = 1.0
+                rows.append(
+                    {
+                        "prompt_id": f"p{prompt_index}",
+                        "layer": layer,
+                        "position_bucket": bucket,
+                        "max_abs": value,
+                        "std": value,
+                        "kurtosis": value,
+                    }
+                )
+
+    result = evaluate_ssq_lr_s1(rows)
+
+    assert result["gate_pass"] is False
+    assert result["passing_layer_count"] == 1
+    assert result["distribution_passing_layer_count"] == 1
+    assert result["required_passing_layer_count"] == 3
+    assert result["selected_s1_ratio"] >= 1.25
+    assert result["distribution_effect_floor_pass"] is False
+
+
 def test_horn_h1_evaluator_uses_directional_support_and_controls() -> None:
     rows = []
     for prompt_index in range(12):
@@ -260,6 +292,91 @@ def test_horn_h1_evaluator_fails_when_permuted_control_preserves_signal() -> Non
 
     assert result["gate_pass"] is False
     assert result["permuted_direction_ratio"] == result["selected_h1_ratio"]
+
+
+def test_horn_h1_evaluator_uses_prompt_cluster_bootstrap_lower_bound() -> None:
+    rows = []
+    for prompt_index in range(12):
+        selected_abs = 0.5 if prompt_index == 0 else 4.0
+        for direction, max_abs in [("attention->ssm", selected_abs), ("ssm->attention", 1.0)]:
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": direction,
+                    "max_abs": 1.0,
+                    "kurtosis": 1.0,
+                    "control_type": "non_boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "direction": "ssm->attention" if direction == "attention->ssm" else "attention->ssm",
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "permuted_direction",
+                }
+            )
+
+    result = evaluate_horn_h1(rows)
+
+    assert result["gate_pass"] is True
+    assert result["selected_h1_direction"] == "attention->ssm"
+    assert result["selected_h1_ci_low"] > 1.0
+
+
+def test_horn_h1_evaluator_bootstraps_prompt_clusters_not_prompt_rows() -> None:
+    rows = []
+    for prompt_index in range(12):
+        cluster_id = "shared_high_cluster" if prompt_index else "single_low_cluster"
+        selected_abs = 1.0 if prompt_index == 0 else 4.5
+        for direction, max_abs in [("attention->ssm", selected_abs), ("ssm->attention", 1.0)]:
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "prompt_cluster_id": cluster_id,
+                    "direction": direction,
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "prompt_cluster_id": cluster_id,
+                    "direction": direction,
+                    "max_abs": 1.0,
+                    "kurtosis": 1.0,
+                    "control_type": "non_boundary",
+                }
+            )
+            rows.append(
+                {
+                    "prompt_id": f"p{prompt_index}",
+                    "prompt_cluster_id": cluster_id,
+                    "direction": "ssm->attention" if direction == "attention->ssm" else "attention->ssm",
+                    "max_abs": max_abs,
+                    "kurtosis": 1.0,
+                    "control_type": "permuted_direction",
+                }
+            )
+
+    result = evaluate_horn_h1(rows)
+
+    assert result["selected_h1_ratio"] >= 3.0
+    assert result["selected_h1_ci_low"] <= 1.0
+    assert result["selected_h1_cluster_bootstrap_low"] == result["selected_h1_ci_low"]
+    assert result["gate_pass"] is False
 
 
 def test_hbsm_b1_evaluator_requires_boundary_enrichment_over_random() -> None:

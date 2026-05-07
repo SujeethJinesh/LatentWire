@@ -31,7 +31,7 @@ from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_r
 SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
 TRACE_PLAN_HASHES = {
     "ssq_lr": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b",
-    "horn": "sha256:d4049d19005c6e6111c6b1c9aefb6f0c4db2ea7b19a9149317fde051f165fcc4",
+    "horn": "sha256:80b292065389e30454ef08f1a8c579702f48b2f03ecd2d5d3633dfaf8c431453",
     "hbsm": "sha256:015e28d426aa4c11d00c67234c15e5cf5ed8f599a28de102fbc00aaccc84ed67",
 }
 GRANITE_TINY_REVISION = "791e0d3d28c86e106c9b6e0b4cecdee0375b6124"

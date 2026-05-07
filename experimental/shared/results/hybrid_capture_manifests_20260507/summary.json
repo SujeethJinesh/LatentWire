@@ -52,24 +52,24 @@
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/horn__ibm-granite-4-0-h-small__metadata_template.json",
       "planned_entry_count": 288,
       "project": "horn",
-      "sha256": "sha256:f30f7fb14c38ab79d446b814cb2f819ce2d9ca7085018466e73066dd69615735",
-      "trace_plan_hash": "sha256:d4049d19005c6e6111c6b1c9aefb6f0c4db2ea7b19a9149317fde051f165fcc4"
+      "sha256": "sha256:3873e9c4ef8b9fb8ff23fa9b0965e5922973b5c55769e4ece505c98d50572741",
+      "trace_plan_hash": "sha256:80b292065389e30454ef08f1a8c579702f48b2f03ecd2d5d3633dfaf8c431453"
     },
     {
       "model_id": "ibm-granite-4.0-h-tiny",
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/horn__ibm-granite-4-0-h-tiny__metadata_template.json",
       "planned_entry_count": 288,
       "project": "horn",
-      "sha256": "sha256:da3a70b12b61935eba0bb11b47cfeaafa160fecb2286e18ed73f64b492b5c095",
-      "trace_plan_hash": "sha256:d4049d19005c6e6111c6b1c9aefb6f0c4db2ea7b19a9149317fde051f165fcc4"
+      "sha256": "sha256:7e7c20ac2d3341da9764e75c10206902b67ae13c5ed749dee5bab5ab5ed2b211",
+      "trace_plan_hash": "sha256:80b292065389e30454ef08f1a8c579702f48b2f03ecd2d5d3633dfaf8c431453"
     },
     {
       "model_id": "qwen3-next-80b-a3b-instruct",
       "path": "experimental/shared/results/hybrid_capture_manifests_20260507/horn__qwen3-next-80b-a3b-instruct__metadata_template.json",
       "planned_entry_count": 828,
       "project": "horn",
-      "sha256": "sha256:988bba268f8663e85cd98ecb88f848136958f8b533a73ab9840aa482589e1111",
-      "trace_plan_hash": "sha256:d4049d19005c6e6111c6b1c9aefb6f0c4db2ea7b19a9149317fde051f165fcc4"
+      "sha256": "sha256:554979c67c77191eba61cd4fa55167ca535c358f20f651537e588520040d3ac1",
+      "trace_plan_hash": "sha256:80b292065389e30454ef08f1a8c579702f48b2f03ecd2d5d3633dfaf8c431453"
     },
     {
       "model_id": "ibm-granite-4.0-h-small",

@@ -82,7 +82,9 @@ bound, Holm-adjusted two-sample readout, magnitude/distribution pass flags, a
 1.25x distribution-effect floor flag, and final-minus-128 versus prefill-end
 max-abs/std/kurtosis ratios. The checker recomputes these fields from raw rows
 rather than global layer means and rejects stale summaries; a tiny
-distribution-only shift cannot promote S1. It must pass
+distribution-only shift cannot promote S1, and a global mean spike in one layer
+cannot satisfy the distribution path unless the counted layer/metric tests also
+clear the per-layer 1.25x effect-size floor. It must pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project ssq\_lr}.
 Saved tensor packets must be converted with
 \texttt{experimental.shared.hybrid\_trace\_packet\_builder} before validation.

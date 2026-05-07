@@ -12,4 +12,5 @@ Selected evaluator fields:
 - `selected_h1_metric`: `max_abs`
 - `selected_h1_direction`: `ssm->attention`
 - `selected_h1_ratio`: `4.044`
+- `selected_h1_cluster_bootstrap_low`: `4.025`
 - `permuted_direction_ratio`: `0.247`

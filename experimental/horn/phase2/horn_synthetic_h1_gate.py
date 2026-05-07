@@ -69,6 +69,7 @@ def _config(seed: int) -> dict[str, object]:
 
 
 def _boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, object]]:
+    prompt_cluster_id = f"synthetic_cluster_{prompt_index:02d}"
     low_max = 2.0 + 0.01 * prompt_index
     high_max = 8.2 + 0.02 * prompt_index
     low_kurtosis = 3.0 + 0.01 * prompt_index
@@ -77,6 +78,7 @@ def _boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, object]]
         {
             "model_id": MODEL_ID,
             "prompt_id": prompt_id,
+            "prompt_cluster_id": prompt_cluster_id,
             "layer_left": 2,
             "layer_right": 3,
             "direction": "attention->ssm",
@@ -93,6 +95,7 @@ def _boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, object]]
         {
             "model_id": MODEL_ID,
             "prompt_id": prompt_id,
+            "prompt_cluster_id": prompt_cluster_id,
             "layer_left": 5,
             "layer_right": 6,
             "direction": "ssm->attention",
@@ -110,10 +113,12 @@ def _boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, object]]
 
 
 def _non_boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, object]]:
+    prompt_cluster_id = f"synthetic_cluster_{prompt_index:02d}"
     return [
         {
             "model_id": MODEL_ID,
             "prompt_id": prompt_id,
+            "prompt_cluster_id": prompt_cluster_id,
             "layer_left": 8,
             "layer_right": 9,
             "direction": "ssm->ssm",
@@ -130,6 +135,7 @@ def _non_boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, obje
         {
             "model_id": MODEL_ID,
             "prompt_id": prompt_id,
+            "prompt_cluster_id": prompt_cluster_id,
             "layer_left": 10,
             "layer_right": 11,
             "direction": "ssm->ssm",
@@ -186,6 +192,7 @@ def _summary_markdown(summary: dict[str, object]) -> str:
             f"- `selected_h1_metric`: `{summary['selected_h1_metric']}`",
             f"- `selected_h1_direction`: `{summary['selected_h1_direction']}`",
             f"- `selected_h1_ratio`: `{summary['selected_h1_ratio']:.3f}`",
+            f"- `selected_h1_cluster_bootstrap_low`: `{summary['selected_h1_cluster_bootstrap_low']:.3f}`",
             f"- `permuted_direction_ratio`: `{summary['permuted_direction_ratio']:.3f}`",
             "",
         ]

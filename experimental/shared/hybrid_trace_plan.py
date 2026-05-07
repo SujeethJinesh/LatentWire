@@ -153,6 +153,7 @@ def _build_horn_rows(
     rows: list[dict[str, Any]] = []
     for prompt in prompts:
         prompt_id = str(prompt["prompt_id"])
+        prompt_cluster_id = str(prompt.get("prompt_cluster_id") or prompt.get("task") or prompt_id)
         for boundary in model_map.get("boundaries", []):
             direction = str(boundary["direction"])
             base = {
@@ -161,6 +162,7 @@ def _build_horn_rows(
                 "model_id": model_id,
                 "architecture_map_hash": _architecture_hash(model_map),
                 "prompt_id": prompt_id,
+                "prompt_cluster_id": prompt_cluster_id,
                 "boundary_index": int(boundary["boundary_index"]),
                 "layer_left": int(boundary["left_layer"]),
                 "layer_right": int(boundary["right_layer"]),

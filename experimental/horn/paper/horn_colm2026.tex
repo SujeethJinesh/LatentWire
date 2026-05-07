@@ -76,10 +76,12 @@ include at least 12 fixed prompt IDs unless
 the packet records an explicit resource limit. Any resource-limited packet must
 use a \texttt{RESOURCE\_LIMITED\_NOT\_PROMOTABLE} decision. The packet must
 include \texttt{prompt\_ids\_hash}, \texttt{architecture\_map\_hash},
-\texttt{trace\_plan\_hash}, the exact \texttt{trace\_plan\_path} whose file
+\texttt{trace\_plan\_hash}, per-row \texttt{prompt\_cluster\_id}, the exact
+\texttt{trace\_plan\_path} whose file
 SHA-256 matches that hash, and a
-summary with prompt count, boundary directions, selected H1a ratio, selected H1a
-CI lower bound, support fraction, non-boundary control ratio, and
+summary with prompt count, boundary directions, selected H1a ratio,
+selected H1a prompt-cluster-bootstrap lower bound, support fraction,
+non-boundary control ratio, and
 permuted-direction ratio, then pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project horn}.
 The checker recomputes these H1a fields from raw rows and rejects stale or

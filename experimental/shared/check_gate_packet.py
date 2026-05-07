@@ -65,6 +65,7 @@ REAL_ROW_FIELDS = {
     "horn": (
         "model_id",
         "prompt_id",
+        "prompt_cluster_id",
         "layer_left",
         "layer_right",
         "direction",
@@ -141,6 +142,7 @@ REAL_SUMMARY_FIELDS = {
         "selected_h1_ratio",
         "selected_h1_threshold",
         "selected_h1_ci_low",
+        "selected_h1_cluster_bootstrap_low",
         "max_abs_direction_ratio",
         "kurtosis_direction_ratio",
         "non_boundary_control_ratio",
@@ -935,6 +937,9 @@ def _validate_real_summary(
         ci_low = summary.get("selected_h1_ci_low")
         if not _finite_number(ci_low) or float(ci_low) <= 0.0:
             errors.append("horn summary selected_h1_ci_low must be positive finite numeric")
+        cluster_low = summary.get("selected_h1_cluster_bootstrap_low")
+        if not _finite_number(cluster_low) or float(cluster_low) <= 0.0:
+            errors.append("horn summary selected_h1_cluster_bootstrap_low must be positive finite numeric")
         support_fraction = summary.get("support_fraction")
         if not _finite_number(support_fraction) or not 0.0 <= float(support_fraction) <= 1.0:
             errors.append("horn summary support_fraction must be in [0, 1]")
@@ -950,6 +955,7 @@ def _validate_real_summary(
         for field in (
             "selected_h1_ratio",
             "selected_h1_ci_low",
+            "selected_h1_cluster_bootstrap_low",
             "max_abs_direction_ratio",
             "kurtosis_direction_ratio",
             "non_boundary_control_ratio",

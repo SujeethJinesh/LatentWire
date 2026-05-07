@@ -743,3 +743,16 @@ before any final throughput claim.
 
 Decision: **HYBRIDKERNEL PROMOTION NOW REQUIRES PRIMARY REPEAT CI SUPPORT**.
 The blocker remains the user-operated NVIDIA/vLLM Nsight packet.
+
+## 2026-05-07 Promotable Matrix Strict Mode
+
+After COLM-style review, `phase2/check_profiler_run_artifacts.py` now exposes
+`--require-full-matrix`. Default checker mode still allows primary-only packets
+as audit evidence with warnings, but the GPU gate commands in the README,
+runbook, and checklist now use strict mode so a promotable packet fails unless
+primary hybrid, same-family control, and cross-family falsification rows are all
+present.
+
+Decision: **GPU PROMOTION REQUIRES THE FULL CONTROL MATRIX**. Primary-only
+Nsight evidence can still kill or inform the branch, but it cannot be treated
+as the reviewer-facing promotion packet.

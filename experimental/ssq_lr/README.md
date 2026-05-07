@@ -115,8 +115,9 @@ include the recomputed S1 evaluator fields: `gate_status`, `gate_pass`,
 prefill-end max-abs/std/kurtosis ratios. The checker recomputes these values
 from prompt-level bucket ratios plus Holm-corrected distribution tests and
 rejects stale summaries. A distribution-only pass must also clear the
-preregistered 1.25x effect-size floor; tiny statistically significant shifts do
-not promote S1.
+preregistered 1.25x effect-size floor per passing layer/metric test; a large
+global mean from one layer cannot promote tiny statistically significant shifts
+elsewhere.
 
 ## Output Paths
 

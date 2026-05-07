@@ -304,6 +304,16 @@ def test_primary_gate_clear_without_controls_stays_audit_only(tmp_path: Path) ->
     assert any("control/falsification rows" in warning for warning in result["warnings"])
 
 
+def test_require_full_matrix_rejects_audit_only_primary_rows(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+
+    result = check_run_artifacts(tmp_path, require_full_matrix=True)
+
+    assert result["status"] == "FAIL"
+    assert result["require_full_matrix"] is True
+    assert any("control/falsification rows" in error for error in result["errors"])
+
+
 def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "nsys/granite_tiny_b1_decode64_run0.nsys-rep").unlink()

@@ -833,6 +833,7 @@ def check_run_artifacts(
     require_native_artifacts: bool = True,
     min_native_artifact_bytes: int = MIN_NATIVE_ARTIFACT_BYTES,
     packet_mode: str = "full",
+    require_full_matrix: bool = False,
 ) -> dict[str, object]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -1091,11 +1092,11 @@ def check_run_artifacts(
             required_review_roles = {"same_family_control", "cross_family_falsification"}
             missing_review_roles = required_review_roles - metric_roles
             if (
-                result["status"].startswith("PROMOTE")
+                (require_full_matrix or result["status"].startswith("PROMOTE"))
                 and missing_review_roles
             ):
                 errors.append(
-                    "promotion profiler packet must include control/falsification rows: "
+                    "promotable profiler packet must include control/falsification rows: "
                     + ", ".join(sorted(missing_review_roles))
                 )
             elif missing_review_roles:
@@ -1197,6 +1198,7 @@ def check_run_artifacts(
         "native_artifacts_required": require_native_artifacts,
         "min_native_artifact_bytes": min_native_artifact_bytes,
         "packet_mode": packet_mode,
+        "require_full_matrix": require_full_matrix,
     }
 
 
@@ -1207,6 +1209,11 @@ def main() -> None:
     parser.add_argument("--min-native-artifact-bytes", type=int, default=MIN_NATIVE_ARTIFACT_BYTES)
     parser.add_argument("--allow-missing-native-artifacts", action="store_true")
     parser.add_argument("--packet-mode", choices=("full", NO_BOUNDARY_SIGNAL_MODE), default="full")
+    parser.add_argument(
+        "--require-full-matrix",
+        action="store_true",
+        help="Fail unless primary, same-family control, and cross-family falsification rows are present.",
+    )
     args = parser.parse_args()
 
     result = check_run_artifacts(
@@ -1215,6 +1222,7 @@ def main() -> None:
         require_native_artifacts=not args.allow_missing_native_artifacts,
         min_native_artifact_bytes=args.min_native_artifact_bytes,
         packet_mode=args.packet_mode,
+        require_full_matrix=args.require_full_matrix,
     )
     print(json.dumps(result, indent=2))
     if result["status"] != "PASS":

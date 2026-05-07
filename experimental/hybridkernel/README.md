@@ -243,6 +243,7 @@ python "$HWK_ROOT/phase2/analyze_profiler_metrics.py" \
 
 python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
   --run-dir "$HWK_RUN" \
+  --require-full-matrix \
   | tee "$HWK_RUN/artifact_check.json"
 ```
 
