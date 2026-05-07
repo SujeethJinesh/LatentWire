@@ -1,0 +1,30 @@
+{
+  "block_size": 256,
+  "claim_boundary": [
+    "S3 prefilter only; not promotable cross-model transfer evidence",
+    "source model is Granite Tiny only under current complete local cache",
+    "retuned=false for every row; no per-model retuning was performed",
+    "true S3 promotion still requires at least two complete hybrid validation models"
+  ],
+  "command": "python -m experimental.shared.ssq_lr_s3_transfer_prefilter",
+  "complete_transfer_models": [
+    "ibm-granite/granite-4.0-h-tiny"
+  ],
+  "gate_name": "ssq_lr_s3",
+  "hf_homes": [
+    "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home",
+    "/Users/sujeethjinesh/.cache/huggingface"
+  ],
+  "preregistration_sha256": "sha256:e82292ec47200b5925bfbd264deb3c691891809c55302f1a612e8bed9b748d86",
+  "primary_layers": [
+    0,
+    30
+  ],
+  "project": "ssq_lr",
+  "recipe_id": "mixed_int3_mxfp4_low_error_25pct",
+  "seed_list": [
+    20260507
+  ],
+  "source_gate_packet_sha256": "sha256:c3d39a05afacbb0a8f003452a75278a0e4f45cc26b3c695f5a003c9c2819a873",
+  "source_s2_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/ssq_lr_s3_prefilter_granite_tiny_layers0_30_20260507"
+}

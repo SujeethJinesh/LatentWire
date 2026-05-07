@@ -52,7 +52,9 @@ or transfer claim.
 | S2 INT3 scouts | 4-prompt block-256 scout passes (`5.224x`, zero argmax delta), but 12-prompt block-64 and block-256 scouts fail because INT3 loses argmax fidelity on held-out prompts | fails held-out quality gate |
 | S2b mixed-block short-window scout | `mixed_int3_mxfp4_low_error_25pct` reaches `4.192x` counted state-memory reduction with zero BF16-argmax delta and `0.03956` selected NLL-delta CI high on 12 prompts | passed only as short-window filter |
 | S2b mixed-block longer-window scout | Same recipe and prompt count with `--max-input-tokens 24 --prefix-tokens 8` keeps `4.192x`, but selected accuracy CI high is `0.0667` and selected NLL-delta CI high is `0.0764` | fails S2; stops mixed recipe before GPU |
-| S2b layer-localization longer-window scout | Layers `0` and `30` pass individually with INT3 at `5.224x`, layer `12` fails, and combined layers `0,30` pass with zero selected accuracy delta and `0.04294` NLL CI high | freezes the only live SSQ-LR recipe candidate |
+| S2b layer-localization longer-window scout | Layers `0` and `30` pass individually with INT3 at `5.224x`, layer `12` fails, and combined layers `0,30` pass with zero selected accuracy delta and `0.04294` NLL CI high | narrows the live layer set but does not survive the stricter prefilter as pure INT3 |
+| S3 prefilter replay | On layers `0,30`, pure INT3 weakens (`accuracy CI high 0.105`), while `mixed_int3_mxfp4_low_error_25pct` reaches `4.192x` with zero selected accuracy drift and `0.05044` NLL CI high | freezes the current live recipe candidate |
+| S3 transfer prefilter | `experimental/shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/` is checker-clean, cites one frozen recipe hash, and emits no retuned rows, but has only one complete local transfer model | S3 locally blocked, not quality-failed |
 | architecture provenance | shared config-derived hashes exist for live hybrid targets | packet provenance ready |
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl` enumerates 5,184 required S1 capture rows | execution checklist only |
 | model eligibility | Granite Tiny is cached locally and used for real resource-limited S1b/S2 scouts; larger live targets remain uncached or GPU-sized. | Mac smoke path exercised; frontier validation still GPU-sized |
@@ -74,6 +76,10 @@ or transfer claim.
 
 ## Next Exact Gate
 
-Freeze `int3_primary_state_block_scaled` on layers `0,30` and run S3
-no-retuning transfer plus verbosity/length-drift readouts. Do not send current
-resource-limited scouts to GPU as a positive method claim.
+Freeze `mixed_int3_mxfp4_low_error_25pct` on layers `0,30` and run S3
+no-retuning transfer plus verbosity/length-drift readouts. The current S3
+prefilter packet
+`experimental/shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/`
+is checker-clean and records `retuned=false` for every row, but it cannot
+promote because only Granite Tiny has complete local hybrid weights. Do not
+send current resource-limited scouts to GPU as a positive method claim.

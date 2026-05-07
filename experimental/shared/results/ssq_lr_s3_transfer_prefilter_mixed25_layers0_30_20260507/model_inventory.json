@@ -1,0 +1,51 @@
+[
+  {
+    "cache_present": true,
+    "complete_weights": true,
+    "model_id": "ibm-granite/granite-4.0-h-tiny",
+    "role": "transfer_candidate",
+    "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--ibm-granite--granite-4.0-h-tiny/snapshots/791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
+  },
+  {
+    "cache_present": false,
+    "complete_weights": false,
+    "model_id": "ibm-granite/granite-4.0-h-micro",
+    "role": "blocked_missing_weights",
+    "snapshot_path": ""
+  },
+  {
+    "cache_present": false,
+    "complete_weights": false,
+    "model_id": "ibm-granite/granite-4.0-h-350m",
+    "role": "blocked_missing_weights",
+    "snapshot_path": ""
+  },
+  {
+    "cache_present": false,
+    "complete_weights": false,
+    "model_id": "ibm-granite/granite-4.0-h-1b",
+    "role": "blocked_missing_weights",
+    "snapshot_path": ""
+  },
+  {
+    "cache_present": true,
+    "complete_weights": false,
+    "model_id": "ibm-granite/granite-4.0-h-small",
+    "role": "blocked_missing_weights",
+    "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39"
+  },
+  {
+    "cache_present": true,
+    "complete_weights": false,
+    "model_id": "ibm-granite/granite-4.0-h-small-FP8",
+    "role": "blocked_missing_weights",
+    "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--ibm-granite--granite-4.0-h-small-FP8/snapshots/9e3273d970f0dfb1425b755c12378d937762a3c2"
+  },
+  {
+    "cache_present": true,
+    "complete_weights": false,
+    "model_id": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+    "role": "blocked_missing_weights",
+    "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--Qwen--Qwen3-Next-80B-A3B-Instruct/snapshots/9c7f2fbe84465e40164a94cc16cd30b6999b0cc7"
+  }
+]

@@ -118,6 +118,39 @@ PY
 } | tee "$HWK_RUN/metadata/environment.txt"
 ```
 
+Run this GPU-node preflight before the first Nsight trace. Save both stdout and
+stderr. If any line fails, stop and record the failure as an audit-only packet
+rather than spending the trace budget.
+
+```bash
+{
+  echo "## tokenizer/model cache"
+  python - <<'PY'
+from transformers import AutoTokenizer
+import os
+for model in [os.environ.get("GRANITE_MODEL", ""), os.environ.get("QWEN_MODEL", "")]:
+    if not model:
+        continue
+    tok = AutoTokenizer.from_pretrained(model, local_files_only=True, trust_remote_code=True)
+    ids = tok.encode("HybridKernel token-count preflight.", add_special_tokens=False)
+    print(model, "tokenizer_ok", len(ids))
+PY
+  echo "## vllm import and profiler flag"
+  python - <<'PY'
+import importlib.metadata as m
+print("vllm", m.version("vllm"))
+PY
+  python -m vllm.entrypoints.openai.api_server --help | grep -E 'profiler-config|disable-log-requests|max-model-len' || true
+  echo "## vram"
+  nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv
+} | tee "$HWK_RUN/metadata/gpu_node_preflight.txt"
+```
+
+If Qwen3-Next cannot load on the selected 5090, record that in
+`metadata/command_notes.md` and keep the packet audit-only. A Granite-only
+packet can inform a kill/prototype decision, but it cannot satisfy the frozen
+full-matrix promotion gate.
+
 Create a reduction input manifest before reducing any timeline windows. This
 file is the row-reduction audit trail: every row in `profiler_metrics.json`
 should be traceable to exact Nsight exports, source time windows, commands, and
@@ -148,6 +181,18 @@ cat > "$HWK_RUN/metadata/reduction_input_manifest.json" <<JSON
 }
 JSON
 ```
+
+Use a row worksheet for every metric row before editing `profiler_metrics.json`.
+The worksheet can be a Markdown file or TSV, but it must be cited by SHA-256 in
+`metadata/reduction_input_manifest.json`. Minimum columns:
+
+```text
+run_id	row_role	model	control_segment	nsys_sqlite	nsys_export_sha256	window_start_ms	window_end_ms	total_step_ms	boundary_ms	matched_non_boundary_ms	ncu_rep	ncu_sha256	ncu_kernel_regex	ncu_launch_skip	ncu_launch_count	reducer_command	notes
+```
+
+Do not reuse a worksheet row across repeats. `total_step_ms`, `boundary_ms`,
+and `matched_non_boundary_ms` must come from the same server-side trace window
+and must cite the exact time interval used to compute them.
 
 Record what process the profiler actually observes. A client-only profile is
 not admissible evidence for HybridKernel because the CUDA work lives in the
@@ -231,6 +276,27 @@ the run ID in every output path:
 export RUN_ID=granite_primary_r1
 export MODEL="$GRANITE_MODEL"
 
+nsys profile \
+  --trace=cuda,nvtx,osrt \
+  --trace-fork-before-exec=true \
+  --cuda-graph-trace=node \
+  --capture-range=cudaProfilerApi \
+  --capture-range-end=repeat \
+  --force-overwrite=true \
+  --stats=true \
+  --output="$HWK_RUN/nsys/${RUN_ID}" \
+  python -m vllm.entrypoints.openai.api_server \
+    --model "$MODEL" \
+    --dtype bfloat16 \
+    --max-model-len 2048 \
+    --disable-log-requests \
+    --profiler-config.profiler cuda \
+  2>&1 | tee "$HWK_RUN/logs/nsys_server_${RUN_ID}.log"
+```
+
+In a second terminal, use the same `RUN_ID`, `MODEL`, and seed:
+
+```bash
 python "$HWK_ROOT/phase2/profiler_driver.py" \
   --model "$MODEL" \
   --batch-size 1 \

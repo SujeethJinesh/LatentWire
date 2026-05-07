@@ -1,0 +1,101 @@
+{
+  "claim_boundary": [
+    "S3 prefilter only; not promotable cross-model transfer evidence",
+    "source model is Granite Tiny only under current complete local cache",
+    "retuned=false for every row; no per-model retuning was performed",
+    "true S3 promotion still requires at least two complete hybrid validation models"
+  ],
+  "complete_transfer_model_count": 1,
+  "decision": "FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER",
+  "frozen_recipe": {
+    "block_size": 256,
+    "precision": "mixed_int3_mxfp4_low_error_25pct",
+    "primary_layers": [
+      0,
+      30
+    ],
+    "recipe_id": "mixed_int3_mxfp4_low_error_25pct",
+    "retuning_allowed": false,
+    "scale_granularity": "per_block_absmax_with_int3_mask",
+    "source_prompt_ids": [
+      "hrsmoke_0001",
+      "hrsmoke_0002",
+      "hrsmoke_0003",
+      "hrsmoke_0004",
+      "hrsmoke_0005",
+      "hrsmoke_0006",
+      "hrsmoke_0007",
+      "hrsmoke_0008",
+      "hrsmoke_0009",
+      "hrsmoke_0010",
+      "hrsmoke_0011",
+      "hrsmoke_0012"
+    ],
+    "source_s2_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/ssq_lr_s3_prefilter_granite_tiny_layers0_30_20260507"
+  },
+  "frozen_recipe_sha256": "sha256:df4c3f234306c6cc98c07073ab21a88e67a186ecca62436d49507a95d62bdbc1",
+  "gate_name": "ssq_lr_s3_cross_model_recipe_transfer",
+  "gate_pass": false,
+  "gate_status": "FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER",
+  "max_accuracy_delta_abs": 0.0,
+  "max_ci_high": 0.0,
+  "max_nll_delta_abs": 0.05043900012969971,
+  "model_inventory": [
+    {
+      "cache_present": true,
+      "complete_weights": true,
+      "model_id": "ibm-granite/granite-4.0-h-tiny",
+      "role": "transfer_candidate",
+      "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--ibm-granite--granite-4.0-h-tiny/snapshots/791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
+    },
+    {
+      "cache_present": false,
+      "complete_weights": false,
+      "model_id": "ibm-granite/granite-4.0-h-micro",
+      "role": "blocked_missing_weights",
+      "snapshot_path": ""
+    },
+    {
+      "cache_present": false,
+      "complete_weights": false,
+      "model_id": "ibm-granite/granite-4.0-h-350m",
+      "role": "blocked_missing_weights",
+      "snapshot_path": ""
+    },
+    {
+      "cache_present": false,
+      "complete_weights": false,
+      "model_id": "ibm-granite/granite-4.0-h-1b",
+      "role": "blocked_missing_weights",
+      "snapshot_path": ""
+    },
+    {
+      "cache_present": true,
+      "complete_weights": false,
+      "model_id": "ibm-granite/granite-4.0-h-small",
+      "role": "blocked_missing_weights",
+      "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39"
+    },
+    {
+      "cache_present": true,
+      "complete_weights": false,
+      "model_id": "ibm-granite/granite-4.0-h-small-FP8",
+      "role": "blocked_missing_weights",
+      "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--ibm-granite--granite-4.0-h-small-FP8/snapshots/9e3273d970f0dfb1425b755c12378d937762a3c2"
+    },
+    {
+      "cache_present": true,
+      "complete_weights": false,
+      "model_id": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+      "role": "blocked_missing_weights",
+      "snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--Qwen--Qwen3-Next-80B-A3B-Instruct/snapshots/9c7f2fbe84465e40164a94cc16cd30b6999b0cc7"
+    }
+  ],
+  "passing_model_count": 1,
+  "prompt_count": 12,
+  "resource_limited_decision": "S3_PREFILTER_NOT_PROMOTABLE_FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER",
+  "retuned_row_count": 0,
+  "row_count": 13,
+  "source_s2_packet_sha256": "sha256:c3d39a05afacbb0a8f003452a75278a0e4f45cc26b3c695f5a003c9c2819a873",
+  "transfer_model_count": 1
+}

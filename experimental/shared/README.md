@@ -65,6 +65,14 @@ Use them for preregistered Mac gates only.
   4-prompt block-256 scout passes the S2 contract but is explicitly
   resource-limited; both 12-prompt held-out INT3 scouts fail S2 because the
   recipe clears bytes but loses quality on at least one prompt.
+- `ssq_lr_s3_transfer_prefilter.py`: freezes the layer-selective S2b recipe
+  into the strict S3 schema and inventories local hybrid model-cache
+  completeness before any GPU promotion. Current artifact:
+  `results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/`,
+  decision `FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER`; the packet freezes
+  `mixed_int3_mxfp4_low_error_25pct` on layers `0,30`, validates cleanly, emits
+  no retuned rows, and fails only because the current Mac has one complete
+  hybrid transfer model (`ibm-granite/granite-4.0-h-tiny`).
 - `horn_h2_noise_replay_scout.py`: resource-limited HORN H2
   noisy-continuation replay from the failed Granite Tiny H1a packet. Current
   artifact: `results/horn_h2_noise_replay_scout_20260507/`, decision

@@ -14,7 +14,7 @@ The current sprint ledger is `project_status_20260506.md`.
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
 | `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, mandatory reduction-input manifest checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, row-level reduction provenance, and at least 3% recoverable boundary overhead |
-| `ssq_lr/` | Mac S1b alive; layer-selective S2b candidate alive | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. Uniform S2 scouts split the blocker: MXFP4 preserves 12-prompt argmax but fails bytes (`3.765x`--`3.938x`), while INT3 clears bytes (`4.923x`--`5.224x`) but fails 12-prompt quality. The three-layer mixed S2b longer-window scout fails, but layer-localization passes for layers `0,30` with INT3 at `5.224x`, zero selected accuracy delta, and `0.04294` selected NLL-delta CI high | Do not GPU-promote SSQ-LR. Freeze layers `0,30` with INT3 for the next Mac S3 no-retuning transfer plus verbosity/length-drift gate |
+| `ssq_lr/` | Mac S1b alive; layer-selective mixed S2b candidate alive; S3 locally blocked | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. Uniform S2 scouts split the blocker: MXFP4 preserves 12-prompt argmax but fails bytes (`3.765x`--`3.938x`), while INT3 clears bytes (`4.923x`--`5.224x`) but fails 12-prompt quality. The three-layer mixed S2b longer-window scout fails, and layer-localization excludes layer `12`. The strictest current `0,30` prefilter replay selects `mixed_int3_mxfp4_low_error_25pct` at `4.192x`, zero selected accuracy drift, and `0.05044` selected NLL-delta CI high; pure INT3 on `0,30` is weakened by the same prefilter (`accuracy CI high 0.105`). The S3 prefilter packet `shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/` freezes the mixed recipe, validates cleanly under the S3 checker, and fails only because the local cache has one complete hybrid transfer model (`Granite Tiny`); Granite Small, Granite Small FP8, and Qwen3-Next are config-only caches here | Do not GPU-promote SSQ-LR. The next admissible evidence is a true two-model S3 no-retuning transfer packet after downloading or running a second complete hybrid model, plus verbosity/length-drift readouts for the same frozen mixed recipe |
 | `horn/` | Demoted control branch; H1a and H2 scouts failed | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06`. The H2 scout `shared/results/horn_h2_noise_replay_scout_20260507/` now fails under the signed-direction contract: directional drift ratio `1.037`, signed selected-direction lower bound `0.324`, support `0.5`, paired units `6/6`, hook-off max delta `0.0` | Do not GPU-promote HORN standalone. Keep it as negative/control evidence unless a deliberately reopened full H2/H3 run has new preregistered scope |
 | `hbsm/` | Weakened control branch; B1 scouts failed | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, controls, and per-prompt measured-drift top-decile derivation. `shared/results/hbsm_local_sensitivity_20260507/` is a checker-passing 56-row one-prompt Granite Tiny B1 failure (`fisher_p=0.375`, cheap-predictor Spearman `-0.476`). `shared/results/hbsm_prompt2_sensitivity_20260507/` is a checker-passing 64-row two-prompt B1 failure (`fisher_p=1.0`, boundary top-decile count `0`, cheap-predictor Spearman `-0.667`) | Do not GPU-promote HBSM. Continue only with a new preregistered mechanism hypothesis; otherwise fold into negative/control evidence |
 | `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes and clean-path generation guard | Paper-only camera-ready polish |
@@ -100,7 +100,15 @@ Shared Mac-local utilities live in `shared/`:
   `shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_layers0_30_20260507/`
   passes with selected recipe `int3_primary_state_block_scaled`, `5.224x`
   counted memory reduction, zero selected accuracy delta, and `0.04294`
-  selected NLL-delta CI high. Layer `12` fails and must be excluded.
+  selected NLL-delta CI high. Layer `12` fails and must be excluded. The
+  stricter prefilter
+  `shared/results/ssq_lr_s3_prefilter_granite_tiny_layers0_30_20260507/`
+  then weakens pure INT3 on `0,30` and selects
+  `mixed_int3_mxfp4_low_error_25pct` at `4.192x`, zero selected accuracy drift,
+  and `0.05044` selected NLL-delta CI high. The S3 transfer prefilter
+  `shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/`
+  freezes that mixed recipe and fails only because the current Mac cache has
+  one complete hybrid transfer model.
   HORN uses 12 prompts over all 8 planned Granite Tiny boundaries and failed
   H1a with hook-captured right-layer input tensors and ratio `1.06`. The H2
   noisy-continuation scout is
@@ -180,8 +188,11 @@ Current resource-limited local capture packet:
    `hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`, then verify with
    `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`.
 2. **SSQ-LR**: S1b now clears on a held-out prompt split, and S2b localizes to
-   INT3 on layers `0,30` only. The next Mac blocker is S3 no-retuning transfer
-   plus verbosity/length-drift readouts for that exact frozen recipe.
+   mixed INT3/MXFP4 on layers `0,30` only. The S3 prefilter freezes that
+   recipe and proves the current Mac cache cannot honestly clear transfer
+   because only Granite Tiny has complete weights. The next blocker is a true
+   two-model S3 no-retuning transfer plus verbosity/length-drift readouts for
+   that exact frozen recipe.
 3. **HORN**: demoted as a standalone branch after weak H1a and H2 scouts. Do
    not spend GPU on HORN unless a future full H2/H3 reopening has a new reason
    and preregistered scope.

@@ -16,8 +16,11 @@ Estimated completion:
   held-out S1b packet reproduces the frozen layer hypothesis. A short-window
   mixed INT3/MXFP4 S2b replay clears the executable local S2 contract, but the
   same recipe fails a longer-window 12-prompt replay. Layer-localization then
-  finds a narrower candidate: INT3 state replay on layers `0` and `30`, while
-  layer `12` fails.
+  finds a narrower candidate on layers `0` and `30`; a stricter 32-token
+  Granite Tiny prefilter weakens pure INT3 but keeps
+  `mixed_int3_mxfp4_low_error_25pct` alive at `4.192x` counted memory and zero
+  selected argmax drift. S3 is locally blocked because only Granite Tiny has
+  complete hybrid weights in cache.
 - **0%** as a systems-result paper: no native GPU state-cache integration or
   benchmark exists.
 
@@ -236,13 +239,19 @@ Layer-localization on the same longer replay isolates the failure. Layers `0`
 and `30` pass individually with `int3_primary_state_block_scaled`; layer `12`
 fails and selects only FP8 at `2.0x`. The combined `0,30` replay passes with
 `5.224x` counted state-memory reduction, zero selected accuracy delta, and
-`0.04294` selected NLL-delta CI high. This keeps SSQ-LR alive only as a
-layer-selective Mac candidate; it is still resource-limited simulated replay.
+`0.04294` selected NLL-delta CI high. A stricter prefilter replay with
+`--max-input-tokens 32 --prefix-tokens 12` then weakens pure INT3 on `0,30`
+(`accuracy CI high 0.105`) but selects
+`mixed_int3_mxfp4_low_error_25pct` at `4.192x`, zero selected accuracy drift,
+and `0.05044` selected NLL-delta CI high. This keeps SSQ-LR alive only as a
+layer-selective mixed-precision Mac candidate; it is still resource-limited
+simulated replay.
 
 Highest-value next Mac-side S2 move:
 
-1. Freeze the layer-selective candidate `int3_primary_state_block_scaled` on
-   layers `0,30`; do not include layer `12`.
+1. Freeze the layer-selective candidate
+   `mixed_int3_mxfp4_low_error_25pct` on layers `0,30`; do not include
+   layer `12`, and do not revive pure INT3 without another held-out pass.
 2. The next admissible Mac gate is S3 transfer/no-retuning replay for that
    exact layer-selective recipe, with longer continuations, paired uncertainty,
    and verbosity/length-drift readouts. Do not lower the `>=4x` threshold or
@@ -431,10 +440,18 @@ Historical/general S1 packets can be validated with:
 ```
 
 Active gate status: held-out S1b is alive, the all-primary mixed recipe fails
-the longer-window replay, and the layer-selective `0,30` INT3 recipe clears the
-longer-window replay. Do not GPU-promote it yet. Only validate an S3 follow-up
-packet after this exact recipe clears no-retuning transfer with paired quality
-bounds and verbosity/length-drift bounds.
+the longer-window replay, layer-localization excludes layer `12`, and the
+strictest current `0,30` replay selects
+`mixed_int3_mxfp4_low_error_25pct`. The current S3 prefilter
+`../shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/`
+freezes that exact recipe and validates cleanly under the S3 checker, but the
+decision is `FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER` because this Mac has
+only one complete hybrid transfer model in cache
+(`ibm-granite/granite-4.0-h-tiny`).
+Granite Small, Granite Small FP8, and Qwen3-Next are config-only caches here.
+Do not GPU-promote it yet. Only validate an S3 follow-up packet after this
+exact recipe clears no-retuning transfer on at least two complete validation
+models with paired quality bounds and verbosity/length-drift bounds.
 Compare against the current hybrid-serving baseline from Nemotron-style
 recurrent-cache deployment: FP16 SSM cache with stochastic rounding, plus
 INT16/block-scaled controls. The local reference memo is
@@ -445,7 +462,7 @@ INT16/block-scaled controls. The local reference memo is
   experimental/ssq_lr/phase2/results/ssq_lr_gate_s2_<YYYYMMDD>_<model_slug> \
   --gate ssq_lr_s2
 ./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
-  experimental/ssq_lr/phase2/results/ssq_lr_gate_s3_<YYYYMMDD>_<model_slug> \
+  experimental/shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507 \
   --gate ssq_lr_s3
 ```
 
@@ -455,7 +472,10 @@ baselines, random same-L2 noise controls, shuffled-scale controls, paired
 uncertainty, and a recipe that clears both the quality and 4x state-memory
 gates. The S3 contract requires one frozen recipe hash, one source S2 packet
 hash, no retuning rows, and transfer quality within the preregistered tolerance
-on at least two validation models.
+on at least two validation models. As of 2026-05-07, the executable S3 checker
+gates on the 2% absolute-accuracy bound and requires max absolute NLL drift in
+the summary; NLL-only S3 promotion is disallowed until a numeric NLL tolerance
+is preregistered before transfer rows are inspected.
 
 The real checker requires `prefill_end`, `2k_or_end`, `8k_or_end`, and
 `final_minus_128` buckets for every `(prompt_id, layer)` pair plus at least 12
@@ -536,6 +556,6 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
 
 No 5090 work until S1b and a non-resource-limited S2/S3 packet pass with the
 exact state quantization recipe frozen. S1b now passes on a resource-limited
-held-out Mac packet, and S2b has a layer-selective `0,30` INT3 candidate, but
-GPU work is justified only after that frozen recipe clears paired quality,
-verbosity/length-drift, and cross-model transfer bounds.
+held-out Mac packet, and S2b has a layer-selective `0,30` mixed INT3/MXFP4
+candidate, but GPU work is justified only after that frozen recipe clears
+paired quality, verbosity/length-drift, and cross-model transfer bounds.

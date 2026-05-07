@@ -298,7 +298,50 @@ Longer-window localization results:
 | `30` | pass | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.04505` |
 | `0,30` | pass | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.04294` |
 
-Decision: **SSQ-LR IS ALIVE ONLY AS A LAYER-SELECTIVE MAC CANDIDATE**. Freeze
-`int3_primary_state_block_scaled` on layers `0,30` and exclude layer `12`. The
-next exact gate is S3 no-retuning transfer plus verbosity/length-drift readouts
-for that exact frozen recipe; still no GPU promotion.
+Decision: **SSQ-LR IS ALIVE ONLY AS A LAYER-SELECTIVE MAC CANDIDATE**. Exclude
+layer `12`. Pure INT3 on layers `0,30` became the immediate candidate, but the
+stricter S3 prefilter below supersedes it with a mixed INT3/MXFP4 recipe. Still
+no GPU promotion.
+
+## 2026-05-07 S3 Prefilter Replay
+
+Packet:
+
+- `experimental/shared/results/ssq_lr_s3_prefilter_granite_tiny_layers0_30_20260507/`
+
+Readout:
+
+| Recipe | Memory | Accuracy CI high | NLL CI high | Decision |
+|---|---:|---:|---:|---|
+| `int3_primary_state_block_scaled` | `5.224x` | `0.105263` | `0.13503` | weakened |
+| `mixed_int3_mxfp4_low_error_25pct` | `4.192x` | `0.000000` | `0.05044` | selected |
+
+Decision: **PURE INT3 IS WEAKENED; MIXED 25% INT3/MXFP4 IS THE LIVE
+RECIPE**. The stricter Granite Tiny replay keeps layers `0,30` but changes the
+recipe to `mixed_int3_mxfp4_low_error_25pct`. This remains resource-limited
+simulated replay and cannot promote by itself.
+
+## 2026-05-07 S3 Transfer Prefilter
+
+Packet:
+
+- `experimental/shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/`
+
+Readout:
+
+| Field | Value |
+|---|---:|
+| Decision | `FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER` |
+| Validator status | clean under `followup_gate_contracts --gate ssq_lr_s3` |
+| Frozen recipe | `mixed_int3_mxfp4_low_error_25pct`, layers `0,30`, block size `256` |
+| Frozen recipe hash | `sha256:df4c3f234306c6cc98c07073ab21a88e67a186ecca62436d49507a95d62bdbc1` |
+| Transfer model count | `1` |
+| Passing model count | `1` |
+| Retuned row count | `0` |
+| Max NLL delta reported by S3 checker | `0.050439` |
+
+Decision: **S3 IS LOCALLY BLOCKED, NOT FAILED ON QUALITY**. The prefilter has
+one complete local hybrid model (`ibm-granite/granite-4.0-h-tiny`) and records
+Granite Small, Granite Small FP8, and Qwen3-Next as config-only caches. A true
+S3 packet still needs at least two complete validation models using this same
+frozen recipe and no retuning, plus verbosity/length-drift readouts.

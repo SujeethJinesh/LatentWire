@@ -1,0 +1,26 @@
+{
+  "block_size": 256,
+  "precision": "mixed_int3_mxfp4_low_error_25pct",
+  "primary_layers": [
+    0,
+    30
+  ],
+  "recipe_id": "mixed_int3_mxfp4_low_error_25pct",
+  "retuning_allowed": false,
+  "scale_granularity": "per_block_absmax_with_int3_mask",
+  "source_prompt_ids": [
+    "hrsmoke_0001",
+    "hrsmoke_0002",
+    "hrsmoke_0003",
+    "hrsmoke_0004",
+    "hrsmoke_0005",
+    "hrsmoke_0006",
+    "hrsmoke_0007",
+    "hrsmoke_0008",
+    "hrsmoke_0009",
+    "hrsmoke_0010",
+    "hrsmoke_0011",
+    "hrsmoke_0012"
+  ],
+  "source_s2_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/ssq_lr_s3_prefilter_granite_tiny_layers0_30_20260507"
+}

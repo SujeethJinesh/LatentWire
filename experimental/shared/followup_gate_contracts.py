@@ -166,6 +166,7 @@ FOLLOWUP_SUMMARY_FIELDS: dict[str, tuple[str, ...]] = {
         "passing_model_count",
         "max_accuracy_delta_abs",
         "max_ci_high",
+        "max_nll_delta_abs",
         "retuned_row_count",
         "frozen_recipe_sha256",
     ),
@@ -384,6 +385,7 @@ def evaluate_ssq_lr_s3(rows: list[dict[str, Any]]) -> dict[str, Any]:
     passing_models = []
     max_accuracy_delta = max((abs(float(row["accuracy_delta_abs"])) for row in transfer_rows), default=float("inf"))
     max_ci_high = max((float(row["paired_ci_high"]) for row in transfer_rows), default=float("inf"))
+    max_nll_delta = max((abs(float(row["nll_delta"])) for row in transfer_rows), default=float("inf"))
     retuned_count = sum(1 for row in rows if bool(row.get("retuned")))
     for model_id in model_ids:
         model_rows = [row for row in transfer_rows if str(row["model_id"]) == model_id]
@@ -412,6 +414,7 @@ def evaluate_ssq_lr_s3(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "passing_model_count": len(passing_models),
         "max_accuracy_delta_abs": max_accuracy_delta,
         "max_ci_high": max_ci_high,
+        "max_nll_delta_abs": max_nll_delta,
         "retuned_row_count": retuned_count,
         "frozen_recipe_sha256": next(iter(frozen_hashes), ""),
     }
