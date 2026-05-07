@@ -33,8 +33,9 @@ Shared Mac-local utilities live in `experimental/shared/`:
 - `hybrid_trace_plan.py`: deterministic SSQ-LR/HORN/HBSM capture plan from the
   frozen 12-prompt manifest and shared architecture maps. The current plan is
   `shared/results/hybrid_trace_plan_20260507/` with 5,184 SSQ-LR rows, 1,008
-  HORN rows, and 1,554 HBSM rows. It is trace-plan-only and cannot promote any
-  gate.
+  HORN rows, and 1,554 HBSM rows. SSQ-LR recurrent-state labels are now derived
+  from the architecture map rather than hard-coded to Granite/Mamba2. It is
+  trace-plan-only and cannot promote any gate.
 - `hybrid_trace_capture_manifest.py`: expands the frozen trace plans into
   per-project/per-model metadata templates for real SSQ-LR and HORN tensor
   packets plus HBSM sensitivity row-packet templates. The current artifact is
@@ -59,7 +60,10 @@ Shared Mac-local utilities live in `experimental/shared/`:
 - `check_gate_packet.py`: generic synthetic-packet validator plus strict
   `--mode real --project ...` contracts for SSQ-LR, HORN, and HBSM, including a
   `SCHEMA_REHEARSAL_NOT_PROMOTABLE` path that exercises real schemas without
-  allowing synthetic rows to promote a gate.
+  allowing synthetic rows to promote a gate. Non-rehearsal packets now reject
+  unregistered `model_revision`/`tokenizer_revision` strings, decisions that do
+  not equal the recomputed S1/H1/B1 gate status, unknown controls, and rows
+  outside a cited `trace_plan_path`.
 - `hybrid_trace_packet_runbook.md`: required schema for the first real
   SSQ-LR/HORN/HBSM trace packet.
 - `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt Mac
@@ -98,12 +102,13 @@ The checker now has a stricter real-packet mode:
 Real packets must include provenance, `summary.md`, matching `row_count`,
 project-specific row schemas, required controls, admissible coverage,
 `prompt_ids_hash`, `architecture_map_hash`, `trace_plan_hash`, and
-decision-grade `summary.json` aggregates. Non-rehearsal real packets now verify `model_id`
-or a registered model alias and
-`architecture_map_hash` against
+decision-grade `summary.json` aggregates. Non-rehearsal real packets now verify
+`model_id` or a registered model alias and `architecture_map_hash` against
 `shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`, not
-just hash syntax, and verify `trace_plan_hash` against the project hash in
-`shared/results/hybrid_trace_plan_20260507/config.json`, not just hash syntax.
+just hash syntax; verify `model_revision` and `tokenizer_revision` against the
+registered eligibility snapshot SHA; verify `trace_plan_hash` against the
+project hash in `shared/results/hybrid_trace_plan_20260507/config.json`; and
+reject off-plan rows whenever `trace_plan_path` is supplied.
 Synthetic-only real-schema rehearsals must set `schema_rehearsal:
 true` and use a `SCHEMA_REHEARSAL_NOT_PROMOTABLE` decision. Resource-limited
 real packets must use a

@@ -269,15 +269,35 @@
   },
   "generated_date": "2026-05-06",
   "git": {
-    "head_at_generation": "8bd21368dcb3ffd57d3877992f60cde0b237d2c7",
+    "head_at_generation": "51c452ca9dda1a46c5e7c445af10dafaf4bbf13c",
     "thoughtflow_path_dirty_at_generation": false,
     "thoughtflow_path_status_at_generation": "",
-    "thoughtflow_path_tree_at_generation": "8738eb34ab30419095343ef4ced8018ab56b817b"
+    "thoughtflow_path_tree_at_generation": "d9850c65ea4eadee73a7e776094d648b49fd3eef"
   },
   "packet_name": "thoughtflow_diagnostic_packet_20260506",
+  "preregistrations": [
+    {
+      "id": "rdu_preregistration",
+      "path": "preregister_recurrence_distance_utility_20260506.md",
+      "role": "one_shot_method_preregistration",
+      "sha256": "sha256:676d5239dddf00668368161df31f90b9a2a91ee2f3b47da378bd65887fd4d832"
+    },
+    {
+      "id": "psi_preregistration",
+      "path": "preregister_prefix_surprisal_utility_20260506.md",
+      "role": "fresh_successor_preregistration",
+      "sha256": "sha256:04da2bd048c18b1656a7fcfacaf5ed2f07a6c18c16610a4993224a37a6f74d32"
+    },
+    {
+      "id": "vwac_preregistration",
+      "path": "preregister_value_weighted_attention_contribution_20260506.md",
+      "role": "fresh_successor_preregistration",
+      "sha256": "sha256:1574c8531664316124b17cd016d47a2a5e4dd78cf39a94981f25d8f1bc1c5339"
+    }
+  ],
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:5a96ac3d444fd622a2a2a349e40c3e6cc6f35fd74057ae68ec2d62ced66f2e11"
+    "sha256": "sha256:25bfb2763ba4750adb5fdc48b6e29b31547983cef4e6599c26d9bb98d628baca"
   }
 }
