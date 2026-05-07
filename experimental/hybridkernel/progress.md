@@ -644,3 +644,17 @@ nine-row minimum.
 
 Decision: **GPU OPERATORS NOW START FROM THE CONTROL-FALSIFIED PACKET SHAPE**.
 The blocker remains the user-operated NVIDIA/vLLM Nsight run.
+
+## 2026-05-07 Native Control Matrix
+
+Added `phase2/native_control_matrix.json` and made
+`phase2/create_native_run_packet.py` copy it into each new GPU packet under
+`metadata/native_control_matrix.json`. The skeleton rows now use fixed control
+labels instead of placeholder control models: Granite primary boundary windows,
+Granite same-model non-boundary windows, and the mapped Qwen3-Next
+cross-family falsification row. The native checklist and runbook now say that a
+missing control makes the packet audit-only; operators should not substitute an
+unmapped model during a short GPU run.
+
+Decision: **HYBRIDKERNEL CONTROL ROLES ARE NOW PREDECLARED BEFORE GPU TIME**.
+The blocker remains native server-side Nsight evidence.

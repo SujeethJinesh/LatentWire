@@ -1,0 +1,28 @@
+{
+  "decision": "CONTROL_MATRIX_READY_NOT_NATIVE_EVIDENCE",
+  "claim_boundary": [
+    "synthetic fixture",
+    "not profiler evidence",
+    "not GPU evidence"
+  ],
+  "rows": [
+    {
+      "row_role": "primary_hybrid",
+      "model": "synthetic-granite-fixture",
+      "control_family": "same_family_matched_segment",
+      "control_model_or_segment": "matched_transformer_block"
+    },
+    {
+      "row_role": "same_family_control",
+      "model": "synthetic-granite-fixture",
+      "control_family": "same_model_non_boundary_segment_control",
+      "control_model_or_segment": "same_family_fixture_control"
+    },
+    {
+      "row_role": "cross_family_falsification",
+      "model": "synthetic-qwen-fixture",
+      "control_family": "cross_family_hybrid_control",
+      "control_model_or_segment": "cross_family_fixture_control"
+    }
+  ]
+}

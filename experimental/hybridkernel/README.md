@@ -41,6 +41,12 @@ profile scopes, stale analyzer outputs, duplicated run IDs, and tiny or
 placeholder Nsight exports. Matching profiler filenames alone are not
 admissible evidence.
 
+The packet skeleton copies `phase2/native_control_matrix.json` into
+`metadata/native_control_matrix.json`. Use it as the row-role authority for the
+GPU run: it fixes the Granite primary rows, same-family non-boundary controls,
+and the mapped cross-family falsification row. If a required control cannot be
+run, the packet remains audit-only.
+
 ## Completion Estimate And Roadmap
 
 Estimated workshop-paper completion: **70%**.

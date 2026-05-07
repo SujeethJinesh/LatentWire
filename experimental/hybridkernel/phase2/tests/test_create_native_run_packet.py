@@ -36,6 +36,7 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
         "metadata/environment.txt",
         "metadata/profile_scope.json",
         "metadata/architecture_map.json",
+        "metadata/native_control_matrix.json",
         "logs/README.md",
         "nsys/README.md",
         "ncu/README.md",
@@ -69,8 +70,21 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     assert [row["row_role"] for row in metrics["rows"]].count("primary_hybrid") == 3
     assert [row["row_role"] for row in metrics["rows"]].count("same_family_control") == 3
     assert [row["row_role"] for row in metrics["rows"]].count("cross_family_falsification") == 3
+    assert {row["model"] for row in metrics["rows"] if row["row_role"] == "same_family_control"} == {
+        "ibm-granite/granite-4.0-h-tiny"
+    }
+    assert {row["model"] for row in metrics["rows"] if row["row_role"] == "cross_family_falsification"} == {
+        "Qwen/Qwen3-Next-80B-A3B-Instruct"
+    }
     architecture_map = json.loads((run_dir / "metadata/architecture_map.json").read_text())
     assert "ibm-granite/granite-4.0-h-tiny" in {row["model"] for row in architecture_map}
+    control_matrix = json.loads((run_dir / "metadata/native_control_matrix.json").read_text())
+    assert control_matrix["decision"] == "CONTROL_MATRIX_READY_NOT_NATIVE_EVIDENCE"
+    assert {row["row_role"] for row in control_matrix["rows"]} == {
+        "primary_hybrid",
+        "same_family_control",
+        "cross_family_falsification",
+    }
 
 
 def test_skeleton_is_not_mistaken_for_complete_native_evidence(tmp_path: Path) -> None:

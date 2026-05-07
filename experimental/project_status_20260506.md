@@ -120,6 +120,10 @@ The native profiler packet now requires per-row reduction provenance:
 `boundary_indices`, `time_window_ms`, `recoverable_fraction_basis`,
 `reduction_command`, and `reduction_notes`. The checker also cross-checks model identity across
 `profile_scope.json`, client replay logs, metric rows, and the architecture map.
+New packets also copy
+`experimental/hybridkernel/phase2/native_control_matrix.json` into
+`metadata/native_control_matrix.json`, fixing the primary, same-family, and
+cross-family row roles before the GPU run starts.
 It now has an explicit `no_boundary_signal_kill` packet mode so a clean
 Nsight-Systems negative run can be reviewable without inventing an Nsight
 Compute target.

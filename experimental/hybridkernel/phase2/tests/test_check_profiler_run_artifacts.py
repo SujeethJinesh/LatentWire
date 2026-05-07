@@ -39,6 +39,32 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
     (run_dir / "metadata/architecture_map.json").write_text(
         '[{"model":"granite","boundary_count":1}]\n', encoding="utf-8"
     )
+    (run_dir / "metadata/native_control_matrix.json").write_text(
+        json.dumps(
+            {
+                "decision": "CONTROL_MATRIX_READY_NOT_NATIVE_EVIDENCE",
+                "rows": [
+                    {
+                        "row_role": "primary_hybrid",
+                        "model": "granite",
+                        "control_family": "same_family_matched_segment",
+                    },
+                    {
+                        "row_role": "same_family_control",
+                        "model": "granite",
+                        "control_family": "same_model_non_boundary_segment_control",
+                    },
+                    {
+                        "row_role": "cross_family_falsification",
+                        "model": "qwen",
+                        "control_family": "cross_family_hybrid_control",
+                    },
+                ],
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     (run_dir / "metadata/profile_scope.json").write_text(
         json.dumps(
             {

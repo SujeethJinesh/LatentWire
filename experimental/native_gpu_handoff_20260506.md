@@ -31,6 +31,8 @@ Minimum admissible packet:
 - server-side Nsight Systems and Nsight Compute artifacts;
 - immutable environment capture including `nvidia-smi`, `nsys`, `ncu`, and
   `python` lines;
+- copied `metadata/native_control_matrix.json` from
+  `experimental/hybridkernel/phase2/native_control_matrix.json`;
 - at least three distinct primary metric rows;
 - at least three same-shape same-family control rows;
 - at least three same-shape cross-family falsification rows;

@@ -34,6 +34,7 @@ The packet is incomplete unless all of these exist:
 | `metadata/environment.txt` | timestamp, hostname, `nvidia-smi`, `nsys --version`, `ncu --version`, Python version, package freeze, vLLM/Torch/Triton/Transformers versions |
 | `metadata/profile_scope.json` | server-side scope for both Nsight Systems and Nsight Compute |
 | `metadata/architecture_map.json` | copied HybridKernel architecture map used for boundary annotation |
+| `metadata/native_control_matrix.json` | copied control matrix fixing primary, same-family, and cross-family row roles before profiling |
 | `logs/*.log` or `logs/*.txt` | Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence markers; client logs must be valid `profiler_driver.py` JSON with a non-empty top-level `model`, `dry_run: false`, `token_counts_required: true`, a non-empty `token_count_source`, and non-empty `requests` rows whose `status` fields are all `ok` and whose prompt/decode token counts are positive. |
 | `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts, not placeholder files |
 | `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels, not placeholder files. Required for boundary-evidence packets; optional only with explicit `--packet-mode no_boundary_signal_kill` and row `ncu_artifact: "not_run_no_boundary_signal"`. |
@@ -123,6 +124,10 @@ Do not duplicate one trace into multiple rows. Repeated rows for the same
 model/config must have distinct `nsys_artifact`, `ncu_artifact`, and
 `time_window_ms` intervals. Do not mix different model families and call them
 repeated runs for the same gate.
+Use `metadata/native_control_matrix.json` as the row-role authority. If the
+cross-family falsification model is unavailable, record that fact in the
+readout and treat the packet as audit-only rather than substituting an unmapped
+model.
 Promotion requires at least three same-shape same-family control rows and three
 same-shape cross-family falsification rows, and both control families must stay
 below the 3% recoverable-gain gate. Controls that reproduce the same signal do

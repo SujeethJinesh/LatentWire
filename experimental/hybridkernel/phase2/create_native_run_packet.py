@@ -29,6 +29,7 @@ PHASE2_DIR = Path(__file__).resolve().parent
 DEFAULT_RUN_ROOT = PHASE2_DIR / "profiler_runs"
 DEFAULT_MODEL = "ibm-granite/granite-4.0-h-tiny"
 DEFAULT_LABEL = "granite_boundary"
+CONTROL_MATRIX_PATH = PHASE2_DIR / "native_control_matrix.json"
 
 
 def _utc_timestamp() -> str:
@@ -132,23 +133,25 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
             "model": model,
             "row_role": "primary_hybrid",
             "control_family": "same_family_matched_segment",
-            "control_model_or_segment": f"{SKELETON_TODO_MARKER}: matched non-boundary segment in {model}",
+            "control_model_or_segment": "granite_hybrid_attention_ssm_boundary_windows",
             "boundary_indices": [],
         },
         {
             "label": "same-family-control",
-            "model": f"{SKELETON_TODO_MARKER}: same-family control model or segment",
+            "model": model,
             "row_role": "same_family_control",
-            "control_family": "same_family_transformer_or_ssm_control",
-            "control_model_or_segment": f"{SKELETON_TODO_MARKER}: matched same-family control",
+            "control_family": "same_model_non_boundary_segment_control",
+            "control_model_or_segment": (
+                "granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows"
+            ),
             "boundary_indices": [],
         },
         {
             "label": "cross-family-falsification",
-            "model": f"{SKELETON_TODO_MARKER}: cross-family falsification model",
+            "model": "Qwen/Qwen3-Next-80B-A3B-Instruct",
             "row_role": "cross_family_falsification",
             "control_family": "cross_family_hybrid_control",
-            "control_model_or_segment": f"{SKELETON_TODO_MARKER}: matched cross-family control",
+            "control_model_or_segment": "qwen3_next_hybrid_boundary_windows",
             "boundary_indices": [],
         },
     ]
@@ -243,6 +246,10 @@ def create_run_packet(
     _write_new(
         output_dir / "metadata/architecture_map.json",
         architecture_map_path.read_text(encoding="utf-8"),
+    )
+    _write_new(
+        output_dir / "metadata/native_control_matrix.json",
+        CONTROL_MATRIX_PATH.read_text(encoding="utf-8"),
     )
     _write_new(
         output_dir / "logs/README.md",

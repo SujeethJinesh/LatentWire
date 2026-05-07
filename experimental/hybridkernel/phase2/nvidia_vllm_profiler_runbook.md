@@ -63,6 +63,13 @@ not admissible evidence: the artifact checker rejects the
 `TODO_NATIVE_PROFILE_FILL` sentinels until real native profiler metadata,
 readout entries, and metric rows replace them.
 
+The skeleton also copies `phase2/native_control_matrix.json` into
+`$HWK_RUN/metadata/native_control_matrix.json`. Treat that file as the
+row-role authority: primary and same-family rows use the Granite serving path,
+and cross-family falsification uses the mapped Qwen3-Next row if it can be run.
+If the cross-family model is unavailable on the GPU node, record the miss and
+keep the packet audit-only; do not substitute an unmapped model and promote.
+
 Do not replace Nsight exports with empty files, copied README files, or text
 placeholders that only satisfy the expected filename extension. The final
 checker requires reviewable profiler payloads, with default minimum artifact

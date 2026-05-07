@@ -25,6 +25,7 @@ from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
 REQUIRED_FILES = [
     "metadata/environment.txt",
     "metadata/architecture_map.json",
+    "metadata/native_control_matrix.json",
     "metadata/profile_scope.json",
     "profiler_metrics.json",
     "profiler_analysis_gate.json",
