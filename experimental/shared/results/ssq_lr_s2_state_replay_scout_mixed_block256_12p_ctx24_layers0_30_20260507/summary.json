@@ -1,0 +1,1228 @@
+{
+  "bf16_noop_max_delta": 0.0,
+  "by_control": [
+    {
+      "control_type": "bf16_noop",
+      "max_abs_nll_delta": 0.0,
+      "max_accuracy_delta_abs": 0.0,
+      "mean_accuracy_delta_abs": 0.0,
+      "mean_nll_delta": 0.0,
+      "min_memory_reduction": 1.0,
+      "recipe_ids": [
+        "bf16_noop_primary_state"
+      ]
+    },
+    {
+      "control_type": "candidate_recipe",
+      "max_abs_nll_delta": 0.074615478515625,
+      "max_accuracy_delta_abs": 0.13333332538604736,
+      "mean_accuracy_delta_abs": 0.0092592587073644,
+      "mean_nll_delta": -0.002167969114250607,
+      "min_memory_reduction": 1.9844961240310077,
+      "recipe_ids": [
+        "fp8_e4m3_primary_state",
+        "int3_primary_state_block_scaled",
+        "int8_primary_state_block64",
+        "mixed_int3_mxfp4_low_error_10pct",
+        "mixed_int3_mxfp4_low_error_25pct",
+        "mxfp4_primary_state_block64"
+      ]
+    },
+    {
+      "control_type": "fp8_state",
+      "max_abs_nll_delta": 0.074615478515625,
+      "max_accuracy_delta_abs": 0.13333332538604736,
+      "mean_accuracy_delta_abs": 0.01111111044883728,
+      "mean_nll_delta": 0.013284847140312195,
+      "min_memory_reduction": 2.0,
+      "recipe_ids": [
+        "fp8_state_baseline"
+      ]
+    },
+    {
+      "control_type": "int8_state",
+      "max_abs_nll_delta": 0.016492128372192383,
+      "max_accuracy_delta_abs": 0.06666666269302368,
+      "mean_accuracy_delta_abs": 0.01111111044883728,
+      "mean_nll_delta": 0.0019731769959131875,
+      "min_memory_reduction": 1.9844961240310077,
+      "recipe_ids": [
+        "int8_state_baseline"
+      ]
+    },
+    {
+      "control_type": "mxfp4_state",
+      "max_abs_nll_delta": 0.06575751304626465,
+      "max_accuracy_delta_abs": 0.06666666269302368,
+      "mean_accuracy_delta_abs": 0.01111111044883728,
+      "mean_nll_delta": -0.009181464711825052,
+      "min_memory_reduction": 3.9384615384615387,
+      "recipe_ids": [
+        "mxfp4_state_baseline"
+      ]
+    },
+    {
+      "control_type": "random_same_l2",
+      "max_abs_nll_delta": 0.16383826732635498,
+      "max_accuracy_delta_abs": 0.13333332538604736,
+      "mean_accuracy_delta_abs": 0.04999999701976776,
+      "mean_nll_delta": -0.004263033469518025,
+      "min_memory_reduction": 3.9384615384615387,
+      "recipe_ids": [
+        "random_same_l2_mxfp4_error"
+      ]
+    },
+    {
+      "control_type": "same_byte_uniform",
+      "max_abs_nll_delta": 0.11749398708343506,
+      "max_accuracy_delta_abs": 0.06666666269302368,
+      "mean_accuracy_delta_abs": 0.02222222089767456,
+      "mean_nll_delta": -0.002524798115094503,
+      "min_memory_reduction": 3.9384615384615387,
+      "recipe_ids": [
+        "same_byte_uniform_contiguous_mxfp4"
+      ]
+    },
+    {
+      "control_type": "shuffled_scales",
+      "max_abs_nll_delta": 2.1551597118377686,
+      "max_accuracy_delta_abs": 0.7999999970197678,
+      "mean_accuracy_delta_abs": 0.28015871718525887,
+      "mean_nll_delta": 0.5781199634075165,
+      "min_memory_reduction": 3.9384615384615387,
+      "recipe_ids": [
+        "shuffled_scales_mxfp4"
+      ]
+    }
+  ],
+  "claim_boundary": [
+    "resource-limited local continuation replay",
+    "BF16-argmax fidelity proxy, not task accuracy",
+    "simulated quantization only",
+    "not GPU evidence",
+    "not a promotable S2 packet"
+  ],
+  "contract_evaluation": {
+    "bf16_noop_max_delta": 0.0,
+    "gate_name": "ssq_lr_s2_state_quantization_sensitivity",
+    "gate_pass": true,
+    "gate_status": "PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY",
+    "recipe_count": 6,
+    "selected_accuracy_ci_high": 0.0,
+    "selected_accuracy_delta_abs": 0.0,
+    "selected_memory_reduction": 5.224489795918367,
+    "selected_nll_delta_abs": 0.042938828468322754,
+    "selected_nll_delta_ci_high": 0.042938828468322754,
+    "selected_recipe_id": "int3_primary_state_block_scaled"
+  },
+  "decision": "PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY",
+  "elapsed_seconds": 308.40174087509513,
+  "gate_name": "ssq_lr_s2_state_quantization_sensitivity",
+  "gate_pass": true,
+  "gate_status": "PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY",
+  "load_seconds": 1.2048180419951677,
+  "prompt_count": 12,
+  "recipe_count": 6,
+  "resource_limited_decision": "RESOURCE_LIMITED_S2_SCOUT_NOT_PROMOTABLE_PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY",
+  "row_count": 156,
+  "run_rows": [
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.009851574897766113,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.004015207290649414,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.003986835479736328,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.003526449203491211,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 0.8666666746139526,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.030133605003356934,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0032951831817626953,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "same_byte_uniform",
+      "nll_delta": -0.034989118576049805,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": 0.003526449203491211,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.8666666746139526,
+      "control_type": "fp8_state",
+      "nll_delta": -0.030133605003356934,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": -0.0032951831817626953,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "random_same_l2",
+      "nll_delta": -0.01538097858428955,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.6000000238418579,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.3820064067840576,
+      "prompt_id": "hrsmoke_0001",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0015257596969604492,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.01132512092590332,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.006216526031494141,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.01599740982055664,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.039513230323791504,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.008278846740722656,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "same_byte_uniform",
+      "nll_delta": 0.024355053901672363,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": 0.01599740982055664,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": 0.039513230323791504,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": 0.008278846740722656,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "random_same_l2",
+      "nll_delta": 0.04596364498138428,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.2814849615097046,
+      "prompt_id": "hrsmoke_0002",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0003781318664550781,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.0068100690841674805,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.0063599348068237305,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.0015604496002197266,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.014701366424560547,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.007079958915710449,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "same_byte_uniform",
+      "nll_delta": -0.008050918579101562,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": 0.0015604496002197266,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": 0.014701366424560547,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": 0.007079958915710449,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "random_same_l2",
+      "nll_delta": 0.06466901302337646,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.6000000238418579,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.4767415523529053,
+      "prompt_id": "hrsmoke_0003",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.04078090190887451,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.03016042709350586,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.023819684982299805,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0027129650115966797,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.01811802387237549,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.023340821266174316,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "same_byte_uniform",
+      "nll_delta": 0.016539692878723145,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": -0.0027129650115966797,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": 0.01811802387237549,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": 0.023340821266174316,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "random_same_l2",
+      "nll_delta": 0.03057861328125,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.5714285969734192,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.24112451076507568,
+      "prompt_id": "hrsmoke_0004",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.005686283111572266,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.004271507263183594,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.01849532127380371,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.008872270584106445,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.074615478515625,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.008515357971191406,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "same_byte_uniform",
+      "nll_delta": 0.01126718521118164,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "int8_state",
+      "nll_delta": 0.008872270584106445,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": 0.074615478515625,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "mxfp4_state",
+      "nll_delta": -0.008515357971191406,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.8666666746139526,
+      "control_type": "random_same_l2",
+      "nll_delta": -0.03678274154663086,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.6000000238418579,
+      "control_type": "shuffled_scales",
+      "nll_delta": 1.5015180110931396,
+      "prompt_id": "hrsmoke_0005",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.042938828468322754,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0519251823425293,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.05590057373046875,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.010942697525024414,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.03640949726104736,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.05318915843963623,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "same_byte_uniform",
+      "nll_delta": -0.11749398708343506,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": -0.010942697525024414,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": 0.03640949726104736,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": -0.05318915843963623,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "random_same_l2",
+      "nll_delta": -0.16383826732635498,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "shuffled_scales",
+      "nll_delta": -0.32017815113067627,
+      "prompt_id": "hrsmoke_0006",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.014060258865356445,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.017929792404174805,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.01661062240600586,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.005095005035400391,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0016567707061767578,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.009533405303955078,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "same_byte_uniform",
+      "nll_delta": -0.01723003387451172,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": 0.005095005035400391,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": -0.0016567707061767578,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": 0.009533405303955078,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "random_same_l2",
+      "nll_delta": 0.16020894050598145,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.20000000298023224,
+      "control_type": "shuffled_scales",
+      "nll_delta": 2.1551597118377686,
+      "prompt_id": "hrsmoke_0007",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0070650577545166016,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.015151023864746094,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.014479875564575195,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0054509639739990234,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.023878097534179688,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.016347885131835938,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "same_byte_uniform",
+      "nll_delta": -0.0044329166412353516,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": -0.0054509639739990234,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": -0.023878097534179688,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": -0.016347885131835938,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.8666666746139526,
+      "control_type": "random_same_l2",
+      "nll_delta": 0.06787109375,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.6000000238418579,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.45380735397338867,
+      "prompt_id": "hrsmoke_0008",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.005607128143310547,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0010600090026855469,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.003092050552368164,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.016492128372192383,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.04922151565551758,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.013045549392700195,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "same_byte_uniform",
+      "nll_delta": 0.021032094955444336,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": 0.016492128372192383,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": 0.04922151565551758,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": 0.013045549392700195,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "random_same_l2",
+      "nll_delta": 0.003907680511474609,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.8666666746139526,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.3626708984375,
+      "prompt_id": "hrsmoke_0009",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.01780569553375244,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0016970634460449219,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0050506591796875,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.004859328269958496,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.02584099769592285,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.01964271068572998,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "same_byte_uniform",
+      "nll_delta": 0.05265390872955322,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": 0.004859328269958496,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": 0.02584099769592285,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": -0.01964271068572998,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "random_same_l2",
+      "nll_delta": -0.04881894588470459,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.40331292152404785,
+      "prompt_id": "hrsmoke_0010",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.019609928131103516,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0031526684761047363,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.003916323184967041,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.00700455904006958,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": 0.017733871936798096,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.004708349704742432,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "same_byte_uniform",
+      "nll_delta": 0.01574605703353882,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "int8_state",
+      "nll_delta": -0.00700455904006958,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": 0.017733871936798096,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "mxfp4_state",
+      "nll_delta": -0.004708349704742432,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "random_same_l2",
+      "nll_delta": -0.028756380081176758,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.7333333492279053,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.5239591598510742,
+      "prompt_id": "hrsmoke_0011",
+      "recipe_id": "shuffled_scales_mxfp4"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.030616044998168945,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "int3_primary_state_block_scaled"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.04440879821777344,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "mixed_int3_mxfp4_low_error_10pct"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.0003962516784667969,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "mixed_int3_mxfp4_low_error_25pct"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.006613731384277344,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "int8_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.06106734275817871,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "fp8_e4m3_primary_state"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "candidate_recipe",
+      "nll_delta": -0.06575751304626465,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "mxfp4_primary_state_block64"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "bf16_noop",
+      "nll_delta": 0.0,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "bf16_noop_primary_state"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "same_byte_uniform",
+      "nll_delta": 0.010305404663085938,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "same_byte_uniform_contiguous_mxfp4"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "int8_state",
+      "nll_delta": -0.006613731384277344,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "int8_state_baseline"
+    },
+    {
+      "argmax_agreement": 1.0,
+      "control_type": "fp8_state",
+      "nll_delta": -0.06106734275817871,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "fp8_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "mxfp4_state",
+      "nll_delta": -0.06575751304626465,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "mxfp4_state_baseline"
+    },
+    {
+      "argmax_agreement": 0.9333333373069763,
+      "control_type": "random_same_l2",
+      "nll_delta": -0.13077807426452637,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "random_same_l2_mxfp4_error"
+    },
+    {
+      "argmax_agreement": 0.8666666746139526,
+      "control_type": "shuffled_scales",
+      "nll_delta": 0.4758322238922119,
+      "prompt_id": "hrsmoke_0012",
+      "recipe_id": "shuffled_scales_mxfp4"
+    }
+  ],
+  "selected_accuracy_ci_high": 0.0,
+  "selected_accuracy_delta_abs": 0.0,
+  "selected_memory_reduction": 5.224489795918367,
+  "selected_nll_delta_abs": 0.042938828468322754,
+  "selected_nll_delta_ci_high": 0.042938828468322754,
+  "selected_recipe_id": "int3_primary_state_block_scaled"
+}

@@ -62,13 +62,19 @@ The same recipe then fails a longer-window replay
 4.192$\times$ byte readout but has selected accuracy CI high 0.0667 and
 selected NLL-delta CI high 0.0764. The mixed recipe is therefore stopped before
 GPU validation.
+Layer-localization gives one narrower candidate: layers 0 and 30 individually
+pass the same longer-window replay with INT3 state at 5.224$\times$ counted
+memory reduction and zero selected accuracy delta, while layer 12 fails. The
+combined layers 0 and 30 replay also passes with selected NLL-delta CI high
+0.04294.
 
 \section{Next Evidence}
 
-The next admissible action is not GPU validation. SSQ-LR should either run a
-single-layer S2 localization scout under the same longer-window replay or stop
-the branch as diagnostic S1b evidence. Otherwise the S1b/S2b result is
-diagnostic evidence, not a positive method.
+The next admissible action is not GPU validation. SSQ-LR should freeze the
+layer-selective recipe, \texttt{int3\_primary\_state\_block\_scaled} on layers
+0 and 30 only, and test no-retuning transfer plus verbosity/length-drift
+readouts. Otherwise the S1b/S2b result is diagnostic evidence, not a positive
+method.
 
 \section{Admissible Real Packet}
 

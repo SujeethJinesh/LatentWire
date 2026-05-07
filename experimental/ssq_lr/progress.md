@@ -275,7 +275,30 @@ Selected recipe: `mixed_int3_mxfp4_low_error_25pct`.
 - rows: `156`
 - replay shape: `--max-input-tokens 24 --prefix-tokens 8`
 
-Decision: **THE MIXED RECIPE IS STOPPED BEFORE GPU**. S1b heterogeneity remains
-alive as a diagnostic, but SSQ-LR has no promotable S2 recipe. The only bounded
-Mac continuation is single-layer S2 localization; do not lower the `>=4x` byte
-threshold or send the current mixed recipe to GPU.
+Decision after this packet: **THE ALL-PRIMARY MIXED RECIPE IS STOPPED BEFORE
+GPU**. S1b heterogeneity remains alive, but the three-layer `0,12,30` recipe is
+not viable. The only bounded Mac continuation is single-layer S2 localization;
+do not lower the `>=4x` byte threshold or send the current mixed recipe to GPU.
+
+## 2026-05-07 S2b Layer-Localization Replay Result
+
+Packets:
+
+- `experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_layer0_20260507/`
+- `experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_layer12_20260507/`
+- `experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_layer30_20260507/`
+- `experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_layers0_30_20260507/`
+
+Longer-window localization results:
+
+| Layers | Decision | Selected recipe | Memory | Accuracy CI high | NLL CI high |
+|---|---|---|---:|---:|---:|
+| `0` | pass | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.04294` |
+| `12` | fail | `fp8_e4m3_primary_state` | `2.000x` | `0.066667` | `0.06903` |
+| `30` | pass | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.04505` |
+| `0,30` | pass | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.04294` |
+
+Decision: **SSQ-LR IS ALIVE ONLY AS A LAYER-SELECTIVE MAC CANDIDATE**. Freeze
+`int3_primary_state_block_scaled` on layers `0,30` and exclude layer `12`. The
+next exact gate is S3 no-retuning transfer plus verbosity/length-drift readouts
+for that exact frozen recipe; still no GPU promotion.
