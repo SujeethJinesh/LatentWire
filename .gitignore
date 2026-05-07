@@ -1,11 +1,13 @@
 .cache/
 .DS_Store
 __pycache__/
+*.pyc
 *.py[cod]
 *.so
 results/
 *ckpt*
 .venv/*
+.venv_gpu/
 venv/
 .pytest_cache/*
 */__pycache__/*

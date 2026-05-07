@@ -1,7 +1,0 @@
-numpy
-pytest
-huggingface-hub
-safetensors
-transformers
-sentencepiece
-tiktoken
