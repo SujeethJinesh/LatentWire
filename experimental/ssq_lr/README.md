@@ -20,12 +20,11 @@ Estimated completion:
   Granite Tiny prefilter weakens pure INT3 and historically selected
   `mixed_int3_mxfp4_low_error_25pct` at `4.192x` counted memory and zero
   selected argmax drift. That pre-transfer candidate is now superseded: the
-  same frozen `0,30` recipe fails a 12-prompt
-  no-retuning transfer replay on the second complete local hybrid model
-  (`ibm-granite/granite-4.0-h-350m`): selected accuracy CI high rises to
-  `0.05263`, so S3 does not promote. A layer-localized diagnostic shows layer
-  `0` can pass on 350M, but no single frozen recipe passes both Granite Tiny and
-  Granite 350M at 12 prompts.
+  same frozen `0,30` recipe fails on the second complete local hybrid model
+  (`ibm-granite/granite-4.0-h-350m`) before promotion because the transfer
+  surface selects an INT8 fallback at only `1.984x`. Post-hoc layer-0 S3
+  diagnostics then fail with accuracy deltas up to `0.05263`, so no single
+  frozen recipe passes both Granite Tiny and Granite 350M at 12 prompts.
 - **0%** as a systems-result paper: no native GPU state-cache integration or
   benchmark exists.
 

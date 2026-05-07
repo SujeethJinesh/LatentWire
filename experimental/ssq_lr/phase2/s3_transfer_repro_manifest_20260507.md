@@ -2,6 +2,9 @@
 
 - date: 2026-05-07
 - status: current recipe stopped for GPU handoff
+- documentation commit: `95a01889`
+- execution commit: not recorded in packet metadata before this manifest; use
+  the packet input hashes below as the artifact authority under code drift
 - decision: the frozen `0,30` mixed INT3/MXFP4 recipe fails no-retuning
   transfer to Granite 350M; layer-0 rescue diagnostics also fail two-model S3
   because Granite Tiny and Granite 350M prefer different low-bit recipes.

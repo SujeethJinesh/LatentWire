@@ -71,7 +71,7 @@ def test_project_papers_keep_required_claim_boundaries() -> None:
             "Kernel logic only; not CUDA or speed evidence",
         ],
         "ssq_lr/paper/ssq_lr_colm2026.tex": [
-            "not camera-ready as a method paper until real S1--S3 evidence exists",
+            "not camera-ready as a method paper until non-resource-limited, passing S1--S3 evidence exists",
             "not model evidence",
             "does not claim weight quantization, activation quantization, KV-cache",
         ],
@@ -81,7 +81,7 @@ def test_project_papers_keep_required_claim_boundaries() -> None:
             "native systems claim is made yet",
         ],
         "hbsm/paper/hbsm_colm2026.tex": [
-            "not camera-ready as a standalone paper until B1--B3",
+            "current HBSM hypothesis is demoted",
             "not model evidence",
             "no real forward-sensitivity evidence",
         ],

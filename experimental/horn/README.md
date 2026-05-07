@@ -156,7 +156,9 @@ The current Granite Tiny resource-limited H1a packet is expected to report
 any packet beginning `PASS_REAL_H1A` must be a new preregistered full H1a/H1
 capture, not a relabeling of the current scout.
 
-Validate later H2/H3 follow-up packets only after real H1a/H1 promotes:
+Validate promotable H2/H3 follow-up packets only after real H1a/H1 promotes.
+Resource-limited H2/H3 demotion scouts are allowed only as explicitly
+non-promoting evidence:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \

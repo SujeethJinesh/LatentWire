@@ -1,7 +1,7 @@
 # HybridKernel NVIDIA/vLLM Profiler Runbook
 
-- date: 2026-05-05
-- status: pre-GPU runbook; no NVIDIA run has been executed from this repo
+- date: 2026-05-07
+- status: current pre-GPU runbook; no NVIDIA run has been executed from this repo
 - scope: local instructions for a user-operated NVIDIA host; no SSH required
 
 ## Gate

@@ -45,7 +45,7 @@ real state-distribution gate instead of a one-row schema check.
 
 Added `paper/reviewer_pack.md` and wired the stricter real-packet blocker into
 the COLM shell. The paper now states that SSQ-LR is not camera-ready as a
-method paper until real S1--S3 evidence exists.
+method paper until non-resource-limited, passing S1--S3 evidence exists.
 
 ## 2026-05-06 Decision-Grade Packet Hardening
 
@@ -382,11 +382,11 @@ recipe is `mixed_int3_mxfp4_low_error_25pct` on layers `0,30`; the layer-0
 mixed25 and INT3 follow-ups are post-hoc diagnostics and cannot be converted
 into promotion rows.
 
-Only one bounded Mac rescue is admissible before branch demotion: write a new
-preregistration before running it, freeze a fresh held-out prompt file, freeze a
-single layer-selection rule and recipe-selection rule before transfer rows are
-inspected, keep the `>=4x` counted state-memory threshold and the S3
-no-retuning transfer contract, include Granite Tiny and Granite 350M with at
-least 12 prompts each, and add verbosity/length drift before any GPU handoff.
-If that rescue fails, SSQ-LR should remain diagnostic evidence rather than an
-active positive-method paper.
+Only one bounded Mac rescue is admissible before revival or GPU
+reconsideration: write a new preregistration before running it, freeze a fresh
+held-out prompt file, freeze a single layer-selection rule and recipe-selection
+rule before transfer rows are inspected, keep the `>=4x` counted state-memory
+threshold and the S3 no-retuning transfer contract, include Granite Tiny and
+Granite 350M with at least 12 prompts each, and add verbosity/length drift
+before any GPU handoff. If that rescue fails, SSQ-LR should remain diagnostic
+evidence rather than an active positive-method paper.

@@ -168,7 +168,7 @@ screenshots or notebook snippets.
 If the exact vLLM command differs from the one in
 `$HWK_RUN/metadata/profile_scope.json`, edit that JSON before validation.
 
-### 4. Run The Smallest Admissible Profile
+### 4. Run A Single-Row Smoke Profile
 
 Start the vLLM server under Nsight Systems:
 
@@ -226,6 +226,10 @@ After Nsight Systems identifies suspicious boundary kernels, run targeted
 Nsight Compute on the server process, save real `.ncu-rep` files under
 `$HWK_RUN/ncu/`, and save server logs under `$HWK_RUN/logs/`.
 
+This single Granite profile is only a smoke/audit path. It can catch setup
+mistakes and produce a kill signal if no boundary-local activity appears, but
+it cannot promote the branch. Promotion requires the full nine-row matrix below.
+
 ### 5. Fill Metrics And Validate
 
 Replace the skeleton `profiler_metrics.json` with at least nine independent
@@ -259,6 +263,9 @@ Expected final packet:
 - `metadata/architecture_map.json`
 - `metadata/native_control_matrix.json`
 - `metadata/reduction_input_manifest.json`
+- `metadata/reduction_worksheet.tsv` or equivalent filled row worksheet
+- `metadata/cross_family_control_replacement_template.json` if Qwen3-Next is
+  replaced by a preregistered feasible hybrid control
 - `logs/nsys_server*.log`
 - `logs/client*.log`
 - `nsys/*.nsys-rep`, `*.sqlite`, or `*.qdrep`

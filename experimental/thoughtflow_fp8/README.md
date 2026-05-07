@@ -49,8 +49,8 @@ What remains for a positive method:
 - stopped-family/proxy-baseline separation, paired uncertainty, and
   oracle/headroom diagnostics.
 
-Do not spend GPU time on the current branch set, including diagnostic-only
-paper polish.
+Do not spend GPU time on the current branch set. Only Mac-local documentation,
+packet hygiene, and camera-ready paper polish remain for this branch family.
 
 ## Current Stop And Reopen Rules
 
@@ -181,7 +181,7 @@ Phase completion requires the deliverables listed in
 phase complete until the deliverables exist and any relevant checks have been
 run.
 
-Current required early gates:
+Historical early gates:
 
 - Phase 0: local setup, references/repos/datasets identified or fetched.
 - Phase 1: LongFlow failure hypothesis, competitive matrix, and DeepSeek V4

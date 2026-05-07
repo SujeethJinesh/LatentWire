@@ -9,7 +9,7 @@
 ## Result
 
 ```text
-284 passed, 1 skipped, 2 warnings in 6.84s
+284 passed, 1 skipped, 2 warnings in 8.61s
 ```
 
 The skipped test is the opt-in non-interpreter Triton CPU-backend check for the
@@ -49,8 +49,9 @@ This recheck is not model evidence. It only says the local validators, packet
 contracts, paper-boundary tests, and Triton-interpreter correctness checks are
 ready to evaluate the next admissible artifacts:
 
-After the documentation edits, the SSQ-LR, HORN, HBSM, and ThoughtFlow-FP8 PDFs
-were rebuilt with `latexmk -pdf -interaction=nonstopmode -halt-on-error`.
+After the documentation edits, the HybridKernel, SSQ-LR, HBSM, and
+ThoughtFlow-FP8 PDFs were rebuilt with
+`latexmk -pdf -interaction=nonstopmode -halt-on-error`.
 
 - HybridKernel: native 5090 Nsight/vLLM full-matrix packet.
 - SSQ-LR: a newly preregistered Mac rescue recipe/layer rule, if pursued.

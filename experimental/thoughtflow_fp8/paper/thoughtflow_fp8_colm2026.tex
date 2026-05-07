@@ -109,7 +109,7 @@ Held-out R-KV-like & 0.211 & 3.482 & -- & 43.7 \\
 Held-out sweep best & 0.211 & 3.480 & -- & 43.7 \\
 \bottomrule
 \end{tabular}
-\caption{Case-study retained-context continuation proxy on distilgpt2 traces. Lower NLL is better. Full context is not a matched-budget baseline. The held-out sweep row is selected on 12 train traces and reported on 12 held-out traces, so its NLL is not directly averaged with the all-trace rows.}
+\caption{Case-study retained-context continuation proxy on distilgpt2 traces. Lower NLL is better. R-KV-like, ThinKV-like, and LongFlow-like rows are Mac-local proxy baselines in this harness, not faithful implementations. Full context is not a matched-budget baseline. The held-out sweep row is selected on 12 train traces and reported on 12 held-out traces, so its NLL is not directly averaged with the all-trace rows.}
 \label{tab:case-study-retention}
 \end{table}
 
@@ -161,7 +161,7 @@ LongFlow-like & 0.210 & 3.588 & +0.150 [-0.016,+0.300] \\
 ThoughtFlow & 0.210 & 3.588 & +0.150 [-0.006,+0.297] \\
 \bottomrule
 \end{tabular}
-\caption{CPU sparse-KV continuation quality on 24 distilgpt2 traces. Negative paired delta is better than R-KV-like. ThoughtFlow-saliency-recent is best in mean NLL, but it clears the strongest non-ThoughtFlow row by only 0.017 NLL and remains below the pre-registered 0.03 promotion margin.}
+\caption{CPU sparse-KV continuation quality on 24 distilgpt2 traces. R-KV-like, ThinKV-like, and LongFlow-like rows are Mac-local proxy baselines, not faithful implementations. Negative paired delta is better than R-KV-like. ThoughtFlow-saliency-recent is best in mean NLL, but it clears the strongest non-ThoughtFlow row by only 0.017 NLL and remains below the pre-registered 0.03 promotion margin.}
 \end{table}
 
 A bounded sparse-cache sweep over 24 nearby anchor/recent/phase/math
@@ -250,7 +250,7 @@ R-KV-like & 74 & 0.214 & 3.939 & +0.039 [-0.015,+0.099] & proxy baseline \\
 LongFlow-like & 74 & 0.213 & 4.158 & +0.258 [+0.178,+0.337] & proxy baseline \\
 \bottomrule
 \end{tabular}
-\caption{Historical failed-to-reproduce one-shot frozen sparse-cache successor evaluation. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050] on this first surface, but later alternate-surface and independent-trace gates fail to reproduce the promotion.}
+\caption{Historical failed-to-reproduce one-shot frozen sparse-cache successor evaluation. R-KV-like, ThinKV-like, and LongFlow-like rows are Mac-local proxy baselines, not faithful implementations. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050] on this first surface, but later alternate-surface and independent-trace gates fail to reproduce the promotion.}
 \end{table}
 
 \begin{table}[h]

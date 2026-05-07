@@ -74,7 +74,7 @@ def test_hybrid_quant_later_gates_are_not_claimed_as_current_evidence() -> None:
 def test_active_project_paper_shells_state_real_packet_blockers() -> None:
     required = {
         "ssq_lr/paper/ssq_lr_colm2026.tex": [
-            "not camera-ready as a method paper until real S1--S3 evidence exists",
+            "not camera-ready as a method paper until non-resource-limited, passing S1--S3 evidence exists",
             "\\texttt{prefill\\_end}",
             "at least 12 prompt IDs",
         ],
@@ -84,7 +84,7 @@ def test_active_project_paper_shells_state_real_packet_blockers() -> None:
             "flipping its direction",
         ],
         "hbsm/paper/hbsm_colm2026.tex": [
-            "not camera-ready as a standalone paper until B1--B3",
+            "current HBSM hypothesis is demoted",
             "perturbation-off row whose drift is",
             "both true and false boundary flags",
         ],
