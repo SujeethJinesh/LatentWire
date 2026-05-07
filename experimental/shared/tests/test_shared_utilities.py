@@ -18,6 +18,9 @@ from experimental.shared.check_gate_packet import validate_gate_packet
 from experimental.shared.hybrid_gate_evaluators import evaluate_ssq_lr_s1
 from experimental.shared.hybrid_manifest_local_capture_runner import (
     _filled_metadata,
+    _first_tensor,
+    _horn_tensors,
+    _install_horn_right_input_hooks,
     select_horn_entries,
     select_ssq_entries,
 )
@@ -436,10 +439,72 @@ def test_manifest_local_capture_selects_minimum_safe_resource_limited_entries() 
         "permuted_direction",
     }
 
-    metadata = _filled_metadata(ssq_template, project="ssq_lr", entries=ssq_template["ssq_lr_entries"], max_input_tokens=8)
-    assert metadata["resource_limit_note"].startswith("ssq_lr local runner used one prompt")
+    metadata = _filled_metadata(
+        ssq_template,
+        project="ssq_lr",
+        entries=ssq_template["ssq_lr_entries"],
+        max_input_tokens=8,
+        prompt_count=1,
+    )
+    assert metadata["resource_limit_note"].startswith("ssq_lr local runner used 1 prompt")
     assert metadata["model_revision"] == GRANITE_TINY_REVISION
     assert "_template_only" not in metadata
+
+
+def test_manifest_local_capture_horn_hooks_capture_right_layer_inputs() -> None:
+    class ToyModel(torch.nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.model = torch.nn.Module()
+            self.model.layers = torch.nn.ModuleList(
+                [
+                    torch.nn.Identity(),
+                    torch.nn.Identity(),
+                    torch.nn.Identity(),
+                ]
+            )
+
+        def forward(self, x: torch.Tensor) -> torch.Tensor:
+            for layer in self.model.layers:
+                x = layer(x + 1.0)
+            return x
+
+    entries = [
+        {
+            "tensor": "horn/p0/boundary_0/observed",
+            "control_type": "boundary",
+            "layer_right": 1,
+        },
+        {
+            "tensor": "horn/p0/boundary_0/permuted_label",
+            "tensor_alias_of": "horn/p0/boundary_0/observed",
+            "control_type": "permuted_direction",
+            "layer_right": 1,
+        },
+        {
+            "tensor": "horn/p0/non_boundary_0_1/boundary_0",
+            "control_type": "non_boundary",
+            "layer_right": 2,
+        },
+    ]
+    model = ToyModel()
+    captures, handles = _install_horn_right_input_hooks(model, entries)
+    try:
+        _ = model(torch.zeros(1, 2))
+    finally:
+        for handle in handles:
+            handle.remove()
+
+    tensors = _horn_tensors(captures, entries)
+
+    assert torch.equal(tensors["horn/p0/boundary_0/observed"], torch.full((1, 2), 2.0))
+    assert torch.equal(tensors["horn/p0/non_boundary_0_1/boundary_0"], torch.full((1, 2), 3.0))
+    assert "horn/p0/boundary_0/permuted_label" not in tensors
+
+
+def test_manifest_local_capture_first_tensor_handles_nested_inputs() -> None:
+    expected = torch.ones(2)
+    assert _first_tensor(({"mask": None, "hidden": [expected]},)) is expected
 
 
 def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> None:

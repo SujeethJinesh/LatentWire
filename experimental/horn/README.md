@@ -90,10 +90,15 @@ boundary activation hooks, so it cannot promote H1a/H1.
 The current manifest-driven local capture packet is
 `../shared/results/hybrid_manifest_local_capture_20260507/horn_gate_packet/`,
 decision `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN`.
-It has 6 rows for one prompt, both boundary directions, matched non-boundary
-controls, and permuted-direction controls, selected ratio `1.37`, and passes
-`check_gate_packet --mode real --project horn`. It uses hidden-state tensors as
-a plumbing proxy and does not promote H1a/H1.
+It has 288 rows for 12 prompts across all 8 planned Granite Tiny boundaries,
+both boundary directions, matched non-boundary controls, and permuted-direction
+controls, selected ratio `1.06` with cluster-bootstrap low `1.06`, and passes
+`check_gate_packet --mode real --project horn`. Its tensors are captured from
+right-layer forward pre-hooks, so the packet now checks real boundary-input
+plumbing rather than hidden-state proxies. It is still resource-limited
+evidence and does not promote H1a/H1. The weak magnitude-screen effect means
+HORN should remain a control branch unless H2 noise replay shows a larger
+directional drift.
 
 The exact H1a/H1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl`;

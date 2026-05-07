@@ -23,7 +23,7 @@
   "tokenizer_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
   "trace_plan_hash": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b",
   "trace_plan_path": "experimental/shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl",
-  "resource_limit_note": "ssq_lr local runner used one prompt and max_input_tokens=8; this packet is execution-plumbing evidence only and cannot promote a gate.",
+  "resource_limit_note": "ssq_lr local runner used 1 prompt(s) and max_input_tokens=8; this packet is execution-plumbing evidence only and cannot promote a gate. SSQ-LR tensors are captured from the returned recurrent SSM cache state.",
   "ssq_lr_entries": [
     {
       "control_type": "bf16_no_quant",

@@ -11,7 +11,7 @@
   "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
   "prompt_ids_hash": "sha256:48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0",
   "prompt_source": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl",
-  "resource_limit_note": "horn local runner used one prompt and max_input_tokens=8; this packet is execution-plumbing evidence only and cannot promote a gate.",
+  "resource_limit_note": "horn local runner used 12 prompt(s) and max_input_tokens=8; this packet is execution-plumbing evidence only and cannot promote a gate. HORN tensors are captured from right-layer forward pre-hooks, not hidden-state proxies.",
   "seed_list": [
     1
   ],

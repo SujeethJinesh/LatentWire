@@ -88,9 +88,11 @@ state, but it is too short and resource-limited to promote S1.
 The current manifest-driven local capture packet is
 `../shared/results/hybrid_manifest_local_capture_20260507/ssq_lr_gate_packet/`,
 decision `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_S1_HETEROGENEITY`. It has
-4 rows for one prompt/layer and all four S1 buckets, selected ratio `1.0`, and
+4 rows for one prompt, one layer, and all four S1 buckets, selected ratio `1.0`, and
 passes `check_gate_packet --mode real --project ssq_lr`. It proves saved-tensor
-provenance and checker reload, not S1 heterogeneity.
+provenance and checker reload, not S1 heterogeneity. The next runner change must
+capture true intermediate recurrent states before prompt/layer scaling, because
+the current short forward only exposes the final recurrent cache state.
 
 The exact S1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl`;

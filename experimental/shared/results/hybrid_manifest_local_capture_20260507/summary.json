@@ -7,16 +7,191 @@
   ],
   "decision": "RESOURCE_LIMITED_CAPTURE_PACKETS_WRITTEN_NOT_PROMOTABLE",
   "execution": {
-    "forward_seconds": 11.745514416950755,
+    "forward_seconds": 91.09365720686037,
     "input_tokens": 8,
-    "load_seconds": 2.3463621670380235,
-    "logits_shape": [
-      1,
-      8,
-      100352
+    "load_seconds": 5.097556457971223,
+    "prompt_count": 12,
+    "prompt_ids": [
+      "hrsmoke_0001",
+      "hrsmoke_0002",
+      "hrsmoke_0003",
+      "hrsmoke_0004",
+      "hrsmoke_0005",
+      "hrsmoke_0006",
+      "hrsmoke_0007",
+      "hrsmoke_0008",
+      "hrsmoke_0009",
+      "hrsmoke_0010",
+      "hrsmoke_0011",
+      "hrsmoke_0012"
+    ],
+    "runs": [
+      {
+        "forward_seconds": 11.442911207908764,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0001"
+      },
+      {
+        "forward_seconds": 8.339395166025497,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0002"
+      },
+      {
+        "forward_seconds": 7.381090124952607,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0003"
+      },
+      {
+        "forward_seconds": 7.469615374924615,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0004"
+      },
+      {
+        "forward_seconds": 7.179229791974649,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0005"
+      },
+      {
+        "forward_seconds": 7.012693583033979,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0006"
+      },
+      {
+        "forward_seconds": 7.319565583020449,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0007"
+      },
+      {
+        "forward_seconds": 6.882068790961057,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0008"
+      },
+      {
+        "forward_seconds": 6.873215042054653,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0009"
+      },
+      {
+        "forward_seconds": 6.973843874991871,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0010"
+      },
+      {
+        "forward_seconds": 6.900567500037141,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0011"
+      },
+      {
+        "forward_seconds": 7.319461166975088,
+        "horn_capture_mode": "right_layer_forward_pre_hook",
+        "horn_tensor_count": 16,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0012"
+      }
     ]
   },
   "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "project_prompt_ids": {
+    "horn": [
+      "hrsmoke_0001",
+      "hrsmoke_0002",
+      "hrsmoke_0003",
+      "hrsmoke_0004",
+      "hrsmoke_0005",
+      "hrsmoke_0006",
+      "hrsmoke_0007",
+      "hrsmoke_0008",
+      "hrsmoke_0009",
+      "hrsmoke_0010",
+      "hrsmoke_0011",
+      "hrsmoke_0012"
+    ],
+    "ssq_lr": [
+      "hrsmoke_0001"
+    ]
+  },
   "project_summaries": {
     "horn": {
       "checker_decision": "RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN",
@@ -37,6 +212,19 @@
     "ssq_lr",
     "horn"
   ],
-  "prompt_id": "hrsmoke_0001",
+  "prompt_ids": [
+    "hrsmoke_0001",
+    "hrsmoke_0002",
+    "hrsmoke_0003",
+    "hrsmoke_0004",
+    "hrsmoke_0005",
+    "hrsmoke_0006",
+    "hrsmoke_0007",
+    "hrsmoke_0008",
+    "hrsmoke_0009",
+    "hrsmoke_0010",
+    "hrsmoke_0011",
+    "hrsmoke_0012"
+  ],
   "surface": "hybrid_manifest_local_capture_runner"
 }

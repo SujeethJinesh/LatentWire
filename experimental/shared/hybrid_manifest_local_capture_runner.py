@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import time
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,11 @@ DEFAULT_OUTPUT_DIR = ROOT / "experimental/shared/results/hybrid_manifest_local_c
 SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
 
 
+def _reset_output_dir(path: Path) -> None:
+    if path.exists():
+        shutil.rmtree(path)
+
+
 def _load_prompt(prompt_path: Path, prompt_id: str) -> dict[str, Any]:
     with prompt_path.open(encoding="utf-8") as handle:
         for line in handle:
@@ -43,6 +49,32 @@ def _load_prompt(prompt_path: Path, prompt_id: str) -> dict[str, Any]:
             if str(row.get("prompt_id")) == prompt_id:
                 return row
     raise ValueError(f"prompt_id {prompt_id!r} not found in {prompt_path}")
+
+
+def _first_prompt_ids(prompt_path: Path, limit: int) -> tuple[str, ...]:
+    if limit < 1:
+        raise ValueError("--prompt-limit must be at least 1")
+    prompt_ids: list[str] = []
+    with prompt_path.open(encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            prompt_ids.append(str(row["prompt_id"]))
+            if len(prompt_ids) >= limit:
+                break
+    if len(prompt_ids) < limit:
+        raise ValueError(f"{prompt_path} only contains {len(prompt_ids)} prompts, requested {limit}")
+    return tuple(prompt_ids)
+
+
+def _first_horn_boundary_indices(template: dict[str, Any], limit: int) -> tuple[int, ...]:
+    if limit < 1:
+        raise ValueError("--horn-boundary-limit must be at least 1")
+    boundary_indices = sorted({int(entry["boundary_index"]) for entry in template["horn_entries"]})
+    if len(boundary_indices) < limit:
+        raise ValueError(f"HORN template only contains {len(boundary_indices)} boundaries, requested {limit}")
+    return tuple(boundary_indices[:limit])
 
 
 def _load_template(manifest_dir: Path, *, project: str, canonical_model_id: str) -> dict[str, Any]:
@@ -62,7 +94,12 @@ def _filled_metadata(
     project: str,
     entries: list[dict[str, Any]],
     max_input_tokens: int,
+    prompt_count: int,
 ) -> dict[str, Any]:
+    capture_note = {
+        "horn": " HORN tensors are captured from right-layer forward pre-hooks, not hidden-state proxies.",
+        "ssq_lr": " SSQ-LR tensors are captured from the returned recurrent SSM cache state.",
+    }.get(project, "")
     metadata = {
         key: value
         for key, value in template.items()
@@ -87,8 +124,9 @@ def _filled_metadata(
             "device": "cpu",
             "command": "python -m experimental.shared.hybrid_manifest_local_capture_runner",
             "resource_limit_note": (
-                f"{project} local runner used one prompt and max_input_tokens={max_input_tokens}; "
+                f"{project} local runner used {prompt_count} prompt(s) and max_input_tokens={max_input_tokens}; "
                 "this packet is execution-plumbing evidence only and cannot promote a gate."
+                f"{capture_note}"
             ),
         }
     )
@@ -147,19 +185,14 @@ def select_horn_entries(
     return entries
 
 
-def _run_tiny_forward(
+def _load_tiny_model_and_tokenizer(
     *,
     model_id: str,
-    prompt: str,
     hf_home: Path,
-    max_input_tokens: int,
-) -> tuple[Any, dict[str, Any]]:
+) -> tuple[Any, Any, float]:
     os.environ.setdefault("HF_HOME", str(hf_home))
     os.environ.setdefault("HF_HUB_CACHE", str(hf_home / "hub"))
     tokenizer = AutoTokenizer.from_pretrained(model_id, local_files_only=True, trust_remote_code=False)
-    tokenized = tokenizer(prompt, return_tensors="pt")
-    if tokenized["input_ids"].shape[1] > max_input_tokens:
-        tokenized = {key: value[:, :max_input_tokens] for key, value in tokenized.items()}
     load_started = time.perf_counter()
     model = AutoModelForCausalLM.from_pretrained(
         model_id,
@@ -170,20 +203,126 @@ def _run_tiny_forward(
         device_map="cpu",
     )
     model.eval()
-    load_seconds = time.perf_counter() - load_started
+    return tokenizer, model, time.perf_counter() - load_started
+
+
+def _tokenize_prompt(tokenizer: Any, prompt: str, max_input_tokens: int) -> dict[str, torch.Tensor]:
+    tokenized = tokenizer(prompt, return_tensors="pt")
+    if tokenized["input_ids"].shape[1] > max_input_tokens:
+        tokenized = {key: value[:, :max_input_tokens] for key, value in tokenized.items()}
+    return tokenized
+
+
+def _run_loaded_forward(
+    *,
+    model: Any,
+    tokenized: dict[str, torch.Tensor],
+    horn_entries: list[dict[str, Any]] | None = None,
+) -> tuple[Any, dict[str, Any], dict[str, torch.Tensor]]:
+    horn_captures: dict[str, torch.Tensor] = {}
+    hook_handles: list[Any] = []
+    if horn_entries:
+        horn_captures, hook_handles = _install_horn_right_input_hooks(model, horn_entries)
     forward_started = time.perf_counter()
-    with torch.no_grad():
-        output = model(**tokenized, use_cache=True, output_hidden_states=True)
-    return output, {
-        "input_tokens": int(tokenized["input_ids"].shape[1]),
-        "load_seconds": load_seconds,
-        "forward_seconds": time.perf_counter() - forward_started,
-        "logits_shape": [int(dim) for dim in output.logits.shape],
-    }
+    try:
+        with torch.no_grad():
+            output = model(**tokenized, use_cache=True, output_hidden_states=True)
+    finally:
+        for handle in hook_handles:
+            handle.remove()
+    return (
+        output,
+        {
+            "input_tokens": int(tokenized["input_ids"].shape[1]),
+            "forward_seconds": time.perf_counter() - forward_started,
+            "logits_shape": [int(dim) for dim in output.logits.shape],
+            "horn_capture_mode": "right_layer_forward_pre_hook" if horn_entries else "none",
+            "horn_tensor_count": len(horn_captures),
+        },
+        horn_captures,
+    )
+
+
+def _run_tiny_forward(
+    *,
+    model_id: str,
+    prompt: str,
+    hf_home: Path,
+    max_input_tokens: int,
+    horn_entries: list[dict[str, Any]] | None = None,
+) -> tuple[Any, dict[str, Any], dict[str, torch.Tensor]]:
+    tokenizer, model, load_seconds = _load_tiny_model_and_tokenizer(model_id=model_id, hf_home=hf_home)
+    output, execution, horn_captures = _run_loaded_forward(
+        model=model,
+        tokenized=_tokenize_prompt(tokenizer, prompt, max_input_tokens),
+        horn_entries=horn_entries,
+    )
+    execution["load_seconds"] = load_seconds
+    return output, execution, horn_captures
 
 
 def _cache_layers(output: Any) -> list[Any]:
     return list(getattr(output.past_key_values, "layers", []))
+
+
+def _decoder_layers(model: Any) -> Any:
+    candidates = [
+        getattr(getattr(model, "model", None), "layers", None),
+        getattr(model, "layers", None),
+        getattr(getattr(model, "decoder", None), "layers", None),
+        getattr(getattr(model, "backbone", None), "layers", None),
+        getattr(getattr(model, "transformer", None), "h", None),
+    ]
+    for candidate in candidates:
+        if candidate is not None and hasattr(candidate, "__len__") and hasattr(candidate, "__getitem__"):
+            return candidate
+    raise ValueError("could not locate decoder layers for HORN right-input hooks")
+
+
+def _first_tensor(value: Any) -> torch.Tensor | None:
+    if torch.is_tensor(value):
+        return value
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            tensor = _first_tensor(item)
+            if tensor is not None:
+                return tensor
+    if isinstance(value, dict):
+        for key in sorted(value):
+            tensor = _first_tensor(value[key])
+            if tensor is not None:
+                return tensor
+    return None
+
+
+def _install_horn_right_input_hooks(
+    model: Any,
+    entries: list[dict[str, Any]],
+) -> tuple[dict[str, torch.Tensor], list[Any]]:
+    layers = _decoder_layers(model)
+    names_by_right_layer: dict[int, list[str]] = {}
+    for entry in entries:
+        if str(entry["control_type"]) == "permuted_direction":
+            continue
+        names_by_right_layer.setdefault(int(entry["layer_right"]), []).append(str(entry["tensor"]))
+    captures: dict[str, torch.Tensor] = {}
+    handles: list[Any] = []
+
+    for layer_index, tensor_names in sorted(names_by_right_layer.items()):
+        if layer_index < 0 or layer_index >= len(layers):
+            raise ValueError(f"HORN entry requested layer_right={layer_index}, but model has {len(layers)} layers")
+
+        def hook(_module: Any, inputs: tuple[Any, ...], *, names: tuple[str, ...] = tuple(tensor_names)) -> None:
+            tensor = _first_tensor(inputs)
+            if tensor is None:
+                raise ValueError("HORN right-input hook could not find a tensor in layer inputs")
+            captured = tensor.detach().float().cpu()
+            for name in names:
+                captures[name] = captured.clone()
+
+        handles.append(layers[layer_index].register_forward_pre_hook(hook))
+
+    return captures, handles
 
 
 def _ssq_tensors(output: Any, entries: list[dict[str, Any]]) -> dict[str, torch.Tensor]:
@@ -200,20 +339,15 @@ def _ssq_tensors(output: Any, entries: list[dict[str, Any]]) -> dict[str, torch.
     return tensors
 
 
-def _hidden_tensor(output: Any, layer_index: int) -> torch.Tensor:
-    hidden_states = getattr(output, "hidden_states", None)
-    if hidden_states is None:
-        raise ValueError("model output did not include hidden_states")
-    index = min(max(layer_index, 0) + 1, len(hidden_states) - 1)
-    return hidden_states[index].detach().float()
-
-
-def _horn_tensors(output: Any, entries: list[dict[str, Any]]) -> dict[str, torch.Tensor]:
+def _horn_tensors(captures: dict[str, torch.Tensor], entries: list[dict[str, Any]]) -> dict[str, torch.Tensor]:
     tensors: dict[str, torch.Tensor] = {}
     for entry in entries:
         if str(entry["control_type"]) == "permuted_direction":
             continue
-        tensors[str(entry["tensor"])] = _hidden_tensor(output, int(entry["layer_right"]))
+        tensor_name = str(entry["tensor"])
+        if tensor_name not in captures:
+            raise ValueError(f"HORN right-input capture missing tensor {tensor_name!r}")
+        tensors[tensor_name] = captures[tensor_name]
     return tensors
 
 
@@ -222,6 +356,11 @@ def run_capture(
     projects: tuple[str, ...] = ("ssq_lr", "horn"),
     model_id: str = DEFAULT_MODEL_ID,
     prompt_id: str = "hrsmoke_0001",
+    prompt_ids: tuple[str, ...] | None = None,
+    prompt_limit: int | None = None,
+    ssq_prompt_limit: int | None = None,
+    horn_prompt_limit: int | None = None,
+    horn_boundary_limit: int | None = None,
     prompt_path: Path = DEFAULT_PROMPTS,
     manifest_dir: Path = DEFAULT_MANIFEST_DIR,
     hf_home: Path = DEFAULT_HF_HOME,
@@ -232,28 +371,92 @@ def run_capture(
     if unsupported:
         raise ValueError(f"unsupported local runner projects: {sorted(unsupported)}")
     output_dir.mkdir(parents=True, exist_ok=True)
-    prompt = _load_prompt(prompt_path, prompt_id)
-    output, execution = _run_tiny_forward(
-        model_id=model_id,
-        prompt=str(prompt["prompt"]),
-        hf_home=hf_home,
-        max_input_tokens=max_input_tokens,
+    def resolve_project_prompt_ids(limit: int | None) -> tuple[str, ...]:
+        if prompt_ids is not None:
+            return prompt_ids
+        effective_limit = limit if limit is not None else prompt_limit
+        return _first_prompt_ids(prompt_path, effective_limit) if effective_limit else (prompt_id,)
+
+    project_prompt_ids: dict[str, tuple[str, ...]] = {
+        project: resolve_project_prompt_ids(ssq_prompt_limit if project == "ssq_lr" else horn_prompt_limit)
+        for project in projects
+    }
+    resolved_prompt_ids = tuple(
+        dict.fromkeys(prompt for ids in project_prompt_ids.values() for prompt in ids)
     )
+    project_entries: dict[str, list[dict[str, Any]]] = {}
+    if "ssq_lr" in projects:
+        ssq_template = _load_template(manifest_dir, project="ssq_lr", canonical_model_id=DEFAULT_CANONICAL_MODEL_ID)
+        project_entries["ssq_lr"] = [
+            entry
+            for selected_prompt_id in project_prompt_ids["ssq_lr"]
+            for entry in select_ssq_entries(ssq_template, prompt_id=selected_prompt_id)
+        ]
+    if "horn" in projects:
+        horn_template = _load_template(manifest_dir, project="horn", canonical_model_id=DEFAULT_CANONICAL_MODEL_ID)
+        horn_boundary_indices = (
+            _first_horn_boundary_indices(horn_template, horn_boundary_limit)
+            if horn_boundary_limit
+            else (0, 1)
+        )
+        project_entries["horn"] = [
+            entry
+            for selected_prompt_id in project_prompt_ids["horn"]
+            for entry in select_horn_entries(
+                horn_template,
+                prompt_id=selected_prompt_id,
+                boundary_indices=horn_boundary_indices,
+            )
+        ]
+    outputs: dict[str, Any] = {}
+    horn_captures: dict[str, torch.Tensor] = {}
+    execution_runs: list[dict[str, Any]] = []
+    tokenizer, model, load_seconds = _load_tiny_model_and_tokenizer(model_id=model_id, hf_home=hf_home)
+    for selected_prompt_id in resolved_prompt_ids:
+        prompt = _load_prompt(prompt_path, selected_prompt_id)
+        prompt_horn_entries = [
+            entry
+            for entry in project_entries.get("horn", [])
+            if str(entry["prompt_id"]) == selected_prompt_id
+        ]
+        output, run_execution, run_horn_captures = _run_loaded_forward(
+            model=model,
+            tokenized=_tokenize_prompt(tokenizer, str(prompt["prompt"]), max_input_tokens),
+            horn_entries=prompt_horn_entries or None,
+        )
+        outputs[selected_prompt_id] = output
+        horn_captures.update(run_horn_captures)
+        execution_runs.append({"prompt_id": selected_prompt_id, **run_execution})
+    execution = {
+        "prompt_count": len(resolved_prompt_ids),
+        "prompt_ids": list(resolved_prompt_ids),
+        "input_tokens": max(int(row["input_tokens"]) for row in execution_runs),
+        "load_seconds": load_seconds,
+        "forward_seconds": sum(float(row["forward_seconds"]) for row in execution_runs),
+        "runs": execution_runs,
+    }
     project_summaries: dict[str, dict[str, Any]] = {}
 
     if "ssq_lr" in projects:
         template = _load_template(manifest_dir, project="ssq_lr", canonical_model_id=DEFAULT_CANONICAL_MODEL_ID)
-        entries = select_ssq_entries(template, prompt_id=prompt_id)
+        entries = project_entries["ssq_lr"]
+        ssq_tensors: dict[str, torch.Tensor] = {}
+        for selected_prompt_id in resolved_prompt_ids:
+            prompt_entries = [entry for entry in entries if str(entry["prompt_id"]) == selected_prompt_id]
+            ssq_tensors.update(_ssq_tensors(outputs[selected_prompt_id], prompt_entries))
         tensor_packet = output_dir / "ssq_lr_tensor_packet"
         gate_packet = output_dir / "ssq_lr_gate_packet"
+        _reset_output_dir(tensor_packet)
+        _reset_output_dir(gate_packet)
         save_tensor_packet(
             tensor_packet,
-            tensors=_ssq_tensors(output, entries),
+            tensors=ssq_tensors,
             metadata=_filled_metadata(
                 template,
                 project="ssq_lr",
                 entries=entries,
                 max_input_tokens=max_input_tokens,
+                prompt_count=len(project_prompt_ids["ssq_lr"]),
             ),
         )
         build_ssq_lr_packet(tensor_packet, gate_packet)
@@ -268,17 +471,20 @@ def run_capture(
 
     if "horn" in projects:
         template = _load_template(manifest_dir, project="horn", canonical_model_id=DEFAULT_CANONICAL_MODEL_ID)
-        entries = select_horn_entries(template, prompt_id=prompt_id)
+        entries = project_entries["horn"]
         tensor_packet = output_dir / "horn_tensor_packet"
         gate_packet = output_dir / "horn_gate_packet"
+        _reset_output_dir(tensor_packet)
+        _reset_output_dir(gate_packet)
         save_tensor_packet(
             tensor_packet,
-            tensors=_horn_tensors(output, entries),
+            tensors=_horn_tensors(horn_captures, entries),
             metadata=_filled_metadata(
                 template,
                 project="horn",
                 entries=entries,
                 max_input_tokens=max_input_tokens,
+                prompt_count=len(project_prompt_ids["horn"]),
             ),
         )
         build_horn_packet(tensor_packet, gate_packet)
@@ -295,7 +501,8 @@ def run_capture(
         "surface": "hybrid_manifest_local_capture_runner",
         "decision": "RESOURCE_LIMITED_CAPTURE_PACKETS_WRITTEN_NOT_PROMOTABLE",
         "model_id": model_id,
-        "prompt_id": prompt_id,
+        "prompt_ids": list(resolved_prompt_ids),
+        "project_prompt_ids": {project: list(ids) for project, ids in project_prompt_ids.items()},
         "projects": list(projects),
         "execution": execution,
         "project_summaries": project_summaries,
@@ -321,7 +528,7 @@ def _summary_markdown(summary: dict[str, Any]) -> str:
         "This is a resource-limited local capture packet. It cannot promote SSQ-LR, HORN, or HBSM.",
         "",
         f"- Model: `{summary['model_id']}`",
-        f"- Prompt: `{summary['prompt_id']}`",
+        f"- Prompts: `{', '.join(summary['prompt_ids'])}`",
         f"- Input tokens: `{summary['execution']['input_tokens']}`",
         f"- Load seconds: `{summary['execution']['load_seconds']:.2f}`",
         f"- Forward seconds: `{summary['execution']['forward_seconds']:.2f}`",
@@ -341,6 +548,10 @@ def main() -> None:
     parser.add_argument("--project", action="append", choices=("ssq_lr", "horn"))
     parser.add_argument("--model-id", default=DEFAULT_MODEL_ID)
     parser.add_argument("--prompt-id", default="hrsmoke_0001")
+    parser.add_argument("--prompt-limit", type=int)
+    parser.add_argument("--ssq-prompt-limit", type=int)
+    parser.add_argument("--horn-prompt-limit", type=int)
+    parser.add_argument("--horn-boundary-limit", type=int)
     parser.add_argument("--prompt-path", type=Path, default=DEFAULT_PROMPTS)
     parser.add_argument("--manifest-dir", type=Path, default=DEFAULT_MANIFEST_DIR)
     parser.add_argument("--hf-home", type=Path, default=DEFAULT_HF_HOME)
@@ -351,6 +562,10 @@ def main() -> None:
         projects=tuple(args.project) if args.project else ("ssq_lr", "horn"),
         model_id=args.model_id,
         prompt_id=args.prompt_id,
+        prompt_limit=args.prompt_limit,
+        ssq_prompt_limit=args.ssq_prompt_limit,
+        horn_prompt_limit=args.horn_prompt_limit,
+        horn_boundary_limit=args.horn_boundary_limit,
         prompt_path=args.prompt_path,
         manifest_dir=args.manifest_dir,
         hf_home=args.hf_home,
