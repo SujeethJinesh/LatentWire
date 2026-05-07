@@ -121,18 +121,21 @@ JSON
 
 ## Workload Matrix
 
-Keep the first run small and discriminative.
+Keep the first run small and discriminative. The authority for row roles is
+`experimental/hybridkernel/phase2/native_control_matrix.json`; copy it into
+`$HWK_RUN/metadata/native_control_matrix.json` before profiling. A packet can
+promote only if all three row roles below have three distinct native repeats on
+the same request/runtime shape and cite distinct Nsight artifacts.
 
-| Row | Model family | Purpose | Prompt/decode shape | Must match |
+| Row role | Model family | Purpose | Prompt/decode shape | Promotion rule |
 |---|---|---|---|---|
-| A | Granite 4.0 H Tiny | primary hybrid target | prefill 128, decode 64, batch 1 and 8 | dtype, quantization, max length |
-| B | Granite 4.0 H Small | scale check if VRAM allows | same as A | same runtime flags |
-| C | same-family non-hybrid or nearest transformer control | launch/materialization control | same as A | same serving path where possible |
-| D | pure or mostly SSM control if available | SSM-internal control | same as A | same dtype and batch |
+| `primary_hybrid` | Granite 4.0 H Tiny, or Granite 4.0 H Small if VRAM allows | measure Granite attention/SSM boundary windows | prefill 128, decode 64, requests 16, batch 1 unless explicitly changed everywhere | only these rows may clear the 3% positive gate |
+| `same_family_control` | same Granite model | same-model non-boundary SSM/attention-internal windows | exactly same dtype, graph mode, prompt/decode/request shape | must stay below the 3% gate |
+| `cross_family_falsification` | Qwen3-Next hybrid family if available | check whether the same boundary signal appears in a different hybrid family | exactly same dtype, graph mode, prompt/decode/request shape | must stay below the 3% gate |
 
-If C or D is unavailable, do not substitute a cross-family model and call it a
-control. Record it as missing and keep the conclusion limited to a hybrid
-timeline audit.
+If either control family is unavailable, record it as missing in the packet and
+keep the conclusion limited to a profiling audit. Do not substitute an unmapped
+model and call it a promotion control.
 
 ## Warmup And Determinism
 

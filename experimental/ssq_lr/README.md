@@ -68,6 +68,18 @@ regenerate it with:
 
 This trace plan is not model evidence. It only enumerates the rows that must be
 captured before `hybrid_trace_packet_builder` can produce a real S1 packet.
+Generate the fill-in metadata templates with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_capture_manifest
+```
+
+For SSQ-LR, the current templates live under
+`../shared/results/hybrid_capture_manifests_20260507/` as
+`ssq_lr__<model_slug>__metadata_template.json`. They are not model evidence:
+fill every `TO_FILL_BEFORE_CAPTURE` field from a real SSM-state capture before
+using `hybrid_trace_packet_builder`. The builder rejects `_template_only: true`
+templates and unfilled markers.
 
 Validate the first real S1 packet with:
 

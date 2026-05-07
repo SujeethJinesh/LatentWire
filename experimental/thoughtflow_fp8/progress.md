@@ -506,8 +506,8 @@ The latest COLM-style review confirmed the branch remains stopped as a positive
 method. The remaining camera-ready improvement that does not require a new
 method branch is packaging: a provenance-locked diagnostic packet tying each
 positive-looking result to its later falsification, with input hashes,
-model/tokenizer revisions, package versions, and exact commands. This is paper
-artifact polish only; it does not reopen RDU/PSI/VWAC.
+available model/source metadata, package versions, and exact commands. This is
+paper artifact polish only; it does not reopen RDU/PSI/VWAC.
 
 Decision: **THOUGHTFLOW REMAINS DIAGNOSTIC-ONLY**. The next optional packaging
 gate is a provenance packet, not a fifth sparse-cache signal.

@@ -71,6 +71,18 @@ regenerate it with:
 This trace plan is not model evidence. It only enumerates observed-boundary,
 permuted-direction, and matched non-boundary rows to capture before building a
 real HORN packet.
+Generate the fill-in metadata templates with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_capture_manifest
+```
+
+For HORN, the current templates live under
+`../shared/results/hybrid_capture_manifests_20260507/` as
+`horn__<model_slug>__metadata_template.json`. They are not model evidence:
+fill every `TO_FILL_BEFORE_CAPTURE` field from a real boundary-activation
+capture before using `hybrid_trace_packet_builder`. The builder rejects
+`_template_only: true` templates and unfilled markers.
 
 Validate the first real H1a screen packet with:
 

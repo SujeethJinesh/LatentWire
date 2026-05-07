@@ -70,6 +70,18 @@ regenerate it with:
 
 This trace plan is not model evidence. It only enumerates the layer/prompt rows
 and comparator controls to fill before building a real HBSM packet.
+Generate the fill-in row-packet templates with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_capture_manifest
+```
+
+For HBSM, the current templates live under
+`../shared/results/hybrid_capture_manifests_20260507/` as
+`hbsm__<model_slug>__row_packet_template.json`. They are not model evidence:
+fill every `TO_FILL_BEFORE_CAPTURE` field from a real sensitivity capture
+before using `hybrid_trace_packet_builder --project hbsm --row-packet ...`.
+The builder rejects `_template_only: true` templates and unfilled markers.
 Required real controls are `perturbation_off`, `random_flags`, `layer_index`,
 `parameter_count_norm`, `boundary_only`, `kl_lens_rank`, and
 `activation_outlier`. Real rows must also include

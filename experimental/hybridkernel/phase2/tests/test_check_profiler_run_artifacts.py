@@ -773,6 +773,56 @@ def test_rejects_reused_artifacts_for_repeated_rows(tmp_path: Path) -> None:
     assert any("distinct ncu_artifact" in error for error in result["errors"])
 
 
+def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    architecture_map_path = tmp_path / "metadata/architecture_map.json"
+    architecture_map_path.write_text(
+        '[{"model":"granite","boundary_count":1},{"model":"qwen","boundary_count":1}]\n',
+        encoding="utf-8",
+    )
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    rows = list(payload["rows"])
+    for base in payload["rows"]:
+        same_family = dict(base)
+        same_family.update(
+            {
+                "row_role": "same_family_control",
+                "control_family": "same_family_non_boundary_segment_control",
+                "control_model_or_segment": "same_model_non_boundary_segment_control",
+                "attention_ssm_boundary_ms": 2.0,
+                "matched_non_boundary_ms": 1.9,
+                "boundary_indices": [],
+            }
+        )
+        cross_family = dict(base)
+        cross_family.update(
+            {
+                "model": "qwen",
+                "row_role": "cross_family_falsification",
+                "control_family": "cross_family_hybrid_control",
+                "control_model_or_segment": "qwen_hybrid_control",
+                "attention_ssm_boundary_ms": 2.0,
+                "matched_non_boundary_ms": 1.9,
+                "boundary_indices": [],
+            }
+        )
+        rows.extend([same_family, cross_family])
+    payload["rows"] = rows
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("reuse the same Nsight Systems artifact" in error for error in result["errors"])
+    assert any("reuse the same Nsight Compute artifact" in error for error in result["errors"])
+
+
 def test_requires_repeated_rows_for_same_run_config(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     metrics_path = tmp_path / "profiler_metrics.json"

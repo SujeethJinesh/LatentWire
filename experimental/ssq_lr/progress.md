@@ -128,3 +128,17 @@ used during capture.
 Decision: **S1 TRACE CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT RUN**.
 The next exact gate remains a real tensor packet built from those planned rows
 and checked with `check_gate_packet --mode real --project ssq_lr`.
+
+## 2026-05-07 Capture-Manifest Templates
+
+Added `../shared/hybrid_trace_capture_manifest.py` and generated
+`../shared/results/hybrid_capture_manifests_20260507/`. For SSQ-LR, the
+artifact provides one per-model fill-in metadata template with 1,728 planned S1
+entries per model. These templates are derived from the frozen trace plan and
+carry `trace_plan_hash`, prompt provenance, architecture hashes, bucket names,
+SSM layer IDs, and tensor filename placeholders.
+
+Decision: **S1 CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
+EVIDENCE**. The next exact gate is to fill one SSQ-LR template from a real
+hybrid SSM-state capture, build the packet, and validate it with
+`check_gate_packet --mode real --project ssq_lr`.

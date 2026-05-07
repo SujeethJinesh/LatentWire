@@ -158,3 +158,18 @@ H1a rows must cite the exact plan JSONL used during capture.
 Decision: **H1A TRACE CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT RUN**.
 The next exact gate remains a real boundary tensor packet built from those
 planned rows and checked with `check_gate_packet --mode real --project horn`.
+
+## 2026-05-07 Capture-Manifest Templates
+
+Added `../shared/hybrid_trace_capture_manifest.py` and generated
+`../shared/results/hybrid_capture_manifests_20260507/`. For HORN, the artifact
+provides per-model fill-in metadata templates with observed-boundary,
+metric-reused permuted-direction, and matched non-boundary rows. Granite
+templates contain 216 planned entries each, while the Qwen3-Next template
+contains 576 entries because its architecture map exposes more hybrid
+boundaries.
+
+Decision: **H1A CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
+EVIDENCE**. The next exact gate is to fill one HORN template from a real
+boundary-activation capture, build the packet, and validate it with
+`check_gate_packet --mode real --project horn`.

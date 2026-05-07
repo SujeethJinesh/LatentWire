@@ -73,6 +73,22 @@ The current trace-plan artifact is
 architecture maps. Its decision is `TRACE_PLAN_READY_NOT_MODEL_EVIDENCE`: it is
 only an execution checklist and cannot promote a gate.
 
+Then generate capture-manifest templates:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_capture_manifest
+```
+
+The current capture-manifest artifact is
+`experimental/shared/results/hybrid_capture_manifests_20260507/`. It expands
+the trace plans into per-project/per-model metadata templates for SSQ-LR and
+HORN tensor packets, plus row-packet templates for HBSM sensitivity tables. Its
+decision is `CAPTURE_MANIFEST_READY_NOT_MODEL_EVIDENCE`: these files contain no
+tensors, no model outputs, no sensitivity metrics, and no GPU evidence. Fill
+every `TO_FILL_BEFORE_CAPTURE` field from a real capture before invoking the
+packet builder. The shared builders reject templates marked `_template_only:
+true` or containing unfilled template markers.
+
 ## SSQ-LR Real S1 Packet
 
 Minimum admissible row fields:

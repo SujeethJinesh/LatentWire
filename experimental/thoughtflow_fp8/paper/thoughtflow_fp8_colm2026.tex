@@ -298,8 +298,10 @@ alternate-surface rerun, independent saved-trace rerun, and fresh-surface
 successor checks each write Markdown and JSON artifacts with promotion
 criteria, paired intervals, oracle/headroom diagnostics, and no-retuning
 decisions. The tracked diagnostic packet hashes the saved JSON artifacts and
-records available model/source metadata plus input hashes where the historical
-artifacts exposed input paths. Its builder refuses regeneration when
+records available model/source metadata plus input hashes for each saved
+artifact where those inputs are explicit. Legacy default trace paths are labeled
+as inferred from \texttt{run\_real\_trace\_retention.DEFAULT\_TRACES}. Its
+builder refuses regeneration when
 \url{experimental/thoughtflow_fp8/} is dirty, and the current manifest records
 a clean path status at generation. The hashed C2C fresh-surface inputs are
 tracked in the repository despite the root results ignore rule. The current

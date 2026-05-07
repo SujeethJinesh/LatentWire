@@ -120,10 +120,12 @@ reduced native trace:
   native artifacts into this row;
 - `reduction_notes`: non-placeholder notes explaining how the row was reduced.
 
-Do not duplicate one trace into multiple rows. Repeated rows for the same
-model/config must have distinct `nsys_artifact`, `ncu_artifact`, and
-`time_window_ms` intervals. Do not mix different model families and call them
-repeated runs for the same gate.
+Do not duplicate one trace into multiple rows. Every non-pending metric row
+must cite its own `nsys_artifact`, and every boundary-evidence row must cite its
+own `ncu_artifact`; the checker rejects artifact reuse across primary,
+same-family control, and cross-family falsification roles. Repeated rows for
+the same model/config must also have distinct `time_window_ms` intervals. Do
+not mix different model families and call them repeated runs for the same gate.
 Use `metadata/native_control_matrix.json` as the row-role authority. If the
 cross-family falsification model is unavailable, record that fact in the
 readout and treat the packet as audit-only rather than substituting an unmapped

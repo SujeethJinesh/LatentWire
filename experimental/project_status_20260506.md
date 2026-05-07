@@ -33,11 +33,19 @@ Shared Mac-local utilities live in `experimental/shared/`:
   `shared/results/hybrid_trace_plan_20260507/` with 5,184 SSQ-LR rows, 1,008
   HORN rows, and 1,554 HBSM rows. It is trace-plan-only and cannot promote any
   gate.
+- `hybrid_trace_capture_manifest.py`: expands the frozen trace plans into
+  per-project/per-model metadata templates for real SSQ-LR and HORN tensor
+  packets plus HBSM sensitivity row-packet templates. The current artifact is
+  `shared/results/hybrid_capture_manifests_20260507/` with 5,184 SSQ-LR
+  template entries, 1,008 HORN template entries, and 1,554 HBSM template
+  entries. It is capture-template-only and cannot promote any gate.
 - `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
   SSQ-LR/HORN real packets and resolves hook names sanitized by tensor-packet
   storage. Resource-limited input metadata now forces a
   `RESOURCE_LIMITED_NOT_PROMOTABLE_...` packet decision, even if the recomputed
-  smoke-gate status would otherwise pass.
+  smoke-gate status would otherwise pass. The builder rejects unfilled capture
+  templates marked `_template_only: true` or containing `TO_FILL_BEFORE_CAPTURE`
+  markers.
 - `hybrid_gate_evaluators.py`: recomputes SSQ-LR S1, HORN H1, and HBSM B1
   decision fields from raw rows so summaries cannot be hand-filled. SSQ-LR now
   uses prompt-level bootstrap-style lower bounds plus Holm-corrected two-sample
@@ -90,8 +98,9 @@ project-specific row schemas, required controls, admissible coverage,
 decision-grade `summary.json` aggregates. Non-rehearsal real packets now verify `model_id` and
 `architecture_map_hash` against
 `shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`, not
-just hash syntax, and require a hash for the trace-plan JSONL that drove row
-capture. Synthetic-only real-schema rehearsals must set `schema_rehearsal:
+just hash syntax, and verify `trace_plan_hash` against the project hash in
+`shared/results/hybrid_trace_plan_20260507/config.json`, not just hash syntax.
+Synthetic-only real-schema rehearsals must set `schema_rehearsal:
 true` and use a `SCHEMA_REHEARSAL_NOT_PROMOTABLE` decision. Resource-limited
 real packets must use a
 `RESOURCE_LIMITED_NOT_PROMOTABLE` decision and cannot promote a gate. The
@@ -111,6 +120,7 @@ Config-only maps now exist for the local Granite and Qwen hybrid configs:
 |---|---|---|
 | `experimental/shared/results/hybrid_architecture_maps_20260506/` | Provides explicit layer kinds, boundary IDs, direction counts, and config hashes for SSQ-LR/HORN/HBSM real trace packets. | Config provenance only; no activations, SSM state, quality, or GPU evidence. |
 | `experimental/shared/results/hybrid_trace_plan_20260507/` | Enumerates exact SSQ-LR/HORN/HBSM trace rows to capture from frozen prompts and architecture maps. | Trace-plan-only; no activations, SSM state, sensitivity, quality, or GPU evidence. |
+| `experimental/shared/results/hybrid_capture_manifests_20260507/` | Provides per-model fill-in templates for tensor/sensitivity capture metadata before packet building. | Capture-template-only; no tensors, model outputs, sensitivity metrics, quality, or GPU evidence. |
 
 ## HybridKernel Packet Hardening
 
@@ -130,6 +140,9 @@ Compute target.
 Per-row `nsys_artifact` and `ncu_artifact` fields must resolve to reviewable
 files inside the run packet with valid Nsight extensions. This prevents a
 reduced metric row from citing a missing or external artifact.
+The checker also rejects reuse of the same Nsight Systems or Nsight Compute
+artifact across any non-pending metric rows, including across primary,
+same-family control, and cross-family falsification roles.
 The profiler reducer now refuses prototype promotion unless the same metric
 packet includes at least three matched same-family control rows and three
 cross-family falsification rows on the same request/runtime shape, and those
@@ -178,10 +191,13 @@ Top-level killed markers:
 1. HybridKernel: run the native NVIDIA/vLLM profiler packet; this is the only
    current branch that can resolve with one GPU experiment.
 2. SSQ-LR: dump or reuse hybrid SSM state packets and test state-distribution
-   heterogeneity before any quantization recipe is tuned.
+   heterogeneity by filling the SSQ-LR capture manifest for the smallest
+   available hybrid model before any quantization recipe is tuned.
 3. HORN: use the same dumps to measure directional boundary outlier asymmetry;
-   keep it as a control unless H1 passes.
+   keep it as a control unless H1 passes. Fill the HORN capture manifest before
+   packet building.
 4. HBSM: only run after shared dumps exist; kill if cheap predictors do not
-   correlate with forward sensitivity.
+   correlate with forward sensitivity. Fill the HBSM row-packet manifest before
+   packet building.
 5. ThoughtFlow: rewrite the existing paper around falsification methodology; no
    new experiments in the current branch.

@@ -24,6 +24,8 @@ from experimental.shared.hybrid_gate_evaluators import (
 )
 from experimental.shared.sensitivity_metrics import kurtosis, max_abs
 
+TEMPLATE_MARKERS = ("TO_FILL_BEFORE_CAPTURE", "TEMPLATE_ONLY")
+
 
 def _rms(tensor: torch.Tensor) -> float:
     values = tensor.float()
@@ -58,6 +60,8 @@ def _require_bool(value: Any, field: str) -> bool:
 
 
 def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
+    if metadata.get("_template_only") is True:
+        raise ValueError("metadata is a capture template; fill it before building a packet")
     required = [
         "model_id",
         "model_revision",
@@ -75,6 +79,10 @@ def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
     missing = [field for field in required if field not in metadata]
     if missing:
         raise ValueError(f"metadata missing required fields: {', '.join(missing)}")
+    for field in required:
+        value = metadata[field]
+        if isinstance(value, str) and any(marker in value for marker in TEMPLATE_MARKERS):
+            raise ValueError(f"metadata field {field} still contains template marker")
     config = {field: metadata[field] for field in required}
     if "resource_limit_note" in metadata:
         config["resource_limit_note"] = metadata["resource_limit_note"]

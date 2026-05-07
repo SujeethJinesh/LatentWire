@@ -172,6 +172,9 @@ SCHEMA_REHEARSAL_DECISION = "SCHEMA_REHEARSAL_NOT_PROMOTABLE"
 ARCHITECTURE_MAPS_PATH = (
     Path(__file__).resolve().parent / "results/hybrid_architecture_maps_20260506/architecture_maps.json"
 )
+TRACE_PLAN_CONFIG_PATH = (
+    Path(__file__).resolve().parent / "results/hybrid_trace_plan_20260507/config.json"
+)
 
 
 def _load_json(path: Path) -> Any:
@@ -194,6 +197,22 @@ def _known_architecture_hashes() -> dict[str, str]:
         config_sha = str(row.get("config_sha256", "")).strip().lower()
         if model_id and re.fullmatch(r"[0-9a-f]{64}", config_sha):
             known[model_id] = f"sha256:{config_sha}"
+    return known
+
+
+def _known_trace_plan_hashes() -> dict[str, str]:
+    try:
+        config = _load_json(TRACE_PLAN_CONFIG_PATH)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+    hashes = config.get("trace_plan_hashes", {}) if isinstance(config, dict) else {}
+    if not isinstance(hashes, dict):
+        return {}
+    known: dict[str, str] = {}
+    for project, value in hashes.items():
+        digest = str(value).strip().lower()
+        if re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+            known[str(project)] = digest
     return known
 
 
@@ -348,7 +367,12 @@ def _validate_schema_rehearsal_decision(
         )
 
 
-def _validate_hash_provenance(config: dict[str, Any], errors: list[str]) -> None:
+def _validate_hash_provenance(
+    config: dict[str, Any],
+    *,
+    project: str | None,
+    errors: list[str],
+) -> None:
     for field in HASH_FIELDS:
         value = config.get(field)
         if not isinstance(value, str) or not re.fullmatch(r"sha256:[0-9a-fA-F]{64}", value):
@@ -359,6 +383,18 @@ def _validate_hash_provenance(config: dict[str, Any], errors: list[str]) -> None
             errors.append(
                 f"config.json {TRACE_PLAN_HASH_FIELD} must be a sha256:<64-hex-digest> value"
             )
+        elif project:
+            known = _known_trace_plan_hashes()
+            if not known:
+                errors.append("trace-plan provenance artifact is unavailable")
+            else:
+                expected = known.get(project)
+                if expected is None:
+                    errors.append("project must match a trace plan in the shared trace-plan artifact")
+                elif value.lower() != expected:
+                    errors.append(
+                        "config.json trace_plan_hash must match shared trace-plan hash for project"
+                    )
 
 
 def _validate_architecture_map_provenance(config: dict[str, Any], errors: list[str]) -> None:
@@ -865,7 +901,7 @@ def validate_gate_packet(
         for field in REAL_CONFIG_FIELDS:
             if field not in config:
                 errors.append(f"config.json missing provenance field {field}")
-        _validate_hash_provenance(config, errors)
+        _validate_hash_provenance(config, project=project, errors=errors)
         _validate_architecture_map_provenance(config, errors)
         for boundary in ("synthetic-only", "not model evidence"):
             if (

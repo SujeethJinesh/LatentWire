@@ -22,11 +22,17 @@ from experimental.shared.hybrid_model_eligibility import (
     _size_gb,
 )
 from experimental.shared.hybrid_trace_packet_builder import build_hbsm_packet, build_horn_packet, build_ssq_lr_packet
+from experimental.shared.hybrid_trace_capture_manifest import build_capture_manifests
 from experimental.shared.hybrid_trace_plan import write_trace_plan
 from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_rank_correlation
 
 
 SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
+TRACE_PLAN_HASHES = {
+    "ssq_lr": "sha256:659f63b59ba3708d56bcded8ad87428162bbbb668cff3cc999c3159da28b5563",
+    "horn": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66",
+    "hbsm": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf",
+}
 
 
 def test_fp4_simulator_is_deterministic_and_shape_preserving() -> None:
@@ -134,7 +140,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
         '"dtype": "bf16", '
         '"device": "mps", '
         '"architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6", '
-        '"trace_plan_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", '
+        f'"trace_plan_hash": "{TRACE_PLAN_HASHES["ssq_lr"]}", '
         '"command": "python run_gate.py"'
         "}\n"
     )
@@ -431,7 +437,7 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
 def test_gate_packet_checker_rejects_unpaired_horn_permuted_prompt(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn_bad_pair"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("horn")
     entries = []
     tensors = {}
     for prompt_index in range(12):
@@ -555,6 +561,48 @@ def test_hybrid_trace_plan_enumerates_project_specific_rows(tmp_path: Path) -> N
     assert "not model evidence" in (output_dir / "decision.md").read_text()
 
 
+def test_hybrid_capture_manifest_templates_are_generated_from_trace_plan(tmp_path: Path) -> None:
+    config_dir = tmp_path / "configs"
+    maps_dir = tmp_path / "maps"
+    trace_plan_dir = tmp_path / "trace_plan"
+    manifest_dir = tmp_path / "capture_manifests"
+    prompts = tmp_path / "prompts.jsonl"
+    config_dir.mkdir()
+    (config_dir / "toy.config.json").write_text(
+        "{"
+        '"architectures": ["ToyHybrid"], '
+        '"model_type": "toyhybrid", '
+        '"hidden_size": 16, '
+        '"layer_types": ["mamba", "attention", "mamba", "mamba"]'
+        "}\n"
+    )
+    prompts.write_text(
+        '{"prompt_id": "p0", "prompt": "one"}\n'
+        '{"prompt_id": "p1", "prompt": "two"}\n'
+    )
+    write_maps(config_dir=config_dir, output_dir=maps_dir)
+    write_trace_plan(
+        output_dir=trace_plan_dir,
+        prompts_path=prompts,
+        architecture_maps_path=maps_dir / "architecture_maps.json",
+    )
+
+    summary = build_capture_manifests(trace_plan_dir=trace_plan_dir, output_dir=manifest_dir)
+
+    assert summary["decision"] == "CAPTURE_MANIFEST_READY_NOT_MODEL_EVIDENCE"
+    assert summary["counts"]["ssq_lr"]["toy"] == 24
+    ssq_template = json.loads((manifest_dir / "ssq_lr__toy__metadata_template.json").read_text())
+    horn_template = json.loads((manifest_dir / "horn__toy__metadata_template.json").read_text())
+    hbsm_template = json.loads((manifest_dir / "hbsm__toy__row_packet_template.json").read_text())
+    assert ssq_template["_template_only"] is True
+    assert len(ssq_template["ssq_lr_entries"]) == 24
+    assert ssq_template["trace_plan_hash"].startswith("sha256:")
+    assert len(horn_template["horn_entries"]) == 12
+    assert "hbsm_entries" not in hbsm_template
+    assert len(hbsm_template["hbsm_entry_templates"]) == 14
+    assert "not GPU evidence" in (manifest_dir / "summary.md").read_text()
+
+
 def test_hybrid_model_eligibility_helpers_are_repo_local(tmp_path: Path) -> None:
     cache = _local_cache_dir(tmp_path / "hf_home", "owner/model-name")
 
@@ -591,7 +639,7 @@ def test_hybrid_model_eligibility_preserves_gpu_recommendation_when_not_cached()
     )
 
 
-def _base_trace_metadata() -> dict[str, object]:
+def _base_trace_metadata(project: str = "ssq_lr") -> dict[str, object]:
     return {
         "model_id": "ibm-granite-4.0-h-tiny",
         "model_revision": "abc123",
@@ -604,7 +652,7 @@ def _base_trace_metadata() -> dict[str, object]:
         "device": "cpu",
         "command": "python dump.py",
         "architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
-        "trace_plan_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "trace_plan_hash": TRACE_PLAN_HASHES[project],
     }
 
 
@@ -641,6 +689,29 @@ def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: 
 
     assert report["ok"]
     assert report["row_count"] == 48
+
+
+def test_packet_builder_rejects_unfilled_capture_templates(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_template"
+    metadata = _base_trace_metadata()
+    metadata["_template_only"] = True
+    metadata["model_revision"] = "TO_FILL_BEFORE_CAPTURE"
+    metadata["ssq_lr_entries"] = [
+        {
+            "tensor": "state",
+            "prompt_id": "p0",
+            "layer": 0,
+            "layer_kind": "mamba2",
+            "position_bucket": "prefill_end",
+            "state_tensor_kind": "mamba2_recurrent_state",
+            "control_type": "bf16_no_quant",
+        }
+    ]
+    save_tensor_packet(tensor_packet, tensors={"state": torch.ones(2, 4)}, metadata=metadata)
+
+    with pytest.raises(ValueError, match="capture template"):
+        build_ssq_lr_packet(tensor_packet, output_dir)
 
 
 def test_packet_builder_marks_resource_limited_packets_non_promotable(tmp_path: Path) -> None:
@@ -742,6 +813,38 @@ def test_gate_packet_checker_requires_trace_plan_hash_for_real_packets(tmp_path:
     assert any("trace_plan_hash" in error for error in report["errors"])
 
 
+def test_gate_packet_checker_rejects_wrong_project_trace_plan_hash(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_wrong_trace_plan_hash"
+    metadata = _base_trace_metadata()
+    metadata["trace_plan_hash"] = TRACE_PLAN_HASHES["horn"]
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("trace_plan_hash must match shared trace-plan hash" in error for error in report["errors"])
+
+
 def test_packet_builder_resolves_sanitized_tensor_names(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "ssq_sanitized"
@@ -776,7 +879,7 @@ def test_packet_builder_resolves_sanitized_tensor_names(tmp_path: Path) -> None:
 def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("horn")
     entries = []
     tensors = {}
     for prompt_index in range(12):
@@ -824,7 +927,7 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
 def test_gate_packet_checker_rejects_horn_permuted_without_actual_direction_flip(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn_fake_flip"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("horn")
     entries = []
     tensors = {}
     for prompt_index in range(12):
@@ -878,7 +981,7 @@ def test_gate_packet_checker_rejects_horn_permuted_without_actual_direction_flip
 def test_gate_packet_checker_rejects_horn_unpaired_non_boundary_prompt(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn_bad_non_boundary_pair"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("horn")
     entries = []
     tensors = {}
     for prompt_index in range(12):
@@ -928,7 +1031,7 @@ def test_gate_packet_checker_rejects_horn_unpaired_non_boundary_prompt(tmp_path:
 def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_boundary(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn_bad"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("horn")
     entries = []
     tensors = {}
     for prompt_index in range(12):
@@ -973,7 +1076,7 @@ def test_gate_packet_checker_rejects_horn_permuted_direction_without_matching_bo
 def test_gate_packet_checker_rejects_horn_permuted_direction_with_independent_metrics(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "horn_bad_metrics"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("horn")
     entries = []
     tensors = {}
     for prompt_index in range(12):
@@ -1020,7 +1123,7 @@ def test_gate_packet_checker_rejects_horn_permuted_direction_with_independent_me
 def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     row_packet = tmp_path / "hbsm_rows.json"
     output_dir = tmp_path / "hbsm"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("hbsm")
     primary_entries = []
     for index in range(60):
         boundary = index < 30
@@ -1110,7 +1213,7 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
 def test_hbsm_checker_rejects_top_decile_flags_that_disagree_with_drift(tmp_path: Path) -> None:
     row_packet = tmp_path / "hbsm_rows.json"
     output_dir = tmp_path / "hbsm_mismatched_top"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("hbsm")
     primary_entries = []
     for index in range(60):
         boundary = index < 30
@@ -1170,7 +1273,7 @@ def test_hbsm_checker_rejects_top_decile_flags_that_disagree_with_drift(tmp_path
 def test_hbsm_checker_rejects_prompt_row_top_decile_flag_mismatch(tmp_path: Path) -> None:
     row_packet = tmp_path / "hbsm_rows.json"
     output_dir = tmp_path / "hbsm_prompt_mismatched_top"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("hbsm")
     primary_entries = []
     for prompt_index in range(12):
         for layer in range(20):
@@ -1232,7 +1335,7 @@ def test_hbsm_checker_rejects_prompt_row_top_decile_flag_mismatch(tmp_path: Path
 def test_hbsm_packet_builder_rejects_string_boolean_flags(tmp_path: Path) -> None:
     row_packet = tmp_path / "hbsm_rows.json"
     output_dir = tmp_path / "hbsm_bad_bool"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("hbsm")
     row_packet.write_text(
         json.dumps(
             {
@@ -1270,7 +1373,7 @@ def test_hbsm_packet_builder_rejects_string_boolean_flags(tmp_path: Path) -> Non
 def test_gate_packet_checker_rejects_hbsm_without_true_and_false_boundary_flags(tmp_path: Path) -> None:
     row_packet = tmp_path / "hbsm_rows.json"
     output_dir = tmp_path / "hbsm_bad"
-    metadata = _base_trace_metadata()
+    metadata = _base_trace_metadata("hbsm")
     controls = [
         "perturbation_off",
         "random_flags",

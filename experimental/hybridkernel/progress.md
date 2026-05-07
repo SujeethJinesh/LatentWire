@@ -658,3 +658,17 @@ unmapped model during a short GPU run.
 
 Decision: **HYBRIDKERNEL CONTROL ROLES ARE NOW PREDECLARED BEFORE GPU TIME**.
 The blocker remains native server-side Nsight evidence.
+
+## 2026-05-07 Cross-Role Artifact-Reuse Guard
+
+After another COLM-style packet review, the native artifact checker now rejects
+reuse of the same `nsys_artifact` or `ncu_artifact` across any non-pending
+metric rows, including across `primary_hybrid`, `same_family_control`, and
+`cross_family_falsification` roles. The earlier guard only checked repeated
+rows within one model/config group, which left a loophole where a copied
+primary trace could masquerade as a control or falsification row. The runbook
+workload matrix now points directly to `native_control_matrix.json` as the
+single authority for row roles.
+
+Decision: **NATIVE CONTROLS MUST BE INDEPENDENT PROFILER ARTIFACTS, NOT COPIED
+ROWS**. The blocker remains the user-operated NVIDIA/vLLM Nsight packet.

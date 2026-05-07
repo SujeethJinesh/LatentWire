@@ -164,3 +164,17 @@ Decision: **B1 SENSITIVITY CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT
 RUN**. The next exact gate remains a real forward-sensitivity row packet built
 from those planned rows and checked with `check_gate_packet --mode real --project
 hbsm`.
+
+## 2026-05-07 Capture-Manifest Templates
+
+Added `../shared/hybrid_trace_capture_manifest.py` and generated
+`../shared/results/hybrid_capture_manifests_20260507/`. For HBSM, the artifact
+provides per-model row-packet templates with B1 boundary-only rows and required
+comparator/control rows. Granite templates contain 486 planned entries each,
+while the Qwen3-Next template contains 582 entries because its architecture map
+exposes more scored layers.
+
+Decision: **B1 CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
+EVIDENCE**. The next exact gate is to fill one HBSM row-packet template from a
+real forward-sensitivity capture, build the packet, and validate it with
+`check_gate_packet --mode real --project hbsm`.

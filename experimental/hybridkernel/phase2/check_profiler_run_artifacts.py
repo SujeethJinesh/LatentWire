@@ -568,6 +568,39 @@ def _validate_repeated_artifact_identity(
             )
 
 
+def _validate_global_artifact_identity(
+    *,
+    raw_rows: list[dict[str, object]],
+    require_native_artifacts: bool,
+    packet_mode: str,
+    errors: list[str],
+) -> None:
+    if not require_native_artifacts:
+        return
+    artifact_fields = [("nsys_artifact", "Nsight Systems")]
+    if packet_mode != NO_BOUNDARY_SIGNAL_MODE:
+        artifact_fields.append(("ncu_artifact", "Nsight Compute"))
+    for field, label in artifact_fields:
+        seen: dict[str, int] = {}
+        for idx, raw in enumerate(raw_rows):
+            value = str(raw.get(field, "")).strip()
+            if (
+                not value
+                or "TODO_NATIVE_PROFILE_FILL" in value
+                or "placeholder" in value.lower()
+            ):
+                continue
+            first_idx = seen.get(value)
+            if first_idx is not None:
+                errors.append(
+                    f"metric rows {first_idx} and {idx} reuse the same {label} artifact "
+                    f"`{value}`; native primary/control/falsification rows must cite "
+                    "distinct profiler artifacts"
+                )
+            else:
+                seen[value] = idx
+
+
 def _models_from_architecture_map(path: Path, errors: list[str]) -> set[str]:
     if not path.is_file():
         return set()
@@ -780,6 +813,12 @@ def check_run_artifacts(
                     metric_rows=rows,
                     raw_rows=raw_native_rows,
                     min_repeated_runs=min_repeated_runs,
+                    require_native_artifacts=require_native_artifacts,
+                    packet_mode=packet_mode,
+                    errors=errors,
+                )
+                _validate_global_artifact_identity(
+                    raw_rows=raw_native_rows,
                     require_native_artifacts=require_native_artifacts,
                     packet_mode=packet_mode,
                     errors=errors,
