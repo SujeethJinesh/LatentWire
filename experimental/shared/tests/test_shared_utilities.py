@@ -22,6 +22,7 @@ from experimental.shared.hybrid_model_eligibility import (
     _mac_trace_decision,
     _size_gb,
 )
+import experimental.shared.hybrid_local_capture_preflight as local_capture_preflight
 from experimental.shared.hybrid_trace_packet_builder import build_hbsm_packet, build_horn_packet, build_ssq_lr_packet
 from experimental.shared.hybrid_trace_capture_manifest import build_capture_manifests
 from experimental.shared.hybrid_trace_plan import write_trace_plan
@@ -191,6 +192,106 @@ def test_gate_packet_checker_rejects_missing_files(tmp_path: Path) -> None:
 
     assert not report["ok"]
     assert "missing config.json" in report["errors"]
+
+
+def test_local_capture_preflight_reports_ready_when_cache_and_deps_exist(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    architecture_maps = tmp_path / "architecture_maps.json"
+    capture_summary = tmp_path / "capture_summary.json"
+    eligibility_summary = tmp_path / "eligibility_summary.json"
+    cache_root = tmp_path / "hf"
+    snapshot = cache_root / "hub/models--org--hybrid/snapshots/rev"
+    snapshot.mkdir(parents=True)
+    (snapshot / "model.safetensors").write_bytes(b"weights")
+    architecture_maps.write_text(
+        json.dumps(
+            [
+                {
+                    "model_id": "org-hybrid",
+                    "model_id_aliases": ["org/hybrid", "org-hybrid"],
+                    "model_type": "granitemoehybrid",
+                    "architecture": "ToyHybrid",
+                    "config_sha256": "a" * 64,
+                    "hidden_size": 8,
+                    "num_hidden_layers": 2,
+                    "boundary_count": 1,
+                    "direction_counts": {"ssm->attention": 1},
+                }
+            ]
+        )
+    )
+    capture_summary.write_text(json.dumps({"counts": {"ssq_lr": {"org-hybrid": 4}}}))
+    eligibility_summary.write_text(json.dumps({"rows": [{"model_id": "org/hybrid", "safetensors_gb": 0.001}]}))
+    monkeypatch.setattr(
+        local_capture_preflight,
+        "_package_status",
+        lambda package_names: {name: {"installed": True, "origin": "test"} for name in package_names},
+    )
+
+    summary = local_capture_preflight.write_packet(
+        output_dir=tmp_path / "out",
+        architecture_maps=architecture_maps,
+        capture_summary=capture_summary,
+        eligibility_summary=eligibility_summary,
+        cache_roots=(cache_root,),
+        mac_weight_budget_gb=1.0,
+    )
+
+    assert summary["decision"] == "LOCAL_CAPTURE_READY_NOT_EVIDENCE"
+    assert summary["rows"][0]["weights_cached"] is True
+    assert "not model evidence" in summary["claim_boundary"]
+
+
+def test_local_capture_preflight_blocks_missing_hybrid_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    architecture_maps = tmp_path / "architecture_maps.json"
+    capture_summary = tmp_path / "capture_summary.json"
+    eligibility_summary = tmp_path / "eligibility_summary.json"
+    cache_root = tmp_path / "hf"
+    snapshot = cache_root / "hub/models--org--hybrid/snapshots/rev"
+    snapshot.mkdir(parents=True)
+    (snapshot / "model.safetensors").write_bytes(b"weights")
+    architecture_maps.write_text(
+        json.dumps(
+            [
+                {
+                    "model_id": "org-hybrid",
+                    "model_id_aliases": ["org/hybrid"],
+                    "model_type": "granitemoehybrid",
+                    "architecture": "ToyHybrid",
+                    "config_sha256": "a" * 64,
+                    "hidden_size": 8,
+                    "num_hidden_layers": 2,
+                    "boundary_count": 1,
+                    "direction_counts": {"ssm->attention": 1},
+                }
+            ]
+        )
+    )
+    capture_summary.write_text(json.dumps({"counts": {"horn": {"org-hybrid": 2}}}))
+    eligibility_summary.write_text(json.dumps({"rows": [{"model_id": "org/hybrid", "safetensors_gb": 0.001}]}))
+
+    def fake_package_status(package_names: tuple[str, ...]) -> dict[str, dict[str, object]]:
+        return {
+            name: {"installed": name != "mamba_ssm", "origin": "test" if name != "mamba_ssm" else None}
+            for name in package_names
+        }
+
+    monkeypatch.setattr(local_capture_preflight, "_package_status", fake_package_status)
+
+    summary = local_capture_preflight.write_packet(
+        output_dir=tmp_path / "out",
+        architecture_maps=architecture_maps,
+        capture_summary=capture_summary,
+        eligibility_summary=eligibility_summary,
+        cache_roots=(cache_root,),
+        mac_weight_budget_gb=1.0,
+    )
+
+    assert summary["decision"] == "LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE"
+    assert "missing hybrid runtime packages: mamba_ssm" in summary["rows"][0]["blocking_reasons"]
 
 
 def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> None:

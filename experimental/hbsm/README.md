@@ -67,6 +67,17 @@ Use the explicit boundary IDs and architecture hashes in
 layer definitions.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
+Local capture readiness is recorded in
+`../shared/results/hybrid_local_capture_preflight_20260507/`; the current
+decision is `LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE` because `mamba_ssm` is
+not installed in the repo-local venv and active hybrid weights are not fully
+cached locally. This packet is preflight-only and cannot promote B1. Rerun it
+before any real capture attempt:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_local_capture_preflight
+```
+
 The exact B1 sensitivity-row checklist is
 `../shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl`;
 regenerate it with:

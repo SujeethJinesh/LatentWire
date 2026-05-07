@@ -65,6 +65,17 @@ Use the explicit architecture hashes in
 `../shared/results/hybrid_architecture_maps_20260506/` for packet provenance.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
+Local capture readiness is recorded in
+`../shared/results/hybrid_local_capture_preflight_20260507/`; the current
+decision is `LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE` because `mamba_ssm` is
+not installed in the repo-local venv and active hybrid weights are not fully
+cached locally. This packet is preflight-only and cannot promote S1. Rerun it
+before any real capture attempt:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_local_capture_preflight
+```
+
 The exact S1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl`;
 regenerate it with:
@@ -111,10 +122,12 @@ Validate later S2/S3 follow-up packets only after real S1 promotes:
 ```
 
 The S2 contract requires frozen recipe IDs, effective bits, state/scale/metadata
-bytes, BF16 no-op drift, same-byte controls, paired uncertainty, and a recipe
-that clears both the quality and 4x state-memory gates. The S3 contract requires
-one frozen recipe hash, one source S2 packet hash, no retuning rows, and transfer
-quality within the preregistered tolerance on at least two validation models.
+bytes, BF16 no-op drift, same-byte controls, explicit INT8/FP8/MXFP4 state
+baselines, random same-L2 noise controls, shuffled-scale controls, paired
+uncertainty, and a recipe that clears both the quality and 4x state-memory
+gates. The S3 contract requires one frozen recipe hash, one source S2 packet
+hash, no retuning rows, and transfer quality within the preregistered tolerance
+on at least two validation models.
 
 The real checker requires `prefill_end`, `2k_or_end`, `8k_or_end`, and
 `final_minus_128` buckets for every `(prompt_id, layer)` pair plus at least 12

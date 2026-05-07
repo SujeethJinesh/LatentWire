@@ -133,7 +133,16 @@ FOLLOWUP_ROW_FIELDS: dict[str, tuple[str, ...]] = {
 }
 
 FOLLOWUP_REQUIRED_CONTROLS: dict[str, set[str]] = {
-    "ssq_lr_s2": {"candidate_recipe", "bf16_noop", "same_byte_uniform"},
+    "ssq_lr_s2": {
+        "candidate_recipe",
+        "bf16_noop",
+        "same_byte_uniform",
+        "int8_state",
+        "fp8_state",
+        "mxfp4_state",
+        "random_same_l2",
+        "shuffled_scales",
+    },
     "ssq_lr_s3": {"transfer_eval", "retune_probe"},
     "horn_h2": {"directional_noise", "hook_off", "flipped_direction_label"},
     "horn_h3": {"hybrid_validation", "pure_attention_control", "pure_mamba_control"},
@@ -357,8 +366,15 @@ def evaluate_horn_h2(rows: list[dict[str, Any]]) -> dict[str, Any]:
         ratio = 1.0
     paired: dict[str, dict[str, float]] = defaultdict(dict)
     for row in noise_rows:
-        key = str(row.get("prompt_cluster_id") or row.get("prompt_id"))
+        key = "|".join(
+            [
+                str(row.get("prompt_cluster_id") or row.get("prompt_id")),
+                str(row.get("seed")),
+                str(row.get("noise_side")),
+            ]
+        )
         paired[key][str(row["boundary_direction"])] = float(row["delta_nll"])
+    paired_unit_count = sum(1 for values in paired.values() if len(values) == 2)
     ratio_low = _bootstrap_ratio_low(paired)
     hook_off_max = max(
         (abs(float(row["hook_off_delta"])) for row in rows if str(row.get("control_type")) == "hook_off"),
@@ -373,7 +389,9 @@ def evaluate_horn_h2(rows: list[dict[str, Any]]) -> dict[str, Any]:
         and ratio_low > 1.0
         and hook_off_max <= 1e-5
         and len(noise_bases) == 1
-        and seed_count >= 1
+        and seed_count >= 3
+        and paired_unit_count == len(paired)
+        and paired_unit_count > 0
     )
     return {
         "gate_name": "horn_h2_directional_noise_propagation",
@@ -388,6 +406,7 @@ def evaluate_horn_h2(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "hook_off_max_delta": hook_off_max,
         "noise_std_basis": next(iter(noise_bases), ""),
         "seed_count": seed_count,
+        "paired_unit_count": paired_unit_count,
     }
 
 
@@ -412,7 +431,7 @@ def evaluate_horn_h3(rows: list[dict[str, Any]]) -> dict[str, Any]:
     pure_controls_fold = all(
         bool(row.get("pure_control_expected_null"))
         and (
-            float(row["directional_drift_ratio"]) < 1.5
+            float(row["directional_drift_ratio"]) < 1.2
             or float(row["directional_ratio_ci_low"]) <= 1.0
         )
         for row in pure_rows
@@ -643,15 +662,35 @@ def _validate_gate_specific_invariants(gate: str, rows: list[dict[str, Any]], er
     if gate == "horn_h2":
         selected = {str(row.get("selected_direction_from_h1", "")) for row in rows}
         noise_basis = {str(row.get("noise_std_basis", "")) for row in rows}
+        seed_values = {row.get("seed") for row in rows if str(row.get("control_type")) == "directional_noise"}
         if len(selected - {""}) != 1:
             errors.append("horn_h2 rows must share one selected_direction_from_h1")
         if len(noise_basis - {""}) != 1:
             errors.append("horn_h2 rows must share one noise_std_basis")
+        if len(seed_values) < 3:
+            errors.append("horn_h2 directional_noise rows must include at least 3 seeds")
+        directional: dict[tuple[str, str, str], set[str]] = defaultdict(set)
+        for row in rows:
+            if str(row.get("control_type")) != "directional_noise":
+                continue
+            key = (
+                str(row.get("prompt_cluster_id") or row.get("prompt_id")),
+                str(row.get("seed")),
+                str(row.get("noise_side")),
+            )
+            directional[key].add(str(row.get("boundary_direction")))
+        unpaired = [key for key, directions in directional.items() if len(directions) != 2]
+        if unpaired:
+            errors.append("horn_h2 directional_noise rows must pair both boundary directions per cluster/seed/noise_side")
     if gate == "horn_h3":
         for index, row in enumerate(rows):
             control_type = str(row.get("control_type"))
             if control_type.startswith("pure_") and row.get("pure_control_expected_null") is not True:
                 errors.append(f"horn_h3 pure control row {index} must set pure_control_expected_null=true")
+            if control_type.startswith("pure_") and float(row.get("directional_drift_ratio", float("inf"))) >= 1.2 and float(
+                row.get("directional_ratio_ci_low", float("inf"))
+            ) > 1.0:
+                errors.append(f"horn_h3 pure control row {index} must fold below 1.2 or have CI overlap 1.0")
     if gate == "hbsm_b2":
         registries = _hash_values(rows, "predictor_registry_sha256")
         if len(registries) != 1 or not all(SHA256_PATTERN.fullmatch(value) for value in registries):

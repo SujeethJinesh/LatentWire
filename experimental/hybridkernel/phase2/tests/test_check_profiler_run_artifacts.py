@@ -340,6 +340,99 @@ def test_require_full_matrix_rejects_audit_only_primary_rows(tmp_path: Path) -> 
     assert any("control/falsification rows" in error for error in result["errors"])
 
 
+def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "metadata/architecture_map.json").write_text(
+        '[{"model":"granite","boundary_count":1},{"model":"qwen","boundary_count":1}]\n',
+        encoding="utf-8",
+    )
+    profile_scope_path = tmp_path / "metadata/profile_scope.json"
+    profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
+    profile_scope["model_scopes"] = [
+        {
+            "model": "granite",
+            "row_roles": ["primary_hybrid", "same_family_control"],
+            "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
+        },
+        {
+            "model": "qwen",
+            "row_roles": ["cross_family_falsification"],
+            "vllm_command": "python -m vllm.entrypoints.openai.api_server --model qwen",
+        },
+    ]
+    profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
+    client_payload = json.loads((tmp_path / "logs/client_replay_b1.log").read_text(encoding="utf-8"))
+    client_payload["model"] = "qwen"
+    (tmp_path / "logs/client_replay_qwen.log").write_text(json.dumps(client_payload) + "\n", encoding="utf-8")
+
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    base = payload["rows"][0]
+    control_rows = []
+    for role, model, run_id, nsys_name, ncu_name, boundary_direction, control_family, segment in [
+        (
+            "same_family_control",
+            "granite",
+            "same-family-single",
+            "nsys/same_family_single.nsys-rep",
+            "ncu/same_family_single.ncu-rep",
+            "non_boundary_same_family",
+            "same_model_non_boundary_segment_control",
+            "same_model_non_boundary_segment_control",
+        ),
+        (
+            "cross_family_falsification",
+            "qwen",
+            "cross-family-single",
+            "nsys/cross_family_single.nsys-rep",
+            "ncu/cross_family_single.ncu-rep",
+            "linear_attention_gated_delta_boundary",
+            "cross_family_hybrid_control",
+            "qwen_hybrid_control",
+        ),
+    ]:
+        _write_profiler_artifact(tmp_path / nsys_name)
+        _write_profiler_artifact(tmp_path / ncu_name)
+        row = dict(base)
+        row.update(
+            {
+                "model": model,
+                "run_id": run_id,
+                "row_role": role,
+                "control_family": control_family,
+                "control_model_or_segment": segment,
+                "boundary_direction": boundary_direction,
+                "attention_ssm_boundary_ms": 2.0,
+                "matched_non_boundary_ms": 1.9,
+                "nsys_artifact": nsys_name,
+                "nsys_artifact_sha256": _sha256(tmp_path / nsys_name),
+                "ncu_artifact": ncu_name,
+                "ncu_artifact_sha256": _sha256(tmp_path / ncu_name),
+                "boundary_indices": [],
+                "time_window_ms": {"start": 10.0 + len(control_rows), "end": 11.0 + len(control_rows)},
+                "ncu_launch_selection": {
+                    "kernel_regex": "synthetic_boundary_kernel",
+                    "launch_skip": 10 + len(control_rows),
+                    "launch_count": 1,
+                    "source_nsys_artifact": nsys_name,
+                    "source_time_window_ms": {"start": 10.0 + len(control_rows), "end": 11.0 + len(control_rows)},
+                    "derivation_notes": "Selected from the matching synthetic control window.",
+                },
+            }
+        )
+        control_rows.append(row)
+    payload["rows"].extend(control_rows)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(json.dumps(analysis, indent=2) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path, require_full_matrix=True)
+
+    assert result["status"] == "FAIL"
+    assert any("at least 3 same_family_control rows" in error for error in result["errors"])
+    assert any("at least 3 cross_family_falsification rows" in error for error in result["errors"])
+
+
 def test_requires_native_profiler_artifacts_by_default(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "nsys/granite_tiny_b1_decode64_run0.nsys-rep").unlink()

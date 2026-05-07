@@ -30,11 +30,24 @@ Shared Mac-local utilities live in `shared/`:
   negative-control rows for real trace packet provenance.
 - `hybrid_model_eligibility.py`: metadata-only HF size/cache preflight for the
   live hybrid targets.
+- `hybrid_local_capture_preflight.py`: local environment/cache/dependency
+  preflight for the first real SSQ-LR/HORN/HBSM captures. Current artifact:
+  `shared/results/hybrid_local_capture_preflight_20260507/`, decision
+  `LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE` because `mamba_ssm` is absent and
+  the active hybrid weights are not fully cached locally.
+- `hybrid_trace_plan.py`: deterministic SSQ-LR/HORN/HBSM row plan from the
+  frozen prompt manifest and architecture maps.
+- `hybrid_trace_capture_manifest.py`: fill-in metadata templates for real
+  tensor/sensitivity captures.
 - `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
   SSQ-LR/HORN real packets and resolves hook names sanitized by tensor-packet
   storage.
 - `hybrid_gate_evaluators.py`: recomputes SSQ-LR S1, HORN H1, and HBSM B1
   decision aggregates from raw packet rows.
+- `followup_gate_contracts.py`: executable S2/S3, H2/H3, and B2/B3 contracts.
+  These now require SSQ-LR's full baseline set, HORN H2 three-seed paired
+  direction units, and HORN H3 pure controls below the preregistered null
+  threshold before any follow-up packet can pass.
 - `sensitivity_metrics.py`: rel-L2, KL, kurtosis, and rank-correlation metrics.
 - `check_gate_packet.py`: generic result-packet validator with strict real
   SSQ-LR/HORN/HBSM packet contracts plus a non-promoting real-schema rehearsal
@@ -54,16 +67,22 @@ Current config-only architecture packet:
 Current metadata-only model eligibility packet:
 `shared/results/hybrid_model_eligibility_20260506/`.
 
+Current local capture preflight packet:
+`shared/results/hybrid_local_capture_preflight_20260507/`.
+
 ## Next Exact Gates
 
 1. **HybridKernel**: run the 5090 profiler packet in
    `hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`, then verify with
    `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`.
-2. **SSQ-LR**: produce the first real hybrid SSM state packet and run Gate S1
-   from `ssq_lr/phase2/preregister_ssq_lr_20260506.md`.
-3. **HORN**: run Gate H1 on the same real trace packet once boundary
-   activations are available.
-4. **HBSM**: run Gate B1 after the shared trace packet exists; only after real
+2. **SSQ-LR**: rerun `python -m experimental.shared.hybrid_local_capture_preflight`
+   after installing local capture dependencies or moving to a GPU node, then
+   produce the first real hybrid SSM state packet and run Gate S1 from
+   `ssq_lr/phase2/preregister_ssq_lr_20260506.md`.
+3. **HORN**: use the same local-capture preflight, then run Gate H1 on the
+   same real trace packet once boundary activations are available.
+4. **HBSM**: use the same local-capture preflight, then run Gate B1 after the
+   shared trace packet exists; only after real
    B1 sensitivity heterogeneity is established, run the B2 cheap-predictor
    rank-correlation gate.
 5. **ThoughtFlow-FP8**: continue paper reframing and citation/table polish; do

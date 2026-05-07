@@ -19,7 +19,7 @@ SHA_B = "sha256:" + "b" * 64
 
 def _write_packet(tmp_path: Path, gate: str, rows: list[dict[str, object]]) -> Path:
     output_dir = tmp_path / gate
-    output_dir.mkdir()
+    output_dir.mkdir(parents=True)
     evaluated = EVALUATORS[gate](rows)
     config = {
         "gate_name": gate,
@@ -92,6 +92,25 @@ def _ssq_lr_s2_rows() -> list[dict[str, object]]:
             "control_type": "same_byte_uniform",
         }
     )
+    rows.extend(
+        [
+            {
+                **base,
+                "recipe_id": control_type,
+                "precision": precision,
+                "accuracy_delta_abs": delta,
+                "paired_ci_high": delta + 0.005,
+                "control_type": control_type,
+            }
+            for control_type, precision, delta in [
+                ("int8_state", "int8_symmetric", 0.004),
+                ("fp8_state", "fp8_e4m3", 0.006),
+                ("mxfp4_state", "mxfp4_e2m1", 0.005),
+                ("random_same_l2", "matched_noise", 0.025),
+                ("shuffled_scales", "mxfp4_e2m1_shuffled_scales", 0.020),
+            ]
+        ]
+    )
     return rows
 
 
@@ -119,26 +138,27 @@ def _ssq_lr_s3_rows() -> list[dict[str, object]]:
 
 def _horn_h2_rows() -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
-    for prompt_id in ["p0", "p1"]:
-        for direction, drift in [("ssm->attention", 0.30), ("attention->ssm", 0.10)]:
-            rows.append(
-                {
-                    "model_id": "granite",
-                    "prompt_id": prompt_id,
-                    "prompt_cluster_id": prompt_id,
-                    "selected_direction_from_h1": "ssm->attention",
-                    "boundary_direction": direction,
-                    "noise_side": "pre_boundary",
-                    "noise_std_basis": "fp4_equivalent",
-                    "noise_scale": 1.0,
-                    "seed": 20260506,
-                    "clean_nll": 1.0,
-                    "noisy_nll": 1.0 + drift,
-                    "delta_nll": drift,
-                    "hook_off_delta": 0.0,
-                    "control_type": "directional_noise",
-                }
-            )
+    for seed in [20260506, 20260507, 20260508]:
+        for prompt_id in ["p0", "p1"]:
+            for direction, drift in [("ssm->attention", 0.30), ("attention->ssm", 0.10)]:
+                rows.append(
+                    {
+                        "model_id": "granite",
+                        "prompt_id": prompt_id,
+                        "prompt_cluster_id": prompt_id,
+                        "selected_direction_from_h1": "ssm->attention",
+                        "boundary_direction": direction,
+                        "noise_side": "pre_boundary",
+                        "noise_std_basis": "fp4_equivalent",
+                        "noise_scale": 1.0,
+                        "seed": seed,
+                        "clean_nll": 1.0,
+                        "noisy_nll": 1.0 + drift,
+                        "delta_nll": drift,
+                        "hook_off_delta": 0.0,
+                        "control_type": "directional_noise",
+                    }
+                )
     rows.append({**rows[0], "control_type": "hook_off", "hook_off_delta": 0.0})
     rows.append({**rows[1], "control_type": "flipped_direction_label"})
     return rows
@@ -289,3 +309,54 @@ def test_hbsm_b2_contract_rejects_predictor_shopping(tmp_path: Path) -> None:
 
     assert not report["ok"]
     assert any("selected from train split only" in error for error in report["errors"])
+
+
+def test_horn_h2_contract_requires_three_seeds_and_direction_pairing(tmp_path: Path) -> None:
+    one_seed_rows = [row for row in _horn_h2_rows() if row.get("seed") in {20260506}]
+    packet_dir = _write_packet(tmp_path / "one_seed", "horn_h2", one_seed_rows)
+
+    report = validate_followup_gate_packet(packet_dir, gate="horn_h2")
+
+    assert not report["ok"]
+    assert any("at least 3 seeds" in error for error in report["errors"])
+
+    unpaired_rows = [
+        row
+        for row in _horn_h2_rows()
+        if not (
+            row["control_type"] == "directional_noise"
+            and row["seed"] == 20260506
+            and row["prompt_id"] == "p0"
+            and row["boundary_direction"] == "attention->ssm"
+        )
+    ]
+    packet_dir = _write_packet(tmp_path / "unpaired", "horn_h2", unpaired_rows)
+
+    report = validate_followup_gate_packet(packet_dir, gate="horn_h2")
+
+    assert not report["ok"]
+    assert any("pair both boundary directions" in error for error in report["errors"])
+
+
+def test_horn_h3_contract_rejects_pure_controls_above_preregistered_threshold(tmp_path: Path) -> None:
+    rows = _horn_h3_rows()
+    for row in rows:
+        if row["control_type"] == "pure_attention_control":
+            row["directional_drift_ratio"] = 1.3
+            row["directional_ratio_ci_low"] = 1.1
+    packet_dir = _write_packet(tmp_path, "horn_h3", rows)
+
+    report = validate_followup_gate_packet(packet_dir, gate="horn_h3")
+
+    assert not report["ok"]
+    assert any("fold below 1.2" in error for error in report["errors"])
+
+
+def test_ssq_lr_s2_contract_requires_full_preregistered_baseline_set(tmp_path: Path) -> None:
+    rows = [row for row in _ssq_lr_s2_rows() if row["control_type"] != "random_same_l2"]
+    packet_dir = _write_packet(tmp_path, "ssq_lr_s2", rows)
+
+    report = validate_followup_gate_packet(packet_dir, gate="ssq_lr_s2")
+
+    assert not report["ok"]
+    assert any("random_same_l2" in error for error in report["errors"])

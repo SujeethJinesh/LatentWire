@@ -1173,6 +1173,18 @@ def check_run_artifacts(
                     "control/falsification rows: "
                     + ", ".join(sorted(missing_review_roles))
                 )
+            if require_full_matrix or result["status"].startswith("PROMOTE"):
+                for role in ("primary_hybrid", "same_family_control", "cross_family_falsification"):
+                    role_rows = [row for row in rows if str(row.get("row_role")) == role]
+                    role_run_ids = {str(row.get("run_id")) for row in role_rows}
+                    if len(role_rows) < min_repeated_runs:
+                        errors.append(
+                            f"full matrix requires at least {min_repeated_runs} {role} rows"
+                        )
+                    if len(role_run_ids) < min_repeated_runs:
+                        errors.append(
+                            f"full matrix requires at least {min_repeated_runs} distinct {role} run_id values"
+                        )
             if counts and max(counts.values()) < min_repeated_runs:
                 errors.append(
                     f"no model has at least {min_repeated_runs} repeated native rows"

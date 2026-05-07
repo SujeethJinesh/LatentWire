@@ -67,6 +67,17 @@ Use the explicit boundary IDs and architecture hashes in
 substring-only module classification for real H1 rows.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
+Local capture readiness is recorded in
+`../shared/results/hybrid_local_capture_preflight_20260507/`; the current
+decision is `LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE` because `mamba_ssm` is
+not installed in the repo-local venv and active hybrid weights are not fully
+cached locally. This packet is preflight-only and cannot promote H1a/H1. Rerun
+it before any real capture attempt:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_local_capture_preflight
+```
+
 The exact H1a/H1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl`;
 regenerate it with:
@@ -115,10 +126,12 @@ Validate later H2/H3 follow-up packets only after real H1a/H1 promotes:
 ```
 
 The H2 contract requires a fixed H1-selected direction, exact noise side and
-noise standard-deviation basis, paired clean/noisy NLL rows, hook-off controls,
-and a directional drift ratio with paired lower bound. The H3 contract requires
-at least two passing hybrid validation models plus pure-attention and
-pure-Mamba controls that fold under the same directional test.
+noise standard-deviation basis, at least three seeds, both boundary directions
+paired for every `(prompt_cluster_id, seed, noise_side)` unit, paired clean/noisy
+NLL rows, hook-off controls, and a directional drift ratio with paired lower
+bound. The H3 contract requires at least two passing hybrid validation models
+plus pure-attention and pure-Mamba controls that fold below the preregistered
+1.2 null threshold or have CI overlap with 1.0 under the same directional test.
 
 H1a is a single-model screen only. It can justify running H2 and adding more
 models, but H1 promotion requires the same selected direction on at least two
