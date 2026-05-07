@@ -84,6 +84,7 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
     expected_script_hash = "sha256:" + hashlib.sha256(script_path.read_bytes()).hexdigest()
     assert manifest["script"]["sha256"] == expected_script_hash
     artifacts = manifest["artifacts"]
+    preregistrations = manifest["preregistrations"]
     assert {artifact["id"] for artifact in artifacts} == {
         "frozen_sparse_cache_probe",
         "rdu_robustness_diagnostic",
@@ -112,11 +113,22 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
             assert artifact["provenance"]["input_path_inference"]["source"] == (
                 "run_real_trace_retention.DEFAULT_TRACES"
             )
+    assert {item["id"] for item in preregistrations} == {
+        "rdu_preregistration",
+        "psi_preregistration",
+        "vwac_preregistration",
+    }
+    for preregistration in preregistrations:
+        path = PHASE2 / preregistration["path"]
+        expected = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        assert preregistration["sha256"] == expected
+        assert preregistration["role"].endswith("preregistration")
     table = (DIAGNOSTIC_PACKET / "falsification_table.md").read_text(encoding="utf-8")
     assert "stale_positive_first_surface" in table
     assert "historical_positive_same_surface" in table
     assert "same_family_falsification" in table
     assert "cross_family_falsification" in table
+    assert "## Preregistrations" in table
 
 
 def test_diagnostic_packet_builder_refuses_dirty_thoughtflow_tree(

@@ -16,6 +16,6 @@
   "trace_plan_hashes": {
     "hbsm": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf",
     "horn": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66",
-    "ssq_lr": "sha256:659f63b59ba3708d56bcded8ad87428162bbbb668cff3cc999c3159da28b5563"
+    "ssq_lr": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b"
   }
 }

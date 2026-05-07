@@ -29,10 +29,11 @@ from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_r
 
 SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
 TRACE_PLAN_HASHES = {
-    "ssq_lr": "sha256:659f63b59ba3708d56bcded8ad87428162bbbb668cff3cc999c3159da28b5563",
+    "ssq_lr": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b",
     "horn": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66",
     "hbsm": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf",
 }
+GRANITE_TINY_REVISION = "791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
 
 
 def test_fp4_simulator_is_deterministic_and_shape_preserving() -> None:
@@ -131,8 +132,8 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
     (packet / "config.json").write_text(
         "{"
         '"model_id": "ibm-granite-4.0-h-tiny", '
-        '"model_revision": "abc123", '
-        '"tokenizer_revision": "tok123", '
+        f'"model_revision": "{GRANITE_TINY_REVISION}", '
+        f'"tokenizer_revision": "{GRANITE_TINY_REVISION}", '
         '"prompt_source": "fixed_manifest.json", '
         '"prompt_ids_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", '
         '"seed_list": [1], '
@@ -147,7 +148,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
     rows = [
         {
             "model_id": "ibm-granite-4.0-h-tiny",
-            "model_revision": "abc123",
+            "model_revision": GRANITE_TINY_REVISION,
             "prompt_id": f"p{prompt_index}",
             "layer": 0,
             "layer_kind": "mamba2",
@@ -167,12 +168,13 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
+    gate_status = str(evaluate_ssq_lr_s1(rows)["gate_status"])
     (packet / "summary.json").write_text(
         json.dumps(
             {
                 "seed": 1,
                 "surface": "real_ssq_lr_s1",
-                "decision": "CONTINUE_REAL_STATE_DUMPS",
+                "decision": gate_status,
                 "row_count": len(rows),
                 "rows": rows,
                 "claim_boundary": ["real model trace", "not GPU evidence"],
@@ -193,7 +195,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
         + "\n"
     )
     (packet / "summary.md").write_text("# Summary\n")
-    (packet / "decision.md").write_text("`CONTINUE_REAL_STATE_DUMPS`\n")
+    (packet / "decision.md").write_text(f"`{gate_status}`\n")
 
     report = validate_gate_packet(packet, mode="real", project="ssq_lr")
 
@@ -213,7 +215,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_incomplete_prompt_layer_matrix(
             rows.append(
                 {
                     "model_id": "ibm-granite-4.0-h-tiny",
-                    "model_revision": "abc123",
+                    "model_revision": GRANITE_TINY_REVISION,
                     "prompt_id": f"p{prompt_index}",
                     "layer": 0,
                     "layer_kind": "mamba2",
@@ -274,7 +276,7 @@ def test_gate_packet_checker_rejects_promotable_resource_limited_real_packet(tmp
     rows = [
         {
             "model_id": "ibm-granite-4.0-h-tiny",
-            "model_revision": "abc123",
+            "model_revision": GRANITE_TINY_REVISION,
             "prompt_id": f"p{prompt_index}",
             "layer": 0,
             "layer_kind": "mamba2",
@@ -337,7 +339,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tm
     rows = [
         {
             "model_id": "ibm-granite-4.0-h-tiny",
-            "model_revision": "abc123",
+            "model_revision": GRANITE_TINY_REVISION,
             "prompt_id": f"p{prompt_index}",
             "layer": 0,
             "layer_kind": "mamba2",
@@ -385,8 +387,8 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
     (packet / "config.json").write_text(
         "{"
         '"model_id": "ibm-granite-4.0-h-tiny", '
-        '"model_revision": "abc123", '
-        '"tokenizer_revision": "tok123", '
+        f'"model_revision": "{GRANITE_TINY_REVISION}", '
+        f'"tokenizer_revision": "{GRANITE_TINY_REVISION}", '
         '"prompt_source": "fixed_manifest.json", '
         '"prompt_ids_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", '
         '"seed_list": [1], '
@@ -561,6 +563,39 @@ def test_hybrid_trace_plan_enumerates_project_specific_rows(tmp_path: Path) -> N
     assert "not model evidence" in (output_dir / "decision.md").read_text()
 
 
+def test_hybrid_trace_plan_uses_architecture_specific_ssq_state_labels(tmp_path: Path) -> None:
+    config_dir = tmp_path / "configs"
+    maps_dir = tmp_path / "maps"
+    output_dir = tmp_path / "trace_plan"
+    prompts = tmp_path / "prompts.jsonl"
+    config_dir.mkdir()
+    (config_dir / "qwen3-next-80b-a3b-instruct.config.json").write_text(
+        "{"
+        '"architectures": ["Qwen3NextForCausalLM"], '
+        '"model_type": "qwen3_next", '
+        '"hidden_size": 16, '
+        '"num_hidden_layers": 5, '
+        '"full_attention_interval": 3'
+        "}\n"
+    )
+    prompts.write_text('{"prompt_id": "p0", "prompt": "one"}\n')
+    write_maps(config_dir=config_dir, output_dir=maps_dir)
+
+    write_trace_plan(
+        output_dir=output_dir,
+        prompts_path=prompts,
+        architecture_maps_path=maps_dir / "architecture_maps.json",
+    )
+
+    ssq_rows = [
+        json.loads(line)
+        for line in (output_dir / "ssq_lr_trace_plan.jsonl").read_text().splitlines()
+    ]
+    assert ssq_rows
+    assert {row["layer_kind"] for row in ssq_rows} == {"ssm"}
+    assert {row["state_tensor_kind"] for row in ssq_rows} == {"recurrent_ssm_state"}
+
+
 def test_hybrid_capture_manifest_templates_are_generated_from_trace_plan(tmp_path: Path) -> None:
     config_dir = tmp_path / "configs"
     maps_dir = tmp_path / "maps"
@@ -642,8 +677,8 @@ def test_hybrid_model_eligibility_preserves_gpu_recommendation_when_not_cached()
 def _base_trace_metadata(project: str = "ssq_lr") -> dict[str, object]:
     return {
         "model_id": "ibm-granite-4.0-h-tiny",
-        "model_revision": "abc123",
-        "tokenizer_revision": "tok123",
+        "model_revision": GRANITE_TINY_REVISION,
+        "tokenizer_revision": GRANITE_TINY_REVISION,
         "prompt_source": "fixed_manifest.json",
         "prompt_ids_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
         "seed_list": [1],
@@ -910,6 +945,118 @@ def test_packet_builder_canonicalizes_served_hf_model_id(tmp_path: Path) -> None
     assert config["model_id"] == "ibm-granite-4.0-h-tiny"
     assert config["served_model_id"] == "ibm-granite/granite-4.0-h-tiny"
     assert {row["model_id"] for row in rows} == {"ibm-granite-4.0-h-tiny"}
+
+
+def test_gate_packet_checker_rejects_unregistered_model_revision(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_bad_revision"
+    metadata = _base_trace_metadata()
+    metadata["model_revision"] = "0" * 40
+    metadata["tokenizer_revision"] = GRANITE_TINY_REVISION
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("model_revision must match" in error for error in report["errors"])
+
+
+def test_gate_packet_checker_rejects_decision_that_disagrees_with_evaluator(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_bad_decision"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+
+    summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
+    summary["decision"] = "PROMOTE_UNVERIFIED"
+    (output_dir / "summary.json").write_text(json.dumps(summary, sort_keys=True) + "\n")
+    (output_dir / "decision.md").write_text("`PROMOTE_UNVERIFIED`\n")
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("summary decision must equal recomputed gate decision" in error for error in report["errors"])
+
+
+def test_gate_packet_checker_rejects_rows_outside_cited_trace_plan(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_bad_trace_plan_row"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+
+    rows = [json.loads(line) for line in (output_dir / "raw_rows.jsonl").read_text().splitlines()]
+    trace_plan = tmp_path / "ssq_trace_plan.jsonl"
+    trace_plan.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
+    config = json.loads((output_dir / "config.json").read_text(encoding="utf-8"))
+    config["trace_plan_path"] = str(trace_plan)
+    (output_dir / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
+
+    rows[0]["prompt_id"] = "unplanned_prompt"
+    (output_dir / "raw_rows.jsonl").write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
+    )
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("outside the frozen trace plan" in error for error in report["errors"])
 
 
 def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:

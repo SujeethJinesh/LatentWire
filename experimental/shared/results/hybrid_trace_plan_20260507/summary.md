@@ -7,7 +7,7 @@ It is not model evidence; it is an execution checklist for producing real packet
 |---|---:|---|
 | `hbsm` | 1554 | `sha256:5f9bea1f3a36...` |
 | `horn` | 1008 | `sha256:bde83105201b...` |
-| `ssq_lr` | 5184 | `sha256:659f63b59ba3...` |
+| `ssq_lr` | 5184 | `sha256:a05dab6ad3b8...` |
 
 ## Use
 

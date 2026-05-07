@@ -244,7 +244,9 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --seed 1 \
   --tokenizer "$MODEL" \
   --require-token-counts \
-  2>&1 | tee "$HWK_RUN/logs/client_b1.log"
+  > "$HWK_RUN/logs/client_b1.log" \
+  2> "$HWK_RUN/logs/client_b1.stderr.log"
+cat "$HWK_RUN/logs/client_b1.log"
 ```
 
 For the dynamic Nsight capture path above, bracket the replay with vLLM's
@@ -262,7 +264,9 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --tokenizer "$MODEL" \
   --require-token-counts \
   --profile-bracket \
-  2>&1 | tee "$HWK_RUN/logs/client_b1_profile_bracket.log"
+  > "$HWK_RUN/logs/client_b1_profile_bracket.log" \
+  2> "$HWK_RUN/logs/client_b1_profile_bracket.stderr.log"
+cat "$HWK_RUN/logs/client_b1_profile_bracket.log"
 ```
 
 The bracketed driver POSTs `/start_profile` before the fixed request replay

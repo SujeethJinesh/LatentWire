@@ -47,7 +47,10 @@ artifact at
 `experimental/shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`;
 a syntactically valid but unrelated hash is rejected. Packet builders canonicalize
 registered served IDs into the map `model_id` and preserve the original value as
-`served_model_id` in `config.json`. A packet that records
+`served_model_id` in `config.json`. The `model_revision` and
+`tokenizer_revision` values must match the registered eligibility snapshot SHA
+for the served/canonical model, and packets that carry `trace_plan_path` are
+checked against that exact frozen row set. A packet that records
 `resource_limit_note` is admissible only as a diagnostic artifact: its
 `summary.json` decision must start with
 `RESOURCE_LIMITED_NOT_PROMOTABLE`, and it cannot promote a gate.
@@ -56,7 +59,8 @@ HBSM: if the input tensor/row metadata contains `resource_limit_note`, the
 written packet decision is prefixed with `RESOURCE_LIMITED_NOT_PROMOTABLE_`
 even when the recomputed gate status itself would pass. This lets two-prompt or
 small-context smoke traces validate hooks and schema without weakening the
-promotion boundary.
+promotion boundary. Non-resource-limited packet decisions must equal the
+recomputed project gate status exactly.
 Synthetic schema rehearsals may run the same real validators only when
 `config.json` sets `schema_rehearsal: true` and `summary.json` uses a decision
 beginning `SCHEMA_REHEARSAL_NOT_PROMOTABLE`. These packets are checker-path

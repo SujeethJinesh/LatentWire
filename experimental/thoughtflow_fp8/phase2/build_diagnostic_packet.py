@@ -106,6 +106,24 @@ LEGACY_CACHED_RDU_ARTIFACTS = {
     "rdu_alternate_surface",
 }
 
+PREREGISTRATIONS = [
+    {
+        "id": "rdu_preregistration",
+        "path": "preregister_recurrence_distance_utility_20260506.md",
+        "role": "one_shot_method_preregistration",
+    },
+    {
+        "id": "psi_preregistration",
+        "path": "preregister_prefix_surprisal_utility_20260506.md",
+        "role": "fresh_successor_preregistration",
+    },
+    {
+        "id": "vwac_preregistration",
+        "path": "preregister_value_weighted_attention_contribution_20260506.md",
+        "role": "fresh_successor_preregistration",
+    },
+]
+
 
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -323,6 +341,15 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
                 "provenance": _artifact_provenance(str(spec["id"]), payload),
             }
         )
+    preregistrations = []
+    for spec in PREREGISTRATIONS:
+        path = PHASE2 / str(spec["path"])
+        preregistrations.append(
+            {
+                **spec,
+                "sha256": _sha256(path),
+            }
+        )
 
     manifest = {
         "packet_name": "thoughtflow_diagnostic_packet_20260506",
@@ -340,6 +367,7 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
             "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
         },
         "artifacts": artifacts,
+        "preregistrations": preregistrations,
     }
     (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 
@@ -357,6 +385,17 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
         lines.append(
             f"| `{artifact['path']}` | {artifact['role']} | `{artifact['sha256']}` | {status} |"
         )
+    lines.extend(
+        [
+            "",
+            "## Preregistrations",
+            "",
+            "| File | Role | SHA-256 |",
+            "|---|---|---|",
+        ]
+    )
+    for prereg in preregistrations:
+        lines.append(f"| `{prereg['path']}` | {prereg['role']} | `{prereg['sha256']}` |")
     lines.extend(
         [
             "",

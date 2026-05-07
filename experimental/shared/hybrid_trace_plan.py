@@ -66,6 +66,13 @@ def _ssm_layers(model_map: dict[str, Any]) -> list[int]:
     ]
 
 
+def _ssq_state_tensor_kind(model_map: dict[str, Any]) -> str:
+    model_type = str(model_map.get("model_type", "")).lower()
+    if model_type == "granitemoehybrid":
+        return "mamba2_recurrent_state"
+    return "recurrent_ssm_state"
+
+
 def _non_boundary_pairs(model_map: dict[str, Any]) -> list[dict[str, Any]]:
     kinds = [str(kind) for kind in model_map.get("layer_kinds", [])]
     boundary_pairs = {
@@ -109,10 +116,13 @@ def _build_ssq_lr_rows(
     model_map: dict[str, Any],
 ) -> list[dict[str, Any]]:
     model_id = str(model_map["model_id"])
+    state_tensor_kind = _ssq_state_tensor_kind(model_map)
+    layer_kinds = [str(kind) for kind in model_map.get("layer_kinds", [])]
     rows: list[dict[str, Any]] = []
     for prompt in prompts:
         prompt_id = str(prompt["prompt_id"])
         for layer in _ssm_layers(model_map):
+            layer_kind = layer_kinds[layer] if layer < len(layer_kinds) else "ssm"
             for bucket in SSQ_BUCKETS:
                 rows.append(
                     {
@@ -122,9 +132,9 @@ def _build_ssq_lr_rows(
                         "architecture_map_hash": _architecture_hash(model_map),
                         "prompt_id": prompt_id,
                         "layer": layer,
-                        "layer_kind": "mamba2",
+                        "layer_kind": layer_kind,
                         "position_bucket": bucket,
-                        "state_tensor_kind": "mamba2_recurrent_state",
+                        "state_tensor_kind": state_tensor_kind,
                         "control_type": "bf16_no_quant",
                         "tensor_name": f"ssq_lr/{model_id}/{prompt_id}/layer_{layer}/{bucket}",
                         "capture": "recurrent SSM/Mamba2 state after state update",

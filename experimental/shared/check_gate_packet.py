@@ -172,9 +172,13 @@ SCHEMA_REHEARSAL_DECISION = "SCHEMA_REHEARSAL_NOT_PROMOTABLE"
 ARCHITECTURE_MAPS_PATH = (
     Path(__file__).resolve().parent / "results/hybrid_architecture_maps_20260506/architecture_maps.json"
 )
+MODEL_ELIGIBILITY_PATH = (
+    Path(__file__).resolve().parent / "results/hybrid_model_eligibility_20260506/raw_rows.jsonl"
+)
 TRACE_PLAN_CONFIG_PATH = (
     Path(__file__).resolve().parent / "results/hybrid_trace_plan_20260507/config.json"
 )
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _load_json(path: Path) -> Any:
@@ -207,6 +211,34 @@ def _known_architecture_hashes() -> dict[str, tuple[str, str]]:
     return known
 
 
+def _canonical_model_aliases() -> dict[str, str]:
+    return {alias: canonical for alias, (canonical, _) in _known_architecture_hashes().items()}
+
+
+def _known_model_revision_sets() -> dict[str, set[str]]:
+    aliases = _canonical_model_aliases()
+    known: dict[str, set[str]] = {}
+    try:
+        lines = MODEL_ELIGIBILITY_PATH.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        return known
+    for line in lines:
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        model_id = str(row.get("model_id", "")).strip()
+        revision = str(row.get("sha", "")).strip()
+        if not model_id or not re.fullmatch(r"[0-9a-f]{40}", revision):
+            continue
+        canonical = aliases.get(model_id, model_id)
+        for key in {model_id, canonical}:
+            known.setdefault(key, set()).add(revision)
+    return known
+
+
 def _known_trace_plan_hashes() -> dict[str, str]:
     try:
         config = _load_json(TRACE_PLAN_CONFIG_PATH)
@@ -221,6 +253,25 @@ def _known_trace_plan_hashes() -> dict[str, str]:
         if re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
             known[str(project)] = digest
     return known
+
+
+def _load_trace_plan_rows(project: str, trace_plan_path: str | None = None) -> list[dict[str, Any]]:
+    if trace_plan_path:
+        path = Path(trace_plan_path)
+        if not path.is_absolute():
+            path = REPO_ROOT / path
+    else:
+        path = TRACE_PLAN_CONFIG_PATH.parent / f"{project}_trace_plan.jsonl"
+    rows: list[dict[str, Any]] = []
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            row = json.loads(stripped)
+            if isinstance(row, dict):
+                rows.append(row)
+    return rows
 
 
 def _missing_fields(row: dict[str, Any], fields: tuple[str, ...]) -> list[str]:
@@ -334,6 +385,78 @@ def _horn_matched_direction(row: dict[str, Any]) -> str:
     return str(row.get("direction", "")).strip()
 
 
+def _trace_plan_key(project: str, row: dict[str, Any]) -> tuple[Any, ...]:
+    if project == "ssq_lr":
+        return (
+            str(row.get("model_id", "")),
+            str(row.get("prompt_id", "")),
+            int(row.get("layer", -1)),
+            str(row.get("position_bucket", "")),
+        )
+    if project == "horn":
+        return (
+            str(row.get("model_id", "")),
+            str(row.get("prompt_id", "")),
+            str(row.get("control_type", "")),
+            int(row.get("boundary_index", -9999)),
+            int(row.get("layer_left", -9999)),
+            int(row.get("layer_right", -9999)),
+            str(row.get("direction", "")),
+            str(row.get("matched_boundary_direction", "")),
+            str(row.get("pre_norm_position", "")),
+            str(row.get("post_norm_position", "")),
+        )
+    if project == "hbsm":
+        return (
+            str(row.get("model_id", "")),
+            str(row.get("prompt_id", "")),
+            str(row.get("control_type", "")),
+            int(row.get("layer", -9999)),
+            bool(row.get("boundary_flag")),
+            str(row.get("train_test_split", "")),
+        )
+    return tuple(sorted(row.items()))
+
+
+def _validate_trace_plan_coverage(
+    *,
+    project: str,
+    rows: list[dict[str, Any]],
+    config: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if _schema_rehearsal(config):
+        return
+    trace_plan_path = config.get("trace_plan_path")
+    if not isinstance(trace_plan_path, str):
+        return
+    try:
+        planned_rows = _load_trace_plan_rows(
+            project,
+            trace_plan_path if isinstance(trace_plan_path, str) else None,
+        )
+    except (FileNotFoundError, json.JSONDecodeError, OSError, ValueError) as exc:
+        errors.append(f"trace plan rows unavailable for coverage validation: {exc}")
+        return
+    model_id = str(config.get("model_id", "")).strip()
+    planned_for_model = [row for row in planned_rows if str(row.get("model_id", "")).strip() == model_id]
+    if not planned_for_model:
+        errors.append("trace plan has no rows for config.json model_id")
+        return
+    expected = {_trace_plan_key(project, row) for row in planned_for_model}
+    observed_counts: dict[tuple[Any, ...], int] = {}
+    for row in rows:
+        key = _trace_plan_key(project, row)
+        observed_counts[key] = observed_counts.get(key, 0) + 1
+    observed = set(observed_counts)
+    if any(count > 1 for count in observed_counts.values()):
+        errors.append(f"{project} real packet has duplicate trace-plan row keys")
+    if observed - expected:
+        errors.append(f"{project} real packet contains rows outside the frozen trace plan")
+    if expected - observed and not _resource_limited(config):
+        errors.append(f"{project} real packet is missing rows from the frozen trace plan")
+
+
 def _resource_limited(config: dict[str, Any]) -> bool:
     return "resource_limit_note" in config
 
@@ -372,6 +495,38 @@ def _validate_schema_rehearsal_decision(
         errors.append(
             f"{project} schema-rehearsal packet must use {SCHEMA_REHEARSAL_DECISION} decision"
         )
+
+
+def _expected_gate_status(project: str, rows: list[dict[str, Any]]) -> str | None:
+    if project == "ssq_lr":
+        return str(evaluate_ssq_lr_s1(rows).get("gate_status"))
+    if project == "horn":
+        return str(evaluate_horn_h1(rows).get("gate_status"))
+    if project == "hbsm":
+        return str(evaluate_hbsm_b1(rows).get("gate_status"))
+    return None
+
+
+def _validate_real_decision(
+    *,
+    project: str,
+    rows: list[dict[str, Any]],
+    config: dict[str, Any],
+    summary: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if _schema_rehearsal(config):
+        return
+    gate_status = _expected_gate_status(project, rows)
+    if gate_status is None:
+        return
+    decision = str(summary.get("decision", ""))
+    if _resource_limited(config):
+        expected = f"{RESOURCE_LIMITED_DECISION}_{gate_status}"
+    else:
+        expected = gate_status
+    if decision != expected:
+        errors.append(f"{project} summary decision must equal recomputed gate decision {expected!r}")
 
 
 def _validate_hash_provenance(
@@ -420,6 +575,27 @@ def _validate_architecture_map_provenance(config: dict[str, Any], errors: list[s
         errors.append(
             "config.json architecture_map_hash must match shared architecture map config hash for model_id"
         )
+
+
+def _validate_model_revision_provenance(config: dict[str, Any], errors: list[str]) -> None:
+    if _schema_rehearsal(config):
+        return
+    known = _known_model_revision_sets()
+    if not known:
+        errors.append("model eligibility revision artifact is unavailable")
+        return
+    identity = str(config.get("served_model_id") or config.get("model_id", "")).strip()
+    canonical = str(config.get("model_id", "")).strip()
+    allowed = set(known.get(identity, set())) | set(known.get(canonical, set()))
+    if not allowed:
+        errors.append("config.json model_id/served_model_id must match a model in the eligibility artifact")
+        return
+    model_revision = str(config.get("model_revision", "")).strip()
+    tokenizer_revision = str(config.get("tokenizer_revision", "")).strip()
+    if model_revision not in allowed:
+        errors.append("config.json model_revision must match the registered eligibility snapshot sha")
+    if tokenizer_revision not in allowed:
+        errors.append("config.json tokenizer_revision must match the registered eligibility snapshot sha")
 
 
 def _validate_real_summary(
@@ -910,6 +1086,7 @@ def validate_gate_packet(
                 errors.append(f"config.json missing provenance field {field}")
         _validate_hash_provenance(config, project=project, errors=errors)
         _validate_architecture_map_provenance(config, errors)
+        _validate_model_revision_provenance(config, errors)
         for boundary in ("synthetic-only", "not model evidence"):
             if (
                 boundary in [str(item) for item in summary.get("claim_boundary", [])]
@@ -953,9 +1130,21 @@ def validate_gate_packet(
             if missing_controls:
                 controls = ", ".join(sorted(missing_controls))
                 errors.append(f"missing required controls: {controls}")
+            unknown_controls = observed_controls - required_controls
+            if unknown_controls:
+                controls = ", ".join(sorted(unknown_controls))
+                errors.append(f"unknown controls: {controls}")
             if not missing_row_fields:
+                _validate_trace_plan_coverage(project=project, rows=raw_rows, config=config, errors=errors)
                 _validate_real_coverage(project=project, rows=raw_rows, config=config, errors=errors)
                 _validate_real_summary(project=project, rows=raw_rows, summary=summary, config=config, errors=errors)
+                _validate_real_decision(
+                    project=project,
+                    rows=raw_rows,
+                    config=config,
+                    summary=summary,
+                    errors=errors,
+                )
             _validate_resource_limit_decision(project=project, config=config, summary=summary, errors=errors)
             _validate_schema_rehearsal_decision(project=project, config=config, summary=summary, errors=errors)
 

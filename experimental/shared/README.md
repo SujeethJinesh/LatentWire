@@ -148,11 +148,16 @@ Real packets also need 64-hex `prompt_ids_hash` values, a `trace_plan_hash`
 for the project trace-plan JSONL used during capture, and an
 `architecture_map_hash` that matches the claimed `model_id` in
 `shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`; a
-random hash-shaped value is rejected. They also need project-specific aggregate
-`summary.json` fields and a non-promotable decision whenever
+random hash-shaped value is rejected. The `model_revision` and
+`tokenizer_revision` fields must match the registered Hugging Face snapshot SHA
+in `shared/results/hybrid_model_eligibility_20260506/raw_rows.jsonl`; arbitrary
+revision strings are rejected. When `trace_plan_path` is present, the checker
+also rejects rows outside that cited frozen trace-plan row set. Real packets
+need project-specific aggregate `summary.json` fields and a decision equal to
+the recomputed S1/H1/B1 gate status, or a non-promotable decision whenever
 `resource_limit_note` is present. The checker recomputes the active S1/H1/B1
-gate summaries from rows and rejects stale or fabricated summary fields. The
-builder now also prefixes resource-limited packet decisions with
+gate summaries from rows and rejects stale or fabricated summary/decision
+fields. The builder now also prefixes resource-limited packet decisions with
 `RESOURCE_LIMITED_NOT_PROMOTABLE_`, so small Mac smoke packets can validate
 hooks without accidentally promoting a gate.
 
