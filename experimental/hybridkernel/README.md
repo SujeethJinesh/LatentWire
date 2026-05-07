@@ -213,6 +213,11 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   | tee "$HWK_RUN/logs/client_b1_profile_bracket.log"
 ```
 
+With `--require-token-counts`, the driver uses the local Hugging Face tokenizer
+to synthesize decode-roundtrip prompts whose tokenized length exactly matches
+`--prefill-tokens`; if it cannot prove the requested length, it fails before
+starting the server-side profile window.
+
 If `--profiler-config.profiler cuda` is unsupported, use the static capture
 path in `phase2/nvidia_vllm_profiler_runbook.md` and record the change in
 `$HWK_RUN/metadata/command_notes.md`.

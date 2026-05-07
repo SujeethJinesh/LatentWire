@@ -19,6 +19,18 @@ and a quick primary-source audit. No external repositories were cloned, no model
 weights were downloaded, no SSH/GPU work was run, and no global installs were
 performed.
 
+## 2026-05-07 Exact Profiler Prompt Synthesis
+
+`phase2/profiler_driver.py` now attempts a local tokenizer decode/encode
+roundtrip whenever prefill token counts are required. The GPU replay command
+therefore emits prompts that tokenize to exactly `--prefill-tokens` when the
+local tokenizer supports roundtripping, and still fails before the profile
+window if exact counts cannot be proven.
+
+Decision: **PROMPT SHAPE IS NOW REVIEWABLE BEFORE GPU PROFILING**. The next
+gate is still the NVIDIA/vLLM Nsight packet; this does not provide performance
+evidence.
+
 ## Phase 0 Checklist
 
 - [x] Create `experimental/hybridkernel/.venv` (`Python 3.9.13`)

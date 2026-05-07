@@ -106,6 +106,46 @@ def test_dry_run_can_log_exact_prompt_token_counts(monkeypatch) -> None:
     assert result["requests"][0]["expected_completion_tokens_total"] == 4
 
 
+def test_required_token_counts_use_decode_roundtrip_prompt_synthesis(monkeypatch) -> None:
+    class FakeTokenizer:
+        vocab_size = 16
+        all_special_ids: list[int] = []
+
+        def decode(
+            self,
+            token_ids: list[int],
+            *,
+            skip_special_tokens: bool,
+            clean_up_tokenization_spaces: bool,
+        ) -> str:
+            assert skip_special_tokens is True
+            assert clean_up_tokenization_spaces is False
+            return " ".join(f"safe{token_id}" for token_id in token_ids)
+
+        def encode(self, prompt: str, *, add_special_tokens: bool) -> list[str]:
+            assert add_special_tokens is False
+            tokens = prompt.split()
+            if all(token.startswith("safe") for token in tokens):
+                return tokens
+            return tokens + ["approximate_prompt_would_mismatch"]
+
+    monkeypatch.setattr(
+        profiler_driver,
+        "_load_tokenizer",
+        lambda model, tokenizer_name, require: (FakeTokenizer(), "fake-tokenizer", "test"),
+    )
+
+    planned = profiler_driver._planned_requests(
+        _args(batch_size=2, prefill_tokens=8, tokenizer="fake-tokenizer", require_token_counts=True),
+        FakeTokenizer(),
+    )
+
+    _request_id, prompt_payload, prompt_token_counts, _payload = planned[0]
+    assert isinstance(prompt_payload, list)
+    assert all(prompt.startswith("safe") for prompt in prompt_payload)
+    assert prompt_token_counts == [8, 8]
+
+
 def test_profile_run_fails_before_start_when_prefill_counts_mismatch(monkeypatch) -> None:
     calls: list[str] = []
 

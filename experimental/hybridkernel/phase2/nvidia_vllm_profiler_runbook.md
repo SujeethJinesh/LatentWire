@@ -281,6 +281,10 @@ cat "$HWK_RUN/logs/client_b1_profile_bracket.log"
 The bracketed driver POSTs `/start_profile` before the fixed request replay
 and `/stop_profile` afterward, so `--capture-range=cudaProfilerApi` captures
 the serving process during the benchmark window rather than server startup.
+When `--require-token-counts` is enabled, the driver synthesizes prompts
+through a local tokenizer decode/encode roundtrip and rejects the run before
+the profile window if any prompt cannot be proven to have exactly
+`--prefill-tokens` tokens.
 
 `profiler_driver.py` is tracked in this repository and can be sanity-checked on
 Mac with:

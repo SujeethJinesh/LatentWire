@@ -1,6 +1,6 @@
 # Experimental Project Control Plane
 
-Date: 2026-05-06
+Date: 2026-05-07
 
 This folder currently tracks five relevant COLM/ICLR branches only:
 HybridKernel, SSQ-LR, HORN, HBSM, and ThoughtFlow-FP8. The control objective is
@@ -13,7 +13,7 @@ The current sprint ledger is `project_status_20260506.md`.
 
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
-| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
+| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
 | `ssq_lr/` | Mac gate scaffolded | Non-promoting 288-row synthetic S1 real-schema rehearsal passes the real SSQ-LR checker | Real hybrid SSM state dumps showing distribution heterogeneity with complete prompt/layer bucket coverage |
 | `horn/` | Mac gate scaffolded | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the real HORN checker; evaluator now reports single-model screens as H1a only, pairs non-boundary controls through `matched_boundary_direction`, and uses prompt-cluster bootstrap lower bounds | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry with per-prompt non-boundary controls, prompt-cluster IDs, and actual-label-flipped permuted controls across enough models for H1 promotion |
 | `hbsm/` | Mac gate scaffolded; novelty is narrow | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, required controls, and per-prompt measured-drift top-decile derivation | Real layer sensitivity packet with every primary prompt-row top-decile flag matching measured drift plus random/KL/outlier controls on current hybrid reasoners |
@@ -63,9 +63,9 @@ Current metadata-only model eligibility packet:
    from `ssq_lr/phase2/preregister_ssq_lr_20260506.md`.
 3. **HORN**: run Gate H1 on the same real trace packet once boundary
    activations are available.
-4. **HBSM**: run Gate B1 after the shared trace packet exists; continue only if
-   the cheaper predictor has nontrivial rank correlation with forward
-   sensitivity.
+4. **HBSM**: run Gate B1 after the shared trace packet exists; only after real
+   B1 sensitivity heterogeneity is established, run the B2 cheap-predictor
+   rank-correlation gate.
 5. **ThoughtFlow-FP8**: continue paper reframing and citation/table polish; do
    not run a new signal without a fresh preregistered surface.
 

@@ -38,6 +38,83 @@ def _prompt(prefill_tokens: int, request_id: int) -> str:
     return " ".join(words)
 
 
+def _tokenizer_vocab_size(tokenizer: Any) -> int | None:
+    vocab_size = getattr(tokenizer, "vocab_size", None)
+    if isinstance(vocab_size, int) and vocab_size > 0:
+        return vocab_size
+    try:
+        length = len(tokenizer)
+    except TypeError:
+        return None
+    return length if isinstance(length, int) and length > 0 else None
+
+
+def _special_token_ids(tokenizer: Any) -> set[int]:
+    raw_ids = getattr(tokenizer, "all_special_ids", []) or []
+    return {int(token_id) for token_id in raw_ids if isinstance(token_id, int)}
+
+
+def _decode_token_ids(tokenizer: Any, token_ids: list[int]) -> str | None:
+    decode = getattr(tokenizer, "decode", None)
+    if decode is None:
+        return None
+    try:
+        decoded = decode(
+            token_ids,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=False,
+        )
+    except TypeError:
+        decoded = decode(token_ids)
+    return decoded if isinstance(decoded, str) and decoded else None
+
+
+def _count_tokens(tokenizer: Any, prompt: str) -> int:
+    encoded = tokenizer.encode(prompt, add_special_tokens=False)
+    return len(encoded)
+
+
+def _exact_prompt_from_tokenizer(tokenizer: Any, prefill_tokens: int, request_id: int) -> str | None:
+    """Synthesize a prompt that round-trips to exactly ``prefill_tokens`` tokens.
+
+    The profiler gate compares latency/HBM statistics at specific prefill sizes,
+    so approximate whitespace prompts are too weak when ``--require-token-counts``
+    is enabled.  Most Hugging Face tokenizers can decode ordinary token ids back
+    into text that re-encodes to the same token count; if that invariant does not
+    hold locally, the caller falls back to the existing explicit count mismatch.
+    """
+
+    if prefill_tokens < 0:
+        raise ValueError("--prefill-tokens must be non-negative")
+    if prefill_tokens == 0:
+        return ""
+
+    vocab_size = _tokenizer_vocab_size(tokenizer)
+    if vocab_size is None:
+        return None
+    special_ids = _special_token_ids(tokenizer)
+    candidate_ids = [token_id for token_id in range(vocab_size) if token_id not in special_ids]
+    if not candidate_ids:
+        return None
+
+    start = (request_id * 131) % len(candidate_ids)
+    single_token_tries = min(64, len(candidate_ids))
+    for offset in range(single_token_tries):
+        token_id = candidate_ids[(start + offset) % len(candidate_ids)]
+        prompt = _decode_token_ids(tokenizer, [token_id] * prefill_tokens)
+        if prompt is not None and _count_tokens(tokenizer, prompt) == prefill_tokens:
+            return prompt
+
+    stride_tries = (1, 3, 7, 13)
+    for stride in stride_tries:
+        ids = [candidate_ids[(start + idx * stride) % len(candidate_ids)] for idx in range(prefill_tokens)]
+        prompt = _decode_token_ids(tokenizer, ids)
+        if prompt is not None and _count_tokens(tokenizer, prompt) == prefill_tokens:
+            return prompt
+
+    return None
+
+
 def _payload(model: str, prompt: str | list[str], decode_tokens: int, seed: int) -> dict[str, object]:
     return {
         "model": model,
@@ -96,11 +173,7 @@ def _prompt_token_counts(tokenizer: Any | None, prompt_payload: str | list[str])
     if tokenizer is None:
         return None
     prompts = [prompt_payload] if isinstance(prompt_payload, str) else prompt_payload
-    counts: list[int] = []
-    for prompt in prompts:
-        encoded = tokenizer.encode(prompt, add_special_tokens=False)
-        counts.append(len(encoded))
-    return counts
+    return [_count_tokens(tokenizer, prompt) for prompt in prompts]
 
 
 def _planned_requests(
@@ -113,8 +186,16 @@ def _planned_requests(
     )
     for request_id in range(args.requests):
         prompts = [
-            _prompt(args.prefill_tokens, request_id * args.batch_size + batch_idx)
+            _exact_prompt_from_tokenizer(tokenizer, args.prefill_tokens, request_id * args.batch_size + batch_idx)
+            if enforce_counts and tokenizer is not None
+            else None
             for batch_idx in range(args.batch_size)
+        ]
+        prompts = [
+            prompt
+            if prompt is not None
+            else _prompt(args.prefill_tokens, request_id * args.batch_size + batch_idx)
+            for batch_idx, prompt in enumerate(prompts)
         ]
         prompt_payload: str | list[str] = prompts[0] if args.batch_size == 1 else prompts
         prompt_token_counts = _prompt_token_counts(tokenizer, prompt_payload)
