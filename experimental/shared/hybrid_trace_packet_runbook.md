@@ -16,10 +16,15 @@ Every real packet must contain:
 - `summary.json`: aggregate readouts, decision, claim boundary, and row count.
 - `summary.md`: human-readable table and interpretation.
 - `decision.md`: pass/fail/continue decision tied to the preregistered gate.
-- optional `tensors/`: state or activation tensor packet written with
-  `activation_dumper.py`. Tensor packets must include `tensor_manifest.json`;
-  SSQ-LR/HORN rows copy the manifest's original tensor name, storage name,
-  SHA-256, dtype, and shape into the real packet.
+- `tensors/` for SSQ-LR/HORN: state or activation tensor packet written with
+  `activation_dumper.py`, including `tensor_manifest.json` and the referenced
+  `.pt` tensor files. SSQ-LR/HORN rows copy the manifest's original tensor
+  name, storage name, SHA-256, dtype, and shape into the real packet, and the
+  checker reloads the copied tensors to recompute row metrics.
+- `evidence/` for HBSM: copied `hbsm_row_packet.json` plus
+  `source_manifest.json`. `config.json` must include
+  `source_row_packet_sha256`, and the checker verifies that hash before B1
+  rows can be interpreted.
 
 Validate any packet with:
 
@@ -148,6 +153,10 @@ must preserve prompt IDs rather than only global layer means.
 Distribution-only promotion also requires the selected S1 ratio to clear the
 1.25x effect-size floor; tiny but statistically significant shifts remain a
 failed S1 packet.
+For non-rehearsal real packets, the checker also loads every cited state tensor
+from `tensors/` and recomputes `max_abs`, `rms`, `std`, `kurtosis`, and
+`outlier_mass`; row values that do not match the saved tensor bytes are
+rejected.
 
 ## HORN Real H1a/H1 Packet
 
@@ -165,7 +174,7 @@ Minimum admissible row fields:
 
 Required controls:
 
-- non-boundary adjacent pairs;
+- a non-boundary adjacent pair matched to each observed boundary row;
 - direction-label permutation matched to an observed boundary tuple, including
   `prompt_id`, boundary index, layer IDs, and matched normalization positions;
 - at least one `attention->ssm` boundary and one `ssm->attention` boundary;
@@ -202,6 +211,10 @@ The checker recomputes these fields with
 `experimental.shared.hybrid_gate_evaluators.evaluate_horn_h1`; the H1a decision
 is therefore coupled to the non-boundary and permuted-direction control ratios,
 not only boundary rows.
+For non-rehearsal real packets, the checker also loads every cited activation
+tensor from `tensors/` and recomputes `max_abs`, `rms`, and `kurtosis`;
+permuted rows must still reuse the observed boundary tensor source, hash, and
+metrics.
 
 ## HBSM Real B1 Packet
 
@@ -256,6 +269,10 @@ Required `summary.json` fields:
 The checker recomputes these fields with
 `experimental.shared.hybrid_gate_evaluators.evaluate_hbsm_b1`; stale
 sensitivity summaries are rejected.
+For non-rehearsal real packets, the checker also verifies
+`evidence/hbsm_row_packet.json` against `config.json` field
+`source_row_packet_sha256` and `evidence/source_manifest.json`; B1 rows without
+that copied source artifact are not admissible.
 
 ## Promotion Boundary
 

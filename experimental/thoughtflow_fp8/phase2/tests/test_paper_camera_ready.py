@@ -22,8 +22,9 @@ def test_paper_marks_saved_distilgpt2_surfaces_as_falsification_fixtures() -> No
 def test_paper_has_stable_owned_repro_command_and_local_triton_note() -> None:
     paper = PAPER.read_text(encoding="utf-8")
 
-    assert "./venv\\_arm64/bin/python -m pytest" in paper
-    assert "experimental/thoughtflow\\_fp8/phase2/tests" in paper
-    assert "experimental/thoughtflow\\_fp8/phase4/tests" in paper
+    assert "TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1" in paper
+    assert "./venv_arm64/bin/python -m pytest" in paper
+    assert "experimental/thoughtflow_fp8/phase2/tests" in paper
+    assert "experimental/thoughtflow_fp8/phase4/tests" in paper
     assert "experimental/thoughtflow_fp8/phase4/triton_interpreter_note_20260506.md" in paper
     assert "experimental/triton_cpu_source_install_20260506.md" not in paper

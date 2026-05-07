@@ -10,7 +10,7 @@ to a real-schema rehearsal:
 - script: `phase2/hbsm_synthetic_b1_gate.py`
 - packet: `phase2/results/hbsm_synthetic_b1/`
 - decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`
-- rows: `504` (`480` primary prompt rows plus `24` control rows)
+- rows: `720` (`480` primary prompt rows plus `240` layer-aligned control rows)
 - scoring layers after prompt aggregation: `40`
 - real checker: passes `--mode real --project hbsm`
 
@@ -154,9 +154,10 @@ future real-packet gate after sensitivity heterogeneity is established.
 
 Added `../shared/hybrid_trace_plan.py` and generated
 `../shared/results/hybrid_trace_plan_20260507/`. For HBSM, the plan enumerates
-1,554 B1 sensitivity rows across frozen prompts, all mapped hybrid layers,
-map-derived boundary flags, train/test splits, and aggregate comparator/control
-rows. The real-packet checker now requires a `trace_plan_hash` for
+2,304 B1 sensitivity rows across frozen prompts, all mapped hybrid layers,
+map-derived boundary flags, train/test splits, and layer-aligned
+comparator/control rows. The real-packet checker now requires a
+`trace_plan_hash` for
 non-rehearsal packets, so future B1 rows must cite the exact plan JSONL used
 during sensitivity capture.
 
@@ -170,8 +171,8 @@ hbsm`.
 Added `../shared/hybrid_trace_capture_manifest.py` and generated
 `../shared/results/hybrid_capture_manifests_20260507/`. For HBSM, the artifact
 provides per-model row-packet templates with B1 boundary-only rows and required
-comparator/control rows. Granite templates contain 486 planned entries each,
-while the Qwen3-Next template contains 582 entries because its architecture map
+comparator/control rows. Granite templates contain 720 planned entries each,
+while the Qwen3-Next template contains 864 entries because its architecture map
 exposes more scored layers.
 
 Decision: **B1 CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
@@ -211,4 +212,17 @@ allowed only as `RESOURCE_LIMITED_NOT_PROMOTABLE` diagnostics.
 
 Decision: **B1 PROMOTION MUST USE THE REGISTERED FROZEN PLAN CONTENT**. The
 blocker remains a real forward-sensitivity table with stronger comparator
+controls.
+
+## 2026-05-07 Source Sensitivity Artifact Guard
+
+After COLM-style artifact review, the HBSM packet builder now copies the source
+forward-sensitivity row packet into `evidence/hbsm_row_packet.json`, records
+`source_row_packet_sha256` in `config.json`, and writes
+`evidence/source_manifest.json`. The real checker verifies those hashes before
+interpreting B1 rows, so a sensitivity table cannot promote from orphaned row
+JSON without a reviewable source artifact.
+
+Decision: **B1 ROWS MUST BE HASHED BACK TO THEIR SOURCE SENSITIVITY PACKET**.
+The blocker remains a real forward-sensitivity table with stronger comparator
 controls.

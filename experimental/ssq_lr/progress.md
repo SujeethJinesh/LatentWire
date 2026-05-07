@@ -185,3 +185,14 @@ accepted when the packet is explicitly marked
 
 Decision: **S1 PROMOTION CANNOT SELF-CERTIFY WITH A CALLER-SUPPLIED PLAN**. The
 blocker remains a real tensor packet generated from the frozen S1 plan.
+
+## 2026-05-07 Saved Tensor Metric Guard
+
+After COLM-style artifact review, the shared packet builder now copies the
+saved SSQ-LR tensor manifest and `.pt` files into every built real packet. The
+real checker reloads each cited tensor and recomputes `max_abs`, `rms`, `std`,
+`kurtosis`, and `outlier_mass`; a row whose metrics do not match the saved
+tensor bytes is rejected even if its SHA-256 provenance fields are well formed.
+
+Decision: **S1 ROW METRICS MUST BE RECOMPUTABLE FROM SAVED STATE TENSORS**. The
+blocker remains a real tensor packet generated from the frozen S1 plan.

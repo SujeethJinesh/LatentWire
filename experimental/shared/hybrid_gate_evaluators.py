@@ -528,13 +528,23 @@ def _derive_hbsm_top_decile(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return derived
 
 
-def _hbsm_control_spearman(rows: list[dict[str, Any]], control_type: str) -> float:
-    control_rows = [row for row in rows if str(row.get("control_type")) == control_type]
-    if len(control_rows) < 2:
+def _hbsm_control_spearman(
+    rows: list[dict[str, Any]],
+    control_type: str,
+    scoring_rows: list[dict[str, Any]],
+) -> float:
+    control_by_key = {
+        (str(row.get("model_id", "")), int(row["layer"])): row
+        for row in rows
+        if str(row.get("control_type")) == control_type and "layer" in row
+    }
+    scoring_keys = [(str(row["model_id"]), int(row["layer"])) for row in scoring_rows]
+    if len(scoring_keys) < 2 or set(control_by_key) != set(scoring_keys):
         return 0.0
+    control_rows = [control_by_key[key] for key in scoring_keys]
     return _spearman(
         [float(row.get("cheap_predictor", 0.0)) for row in control_rows],
-        [float(row["kl_or_nll_drift"]) for row in control_rows],
+        [float(row["kl_or_nll_drift"]) for row in scoring_rows],
     )
 
 
@@ -596,8 +606,8 @@ def evaluate_hbsm_b1(rows: list[dict[str, Any]]) -> dict[str, Any]:
             [1.0 if row["boundary_flag"] else 0.0 for row in scoring_rows],
             [float(row["kl_or_nll_drift"]) for row in scoring_rows],
         ),
-        "kl_lens_rank": _hbsm_control_spearman(rows, "kl_lens_rank"),
-        "activation_outlier": _hbsm_control_spearman(rows, "activation_outlier"),
+        "kl_lens_rank": _hbsm_control_spearman(rows, "kl_lens_rank", scoring_rows),
+        "activation_outlier": _hbsm_control_spearman(rows, "activation_outlier", scoring_rows),
     }
     prompt_count = len({str(row.get("prompt_id")) for row in primary_rows if "prompt_id" in row})
     scoring_layer_count = len(scoring_rows)

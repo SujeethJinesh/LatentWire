@@ -22,7 +22,9 @@ Use them for preregistered Mac gates only.
   plan from the frozen prompt manifest and config-derived architecture maps.
 - `hybrid_trace_packet_builder.py`: converts future saved trace tensor packets
   into strict SSQ-LR/HORN real gate packets and converts HBSM sensitivity rows
-  into strict real B1 packets.
+  into strict real B1 packets. Built SSQ-LR/HORN packets copy the tensor
+  manifest and `.pt` files into `tensors/`; built HBSM packets copy the source
+  sensitivity row packet into `evidence/` with a SHA-256 manifest.
 - `hybrid_gate_evaluators.py`: recomputes S1/H1/B1 pass/fail summaries from
   packet rows so real packets cannot promote from hand-written aggregate labels.
   The active evaluators use prompt-level S1 lower bounds, H1 non-boundary and
@@ -32,7 +34,10 @@ Use them for preregistered Mac gates only.
 - `sensitivity_metrics.py`: quality, drift, and rank-correlation metrics.
 - `check_gate_packet.py`: packet validator for synthetic and real Mac-local
   gate results, with stricter `--mode real --project ...` contracts and an
-  explicit non-promoting schema-rehearsal path for checker-path tests.
+  explicit non-promoting schema-rehearsal path for checker-path tests. For
+  non-rehearsal SSQ-LR/HORN packets it reloads saved tensors and recomputes
+  row metrics from the bytes; for HBSM it verifies the copied sensitivity row
+  packet hash before interpreting B1 rows.
 - `hybrid_trace_packet_runbook.md`: required real-packet schema for SSQ-LR,
   HORN, and HBSM.
 - `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt
@@ -181,3 +186,17 @@ that manifest provenance through `tensor_name`, `tensor_source_name`,
 `tensor_storage_name`, `tensor_sha256`, `tensor_dtype`, and `tensor_shape`.
 HORN `permuted_direction` rows must additionally record `tensor_alias_of` and
 reuse the observed boundary tensor hash.
+For non-rehearsal SSQ-LR/HORN packets, `hybrid_trace_packet_builder.py` copies
+the tensor manifest and `.pt` tensor files into the packet's `tensors/`
+directory. The real checker reloads those tensors and rejects rows whose
+reported max-abs, RMS, standard deviation, kurtosis, or outlier-mass metrics do
+not match the saved bytes.
+
+## HBSM Sensitivity Provenance
+
+HBSM B1 consumes forward-sensitivity rows rather than raw state/boundary
+tensors. Non-rehearsal HBSM packets therefore include
+`evidence/hbsm_row_packet.json`, `evidence/source_manifest.json`, and
+`config.json` field `source_row_packet_sha256`. The checker verifies the copied
+source packet's SHA-256 before interpreting B1 rows, so sensitivity tables
+remain tied to a reviewable source artifact.

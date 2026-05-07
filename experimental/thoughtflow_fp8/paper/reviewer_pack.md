@@ -36,6 +36,15 @@ result, or latency/throughput win.
 | Novelty | The method space is crowded by recent sparse/quantized KV-cache work, including LongFlow, ThinKV, R-KV/R-KVHash, LazyEviction/ForesightKV-style future-use signals, PM-KVQ, and KVQuant. The defensible novelty is the falsification ladder and stop rule, not a new compression method. | Do not claim method novelty. |
 | Camera-readiness | The current draft is camera-ready only as a falsification-methodology workshop note with the first-surface RDU table clearly marked as failed-to-reproduce. It is not a mainline method or systems paper. | Workshop diagnostic at most. |
 
+## 2026-05-07 Reviewer-Facing Paper Cleanup
+
+The paper now places a final signal-status matrix immediately after the
+protocol contribution and includes a registration-to-measurement ledger with
+preregistration and artifact hash prefixes. The stop-rule section has been
+reworded around the diagnostic ladder contribution rather than apologizing for
+the lack of a positive method, and the stable TeX test command now matches this
+reviewer pack's Triton interpreter environment.
+
 ## Strongest Evidence
 
 | Gate | Result | Decision |

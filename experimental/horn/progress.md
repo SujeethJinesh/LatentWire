@@ -149,7 +149,7 @@ The blocker remains the same prompt-paired real activation dump.
 
 Added `../shared/hybrid_trace_plan.py` and generated
 `../shared/results/hybrid_trace_plan_20260507/`. For HORN, the plan enumerates
-1,008 H1a/H1 capture rows across frozen prompts, shared architecture-map
+1,404 H1a/H1 capture rows across frozen prompts, shared architecture-map
 boundaries, observed boundary rows, metric-reused permuted-direction rows, and
 matched non-boundary controls for both boundary directions. The real-packet
 checker now requires a `trace_plan_hash` for non-rehearsal packets, so future
@@ -165,8 +165,8 @@ Added `../shared/hybrid_trace_capture_manifest.py` and generated
 `../shared/results/hybrid_capture_manifests_20260507/`. For HORN, the artifact
 provides per-model fill-in metadata templates with observed-boundary,
 metric-reused permuted-direction, and matched non-boundary rows. Granite
-templates contain 216 planned entries each, while the Qwen3-Next template
-contains 576 entries because its architecture map exposes more hybrid
+templates contain 288 planned entries each, while the Qwen3-Next template
+contains 828 entries because its architecture map exposes more hybrid
 boundaries.
 
 Decision: **H1A CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
@@ -230,3 +230,16 @@ must cite trace-plan rows whose file SHA-256 equals the registered shared HORN
 
 Decision: **H1A PROMOTION MUST USE THE REGISTERED FROZEN PLAN CONTENT**. The
 blocker remains the first real prompt-paired boundary dump.
+
+## 2026-05-07 Saved Tensor Metric Guard
+
+After COLM-style artifact review, the shared packet builder now copies the
+saved HORN tensor manifest and `.pt` files into every built real packet. The
+real checker reloads each cited tensor and recomputes `max_abs`, `rms`, and
+`kurtosis`; a row whose metrics do not match the saved activation bytes is
+rejected even if its hash provenance fields are syntactically valid. Permuted
+controls must still reuse the observed boundary tensor source, hash, and
+metrics.
+
+Decision: **H1A ROW METRICS MUST BE RECOMPUTABLE FROM SAVED BOUNDARY TENSORS**.
+The blocker remains the first real prompt-paired boundary dump.

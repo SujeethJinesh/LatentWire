@@ -186,16 +186,18 @@ def _build_horn_rows(
                     "control_type": "permuted_direction",
                     "direction": flipped,
                     "matched_boundary_direction": flipped,
+                    "tensor_alias_of": (
+                        f"horn/{model_id}/{prompt_id}/boundary_{boundary['boundary_index']}/observed"
+                    ),
                     "tensor_name": (
                         f"horn/{model_id}/{prompt_id}/boundary_{boundary['boundary_index']}/permuted_label"
                     ),
                     "capture": "reuse observed boundary tensor; flip only direction label in metadata",
                 }
             )
-        for matched_direction in ("attention->ssm", "ssm->attention"):
             pair = _choose_non_boundary_control(
                 non_boundary_pairs,
-                matched_boundary_direction=matched_direction,
+                matched_boundary_direction=direction,
             )
             rows.append(
                 {
@@ -204,19 +206,19 @@ def _build_horn_rows(
                     "model_id": model_id,
                     "architecture_map_hash": _architecture_hash(model_map),
                     "prompt_id": prompt_id,
-                    "boundary_index": -1,
+                    "boundary_index": int(boundary["boundary_index"]),
                     "layer_left": int(pair["layer_left"]),
                     "layer_right": int(pair["layer_right"]),
                     "direction": pair["direction"],
-                    "matched_boundary_direction": matched_direction,
+                    "matched_boundary_direction": direction,
                     "pre_norm_position": "matched_non_boundary_left_output",
                     "post_norm_position": "matched_non_boundary_right_input",
                     "control_type": "non_boundary",
                     "tensor_name": (
                         f"horn/{model_id}/{prompt_id}/non_boundary_"
-                        f"{pair['layer_left']}_{pair['layer_right']}/{matched_direction}"
+                        f"{pair['layer_left']}_{pair['layer_right']}/boundary_{boundary['boundary_index']}"
                     ),
-                    "capture": "activation crossing adjacent non-boundary control pair",
+                    "capture": "activation crossing adjacent non-boundary control pair matched to one observed boundary",
                 }
             )
     return rows
@@ -264,22 +266,23 @@ def _build_hbsm_rows(
         "kl_lens_rank",
         "activation_outlier",
     ):
-        rows.append(
-            {
-                "project": "hbsm",
-                "gate": "B1",
-                "model_id": model_id,
-                "architecture_map_hash": _architecture_hash(model_map),
-                "prompt_id": "aggregate_control",
-                "layer": -1,
-                "layer_kind": "aggregate",
-                "boundary_flag": False,
-                "precision_perturbation": control_type,
-                "train_test_split": "control",
-                "control_type": control_type,
-                "capture": "aggregate B1 comparator/control row required before packet promotion",
-            }
-        )
+        for layer, kind in enumerate(layer_kinds):
+            rows.append(
+                {
+                    "project": "hbsm",
+                    "gate": "B1",
+                    "model_id": model_id,
+                    "architecture_map_hash": _architecture_hash(model_map),
+                    "prompt_id": f"control_{control_type}",
+                    "layer": layer,
+                    "layer_kind": kind,
+                    "boundary_flag": layer in boundary_layers,
+                    "precision_perturbation": control_type,
+                    "train_test_split": "control",
+                    "control_type": control_type,
+                    "capture": "layer-aligned B1 comparator/control row required before packet promotion",
+                }
+            )
     return rows
 
 

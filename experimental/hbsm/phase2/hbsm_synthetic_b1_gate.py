@@ -96,8 +96,9 @@ def _primary_row(prompt_id: str, prompt_index: int, layer: int) -> dict[str, obj
 
 def _control_rows() -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
-    for control_index, control_type in enumerate(CONTROL_TYPES):
-        for layer in range(4):
+    for control_type in CONTROL_TYPES:
+        for layer in LAYERS:
+            boundary = layer in BOUNDARY_LAYERS
             drift = 0.0 if control_type == "perturbation_off" else 0.01 * (layer + 1)
             if control_type == "kl_lens_rank":
                 drift = 0.04 + 0.015 * layer
@@ -107,8 +108,8 @@ def _control_rows() -> list[dict[str, object]]:
                 {
                     "model_id": MODEL_ID,
                     "prompt_id": f"control_{control_type}_{layer}",
-                    "layer": 1000 + 10 * control_index + layer,
-                    "boundary_flag": False,
+                    "layer": layer,
+                    "boundary_flag": boundary,
                     "precision_perturbation": "mxfp4_e2m1",
                     "kl_or_nll_drift": drift,
                     "cheap_predictor": 0.5 + 0.2 * layer,

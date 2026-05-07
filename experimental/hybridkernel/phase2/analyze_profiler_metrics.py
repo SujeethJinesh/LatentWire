@@ -268,27 +268,25 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
         first = config_rows[0]
         primary_rows = [row for row in config_rows if str(row["row_role"]) == "primary_hybrid"]
         primary_gains = [float(row["recoverable_gain_upper_bound"]) for row in primary_rows]
+        primary_ci = _bootstrap_ci(primary_gains) if primary_gains else {"low": 0.0, "high": 0.0}
         distinct_primary_run_ids = len({str(row["run_id"]) for row in primary_rows})
         row_roles = sorted({str(row["row_role"]) for row in config_rows})
         comparable_rows = roles_by_analysis_group[str(first["analysis_group_key"])]
         review_row_roles = sorted({str(row["row_role"]) for row in comparable_rows})
-        same_family_control_rows = sum(
-            1
+        same_family_comparable_rows = [
+            row
             for row in comparable_rows
             if str(row["row_role"]) == "same_family_control"
-        )
+            and str(row["model"]) == str(first["model"])
+        ]
+        same_family_control_rows = len(same_family_comparable_rows)
         distinct_same_family_control_run_ids = len(
-            {
-                str(row["run_id"])
-                for row in comparable_rows
-                if str(row["row_role"]) == "same_family_control"
-            }
+            {str(row["run_id"]) for row in same_family_comparable_rows}
         )
         same_family_control_clear_rows = sum(
             1
-            for row in comparable_rows
-            if str(row["row_role"]) == "same_family_control"
-            and float(row["recoverable_gain_upper_bound"]) >= 0.03
+            for row in same_family_comparable_rows
+            if float(row["recoverable_gain_upper_bound"]) >= 0.03
         )
         cross_family_falsification_rows = sum(
             1
@@ -339,12 +337,16 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             "median_recoverable_gain_upper_bound": median(gains),
             "iqr_recoverable_gain_upper_bound": _iqr(gains),
             "bootstrap_ci95_recoverable_gain_upper_bound": ci,
+            "bootstrap_ci95_primary_recoverable_gain_upper_bound": primary_ci,
             "min_recoverable_gain_upper_bound": min(gains),
+            "min_primary_recoverable_gain_upper_bound": min(primary_gains) if primary_gains else 0.0,
+            "primary_ci_low_above_zero": primary_ci["low"] > 0.0,
             "clears_3pct_gate_all_runs": (
                 len(primary_rows) >= 3
                 and distinct_primary_run_ids >= 3
                 and bool(primary_gains)
                 and min(primary_gains) >= 0.03
+                and primary_ci["low"] > 0.0
             ),
         }
     clearing_rows = [
@@ -391,12 +393,12 @@ def _write_markdown(result: dict[str, object], path: Path) -> None:
         "",
         "## Model Summary",
         "",
-        "| Model/config | Runs | Batch | Mean avoidable share | Mean gain UB | Median gain UB | IQR | Bootstrap 95% CI | Min gain UB | Clears? |",
-        "|---|---:|---|---:|---:|---:|---:|---:|---:|---|",
+        "| Model/config | Runs | Batch | Mean avoidable share | Mean gain UB | Median gain UB | IQR | Bootstrap 95% CI | Primary 95% CI | Min primary gain UB | Clears? |",
+        "|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---|",
     ]
     for config_key, row in result.get("summary", {}).items():
         lines.append(
-            "| {model} / {dtype} / graph={graph} / control={control} | {runs} | b{batch} p{prefill} d{decode} r{requests} | {mean_avoidable_share:.2%} | {mean_recoverable_gain_upper_bound:.2%} | {median_recoverable_gain_upper_bound:.2%} | {iqr_recoverable_gain_upper_bound:.2%} | [{ci_low:.2%}, {ci_high:.2%}] | {min_recoverable_gain_upper_bound:.2%} | {clears} |".format(
+            "| {model} / {dtype} / graph={graph} / control={control} | {runs} | b{batch} p{prefill} d{decode} r{requests} | {mean_avoidable_share:.2%} | {mean_recoverable_gain_upper_bound:.2%} | {median_recoverable_gain_upper_bound:.2%} | {iqr_recoverable_gain_upper_bound:.2%} | [{ci_low:.2%}, {ci_high:.2%}] | [{primary_ci_low:.2%}, {primary_ci_high:.2%}] | {min_primary_recoverable_gain_upper_bound:.2%} | {clears} |".format(
                 model=row["model"],
                 dtype=row["dtype"],
                 graph=row["cuda_graph_enabled"],
@@ -412,12 +414,14 @@ def _write_markdown(result: dict[str, object], path: Path) -> None:
                 iqr_recoverable_gain_upper_bound=row["iqr_recoverable_gain_upper_bound"],
                 ci_low=row["bootstrap_ci95_recoverable_gain_upper_bound"]["low"],
                 ci_high=row["bootstrap_ci95_recoverable_gain_upper_bound"]["high"],
-                min_recoverable_gain_upper_bound=row["min_recoverable_gain_upper_bound"],
+                primary_ci_low=row["bootstrap_ci95_primary_recoverable_gain_upper_bound"]["low"],
+                primary_ci_high=row["bootstrap_ci95_primary_recoverable_gain_upper_bound"]["high"],
+                min_primary_recoverable_gain_upper_bound=row["min_primary_recoverable_gain_upper_bound"],
                 clears="yes" if row["clears_3pct_gate_all_runs"] else "no",
             )
         )
     if not result.get("summary"):
-        lines.append("| pending | 0 | -- | -- | -- | -- | -- | -- | -- | no |")
+        lines.append("| pending | 0 | -- | -- | -- | -- | -- | -- | -- | -- | no |")
     lines.extend(
         [
             "",

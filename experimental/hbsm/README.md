@@ -37,7 +37,7 @@ Synthetic-only real-schema rehearsal packet:
 
 - `phase2/results/hbsm_synthetic_b1/`
 - decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`
-- rows: `504` (`480` primary prompt rows plus `24` control rows)
+- rows: `720` (`480` primary prompt rows plus `240` layer-aligned control rows)
 
 This validates the real B1 row schema, prompt-to-layer aggregation, required
 controls, provenance fields, and recomputed evaluator summary. It is not model

@@ -18,7 +18,10 @@ kernel scaffold. It is a native profiler trace that answers:
 
 Kill the branch if this run finds no separable boundary overhead after matching
 for sequence length, batch shape, CUDA graph behavior, quantization, and model
-family.
+family. Treat the first native matrix as a prototype/no-boundary decision, not
+as a final paper speed claim: a paper-level throughput claim still needs the
+broader pure/mostly-Transformer and mostly-SSM controls listed in
+`control_feasibility_matrix.md`.
 
 ## Source Context
 
@@ -152,7 +155,9 @@ the same request/runtime shape and cite distinct Nsight artifacts.
 
 If either control family is unavailable, record it as missing in the packet and
 keep the conclusion limited to a profiling audit. Do not substitute an unmapped
-model and call it a promotion control.
+model and call it a promotion control. In particular, if Qwen3-Next cannot fit
+or run on the node, the first packet is audit-only even if Granite primary rows
+look large.
 
 ## Warmup And Determinism
 
@@ -177,6 +182,10 @@ python -m vllm.entrypoints.openai.api_server \
 
 If the local vLLM version uses a different serving command, record the exact
 replacement in `$HWK_RUN/metadata/command_notes.md`.
+After the warmup request succeeds, stop this warmup server cleanly before
+starting the Nsight Systems server below. Verify the port is free and record the
+stop/restart note in `$HWK_RUN/metadata/command_notes.md`; do not leave the
+warmup server running while launching the profiled server.
 
 ## Nsight Systems Timeline Pass
 
@@ -294,7 +303,10 @@ Do not interpret ad hoc manual API calls as benchmark evidence, and do not
 submit a run where `metadata/profile_scope.json` says the profiled process was
 only the HTTP client.
 
-Repeat for batch 8 if memory allows.
+Do not add batch 8 rows to the first promotable matrix. If memory allows, run
+batch 8 only as a separate audit packet with its own copied
+`native_control_matrix.json`; do not mix batch sizes inside one promotion
+decision.
 
 ## Boundary Annotation Pass
 
@@ -371,13 +383,16 @@ Write `$HWK_RUN/readout.md` with this table:
 | Distinct boundary conversion/materialization kernel? | kernel names and timestamps | yes/no |
 | Boundary idle or launch gap? | median and paired deltas | yes/no |
 | Extra DRAM/L2 traffic near boundary? | NCU bytes vs matched controls | yes/no |
-| End-to-end impact estimate clears 3%? | formula and confidence interval | yes/no |
+| End-to-end impact estimate clears 3%? | all primary rows >= 3% and primary bootstrap CI low > 0 | yes/no |
 | Same-family controls available? | model/control rows | yes/no |
 | Cross-family falsification attempted? | model/control rows | yes/no |
 
 Use matched comparisons across repeated fixed-request runs. Report median,
-interquartile range, and bootstrap intervals over repeated reduced rows. Do not
-report a single trace screenshot as a positive result.
+interquartile range, and bootstrap intervals over repeated reduced rows. The
+analyzer exposes both all-row and primary-row bootstrap intervals; promotion
+requires the primary interval low end to be above zero and every primary repeat
+to clear the 3% recoverable-gain upper-bound gate. Do not report a single trace
+screenshot as a positive result.
 
 ## Parser Input
 
@@ -424,7 +439,8 @@ Use distinct `run_id` values, `nsys_artifact` paths, `ncu_artifact` paths, and
 `time_window_ms` intervals for independent repeated traces. Duplicating one
 trace into three rows is not admissible evidence and will fail the artifact
 verifier.
-Promotion also requires at least three same-shape same-family control rows and
+Promotion also requires the primary bootstrap CI low end to be above zero, all
+three primary rows to clear 3%, and at least three same-shape same-family control rows and
 three same-shape cross-family falsification rows, with those controls staying
 below the 3% recoverable-gain gate. A packet where controls preserve the same
 3% signal remains audit-only.

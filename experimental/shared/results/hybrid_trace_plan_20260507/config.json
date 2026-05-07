@@ -16,8 +16,8 @@
   "prompt_ids_hash": "sha256:48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0",
   "prompt_source": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl",
   "trace_plan_hashes": {
-    "hbsm": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf",
-    "horn": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66",
+    "hbsm": "sha256:015e28d426aa4c11d00c67234c15e5cf5ed8f599a28de102fbc00aaccc84ed67",
+    "horn": "sha256:d4049d19005c6e6111c6b1c9aefb6f0c4db2ea7b19a9149317fde051f165fcc4",
     "ssq_lr": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b"
   }
 }

@@ -31,10 +31,49 @@ from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_r
 SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
 TRACE_PLAN_HASHES = {
     "ssq_lr": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b",
-    "horn": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66",
-    "hbsm": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf",
+    "horn": "sha256:d4049d19005c6e6111c6b1c9aefb6f0c4db2ea7b19a9149317fde051f165fcc4",
+    "hbsm": "sha256:015e28d426aa4c11d00c67234c15e5cf5ed8f599a28de102fbc00aaccc84ed67",
 }
 GRANITE_TINY_REVISION = "791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
+HBSM_CONTROLS = (
+    "perturbation_off",
+    "random_flags",
+    "layer_index",
+    "parameter_count_norm",
+    "kl_lens_rank",
+    "activation_outlier",
+)
+
+
+def _hbsm_layer_aligned_controls(primary_entries: list[dict[str, object]]) -> list[dict[str, object]]:
+    by_layer: dict[int, dict[str, object]] = {}
+    for entry in primary_entries:
+        layer = int(entry["layer"])
+        by_layer.setdefault(layer, entry)
+    controls: list[dict[str, object]] = []
+    for control in HBSM_CONTROLS:
+        for layer, primary in sorted(by_layer.items()):
+            controls.append(
+                {
+                    "prompt_id": f"control_{control}",
+                    "layer": layer,
+                    "boundary_flag": bool(primary["boundary_flag"]),
+                    "precision_perturbation": "perturbation_off"
+                    if control == "perturbation_off"
+                    else "mxfp4_e2m1",
+                    "kl_or_nll_drift": 0.0
+                    if control == "perturbation_off"
+                    else float(primary["kl_or_nll_drift"]),
+                    "cheap_predictor": float(primary.get("cheap_predictor", 0.0)),
+                    "parameter_count": int(primary.get("parameter_count", 1024)),
+                    "weight_norm": float(primary.get("weight_norm", 0.5)),
+                    "top_decile_flag": False,
+                    "random_top_decile": False,
+                    "train_test_split": "control",
+                    "control_type": control,
+                }
+            )
+    return controls
 
 
 def test_fp4_simulator_is_deterministic_and_shape_preserving() -> None:
@@ -140,7 +179,7 @@ def test_gate_packet_checker_accepts_valid_synthetic_packet(tmp_path: Path) -> N
 
     report = validate_gate_packet(packet, expected_decision_prefix="SYNTHETIC")
 
-    assert report["ok"]
+    assert report["ok"], report["errors"]
     assert report["row_count"] == 1
 
 
@@ -195,6 +234,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
     ]
     for index, row in enumerate(rows):
         row.update(_fake_tensor_provenance(f"state_{index}", row["state_shape"]))
+    _write_fake_tensor_artifacts(packet, rows)
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
@@ -230,7 +270,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
 
     report = validate_gate_packet(packet, mode="real", project="ssq_lr")
 
-    assert report["ok"]
+    assert report["ok"], report["errors"]
     assert report["mode"] == "real"
 
 
@@ -263,6 +303,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_incomplete_prompt_layer_matrix(
             )
     for index, row in enumerate(rows):
         row.update(_fake_tensor_provenance(f"state_{index}", row["state_shape"]))
+    _write_fake_tensor_artifacts(packet, rows)
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
@@ -391,6 +432,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tm
     ]
     for index, row in enumerate(rows):
         row.update(_fake_tensor_provenance(f"state_{index}", row["state_shape"]))
+    _write_fake_tensor_artifacts(packet, rows)
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
@@ -582,7 +624,7 @@ def test_hybrid_trace_plan_enumerates_project_specific_rows(tmp_path: Path) -> N
     )
 
     assert summary["decision"] == "TRACE_PLAN_READY_NOT_MODEL_EVIDENCE"
-    assert summary["row_counts"] == {"hbsm": 14, "horn": 12, "ssq_lr": 24}
+    assert summary["row_counts"] == {"hbsm": 32, "horn": 12, "ssq_lr": 24}
     horn_rows = [
         json.loads(line)
         for line in (output_dir / "horn_trace_plan.jsonl").read_text().splitlines()
@@ -597,6 +639,10 @@ def test_hybrid_trace_plan_enumerates_project_specific_rows(tmp_path: Path) -> N
         for row in horn_rows
         if row["control_type"] == "non_boundary"
     } == {"attention->ssm", "ssm->attention"}
+    for row in horn_rows:
+        if row["control_type"] == "permuted_direction":
+            observed_name = row["tensor_name"].replace("/permuted_label", "/observed")
+            assert row["tensor_alias_of"] == observed_name
     assert "not model evidence" in (output_dir / "decision.md").read_text()
 
 
@@ -671,7 +717,7 @@ def test_hybrid_capture_manifest_templates_are_generated_from_trace_plan(tmp_pat
     assert ssq_template["trace_plan_hash"].startswith("sha256:")
     assert len(horn_template["horn_entries"]) == 12
     assert "hbsm_entries" not in hbsm_template
-    assert len(hbsm_template["hbsm_entry_templates"]) == 14
+    assert len(hbsm_template["hbsm_entry_templates"]) == 32
     assert "not GPU evidence" in (manifest_dir / "summary.md").read_text()
 
 
@@ -757,6 +803,42 @@ def _fake_tensor_provenance(name: str, shape: list[int] | None = None) -> dict[s
     }
 
 
+def _write_fake_tensor_artifacts(packet_dir: Path, rows: list[dict[str, object]]) -> None:
+    tensor_dir = packet_dir / "tensors"
+    tensor_dir.mkdir(parents=True, exist_ok=True)
+    manifest = {}
+    for index, row in enumerate(rows):
+        storage_name = str(row["tensor_storage_name"])
+        shape = list(row["tensor_shape"])
+        tensor = torch.arange(1, int(torch.prod(torch.tensor(shape))) + 1, dtype=torch.float32).reshape(shape)
+        tensor = tensor + float(index)
+        tensor_path = tensor_dir / storage_name
+        torch.save(tensor, tensor_path)
+        sha256 = "sha256:" + hashlib.sha256(tensor_path.read_bytes()).hexdigest()
+        row["tensor_sha256"] = sha256
+        row["tensor_shape"] = shape
+        if "state_shape" in row:
+            row["state_shape"] = shape
+        values = tensor.float()
+        row["max_abs"] = float(torch.amax(torch.abs(values)))
+        row["rms"] = float(torch.sqrt(torch.mean(values * values)))
+        row["std"] = float(torch.std(values, unbiased=False))
+        row["kurtosis"] = kurtosis(values)
+        if "outlier_mass" in row:
+            flat = values.reshape(-1).abs()
+            threshold = flat.mean() + 3.0 * flat.std(unbiased=False)
+            row["outlier_mass"] = float(torch.mean((flat > threshold).float()))
+        manifest[Path(storage_name).stem] = {
+            "dtype": row["tensor_dtype"],
+            "original_name": row["tensor_source_name"],
+            "sha256": sha256,
+            "shape": row["tensor_shape"],
+            "storage_name": storage_name,
+        }
+    (tensor_dir / "tensor_manifest.json").write_text(json.dumps(manifest, sort_keys=True) + "\n")
+    (tensor_dir / "metadata.json").write_text("{}\n")
+
+
 def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "ssq"
@@ -790,12 +872,119 @@ def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: 
     report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
     first_row = json.loads((output_dir / "raw_rows.jsonl").read_text().splitlines()[0])
 
-    assert report["ok"]
+    assert report["ok"], report["errors"]
     assert report["row_count"] == 48
     assert first_row["tensor_name"] == "state_layer_0_prefill_end_p0"
     assert first_row["tensor_source_name"] == "state_layer_0_prefill_end_p0"
     assert first_row["tensor_sha256"].startswith("sha256:")
     assert first_row["tensor_shape"] == [2, 4]
+    assert (output_dir / "tensors/tensor_manifest.json").is_file()
+    assert (output_dir / "tensors" / first_row["tensor_storage_name"]).is_file()
+
+
+def test_gate_packet_checker_rejects_missing_saved_tensor_artifact(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_missing_tensor_artifact"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    _attach_trace_plan_path_from_raw_rows(output_dir, tmp_path, "ssq_lr")
+    first_row = json.loads((output_dir / "raw_rows.jsonl").read_text().splitlines()[0])
+    (output_dir / "tensors" / first_row["tensor_storage_name"]).unlink()
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("tensor artifact is missing" in error for error in report["errors"])
+
+
+def test_gate_packet_checker_rejects_saved_tensor_hash_mismatch(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_tensor_hash_mismatch"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    _attach_trace_plan_path_from_raw_rows(output_dir, tmp_path, "ssq_lr")
+    first_row = json.loads((output_dir / "raw_rows.jsonl").read_text().splitlines()[0])
+    (output_dir / "tensors" / first_row["tensor_storage_name"]).write_bytes(b"corrupted tensor bytes")
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("tensor_sha256 does not match" in error for error in report["errors"])
+
+
+def test_gate_packet_checker_rejects_metric_that_disagrees_with_saved_tensor(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_metric_mismatch"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    _attach_trace_plan_path_from_raw_rows(output_dir, tmp_path, "ssq_lr")
+    rows = [json.loads(line) for line in (output_dir / "raw_rows.jsonl").read_text().splitlines()]
+    rows[0]["max_abs"] = float(rows[0]["max_abs"]) + 123.0
+    (output_dir / "raw_rows.jsonl").write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
+    )
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("max_abs does not match loaded tensor" in error for error in report["errors"])
 
 
 def test_packet_builder_rejects_unfilled_capture_templates(tmp_path: Path) -> None:
@@ -852,7 +1041,7 @@ def test_packet_builder_marks_resource_limited_packets_non_promotable(tmp_path: 
     report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
 
     assert summary["decision"].startswith("RESOURCE_LIMITED_NOT_PROMOTABLE_")
-    assert report["ok"]
+    assert report["ok"], report["errors"]
 
 
 def test_gate_packet_checker_rejects_unknown_architecture_map_hash(tmp_path: Path) -> None:
@@ -1050,7 +1239,7 @@ def test_packet_builder_resolves_sanitized_tensor_names(tmp_path: Path) -> None:
     _attach_trace_plan_path_from_raw_rows(output_dir, tmp_path, "ssq_lr")
     report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
 
-    assert report["ok"]
+    assert report["ok"], report["errors"]
     assert report["row_count"] == 48
 
 
@@ -1085,7 +1274,7 @@ def test_packet_builder_canonicalizes_served_hf_model_id(tmp_path: Path) -> None
     config = json.loads((output_dir / "config.json").read_text(encoding="utf-8"))
     rows = [json.loads(line) for line in (output_dir / "raw_rows.jsonl").read_text().splitlines()]
 
-    assert report["ok"]
+    assert report["ok"], report["errors"]
     assert config["model_id"] == "ibm-granite-4.0-h-tiny"
     assert config["served_model_id"] == "ibm-granite/granite-4.0-h-tiny"
     assert {row["model_id"] for row in rows} == {"ibm-granite-4.0-h-tiny"}
@@ -1268,11 +1457,13 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
         and row["prompt_id"] == "p0"
     )
 
-    assert report["ok"]
+    assert report["ok"], report["errors"]
     assert report["row_count"] == 72
     assert permuted["tensor_alias_of"] == boundary["tensor_name"]
     assert permuted["tensor_source_name"] == boundary["tensor_source_name"]
     assert permuted["tensor_sha256"] == boundary["tensor_sha256"]
+    assert (output_dir / "tensors/tensor_manifest.json").is_file()
+    assert (output_dir / "tensors" / boundary["tensor_storage_name"]).is_file()
 
 
 def test_horn_packet_builder_uses_tensor_alias_for_permuted_rows(tmp_path: Path) -> None:
@@ -1587,55 +1778,7 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
                 "control_type": "boundary_only",
             }
         )
-    control_entries = [
-        {
-            "prompt_id": f"control_{control}",
-            "layer": 100 + index,
-            "boundary_flag": False,
-            "precision_perturbation": "mxfp4_e2m1",
-            "kl_or_nll_drift": 0.0,
-            "cheap_predictor": 0.0,
-            "parameter_count": 1024,
-            "weight_norm": 0.5,
-            "top_decile_flag": False,
-            "random_top_decile": False,
-            "train_test_split": "train",
-            "control_type": control,
-        }
-        for index, control in enumerate(["perturbation_off", "random_flags", "layer_index", "parameter_count_norm"])
-    ]
-    control_entries.extend(
-        [
-            {
-                "prompt_id": "control_kl_lens_rank",
-                "layer": 200,
-                "boundary_flag": False,
-                "precision_perturbation": "mxfp4_e2m1",
-                "kl_or_nll_drift": 0.0,
-                "cheap_predictor": 0.0,
-                "parameter_count": 1024,
-                "weight_norm": 0.5,
-                "top_decile_flag": False,
-                "random_top_decile": False,
-                "train_test_split": "train",
-                "control_type": "kl_lens_rank",
-            },
-            {
-                "prompt_id": "control_activation_outlier",
-                "layer": 201,
-                "boundary_flag": False,
-                "precision_perturbation": "mxfp4_e2m1",
-                "kl_or_nll_drift": 0.0,
-                "cheap_predictor": 0.0,
-                "parameter_count": 1024,
-                "weight_norm": 0.5,
-                "top_decile_flag": False,
-                "random_top_decile": False,
-                "train_test_split": "train",
-                "control_type": "activation_outlier",
-            },
-        ]
-    )
+    control_entries = _hbsm_layer_aligned_controls(primary_entries)
     row_packet.write_text(
         json.dumps(
             {
@@ -1650,9 +1793,17 @@ def test_hbsm_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     build_hbsm_packet(row_packet, output_dir)
     _attach_trace_plan_path_from_raw_rows(output_dir, tmp_path, "hbsm")
     report = validate_gate_packet(output_dir, mode="real", project="hbsm")
+    config = json.loads((output_dir / "config.json").read_text(encoding="utf-8"))
 
-    assert report["ok"]
-    assert report["row_count"] == 66
+    assert report["ok"], report["errors"]
+    assert report["row_count"] == 420
+    assert config["source_row_packet_sha256"].startswith("sha256:")
+    assert (output_dir / "evidence/hbsm_row_packet.json").is_file()
+    assert (output_dir / "evidence/source_manifest.json").is_file()
+    (output_dir / "evidence/hbsm_row_packet.json").unlink()
+    missing_report = validate_gate_packet(output_dir, mode="real", project="hbsm")
+    assert not missing_report["ok"]
+    assert any("evidence/hbsm_row_packet.json" in error for error in missing_report["errors"])
 
 
 def test_hbsm_checker_rejects_top_decile_flags_that_disagree_with_drift(tmp_path: Path) -> None:
@@ -1678,31 +1829,7 @@ def test_hbsm_checker_rejects_top_decile_flags_that_disagree_with_drift(tmp_path
                 "control_type": "boundary_only",
             }
         )
-    controls = [
-        "perturbation_off",
-        "random_flags",
-        "layer_index",
-        "parameter_count_norm",
-        "kl_lens_rank",
-        "activation_outlier",
-    ]
-    control_entries = [
-        {
-            "prompt_id": f"control_{control}",
-            "layer": 100 + index,
-            "boundary_flag": False,
-            "precision_perturbation": "mxfp4_e2m1",
-            "kl_or_nll_drift": 0.0,
-            "cheap_predictor": 0.0,
-            "parameter_count": 1024,
-            "weight_norm": 0.5,
-            "top_decile_flag": False,
-            "random_top_decile": False,
-            "train_test_split": "train",
-            "control_type": control,
-        }
-        for index, control in enumerate(controls)
-    ]
+    control_entries = _hbsm_layer_aligned_controls(primary_entries)
     row_packet.write_text(
         json.dumps({"metadata": metadata, "hbsm_entries": primary_entries + control_entries}) + "\n",
         encoding="utf-8",
@@ -1740,31 +1867,7 @@ def test_hbsm_checker_rejects_prompt_row_top_decile_flag_mismatch(tmp_path: Path
                 }
             )
     primary_entries[0]["top_decile_flag"] = False
-    controls = [
-        "perturbation_off",
-        "random_flags",
-        "layer_index",
-        "parameter_count_norm",
-        "kl_lens_rank",
-        "activation_outlier",
-    ]
-    control_entries = [
-        {
-            "prompt_id": f"control_{control}",
-            "layer": 100 + index,
-            "boundary_flag": False,
-            "precision_perturbation": "mxfp4_e2m1",
-            "kl_or_nll_drift": 0.0,
-            "cheap_predictor": 0.0,
-            "parameter_count": 1024,
-            "weight_norm": 0.5,
-            "top_decile_flag": False,
-            "random_top_decile": False,
-            "train_test_split": "train",
-            "control_type": control,
-        }
-        for index, control in enumerate(controls)
-    ]
+    control_entries = _hbsm_layer_aligned_controls(primary_entries)
     row_packet.write_text(
         json.dumps({"metadata": metadata, "hbsm_entries": primary_entries + control_entries}) + "\n",
         encoding="utf-8",
@@ -1819,14 +1922,6 @@ def test_gate_packet_checker_rejects_hbsm_without_true_and_false_boundary_flags(
     row_packet = tmp_path / "hbsm_rows.json"
     output_dir = tmp_path / "hbsm_bad"
     metadata = _base_trace_metadata("hbsm")
-    controls = [
-        "perturbation_off",
-        "random_flags",
-        "layer_index",
-        "parameter_count_norm",
-        "kl_lens_rank",
-        "activation_outlier",
-    ]
     primary_entries = [
         {
             "prompt_id": f"p{index}",
@@ -1848,23 +1943,7 @@ def test_gate_packet_checker_rejects_hbsm_without_true_and_false_boundary_flags(
         json.dumps(
             {
                 "metadata": metadata,
-                "hbsm_entries": primary_entries + [
-                    {
-                        "prompt_id": f"control_{control}",
-                        "layer": index,
-                        "boundary_flag": False,
-                        "precision_perturbation": "mxfp4_e2m1",
-                        "kl_or_nll_drift": 0.0 if control == "perturbation_off" else float(index) * 0.01,
-                        "cheap_predictor": float(index + 1),
-                        "parameter_count": 1024 + index,
-                        "weight_norm": 0.5 + index,
-                        "top_decile_flag": control == "boundary_only",
-                        "random_top_decile": control == "random_flags",
-                        "train_test_split": "train" if index % 2 == 0 else "test",
-                        "control_type": control,
-                    }
-                    for index, control in enumerate(controls)
-                ],
+                "hbsm_entries": primary_entries + _hbsm_layer_aligned_controls(primary_entries),
             }
         )
         + "\n",

@@ -730,3 +730,16 @@ positive-looking boundary signal.
 
 Decision: **NATIVE PACKETS NOW HAVE TO MATCH THE FROZEN RUN MATRIX EXACTLY**.
 The blocker remains the user-operated NVIDIA/vLLM Nsight packet.
+
+## 2026-05-07 Primary CI Promotion Alignment
+
+After static COLM-style review, `phase2/analyze_profiler_metrics.py` now
+matches the runbook language: a primary group clears the 3% gate only when all
+three distinct primary repeats are at least 3% and the bootstrap 95% CI low end
+over primary repeats is above zero. The runbook now also marks the first native
+matrix as a prototype/no-boundary decision rather than a final paper speed
+claim; broader pure/mostly-Transformer and mostly-SSM controls remain required
+before any final throughput claim.
+
+Decision: **HYBRIDKERNEL PROMOTION NOW REQUIRES PRIMARY REPEAT CI SUPPORT**.
+The blocker remains the user-operated NVIDIA/vLLM Nsight packet.

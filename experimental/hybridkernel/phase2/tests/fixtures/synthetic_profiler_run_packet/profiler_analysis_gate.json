@@ -107,7 +107,13 @@
         "low": 0.012,
         "high": 0.012
       },
+      "bootstrap_ci95_primary_recoverable_gain_upper_bound": {
+        "low": 0.012,
+        "high": 0.012
+      },
       "min_recoverable_gain_upper_bound": 0.012,
+      "min_primary_recoverable_gain_upper_bound": 0.012,
+      "primary_ci_low_above_zero": true,
       "clears_3pct_gate_all_runs": false
     }
   },

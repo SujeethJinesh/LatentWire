@@ -103,6 +103,35 @@ def _prompt_token_counts(tokenizer: Any | None, prompt_payload: str | list[str])
     return counts
 
 
+def _planned_requests(
+    args: argparse.Namespace,
+    tokenizer: Any | None,
+) -> list[tuple[int, str | list[str], list[int] | None, dict[str, object]]]:
+    planned = []
+    enforce_counts = bool(getattr(args, "enforce_prefill_token_counts", False)) or bool(
+        getattr(args, "require_token_counts", False)
+    )
+    for request_id in range(args.requests):
+        prompts = [
+            _prompt(args.prefill_tokens, request_id * args.batch_size + batch_idx)
+            for batch_idx in range(args.batch_size)
+        ]
+        prompt_payload: str | list[str] = prompts[0] if args.batch_size == 1 else prompts
+        prompt_token_counts = _prompt_token_counts(tokenizer, prompt_payload)
+        if enforce_counts:
+            if prompt_token_counts is None:
+                raise RuntimeError("prefill token-count enforcement requires a loaded tokenizer")
+            mismatched = [count for count in prompt_token_counts if count != args.prefill_tokens]
+            if mismatched:
+                raise ValueError(
+                    "prompt token counts do not match --prefill-tokens="
+                    f"{args.prefill_tokens}: {prompt_token_counts}"
+                )
+        payload = _payload(args.model, prompt_payload, args.decode_tokens, args.seed + request_id)
+        planned.append((request_id, prompt_payload, prompt_token_counts, payload))
+    return planned
+
+
 def run(args: argparse.Namespace) -> dict[str, object]:
     base_endpoint = args.endpoint.rstrip("/")
     endpoint = base_endpoint + "/v1/completions"
@@ -114,19 +143,13 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         getattr(args, "tokenizer", None),
         bool(getattr(args, "require_token_counts", False)),
     )
+    planned_requests = _planned_requests(args, tokenizer)
 
     if args.profile_bracket and not args.dry_run:
         _post_json(profile_start_endpoint, {}, args.timeout_s)
 
     try:
-        for request_id in range(args.requests):
-            prompts = [
-                _prompt(args.prefill_tokens, request_id * args.batch_size + batch_idx)
-                for batch_idx in range(args.batch_size)
-            ]
-            prompt_payload: str | list[str] = prompts[0] if args.batch_size == 1 else prompts
-            prompt_token_counts = _prompt_token_counts(tokenizer, prompt_payload)
-            payload = _payload(args.model, prompt_payload, args.decode_tokens, args.seed + request_id)
+        for request_id, _prompt_payload, prompt_token_counts, payload in planned_requests:
             if args.dry_run:
                 rows.append(
                     RequestRow(
@@ -183,6 +206,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "tokenizer": tokenizer_name,
         "token_count_source": token_count_source,
         "token_counts_required": bool(getattr(args, "require_token_counts", False)),
+        "prefill_token_counts_enforced": bool(getattr(args, "enforce_prefill_token_counts", False))
+        or bool(getattr(args, "require_token_counts", False)),
         "requests": [asdict(row) for row in rows],
     }
 
@@ -204,6 +229,11 @@ def main() -> None:
         "--require-token-counts",
         action="store_true",
         help="Fail unless the tokenizer can be loaded locally and prompt token counts are logged.",
+    )
+    parser.add_argument(
+        "--enforce-prefill-token-counts",
+        action="store_true",
+        help="Fail before profiling unless every prompt tokenizes to --prefill-tokens.",
     )
     parser.add_argument("--timeout-s", type=float, default=120.0)
     parser.add_argument(

@@ -16,7 +16,7 @@
     "primary_repeats": 3,
     "same_family_control_repeats": 3,
     "cross_family_falsification_repeats": 3,
-    "primary_gain_gate": "recoverable_gain_upper_bound >= 0.03 with CI above zero",
+    "primary_gain_gate": "all primary recoverable_gain_upper_bound rows >= 0.03 and bootstrap CI low over primary rows > 0",
     "control_gate": "same-family and cross-family rows must stay below the 0.03 promotion gate"
   },
   "rows": [

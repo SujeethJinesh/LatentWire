@@ -10,7 +10,9 @@ forward sensitivity table rather than a raw tensor summary.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -57,15 +59,7 @@ def _lookup_tensor(
         tensor = tensors[lookup_name]
         provenance = dict(manifest.get(lookup_name, {}))
         if not provenance:
-            provenance = {
-                "original_name": name,
-                "safe_name": lookup_name,
-                "storage_name": f"{lookup_name}.pt",
-                "sha256": "sha256:unknown",
-                "dtype": str(tensor.dtype),
-                "shape": list(tensor.shape),
-                "numel": int(tensor.numel()),
-            }
+            raise KeyError(f"tensor {name!r} is missing from tensor_manifest.json")
         return tensor, provenance
     raise KeyError(f"tensor {name!r} not found in packet")
 
@@ -204,6 +198,38 @@ def _write_packet(
     )
 
 
+def _copy_tensor_artifacts(tensor_packet: Path, output_dir: Path) -> None:
+    """Copy the saved tensor files needed to make row hashes reviewable."""
+
+    tensor_dir = output_dir / "tensors"
+    tensor_dir.mkdir(parents=True, exist_ok=True)
+    for name in ("metadata.json", "tensor_manifest.json"):
+        source = tensor_packet / name
+        if not source.is_file():
+            raise FileNotFoundError(f"tensor packet missing required artifact: {source}")
+        shutil.copy2(source, tensor_dir / name)
+    for source in sorted(tensor_packet.glob("*.pt")):
+        shutil.copy2(source, tensor_dir / source.name)
+
+
+def _copy_hbsm_row_artifact(row_packet: Path, output_dir: Path) -> str:
+    evidence_dir = output_dir / "evidence"
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    storage_name = "hbsm_row_packet.json"
+    target = evidence_dir / storage_name
+    shutil.copy2(row_packet, target)
+    digest = "sha256:" + hashlib.sha256(target.read_bytes()).hexdigest()
+    manifest = {
+        "source_row_packet": {
+            "original_name": row_packet.name,
+            "sha256": digest,
+            "storage_name": storage_name,
+        }
+    }
+    (evidence_dir / "source_manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    return digest
+
+
 def _summary_markdown(
     *,
     surface: str,
@@ -274,6 +300,7 @@ def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str,
         claim_boundary=["saved tensor trace", "not GPU evidence"],
         summary_extra=summary_extra,
     )
+    _copy_tensor_artifacts(tensor_packet, output_dir)
     return rows
 
 
@@ -325,6 +352,7 @@ def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, A
         claim_boundary=["saved tensor trace", "not GPU evidence"],
         summary_extra=summary_extra,
     )
+    _copy_tensor_artifacts(tensor_packet, output_dir)
     return rows
 
 
@@ -341,6 +369,7 @@ def build_hbsm_packet(row_packet: Path, output_dir: Path) -> list[dict[str, Any]
     entries = payload.get("hbsm_entries")
     if not isinstance(entries, list):
         raise ValueError("HBSM row packet must contain list field hbsm_entries")
+    config["source_row_packet_sha256"] = "sha256:" + hashlib.sha256(row_packet.read_bytes()).hexdigest()
     rows: list[dict[str, Any]] = []
     for index, entry in enumerate(entries):
         if not isinstance(entry, dict):
@@ -373,6 +402,7 @@ def build_hbsm_packet(row_packet: Path, output_dir: Path) -> list[dict[str, Any]
         claim_boundary=["saved forward sensitivity rows", "not GPU evidence"],
         summary_extra=summary_extra,
     )
+    _copy_hbsm_row_artifact(row_packet, output_dir)
     return rows
 
 

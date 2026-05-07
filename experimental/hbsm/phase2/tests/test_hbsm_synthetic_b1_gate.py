@@ -19,7 +19,7 @@ def test_synthetic_b1_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     )
 
     assert report["ok"], report["errors"]
-    assert report["row_count"] == 504
+    assert report["row_count"] == 720
     assert summary["decision"] == "SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1"
     assert summary["gate_status"] == "PASS_REAL_B1_SENSITIVITY_HETEROGENEITY"
     assert summary["primary_row_count"] == 480

@@ -26,7 +26,7 @@ HORN.
 |---|---|---|
 | Benchmarks | B1 should measure KL/NLL drift on current hybrid reasoners, but no live sensitivity sweep exists yet. | Gate pending. |
 | Ablations | Required baselines are perturbation-off, random flags, layer index, parameter count/norm, boundary-only, KL-style ranking, activation/outlier ranking, and train/test or leave-one-model-out splits. | Adequate before real B1 and B2. |
-| Correctness | The checker scores only primary `boundary_only` rows after aggregating prompt rows to `(model_id, layer)`, derives measured top deciles from aggregated `kl_or_nll_drift`, rejects supplied `top_decile_flag` disagreements on any prompt row, and requires prompt-level boundary/non-boundary coverage, finite metrics, true scoring-layer top-decile cardinality, a same-count non-enriched random baseline, train/test coverage, prompt hash provenance, architecture-map hash provenance tied to the claimed model, recomputed B1 `summary.json` enrichment/p-value/Spearman aggregates, and near-zero drift for perturbation-off rows. The shared builder now automatically marks resource-limited packets non-promotable. | Artifact path is hardened. |
+| Correctness | The checker scores only primary `boundary_only` rows after aggregating prompt rows to `(model_id, layer)`, derives measured top deciles from aggregated `kl_or_nll_drift`, rejects supplied `top_decile_flag` disagreements on any prompt row, and requires prompt-level boundary/non-boundary coverage, finite metrics, true scoring-layer top-decile cardinality, a same-count non-enriched random baseline, train/test coverage, prompt hash provenance, architecture-map hash provenance tied to the claimed model, a `trace_plan_path` whose file hash matches the registered `trace_plan_hash`, every comparator control on the same `(model_id, layer)` scoring set as `boundary_only`, copied source sensitivity row-packet provenance, recomputed B1 `summary.json` enrichment/p-value/Spearman aggregates, and near-zero drift for perturbation-off rows. The shared builder now automatically marks resource-limited packets non-promotable. | Artifact path is hardened. |
 | Reproducibility | Synthetic B1 real-schema rehearsal is deterministic, passes the real checker in non-promoting mode, and shared architecture maps fix boundary flags. | Not model evidence. |
 | Novelty | Broad forward-only sensitivity is crowded; the defensible wedge is mechanism plus cheaper predictor on current hybrid reasoners. | Narrow and fragile. |
 | Camera-readiness | The draft is a preregistration shell. It needs real B1/B2/B3 evidence before submission as a standalone paper. | Not camera-ready. |
@@ -35,11 +35,11 @@ HORN.
 
 | Gate | Result | Decision |
 |---|---|---|
-| synthetic B1 schema rehearsal | 504 real-schema rows, 480 primary prompt rows, 40 scoring layers after aggregation, real checker passes with `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1` | validates packet contract only |
+| synthetic B1 schema rehearsal | 720 real-schema rows, 480 primary prompt rows, 240 layer-aligned control rows, 40 scoring layers after aggregation, real checker passes with `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1` | validates packet contract only |
 | architecture provenance | shared boundary flags and model hashes exist | packet provenance ready |
-| trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl` enumerates 1,554 B1 sensitivity/control rows | execution checklist only |
+| trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl` enumerates 2,304 layer-aligned B1 sensitivity/control rows | execution checklist only |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
-| real-packet checker | rejects missing no-op rows, missing primary-row prompt coverage, stale summary fields, non-finite metrics, split omissions, promotable resource-limited decisions, supplied top-decile flags that disagree with measured drift, unmatched random/top-decile counts, and random baselines that reproduce boundary enrichment | ready for real B1 |
+| real-packet checker | rejects missing no-op rows, missing primary-row prompt coverage, stale summary fields, non-finite metrics, split omissions, missing trace-plan hash pinning, missing source sensitivity artifacts, source row-packet hash mismatches, non-layer-aligned comparator controls, promotable resource-limited decisions, supplied top-decile flags that disagree with measured drift, unmatched random/top-decile counts, and random baselines that reproduce boundary enrichment | ready for real B1 |
 
 ## Reviewer Risks
 

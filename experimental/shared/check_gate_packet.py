@@ -6,15 +6,19 @@ import argparse
 import hashlib
 import json
 import math
+import pickle
 import re
 from pathlib import Path
 from typing import Any
+
+import torch
 
 from experimental.shared.hybrid_gate_evaluators import (
     evaluate_hbsm_b1,
     evaluate_horn_h1,
     evaluate_ssq_lr_s1,
 )
+from experimental.shared.sensitivity_metrics import kurtosis, max_abs
 
 BASE_REQUIRED_FILES = ("config.json", "raw_rows.jsonl", "summary.json", "decision.md")
 REAL_REQUIRED_FILES = BASE_REQUIRED_FILES + ("summary.md",)
@@ -368,6 +372,178 @@ def _validate_tensor_provenance(
         errors.append(f"{project} row {row_index} tensor_shape must be a non-empty positive integer list")
 
 
+def _load_tensor_artifact(path: Path) -> torch.Tensor:
+    try:
+        value = torch.load(path, map_location="cpu", weights_only=True)
+    except TypeError:
+        value = torch.load(path, map_location="cpu")
+    if not isinstance(value, torch.Tensor):
+        raise TypeError(f"{path} did not load to a torch.Tensor")
+    return value
+
+
+def _rms(tensor: torch.Tensor) -> float:
+    values = tensor.float()
+    return float(torch.sqrt(torch.mean(values * values)))
+
+
+def _outlier_mass(tensor: torch.Tensor) -> float:
+    values = tensor.float().reshape(-1).abs()
+    if values.numel() == 0:
+        return 0.0
+    threshold = values.mean() + 3.0 * values.std(unbiased=False)
+    return float(torch.mean((values > threshold).float()))
+
+
+def _close_enough(left: Any, right: float, *, atol: float = 1e-5, rtol: float = 1e-5) -> bool:
+    if not _finite_number(left) or not math.isfinite(right):
+        return False
+    return abs(float(left) - right) <= atol + rtol * abs(right)
+
+
+def _validate_tensor_metrics(
+    *,
+    project: str,
+    row_index: int,
+    row: dict[str, Any],
+    tensor: torch.Tensor,
+    errors: list[str],
+) -> None:
+    tensor_shape = list(tensor.shape)
+    if row.get("tensor_shape") != tensor_shape:
+        errors.append(f"{project} row {row_index} tensor_shape does not match loaded tensor")
+    if project == "ssq_lr" and row.get("state_shape") != tensor_shape:
+        errors.append(f"{project} row {row_index} state_shape does not match loaded tensor")
+    computed: dict[str, float] = {
+        "max_abs": max_abs(tensor),
+        "rms": _rms(tensor),
+        "kurtosis": kurtosis(tensor),
+    }
+    if project == "ssq_lr":
+        computed["std"] = float(torch.std(tensor.float(), unbiased=False))
+        computed["outlier_mass"] = _outlier_mass(tensor)
+    for field, expected in computed.items():
+        if not _close_enough(row.get(field), expected):
+            errors.append(f"{project} row {row_index} {field} does not match loaded tensor")
+
+
+def _validate_tensor_artifacts(
+    *,
+    project: str,
+    packet_dir: Path,
+    rows: list[dict[str, Any]],
+    config: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if project not in {"ssq_lr", "horn"} or _schema_rehearsal(config):
+        return
+    tensor_dir = packet_dir / "tensors"
+    manifest_path = tensor_dir / "tensor_manifest.json"
+    if not manifest_path.is_file():
+        errors.append(f"{project} real packet must include tensors/tensor_manifest.json")
+        return
+    try:
+        manifest = _load_json(manifest_path)
+    except (json.JSONDecodeError, OSError) as exc:
+        errors.append(f"{project} tensors/tensor_manifest.json is invalid: {exc}")
+        return
+    if not isinstance(manifest, dict):
+        errors.append(f"{project} tensors/tensor_manifest.json must be an object")
+        return
+    manifest_by_storage: dict[str, dict[str, Any]] = {}
+    for value in manifest.values():
+        if not isinstance(value, dict):
+            continue
+        storage_name = str(value.get("storage_name", "")).strip()
+        if storage_name:
+            manifest_by_storage[storage_name] = value
+    for index, row in enumerate(rows):
+        storage_name = str(row.get("tensor_storage_name", "")).strip()
+        if not storage_name:
+            continue
+        storage_path = Path(storage_name)
+        if storage_path.is_absolute() or ".." in storage_path.parts or storage_path.name != storage_name:
+            errors.append(f"{project} row {index} tensor_storage_name must be a plain in-packet filename")
+            continue
+        tensor_path = tensor_dir / storage_name
+        if not tensor_path.is_file():
+            errors.append(f"{project} row {index} tensor artifact is missing: tensors/{storage_name}")
+            continue
+        actual_sha256 = _file_sha256(tensor_path)
+        if actual_sha256 != str(row.get("tensor_sha256", "")).strip().lower():
+            errors.append(f"{project} row {index} tensor_sha256 does not match tensors/{storage_name}")
+        try:
+            tensor = _load_tensor_artifact(tensor_path)
+        except (OSError, RuntimeError, TypeError, ValueError, pickle.UnpicklingError) as exc:
+            errors.append(f"{project} row {index} tensor artifact could not be loaded: {exc}")
+            continue
+        _validate_tensor_metrics(
+            project=project,
+            row_index=index,
+            row=row,
+            tensor=tensor,
+            errors=errors,
+        )
+        manifest_row = manifest_by_storage.get(storage_name)
+        if manifest_row is None:
+            errors.append(f"{project} row {index} tensor_storage_name is absent from tensor_manifest.json")
+            continue
+        checks = [
+            ("sha256", "tensor_sha256"),
+            ("dtype", "tensor_dtype"),
+            ("shape", "tensor_shape"),
+        ]
+        for manifest_field, row_field in checks:
+            if manifest_row.get(manifest_field) != row.get(row_field):
+                errors.append(
+                    f"{project} row {index} {row_field} does not match tensor_manifest.json"
+                )
+        source_name = str(row.get("tensor_source_name", "")).strip()
+        original_name = str(manifest_row.get("original_name", "")).strip()
+        if source_name and original_name and source_name != original_name:
+            errors.append(
+                f"{project} row {index} tensor_source_name does not match tensor_manifest.json"
+            )
+
+
+def _validate_hbsm_source_artifact(
+    *,
+    packet_dir: Path,
+    config: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if _schema_rehearsal(config):
+        return
+    evidence_dir = packet_dir / "evidence"
+    source_path = evidence_dir / "hbsm_row_packet.json"
+    manifest_path = evidence_dir / "source_manifest.json"
+    if not source_path.is_file():
+        errors.append("hbsm real packet must include evidence/hbsm_row_packet.json")
+        return
+    if not manifest_path.is_file():
+        errors.append("hbsm real packet must include evidence/source_manifest.json")
+        return
+    expected_digest = str(config.get("source_row_packet_sha256", "")).strip().lower()
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", expected_digest):
+        errors.append("hbsm config.json source_row_packet_sha256 must be sha256:<64 lowercase hex chars>")
+    actual_digest = _file_sha256(source_path)
+    if expected_digest and actual_digest != expected_digest:
+        errors.append("hbsm source_row_packet_sha256 does not match evidence/hbsm_row_packet.json")
+    try:
+        manifest = _load_json(manifest_path)
+    except (json.JSONDecodeError, OSError) as exc:
+        errors.append(f"hbsm evidence/source_manifest.json is invalid: {exc}")
+        return
+    source_manifest = manifest.get("source_row_packet") if isinstance(manifest, dict) else None
+    if not isinstance(source_manifest, dict):
+        errors.append("hbsm evidence/source_manifest.json must contain source_row_packet")
+        return
+    if source_manifest.get("storage_name") != "hbsm_row_packet.json":
+        errors.append("hbsm source_manifest storage_name must be hbsm_row_packet.json")
+    if source_manifest.get("sha256") != actual_digest:
+        errors.append("hbsm source_manifest sha256 does not match evidence/hbsm_row_packet.json")
+
+
 def _validate_ratio_field(
     *,
     project: str,
@@ -453,6 +629,7 @@ def _trace_plan_key(project: str, row: dict[str, Any]) -> tuple[Any, ...]:
             str(row.get("control_type", "")),
             int(row.get("layer", -9999)),
             bool(row.get("boundary_flag")),
+            str(row.get("precision_perturbation", "")),
             str(row.get("train_test_split", "")),
         )
     return tuple(sorted(row.items()))
@@ -1111,7 +1288,31 @@ def _validate_real_coverage(
             errors.append(
                 "hbsm boundary_only random_top_decile true count must equal ceil(10% of aggregated primary layers)"
             )
+        scoring_keys = {(str(row["model_id"]), int(row["layer"])) for row in scoring_rows}
+        for control_type in sorted(REAL_CONTROL_VALUES["hbsm"] - {"boundary_only"}):
+            control_keys = {
+                (str(row.get("model_id", "")), int(row["layer"]))
+                for row in rows
+                if str(row.get("control_type")) == control_type and "layer" in row
+            }
+            if control_keys != scoring_keys:
+                errors.append(
+                    f"hbsm {control_type} controls must cover the same model/layer scoring set as boundary_only"
+                )
+        allowed_perturbations = {
+            "fp4_sim_weight_or_activation_perturbation",
+            "mxfp4_e2m1",
+            "perturbation_off",
+            "random_flags",
+            "layer_index",
+            "parameter_count_norm",
+            "kl_lens_rank",
+            "activation_outlier",
+        }
         for index, row in enumerate(rows):
+            precision_perturbation = str(row.get("precision_perturbation", "")).strip()
+            if precision_perturbation not in allowed_perturbations:
+                errors.append(f"hbsm row {index} precision_perturbation must be a preregistered perturbation label")
             for field in ("kl_or_nll_drift", "cheap_predictor", "parameter_count", "weight_norm"):
                 if not _finite_number(row.get(field)):
                     errors.append(f"hbsm row {index} {field} must be finite numeric")
@@ -1220,6 +1421,19 @@ def validate_gate_packet(
                 errors.append(f"unknown controls: {controls}")
             if not missing_row_fields:
                 _validate_trace_plan_coverage(project=project, rows=raw_rows, config=config, errors=errors)
+                _validate_tensor_artifacts(
+                    project=project,
+                    packet_dir=packet_dir,
+                    rows=raw_rows,
+                    config=config,
+                    errors=errors,
+                )
+                if project == "hbsm":
+                    _validate_hbsm_source_artifact(
+                        packet_dir=packet_dir,
+                        config=config,
+                        errors=errors,
+                    )
                 _validate_real_coverage(project=project, rows=raw_rows, config=config, errors=errors)
                 _validate_real_summary(project=project, rows=raw_rows, summary=summary, config=config, errors=errors)
                 _validate_real_decision(

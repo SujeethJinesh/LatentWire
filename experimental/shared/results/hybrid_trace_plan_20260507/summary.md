@@ -5,8 +5,8 @@ It is not model evidence; it is an execution checklist for producing real packet
 
 | Project | Planned rows | Trace-plan hash |
 |---|---:|---|
-| `hbsm` | 1554 | `sha256:5f9bea1f3a36...` |
-| `horn` | 1008 | `sha256:bde83105201b...` |
+| `hbsm` | 2304 | `sha256:015e28d426aa...` |
+| `horn` | 1404 | `sha256:d4049d19005c...` |
 | `ssq_lr` | 5184 | `sha256:a05dab6ad3b8...` |
 
 ## Use

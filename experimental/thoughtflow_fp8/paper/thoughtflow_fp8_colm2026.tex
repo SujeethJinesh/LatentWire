@@ -44,6 +44,23 @@ Fresh surface & Test robustness. & Failure demotes or kills the signal. \\
 \caption{Falsification protocol used for each sparse-cache successor.}
 \end{table}
 
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.19\linewidth}p{0.35\linewidth}p{0.34\linewidth}}
+\toprule
+Signal & Final surface & Final state \\
+\midrule
+anchor family & 74-trace frozen sparse-cache gate with matched ThinKV-like and R-KV-like proxies. & Stopped: no robust matched-budget win. \\
+\texttt{rdu\_topk} & Alternate surface plus independent 89-trace saved-trace reproduction. & Killed: first-surface pass fails reproduction. \\
+\texttt{psi\_topk} & Fresh 70-trace C2C GSM saved-trace surface. & Killed: large NLL regression versus both proxies. \\
+\texttt{vwac\_topk} & Fresh 64-trace C2C SVAMP saved-trace surface. & Killed: worse than both proxies with paired intervals. \\
+\bottomrule
+\end{tabular}
+\caption{Final status matrix. The contribution is the auditable stop protocol
+and its failure modes, not a live sparse-cache method.}
+\end{table}
+
 \section{Signals Under Test}
 
 The original policy protects anchors and phase labels. The first successor adds a small recent-token reserve. The second successor protects anchors, reserves half the retained budget for recent tokens, and lets phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The pre-registered \texttt{rdu\_topk} successor is demoted after stricter reproduction; later \texttt{psi\_topk} and \texttt{vwac\_topk} successors are killed by fresh-surface gates.
@@ -175,6 +192,23 @@ Value-weighted attention fresh surface & \texttt{vwac\_topk} reaches NLL 4.336 v
 \begin{table}[h]
 \centering
 \small
+\begin{tabular}{p{0.23\linewidth}p{0.20\linewidth}p{0.43\linewidth}}
+\toprule
+Registration & SHA-256 prefix & Measurement artifact \\
+\midrule
+\texttt{rdu\_topk} & \texttt{676d5239} & Same-surface pass, alternate-surface failure, and independent-trace failure are bundled in the diagnostic packet. \\
+\texttt{psi\_topk} & \texttt{04da2bd0} & One-shot fresh C2C GSM sparse-cache check, artifact SHA prefix \texttt{d0a08035}. \\
+\texttt{vwac\_topk} & \texttt{1574c853} & One-shot fresh C2C SVAMP sparse-cache check, artifact SHA prefix \texttt{80a35954}. \\
+\bottomrule
+\end{tabular}
+\caption{Registration-to-measurement ledger. Full hashes and artifact paths are
+recorded in the tracked diagnostic packet; this table exposes the audit chain
+inside the paper.}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
 \begin{tabular}{lrrrr}
 \toprule
 Policy & Traces & Keep rate & NLL & Paired $\Delta$ vs ThinKV-like \\
@@ -215,6 +249,22 @@ decomposition explains where the reproduction fails: \texttt{rdu\_topk} is
 better on short-prefix/low-density rows. The large-regression buckets are
 exactly the buckets a robust policy would need to handle before any long-context
 claim.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.27\linewidth}p{0.33\linewidth}p{0.30\linewidth}}
+\toprule
+Lesson & Observed failure & Protocol implication \\
+\midrule
+First-surface positives are weak evidence. & \texttt{rdu\_topk} passed one frozen slice, then failed same-family and independent surfaces. & Require fresh-surface reproduction before promotion. \\
+Density regimes matter. & Long-prefix/high-RDU-density rows regress by +0.213 NLL. & Bucket diagnostics should be mandatory, not post-hoc color. \\
+Oracle gaps prevent overclaiming. & Same-slice reproduction remained 0.145 NLL above the compressed oracle. & Report headroom before adding implementation work. \\
+Consumed signals should stay consumed. & \texttt{psi\_topk} and \texttt{vwac\_topk} failed one-shot gates. & Do not retune failed utility families on the same traces. \\
+\bottomrule
+\end{tabular}
+\caption{Methodological lessons from the stopped sparse-cache ladder.}
+\end{table}
 
 \paragraph{Prefix-surprisal successor.}
 A later consumed successor tested whether retaining high self-surprisal
@@ -266,8 +316,8 @@ LongFlow, LazyEviction, ForesightKV, PM-KVQ, or KVQuant.
 
 \section{Stop Rule and Reopen Gate}
 
-The branch is now demoted to a diagnostic. The stopped anchor/recent/phase/math
-policy family remains ruled out as a tunable branch on this trace set,
+The branch now contributes a diagnostic falsification ladder. The stopped
+anchor/recent/phase/math policy family remains ruled out as a tunable branch on this trace set,
 \texttt{rdu\_topk} fails reproduction, and \texttt{psi\_topk}/\texttt{vwac\_topk}
 fail their fresh-surface gates. A paper-ready method claim now requires a genuinely new
 pre-registered utility signal evaluated once on a fresh/larger frozen surface
@@ -308,9 +358,13 @@ tracked in the repository despite the root results ignore rule. The current
 package should still be read as a
 machine-checked falsification note rather than a full artifact-evaluation
 release. The stable local correctness command is:
-\texttt{./venv\_arm64/bin/python -m pytest
-experimental/thoughtflow\_fp8/phase2/tests
-experimental/thoughtflow\_fp8/phase4/tests -q -rs}.
+\begin{verbatim}
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 \
+TRITON_HOME="$PWD/.debug/triton_home" \
+./venv_arm64/bin/python -m pytest \
+  experimental/thoughtflow_fp8/phase2/tests \
+  experimental/thoughtflow_fp8/phase4/tests -q -rs
+\end{verbatim}
 
 \section{Artifacts}
 

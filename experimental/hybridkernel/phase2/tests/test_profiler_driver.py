@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import pytest
+
 from experimental.hybridkernel.phase2 import profiler_driver
 
 
@@ -16,6 +18,7 @@ def _args(**overrides: object) -> SimpleNamespace:
         "seed": 1,
         "tokenizer": None,
         "require_token_counts": False,
+        "enforce_prefill_token_counts": False,
         "timeout_s": 5.0,
         "profile_bracket": False,
         "dry_run": False,
@@ -101,3 +104,36 @@ def test_dry_run_can_log_exact_prompt_token_counts(monkeypatch) -> None:
     assert result["requests"][0]["prompt_token_count_total"] == 16
     assert result["requests"][0]["requested_decode_tokens"] == 2
     assert result["requests"][0]["expected_completion_tokens_total"] == 4
+
+
+def test_profile_run_fails_before_start_when_prefill_counts_mismatch(monkeypatch) -> None:
+    calls: list[str] = []
+
+    class FakeTokenizer:
+        def encode(self, prompt: str, *, add_special_tokens: bool) -> list[int]:
+            assert add_special_tokens is False
+            return prompt.split() + ["extra"]
+
+    def fake_post_json(endpoint: str, payload: dict[str, object], timeout_s: float) -> None:
+        del payload, timeout_s
+        calls.append(endpoint)
+
+    monkeypatch.setattr(
+        profiler_driver,
+        "_load_tokenizer",
+        lambda model, tokenizer_name, require: (FakeTokenizer(), "fake-tokenizer", "test"),
+    )
+    monkeypatch.setattr(profiler_driver, "_post_json", fake_post_json)
+
+    with pytest.raises(ValueError, match="prompt token counts do not match"):
+        profiler_driver.run(
+            _args(
+                profile_bracket=True,
+                tokenizer="fake-tokenizer",
+                require_token_counts=True,
+                prefill_tokens=8,
+                requests=1,
+            )
+        )
+
+    assert calls == []

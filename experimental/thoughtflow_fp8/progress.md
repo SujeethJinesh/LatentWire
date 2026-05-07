@@ -1,5 +1,9 @@
 # ThoughtFlow-FP8 Progress
 
+Current decision supersedes the chronological status notes below: all consumed
+positive-method sparse-cache branches are stopped, and the live artifact is a
+falsification-methodology paper plus diagnostic packet.
+
 ## Status
 
 - Phase 0: partial quick pass.

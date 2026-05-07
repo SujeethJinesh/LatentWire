@@ -44,7 +44,6 @@ def _review_control_rows() -> list[dict[str, object]]:
         rows.append(
             _native_row(
                 100 + idx,
-                model="granite-transformer-control",
                 row_role="same_family_control",
                 control_family="same_family_transformer_heavy_control",
                 control_model_or_segment="same_family_transformer_heavy_control",
@@ -135,6 +134,23 @@ def test_unmatched_review_controls_do_not_promote_clearing_primary() -> None:
     assert summary_row["clears_3pct_gate_all_runs"] is True
     assert summary_row["same_family_control_rows"] == 0
     assert summary_row["cross_family_falsification_rows"] == 0
+
+
+def test_same_family_controls_must_use_same_model_as_primary() -> None:
+    mismatched_same_family = [
+        dict(row, model="granite-transformer-control")
+        if row["row_role"] == "same_family_control"
+        else row
+        for row in _review_control_rows()
+    ]
+
+    result = analyze({"rows": [_native_row(idx) for idx in range(3)] + mismatched_same_family})
+
+    assert result["status"].startswith("WEAKLY ALIVE")
+    summary_row = next(row for row in result["summary"].values() if row["model"] == "granite")
+    assert summary_row["clears_3pct_gate_all_runs"] is True
+    assert summary_row["same_family_control_rows"] == 0
+    assert summary_row["cross_family_falsification_rows"] == 3
 
 
 def test_primary_gate_clear_without_controls_is_not_promoted() -> None:
