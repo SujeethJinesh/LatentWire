@@ -336,10 +336,10 @@
   },
   "generated_date": "2026-05-06",
   "git": {
-    "head_at_generation": "4ccd8d614d5b71a40a44230ff05ed570a8060d3e",
-    "thoughtflow_path_dirty_at_generation": true,
-    "thoughtflow_path_status_at_generation": "M experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py\n M experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/README.md\n M experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/falsification_table.md\n M experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/manifest.json\n M experimental/thoughtflow_fp8/phase2/tests/test_saved_falsification_artifacts.py",
-    "thoughtflow_path_tree_at_generation": "aea2509ea869b9d0395f81ed5b685919c73c7296"
+    "head_at_generation": "31fab4567ef771cfbc831fdfd0b2ad0cb947bfd4",
+    "thoughtflow_path_dirty_at_generation": false,
+    "thoughtflow_path_status_at_generation": "",
+    "thoughtflow_path_tree_at_generation": "aa75133461579767aaa3e8cb77a6a42fbd6e0e11"
   },
   "packet_name": "thoughtflow_diagnostic_packet_20260506",
   "preregistrations": [
