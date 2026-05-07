@@ -1,6 +1,6 @@
 # HBSM Reviewer Pack
 
-- status: weakened after resource-limited real-model B1 scouts
+- status: demoted control branch after resource-limited real-model B1 scouts
 - current decision: do not GPU-promote; treat as negative/control unless a new
   narrower hypothesis is preregistered
 - camera-readiness: not submittable as a standalone paper until B1--B3 separate
@@ -34,7 +34,7 @@ Status shorthand: B2/B3 are not current evidence.
 
 | Axis | Reviewer read | Current decision |
 |---|---|---|
-| Benchmarks | B1 now has one-prompt and two-prompt Granite Tiny resource-limited sweeps. Both are useful Mac filters, not task or GPU evidence. | B1 weakened. |
+| Benchmarks | B1 now has one-prompt and two-prompt Granite Tiny resource-limited sweeps. Both are useful Mac filters, not task or GPU evidence, and both fail in the wrong direction for the boundary-sensitivity hypothesis. | B1 demoted unless a new narrower mechanism is preregistered. |
 | Ablations | Required baselines are perturbation-off, random flags, layer index, parameter count/norm, boundary-only, KL-style ranking, activation/outlier ranking, and train/test or leave-one-model-out splits. | Adequate before real B1 and B2. |
 | Correctness | The checker scores only primary `boundary_only` rows after aggregating prompt rows to `(model_id, layer)`, derives measured top deciles from aggregated `kl_or_nll_drift`, rejects supplied `top_decile_flag` disagreements on any prompt row, and requires prompt-level boundary/non-boundary coverage, finite metrics, true scoring-layer top-decile cardinality, a same-count non-enriched random baseline, train/test coverage, prompt hash provenance, architecture-map hash provenance tied to the claimed model, a `trace_plan_path` whose file hash matches the registered `trace_plan_hash`, every comparator control on the same `(model_id, layer)` scoring set as `boundary_only`, copied source sensitivity row-packet provenance, recomputed B1 `summary.json` enrichment/p-value/Spearman aggregates, and near-zero drift for perturbation-off rows. The shared builder now automatically marks resource-limited packets non-promotable. B2/B3 follow-up contracts additionally reject missing predictor registry hashes, hyperparameter hashes, train-only selection, held-out Spearman/baseline margins, HORN-alignment signs, noise-off controls, and direction-flip controls. | Artifact path is hardened. |
 | Reproducibility | Synthetic B1 real-schema rehearsal is deterministic, passes the real checker in non-promoting mode, and shared architecture maps fix boundary flags. The two-prompt scout is reproducible from cached Granite Tiny weights with `hbsm_local_sensitivity_runner --prompt-limit 2`. | Strong enough to weaken B1; not positive evidence. |
@@ -58,6 +58,8 @@ Status shorthand: B2/B3 are not current evidence.
 
 - Real forward-sensitivity rows exist only on resource-limited Granite Tiny
   scouts, and both fail B1.
+- The current rows are not cheap-predictor evidence, mechanism evidence,
+  novelty evidence, or GPU evidence.
 - KL Lens-style forward sensitivity for mixed-precision hybrid models narrows
   the novelty claim; see arXiv:2604.13440
   (`https://arxiv.org/abs/2604.13440`).
@@ -67,8 +69,10 @@ Status shorthand: B2/B3 are not current evidence.
 
 ## Next Exact Gate
 
-Do not run GPU validation. Only run more HBSM Mac work if a narrower hypothesis
-is preregistered. Any future B1 packet must pass:
+Do not run GPU validation or a broad 12-prompt B1 sweep under the current
+hypothesis. Only run more HBSM Mac work if a narrower mechanism hypothesis is
+preregistered and explains why the two-prompt B1 scout should reverse. Any
+future B1 packet must pass:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \

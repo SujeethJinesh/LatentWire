@@ -9,7 +9,7 @@ Status: **DEMOTED CONTROL / H1a and H2 scouts failed**.
 
 Estimated completion:
 
-- **8%** as a positive-method paper: hypothesis, gates, packet checker,
+- **12%** as a positive-method paper: hypothesis, gates, packet checker,
   trace-plan handoff, one checker-passing resource-limited real H1a packet, and
   one H2 follow-up scout are scaffolded, but both observed directional signals
   are weak.

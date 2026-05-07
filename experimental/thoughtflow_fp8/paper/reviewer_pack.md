@@ -45,6 +45,9 @@ preregistration and artifact hash prefixes. The stop-rule section has been
 reworded around the diagnostic ladder contribution rather than apologizing for
 the lack of a positive method, and the stable TeX test command now matches this
 reviewer pack's Triton interpreter environment.
+The latest polish adds an explicit first-page reviewer takeaway and a final
+paragraph stating why the artifact is positive as methodology: it prevents
+narrow false positives from becoming GPU/kernel work before robustness exists.
 
 ## Strongest Evidence
 

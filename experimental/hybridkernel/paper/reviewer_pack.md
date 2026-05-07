@@ -63,6 +63,8 @@ Run the user-operated NVIDIA/vLLM packet from
 Promote only if at least three distinct primary native repeats all clear the 3%
 recoverable-gain gate, the primary-repeat bootstrap CI low end is above zero,
 and three same-shape same-family plus three same-shape cross-family controls
-stay below that gate. If Qwen3-Next or another frozen matrix control is missing,
-the packet is audit-only. Kill or shelve if repeated native summaries show less
-than 1% recoverable gain.
+stay below that gate. This would promote only the boundary-overhead
+investigation and prototype-kernel plan, not a paper-level throughput or vLLM
+speedup claim. If Qwen3-Next or another preregistered feasible matrix control
+is missing, the packet is audit-only. Kill or shelve if repeated native
+summaries show less than 1% recoverable gain.

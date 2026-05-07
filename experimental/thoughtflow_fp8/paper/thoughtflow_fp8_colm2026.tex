@@ -46,6 +46,12 @@ Fresh surface & Test robustness. & Failure demotes or kills the signal. \\
 \caption{Falsification protocol used for each sparse-cache successor.}
 \end{table}
 
+Reviewer takeaway: the protocol is designed to stop attractive false positives
+before they become GPU or kernel projects. In this case it catches a
+first-surface \texttt{rdu\_topk} win, forces same-family and proxy-baseline
+separation, and then uses independent/fresh saved-trace surfaces to demote or
+kill every consumed successor without retuning.
+
 The next table is included only to show why the branch looked promising before
 the fresh gates. It is not a current leaderboard: every candidate policy row in
 the table is superseded by the demotion ladder that follows.
@@ -343,6 +349,12 @@ pre-registered utility signal evaluated once on a fresh/larger frozen surface
 with strict stopped-family, proxy-baseline, and oracle/headroom reporting. The Triton
 interpreter gate is no longer the blocker for the quantization scaffold; method
 evidence is. This means no real FP8, CUDA, latency, or throughput result is claimed.
+
+The positive value of the artifact is procedural: it reduces the chance that a
+plausible sparse-cache heuristic is promoted from a narrow frozen slice into
+implementation work before robustness exists. The stopped rows are therefore
+not failed leaderboard entries; they are worked examples of what the ladder is
+meant to prevent.
 
 \section{Related Work and Scope}
 

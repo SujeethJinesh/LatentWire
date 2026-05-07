@@ -465,7 +465,10 @@ fails, and the paired local S3 packets
 and
 `../shared/results/ssq_lr_s3_local_transfer_prefilter_int3_granite_tiny_350m_layer0_12p_20260507/`
 both fail because the recipe that passes one Granite model does not pass the
-other. Do not GPU-promote SSQ-LR under the current recipe.
+other. Do not GPU-promote SSQ-LR under the current recipe. The exact
+reproduction commands, model revisions, prompt hash, source packet hashes,
+frozen recipe hashes, and checker commands for this stop artifact are recorded
+in `phase2/s3_transfer_repro_manifest_20260507.md`.
 Compare against the current hybrid-serving baseline from Nemotron-style
 recurrent-cache deployment: FP16 SSM cache with stochastic rounding, plus
 INT16/block-scaled controls. The local reference memo is

@@ -5,7 +5,8 @@ explained and predicted more cheaply than full forward-pass KL sweeps.
 
 ## Current Readiness
 
-Status: **WEAKENED / resource-limited prompt-repeat B1 scout failed**.
+Status: **DEMOTED CONTROL / resource-limited B1 scouts failed unless a new
+narrower mechanism is preregistered**.
 
 Estimated completion:
 

@@ -78,6 +78,27 @@ source Granite Tiny layer-0 replay and Granite 350M layer-0 replay prefer
 different low-bit recipes. Two local S3 packets that freeze either mixed25 or
 INT3 for layer 0 both fail, so there is no current frozen recipe that transfers.
 
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{p{0.34\linewidth}p{0.23\linewidth}rr}
+\toprule
+Mac packet & Selected recipe & Memory & Accuracy CI high \\
+\midrule
+Granite Tiny layer 0 source & mixed25 INT3/MXFP4 & 4.192$\times$ & 0.000 \\
+Granite 350M layers 0,30 & INT8 fallback & 1.984$\times$ & 0.000 \\
+Granite 350M layer 0 & INT3 & 5.224$\times$ & 0.000 \\
+Granite 350M layer 30 & INT8 fallback & 1.984$\times$ & 0.000 \\
+Two-model S3, frozen mixed25 layer 0 & mixed25 INT3/MXFP4 & -- & 0.0667 \\
+Two-model S3, frozen INT3 layer 0 & INT3 & -- & 0.0526 \\
+\bottomrule
+\end{tabular}
+\caption{Current SSQ-LR transfer failure. Layer diagnostics are not a rescue:
+the recipe that passes one Granite model does not pass the other under the
+frozen no-retuning S3 contract. The rows are Mac-local simulated replay, not
+native GPU, bandwidth, or serving evidence.}
+\end{table}
+
 \section{Next Evidence}
 
 The next admissible action is not GPU validation. SSQ-LR needs a new
