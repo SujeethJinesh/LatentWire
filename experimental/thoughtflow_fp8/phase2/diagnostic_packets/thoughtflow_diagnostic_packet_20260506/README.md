@@ -5,7 +5,8 @@ Status: tracked falsification provenance packet, not positive-method evidence.
 Run:
 
 ```bash
-./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py
+./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py \
+  --output .debug/thoughtflow_diagnostic_packet_check
 ```
 
 Expected pass condition: the builder exits successfully only from a clean

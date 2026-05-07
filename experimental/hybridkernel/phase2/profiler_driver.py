@@ -9,6 +9,7 @@ has an executable driver instead of an ad hoc curl loop.  On Mac, use
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import time
 import urllib.error
@@ -23,6 +24,8 @@ class RequestRow:
     batch_size: int
     prefill_tokens: int
     decode_tokens: int
+    prompt_sha256: list[str]
+    payload_sha256: str
     prompt_token_counts: list[int] | None
     prompt_token_count_total: int | None
     requested_decode_tokens: int
@@ -128,6 +131,20 @@ def _payload(model: str, prompt: str | list[str], decode_tokens: int, seed: int)
     }
 
 
+def _sha256_text(value: str) -> str:
+    return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _sha256_json(payload: dict[str, object]) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
+
+
+def _prompt_hashes(prompt_payload: str | list[str]) -> list[str]:
+    prompts = [prompt_payload] if isinstance(prompt_payload, str) else prompt_payload
+    return [_sha256_text(prompt) for prompt in prompts]
+
+
 def _post_json(endpoint: str, payload: dict[str, object], timeout_s: float) -> dict[str, Any] | None:
     body = json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(
@@ -230,7 +247,9 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         _post_json(profile_start_endpoint, {}, args.timeout_s)
 
     try:
-        for request_id, _prompt_payload, prompt_token_counts, payload in planned_requests:
+        for request_id, prompt_payload, prompt_token_counts, payload in planned_requests:
+            prompt_sha256 = _prompt_hashes(prompt_payload)
+            payload_sha256 = _sha256_json(payload)
             if args.dry_run:
                 rows.append(
                     RequestRow(
@@ -238,6 +257,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                         batch_size=args.batch_size,
                         prefill_tokens=args.prefill_tokens,
                         decode_tokens=args.decode_tokens,
+                        prompt_sha256=prompt_sha256,
+                        payload_sha256=payload_sha256,
                         prompt_token_counts=prompt_token_counts,
                         prompt_token_count_total=sum(prompt_token_counts) if prompt_token_counts else None,
                         requested_decode_tokens=args.decode_tokens,
@@ -264,6 +285,8 @@ def run(args: argparse.Namespace) -> dict[str, object]:
                     batch_size=args.batch_size,
                     prefill_tokens=args.prefill_tokens,
                     decode_tokens=args.decode_tokens,
+                    prompt_sha256=prompt_sha256,
+                    payload_sha256=payload_sha256,
                     prompt_token_counts=prompt_token_counts,
                     prompt_token_count_total=sum(prompt_token_counts) if prompt_token_counts else None,
                     requested_decode_tokens=args.decode_tokens,

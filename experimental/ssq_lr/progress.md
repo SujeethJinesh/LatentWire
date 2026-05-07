@@ -205,9 +205,9 @@ tensor bytes is rejected even if its SHA-256 provenance fields are well formed.
 Decision: **S1 ROW METRICS MUST BE RECOMPUTABLE FROM SAVED STATE TENSORS**. The
 blocker remains a real tensor packet generated from the frozen S1 plan.
 
-## 2026-05-07 Held-Out S1b / S2 Scout Decision
+## 2026-05-07 Historical Held-Out S1b / S2 Scout Decision
 
-The Granite Tiny held-out S1b packet is the current positive Mac signal:
+The Granite Tiny held-out S1b packet was a historical diagnostic S1b signal:
 192 saved-tensor rows over 12 held-out prompts and layers `0`, `12`, `18`,
 and `30`, with primary layers `0`, `12`, and `30` passing at selected ratio
 `2.459`, CI low `1.861`, and Holm p-min `2.78e-05`.
@@ -263,9 +263,9 @@ Selected recipe: `mixed_int3_mxfp4_low_error_25pct`.
 - prompts: `12`
 - rows: `156`
 
-Decision after this short-window packet: **S2 WAS REVIVED AS A MAC CANDIDATE,
-NOT GPU-READY**. The next packet must test the same recipe on a longer
-continuation window before any GPU discussion.
+Decision after this short-window packet: **SHORT-WINDOW S2 FILTER PASSED
+BEFORE LATER FALSIFICATION, NOT GPU-READY**. The next packet had to test the
+same recipe on a longer continuation window before any GPU discussion.
 
 ## 2026-05-07 S2b Longer-Window Replay Result
 
@@ -306,8 +306,8 @@ Longer-window localization results:
 | `30` | pass | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.04505` |
 | `0,30` | pass | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.04294` |
 
-Decision: **SSQ-LR IS ALIVE ONLY AS A LAYER-SELECTIVE MAC CANDIDATE**. Exclude
-layer `12`. Pure INT3 on layers `0,30` became the immediate candidate, but the
+Decision: **PRE-S3 LAYER-SELECTIVE MAC CANDIDATE ONLY**. Exclude layer `12`.
+Pure INT3 on layers `0,30` became the immediate candidate, but the
 stricter S3 prefilter below supersedes it with a mixed INT3/MXFP4 recipe. Still
 no GPU promotion.
 
@@ -367,7 +367,7 @@ Packets:
 
 Readout:
 
-| Packet | Decision | Selected/live recipe | Memory | Accuracy CI high | NLL CI high |
+| Packet | Decision | Selected recipe | Memory | Accuracy CI high | NLL CI high |
 |---|---|---|---:|---:|---:|
 | Granite 350M layers `0,30` | `FAIL_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY` | fallback `int8_primary_state_block64` | `1.984x` | `0.000000` | `0.008906` |
 | Granite 350M layer `0` | `PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY` | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.015687` |

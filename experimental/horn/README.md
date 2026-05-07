@@ -108,6 +108,8 @@ reopening gives a concrete reason this near-null screen should reverse.
 
 The current H2 noisy-continuation scout is
 `../shared/results/horn_h2_noise_replay_scout_20260507/`, decision
+`RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`
+with raw `gate_status`
 `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`. It is a contract-valid
 resource-limited follow-up packet, not H2 promotion: 20 rows, 2 prompts, 3
 seeds, paired units `6/6`, hook-off max delta `0.0`, H1-selected direction
@@ -273,7 +275,8 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
 ```
 
 Expected decision:
-`FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`.
+`RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`
+with raw `gate_status` `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`.
 
 ## GPU Rule
 

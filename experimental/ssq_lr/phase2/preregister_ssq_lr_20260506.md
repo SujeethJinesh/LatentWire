@@ -4,6 +4,10 @@
 - status: preregistered before measurement
 - branch: recurrent SSM state quantization for hybrid reasoners
 
+Closure: this preregistration was consumed by the 2026-05-07 stop/demotion
+artifacts. It cannot authorize rescue rows; any reopening requires a new
+preregistration before collecting rows.
+
 ## S1: State Distribution Heterogeneity
 
 Run a hybrid model on reasoning traces and dump recurrent SSM state at the

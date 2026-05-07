@@ -6,6 +6,8 @@
       "served_model_id": "synthetic-granite-fixture",
       "model_revision": "synthetic-model-revision",
       "tokenizer_revision": "synthetic-tokenizer-revision",
+      "model_revision_is_immutable": true,
+      "tokenizer_revision_is_immutable": true,
       "cache_source": "checked-in synthetic fixture",
       "snapshot_manifest_path": "metadata/synthetic_snapshot_manifest.json",
       "snapshot_manifest_sha256": "sha256:d04a9408476654c6477fc2718a1f26e87d0505e9fd49f5fb3c1f495bcc6b1e15",

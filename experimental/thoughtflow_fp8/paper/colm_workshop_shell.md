@@ -84,7 +84,7 @@ The most recent proxy scored 24 saved traces at 0.20 retained-prefix budget:
 Interpretation: a simple recent-token reserve repairs part of the failure mode,
 which means pure phase-marker protection was too far from the continuation
 objective. The branch is still not revived because the R-KV-like retained-prefix
-proxy remains stronger at the same keep rate.
+proxy remains stronger under the nominal-budget accounting used here.
 
 The real hidden/KV telemetry sharpens the diagnosis but does not change the
 decision:

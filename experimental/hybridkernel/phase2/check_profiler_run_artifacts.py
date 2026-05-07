@@ -118,6 +118,7 @@ ENVIRONMENT_PROVENANCE_VERSION = "hybridkernel_environment_v1"
 MODEL_PROVENANCE_VERSION = "hybridkernel_model_provenance_v1"
 REPLACEMENT_METADATA_PATH = "metadata/cross_family_control_replacement_template.json"
 MAX_RECOVERABLE_FRACTION = 0.60
+MUTABLE_REVISION_NAMES = {"main", "master", "head", "latest", "dev", "trunk"}
 REQUIRED_ENVIRONMENT_FIELDS = [
     "timestamp_utc",
     "hostname",
@@ -218,6 +219,8 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                 else:
                     for index, row in enumerate(requests):
                         prompt_counts = row.get("prompt_token_counts")
+                        prompt_sha256 = row.get("prompt_sha256")
+                        payload_sha256 = str(row.get("payload_sha256", "")).strip()
                         batch_size = row.get("batch_size")
                         prompt_total = row.get("prompt_token_count_total")
                         requested_decode = row.get("requested_decode_tokens")
@@ -225,6 +228,22 @@ def _validate_native_logs(log_files: list[Path], errors: list[str]) -> None:
                         if not _positive_int(batch_size):
                             errors.append(
                                 f"client replay request {index} must contain positive batch_size"
+                            )
+                        if (
+                            not isinstance(prompt_sha256, list)
+                            or not prompt_sha256
+                            or not all(isinstance(value, str) and SHA256_PATTERN.match(value) for value in prompt_sha256)
+                        ):
+                            errors.append(
+                                f"client replay request {index} must contain prompt_sha256 rows"
+                            )
+                        elif _positive_int(batch_size) and len(prompt_sha256) != batch_size:
+                            errors.append(
+                                f"client replay request {index} prompt_sha256 length must equal batch_size"
+                            )
+                        if not SHA256_PATTERN.match(payload_sha256):
+                            errors.append(
+                                f"client replay request {index} must contain payload_sha256"
                             )
                         if (
                             not isinstance(prompt_counts, list)
@@ -1025,6 +1044,17 @@ def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[
     if request_shape is not None and not isinstance(request_shape, dict):
         errors.append("native_control_matrix.json request_shape must be an object when present")
         request_shape = None
+    if isinstance(request_shape, dict):
+        for field in (
+            "batch_size",
+            "prefill_tokens",
+            "decode_tokens",
+            "requests",
+            "dtype",
+            "cuda_graph_enabled",
+        ):
+            if field not in request_shape:
+                errors.append(f"native_control_matrix.json request_shape must include {field}")
     specs: dict[str, list[dict[str, object]]] = {}
     for index, row in enumerate(rows):
         if not isinstance(row, dict):
@@ -1175,6 +1205,15 @@ def _validate_model_provenance(
             value = str(row.get(field, "")).strip()
             if _is_unfilled_text(value):
                 errors.append(f"model_provenance.json row {index} {field} must be filled")
+            if field in {"model_revision", "tokenizer_revision"}:
+                lowered = value.lower()
+                if lowered in MUTABLE_REVISION_NAMES or lowered.startswith("refs/heads/"):
+                    errors.append(
+                        f"model_provenance.json row {index} {field} must not be a mutable branch alias"
+                    )
+        for field in ("model_revision_is_immutable", "tokenizer_revision_is_immutable"):
+            if row.get(field) is not True:
+                errors.append(f"model_provenance.json row {index} {field} must be true")
         _validate_model_snapshot_manifest(
             run_dir=run_dir,
             row_index=index,
@@ -1339,6 +1378,7 @@ def _validate_native_control_matrix_rows(
                 "decode_tokens": batch_shape.get("decode_tokens"),
                 "requests": batch_shape.get("requests"),
                 "dtype": dtype,
+                "cuda_graph_enabled": row.get("cuda_graph_enabled"),
             }
             if not any(
                 all(row_shape.get(key) == spec_shape.get(key) for key in row_shape)

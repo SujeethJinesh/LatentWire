@@ -280,7 +280,8 @@ preserved in the aggregate, directional drift ratio `1.037`, signed
 selected-direction lower bound `0.324`, and selected-direction support fraction
 `0.5`.
 The packet is contract-valid but its decision is
-`FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`.
+`RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`
+with raw gate status `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`.
 
 Decision: **HORN IS A DEMOTED CONTROL BRANCH**. Do not spend GPU time on a
 standalone HORN claim. Reopen only with a new preregistered full H2/H3 scope

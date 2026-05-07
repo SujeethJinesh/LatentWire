@@ -327,7 +327,12 @@ If a prototype is later implemented after promotion, its first quality smoke
 uses `experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl`
 with greedy decoding and 256 max new tokens. It must show zero normalized
 exact-answer regressions versus stock vLLM and mean output-length drift within
-10% before any speed table is cited.
+10% before any speed table is cited. Validate the saved smoke artifact with:
+
+```bash
+./venv_arm64/bin/python -m experimental.hybridkernel.phase2.check_quality_smoke_artifacts \
+  path/to/quality_smoke.json --repo-root "$PWD"
+```
 
 Before renting time, confirm that the planned cross-family falsification model
 fits the node. A Granite-only 5090 packet is useful as an audit/kill packet, but

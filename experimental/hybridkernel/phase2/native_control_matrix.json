@@ -10,7 +10,8 @@
     "prefill_tokens": 128,
     "decode_tokens": 64,
     "requests": 16,
-    "dtype": "bfloat16"
+    "dtype": "bfloat16",
+    "cuda_graph_enabled": true
   },
   "promotion_rule": {
     "primary_repeats": 3,

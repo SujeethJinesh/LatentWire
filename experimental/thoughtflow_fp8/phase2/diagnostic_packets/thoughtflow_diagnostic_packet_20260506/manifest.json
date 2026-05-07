@@ -387,8 +387,8 @@
     }
   ],
   "script": {
-    "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
+    "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py --output .debug/thoughtflow_diagnostic_packet_check",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:59d436dab9e4b61f770c270d4be5e4cb4dce2ec6157390f0dbcc4e29da62fb84"
+    "sha256": "sha256:3735ab939e670ed8e6ecfa1e7a2d1839a75ad8dbae00351a83bf0f89d52bcfb3"
   }
 }

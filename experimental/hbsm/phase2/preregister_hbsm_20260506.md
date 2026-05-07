@@ -4,6 +4,10 @@
 - status: preregistered before measurement
 - branch: hybrid boundary sensitivity mechanism
 
+Closure: this preregistration was consumed by the 2026-05-07 stop/demotion
+artifacts. It cannot authorize rescue rows; any reopening requires a new
+preregistration before collecting rows.
+
 ## B1: Sensitivity Heterogeneity Replication
 
 Measure KL-divergence or downstream NLL/PPL sensitivity per layer under

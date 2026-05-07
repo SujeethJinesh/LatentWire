@@ -799,3 +799,24 @@ remaining blocker is still the native NVIDIA/vLLM full-matrix profiler packet;
 a Granite-only 5090 packet remains audit/kill-only unless the cross-family row
 is feasible or replaced by a preregistered feasible hybrid control before
 profiling.
+
+## 2026-05-07 Prompt/Runtime/Quality Contract Hardening
+
+After another COLM-style reproducibility review, the native packet contract now
+also locks prompt identity and runtime shape. `phase2/profiler_driver.py`
+records per-request `prompt_sha256` and `payload_sha256`; the artifact checker
+requires those hashes, rejects mutable model/tokenizer revision aliases such as
+`main`, `master`, `HEAD`, `latest`, and `refs/heads/*`, and includes
+`cuda_graph_enabled` in the native control-matrix request/runtime-shape match.
+The native control matrix and cross-family replacement template now carry
+`cuda_graph_enabled: true` explicitly.
+
+The prose-only post-promotion quality smoke is now a checked artifact contract:
+`phase2/check_quality_smoke_artifacts.py` requires a frozen prompt-file hash,
+stock/prototype output hashes, zero normalized-answer mismatches, accuracy drop
+no worse than 1 point, and mean output-length drift within 10% before any future
+prototype speed table can be cited.
+
+Decision: **HYBRIDKERNEL MAC-SIDE REVIEW CONTRACT IS SATURATED AGAIN**. The
+only remaining positive-method blocker is still a native NVIDIA/vLLM full-matrix
+profiler packet; no Mac-local experiment can substitute for the 5090 gate.

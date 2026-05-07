@@ -106,6 +106,8 @@ def test_dry_run_can_log_exact_prompt_token_counts(monkeypatch) -> None:
     assert result["requests"][0]["prompt_token_count_total"] == 16
     assert result["requests"][0]["requested_decode_tokens"] == 2
     assert result["requests"][0]["expected_completion_tokens_total"] == 4
+    assert len(result["requests"][0]["prompt_sha256"]) == 2
+    assert str(result["requests"][0]["payload_sha256"]).startswith("sha256:")
 
 
 def test_required_token_counts_use_decode_roundtrip_prompt_synthesis(monkeypatch) -> None:

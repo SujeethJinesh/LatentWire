@@ -17,7 +17,9 @@
       "batch_size": 1,
       "prefill_tokens": 128,
       "decode_tokens": 64,
-      "requests": 16
+      "requests": 16,
+      "dtype": "bfloat16",
+      "cuda_graph_enabled": true
     },
     "feasibility_reason": "TO_FILL_WHY_THIS_MODEL_FITS_AND_IS_A_HYBRID_CONTROL",
     "architecture_map_path": "metadata/architecture_map.json",

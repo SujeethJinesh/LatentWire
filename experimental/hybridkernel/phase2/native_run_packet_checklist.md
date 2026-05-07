@@ -37,11 +37,11 @@ The packet is incomplete unless all of these exist:
 | `metadata/environment.json` | parseable environment record with `environment_version: "hybridkernel_environment_v1"`, host/GPU/profiler/Python fields, and installed `vllm`, `torch`, `triton`, and `transformers` versions |
 | `metadata/profile_scope.json` | server-side scope for both Nsight Systems and Nsight Compute |
 | `metadata/architecture_map.json` | copied HybridKernel architecture map used for boundary annotation |
-| `metadata/model_provenance.json` | exact model and tokenizer provenance for every served metric model: model ID, served model ID, resolved model revision, tokenizer revision, cache source, snapshot manifest path/SHA, `local_files_only`, and `trust_remote_code` |
+| `metadata/model_provenance.json` | exact model and tokenizer provenance for every served metric model: model ID, served model ID, resolved model revision, tokenizer revision, immutable-revision attestations, cache source, snapshot manifest path/SHA, `local_files_only`, and `trust_remote_code` |
 | `metadata/native_control_matrix.json` | copied control matrix fixing primary, same-family, and cross-family row roles before profiling |
 | `metadata/reduction_input_manifest.json` | row-level reduction audit trail with `manifest_version: "hybridkernel_reduction_inputs_v1"` tying each metric row to source Nsight exports, time windows, commands, and reducer script or worksheet path plus SHA-256 digests |
 | `metadata/reduction_worksheet.tsv` or equivalent cited source file | filled manual/scripted reduction worksheet cited by `reduction_source_path` in the manifest; template markers are rejected |
-| `logs/*.log` or `logs/*.txt` | Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence markers; client logs must be valid `profiler_driver.py` JSON with a non-empty top-level `model`, a top-level `run_id` matching one metric row, `dry_run: false`, `token_counts_required: true`, a non-empty `token_count_source`, and non-empty `requests` rows whose `status` fields are all `ok` and whose prompt/decode token counts are positive. |
+| `logs/*.log` or `logs/*.txt` | Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence markers; client logs must be valid `profiler_driver.py` JSON with a non-empty top-level `model`, a top-level `run_id` matching one metric row, `dry_run: false`, `token_counts_required: true`, a non-empty `token_count_source`, and non-empty `requests` rows whose `status` fields are all `ok`, whose `prompt_sha256` and `payload_sha256` fields are filled, and whose prompt/decode token counts are positive. |
 | `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts, not placeholder files |
 | `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels, not placeholder files. Required for boundary-evidence packets; optional only with explicit `--packet-mode no_boundary_signal_kill` and row `ncu_artifact: "not_run_no_boundary_signal"`. |
 | `readout.md` | completed decision table from the runbook |
@@ -52,7 +52,9 @@ After the checker command runs, the returned packet should also include
 `artifact_check.json`. The checker validates the files above and then produces
 that final self-report.
 
-`metadata/model_provenance.json` must use this shape:
+`metadata/model_provenance.json` must use this shape. The checker rejects
+mutable revision aliases such as `main`, `master`, `HEAD`, `latest`, and
+`refs/heads/*`.
 
 ```json
 {
@@ -63,6 +65,8 @@ that final self-report.
       "served_model_id": "ibm-granite/granite-4.0-h-tiny",
       "model_revision": "<resolved git commit or immutable snapshot>",
       "tokenizer_revision": "<resolved git commit or immutable snapshot>",
+      "model_revision_is_immutable": true,
+      "tokenizer_revision_is_immutable": true,
       "cache_source": "<HF cache path, mounted volume, or download source>",
       "snapshot_manifest_path": "metadata/granite_snapshot_manifest.json",
       "snapshot_manifest_sha256": "sha256:<64 lowercase hex chars>",
@@ -211,10 +215,11 @@ run directory. Missing files, absolute paths, `..` escapes, wrong extensions,
 placeholder profiler exports, UTF-8/plain-text fake profiler files, and SHA-256
 mismatches are rejected. It also checks the client replay `model`, `run_id`,
 batch/per-sample prefill/decode/request shape against metric rows for models
-present in the client logs, requires uniform prompt counts within each fixed
-batch, and requires replay `response_usage.completion_tokens` to equal
-`batch_size * requested_decode_tokens`, and records
-`expected_completion_tokens_total` when emitted by `profiler_driver.py`.
+present in the client logs, requires per-request prompt and payload SHA-256s,
+requires uniform prompt counts within each fixed batch, and requires replay
+`response_usage.completion_tokens` to equal `batch_size * requested_decode_tokens`,
+and records `expected_completion_tokens_total` when emitted by
+`profiler_driver.py`.
 
 ## Final Local Commands
 

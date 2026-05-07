@@ -7,6 +7,7 @@ without confusing historical first-surface wins for a live method claim.
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import importlib.metadata as metadata
 import json
@@ -399,7 +400,10 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
         "script": {
             "path": str(Path(__file__).relative_to(REPO_ROOT)),
             "sha256": _sha256(Path(__file__)),
-            "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
+            "command": (
+                "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py "
+                "--output .debug/thoughtflow_diagnostic_packet_check"
+            ),
         },
         "artifacts": artifacts,
         "preregistrations": preregistrations,
@@ -454,7 +458,8 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
                 "Run:",
                 "",
                 "```bash",
-                "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
+                "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py \\",
+                "  --output .debug/thoughtflow_diagnostic_packet_check",
                 "```",
                 "",
                 "Expected pass condition: the builder exits successfully only from a clean",
@@ -492,7 +497,15 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
 
 
 def main() -> None:
-    build_packet()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_OUTPUT,
+        help="Diagnostic packet output directory. Use a .debug path for local verification.",
+    )
+    args = parser.parse_args()
+    build_packet(args.output)
 
 
 if __name__ == "__main__":

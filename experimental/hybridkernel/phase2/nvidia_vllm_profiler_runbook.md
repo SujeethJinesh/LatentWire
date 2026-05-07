@@ -101,9 +101,12 @@ It also fails the packet if `metadata/environment.txt` omits `nvidia-smi`,
 The generated packet also includes `metadata/model_provenance.json`. Fill it
 before profiling with exact model and tokenizer revisions for every served
 model in the metric rows, including the vLLM served model string, cache source,
-`local_files_only`, and `trust_remote_code` values. The checker rejects a packet
-whose model provenance does not cover the profiler metrics and client replay
-logs.
+immutable-revision attestations, `local_files_only`, and `trust_remote_code`
+values. The checker rejects a packet whose model provenance does not cover the
+profiler metrics and client replay logs, or whose model/tokenizer revision
+attestations are missing or false.
+Mutable aliases such as `main`, `master`, `HEAD`, `latest`, and `refs/heads/*`
+are rejected even when the immutable attestation is set.
 Use this schema:
 
 ```json
@@ -115,6 +118,8 @@ Use this schema:
       "served_model_id": "ibm-granite/granite-4.0-h-tiny",
       "model_revision": "<resolved git commit or immutable snapshot>",
       "tokenizer_revision": "<resolved git commit or immutable snapshot>",
+      "model_revision_is_immutable": true,
+      "tokenizer_revision_is_immutable": true,
       "cache_source": "<HF cache path, mounted volume, or download source>",
       "snapshot_manifest_path": "metadata/granite_snapshot_manifest.json",
       "snapshot_manifest_sha256": "sha256:<64 lowercase hex chars>",
@@ -697,10 +702,10 @@ Every row named in `profiler_metrics.json`, including same-family and
 cross-family controls, must have a matching `profiler_driver.py` client replay
 JSON log under `logs/` with the same model, `run_id`, batch size, uniform
 per-sample prefill token count, decode-token count, and request count. Every
-replay request must record
-`batch_size`, `prompt_token_counts`, `prompt_token_count_total`,
-`requested_decode_tokens`, `expected_completion_tokens_total` when available,
-and `response_usage.completion_tokens`; completion tokens must equal
+replay request must record `batch_size`, `prompt_sha256`, `payload_sha256`,
+`prompt_token_counts`, `prompt_token_count_total`, `requested_decode_tokens`,
+`expected_completion_tokens_total` when available, and
+`response_usage.completion_tokens`; completion tokens must equal
 `batch_size * requested_decode_tokens` so early-EOS runs cannot satisfy a
 fixed-decode gate and batched vLLM usage accounting is interpreted correctly.
 Metric rows without replay evidence now fail the packet checker.
@@ -817,7 +822,10 @@ before any systems claim:
   output-token count drift, and any available continuation logprob/NLL drift.
   Pass criterion for a prototype claim: zero normalized exact-answer
   regressions on this 12-prompt smoke set and mean output-length drift within
-  10%. This is only a smoke guard, not a benchmark-accuracy claim.
+  10%. Save the table as `quality_smoke.json` and validate it with
+  `./venv_arm64/bin/python -m experimental.hybridkernel.phase2.check_quality_smoke_artifacts
+  path/to/quality_smoke.json --repo-root "$PWD"`. This is only a smoke guard,
+  not a benchmark-accuracy claim.
 
 Do not add these tables unless the strict profiler packet promotes first.
 

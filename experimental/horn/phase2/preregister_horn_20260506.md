@@ -4,6 +4,10 @@
 - status: preregistered before measurement
 - branch: directional outlier propagation through hybrid boundaries
 
+Closure: this preregistration was consumed by the 2026-05-07 stop/demotion
+artifacts. It cannot authorize rescue rows; any reopening requires a new
+preregistration before collecting rows.
+
 ## H1a: Single-Model Activation Screen
 
 The first live hybrid packet is only a **single-model screen**. It must target a

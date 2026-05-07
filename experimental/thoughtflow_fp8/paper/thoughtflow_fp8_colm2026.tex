@@ -40,7 +40,7 @@ If older tracked artifacts say \texttt{ALIVE}, \texttt{REPRODUCED}, or
 Protocol check & Purpose & Stop condition \\
 \midrule
 Frozen surface & Prevent post-hoc tuning. & A successor is measured once after preregistration. \\
-Matched budget & Avoid full-cache comparisons. & Must beat R-KV-like and ThinKV-like rows at the same keep rate. \\
+Nominal budget accounting & Avoid full-cache comparisons. & Must beat R-KV-like and ThinKV-like rows at the preregistered nominal budget, with achieved keep rates reported rather than assumed equal. \\
 Stopped/proxy split & Separate local family reuse from proxy-baseline robustness. & A stopped-family-only win is diagnostic, not a method claim. \\
 Paired intervals & Avoid mean-only promotion. & For $\Delta=\mathrm{NLL}_{candidate}-\mathrm{NLL}_{baseline}$, promotion requires mean $\Delta\leq -0.03$ and paired CI high below zero versus both proxies. \\
 Oracle/headroom & Show whether a useful policy exists at the budget. & Large oracle gaps block method claims. \\
@@ -327,7 +327,7 @@ R-KV-like and 0.2219 for both \texttt{vwac\_topk} and ThinKV-like.
 Claimed & Not claimed \\
 \midrule
 Preregistered sparse-cache falsification ladder. & State-of-the-art KV compression. \\
-Matched-budget Mac sparse-cache scoring. & Native FP8 serving quality. \\
+Nominal-budget Mac sparse-cache scoring with achieved keep rates reported. & Native FP8 serving quality. \\
 Stopped-family/proxy-baseline and fresh-surface stop rules. & CUDA kernel speed, latency, throughput, or HBM savings. \\
 Triton-interpreter parity for an int8 anchor/phase scaffold primitive. & A live deployable compression method or FP8/cache-serving correctness. \\
 \bottomrule
@@ -404,7 +404,8 @@ machine-checked falsification note rather than a full artifact-evaluation
 release. The stable local correctness command is:
 \begin{verbatim}
 ./venv_arm64/bin/python \
-  experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py
+  experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py \
+  --output .debug/thoughtflow_diagnostic_packet_check
 \end{verbatim}
 Then run:
 \begin{verbatim}
@@ -430,8 +431,8 @@ independent RDU & \path{rdu_independent_trace_reproduction_check.py} & saved cha
 \texttt{vwac\_topk} & \path{vwac_fresh_sparse_cache_check.py} & distilgpt2 C2C SVAMP, 64 scored & \texttt{80a35954} \\
 \bottomrule
 \end{tabular}
-\caption{Diagnostic-packet command map. Full commands, source metadata, and
-input SHA-256 values are in the tracked manifest. All rows are saved-trace
+\caption{Diagnostic-packet command map. Replay entry points, source metadata,
+and saved-artifact SHA-256 values are in the tracked manifest. All rows are saved-trace
 proxy fixtures, not faithful LongFlow, ThinKV, or R-KV benchmark results.}
 \label{tab:thoughtflow-artifact-commands}
 \end{table}

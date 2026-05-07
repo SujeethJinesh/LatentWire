@@ -24,6 +24,10 @@ def _sha256(path: Path) -> str:
     return "sha256:" + digest.hexdigest()
 
 
+def _sha256_text(value: str) -> str:
+    return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
 def _write_profiler_artifact(path: Path) -> None:
     path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
 
@@ -51,13 +55,18 @@ def _write_client_replay_log(
                     {
                         "status": "ok",
                         "batch_size": batch_size,
+                        "prompt_sha256": [
+                            _sha256_text(f"{run_id}:{request_id}:{sample_id}:prompt")
+                            for sample_id in range(batch_size)
+                        ],
+                        "payload_sha256": _sha256_text(f"{run_id}:{request_id}:payload"),
                         "prompt_token_counts": [prefill_tokens for _ in range(batch_size)],
                         "prompt_token_count_total": batch_size * prefill_tokens,
                         "requested_decode_tokens": decode_tokens,
                         "expected_completion_tokens_total": batch_size * decode_tokens,
                         "response_usage": {"completion_tokens": batch_size * decode_tokens},
                     }
-                    for _ in range(requests)
+                    for request_id in range(requests)
                 ],
             }
         )
@@ -166,6 +175,8 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                         "served_model_id": "granite",
                         "model_revision": "test-granite-model-revision",
                         "tokenizer_revision": "test-granite-tokenizer-revision",
+                        "model_revision_is_immutable": True,
+                        "tokenizer_revision_is_immutable": True,
                         "cache_source": "synthetic fixture",
                         "snapshot_manifest_path": granite_manifest_path,
                         "snapshot_manifest_sha256": granite_manifest_sha,
@@ -196,6 +207,7 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                     "decode_tokens": 64,
                     "requests": 16,
                     "dtype": "bfloat16",
+                    "cuda_graph_enabled": True,
                 },
                 "rows": [
                     {
@@ -346,6 +358,8 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
             "served_model_id": DEFAULT_CROSS_FAMILY_MODEL,
             "model_revision": "test-qwen-model-revision",
             "tokenizer_revision": "test-qwen-tokenizer-revision",
+            "model_revision_is_immutable": True,
+            "tokenizer_revision_is_immutable": True,
             "cache_source": "synthetic fixture",
             "snapshot_manifest_path": qwen_manifest_path,
             "snapshot_manifest_sha256": qwen_manifest_sha,
@@ -546,6 +560,8 @@ def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None
             "served_model_id": DEFAULT_CROSS_FAMILY_MODEL,
             "model_revision": "test-qwen-model-revision",
             "tokenizer_revision": "test-qwen-tokenizer-revision",
+            "model_revision_is_immutable": True,
+            "tokenizer_revision_is_immutable": True,
             "cache_source": "synthetic fixture",
             "snapshot_manifest_path": qwen_manifest_path,
             "snapshot_manifest_sha256": qwen_manifest_sha,
@@ -917,6 +933,21 @@ def test_rejects_client_replay_mixed_request_shapes(tmp_path: Path) -> None:
     assert any("one fixed request shape" in error for error in result["errors"])
 
 
+def test_rejects_client_replay_without_prompt_payload_hashes(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    log_path = tmp_path / "logs/client_replay_granite_run0.log"
+    payload = json.loads(log_path.read_text(encoding="utf-8"))
+    payload["requests"][0].pop("prompt_sha256")
+    payload["requests"][1]["payload_sha256"] = ""
+    log_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("prompt_sha256" in error for error in result["errors"])
+    assert any("payload_sha256" in error for error in result["errors"])
+
+
 def test_rejects_client_replay_batch_size_mismatch(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     metrics_path = tmp_path / "profiler_metrics.json"
@@ -947,6 +978,7 @@ def test_accepts_batch_replay_with_per_sample_prefill_tokens(tmp_path: Path) -> 
         log_payload = json.loads(log_path.read_text(encoding="utf-8"))
         for request in log_payload["requests"]:
             request["batch_size"] = 8
+            request["prompt_sha256"] = [_sha256_text(f"{log_path.name}:{idx}:prompt") for idx in range(8)]
             request["prompt_token_counts"] = [128] * 8
             request["prompt_token_count_total"] = 1024
             request["expected_completion_tokens_total"] = 512
@@ -1045,6 +1077,36 @@ def test_requires_model_snapshot_manifest_hashes(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("snapshot_manifest_sha256 must match" in error for error in result["errors"])
+
+
+def test_requires_immutable_model_revision_attestation(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    provenance_path = tmp_path / "metadata/model_provenance.json"
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["models"][0]["model_revision_is_immutable"] = False
+    provenance["models"][0].pop("tokenizer_revision_is_immutable")
+    provenance_path.write_text(json.dumps(provenance) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("model_revision_is_immutable must be true" in error for error in result["errors"])
+    assert any("tokenizer_revision_is_immutable must be true" in error for error in result["errors"])
+
+
+def test_rejects_mutable_model_revision_aliases(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    provenance_path = tmp_path / "metadata/model_provenance.json"
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["models"][0]["model_revision"] = "main"
+    provenance["models"][0]["tokenizer_revision"] = "refs/heads/master"
+    provenance_path.write_text(json.dumps(provenance) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("model_revision must not be a mutable branch alias" in error for error in result["errors"])
+    assert any("tokenizer_revision must not be a mutable branch alias" in error for error in result["errors"])
 
 
 def test_requires_same_family_control_window_ids(tmp_path: Path) -> None:
@@ -1361,6 +1423,8 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
             "served_model_id": DEFAULT_CROSS_FAMILY_MODEL,
             "model_revision": "test-qwen-model-revision",
             "tokenizer_revision": "test-qwen-tokenizer-revision",
+            "model_revision_is_immutable": True,
+            "tokenizer_revision_is_immutable": True,
             "cache_source": "synthetic fixture",
             "snapshot_manifest_path": qwen_manifest_path,
             "snapshot_manifest_sha256": qwen_manifest_sha,
@@ -1486,6 +1550,24 @@ def test_rejects_metric_request_shape_outside_native_control_matrix(tmp_path: Pa
     )
 
     result = check_run_artifacts(tmp_path, require_native_artifacts=False)
+
+    assert result["status"] == "FAIL"
+    assert any("request_shape does not match" in error for error in result["errors"])
+
+
+def test_rejects_cuda_graph_state_outside_native_control_matrix(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["cuda_graph_enabled"] = False
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path, require_full_matrix=True, require_native_artifacts=False)
 
     assert result["status"] == "FAIL"
     assert any("request_shape does not match" in error for error in result["errors"])

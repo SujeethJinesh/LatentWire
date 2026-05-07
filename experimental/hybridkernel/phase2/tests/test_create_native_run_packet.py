@@ -24,6 +24,10 @@ def _sha256(path: Path) -> str:
     return "sha256:" + digest.hexdigest()
 
 
+def _sha256_text(value: str) -> str:
+    return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
 def _write_profiler_artifact(path: Path) -> None:
     path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
 
@@ -41,13 +45,15 @@ def _write_client_replay_log(run_dir: Path, *, model: str, run_id: str) -> None:
                     {
                         "status": "ok",
                         "batch_size": 1,
+                        "prompt_sha256": [_sha256_text(f"{run_id}:{request_id}:prompt")],
+                        "payload_sha256": _sha256_text(f"{run_id}:{request_id}:payload"),
                         "prompt_token_counts": [128],
                         "prompt_token_count_total": 128,
                         "requested_decode_tokens": 64,
                         "expected_completion_tokens_total": 64,
                         "response_usage": {"completion_tokens": 64},
                     }
-                    for _ in range(16)
+                    for request_id in range(16)
                 ],
             }
         )
@@ -213,6 +219,8 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
         "Qwen/Qwen3-Next-80B-A3B-Instruct",
     }
     assert all("snapshot_manifest_path" in row for row in model_provenance["models"])
+    assert all("model_revision_is_immutable" in row for row in model_provenance["models"])
+    assert all("tokenizer_revision_is_immutable" in row for row in model_provenance["models"])
     environment = json.loads((run_dir / "metadata/environment.json").read_text())
     assert environment["environment_version"] == "hybridkernel_environment_v1"
     assert SKELETON_TODO_MARKER in (run_dir / "metadata/reduction_worksheet.tsv").read_text()
@@ -306,6 +314,8 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                         "served_model_id": model,
                         "model_revision": "test-granite-commit",
                         "tokenizer_revision": "test-granite-tokenizer-commit",
+                        "model_revision_is_immutable": True,
+                        "tokenizer_revision_is_immutable": True,
                         "cache_source": "synthetic test fixture",
                         "snapshot_manifest_path": granite_manifest_path,
                         "snapshot_manifest_sha256": granite_manifest_sha,
@@ -317,6 +327,8 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                         "served_model_id": cross_family,
                         "model_revision": "test-qwen-commit",
                         "tokenizer_revision": "test-qwen-tokenizer-commit",
+                        "model_revision_is_immutable": True,
+                        "tokenizer_revision_is_immutable": True,
                         "cache_source": "synthetic test fixture",
                         "snapshot_manifest_path": qwen_manifest_path,
                         "snapshot_manifest_sha256": qwen_manifest_sha,

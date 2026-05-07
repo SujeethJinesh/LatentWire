@@ -134,11 +134,13 @@ fresh surface, or move to GPU.
 ## Diagnostic Packet Hygiene
 
 The current diagnostic packet is tracked at
-`phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/`. Regenerate
-it only from a clean `experimental/thoughtflow_fp8` path:
+`phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/`. For local
+verification, rebuild the same packet shape into `.debug` from a clean
+`experimental/thoughtflow_fp8` path so the tracked packet is not rewritten:
 
 ```bash
-./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py
+./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py \
+  --output .debug/thoughtflow_diagnostic_packet_check
 ```
 
 The builder refuses dirty-path regeneration, and the saved-artifact tests assert

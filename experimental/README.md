@@ -12,17 +12,17 @@ preregistration explicitly reopens the branch.
 
 The current sprint ledger is `project_status_20260506.md`.
 The latest full local readiness recheck is
-`local_readiness_recheck_20260507.md` (`294 passed, 1 skipped, 2 warnings`).
+`local_readiness_recheck_20260507.md` (`303 passed, 1 skipped, 2 warnings`).
 
 ## Current Branch Ledger
 
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
-| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, mandatory reduction-input manifest checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, row-level reduction provenance, and at least 3% recoverable boundary overhead |
+| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker with prompt/payload hashes, immutable model-provenance attestation, CUDA-graph-matched control matrix checks, mandatory reduction-input manifest checker, quality-smoke artifact checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, row-level reduction provenance, and at least 3% recoverable boundary overhead |
 | `ssq_lr/` | Stopped current recipe; diagnostic scaffold only unless newly preregistered | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. Uniform S2 scouts split the blocker, and the strictest Granite Tiny `0,30` prefilter replay selected `mixed_int3_mxfp4_low_error_25pct` at `4.192x`, zero selected accuracy drift, and `0.05044` selected NLL-delta CI high. After adding Granite 350M as a second complete local hybrid model, the frozen `0,30` recipe fails the 12-prompt transfer replay; layer `0` passes on 350M and layer `30` fails, but local two-model S3 packets for layer-0 mixed25 and INT3 both fail because the recipe that passes one Granite model does not pass the other | Do not GPU-promote SSQ-LR under the current recipe. The next admissible evidence is a newly preregistered recipe/layer rule that clears Mac S2/S3 without retuning |
 | `horn/` | 0% active; demoted control scaffold | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06`. The H2 scout `shared/results/horn_h2_noise_replay_scout_20260507/` now fails under the signed-direction contract: directional drift ratio `1.037`, signed selected-direction lower bound `0.324`, support `0.5`, paired units `6/6`, hook-off max delta `0.0` | Do not GPU-promote HORN standalone. Keep it as negative/control evidence unless a deliberately reopened full H2/H3 run has new preregistered scope |
 | `hbsm/` | 0% active; demoted control scaffold | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, controls, and per-prompt measured-drift top-decile derivation. `shared/results/hbsm_local_sensitivity_20260507/` is a checker-passing 56-row one-prompt Granite Tiny B1 failure (`fisher_p=0.375`, cheap-predictor Spearman `-0.476`). `shared/results/hbsm_prompt2_sensitivity_20260507/` is a checker-passing 64-row two-prompt B1 failure (`fisher_p=1.0`, boundary top-decile count `0`, cheap-predictor Spearman `-0.667`) | Do not GPU-promote HBSM. Continue only with a new preregistered mechanism hypothesis; otherwise fold into negative/control evidence |
-| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes and clean-path generation guard | Paper-only camera-ready polish |
+| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with local-workspace input hashes, clean-path generation guard, and `.debug` rebuild instructions | Paper-only camera-ready polish |
 
 ## Shared Infrastructure
 
@@ -123,9 +123,11 @@ Shared Mac-local utilities live in `shared/`:
   H1a with hook-captured right-layer input tensors and ratio `1.06`. The H2
   noisy-continuation scout is
   `shared/results/horn_h2_noise_replay_scout_20260507/`, decision
-  `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`; it is contract-valid but
-  weak (`1.037` directional drift ratio, signed selected-direction lower
-  `0.324`, support `0.5`), so HORN is demoted as a standalone branch. These are
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`
+  with raw gate status `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`; it is
+  contract-valid but weak (`1.037` directional drift ratio, signed
+  selected-direction lower `0.324`, support `0.5`), so HORN is demoted as a
+  standalone branch. These are
   plumbing/demotion packets, not promotable gate evidence.
 - `ssq_lr_all_layer_scout.py`: metrics-only all-recurrent-layer scout that
   avoids committing duplicated tensor packets. Current artifact:
@@ -134,9 +136,10 @@ Shared Mac-local utilities live in `shared/`:
 - `horn_h2_noise_replay_scout.py`: resource-limited HORN H2
   noise-propagation scout from the failed Granite Tiny H1a packet. Current
   artifact: `shared/results/horn_h2_noise_replay_scout_20260507/`, decision
-  `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`; it passes
-  `followup_gate_contracts --gate horn_h2` but the observed directional drift
-  ratio is `1.037`, so it demotes HORN rather than reviving it.
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`
+  with raw gate status `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`; it
+  passes `followup_gate_contracts --gate horn_h2` but the observed directional
+  drift ratio is `1.037`, so it demotes HORN rather than reviving it.
 - `hbsm_local_sensitivity_runner.py`: manifest-driven resource-limited HBSM B1
   forward-sensitivity runner. Current artifact:
   `shared/results/hbsm_local_sensitivity_20260507/`, decision

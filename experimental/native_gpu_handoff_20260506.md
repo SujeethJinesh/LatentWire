@@ -36,7 +36,8 @@ Minimum admissible packet:
 - copied `metadata/native_control_matrix.json` from
   `experimental/hybridkernel/phase2/native_control_matrix.json`;
 - filled `metadata/model_provenance.json` covering every served metric model
-  and tokenizer revision;
+  and tokenizer revision, with immutable revision attestations and no mutable
+  aliases such as `main`, `master`, `HEAD`, `latest`, or `refs/heads/*`;
 - at least three distinct primary metric rows;
 - at least three same-shape same-family control rows;
 - at least three same-shape cross-family falsification rows;
@@ -45,6 +46,8 @@ Minimum admissible packet:
   or worksheet path plus SHA-256;
 - explicit `run_id`, dtype, CUDA graph state, batch shape, request count, and
   matched control label in every row;
+- fixed-replay client logs containing prompt and payload SHA-256s plus exact
+  token-count and completion-token accounting for every request;
 - local analyzer and artifact checker both pass.
 
 Decision commands on the NVIDIA host after trace reduction:
@@ -70,6 +73,15 @@ The fixed-request client commands in the runbook must use
 `--require-token-counts`; the driver then synthesizes tokenizer-roundtrip
 prompts and fails before profiling if the exact prefill length cannot be
 proven.
+
+If the profiler gate promotes and a prototype is implemented, save the first
+quality smoke as `quality_smoke.json` and validate it locally before citing any
+speed table:
+
+```bash
+./venv_arm64/bin/python -m experimental.hybridkernel.phase2.check_quality_smoke_artifacts \
+  "$QUALITY_SMOKE_JSON" --repo-root "$PWD"
+```
 
 ## SSQ-LR / HORN / HBSM
 
@@ -169,7 +181,7 @@ Latest recorded result:
 `experimental/local_readiness_recheck_20260507.md`.
 
 ```text
-294 passed, 1 skipped, 2 warnings in 7.18s
+303 passed, 1 skipped, 2 warnings in 7.22s
 ```
 
 Before interpreting any new native packet, rerun the owned Mac suite:
