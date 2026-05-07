@@ -1,0 +1,15 @@
+{
+  "environment_version": "hybridkernel_environment_v1",
+  "timestamp_utc": "2026-05-07T00:00:00Z",
+  "hostname": "synthetic-fixture-node",
+  "nvidia_smi": "NVIDIA-SMI synthetic fixture",
+  "nsys_version": "Nsight Systems synthetic fixture",
+  "ncu_version": "Nsight Compute synthetic fixture",
+  "python_version": "Python 3.11.0",
+  "packages": {
+    "vllm": "0.8.0",
+    "torch": "2.7.0",
+    "triton": "3.3.0",
+    "transformers": "4.51.0"
+  }
+}

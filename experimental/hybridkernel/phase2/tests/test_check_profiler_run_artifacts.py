@@ -28,6 +28,30 @@ def _write_profiler_artifact(path: Path) -> None:
     path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
 
 
+def _write_snapshot_manifest(run_dir: Path, name: str) -> tuple[str, str]:
+    path = run_dir / f"metadata/{name}_snapshot_manifest.json"
+    path.write_text(
+        json.dumps(
+            {
+                "files": [
+                    {
+                        "path": "config.json",
+                        "sha256": "sha256:" + ("1" * 64),
+                    },
+                    {
+                        "path": "tokenizer.json",
+                        "sha256": "sha256:" + ("2" * 64),
+                    },
+                ]
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return f"metadata/{name}_snapshot_manifest.json", _sha256(path)
+
+
 def _write_reduction_manifest(run_dir: Path, payload: dict[str, object] | None = None) -> None:
     if payload is None:
         payload = json.loads((run_dir / "profiler_metrics.json").read_text(encoding="utf-8"))
@@ -71,6 +95,29 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         "nvidia-smi\nnsys version\nncu version\npython -VV\n",
         encoding="utf-8",
     )
+    (run_dir / "metadata/environment.json").write_text(
+        json.dumps(
+            {
+                "environment_version": "hybridkernel_environment_v1",
+                "timestamp_utc": "2026-05-07T00:00:00Z",
+                "hostname": "synthetic-gpu-node",
+                "nvidia_smi": "NVIDIA-SMI synthetic driver",
+                "nsys_version": "Nsight Systems synthetic",
+                "ncu_version": "Nsight Compute synthetic",
+                "python_version": "Python 3.11.0",
+                "packages": {
+                    "vllm": "0.8.0",
+                    "torch": "2.7.0",
+                    "triton": "3.3.0",
+                    "transformers": "4.51.0",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    granite_manifest_path, granite_manifest_sha = _write_snapshot_manifest(run_dir, "granite")
     (run_dir / "metadata/model_provenance.json").write_text(
         json.dumps(
             {
@@ -82,6 +129,8 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                         "model_revision": "test-granite-model-revision",
                         "tokenizer_revision": "test-granite-tokenizer-revision",
                         "cache_source": "synthetic fixture",
+                        "snapshot_manifest_path": granite_manifest_path,
+                        "snapshot_manifest_sha256": granite_manifest_sha,
                         "local_files_only": True,
                         "trust_remote_code": True,
                     }
@@ -220,6 +269,7 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                 ),
                 "kernel_names": ["synthetic_boundary_kernel"],
                 "boundary_indices": [0],
+                "control_window_ids": [],
                 "time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
                 "ncu_launch_selection": {
                     "kernel_regex": "synthetic_boundary_kernel",
@@ -275,6 +325,7 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
     )
     provenance_path = run_dir / "metadata/model_provenance.json"
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    qwen_manifest_path, qwen_manifest_sha = _write_snapshot_manifest(run_dir, "qwen")
     provenance["models"].append(
         {
             "model_id": DEFAULT_CROSS_FAMILY_MODEL,
@@ -282,6 +333,8 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
             "model_revision": "test-qwen-model-revision",
             "tokenizer_revision": "test-qwen-tokenizer-revision",
             "cache_source": "synthetic fixture",
+            "snapshot_manifest_path": qwen_manifest_path,
+            "snapshot_manifest_sha256": qwen_manifest_sha,
             "local_files_only": True,
             "trust_remote_code": True,
         }
@@ -455,6 +508,7 @@ def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None
     (tmp_path / "logs/client_replay_qwen.log").write_text(json.dumps(client_payload) + "\n", encoding="utf-8")
     provenance_path = tmp_path / "metadata/model_provenance.json"
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    qwen_manifest_path, qwen_manifest_sha = _write_snapshot_manifest(tmp_path, "qwen")
     provenance["models"].append(
         {
             "model_id": DEFAULT_CROSS_FAMILY_MODEL,
@@ -462,6 +516,8 @@ def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None
             "model_revision": "test-qwen-model-revision",
             "tokenizer_revision": "test-qwen-tokenizer-revision",
             "cache_source": "synthetic fixture",
+            "snapshot_manifest_path": qwen_manifest_path,
+            "snapshot_manifest_sha256": qwen_manifest_sha,
             "local_files_only": True,
             "trust_remote_code": True,
         }
@@ -511,7 +567,12 @@ def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None
                 "nsys_artifact_sha256": _sha256(tmp_path / nsys_name),
                 "ncu_artifact": ncu_name,
                 "ncu_artifact_sha256": _sha256(tmp_path / ncu_name),
-                "boundary_indices": [],
+                "boundary_indices": [0] if role == "cross_family_falsification" else [],
+                "control_window_ids": (
+                    ["granite-non-boundary-window-0"]
+                    if role == "same_family_control"
+                    else []
+                ),
                 "time_window_ms": {"start": 10.0 + len(control_rows), "end": 11.0 + len(control_rows)},
                 "ncu_launch_selection": {
                     "kernel_regex": "synthetic_boundary_kernel",
@@ -922,6 +983,66 @@ def test_requires_complete_environment_capture(tmp_path: Path) -> None:
     )
 
 
+def test_requires_structured_environment_versions(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    environment_path = tmp_path / "metadata/environment.json"
+    payload = json.loads(environment_path.read_text(encoding="utf-8"))
+    payload["packages"]["vllm"] = "unavailable"
+    environment_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("environment.json packages.vllm" in error for error in result["errors"])
+
+
+def test_requires_model_snapshot_manifest_hashes(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    provenance_path = tmp_path / "metadata/model_provenance.json"
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["models"][0]["snapshot_manifest_sha256"] = "sha256:" + ("0" * 64)
+    provenance_path.write_text(json.dumps(provenance) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("snapshot_manifest_sha256 must match" in error for error in result["errors"])
+
+
+def test_requires_same_family_control_window_ids(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    control_row = dict(payload["rows"][0])
+    control_row.update(
+        {
+            "run_id": "same-family-control-0",
+            "row_role": "same_family_control",
+            "control_family": "same_model_non_boundary_segment_control",
+            "control_model_or_segment": "same_model_non_boundary_segment_control",
+            "boundary_direction": "non_boundary_same_family",
+            "attention_ssm_boundary_ms": 2.0,
+            "matched_non_boundary_ms": 1.9,
+            "boundary_indices": [],
+            "control_window_ids": [],
+            "time_window_ms": {"start": 10.0, "end": 11.0},
+        }
+    )
+    payload["rows"].append(control_row)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    _write_reduction_manifest(tmp_path, payload)
+
+    result = check_run_artifacts(tmp_path, require_native_artifacts=False)
+
+    assert result["status"] == "FAIL"
+    assert any("same_family_control rows must name control_window_ids" in error for error in result["errors"])
+
+
 def test_rejects_unfilled_readout_template_cells(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "readout.md").write_text(
@@ -1195,6 +1316,7 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
     )
     provenance_path = tmp_path / "metadata/model_provenance.json"
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    qwen_manifest_path, qwen_manifest_sha = _write_snapshot_manifest(tmp_path, "qwen")
     provenance["models"].append(
         {
             "model_id": DEFAULT_CROSS_FAMILY_MODEL,
@@ -1202,6 +1324,8 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
             "model_revision": "test-qwen-model-revision",
             "tokenizer_revision": "test-qwen-tokenizer-revision",
             "cache_source": "synthetic fixture",
+            "snapshot_manifest_path": qwen_manifest_path,
+            "snapshot_manifest_sha256": qwen_manifest_sha,
             "local_files_only": True,
             "trust_remote_code": True,
         }
@@ -1220,6 +1344,7 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
                 "attention_ssm_boundary_ms": 2.0,
                 "matched_non_boundary_ms": 1.9,
                 "boundary_indices": [],
+                "control_window_ids": ["granite-reused-non-boundary-window"],
             }
         )
         cross_family = dict(base)
@@ -1231,7 +1356,7 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
                 "control_model_or_segment": "qwen_hybrid_control",
                 "attention_ssm_boundary_ms": 2.0,
                 "matched_non_boundary_ms": 1.9,
-                "boundary_indices": [],
+                "boundary_indices": [0],
             }
         )
         rows.extend([same_family, cross_family])

@@ -34,9 +34,10 @@ The packet is incomplete unless all of these exist:
 | Path | Required content |
 |---|---|
 | `metadata/environment.txt` | timestamp, hostname, `nvidia-smi`, `nsys --version`, `ncu --version`, Python version, package freeze, vLLM/Torch/Triton/Transformers versions |
+| `metadata/environment.json` | parseable environment record with `environment_version: "hybridkernel_environment_v1"`, host/GPU/profiler/Python fields, and installed `vllm`, `torch`, `triton`, and `transformers` versions |
 | `metadata/profile_scope.json` | server-side scope for both Nsight Systems and Nsight Compute |
 | `metadata/architecture_map.json` | copied HybridKernel architecture map used for boundary annotation |
-| `metadata/model_provenance.json` | exact model and tokenizer provenance for every served metric model: model ID, served model ID, resolved model revision, tokenizer revision, cache source, `local_files_only`, and `trust_remote_code` |
+| `metadata/model_provenance.json` | exact model and tokenizer provenance for every served metric model: model ID, served model ID, resolved model revision, tokenizer revision, cache source, snapshot manifest path/SHA, `local_files_only`, and `trust_remote_code` |
 | `metadata/native_control_matrix.json` | copied control matrix fixing primary, same-family, and cross-family row roles before profiling |
 | `metadata/reduction_input_manifest.json` | row-level reduction audit trail with `manifest_version: "hybridkernel_reduction_inputs_v1"` tying each metric row to source Nsight exports, time windows, commands, and reducer script or worksheet path plus SHA-256 digests |
 | `metadata/reduction_worksheet.tsv` or equivalent cited source file | filled manual/scripted reduction worksheet cited by `reduction_source_path` in the manifest; template markers are rejected |
@@ -63,6 +64,8 @@ that final self-report.
       "model_revision": "<resolved git commit or immutable snapshot>",
       "tokenizer_revision": "<resolved git commit or immutable snapshot>",
       "cache_source": "<HF cache path, mounted volume, or download source>",
+      "snapshot_manifest_path": "metadata/granite_snapshot_manifest.json",
+      "snapshot_manifest_sha256": "sha256:<64 lowercase hex chars>",
       "local_files_only": false,
       "trust_remote_code": true
     }
@@ -159,6 +162,11 @@ reduced native trace:
   no-boundary-signal kill mode;
 - `kernel_names`: non-empty list of kernel names used in the reduction;
 - `boundary_indices`: integer boundary IDs, non-empty for `primary_hybrid`;
+  also non-empty for `cross_family_falsification` rows because those are
+  boundary rows in the mapped cross-family hybrid. Same-family controls use
+  empty `boundary_indices`.
+- `control_window_ids`: stable non-boundary window IDs, non-empty for
+  `same_family_control` rows and empty for primary/cross-family boundary rows;
 - `time_window_ms`: object with numeric `start` and `end`, with `end > start`;
 - `ncu_launch_selection`: object recording `kernel_regex`, `launch_skip`,
   positive `launch_count`, `source_nsys_artifact`, matching

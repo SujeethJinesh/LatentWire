@@ -451,7 +451,7 @@ Historical/general S1 packets can be validated with:
   --mode real --project ssq_lr
 ```
 
-Active gate status: held-out S1b state heterogeneity is real, the all-primary
+Current stop status: held-out S1b state heterogeneity is real, the all-primary
 mixed recipe fails the longer-window replay, layer-localization excludes layer
 `12`, and the strictest Granite Tiny `0,30` replay historically selected
 `mixed_int3_mxfp4_low_error_25pct`. The cache-only S3 prefilter

@@ -368,18 +368,18 @@ latency, throughput, or Blackwell evidence.
   reuse. No code was changed and no frozen probe was run.
 - 2026-05-06: Implemented the pre-registered `rdu_topk` signal in the frozen
   sparse-cache probe and ran the one allowed frozen evaluation. Historical
-  result: temporarily revived
+  first-surface result: passed
   on this Mac-local decision surface. `rdu_topk` NLL is 3.779 versus ThinKV-like
   3.900 and R-KV-like 3.939, with paired CIs below zero against both baselines.
   Do not tune this signal on the same saved traces.
 - 2026-05-06: Added a cached deterministic split/paired diagnostic for the
   historical `rdu_topk` row. All four half-size partitions keep positive mean
   margins versus R-KV-like and ThinKV-like, but only 2/4 partitions clear both
-  paired CI highs below zero. `rdu_topk` was promoted on that frozen
+  paired CI highs below zero. `rdu_topk` was historically promoted on that frozen
   gate, but this row is now superseded by later demotion evidence.
 - 2026-05-06: Added and ran the measured no-retuning reproduction check for
   `rdu_topk` on the same 74-trace frozen sparse-cache surface. The measured
-  rerun exactly matches the cached promoted gate on this deterministic Mac
+  rerun exactly matches the cached historical first-surface gate on this deterministic Mac
   stack, preserves same-family and cross-family margins, and adds
   oracle/headroom diagnostics. This strengthens local reproduction status but
   does not replace a larger or seed-repeated frozen slice.
@@ -419,7 +419,7 @@ current `rdu_topk` branch.
 ## 2026-05-06 Current Decision Manifest
 
 Added `phase2/current_decision_manifest_20260506.md` and
-`paper/reviewer_pack.md` to prevent stale historical `ALIVE`/`PROMOTED`
+`paper/reviewer_pack.md` to prevent stale historical `ALIVE`/`REPRODUCED`/`PROMOTED`
 artifacts from being misread as the current conclusion. The manifest records
 that there is no live method branch, that `rdu_topk` is stopped after the
 alternate-surface and independent-trace failures, and that GPU/FP8 work is not

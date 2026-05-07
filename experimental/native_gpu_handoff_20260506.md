@@ -12,10 +12,11 @@
 2. **SSQ-LR**: current recipe failed 12-prompt no-retuning transfer to Granite
    350M; no GPU validation until a newly preregistered recipe clears S1--S3
    without per-model retuning.
-3. **HORN**: no GPU validation until real H1a/H1/H2/H3 boundary controls show
-   cross-model directional asymmetry and noise-propagation sensitivity.
-4. **HBSM**: no GPU validation until real B1/B2/B3 sensitivity and predictor
-   gates survive the KL-style and activation/outlier baselines.
+3. **HORN**: no GPU validation until a newly preregistered reopening produces
+   real H1a/H1/H2/H3 boundary controls with cross-model directional asymmetry
+   and noise-propagation sensitivity.
+4. **HBSM**: no GPU validation until a newly preregistered B1/B2/B3 mechanism
+   hypothesis survives the KL-style and activation/outlier baselines.
 5. **ThoughtFlow-FP8**: no GPU work for the current branch set (`rdu_topk`,
    `psi_topk`, or `vwac_topk`). Reopen only after a new preregistered utility
    signal exists and passes a fresh/larger frozen sparse-cache surface.
@@ -160,7 +161,7 @@ Latest recorded result:
 `experimental/local_readiness_recheck_20260507.md`.
 
 ```text
-288 passed, 1 skipped, 2 warnings in 10.93s
+291 passed, 1 skipped, 2 warnings in 11.63s
 ```
 
 Before interpreting any new native packet, rerun the owned Mac suite:

@@ -29,6 +29,7 @@
       "boundary_indices": [
         0
       ],
+      "control_window_ids": [],
       "time_window_ms": {
         "start": 0.0,
         "end": 1.0
@@ -78,6 +79,7 @@
       "boundary_indices": [
         0
       ],
+      "control_window_ids": [],
       "time_window_ms": {
         "start": 1.0,
         "end": 2.0
@@ -127,6 +129,7 @@
       "boundary_indices": [
         0
       ],
+      "control_window_ids": [],
       "time_window_ms": {
         "start": 2.0,
         "end": 3.0

@@ -178,6 +178,26 @@ screenshots or notebook snippets.
   python -VV
   python -m pip freeze
 } | tee "$HWK_RUN/metadata/environment.txt"
+
+python - <<'PY'
+import datetime as dt, importlib.metadata as m, json, pathlib, platform, subprocess, sys, os
+
+def run(cmd):
+    return subprocess.check_output(cmd, text=True, stderr=subprocess.STDOUT).strip()
+
+payload = {
+    "environment_version": "hybridkernel_environment_v1",
+    "timestamp_utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "hostname": platform.node(),
+    "nvidia_smi": run(["nvidia-smi"]),
+    "nsys_version": run(["nsys", "--version"]),
+    "ncu_version": run(["ncu", "--version"]),
+    "python_version": sys.version.replace("\n", " "),
+    "packages": {name: m.version(name) for name in ["vllm", "torch", "triton", "transformers"]},
+}
+out = pathlib.Path(os.environ["HWK_RUN"]) / "metadata/environment.json"
+out.write_text(json.dumps(payload, indent=2) + "\n")
+PY
 ```
 
 If the exact vLLM command differs from the one in
@@ -274,6 +294,7 @@ python "$HWK_ROOT/phase2/check_profiler_run_artifacts.py" \
 Expected final packet:
 
 - `metadata/environment.txt`
+- `metadata/environment.json`
 - `metadata/profile_scope.json`
 - `metadata/architecture_map.json`
 - `metadata/model_provenance.json`

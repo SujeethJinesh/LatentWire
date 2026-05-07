@@ -94,7 +94,9 @@ placeholders that only satisfy the expected filename extension. The final
 checker requires reviewable profiler payloads, with default minimum artifact
 size of 1024 bytes and no skeleton placeholder markers.
 It also fails the packet if `metadata/environment.txt` omits `nvidia-smi`,
-`nsys`, `ncu`, or `python` capture lines.
+`nsys`, `ncu`, or `python` capture lines, or if the parseable
+`metadata/environment.json` does not include installed `vllm`, `torch`,
+`triton`, and `transformers` versions.
 
 The generated packet also includes `metadata/model_provenance.json`. Fill it
 before profiling with exact model and tokenizer revisions for every served
@@ -114,6 +116,8 @@ Use this schema:
       "model_revision": "<resolved git commit or immutable snapshot>",
       "tokenizer_revision": "<resolved git commit or immutable snapshot>",
       "cache_source": "<HF cache path, mounted volume, or download source>",
+      "snapshot_manifest_path": "metadata/granite_snapshot_manifest.json",
+      "snapshot_manifest_sha256": "sha256:<64 lowercase hex chars>",
       "local_files_only": false,
       "trust_remote_code": true
     }
@@ -141,6 +145,48 @@ for name in ["vllm", "torch", "triton", "transformers"]:
         print(f"{name}: unavailable ({exc})")
 PY
 } | tee "$HWK_RUN/metadata/environment.txt"
+
+python - <<'PY'
+import datetime as dt, importlib.metadata as m, json, pathlib, platform, subprocess, sys, os
+
+def run(cmd):
+    return subprocess.check_output(cmd, text=True, stderr=subprocess.STDOUT).strip()
+
+payload = {
+    "environment_version": "hybridkernel_environment_v1",
+    "timestamp_utc": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "hostname": platform.node(),
+    "nvidia_smi": run(["nvidia-smi"]),
+    "nsys_version": run(["nsys", "--version"]),
+    "ncu_version": run(["ncu", "--version"]),
+    "python_version": sys.version.replace("\n", " "),
+    "packages": {name: m.version(name) for name in ["vllm", "torch", "triton", "transformers"]},
+}
+out = pathlib.Path(os.environ["HWK_RUN"]) / "metadata/environment.json"
+out.write_text(json.dumps(payload, indent=2) + "\n")
+PY
+```
+
+For each served model, write a lightweight snapshot manifest with config and
+tokenizer metadata hashes before profiling and record its SHA in
+`metadata/model_provenance.json`:
+
+```bash
+python - <<'PY'
+import hashlib, json, pathlib, os
+snapshot_dir = pathlib.Path(os.environ["MODEL_SNAPSHOT_DIR"])
+rows = []
+for pattern in ["config*.json", "tokenizer*.json", "generation_config.json", "special_tokens_map.json"]:
+    for path in sorted(snapshot_dir.glob(pattern)):
+        if path.is_file():
+            h = hashlib.sha256(path.read_bytes()).hexdigest()
+            rows.append({"path": str(path.relative_to(snapshot_dir)), "sha256": "sha256:" + h})
+if not rows:
+    raise SystemExit("no config/tokenizer metadata files found")
+out = pathlib.Path(os.environ["HWK_RUN"]) / "metadata/granite_snapshot_manifest.json"
+out.write_text(json.dumps({"files": rows}, indent=2) + "\n")
+print("sha256:" + hashlib.sha256(out.read_bytes()).hexdigest())
+PY
 ```
 
 Run this GPU-node preflight before the first Nsight trace. Save both stdout and
@@ -643,6 +689,7 @@ Required fields:
 | `ncu_artifact_sha256` | `sha256:<64 lowercase hex chars>` digest of the `ncu_artifact` file, or `not_run_no_boundary_signal` only in no-boundary-signal kill packets |
 | `kernel_names` | non-empty list of kernel names reduced into the row |
 | `boundary_indices` | list of architecture-map boundary indices represented by the row |
+| `control_window_ids` | stable non-boundary window IDs; required and non-empty for same-family controls, empty for primary and cross-family boundary rows |
 | `time_window_ms` | object with numeric `start` and `end` trace-window boundaries |
 | `ncu_launch_selection` | object recording `kernel_regex`, `launch_skip`, positive `launch_count`, `source_nsys_artifact`, matching `source_time_window_ms`, and derivation notes for the NCU launch slice |
 | `reduction_command` | exact command or script invocation used to reduce the Nsight artifacts into this row |

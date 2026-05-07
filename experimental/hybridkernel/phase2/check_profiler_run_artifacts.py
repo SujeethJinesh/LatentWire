@@ -24,6 +24,7 @@ from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
 
 REQUIRED_FILES = [
     "metadata/environment.txt",
+    "metadata/environment.json",
     "metadata/architecture_map.json",
     "metadata/model_provenance.json",
     "metadata/native_control_matrix.json",
@@ -89,6 +90,7 @@ REQUIRED_METRIC_PROVENANCE_FIELDS = [
     "ncu_artifact_sha256",
     "kernel_names",
     "boundary_indices",
+    "control_window_ids",
     "time_window_ms",
     "recoverable_fraction_basis",
     "reduction_command",
@@ -112,9 +114,19 @@ REDUCTION_MANIFEST_VERSION = "hybridkernel_reduction_inputs_v1"
 ALLOWED_ROW_ROLES = {"primary_hybrid", "same_family_control", "cross_family_falsification"}
 SHA256_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 DEFAULT_CROSS_FAMILY_MODEL = "Qwen/Qwen3-Next-80B-A3B-Instruct"
+ENVIRONMENT_PROVENANCE_VERSION = "hybridkernel_environment_v1"
 MODEL_PROVENANCE_VERSION = "hybridkernel_model_provenance_v1"
 REPLACEMENT_METADATA_PATH = "metadata/cross_family_control_replacement_template.json"
 MAX_RECOVERABLE_FRACTION = 0.60
+REQUIRED_ENVIRONMENT_FIELDS = [
+    "timestamp_utc",
+    "hostname",
+    "nvidia_smi",
+    "nsys_version",
+    "ncu_version",
+    "python_version",
+]
+REQUIRED_ENVIRONMENT_PACKAGES = ["vllm", "torch", "triton", "transformers"]
 
 
 def _matching_artifacts(root: Path, patterns: list[str]) -> list[Path]:
@@ -299,6 +311,16 @@ def _file_sha256(path: Path) -> str:
 def _reject_skeleton_todo(path: Path, label: str, errors: list[str]) -> None:
     if path.is_file() and SKELETON_TODO_MARKER in _read_text(path):
         errors.append(f"{label} still contains native run-packet skeleton TODO markers")
+
+
+def _is_unfilled_text(value: object) -> bool:
+    text = str(value or "").strip()
+    return (
+        not text
+        or SKELETON_TODO_MARKER in text
+        or "TO_FILL" in text
+        or "placeholder" in text.lower()
+    )
 
 
 def _validate_profiled_process(field: str, value: str, errors: list[str]) -> None:
@@ -563,7 +585,7 @@ def _validate_metric_provenance(
             "reduction_notes",
         ]:
             value = str(row.get(field, "")).strip()
-            if not value or "TODO_NATIVE_PROFILE_FILL" in value or "placeholder" in value.lower():
+            if _is_unfilled_text(value):
                 errors.append(f"metric row {idx} {field} must be filled with non-placeholder text")
         nsys_value = str(row.get("nsys_artifact", "")).strip()
         nsys_sha256 = str(row.get("nsys_artifact_sha256", "")).strip()
@@ -605,8 +627,18 @@ def _validate_metric_provenance(
             isinstance(value, int) and not isinstance(value, bool) for value in boundary_indices
         ):
             errors.append(f"metric row {idx} boundary_indices must be a list of integers")
-        elif row_role == "primary_hybrid" and not boundary_indices:
-            errors.append(f"metric row {idx} primary_hybrid rows must name boundary_indices")
+        elif row_role in {"primary_hybrid", "cross_family_falsification"} and not boundary_indices:
+            errors.append(
+                f"metric row {idx} {row_role} rows must name boundary_indices"
+            )
+        control_window_ids = row.get("control_window_ids")
+        if not isinstance(control_window_ids, list) or not all(
+            isinstance(value, str) and value.strip() and not _is_unfilled_text(value)
+            for value in control_window_ids
+        ):
+            errors.append(f"metric row {idx} control_window_ids must be a list of stable non-placeholder strings")
+        elif row_role == "same_family_control" and not control_window_ids:
+            errors.append(f"metric row {idx} same_family_control rows must name control_window_ids")
         time_window = row.get("time_window_ms")
         if not isinstance(time_window, dict):
             errors.append(f"metric row {idx} time_window_ms must be an object")
@@ -1009,7 +1041,105 @@ def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[
     return specs
 
 
-def _validate_model_provenance(path: Path, required_models: set[str], errors: list[str]) -> None:
+def _validate_environment_json(path: Path, errors: list[str]) -> None:
+    if not path.is_file():
+        return
+    _reject_skeleton_todo(path, "metadata/environment.json", errors)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"environment.json is invalid: {exc}")
+        return
+    if not isinstance(payload, dict):
+        errors.append("environment.json must be a JSON object")
+        return
+    if str(payload.get("environment_version", "")).strip() != ENVIRONMENT_PROVENANCE_VERSION:
+        errors.append(
+            "environment.json environment_version must be "
+            f"{ENVIRONMENT_PROVENANCE_VERSION!r}"
+        )
+    for field in REQUIRED_ENVIRONMENT_FIELDS:
+        if _is_unfilled_text(payload.get(field)):
+            errors.append(f"environment.json {field} must be filled")
+    packages = payload.get("packages")
+    if not isinstance(packages, dict):
+        errors.append("environment.json packages must be an object")
+        return
+    for package in REQUIRED_ENVIRONMENT_PACKAGES:
+        value = packages.get(package)
+        if _is_unfilled_text(value) or "unavailable" in str(value).lower():
+            errors.append(f"environment.json packages.{package} must be filled with an installed version")
+
+
+def _validate_model_snapshot_manifest(
+    *,
+    run_dir: Path,
+    row_index: int,
+    row: dict[str, object],
+    errors: list[str],
+) -> None:
+    manifest_path_value = str(row.get("snapshot_manifest_path", "")).strip()
+    manifest_sha256 = str(row.get("snapshot_manifest_sha256", "")).strip()
+    if _is_unfilled_text(manifest_path_value):
+        errors.append(f"model_provenance.json row {row_index} snapshot_manifest_path must be filled")
+        return
+    if not SHA256_PATTERN.match(manifest_sha256):
+        errors.append(
+            f"model_provenance.json row {row_index} snapshot_manifest_sha256 "
+            "must be sha256:<64 lowercase hex chars>"
+        )
+    manifest_path = _resolve_packet_relative_path(
+        run_dir,
+        manifest_path_value,
+        f"model_provenance.json row {row_index} snapshot_manifest_path",
+        errors,
+    )
+    if manifest_path is None:
+        return
+    if SHA256_PATTERN.match(manifest_sha256) and _file_sha256(manifest_path) != manifest_sha256:
+        errors.append(
+            f"model_provenance.json row {row_index} snapshot_manifest_sha256 "
+            "must match snapshot_manifest_path file"
+        )
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(
+            f"model_provenance.json row {row_index} snapshot manifest is invalid: {exc}"
+        )
+        return
+    if not isinstance(manifest, dict):
+        errors.append(f"model_provenance.json row {row_index} snapshot manifest must be a JSON object")
+        return
+    files = manifest.get("files")
+    if not isinstance(files, list) or not files:
+        errors.append(f"model_provenance.json row {row_index} snapshot manifest must list files")
+        return
+    for file_index, file_row in enumerate(files):
+        if not isinstance(file_row, dict):
+            errors.append(
+                f"model_provenance.json row {row_index} snapshot manifest file {file_index} must be an object"
+            )
+            continue
+        if _is_unfilled_text(file_row.get("path")):
+            errors.append(
+                f"model_provenance.json row {row_index} snapshot manifest file {file_index} path must be filled"
+            )
+        digest = str(file_row.get("sha256", "")).strip()
+        if not SHA256_PATTERN.match(digest):
+            errors.append(
+                f"model_provenance.json row {row_index} snapshot manifest file {file_index} "
+                "sha256 must be sha256:<64 lowercase hex chars>"
+            )
+
+
+def _validate_model_provenance(
+    path: Path,
+    required_models: set[str],
+    errors: list[str],
+    *,
+    run_dir: Path,
+) -> None:
     if not path.is_file():
         return
     _reject_skeleton_todo(path, "metadata/model_provenance.json", errors)
@@ -1043,8 +1173,14 @@ def _validate_model_provenance(path: Path, required_models: set[str], errors: li
             "cache_source",
         ]:
             value = str(row.get(field, "")).strip()
-            if not value or SKELETON_TODO_MARKER in value or "TO_FILL" in value:
+            if _is_unfilled_text(value):
                 errors.append(f"model_provenance.json row {index} {field} must be filled")
+        _validate_model_snapshot_manifest(
+            run_dir=run_dir,
+            row_index=index,
+            row=row,
+            errors=errors,
+        )
         trust_remote_code = row.get("trust_remote_code")
         if not isinstance(trust_remote_code, bool):
             errors.append(f"model_provenance.json row {index} trust_remote_code must be boolean")
@@ -1327,6 +1463,7 @@ def check_run_artifacts(
         for marker in ENVIRONMENT_MARKERS:
             if marker not in environment:
                 errors.append(f"environment metadata does not mention {marker}")
+    _validate_environment_json(run_dir / "metadata/environment.json", errors)
 
     architecture_models = _models_from_architecture_map(
         run_dir / "metadata/architecture_map.json", errors
@@ -1624,6 +1761,7 @@ def check_run_artifacts(
         run_dir / "metadata/model_provenance.json",
         required_provenance_models,
         errors,
+        run_dir=run_dir,
     )
 
     analysis_json_path = run_dir / "profiler_analysis_gate.json"

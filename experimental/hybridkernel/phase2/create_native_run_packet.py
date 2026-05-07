@@ -97,6 +97,25 @@ PY
 """
 
 
+def _environment_json_template() -> dict[str, object]:
+    return {
+        "environment_version": "hybridkernel_environment_v1",
+        "timestamp_utc": SKELETON_TODO_MARKER,
+        "hostname": SKELETON_TODO_MARKER,
+        "nvidia_smi": SKELETON_TODO_MARKER,
+        "nsys_version": SKELETON_TODO_MARKER,
+        "ncu_version": SKELETON_TODO_MARKER,
+        "python_version": SKELETON_TODO_MARKER,
+        "packages": {
+            "vllm": SKELETON_TODO_MARKER,
+            "torch": SKELETON_TODO_MARKER,
+            "triton": SKELETON_TODO_MARKER,
+            "transformers": SKELETON_TODO_MARKER,
+        },
+        "notes": "Fill from the same GPU node and virtual environment used for profiling.",
+    }
+
+
 def _profile_scope(model: str) -> dict[str, object]:
     qwen_model = DEFAULT_CROSS_FAMILY_MODEL
     return {
@@ -159,6 +178,7 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
             "control_model_or_segment": "granite_hybrid_attention_ssm_boundary_windows",
             "boundary_direction": "mixed_attention_ssm",
             "boundary_indices": [],
+            "control_window_ids": [],
         },
         {
             "label": "same-family-control",
@@ -170,6 +190,7 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
             ),
             "boundary_direction": "non_boundary_same_family",
             "boundary_indices": [],
+            "control_window_ids": [],
         },
         {
             "label": "cross-family-falsification",
@@ -179,6 +200,7 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
             "control_model_or_segment": "qwen3_next_hybrid_boundary_windows",
             "boundary_direction": "linear_attention_gated_delta_boundary",
             "boundary_indices": [],
+            "control_window_ids": [],
         },
     ]
     return {
@@ -216,6 +238,7 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
                 "ncu_artifact_sha256": None,
                 "kernel_names": [],
                 "boundary_indices": spec["boundary_indices"],
+                "control_window_ids": spec["control_window_ids"],
                 "time_window_ms": {"start": None, "end": None},
                 "ncu_launch_selection": {
                     "kernel_regex": None,
@@ -289,6 +312,8 @@ def _model_provenance_template(model: str) -> dict[str, object]:
                 "model_revision": SKELETON_TODO_MARKER,
                 "tokenizer_revision": SKELETON_TODO_MARKER,
                 "cache_source": SKELETON_TODO_MARKER,
+                "snapshot_manifest_path": SKELETON_TODO_MARKER,
+                "snapshot_manifest_sha256": f"sha256:{SKELETON_TODO_MARKER}",
                 "local_files_only": False,
                 "trust_remote_code": True,
             },
@@ -298,6 +323,8 @@ def _model_provenance_template(model: str) -> dict[str, object]:
                 "model_revision": SKELETON_TODO_MARKER,
                 "tokenizer_revision": SKELETON_TODO_MARKER,
                 "cache_source": SKELETON_TODO_MARKER,
+                "snapshot_manifest_path": SKELETON_TODO_MARKER,
+                "snapshot_manifest_sha256": f"sha256:{SKELETON_TODO_MARKER}",
                 "local_files_only": False,
                 "trust_remote_code": True,
             },
@@ -341,6 +368,10 @@ def create_run_packet(
 
     _write_new(output_dir / "README.md", _packet_readme(model))
     _write_new(output_dir / "metadata/environment.txt", _environment_template())
+    _write_new(
+        output_dir / "metadata/environment.json",
+        json.dumps(_environment_json_template(), indent=2) + "\n",
+    )
     _write_new(
         output_dir / "metadata/profile_scope.json",
         json.dumps(_profile_scope(model), indent=2) + "\n",

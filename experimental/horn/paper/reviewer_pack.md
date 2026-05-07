@@ -37,7 +37,7 @@ positive claim; H3 has no model evidence.
 | Correctness | The checker now requires at least 12 prompts unless resource-limited, prompt-cluster IDs, both boundary directions, per-prompt both-direction non-boundary controls through `matched_boundary_direction`, finite numeric fields, prompt hash provenance, architecture-map hash provenance tied to the claimed model, a `trace_plan_path` whose file hash matches the registered `trace_plan_hash`, saved tensor artifact provenance, recomputed H1a `summary.json` gate aggregates, and every observed boundary tuple to have a permuted-direction row that reuses the same metrics/source/hash while flipping the actual `direction` label. Non-rehearsal packets must include the copied `.pt` activation tensors; the checker reloads them and recomputes max-abs, RMS, and kurtosis row metrics. The selected H1a lower bound is recomputed as a deterministic prompt-cluster bootstrap, so aggregate-only rows cannot fabricate the interval. Near-boundary non-boundary controls block promotion. The shared builder now automatically marks resource-limited packets non-promotable. H2/H3 follow-up contracts additionally reject missing fixed H1 direction, noise side/basis, paired clean/noisy NLL rows, hook-off controls, pure-attention controls, and pure-Mamba controls. | Artifact path is hardened. |
 | Reproducibility | The 72-row synthetic H1a real-schema rehearsal is deterministic, passes the real checker in non-promoting mode, and shared architecture maps fix boundary IDs. The H1a real packet and H2 scout are both reproducible from local cached Granite Tiny weights with repo-local commands. | Strong enough for demotion; not positive evidence. |
 | Novelty | The proposed wedge is directional propagation through hybrid boundaries, not generic activation-outlier measurement. | Plausible only if H1/H2/H3 pass. |
-| Camera-readiness | The draft is a preregistration shell and needs real H1/H2/H3 tables before any standalone method/measurement submission. As a standalone paper it should be stopped unless reopened with a new gate; the current value is a negative/control appendix for SSQ-LR/HBSM. | Not camera-ready standalone. |
+| Camera-readiness | The draft is a preregistration shell and needs real H1/H2/H3 tables before any standalone method/measurement submission. As a standalone paper it should be stopped unless reopened with a new gate; the current value is negative/control appendix context. | Not camera-ready standalone. |
 
 ## Strongest Evidence
 
@@ -50,7 +50,7 @@ positive claim; H3 has no model evidence.
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl` enumerates 1,404 boundary/control capture rows, including a matched non-boundary control for each observed boundary row | execution checklist only |
 | model eligibility | Granite Tiny is cached locally and used for real resource-limited H1a/H2 scouts; larger live targets remain uncached or GPU-sized. | Mac demotion path exercised; frontier validation still GPU-sized |
 | real-packet checker | rejects missing directions, stale summary fields, too few prompts, non-finite rows, promotable resource-limited decisions, missing trace-plan hash pinning, missing tensor artifacts, tensor hash mismatches, row metrics that do not recompute from saved activation tensors, unpaired or independently measured permuted controls, near-boundary non-boundary controls, and permuted controls that preserve the selected directional effect | ready for real H1 |
-| follow-up contract checker | `experimental.shared.followup_gate_contracts --gate horn_h2/horn_h3` enforces noisy replay and cross-architecture control fields before later evidence can be cited | contract ready, no model rows |
+| follow-up contract checker | `experimental.shared.followup_gate_contracts --gate horn_h2/horn_h3` enforces noisy replay and cross-architecture control fields before later evidence can be cited | contract ready; H2 model rows fail, H3 has no model rows |
 
 Non-boundary rows may retain their true architecture direction while using
 `matched_boundary_direction` to identify the boundary direction they control
@@ -74,7 +74,7 @@ is treated as an acceptable null.
 
 ## Next Exact Gate
 
-Do not spend GPU on HORN standalone. Fold the H1a/H2 failures into SSQ-LR/HBSM
-as negative/control evidence. Reopen HORN only with a new preregistered full
+Do not spend GPU on HORN standalone. Fold the H1a/H2 failures into
+negative/control appendix context. Reopen HORN only with a new preregistered full
 H2/H3 scope on more prompts/models and a clear reason why the near-null,
 direction-flipping H2 scout should be overturned.

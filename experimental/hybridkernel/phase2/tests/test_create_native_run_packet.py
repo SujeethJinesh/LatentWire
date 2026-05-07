@@ -28,6 +28,24 @@ def _write_profiler_artifact(path: Path) -> None:
     path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
 
 
+def _write_snapshot_manifest(run_dir: Path, name: str) -> tuple[str, str]:
+    path = run_dir / f"metadata/{name}_snapshot_manifest.json"
+    path.write_text(
+        json.dumps(
+            {
+                "files": [
+                    {"path": "config.json", "sha256": "sha256:" + ("1" * 64)},
+                    {"path": "tokenizer.json", "sha256": "sha256:" + ("2" * 64)},
+                ]
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return f"metadata/{name}_snapshot_manifest.json", _sha256(path)
+
+
 def _write_reduction_manifest(run_dir: Path, payload: dict[str, object]) -> None:
     rows = []
     for row in payload["rows"]:
@@ -69,6 +87,7 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     expected_files = [
         "README.md",
         "metadata/environment.txt",
+        "metadata/environment.json",
         "metadata/profile_scope.json",
         "metadata/architecture_map.json",
         "metadata/model_provenance.json",
@@ -149,6 +168,7 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     for row in metrics["rows"]:
         assert "ncu_launch_selection" in row
         assert row["ncu_launch_selection"]["kernel_regex"] is None
+        assert "control_window_ids" in row
     architecture_map = json.loads((run_dir / "metadata/architecture_map.json").read_text())
     assert "ibm-granite/granite-4.0-h-tiny" in {row["model"] for row in architecture_map}
     control_matrix = json.loads((run_dir / "metadata/native_control_matrix.json").read_text())
@@ -164,6 +184,9 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
         "ibm-granite/granite-4.0-h-tiny",
         "Qwen/Qwen3-Next-80B-A3B-Instruct",
     }
+    assert all("snapshot_manifest_path" in row for row in model_provenance["models"])
+    environment = json.loads((run_dir / "metadata/environment.json").read_text())
+    assert environment["environment_version"] == "hybridkernel_environment_v1"
     assert SKELETON_TODO_MARKER in (run_dir / "metadata/reduction_worksheet.tsv").read_text()
 
 
@@ -178,6 +201,7 @@ def test_skeleton_is_not_mistaken_for_complete_native_evidence(tmp_path: Path) -
     assert any("no valid native rows" in error for error in result["errors"])
     assert any(SKELETON_TODO_MARKER in (run_dir / path).read_text() for path in [
         "metadata/environment.txt",
+        "metadata/environment.json",
         "metadata/model_provenance.json",
         "metadata/reduction_input_manifest.json",
         "metadata/reduction_worksheet.tsv",
@@ -220,6 +244,30 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
     (run_dir / "metadata/environment.txt").write_text(
         "nvidia-smi\nnsys version\nncu version\npython -VV\n", encoding="utf-8"
     )
+    (run_dir / "metadata/environment.json").write_text(
+        json.dumps(
+            {
+                "environment_version": "hybridkernel_environment_v1",
+                "timestamp_utc": "2026-05-07T00:00:00Z",
+                "hostname": "synthetic-gpu-node",
+                "nvidia_smi": "NVIDIA-SMI synthetic driver",
+                "nsys_version": "Nsight Systems synthetic",
+                "ncu_version": "Nsight Compute synthetic",
+                "python_version": "Python 3.11.0",
+                "packages": {
+                    "vllm": "0.8.0",
+                    "torch": "2.7.0",
+                    "triton": "3.3.0",
+                    "transformers": "4.51.0",
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    granite_manifest_path, granite_manifest_sha = _write_snapshot_manifest(run_dir, "granite")
+    qwen_manifest_path, qwen_manifest_sha = _write_snapshot_manifest(run_dir, "qwen")
     (run_dir / "metadata/model_provenance.json").write_text(
         json.dumps(
             {
@@ -231,6 +279,8 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                         "model_revision": "test-granite-commit",
                         "tokenizer_revision": "test-granite-tokenizer-commit",
                         "cache_source": "synthetic test fixture",
+                        "snapshot_manifest_path": granite_manifest_path,
+                        "snapshot_manifest_sha256": granite_manifest_sha,
                         "local_files_only": True,
                         "trust_remote_code": True,
                     },
@@ -240,6 +290,8 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                         "model_revision": "test-qwen-commit",
                         "tokenizer_revision": "test-qwen-tokenizer-commit",
                         "cache_source": "synthetic test fixture",
+                        "snapshot_manifest_path": qwen_manifest_path,
+                        "snapshot_manifest_sha256": qwen_manifest_sha,
                         "local_files_only": True,
                         "trust_remote_code": True,
                     },
@@ -365,7 +417,12 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                     "ncu_artifact": f"ncu/{row_id}.ncu-rep",
                     "ncu_artifact_sha256": _sha256(ncu_path),
                     "kernel_names": [f"synthetic_{label}_kernel"],
-                    "boundary_indices": [spec_index] if role == "primary_hybrid" else [],
+                    "boundary_indices": [spec_index] if role != "same_family_control" else [],
+                    "control_window_ids": (
+                        [f"granite-non-boundary-window-{repeat}"]
+                        if role == "same_family_control"
+                        else []
+                    ),
                     "time_window_ms": {
                         "start": float(spec_index * 10 + repeat),
                         "end": float(spec_index * 10 + repeat) + 1.0,

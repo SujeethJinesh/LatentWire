@@ -2,7 +2,7 @@
 
 - date: 2026-05-07
 - status: current recipe stopped for GPU handoff
-- documentation commit: `95a01889`
+- documentation/audit commit: `3eaa9e62`
 - execution commit: not recorded in packet metadata before this manifest; use
   the packet input hashes below as the artifact authority under code drift
 - decision: the frozen `0,30` mixed INT3/MXFP4 recipe fails no-retuning

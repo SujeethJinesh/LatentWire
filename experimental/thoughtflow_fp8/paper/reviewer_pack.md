@@ -33,7 +33,7 @@ saved-trace falsification fixtures, not reasoning-model benchmark claims.
 | Benchmarks | Mac-local `distilgpt2` sparse-cache scoring is useful for falsification, but it is not a reasoning-model benchmark and does not include faithful LongFlow, ThinKV, R-KV/R-KVHash, PM-KVQ, KVQuant, or RaaS implementations. | Diagnostic only. |
 | Ablations | The project has synthetic retention, retained-text NLL, hidden/KV telemetry, cache-dropping quality, train-fixed sparse sweeps, same-slice RDU reproduction, alternate-surface RDU, independent-trace RDU, and fresh PSI/VWAC successor gates. The decisive ablation set is negative: `rdu_topk` fails independent proxy-baseline separation, while `psi_topk` and `vwac_topk` fail on fresh surfaces. | Sufficient to stop this branch family. |
 | Correctness | CPU sparse-cache scoring, paired uncertainty, oracle/headroom reporting, RDU telemetry, and int8 anchor/phase Triton-interpreter parity are tested. These do not establish native FP8, CUDA, latency, throughput, or serving correctness. | Correctness scaffold only. |
-| Reproducibility | Markdown and JSON artifacts are tracked for every gate, and the owned test command is stable under `./venv_arm64`. Historical `ALIVE`/`PROMOTED` artifacts are preserved for auditability but superseded by the current decision manifest. The diagnostic packet builder now refuses dirty `experimental/thoughtflow_fp8` regeneration, the current manifest records a clean path at generation, and every hashed packet input is present in the repository. | Good enough for a diagnostic note. |
+| Reproducibility | Markdown and JSON artifacts are tracked for every gate, and the owned test command is stable under `./venv_arm64`. Historical `ALIVE`/`REPRODUCED`/`PROMOTED` artifacts are preserved for auditability but superseded by the current decision manifest. The diagnostic packet builder now refuses dirty `experimental/thoughtflow_fp8` regeneration, the current manifest records a clean path at generation, and every hashed packet input is present in the repository. | Good enough for a diagnostic note. |
 | Novelty | The method space is crowded by recent sparse/quantized KV-cache work, including LongFlow, ThinKV, R-KV/R-KVHash, LazyEviction/ForesightKV-style future-use signals, PM-KVQ, and KVQuant. The defensible novelty is the falsification ladder and stop rule, not a new compression method. | Do not claim method novelty. |
 | Camera-readiness | The current draft is close only as a falsification-methodology workshop note with the first-surface RDU table clearly marked as failed-to-reproduce and `distilgpt2`/proxy-baseline/non-native caveats visible on the first read. It is not a mainline method or systems paper. | Workshop diagnostic at most. |
 
@@ -63,7 +63,7 @@ narrow false positives from becoming GPU/kernel work before robustness exists.
 | fresh prefix-surprisal utility | `psi_topk` NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960 on 70 fresh C2C GSM70 traces | killed |
 | fresh value-weighted attention utility | `vwac_topk` NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162 on 64 fresh C2C SVAMP70 traces | killed |
 | Triton interpreter | anchor/phase int8 primitive matches CPU reference | kernel logic only |
-| current authority | historical `ALIVE`/`PROMOTED` artifacts are superseded by the current decision manifest | manifest controls |
+| current authority | historical `ALIVE`/`REPRODUCED`/`PROMOTED` artifacts are superseded by the current decision manifest | manifest controls |
 
 ## Stable Owned-Test Command
 

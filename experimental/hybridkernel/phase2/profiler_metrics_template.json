@@ -30,6 +30,7 @@
       "boundary_indices": [
         0
       ],
+      "control_window_ids": [],
       "time_window_ms": {
         "start": null,
         "end": null
