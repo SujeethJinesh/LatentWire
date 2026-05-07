@@ -128,6 +128,23 @@ If any condition fails, kill that exact signal. Do not tune its formula, mix it
 with consumed RDU/PSI/VWAC components, change the surface, rerun on another
 fresh surface, or move to GPU.
 
+## Diagnostic Packet Hygiene
+
+The current diagnostic packet is tracked at
+`phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/`. Regenerate
+it only from a clean `experimental/thoughtflow_fp8` path:
+
+```bash
+./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py
+```
+
+The builder refuses dirty-path regeneration, and the saved-artifact tests assert
+that the manifest records a clean ThoughtFlow path. This protects the
+falsification packet from mixing stale JSON evidence with uncommitted paper or
+script edits. The fresh C2C input JSONL files referenced by the PSI/VWAC
+artifacts are force-tracked under the root `results/` directory so a clean
+checkout can resolve all hashed packet inputs.
+
 If it promotes, the next native gate is limited GPU validation of that exact
 frozen policy only, not GPU-side method search.
 

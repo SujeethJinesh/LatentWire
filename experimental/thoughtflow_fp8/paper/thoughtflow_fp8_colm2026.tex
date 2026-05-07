@@ -299,7 +299,11 @@ successor checks each write Markdown and JSON artifacts with promotion
 criteria, paired intervals, oracle/headroom diagnostics, and no-retuning
 decisions. The tracked diagnostic packet hashes the saved JSON artifacts and
 records available model/source metadata plus input hashes where the historical
-artifacts exposed input paths. The current package should still be read as a
+artifacts exposed input paths. Its builder refuses regeneration when
+\url{experimental/thoughtflow_fp8/} is dirty, and the current manifest records
+a clean path status at generation. The hashed C2C fresh-surface inputs are
+tracked in the repository despite the root results ignore rule. The current
+package should still be read as a
 machine-checked falsification note rather than a full artifact-evaluation
 release. The stable local correctness command is:
 \texttt{./venv\_arm64/bin/python -m pytest

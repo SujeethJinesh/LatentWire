@@ -17,7 +17,7 @@ The current sprint ledger is `project_status_20260506.md`.
 | `ssq_lr/` | Mac gate scaffolded | Non-promoting 288-row synthetic S1 real-schema rehearsal passes the real SSQ-LR checker | Real hybrid SSM state dumps showing distribution heterogeneity with complete prompt/layer bucket coverage |
 | `horn/` | Mac gate scaffolded | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the real HORN checker; evaluator now reports single-model screens as H1a only and pairs non-boundary controls through `matched_boundary_direction` | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry with per-prompt non-boundary controls and actual-label-flipped permuted controls across enough models for H1 promotion |
 | `hbsm/` | Mac gate scaffolded; novelty is narrow | Non-promoting 504-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, required controls, and per-prompt measured-drift top-decile derivation | Real layer sensitivity packet with every primary prompt-row top-decile flag matching measured drift plus random/KL/outlier controls on current hybrid reasoners |
-| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes | Paper-only camera-ready polish |
+| `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes and clean-path generation guard | Paper-only camera-ready polish |
 
 ## Shared Infrastructure
 

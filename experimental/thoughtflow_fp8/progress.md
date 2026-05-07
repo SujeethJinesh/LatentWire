@@ -537,3 +537,19 @@ input paths.
 Decision: **THOUGHTFLOW PROVENANCE IS LOCKED FOR THE CURRENT DIAGNOSTIC
 PACKET**. This remains packaging evidence for the falsification paper, not a
 positive-method reopening.
+
+## 2026-05-06 Clean Provenance Guard
+
+Added a clean-tree guard to
+`phase2/build_diagnostic_packet.py`: the tracked diagnostic packet now refuses
+to regenerate while `experimental/thoughtflow_fp8` has uncommitted changes. The
+current packet was regenerated from a clean ThoughtFlow path and its manifest
+records `thoughtflow_path_dirty_at_generation: false` with an empty path status.
+The saved-artifact tests lock both the refusal path and the clean manifest
+fields. The two C2C fresh-surface JSONL inputs referenced by PSI/VWAC are now
+force-tracked despite the root `results/` ignore rule, so clean checkouts can
+resolve every hashed packet input.
+
+Decision: **THOUGHTFLOW REPRODUCIBILITY PACKAGING IS CAMERA-READY FOR THE
+DIAGNOSTIC CLAIM**. This still does not create a live positive method or GPU
+claim.

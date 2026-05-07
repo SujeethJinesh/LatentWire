@@ -229,15 +229,15 @@
   },
   "generated_date": "2026-05-06",
   "git": {
-    "head_at_generation": "910c6d1a542cb98d102cca31750587392371785c",
-    "thoughtflow_path_dirty_at_generation": true,
-    "thoughtflow_path_status_at_generation": "M experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py\n M experimental/thoughtflow_fp8/phase2/tests/test_saved_falsification_artifacts.py",
-    "thoughtflow_path_tree_at_generation": "04ed7dac7a495e354ecde644b91ffdf1d4643945"
+    "head_at_generation": "9d5e6352e9db216bec63d5a701e3c14389b75023",
+    "thoughtflow_path_dirty_at_generation": false,
+    "thoughtflow_path_status_at_generation": "",
+    "thoughtflow_path_tree_at_generation": "a9832e8487dc12fd468fa2f754889496f5566c5c"
   },
   "packet_name": "thoughtflow_diagnostic_packet_20260506",
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:5d3e5e5eafa2bc244254d0178d10ab5dbfd493eb5b9821a97c62e4c6088886cb"
+    "sha256": "sha256:7d8fb4acdc2c0475754c74c11e00574af9864ac2f57a264b84efa37ed8138aaf"
   }
 }

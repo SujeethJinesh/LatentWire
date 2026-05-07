@@ -78,7 +78,11 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
     manifest = json.loads((DIAGNOSTIC_PACKET / "manifest.json").read_text(encoding="utf-8"))
 
     assert "not a positive method claim" in manifest["claim_boundary"]
-    assert manifest["script"]["sha256"].startswith("sha256:")
+    assert manifest["git"]["thoughtflow_path_dirty_at_generation"] is False
+    assert manifest["git"]["thoughtflow_path_status_at_generation"] == ""
+    script_path = REPO_ROOT / str(manifest["script"]["path"])
+    expected_script_hash = "sha256:" + hashlib.sha256(script_path.read_bytes()).hexdigest()
+    assert manifest["script"]["sha256"] == expected_script_hash
     artifacts = manifest["artifacts"]
     assert {artifact["id"] for artifact in artifacts} == {
         "frozen_sparse_cache_probe",
