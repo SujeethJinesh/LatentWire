@@ -336,6 +336,16 @@ def _artifact_summary(artifact_id: str, payload: dict[str, Any]) -> dict[str, An
     raise ValueError(f"unknown artifact id: {artifact_id}")
 
 
+def _diagnostic_readout(artifact: dict[str, Any]) -> str:
+    """Return a readout that cannot be mistaken for live method evidence."""
+
+    status = str(artifact["summary"]["status"])
+    role = str(artifact["role"])
+    if role.startswith("stale_positive") or role.startswith("historical_positive"):
+        return f"SUPERSEDED historical readout: {status}"
+    return status
+
+
 def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool = True) -> dict[str, Any]:
     if require_clean_tree:
         _require_clean_thoughtflow_tree()
@@ -391,8 +401,7 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
         "|---|---|---|---|",
     ]
     for artifact in artifacts:
-        summary = artifact["summary"]
-        status = str(summary["status"]).replace("|", "\\|")
+        status = _diagnostic_readout(artifact).replace("|", "\\|")
         lines.append(
             f"| `{artifact['path']}` | {artifact['role']} | `{artifact['sha256']}` | {status} |"
         )
@@ -426,16 +435,40 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
             [
                 "# ThoughtFlow Diagnostic Packet",
                 "",
+                "Status: tracked falsification provenance packet, not positive-method evidence.",
+                "",
                 "Run:",
                 "",
                 "```bash",
                 "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
                 "```",
                 "",
-                "Then inspect `manifest.json` and `falsification_table.md`.",
+                "Expected pass condition: the builder exits successfully only from a clean",
+                "`experimental/thoughtflow_fp8/` path and rewrites the same manifest/table shape",
+                "with explicit hashes for the saved decision artifacts.",
+                "",
+                "Then inspect:",
+                "",
+                "- `manifest.json` for git state, source metadata, saved-artifact hashes, and",
+                "  input-hash provenance where available.",
+                "- `falsification_table.md` for the consumed signal ladder and stop decisions.",
+                "- `../../current_decision_manifest_20260506.md` for the current branch-level",
+                "  claim boundary.",
+                "",
                 "This tracked packet lives outside ignored `results/` directories so",
                 "clean checkouts can run the saved-artifact tests.",
                 "This packet does not reopen the stopped RDU/PSI/VWAC branches.",
+                "",
+                "Local correctness command:",
+                "",
+                "```bash",
+                "cd /Users/sujeethjinesh/Desktop/LatentWire",
+                "TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 \\",
+                'TRITON_HOME="$PWD/.debug/triton_home" \\',
+                "./venv_arm64/bin/python -m pytest \\",
+                "  experimental/thoughtflow_fp8/phase2/tests \\",
+                "  experimental/thoughtflow_fp8/phase4/tests -q -rs",
+                "```",
                 "",
             ]
         ),

@@ -336,10 +336,10 @@
   },
   "generated_date": "2026-05-06",
   "git": {
-    "head_at_generation": "35a8cdfdee7b83fa99c9ea3539269bd7411487c1",
-    "thoughtflow_path_dirty_at_generation": false,
-    "thoughtflow_path_status_at_generation": "",
-    "thoughtflow_path_tree_at_generation": "f6852b86ba2cfe53c986e563b534b44707a1fab4"
+    "head_at_generation": "4ccd8d614d5b71a40a44230ff05ed570a8060d3e",
+    "thoughtflow_path_dirty_at_generation": true,
+    "thoughtflow_path_status_at_generation": "M experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py\n M experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/README.md\n M experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/falsification_table.md\n M experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/manifest.json\n M experimental/thoughtflow_fp8/phase2/tests/test_saved_falsification_artifacts.py",
+    "thoughtflow_path_tree_at_generation": "aea2509ea869b9d0395f81ed5b685919c73c7296"
   },
   "packet_name": "thoughtflow_diagnostic_packet_20260506",
   "preregistrations": [
@@ -365,6 +365,6 @@
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:253fc8af51798d0bf4d51f208ea28ef1a2efbef595ddaf83339e4dab902bf119"
+    "sha256": "sha256:b6ba7ff87280f26e680ebe62c055eb1431bcfafc120d3e4cd2c6b189de9e79cc"
   }
 }

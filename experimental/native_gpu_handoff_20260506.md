@@ -1,6 +1,6 @@
 # Native GPU Handoff Map
 
-- date: 2026-05-06
+- date: 2026-05-07
 - scope: what remains after Mac/Triton saturation
 - rule: do not add GPU numbers to any paper until the relevant gate below
   passes its local verifier or decision checklist
@@ -49,6 +49,7 @@ python experimental/hybridkernel/phase2/analyze_profiler_metrics.py \
 
 python experimental/hybridkernel/phase2/check_profiler_run_artifacts.py \
   --run-dir "$HWK_RUN" \
+  --require-full-matrix \
   | tee "$HWK_RUN/artifact_check.json"
 ```
 
@@ -57,6 +58,11 @@ the same packet includes three same-family and three cross-family controls on
 the same request/runtime shape that stay below the 3% gate. A primary-only
 packet is audit-only. Kill or shelve if repeated native summaries show less
 than 1% recoverable gain.
+
+The fixed-request client commands in the runbook must use
+`--require-token-counts`; the driver then synthesizes tokenizer-roundtrip
+prompts and fails before profiling if the exact prefill length cannot be
+proven.
 
 ## SSQ-LR / HORN / HBSM
 
@@ -85,6 +91,44 @@ trace plan:
 Current artifact:
 `experimental/shared/results/hybrid_trace_plan_20260507/`. It is a row-level
 capture checklist only, with no model or GPU evidence.
+
+Then generate fill-in capture manifests:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_capture_manifest
+```
+
+Current artifact:
+`experimental/shared/results/hybrid_capture_manifests_20260507/`. Fill every
+`TO_FILL_BEFORE_CAPTURE` field from a real capture before building packets.
+Templates are deliberately rejected by the builder.
+
+Build SSQ-LR and HORN packets from saved tensor packets:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
+  --project ssq_lr \
+  --tensor-packet "$SSQ_LR_TENSOR_PACKET" \
+  --output-dir experimental/ssq_lr/phase2/results/ssq_lr_gate_s1_<YYYYMMDD>_<model_slug>
+
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
+  --project horn \
+  --tensor-packet "$HORN_TENSOR_PACKET" \
+  --output-dir experimental/horn/phase2/results/horn_gate_h1_<YYYYMMDD>_<model_slug>
+```
+
+Build HBSM from saved sensitivity rows:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_packet_builder \
+  --project hbsm \
+  --row-packet "$HBSM_ROW_PACKET" \
+  --output-dir experimental/hbsm/phase2/results/hbsm_gate_b1_<YYYYMMDD>_<model_slug>
+```
+
+Only after a real HBSM B1 packet establishes sensitivity heterogeneity should
+the B2 cheap-predictor rank-correlation gate be run. Do not promote a B2-style
+claim from the synthetic B1 rehearsal.
 
 ## ThoughtFlow-FP8
 

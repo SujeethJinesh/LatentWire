@@ -68,6 +68,8 @@ for every prompt; each
 permuted-direction row must match an observed boundary tuple with the same
 prompt ID, layer IDs, normalization positions, and measured metrics while
 flipping the actual \texttt{direction} label only. It cannot
+substitute a separately measured tensor for the null: the control is built by
+reusing the observed metrics and flipping its direction label. It cannot
 pass if the permuted controls preserve the selected high-magnitude direction;
 a faithful label flip may preserve unsigned asymmetry while moving the signal
 to the opposite label. Non-boundary controls must stay below the selected H1

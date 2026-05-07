@@ -23,6 +23,22 @@ as a final paper speed claim: a paper-level throughput claim still needs the
 broader pure/mostly-Transformer and mostly-SSM controls listed in
 `control_feasibility_matrix.md`.
 
+## Operator Preflight Before GPU Rental
+
+Run this on the Mac/local checkout before spending GPU minutes. It exercises the
+packet skeleton, fixed-request driver, reducer, and artifact checker without
+claiming native performance evidence:
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase2/tests/test_create_native_run_packet.py \
+  experimental/hybridkernel/phase2/tests/test_profiler_driver.py \
+  experimental/hybridkernel/phase2/tests/test_analyze_profiler_metrics.py \
+  experimental/hybridkernel/phase2/tests/test_check_profiler_run_artifacts.py \
+  -q
+```
+
 ## Source Context
 
 | Source | Why it matters for the run |
@@ -476,9 +492,12 @@ max(boundary_ms - matched_non_boundary_ms, 0)
                  total_step_ms
 ```
 
-Promotion requires at least three repeated runs where the minimum recoverable
-gain upper bound is at least 3%. If the mean recoverable-gain upper bound is
-below 1%, shelve the branch unless a new profiler anomaly appears.
+Promotion requires at least three repeated primary rows whose minimum
+recoverable-gain upper bound is at least 3%, whose primary bootstrap CI low end
+is above zero, and whose same-family/cross-family control matrix passes
+`check_profiler_run_artifacts.py --require-full-matrix`. If the mean
+recoverable-gain upper bound is below 1%, shelve the branch unless a new
+profiler anomaly appears.
 
 ## Artifact Completeness Check
 
@@ -546,6 +565,19 @@ A synthetic, non-evidence packet fixture exists at
 `phase2/tests/fixtures/synthetic_profiler_run_packet/` to show the required
 directory shape and keep the checker covered on Mac. It contains placeholder
 Nsight files and must not be cited as profiler data.
+
+## Post-Promotion Benchmark Tables
+
+If the profiler gate promotes, the paper still needs final benchmark tables
+before any systems claim:
+
+- stock vLLM versus the prototype on the promoted model/config;
+- 1K, 4K, 16K, and 32K prompt lengths with 256 decode tokens;
+- batch 1 as the primary setting and batch 8 as an audit packet if memory allows;
+- latency breakdown from Nsight Systems and HBM counters from Nsight Compute;
+- a quality-invariance smoke table on the frozen reasoning prompt set.
+
+Do not add these tables unless the strict profiler packet promotes first.
 
 ## Promotion Criteria
 

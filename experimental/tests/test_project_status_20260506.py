@@ -84,6 +84,19 @@ def test_active_project_paper_shells_state_real_packet_blockers() -> None:
             assert phrase in text, f"{relative_path} missing {phrase}"
 
 
+def test_native_gpu_handoff_has_strict_active_project_commands() -> None:
+    handoff = (EXPERIMENTAL / "native_gpu_handoff_20260506.md").read_text()
+
+    for project in ["HybridKernel", "SSQ-LR", "HORN", "HBSM", "ThoughtFlow-FP8"]:
+        assert project in handoff
+    assert "--require-full-matrix" in handoff
+    assert "--require-token-counts" in handoff
+    for project in ["ssq_lr", "horn", "hbsm"]:
+        assert f"--project {project}" in handoff
+    assert "TO_FILL_BEFORE_CAPTURE" in handoff
+    assert "Only after a real HBSM B1 packet establishes sensitivity heterogeneity" in handoff
+
+
 def test_killed_markers_are_one_page_decision_records() -> None:
     for readme_path in EXPERIMENTAL.glob("KILLED_*/README.md"):
         text = readme_path.read_text()

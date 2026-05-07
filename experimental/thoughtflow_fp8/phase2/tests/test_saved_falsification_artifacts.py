@@ -140,9 +140,18 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
     table = (DIAGNOSTIC_PACKET / "falsification_table.md").read_text(encoding="utf-8")
     assert "stale_positive_first_surface" in table
     assert "historical_positive_same_surface" in table
+    assert "SUPERSEDED historical readout: ALIVE" in table
+    assert "SUPERSEDED historical readout: PROMOTED" in table
+    assert "SUPERSEDED historical readout: REPRODUCED" in table
     assert "same_family_falsification" in table
     assert "cross_family_falsification" in table
     assert "## Preregistrations" in table
+
+
+def test_diagnostic_packet_has_no_stale_results_duplicate() -> None:
+    stale_results_packet = PHASE2 / "results/thoughtflow_diagnostic_packet_20260506"
+
+    assert not stale_results_packet.exists()
 
 
 def test_diagnostic_packet_builder_refuses_dirty_thoughtflow_tree(

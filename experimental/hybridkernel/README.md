@@ -357,3 +357,16 @@ TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
   experimental/hybridkernel/phase3/tests \
   experimental/hybridkernel/phase4/tests -rs
 ```
+
+Before renting a GPU node, run the smaller operator preflight that covers the
+native packet generator, fixed-request driver, reducer, and artifact checker:
+
+```bash
+cd /Users/sujeethjinesh/Desktop/LatentWire
+./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase2/tests/test_create_native_run_packet.py \
+  experimental/hybridkernel/phase2/tests/test_profiler_driver.py \
+  experimental/hybridkernel/phase2/tests/test_analyze_profiler_metrics.py \
+  experimental/hybridkernel/phase2/tests/test_check_profiler_run_artifacts.py \
+  -q
+```
