@@ -1,0 +1,2 @@
+run_id	row_role	model	control_segment	nsys_sqlite	nsys_export_sha256	window_start_ms	window_end_ms	total_step_ms	boundary_ms	matched_non_boundary_ms	ncu_rep	ncu_sha256	ncu_kernel_regex	ncu_launch_skip	ncu_launch_count	reducer_command	notes
+TODO_NATIVE_PROFILE_FILL	primary_hybrid	TO_FILL_BEFORE_REDUCTION	TO_FILL_BEFORE_REDUCTION	nsys/TODO.sqlite	sha256:TODO	TODO	TODO	TODO	TODO	TODO	ncu/TODO.ncu-rep	sha256:TODO	TODO	TODO	TODO	TO_FILL_BEFORE_REDUCTION	TO_FILL_BEFORE_REDUCTION

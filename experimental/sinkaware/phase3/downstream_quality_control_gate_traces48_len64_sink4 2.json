@@ -1,0 +1,705 @@
+{
+  "model_names": [
+    "distilgpt2",
+    "facebook/opt-125m"
+  ],
+  "max_traces": 48,
+  "max_length": 64,
+  "sink_tokens": 4,
+  "train_fraction": 0.67,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "model_results": [
+    {
+      "model_name": "distilgpt2",
+      "model_family": "gpt2",
+      "seed_rows": [
+        {
+          "seed": 0,
+          "model_name": "distilgpt2",
+          "model_family": "gpt2",
+          "train_traces": 32,
+          "heldout_traces": 16,
+          "train_trace_indices": [
+            44,
+            22,
+            29,
+            18,
+            23,
+            20,
+            19,
+            41,
+            25,
+            39,
+            4,
+            2,
+            36,
+            32,
+            1,
+            13,
+            40,
+            10,
+            15,
+            33,
+            26,
+            3,
+            31,
+            27,
+            21,
+            30,
+            35,
+            0,
+            37,
+            38,
+            14,
+            12
+          ],
+          "heldout_trace_indices": [
+            5,
+            6,
+            28,
+            43,
+            46,
+            45,
+            9,
+            8,
+            42,
+            7,
+            11,
+            47,
+            24,
+            17,
+            34,
+            16
+          ],
+          "exact_baseline": {
+            "loss": 3.0701040445150554,
+            "n_tokens": 1001.0,
+            "loss_delta_vs_exact": 0.0
+          },
+          "modes": {
+            "exact": {
+              "loss": 3.0701040445150554,
+              "n_tokens": 1001.0,
+              "loss_delta_vs_exact": 0.0,
+              "abs_loss_delta_vs_exact": 0.0,
+              "mean_kl_to_exact": 0.0,
+              "top1_disagreement_rate": 0.0
+            },
+            "position": {
+              "loss": 3.1653864781458774,
+              "n_tokens": 1001.0,
+              "loss_delta_vs_exact": 0.095282433630822,
+              "abs_loss_delta_vs_exact": 0.095282433630822,
+              "mean_kl_to_exact": 0.07393446823695561,
+              "top1_disagreement_rate": 0.1008991008991009
+            },
+            "rank2": {
+              "loss": 3.1319824127288727,
+              "n_tokens": 1001.0,
+              "loss_delta_vs_exact": 0.061878368213817314,
+              "abs_loss_delta_vs_exact": 0.061878368213817314,
+              "mean_kl_to_exact": 0.05233890479142135,
+              "top1_disagreement_rate": 0.0899100899100899
+            }
+          },
+          "rank2_abs_loss_delta_improvement_vs_position": 0.03340406541700469,
+          "rank2_kl_improvement_vs_position": 0.02159556344553426,
+          "rank2_top1_improvement_vs_position": 0.010989010989010992
+        },
+        {
+          "seed": 1,
+          "model_name": "distilgpt2",
+          "model_family": "gpt2",
+          "train_traces": 32,
+          "heldout_traces": 16,
+          "train_trace_indices": [
+            37,
+            12,
+            14,
+            26,
+            7,
+            11,
+            41,
+            40,
+            47,
+            18,
+            4,
+            44,
+            10,
+            46,
+            15,
+            21,
+            22,
+            36,
+            20,
+            45,
+            30,
+            17,
+            1,
+            27,
+            23,
+            9,
+            3,
+            29,
+            0,
+            33,
+            5,
+            6
+          ],
+          "heldout_trace_indices": [
+            39,
+            2,
+            43,
+            8,
+            35,
+            32,
+            16,
+            31,
+            19,
+            42,
+            24,
+            13,
+            28,
+            38,
+            34,
+            25
+          ],
+          "exact_baseline": {
+            "loss": 3.05708899806388,
+            "n_tokens": 1005.0,
+            "loss_delta_vs_exact": 0.0
+          },
+          "modes": {
+            "exact": {
+              "loss": 3.05708899806388,
+              "n_tokens": 1005.0,
+              "loss_delta_vs_exact": 0.0,
+              "abs_loss_delta_vs_exact": 0.0,
+              "mean_kl_to_exact": 0.0,
+              "top1_disagreement_rate": 0.0
+            },
+            "position": {
+              "loss": 3.16225634522699,
+              "n_tokens": 1005.0,
+              "loss_delta_vs_exact": 0.10516734716311005,
+              "abs_loss_delta_vs_exact": 0.10516734716311005,
+              "mean_kl_to_exact": 0.08133193639973503,
+              "top1_disagreement_rate": 0.12935323383084577
+            },
+            "rank2": {
+              "loss": 3.125513712565104,
+              "n_tokens": 1005.0,
+              "loss_delta_vs_exact": 0.06842471450122423,
+              "abs_loss_delta_vs_exact": 0.06842471450122423,
+              "mean_kl_to_exact": 0.056087667787846046,
+              "top1_disagreement_rate": 0.10845771144278607
+            }
+          },
+          "rank2_abs_loss_delta_improvement_vs_position": 0.03674263266188582,
+          "rank2_kl_improvement_vs_position": 0.025244268611888984,
+          "rank2_top1_improvement_vs_position": 0.020895522388059695
+        },
+        {
+          "seed": 2,
+          "model_name": "distilgpt2",
+          "model_family": "gpt2",
+          "train_traces": 32,
+          "heldout_traces": 16,
+          "train_trace_indices": [
+            24,
+            7,
+            11,
+            12,
+            26,
+            1,
+            3,
+            46,
+            8,
+            33,
+            4,
+            5,
+            23,
+            38,
+            47,
+            20,
+            14,
+            36,
+            44,
+            25,
+            18,
+            0,
+            9,
+            34,
+            43,
+            19,
+            15,
+            42,
+            16,
+            31,
+            35,
+            21
+          ],
+          "heldout_trace_indices": [
+            27,
+            10,
+            32,
+            28,
+            30,
+            22,
+            41,
+            17,
+            37,
+            2,
+            13,
+            45,
+            39,
+            6,
+            40,
+            29
+          ],
+          "exact_baseline": {
+            "loss": 3.081671945111242,
+            "n_tokens": 1002.0,
+            "loss_delta_vs_exact": 0.0
+          },
+          "modes": {
+            "exact": {
+              "loss": 3.081671945111242,
+              "n_tokens": 1002.0,
+              "loss_delta_vs_exact": 0.0,
+              "abs_loss_delta_vs_exact": 0.0,
+              "mean_kl_to_exact": 0.0,
+              "top1_disagreement_rate": 0.0
+            },
+            "position": {
+              "loss": 3.1900310554428253,
+              "n_tokens": 1002.0,
+              "loss_delta_vs_exact": 0.10835911033158308,
+              "abs_loss_delta_vs_exact": 0.10835911033158308,
+              "mean_kl_to_exact": 0.09479986027091325,
+              "top1_disagreement_rate": 0.15269461077844312
+            },
+            "rank2": {
+              "loss": 3.156657418804968,
+              "n_tokens": 1002.0,
+              "loss_delta_vs_exact": 0.07498547369372588,
+              "abs_loss_delta_vs_exact": 0.07498547369372588,
+              "mean_kl_to_exact": 0.06965286122586675,
+              "top1_disagreement_rate": 0.1217564870259481
+            }
+          },
+          "rank2_abs_loss_delta_improvement_vs_position": 0.033373636637857196,
+          "rank2_kl_improvement_vs_position": 0.025146999045046498,
+          "rank2_top1_improvement_vs_position": 0.030938123752495023
+        }
+      ],
+      "aggregate": {
+        "exact_abs_loss_delta_vs_baseline": {
+          "mean": 0.0,
+          "ci95": 0.0
+        },
+        "exact_mean_kl_to_baseline": {
+          "mean": 0.0,
+          "ci95": 0.0
+        },
+        "position_abs_loss_delta_vs_baseline": {
+          "mean": 0.10293629704183838,
+          "ci95": 0.0077151217588017585
+        },
+        "rank2_abs_loss_delta_vs_baseline": {
+          "mean": 0.06842951880292247,
+          "ci95": 0.007416044554129467
+        },
+        "rank2_abs_loss_delta_improvement_vs_position": {
+          "mean": 0.0345067782389159,
+          "ci95": 0.0021912049729618504
+        },
+        "rank2_kl_improvement_vs_position": {
+          "mean": 0.023995610367489914,
+          "ci95": 0.002352689781517083
+        },
+        "rank2_top1_disagreement_improvement_vs_position": {
+          "mean": 0.020940885709855236,
+          "ci95": 0.01128736065858309
+        },
+        "all_seeds_exact_noop_ok": {
+          "value": true,
+          "n": 3
+        },
+        "all_seeds_rank2_closer_by_loss": {
+          "value": true,
+          "n": 3
+        },
+        "all_seeds_rank2_closer_by_kl": {
+          "value": true,
+          "n": 3
+        },
+        "min_rank2_abs_loss_delta_improvement_vs_position": {
+          "value": 0.033373636637857196
+        }
+      },
+      "status": "ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL."
+    },
+    {
+      "model_name": "facebook/opt-125m",
+      "model_family": "opt",
+      "seed_rows": [
+        {
+          "seed": 0,
+          "model_name": "facebook/opt-125m",
+          "model_family": "opt",
+          "train_traces": 32,
+          "heldout_traces": 16,
+          "train_trace_indices": [
+            44,
+            22,
+            29,
+            18,
+            23,
+            20,
+            19,
+            41,
+            25,
+            39,
+            4,
+            2,
+            36,
+            32,
+            1,
+            13,
+            40,
+            10,
+            15,
+            33,
+            26,
+            3,
+            31,
+            27,
+            21,
+            30,
+            35,
+            0,
+            37,
+            38,
+            14,
+            12
+          ],
+          "heldout_trace_indices": [
+            5,
+            6,
+            28,
+            43,
+            46,
+            45,
+            9,
+            8,
+            42,
+            7,
+            11,
+            47,
+            24,
+            17,
+            34,
+            16
+          ],
+          "exact_baseline": {
+            "loss": 2.7278043189766636,
+            "n_tokens": 1003.0,
+            "loss_delta_vs_exact": 0.0
+          },
+          "modes": {
+            "exact": {
+              "loss": 2.7278043189766636,
+              "n_tokens": 1003.0,
+              "loss_delta_vs_exact": 0.0,
+              "abs_loss_delta_vs_exact": 0.0,
+              "mean_kl_to_exact": 0.0,
+              "top1_disagreement_rate": 0.0
+            },
+            "position": {
+              "loss": 2.9450991355766685,
+              "n_tokens": 1003.0,
+              "loss_delta_vs_exact": 0.21729481660000483,
+              "abs_loss_delta_vs_exact": 0.21729481660000483,
+              "mean_kl_to_exact": 0.220228167616596,
+              "top1_disagreement_rate": 0.19441674975074777
+            },
+            "rank2": {
+              "loss": 2.8384840747532794,
+              "n_tokens": 1003.0,
+              "loss_delta_vs_exact": 0.11067975577661571,
+              "abs_loss_delta_vs_exact": 0.11067975577661571,
+              "mean_kl_to_exact": 0.10649872158959522,
+              "top1_disagreement_rate": 0.1345962113659023
+            }
+          },
+          "rank2_abs_loss_delta_improvement_vs_position": 0.10661506082338912,
+          "rank2_kl_improvement_vs_position": 0.11372944602700077,
+          "rank2_top1_improvement_vs_position": 0.05982053838484547
+        },
+        {
+          "seed": 1,
+          "model_name": "facebook/opt-125m",
+          "model_family": "opt",
+          "train_traces": 32,
+          "heldout_traces": 16,
+          "train_trace_indices": [
+            37,
+            12,
+            14,
+            26,
+            7,
+            11,
+            41,
+            40,
+            47,
+            18,
+            4,
+            44,
+            10,
+            46,
+            15,
+            21,
+            22,
+            36,
+            20,
+            45,
+            30,
+            17,
+            1,
+            27,
+            23,
+            9,
+            3,
+            29,
+            0,
+            33,
+            5,
+            6
+          ],
+          "heldout_trace_indices": [
+            39,
+            2,
+            43,
+            8,
+            35,
+            32,
+            16,
+            31,
+            19,
+            42,
+            24,
+            13,
+            28,
+            38,
+            34,
+            25
+          ],
+          "exact_baseline": {
+            "loss": 2.706090440342893,
+            "n_tokens": 1007.0,
+            "loss_delta_vs_exact": 0.0
+          },
+          "modes": {
+            "exact": {
+              "loss": 2.706090440342893,
+              "n_tokens": 1007.0,
+              "loss_delta_vs_exact": 0.0,
+              "abs_loss_delta_vs_exact": 0.0,
+              "mean_kl_to_exact": 0.0,
+              "top1_disagreement_rate": 0.0
+            },
+            "position": {
+              "loss": 2.932476327814672,
+              "n_tokens": 1007.0,
+              "loss_delta_vs_exact": 0.22638588747177923,
+              "abs_loss_delta_vs_exact": 0.22638588747177923,
+              "mean_kl_to_exact": 0.20450776714790897,
+              "top1_disagreement_rate": 0.19463753723932473
+            },
+            "rank2": {
+              "loss": 2.8181386907855948,
+              "n_tokens": 1007.0,
+              "loss_delta_vs_exact": 0.11204825044270184,
+              "abs_loss_delta_vs_exact": 0.11204825044270184,
+              "mean_kl_to_exact": 0.089149986501957,
+              "top1_disagreement_rate": 0.13406156901688182
+            }
+          },
+          "rank2_abs_loss_delta_improvement_vs_position": 0.1143376370290774,
+          "rank2_kl_improvement_vs_position": 0.11535778064595197,
+          "rank2_top1_improvement_vs_position": 0.060575968222442905
+        },
+        {
+          "seed": 2,
+          "model_name": "facebook/opt-125m",
+          "model_family": "opt",
+          "train_traces": 32,
+          "heldout_traces": 16,
+          "train_trace_indices": [
+            24,
+            7,
+            11,
+            12,
+            26,
+            1,
+            3,
+            46,
+            8,
+            33,
+            4,
+            5,
+            23,
+            38,
+            47,
+            20,
+            14,
+            36,
+            44,
+            25,
+            18,
+            0,
+            9,
+            34,
+            43,
+            19,
+            15,
+            42,
+            16,
+            31,
+            35,
+            21
+          ],
+          "heldout_trace_indices": [
+            27,
+            10,
+            32,
+            28,
+            30,
+            22,
+            41,
+            17,
+            37,
+            2,
+            13,
+            45,
+            39,
+            6,
+            40,
+            29
+          ],
+          "exact_baseline": {
+            "loss": 2.687145328236482,
+            "n_tokens": 1003.0,
+            "loss_delta_vs_exact": 0.0
+          },
+          "modes": {
+            "exact": {
+              "loss": 2.687145328236482,
+              "n_tokens": 1003.0,
+              "loss_delta_vs_exact": 0.0,
+              "abs_loss_delta_vs_exact": 0.0,
+              "mean_kl_to_exact": 0.0,
+              "top1_disagreement_rate": 0.0
+            },
+            "position": {
+              "loss": 2.968614884411706,
+              "n_tokens": 1003.0,
+              "loss_delta_vs_exact": 0.28146955617522407,
+              "abs_loss_delta_vs_exact": 0.28146955617522407,
+              "mean_kl_to_exact": 0.24605024704785788,
+              "top1_disagreement_rate": 0.22432701894317048
+            },
+            "rank2": {
+              "loss": 2.812340482519726,
+              "n_tokens": 1003.0,
+              "loss_delta_vs_exact": 0.12519515428324368,
+              "abs_loss_delta_vs_exact": 0.12519515428324368,
+              "mean_kl_to_exact": 0.09621151589444009,
+              "top1_disagreement_rate": 0.13559322033898305
+            }
+          },
+          "rank2_abs_loss_delta_improvement_vs_position": 0.15627440189198039,
+          "rank2_kl_improvement_vs_position": 0.14983873115341778,
+          "rank2_top1_improvement_vs_position": 0.08873379860418742
+        }
+      ],
+      "aggregate": {
+        "exact_abs_loss_delta_vs_baseline": {
+          "mean": 0.0,
+          "ci95": 0.0
+        },
+        "exact_mean_kl_to_baseline": {
+          "mean": 0.0,
+          "ci95": 0.0
+        },
+        "position_abs_loss_delta_vs_baseline": {
+          "mean": 0.24171675341566937,
+          "ci95": 0.039295855636795836
+        },
+        "rank2_abs_loss_delta_vs_baseline": {
+          "mean": 0.11597438683418708,
+          "ci95": 0.009069465134647094
+        },
+        "rank2_abs_loss_delta_improvement_vs_position": {
+          "mean": 0.1257423665814823,
+          "ci95": 0.03023875039521543
+        },
+        "rank2_kl_improvement_vs_position": {
+          "mean": 0.12630865260879018,
+          "ci95": 0.023077874759042324
+        },
+        "rank2_top1_disagreement_improvement_vs_position": {
+          "mean": 0.0697101017371586,
+          "ci95": 0.018648121971195992
+        },
+        "all_seeds_exact_noop_ok": {
+          "value": true,
+          "n": 3
+        },
+        "all_seeds_rank2_closer_by_loss": {
+          "value": true,
+          "n": 3
+        },
+        "all_seeds_rank2_closer_by_kl": {
+          "value": true,
+          "n": 3
+        },
+        "min_rank2_abs_loss_delta_improvement_vs_position": {
+          "value": 0.10661506082338912
+        }
+      },
+      "status": "ALIVE but bounded on this model; rank-2 is closer than position-only in downstream loss and KL."
+    }
+  ],
+  "aggregate": {
+    "rank2_abs_loss_delta_improvement_across_models": {
+      "mean": 0.0801245724101991,
+      "ci95": 0.08941087657571506
+    },
+    "rank2_kl_improvement_across_models": {
+      "mean": 0.07515213148814004,
+      "ci95": 0.10026678139647426
+    },
+    "all_models_exact_noop_ok": {
+      "value": true,
+      "n": 2
+    },
+    "all_models_rank2_closer_by_loss": {
+      "value": true,
+      "n": 2
+    },
+    "all_models_rank2_closer_by_kl": {
+      "value": true,
+      "n": 2
+    },
+    "min_model_rank2_abs_loss_delta_improvement": {
+      "value": 0.0345067782389159
+    }
+  },
+  "status": "ALIVE but bounded; rank-2 passes the downstream GPT2/OPT control smoke."
+}
