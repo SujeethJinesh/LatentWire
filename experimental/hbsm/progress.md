@@ -149,3 +149,18 @@ cheap-predictor gate.
 
 Decision: **CURRENT HBSM EVIDENCE IS B1 PACKET PLUMBING ONLY**. B2 remains a
 future real-packet gate after sensitivity heterogeneity is established.
+
+## 2026-05-07 Trace-Plan Artifact
+
+Added `../shared/hybrid_trace_plan.py` and generated
+`../shared/results/hybrid_trace_plan_20260507/`. For HBSM, the plan enumerates
+1,554 B1 sensitivity rows across frozen prompts, all mapped hybrid layers,
+map-derived boundary flags, train/test splits, and aggregate comparator/control
+rows. The real-packet checker now requires a `trace_plan_hash` for
+non-rehearsal packets, so future B1 rows must cite the exact plan JSONL used
+during sensitivity capture.
+
+Decision: **B1 SENSITIVITY CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT
+RUN**. The next exact gate remains a real forward-sensitivity row packet built
+from those planned rows and checked with `check_gate_packet --mode real --project
+hbsm`.

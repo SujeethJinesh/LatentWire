@@ -9,7 +9,8 @@ Status: **NEW / wounded novelty / Mac gates pending**.
 
 Estimated completion:
 
-- **10%** as a narrow mechanism paper: hypothesis and gates are scaffolded.
+- **15%** as a narrow mechanism paper: hypothesis, gates, packet checker, and
+  trace-plan handoff are scaffolded.
 - **0%** as a broad sensitivity-discovery paper because recent KL Lens-style
   work narrows that novelty.
 
@@ -59,6 +60,16 @@ Use the explicit boundary IDs and architecture hashes in
 layer definitions.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
+The exact B1 sensitivity-row checklist is
+`../shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl`;
+regenerate it with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_plan
+```
+
+This trace plan is not model evidence. It only enumerates the layer/prompt rows
+and comparator controls to fill before building a real HBSM packet.
 Required real controls are `perturbation_off`, `random_flags`, `layer_index`,
 `parameter_count_norm`, `boundary_only`, `kl_lens_rank`, and
 `activation_outlier`. Real rows must also include
@@ -80,8 +91,9 @@ Convert saved B1 sensitivity rows with
 
 Any resource-limited packet must set a decision beginning
 `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but cannot
-promote B1. Real `config.json` provenance must include `prompt_ids_hash` and
-`architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must
+promote B1. Real `config.json` provenance must include `prompt_ids_hash`,
+`architecture_map_hash`, and `trace_plan_hash` as `sha256:<64-hex-digest>`
+strings. Real `summary.json` must
 include the recomputed B1 evaluator fields: `gate_status`, `gate_pass`,
 primary row, scoring-layer, and prompt counts, expected/top/random/train/test counts,
 split/control summaries, boundary/non-boundary top-decile counts and rates,

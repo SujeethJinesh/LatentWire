@@ -10,7 +10,8 @@ Every real packet must contain:
 - `config.json`: model id, model revision/hash, tokenizer revision, prompt
   source, prompt ids/hash, seed list, context lengths, dtype, device, and exact
   command. It must also include `architecture_map_hash` from
-  `shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`.
+  `shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`
+  and `trace_plan_hash` from the project trace-plan JSONL used for capture.
 - `raw_rows.jsonl`: one JSON row per layer/boundary/state measurement.
 - `summary.json`: aggregate readouts, decision, claim boundary, and row count.
 - `summary.md`: human-readable table and interpretation.
@@ -37,9 +38,10 @@ The checker rejects real packets without provenance fields, `summary.md`,
 matching `row_count`, project-specific row schemas, required controls, and
 project-specific admissible coverage.
 
-For real packets, `config.json` must record `prompt_ids_hash` and
-`architecture_map_hash` as `sha256:<64-hex-digest>` strings. For non-rehearsal
-real packets, `model_id` and `architecture_map_hash` must match the shared
+For real packets, `config.json` must record `prompt_ids_hash`,
+`architecture_map_hash`, and, unless it is a schema rehearsal,
+`trace_plan_hash` as `sha256:<64-hex-digest>` strings. For non-rehearsal real
+packets, `model_id` and `architecture_map_hash` must match the shared
 architecture map artifact at
 `experimental/shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`;
 a syntactically valid but unrelated hash is rejected. A packet that records
@@ -56,6 +58,20 @@ Synthetic schema rehearsals may run the same real validators only when
 `config.json` sets `schema_rehearsal: true` and `summary.json` uses a decision
 beginning `SCHEMA_REHEARSAL_NOT_PROMOTABLE`. These packets are checker-path
 tests, not model evidence.
+
+Before dumping tensors or sensitivity rows, generate the deterministic capture
+plan:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_plan
+```
+
+The current trace-plan artifact is
+`experimental/shared/results/hybrid_trace_plan_20260507/`. It enumerates
+`ssq_lr_trace_plan.jsonl`, `horn_trace_plan.jsonl`, and
+`hbsm_trace_plan.jsonl` rows from the frozen prompt manifest and shared
+architecture maps. Its decision is `TRACE_PLAN_READY_NOT_MODEL_EVIDENCE`: it is
+only an execution checklist and cannot promote a gate.
 
 ## SSQ-LR Real S1 Packet
 

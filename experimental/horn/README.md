@@ -9,7 +9,8 @@ Status: **NEW / Mac gates pending**.
 
 Estimated completion:
 
-- **10%** as a positive-method paper: hypothesis and gates are scaffolded.
+- **15%** as a positive-method paper: hypothesis, gates, packet checker, and
+  trace-plan handoff are scaffolded.
 - **0%** as a systems-result paper: no precision allocation or native GPU
   validation exists.
 
@@ -59,6 +60,17 @@ Use the explicit boundary IDs and architecture hashes in
 substring-only module classification for real H1 rows.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
+The exact H1a/H1 capture checklist is
+`../shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl`;
+regenerate it with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_plan
+```
+
+This trace plan is not model evidence. It only enumerates observed-boundary,
+permuted-direction, and matched non-boundary rows to capture before building a
+real HORN packet.
 
 Validate the first real H1a screen packet with:
 
@@ -91,8 +103,9 @@ resource-limited packet must set a decision
 beginning `RESOURCE_LIMITED_NOT_PROMOTABLE`; it may document local limits but
 cannot promote H1a or H1.
 
-Real `config.json` provenance must include `prompt_ids_hash` and
-`architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must
+Real `config.json` provenance must include `prompt_ids_hash`,
+`architecture_map_hash`, and `trace_plan_hash` as `sha256:<64-hex-digest>`
+strings. Real `summary.json` must
 include the recomputed H1a evaluator fields: `gate_status`, `gate_pass`,
 `prompt_count`, `boundary_directions`, `selected_h1_metric`,
 `selected_h1_direction`, `selected_h1_ratio`, `selected_h1_threshold`,

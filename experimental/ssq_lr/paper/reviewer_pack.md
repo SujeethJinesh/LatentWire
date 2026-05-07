@@ -36,6 +36,7 @@ and kill conditions.
 |---|---|---|
 | synthetic S1 schema rehearsal | 288 rows, 12 prompts, 6 recurrent layers, 4 buckets; passes `--mode real --project ssq_lr` as `SCHEMA_REHEARSAL_NOT_PROMOTABLE...` | validates checker path only |
 | architecture provenance | shared config-derived hashes exist for live hybrid targets | packet provenance ready |
+| trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl` enumerates 5,184 required S1 capture rows | execution checklist only |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
 | real-packet checker | rejects missing buckets, incomplete prompt/layer matrices, stale summary fields, too few prompts, promotable resource-limited decisions, mismatched model IDs, and missing controls | ready for real S1 |
 

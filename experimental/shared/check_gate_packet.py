@@ -166,6 +166,7 @@ REAL_SUMMARY_FIELDS = {
     ),
 }
 HASH_FIELDS = ("prompt_ids_hash", "architecture_map_hash")
+TRACE_PLAN_HASH_FIELD = "trace_plan_hash"
 RESOURCE_LIMITED_DECISION = "RESOURCE_LIMITED_NOT_PROMOTABLE"
 SCHEMA_REHEARSAL_DECISION = "SCHEMA_REHEARSAL_NOT_PROMOTABLE"
 ARCHITECTURE_MAPS_PATH = (
@@ -352,6 +353,12 @@ def _validate_hash_provenance(config: dict[str, Any], errors: list[str]) -> None
         value = config.get(field)
         if not isinstance(value, str) or not re.fullmatch(r"sha256:[0-9a-fA-F]{64}", value):
             errors.append(f"config.json {field} must be a sha256:<64-hex-digest> value")
+    if not _schema_rehearsal(config):
+        value = config.get(TRACE_PLAN_HASH_FIELD)
+        if not isinstance(value, str) or not re.fullmatch(r"sha256:[0-9a-fA-F]{64}", value):
+            errors.append(
+                f"config.json {TRACE_PLAN_HASH_FIELD} must be a sha256:<64-hex-digest> value"
+            )
 
 
 def _validate_architecture_map_provenance(config: dict[str, Any], errors: list[str]) -> None:

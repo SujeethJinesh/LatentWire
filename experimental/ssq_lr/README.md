@@ -9,7 +9,8 @@ Status: **NEW / Mac gates pending**.
 
 Estimated completion:
 
-- **10%** as a positive-method paper: hypothesis and gates are scaffolded.
+- **15%** as a positive-method paper: hypothesis, gates, packet checker, and
+  trace-plan handoff are scaffolded.
 - **0%** as a systems-result paper: no native GPU state-cache integration or
   benchmark exists.
 
@@ -57,6 +58,16 @@ Use the explicit architecture hashes in
 `../shared/results/hybrid_architecture_maps_20260506/` for packet provenance.
 Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
+The exact S1 capture checklist is
+`../shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl`;
+regenerate it with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_plan
+```
+
+This trace plan is not model evidence. It only enumerates the rows that must be
+captured before `hybrid_trace_packet_builder` can produce a real S1 packet.
 
 Validate the first real S1 packet with:
 
@@ -77,8 +88,9 @@ promote S1. Schema-rehearsal packets must set `schema_rehearsal: true` in
 `config.json`, use a decision beginning `SCHEMA_REHEARSAL_NOT_PROMOTABLE`, and
 remain non-evidence even when their synthetic rows make the evaluator pass.
 
-Real `config.json` provenance must include `prompt_ids_hash` and
-`architecture_map_hash` as `sha256:<64-hex-digest>` strings. Real `summary.json` must
+Real `config.json` provenance must include `prompt_ids_hash`,
+`architecture_map_hash`, and `trace_plan_hash` as `sha256:<64-hex-digest>`
+strings. Real `summary.json` must
 include the recomputed S1 evaluator fields: `gate_status`, `gate_pass`,
 `prompt_count`, `position_buckets`, `ssm_layer_count`, `passing_layer_count`,
 `distribution_passing_layer_count`, `required_passing_layer_count`,

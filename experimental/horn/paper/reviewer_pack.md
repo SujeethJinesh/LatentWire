@@ -35,6 +35,7 @@ asymmetry.
 |---|---|---|
 | synthetic H1a schema rehearsal | 72 real-schema rows, selected max-abs ratio 4.044, non-boundary control ratio 1.042, permuted control ratio 0.247, real checker passes with `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A` | validates packet contract only |
 | architecture provenance | shared boundary IDs and direction counts exist | packet provenance ready |
+| trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl` enumerates 1,008 boundary/control capture rows | execution checklist only |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
 | real-packet checker | rejects missing directions, stale summary fields, too few prompts, non-finite rows, promotable resource-limited decisions, unpaired or independently measured permuted controls, near-boundary non-boundary controls, and permuted controls that preserve the selected directional effect | ready for real H1 |
 

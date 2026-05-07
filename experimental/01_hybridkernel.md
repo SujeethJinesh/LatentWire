@@ -1,5 +1,13 @@
 # 01 — HybridKernel: Fused Attention↔SSM Boundary Kernel
 
+> **Current 2026-05-07 authority.** This is a historical project brief. The
+> live HybridKernel gate is now the native vLLM/Nsight profiler packet described
+> in `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md` and
+> `experimental/native_gpu_handoff_20260506.md`. Do not implement a fused
+> kernel, Phase 6 prototype, or Phase 7 benchmark suite until that profiler
+> packet clears the preregistered `>=3%` recoverable-gain gate with primary,
+> same-family, and cross-family control rows.
+
 ## TL;DR
 Hybrid LLMs interleave attention layers and SSM layers. Current targets (May 2026): Granite-4.0-H (9 Mamba : 1 attention, Oct 2025), Nemotron-H (8B/47B/56B), Nemotron-3-Nano-30B-A3B (Dec 2025, hybrid MoE with reasoning budget), Mamba-3 (March 2026), Apriel-H1-15B-Thinker (hybrid reasoner), Qwen3-Next-80B-A3B. The transitions may involve memory format conversions and separate kernel launches. This project tests whether a narrow boundary-fusion primitive remains novel and useful after source audit and Macbook correctness gates.
 

@@ -1,0 +1,23 @@
+{
+  "architecture_maps": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hybrid_architecture_maps_20260506/architecture_maps.json",
+  "architecture_maps_hash": "sha256:9836be12e8f9bcf6c0e8acb03119f5710f65225b126cf0c3099477c5f1bf1f27",
+  "claim_boundary": [
+    "trace-plan-only",
+    "not model evidence",
+    "not GPU evidence"
+  ],
+  "decision": "TRACE_PLAN_READY_NOT_MODEL_EVIDENCE",
+  "model_ids": [
+    "ibm-granite-4.0-h-small",
+    "ibm-granite-4.0-h-tiny",
+    "qwen3-next-80b-a3b-instruct"
+  ],
+  "prompt_count": 12,
+  "prompt_ids_hash": "sha256:48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0",
+  "prompt_source": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl",
+  "trace_plan_hashes": {
+    "hbsm": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf",
+    "horn": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66",
+    "ssq_lr": "sha256:659f63b59ba3708d56bcded8ad87428162bbbb668cff3cc999c3159da28b5563"
+  }
+}

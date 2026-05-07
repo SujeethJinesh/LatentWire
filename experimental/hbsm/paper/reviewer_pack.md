@@ -37,6 +37,7 @@ HORN.
 |---|---|---|
 | synthetic B1 schema rehearsal | 504 real-schema rows, 480 primary prompt rows, 40 scoring layers after aggregation, real checker passes with `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1` | validates packet contract only |
 | architecture provenance | shared boundary flags and model hashes exist | packet provenance ready |
+| trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl` enumerates 1,554 B1 sensitivity/control rows | execution checklist only |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
 | real-packet checker | rejects missing no-op rows, missing primary-row prompt coverage, stale summary fields, non-finite metrics, split omissions, promotable resource-limited decisions, supplied top-decile flags that disagree with measured drift, unmatched random/top-decile counts, and random baselines that reproduce boundary enrichment | ready for real B1 |
 

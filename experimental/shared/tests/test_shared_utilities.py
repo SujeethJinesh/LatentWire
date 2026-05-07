@@ -22,6 +22,7 @@ from experimental.shared.hybrid_model_eligibility import (
     _size_gb,
 )
 from experimental.shared.hybrid_trace_packet_builder import build_hbsm_packet, build_horn_packet, build_ssq_lr_packet
+from experimental.shared.hybrid_trace_plan import write_trace_plan
 from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_rank_correlation
 
 
@@ -133,6 +134,7 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
         '"dtype": "bf16", '
         '"device": "mps", '
         '"architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6", '
+        '"trace_plan_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", '
         '"command": "python run_gate.py"'
         "}\n"
     )
@@ -386,6 +388,7 @@ def test_gate_packet_checker_rejects_real_packet_without_project_controls(tmp_pa
         '"dtype": "bf16", '
         '"device": "mps", '
         '"architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6", '
+        '"trace_plan_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", '
         '"command": "python run_gate.py"'
         "}\n"
     )
@@ -507,6 +510,51 @@ def test_hybrid_architecture_map_packet_contains_controls(tmp_path: Path) -> Non
     assert "CONFIG_ONLY_READY_FOR_TRACE_PACKET_PROVENANCE" in (output_dir / "decision.md").read_text()
 
 
+def test_hybrid_trace_plan_enumerates_project_specific_rows(tmp_path: Path) -> None:
+    config_dir = tmp_path / "configs"
+    maps_dir = tmp_path / "maps"
+    output_dir = tmp_path / "trace_plan"
+    prompts = tmp_path / "prompts.jsonl"
+    config_dir.mkdir()
+    (config_dir / "toy.config.json").write_text(
+        "{"
+        '"architectures": ["ToyHybrid"], '
+        '"model_type": "toyhybrid", '
+        '"hidden_size": 16, '
+        '"layer_types": ["mamba", "attention", "mamba", "mamba"]'
+        "}\n"
+    )
+    prompts.write_text(
+        '{"prompt_id": "p0", "prompt": "one"}\n'
+        '{"prompt_id": "p1", "prompt": "two"}\n'
+    )
+    write_maps(config_dir=config_dir, output_dir=maps_dir)
+
+    summary = write_trace_plan(
+        output_dir=output_dir,
+        prompts_path=prompts,
+        architecture_maps_path=maps_dir / "architecture_maps.json",
+    )
+
+    assert summary["decision"] == "TRACE_PLAN_READY_NOT_MODEL_EVIDENCE"
+    assert summary["row_counts"] == {"hbsm": 14, "horn": 12, "ssq_lr": 24}
+    horn_rows = [
+        json.loads(line)
+        for line in (output_dir / "horn_trace_plan.jsonl").read_text().splitlines()
+    ]
+    assert {row["control_type"] for row in horn_rows} == {
+        "boundary",
+        "non_boundary",
+        "permuted_direction",
+    }
+    assert {
+        row["matched_boundary_direction"]
+        for row in horn_rows
+        if row["control_type"] == "non_boundary"
+    } == {"attention->ssm", "ssm->attention"}
+    assert "not model evidence" in (output_dir / "decision.md").read_text()
+
+
 def test_hybrid_model_eligibility_helpers_are_repo_local(tmp_path: Path) -> None:
     cache = _local_cache_dir(tmp_path / "hf_home", "owner/model-name")
 
@@ -556,6 +604,7 @@ def _base_trace_metadata() -> dict[str, object]:
         "device": "cpu",
         "command": "python dump.py",
         "architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
+        "trace_plan_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
     }
 
 
@@ -657,6 +706,40 @@ def test_gate_packet_checker_rejects_unknown_architecture_map_hash(tmp_path: Pat
 
     assert not report["ok"]
     assert any("architecture_map_hash must match" in error for error in report["errors"])
+
+
+def test_gate_packet_checker_requires_trace_plan_hash_for_real_packets(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_missing_trace_plan_hash"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    config = json.loads((output_dir / "config.json").read_text(encoding="utf-8"))
+    config.pop("trace_plan_hash")
+    (output_dir / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("trace_plan_hash" in error for error in report["errors"])
 
 
 def test_packet_builder_resolves_sanitized_tensor_names(tmp_path: Path) -> None:

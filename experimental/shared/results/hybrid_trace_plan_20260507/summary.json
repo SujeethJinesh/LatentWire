@@ -1,0 +1,21 @@
+{
+  "claim_boundary": [
+    "trace-plan-only",
+    "not model evidence",
+    "not GPU evidence"
+  ],
+  "decision": "TRACE_PLAN_READY_NOT_MODEL_EVIDENCE",
+  "model_count": 3,
+  "prompt_count": 12,
+  "row_counts": {
+    "hbsm": 1554,
+    "horn": 1008,
+    "ssq_lr": 5184
+  },
+  "surface": "hybrid_trace_collection_plan",
+  "trace_plan_hashes": {
+    "hbsm": "sha256:5f9bea1f3a36920429f86f0c998ff92af6e8c8c99612d25cac46b0d3c6560acf",
+    "horn": "sha256:bde83105201b553340944f8c29bc94f8444f172e4fbe96d16951115208aa4c66",
+    "ssq_lr": "sha256:659f63b59ba3708d56bcded8ad87428162bbbb668cff3cc999c3159da28b5563"
+  }
+}

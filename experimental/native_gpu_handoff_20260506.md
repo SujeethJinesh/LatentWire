@@ -73,6 +73,17 @@ must carry a `RESOURCE_LIMITED_NOT_PROMOTABLE` decision. Full GPU validation is
 blocked until the Mac/shared trace gates identify a surviving recipe or
 mechanism.
 
+Before collecting those tensors or sensitivity rows, use the deterministic
+trace plan:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_plan
+```
+
+Current artifact:
+`experimental/shared/results/hybrid_trace_plan_20260507/`. It is a row-level
+capture checklist only, with no model or GPU evidence.
+
 ## ThoughtFlow-FP8
 
 Current manifest:

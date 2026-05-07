@@ -1,9 +1,17 @@
 # Experimental Projects Mac-Complete Readiness Audit
 
+> **Superseded on 2026-05-07.** This file is a historical three-project Mac
+> saturation audit. The active experimental scope is now exactly
+> HybridKernel, SSQ-LR, HORN, HBSM, and ThoughtFlow-FP8. Use
+> `experimental/project_status_20260506.md`,
+> `experimental/native_gpu_handoff_20260506.md`, and the project READMEs for
+> current instructions. Do not use the historical project list below as the
+> active status authority.
+
 - date: 2026-05-06
 - environment: `./venv_arm64`
 - Triton status: `triton-cpu` source install available; interpreter gates pass
-- scope: HybridKernel, SinkAware, ThoughtFlow-FP8 side projects
+- historical scope: HybridKernel, SinkAware, ThoughtFlow-FP8 side projects
 
 ## Summary
 

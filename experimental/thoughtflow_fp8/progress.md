@@ -6,9 +6,10 @@
 - Phase 1: quick forensics pass complete.
 - Phase 2: synthetic retention simulation complete; real-trace text proxy gate
   weakened the branch; hidden/KV saliency telemetry and the stopped
-  anchor/recent/phase/math sparse-cache family were mixed/negative, but the
-  pre-registered `rdu_topk` successor revived the branch on the frozen
-  sparse-cache quality gate
+  anchor/recent/phase/math sparse-cache family were mixed/negative. The
+  pre-registered `rdu_topk` successor cleared its first frozen sparse-cache
+  gate, then failed alternate-surface and independent-trace reproduction and is
+  now diagnostic-only.
 - Phase 4: anchor/phase retention reference plus Triton interpreter correctness
   pass locally; native GPU/FP8 numerical drift and performance remain absent
 - Current viability: the stopped current policy family remains ruled out.
@@ -177,19 +178,18 @@ artifact.
 `phase2/preregister_recurrence_distance_utility_20260506.md` then registered
 exactly one successor signal, `rdu_topk`, based on recurrence-distance utility
 from prefix self-attention lag buckets. The 2026-05-06 one-shot frozen
-sparse-cache run revived the branch on the current Mac-local distilgpt2
-surface. At the same 0.20 keep fraction and 74 scored traces, `rdu_topk` reaches
+sparse-cache run temporarily cleared the first gate on the current Mac-local
+distilgpt2 surface; later alternate-surface and independent-trace checks
+demoted it to diagnostic-only. At the same 0.20 keep fraction and 74 scored traces, `rdu_topk` reaches
 NLL `3.779`, beating ThinKV-like (`3.900`) by `0.121` NLL and R-KV-like
 (`3.939`) by `0.160` NLL. Paired uncertainty clears the pre-registered rule:
 delta versus R-KV-like is `-0.160` with 95% CI `[-0.264, -0.050]`; delta versus
 ThinKV-like is `-0.121` with 95% CI `[-0.211, -0.037]`.
 
-Status: **REVIVED ON THE FIRST FROZEN SUCCESSOR GATE, NOT ICLR-READY**. Alive:
-recurrence-distance utility as a training-free sparse-cache signal. Still
-stopped: all anchor/recent/phase/math tuning on this trace set. Highest-priority
-next gate: reproduce `rdu_topk` on a larger or seed-repeated frozen slice with
-strict same-family versus cross-family separation and oracle/headroom
-diagnostics before widening to competitor or long-context benchmarks.
+Status: **HISTORICAL FIRST-GATE PASS; NOW DIAGNOSTIC ONLY**. Not alive as a
+positive method. Still stopped: all anchor/recent/phase/math tuning on this
+trace set. The later reproduction checks supersede this temporary first-gate
+readout.
 
 `phase2/rdu_robustness_diagnostic.md` adds the smallest cached robustness
 artifact around that 0.20 run without retuning or changing the scoring rule.

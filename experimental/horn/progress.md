@@ -144,3 +144,17 @@ unrelated architecture provenance field.
 
 Decision: **H1A BOUNDARY ROWS MUST BE TIED TO A KNOWN HYBRID ARCHITECTURE MAP**.
 The blocker remains the same prompt-paired real activation dump.
+
+## 2026-05-07 Trace-Plan Artifact
+
+Added `../shared/hybrid_trace_plan.py` and generated
+`../shared/results/hybrid_trace_plan_20260507/`. For HORN, the plan enumerates
+1,008 H1a/H1 capture rows across frozen prompts, shared architecture-map
+boundaries, observed boundary rows, metric-reused permuted-direction rows, and
+matched non-boundary controls for both boundary directions. The real-packet
+checker now requires a `trace_plan_hash` for non-rehearsal packets, so future
+H1a rows must cite the exact plan JSONL used during capture.
+
+Decision: **H1A TRACE CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT RUN**.
+The next exact gate remains a real boundary tensor packet built from those
+planned rows and checked with `check_gate_packet --mode real --project horn`.

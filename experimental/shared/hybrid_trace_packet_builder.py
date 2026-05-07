@@ -70,6 +70,7 @@ def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
         "device",
         "command",
         "architecture_map_hash",
+        "trace_plan_hash",
     ]
     missing = [field for field in required if field not in metadata]
     if missing:

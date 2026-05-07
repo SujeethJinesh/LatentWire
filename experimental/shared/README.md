@@ -18,6 +18,8 @@ Use them for preregistered Mac gates only.
   validate real trace packet provenance.
 - `hybrid_model_eligibility.py`: metadata-only Hugging Face size/cache
   preflight for the live hybrid targets.
+- `hybrid_trace_plan.py`: deterministic SSQ-LR/HORN/HBSM trace-collection
+  plan from the frozen prompt manifest and config-derived architecture maps.
 - `hybrid_trace_packet_builder.py`: converts future saved trace tensor packets
   into strict SSQ-LR/HORN real gate packets and converts HBSM sensitivity rows
   into strict real B1 packets.
@@ -75,6 +77,22 @@ HF_HOME="$PWD/.debug/hf_home" \
 
 ## Real Trace Packet Builder
 
+Before dumping tensors, generate the exact row plan:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_plan
+```
+
+Current output:
+
+```text
+experimental/shared/results/hybrid_trace_plan_20260507/
+```
+
+This writes `ssq_lr_trace_plan.jsonl`, `horn_trace_plan.jsonl`, and
+`hbsm_trace_plan.jsonl`. These files are trace-capture checklists only; they do
+not contain activations, SSM state, quality metrics, or GPU evidence.
+
 After a model run writes tensors with `activation_dumper.py`, build strict
 project packets with:
 
@@ -108,7 +126,8 @@ every prompt; permuted controls must flip the actual `direction` label.
 For HBSM, supplied `top_decile_flag` values must match the measured
 `kl_or_nll_drift` top-decile ranking after aggregation on every primary prompt
 row.
-Real packets also need 64-hex `prompt_ids_hash` values and an
+Real packets also need 64-hex `prompt_ids_hash` values, a `trace_plan_hash`
+for the project trace-plan JSONL used during capture, and an
 `architecture_map_hash` that matches the claimed `model_id` in
 `shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`; a
 random hash-shaped value is rejected. They also need project-specific aggregate

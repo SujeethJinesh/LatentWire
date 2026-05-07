@@ -61,9 +61,10 @@ maps. Each row must report \texttt{model\_id}, \texttt{layer},
 \texttt{parameter\_count}, \texttt{weight\_norm},
 \texttt{top\_decile\_flag}, \texttt{random\_top\_decile},
 \texttt{train\_test\_split}, and \texttt{control\_type}.
-The packet must include \texttt{prompt\_ids\_hash},
-\texttt{architecture\_map\_hash}, \texttt{summary.md}, matching
-\texttt{row\_count}, and pass
+The packet must include \texttt{config.json}, \texttt{raw\_rows.jsonl},
+\texttt{summary.json}, \texttt{summary.md}, \texttt{decision.md},
+\texttt{prompt\_ids\_hash}, \texttt{architecture\_map\_hash},
+\texttt{trace\_plan\_hash}, matching \texttt{row\_count}, and pass
 \texttt{experimental.shared.check\_gate\_packet --mode real --project hbsm}.
 The checker requires both true and false boundary flags, finite sensitivity and
 predictor fields, all listed controls, and a perturbation-off row whose drift is
@@ -81,7 +82,8 @@ primary-row, scoring-layer, and prompt counts; top-decile count; random
 top-decile count; train/test counts; boundary top-decile enrichment; Fisher
 p-value; cheap-predictor Spearman correlation; baseline Spearman values; and
 the cheap-predictor margin over the best baseline. The checker recomputes these
-fields from raw rows and rejects stale or hand-filled summaries.
+fields from \texttt{raw\_rows.jsonl} and rejects stale or hand-filled
+\texttt{summary.json} entries.
 
 \begin{table}[h]
 \centering

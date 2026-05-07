@@ -1,5 +1,13 @@
 # Pre-GPU Next Steps For Side Systems Projects
 
+> **Superseded on 2026-05-07.** This file is historical planning context. The
+> active scope is exactly HybridKernel, SSQ-LR, HORN, HBSM, and ThoughtFlow-FP8.
+> Use `experimental/project_status_20260506.md` and
+> `experimental/native_gpu_handoff_20260506.md` for current gates. In
+> particular, HybridKernel must run the native profiler packet before any
+> fused-kernel implementation, and ThoughtFlow is diagnostic-only unless a new
+> preregistered utility signal is opened.
+
 These projects remain outside COLM_v3 claims. The goal here is to improve the
 odds that any later NVIDIA run is worth doing.
 
