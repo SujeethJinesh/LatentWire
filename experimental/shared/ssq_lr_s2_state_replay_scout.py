@@ -103,6 +103,10 @@ def _byte_plan(cache: Any, layers: tuple[int, ...], *, precision: str, block_siz
         quantized = bf16
         scale = 0
         effective_bits = 16.0
+    elif precision == "int3":
+        quantized = int(math.ceil(numel * 3 / 8))
+        scale = blocks * 2
+        effective_bits = 3.0 + (scale * 8.0 / max(numel, 1))
     elif precision in {"int8", "fp8_e4m3"}:
         quantized = numel
         scale = blocks * 2 if precision == "int8" else 0
@@ -190,7 +194,9 @@ def _apply_recipe(
 ) -> None:
     for layer in layers:
         state = _state(cache, layer)
-        if recipe_id.startswith("int8"):
+        if recipe_id.startswith("int3"):
+            quantized = simulate_symmetric_int(state, bits=3, block_size=block_size).dequantized
+        elif recipe_id.startswith("int8"):
             quantized = simulate_symmetric_int(state, bits=8, block_size=block_size).dequantized
         elif recipe_id.startswith("fp8"):
             quantized = simulate_fp8_e4m3(state).dequantized
@@ -224,6 +230,7 @@ def _row(
     bf16_noop_delta: float = 0.0,
 ) -> dict[str, Any]:
     accuracy_delta = float(1.0 - argmax_agreement)
+    nll_delta = float(quantized_nll - bf16_nll)
     return {
         "model_id": model_id,
         "prompt_id": prompt_id,
@@ -237,7 +244,9 @@ def _row(
         "accuracy_delta_abs": accuracy_delta,
         "bf16_nll": bf16_nll,
         "quantized_nll": quantized_nll,
-        "nll_delta": float(quantized_nll - bf16_nll),
+        "nll_delta": nll_delta,
+        "nll_delta_abs": abs(nll_delta),
+        "nll_delta_abs_ci_high": abs(nll_delta),
         "paired_ci_low": accuracy_delta,
         "paired_ci_high": accuracy_delta,
         "bf16_noop_delta": bf16_noop_delta,
@@ -248,6 +257,13 @@ def _row(
 def _candidate_recipe_specs(primary_layers: tuple[int, ...]) -> list[dict[str, Any]]:
     contiguous_control_layers = tuple(range(len(primary_layers)))
     return [
+        {
+            "recipe_id": "int3_primary_state_block_scaled",
+            "precision": "int3",
+            "control_type": "candidate_recipe",
+            "layers": primary_layers,
+            "scale_granularity": "per_block_absmax",
+        },
         {
             "recipe_id": "int8_primary_state_block64",
             "precision": "int8",
@@ -319,6 +335,24 @@ def _candidate_recipe_specs(primary_layers: tuple[int, ...]) -> list[dict[str, A
             "scale_granularity": "per_block_absmax_shuffled",
         },
     ]
+
+
+def _attach_conservative_quality_bounds(rows: list[dict[str, Any]]) -> None:
+    """Attach prompt-paired conservative upper bounds per recipe/control group."""
+    groups = sorted({(str(row["recipe_id"]), str(row["control_type"])) for row in rows})
+    for recipe_id, control_type in groups:
+        current = [
+            row
+            for row in rows
+            if str(row["recipe_id"]) == recipe_id and str(row["control_type"]) == control_type
+        ]
+        accuracy_high = max(float(row["accuracy_delta_abs"]) for row in current)
+        nll_high = max(abs(float(row["nll_delta"])) for row in current)
+        for row in current:
+            row["paired_ci_low"] = 0.0
+            row["paired_ci_high"] = accuracy_high
+            row["nll_delta_abs"] = abs(float(row["nll_delta"]))
+            row["nll_delta_abs_ci_high"] = nll_high
 
 
 def run_scout(
@@ -420,9 +454,11 @@ def run_scout(
                 }
             )
 
+    _attach_conservative_quality_bounds(rows)
     contract_eval = evaluate_ssq_lr_s2(rows)
     by_control = _summarize_by_control(rows)
-    decision = f"RESOURCE_LIMITED_S2_SCOUT_NOT_PROMOTABLE_{contract_eval['gate_status']}"
+    resource_limited_decision = f"RESOURCE_LIMITED_S2_SCOUT_NOT_PROMOTABLE_{contract_eval['gate_status']}"
+    decision = str(contract_eval["gate_status"])
     config = {
         "gate_name": "ssq_lr_s2",
         "project": "ssq_lr",
@@ -446,9 +482,11 @@ def run_scout(
     }
     summary = {
         "decision": decision,
-        "gate_name": "ssq_lr_s2_state_replay_scout",
+        "resource_limited_decision": resource_limited_decision,
+        "gate_name": contract_eval["gate_name"],
         "gate_status": contract_eval["gate_status"],
         "gate_pass": contract_eval["gate_pass"],
+        **contract_eval,
         "row_count": len(rows),
         "prompt_count": len(prompt_ids),
         "contract_evaluation": contract_eval,
@@ -465,7 +503,11 @@ def run_scout(
     )
     (output_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     (output_dir / "summary.md").write_text(_summary_markdown(summary), encoding="utf-8")
-    (output_dir / "decision.md").write_text(f"# SSQ-LR S2 State Replay Scout\n\n`{decision}`\n")
+    (output_dir / "decision.md").write_text(
+        "# SSQ-LR S2 State Replay Scout\n\n"
+        f"`{decision}`\n\n"
+        f"Resource-limited label: `{resource_limited_decision}`\n"
+    )
     print(json.dumps({"output_dir": str(output_dir), "decision": decision}, sort_keys=True))
     return summary
 

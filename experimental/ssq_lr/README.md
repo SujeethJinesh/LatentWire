@@ -5,16 +5,17 @@ below FP16 without quality loss during long reasoning.
 
 ## Current Readiness
 
-Status: **NEW / layer-selective S1 signal alive but non-promoting**.
+Status: **WEAKENED / S1b signal alive, S2 recipe failed on held-out scout**.
 
 Estimated completion:
 
-- **38%** as a positive-method paper: hypothesis, gates, packet checker,
+- **30%** as a positive-method paper: hypothesis, gates, packet checker,
   trace-plan handoff, one corrected one-layer S1 smoke pass, one four-layer S1
   smoke failure, one all-recurrent-layer metrics-only S1 failure, and one
   checker-passing selected-layer prompt-repeat packet are scaffolded. A fresh
-  held-out S1b packet now reproduces the frozen layer hypothesis, but S2 still
-  blocks method promotion.
+  held-out S1b packet reproduces the frozen layer hypothesis. S2 is now
+  weakened: MXFP4 preserves quality but fails the byte gate, while INT3 clears
+  bytes and fails the 12-prompt held-out quality scout.
 - **0%** as a systems-result paper: no native GPU state-cache integration or
   benchmark exists.
 
@@ -37,10 +38,10 @@ quantization sensitivity. Gate S3 tests cross-model transfer without retuning.
 
 Current executable scope: S1 has the strict real trace packet builder/checker
 path. S2/S3 now have follow-up contract checks in
-`../shared/followup_gate_contracts.py`, but no S2/S3 model packets exist and no
+`../shared/followup_gate_contracts.py`, and resource-limited S2 scouts exist.
+They are not current evidence for promotion: no
 quantization-quality, byte-savings, or cross-model-transfer claim is allowed
-until real S1 promotes and those follow-up contracts are filled from the frozen
-real S1 replay surface.
+until a non-resource-limited S2/S3 packet clears on the frozen replay surface.
 
 ## Current Mac Packet
 
@@ -181,8 +182,9 @@ The current resource-limited S2 continuation replay scouts are:
 
 - `../shared/results/ssq_lr_s2_state_replay_scout_20260507/`
 - `../shared/results/ssq_lr_s2_state_replay_scout_block256_20260507/`
-- decision for both:
-  `RESOURCE_LIMITED_S2_SCOUT_NOT_PROMOTABLE_FAIL_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY`
+- `../shared/results/ssq_lr_s2_state_replay_scout_int3_block256_20260507/`
+- `../shared/results/ssq_lr_s2_state_replay_scout_int3_block256_12p_20260507/`
+- `../shared/results/ssq_lr_s2_state_replay_scout_int3_block64_12p_20260507/`
 
 They replay short continuations from cached Granite Tiny recurrent states and
 mutate only the selected SSM state layers. Calibrated INT8/FP8/MXFP4 state
@@ -194,6 +196,16 @@ only `3.765x` state-memory reduction at block size 64 and `3.938x` at block
 size 256, below the preregistered `4x` threshold. Treat these scouts as
 information-content evidence only; they are not quality, throughput, or GPU
 evidence.
+
+The INT3 follow-up splits the blocker cleanly. INT3 with counted FP16 scale
+bytes clears the memory threshold (`5.224x` at block size 256, `4.923x` at
+block size 64). The 4-prompt block-256 scout passes the executable S2 contract
+with zero BF16-argmax delta, but it is explicitly resource-limited. Both
+12-prompt held-out scouts fail S2: the evaluator selects MXFP4 because it has
+zero argmax delta, but MXFP4 remains below `4x`; INT3 clears bytes but loses
+argmax fidelity on at least one held-out prompt. The current conclusion is:
+S1b heterogeneity is real, but SSQ-LR does not yet have a promotable Mac-local
+state-quantization recipe.
 
 Regenerate it with:
 
@@ -276,6 +288,28 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   --prompt-limit 4 --max-input-tokens 8 --prefix-tokens 4 \
   --primary-layers 0,12,30 --block-size 256 \
   --output-dir experimental/shared/results/ssq_lr_s2_state_replay_scout_block256_20260507
+```
+
+Regenerate the INT3 held-out S2 scouts with:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.ssq_lr_s2_state_replay_scout \
+  --prompt-limit 12 --max-input-tokens 8 --prefix-tokens 4 \
+  --primary-layers 0,12,30 --block-size 256 \
+  --output-dir experimental/shared/results/ssq_lr_s2_state_replay_scout_int3_block256_12p_20260507
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/shared/results/ssq_lr_s2_state_replay_scout_int3_block256_12p_20260507 \
+  --gate ssq_lr_s2
+
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.ssq_lr_s2_state_replay_scout \
+  --prompt-limit 12 --max-input-tokens 8 --prefix-tokens 4 \
+  --primary-layers 0,12,30 --block-size 64 \
+  --output-dir experimental/shared/results/ssq_lr_s2_state_replay_scout_int3_block64_12p_20260507
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/shared/results/ssq_lr_s2_state_replay_scout_int3_block64_12p_20260507 \
+  --gate ssq_lr_s2
 ```
 
 The exact S1 capture checklist is

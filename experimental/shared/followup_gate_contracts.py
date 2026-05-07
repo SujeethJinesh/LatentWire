@@ -157,6 +157,8 @@ FOLLOWUP_SUMMARY_FIELDS: dict[str, tuple[str, ...]] = {
         "selected_memory_reduction",
         "selected_accuracy_delta_abs",
         "selected_accuracy_ci_high",
+        "selected_nll_delta_abs",
+        "selected_nll_delta_ci_high",
         "bf16_noop_max_delta",
     ),
     "ssq_lr_s3": (
@@ -259,7 +261,7 @@ def evaluate_ssq_lr_s2(rows: list[dict[str, Any]]) -> dict[str, Any]:
     recipes = sorted({str(row["recipe_id"]) for row in recipe_rows})
     noop_rows = [row for row in rows if str(row.get("control_type")) == "bf16_noop"]
     noop_max = max((abs(float(row["bf16_noop_delta"])) for row in noop_rows), default=float("inf"))
-    best: dict[str, Any] | None = None
+    candidates: list[dict[str, Any]] = []
     for recipe_id in recipes:
         current = [row for row in recipe_rows if str(row["recipe_id"]) == recipe_id]
         total_bytes = [
@@ -272,31 +274,68 @@ def evaluate_ssq_lr_s2(rows: list[dict[str, Any]]) -> dict[str, Any]:
         )
         accuracy_delta = max(abs(float(row["accuracy_delta_abs"])) for row in current)
         ci_high = max(float(row["paired_ci_high"]) for row in current)
+        nll_delta_abs = max(abs(float(row["nll_delta"])) for row in current)
+        nll_ci_high = max(
+            float(row.get("nll_delta_abs_ci_high", abs(float(row["nll_delta"]))))
+            for row in current
+        )
         candidate = {
             "recipe_id": recipe_id,
             "memory_reduction": memory_reduction,
             "accuracy_delta": accuracy_delta,
             "ci_high": ci_high,
+            "nll_delta_abs": nll_delta_abs,
+            "nll_ci_high": nll_ci_high,
         }
-        if best is None or (accuracy_delta, -memory_reduction, recipe_id) < (
-            best["accuracy_delta"],
-            -best["memory_reduction"],
-            best["recipe_id"],
-        ):
-            best = candidate
-    if best is None:
+        candidate["quality_pass"] = ci_high <= 0.01 or nll_ci_high <= 0.01
+        candidate["gate_pass"] = (
+            memory_reduction >= 4.0 and candidate["quality_pass"] and noop_max <= 1e-5
+        )
+        candidates.append(candidate)
+    passing_candidates = [candidate for candidate in candidates if candidate["gate_pass"]]
+    quality_only_candidates = [candidate for candidate in candidates if candidate["quality_pass"]]
+    if passing_candidates:
+        best = min(
+            passing_candidates,
+            key=lambda item: (
+                item["nll_ci_high"],
+                item["ci_high"],
+                -item["memory_reduction"],
+                item["recipe_id"],
+            ),
+        )
+    elif quality_only_candidates:
+        best = min(
+            quality_only_candidates,
+            key=lambda item: (
+                -item["memory_reduction"],
+                item["nll_ci_high"],
+                item["ci_high"],
+                item["recipe_id"],
+            ),
+        )
+    elif candidates:
+        best = min(
+            candidates,
+            key=lambda item: (
+                item["accuracy_delta"],
+                item["nll_ci_high"],
+                -item["memory_reduction"],
+                item["recipe_id"],
+            ),
+        )
+    else:
         best = {
             "recipe_id": "",
             "memory_reduction": 1.0,
             "accuracy_delta": float("inf"),
             "ci_high": float("inf"),
+            "nll_delta_abs": float("inf"),
+            "nll_ci_high": float("inf"),
+            "quality_pass": False,
+            "gate_pass": False,
         }
-    gate_pass = (
-        best["memory_reduction"] >= 4.0
-        and best["accuracy_delta"] <= 0.01
-        and best["ci_high"] <= 0.01
-        and noop_max <= 1e-5
-    )
+    gate_pass = bool(best["gate_pass"])
     return {
         "gate_name": "ssq_lr_s2_state_quantization_sensitivity",
         "gate_pass": gate_pass,
@@ -308,6 +347,8 @@ def evaluate_ssq_lr_s2(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "selected_memory_reduction": best["memory_reduction"],
         "selected_accuracy_delta_abs": best["accuracy_delta"],
         "selected_accuracy_ci_high": best["ci_high"],
+        "selected_nll_delta_abs": best["nll_delta_abs"],
+        "selected_nll_delta_ci_high": best["nll_ci_high"],
         "bf16_noop_max_delta": noop_max,
     }
 

@@ -360,3 +360,19 @@ def test_ssq_lr_s2_contract_requires_full_preregistered_baseline_set(tmp_path: P
 
     assert not report["ok"]
     assert any("random_same_l2" in error for error in report["errors"])
+
+
+def test_ssq_lr_s2_contract_accepts_preregistered_nll_alternative() -> None:
+    rows = _ssq_lr_s2_rows()
+    for row in rows:
+        if row["control_type"] == "candidate_recipe":
+            row["accuracy_delta_abs"] = 0.03
+            row["paired_ci_high"] = 0.04
+            row["nll_delta"] = 0.004
+            row["nll_delta_abs_ci_high"] = 0.008
+
+    result = evaluate_ssq_lr_s2(rows)
+
+    assert result["gate_pass"] is True
+    assert result["selected_accuracy_ci_high"] == 0.04
+    assert result["selected_nll_delta_ci_high"] == 0.008

@@ -57,6 +57,14 @@ Use them for preregistered Mac gates only.
   failures because honest scale-byte accounting stays below the preregistered
   `4x` memory-reduction threshold. The scouts are useful information-content
   checks only; they are not quality, GPU, or throughput evidence.
+- `ssq_lr_s2_state_replay_scout.py --block-size {64,256}` now includes an
+  INT3 candidate with scale bytes counted. Current INT3 artifacts:
+  `results/ssq_lr_s2_state_replay_scout_int3_block256_20260507/`,
+  `results/ssq_lr_s2_state_replay_scout_int3_block256_12p_20260507/`, and
+  `results/ssq_lr_s2_state_replay_scout_int3_block64_12p_20260507/`. The
+  4-prompt block-256 scout passes the S2 contract but is explicitly
+  resource-limited; both 12-prompt held-out INT3 scouts fail S2 because the
+  recipe clears bytes but loses quality on at least one prompt.
 - `horn_h2_noise_replay_scout.py`: resource-limited HORN H2
   noisy-continuation replay from the failed Granite Tiny H1a packet. Current
   artifact: `results/horn_h2_noise_replay_scout_20260507/`, decision
