@@ -1,0 +1,845 @@
+{
+  "claim_boundary": [
+    "resource-limited local capture",
+    "not SSQ-LR/HORN/HBSM gate promotion",
+    "not GPU evidence",
+    "not quality evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_CAPTURE_PACKETS_WRITTEN_NOT_PROMOTABLE",
+  "execution": {
+    "forward_seconds": 86.64796241594013,
+    "input_tokens": 8,
+    "load_seconds": 3.6630917500006035,
+    "prompt_count": 12,
+    "prompt_ids": [
+      "hrs1b_0001",
+      "hrs1b_0002",
+      "hrs1b_0003",
+      "hrs1b_0004",
+      "hrs1b_0005",
+      "hrs1b_0006",
+      "hrs1b_0007",
+      "hrs1b_0008",
+      "hrs1b_0009",
+      "hrs1b_0010",
+      "hrs1b_0011",
+      "hrs1b_0012"
+    ],
+    "runs": [
+      {
+        "forward_seconds": 10.909576416946948,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0001"
+      },
+      {
+        "forward_seconds": 7.380912750028074,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0002"
+      },
+      {
+        "forward_seconds": 7.105399667052552,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0003"
+      },
+      {
+        "forward_seconds": 7.336090583004989,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0004"
+      },
+      {
+        "forward_seconds": 6.969788833055645,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0005"
+      },
+      {
+        "forward_seconds": 6.724982375046238,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0006"
+      },
+      {
+        "forward_seconds": 6.6964359999401495,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0007"
+      },
+      {
+        "forward_seconds": 6.614830791950226,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0008"
+      },
+      {
+        "forward_seconds": 6.632146457908675,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0009"
+      },
+      {
+        "forward_seconds": 6.928907082998194,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0010"
+      },
+      {
+        "forward_seconds": 6.5533323750132695,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0011"
+      },
+      {
+        "forward_seconds": 6.795559082995169,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrs1b_0012"
+      }
+    ],
+    "ssq_bucket_runs": [
+      {
+        "forward_seconds": 6.518389582983218,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0001"
+      },
+      {
+        "forward_seconds": 6.507665290962905,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0001"
+      },
+      {
+        "forward_seconds": 6.609937832923606,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0001"
+      },
+      {
+        "forward_seconds": 6.542878290987574,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0001"
+      },
+      {
+        "forward_seconds": 6.571646000025794,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0002"
+      },
+      {
+        "forward_seconds": 7.094598750001751,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0002"
+      },
+      {
+        "forward_seconds": 6.579984332900494,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0002"
+      },
+      {
+        "forward_seconds": 6.776366958045401,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0002"
+      },
+      {
+        "forward_seconds": 6.61031883303076,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0003"
+      },
+      {
+        "forward_seconds": 6.603199415956624,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0003"
+      },
+      {
+        "forward_seconds": 6.661093458067626,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0003"
+      },
+      {
+        "forward_seconds": 6.684132750029676,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0003"
+      },
+      {
+        "forward_seconds": 6.559043791028671,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0004"
+      },
+      {
+        "forward_seconds": 6.569728209055029,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0004"
+      },
+      {
+        "forward_seconds": 6.825283166021109,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0004"
+      },
+      {
+        "forward_seconds": 7.130769875016995,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0004"
+      },
+      {
+        "forward_seconds": 6.466215166030452,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0005"
+      },
+      {
+        "forward_seconds": 6.508126624976285,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0005"
+      },
+      {
+        "forward_seconds": 6.583600915968418,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0005"
+      },
+      {
+        "forward_seconds": 6.6037467499263585,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0005"
+      },
+      {
+        "forward_seconds": 6.4421259589726105,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0006"
+      },
+      {
+        "forward_seconds": 6.891326708020642,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0006"
+      },
+      {
+        "forward_seconds": 6.70541279099416,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0006"
+      },
+      {
+        "forward_seconds": 6.56188612501137,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0006"
+      },
+      {
+        "forward_seconds": 6.516836415976286,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0007"
+      },
+      {
+        "forward_seconds": 6.520654125022702,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0007"
+      },
+      {
+        "forward_seconds": 6.603878124966286,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0007"
+      },
+      {
+        "forward_seconds": 6.688387708971277,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0007"
+      },
+      {
+        "forward_seconds": 6.6320864169392735,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0008"
+      },
+      {
+        "forward_seconds": 6.554352666949853,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0008"
+      },
+      {
+        "forward_seconds": 6.609431541990489,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0008"
+      },
+      {
+        "forward_seconds": 6.649981709080748,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0008"
+      },
+      {
+        "forward_seconds": 6.574453082983382,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0009"
+      },
+      {
+        "forward_seconds": 6.546003457973711,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0009"
+      },
+      {
+        "forward_seconds": 6.531830958090723,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0009"
+      },
+      {
+        "forward_seconds": 6.572697167051956,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0009"
+      },
+      {
+        "forward_seconds": 6.508860458037816,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0010"
+      },
+      {
+        "forward_seconds": 6.475201542023569,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0010"
+      },
+      {
+        "forward_seconds": 6.5309263340895995,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0010"
+      },
+      {
+        "forward_seconds": 6.546588417026214,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0010"
+      },
+      {
+        "forward_seconds": 6.595877000014298,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0011"
+      },
+      {
+        "forward_seconds": 6.65308558405377,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0011"
+      },
+      {
+        "forward_seconds": 7.1486719159875065,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0011"
+      },
+      {
+        "forward_seconds": 6.892906291992404,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0011"
+      },
+      {
+        "forward_seconds": 7.19986950000748,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrs1b_0012"
+      },
+      {
+        "forward_seconds": 6.753095082938671,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrs1b_0012"
+      },
+      {
+        "forward_seconds": 7.1350040410179645,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrs1b_0012"
+      },
+      {
+        "forward_seconds": 6.834368375013582,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrs1b_0012"
+      }
+    ]
+  },
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "project_prompt_ids": {
+    "ssq_lr": [
+      "hrs1b_0001",
+      "hrs1b_0002",
+      "hrs1b_0003",
+      "hrs1b_0004",
+      "hrs1b_0005",
+      "hrs1b_0006",
+      "hrs1b_0007",
+      "hrs1b_0008",
+      "hrs1b_0009",
+      "hrs1b_0010",
+      "hrs1b_0011",
+      "hrs1b_0012"
+    ]
+  },
+  "project_summaries": {
+    "ssq_lr": {
+      "checker_decision": "RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY",
+      "checker_ok": true,
+      "errors": [],
+      "gate_packet": "experimental/shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/ssq_lr_gate_packet",
+      "tensor_packet": "experimental/shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/ssq_lr_tensor_packet"
+    }
+  },
+  "projects": [
+    "ssq_lr"
+  ],
+  "prompt_ids": [
+    "hrs1b_0001",
+    "hrs1b_0002",
+    "hrs1b_0003",
+    "hrs1b_0004",
+    "hrs1b_0005",
+    "hrs1b_0006",
+    "hrs1b_0007",
+    "hrs1b_0008",
+    "hrs1b_0009",
+    "hrs1b_0010",
+    "hrs1b_0011",
+    "hrs1b_0012"
+  ],
+  "surface": "hybrid_manifest_local_capture_runner"
+}

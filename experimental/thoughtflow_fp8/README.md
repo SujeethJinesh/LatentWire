@@ -25,7 +25,7 @@ No real FP8, CUDA, latency, throughput, or Blackwell result is claimed.
 
 ## Completion Estimate And Roadmap
 
-Estimated completion as a diagnostic workshop note: **90%**.
+Estimated completion as a diagnostic workshop note: **93%**.
 
 Estimated completion as a positive method paper: **0% on the current branch**.
 
@@ -49,7 +49,8 @@ What remains for a positive method:
 - stopped-family/proxy-baseline separation, paired uncertainty, and
   oracle/headroom diagnostics.
 
-Do not spend GPU time on the current branch set.
+Do not spend GPU time on the current branch set, including diagnostic-only
+paper polish.
 
 ## Current Stop And Reopen Rules
 

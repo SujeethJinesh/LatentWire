@@ -5,12 +5,13 @@ attention/SSM boundaries.
 
 ## Current Readiness
 
-Status: **NEW / Mac gates pending**.
+Status: **WEAK CONTROL / H1a real screen failed**.
 
 Estimated completion:
 
-- **15%** as a positive-method paper: hypothesis, gates, packet checker, and
-  trace-plan handoff are scaffolded.
+- **15%** as a positive-method paper: hypothesis, gates, packet checker,
+  trace-plan handoff, and one checker-passing resource-limited real H1a packet
+  are scaffolded, but the observed directional signal is weak.
 - **0%** as a systems-result paper: no precision allocation or native GPU
   validation exists.
 
@@ -240,5 +241,9 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
 ## GPU Rule
 
 No native performance or precision-allocation claim until H1--H3 pass and a
-directional recipe is frozen. GPU execution may still be used to collect the
-same H1--H3 evidence if local hybrid model loading is the only blocker.
+directional recipe is frozen. The current real H1a packet fails with selected
+ratio `1.06`, so HORN must not be promoted to GPU from magnitude/kurtosis
+screening alone. The only reasonable next Mac action is a bounded H2
+noise-propagation replay with hook-off controls; if that also stays near
+`1.0`, keep HORN as a negative or control branch for SSQ-LR/HBSM rather than a
+standalone paper.

@@ -14,8 +14,8 @@ The current sprint ledger is `project_status_20260506.md`.
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
 | `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
-| `ssq_lr/` | Mac gate scaffolded; Granite Tiny cached; alive only as layer-selective branch | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The post-hoc selected layers `0`, `12`, `18`, `30` then reproduced on the frozen 12-prompt surface: `shared/results/ssq_lr_prompt_repeat_tensor_capture_20260507/` is a checker-passing 192-row tensor-provenance packet with `3/4` passing layers, selected S1 ratio `2.56`, and CI low `2.01` | Layer subset was selected post-hoc and remains non-promoting; freeze it into a fresh S1b/held-out prompt gate or clear S2 quantization sensitivity before GPU |
-| `horn/` | Mac gate scaffolded; Granite Tiny cached | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the real HORN checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry with per-prompt non-boundary controls, prompt-cluster IDs, and actual-label-flipped permuted controls across enough models for H1 promotion |
+| `ssq_lr/` | Mac S1b alive; S2 not yet promotable | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The post-hoc selected layers `0`, `12`, `18`, `30` reproduced on the frozen 12-prompt surface. The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. S2 replay scouts preserve short-surface fidelity but fail official S2 because honest MXFP4 scale-byte accounting is only `3.765x`--`3.938x`, below `4x` | Clear S2 with `>=4x` real state-memory reduction plus paired quality bounds, or defer SSQ-LR GPU until native packed-state measurement is unavoidable |
+| `horn/` | Weak control branch; H1a real screen failed | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06` | Do not GPU-promote HORN from H1a. Run only a bounded H2 noise replay on Mac if time remains; otherwise keep it as a negative/control branch |
 | `hbsm/` | Mac gate scaffolded; Granite Tiny cached; novelty is narrow | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, required controls, and per-prompt measured-drift top-decile derivation; `shared/results/hbsm_local_sensitivity_20260507/` now contains a checker-passing 56-row resource-limited Granite Tiny B1 packet from one 8-token prompt, decision `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY` | Full B1 sensitivity packet across enough prompts/layers/models, then B2 cheap-predictor split; smoke result is weak and non-promoting |
 | `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes and clean-path generation guard | Paper-only camera-ready polish |
 
@@ -71,6 +71,17 @@ Shared Mac-local utilities live in `shared/`:
   `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`; it repeats
   those four layers across all 12 frozen prompts and passes the real checker,
   but remains non-promoting because the layer subset was selected post-hoc.
+  The held-out S1b tensor packet is
+  `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/`, decision
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`; it freezes
+  layers `0`, `12`, `30` as primary and layer `18` as near-miss/control on a
+  fresh 12-prompt surface, passes the checker through an explicit held-out
+  `trace_plan_config_path`, and keeps SSQ-LR alive for S2 but not GPU.
+  The S2 replay scouts are
+  `shared/results/ssq_lr_s2_state_replay_scout_20260507/` and
+  `shared/results/ssq_lr_s2_state_replay_scout_block256_20260507/`; both are
+  informational non-promoting failures of the official S2 contract because
+  honest scale-byte accounting stays below `4x` state-memory reduction.
   HORN uses 12 prompts over all 8 planned Granite Tiny
   boundaries and failed H1a with hook-captured right-layer input tensors and
   ratio `1.06`. These are plumbing packets, not promotable gate evidence.
@@ -132,9 +143,10 @@ Current resource-limited local capture packet:
 1. **HybridKernel**: run the 5090 profiler packet in
    `hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`, then verify with
    `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`.
-2. **SSQ-LR**: freeze the layer-selective branch (`0`, `12`, `30` as primary,
-   `18` as near-miss/control) into a fresh S1b or S2 quantization-sensitivity
-   gate; do not spend GPU until that non-post-hoc gate clears.
+2. **SSQ-LR**: S1b now clears on a held-out prompt split. The next blocker is
+   S2: produce an honest state-packing/byte-accounting recipe that clears
+   `>=4x` effective state-memory reduction with paired quality bounds, or move
+   only that packing question to the 5090 when the Mac cannot emulate it.
 3. **HORN**: keep as a weak control unless a follow-up H2 noise-propagation
    replay shows larger directional drift than the H1a magnitude screen.
 4. **HBSM**: decide whether the weak Granite Tiny smoke packet justifies a full

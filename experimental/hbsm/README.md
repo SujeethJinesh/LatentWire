@@ -246,5 +246,9 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
 
 ## GPU Rule
 
-No GPU validation until B1--B3 pass. If HORN passes and HBSM is redundant, fold
-HBSM into HORN instead of keeping a separate paper.
+No GPU validation until B1--B3 pass. The current B1 smoke fails and the cheap
+predictor is negative, so no sensitivity-discovery, no-forward-pass predictor,
+or mechanism claim is allowed from the current packet. The next Mac decision is
+binary: run a full 12-prompt B1 packet, or demote HBSM into the SSQ-LR/HORN
+control appendix. If HORN passes and HBSM is redundant, fold HBSM into HORN
+instead of keeping a separate paper.

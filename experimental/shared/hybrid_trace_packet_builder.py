@@ -153,6 +153,8 @@ def _base_config(metadata: dict[str, Any]) -> dict[str, Any]:
     config["canonical_model_id"] = canonical_model_id
     if "trace_plan_path" in metadata:
         config["trace_plan_path"] = metadata["trace_plan_path"]
+    if "trace_plan_config_path" in metadata:
+        config["trace_plan_config_path"] = metadata["trace_plan_config_path"]
     if "resource_limit_note" in metadata:
         config["resource_limit_note"] = metadata["resource_limit_note"]
     return config

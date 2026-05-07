@@ -10,6 +10,7 @@ from experimental.shared.boundary_inspector import LayerKind, boundaries_from_mo
 from experimental.shared.fp4_simulator import (
     gap_recovery_ratio,
     protect_positions,
+    simulate_fp8_e4m3,
     simulate_mxfp4_e2m1,
     simulate_symmetric_int,
 )
@@ -108,6 +109,15 @@ def test_fp4_simulator_is_deterministic_and_shape_preserving() -> None:
     assert first.dequantized.shape == tensor.shape
     assert torch.equal(first.dequantized, second.dequantized)
     assert first.format_name == "mxfp4_e2m1_sim"
+
+
+def test_fp8_cast_simulator_is_shape_preserving() -> None:
+    tensor = torch.linspace(-2, 2, steps=16, dtype=torch.float16)
+    result = simulate_fp8_e4m3(tensor)
+
+    assert result.dequantized.shape == tensor.shape
+    assert result.dequantized.dtype == tensor.dtype
+    assert result.format_name == "fp8_e4m3fn_cast_sim"
 
 
 def test_symmetric_int_quantization_and_protected_positions() -> None:
@@ -1118,6 +1128,7 @@ def test_hybrid_capture_manifest_templates_are_generated_from_trace_plan(tmp_pat
     assert ssq_template["_template_only"] is True
     assert len(ssq_template["ssq_lr_entries"]) == 24
     assert ssq_template["trace_plan_hash"].startswith("sha256:")
+    assert ssq_template["trace_plan_config_path"].endswith("config.json")
     assert len(horn_template["horn_entries"]) == 12
     assert {entry["prompt_cluster_id"] for entry in horn_template["horn_entries"]} == {"p0", "p1"}
     assert "hbsm_entries" not in hbsm_template
@@ -1682,6 +1693,54 @@ def test_gate_packet_checker_rejects_wrong_project_trace_plan_hash(tmp_path: Pat
 
     assert not report["ok"]
     assert any("trace_plan_hash must match shared trace-plan hash" in error for error in report["errors"])
+
+
+def test_gate_packet_checker_accepts_resource_limited_alternate_trace_plan_config(
+    tmp_path: Path,
+) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_alternate_trace_plan"
+    trace_plan = tmp_path / "alternate_ssq_lr_trace_plan.jsonl"
+    trace_config = tmp_path / "alternate_trace_plan_config.json"
+    metadata = _base_trace_metadata()
+    metadata["resource_limit_note"] = "unit-test packet cites a held-out trace-plan registry"
+    entries = []
+    tensors = {}
+    plan_rows = []
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_heldout_{prompt_index}"
+            entry = {
+                "tensor": tensor_name,
+                "prompt_id": f"heldout_{prompt_index}",
+                "layer": 0,
+                "layer_kind": "mamba2",
+                "position_bucket": bucket,
+                "state_tensor_kind": "mamba2_recurrent_state",
+                "control_type": "bf16_no_quant",
+            }
+            entries.append(entry)
+            plan_rows.append({"model_id": "ibm-granite-4.0-h-tiny", **entry})
+            tensors[tensor_name] = torch.randn(2, 4)
+    trace_plan.write_text(
+        "\n".join(json.dumps(row, sort_keys=True) for row in plan_rows) + "\n",
+        encoding="utf-8",
+    )
+    trace_hash = f"sha256:{hashlib.sha256(trace_plan.read_bytes()).hexdigest()}"
+    trace_config.write_text(
+        json.dumps({"trace_plan_hashes": {"ssq_lr": trace_hash}}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    metadata["trace_plan_hash"] = trace_hash
+    metadata["trace_plan_path"] = str(trace_plan)
+    metadata["trace_plan_config_path"] = str(trace_config)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert report["ok"], report["errors"]
 
 
 def test_gate_packet_checker_rejects_promotable_packet_with_unpinned_trace_plan_path(tmp_path: Path) -> None:

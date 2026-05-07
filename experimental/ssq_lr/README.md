@@ -9,10 +9,12 @@ Status: **NEW / layer-selective S1 signal alive but non-promoting**.
 
 Estimated completion:
 
-- **30%** as a positive-method paper: hypothesis, gates, packet checker,
+- **38%** as a positive-method paper: hypothesis, gates, packet checker,
   trace-plan handoff, one corrected one-layer S1 smoke pass, one four-layer S1
   smoke failure, one all-recurrent-layer metrics-only S1 failure, and one
-  checker-passing selected-layer prompt-repeat packet are scaffolded.
+  checker-passing selected-layer prompt-repeat packet are scaffolded. A fresh
+  held-out S1b packet now reproduces the frozen layer hypothesis, but S2 still
+  blocks method promotion.
 - **0%** as a systems-result paper: no native GPU state-cache integration or
   benchmark exists.
 
@@ -157,6 +159,42 @@ set and layer `18` as a near-miss/control. The next local gate must be either a
 fresh/held-out layer-selective S1b or an S2 state-quantization sensitivity gate;
 do not move to GPU from this packet alone.
 
+The fresh held-out S1b tensor packet is:
+
+- `../shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/ssq_lr_gate_packet/`
+- decision: `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`
+- checker: passes `check_gate_packet --mode real --project ssq_lr`
+- rows: `192` (12 held-out prompts, layers `0`, `12`, `18`, `30`, four buckets)
+- frozen primary layers: `0`, `12`, `30`
+- near-miss/control layer: `18`
+- S1 readout: `passing_layer_count=3`, `required_passing_layer_count=3`
+- selected S1 ratio: `2.459378`
+- selected S1 CI low: `1.860973`
+- Holm minimum p-value: `2.775512e-05`
+
+This is the first non-post-hoc Mac evidence that the layer-selective state
+heterogeneity hypothesis is alive. It still cannot promote SSQ-LR to GPU by
+itself because S1 only establishes state distribution heterogeneity, not a
+usable state-quantization recipe.
+
+The current resource-limited S2 continuation replay scouts are:
+
+- `../shared/results/ssq_lr_s2_state_replay_scout_20260507/`
+- `../shared/results/ssq_lr_s2_state_replay_scout_block256_20260507/`
+- decision for both:
+  `RESOURCE_LIMITED_S2_SCOUT_NOT_PROMOTABLE_FAIL_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY`
+
+They replay short continuations from cached Granite Tiny recurrent states and
+mutate only the selected SSM state layers. Calibrated INT8/FP8/MXFP4 state
+perturbations preserve BF16-argmax fidelity on the tiny continuation surface,
+while destructive controls break: random same-L2 MXFP4 error changes accuracy
+by up to `0.3333`, and shuffled-scale MXFP4 changes accuracy by up to `1.0`.
+The official S2 gate still fails because honest scale-byte accounting gives
+only `3.765x` state-memory reduction at block size 64 and `3.938x` at block
+size 256, below the preregistered `4x` threshold. Treat these scouts as
+information-content evidence only; they are not quality, throughput, or GPU
+evidence.
+
 Regenerate it with:
 
 ```bash
@@ -201,6 +239,43 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
   experimental/shared/results/ssq_lr_prompt_repeat_tensor_capture_20260507/ssq_lr_gate_packet \
   --mode real --project ssq_lr
+```
+
+Regenerate the held-out S1b packet with:
+
+```bash
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_plan \
+  --prompts experimental/shared/prompts/hybrid_reasoning_s1b_holdout_12_20260507.jsonl \
+  --output-dir experimental/shared/results/hybrid_trace_plan_s1b_holdout_20260507
+./venv_arm64/bin/python -m experimental.shared.hybrid_trace_capture_manifest \
+  --trace-plan-dir experimental/shared/results/hybrid_trace_plan_s1b_holdout_20260507 \
+  --output-dir experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hybrid_manifest_local_capture_runner \
+  --project ssq_lr \
+  --prompt-path experimental/shared/prompts/hybrid_reasoning_s1b_holdout_12_20260507.jsonl \
+  --manifest-dir experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507 \
+  --ssq-prompt-limit 12 --ssq-layers 0,12,18,30 \
+  --max-input-tokens 8 \
+  --output-dir experimental/shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/ssq_lr_gate_packet \
+  --mode real --project ssq_lr
+```
+
+Regenerate the S2 replay scouts with:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.ssq_lr_s2_state_replay_scout \
+  --prompt-limit 4 --max-input-tokens 8 --prefix-tokens 4 \
+  --primary-layers 0,12,30 \
+  --output-dir experimental/shared/results/ssq_lr_s2_state_replay_scout_20260507
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.ssq_lr_s2_state_replay_scout \
+  --prompt-limit 4 --max-input-tokens 8 --prefix-tokens 4 \
+  --primary-layers 0,12,30 --block-size 256 \
+  --output-dir experimental/shared/results/ssq_lr_s2_state_replay_scout_block256_20260507
 ```
 
 The exact S1 capture checklist is
@@ -333,5 +408,10 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
 
 ## GPU Rule
 
-No 5090 work until S1--S3 pass and the exact state quantization recipe is
-frozen.
+No 5090 work until S1b and S2 pass and the exact state quantization recipe is
+frozen. S1b now passes on a resource-limited held-out Mac packet, but S2 still
+fails the preregistered memory-reduction gate under honest simulated scale-byte
+accounting. GPU work is justified only for the remaining native-packing
+question if the Mac cannot emulate the final packed-state byte layout, or after
+an S2 packet clears `>=4x` effective state-memory reduction with paired quality
+bounds.

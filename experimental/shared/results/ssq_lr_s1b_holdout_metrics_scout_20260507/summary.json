@@ -1,0 +1,389 @@
+{
+  "bucket_runs": [
+    {
+      "forward_seconds": 9.417864875053056,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0001"
+    },
+    {
+      "forward_seconds": 6.86112575000152,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0001"
+    },
+    {
+      "forward_seconds": 6.821078624925576,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0001"
+    },
+    {
+      "forward_seconds": 7.016003750031814,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0001"
+    },
+    {
+      "forward_seconds": 6.7495214159134775,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0002"
+    },
+    {
+      "forward_seconds": 6.700555333984084,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0002"
+    },
+    {
+      "forward_seconds": 6.676553083001636,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0002"
+    },
+    {
+      "forward_seconds": 6.9589067089837044,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0002"
+    },
+    {
+      "forward_seconds": 8.045438208035193,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0003"
+    },
+    {
+      "forward_seconds": 6.804731417098083,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0003"
+    },
+    {
+      "forward_seconds": 6.819935332983732,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0003"
+    },
+    {
+      "forward_seconds": 6.781065208022483,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0003"
+    },
+    {
+      "forward_seconds": 6.717167042079382,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0004"
+    },
+    {
+      "forward_seconds": 6.987530958023854,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0004"
+    },
+    {
+      "forward_seconds": 7.149407707969658,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0004"
+    },
+    {
+      "forward_seconds": 6.6416631249012426,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0004"
+    },
+    {
+      "forward_seconds": 6.774952958920039,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0005"
+    },
+    {
+      "forward_seconds": 6.803271124954335,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0005"
+    },
+    {
+      "forward_seconds": 6.797918625059538,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0005"
+    },
+    {
+      "forward_seconds": 6.747701416956261,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0005"
+    },
+    {
+      "forward_seconds": 6.635802875040099,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0006"
+    },
+    {
+      "forward_seconds": 6.674741375027224,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0006"
+    },
+    {
+      "forward_seconds": 6.663175833993591,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0006"
+    },
+    {
+      "forward_seconds": 6.738687708042562,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0006"
+    },
+    {
+      "forward_seconds": 6.61297579202801,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0007"
+    },
+    {
+      "forward_seconds": 6.8391265840036795,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0007"
+    },
+    {
+      "forward_seconds": 6.865587542066351,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0007"
+    },
+    {
+      "forward_seconds": 7.123810333083384,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0007"
+    },
+    {
+      "forward_seconds": 7.821675541927107,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0008"
+    },
+    {
+      "forward_seconds": 8.086236917064525,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0008"
+    },
+    {
+      "forward_seconds": 7.142435582936741,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0008"
+    },
+    {
+      "forward_seconds": 6.681860040989704,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0008"
+    },
+    {
+      "forward_seconds": 6.649435708066449,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0009"
+    },
+    {
+      "forward_seconds": 6.636843833024614,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0009"
+    },
+    {
+      "forward_seconds": 7.168453083955683,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0009"
+    },
+    {
+      "forward_seconds": 6.8756163329817355,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0009"
+    },
+    {
+      "forward_seconds": 6.722871667006984,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0010"
+    },
+    {
+      "forward_seconds": 6.768280040938407,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0010"
+    },
+    {
+      "forward_seconds": 6.830327250063419,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0010"
+    },
+    {
+      "forward_seconds": 6.75887491600588,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0010"
+    },
+    {
+      "forward_seconds": 6.660607959027402,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0011"
+    },
+    {
+      "forward_seconds": 6.730733957956545,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0011"
+    },
+    {
+      "forward_seconds": 6.993489624932408,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0011"
+    },
+    {
+      "forward_seconds": 6.996977207949385,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0011"
+    },
+    {
+      "forward_seconds": 6.688040083041415,
+      "input_tokens": 2,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrs1b_0012"
+    },
+    {
+      "forward_seconds": 6.718773041968234,
+      "input_tokens": 4,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrs1b_0012"
+    },
+    {
+      "forward_seconds": 6.81771670805756,
+      "input_tokens": 6,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrs1b_0012"
+    },
+    {
+      "forward_seconds": 6.778735958039761,
+      "input_tokens": 8,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrs1b_0012"
+    }
+  ],
+  "claim_boundary": [
+    "metrics-only resource-limited local scout",
+    "not a tensor-provenance gate packet",
+    "not SSQ-LR S1 promotion",
+    "not GPU evidence",
+    "not quality evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_SCOUT_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY",
+  "elapsed_seconds": 335.80563424993306,
+  "evaluation": {
+    "distribution_effect_floor_pass": true,
+    "distribution_gate_pass": true,
+    "distribution_passing_layer_count": 4,
+    "gate_name": "ssq_lr_s1_state_distribution_heterogeneity",
+    "gate_pass": true,
+    "gate_status": "PASS_REAL_S1_HETEROGENEITY",
+    "holm_p_min": 2.7755123914260032e-05,
+    "kurtosis_ratio_final_minus_128_vs_prefill_end": 0.43754945571267756,
+    "magnitude_gate_pass": true,
+    "max_abs_ratio_final_minus_128_vs_prefill_end": 1.8069433050985366,
+    "pass_fraction": 0.75,
+    "passing_layer_count": 3,
+    "position_buckets": [
+      "2k_or_end",
+      "8k_or_end",
+      "final_minus_128",
+      "prefill_end"
+    ],
+    "prompt_count": 12,
+    "required_passing_layer_count": 3,
+    "selected_s1_ci_low": 1.860972818686766,
+    "selected_s1_ratio": 2.45937833594786,
+    "ssm_layer_count": 4,
+    "std_ratio_final_minus_128_vs_prefill_end": 2.45937833594786
+  },
+  "layer_limit": null,
+  "layer_ratios": [
+    {
+      "kurtosis_ratio": 2.229251485312921,
+      "layer": 0,
+      "local_pass": true,
+      "max_abs_ratio": 2.961905169096584,
+      "selected_ratio": 2.961905169096584,
+      "std_ratio": 1.9085792067178875
+    },
+    {
+      "kurtosis_ratio": 0.2676120567951298,
+      "layer": 12,
+      "local_pass": true,
+      "max_abs_ratio": 1.033635187580854,
+      "selected_ratio": 2.0522497781192945,
+      "std_ratio": 2.0522497781192945
+    },
+    {
+      "kurtosis_ratio": 0.7200305136591013,
+      "layer": 18,
+      "local_pass": false,
+      "max_abs_ratio": 1.6581461399431965,
+      "selected_ratio": 1.6581461399431965,
+      "std_ratio": 1.6321948931717292
+    },
+    {
+      "kurtosis_ratio": 0.2950961825398395,
+      "layer": 30,
+      "local_pass": true,
+      "max_abs_ratio": 2.8624853564026314,
+      "selected_ratio": 4.147603511797839,
+      "std_ratio": 4.147603511797839
+    }
+  ],
+  "layers": [
+    0,
+    12,
+    18,
+    30
+  ],
+  "load_seconds": 2.551381249912083,
+  "max_input_tokens": 8,
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "prompt_count": 12,
+  "prompt_ids": [
+    "hrs1b_0001",
+    "hrs1b_0002",
+    "hrs1b_0003",
+    "hrs1b_0004",
+    "hrs1b_0005",
+    "hrs1b_0006",
+    "hrs1b_0007",
+    "hrs1b_0008",
+    "hrs1b_0009",
+    "hrs1b_0010",
+    "hrs1b_0011",
+    "hrs1b_0012"
+  ],
+  "row_count": 192,
+  "surface": "ssq_lr_all_layer_scout"
+}

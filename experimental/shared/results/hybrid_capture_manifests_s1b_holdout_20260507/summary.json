@@ -1,0 +1,101 @@
+{
+  "claim_boundary": [
+    "capture-manifest-template",
+    "not model evidence",
+    "not GPU evidence"
+  ],
+  "counts": {
+    "hbsm": {
+      "ibm-granite-4.0-h-small": 720,
+      "ibm-granite-4.0-h-tiny": 720,
+      "qwen3-next-80b-a3b-instruct": 864
+    },
+    "horn": {
+      "ibm-granite-4.0-h-small": 288,
+      "ibm-granite-4.0-h-tiny": 288,
+      "qwen3-next-80b-a3b-instruct": 828
+    },
+    "ssq_lr": {
+      "ibm-granite-4.0-h-small": 1728,
+      "ibm-granite-4.0-h-tiny": 1728,
+      "qwen3-next-80b-a3b-instruct": 1728
+    }
+  },
+  "decision": "CAPTURE_MANIFEST_READY_NOT_MODEL_EVIDENCE",
+  "generated": [
+    {
+      "model_id": "ibm-granite-4.0-h-small",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/ssq_lr__ibm-granite-4-0-h-small__metadata_template.json",
+      "planned_entry_count": 1728,
+      "project": "ssq_lr",
+      "sha256": "sha256:c09acf4731c0271207a2077b4ee3e026232df14db8e4e5ae3849437e38c2e7cc",
+      "trace_plan_hash": "sha256:8fefebf0a704f1f5d3575c83ed9991e0bf09210ee3387fd3f979332afb8892e2"
+    },
+    {
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/ssq_lr__ibm-granite-4-0-h-tiny__metadata_template.json",
+      "planned_entry_count": 1728,
+      "project": "ssq_lr",
+      "sha256": "sha256:063f7f5eabd45fad7afb58341d5d249612811341f917a2b00b754aaf5b1fe558",
+      "trace_plan_hash": "sha256:8fefebf0a704f1f5d3575c83ed9991e0bf09210ee3387fd3f979332afb8892e2"
+    },
+    {
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/ssq_lr__qwen3-next-80b-a3b-instruct__metadata_template.json",
+      "planned_entry_count": 1728,
+      "project": "ssq_lr",
+      "sha256": "sha256:a3d6618983d34af2120e6e82a2128787ec8e8de4d87f6ba5c0dc7192ac0935fd",
+      "trace_plan_hash": "sha256:8fefebf0a704f1f5d3575c83ed9991e0bf09210ee3387fd3f979332afb8892e2"
+    },
+    {
+      "model_id": "ibm-granite-4.0-h-small",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/horn__ibm-granite-4-0-h-small__metadata_template.json",
+      "planned_entry_count": 288,
+      "project": "horn",
+      "sha256": "sha256:7395f8aef002efd1d8d8fa5b58a8d4f11a0fd9e99c6abd587753ed49f6dc6f6f",
+      "trace_plan_hash": "sha256:c32e3572eb331d80b8f29cc5b0b292fa52c042cb33530ac2640456bd05ccef21"
+    },
+    {
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/horn__ibm-granite-4-0-h-tiny__metadata_template.json",
+      "planned_entry_count": 288,
+      "project": "horn",
+      "sha256": "sha256:459eb07b85990facbf1fa2a05cf4cd7a25818f832eb9cf732335111ae58788a2",
+      "trace_plan_hash": "sha256:c32e3572eb331d80b8f29cc5b0b292fa52c042cb33530ac2640456bd05ccef21"
+    },
+    {
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/horn__qwen3-next-80b-a3b-instruct__metadata_template.json",
+      "planned_entry_count": 828,
+      "project": "horn",
+      "sha256": "sha256:c8481a9bebe35f7a4ffba01319a4fcac98576fafd3be63f91c0e850aa01a5320",
+      "trace_plan_hash": "sha256:c32e3572eb331d80b8f29cc5b0b292fa52c042cb33530ac2640456bd05ccef21"
+    },
+    {
+      "model_id": "ibm-granite-4.0-h-small",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/hbsm__ibm-granite-4-0-h-small__row_packet_template.json",
+      "planned_entry_count": 720,
+      "project": "hbsm",
+      "sha256": "sha256:105dc18b98407add1d6e2c33abdd4ed36499e75c9c31a2aa91c089ba6c14c5c6",
+      "trace_plan_hash": "sha256:ba532c101b2f52ad2bdd8fdbe46577007eeeb1000373ba46e22132b45abc2d42"
+    },
+    {
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/hbsm__ibm-granite-4-0-h-tiny__row_packet_template.json",
+      "planned_entry_count": 720,
+      "project": "hbsm",
+      "sha256": "sha256:88d30cf74808cf123f105210d039bfe059884715b01f7b06e78418940750c40d",
+      "trace_plan_hash": "sha256:ba532c101b2f52ad2bdd8fdbe46577007eeeb1000373ba46e22132b45abc2d42"
+    },
+    {
+      "model_id": "qwen3-next-80b-a3b-instruct",
+      "path": "experimental/shared/results/hybrid_capture_manifests_s1b_holdout_20260507/hbsm__qwen3-next-80b-a3b-instruct__row_packet_template.json",
+      "planned_entry_count": 864,
+      "project": "hbsm",
+      "sha256": "sha256:66bdf365201bf75beea137fd16cda030206b77f31e8839e9c9b1b17b0ea06ac3",
+      "trace_plan_hash": "sha256:ba532c101b2f52ad2bdd8fdbe46577007eeeb1000373ba46e22132b45abc2d42"
+    }
+  ],
+  "surface": "hybrid_trace_capture_manifest_templates",
+  "trace_plan_dir": "experimental/shared/results/hybrid_trace_plan_s1b_holdout_20260507"
+}

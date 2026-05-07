@@ -10,7 +10,8 @@ Use them for preregistered Mac gates only.
 ## Utilities
 
 - `fp4_simulator.py`: deterministic INT/FP-style cast-and-cast-back
-  quantization simulators and quality-gap recovery helpers.
+  quantization simulators, including FP8 E4M3/E5M2 helpers and MXFP4-style
+  block scaling, plus quality-gap recovery helpers.
 - `activation_dumper.py`: lightweight tensor packet save/load helpers for
   cached traces.
 - `boundary_inspector.py`: layer-kind and attention/SSM boundary helpers.
@@ -41,6 +42,21 @@ Use them for preregistered Mac gates only.
   layers `0`, `12`, `18`, and `30` across all 12 frozen prompts, writes saved
   tensors, and passes the real SSQ-LR checker. It remains non-promoting because
   those layers were selected after the all-layer scout.
+- `prompts/hybrid_reasoning_s1b_holdout_12_20260507.jsonl`: held-out
+  SSQ-LR S1b prompt split. Current held-out trace plan:
+  `results/hybrid_trace_plan_s1b_holdout_20260507/`; current held-out tensor
+  packet: `results/ssq_lr_s1b_holdout_tensor_capture_20260507/`, decision
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`. It freezes
+  layers `0`, `12`, and `30` as primary with layer `18` as near-miss/control,
+  passes checker provenance through an explicit held-out
+  `trace_plan_config_path`, and remains non-promoting.
+- `ssq_lr_s2_state_replay_scout.py`: resource-limited SSQ-LR S2 continuation
+  replay scout from cached recurrent states. Current artifacts:
+  `results/ssq_lr_s2_state_replay_scout_20260507/` and
+  `results/ssq_lr_s2_state_replay_scout_block256_20260507/`, both official S2
+  failures because honest scale-byte accounting stays below the preregistered
+  `4x` memory-reduction threshold. The scouts are useful information-content
+  checks only; they are not quality, GPU, or throughput evidence.
 - `hybrid_architecture_maps.py`: explicit config-derived boundary maps used to
   validate real trace packet provenance.
 - `hybrid_model_eligibility.py`: metadata-only Hugging Face size/cache
@@ -194,8 +210,10 @@ revision strings are rejected. Non-rehearsal real packets must also cite
 `trace_plan_path`; the checker rejects rows outside that frozen trace-plan row
 set instead of allowing uncited row coverage. For a promotable packet, the
 file cited by `trace_plan_path` must hash to the registered project
-`trace_plan_hash`; caller-created subset plans are accepted only when
-`resource_limit_note` makes the packet explicitly non-promotable. Real packets
+`trace_plan_hash`. Alternate held-out trace-plan registries must be cited
+explicitly through `trace_plan_config_path`; caller-created subset plans are
+accepted only when `resource_limit_note` makes the packet explicitly
+non-promotable. Real packets
 need project-specific aggregate `summary.json` fields and a decision equal to
 the recomputed S1/H1/B1 gate status, or a non-promotable decision whenever
 `resource_limit_note` is present. The checker recomputes the active S1/H1/B1

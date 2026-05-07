@@ -1,0 +1,23 @@
+{
+  "architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
+  "canonical_model_id": "ibm-granite-4.0-h-tiny",
+  "command": "python -m experimental.shared.hybrid_manifest_local_capture_runner",
+  "context_lengths": [
+    8
+  ],
+  "device": "cpu",
+  "dtype": "float16",
+  "model_id": "ibm-granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "prompt_ids_hash": "sha256:7261a54ff08d5cf100a961f62dbbe467fd1d9e653d4060888d0564cc9b848b1f",
+  "prompt_source": "experimental/shared/prompts/hybrid_reasoning_s1b_holdout_12_20260507.jsonl",
+  "resource_limit_note": "ssq_lr local runner used 12 prompt(s) and max_input_tokens=8; this packet is execution-plumbing evidence only and cannot promote a gate. SSQ-LR tensors are captured from bucket-specific truncated-prefix forward replays, not duplicated final cache state.",
+  "seed_list": [
+    1
+  ],
+  "served_model_id": "ibm-granite/granite-4.0-h-tiny",
+  "tokenizer_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "trace_plan_hash": "sha256:8fefebf0a704f1f5d3575c83ed9991e0bf09210ee3387fd3f979332afb8892e2",
+  "trace_plan_config_path": "experimental/shared/results/hybrid_trace_plan_s1b_holdout_20260507/config.json",
+  "trace_plan_path": "experimental/shared/results/hybrid_trace_plan_s1b_holdout_20260507/ssq_lr_trace_plan.jsonl"
+}

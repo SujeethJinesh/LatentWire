@@ -195,6 +195,7 @@ MODEL_ELIGIBILITY_PATH = (
 TRACE_PLAN_CONFIG_PATH = (
     Path(__file__).resolve().parent / "results/hybrid_trace_plan_20260507/config.json"
 )
+TRACE_PLAN_CONFIG_FIELD = "trace_plan_config_path"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -256,12 +257,22 @@ def _known_model_revision_sets() -> dict[str, set[str]]:
     return known
 
 
-def _known_trace_plan_hashes() -> dict[str, str]:
+def _resolve_repo_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path
+    return REPO_ROOT / path
+
+
+def _known_trace_plan_hashes(config: dict[str, Any] | None = None) -> dict[str, str]:
+    config_path = TRACE_PLAN_CONFIG_PATH
+    if config is not None and isinstance(config.get(TRACE_PLAN_CONFIG_FIELD), str):
+        config_path = _resolve_repo_path(str(config[TRACE_PLAN_CONFIG_FIELD]))
     try:
-        config = _load_json(TRACE_PLAN_CONFIG_PATH)
+        trace_config = _load_json(config_path)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
-    hashes = config.get("trace_plan_hashes", {}) if isinstance(config, dict) else {}
+    hashes = trace_config.get("trace_plan_hashes", {}) if isinstance(trace_config, dict) else {}
     if not isinstance(hashes, dict):
         return {}
     known: dict[str, str] = {}
@@ -274,9 +285,7 @@ def _known_trace_plan_hashes() -> dict[str, str]:
 
 def _load_trace_plan_rows(project: str, trace_plan_path: str | None = None) -> list[dict[str, Any]]:
     if trace_plan_path:
-        path = Path(trace_plan_path)
-        if not path.is_absolute():
-            path = REPO_ROOT / path
+        path = _resolve_repo_path(trace_plan_path)
     else:
         path = TRACE_PLAN_CONFIG_PATH.parent / f"{project}_trace_plan.jsonl"
     rows: list[dict[str, Any]] = []
@@ -783,7 +792,7 @@ def _validate_hash_provenance(
                 f"config.json {TRACE_PLAN_HASH_FIELD} must be a sha256:<64-hex-digest> value"
             )
         elif project:
-            known = _known_trace_plan_hashes()
+            known = _known_trace_plan_hashes(config)
             if not known:
                 errors.append("trace-plan provenance artifact is unavailable")
             else:

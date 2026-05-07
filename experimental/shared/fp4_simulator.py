@@ -85,6 +85,36 @@ def simulate_mxfp4_e2m1(tensor: torch.Tensor, *, block_size: int = 32) -> Quanti
     )
 
 
+def simulate_fp8_e4m3(tensor: torch.Tensor) -> QuantizationResult:
+    """Simulate FP8 E4M3 cast-and-cast-back when PyTorch exposes the dtype."""
+
+    if not hasattr(torch, "float8_e4m3fn"):
+        raise RuntimeError("torch.float8_e4m3fn is unavailable in this PyTorch build")
+    dequantized = tensor.to(torch.float8_e4m3fn).to(tensor.dtype)
+    return QuantizationResult(
+        dequantized=dequantized,
+        scale=torch.empty(0),
+        codebook=None,
+        format_name="fp8_e4m3fn_cast_sim",
+        block_size=0,
+    )
+
+
+def simulate_fp8_e5m2(tensor: torch.Tensor) -> QuantizationResult:
+    """Simulate FP8 E5M2 cast-and-cast-back when PyTorch exposes the dtype."""
+
+    if not hasattr(torch, "float8_e5m2"):
+        raise RuntimeError("torch.float8_e5m2 is unavailable in this PyTorch build")
+    dequantized = tensor.to(torch.float8_e5m2).to(tensor.dtype)
+    return QuantizationResult(
+        dequantized=dequantized,
+        scale=torch.empty(0),
+        codebook=None,
+        format_name="fp8_e5m2_cast_sim",
+        block_size=0,
+    )
+
+
 def simulate_symmetric_int(
     tensor: torch.Tensor,
     *,

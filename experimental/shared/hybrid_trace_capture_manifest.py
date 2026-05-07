@@ -111,6 +111,7 @@ def _base_metadata(
         "command": TEMPLATE_MARKER,
         "architecture_map_hash": _single_architecture_hash(rows, model_id=model_id),
         "trace_plan_hash": trace_plan_hash,
+        "trace_plan_config_path": _repo_label(trace_plan_dir / "config.json"),
         "trace_plan_path": _repo_label(trace_plan_dir / f"{project}_trace_plan.jsonl"),
         "capture_manifest_claim_boundary": [
             "capture-manifest-template",
