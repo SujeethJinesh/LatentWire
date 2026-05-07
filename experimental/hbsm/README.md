@@ -69,14 +69,28 @@ Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
 Local capture readiness is recorded in
 `../shared/results/hybrid_local_capture_preflight_20260507/`; the current
-decision is `LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE` because `mamba_ssm` is
-not installed in the repo-local venv and active hybrid weights are not fully
-cached locally. This packet is preflight-only and cannot promote B1. Rerun it
-before any real capture attempt:
+decision is `LOCAL_CAPTURE_READY_NOT_EVIDENCE` for Granite Tiny because its
+weights are cached locally and its native `transformers` hybrid class is
+available. Granite Small and Qwen3-Next remain GPU-sized or uncached.
+`mamba_ssm` and `vllm` are recorded as optional runtime packages here, not hard
+blockers for a local `transformers` capture. This packet is preflight-only and
+cannot promote B1. Rerun it before any real capture attempt:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.hybrid_local_capture_preflight
 ```
+
+The current local execution smoke is
+`../shared/results/hybrid_transformers_smoke_probe_20260507/`, decision
+`RESOURCE_LIMITED_EXECUTION_SMOKE_NOT_PROMOTABLE`. It loaded Granite Tiny and
+ran one 8-token CPU forward. This proves the local model path is viable for
+developing the B1 sensitivity runner, but it has no sensitivity rows and cannot
+promote B1.
+
+The shared manifest local capture runner currently covers SSQ-LR and HORN only.
+HBSM still needs a perturbation/sensitivity replay that emits row packets, not
+raw tensor packets; do not treat the SSQ-LR/HORN resource-limited packets as
+HBSM evidence.
 
 The exact B1 sensitivity-row checklist is
 `../shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl`;
@@ -188,6 +202,14 @@ jq '.decision, .row_count, .gate_status, .primary_row_count, .scoring_layer_coun
 ```
 
 Expected decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`.
+
+Resource-limited Granite Tiny execution smoke:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hybrid_transformers_smoke_probe \
+  --max-input-tokens 8
+```
 
 ## GPU Rule
 

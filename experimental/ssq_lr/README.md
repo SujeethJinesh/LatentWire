@@ -67,14 +67,30 @@ Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
 Local capture readiness is recorded in
 `../shared/results/hybrid_local_capture_preflight_20260507/`; the current
-decision is `LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE` because `mamba_ssm` is
-not installed in the repo-local venv and active hybrid weights are not fully
-cached locally. This packet is preflight-only and cannot promote S1. Rerun it
-before any real capture attempt:
+decision is `LOCAL_CAPTURE_READY_NOT_EVIDENCE` for Granite Tiny because its
+weights are cached locally and its native `transformers` hybrid class is
+available. Granite Small and Qwen3-Next remain GPU-sized or uncached.
+`mamba_ssm` and `vllm` are recorded as optional runtime packages here, not hard
+blockers for a local `transformers` capture. This packet is preflight-only and
+cannot promote S1. Rerun it before any real capture attempt:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.hybrid_local_capture_preflight
 ```
+
+The current local execution smoke is
+`../shared/results/hybrid_transformers_smoke_probe_20260507/`, decision
+`RESOURCE_LIMITED_EXECUTION_SMOKE_NOT_PROMOTABLE`. It loaded Granite Tiny, ran
+one 8-token CPU forward, and observed 36 recurrent-state cache layers plus 4
+attention-cache layers. This proves the local execution path reaches recurrent
+state, but it is too short and resource-limited to promote S1.
+
+The current manifest-driven local capture packet is
+`../shared/results/hybrid_manifest_local_capture_20260507/ssq_lr_gate_packet/`,
+decision `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_S1_HETEROGENEITY`. It has
+4 rows for one prompt/layer and all four S1 buckets, selected ratio `1.0`, and
+passes `check_gate_packet --mode real --project ssq_lr`. It proves saved-tensor
+provenance and checker reload, not S1 heterogeneity.
 
 The exact S1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl`;
@@ -184,6 +200,25 @@ jq '.decision, .row_count, .gate_status, .selected_s1_ratio' \
 ```
 
 Expected decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_SSQ_LR_S1`.
+
+Resource-limited Granite Tiny execution smoke:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hybrid_transformers_smoke_probe \
+  --max-input-tokens 8
+```
+
+Resource-limited manifest capture packet:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hybrid_manifest_local_capture_runner \
+  --project ssq_lr --max-input-tokens 8
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/shared/results/hybrid_manifest_local_capture_20260507/ssq_lr_gate_packet \
+  --mode real --project ssq_lr
+```
 
 ## GPU Rule
 

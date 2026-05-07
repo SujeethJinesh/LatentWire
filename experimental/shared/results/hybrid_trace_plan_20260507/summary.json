@@ -15,7 +15,7 @@
   "surface": "hybrid_trace_collection_plan",
   "trace_plan_hashes": {
     "hbsm": "sha256:015e28d426aa4c11d00c67234c15e5cf5ed8f599a28de102fbc00aaccc84ed67",
-    "horn": "sha256:80b292065389e30454ef08f1a8c579702f48b2f03ecd2d5d3633dfaf8c431453",
+    "horn": "sha256:a2df7d6485d376747ba179c80172882b3dddd440d1db3b5f765f777a857e75f0",
     "ssq_lr": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b"
   }
 }

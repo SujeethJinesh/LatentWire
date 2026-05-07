@@ -1,0 +1,58 @@
+{
+  "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_2k_or_end": {
+    "dtype": "torch.float32",
+    "numel": 393216,
+    "original_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/2k_or_end",
+    "safe_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_2k_or_end",
+    "sha256": "sha256:9ed5ab4394713ec913737aff992704471616516cb7a419a35a9ca0dfcfff6cfd",
+    "shape": [
+      1,
+      48,
+      64,
+      128
+    ],
+    "storage_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_2k_or_end.pt"
+  },
+  "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_8k_or_end": {
+    "dtype": "torch.float32",
+    "numel": 393216,
+    "original_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/8k_or_end",
+    "safe_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_8k_or_end",
+    "sha256": "sha256:798b5ed2f22eb34f383ad2856ff3ead8155bca3d5098429e004f7b1e6bd7f367",
+    "shape": [
+      1,
+      48,
+      64,
+      128
+    ],
+    "storage_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_8k_or_end.pt"
+  },
+  "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_final_minus_128": {
+    "dtype": "torch.float32",
+    "numel": 393216,
+    "original_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/final_minus_128",
+    "safe_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_final_minus_128",
+    "sha256": "sha256:724add01615bd008c18142823ed336c379efd7b277190a27d3d798cf0346e7a6",
+    "shape": [
+      1,
+      48,
+      64,
+      128
+    ],
+    "storage_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_final_minus_128.pt"
+  },
+  "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_prefill_end": {
+    "dtype": "torch.float32",
+    "numel": 393216,
+    "original_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/prefill_end",
+    "safe_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_prefill_end",
+    "sha256": "sha256:2c50330666d0b64d8cfab5a3a2f7adc84a7fc1128aeb9461d0fc3f515e1e2875",
+    "shape": [
+      1,
+      48,
+      64,
+      128
+    ],
+    "storage_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_prefill_end.pt"
+  }
+}

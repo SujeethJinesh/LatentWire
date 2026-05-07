@@ -2,8 +2,12 @@
   "artifacts": [
     {
       "claim": "The first frozen sparse-cache surface made rdu_topk look alive.",
+      "current_claim_allowed": false,
+      "current_status": "superseded_diagnostic_only",
+      "historical_status": "ALIVE",
       "id": "frozen_sparse_cache_probe",
       "path": "frozen_sparse_cache_probe.json",
+      "positive_method_claim_allowed": false,
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py",
         "input_hashes": {
@@ -29,7 +33,6 @@
           "n_scored_traces": 74
         }
       },
-      "historical_status": "ALIVE",
       "role": "stale_positive_first_surface",
       "sha256": "sha256:f79c286c24c68c0f38d65a3d628db59084c3119c7b3e26ffe0ac8702be851ec9",
       "summary": {
@@ -42,8 +45,12 @@
     },
     {
       "claim": "Cached deterministic splits preserved positive means but not a fresh-surface claim.",
+      "current_claim_allowed": false,
+      "current_status": "superseded_diagnostic_only",
+      "historical_status": "PROMOTED",
       "id": "rdu_robustness_diagnostic",
       "path": "rdu_robustness_diagnostic.json",
+      "positive_method_claim_allowed": false,
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py",
         "input_hashes": {
@@ -60,7 +67,6 @@
           "source_artifact": "frozen_sparse_cache_probe.json"
         }
       },
-      "historical_status": "PROMOTED",
       "role": "stale_positive_robustness_probe",
       "sha256": "sha256:623b962fd3c98068a59764b31a49a471dbe3b8ca33a4190ed68ac1354b4e4e26",
       "summary": {
@@ -73,8 +79,12 @@
     },
     {
       "claim": "rdu_topk reproduced the first frozen sparse-cache gate on the same surface.",
+      "current_claim_allowed": false,
+      "current_status": "superseded_diagnostic_only",
+      "historical_status": "REPRODUCED",
       "id": "rdu_same_surface_rerun",
       "path": "rdu_no_retune_reproduction_check.json",
+      "positive_method_claim_allowed": false,
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.py",
         "input_hashes": {
@@ -112,7 +122,6 @@
           }
         }
       },
-      "historical_status": "REPRODUCED",
       "role": "historical_positive_same_surface",
       "sha256": "sha256:9a6420cf4d2bd18764f5e0e60fcd5964378a27996111b82485b71fcb668accd9",
       "summary": {
@@ -125,8 +134,11 @@
     },
     {
       "claim": "rdu_topk failed strict same-family separation on an alternate surface.",
+      "current_claim_allowed": true,
+      "current_status": "current_falsification_evidence",
       "id": "rdu_alternate_surface",
       "path": "rdu_alt_surface_reproduction_check.json",
+      "positive_method_claim_allowed": false,
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.py",
         "input_hashes": {
@@ -205,8 +217,11 @@
     },
     {
       "claim": "rdu_topk failed cross-family separation on independent saved traces.",
+      "current_claim_allowed": true,
+      "current_status": "current_falsification_evidence",
       "id": "rdu_independent_surface",
       "path": "rdu_independent_trace_reproduction_check.json",
+      "positive_method_claim_allowed": false,
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py",
         "input_hashes": {
@@ -256,8 +271,11 @@
     },
     {
       "claim": "psi_topk failed its preregistered fresh-surface promotion rule.",
+      "current_claim_allowed": true,
+      "current_status": "current_falsification_evidence",
       "id": "psi_fresh_surface",
       "path": "psi_fresh_sparse_cache_check.json",
+      "positive_method_claim_allowed": false,
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py",
         "input_hashes": {
@@ -290,8 +308,11 @@
     },
     {
       "claim": "vwac_topk failed its preregistered fresh-surface promotion rule.",
+      "current_claim_allowed": true,
+      "current_status": "current_falsification_evidence",
       "id": "vwac_fresh_surface",
       "path": "vwac_fresh_sparse_cache_check.json",
+      "positive_method_claim_allowed": false,
       "provenance": {
         "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py",
         "input_hashes": {
@@ -339,10 +360,10 @@
   },
   "generated_date": "2026-05-06",
   "git": {
-    "head_at_generation": "31fab4567ef771cfbc831fdfd0b2ad0cb947bfd4",
+    "head_at_generation": "8d8e6f440994434ad4f3f6e68e73eca561e570a5",
     "thoughtflow_path_dirty_at_generation": false,
     "thoughtflow_path_status_at_generation": "",
-    "thoughtflow_path_tree_at_generation": "aa75133461579767aaa3e8cb77a6a42fbd6e0e11"
+    "thoughtflow_path_tree_at_generation": "a0e755290a60ff3233be0516362ace222d9f4b6d"
   },
   "packet_name": "thoughtflow_diagnostic_packet_20260506",
   "preregistrations": [
@@ -368,6 +389,6 @@
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:5790df42a4a663e7f703a41dea965ef75ce31dc7cc820f561bd67853e9443091"
+    "sha256": "sha256:89d5e69717f43fa33ccaf0984e9d8064d8e4e22dcffa9cba1111f939c914ae97"
   }
 }

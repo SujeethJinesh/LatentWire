@@ -142,6 +142,7 @@ def _horn_entries(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         entry = {
             "tensor": str(row["tensor_name"]),
             "prompt_id": str(row["prompt_id"]),
+            "prompt_cluster_id": str(row["prompt_cluster_id"]),
             "layer_left": int(row["layer_left"]),
             "layer_right": int(row["layer_right"]),
             "direction": str(row["direction"]),

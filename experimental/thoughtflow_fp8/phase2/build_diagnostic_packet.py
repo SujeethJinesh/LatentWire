@@ -362,8 +362,20 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
                 "provenance": _artifact_provenance(str(spec["id"]), payload),
             }
         )
-        if str(spec["role"]).startswith(("stale_positive", "historical_positive")):
-            artifacts[-1]["historical_status"] = artifacts[-1]["summary"]["status"]
+        historical_positive = str(spec["role"]).startswith(
+            ("stale_positive", "historical_positive")
+        )
+        artifacts[-1]["current_status"] = (
+            "superseded_diagnostic_only"
+            if historical_positive
+            else "current_falsification_evidence"
+        )
+        artifacts[-1]["current_claim_allowed"] = not historical_positive
+        artifacts[-1]["positive_method_claim_allowed"] = False
+        if historical_positive:
+            artifacts[-1]["historical_status"] = str(artifacts[-1]["summary"]["status"]).split(
+                maxsplit=1
+            )[0]
     preregistrations = []
     for spec in PREREGISTRATIONS:
         path = PHASE2 / str(spec["path"])

@@ -1,0 +1,109 @@
+{
+  "architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
+  "canonical_model_id": "ibm-granite-4.0-h-tiny",
+  "capture_manifest_claim_boundary": [
+    "capture-manifest-template",
+    "not model evidence",
+    "not GPU evidence"
+  ],
+  "command": "python -m experimental.shared.hybrid_manifest_local_capture_runner",
+  "context_lengths": [
+    8
+  ],
+  "device": "cpu",
+  "dtype": "float16",
+  "model_id": "ibm-granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "prompt_ids_hash": "sha256:48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0",
+  "prompt_source": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl",
+  "seed_list": [
+    1
+  ],
+  "served_model_id": "ibm-granite/granite-4.0-h-tiny",
+  "tokenizer_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "trace_plan_hash": "sha256:a2df7d6485d376747ba179c80172882b3dddd440d1db3b5f765f777a857e75f0",
+  "trace_plan_path": "experimental/shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl",
+  "resource_limit_note": "horn local runner used one prompt and max_input_tokens=8; this packet is execution-plumbing evidence only and cannot promote a gate.",
+  "horn_entries": [
+    {
+      "boundary_index": 0,
+      "control_type": "boundary",
+      "direction": "ssm->attention",
+      "layer_left": 4,
+      "layer_right": 5,
+      "matched_boundary_direction": "ssm->attention",
+      "post_norm_position": "pre_right_layer_input",
+      "pre_norm_position": "post_left_layer_norm_or_residual_output",
+      "prompt_cluster_id": "arithmetic",
+      "prompt_id": "hrsmoke_0001",
+      "tensor": "horn/ibm-granite-4.0-h-tiny/hrsmoke_0001/boundary_0/observed"
+    },
+    {
+      "boundary_index": 0,
+      "control_type": "permuted_direction",
+      "direction": "attention->ssm",
+      "layer_left": 4,
+      "layer_right": 5,
+      "matched_boundary_direction": "attention->ssm",
+      "post_norm_position": "pre_right_layer_input",
+      "pre_norm_position": "post_left_layer_norm_or_residual_output",
+      "prompt_cluster_id": "arithmetic",
+      "prompt_id": "hrsmoke_0001",
+      "tensor": "horn/ibm-granite-4.0-h-tiny/hrsmoke_0001/boundary_0/permuted_label",
+      "tensor_alias_of": "horn/ibm-granite-4.0-h-tiny/hrsmoke_0001/boundary_0/observed"
+    },
+    {
+      "boundary_index": 0,
+      "control_type": "non_boundary",
+      "direction": "ssm->ssm",
+      "layer_left": 0,
+      "layer_right": 1,
+      "matched_boundary_direction": "ssm->attention",
+      "post_norm_position": "matched_non_boundary_right_input",
+      "pre_norm_position": "matched_non_boundary_left_output",
+      "prompt_cluster_id": "arithmetic",
+      "prompt_id": "hrsmoke_0001",
+      "tensor": "horn/ibm-granite-4.0-h-tiny/hrsmoke_0001/non_boundary_0_1/boundary_0"
+    },
+    {
+      "boundary_index": 1,
+      "control_type": "boundary",
+      "direction": "attention->ssm",
+      "layer_left": 5,
+      "layer_right": 6,
+      "matched_boundary_direction": "attention->ssm",
+      "post_norm_position": "pre_right_layer_input",
+      "pre_norm_position": "post_left_layer_norm_or_residual_output",
+      "prompt_cluster_id": "arithmetic",
+      "prompt_id": "hrsmoke_0001",
+      "tensor": "horn/ibm-granite-4.0-h-tiny/hrsmoke_0001/boundary_1/observed"
+    },
+    {
+      "boundary_index": 1,
+      "control_type": "permuted_direction",
+      "direction": "ssm->attention",
+      "layer_left": 5,
+      "layer_right": 6,
+      "matched_boundary_direction": "ssm->attention",
+      "post_norm_position": "pre_right_layer_input",
+      "pre_norm_position": "post_left_layer_norm_or_residual_output",
+      "prompt_cluster_id": "arithmetic",
+      "prompt_id": "hrsmoke_0001",
+      "tensor": "horn/ibm-granite-4.0-h-tiny/hrsmoke_0001/boundary_1/permuted_label",
+      "tensor_alias_of": "horn/ibm-granite-4.0-h-tiny/hrsmoke_0001/boundary_1/observed"
+    },
+    {
+      "boundary_index": 1,
+      "control_type": "non_boundary",
+      "direction": "ssm->ssm",
+      "layer_left": 0,
+      "layer_right": 1,
+      "matched_boundary_direction": "attention->ssm",
+      "post_norm_position": "matched_non_boundary_right_input",
+      "pre_norm_position": "matched_non_boundary_left_output",
+      "prompt_cluster_id": "arithmetic",
+      "prompt_id": "hrsmoke_0001",
+      "tensor": "horn/ibm-granite-4.0-h-tiny/hrsmoke_0001/non_boundary_0_1/boundary_1"
+    }
+  ]
+}

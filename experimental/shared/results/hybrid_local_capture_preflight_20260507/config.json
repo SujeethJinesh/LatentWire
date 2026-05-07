@@ -1,8 +1,7 @@
 {
   "architecture_maps": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hybrid_architecture_maps_20260506/architecture_maps.json",
   "cache_roots": [
-    "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home",
-    "/Users/sujeethjinesh/.cache/huggingface"
+    ".debug/hf_home"
   ],
   "capture_summary": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hybrid_capture_manifests_20260507/summary.json",
   "command": "python -m experimental.shared.hybrid_local_capture_preflight",

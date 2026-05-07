@@ -47,6 +47,7 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     ]
     for relative in expected_files:
         assert (run_dir / relative).is_file(), relative
+    assert "--require-full-matrix" in (run_dir / "README.md").read_text()
 
     profile_scope = json.loads((run_dir / "metadata/profile_scope.json").read_text())
     assert profile_scope["profiled_process"] == "vllm_server"

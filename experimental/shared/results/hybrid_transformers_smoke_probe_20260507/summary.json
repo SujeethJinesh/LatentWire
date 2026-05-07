@@ -1,0 +1,222 @@
+{
+  "attention_cache_layer_count": 4,
+  "cache_layer_count": 40,
+  "cache_type": "DynamicCache",
+  "claim_boundary": [
+    "resource-limited execution smoke",
+    "not SSQ-LR/HORN/HBSM gate evidence",
+    "not GPU evidence",
+    "not quality evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_EXECUTION_SMOKE_NOT_PROMOTABLE",
+  "device_map": "cpu",
+  "dtype": "float16",
+  "forward_seconds": 36.767688625026494,
+  "input_tokens": 8,
+  "load_seconds": 12.062106584082358,
+  "logits_shape": [
+    1,
+    8,
+    100352
+  ],
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "prompt_id": "hrsmoke_0001",
+  "recurrent_state_layer_count": 36,
+  "rss_gb_after_forward": 6.7105712890625,
+  "sampled_layers": [
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 0
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 1
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 2
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 3
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 4
+    },
+    {
+      "fields": {
+        "keys": [
+          1,
+          4,
+          8,
+          128
+        ],
+        "values": [
+          1,
+          4,
+          8,
+          128
+        ]
+      },
+      "layer": 5
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 6
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 7
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 8
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 9
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 10
+    },
+    {
+      "fields": {
+        "conv_states": [
+          1,
+          3328,
+          4
+        ],
+        "recurrent_states": [
+          1,
+          48,
+          64,
+          128
+        ]
+      },
+      "layer": 11
+    }
+  ],
+  "surface": "hybrid_transformers_smoke_probe"
+}

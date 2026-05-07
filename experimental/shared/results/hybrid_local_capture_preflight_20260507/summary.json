@@ -4,7 +4,7 @@
     "not model evidence",
     "not GPU evidence"
   ],
-  "decision": "LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE",
+  "decision": "LOCAL_CAPTURE_READY_NOT_EVIDENCE",
   "environment": {
     "claim_boundary": [
       "preflight-only",
@@ -42,7 +42,7 @@
     "torch_version": "2.6.0",
     "total_memory_gb": 64.0
   },
-  "next_step": "Install the missing runtime packages in the repo-local venv, then rerun this preflight.",
+  "next_step": "Run the first real SSQ-LR/HORN/HBSM tensor capture from the frozen manifest.",
   "row_count": 3,
   "rows": [
     {
@@ -55,8 +55,7 @@
       "architecture_map_hash": "8616e9f0b30e6fac9696f7c1e1dbd08f1a850ac4af0de6353f7d6009043702ae",
       "blocking_reasons": [
         "no local cached model weights found",
-        "estimated weights 59.99 GB exceed Mac capture budget 24.00 GB",
-        "missing hybrid runtime packages: mamba_ssm"
+        "estimated weights 59.99 GB exceed Mac capture budget 24.00 GB"
       ],
       "boundary_count": 8,
       "cache_aliases_checked": [
@@ -65,11 +64,10 @@
         "ibm-granite/granite-4.0-h-small-FP8"
       ],
       "cache_roots_checked": [
-        "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home",
-        "/Users/sujeethjinesh/.cache/huggingface"
+        ".debug/hf_home"
       ],
       "cached_weight_locations": [],
-      "decision": "LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE",
+      "decision": "LOCAL_CAPTURE_BLOCKED_MODEL_CACHE_NOT_EVIDENCE",
       "direction_counts": {
         "attention->ssm": 4,
         "ssm->attention": 4
@@ -80,6 +78,10 @@
       "model_id": "ibm-granite-4.0-h-small",
       "model_type": "granitemoehybrid",
       "num_hidden_layers": 40,
+      "optional_runtime_packages_missing": [
+        "mamba_ssm",
+        "vllm"
+      ],
       "project_entry_counts": {
         "hbsm": 720,
         "horn": 288,
@@ -90,6 +92,8 @@
         "horn",
         "ssq_lr"
       ],
+      "transformers_model_class_available": true,
+      "transformers_model_class_status": "ibm-granite/granite-4.0-h-small:transformers.models.granitemoehybrid.modeling_granitemoehybrid.GraniteMoeHybridForCausalLM",
       "weights_cached": false
     },
     {
@@ -99,21 +103,26 @@
       ],
       "architecture": "GraniteMoeHybridForCausalLM",
       "architecture_map_hash": "bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
-      "blocking_reasons": [
-        "no local cached model weights found",
-        "missing hybrid runtime packages: mamba_ssm"
-      ],
+      "blocking_reasons": [],
       "boundary_count": 8,
       "cache_aliases_checked": [
         "ibm-granite-4.0-h-tiny",
         "ibm-granite/granite-4.0-h-tiny"
       ],
       "cache_roots_checked": [
-        "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home",
-        "/Users/sujeethjinesh/.cache/huggingface"
+        ".debug/hf_home"
       ],
-      "cached_weight_locations": [],
-      "decision": "LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE",
+      "cached_weight_locations": [
+        {
+          "cache_root": ".debug/hf_home",
+          "model_cache_dir": ".debug/hf_home/hub/models--ibm-granite--granite-4.0-h-tiny",
+          "model_id": "ibm-granite/granite-4.0-h-tiny",
+          "snapshot_count": 1,
+          "weight_file_count": 3,
+          "weight_gb_on_disk": 12.925027176737785
+        }
+      ],
+      "decision": "LOCAL_CAPTURE_READY_NOT_EVIDENCE",
       "direction_counts": {
         "attention->ssm": 4,
         "ssm->attention": 4
@@ -124,6 +133,10 @@
       "model_id": "ibm-granite-4.0-h-tiny",
       "model_type": "granitemoehybrid",
       "num_hidden_layers": 40,
+      "optional_runtime_packages_missing": [
+        "mamba_ssm",
+        "vllm"
+      ],
       "project_entry_counts": {
         "hbsm": 720,
         "horn": 288,
@@ -134,7 +147,9 @@
         "horn",
         "ssq_lr"
       ],
-      "weights_cached": false
+      "transformers_model_class_available": true,
+      "transformers_model_class_status": "ibm-granite/granite-4.0-h-tiny:transformers.models.granitemoehybrid.modeling_granitemoehybrid.GraniteMoeHybridForCausalLM",
+      "weights_cached": true
     },
     {
       "aliases": [
@@ -145,8 +160,7 @@
       "architecture_map_hash": "2d483c7cabad7c8704478ed4038fa7e7b2eff840bc00a118eccbe38e2b488303",
       "blocking_reasons": [
         "no local cached model weights found",
-        "estimated weights 151.49 GB exceed Mac capture budget 24.00 GB",
-        "missing hybrid runtime packages: mamba_ssm"
+        "estimated weights 151.49 GB exceed Mac capture budget 24.00 GB"
       ],
       "boundary_count": 23,
       "cache_aliases_checked": [
@@ -154,11 +168,10 @@
         "qwen3-next-80b-a3b-instruct"
       ],
       "cache_roots_checked": [
-        "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home",
-        "/Users/sujeethjinesh/.cache/huggingface"
+        ".debug/hf_home"
       ],
       "cached_weight_locations": [],
-      "decision": "LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE",
+      "decision": "LOCAL_CAPTURE_BLOCKED_MODEL_CACHE_NOT_EVIDENCE",
       "direction_counts": {
         "attention->ssm": 11,
         "ssm->attention": 12
@@ -169,6 +182,10 @@
       "model_id": "qwen3-next-80b-a3b-instruct",
       "model_type": "qwen3_next",
       "num_hidden_layers": 48,
+      "optional_runtime_packages_missing": [
+        "mamba_ssm",
+        "vllm"
+      ],
       "project_entry_counts": {
         "hbsm": 864,
         "horn": 828,
@@ -179,6 +196,8 @@
         "horn",
         "ssq_lr"
       ],
+      "transformers_model_class_available": true,
+      "transformers_model_class_status": "Qwen/Qwen3-Next-80B-A3B-Instruct:transformers.models.qwen3_next.modeling_qwen3_next.Qwen3NextForCausalLM",
       "weights_cached": false
     }
   ],

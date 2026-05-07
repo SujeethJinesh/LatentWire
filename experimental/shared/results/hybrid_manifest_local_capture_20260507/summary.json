@@ -1,0 +1,42 @@
+{
+  "claim_boundary": [
+    "resource-limited local capture",
+    "not SSQ-LR/HORN/HBSM gate promotion",
+    "not GPU evidence",
+    "not quality evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_CAPTURE_PACKETS_WRITTEN_NOT_PROMOTABLE",
+  "execution": {
+    "forward_seconds": 11.745514416950755,
+    "input_tokens": 8,
+    "load_seconds": 2.3463621670380235,
+    "logits_shape": [
+      1,
+      8,
+      100352
+    ]
+  },
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "project_summaries": {
+    "horn": {
+      "checker_decision": "RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN",
+      "checker_ok": true,
+      "errors": [],
+      "gate_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hybrid_manifest_local_capture_20260507/horn_gate_packet",
+      "tensor_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hybrid_manifest_local_capture_20260507/horn_tensor_packet"
+    },
+    "ssq_lr": {
+      "checker_decision": "RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_S1_HETEROGENEITY",
+      "checker_ok": true,
+      "errors": [],
+      "gate_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hybrid_manifest_local_capture_20260507/ssq_lr_gate_packet",
+      "tensor_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hybrid_manifest_local_capture_20260507/ssq_lr_tensor_packet"
+    }
+  },
+  "projects": [
+    "ssq_lr",
+    "horn"
+  ],
+  "prompt_id": "hrsmoke_0001",
+  "surface": "hybrid_manifest_local_capture_runner"
+}

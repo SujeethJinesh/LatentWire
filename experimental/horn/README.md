@@ -69,14 +69,31 @@ Model-size/cache eligibility is recorded in
 `../shared/results/hybrid_model_eligibility_20260506/`.
 Local capture readiness is recorded in
 `../shared/results/hybrid_local_capture_preflight_20260507/`; the current
-decision is `LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE` because `mamba_ssm` is
-not installed in the repo-local venv and active hybrid weights are not fully
-cached locally. This packet is preflight-only and cannot promote H1a/H1. Rerun
-it before any real capture attempt:
+decision is `LOCAL_CAPTURE_READY_NOT_EVIDENCE` for Granite Tiny because its
+weights are cached locally and its native `transformers` hybrid class is
+available. Granite Small and Qwen3-Next remain GPU-sized or uncached.
+`mamba_ssm` and `vllm` are recorded as optional runtime packages here, not hard
+blockers for a local `transformers` capture. This packet is preflight-only and
+cannot promote H1a/H1. Rerun it before any real capture attempt:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.hybrid_local_capture_preflight
 ```
+
+The current local execution smoke is
+`../shared/results/hybrid_transformers_smoke_probe_20260507/`, decision
+`RESOURCE_LIMITED_EXECUTION_SMOKE_NOT_PROMOTABLE`. It loaded Granite Tiny, ran
+one 8-token CPU forward, and observed the expected hybrid cache split. This
+proves the local execution path is alive, but it is too short and lacks
+boundary activation hooks, so it cannot promote H1a/H1.
+
+The current manifest-driven local capture packet is
+`../shared/results/hybrid_manifest_local_capture_20260507/horn_gate_packet/`,
+decision `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN`.
+It has 6 rows for one prompt, both boundary directions, matched non-boundary
+controls, and permuted-direction controls, selected ratio `1.37`, and passes
+`check_gate_packet --mode real --project horn`. It uses hidden-state tensors as
+a plumbing proxy and does not promote H1a/H1.
 
 The exact H1a/H1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl`;
@@ -88,7 +105,8 @@ regenerate it with:
 
 This trace plan is not model evidence. It only enumerates observed-boundary,
 permuted-direction, and matched non-boundary rows to capture before building a
-real HORN packet.
+real HORN packet. Every planned HORN row, including non-boundary controls,
+preserves `prompt_cluster_id` for cluster-bootstrap and paired-control checks.
 Generate the fill-in metadata templates with:
 
 ```bash
@@ -194,6 +212,25 @@ jq '.decision, .row_count, .gate_status, .selected_h1_ratio, .non_boundary_contr
 ```
 
 Expected decision: `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A`.
+
+Resource-limited Granite Tiny execution smoke:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hybrid_transformers_smoke_probe \
+  --max-input-tokens 8
+```
+
+Resource-limited manifest capture packet:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hybrid_manifest_local_capture_runner \
+  --project horn --max-input-tokens 8
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/shared/results/hybrid_manifest_local_capture_20260507/horn_gate_packet \
+  --mode real --project horn
+```
 
 ## GPU Rule
 

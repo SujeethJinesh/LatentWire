@@ -1,0 +1,22 @@
+{
+  "architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
+  "canonical_model_id": "ibm-granite-4.0-h-tiny",
+  "command": "python -m experimental.shared.hybrid_manifest_local_capture_runner",
+  "context_lengths": [
+    8
+  ],
+  "device": "cpu",
+  "dtype": "float16",
+  "model_id": "ibm-granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "prompt_ids_hash": "sha256:48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0",
+  "prompt_source": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl",
+  "resource_limit_note": "ssq_lr local runner used one prompt and max_input_tokens=8; this packet is execution-plumbing evidence only and cannot promote a gate.",
+  "seed_list": [
+    1
+  ],
+  "served_model_id": "ibm-granite/granite-4.0-h-tiny",
+  "tokenizer_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "trace_plan_hash": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b",
+  "trace_plan_path": "experimental/shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl"
+}

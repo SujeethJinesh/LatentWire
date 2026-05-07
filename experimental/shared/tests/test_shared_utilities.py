@@ -16,6 +16,11 @@ from experimental.shared.fp4_simulator import (
 from experimental.shared.hybrid_architecture_maps import build_map, write_maps
 from experimental.shared.check_gate_packet import validate_gate_packet
 from experimental.shared.hybrid_gate_evaluators import evaluate_ssq_lr_s1
+from experimental.shared.hybrid_manifest_local_capture_runner import (
+    _filled_metadata,
+    select_horn_entries,
+    select_ssq_entries,
+)
 from experimental.shared.hybrid_model_eligibility import (
     _architecture_hash,
     _local_cache_dir,
@@ -23,6 +28,7 @@ from experimental.shared.hybrid_model_eligibility import (
     _size_gb,
 )
 import experimental.shared.hybrid_local_capture_preflight as local_capture_preflight
+from experimental.shared.hybrid_transformers_smoke_probe import summarize_cache
 from experimental.shared.hybrid_trace_packet_builder import build_hbsm_packet, build_horn_packet, build_ssq_lr_packet
 from experimental.shared.hybrid_trace_capture_manifest import build_capture_manifests
 from experimental.shared.hybrid_trace_plan import write_trace_plan
@@ -32,7 +38,7 @@ from experimental.shared.sensitivity_metrics import kurtosis, rel_l2, spearman_r
 SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
 TRACE_PLAN_HASHES = {
     "ssq_lr": "sha256:a05dab6ad3b821b91bd2e3c67340703bd7c7594e8d86b79051bfe763da17305b",
-    "horn": "sha256:80b292065389e30454ef08f1a8c579702f48b2f03ecd2d5d3633dfaf8c431453",
+    "horn": "sha256:a2df7d6485d376747ba179c80172882b3dddd440d1db3b5f765f777a857e75f0",
     "hbsm": "sha256:015e28d426aa4c11d00c67234c15e5cf5ed8f599a28de102fbc00aaccc84ed67",
 }
 GRANITE_TINY_REVISION = "791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
@@ -228,6 +234,11 @@ def test_local_capture_preflight_reports_ready_when_cache_and_deps_exist(
         "_package_status",
         lambda package_names: {name: {"installed": True, "origin": "test"} for name in package_names},
     )
+    monkeypatch.setattr(
+        local_capture_preflight,
+        "_transformers_model_class_status",
+        lambda aliases: (True, "toy:ToyHybridForCausalLM"),
+    )
 
     summary = local_capture_preflight.write_packet(
         output_dir=tmp_path / "out",
@@ -243,7 +254,7 @@ def test_local_capture_preflight_reports_ready_when_cache_and_deps_exist(
     assert "not model evidence" in summary["claim_boundary"]
 
 
-def test_local_capture_preflight_blocks_missing_hybrid_runtime(
+def test_local_capture_preflight_does_not_block_on_optional_mamba_ssm(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     architecture_maps = tmp_path / "architecture_maps.json"
@@ -280,6 +291,65 @@ def test_local_capture_preflight_blocks_missing_hybrid_runtime(
         }
 
     monkeypatch.setattr(local_capture_preflight, "_package_status", fake_package_status)
+    monkeypatch.setattr(
+        local_capture_preflight,
+        "_transformers_model_class_status",
+        lambda aliases: (True, "toy:ToyHybridForCausalLM"),
+    )
+
+    summary = local_capture_preflight.write_packet(
+        output_dir=tmp_path / "out",
+        architecture_maps=architecture_maps,
+        capture_summary=capture_summary,
+        eligibility_summary=eligibility_summary,
+        cache_roots=(cache_root,),
+        mac_weight_budget_gb=1.0,
+    )
+
+    assert summary["decision"] == "LOCAL_CAPTURE_READY_NOT_EVIDENCE"
+    assert summary["rows"][0]["optional_runtime_packages_missing"] == ["mamba_ssm"]
+    assert summary["rows"][0]["blocking_reasons"] == []
+
+
+def test_local_capture_preflight_blocks_when_transformers_class_is_unavailable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    architecture_maps = tmp_path / "architecture_maps.json"
+    capture_summary = tmp_path / "capture_summary.json"
+    eligibility_summary = tmp_path / "eligibility_summary.json"
+    cache_root = tmp_path / "hf"
+    snapshot = cache_root / "hub/models--org--hybrid/snapshots/rev"
+    snapshot.mkdir(parents=True)
+    (snapshot / "model.safetensors").write_bytes(b"weights")
+    architecture_maps.write_text(
+        json.dumps(
+            [
+                {
+                    "model_id": "org-hybrid",
+                    "model_id_aliases": ["org/hybrid"],
+                    "model_type": "granitemoehybrid",
+                    "architecture": "ToyHybrid",
+                    "config_sha256": "a" * 64,
+                    "hidden_size": 8,
+                    "num_hidden_layers": 2,
+                    "boundary_count": 1,
+                    "direction_counts": {"ssm->attention": 1},
+                }
+            ]
+        )
+    )
+    capture_summary.write_text(json.dumps({"counts": {"hbsm": {"org-hybrid": 2}}}))
+    eligibility_summary.write_text(json.dumps({"rows": [{"model_id": "org/hybrid", "safetensors_gb": 0.001}]}))
+    monkeypatch.setattr(
+        local_capture_preflight,
+        "_package_status",
+        lambda package_names: {name: {"installed": True, "origin": "test"} for name in package_names},
+    )
+    monkeypatch.setattr(
+        local_capture_preflight,
+        "_transformers_model_class_status",
+        lambda aliases: (False, "toy class missing"),
+    )
 
     summary = local_capture_preflight.write_packet(
         output_dir=tmp_path / "out",
@@ -291,7 +361,85 @@ def test_local_capture_preflight_blocks_missing_hybrid_runtime(
     )
 
     assert summary["decision"] == "LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE"
-    assert "missing hybrid runtime packages: mamba_ssm" in summary["rows"][0]["blocking_reasons"]
+    assert "local transformers cannot instantiate" in summary["rows"][0]["blocking_reasons"][0]
+
+
+def test_transformers_smoke_probe_summarizes_recurrent_and_attention_cache() -> None:
+    class Layer:
+        def __init__(self, **kwargs: object) -> None:
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+
+    class Cache:
+        layers = [
+            Layer(recurrent_states=torch.zeros(1, 2, 3), conv_states=torch.zeros(1, 4, 5)),
+            Layer(keys=torch.zeros(1, 2, 3, 4), values=torch.zeros(1, 2, 3, 4)),
+        ]
+
+    summary = summarize_cache(Cache())
+
+    assert summary["cache_layer_count"] == 2
+    assert summary["recurrent_state_layer_count"] == 1
+    assert summary["attention_cache_layer_count"] == 1
+    assert summary["sampled_layers"][0]["fields"]["recurrent_states"] == [1, 2, 3]
+
+
+def test_manifest_local_capture_selects_minimum_safe_resource_limited_entries() -> None:
+    ssq_template = {
+        "model_id": "ibm-granite-4.0-h-tiny",
+        "trace_plan_hash": TRACE_PLAN_HASHES["ssq_lr"],
+        "ssq_lr_entries": [
+            {
+                "tensor": f"ssq/p0/layer_0/{bucket}",
+                "prompt_id": "p0",
+                "layer": 0,
+                "layer_kind": "ssm",
+                "position_bucket": bucket,
+                "state_tensor_kind": "mamba2_recurrent_state",
+                "control_type": "bf16_no_quant",
+            }
+            for bucket in SSQ_BUCKETS
+        ],
+    }
+    assert [entry["position_bucket"] for entry in select_ssq_entries(ssq_template, prompt_id="p0")] == list(
+        SSQ_BUCKETS
+    )
+
+    horn_template = {
+        "horn_entries": [
+            {
+                "tensor": f"horn/p0/boundary_{boundary}/{control}",
+                "prompt_id": "p0",
+                "prompt_cluster_id": "cluster",
+                "layer_left": boundary,
+                "layer_right": boundary + 1,
+                "direction": direction if control != "permuted_direction" else flipped,
+                "matched_boundary_direction": direction if control != "permuted_direction" else flipped,
+                "boundary_index": boundary,
+                "pre_norm_position": "post",
+                "post_norm_position": "pre",
+                "control_type": control,
+                **({"tensor_alias_of": f"horn/p0/boundary_{boundary}/boundary"} if control == "permuted_direction" else {}),
+            }
+            for boundary, direction, flipped in (
+                (0, "ssm->attention", "attention->ssm"),
+                (1, "attention->ssm", "ssm->attention"),
+            )
+            for control in ("boundary", "non_boundary", "permuted_direction")
+        ]
+    }
+    selected = select_horn_entries(horn_template, prompt_id="p0")
+    assert len(selected) == 6
+    assert {entry["control_type"] for entry in selected} == {
+        "boundary",
+        "non_boundary",
+        "permuted_direction",
+    }
+
+    metadata = _filled_metadata(ssq_template, project="ssq_lr", entries=ssq_template["ssq_lr_entries"], max_input_tokens=8)
+    assert metadata["resource_limit_note"].startswith("ssq_lr local runner used one prompt")
+    assert metadata["model_revision"] == GRANITE_TINY_REVISION
+    assert "_template_only" not in metadata
 
 
 def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> None:
@@ -735,6 +883,7 @@ def test_hybrid_trace_plan_enumerates_project_specific_rows(tmp_path: Path) -> N
         "non_boundary",
         "permuted_direction",
     }
+    assert {row["prompt_cluster_id"] for row in horn_rows} == {"p0", "p1"}
     assert {
         row["matched_boundary_direction"]
         for row in horn_rows
@@ -817,6 +966,7 @@ def test_hybrid_capture_manifest_templates_are_generated_from_trace_plan(tmp_pat
     assert len(ssq_template["ssq_lr_entries"]) == 24
     assert ssq_template["trace_plan_hash"].startswith("sha256:")
     assert len(horn_template["horn_entries"]) == 12
+    assert {entry["prompt_cluster_id"] for entry in horn_template["horn_entries"]} == {"p0", "p1"}
     assert "hbsm_entries" not in hbsm_template
     assert len(hbsm_template["hbsm_entry_templates"]) == 32
     assert "not GPU evidence" in (manifest_dir / "summary.md").read_text()
@@ -855,6 +1005,15 @@ def test_hybrid_model_eligibility_preserves_gpu_recommendation_when_not_cached()
             mamba_ssm_installed=True,
         )
         == "BLOCKED_NOT_CACHED"
+    )
+    assert (
+        _mac_trace_decision(
+            weights_cached=True,
+            estimated_weight_gb=8.0,
+            requires_mamba_ssm=True,
+            mamba_ssm_installed=False,
+        )
+        == "POSSIBLE_LOCAL_CACHE_CHECK_REQUIRED"
     )
 
 

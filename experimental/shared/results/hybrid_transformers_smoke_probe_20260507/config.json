@@ -1,0 +1,9 @@
+{
+  "command": "python -m experimental.shared.hybrid_transformers_smoke_probe",
+  "device_map": "cpu",
+  "dtype": "float16",
+  "hf_home": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home",
+  "max_input_tokens": 8,
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "prompt_path": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl"
+}

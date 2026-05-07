@@ -615,6 +615,7 @@ def _trace_plan_key(project: str, row: dict[str, Any]) -> tuple[Any, ...]:
         return (
             str(row.get("model_id", "")),
             str(row.get("prompt_id", "")),
+            str(row.get("prompt_cluster_id", "")),
             str(row.get("control_type", "")),
             int(row.get("boundary_index", -9999)),
             int(row.get("layer_left", -9999)),

@@ -4,14 +4,14 @@
     "not model evidence",
     "not GPU evidence"
   ],
-  "decision": "GPU_RECOMMENDED_FOR_LARGE_MODELS",
+  "decision": "LOCAL_CACHE_CANDIDATE_REQUIRES_TRACE_RUN",
   "row_count": 4,
   "rows": [
     {
       "architecture_map_hash": "bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
-      "blocking_reason": "weights not present in repo-local HF cache",
+      "blocking_reason": "none",
       "has_local_snapshot": true,
-      "mac_trace_decision": "BLOCKED_NOT_CACHED",
+      "mac_trace_decision": "POSSIBLE_LOCAL_CACHE_CHECK_REQUIRED",
       "model_id": "ibm-granite/granite-4.0-h-tiny",
       "model_type_tag": "granitemoehybrid",
       "safetensors_gb": 12.925027176737785

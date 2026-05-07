@@ -72,12 +72,11 @@ def _mac_trace_decision(
     requires_mamba_ssm: bool,
     mamba_ssm_installed: bool,
 ) -> str:
+    _ = (requires_mamba_ssm, mamba_ssm_installed)
     if estimated_weight_gb is not None and estimated_weight_gb > 24.0:
         return "GPU_RECOMMENDED_SIZE_NOT_CACHED" if not weights_cached else "GPU_RECOMMENDED_SIZE"
     if not weights_cached:
         return "BLOCKED_NOT_CACHED"
-    if requires_mamba_ssm and not mamba_ssm_installed:
-        return "PREFLIGHT_BLOCKED_MISSING_RUNTIME"
     return "POSSIBLE_LOCAL_CACHE_CHECK_REQUIRED"
 
 
@@ -138,12 +137,14 @@ def inspect_model(api: HfApi, model_id: str, cache_root: Path) -> dict[str, Any]
     eligible_for_horn = eligible_for_ssq_lr
     eligible_for_hbsm = eligible_for_ssq_lr
     blocking_reason = "none"
+    optional_runtime_packages_missing = []
+    if requires_mamba_ssm and not mamba_ssm_installed:
+        optional_runtime_packages_missing.append("mamba_ssm")
+
     if not weights_cached and mac_trace_decision != "GPU_RECOMMENDED_SIZE_NOT_CACHED":
         blocking_reason = "weights not present in repo-local HF cache"
     elif mac_trace_decision == "GPU_RECOMMENDED_SIZE_NOT_CACHED":
         blocking_reason = "weights not present in repo-local HF cache; model size exceeds Mac trace budget"
-    elif requires_mamba_ssm and not mamba_ssm_installed:
-        blocking_reason = "mamba_ssm runtime not installed"
     elif not config_ok or not tokenizer_ok:
         blocking_reason = "transformers config/tokenizer probe failed"
 
@@ -169,6 +170,7 @@ def inspect_model(api: HfApi, model_id: str, cache_root: Path) -> dict[str, Any]
         "requires_remote_code": False,
         "requires_mamba_ssm": requires_mamba_ssm,
         "mamba_ssm_installed": mamba_ssm_installed,
+        "optional_runtime_packages_missing": optional_runtime_packages_missing,
         "can_instantiate_config_only": config_ok,
         "can_load_tokenizer": tokenizer_ok,
         "can_load_weights_local_only": can_load_weights_local_only,
@@ -197,9 +199,6 @@ def write_packet(
         decision = "GPU_RECOMMENDED_FOR_LARGE_MODELS"
     if any(row["mac_trace_decision"] == "POSSIBLE_LOCAL_CACHE_CHECK_REQUIRED" for row in rows):
         decision = "LOCAL_CACHE_CANDIDATE_REQUIRES_TRACE_RUN"
-    if any(row["mac_trace_decision"] == "PREFLIGHT_BLOCKED_MISSING_RUNTIME" for row in rows):
-        decision = "PREFLIGHT_BLOCKED_MISSING_RUNTIME"
-
     (output_dir / "raw_rows.jsonl").write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
     (output_dir / "config.json").write_text(
         json.dumps(

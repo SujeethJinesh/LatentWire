@@ -129,6 +129,12 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
                 assert field in measured
         if artifact["role"].startswith(("stale_positive", "historical_positive")):
             assert artifact["historical_status"] in {"ALIVE", "PROMOTED", "REPRODUCED"}
+            assert artifact["current_status"] == "superseded_diagnostic_only"
+            assert artifact["current_claim_allowed"] is False
+            assert artifact["positive_method_claim_allowed"] is False
+        else:
+            assert artifact["current_status"] == "current_falsification_evidence"
+            assert artifact["positive_method_claim_allowed"] is False
     assert {item["id"] for item in preregistrations} == {
         "rdu_preregistration",
         "psi_preregistration",

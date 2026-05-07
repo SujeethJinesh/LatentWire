@@ -19,6 +19,7 @@ from typing import Any
 
 import psutil
 import torch
+from transformers import AutoConfig, AutoModelForCausalLM
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,8 +28,7 @@ DEFAULT_ARCHITECTURE_MAPS = ROOT / "experimental/shared/results/hybrid_architect
 DEFAULT_CAPTURE_SUMMARY = ROOT / "experimental/shared/results/hybrid_capture_manifests_20260507/summary.json"
 DEFAULT_ELIGIBILITY_SUMMARY = ROOT / "experimental/shared/results/hybrid_model_eligibility_20260506/summary.json"
 REQUIRED_BASE_PACKAGES = ("torch", "transformers", "huggingface_hub")
-REQUIRED_HYBRID_RUNTIME_PACKAGES = ("mamba_ssm",)
-OPTIONAL_GPU_PACKAGES = ("vllm",)
+OPTIONAL_RUNTIME_PACKAGES = ("mamba_ssm", "vllm")
 DEFAULT_MAC_WEIGHT_BUDGET_GB = 24.0
 
 
@@ -105,6 +105,23 @@ def _package_status(package_names: tuple[str, ...]) -> dict[str, dict[str, Any]]
     return status
 
 
+def _transformers_model_class_status(aliases: list[str]) -> tuple[bool, str]:
+    """Check whether local Transformers can instantiate the hybrid class.
+
+    This is intentionally config/class-only. It does not load weights.
+    """
+
+    errors: list[str] = []
+    for alias in aliases:
+        try:
+            config = AutoConfig.from_pretrained(alias, local_files_only=True, trust_remote_code=False)
+            model_class = AutoModelForCausalLM._model_mapping[type(config)]
+            return True, f"{alias}:{model_class.__module__}.{model_class.__name__}"
+        except Exception as exc:  # pragma: no cover - depends on local HF cache details
+            errors.append(f"{alias}:{type(exc).__name__}:{str(exc)[:120]}")
+    return False, "; ".join(errors)
+
+
 def _load_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -174,7 +191,7 @@ def _decide_model(
     weights_cached: bool,
     estimated_weight_gb: float | None,
     missing_base_packages: list[str],
-    missing_hybrid_packages: list[str],
+    transformers_model_class_available: bool,
     mac_weight_budget_gb: float,
 ) -> tuple[str, list[str]]:
     blockers: list[str] = []
@@ -186,12 +203,12 @@ def _decide_model(
         blockers.append(
             f"estimated weights {estimated_weight_gb:.2f} GB exceed Mac capture budget {mac_weight_budget_gb:.2f} GB"
         )
-    if missing_hybrid_packages:
-        blockers.append("missing hybrid runtime packages: " + ", ".join(missing_hybrid_packages))
+    if not transformers_model_class_available:
+        blockers.append("local transformers cannot instantiate the hybrid model class from cached config")
 
     if not blockers:
         return "LOCAL_CAPTURE_READY_NOT_EVIDENCE", blockers
-    if missing_base_packages or missing_hybrid_packages:
+    if missing_base_packages or not transformers_model_class_available:
         return "LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE", blockers
     if not weights_cached:
         return "LOCAL_CAPTURE_BLOCKED_MODEL_CACHE_NOT_EVIDENCE", blockers
@@ -207,10 +224,9 @@ def build_preflight_rows(
     mac_weight_budget_gb: float | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     cache_roots = cache_roots or _default_cache_roots()
-    package_names = REQUIRED_BASE_PACKAGES + REQUIRED_HYBRID_RUNTIME_PACKAGES + OPTIONAL_GPU_PACKAGES
+    package_names = REQUIRED_BASE_PACKAGES + OPTIONAL_RUNTIME_PACKAGES
     package_status = _package_status(package_names)
     missing_base = [name for name in REQUIRED_BASE_PACKAGES if not package_status[name]["installed"]]
-    missing_hybrid = [name for name in REQUIRED_HYBRID_RUNTIME_PACKAGES if not package_status[name]["installed"]]
     sizes = _estimated_sizes_by_model(eligibility_summary)
     budget_gb = _memory_budget_gb(mac_weight_budget_gb)
 
@@ -231,11 +247,12 @@ def build_preflight_rows(
                     break
         if estimated_weight_gb is None and weighted_probes:
             estimated_weight_gb = max(probe.weight_bytes for probe in weighted_probes) / (1024**3)
+        class_available, class_status = _transformers_model_class_status(aliases)
         decision, blockers = _decide_model(
             weights_cached=weights_cached,
             estimated_weight_gb=estimated_weight_gb,
             missing_base_packages=missing_base,
-            missing_hybrid_packages=missing_hybrid,
+            transformers_model_class_available=class_available,
             mac_weight_budget_gb=budget_gb,
         )
         rows.append(
@@ -257,6 +274,11 @@ def build_preflight_rows(
                 ],
                 "estimated_weight_gb": estimated_weight_gb,
                 "mac_weight_budget_gb": budget_gb,
+                "transformers_model_class_available": class_available,
+                "transformers_model_class_status": class_status,
+                "optional_runtime_packages_missing": [
+                    name for name in OPTIONAL_RUNTIME_PACKAGES if not package_status[name]["installed"]
+                ],
                 "required_for_projects": sorted(str(project) for project in model["project_entry_counts"]),
                 "decision": decision,
                 "blocking_reasons": blockers,
@@ -340,7 +362,7 @@ def _next_step(decision: str) -> str:
     if decision == "LOCAL_CAPTURE_READY_NOT_EVIDENCE":
         return "Run the first real SSQ-LR/HORN/HBSM tensor capture from the frozen manifest."
     if decision == "LOCAL_CAPTURE_BLOCKED_DEPS_NOT_EVIDENCE":
-        return "Install the missing runtime packages in the repo-local venv, then rerun this preflight."
+        return "Fix the missing base package or Transformers model-class support in the repo-local venv, then rerun this preflight."
     if decision == "LOCAL_CAPTURE_GPU_RECOMMENDED_NOT_EVIDENCE":
         return "Use this packet to prepare a GPU-node capture runbook; do not try to promote Mac-only metadata."
     return "Populate a repo-local HF cache or use a GPU node with cached weights, then rerun this preflight."
@@ -356,18 +378,19 @@ def _summary_markdown(summary: dict[str, Any]) -> str:
         "",
         f"Next step: {summary['next_step']}",
         "",
-        "| Model | Projects | Cached weights | Est. GB | Decision | Blockers |",
-        "|---|---|---|---:|---|---|",
+        "| Model | Projects | Cached weights | Transformers class | Est. GB | Decision | Blockers |",
+        "|---|---|---|---|---:|---|---|",
     ]
     for row in summary["rows"]:
         est = row.get("estimated_weight_gb")
         est_text = "unknown" if est is None else f"{float(est):.2f}"
         blockers = "; ".join(row.get("blocking_reasons", [])) or "none"
         lines.append(
-            "| {model} | {projects} | {cached} | {est} | `{decision}` | {blockers} |".format(
+            "| {model} | {projects} | {cached} | {cls} | {est} | `{decision}` | {blockers} |".format(
                 model=row["model_id"],
                 projects=", ".join(row["required_for_projects"]),
                 cached="yes" if row["weights_cached"] else "no",
+                cls="yes" if row["transformers_model_class_available"] else "no",
                 est=est_text,
                 decision=row["decision"],
                 blockers=blockers,
@@ -389,6 +412,13 @@ def _summary_markdown(summary: dict[str, Any]) -> str:
     )
     for package, status in summary["environment"]["packages"].items():
         lines.append(f"- `{package}`: {'installed' if status['installed'] else 'missing'}")
+    lines.extend(
+        [
+            "",
+            "`mamba_ssm` and `vllm` are recorded as optional local/GPU runtime packages here;",
+            "they are not hard blockers when cached configs map to native `transformers` hybrid classes.",
+        ]
+    )
     lines.append("")
     return "\n".join(lines)
 

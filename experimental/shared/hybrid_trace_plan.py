@@ -208,6 +208,7 @@ def _build_horn_rows(
                     "model_id": model_id,
                     "architecture_map_hash": _architecture_hash(model_map),
                     "prompt_id": prompt_id,
+                    "prompt_cluster_id": prompt_cluster_id,
                     "boundary_index": int(boundary["boundary_index"]),
                     "layer_left": int(pair["layer_left"]),
                     "layer_right": int(pair["layer_right"]),
