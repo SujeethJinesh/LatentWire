@@ -186,3 +186,25 @@ permuted tensors that the checker would later reject as metric-mismatched.
 
 Decision: **H1A PACKETS NOW REPRESENT PERMUTED CONTROLS AS METADATA ALIASES**.
 The blocker remains a real boundary-activation capture.
+
+## 2026-05-07 Complete Permuted-Pair Guard
+
+The shared real-packet checker now requires every observed HORN boundary tuple
+to have its paired `permuted_direction` row. The earlier checker verified each
+supplied permuted row but did not reject omitted permuted rows, which could let
+a real packet skip hard boundary tuples while still passing aggregate direction
+coverage. A new negative test removes one permuted pair and confirms the packet
+is rejected.
+
+Decision: **H1A PERMUTED CONTROLS ARE NOW REQUIRED PER OBSERVED BOUNDARY, NOT
+JUST IN AGGREGATE**. The blocker remains a real prompt-paired boundary dump.
+
+## 2026-05-07 Trace-Plan Path Guard
+
+The shared real-packet checker now rejects non-rehearsal HORN packets that omit
+`trace_plan_path`. The H1 row set must be loaded from a cited frozen trace plan
+before the checker will accept boundary, non-boundary, or permuted-control
+coverage.
+
+Decision: **H1A REAL BOUNDARY ROWS MUST BE TRACE-PLAN-CHECKABLE**. The blocker
+remains the first real boundary-activation packet.

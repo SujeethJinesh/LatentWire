@@ -429,6 +429,7 @@ def _validate_trace_plan_coverage(
         return
     trace_plan_path = config.get("trace_plan_path")
     if not isinstance(trace_plan_path, str):
+        errors.append("config.json trace_plan_path must cite the frozen trace-plan rows for real packets")
         return
     try:
         planned_rows = _load_trace_plan_rows(
@@ -926,6 +927,20 @@ def _validate_real_coverage(
             ): row
             for row in boundary_rows
         }
+        permuted_keys = {
+            (
+                row.get("prompt_id"),
+                row.get("layer_left"),
+                row.get("layer_right"),
+                row.get("boundary_index"),
+                row.get("pre_norm_position"),
+                row.get("post_norm_position"),
+            )
+            for row in rows
+            if str(row.get("control_type")) == "permuted_direction"
+        }
+        if set(boundary_by_key) - permuted_keys:
+            errors.append("horn every observed boundary tuple must have a paired permuted_direction row")
         for row in rows:
             if str(row.get("control_type")) != "permuted_direction":
                 continue

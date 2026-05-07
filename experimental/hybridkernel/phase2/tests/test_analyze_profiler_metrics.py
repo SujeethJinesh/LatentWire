@@ -88,6 +88,8 @@ def test_promotes_only_when_all_repeated_runs_clear_gate() -> None:
     assert summary_row["clears_3pct_gate_all_runs"] is True
     assert summary_row["same_family_control_rows"] == 3
     assert summary_row["cross_family_falsification_rows"] == 3
+    assert summary_row["distinct_same_family_control_run_ids"] == 3
+    assert summary_row["distinct_cross_family_falsification_run_ids"] == 3
     assert summary_row["same_family_control_clear_rows"] == 0
     assert summary_row["cross_family_falsification_clear_rows"] == 0
     assert summary_row["median_recoverable_gain_upper_bound"] == 0.036
@@ -180,6 +182,27 @@ def test_duplicate_run_ids_do_not_clear_gate() -> None:
     assert summary_row["distinct_run_ids"] == 1
     assert summary_row["clears_3pct_gate_all_runs"] is False
     assert not result["status"].startswith("PROMOTE")
+
+
+def test_duplicate_control_run_ids_do_not_promote_clearing_primary() -> None:
+    controls = []
+    for row in _review_control_rows():
+        if row["row_role"] == "same_family_control":
+            controls.append(dict(row, run_id="same_family_duplicate"))
+        elif row["row_role"] == "cross_family_falsification":
+            controls.append(dict(row, run_id="cross_family_duplicate"))
+        else:
+            controls.append(row)
+
+    result = analyze({"rows": [_native_row(idx) for idx in range(3)] + controls})
+
+    assert result["status"].startswith("WEAKLY ALIVE")
+    summary_row = next(row for row in result["summary"].values() if row["model"] == "granite")
+    assert summary_row["clears_3pct_gate_all_runs"] is True
+    assert summary_row["same_family_control_rows"] == 3
+    assert summary_row["distinct_same_family_control_run_ids"] == 1
+    assert summary_row["cross_family_falsification_rows"] == 3
+    assert summary_row["distinct_cross_family_falsification_run_ids"] == 1
 
 
 def test_kills_when_recoverable_gain_is_tiny() -> None:

@@ -699,3 +699,16 @@ families before analysis.
 Decision: **HYBRIDKERNEL PROMOTION ROWS NOW HAVE TO MATCH THE PREDECLARED
 CONTROL MATRIX**. The blocker remains the user-operated NVIDIA/vLLM Nsight
 packet.
+
+## 2026-05-07 Distinct Control Repeat Guard
+
+After another packet false-positive audit, `phase2/analyze_profiler_metrics.py`
+now requires the same-family controls and cross-family falsification rows to
+have at least three distinct `run_id` values before a clearing primary group can
+promote. The previous analysis counted control rows but did not separately
+count distinct control repeats, so copied/cloned control rows could satisfy the
+row count while failing the intended three-repeat rule. A new analyzer test
+locks this regression.
+
+Decision: **HYBRIDKERNEL CONTROLS NOW NEED DISTINCT REPEATS, NOT JUST THREE
+ROWS**. The blocker remains the user-operated NVIDIA/vLLM Nsight packet.

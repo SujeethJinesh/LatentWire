@@ -564,3 +564,15 @@ preregistration and fresh/larger sparse-cache surface.
 
 Decision: **OLD THOUGHTFLOW POSITIVE-METHOD PLANS ARE EXPLICITLY HISTORICAL**.
 The current branch remains diagnostic-only.
+
+## 2026-05-07 Diagnostic Provenance Tightening
+
+The diagnostic packet builder now fails if any declared input path cannot be
+resolved and hashed. It also records nested RDU reproduction metadata from
+`measured_reproduction`, `measured_surface`, and cached baseline/surface blocks,
+so reviewers can see the model, keep fraction, max length, continuation tokens,
+and trace count for each falsification artifact instead of only top-level JSON
+fields.
+
+Decision: **THOUGHTFLOW INPUT PROVENANCE IS STRICT, BUT STILL DIAGNOSTIC-ONLY**.
+No fifth sparse-cache signal is being run.

@@ -277,6 +277,13 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             for row in comparable_rows
             if str(row["row_role"]) == "same_family_control"
         )
+        distinct_same_family_control_run_ids = len(
+            {
+                str(row["run_id"])
+                for row in comparable_rows
+                if str(row["row_role"]) == "same_family_control"
+            }
+        )
         same_family_control_clear_rows = sum(
             1
             for row in comparable_rows
@@ -288,6 +295,14 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             for row in comparable_rows
             if str(row["row_role"]) == "cross_family_falsification"
             and str(row["model"]) != str(first["model"])
+        )
+        distinct_cross_family_falsification_run_ids = len(
+            {
+                str(row["run_id"])
+                for row in comparable_rows
+                if str(row["row_role"]) == "cross_family_falsification"
+                and str(row["model"]) != str(first["model"])
+            }
         )
         cross_family_falsification_clear_rows = sum(
             1
@@ -314,7 +329,9 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
             "row_roles": row_roles,
             "review_row_roles": review_row_roles,
             "same_family_control_rows": same_family_control_rows,
+            "distinct_same_family_control_run_ids": distinct_same_family_control_run_ids,
             "cross_family_falsification_rows": cross_family_falsification_rows,
+            "distinct_cross_family_falsification_run_ids": distinct_cross_family_falsification_run_ids,
             "same_family_control_clear_rows": same_family_control_clear_rows,
             "cross_family_falsification_clear_rows": cross_family_falsification_clear_rows,
             "mean_avoidable_share": mean(avoidable),
@@ -336,7 +353,9 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
     any_primary_clears = bool(clearing_rows)
     has_review_roles_for_clearing = any(
         int(row["same_family_control_rows"]) >= 3
+        and int(row["distinct_same_family_control_run_ids"]) >= 3
         and int(row["cross_family_falsification_rows"]) >= 3
+        and int(row["distinct_cross_family_falsification_run_ids"]) >= 3
         and int(row["same_family_control_clear_rows"]) == 0
         and int(row["cross_family_falsification_clear_rows"]) == 0
         for row in clearing_rows

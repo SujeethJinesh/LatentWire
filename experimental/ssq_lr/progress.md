@@ -153,3 +153,13 @@ registered aliases with the matching architecture hash.
 
 Decision: **S1 PACKETS CAN USE SERVED HF IDS WITHOUT BREAKING PROVENANCE**. The
 blocker remains a real hybrid SSM-state capture.
+
+## 2026-05-07 Trace-Plan Path Guard
+
+The shared real-packet checker now rejects non-rehearsal SSQ-LR packets that
+omit `trace_plan_path`. A correct `trace_plan_hash` alone is no longer enough:
+the checker must be able to load the cited row plan and verify that observed
+state rows are neither off-plan nor duplicated.
+
+Decision: **S1 REAL ROWS MUST BE TRACE-PLAN-CHECKABLE, NOT JUST HASH-SHAPED**.
+The blocker remains a real tensor packet generated from the frozen S1 plan.

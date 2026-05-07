@@ -63,7 +63,7 @@ Shared Mac-local utilities live in `experimental/shared/`:
   allowing synthetic rows to promote a gate. Non-rehearsal packets now reject
   unregistered `model_revision`/`tokenizer_revision` strings, decisions that do
   not equal the recomputed S1/H1/B1 gate status, unknown controls, and rows
-  outside a cited `trace_plan_path`.
+  whose `config.json` omits `trace_plan_path` or falls outside that cited plan.
 - `hybrid_trace_packet_runbook.md`: required schema for the first real
   SSQ-LR/HORN/HBSM trace packet.
 - `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt Mac
@@ -108,7 +108,7 @@ decision-grade `summary.json` aggregates. Non-rehearsal real packets now verify
 just hash syntax; verify `model_revision` and `tokenizer_revision` against the
 registered eligibility snapshot SHA; verify `trace_plan_hash` against the
 project hash in `shared/results/hybrid_trace_plan_20260507/config.json`; and
-reject off-plan rows whenever `trace_plan_path` is supplied.
+require `trace_plan_path` so off-plan rows cannot bypass frozen plan coverage.
 Synthetic-only real-schema rehearsals must set `schema_rehearsal:
 true` and use a `SCHEMA_REHEARSAL_NOT_PROMOTABLE` decision. Resource-limited
 real packets must use a
@@ -158,7 +158,9 @@ and multi-model metric packets whose `profile_scope.json` lacks per-model
 The profiler reducer now refuses prototype promotion unless the same metric
 packet includes at least three matched same-family control rows and three
 cross-family falsification rows on the same request/runtime shape, and those
-controls stay below the 3% recoverable-gain gate. Same-family controls may be
+controls stay below the 3% recoverable-gain gate. The three same-family and
+three cross-family rows must also have distinct `run_id` values, so copied
+control rows cannot satisfy the three-repeat rule. Same-family controls may be
 matched segments or same-family control models. A primary-only packet that
 clears 3%, or a packet whose controls reproduce the same signal, remains
 audit-only. The reducer rejects impossible local timings, and the artifact

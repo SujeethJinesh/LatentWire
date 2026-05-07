@@ -40,8 +40,10 @@ project-specific admissible coverage.
 
 For real packets, `config.json` must record `prompt_ids_hash`,
 `architecture_map_hash`, and, unless it is a schema rehearsal,
-`trace_plan_hash` as `sha256:<64-hex-digest>` strings. For non-rehearsal real
-packets, `model_id` (or a registered `model_id_aliases` entry such as an HF
+`trace_plan_hash` as `sha256:<64-hex-digest>` strings. Non-rehearsal real
+packets must also cite the trace-plan JSONL in `trace_plan_path`; packets that
+omit it are not admissible because coverage cannot be checked. For
+non-rehearsal real packets, `model_id` (or a registered `model_id_aliases` entry such as an HF
 repo ID) and `architecture_map_hash` must match the shared architecture map
 artifact at
 `experimental/shared/results/hybrid_architecture_maps_20260506/architecture_maps.json`;
@@ -49,8 +51,8 @@ a syntactically valid but unrelated hash is rejected. Packet builders canonicali
 registered served IDs into the map `model_id` and preserve the original value as
 `served_model_id` in `config.json`. The `model_revision` and
 `tokenizer_revision` values must match the registered eligibility snapshot SHA
-for the served/canonical model, and packets that carry `trace_plan_path` are
-checked against that exact frozen row set. A packet that records
+for the served/canonical model, and `trace_plan_path` rows are checked against
+that exact frozen row set. A packet that records
 `resource_limit_note` is admissible only as a diagnostic artifact: its
 `summary.json` decision must start with
 `RESOURCE_LIMITED_NOT_PROMOTABLE`, and it cannot promote a gate.

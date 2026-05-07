@@ -208,7 +208,7 @@ def _hash_existing_input_paths(paths: list[str]) -> dict[str, str]:
     for raw_path in paths:
         resolved = _resolve_input_path(raw_path)
         if resolved is None:
-            continue
+            raise ValueError(f"unresolved diagnostic packet input path: {raw_path}")
         hashes[str(resolved.relative_to(REPO_ROOT))] = _sha256(resolved)
     return hashes
 
@@ -241,6 +241,17 @@ def _artifact_provenance(artifact_id: str, payload: dict[str, Any]) -> dict[str,
         "source_artifact",
     ]
     source_metadata = {key: payload[key] for key in metadata_keys if key in payload}
+    for section in (
+        "cached_surface",
+        "measured_surface",
+        "cached_baseline",
+        "measured_reproduction",
+    ):
+        section_payload = payload.get(section)
+        if isinstance(section_payload, dict):
+            selected = {key: section_payload[key] for key in metadata_keys if key in section_payload}
+            if selected:
+                source_metadata[section] = selected
     input_paths: list[str] = []
     for key in ("source_artifact", "input_paths", "trace_input_paths"):
         value = payload.get(key)

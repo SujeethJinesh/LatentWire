@@ -151,8 +151,9 @@ for the project trace-plan JSONL used during capture, and an
 random hash-shaped value is rejected. The `model_revision` and
 `tokenizer_revision` fields must match the registered Hugging Face snapshot SHA
 in `shared/results/hybrid_model_eligibility_20260506/raw_rows.jsonl`; arbitrary
-revision strings are rejected. When `trace_plan_path` is present, the checker
-also rejects rows outside that cited frozen trace-plan row set. Real packets
+revision strings are rejected. Non-rehearsal real packets must also cite
+`trace_plan_path`; the checker rejects rows outside that frozen trace-plan row
+set instead of allowing uncited row coverage. Real packets
 need project-specific aggregate `summary.json` fields and a decision equal to
 the recomputed S1/H1/B1 gate status, or a non-promotable decision whenever
 `resource_limit_note` is present. The checker recomputes the active S1/H1/B1

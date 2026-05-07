@@ -94,7 +94,9 @@
         "primary_hybrid"
       ],
       "same_family_control_rows": 0,
+      "distinct_same_family_control_run_ids": 0,
       "cross_family_falsification_rows": 0,
+      "distinct_cross_family_falsification_run_ids": 0,
       "same_family_control_clear_rows": 0,
       "cross_family_falsification_clear_rows": 0,
       "mean_avoidable_share": 0.02,

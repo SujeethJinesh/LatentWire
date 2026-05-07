@@ -113,6 +113,20 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
             assert artifact["provenance"]["input_path_inference"]["source"] == (
                 "run_real_trace_retention.DEFAULT_TRACES"
             )
+        if artifact["id"] in {
+            "rdu_same_surface_rerun",
+            "rdu_alternate_surface",
+            "rdu_independent_surface",
+        }:
+            measured = artifact["provenance"]["source_metadata"]["measured_reproduction"]
+            for field in (
+                "model_name",
+                "keep_fraction",
+                "max_length",
+                "continuation_tokens",
+                "n_scored_traces",
+            ):
+                assert field in measured
     assert {item["id"] for item in preregistrations} == {
         "rdu_preregistration",
         "psi_preregistration",
@@ -145,3 +159,8 @@ def test_diagnostic_packet_builder_refuses_dirty_thoughtflow_tree(
         build_diagnostic_packet.build_packet(output_dir)
 
     assert not output_dir.exists()
+
+
+def test_diagnostic_packet_rejects_missing_declared_input_path() -> None:
+    with pytest.raises(ValueError, match="unresolved diagnostic packet input path"):
+        build_diagnostic_packet._hash_existing_input_paths(["missing/thoughtflow/input.jsonl"])

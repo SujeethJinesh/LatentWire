@@ -190,3 +190,13 @@ fields.
 
 Decision: **B1 ROW PACKETS NOW FAIL EARLY ON UNFILLED TEMPLATES OR UNKNOWN
 MODEL IDS**. The blocker remains a real forward-sensitivity table.
+
+## 2026-05-07 Trace-Plan Path Guard
+
+The shared real-packet checker now rejects non-rehearsal HBSM packets that omit
+`trace_plan_path`. B1 sensitivity rows, KL-style comparators, activation/outlier
+comparators, random baselines, and no-op perturbation controls must all be
+checkable against a cited frozen row plan.
+
+Decision: **B1 REAL SENSITIVITY ROWS MUST BE TRACE-PLAN-CHECKABLE**. The
+blocker remains a real forward-sensitivity table.
