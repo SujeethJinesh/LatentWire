@@ -1,0 +1,85 @@
+{
+  "activation_stats": {
+    "0": {
+      "kurtosis": 26.83186149597168,
+      "max_abs": 1.8359375
+    },
+    "1": {
+      "kurtosis": 84.904296875,
+      "max_abs": 1.7578125
+    },
+    "2": {
+      "kurtosis": 67.90548706054688,
+      "max_abs": 1.697265625
+    },
+    "3": {
+      "kurtosis": 73.95774841308594,
+      "max_abs": 1.759765625
+    },
+    "4": {
+      "kurtosis": 94.69352722167969,
+      "max_abs": 2.599609375
+    },
+    "5": {
+      "kurtosis": 103.95814514160156,
+      "max_abs": 2.748046875
+    },
+    "6": {
+      "kurtosis": 142.57968139648438,
+      "max_abs": 3.091796875
+    },
+    "7": {
+      "kurtosis": 105.75618743896484,
+      "max_abs": 3.009765625
+    }
+  },
+  "baseline_seconds": 89.019150792039,
+  "block_size": 32,
+  "checker_decision": "RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY",
+  "checker_errors": [],
+  "checker_ok": true,
+  "claim_boundary": [
+    "resource-limited local HBSM sensitivity packet",
+    "not HBSM B1 promotion",
+    "not GPU evidence",
+    "not quality benchmark evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_HBSM_B1_PACKET_WRITTEN_NOT_PROMOTABLE",
+  "drift_by_layer": {
+    "0": 0.0004445824888534844,
+    "1": 0.005558231379836798,
+    "2": 0.005777660757303238,
+    "3": 0.010679769329726696,
+    "4": 0.006483949720859528,
+    "5": 0.0273013673722744,
+    "6": 0.003255256684496999,
+    "7": 0.009594105184078217
+  },
+  "gate_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hbsm_local_sensitivity_20260507/hbsm_gate_packet",
+  "input_tokens": 8,
+  "layer_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "load_seconds": 14.113550874986686,
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "perturb_seconds": {
+    "0": 33.08150987501722,
+    "1": 32.28739991702605,
+    "2": 31.672819665982388,
+    "3": 31.883202750002965,
+    "4": 13.109377666958608,
+    "5": 8.257219249964692,
+    "6": 7.59118679095991,
+    "7": 8.35130833403673
+  },
+  "prompt_id": "hrsmoke_0001",
+  "row_packet": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/results/hbsm_local_sensitivity_20260507/hbsm_row_packet.json",
+  "surface": "hbsm_local_sensitivity_runner"
+}

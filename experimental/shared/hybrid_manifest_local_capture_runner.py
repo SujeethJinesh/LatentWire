@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import shutil
 import time
@@ -33,6 +34,12 @@ DEFAULT_PROMPTS = ROOT / "experimental/shared/prompts/hybrid_reasoning_smoke_12_
 DEFAULT_MANIFEST_DIR = ROOT / "experimental/shared/results/hybrid_capture_manifests_20260507"
 DEFAULT_OUTPUT_DIR = ROOT / "experimental/shared/results/hybrid_manifest_local_capture_20260507"
 SSQ_BUCKETS = ("prefill_end", "2k_or_end", "8k_or_end", "final_minus_128")
+SSQ_BUCKET_FRACTIONS = {
+    "prefill_end": 0.25,
+    "2k_or_end": 0.50,
+    "8k_or_end": 0.75,
+    "final_minus_128": 1.00,
+}
 
 
 def _reset_output_dir(path: Path) -> None:
@@ -98,7 +105,10 @@ def _filled_metadata(
 ) -> dict[str, Any]:
     capture_note = {
         "horn": " HORN tensors are captured from right-layer forward pre-hooks, not hidden-state proxies.",
-        "ssq_lr": " SSQ-LR tensors are captured from the returned recurrent SSM cache state.",
+        "ssq_lr": (
+            " SSQ-LR tensors are captured from bucket-specific truncated-prefix "
+            "forward replays, not duplicated final cache state."
+        ),
     }.get(project, "")
     metadata = {
         key: value
@@ -325,7 +335,20 @@ def _install_horn_right_input_hooks(
     return captures, handles
 
 
-def _ssq_tensors(output: Any, entries: list[dict[str, Any]]) -> dict[str, torch.Tensor]:
+def _bucket_tokenized(
+    tokenized: dict[str, torch.Tensor],
+    *,
+    bucket: str,
+    max_input_tokens: int,
+) -> dict[str, torch.Tensor]:
+    if bucket not in SSQ_BUCKET_FRACTIONS:
+        raise ValueError(f"unknown SSQ-LR bucket {bucket!r}")
+    full_len = int(tokenized["input_ids"].shape[1])
+    target_len = max(1, min(full_len, math.ceil(max_input_tokens * SSQ_BUCKET_FRACTIONS[bucket])))
+    return {key: value[:, :target_len] for key, value in tokenized.items()}
+
+
+def _ssq_tensors_from_output(output: Any, entries: list[dict[str, Any]]) -> dict[str, torch.Tensor]:
     layers = _cache_layers(output)
     tensors: dict[str, torch.Tensor] = {}
     for entry in entries:
@@ -410,10 +433,13 @@ def run_capture(
         ]
     outputs: dict[str, Any] = {}
     horn_captures: dict[str, torch.Tensor] = {}
+    ssq_tensors: dict[str, torch.Tensor] = {}
     execution_runs: list[dict[str, Any]] = []
+    ssq_bucket_runs: list[dict[str, Any]] = []
     tokenizer, model, load_seconds = _load_tiny_model_and_tokenizer(model_id=model_id, hf_home=hf_home)
     for selected_prompt_id in resolved_prompt_ids:
         prompt = _load_prompt(prompt_path, selected_prompt_id)
+        tokenized_prompt = _tokenize_prompt(tokenizer, str(prompt["prompt"]), max_input_tokens)
         prompt_horn_entries = [
             entry
             for entry in project_entries.get("horn", [])
@@ -421,12 +447,37 @@ def run_capture(
         ]
         output, run_execution, run_horn_captures = _run_loaded_forward(
             model=model,
-            tokenized=_tokenize_prompt(tokenizer, str(prompt["prompt"]), max_input_tokens),
+            tokenized=tokenized_prompt,
             horn_entries=prompt_horn_entries or None,
         )
         outputs[selected_prompt_id] = output
         horn_captures.update(run_horn_captures)
         execution_runs.append({"prompt_id": selected_prompt_id, **run_execution})
+        if selected_prompt_id in project_prompt_ids.get("ssq_lr", ()):
+            for bucket in SSQ_BUCKETS:
+                bucket_tokenized = _bucket_tokenized(
+                    tokenized_prompt,
+                    bucket=bucket,
+                    max_input_tokens=max_input_tokens,
+                )
+                bucket_output, bucket_execution, _ = _run_loaded_forward(
+                    model=model,
+                    tokenized=bucket_tokenized,
+                )
+                bucket_entries = [
+                    entry
+                    for entry in project_entries.get("ssq_lr", [])
+                    if str(entry["prompt_id"]) == selected_prompt_id
+                    and str(entry["position_bucket"]) == bucket
+                ]
+                ssq_tensors.update(_ssq_tensors_from_output(bucket_output, bucket_entries))
+                ssq_bucket_runs.append(
+                    {
+                        "prompt_id": selected_prompt_id,
+                        "position_bucket": bucket,
+                        **bucket_execution,
+                    }
+                )
     execution = {
         "prompt_count": len(resolved_prompt_ids),
         "prompt_ids": list(resolved_prompt_ids),
@@ -434,16 +485,13 @@ def run_capture(
         "load_seconds": load_seconds,
         "forward_seconds": sum(float(row["forward_seconds"]) for row in execution_runs),
         "runs": execution_runs,
+        "ssq_bucket_runs": ssq_bucket_runs,
     }
     project_summaries: dict[str, dict[str, Any]] = {}
 
     if "ssq_lr" in projects:
         template = _load_template(manifest_dir, project="ssq_lr", canonical_model_id=DEFAULT_CANONICAL_MODEL_ID)
         entries = project_entries["ssq_lr"]
-        ssq_tensors: dict[str, torch.Tensor] = {}
-        for selected_prompt_id in resolved_prompt_ids:
-            prompt_entries = [entry for entry in entries if str(entry["prompt_id"]) == selected_prompt_id]
-            ssq_tensors.update(_ssq_tensors(outputs[selected_prompt_id], prompt_entries))
         tensor_packet = output_dir / "ssq_lr_tensor_packet"
         gate_packet = output_dir / "ssq_lr_gate_packet"
         _reset_output_dir(tensor_packet)

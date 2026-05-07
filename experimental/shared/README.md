@@ -14,6 +14,12 @@ Use them for preregistered Mac gates only.
 - `activation_dumper.py`: lightweight tensor packet save/load helpers for
   cached traces.
 - `boundary_inspector.py`: layer-kind and attention/SSM boundary helpers.
+- `hybrid_manifest_local_capture_runner.py`: resource-limited Granite Tiny
+  SSQ-LR/HORN tensor runner. The current dedicated SSQ-LR artifact is
+  `results/ssq_lr_local_bucket_capture_20260507/`, decision
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`, using
+  bucket-specific 2/4/6/8-token recurrent-state replays. This validates
+  SSQ-LR bucket capture plumbing only; one prompt/layer cannot promote S1.
 - `hybrid_architecture_maps.py`: explicit config-derived boundary maps used to
   validate real trace packet provenance.
 - `hybrid_model_eligibility.py`: metadata-only Hugging Face size/cache
@@ -25,6 +31,13 @@ Use them for preregistered Mac gates only.
   into strict real B1 packets. Built SSQ-LR/HORN packets copy the tensor
   manifest and `.pt` files into `tensors/`; built HBSM packets copy the source
   sensitivity row packet into `evidence/` with a SHA-256 manifest.
+- `hbsm_local_sensitivity_runner.py`: resource-limited Granite Tiny HBSM B1
+  runner that fills the row-packet template from local forward perturbation
+  replays. Current artifact:
+  `results/hbsm_local_sensitivity_20260507/`, decision
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY`.
+  This validates the HBSM row/provenance path only; it is one short prompt and
+  cannot promote B1.
 - `hybrid_gate_evaluators.py`: recomputes S1/H1/B1 pass/fail summaries from
   packet rows so real packets cannot promote from hand-written aggregate labels.
   The active evaluators use prompt-level S1 lower bounds, H1 non-boundary and
@@ -200,3 +213,14 @@ tensors. Non-rehearsal HBSM packets therefore include
 `config.json` field `source_row_packet_sha256`. The checker verifies the copied
 source packet's SHA-256 before interpreting B1 rows, so sensitivity tables
 remain tied to a reviewable source artifact.
+
+The current non-promoting smoke packet can be regenerated with:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hbsm_local_sensitivity_runner \
+  --max-input-tokens 8 --layer-limit 8 --block-size 32
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/shared/results/hbsm_local_sensitivity_20260507/hbsm_gate_packet \
+  --mode real --project hbsm
+```

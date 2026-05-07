@@ -14,9 +14,9 @@ The current sprint ledger is `project_status_20260506.md`.
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
 | `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
-| `ssq_lr/` | Mac gate scaffolded; Granite Tiny cached | Non-promoting 288-row synthetic S1 real-schema rehearsal passes the real SSQ-LR checker; local preflight marks Granite Tiny ready; the manifest local runner wrote a checker-passing 4-row resource-limited S1 packet from one real Granite Tiny prompt | Real hybrid SSM state dumps showing distribution heterogeneity with complete prompt/layer bucket coverage |
+| `ssq_lr/` | Mac gate scaffolded; Granite Tiny cached | Non-promoting 288-row synthetic S1 real-schema rehearsal passes the real SSQ-LR checker; local preflight marks Granite Tiny ready; `shared/results/ssq_lr_local_bucket_capture_20260507/` now contains a checker-passing 4-row bucket-truncated Granite Tiny S1 packet, decision `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`, selected ratio `3.29` | Full real hybrid SSM state dumps with complete prompt/layer bucket coverage; the current pass is one prompt/layer and short-prefix smoke only |
 | `horn/` | Mac gate scaffolded; Granite Tiny cached | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the real HORN checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks | Real attention-to-SSM / SSM-to-attention boundary dumps showing asymmetry with per-prompt non-boundary controls, prompt-cluster IDs, and actual-label-flipped permuted controls across enough models for H1 promotion |
-| `hbsm/` | Mac gate scaffolded; Granite Tiny cached; novelty is narrow | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, required controls, and per-prompt measured-drift top-decile derivation; local preflight makes Granite Tiny available for the first resource-limited sensitivity runner | Real layer sensitivity packet with every primary prompt-row top-decile flag matching measured drift plus random/KL/outlier controls on current hybrid reasoners |
+| `hbsm/` | Mac gate scaffolded; Granite Tiny cached; novelty is narrow | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, required controls, and per-prompt measured-drift top-decile derivation; `shared/results/hbsm_local_sensitivity_20260507/` now contains a checker-passing 56-row resource-limited Granite Tiny B1 packet from one 8-token prompt, decision `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY` | Full B1 sensitivity packet across enough prompts/layers/models, then B2 cheap-predictor split; smoke result is weak and non-promoting |
 | `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes and clean-path generation guard | Paper-only camera-ready polish |
 
 ## Shared Infrastructure
@@ -50,11 +50,22 @@ Shared Mac-local utilities live in `shared/`:
   `shared/results/hybrid_manifest_local_capture_20260507/`, decision
   `RESOURCE_LIMITED_CAPTURE_PACKETS_WRITTEN_NOT_PROMOTABLE`; it produced
   checker-passing non-promoting Granite Tiny SSQ-LR and HORN packets from one
-  shared model load. SSQ-LR uses one prompt/layer and failed S1 with ratio
-  `1.0`; HORN uses 12 prompts over all 8 planned Granite Tiny boundaries and
+  shared model load. The older combined packet's SSQ-LR row reused one final
+  cache state and failed S1 with ratio `1.0`; the current dedicated SSQ-LR
+  bucket-truncated packet is
+  `shared/results/ssq_lr_local_bucket_capture_20260507/`, decision
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY`, selected ratio
+  `3.29`. HORN uses 12 prompts over all 8 planned Granite Tiny boundaries and
   failed H1a with hook-captured right-layer input tensors and ratio `1.06`.
-  These are plumbing
-  packets, not gate evidence.
+  These are plumbing packets, not promotable gate evidence.
+- `hbsm_local_sensitivity_runner.py`: manifest-driven resource-limited HBSM B1
+  forward-sensitivity runner. Current artifact:
+  `shared/results/hbsm_local_sensitivity_20260507/`, decision
+  `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY`; it
+  wrote a checker-passing 56-row Granite Tiny packet from one 8-token prompt,
+  8 layers, MXFP4 E2M1 output perturbation hooks, and all required B1
+  controls. The top observed drift was layer 5 (`0.0273` symmetric KL), the
+  packet failed B1 (`fisher_p=0.375`), and this is plumbing evidence only.
 - `hybrid_trace_plan.py`: deterministic SSQ-LR/HORN/HBSM row plan from the
   frozen prompt manifest and architecture maps.
 - `hybrid_trace_capture_manifest.py`: fill-in metadata templates for real
@@ -101,15 +112,14 @@ Current resource-limited local capture packet:
 1. **HybridKernel**: run the 5090 profiler packet in
    `hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`, then verify with
    `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`.
-2. **SSQ-LR**: add true intermediate-position recurrent-state dumps, then
-   scale beyond one prompt/layer without duplicating final-state tensors; move the
-   full 12-prompt S1 gate to faster local runtime or GPU if CPU remains the
-   blocker.
+2. **SSQ-LR**: scale the bucket-truncated recurrent-state runner beyond one
+   prompt/layer; move the full 12-prompt S1 gate to faster local runtime or GPU
+   if CPU remains the blocker.
 3. **HORN**: keep as a weak control unless a follow-up H2 noise-propagation
    replay shows larger directional drift than the H1a magnitude screen.
-4. **HBSM**: add the layer sensitivity replay on top of the same Granite Tiny
-   runner, then build a resource-limited B1 packet before attempting the full
-   B1/B2 mechanism-and-predictor gates.
+4. **HBSM**: decide whether the weak Granite Tiny smoke packet justifies a full
+   B1 run; if yes, scale the same runner to the frozen 12-prompt/layer matrix,
+   otherwise fold HBSM into HORN/SSQ-LR as a negative control.
 5. **ThoughtFlow-FP8**: continue paper reframing and citation/table polish; do
    not run a new signal without a fresh preregistered surface.
 

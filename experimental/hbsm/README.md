@@ -5,12 +5,13 @@ explained and predicted more cheaply than full forward-pass KL sweeps.
 
 ## Current Readiness
 
-Status: **NEW / wounded novelty / Mac gates pending**.
+Status: **NEW / wounded novelty / weak resource-limited Mac smoke complete**.
 
 Estimated completion:
 
-- **15%** as a narrow mechanism paper: hypothesis, gates, packet checker, and
-  trace-plan handoff are scaffolded.
+- **20%** as a narrow mechanism paper: hypothesis, gates, packet checker,
+  trace-plan handoff, and one resource-limited real-model sensitivity packet
+  are scaffolded.
 - **0%** as a broad sensitivity-discovery paper because recent KL Lens-style
   work narrows that novelty.
 
@@ -88,9 +89,33 @@ developing the B1 sensitivity runner, but it has no sensitivity rows and cannot
 promote B1.
 
 The shared manifest local capture runner currently covers SSQ-LR and HORN only.
-HBSM still needs a perturbation/sensitivity replay that emits row packets, not
-raw tensor packets; do not treat the SSQ-LR/HORN resource-limited packets as
-HBSM evidence.
+HBSM now has its own perturbation/sensitivity replay because it emits row
+packets, not raw tensor packets; do not treat the SSQ-LR/HORN
+resource-limited packets as HBSM evidence.
+
+Resource-limited real-model smoke packet:
+
+- `../shared/results/hbsm_local_sensitivity_20260507/`
+- gate packet: `../shared/results/hbsm_local_sensitivity_20260507/hbsm_gate_packet/`
+- decision: `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY`
+- checker: passes `check_gate_packet --mode real --project hbsm`
+- rows: `56` (`8` primary Granite Tiny layers plus six layer-aligned control
+  families)
+- top observed drift: layer `5`, symmetric KL `0.027301367`
+- B1 readout: `fisher_p_boundary_top_decile=0.375`,
+  `cheap_predictor_spearman=-0.476`, so the smoke packet is weak and
+  non-promoting.
+
+Regenerate it with:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hbsm_local_sensitivity_runner \
+  --max-input-tokens 8 --layer-limit 8 --block-size 32
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/shared/results/hbsm_local_sensitivity_20260507/hbsm_gate_packet \
+  --mode real --project hbsm
+```
 
 The exact B1 sensitivity-row checklist is
 `../shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl`;
@@ -209,6 +234,14 @@ Resource-limited Granite Tiny execution smoke:
 HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   ./venv_arm64/bin/python -m experimental.shared.hybrid_transformers_smoke_probe \
   --max-input-tokens 8
+```
+
+Resource-limited Granite Tiny HBSM B1 sensitivity smoke:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hbsm_local_sensitivity_runner \
+  --max-input-tokens 8 --layer-limit 8 --block-size 32
 ```
 
 ## GPU Rule

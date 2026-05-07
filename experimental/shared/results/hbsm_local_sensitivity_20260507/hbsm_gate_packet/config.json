@@ -1,0 +1,23 @@
+{
+  "architecture_map_hash": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6",
+  "canonical_model_id": "ibm-granite-4.0-h-tiny",
+  "command": "python -m experimental.shared.hbsm_local_sensitivity_runner",
+  "context_lengths": [
+    8
+  ],
+  "device": "cpu",
+  "dtype": "float16",
+  "model_id": "ibm-granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "prompt_ids_hash": "sha256:48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0",
+  "prompt_source": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl",
+  "resource_limit_note": "HBSM local sensitivity runner used one short prompt, 8 layer(s), max_input_tokens=8, and MXFP4 E2M1 block_size=32; this validates forward-sensitivity plumbing only and cannot promote B1.",
+  "seed_list": [
+    1
+  ],
+  "served_model_id": "ibm-granite/granite-4.0-h-tiny",
+  "source_row_packet_sha256": "sha256:d82bd2a5f4ac6908c96c276edde72151be3f9d8ce6252a63b729913c68aaa043",
+  "tokenizer_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "trace_plan_hash": "sha256:015e28d426aa4c11d00c67234c15e5cf5ed8f599a28de102fbc00aaccc84ed67",
+  "trace_plan_path": "experimental/shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl"
+}

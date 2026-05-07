@@ -16,7 +16,14 @@ from experimental.shared.fp4_simulator import (
 from experimental.shared.hybrid_architecture_maps import build_map, write_maps
 from experimental.shared.check_gate_packet import validate_gate_packet
 from experimental.shared.hybrid_gate_evaluators import evaluate_ssq_lr_s1
+from experimental.shared.hbsm_local_sensitivity_runner import (
+    _random_top_layers,
+    _replace_first_tensor,
+    _top_decile_layers,
+    select_hbsm_entries,
+)
 from experimental.shared.hybrid_manifest_local_capture_runner import (
+    _bucket_tokenized,
     _filled_metadata,
     _first_tensor,
     _horn_tensors,
@@ -1080,6 +1087,82 @@ def test_hybrid_model_eligibility_preserves_gpu_recommendation_when_not_cached()
         )
         == "POSSIBLE_LOCAL_CACHE_CHECK_REQUIRED"
     )
+
+
+def test_hbsm_select_entries_keeps_layer_aligned_controls() -> None:
+    entries = []
+    for layer in range(4):
+        boundary = layer in {1, 2}
+        entries.append(
+            {
+                "prompt_id": "p0",
+                "layer": layer,
+                "boundary_flag": boundary,
+                "control_type": "boundary_only",
+            }
+        )
+    for control_type in HBSM_CONTROLS:
+        for layer in range(4):
+            entries.append(
+                {
+                    "prompt_id": f"control_{control_type}",
+                    "layer": layer,
+                    "boundary_flag": layer in {1, 2},
+                    "control_type": control_type,
+                }
+            )
+
+    selected = select_hbsm_entries(
+        {"hbsm_entry_templates": entries},
+        prompt_id="p0",
+        layer_limit=4,
+    )
+
+    assert len(selected) == 4 * (1 + len(HBSM_CONTROLS))
+    assert {
+        row["control_type"]
+        for row in selected
+    } == {"boundary_only", *HBSM_CONTROLS}
+
+
+def test_hbsm_replace_first_tensor_preserves_nested_structure() -> None:
+    value = ("meta", {"later": torch.ones(2), "first": torch.arange(2, dtype=torch.float32)})
+
+    replaced, did_replace = _replace_first_tensor(value, lambda tensor: tensor + 10)
+
+    assert did_replace
+    assert isinstance(replaced, tuple)
+    assert torch.equal(replaced[1]["first"], torch.tensor([10.0, 11.0]))
+    assert torch.equal(replaced[1]["later"], torch.ones(2))
+
+
+def test_hbsm_top_and_random_decile_are_same_cardinality() -> None:
+    drift = {layer: float(layer) for layer in range(11)}
+    primary_by_layer = {
+        layer: {"boundary_flag": layer % 2 == 0}
+        for layer in drift
+    }
+
+    top_layers = _top_decile_layers(drift)
+    random_layers = _random_top_layers(primary_by_layer, top_layers)
+
+    assert top_layers == {10, 9}
+    assert len(random_layers) == len(top_layers)
+    assert not (top_layers & random_layers)
+
+
+def test_ssq_bucket_tokenized_uses_monotone_short_prefixes() -> None:
+    tokenized = {
+        "input_ids": torch.arange(8).reshape(1, 8),
+        "attention_mask": torch.ones(1, 8),
+    }
+
+    lengths = [
+        int(_bucket_tokenized(tokenized, bucket=bucket, max_input_tokens=8)["input_ids"].shape[1])
+        for bucket in SSQ_BUCKETS
+    ]
+
+    assert lengths == [2, 4, 6, 8]
 
 
 def _base_trace_metadata(project: str = "ssq_lr") -> dict[str, object]:

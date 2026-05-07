@@ -1,0 +1,108 @@
+{
+  "claim_boundary": [
+    "resource-limited local capture",
+    "not SSQ-LR/HORN/HBSM gate promotion",
+    "not GPU evidence",
+    "not quality evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_CAPTURE_PACKETS_WRITTEN_NOT_PROMOTABLE",
+  "execution": {
+    "forward_seconds": 8.732573833083734,
+    "input_tokens": 8,
+    "load_seconds": 2.8751894580200315,
+    "prompt_count": 1,
+    "prompt_ids": [
+      "hrsmoke_0001"
+    ],
+    "runs": [
+      {
+        "forward_seconds": 8.732573833083734,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "prompt_id": "hrsmoke_0001"
+      }
+    ],
+    "ssq_bucket_runs": [
+      {
+        "forward_seconds": 6.694326833006926,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 2,
+        "logits_shape": [
+          1,
+          2,
+          100352
+        ],
+        "position_bucket": "prefill_end",
+        "prompt_id": "hrsmoke_0001"
+      },
+      {
+        "forward_seconds": 6.521832957980223,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 4,
+        "logits_shape": [
+          1,
+          4,
+          100352
+        ],
+        "position_bucket": "2k_or_end",
+        "prompt_id": "hrsmoke_0001"
+      },
+      {
+        "forward_seconds": 7.191480500041507,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 6,
+        "logits_shape": [
+          1,
+          6,
+          100352
+        ],
+        "position_bucket": "8k_or_end",
+        "prompt_id": "hrsmoke_0001"
+      },
+      {
+        "forward_seconds": 6.651384167023934,
+        "horn_capture_mode": "none",
+        "horn_tensor_count": 0,
+        "input_tokens": 8,
+        "logits_shape": [
+          1,
+          8,
+          100352
+        ],
+        "position_bucket": "final_minus_128",
+        "prompt_id": "hrsmoke_0001"
+      }
+    ]
+  },
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "project_prompt_ids": {
+    "ssq_lr": [
+      "hrsmoke_0001"
+    ]
+  },
+  "project_summaries": {
+    "ssq_lr": {
+      "checker_decision": "RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY",
+      "checker_ok": true,
+      "errors": [],
+      "gate_packet": "experimental/shared/results/ssq_lr_local_bucket_capture_20260507/ssq_lr_gate_packet",
+      "tensor_packet": "experimental/shared/results/ssq_lr_local_bucket_capture_20260507/ssq_lr_tensor_packet"
+    }
+  },
+  "projects": [
+    "ssq_lr"
+  ],
+  "prompt_ids": [
+    "hrsmoke_0001"
+  ],
+  "surface": "hybrid_manifest_local_capture_runner"
+}

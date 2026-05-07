@@ -1,0 +1,164 @@
+{
+  "claim_boundary": [
+    "saved tensor trace",
+    "not GPU evidence"
+  ],
+  "decision": "RESOURCE_LIMITED_NOT_PROMOTABLE_PASS_REAL_S1_HETEROGENEITY",
+  "distribution_effect_floor_pass": false,
+  "distribution_gate_pass": false,
+  "distribution_passing_layer_count": 0,
+  "gate_name": "ssq_lr_s1_state_distribution_heterogeneity",
+  "gate_pass": true,
+  "gate_status": "PASS_REAL_S1_HETEROGENEITY",
+  "holm_p_min": 1.0,
+  "kurtosis_ratio_final_minus_128_vs_prefill_end": 1.37882478818165,
+  "magnitude_gate_pass": true,
+  "max_abs_ratio_final_minus_128_vs_prefill_end": 3.2938470385278897,
+  "pass_fraction": 1.0,
+  "passing_layer_count": 1,
+  "position_buckets": [
+    "2k_or_end",
+    "8k_or_end",
+    "final_minus_128",
+    "prefill_end"
+  ],
+  "prompt_count": 1,
+  "required_passing_layer_count": 1,
+  "row_count": 4,
+  "rows": [
+    {
+      "control_type": "bf16_no_quant",
+      "kurtosis": 1358.3468017578125,
+      "layer": 0,
+      "layer_kind": "ssm",
+      "max_abs": 0.053070068359375,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+      "outlier_mass": 0.0074895224533975124,
+      "position_bucket": "prefill_end",
+      "prompt_id": "hrsmoke_0001",
+      "rms": 0.000608133093919605,
+      "state_shape": [
+        1,
+        48,
+        64,
+        128
+      ],
+      "state_tensor_kind": "mamba2_recurrent_state",
+      "std": 0.0006080891471356153,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/prefill_end",
+      "tensor_sha256": "sha256:06b6851a17f4dcbd1c9821b733d258a39c5abbcac80c87c9497840dffa860677",
+      "tensor_shape": [
+        1,
+        48,
+        64,
+        128
+      ],
+      "tensor_source_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/prefill_end",
+      "tensor_storage_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_prefill_end.pt"
+    },
+    {
+      "control_type": "bf16_no_quant",
+      "kurtosis": 1126.0650634765625,
+      "layer": 0,
+      "layer_kind": "ssm",
+      "max_abs": 0.0931396484375,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+      "outlier_mass": 0.008204142563045025,
+      "position_bucket": "2k_or_end",
+      "prompt_id": "hrsmoke_0001",
+      "rms": 0.001018138718791306,
+      "state_shape": [
+        1,
+        48,
+        64,
+        128
+      ],
+      "state_tensor_kind": "mamba2_recurrent_state",
+      "std": 0.0010180609533563256,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/2k_or_end",
+      "tensor_sha256": "sha256:af0efec66c077405c16c07f800abc6e90b77e748143abe6226527f71481df6a5",
+      "tensor_shape": [
+        1,
+        48,
+        64,
+        128
+      ],
+      "tensor_source_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/2k_or_end",
+      "tensor_storage_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_2k_or_end.pt"
+    },
+    {
+      "control_type": "bf16_no_quant",
+      "kurtosis": 2122.34375,
+      "layer": 0,
+      "layer_kind": "ssm",
+      "max_abs": 0.131591796875,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+      "outlier_mass": 0.0075047812424600124,
+      "position_bucket": "8k_or_end",
+      "prompt_id": "hrsmoke_0001",
+      "rms": 0.0011154556414112449,
+      "state_shape": [
+        1,
+        48,
+        64,
+        128
+      ],
+      "state_tensor_kind": "mamba2_recurrent_state",
+      "std": 0.0011154335225000978,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/8k_or_end",
+      "tensor_sha256": "sha256:a985677a7a2857ff9e6749d22160e19d29bf2f16390e526df35c4d74f52bea56",
+      "tensor_shape": [
+        1,
+        48,
+        64,
+        128
+      ],
+      "tensor_source_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/8k_or_end",
+      "tensor_storage_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_8k_or_end.pt"
+    },
+    {
+      "control_type": "bf16_no_quant",
+      "kurtosis": 1872.9222412109375,
+      "layer": 0,
+      "layer_kind": "ssm",
+      "max_abs": 0.1748046875,
+      "model_id": "ibm-granite-4.0-h-tiny",
+      "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+      "outlier_mass": 0.0075225830078125,
+      "position_bucket": "final_minus_128",
+      "prompt_id": "hrsmoke_0001",
+      "rms": 0.0014232180546969175,
+      "state_shape": [
+        1,
+        48,
+        64,
+        128
+      ],
+      "state_tensor_kind": "mamba2_recurrent_state",
+      "std": 0.0014229483203962445,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/final_minus_128",
+      "tensor_sha256": "sha256:724add01615bd008c18142823ed336c379efd7b277190a27d3d798cf0346e7a6",
+      "tensor_shape": [
+        1,
+        48,
+        64,
+        128
+      ],
+      "tensor_source_name": "ssq_lr/ibm-granite-4.0-h-tiny/hrsmoke_0001/layer_0/final_minus_128",
+      "tensor_storage_name": "ssq_lr_ibm-granite-4.0-h-tiny_hrsmoke_0001_layer_0_final_minus_128.pt"
+    }
+  ],
+  "seed": 1,
+  "selected_s1_ci_low": 3.2938470385278897,
+  "selected_s1_ratio": 3.2938470385278897,
+  "ssm_layer_count": 1,
+  "std_ratio_final_minus_128_vs_prefill_end": 2.340032423040269,
+  "surface": "real_ssq_lr_s1_tensor_packet"
+}
