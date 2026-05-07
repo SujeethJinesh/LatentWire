@@ -287,6 +287,25 @@ def test_followup_contract_rejects_missing_required_control(tmp_path: Path) -> N
     assert any("missing required controls: hook_off" in error for error in report["errors"])
 
 
+def test_horn_h2_signed_direction_support_blocks_flip_masking() -> None:
+    rows = _horn_h2_rows()
+    flipped_one_pair = False
+    for row in rows:
+        if (
+            row["control_type"] == "directional_noise"
+            and row["prompt_id"] == "p0"
+            and row["seed"] == 20260506
+        ):
+            row["delta_nll"] = 0.05 if row["boundary_direction"] == "ssm->attention" else 0.40
+            flipped_one_pair = True
+    assert flipped_one_pair
+
+    evaluation = evaluate_horn_h2(rows)
+
+    assert evaluation["selected_direction_support_fraction"] < 1.0
+    assert evaluation["gate_pass"] is False
+
+
 def test_ssq_lr_s3_contract_rejects_retuning(tmp_path: Path) -> None:
     rows = _ssq_lr_s3_rows()
     rows[0]["retuned"] = True

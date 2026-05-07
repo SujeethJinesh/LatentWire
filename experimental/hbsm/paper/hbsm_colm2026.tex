@@ -5,7 +5,7 @@
 \usepackage{hyperref}
 \usepackage{url}
 
-\title{HBSM: Hybrid Boundary Sensitivity Mechanisms}
+\title{HBSM Preregistration Note: Hybrid Boundary Sensitivity Mechanisms}
 \author{Anonymous authors\\Paper under double-blind review}
 
 \begin{document}
@@ -13,8 +13,8 @@
 
 \begin{abstract}
 This is a living paper shell for a preregistered Mac-first experiment. HBSM
-tests whether sensitivity in frontier hybrid reasoners can be explained and
-predicted cheaply. The broad forward-only sensitivity claim is wounded by
+tests whether sensitivity in the planned hybrid-reasoner target family can be
+explained and predicted cheaply. The broad forward-only sensitivity claim is wounded by
 KL Lens-style forward-sensitivity work, so no novelty or positive result is
 claimed yet. Current Granite Tiny resource-limited scouts fail B1.
 \end{abstract}
@@ -55,8 +55,10 @@ targets and architecture hashes, but no corresponding weights are cached
 repo-locally except Granite Tiny. HBSM now has two Granite Tiny
 resource-limited forward-sensitivity packets: a one-prompt smoke and a
 two-prompt prompt-repeat scout. Both are checker-valid, non-promoting B1
-failures; there is still no real forward-sensitivity evidence that promotes
-B1. The two-prompt scout removes the one-prompt boundary-top-decile hint:
+failures; the 8-layer smoke is too small to formally satisfy the full Fisher
+gate, but the observed rank direction and cheap-predictor sign are wrong. There
+is still no real forward-sensitivity evidence that promotes B1. The two-prompt
+scout removes the one-prompt boundary-top-decile hint:
 its boundary top-decile count is zero, Fisher \(p=1.0\), and cheap-predictor
 Spearman is \(-0.667\).
 

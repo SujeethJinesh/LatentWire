@@ -174,6 +174,7 @@ FOLLOWUP_SUMMARY_FIELDS: dict[str, tuple[str, ...]] = {
         "selected_h2_direction",
         "directional_drift_ratio",
         "directional_ratio_ci_low",
+        "selected_direction_support_fraction",
         "hook_off_max_delta",
         "noise_std_basis",
         "seed_count",
@@ -250,6 +251,30 @@ def _bootstrap_ratio_low(paired: dict[str, dict[str, float]]) -> float:
     ratios.sort()
     index = max(0, int(0.025 * (len(ratios) - 1)))
     return float(ratios[index])
+
+
+def _signed_direction_ratio_low(
+    paired: dict[str, dict[str, float]],
+    *,
+    selected_direction: str,
+) -> tuple[float, float]:
+    ratios: list[float] = []
+    wins = 0
+    for values in paired.values():
+        if selected_direction not in values or len(values) != 2:
+            continue
+        other_values = [value for direction, value in values.items() if direction != selected_direction]
+        if len(other_values) != 1 or other_values[0] <= 0.0:
+            continue
+        ratio = _safe_ratio(values[selected_direction], other_values[0])
+        ratios.append(ratio)
+        if ratio > 1.0:
+            wins += 1
+    if not ratios:
+        return 0.0, 0.0
+    ratios.sort()
+    index = max(0, int(0.025 * (len(ratios) - 1)))
+    return float(ratios[index]), float(wins / len(ratios))
 
 
 def _hash_values(rows: list[dict[str, Any]], field: str) -> set[str]:
@@ -416,18 +441,22 @@ def evaluate_horn_h2(rows: list[dict[str, Any]]) -> dict[str, Any]:
         )
         paired[key][str(row["boundary_direction"])] = float(row["delta_nll"])
     paired_unit_count = sum(1 for values in paired.values() if len(values) == 2)
-    ratio_low = _bootstrap_ratio_low(paired)
     hook_off_max = max(
         (abs(float(row["hook_off_delta"])) for row in rows if str(row.get("control_type")) == "hook_off"),
         default=float("inf"),
     )
     selected_from_h1 = str(noise_rows[0].get("selected_direction_from_h1", "")) if noise_rows else ""
+    signed_ratio_low, selected_support_fraction = _signed_direction_ratio_low(
+        paired,
+        selected_direction=selected_from_h1,
+    )
     noise_bases = {str(row.get("noise_std_basis", "")) for row in noise_rows}
     seed_count = len({int(row["seed"]) for row in noise_rows if isinstance(row.get("seed"), int)})
     gate_pass = (
         selected_h2 == selected_from_h1
         and ratio >= 1.5
-        and ratio_low > 1.0
+        and signed_ratio_low > 1.0
+        and selected_support_fraction >= 0.75
         and hook_off_max <= 1e-5
         and len(noise_bases) == 1
         and seed_count >= 3
@@ -443,7 +472,8 @@ def evaluate_horn_h2(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "selected_direction_from_h1": selected_from_h1,
         "selected_h2_direction": selected_h2,
         "directional_drift_ratio": ratio,
-        "directional_ratio_ci_low": ratio_low,
+        "directional_ratio_ci_low": signed_ratio_low,
+        "selected_direction_support_fraction": selected_support_fraction,
         "hook_off_max_delta": hook_off_max,
         "noise_std_basis": next(iter(noise_bases), ""),
         "seed_count": seed_count,

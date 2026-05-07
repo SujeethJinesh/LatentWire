@@ -29,8 +29,9 @@ per-model retuning. Failing any gate kills the branch before GPU work.
 The current real trace packet builder/checker covers S1. S2 and S3 now have
 executable follow-up contracts in \texttt{experimental/shared/followup\_gate\_contracts.py}:
 they require frozen recipe IDs, byte accounting, BF16 no-op controls, paired
-accuracy and continuation-NLL quality bounds, frozen recipe/source hashes, and
-no-retuning transfer rows. Resource-limited S2 scouts are not current evidence
+accuracy and continuation-NLL quality bounds, verbosity/length-drift readouts
+before revival, frozen recipe/source hashes, and no-retuning transfer rows.
+Resource-limited S2 scouts are not current evidence
 for promotion. SSQ-LR makes no quality, byte-savings, transfer, GPU, latency, or
 throughput claim until non-resource-limited S1--S3 packets clear.
 
@@ -44,20 +45,27 @@ synthetic-only: it is not model evidence, not a quality result, and not GPU
 evidence.
 The held-out S1b packet is the strongest positive evidence so far: it repeats
 the frozen selected layers \texttt{0}, \texttt{12}, and \texttt{30} on 12
-held-out prompts with selected ratio 2.459 and lower bound 1.861. S2 does not
-yet convert that heterogeneity into a method. MXFP4 preserves short
+held-out prompts with selected ratio 2.459 and lower bound 1.861. Uniform
+state recipes do not yet convert that heterogeneity into a method. MXFP4 preserves short
 BF16-argmax fidelity but reaches only 3.765--3.938$\times$ state-memory
 reduction after scale bytes. INT3 reaches 4.923--5.224$\times$ after scale
 bytes, but both 12-prompt held-out scouts fail because at least one prompt loses
 argmax fidelity. The 4-prompt INT3 pass is therefore treated as resource-limited
 and non-promoting.
+The newest resource-limited mixed-block S2b scout selects
+\texttt{mixed\_int3\_mxfp4\_low\_error\_25pct}: it reaches 4.192$\times$
+counted state-memory reduction on the 12-prompt held-out replay with zero
+BF16-argmax delta and 0.03956 selected NLL-delta CI high. This revives S2 as a
+Mac candidate, but the packet is still short-continuation simulated replay and
+cannot promote to GPU.
 
 \section{Next Evidence}
 
-The next admissible action is not GPU validation of the current recipe. SSQ-LR
-should continue only if a new frozen sub-4-bit recipe or native packed-state
-layout has a plausible path to clearing S2 with paired quality bounds. Otherwise
-the S1b result is diagnostic evidence, not a positive method.
+The next admissible action is not GPU validation. SSQ-LR should freeze the
+mixed-block recipe hash and rerun a non-resource-limited S2 packet with longer
+continuations, paired quality bounds, verbosity/length-drift readouts, and the
+same controls. Otherwise the S1b/S2b result is diagnostic evidence, not a
+positive method.
 
 \section{Admissible Real Packet}
 
@@ -79,6 +87,8 @@ Full schema details live in the README and runbook.
 Required baseline & Purpose \\
 \midrule
 BF16 no-op replay & Catch hook/serialization bugs. \\
+FP16 stochastic-rounding SSM cache & Deployment baseline from Nemotron-style hybrid serving. \\
+INT16 block-scaled SSM cache & Higher-precision recurrent-cache control. \\
 INT8 state-only & Standard low-bit state control. \\
 FP8-style state-only & Checks whether sub-FP16 state can match the likely deployed fallback. \\
 MXFP4 state-only & Candidate sub-FP16 recipe. \\
@@ -96,6 +106,13 @@ Byte accounting & Include scale/metadata overhead. \\
 The reviewer-facing claim boundary is tracked in
 \url{experimental/ssq_lr/paper/reviewer_pack.md}. It records that SSQ-LR is
 not camera-ready as a method paper until real S1--S3 evidence exists.
+The newest novelty baseline is Nemotron 3 Super's recurrent-cache recipe:
+NVIDIA documentation treats Mamba SSM cache quantization as a separate
+deployment challenge and selects FP16 with stochastic rounding for the SSM cache,
+with INT16/block-scaled variants discussed as controls. SSQ-LR is therefore not
+novel for noticing SSM cache precision; it must beat this baseline with a
+sub-FP16 recipe and paired quality evidence. The source memo is
+\url{../../../references/754_ssq_lr_nemotron_state_cache_refs_20260507.md}.
 
 \section{Claim Boundary}
 

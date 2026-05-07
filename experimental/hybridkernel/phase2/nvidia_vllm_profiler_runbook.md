@@ -206,6 +206,51 @@ model and call it a promotion control. In particular, if Qwen3-Next cannot fit
 or run on the node, the first packet is audit-only even if Granite primary rows
 look large.
 
+### Copy-Paste Promotion Matrix
+
+Before renting the node, verify that every model below can be served on the
+chosen hardware. On a 5090, Granite Tiny/Small can produce an audit packet; if
+the cross-family model cannot fit, the full promotion gate requires a larger
+node or a separately preregistered feasible cross-family model. Do not call a
+Granite-only packet promotable.
+
+Use this matrix to allocate unique run IDs and artifact/log names. Each run ID
+must correspond to a distinct server trace, client JSON log, reduction window,
+and metric row.
+
+| Run IDs | Role | Model | Control segment |
+|---|---|---|---|
+| `granite_primary_r1`, `granite_primary_r2`, `granite_primary_r3` | `primary_hybrid` | `$GRANITE_MODEL` | boundary windows |
+| `granite_same_family_r1`, `granite_same_family_r2`, `granite_same_family_r3` | `same_family_control` | `$GRANITE_MODEL` | non-boundary same-type windows |
+| `qwen_cross_family_r1`, `qwen_cross_family_r2`, `qwen_cross_family_r3` | `cross_family_falsification` | `$QWEN_MODEL` | matched boundary windows |
+
+For each row in the table, start a fresh profiled server for that model and use
+the run ID in every output path:
+
+```bash
+export RUN_ID=granite_primary_r1
+export MODEL="$GRANITE_MODEL"
+
+python "$HWK_ROOT/phase2/profiler_driver.py" \
+  --model "$MODEL" \
+  --batch-size 1 \
+  --prefill-tokens 128 \
+  --decode-tokens 64 \
+  --requests 16 \
+  --seed 1 \
+  --tokenizer "$MODEL" \
+  --require-token-counts \
+  --profile-bracket \
+  > "$HWK_RUN/logs/client_${RUN_ID}.log" \
+  2> "$HWK_RUN/logs/client_${RUN_ID}.stderr.log"
+```
+
+Repeat with `RUN_ID=granite_primary_r2` and seed `2`, then
+`RUN_ID=granite_primary_r3` and seed `3`. Repeat the same pattern for
+`granite_same_family_*` and `qwen_cross_family_*`, changing only `RUN_ID`,
+`MODEL`, and seed. Keep `batch-size`, `prefill-tokens`, `decode-tokens`, and
+`requests` fixed across all nine rows unless a new packet is started.
+
 ## Warmup And Determinism
 
 Use fixed prompts, fixed output lengths, and at least three seeds when the

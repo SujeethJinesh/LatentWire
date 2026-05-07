@@ -20,9 +20,9 @@ Estimated completion:
 ## Paper Story
 
 HBSM is not a generic forward-only sensitivity paper. Its remaining wedge is a
-mechanistic account for frontier hybrid reasoners, FP4-specific sensitivity,
-and cheaper predictors based on weight/statistics rather than repeated
-quantized forward passes.
+mechanistic account for the planned hybrid-reasoner target family,
+FP4-specific sensitivity, and cheaper predictors based on weight/statistics
+rather than repeated quantized forward passes.
 
 ## Preregistered Gates
 
@@ -106,7 +106,9 @@ Resource-limited real-model smoke packet:
 - top observed drift: layer `5`, symmetric KL `0.027301367`
 - B1 readout: `fisher_p_boundary_top_decile=0.375`,
   `cheap_predictor_spearman=-0.476`, so the smoke packet is weak and
-  non-promoting.
+  non-promoting. With only 8 layers, this subset is too small to formally
+  satisfy the B1 Fisher gate; it weakens the branch because the rank direction
+  and cheap-predictor sign are wrong.
 
 Resource-limited prompt-repeat B1 scout:
 
@@ -125,7 +127,7 @@ to a non-boundary layer after the first prompt repeat, and the cheap predictor
 stays negative. Do not spend a long 12-prompt Mac sweep or GPU validation on
 HBSM unless the hypothesis is narrowed or replaced.
 
-Regenerate it with:
+Regenerate the one-prompt smoke with:
 
 ```bash
 HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \

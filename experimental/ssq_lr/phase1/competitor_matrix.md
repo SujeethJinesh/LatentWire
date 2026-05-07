@@ -17,6 +17,7 @@ KV-cache quantization, or a serving-speed result before native validation.
 | Rotation/outlier handling | QuaRot, SpinQuant, HIGGS-style rotations | "State quantization should use known rotations." | Include rotation/protected-outlier controls before claiming a recipe. |
 | KV-cache quantization | KIVI, KVQuant, PM-KVQ | "This is KV quantization, not SSM state." | Report SSM state bytes separately from KV bytes. |
 | Hybrid sensitivity tools | KL/sensitivity sweeps, AutoQuantize-style allocation | "Sensitivity already identifies layers." | Show a frozen state-only recipe transfers without per-model retuning. |
+| Nemotron-style recurrent-cache deployment | FP16 stochastic rounding; INT16 block-scaled SSM cache controls | "Production hybrid SSM cache precision already has a recipe." | Beat FP16 stochastic rounding with sub-FP16 state bytes under paired NLL and verbosity/length drift; cite `references/754_ssq_lr_nemotron_state_cache_refs_20260507.md`. |
 
 ## Before A Paper Claim
 

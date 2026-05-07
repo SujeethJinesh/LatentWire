@@ -279,6 +279,11 @@ reproduce the signal. Kill or shelve if no separable boundary overhead appears,
 the mean recoverable gain is below 1%, or the signal is explained by existing
 vLLM hybrid SSM layout/transfer machinery.
 
+Before renting time, confirm that the planned cross-family falsification model
+fits the node. A Granite-only 5090 packet is useful as an audit/kill packet, but
+it cannot promote without the three cross-family rows unless a feasible
+cross-family replacement is preregistered.
+
 ## Local Setup
 
 Use the repo-local ARM64 virtual environment when available:

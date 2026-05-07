@@ -235,6 +235,9 @@ prompt and 8 layers, top drift layer `5`, Fisher p `0.375`, and cheap-predictor
 Spearman `-0.476`. The two-prompt prompt-repeat scout has 64 checker-passing
 rows, Fisher p `1.0`, boundary top-decile count `0`, non-boundary top-decile
 count `1`, and cheap-predictor Spearman `-0.667`.
+The 8-layer smoke is too small to formally satisfy the full Fisher gate; the
+branch is weakened because the observed ranking and cheap-predictor direction
+are wrong, not because this tiny subset alone formally falsifies B1.
 
 Decision: **HBSM IS WEAKENED AND SHOULD NOT SCALE B1 AS-IS**. Do not run a
 larger B1 table or GPU validation until a narrower mechanism hypothesis is

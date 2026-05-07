@@ -12,7 +12,7 @@
 - Phase 3/4: boundary kernel correctness gates pass under `TRITON_INTERPRET=1`;
   non-interpreter `TRITON_CPU_BACKEND=1` passes when Homebrew GCC libraries are
   exposed through `LIBRARY_PATH`/`DYLD_LIBRARY_PATH`
-- Last updated: 2026-05-06
+- Last updated: 2026-05-07
 
 This scaffold now has a local environment check, small public config fetches,
 and a quick primary-source audit. No external repositories were cloned, no model

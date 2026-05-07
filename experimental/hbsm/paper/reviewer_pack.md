@@ -46,12 +46,12 @@ Status shorthand: B2/B3 are not current evidence.
 | Gate | Result | Decision |
 |---|---|---|
 | synthetic B1 schema rehearsal | 720 real-schema rows, 480 primary prompt rows, 240 layer-aligned control rows, 40 scoring layers after aggregation, real checker passes with `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1` | validates packet contract only |
-| one-prompt B1 smoke | 56 checker-passing rows from one Granite Tiny prompt and 8 layers; top drift layer 5, Fisher p `0.375`, cheap-predictor Spearman `-0.476` | weak, non-promoting B1 failure |
-| two-prompt B1 scout | 64 checker-passing rows from two Granite Tiny prompts and 8 layers; Fisher p `1.0`, boundary top-decile count `0`, non-boundary top-decile count `1`, cheap-predictor Spearman `-0.667` | weakens B1 further; do not scale without new hypothesis |
+| one-prompt B1 smoke | 56 checker-passing rows from one Granite Tiny prompt and 8 layers; top drift layer 5, Fisher p `0.375`, cheap-predictor Spearman `-0.476` | weak non-promoting screen; underpowered for formal Fisher pass/fail |
+| two-prompt B1 scout | 64 checker-passing rows from two Granite Tiny prompts and 8 layers; Fisher p `1.0`, boundary top-decile count `0`, non-boundary top-decile count `1`, cheap-predictor Spearman `-0.667` | weakens rank direction further; do not scale without new hypothesis |
 | architecture provenance | shared boundary flags and model hashes exist | packet provenance ready |
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl` enumerates 2,304 layer-aligned B1 sensitivity/control rows | execution checklist only |
 | model eligibility | Granite Tiny is cached locally and used for real resource-limited B1 scouts; larger live targets remain uncached or GPU-sized. | Mac weakening path exercised; frontier validation still GPU-sized |
-| real-packet checker | rejects missing no-op rows, missing primary-row prompt coverage, stale summary fields, non-finite metrics, split omissions, missing trace-plan hash pinning, missing source sensitivity artifacts, source row-packet hash mismatches, non-layer-aligned comparator controls, promotable resource-limited decisions, supplied top-decile flags that disagree with measured drift, unmatched random/top-decile counts, and random baselines that reproduce boundary enrichment | ready for real B1 |
+| real-packet checker | rejects missing no-op rows, missing primary-row prompt coverage, stale summary fields, non-finite metrics, split omissions, missing trace-plan hash pinning, missing source sensitivity artifacts, source row-packet hash mismatches, non-layer-aligned comparator controls, promotable resource-limited decisions, supplied top-decile flags that disagree with measured drift, unmatched random/top-decile counts, and blocks promotion when random baselines reproduce boundary enrichment | ready for real B1 |
 | follow-up contract checker | `experimental.shared.followup_gate_contracts --gate hbsm_b2/hbsm_b3` enforces frozen predictor splits and matched-noise mechanism controls before later evidence can be cited | contract ready, no model rows |
 
 ## Reviewer Risks

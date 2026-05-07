@@ -45,7 +45,7 @@ positive claim; H3 has no model evidence.
 |---|---|---|
 | synthetic H1a schema rehearsal | 72 real-schema rows, selected max-abs ratio 4.044, non-boundary control ratio 1.042, permuted control ratio 0.247, real checker passes with `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A` | validates packet contract only |
 | Granite Tiny H1a real screen | 288 rows, 12 prompts, all 8 planned boundaries, right-layer input hook tensors, selected ratio `1.06`, cluster-bootstrap low `1.06`, checker-passing decision `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN` | weak single-model screen; no H1a/H1 promotion |
-| Granite Tiny H2 scout | 20 rows, 2 prompts, 3 seeds, paired units `6/6`, hook-off max delta `0.0`, H1-selected direction preserved, directional drift ratio `1.037`, paired lower bound `1.072`, contract-valid decision `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION` | demotes HORN standalone |
+| Granite Tiny H2 scout | 20 rows, 2 prompts, 3 seeds, paired units `6/6`, hook-off max delta `0.0`, H1-selected direction preserved only in aggregate, directional drift ratio `1.037`, signed selected-direction lower bound `0.324`, support fraction `0.5`, contract-valid decision `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION` | demotes HORN standalone |
 | architecture provenance | shared boundary IDs and direction counts exist | packet provenance ready |
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl` enumerates 1,404 boundary/control capture rows, including a matched non-boundary control for each observed boundary row | execution checklist only |
 | model eligibility | Granite Tiny is cached locally and used for real resource-limited H1a/H2 scouts; larger live targets remain uncached or GPU-sized. | Mac demotion path exercised; frontier validation still GPU-sized |
@@ -76,5 +76,5 @@ is treated as an acceptable null.
 
 Do not spend GPU on HORN standalone. Fold the H1a/H2 failures into SSQ-LR/HBSM
 as negative/control evidence. Reopen HORN only with a new preregistered full
-H2/H3 scope on more prompts/models and a clear reason why the `1.037` H2 scout
-should be overturned.
+H2/H3 scope on more prompts/models and a clear reason why the near-null,
+direction-flipping H2 scout should be overturned.

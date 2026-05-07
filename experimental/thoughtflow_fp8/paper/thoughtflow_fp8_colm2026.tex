@@ -75,7 +75,9 @@ The proxy rows in Table~\ref{tab:case-study-retention} are deliberately simple
 matched-budget controls, not faithful reimplementations of the cited systems:
 \texttt{R-KV-like} keeps the first four anchor tokens plus the most recent tail,
 \texttt{ThinKV-like} keeps a recent reserve plus a math-state importance bonus,
-and \texttt{LongFlow-like} is an importance top-$k$ retention rule. The local
+and \texttt{LongFlow-like} is an importance top-$k$ retention rule. The ``-like''
+suffix is part of the local row name: each such row is a Mac-local proxy, not a
+benchmark comparison to the named method. The local
 definitions live in
 \url{experimental/thoughtflow_fp8/phase2/simulate_phase_retention.py}; the
 paper uses them only as falsification controls for the stopped signal family.

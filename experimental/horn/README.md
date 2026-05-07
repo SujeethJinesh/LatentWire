@@ -100,17 +100,18 @@ controls, selected ratio `1.06` with cluster-bootstrap low `1.06`, and passes
 right-layer forward pre-hooks, so the packet now checks real boundary-input
 plumbing rather than hidden-state proxies. It is still resource-limited
 evidence and does not promote H1a/H1. The weak magnitude-screen effect means
-HORN should remain a control branch unless H2 noise replay shows a larger
-directional drift.
+HORN should remain a control branch unless a future, preregistered H2/H3
+reopening gives a concrete reason this near-null screen should reverse.
 
 The current H2 noisy-continuation scout is
 `../shared/results/horn_h2_noise_replay_scout_20260507/`, decision
 `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`. It is a contract-valid
 resource-limited follow-up packet, not H2 promotion: 20 rows, 2 prompts, 3
 seeds, paired units `6/6`, hook-off max delta `0.0`, H1-selected direction
-preserved, directional drift ratio `1.037`, paired lower bound `1.072`, and
-demotion recommendation `DEMOTE_HORN_STANDALONE_WEAK_H2`. This weak H2 result
-demotes HORN as a standalone branch.
+preserved in the aggregate, directional drift ratio `1.037`, signed
+selected-direction lower bound `0.324`, selected-direction support fraction
+`0.5`, and demotion recommendation `DEMOTE_HORN_STANDALONE_WEAK_H2`. This weak
+H2 result demotes HORN as a standalone branch.
 
 The exact H1a/H1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl`;
@@ -268,6 +269,7 @@ Expected decision:
 No native performance or precision-allocation claim until H1--H3 pass and a
 directional recipe is frozen. The current real H1a packet fails with selected
 ratio `1.06`, and the H2 scout also stays near null with directional drift
-ratio `1.037`. HORN must not be promoted to GPU as a standalone branch. Keep it
-as negative/control evidence for SSQ-LR/HBSM unless a future full H2/H3
-reopening has a new preregistered reason.
+ratio `1.037` and selected-direction support `0.5`. HORN must not be promoted
+to GPU as a standalone branch. Keep it as negative/control evidence for
+SSQ-LR/HBSM unless a future full H2/H3 reopening has a new preregistered
+reason.

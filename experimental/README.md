@@ -14,8 +14,8 @@ The current sprint ledger is `project_status_20260506.md`.
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
 | `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, mandatory reduction-input manifest checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, row-level reduction provenance, and at least 3% recoverable boundary overhead |
-| `ssq_lr/` | Mac S1b alive; S2 weakened | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. S2 now has contract-valid scouts: MXFP4 preserves 12-prompt argmax but fails bytes (`3.765x`--`3.938x`), INT3 clears bytes (`4.923x`--`5.224x`) but fails 12-prompt quality; only the 4-prompt INT3 scout passes and is explicitly resource-limited | Do not GPU-promote SSQ-LR from current Mac evidence. Continue only with a new frozen sub-4-bit recipe/native-packing rationale, or treat S1b as diagnostic evidence |
-| `horn/` | Demoted control branch; H1a and H2 scouts failed | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06`. The H2 scout `shared/results/horn_h2_noise_replay_scout_20260507/` passes the follow-up contract but fails with directional drift ratio `1.037`, paired units `6/6`, hook-off max delta `0.0`, and demotion `DEMOTE_HORN_STANDALONE_WEAK_H2` | Do not GPU-promote HORN standalone. Keep it as negative/control evidence unless a deliberately reopened full H2/H3 run has new preregistered scope |
+| `ssq_lr/` | Mac S1b alive; S2b mixed candidate revived but non-promotable | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. Uniform S2 scouts split the blocker: MXFP4 preserves 12-prompt argmax but fails bytes (`3.765x`--`3.938x`), while INT3 clears bytes (`4.923x`--`5.224x`) but fails 12-prompt quality. The new mixed-block S2b scout `shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_20260507/` selects `mixed_int3_mxfp4_low_error_25pct` with `4.192x` counted memory reduction, zero BF16-argmax delta, and `0.03956` selected NLL-delta CI high | Do not GPU-promote SSQ-LR from current resource-limited evidence. Freeze the mixed recipe and rerun non-resource-limited S2 with longer continuations, paired quality, verbosity/length drift, and Nemotron-style FP16 stochastic-rounding plus INT16/block-scaled baselines |
+| `horn/` | Demoted control branch; H1a and H2 scouts failed | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06`. The H2 scout `shared/results/horn_h2_noise_replay_scout_20260507/` now fails under the signed-direction contract: directional drift ratio `1.037`, signed selected-direction lower bound `0.324`, support `0.5`, paired units `6/6`, hook-off max delta `0.0` | Do not GPU-promote HORN standalone. Keep it as negative/control evidence unless a deliberately reopened full H2/H3 run has new preregistered scope |
 | `hbsm/` | Weakened control branch; B1 scouts failed | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, controls, and per-prompt measured-drift top-decile derivation. `shared/results/hbsm_local_sensitivity_20260507/` is a checker-passing 56-row one-prompt Granite Tiny B1 failure (`fisher_p=0.375`, cheap-predictor Spearman `-0.476`). `shared/results/hbsm_prompt2_sensitivity_20260507/` is a checker-passing 64-row two-prompt B1 failure (`fisher_p=1.0`, boundary top-decile count `0`, cheap-predictor Spearman `-0.667`) | Do not GPU-promote HBSM. Continue only with a new preregistered mechanism hypothesis; otherwise fold into negative/control evidence |
 | `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes and clean-path generation guard | Paper-only camera-ready polish |
 
@@ -88,14 +88,20 @@ Shared Mac-local utilities live in `shared/`:
   and `shared/results/ssq_lr_s2_state_replay_scout_int3_block64_12p_20260507/`.
   INT3 block-256 passes on 4 prompts (`5.224x`, zero argmax delta) but both
   12-prompt held-out INT3 scouts fail quality, while MXFP4 remains
-  quality-stable and below `4x`.
+  quality-stable and below `4x`. The mixed-block S2b scout is
+  `shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_20260507/`, decision
+  `RESOURCE_LIMITED_S2_SCOUT_NOT_PROMOTABLE_PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY`;
+  it selects `mixed_int3_mxfp4_low_error_25pct` at `4.192x` counted memory
+  reduction with zero BF16-argmax delta and `0.03956` selected NLL-delta CI
+  high, reviving the next Mac candidate but not authorizing GPU.
   HORN uses 12 prompts over all 8 planned Granite Tiny boundaries and failed
   H1a with hook-captured right-layer input tensors and ratio `1.06`. The H2
   noisy-continuation scout is
   `shared/results/horn_h2_noise_replay_scout_20260507/`, decision
   `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`; it is contract-valid but
-  weak (`1.037` directional drift ratio), so HORN is demoted as a standalone
-  branch. These are plumbing/demotion packets, not promotable gate evidence.
+  weak (`1.037` directional drift ratio, signed selected-direction lower
+  `0.324`, support `0.5`), so HORN is demoted as a standalone branch. These are
+  plumbing/demotion packets, not promotable gate evidence.
 - `ssq_lr_all_layer_scout.py`: metrics-only all-recurrent-layer scout that
   avoids committing duplicated tensor packets. Current artifact:
   `shared/results/ssq_lr_all_layer_scout_20260507/`. It is not a
@@ -166,11 +172,11 @@ Current resource-limited local capture packet:
 1. **HybridKernel**: run the 5090 profiler packet in
    `hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`, then verify with
    `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`.
-2. **SSQ-LR**: S1b now clears on a held-out prompt split. The next blocker is
-   S2: current Mac scouts say MXFP4 preserves quality but fails `4x`, while
-   INT3 clears `4x` but fails 12-prompt quality. Continue only with a new frozen
-   sub-4-bit recipe or native-packing rationale; otherwise keep SSQ-LR as
-   diagnostic S1b evidence.
+2. **SSQ-LR**: S1b now clears on a held-out prompt split and the mixed-block S2b
+   scout revives `mixed_int3_mxfp4_low_error_25pct` as the next Mac candidate.
+   Freeze that recipe and rerun non-resource-limited S2 with longer
+   continuations, paired quality, verbosity/length drift, and Nemotron-style
+   FP16 stochastic-rounding plus INT16/block-scaled baselines.
 3. **HORN**: demoted as a standalone branch after weak H1a and H2 scouts. Do
    not spend GPU on HORN unless a future full H2/H3 reopening has a new reason
    and preregistered scope.
@@ -190,8 +196,8 @@ profiler packet.
 For SSQ-LR, HORN, and HBSM, the first live trace packet builders/checkers are
 S1, H1a/H1, and B1 respectively. The S2/S3, H2/H3, and B2/B3 follow-up
 contracts are now executable through `shared/followup_gate_contracts.py`.
-Current SSQ-LR S2 and HORN H2 model packets are non-promoting failures; HBSM
-B2/B3 still have no model packet evidence.
+Current SSQ-LR S2b and HORN H2 model packets are non-promoting Mac packets;
+HBSM B2/B3 still have no model packet evidence.
 
 ## Killed Marker Convention
 

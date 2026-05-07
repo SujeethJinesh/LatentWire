@@ -348,9 +348,9 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   ./venv_arm64/bin/python -m experimental.shared.ssq_lr_s2_state_replay_scout \
   --prompt-limit 12 --max-input-tokens 8 --prefix-tokens 4 \
   --primary-layers 0,12,30 --block-size 256 \
-  --output-dir experimental/shared/results/ssq_lr_s2_mixed_block256_12p_20260507
+  --output-dir experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_20260507
 ./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
-  experimental/shared/results/ssq_lr_s2_mixed_block256_12p_20260507 \
+  experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_20260507 \
   --gate ssq_lr_s2
 ```
 

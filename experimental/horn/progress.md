@@ -267,10 +267,13 @@ H1a/H1.
 
 The H2 noisy-continuation scout also fails: 20 rows over 2 prompts and 3 seeds,
 paired units `6/6`, hook-off max delta `0.0`, fixed H1-selected direction
-preserved, directional drift ratio `1.037`, and paired lower bound `1.072`.
+preserved in the aggregate, directional drift ratio `1.037`, signed
+selected-direction lower bound `0.324`, and selected-direction support fraction
+`0.5`.
 The packet is contract-valid but its decision is
 `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`.
 
 Decision: **HORN IS A DEMOTED CONTROL BRANCH**. Do not spend GPU time on a
 standalone HORN claim. Reopen only with a new preregistered full H2/H3 scope
-and a concrete reason the current near-null H2 scout should reverse.
+and a concrete reason the current near-null, direction-flipping H2 scout should
+reverse.
