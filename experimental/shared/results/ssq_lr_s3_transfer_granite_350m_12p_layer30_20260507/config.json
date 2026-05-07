@@ -1,0 +1,40 @@
+{
+  "claim_boundary": [
+    "resource-limited local continuation replay",
+    "BF16-argmax fidelity proxy, not task accuracy",
+    "simulated quantization only",
+    "not GPU evidence",
+    "not a promotable S2 packet"
+  ],
+  "command": "python -m experimental.shared.ssq_lr_s2_state_replay_scout",
+  "gate_name": "ssq_lr_s2",
+  "max_input_tokens": 32,
+  "model_id": "ibm-granite/granite-4.0-h-350m",
+  "model_revision": "3b17b717b8f2f5d305b0a92c1491e239aeda19c8",
+  "model_snapshot_path": "/Users/sujeethjinesh/Desktop/LatentWire/.debug/hf_home/hub/models--ibm-granite--granite-4.0-h-350m/snapshots/3b17b717b8f2f5d305b0a92c1491e239aeda19c8",
+  "prefix_tokens": 12,
+  "preregistration_sha256": "sha256:e82292ec47200b5925bfbd264deb3c691891809c55302f1a612e8bed9b748d86",
+  "primary_layers": [
+    30
+  ],
+  "project": "ssq_lr",
+  "prompt_ids": [
+    "hrsmoke_0001",
+    "hrsmoke_0002",
+    "hrsmoke_0003",
+    "hrsmoke_0004",
+    "hrsmoke_0005",
+    "hrsmoke_0006",
+    "hrsmoke_0007",
+    "hrsmoke_0008",
+    "hrsmoke_0009",
+    "hrsmoke_0010",
+    "hrsmoke_0011",
+    "hrsmoke_0012"
+  ],
+  "seed_list": [
+    3718
+  ],
+  "source_gate_packet_sha256": "sha256:f61ff7290d9a8753f16c64c3e810862dc950aeae1495a8c8ef85520e9ac09a29",
+  "tokenizer_revision": "3b17b717b8f2f5d305b0a92c1491e239aeda19c8"
+}

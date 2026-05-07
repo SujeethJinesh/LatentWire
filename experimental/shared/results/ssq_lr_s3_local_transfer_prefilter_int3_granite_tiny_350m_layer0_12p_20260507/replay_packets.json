@@ -1,0 +1,28 @@
+[
+  {
+    "model_ids": [
+      "ibm-granite/granite-4.0-h-tiny"
+    ],
+    "packet_dir": "experimental/shared/results/ssq_lr_s3_source_granite_tiny_12p_layer0_ctx32_20260507",
+    "packet_sha256": "sha256:5d58980572c48693045de5a05f7a191133a99ed34fa273ad6ee25aedbcd2d3a8",
+    "prompt_count": 12,
+    "role": "source_model_frozen_recipe_reference",
+    "row_count": 12,
+    "selected_accuracy_delta_abs": 0.0,
+    "selected_nll_delta_abs": 0.04112434387207031,
+    "selected_nll_delta_ci_high": 0.04112434387207031
+  },
+  {
+    "model_ids": [
+      "ibm-granite/granite-4.0-h-350m"
+    ],
+    "packet_dir": "experimental/shared/results/ssq_lr_s3_transfer_granite_350m_12p_layer0_20260507",
+    "packet_sha256": "sha256:d86251a00d9e351e449b256293e9e3027e71b99bb0c76cdc972787bf26ed7071",
+    "prompt_count": 12,
+    "role": "transfer_model_no_retune_local_replay",
+    "row_count": 12,
+    "selected_accuracy_delta_abs": 0.0,
+    "selected_nll_delta_abs": 0.015686750411987305,
+    "selected_nll_delta_ci_high": 0.015686750411987305
+  }
+]

@@ -16,7 +16,7 @@ This is a living paper shell for a preregistered Mac-first experiment. SSQ-LR
 tests whether recurrent SSM state in hybrid reasoning models can be quantized
 below FP16 while preserving quality. No positive result or native systems claim
 is made yet; current held-out S2 scouts fail to produce a recipe that clears
-both quality and byte-accounting gates.
+both quality and byte-accounting gates across transfer models.
 \end{abstract}
 
 \section{Current Gate and Claim Boundary}
@@ -70,18 +70,21 @@ combined layers 0 and 30 replay also passes with selected NLL-delta CI high
 (accuracy CI high 0.105) but selects
 \texttt{mixed\_int3\_mxfp4\_low\_error\_25pct} at 4.192$\times$ counted
 memory, zero selected accuracy drift, and 0.05044 selected NLL-delta CI high.
+The S3 transfer replay then fails on the second complete local hybrid model:
+Granite 350M with the same 12 prompts, layers 0 and 30, 32-token context, and
+no retuning selects an INT8 fallback at only 1.984$\times$ memory. Layer
+localization shows layer 0 can pass on Granite 350M and layer 30 fails, but the
+source Granite Tiny layer-0 replay and Granite 350M layer-0 replay prefer
+different low-bit recipes. Two local S3 packets that freeze either mixed25 or
+INT3 for layer 0 both fail, so there is no current frozen recipe that transfers.
 
 \section{Next Evidence}
 
-The next admissible action is not GPU validation. SSQ-LR should freeze the
-layer-selective recipe,
-\texttt{mixed\_int3\_mxfp4\_low\_error\_25pct} on layers 0 and 30 only, and
-test no-retuning transfer plus verbosity/length-drift readouts. The current S3
-prefilter packet freezes this recipe and validates cleanly under the S3 schema,
-but fails the transfer gate because the local cache contains only one complete
-hybrid validation model. Granite Small, Granite Small FP8, and Qwen3-Next are
-config-only caches on this Mac. Otherwise the S1b/S2b result is diagnostic
-evidence, not a positive method.
+The next admissible action is not GPU validation. SSQ-LR needs a new
+preregistered recipe or layer-selection rule that is frozen before seeing
+transfer rows, then must rerun no-retuning transfer plus verbosity/length-drift
+readouts. The current S1b/S2b result is diagnostic evidence, not a positive
+method.
 
 \section{Admissible Real Packet}
 
@@ -98,7 +101,7 @@ Full schema details live in the README and runbook.
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{ll}
+\begin{tabular}{p{0.34\linewidth}p{0.56\linewidth}}
 \toprule
 Required baseline & Purpose \\
 \midrule

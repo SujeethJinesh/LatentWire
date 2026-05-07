@@ -9,8 +9,9 @@
 
 1. **HybridKernel profiler packet**: useful only if native vLLM profiling finds
    separable attention/SSM boundary overhead.
-2. **SSQ-LR**: no GPU validation until a real Mac/shared trace packet clears
-   S1--S3 without per-model retuning.
+2. **SSQ-LR**: current recipe failed 12-prompt no-retuning transfer to Granite
+   350M; no GPU validation until a newly preregistered recipe clears S1--S3
+   without per-model retuning.
 3. **HORN**: no GPU validation until real H1a/H1/H2/H3 boundary controls show
    cross-model directional asymmetry and noise-propagation sensitivity.
 4. **HBSM**: no GPU validation until real B1/B2/B3 sensitivity and predictor
@@ -83,6 +84,10 @@ Resource-limited trace packets are allowed only as hook/schema diagnostics and
 must carry a `RESOURCE_LIMITED_NOT_PROMOTABLE` decision. Full GPU validation is
 blocked until the Mac/shared trace gates identify a surviving recipe or
 mechanism.
+As of 2026-05-07, SSQ-LR has no surviving GPU handoff recipe: the frozen
+`0,30` mixed INT3/MXFP4 recipe fails Granite 350M transfer, and layer-0 rescue
+diagnostics fail two-model S3 because Granite Tiny and Granite 350M prefer
+different frozen recipes.
 
 Before collecting those tensors or sensitivity rows, use the deterministic
 trace plan:

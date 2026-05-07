@@ -33,7 +33,6 @@ from experimental.shared.hybrid_manifest_local_capture_runner import (
     DEFAULT_HF_HOME,
     DEFAULT_MODEL_ID,
     DEFAULT_PROMPTS,
-    GRANITE_TINY_REVISION,
     _first_prompt_ids,
     _load_prompt,
     _load_tiny_model_and_tokenizer,
@@ -58,6 +57,24 @@ def _reset_output_dir(path: Path) -> None:
 
 def _sha256(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _local_snapshot_metadata(*, model_id: str, hf_home: Path) -> dict[str, str]:
+    repo_cache = hf_home / "hub" / f"models--{model_id.replace('/', '--')}"
+    ref_path = repo_cache / "refs/main"
+    if not ref_path.exists():
+        return {
+            "model_revision": "remote_or_unregistered",
+            "tokenizer_revision": "remote_or_unregistered",
+            "model_snapshot_path": "",
+        }
+    revision = ref_path.read_text(encoding="utf-8").strip()
+    snapshot = repo_cache / "snapshots" / revision
+    return {
+        "model_revision": revision,
+        "tokenizer_revision": revision,
+        "model_snapshot_path": str(snapshot) if snapshot.exists() else "",
+    }
 
 
 def _parse_layers(value: str) -> tuple[int, ...]:
@@ -548,7 +565,6 @@ def run_scout(
         "seed_list": [seed],
         "command": "python -m experimental.shared.ssq_lr_s2_state_replay_scout",
         "model_id": model_id,
-        "model_revision": GRANITE_TINY_REVISION,
         "prompt_ids": list(prompt_ids),
         "max_input_tokens": max_input_tokens,
         "prefix_tokens": prefix_tokens,
@@ -561,6 +577,7 @@ def run_scout(
             "not a promotable S2 packet",
         ],
     }
+    config.update(_local_snapshot_metadata(model_id=model_id, hf_home=hf_home))
     summary = {
         "decision": decision,
         "resource_limited_decision": resource_limited_decision,

@@ -1,0 +1,25 @@
+{
+  "block_size": 256,
+  "claim_boundary": [
+    "local two-model S3 preflight only; not native GPU evidence",
+    "transfer replay includes a short same-family Granite 350M scout, not the full preregistered target roster",
+    "source Granite Tiny rows remain part of the local contract packet and should not be counted as independent cross-family validation",
+    "retuned=false for every row; no per-model retuning was performed"
+  ],
+  "command": "python -m experimental.shared.ssq_lr_s3_local_transfer_prefilter",
+  "gate_name": "ssq_lr_s3",
+  "preregistration_sha256": "sha256:e82292ec47200b5925bfbd264deb3c691891809c55302f1a612e8bed9b748d86",
+  "primary_layers": [
+    0
+  ],
+  "project": "ssq_lr",
+  "recipe_id": "int3_primary_state_block_scaled",
+  "seed_list": [
+    20260507
+  ],
+  "source_gate_packet_sha256": "sha256:5d58980572c48693045de5a05f7a191133a99ed34fa273ad6ee25aedbcd2d3a8",
+  "source_s2_packet": "experimental/shared/results/ssq_lr_s3_source_granite_tiny_12p_layer0_ctx32_20260507",
+  "transfer_s2_packets": [
+    "experimental/shared/results/ssq_lr_s3_transfer_granite_350m_12p_layer0_20260507"
+  ]
+}

@@ -5,11 +5,11 @@ below FP16 without quality loss during long reasoning.
 
 ## Current Readiness
 
-Status: **WEAKENED / layer-selective S2b Mac candidate alive**.
+Status: **WEAKENED / S3 transfer failed on the current frozen recipe**.
 
 Estimated completion:
 
-- **35%** as a positive-method paper: hypothesis, gates, packet checker,
+- **20%** as a positive-method paper: hypothesis, gates, packet checker,
   trace-plan handoff, one corrected one-layer S1 smoke pass, one four-layer S1
   smoke failure, one all-recurrent-layer metrics-only S1 failure, and one
   checker-passing selected-layer prompt-repeat packet are scaffolded. A fresh
@@ -19,8 +19,12 @@ Estimated completion:
   finds a narrower candidate on layers `0` and `30`; a stricter 32-token
   Granite Tiny prefilter weakens pure INT3 but keeps
   `mixed_int3_mxfp4_low_error_25pct` alive at `4.192x` counted memory and zero
-  selected argmax drift. S3 is locally blocked because only Granite Tiny has
-  complete hybrid weights in cache.
+  selected argmax drift. The same frozen `0,30` recipe fails a 12-prompt
+  no-retuning transfer replay on the second complete local hybrid model
+  (`ibm-granite/granite-4.0-h-350m`): selected accuracy CI high rises to
+  `0.05263`, so S3 does not promote. A layer-localized diagnostic shows layer
+  `0` can pass on 350M, but no single frozen recipe passes both Granite Tiny and
+  Granite 350M at 12 prompts.
 - **0%** as a systems-result paper: no native GPU state-cache integration or
   benchmark exists.
 
@@ -47,6 +51,8 @@ path. S2/S3 now have follow-up contract checks in
 They are not current evidence for promotion: no
 quantization-quality, byte-savings, or cross-model-transfer claim is allowed
 until a non-resource-limited S2/S3 packet clears on the frozen replay surface.
+The current frozen S3 candidate has failed local no-retuning transfer; any
+revival needs a new preregistered recipe or layer-selection rule before GPU.
 
 ## Current Mac Packet
 
@@ -442,16 +448,24 @@ Historical/general S1 packets can be validated with:
 Active gate status: held-out S1b is alive, the all-primary mixed recipe fails
 the longer-window replay, layer-localization excludes layer `12`, and the
 strictest current `0,30` replay selects
-`mixed_int3_mxfp4_low_error_25pct`. The current S3 prefilter
+`mixed_int3_mxfp4_low_error_25pct`. The cache-only S3 prefilter
 `../shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/`
 freezes that exact recipe and validates cleanly under the S3 checker, but the
 decision is `FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER` because this Mac has
 only one complete hybrid transfer model in cache
 (`ibm-granite/granite-4.0-h-tiny`).
-Granite Small, Granite Small FP8, and Qwen3-Next are config-only caches here.
-Do not GPU-promote it yet. Only validate an S3 follow-up packet after this
-exact recipe clears no-retuning transfer on at least two complete validation
-models with paired quality bounds and verbosity/length-drift bounds.
+After downloading Granite 350M locally, the actual 12-prompt no-retuning S3
+replay for the frozen `0,30` mixed recipe failed:
+`../shared/results/ssq_lr_s3_transfer_granite_350m_12p_layers0_30_20260507/`
+has decision `FAIL_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY`, selected fallback
+`int8_primary_state_block64`, and only `1.984x` memory reduction. The
+diagnostic layer-localized packets show layer `0` passes on 350M but layer `30`
+fails, and the paired local S3 packets
+`../shared/results/ssq_lr_s3_local_transfer_prefilter_mixed25_granite_tiny_350m_layer0_12p_20260507/`
+and
+`../shared/results/ssq_lr_s3_local_transfer_prefilter_int3_granite_tiny_350m_layer0_12p_20260507/`
+both fail because the recipe that passes one Granite model does not pass the
+other. Do not GPU-promote SSQ-LR under the current recipe.
 Compare against the current hybrid-serving baseline from Nemotron-style
 recurrent-cache deployment: FP16 SSM cache with stochastic rounding, plus
 INT16/block-scaled controls. The local reference memo is
@@ -462,7 +476,7 @@ INT16/block-scaled controls. The local reference memo is
   experimental/ssq_lr/phase2/results/ssq_lr_gate_s2_<YYYYMMDD>_<model_slug> \
   --gate ssq_lr_s2
 ./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
-  experimental/shared/results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507 \
+  experimental/shared/results/ssq_lr_s3_local_transfer_prefilter_mixed25_granite_tiny_350m_layer0_12p_20260507 \
   --gate ssq_lr_s3
 ```
 
@@ -556,6 +570,7 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
 
 No 5090 work until S1b and a non-resource-limited S2/S3 packet pass with the
 exact state quantization recipe frozen. S1b now passes on a resource-limited
-held-out Mac packet, and S2b has a layer-selective `0,30` mixed INT3/MXFP4
-candidate, but GPU work is justified only after that frozen recipe clears
-paired quality, verbosity/length-drift, and cross-model transfer bounds.
+held-out Mac packet, but the current `0,30` mixed INT3/MXFP4 S2b candidate
+fails 12-prompt no-retuning transfer to Granite 350M. GPU work is justified
+only after a newly preregistered frozen recipe clears paired quality,
+verbosity/length-drift, and cross-model transfer bounds.

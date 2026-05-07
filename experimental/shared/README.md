@@ -71,8 +71,17 @@ Use them for preregistered Mac gates only.
   `results/ssq_lr_s3_transfer_prefilter_mixed25_layers0_30_20260507/`,
   decision `FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER`; the packet freezes
   `mixed_int3_mxfp4_low_error_25pct` on layers `0,30`, validates cleanly, emits
-  no retuned rows, and fails only because the current Mac has one complete
-  hybrid transfer model (`ibm-granite/granite-4.0-h-tiny`).
+  no retuned rows, and was a cache-only blocker with one complete hybrid
+  transfer model (`ibm-granite/granite-4.0-h-tiny`); it is superseded by the
+  local transfer rows below.
+- `ssq_lr_s3_local_transfer_prefilter.py`: combines actual source and transfer
+  S2 replay rows into the strict S3 schema. Current artifacts
+  `results/ssq_lr_s3_local_transfer_prefilter_mixed25_granite_tiny_350m_layer0_12p_20260507/`
+  and
+  `results/ssq_lr_s3_local_transfer_prefilter_int3_granite_tiny_350m_layer0_12p_20260507/`
+  are validator-clean failures: two models, 12 prompts per model, no retuning,
+  one frozen recipe hash, and one source S2 hash, but only one model passes in
+  each packet.
 - `horn_h2_noise_replay_scout.py`: resource-limited HORN H2
   noisy-continuation replay from the failed Granite Tiny H1a packet. Current
   artifact: `results/horn_h2_noise_replay_scout_20260507/`, decision

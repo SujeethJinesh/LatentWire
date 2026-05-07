@@ -1,0 +1,25 @@
+{
+  "block_size": 256,
+  "precision": "int3",
+  "primary_layers": [
+    0
+  ],
+  "recipe_id": "int3_primary_state_block_scaled",
+  "retuning_allowed": false,
+  "scale_granularity": "per_block_absmax",
+  "source_prompt_ids": [
+    "hrsmoke_0001",
+    "hrsmoke_0002",
+    "hrsmoke_0003",
+    "hrsmoke_0004",
+    "hrsmoke_0005",
+    "hrsmoke_0006",
+    "hrsmoke_0007",
+    "hrsmoke_0008",
+    "hrsmoke_0009",
+    "hrsmoke_0010",
+    "hrsmoke_0011",
+    "hrsmoke_0012"
+  ],
+  "source_s2_packet": "experimental/shared/results/ssq_lr_s3_source_granite_tiny_12p_layer0_ctx32_20260507"
+}

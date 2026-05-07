@@ -1,0 +1,81 @@
+{
+  "claim_boundary": [
+    "local two-model S3 preflight only; not native GPU evidence",
+    "transfer replay includes a short same-family Granite 350M scout, not the full preregistered target roster",
+    "source Granite Tiny rows remain part of the local contract packet and should not be counted as independent cross-family validation",
+    "retuned=false for every row; no per-model retuning was performed"
+  ],
+  "decision": "FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER",
+  "frozen_recipe": {
+    "block_size": 256,
+    "precision": "int3",
+    "primary_layers": [
+      0
+    ],
+    "recipe_id": "int3_primary_state_block_scaled",
+    "retuning_allowed": false,
+    "scale_granularity": "per_block_absmax",
+    "source_prompt_ids": [
+      "hrsmoke_0001",
+      "hrsmoke_0002",
+      "hrsmoke_0003",
+      "hrsmoke_0004",
+      "hrsmoke_0005",
+      "hrsmoke_0006",
+      "hrsmoke_0007",
+      "hrsmoke_0008",
+      "hrsmoke_0009",
+      "hrsmoke_0010",
+      "hrsmoke_0011",
+      "hrsmoke_0012"
+    ],
+    "source_s2_packet": "experimental/shared/results/ssq_lr_s3_source_granite_tiny_12p_layer0_ctx32_20260507"
+  },
+  "frozen_recipe_sha256": "sha256:a460bb6aecb7fd8ddde17c52d2c368d239e77a3e711a7fdc08329846c5a59154",
+  "gate_name": "ssq_lr_s3_cross_model_recipe_transfer",
+  "gate_pass": false,
+  "gate_status": "FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER",
+  "max_accuracy_delta_abs": 0.05263155698776245,
+  "max_ci_high": 0.05263155698776245,
+  "max_nll_delta_abs": 0.12321269512176514,
+  "minimum_model_prompt_count": 12,
+  "passing_model_count": 1,
+  "replay_packets": [
+    {
+      "model_ids": [
+        "ibm-granite/granite-4.0-h-tiny"
+      ],
+      "packet_dir": "experimental/shared/results/ssq_lr_s3_source_granite_tiny_12p_layer0_ctx32_20260507",
+      "packet_sha256": "sha256:5d58980572c48693045de5a05f7a191133a99ed34fa273ad6ee25aedbcd2d3a8",
+      "prompt_count": 12,
+      "role": "source_model_frozen_recipe_reference",
+      "row_count": 12,
+      "selected_accuracy_delta_abs": 0.0,
+      "selected_nll_delta_abs": 0.04112434387207031,
+      "selected_nll_delta_ci_high": 0.04112434387207031
+    },
+    {
+      "model_ids": [
+        "ibm-granite/granite-4.0-h-350m"
+      ],
+      "packet_dir": "experimental/shared/results/ssq_lr_s3_transfer_granite_350m_12p_layer0_20260507",
+      "packet_sha256": "sha256:d86251a00d9e351e449b256293e9e3027e71b99bb0c76cdc972787bf26ed7071",
+      "prompt_count": 12,
+      "role": "transfer_model_no_retune_local_replay",
+      "row_count": 12,
+      "selected_accuracy_delta_abs": 0.0,
+      "selected_nll_delta_abs": 0.015686750411987305,
+      "selected_nll_delta_ci_high": 0.015686750411987305
+    }
+  ],
+  "resource_limited_decision": "LOCAL_PREFLIGHT_NOT_PROMOTABLE_FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER",
+  "retuned_row_count": 0,
+  "row_count": 25,
+  "source_s2_gate_status": "PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY",
+  "source_s2_packet_sha256": "sha256:5d58980572c48693045de5a05f7a191133a99ed34fa273ad6ee25aedbcd2d3a8",
+  "transfer_model_count": 2,
+  "transfer_model_prompt_counts": {
+    "ibm-granite/granite-4.0-h-350m": 12,
+    "ibm-granite/granite-4.0-h-tiny": 12
+  }
+}

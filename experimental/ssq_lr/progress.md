@@ -340,8 +340,39 @@ Readout:
 | Retuned row count | `0` |
 | Max NLL delta reported by S3 checker | `0.050439` |
 
-Decision: **S3 IS LOCALLY BLOCKED, NOT FAILED ON QUALITY**. The prefilter has
-one complete local hybrid model (`ibm-granite/granite-4.0-h-tiny`) and records
-Granite Small, Granite Small FP8, and Qwen3-Next as config-only caches. A true
-S3 packet still needs at least two complete validation models using this same
-frozen recipe and no retuning, plus verbosity/length-drift readouts.
+Decision: **CACHE-ONLY S3 WAS LOCALLY BLOCKED**. This prefilter had one
+complete local hybrid model (`ibm-granite/granite-4.0-h-tiny`) and recorded
+Granite Small, Granite Small FP8, and Qwen3-Next as config-only caches. It is
+now superseded by the Granite 350M transfer replay below, which removes the
+cache-only blocker and exposes a quality/transfer failure.
+
+## 2026-05-07 Granite 350M Transfer Replay
+
+Packets:
+
+- `experimental/shared/results/ssq_lr_s3_transfer_granite_350m_12p_layers0_30_20260507/`
+- `experimental/shared/results/ssq_lr_s3_transfer_granite_350m_12p_layer0_20260507/`
+- `experimental/shared/results/ssq_lr_s3_transfer_granite_350m_12p_layer30_20260507/`
+- `experimental/shared/results/ssq_lr_s3_source_granite_tiny_12p_layer0_ctx32_20260507/`
+- `experimental/shared/results/ssq_lr_s3_local_transfer_prefilter_mixed25_granite_tiny_350m_layer0_12p_20260507/`
+- `experimental/shared/results/ssq_lr_s3_local_transfer_prefilter_int3_granite_tiny_350m_layer0_12p_20260507/`
+
+Readout:
+
+| Packet | Decision | Selected/live recipe | Memory | Accuracy CI high | NLL CI high |
+|---|---|---|---:|---:|---:|
+| Granite 350M layers `0,30` | `FAIL_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY` | fallback `int8_primary_state_block64` | `1.984x` | `0.000000` | `0.008906` |
+| Granite 350M layer `0` | `PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY` | `int3_primary_state_block_scaled` | `5.224x` | `0.000000` | `0.015687` |
+| Granite 350M layer `30` | `FAIL_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY` | fallback `int8_primary_state_block64` | `1.984x` | `0.000000` | `0.008893` |
+| Granite Tiny layer `0`, matched context | `PASS_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY` | `mixed_int3_mxfp4_low_error_25pct` | `4.192x` | `0.000000` | `0.041124` |
+| Local S3, layer `0`, frozen mixed25 | `FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER` | source-passing mixed25 | -- | `0.066667` | `0.041124` |
+| Local S3, layer `0`, frozen INT3 diagnostic | `FAIL_REAL_SSQ_LR_S3_CROSS_MODEL_TRANSFER` | transfer-passing INT3 | -- | `0.052632` | `0.123213` |
+
+Decision: **SSQ-LR S3 FAILS ON THE CURRENT MAC TRANSFER SURFACE**. The
+second complete local hybrid model (`ibm-granite/granite-4.0-h-350m`) removes
+the earlier cache-only blocker and exposes a real transfer failure. The frozen
+`0,30` mixed recipe does not preserve the 12-prompt transfer surface. The
+layer-0 diagnostic is also not a rescue: Granite Tiny and Granite 350M prefer
+different low-bit recipes, so no single frozen recipe passes both models under
+the current S3 contract. Do not GPU-promote SSQ-LR without a new
+preregistered recipe/layer rule.
