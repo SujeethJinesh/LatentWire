@@ -171,6 +171,7 @@ def _cached_vs_measured(cached: dict[str, object], measured: dict[str, object]) 
 def _compact_result(result: dict[str, object]) -> dict[str, object]:
     return {
         "model_name": result["model_name"],
+        "input_paths": result.get("input_paths", []),
         "keep_fraction": result["keep_fraction"],
         "max_traces": result["max_traces"],
         "max_length": result["max_length"],

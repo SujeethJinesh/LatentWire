@@ -25,7 +25,7 @@ try:
         _summary,
     )
     from .perplexity_impact_proxy import POLICIES, thoughtflow_saliency_recent
-    from .run_real_trace_retention import OUT_DIR, ROOT
+    from .run_real_trace_retention import DEFAULT_TRACES, OUT_DIR, ROOT
     from .simulate_phase_retention import Token, rkv_like, thin_kv_like
 except ImportError:  # pragma: no cover - supports direct script execution.
     from kv_drop_quality_probe import (
@@ -37,7 +37,7 @@ except ImportError:  # pragma: no cover - supports direct script execution.
         _summary,
     )
     from perplexity_impact_proxy import POLICIES, thoughtflow_saliency_recent
-    from run_real_trace_retention import OUT_DIR, ROOT
+    from run_real_trace_retention import DEFAULT_TRACES, OUT_DIR, ROOT
     from simulate_phase_retention import Token, rkv_like, thin_kv_like
 
 
@@ -233,7 +233,8 @@ def _run(
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = _load_model_for_prefill_attentions(model_name)
     model.eval()
-    prepared = _prepare_rows(tokenizer, max_traces, max_length, continuation_tokens, trace_paths)
+    resolved_trace_paths = trace_paths or DEFAULT_TRACES
+    prepared = _prepare_rows(tokenizer, max_traces, max_length, continuation_tokens, resolved_trace_paths)
     policies = _frozen_policies()
     rows = []
     rdu_per_trace = []
@@ -320,7 +321,7 @@ def _run(
         "model_name": model_name,
         "input_paths": [
             str(path.relative_to(ROOT)) if path.is_absolute() and path.is_relative_to(ROOT) else str(path)
-            for path in (trace_paths or [])
+            for path in resolved_trace_paths
         ],
         "keep_fraction": keep_fraction,
         "max_traces": max_traces,

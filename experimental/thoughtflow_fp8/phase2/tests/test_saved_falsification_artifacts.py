@@ -100,10 +100,18 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
         assert artifact["provenance"]["command"].startswith("./venv_arm64/bin/python")
         assert isinstance(artifact["provenance"]["source_metadata"], dict)
         assert isinstance(artifact["provenance"]["input_hashes"], dict)
-        if artifact["provenance"]["input_paths"]:
-            assert artifact["provenance"]["input_hashes"]
-            for input_path in artifact["provenance"]["input_hashes"]:
-                assert (REPO_ROOT / input_path).is_file()
+        assert artifact["provenance"]["input_paths"]
+        assert artifact["provenance"]["input_hashes"]
+        for input_path in artifact["provenance"]["input_hashes"]:
+            assert (REPO_ROOT / input_path).is_file()
+        if artifact["id"] in {
+            "frozen_sparse_cache_probe",
+            "rdu_same_surface_rerun",
+            "rdu_alternate_surface",
+        }:
+            assert artifact["provenance"]["input_path_inference"]["source"] == (
+                "run_real_trace_retention.DEFAULT_TRACES"
+            )
     table = (DIAGNOSTIC_PACKET / "falsification_table.md").read_text(encoding="utf-8")
     assert "stale_positive_first_surface" in table
     assert "historical_positive_same_surface" in table
