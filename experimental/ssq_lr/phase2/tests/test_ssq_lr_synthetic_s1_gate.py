@@ -21,6 +21,10 @@ def test_synthetic_s1_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     assert summary["gate_status"] == "PASS_REAL_S1_HETEROGENEITY"
     assert summary["decision"].startswith("SCHEMA_REHEARSAL_NOT_PROMOTABLE")
     assert summary["evidence_kind"] == "schema_rehearsal"
+    assert summary["schema_rehearsal"] is True
+    assert summary["positive_evidence"] is False
+    assert summary["promotion_gate_pass"] is False
+    assert summary["scrape_exclude"] is True
     assert summary["promotable"] is False
     assert "synthetic-only" in summary["claim_boundary"]
     summary_md = (output_dir / "summary.md").read_text(encoding="utf-8")

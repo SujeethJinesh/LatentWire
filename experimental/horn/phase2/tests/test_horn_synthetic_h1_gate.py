@@ -26,6 +26,10 @@ def test_synthetic_h1a_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     assert summary["gate_status"] == "PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN"
     assert summary["decision"].startswith("SCHEMA_REHEARSAL_NOT_PROMOTABLE")
     assert summary["evidence_kind"] == "schema_rehearsal"
+    assert summary["schema_rehearsal"] is True
+    assert summary["positive_evidence"] is False
+    assert summary["promotion_gate_pass"] is False
+    assert summary["scrape_exclude"] is True
     assert summary["promotable"] is False
     assert summary["prompt_count"] == 12
     assert summary["selected_h1_direction"] == "ssm->attention"

@@ -42,8 +42,10 @@
   "non_boundary_random_top_decile_rate": 0.13333333333333333,
   "non_boundary_top_decile_count": 0,
   "non_boundary_top_decile_rate": 0.0,
+  "positive_evidence": false,
   "primary_row_count": 480,
   "promotable": false,
+  "promotion_gate_pass": false,
   "prompt_count": 12,
   "random_boundary_top_decile_enrichment": 0.0,
   "random_top_decile_count": 4,
@@ -10850,7 +10852,9 @@
       "weight_norm": 1.3900000000000001
     }
   ],
+  "schema_rehearsal": true,
   "scoring_layer_count": 40,
+  "scrape_exclude": true,
   "seed": 20260506,
   "split_counts": {
     "test": 20,

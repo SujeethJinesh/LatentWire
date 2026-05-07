@@ -13,9 +13,9 @@ import json
 from pathlib import Path
 
 try:
-    from .frozen_sparse_cache_probe import RDU_POLICY_NAME, _run as run_frozen_probe
+    from .frozen_sparse_cache_probe import DISTILGPT2_REVISION, RDU_POLICY_NAME, _run as run_frozen_probe
 except ImportError:  # pragma: no cover - supports direct script execution.
-    from frozen_sparse_cache_probe import RDU_POLICY_NAME, _run as run_frozen_probe
+    from frozen_sparse_cache_probe import DISTILGPT2_REVISION, RDU_POLICY_NAME, _run as run_frozen_probe
 
 
 PHASE2_DIR = Path(__file__).resolve().parent
@@ -171,6 +171,8 @@ def _cached_vs_measured(cached: dict[str, object], measured: dict[str, object]) 
 def _compact_result(result: dict[str, object]) -> dict[str, object]:
     return {
         "model_name": result["model_name"],
+        "model_revision": result.get("model_revision", ""),
+        "tokenizer_revision": result.get("tokenizer_revision", ""),
         "input_paths": result.get("input_paths", []),
         "keep_fraction": result["keep_fraction"],
         "max_traces": result["max_traces"],
@@ -321,6 +323,7 @@ def main() -> None:
     parser.add_argument("--json-output", type=Path, default=DEFAULT_JSON_OUTPUT)
     parser.add_argument("--md-output", type=Path, default=DEFAULT_MD_OUTPUT)
     parser.add_argument("--model-name", default="distilgpt2")
+    parser.add_argument("--model-revision", default=DISTILGPT2_REVISION)
     parser.add_argument("--keep-fraction", type=float, default=0.20)
     parser.add_argument("--max-traces", type=int, default=74)
     parser.add_argument("--max-length", type=int, default=96)
@@ -334,8 +337,11 @@ def main() -> None:
         args.max_traces,
         args.max_length,
         args.continuation_tokens,
+        model_revision=args.model_revision,
     )
     report = build_report(cached, measured)
+    args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.md_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     _write_markdown(report, args.md_output)
     print(

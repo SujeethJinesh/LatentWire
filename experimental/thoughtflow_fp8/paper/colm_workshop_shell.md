@@ -1,11 +1,15 @@
 # ThoughtFlow-FP8 COLM Workshop Shell
 
+> Historical scaffold only. This file is not part of the current reviewer pack
+> or submission draft; use `paper/thoughtflow_fp8_colm2026.tex` and
+> `paper/reviewer_pack.md` instead.
+
 Status date: 2026-05-06
 
 ## Current Policy Status
 
 **Stopped for the current anchor/recent/phase/math policy family; demoted or
-killed for the pre-registered `rdu_topk`, `psi_topk`, and `vwac_topk`
+killed for the repo-local registered `rdu_topk`, `psi_topk`, and `vwac_topk`
 successors.** The current
 interpretable retention family supports a diagnostic/falsification claim only,
 and should not be tuned further on the available saved traces. The first

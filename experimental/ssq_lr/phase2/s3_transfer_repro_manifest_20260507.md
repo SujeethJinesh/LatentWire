@@ -5,6 +5,7 @@
 - documentation/audit commit: `3eaa9e62`
 - execution commit: not recorded in packet metadata before this manifest; use
   the packet input hashes below as the artifact authority under code drift
+- review-base HEAD before this hardening pass: `e49353540474cceedfabe948e49fd1fa5f4da854`
 - decision: the frozen `0,30` mixed INT3/MXFP4 recipe fails no-retuning
   transfer to Granite 350M; layer-0 rescue diagnostics also fail two-model S3
   because Granite Tiny and Granite 350M prefer different low-bit recipes.
@@ -137,6 +138,15 @@ The local `frozen_recipe.json` file hashes are:
 
 - mixed25 packet: `2b2a53d94198b763df622570425b52463e1ecd568f5b1f85e1d3caa77a7fcd87`
 - INT3 packet: `2e87175e79f8ddf7530c7042624d3f861c886539e259cd02968ca534456f98bc`
+
+Source code hashes for this review pass:
+
+| Source | SHA-256 |
+|---|---|
+| `experimental/shared/ssq_lr_s2_state_replay_scout.py` | `a807e3edaa31465c9b46db648512b67c8a12071ae6f06cb162d4815574ce7712` |
+| `experimental/shared/ssq_lr_s3_local_transfer_prefilter.py` | `47d3f427e202c5954e4fa040e286a8df550b360b31850502abd2d3b80c73e51c` |
+| `experimental/shared/followup_gate_contracts.py` | `4e105379a799ffeb78b5af4917363388b07c42ff5b75d4389b8d12b3c808f14e` |
+| `experimental/shared/check_gate_packet.py` | `3f6b52b82b7c3ab3eda695d2263f3ba15aaf5b2ed8203ced2a4207330eb72bb8` |
 
 Packet input hashes:
 

@@ -84,16 +84,30 @@ ARTIFACT_COMMANDS = {
         "--md-output .debug/thoughtflow_replay/frozen_sparse_cache_probe.md"
     ),
     "rdu_robustness_diagnostic": (
-        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py"
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py "
+        "--json-output .debug/thoughtflow_replay/rdu_robustness_diagnostic.json "
+        "--md-output .debug/thoughtflow_replay/rdu_robustness_diagnostic.md"
     ),
     "rdu_same_surface_rerun": (
-        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.py"
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_no_retune_reproduction_check.py "
+        f"--model-revision {DISTILGPT2_REVISION} "
+        "--json-output .debug/thoughtflow_replay/rdu_no_retune_reproduction_check.json "
+        "--md-output .debug/thoughtflow_replay/rdu_no_retune_reproduction_check.md"
     ),
     "rdu_alternate_surface": (
-        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.py"
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_alt_surface_reproduction_check.py "
+        f"--model-revision {DISTILGPT2_REVISION} "
+        "--json-output .debug/thoughtflow_replay/rdu_alt_surface_reproduction_check.json "
+        "--md-output .debug/thoughtflow_replay/rdu_alt_surface_reproduction_check.md"
     ),
     "rdu_independent_surface": (
-        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py"
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py "
+        f"--model-revision {DISTILGPT2_REVISION} "
+        "--input-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/source_alone.jsonl "
+        "--input-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/text_to_text.jsonl "
+        "--input-jsonl results/surface_scout_qwen25math_qwen3_svamp32_chat_20260426/target_alone.jsonl "
+        "--json-output .debug/thoughtflow_replay/rdu_independent_trace_reproduction_check.json "
+        "--md-output .debug/thoughtflow_replay/rdu_independent_trace_reproduction_check.md"
     ),
     "psi_fresh_surface": (
         "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py "
@@ -209,6 +223,29 @@ def _require_clean_thoughtflow_tree() -> None:
         )
 
 
+def _git_status_for_paths(paths: list[str]) -> str:
+    if not paths:
+        return ""
+    return subprocess.check_output(
+        ["git", "status", "--short", "--", *paths],
+        cwd=REPO_ROOT,
+        text=True,
+    ).strip()
+
+
+def _require_clean_tracked_inputs(paths: list[str]) -> str:
+    try:
+        path_status = _git_status_for_paths(sorted(set(paths)))
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        raise RuntimeError("refusing to build diagnostic packet: git status unavailable") from exc
+    if path_status:
+        raise RuntimeError(
+            "refusing to build diagnostic packet while hashed diagnostic inputs are dirty:\n"
+            f"{path_status}"
+        )
+    return path_status
+
+
 def _resolve_input_path(raw_path: str) -> Path | None:
     path = Path(raw_path)
     candidates = [path] if path.is_absolute() else [REPO_ROOT / path, PHASE2 / path]
@@ -278,8 +315,19 @@ def _artifact_provenance(artifact_id: str, payload: dict[str, Any]) -> dict[str,
         if "--model-revision" in command_parts:
             revision_index = command_parts.index("--model-revision") + 1
             if revision_index < len(command_parts):
-                source_metadata.setdefault("model_revision", command_parts[revision_index])
-                source_metadata.setdefault("tokenizer_revision", command_parts[revision_index])
+                revision = command_parts[revision_index]
+                source_metadata.setdefault("model_revision", revision)
+                source_metadata.setdefault("tokenizer_revision", revision)
+                for section in (
+                    "cached_surface",
+                    "measured_surface",
+                    "cached_baseline",
+                    "measured_reproduction",
+                ):
+                    section_metadata = source_metadata.get(section)
+                    if isinstance(section_metadata, dict) and section_metadata.get("model_name"):
+                        section_metadata.setdefault("model_revision", revision)
+                        section_metadata.setdefault("tokenizer_revision", revision)
     input_paths: list[str] = []
     for key in ("source_artifact", "input_paths", "trace_input_paths"):
         value = payload.get(key)
@@ -413,6 +461,22 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
                 "sha256": _sha256(path),
             }
         )
+    tracked_input_paths = [
+        str(Path("experimental/thoughtflow_fp8/phase2") / artifact["path"])
+        for artifact in artifacts
+    ]
+    tracked_input_paths.extend(
+        str(Path("experimental/thoughtflow_fp8/phase2") / preregistration["path"])
+        for preregistration in preregistrations
+    )
+    tracked_input_paths.extend(
+        input_path
+        for artifact in artifacts
+        for input_path in artifact["provenance"].get("input_hashes", {})
+    )
+    tracked_input_status = ""
+    if require_clean_tree:
+        tracked_input_status = _require_clean_tracked_inputs(tracked_input_paths)
 
     manifest = {
         "packet_name": "thoughtflow_diagnostic_packet_20260506",
@@ -423,6 +487,8 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
         ],
         "generated_date": "2026-05-06",
         "git": _git_metadata(),
+        "tracked_input_paths_clean_at_generation": tracked_input_status == "",
+        "tracked_input_paths_status_at_generation": tracked_input_status,
         "environment": _package_versions(),
         "script": {
             "path": str(Path(__file__).relative_to(REPO_ROOT)),

@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 
 try:
-    from .frozen_sparse_cache_probe import RDU_POLICY_NAME, _run as run_frozen_probe
+    from .frozen_sparse_cache_probe import DISTILGPT2_REVISION, RDU_POLICY_NAME, _run as run_frozen_probe
     from .rdu_no_retune_reproduction_check import (
         DEFAULT_CACHED_INPUT,
         PROMOTION_MARGIN,
@@ -28,7 +28,7 @@ try:
         _promotion_decision,
     )
 except ImportError:  # pragma: no cover - supports direct script execution.
-    from frozen_sparse_cache_probe import RDU_POLICY_NAME, _run as run_frozen_probe
+    from frozen_sparse_cache_probe import DISTILGPT2_REVISION, RDU_POLICY_NAME, _run as run_frozen_probe
     from rdu_no_retune_reproduction_check import (
         DEFAULT_CACHED_INPUT,
         PROMOTION_MARGIN,
@@ -52,6 +52,8 @@ DEFAULT_MD_OUTPUT = PHASE2_DIR / "rdu_alt_surface_reproduction_check.md"
 def _surface_descriptor(result: dict[str, object]) -> dict[str, object]:
     return {
         "model_name": result["model_name"],
+        "model_revision": result.get("model_revision", ""),
+        "tokenizer_revision": result.get("tokenizer_revision", ""),
         "keep_fraction": result["keep_fraction"],
         "max_traces": result["max_traces"],
         "max_length": result["max_length"],
@@ -248,6 +250,7 @@ def main() -> None:
     parser.add_argument("--md-output", type=Path, default=DEFAULT_MD_OUTPUT)
     parser.add_argument("--measured-label", default="measured_alt_surface_len112_cont32")
     parser.add_argument("--model-name", default="distilgpt2")
+    parser.add_argument("--model-revision", default=DISTILGPT2_REVISION)
     parser.add_argument("--keep-fraction", type=float, default=0.20)
     parser.add_argument("--max-traces", type=int, default=74)
     parser.add_argument("--max-length", type=int, default=112)
@@ -261,8 +264,11 @@ def main() -> None:
         args.max_traces,
         args.max_length,
         args.continuation_tokens,
+        model_revision=args.model_revision,
     )
     report = build_report(cached, measured, measured_label=args.measured_label)
+    args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.md_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     _write_markdown(report, args.md_output)
     print(

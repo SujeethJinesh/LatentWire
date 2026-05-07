@@ -81,6 +81,8 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
     assert "not a positive method claim" in manifest["claim_boundary"]
     assert manifest["git"]["thoughtflow_path_dirty_at_generation"] is False
     assert manifest["git"]["thoughtflow_path_status_at_generation"] == ""
+    assert manifest["tracked_input_paths_clean_at_generation"] is True
+    assert manifest["tracked_input_paths_status_at_generation"] == ""
     script_path = REPO_ROOT / str(manifest["script"]["path"])
     expected_script_hash = "sha256:" + hashlib.sha256(script_path.read_bytes()).hexdigest()
     assert manifest["script"]["sha256"] == expected_script_hash
@@ -101,19 +103,34 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
         expected = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
         assert artifact["sha256"] == expected
         assert artifact["provenance"]["command"].startswith("./venv_arm64/bin/python")
+        assert "--json-output .debug/thoughtflow_replay/" in artifact["provenance"]["command"]
+        assert "--md-output .debug/thoughtflow_replay/" in artifact["provenance"]["command"]
+        assert not any(
+            token.endswith((
+                "frozen_sparse_cache_probe.json",
+                "rdu_no_retune_reproduction_check.json",
+                "rdu_alt_surface_reproduction_check.json",
+                "rdu_independent_trace_reproduction_check.json",
+                "psi_fresh_sparse_cache_check.json",
+                "vwac_fresh_sparse_cache_check.json",
+            ))
+            for token in artifact["provenance"]["command"].split()
+            if not token.startswith(".debug/")
+        )
         assert isinstance(artifact["provenance"]["source_metadata"], dict)
         assert isinstance(artifact["provenance"]["input_hashes"], dict)
         assert artifact["provenance"]["input_paths"]
         assert artifact["provenance"]["input_hashes"]
         if artifact["id"] in {
             "frozen_sparse_cache_probe",
+            "rdu_same_surface_rerun",
+            "rdu_alternate_surface",
+            "rdu_independent_surface",
             "psi_fresh_surface",
             "vwac_fresh_surface",
         }:
             command = artifact["provenance"]["command"]
             assert "--model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa" in command
-            assert "--json-output .debug/thoughtflow_replay/" in command
-            assert "--md-output .debug/thoughtflow_replay/" in command
             source_metadata = artifact["provenance"]["source_metadata"]
             assert source_metadata["model_revision"] == "2290a62682d06624634c1f46a6ad5be0f47f38aa"
             assert (
@@ -141,6 +158,8 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
             measured = artifact["provenance"]["source_metadata"]["measured_reproduction"]
             for field in (
                 "model_name",
+                "model_revision",
+                "tokenizer_revision",
                 "keep_fraction",
                 "max_length",
                 "continuation_tokens",

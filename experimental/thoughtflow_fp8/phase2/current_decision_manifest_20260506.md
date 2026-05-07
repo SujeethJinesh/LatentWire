@@ -6,7 +6,7 @@
 
 ## Current Decision
 
-The original anchor/recent/phase/math policy family and the pre-registered
+The original anchor/recent/phase/math policy family and the repo-local registered
 `rdu_topk`, `psi_topk`, and `vwac_topk` successors are stopped on the available
 Mac-local sparse-cache surfaces. `rdu_topk` cleared the first frozen 74-trace
 gate and reproduced on the same deterministic slice, but then failed stricter
@@ -17,13 +17,13 @@ checks:
 - independent saved traces: R-KV-like was best compressed at NLL 3.981, while
   `rdu_topk` reached 4.014 on 89 scored traces.
 
-The later `psi_topk` prefix-surprisal successor was pre-registered before
+The later `psi_topk` prefix-surprisal successor was registered in-repo before
 measurement and evaluated once on the fresh C2C GSM70 saved-trace surface. It
 failed decisively: `psi_topk` reached NLL 7.899 versus ThinKV-like 3.906 and
 R-KV-like 3.960 on 70 scored traces.
 
 The later `vwac_topk` value-weighted attention-contribution successor was also
-pre-registered before measurement and evaluated once on the fresh C2C SVAMP70
+registered in-repo before measurement and evaluated once on the fresh C2C SVAMP70
 surface. It failed: `vwac_topk` reached NLL 4.336 versus R-KV-like 4.096 and
 ThinKV-like 4.162 on 64 scored traces.
 
@@ -45,14 +45,14 @@ auditability only. The current decision is the demotion recorded here, in `progr
 ## Allowed Next Work
 
 Current reopen state: **all consumed successor registrations are stopped and no
-fresh utility signal is pre-registered, so there is no runnable successor gate.**
-A future gate starts with a new pre-registration artifact, not with another
+fresh utility signal is registered, so there is no runnable successor gate.**
+A future gate starts with a new repo-local registration artifact, not with another
 measurement on the current traces or the consumed RDU/PSI/VWAC surfaces.
 
 Allowed:
 
 - diagnostic packaging and consistency checks;
-- a fresh preregistration for a genuinely different utility family, before any
+- a fresh registration for a genuinely different utility family, before any
   measurement;
 - a one-shot evaluation only on a fresh/larger frozen sparse-cache surface.
 

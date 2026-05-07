@@ -24,6 +24,7 @@ positive evidence.
 - prompt_ids_hash: `sha256:48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`
 - trace_plan_hash: `sha256:015e28d426aa4c11d00c67234c15e5cf5ed8f599a28de102fbc00aaccc84ed67`
 - preregistration_sha256: `2f1d2ec3caab20eb3068dd5b7b42307ee1d61acbd3aecbc8551a1be494809592`
+- review-base HEAD before this hardening pass: `e49353540474cceedfabe948e49fd1fa5f4da854`
 - prompt_count: `2`
 - layer_count: `8`
 - max_input_tokens: `8`
@@ -79,6 +80,13 @@ Expected checker output:
 | `hbsm_gate_packet/summary.json` | `e84226aaa79bb44b7b4ae1f3ca69d6e8c64e774a500fe65c7349f1eb7c10f1a3` |
 | `hbsm_gate_packet/decision.md` | `882b05e26c8ef24c53e2977229f7c7206f2e63da0202abd1881bca2ae4cf6eef` |
 | `hbsm_row_packet.json` | `7e7dd37398ace957bc7bc93d74a04592ee53e014d71868882c48262f7cda5355` |
+
+Source code hashes for this review pass:
+
+| Source | SHA-256 |
+|---|---|
+| `experimental/shared/hbsm_local_sensitivity_runner.py` | `34ad97ac19ef15359430e17bbe5c30e5c451a33cb1b5f039385486626674b94f` |
+| `experimental/shared/check_gate_packet.py` | `3f6b52b82b7c3ab3eda695d2263f3ba15aaf5b2ed8203ced2a4207330eb72bb8` |
 
 ## Next Gate
 

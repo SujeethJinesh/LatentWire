@@ -21,7 +21,9 @@
   "non_boundary_direction_count": 2,
   "permuted_direction_count": 2,
   "permuted_direction_ratio": 0.24729241877256322,
+  "positive_evidence": false,
   "promotable": false,
+  "promotion_gate_pass": false,
   "prompt_count": 12,
   "row_count": 72,
   "rows": [
@@ -1850,6 +1852,8 @@
       "tensor_storage_name": "horn_synthetic_prompt_11_boundary_1_observed.pt"
     }
   ],
+  "schema_rehearsal": true,
+  "scrape_exclude": true,
   "seed": 20260506,
   "selected_h1_ci_low": 4.024738679975736,
   "selected_h1_cluster_bootstrap_low": 4.024738679975736,

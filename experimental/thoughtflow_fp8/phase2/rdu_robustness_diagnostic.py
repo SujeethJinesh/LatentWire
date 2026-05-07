@@ -329,6 +329,8 @@ def main() -> None:
 
     source = json.loads(args.input.read_text(encoding="utf-8"))
     result = _run_from_result(source, bootstrap_samples=args.bootstrap_samples)
+    args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.md_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     _write_markdown(result, args.md_output)
     print(json.dumps({"status": result["status"], "split_promotion_passes": result["split_promotion_passes"]}, indent=2))

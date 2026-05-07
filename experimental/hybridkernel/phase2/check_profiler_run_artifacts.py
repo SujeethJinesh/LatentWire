@@ -161,15 +161,103 @@ def _matching_artifacts(root: Path, patterns: list[str]) -> list[Path]:
 
 
 def _has_server_profiler_log(log_files: list[Path]) -> bool:
-    return any(
-        "server" in path.name.lower()
-        and ("nsys" in path.name.lower() or "ncu" in path.name.lower())
-        for path in log_files
-    )
+    return bool(_server_profiler_logs(log_files))
 
 
 def _has_client_replay_log(log_files: list[Path]) -> bool:
     return any("client" in path.name.lower() for path in log_files)
+
+
+def _server_profiler_logs(log_files: list[Path]) -> list[Path]:
+    return [
+        path
+        for path in log_files
+        if "server" in path.name.lower()
+        and ("nsys" in path.name.lower() or "ncu" in path.name.lower())
+    ]
+
+
+def _delimited_value_present(haystack: str, value: str) -> bool:
+    needle = value.strip().lower()
+    if not needle:
+        return False
+    variants = {needle, needle.replace("/", "_").replace(" ", "_")}
+    return any(
+        re.search(rf"(^|[^a-z0-9]){re.escape(variant)}($|[^a-z0-9])", haystack)
+        for variant in variants
+        if variant
+    )
+
+
+def _run_id_present_in_server_log(haystack: str, run_id: str) -> bool:
+    run_id = run_id.strip()
+    if not run_id:
+        return False
+    lowered = run_id.lower()
+    normalized = lowered.replace("/", "_").replace(" ", "_")
+    tagged_variants = [
+        f"run_id={lowered}",
+        f"run_id: {lowered}",
+        f"run_id:{lowered}",
+        f"run-id={lowered}",
+        f"run-id: {lowered}",
+        f"run-id:{lowered}",
+        f"runid={lowered}",
+        f"run_id={normalized}",
+        f"run_id: {normalized}",
+        f"run-id={normalized}",
+        f"runid={normalized}",
+    ]
+    if any(variant in haystack for variant in tagged_variants):
+        return True
+    if lowered.isdigit():
+        return False
+    return _delimited_value_present(haystack, lowered)
+
+
+def _model_present_in_server_log(haystack: str, model: str) -> bool:
+    model = model.strip()
+    if not model:
+        return False
+    lowered = model.lower()
+    variants = {lowered, lowered.replace("/", "_").replace(" ", "_")}
+    if "/" in lowered:
+        variants.add(lowered.rsplit("/", maxsplit=1)[-1])
+    return any(_delimited_value_present(haystack, variant) for variant in variants)
+
+
+def _validate_server_logs_cover_metric_rows(
+    *,
+    raw_rows: list[dict[str, object]],
+    log_files: list[Path],
+    require_native_artifacts: bool,
+    errors: list[str],
+) -> None:
+    if not require_native_artifacts:
+        return
+    server_logs = _server_profiler_logs(log_files)
+    if not server_logs:
+        return
+    server_haystacks = [
+        (path.name, f"{path.name}\n{_read_text(path)}".lower())
+        for path in server_logs
+    ]
+    for row_index, row in enumerate(raw_rows):
+        run_id = str(row.get("run_id", "")).strip()
+        model = str(row.get("model", "")).strip()
+        if not run_id or not model:
+            continue
+        if any(
+            _run_id_present_in_server_log(haystack, run_id)
+            and _model_present_in_server_log(haystack, model)
+            for _, haystack in server_haystacks
+        ):
+            continue
+        errors.append(
+            "server profiler log does not match profiler_metrics.json "
+            f"run_id/model for metric row {row_index}: "
+            f"expected run_id={run_id!r}, model={model!r}"
+        )
 
 
 def _positive_int(value: object) -> bool:
@@ -1051,6 +1139,32 @@ def _models_from_architecture_map(path: Path, errors: list[str]) -> set[str]:
     return models
 
 
+def _boundary_indices_from_architecture_map(path: Path) -> dict[str, set[int]]:
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    rows = payload if isinstance(payload, list) else payload.get("rows", []) if isinstance(payload, dict) else []
+    indices: dict[str, set[int]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        model = str(row.get("model") or row.get("model_id", "")).strip()
+        values = row.get("boundary_indices")
+        if not model or not isinstance(values, list):
+            continue
+        parsed = {
+            value
+            for value in values
+            if isinstance(value, int) and not isinstance(value, bool)
+        }
+        if parsed:
+            indices[model] = parsed
+    return indices
+
+
 def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[str, object]]]:
     if not path.is_file():
         return {}
@@ -1083,6 +1197,13 @@ def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[
         if not isinstance(row, dict):
             errors.append(f"native_control_matrix.json row {index} must be an object")
             continue
+        for field in ("boundary_indices", "control_window_ids"):
+            value = row.get(field)
+            if value is not None and not isinstance(value, list):
+                errors.append(
+                    f"native_control_matrix.json row {index} {field} must be a JSON list, "
+                    "not prose; use a separate deterministic rule field for runbook text"
+                )
         role = str(row.get("row_role", "")).strip()
         if role not in ALLOWED_ROW_ROLES:
             errors.append(f"native_control_matrix.json row {index} has invalid row_role")
@@ -1399,6 +1520,7 @@ def _validate_native_control_matrix_rows(
     *,
     raw_rows: list[dict[str, object]],
     control_specs: dict[str, list[dict[str, object]]],
+    architecture_boundary_indices: dict[str, set[int]],
     errors: list[str],
 ) -> None:
     if not control_specs:
@@ -1477,6 +1599,82 @@ def _validate_native_control_matrix_rows(
                 errors.append(
                     f"metric row {index} request_shape does not match "
                     f"native_control_matrix.json for {role}: {row_shape}"
+                )
+
+        matching_specs = [
+            spec
+            for spec in specs
+            if (not allowed_models or model in {str(spec.get("model", "")).strip(), str(spec.get("fallback_model_if_vram_allows", "")).strip()})
+            and (not str(spec.get("control_family", "")).strip() or family == str(spec.get("control_family", "")).strip())
+            and (not str(spec.get("control_model_or_segment", "")).strip() or control == str(spec.get("control_model_or_segment", "")).strip())
+            and (not str(spec.get("boundary_direction", "")).strip() or direction == str(spec.get("boundary_direction", "")).strip())
+        ]
+        row_boundary_indices = row.get("boundary_indices")
+        if isinstance(row_boundary_indices, list):
+            row_boundary_set = {
+                value
+                for value in row_boundary_indices
+                if isinstance(value, int) and not isinstance(value, bool)
+            }
+        else:
+            row_boundary_set = set()
+        if role in {"primary_hybrid", "cross_family_falsification"}:
+            declared_sets = []
+            for spec in matching_specs:
+                spec_boundary_indices = spec.get("boundary_indices")
+                if not isinstance(spec_boundary_indices, list) or not spec_boundary_indices:
+                    continue
+                declared_sets.append(
+                    {
+                        value
+                        for value in spec_boundary_indices
+                        if isinstance(value, int) and not isinstance(value, bool)
+                    }
+                )
+            if declared_sets and row_boundary_set not in declared_sets:
+                errors.append(
+                    f"metric row {index} boundary_indices must match a predeclared "
+                    "native_control_matrix.json boundary_indices list"
+                )
+            if any(
+                str(spec.get("boundary_index_rule", "")).strip()
+                == "all_boundary_indices_from_architecture_map_for_model"
+                for spec in matching_specs
+            ):
+                expected = architecture_boundary_indices.get(model)
+                if expected and row_boundary_set != expected:
+                    errors.append(
+                        f"metric row {index} boundary_indices must equal architecture_map.json "
+                        f"boundary_indices for model {model}"
+                    )
+        if role == "same_family_control":
+            row_control_ids = row.get("control_window_ids")
+            row_control_set = {
+                str(value).strip()
+                for value in row_control_ids
+                if isinstance(row_control_ids, list) and isinstance(value, str) and value.strip()
+            }
+            declared_control_sets = []
+            for spec in matching_specs:
+                spec_control_ids = spec.get("control_window_ids")
+                if not isinstance(spec_control_ids, list) or not spec_control_ids:
+                    continue
+                declared_control_sets.append(
+                    {
+                        str(value).strip()
+                        for value in spec_control_ids
+                        if isinstance(value, str) and value.strip()
+                    }
+                )
+            if not declared_control_sets:
+                errors.append(
+                    f"metric row {index} same_family_control requires predeclared "
+                    "native_control_matrix.json control_window_ids"
+                )
+            elif not any(row_control_set.issubset(declared) for declared in declared_control_sets):
+                errors.append(
+                    f"metric row {index} control_window_ids must be a subset of predeclared "
+                    "native_control_matrix.json control_window_ids"
                 )
 
 
@@ -1597,6 +1795,9 @@ def check_run_artifacts(
 
     architecture_models = _models_from_architecture_map(
         run_dir / "metadata/architecture_map.json", errors
+    )
+    architecture_boundary_indices = _boundary_indices_from_architecture_map(
+        run_dir / "metadata/architecture_map.json"
     )
     control_specs = _native_control_specs(
         run_dir / "metadata/native_control_matrix.json", errors
@@ -1748,6 +1949,12 @@ def check_run_artifacts(
                 for row in payload.get("rows", [])
                 if isinstance(row, dict) and not _is_pending_metric_row(row)
             ]
+            _validate_server_logs_cover_metric_rows(
+                raw_rows=raw_native_rows,
+                log_files=log_files,
+                require_native_artifacts=require_native_artifacts,
+                errors=errors,
+            )
             _validate_reduction_input_manifest(
                 path=run_dir / "metadata/reduction_input_manifest.json",
                 run_dir=run_dir,
@@ -1758,6 +1965,7 @@ def check_run_artifacts(
             _validate_native_control_matrix_rows(
                 raw_rows=raw_native_rows,
                 control_specs=control_specs,
+                architecture_boundary_indices=architecture_boundary_indices,
                 errors=errors,
             )
             _validate_cross_family_replacement(

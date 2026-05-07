@@ -62,8 +62,8 @@ positives from becoming GPU/kernel work before robustness exists.
 | same-slice rerun | reproduces the cached gate exactly | bookkeeping only |
 | alternate surface | stopped same-family row beats `rdu_topk` by 0.006 NLL | weakened |
 | independent saved traces | R-KV-like is best compressed; `rdu_topk` fails proxy-baseline separation | stopped |
-| fresh prefix-surprisal utility | `psi_topk` NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960 on 70 fresh C2C GSM70 traces | killed |
-| fresh value-weighted attention utility | `vwac_topk` NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162 on 64 fresh C2C SVAMP70 traces | killed |
+| fresh prefix-surprisal utility | `psi_topk` NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960 on 70 fresh repo-local C2C-named GSM70 traces | killed |
+| fresh value-weighted attention utility | `vwac_topk` NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162 on 64 fresh repo-local C2C-named SVAMP70 traces | killed |
 | Triton interpreter | anchor/phase int8 primitive matches CPU reference | kernel logic only |
 | current authority | historical `ALIVE`/`REPRODUCED`/`PROMOTED` artifacts are superseded by the current decision manifest | manifest controls |
 

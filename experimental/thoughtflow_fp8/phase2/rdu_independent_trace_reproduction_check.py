@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 try:
-    from .frozen_sparse_cache_probe import RDU_POLICY_NAME, _run as run_frozen_probe
+    from .frozen_sparse_cache_probe import DISTILGPT2_REVISION, RDU_POLICY_NAME, _run as run_frozen_probe
     from .rdu_no_retune_reproduction_check import (
         DEFAULT_CACHED_INPUT,
         FULL_POLICY,
@@ -27,7 +27,7 @@ try:
         _promotion_decision,
     )
 except ImportError:  # pragma: no cover - supports direct script execution.
-    from frozen_sparse_cache_probe import RDU_POLICY_NAME, _run as run_frozen_probe
+    from frozen_sparse_cache_probe import DISTILGPT2_REVISION, RDU_POLICY_NAME, _run as run_frozen_probe
     from rdu_no_retune_reproduction_check import (
         DEFAULT_CACHED_INPUT,
         FULL_POLICY,
@@ -394,6 +394,7 @@ def main() -> None:
     parser.add_argument("--input-jsonl", action="append", type=Path, default=[])
     parser.add_argument("--measured-label", default="measured_independent_chat_svamp96")
     parser.add_argument("--model-name", default="distilgpt2")
+    parser.add_argument("--model-revision", default=DISTILGPT2_REVISION)
     parser.add_argument("--keep-fraction", type=float, default=0.20)
     parser.add_argument("--max-traces", type=int, default=96)
     parser.add_argument("--max-length", type=int, default=96)
@@ -409,6 +410,7 @@ def main() -> None:
         args.max_length,
         args.continuation_tokens,
         trace_paths=trace_paths,
+        model_revision=args.model_revision,
     )
     report = build_report(
         cached,
@@ -416,6 +418,8 @@ def main() -> None:
         measured_label=args.measured_label,
         trace_input_paths=tuple(_path_label(path) for path in trace_paths),
     )
+    args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.md_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     _write_markdown(report, args.md_output)
     print(

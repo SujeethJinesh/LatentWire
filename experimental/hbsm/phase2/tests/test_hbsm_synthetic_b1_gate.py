@@ -26,6 +26,10 @@ def test_synthetic_b1_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     assert summary["gate_status"] == "PASS_REAL_B1_SENSITIVITY_HETEROGENEITY"
     assert summary["decision"].startswith("SCHEMA_REHEARSAL_NOT_PROMOTABLE")
     assert summary["evidence_kind"] == "schema_rehearsal"
+    assert summary["schema_rehearsal"] is True
+    assert summary["positive_evidence"] is False
+    assert summary["promotion_gate_pass"] is False
+    assert summary["scrape_exclude"] is True
     assert summary["promotable"] is False
     assert summary["primary_row_count"] == 480
     assert summary["scoring_layer_count"] == 40

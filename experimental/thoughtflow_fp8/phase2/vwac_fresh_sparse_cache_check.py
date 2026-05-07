@@ -326,6 +326,8 @@ def main() -> None:
         trace_paths=args.input_jsonl,
         model_revision=args.model_revision,
     )
+    args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.md_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     write_markdown(result, args.md_output)
     print(json.dumps({"status": result["status"], "decision": result["decision"]}, indent=2))

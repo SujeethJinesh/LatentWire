@@ -91,8 +91,10 @@ coercing strings. The shared Mac smoke prompt manifest is
 `../shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl` with SHA-256
 `48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
 
-Decision: **NEXT B1 MUST BE GENERATED FROM RAW SENSITIVITY ROWS**. The blocker
-is still live model weights and forward-sensitivity measurements.
+Decision: **B1 MUST BE GENERATED FROM RAW SENSITIVITY ROWS**. This was the
+historical packet-construction rule before the later Granite Tiny scouts. The
+current branch status is weakened/demoted unless a narrower mechanism is
+preregistered before more rows are inspected.
 
 ## 2026-05-06 Reviewer Novelty Note
 
@@ -172,9 +174,9 @@ non-rehearsal packets, so future B1 rows must cite the exact plan JSONL used
 during sensitivity capture.
 
 Decision: **B1 SENSITIVITY CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT
-RUN**. The next exact gate remains a real forward-sensitivity row packet built
-from those planned rows and checked with `check_gate_packet --mode real --project
-hbsm`.
+RUN AT FULL SCOPE**. The plan remains reusable for a future preregistered
+reopening, but the current branch status is weakened by the later
+resource-limited Granite Tiny B1 scouts.
 
 ## 2026-05-07 Capture-Manifest Templates
 
@@ -185,10 +187,10 @@ comparator/control rows. Granite templates contain 720 planned entries each,
 while the Qwen3-Next template contains 864 entries because its architecture map
 exposes more scored layers.
 
-Decision: **B1 CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
-EVIDENCE**. The next exact gate is to fill one HBSM row-packet template from a
-real forward-sensitivity capture, build the packet, and validate it with
-`check_gate_packet --mode real --project hbsm`.
+Decision: **B1 CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO FULL-SCOPE MODEL
+EVIDENCE**. The template is a reproducibility asset for a future narrower
+mechanism branch; it is not an active GPU handoff under the current weakened B1
+story.
 
 ## 2026-05-07 Model-Alias and Template-Sentinel Guard
 

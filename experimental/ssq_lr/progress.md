@@ -134,9 +134,10 @@ preregistered buckets (`prefill_end`, `2k_or_end`, `8k_or_end`, and
 for non-rehearsal packets, so future S1 rows must cite the exact plan JSONL
 used during capture.
 
-Decision: **S1 TRACE CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT RUN**.
-The next exact gate remains a real tensor packet built from those planned rows
-and checked with `check_gate_packet --mode real --project ssq_lr`.
+Decision: **S1 TRACE CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT RUN AT
+FULL SCOPE**. The plan remains a reproducibility asset for a future
+preregistered reopening; the current SSQ-LR recipe is stopped after S3 transfer
+failure.
 
 ## 2026-05-07 Capture-Manifest Templates
 
@@ -391,12 +392,11 @@ recipe is `mixed_int3_mxfp4_low_error_25pct` on layers `0,30`; the layer-0
 mixed25 and INT3 follow-ups are post-hoc diagnostics and cannot be converted
 into promotion rows.
 
-No additional rows under the current recipe are admissible. Only one bounded
-Mac rescue is admissible before revival or GPU reconsideration, and it must be
-a new preregistered branch: write a new preregistration before running it,
-freeze a fresh held-out prompt file, freeze a single layer-selection rule and
-recipe-selection rule before transfer rows are inspected, keep the `>=4x`
+No additional rows under the current recipe are admissible. SSQ-LR has no
+active GPU handoff path unless a new preregistered branch is opened before any
+new rows are inspected. A reopening must freeze a fresh held-out prompt file,
+freeze a single layer-selection rule and recipe-selection rule, keep the `>=4x`
 counted state-memory threshold and the S3 no-retuning transfer contract,
 include Granite Tiny and Granite 350M with at least 12 prompts each, and add
-verbosity/length drift before any GPU handoff. If that rescue fails, SSQ-LR
-should remain diagnostic evidence rather than an active positive-method paper.
+verbosity/length drift before any GPU handoff. Without that new registration,
+SSQ-LR remains diagnostic evidence rather than an active positive-method paper.

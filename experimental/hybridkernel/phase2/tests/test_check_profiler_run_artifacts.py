@@ -75,6 +75,27 @@ def _write_client_replay_log(
     )
 
 
+def _write_server_profiler_log(
+    run_dir: Path,
+    filename: str,
+    *,
+    model: str,
+    run_id: str,
+) -> None:
+    (run_dir / "logs" / filename).write_text(
+        "\n".join(
+            [
+                "nsys vllm server cuda profiler log",
+                f"model={model}",
+                f"run_id={run_id}",
+                "cuda profiler range active",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_snapshot_manifest(run_dir: Path, name: str) -> tuple[str, str]:
     path = run_dir / f"metadata/{name}_snapshot_manifest.json"
     path.write_text(
@@ -253,10 +274,13 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         + "\n",
         encoding="utf-8",
     )
-    (run_dir / "logs/nsys_server_b1.log").write_text(
-        "nsys vllm server cuda profiler log\n", encoding="utf-8"
-    )
     for idx in range(runs):
+        _write_server_profiler_log(
+            run_dir,
+            f"nsys_server_granite_run{idx}.log",
+            model="granite",
+            run_id=str(idx),
+        )
         _write_client_replay_log(
             run_dir,
             f"client_replay_granite_run{idx}.log",
@@ -490,6 +514,12 @@ def _add_replacement_cross_family_rows(
         _write_client_replay_log(
             run_dir,
             f"client_replay_replacement_run{idx}.log",
+            model=replacement_model,
+            run_id=f"replacement-{idx}",
+        )
+        _write_server_profiler_log(
+            run_dir,
+            f"nsys_server_replacement_run{idx}.log",
             model=replacement_model,
             run_id=f"replacement-{idx}",
         )
@@ -924,7 +954,8 @@ def test_no_boundary_signal_kill_requires_clean_negative_nsys_evidence(tmp_path:
 def test_requires_server_and_client_logs(tmp_path: Path) -> None:
     server_missing = tmp_path / "server_missing"
     _write_complete_run(server_missing)
-    (server_missing / "logs/nsys_server_b1.log").unlink()
+    for log_path in (server_missing / "logs").glob("nsys_server*.log"):
+        log_path.unlink()
 
     server_result = check_run_artifacts(server_missing)
 
@@ -941,9 +972,20 @@ def test_requires_server_and_client_logs(tmp_path: Path) -> None:
     assert any("client replay log" in error for error in client_result["errors"])
 
 
+def test_rejects_missing_run_specific_server_profiler_log(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "logs/nsys_server_granite_run1.log").unlink()
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("run_id/model for metric row 1" in error for error in result["errors"])
+
+
 def test_rejects_server_warmup_log_without_profiler_log(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "logs/nsys_server_b1.log").unlink()
+    for log_path in (tmp_path / "logs").glob("nsys_server*.log"):
+        log_path.unlink()
     (tmp_path / "logs/server_warmup.log").write_text(
         "server warmup log, not a profiler log\n", encoding="utf-8"
     )
@@ -956,7 +998,7 @@ def test_rejects_server_warmup_log_without_profiler_log(tmp_path: Path) -> None:
 
 def test_rejects_empty_or_placeholder_native_logs(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "logs/nsys_server_b1.log").write_text("", encoding="utf-8")
+    (tmp_path / "logs/nsys_server_granite_run0.log").write_text("", encoding="utf-8")
     (tmp_path / "logs/client_replay_granite_run0.log").write_text(
         "placeholder client replay\n", encoding="utf-8"
     )
@@ -970,7 +1012,7 @@ def test_rejects_empty_or_placeholder_native_logs(tmp_path: Path) -> None:
 
 def test_rejects_arbitrary_native_log_payloads(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
-    (tmp_path / "logs/nsys_server_b1.log").write_text("abcdefgh\n", encoding="utf-8")
+    (tmp_path / "logs/nsys_server_granite_run0.log").write_text("abcdefgh\n", encoding="utf-8")
     (tmp_path / "logs/client_replay_granite_run0.log").write_text("abcdefgh\n", encoding="utf-8")
 
     result = check_run_artifacts(tmp_path)

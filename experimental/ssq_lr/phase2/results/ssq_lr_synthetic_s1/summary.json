@@ -26,7 +26,9 @@
     "final_minus_128",
     "prefill_end"
   ],
+  "positive_evidence": false,
   "promotable": false,
+  "promotion_gate_pass": false,
   "prompt_count": 12,
   "required_passing_layer_count": 3,
   "row_count": 288,
@@ -8096,6 +8098,8 @@
       "tensor_storage_name": "ssq_lr_synthetic_prompt_11_layer_5_final_minus_128.pt"
     }
   ],
+  "schema_rehearsal": true,
+  "scrape_exclude": true,
   "seed": 20260506,
   "selected_s1_ci_low": 3.8888887650582613,
   "selected_s1_ratio": 3.8888888937758046,

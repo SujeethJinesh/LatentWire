@@ -28,6 +28,7 @@ camera-ready positive evidence.
 - source_gate_packet_sha256: `sha256:f6588496123def548e5363cc5f0db061f198ee581f92886d4f5e3e4197e07ac0`
 - preregistration_sha256: `sha256:fe71d4c0ecc117412731c7e5c30e866023dff3f06070355241438ecc0c6254f2`
 - trace_plan_sha256: `a2df7d6485d376747ba179c80172882b3dddd440d1db3b5f765f777a857e75f0`
+- review-base HEAD before this hardening pass: `e49353540474cceedfabe948e49fd1fa5f4da854`
 - resource_limit_note: Mac-local HORN H2 scout over short Granite Tiny prompts; useful for demotion or follow-up planning only, not a promotable H2 packet.
 
 ## Readout
@@ -82,6 +83,14 @@ to this follow-up packet; H2 is validated by
 | `raw_rows.jsonl` | `def14c7df3c2ce4f2e84e3005df48bd2ce397795bf760811e7349ae7303834b6` |
 | `summary.json` | `e718b1bc02eb425fea6d8772520aa7c38eef358341500363ab2967dbbd05eb38` |
 | `decision.md` | `cdd096eb0faf5c367e06e2efe1bda3c07c9bda2bfa18c65bea0d34f88c270ef4` |
+
+Source code hashes for this review pass:
+
+| Source | SHA-256 |
+|---|---|
+| `experimental/shared/horn_h2_noise_replay_scout.py` | `32dc6c30926e79dd2312a3ff65af7e26f1c723befa23425e3cb721eb687e8954` |
+| `experimental/shared/followup_gate_contracts.py` | `4e105379a799ffeb78b5af4917363388b07c42ff5b75d4389b8d12b3c808f14e` |
+| `experimental/shared/check_gate_packet.py` | `3f6b52b82b7c3ab3eda695d2263f3ba15aaf5b2ed8203ced2a4207330eb72bb8` |
 
 ## Next Gate
 

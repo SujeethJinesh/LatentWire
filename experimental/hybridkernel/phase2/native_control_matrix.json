@@ -28,7 +28,8 @@
       "control_family": "same_family_matched_segment",
       "control_model_or_segment": "granite_hybrid_attention_ssm_boundary_windows",
       "boundary_direction": "mixed_attention_ssm",
-      "boundary_indices": "all Granite attention<->SSM boundaries from metadata/architecture_map.json",
+      "boundary_indices": [],
+      "boundary_index_rule": "all_boundary_indices_from_architecture_map_for_model",
       "control_window_ids": [],
       "required_repeats": 3,
       "interpretation": "Only these rows can trigger the HybridKernel positive gate."
@@ -41,7 +42,8 @@
       "control_model_or_segment": "granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows",
       "boundary_direction": "non_boundary_same_family",
       "boundary_indices": [],
-      "control_window_ids": "stable non-boundary window IDs from Nsight Systems, e.g. granite-layer12-ssm-internal-window",
+      "control_window_ids": [],
+      "control_window_id_rule": "fill stable non-boundary window IDs in the copied run packet before profiling; metric control_window_ids must be a subset",
       "required_repeats": 3,
       "interpretation": "Controls for generic launch, CUDA graph, SSM-internal, and attention-internal overhead on the same serving path."
     },
@@ -52,7 +54,8 @@
       "control_family": "cross_family_hybrid_control",
       "control_model_or_segment": "qwen3_next_hybrid_boundary_windows",
       "boundary_direction": "linear_attention_gated_delta_boundary",
-      "boundary_indices": "all Qwen3-Next config-derived boundaries from metadata/architecture_map.json",
+      "boundary_indices": [],
+      "boundary_index_rule": "all_boundary_indices_from_architecture_map_for_model",
       "control_window_ids": [],
       "required_repeats": 3,
       "interpretation": "Falsifies a Granite-specific claim if the same apparent boundary signal appears in a different hybrid family."

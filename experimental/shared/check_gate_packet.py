@@ -741,6 +741,17 @@ def _validate_schema_rehearsal_decision(
         errors.append(
             f"{project} schema-rehearsal packet must use {SCHEMA_REHEARSAL_DECISION} decision"
         )
+    expected_flags = {
+        "schema_rehearsal": True,
+        "positive_evidence": False,
+        "promotion_gate_pass": False,
+        "scrape_exclude": True,
+        "promotable": False,
+    }
+    for field, expected in expected_flags.items():
+        if summary.get(field) is not expected:
+            expected_text = str(expected).lower()
+            errors.append(f"{project} schema-rehearsal summary {field} must be {expected_text}")
 
 
 def _expected_gate_status(project: str, rows: list[dict[str, Any]]) -> str | None:

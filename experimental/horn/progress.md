@@ -116,8 +116,9 @@ real single-model packet can emit `PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN`,
 but the project still needs cross-model consistency before claiming H1.
 
 Decision: **SINGLE-MODEL BOUNDARY ASYMMETRY IS A SCREEN, NOT A PAPER RESULT**.
-The next exact gate remains a real prompt-paired H1a dump, followed by
-cross-model H1 aggregation only if the screen passes.
+This was the historical H1a promotion rule before the later Granite Tiny H1a
+and H2 scouts. The current branch status is the demoted-control decision at the
+end of this ledger, not an active GPU handoff.
 
 ## 2026-05-06 H1a Schema-Rehearsal Upgrade
 
@@ -179,9 +180,10 @@ matched non-boundary controls for both boundary directions. The real-packet
 checker now requires a `trace_plan_hash` for non-rehearsal packets, so future
 H1a rows must cite the exact plan JSONL used during capture.
 
-Decision: **H1A TRACE CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT RUN**.
-The next exact gate remains a real boundary tensor packet built from those
-planned rows and checked with `check_gate_packet --mode real --project horn`.
+Decision: **H1A TRACE CAPTURE IS NOW OPERATIONALLY SPECIFIED BUT STILL NOT RUN
+AT FULL SCOPE**. The plan remains a reproducibility asset for a future
+preregistered reopening; the current HORN branch is demoted after the later
+resource-limited H1a/H2 scouts.
 
 ## 2026-05-07 Capture-Manifest Templates
 
@@ -194,9 +196,9 @@ contains 828 entries because its architecture map exposes more hybrid
 boundaries.
 
 Decision: **H1A CAPTURE NOW HAS A FILL-IN TEMPLATE BUT STILL NO MODEL
-EVIDENCE**. The next exact gate is to fill one HORN template from a real
-boundary-activation capture, build the packet, and validate it with
-`check_gate_packet --mode real --project horn`.
+EVIDENCE**. This template remains useful for a future preregistered reopening,
+but the current branch status is demoted after the later resource-limited H1a
+and H2 scouts.
 
 ## 2026-05-07 Model-Alias and Permuted-Tensor Guard
 

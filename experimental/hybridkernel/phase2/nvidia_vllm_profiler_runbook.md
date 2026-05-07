@@ -71,9 +71,12 @@ host:
 
 ```bash
 export HWK_ROOT=/path/to/LatentWire/experimental/hybridkernel
+export GRANITE_MODEL=ibm-granite/granite-4.0-h-tiny
+export QWEN_MODEL=Qwen/Qwen3-Next-80B-A3B-Instruct
+export PREREGISTERED_CROSS_FAMILY_MODEL=
 python "$HWK_ROOT/phase2/create_native_run_packet.py" \
   --label granite_boundary \
-  --model ibm-granite/granite-4.0-h-tiny
+  --model "${GRANITE_MODEL:?set GRANITE_MODEL before creating the packet}"
 ```
 
 The command prints a `run_dir`. Export that exact path as `HWK_RUN` before
@@ -204,12 +207,11 @@ rather than spending the trace budget.
   python - <<'PY'
 from transformers import AutoTokenizer
 import os
-for model in [os.environ.get("GRANITE_MODEL", ""), os.environ.get("QWEN_MODEL", "")]:
-    if not model:
-        continue
+for env_name in ["GRANITE_MODEL", "QWEN_MODEL"]:
+    model = os.environ[env_name]
     tok = AutoTokenizer.from_pretrained(model, local_files_only=True, trust_remote_code=True)
     ids = tok.encode("HybridKernel token-count preflight.", add_special_tokens=False)
-    print(model, "tokenizer_ok", len(ids))
+    print(env_name, model, "tokenizer_ok", len(ids))
 PY
   echo "## vllm import and profiler flag"
   python - <<'PY'
@@ -274,18 +276,18 @@ cat > "$HWK_RUN/metadata/profile_scope.json" <<JSON
   "nsys_trace_scope": "server-side CUDA kernels under fixed request replay",
   "ncu_trace_scope": "server-side CUDA kernels under suspicious-kernel replay",
   "request_driver_process": "profiler_driver_http_client",
-  "model": "$MODEL",
-  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests",
+  "model": "${GRANITE_MODEL:?set GRANITE_MODEL}",
+  "vllm_command": "python -m vllm.entrypoints.openai.api_server --model ${GRANITE_MODEL:?set GRANITE_MODEL} --dtype bfloat16 --max-model-len 2048 --disable-log-requests",
   "model_scopes": [
     {
       "row_roles": ["primary_hybrid", "same_family_control"],
-      "model": "$MODEL",
-      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model $MODEL --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+      "model": "${GRANITE_MODEL:?set GRANITE_MODEL}",
+      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model ${GRANITE_MODEL:?set GRANITE_MODEL} --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
     },
     {
       "row_roles": ["cross_family_falsification"],
-      "model": "Qwen/Qwen3-Next-80B-A3B-Instruct",
-      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen3-Next-80B-A3B-Instruct --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
+      "model": "${QWEN_MODEL:?set QWEN_MODEL}",
+      "vllm_command": "python -m vllm.entrypoints.openai.api_server --model ${QWEN_MODEL:?set QWEN_MODEL} --dtype bfloat16 --max-model-len 2048 --disable-log-requests"
     }
   ]
 }
@@ -393,7 +395,7 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --prefill-tokens 128 \
   --decode-tokens 64 \
   --requests 16 \
-  --seed 1 \
+  --seed "$SEED" \
   --tokenizer "$MODEL" \
   --require-token-counts \
   --profile-bracket \
