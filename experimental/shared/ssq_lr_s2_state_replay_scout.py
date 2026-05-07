@@ -115,6 +115,27 @@ def _byte_plan(cache: Any, layers: tuple[int, ...], *, precision: str, block_siz
         quantized = int(math.ceil(numel / 2))
         scale = blocks * 2
         effective_bits = 4.0 + (scale * 8.0 / max(numel, 1))
+    elif precision.startswith("mixed_int3_mxfp4_low_error_"):
+        fraction = _parse_mixed_int3_fraction(precision)
+        quantized = 0
+        metadata = 0
+        for layer in layers:
+            state = _state(cache, layer)
+            layer_blocks = _block_count(state, block_size)
+            int3_blocks = _mixed_int3_block_count(layer_blocks, fraction)
+            int3_elements = min(state.numel(), int3_blocks * block_size)
+            mxfp4_elements = state.numel() - int3_elements
+            quantized += int(math.ceil((int3_elements * 3 + mxfp4_elements * 4) / 8))
+            metadata += int(math.ceil(layer_blocks / 8))
+        scale = blocks * 2
+        effective_bits = ((quantized + scale + metadata) * 8.0) / max(numel, 1)
+        return {
+            "bf16_state_bytes": float(bf16),
+            "quantized_state_bytes": float(quantized),
+            "scale_bytes": float(scale),
+            "metadata_bytes": float(metadata),
+            "effective_bits": float(effective_bits),
+        }
     elif precision in {"bf16_noop", "random_same_l2", "shuffled_scales"}:
         quantized = int(math.ceil(numel / 2))
         scale = blocks * 2
@@ -128,6 +149,20 @@ def _byte_plan(cache: Any, layers: tuple[int, ...], *, precision: str, block_siz
         "metadata_bytes": 0.0,
         "effective_bits": float(effective_bits),
     }
+
+
+def _parse_mixed_int3_fraction(value: str) -> float:
+    prefix = "mixed_int3_mxfp4_low_error_"
+    if not value.startswith(prefix) or not value.endswith("pct"):
+        raise ValueError(f"mixed precision identifier must be {prefix}<percent>pct, got {value!r}")
+    percent = float(value.removeprefix(prefix).removesuffix("pct"))
+    if percent <= 0.0 or percent >= 100.0:
+        raise ValueError("mixed INT3 percentage must be in (0, 100)")
+    return percent / 100.0
+
+
+def _mixed_int3_block_count(blocks: int, fraction: float) -> int:
+    return max(1, min(blocks, int(math.ceil(blocks * fraction))))
 
 
 def _nll_and_top1(logits: torch.Tensor, targets: torch.Tensor) -> tuple[float, torch.Tensor]:
@@ -175,6 +210,32 @@ def _quantize_mxfp4_shuffled_scales(tensor: torch.Tensor, *, block_size: int, se
     return _restore_blocks(dequantized, original_shape, pad).to(tensor.dtype)
 
 
+def _quantize_mixed_int3_mxfp4_low_error(
+    tensor: torch.Tensor,
+    *,
+    block_size: int,
+    int3_fraction: float,
+) -> torch.Tensor:
+    """Use INT3 for the lowest-error blocks and MXFP4 elsewhere.
+
+    The selector uses only block-local quantization error against the current
+    state tensor. It does not inspect downstream logits or labels, so it is a
+    deployable allocation rule rather than an accuracy oracle.
+    """
+
+    int3 = simulate_symmetric_int(tensor, bits=3, block_size=block_size).dequantized
+    mxfp4 = simulate_mxfp4_e2m1(tensor, block_size=block_size).dequantized
+    original_blocks, original_shape, pad = _flatten_blocks(tensor, block_size)
+    int3_blocks, _, _ = _flatten_blocks(int3, block_size)
+    mxfp4_blocks, _, _ = _flatten_blocks(mxfp4, block_size)
+    block_errors = torch.mean((int3_blocks.float() - original_blocks.float()) ** 2, dim=1)
+    int3_count = _mixed_int3_block_count(int(block_errors.numel()), int3_fraction)
+    selected = torch.zeros_like(block_errors, dtype=torch.bool)
+    selected[torch.topk(block_errors, k=int3_count, largest=False).indices] = True
+    mixed_blocks = torch.where(selected[:, None], int3_blocks, mxfp4_blocks)
+    return _restore_blocks(mixed_blocks, original_shape, pad).to(tensor.dtype)
+
+
 def _same_l2_noise(tensor: torch.Tensor, reference: torch.Tensor, *, seed: int) -> torch.Tensor:
     error_norm = torch.linalg.norm((reference.float() - tensor.float()).reshape(-1))
     generator = torch.Generator(device=tensor.device)
@@ -194,7 +255,13 @@ def _apply_recipe(
 ) -> None:
     for layer in layers:
         state = _state(cache, layer)
-        if recipe_id.startswith("int3"):
+        if recipe_id.startswith("mixed_int3_mxfp4_low_error_"):
+            quantized = _quantize_mixed_int3_mxfp4_low_error(
+                state,
+                block_size=block_size,
+                int3_fraction=_parse_mixed_int3_fraction(recipe_id),
+            )
+        elif recipe_id.startswith("int3"):
             quantized = simulate_symmetric_int(state, bits=3, block_size=block_size).dequantized
         elif recipe_id.startswith("int8"):
             quantized = simulate_symmetric_int(state, bits=8, block_size=block_size).dequantized
@@ -263,6 +330,20 @@ def _candidate_recipe_specs(primary_layers: tuple[int, ...]) -> list[dict[str, A
             "control_type": "candidate_recipe",
             "layers": primary_layers,
             "scale_granularity": "per_block_absmax",
+        },
+        {
+            "recipe_id": "mixed_int3_mxfp4_low_error_10pct",
+            "precision": "mixed_int3_mxfp4_low_error_10pct",
+            "control_type": "candidate_recipe",
+            "layers": primary_layers,
+            "scale_granularity": "per_block_absmax_with_int3_mask",
+        },
+        {
+            "recipe_id": "mixed_int3_mxfp4_low_error_25pct",
+            "precision": "mixed_int3_mxfp4_low_error_25pct",
+            "control_type": "candidate_recipe",
+            "layers": primary_layers,
+            "scale_granularity": "per_block_absmax_with_int3_mask",
         },
         {
             "recipe_id": "int8_primary_state_block64",

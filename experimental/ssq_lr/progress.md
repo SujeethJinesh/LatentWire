@@ -214,3 +214,27 @@ Decision: **SSQ-LR IS WEAKENED, NOT GPU-READY**. S1b heterogeneity stays alive,
 but the next gate must be a new frozen sub-4-bit/native-packed state recipe
 that clears S2 with paired quality bounds. Do not promote the current MXFP4 or
 INT3 scouts to GPU.
+
+## 2026-05-07 S2b Mixed-Block Recipe Patch
+
+The highest-value Mac-side S2 follow-up is now a bounded recipe test rather
+than a gate change. The S2 scout supports two new candidate rows:
+`mixed_int3_mxfp4_low_error_10pct` and
+`mixed_int3_mxfp4_low_error_25pct`. For each recurrent state tensor, the
+allocator quantizes blocks with INT3 and MXFP4, stores the lowest INT3-error
+blocks as INT3, stores the remaining blocks as MXFP4, and counts both FP16
+scale bytes and a one-bit-per-block precision mask in `metadata_bytes`.
+
+This keeps the selector deployable: it uses only block-local quantization error
+against the current state tensor, not labels or downstream logits. The first
+gate question is whether a small INT3 fraction can push the MXFP4-like row over
+the preregistered `>=4x` byte threshold without reproducing the 12-prompt INT3
+argmax failure. If both mixed-block rows fail, the next bounded diagnostic is a
+single-layer S2 localization scout before freezing any layer-selective recipe.
+
+Scratch-only capability check: a one-prompt local run selected
+`mixed_int3_mxfp4_low_error_10pct` with `4.034x` counted state-memory reduction,
+zero BF16-argmax delta, and `0.00443` NLL-delta CI high. This only proves the
+new scout path is executable and byte-feasible on the current Mac cache; it is
+not promotable evidence. The actual S2b decision requires the frozen 12-prompt
+held-out replay packet.

@@ -207,6 +207,23 @@ argmax fidelity on at least one held-out prompt. The current conclusion is:
 S1b heterogeneity is real, but SSQ-LR does not yet have a promotable Mac-local
 state-quantization recipe.
 
+Highest-value next Mac-side S2 move:
+
+1. Run the mixed INT3/MXFP4 low-error block allocator now implemented in
+   `../shared/ssq_lr_s2_state_replay_scout.py`. This is a bounded recipe change,
+   not a gate relaxation: each state block is quantized both ways, the lowest
+   INT3-error blocks are stored as INT3, the remaining blocks use MXFP4, and the
+   row packet counts FP16 scale bytes plus a one-bit-per-block precision mask.
+   The deployable selector uses only state-tensor quantization error, not
+   downstream logits or labels. The 10% and 25% INT3 candidates should answer
+   whether the MXFP4 quality row can cross `>=4x` without falling to full INT3
+   quality.
+2. If the mixed-block allocator fails on the 12-prompt held-out scout, the next
+   bounded alternative is layer-localization: rerun S2 with single primary
+   layers and only then freeze a layer-selective mixed recipe. Do not lower the
+   `>=4x` threshold or treat native MXFP4 scale packing as free metadata without
+   a separate hardware-backed byte-accounting note.
+
 Regenerate it with:
 
 ```bash
