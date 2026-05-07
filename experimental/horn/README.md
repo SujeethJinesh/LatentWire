@@ -5,13 +5,14 @@ attention/SSM boundaries.
 
 ## Current Readiness
 
-Status: **WEAK CONTROL / H1a real screen failed**.
+Status: **DEMOTED CONTROL / H1a and H2 scouts failed**.
 
 Estimated completion:
 
-- **15%** as a positive-method paper: hypothesis, gates, packet checker,
-  trace-plan handoff, and one checker-passing resource-limited real H1a packet
-  are scaffolded, but the observed directional signal is weak.
+- **8%** as a positive-method paper: hypothesis, gates, packet checker,
+  trace-plan handoff, one checker-passing resource-limited real H1a packet, and
+  one H2 follow-up scout are scaffolded, but both observed directional signals
+  are weak.
 - **0%** as a systems-result paper: no precision allocation or native GPU
   validation exists.
 
@@ -34,10 +35,11 @@ pure-architecture controls.
 
 Current executable scope: H1a/H1 boundary statistics have the strict real trace
 packet builder/checker path. H2/H3 now have follow-up contract checks in
-`../shared/followup_gate_contracts.py`, but no H2/H3 model packets exist and no
+`../shared/followup_gate_contracts.py`. A resource-limited H2 scout exists and
+fails; it is not current evidence for a positive H2/H3 claim. No
 noise-propagation, precision-allocation, or cross-architecture claim is allowed
-until real H1a/H1 promotes and those contracts are filled from matched noisy
-replays plus pure-architecture controls.
+unless HORN is deliberately reopened with a full preregistered H2/H3 scope on
+more prompts/models.
 
 ## Current Mac Packet
 
@@ -100,6 +102,15 @@ plumbing rather than hidden-state proxies. It is still resource-limited
 evidence and does not promote H1a/H1. The weak magnitude-screen effect means
 HORN should remain a control branch unless H2 noise replay shows a larger
 directional drift.
+
+The current H2 noisy-continuation scout is
+`../shared/results/horn_h2_noise_replay_scout_20260507/`, decision
+`FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`. It is a contract-valid
+resource-limited follow-up packet, not H2 promotion: 20 rows, 2 prompts, 3
+seeds, paired units `6/6`, hook-off max delta `0.0`, H1-selected direction
+preserved, directional drift ratio `1.037`, paired lower bound `1.072`, and
+demotion recommendation `DEMOTE_HORN_STANDALONE_WEAK_H2`. This weak H2 result
+demotes HORN as a standalone branch.
 
 The exact H1a/H1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl`;
@@ -238,12 +249,25 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   --mode real --project horn
 ```
 
+Resource-limited H2 noisy-continuation scout:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.horn_h2_noise_replay_scout \
+  --prompt-limit 2 --max-input-tokens 2 --seeds 1,2,3 --noise-scale 0.05
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/shared/results/horn_h2_noise_replay_scout_20260507 \
+  --gate horn_h2
+```
+
+Expected decision:
+`FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`.
+
 ## GPU Rule
 
 No native performance or precision-allocation claim until H1--H3 pass and a
 directional recipe is frozen. The current real H1a packet fails with selected
-ratio `1.06`, so HORN must not be promoted to GPU from magnitude/kurtosis
-screening alone. The only reasonable next Mac action is a bounded H2
-noise-propagation replay with hook-off controls; if that also stays near
-`1.0`, keep HORN as a negative or control branch for SSQ-LR/HBSM rather than a
-standalone paper.
+ratio `1.06`, and the H2 scout also stays near null with directional drift
+ratio `1.037`. HORN must not be promoted to GPU as a standalone branch. Keep it
+as negative/control evidence for SSQ-LR/HBSM unless a future full H2/H3
+reopening has a new preregistered reason.

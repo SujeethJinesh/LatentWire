@@ -15,7 +15,7 @@ The current sprint ledger is `project_status_20260506.md`.
 |---|---|---|---|
 | `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
 | `ssq_lr/` | Mac S1b alive; S2 not yet promotable | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The post-hoc selected layers `0`, `12`, `18`, `30` reproduced on the frozen 12-prompt surface. The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. S2 replay scouts preserve short-surface fidelity but fail official S2 because honest MXFP4 scale-byte accounting is only `3.765x`--`3.938x`, below `4x` | Clear S2 with `>=4x` real state-memory reduction plus paired quality bounds, or defer SSQ-LR GPU until native packed-state measurement is unavoidable |
-| `horn/` | Weak control branch; H1a real screen failed | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06` | Do not GPU-promote HORN from H1a. Run only a bounded H2 noise replay on Mac if time remains; otherwise keep it as a negative/control branch |
+| `horn/` | Demoted control branch; H1a and H2 scouts failed | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06`. The H2 scout `shared/results/horn_h2_noise_replay_scout_20260507/` passes the follow-up contract but fails with directional drift ratio `1.037`, paired units `6/6`, hook-off max delta `0.0`, and demotion `DEMOTE_HORN_STANDALONE_WEAK_H2` | Do not GPU-promote HORN standalone. Keep it as negative/control evidence unless a deliberately reopened full H2/H3 run has new preregistered scope |
 | `hbsm/` | Mac gate scaffolded; Granite Tiny cached; novelty is narrow | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, required controls, and per-prompt measured-drift top-decile derivation; `shared/results/hbsm_local_sensitivity_20260507/` now contains a checker-passing 56-row resource-limited Granite Tiny B1 packet from one 8-token prompt, decision `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY` | Full B1 sensitivity packet across enough prompts/layers/models, then B2 cheap-predictor split; smoke result is weak and non-promoting |
 | `thoughtflow_fp8/` | Positive method stopped; falsification paper active | Preregistered sparse-cache signal ladder, oracle/headroom diagnostics, fresh-surface failures, provenance-locked diagnostic packet with upstream input hashes and clean-path generation guard | Paper-only camera-ready polish |
 
@@ -82,13 +82,23 @@ Shared Mac-local utilities live in `shared/`:
   `shared/results/ssq_lr_s2_state_replay_scout_block256_20260507/`; both are
   informational non-promoting failures of the official S2 contract because
   honest scale-byte accounting stays below `4x` state-memory reduction.
-  HORN uses 12 prompts over all 8 planned Granite Tiny
-  boundaries and failed H1a with hook-captured right-layer input tensors and
-  ratio `1.06`. These are plumbing packets, not promotable gate evidence.
+  HORN uses 12 prompts over all 8 planned Granite Tiny boundaries and failed
+  H1a with hook-captured right-layer input tensors and ratio `1.06`. The H2
+  noisy-continuation scout is
+  `shared/results/horn_h2_noise_replay_scout_20260507/`, decision
+  `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`; it is contract-valid but
+  weak (`1.037` directional drift ratio), so HORN is demoted as a standalone
+  branch. These are plumbing/demotion packets, not promotable gate evidence.
 - `ssq_lr_all_layer_scout.py`: metrics-only all-recurrent-layer scout that
   avoids committing duplicated tensor packets. Current artifact:
   `shared/results/ssq_lr_all_layer_scout_20260507/`. It is not a
   tensor-provenance gate packet and cannot promote S1.
+- `horn_h2_noise_replay_scout.py`: resource-limited HORN H2
+  noise-propagation scout from the failed Granite Tiny H1a packet. Current
+  artifact: `shared/results/horn_h2_noise_replay_scout_20260507/`, decision
+  `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`; it passes
+  `followup_gate_contracts --gate horn_h2` but the observed directional drift
+  ratio is `1.037`, so it demotes HORN rather than reviving it.
 - `hbsm_local_sensitivity_runner.py`: manifest-driven resource-limited HBSM B1
   forward-sensitivity runner. Current artifact:
   `shared/results/hbsm_local_sensitivity_20260507/`, decision
@@ -147,8 +157,9 @@ Current resource-limited local capture packet:
    S2: produce an honest state-packing/byte-accounting recipe that clears
    `>=4x` effective state-memory reduction with paired quality bounds, or move
    only that packing question to the 5090 when the Mac cannot emulate it.
-3. **HORN**: keep as a weak control unless a follow-up H2 noise-propagation
-   replay shows larger directional drift than the H1a magnitude screen.
+3. **HORN**: demoted as a standalone branch after weak H1a and H2 scouts. Do
+   not spend GPU on HORN unless a future full H2/H3 reopening has a new reason
+   and preregistered scope.
 4. **HBSM**: decide whether the weak Granite Tiny smoke packet justifies a full
    B1 run; if yes, scale the same runner to the frozen 12-prompt/layer matrix,
    otherwise fold HBSM into HORN/SSQ-LR as a negative control.

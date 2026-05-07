@@ -14,8 +14,9 @@
 \begin{abstract}
 This is a living paper shell for a preregistered Mac-first experiment. HORN
 tests whether attention-to-SSM and SSM-to-attention boundaries differ in
-outlier magnitude and quantization-noise sensitivity. No positive result or
-native systems claim is made yet.
+outlier magnitude and quantization-noise sensitivity. The current Granite Tiny
+H1a and H2 scouts are negative, so no positive result or native systems claim is
+made.
 \end{abstract}
 
 \section{Current Gate}
@@ -31,10 +32,10 @@ statistics. H2 and H3 now have executable follow-up contracts in
 \texttt{experimental/shared/followup\_gate\_contracts.py}: they require a fixed
 H1-selected direction, exact noise side and noise scale basis, paired
 clean/noisy rows, hook-off controls, and pure-attention plus pure-Mamba control
-rows. These contracts are not model evidence: no noise-propagation,
-precision-allocation, or cross-architecture claim is allowed until real H1a/H1
-promotes and the H2/H3 contracts are filled from matched noisy replays and
-pure-architecture controls.
+rows. The current resource-limited H2 scout satisfies the H2 contract but
+fails the gate. No noise-propagation, precision-allocation, or
+cross-architecture claim is allowed unless the branch is reopened with a fuller
+preregistered H2/H3 scope.
 
 \section{Mac Artifact Status}
 
@@ -45,18 +46,24 @@ selected-direction control ratio 0.247, producing
 \texttt{SCHEMA\_REHEARSAL\_NOT\_PROMOTABLE\_SYNTHETIC\_HORN\_H1A}. This is
 synthetic-only: it is not model evidence, not a quantization-noise result, and
 not GPU evidence.
-The metadata-only model eligibility packet identifies live hybrid targets and
-records architecture-map hashes for admissible packets, but no target weights
-are cached repo-locally, so HORN has not yet produced real boundary rows on the
-current Mac.
+The current Granite Tiny H1a packet uses 12 real prompts over all 8 planned
+boundaries with right-layer input hooks and passes the real checker in
+resource-limited non-promoting mode, but its selected ratio is only 1.06. The
+current H2 scout uses 2 prompts, 3 seeds, paired boundary-direction noisy
+continuations, and hook-off controls. It is contract-valid with paired units
+6/6 and hook-off max delta 0.0, but its directional drift ratio is only 1.037,
+producing
+\texttt{FAIL\_REAL\_HORN\_H2\_DIRECTIONAL\_NOISE\_PROPAGATION}. This demotes
+HORN as a standalone branch.
 
 \section{Next Evidence}
 
-The next admissible row is a real H1a boundary activation dump from a hybrid model.
-HORN remains a control branch unless real H1/H2/H3 gates show consistent
-directional asymmetry that pure-attention and pure-Mamba controls do not share.
-Pure-architecture controls are an H3 requirement, not a blocker for the first
-H1a boundary-activation packet.
+The next admissible action is not GPU validation. HORN remains negative/control
+evidence for SSQ-LR/HBSM unless a future full H2/H3 reopening is
+preregistered with more prompts, more models, and a clear reason why the current
+near-null H2 scout should be overturned. Pure-architecture controls remain an
+H3 requirement for any future revival.
+The paper is not camera-ready as a method or measurement paper until real H1--H3 evidence exists.
 
 \section{Admissible Real Packet}
 
@@ -132,6 +139,8 @@ Pure-architecture control & Prevents generic outlier claims. \\
 \section{Reviewer Packet}
 
 The reviewer-facing claim boundary is tracked in
-\url{experimental/horn/paper/reviewer_pack.md}. It records that HORN is not camera-ready as a method or measurement paper until real H1--H3 evidence exists.
+\url{experimental/horn/paper/reviewer_pack.md}. It records that HORN is not
+camera-ready as a standalone method or measurement paper and should currently
+serve only as negative/control evidence. No native systems claim is made yet.
 
 \end{document}

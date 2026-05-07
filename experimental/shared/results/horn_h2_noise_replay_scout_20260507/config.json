@@ -1,0 +1,25 @@
+{
+  "command": "python -m experimental.shared.horn_h2_noise_replay_scout",
+  "forward_seconds": 119.43845191504806,
+  "gate_name": "horn_h2",
+  "load_seconds": 2.1205628749448806,
+  "max_input_tokens": 2,
+  "model_id": "ibm-granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "noise_scale": 0.05,
+  "preregistration_sha256": "sha256:fe71d4c0ecc117412731c7e5c30e866023dff3f06070355241438ecc0c6254f2",
+  "project": "horn",
+  "prompt_limit": 2,
+  "prompt_source": "/Users/sujeethjinesh/Desktop/LatentWire/experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl",
+  "resource_limit_note": "Mac-local HORN H2 scout over short Granite Tiny prompts; useful for demotion or follow-up planning only, not a promotable H2 packet.",
+  "seed_list": [
+    1,
+    2,
+    3
+  ],
+  "served_model_id": "ibm-granite/granite-4.0-h-tiny",
+  "source_gate_packet_sha256": "sha256:f6588496123def548e5363cc5f0db061f198ee581f92886d4f5e3e4197e07ac0",
+  "source_h1a_decision": "RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN",
+  "source_h1a_selected_ratio": 1.0617580690558783,
+  "tokenizer_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
+}

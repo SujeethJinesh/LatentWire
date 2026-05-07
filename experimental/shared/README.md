@@ -57,6 +57,13 @@ Use them for preregistered Mac gates only.
   failures because honest scale-byte accounting stays below the preregistered
   `4x` memory-reduction threshold. The scouts are useful information-content
   checks only; they are not quality, GPU, or throughput evidence.
+- `horn_h2_noise_replay_scout.py`: resource-limited HORN H2
+  noisy-continuation replay from the failed Granite Tiny H1a packet. Current
+  artifact: `results/horn_h2_noise_replay_scout_20260507/`, decision
+  `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`; it passes the H2 follow-up
+  contract with complete paired units and hook-off max delta `0.0`, but the
+  directional drift ratio is only `1.037`, so this demotes HORN as a
+  standalone branch instead of promoting H2.
 - `hybrid_architecture_maps.py`: explicit config-derived boundary maps used to
   validate real trace packet provenance.
 - `hybrid_model_eligibility.py`: metadata-only Hugging Face size/cache
