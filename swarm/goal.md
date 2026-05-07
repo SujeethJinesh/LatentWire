@@ -131,3 +131,82 @@ If budget runs out before the above. In that case, the wrap-up writes swarm/fina
 
 - Write a "progress note" to `swarm/progress_<date_hour>.md` every 4 hours containing: current entry, what's done, what's running, expected next 4 hours, any concerns.
 - The final `swarm/final_report.md` must include: paper-by-paper status, GPU hours actually used per entry, total wall-clock, total dollar spend estimate (~$1.89/hr), any preregistration that was killed and why, any committee feedback that's still unresolved.
+
+## Persistence and pivot behavior — keep digging for positive methods
+
+The objective is to ship at least one positive-method paper to COLM 2026. A positive-method paper proposes a new method, shows it works, and explains why. This is what publishes at top venues.
+
+ThoughtFlow-FP8 is a separate case: it is a falsification paper that is already drafted and represents the safe submission. Everything else in the portfolio is being driven toward positive-method outcomes.
+
+The default ranking of outcomes for this swarm, from best to worst:
+
+1. Multiple positive-method papers from different branches.
+2. One strong positive-method paper plus the ThoughtFlow falsification paper.
+3. The ThoughtFlow falsification paper alone, with documentation of why other branches did not yield positive methods despite genuine effort.
+4. No submission — last-resort outcome, requires explicit justification in swarm/final_report.md.
+
+Outcomes 1-3 all count as goal-achieved or partial-success. Outcome 4 is acceptable only when evidence genuinely does not support any positive-method paper after the effort floor below has been exhausted.
+
+### When a queue entry kills
+
+A kill is data, not a conclusion. After writing the KILL manifest, before moving to the next queue entry, spawn a "diagnostic subagent" that produces diagnostic.md in the killed project's directory. The diagnostic must answer:
+
+- What was the proximate failure? Distinguish between (a) the hypothesis was wrong, (b) the experimental setup was insufficient to detect the effect, (c) infrastructure issue, (d) prereg ambiguity.
+- If (b): what setup change would give the original hypothesis a fair test? Smaller granularity, different decode positions, layer-stratified analysis, different model class. If a fair retest is feasible, propose it as a fresh preregistration with new thresholds. This is not a re-run of the killed experiment; it is a new experiment with a related but distinct hypothesis.
+- If (a): the data probably contains hints about what *would* work. Examine the result packet for unexpected patterns. Examples: "outliers don't migrate but they cluster" suggests a clustering-based method. "States don't age uniformly but layer-13 states age strongly" suggests a layer-targeted method. List up to 3 alternative positive hypotheses informed by what the data actually showed. Each requires a fresh preregistration with new thresholds and a clear positive-method gate.
+- For each alternative hypothesis, evaluate plausibility: how likely is this to yield a positive result, what would the resulting paper claim, and is it competitive at COLM 2026.
+
+If the diagnostic identifies a plausible alternative positive hypothesis, author a fresh preregistration for it (new file, new branch directory, new gate criteria), draft runner/checker, and add to the queue with priority such that it runs before lower-priority original entries. Pivot depth limit: do not chain pivots beyond depth 2 from any original branch (a pivot of a pivot is fine; a pivot of a pivot of a pivot is not).
+
+Do not spawn paper iteration on a kill itself. Papers are only drafted for entries that PASS their gates. The diagnostic.md is internal documentation, not a paper draft.
+
+### When an entry hits a hard infra wall
+
+Before declaring FAIL_INFRA, exhaust this checklist:
+
+- Web-search the exact error message with the version of every relevant tool (vllm, torch, transformers, triton, cuda).
+- Check the upstream issue tracker for that tool. If a known fix exists, apply it (per the self-unblocking section's blast-radius evaluation).
+- Try alternative configurations: smaller batch size, different attention backend, eager mode instead of cudagraph, FP8 instead of BF16 if supported.
+- Try a different model in the same architectural class if the original is buggy in vllm. Document the substitution and its scientific equivalence to the preregistration.
+- Spawn a fresh subagent with no context to attempt the same task — sometimes context contamination causes loops.
+
+Only after the checklist is exhausted does FAIL_INFRA count toward the three-strikes stop rule.
+
+### Forbidden pivots (these are p-hacking, never do these)
+
+- Re-running a killed experiment with different random seeds hoping for better statistics.
+- Loosening any preregistered threshold to convert a kill into a pass.
+- Substituting models or datasets after seeing kill results, without a fresh preregistration.
+- Cherry-picking a subset of layers, positions, or prompts that happen to show a positive effect.
+- Recharacterizing a killed hypothesis as a "different finding" without a fresh preregistration with new thresholds set before observing the new data.
+- Pivoting to a method that has already been killed elsewhere in the portfolio.
+- Writing a paper that omits the failure modes documented in diagnostic.md or committee_reviews.
+
+If a subagent proposes any of the above, the supervising agent kills the proposal and logs the attempt to swarm/integrity_violations.md. Three integrity violations pause /goal and surface to human.
+
+### Effort floor before declaring goal-unmet
+
+Before declaring goal-unmet with zero positive-method camera-ready candidates, you must have:
+
+- Run every original Phase 0 entry in the queue (not just stopped at the first kill).
+- Authored a diagnostic.md for every killed entry.
+- Pursued at least one pivot per killed branch where the diagnostic identified a plausible alternative positive hypothesis.
+- Continued pivoting until either a positive method emerges OR the gpu_hours_used budget is genuinely close to exhaustion (within 10 hours of the 160-hour limit).
+- Written swarm/final_report.md with explicit justification for why no positive-method submission is possible despite the pivots attempted.
+
+ThoughtFlow's falsification paper does not count toward the positive-method requirement; it is a separate path. If ThoughtFlow is the only paper that ships, that is outcome 3 above (acceptable but not optimal).
+
+Anything less than this effort floor means /goal continues working. Stopping early without exhausting the effort floor is a failure mode worse than a genuine negative outcome.
+
+### Quality bar for positive-method papers
+
+A positive-method paper must satisfy all of:
+
+- The method is novel (web-search audit confirms no 2025/2026 paper has proposed it).
+- The method works on the primary model with measurable improvement past a preregistered threshold.
+- The improvement reproduces on at least one cross-family control.
+- The paper has a clear story: what the method does, why it works, when it fails.
+- Committee review scores ≥7/10 from all three reviewers.
+- Reproducibility audit passes.
+
+Do not ship a paper that fails any of these. A paper that ships and gets desk-rejected is worse for your reputation than no submission. Better to extend the swarm by another pivot cycle than to ship a weak paper.
