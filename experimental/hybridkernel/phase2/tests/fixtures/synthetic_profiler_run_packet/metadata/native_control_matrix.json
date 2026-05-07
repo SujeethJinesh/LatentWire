@@ -5,6 +5,14 @@
     "not profiler evidence",
     "not GPU evidence"
   ],
+  "request_shape": {
+    "batch_size": 1,
+    "prefill_tokens": 128,
+    "decode_tokens": 64,
+    "requests": 16,
+    "dtype": "bfloat16",
+    "cuda_graph_enabled": true
+  },
   "rows": [
     {
       "row_role": "primary_hybrid",

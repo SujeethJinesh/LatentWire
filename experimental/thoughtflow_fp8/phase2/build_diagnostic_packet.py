@@ -74,7 +74,10 @@ ARTIFACTS = [
 
 ARTIFACT_COMMANDS = {
     "frozen_sparse_cache_probe": (
-        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py"
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py "
+        "--model-name distilgpt2 "
+        "--model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa "
+        "--keep-fraction 0.20 --max-traces 74 --max-length 96 --continuation-tokens 24"
     ),
     "rdu_robustness_diagnostic": (
         "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py"
@@ -89,10 +92,18 @@ ARTIFACT_COMMANDS = {
         "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.py"
     ),
     "psi_fresh_surface": (
-        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py"
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py "
+        "--model-name distilgpt2 "
+        "--model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa "
+        "--keep-fraction 0.20 --max-traces 70 --max-length 96 --continuation-tokens 24 "
+        "--input-jsonl results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl"
     ),
     "vwac_fresh_surface": (
-        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py"
+        "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py "
+        "--model-name distilgpt2 "
+        "--model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa "
+        "--keep-fraction 0.20 --max-traces 70 --max-length 96 --continuation-tokens 24 "
+        "--input-jsonl results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl"
     ),
 }
 
@@ -473,7 +484,7 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
                 "Then inspect:",
                 "",
                 "- `manifest.json` for git state, source metadata, saved-artifact hashes, and",
-                "  input-hash provenance where available.",
+                "  tracked input-hash provenance for the saved diagnostic packet.",
                 "- `falsification_table.md` for the consumed signal ladder and stop decisions.",
                 "- `../../current_decision_manifest_20260506.md` for the current branch-level",
                 "  claim boundary.",

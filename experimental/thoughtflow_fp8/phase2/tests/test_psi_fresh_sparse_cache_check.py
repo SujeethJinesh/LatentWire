@@ -1,4 +1,5 @@
 import torch
+import inspect
 
 from experimental.thoughtflow_fp8.phase2 import psi_fresh_sparse_cache_check as psi
 
@@ -56,3 +57,48 @@ def test_promotion_fails_when_psi_is_not_best_compressed():
 
     assert decision["promotion_pass"] is False
 
+
+def test_run_accepts_explicit_model_revision_for_replay():
+    signature = inspect.signature(psi.run)
+
+    assert "model_revision" in signature.parameters
+    assert signature.parameters["model_revision"].default == psi.DISTILGPT2_REVISION
+
+
+def test_markdown_reports_model_and_tokenizer_revision(tmp_path):
+    result = {
+        "status": "KILLED",
+        "model_name": "distilgpt2",
+        "model_revision": "abc123",
+        "tokenizer_revision": "abc123",
+        "policy_name": psi.PSI_POLICY_NAME,
+        "n_scored_traces": 0,
+        "keep_fraction": 0.2,
+        "max_length": 96,
+        "continuation_tokens": 24,
+        "input_paths": [],
+        "summary": {"full_cache": {"nll": 1.0, "n_traces": 0, "keep_rate": 1.0, "delta_nll_vs_full": 0.0}},
+        "decision": {
+            "best_compressed_policy": "none",
+            "margin_vs_rkv_like": 0.0,
+            "paired_delta_vs_rkv_like": {},
+            "margin_vs_thin_kv_like": 0.0,
+            "paired_delta_vs_thin_kv_like": {},
+            "promotion_pass": False,
+        },
+        "psi_topk_telemetry": {
+            "aggregate": {
+                "mean_surprisal": 0.0,
+                "mean_kept_surprisal": 0.0,
+                "max_surprisal": 0.0,
+                "nonzero_tokens": 0.0,
+            }
+        },
+    }
+
+    output = tmp_path / "psi.md"
+    psi.write_markdown(result, output)
+
+    text = output.read_text(encoding="utf-8")
+    assert "model revision: `abc123`" in text
+    assert "tokenizer revision: `abc123`" in text

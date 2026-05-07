@@ -10,6 +10,7 @@
   "distribution_effect_floor_pass": true,
   "distribution_gate_pass": true,
   "distribution_passing_layer_count": 6,
+  "evidence_kind": "schema_rehearsal",
   "gate_name": "ssq_lr_s1_state_distribution_heterogeneity",
   "gate_pass": true,
   "gate_status": "PASS_REAL_S1_HETEROGENEITY",
@@ -25,6 +26,7 @@
     "final_minus_128",
     "prefill_end"
   ],
+  "promotable": false,
   "prompt_count": 12,
   "required_passing_layer_count": 3,
   "row_count": 288,

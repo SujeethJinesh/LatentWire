@@ -12,6 +12,7 @@ import torch
 
 try:
     from .frozen_sparse_cache_probe import (
+        DISTILGPT2_REVISION,
         FROZEN_SPARSE_POLICY_NAME,
         _frozen_policies,
         _load_model_for_prefill_attentions,
@@ -21,6 +22,7 @@ try:
     from .run_real_trace_retention import OUT_DIR, ROOT
 except ImportError:  # pragma: no cover - supports direct script execution.
     from frozen_sparse_cache_probe import (
+        DISTILGPT2_REVISION,
         FROZEN_SPARSE_POLICY_NAME,
         _frozen_policies,
         _load_model_for_prefill_attentions,
@@ -145,6 +147,7 @@ def run(
     max_length: int,
     continuation_tokens: int,
     trace_paths: list[Path] | None = None,
+    model_revision: str = DISTILGPT2_REVISION,
 ) -> dict[str, object]:
     cache_dir = ROOT / "experimental/thoughtflow_fp8/.debug/hf_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -153,8 +156,8 @@ def run(
 
     from transformers import AutoTokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = _load_model_for_prefill_attentions(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, revision=model_revision)
+    model = _load_model_for_prefill_attentions(model_name, model_revision)
     model.eval()
     resolved_trace_paths = _resolve_input_paths(trace_paths or [])
     prepared = _prepare_rows(tokenizer, max_traces, max_length, continuation_tokens, resolved_trace_paths)
@@ -221,6 +224,8 @@ def run(
     decision = _promotion_decision(summary, paired_vs_rkv, paired_vs_thin)
     return {
         "model_name": model_name,
+        "model_revision": model_revision,
+        "tokenizer_revision": model_revision,
         "input_paths": [_path_label(path) for path in resolved_trace_paths],
         "keep_fraction": keep_fraction,
         "max_traces": max_traces,
@@ -253,6 +258,8 @@ def write_markdown(result: dict[str, object], output_path: Path = DEFAULT_MD_OUT
         f"Status: **{result['status']}**",
         "",
         f"- model: `{result['model_name']}`",
+        f"- model revision: `{result['model_revision']}`",
+        f"- tokenizer revision: `{result['tokenizer_revision']}`",
         f"- policy: `{result['policy_name']}`",
         f"- scored traces: {result['n_scored_traces']}",
         f"- keep fraction: {result['keep_fraction']:.2f}",
@@ -304,6 +311,7 @@ def main() -> None:
     parser.add_argument("--max-traces", type=int, default=70)
     parser.add_argument("--max-length", type=int, default=96)
     parser.add_argument("--continuation-tokens", type=int, default=24)
+    parser.add_argument("--model-revision", default=DISTILGPT2_REVISION)
     parser.add_argument("--input-jsonl", action="append", type=Path, default=[])
     parser.add_argument("--json-output", type=Path, default=DEFAULT_JSON_OUTPUT)
     parser.add_argument("--md-output", type=Path, default=DEFAULT_MD_OUTPUT)
@@ -316,6 +324,7 @@ def main() -> None:
         args.max_length,
         args.continuation_tokens,
         trace_paths=args.input_jsonl,
+        model_revision=args.model_revision,
     )
     args.json_output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     write_markdown(result, args.md_output)
@@ -324,4 +333,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

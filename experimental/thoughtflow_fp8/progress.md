@@ -478,8 +478,9 @@ sparse-cache surface with matched-budget quality wins, same/cross-family
 separation, paired uncertainty, and oracle/headroom diagnostics. The status
 block now says Triton interpreter correctness passes locally while native
 GPU/FP8 performance remains absent. The paper no longer calls the sparse-cache
-probe "finally" and lists the workshop shell, README, and progress ledger as
-handoff artifacts.
+probe "finally". A later hygiene pass removed the historical workshop shell
+from the camera-ready artifact list because it contains revived-positive
+planning language that is not part of the stopped-branch claim.
 
 Decision: **NO ADDITIONAL MAC-SIDE THOUGHTFLOW EXPERIMENTS OR METHOD WORK
 REMAIN FOR CURRENT BRANCHES**. Any evidence improvement requires a genuinely

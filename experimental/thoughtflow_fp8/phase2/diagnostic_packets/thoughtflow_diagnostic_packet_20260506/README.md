@@ -16,7 +16,7 @@ with explicit hashes for the saved decision artifacts.
 Then inspect:
 
 - `manifest.json` for git state, source metadata, saved-artifact hashes, and
-  input-hash provenance where available.
+  tracked input-hash provenance for the saved diagnostic packet.
 - `falsification_table.md` for the consumed signal ladder and stop decisions.
 - `../../current_decision_manifest_20260506.md` for the current branch-level
   claim boundary.

@@ -122,10 +122,8 @@ source .venv_gpu/bin/activate
 python -m pip install --upgrade pip
 export VLLM_VERSION=...  # fill exact release used on the GPU node
 export RUN_ID=...        # e.g., 20260507_5090_granite_small
-mkdir -p "experimental/hybridkernel/phase2/native_runs/${RUN_ID}/metadata"
 python -m pip install "vllm==${VLLM_VERSION:?set VLLM_VERSION}"
 python -m pip install -r experimental/hybridkernel/requirements-gpu-checkers.txt
-python -m pip freeze | tee "experimental/hybridkernel/phase2/native_runs/${RUN_ID}/metadata/environment_freeze.txt"
 
 nvidia-smi
 nsys --version
@@ -158,6 +156,7 @@ PACKET_JSON=$(python "$HWK_ROOT/phase2/create_native_run_packet.py" \
   --model "$MODEL")
 echo "$PACKET_JSON"
 export HWK_RUN=$(python -c 'import json,sys; print(json.load(sys.stdin)["run_dir"])' <<< "$PACKET_JSON")
+python -m pip freeze | tee "$HWK_RUN/metadata/environment_freeze.txt"
 ```
 
 Expected packet path:

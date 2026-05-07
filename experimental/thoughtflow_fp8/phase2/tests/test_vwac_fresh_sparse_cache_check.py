@@ -1,4 +1,5 @@
 import torch
+import inspect
 
 from experimental.thoughtflow_fp8.phase2 import vwac_fresh_sparse_cache_check as vwac
 
@@ -43,3 +44,10 @@ def test_vwac_promotion_requires_best_compressed_row():
     decision = vwac._promotion_decision(summary, paired_vs_rkv, paired_vs_thin)
 
     assert decision["promotion_pass"] is False
+
+
+def test_run_accepts_explicit_model_revision_for_replay():
+    signature = inspect.signature(vwac.run)
+
+    assert "model_revision" in signature.parameters
+    assert signature.parameters["model_revision"].default == vwac.DISTILGPT2_REVISION

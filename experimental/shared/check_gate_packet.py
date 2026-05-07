@@ -1377,6 +1377,11 @@ def validate_gate_packet(
         claim_boundary = [str(item) for item in summary.get("claim_boundary", [])]
         if str(summary.get("surface", "")).startswith("synthetic") and "synthetic-only" not in claim_boundary:
             errors.append("synthetic packet must include synthetic-only claim boundary")
+        if _schema_rehearsal(config):
+            if summary.get("evidence_kind") != "schema_rehearsal":
+                errors.append("schema-rehearsal packet summary evidence_kind must be schema_rehearsal")
+            if summary.get("promotable") is not False:
+                errors.append("schema-rehearsal packet summary promotable must be false")
 
     if resolved_mode == "real":
         for name in REAL_REQUIRED_FILES:

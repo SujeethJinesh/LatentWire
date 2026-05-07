@@ -165,6 +165,8 @@ def run_gate(*, seed: int = 20260506, output_dir: Path = DEFAULT_OUTPUT) -> dict
         "seed": seed,
         "surface": "hbsm_b1_real_schema_rehearsal",
         "decision": decision,
+        "evidence_kind": "schema_rehearsal",
+        "promotable": False,
         "row_count": len(rows),
         "rows": rows,
         "claim_boundary": [

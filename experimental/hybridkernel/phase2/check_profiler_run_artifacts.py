@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[3]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
+from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze, render_markdown
 
 
 REQUIRED_FILES = [
@@ -1064,8 +1064,8 @@ def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[
         errors.append("native_control_matrix.json must contain non-empty rows")
         return {}
     request_shape = payload.get("request_shape") if isinstance(payload, dict) else None
-    if request_shape is not None and not isinstance(request_shape, dict):
-        errors.append("native_control_matrix.json request_shape must be an object when present")
+    if not isinstance(request_shape, dict):
+        errors.append("native_control_matrix.json request_shape must be an object")
         request_shape = None
     if isinstance(request_shape, dict):
         for field in (
@@ -1963,6 +1963,8 @@ def check_run_artifacts(
             errors.append("profiler_analysis_gate.md missing gate title")
         if computed_analysis is not None and str(computed_analysis["status"]) not in analysis_md:
             errors.append("profiler_analysis_gate.md status does not match profiler_metrics.json")
+        if computed_analysis is not None and analysis_md != render_markdown(computed_analysis):
+            errors.append("profiler_analysis_gate.md does not match profiler_metrics.json")
 
     status = "FAIL" if errors else "PASS"
     return {

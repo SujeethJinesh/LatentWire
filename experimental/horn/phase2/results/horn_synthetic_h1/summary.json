@@ -11,6 +11,7 @@
     "not GPU evidence"
   ],
   "decision": "SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A",
+  "evidence_kind": "schema_rehearsal",
   "gate_name": "horn_h1a_single_model_directional_asymmetry_screen",
   "gate_pass": true,
   "gate_status": "PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN",
@@ -20,6 +21,7 @@
   "non_boundary_direction_count": 2,
   "permuted_direction_count": 2,
   "permuted_direction_ratio": 0.24729241877256322,
+  "promotable": false,
   "prompt_count": 12,
   "row_count": 72,
   "rows": [

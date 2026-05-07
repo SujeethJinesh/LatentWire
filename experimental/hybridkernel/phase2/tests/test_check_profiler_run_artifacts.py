@@ -5,7 +5,7 @@ import shutil
 import hashlib
 from pathlib import Path
 
-from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
+from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze, render_markdown
 from experimental.hybridkernel.phase2.check_profiler_run_artifacts import (
     DEFAULT_CROSS_FAMILY_MODEL,
     READOUT_MARKERS,
@@ -332,8 +332,7 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         encoding="utf-8",
     )
     (run_dir / "profiler_analysis_gate.md").write_text(
-        "# HybridKernel Profiler Analysis Gate\n\n"
-        f"Status: **{analysis['status']}**\n",
+        render_markdown(analysis),
         encoding="utf-8",
     )
 
@@ -402,8 +401,7 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
         encoding="utf-8",
     )
     (run_dir / "profiler_analysis_gate.md").write_text(
-        "# HybridKernel Profiler Analysis Gate\n\n"
-        f"Status: **{analysis['status']}**\n",
+        render_markdown(analysis),
         encoding="utf-8",
     )
 
@@ -535,8 +533,7 @@ def _add_replacement_cross_family_rows(
         encoding="utf-8",
     )
     (run_dir / "profiler_analysis_gate.md").write_text(
-        "# HybridKernel Profiler Analysis Gate\n\n"
-        f"Status: **{analysis['status']}**\n",
+        render_markdown(analysis),
         encoding="utf-8",
     )
 
@@ -715,8 +712,7 @@ def test_primary_gate_clear_without_controls_stays_audit_only(tmp_path: Path) ->
         encoding="utf-8",
     )
     (tmp_path / "profiler_analysis_gate.md").write_text(
-        "# HybridKernel Profiler Analysis Gate\n\n"
-        f"Status: **{analysis['status']}**\n",
+        render_markdown(analysis),
         encoding="utf-8",
     )
 
@@ -897,8 +893,7 @@ def test_no_boundary_signal_kill_packet_allows_missing_ncu(tmp_path: Path) -> No
         encoding="utf-8",
     )
     (tmp_path / "profiler_analysis_gate.md").write_text(
-        "# HybridKernel Profiler Analysis Gate\n\n"
-        f"Status: **{analysis['status']}**\n",
+        render_markdown(analysis),
         encoding="utf-8",
     )
 
@@ -1174,8 +1169,7 @@ def test_rejects_client_replay_batch_size_mismatch(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     (tmp_path / "profiler_analysis_gate.md").write_text(
-        "# HybridKernel Profiler Analysis Gate\n\n"
-        f"Status: **{analysis['status']}**\n",
+        render_markdown(analysis),
         encoding="utf-8",
     )
 
@@ -1214,8 +1208,7 @@ def test_accepts_batch_replay_with_per_sample_prefill_tokens(tmp_path: Path) -> 
         encoding="utf-8",
     )
     (tmp_path / "profiler_analysis_gate.md").write_text(
-        "# HybridKernel Profiler Analysis Gate\n\n"
-        f"Status: **{analysis['status']}**\n",
+        render_markdown(analysis),
         encoding="utf-8",
     )
 
@@ -1768,6 +1761,19 @@ def test_rejects_metric_request_shape_outside_native_control_matrix(tmp_path: Pa
     assert any("request_shape does not match" in error for error in result["errors"])
 
 
+def test_requires_native_control_matrix_request_shape(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    control_matrix_path = tmp_path / "metadata/native_control_matrix.json"
+    control_matrix = json.loads(control_matrix_path.read_text(encoding="utf-8"))
+    control_matrix.pop("request_shape")
+    control_matrix_path.write_text(json.dumps(control_matrix) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path, require_full_matrix=True, require_native_artifacts=False)
+
+    assert result["status"] == "FAIL"
+    assert any("request_shape must be an object" in error for error in result["errors"])
+
+
 def test_rejects_cuda_graph_state_outside_native_control_matrix(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     metrics_path = tmp_path / "profiler_metrics.json"
@@ -1834,6 +1840,22 @@ def test_rejects_stale_profiler_analysis_rows(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("rows do not match" in error for error in result["errors"])
+
+
+def test_rejects_stale_profiler_analysis_markdown(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    analysis_md_path = tmp_path / "profiler_analysis_gate.md"
+    analysis_md_path.write_text(
+        "# HybridKernel Profiler Analysis Gate\n\n"
+        "Status: **WEAKLY ALIVE: profiler evidence is nonzero but below the prototype gate.**\n\n"
+        "Stale copied table omitted the computed model summary.\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("profiler_analysis_gate.md does not match" in error for error in result["errors"])
 
 
 def test_synthetic_fixture_documents_complete_packet_shape(tmp_path: Path) -> None:

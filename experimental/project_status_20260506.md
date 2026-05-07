@@ -382,3 +382,27 @@ Top-level killed markers:
 5. ThoughtFlow: continue paper-only copyedit and human review around the
    falsification-methodology contribution; no new experiments in the current
    branch.
+
+## 2026-05-07 Additional Mac-Side Hardening
+
+- HybridKernel: the native artifact checker now requires
+  `metadata/native_control_matrix.json` to include a filled global
+  `request_shape`; metric rows whose batch/dtype/CUDA-graph fields do not match
+  that shape fail the packet. The checker also treats
+  `profiler_analysis_gate.md` as generated evidence: it must exactly match the
+  recomputed profiler analysis, not merely contain the same status string. The
+  README quickstart now records package freeze metadata inside `$HWK_RUN`, and
+  the paper scaffold invokes the checker with `--require-full-matrix`.
+- SSQ-LR/HORN/HBSM: synthetic schema-rehearsal packets now write
+  `evidence_kind: schema_rehearsal` and `promotable: false`; the shared packet
+  checker rejects rehearsal summaries that try to look promotable even when the
+  evaluator `gate_status` is a pass-like string.
+- ThoughtFlow: PSI/VWAC fresh-surface replay scripts now accept a pinned
+  `--model-revision`, pass it to both tokenizer and model loading, and record
+  model/tokenizer revisions in future artifacts. The current paper and
+  diagnostic packet readouts now cite the current RDU preregistration hash
+  prefix `c49da7df` and no longer list the historical workshop shell as a
+  camera-ready artifact.
+- Verification: default in-scope suite is `317 passed, 1 skipped, 2 warnings in
+  7.84s`; the skipped HybridKernel opt-in Triton CPU-backend gate passes
+  separately with `HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 TRITON_CPU_BACKEND=1`.

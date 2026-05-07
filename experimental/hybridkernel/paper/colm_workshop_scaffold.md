@@ -141,8 +141,9 @@ Promotion threshold:
 - [ ] Run Nsight Compute only on suspicious boundary kernels and matched
   same-type controls.
 - [ ] Compute paired uncertainty over repeated fixed-request runs.
-- [ ] Run `phase2/check_profiler_run_artifacts.py --run-dir "$HWK_RUN"` and
-  save `artifact_check.json`; the checker must confirm
+- [ ] Run
+  `phase2/check_profiler_run_artifacts.py --run-dir "$HWK_RUN" --require-full-matrix`
+  and save `artifact_check.json`; the checker must confirm
   `profiler_analysis_gate.json`/`.md` were generated from the same metric rows.
 - [ ] Return the full packet described in
   `phase2/native_run_packet_checklist.md`.

@@ -20,6 +20,8 @@ def test_synthetic_s1_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     # but the packet decision remains schema-rehearsal/non-promoting.
     assert summary["gate_status"] == "PASS_REAL_S1_HETEROGENEITY"
     assert summary["decision"].startswith("SCHEMA_REHEARSAL_NOT_PROMOTABLE")
+    assert summary["evidence_kind"] == "schema_rehearsal"
+    assert summary["promotable"] is False
     assert "synthetic-only" in summary["claim_boundary"]
     assert (output_dir / "summary.md").is_file()
 
@@ -36,3 +38,17 @@ def test_synthetic_s1_rehearsal_cannot_use_promoting_decision(tmp_path: Path) ->
 
     assert not report["ok"]
     assert any("schema-rehearsal packet must use" in error for error in report["errors"])
+
+
+def test_synthetic_s1_rehearsal_requires_non_promoting_summary_flags(tmp_path: Path) -> None:
+    output_dir = tmp_path / "ssq_lr_synthetic_s1"
+    run_gate(output_dir=output_dir)
+    summary_path = output_dir / "summary.json"
+    summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    summary["promotable"] = True
+    summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("promotable must be false" in error for error in report["errors"])

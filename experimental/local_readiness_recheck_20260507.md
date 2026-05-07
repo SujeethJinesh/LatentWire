@@ -9,7 +9,7 @@
 ## Result
 
 ```text
-309 passed, 1 skipped, 2 warnings in 7.61s
+317 passed, 1 skipped, 2 warnings in 7.84s
 ```
 
 The skipped test is the opt-in non-interpreter Triton CPU-backend check for the
@@ -18,6 +18,23 @@ HybridKernel toy primitive:
 ```text
 experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py
 set HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 to run this opt-in gate
+```
+
+That opt-in gate was run separately outside interpreter mode on the same Mac
+install and passed:
+
+```text
+1 passed in 1.35s
+```
+
+Command:
+
+```bash
+TRITON_CPU_BACKEND=1 HYBRIDKERNEL_RUN_TRITON_CPU_BACKEND=1 \
+TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase4/tests/test_boundary_triton_cpu_backend.py \
+  -q -rs
 ```
 
 The warnings are import-time `SwigPyPacked` / `SwigPyObject` deprecation
@@ -60,6 +77,20 @@ prototype quality-smoke checker recomputes answer mismatches and output-length
 drift from JSONL outputs, SSQ-LR/HORN/HBSM synthetic gates explicitly assert
 non-promoting packet decisions, and the ThoughtFlow diagnostic packet now
 requires every hashed input path to be tracked for clean-checkout replay.
+
+Second follow-up hardening on 2026-05-07 closed reviewer-found Mac-side gaps:
+HybridKernel submitted/native control matrices now require a global
+`request_shape`, metric rows must match that shape, and
+`profiler_analysis_gate.md` must exactly match the recomputed profiler analysis
+rather than only carrying the same status string. The GPU quickstart now writes
+`environment_freeze.txt` into `$HWK_RUN/metadata`, and the paper scaffold uses
+the strict `--require-full-matrix` artifact-check command. SSQ-LR/HORN/HBSM
+schema-rehearsal summaries now carry explicit `evidence_kind:
+schema_rehearsal` and `promotable: false` flags, and the shared gate checker
+rejects synthetic packets that omit or contradict those fields. ThoughtFlow
+PSI/VWAC fresh-surface scripts now accept and record the pinned model/tokenizer
+revision used by the runnable replay path, and the paper/diagnostic packet hash
+readouts were aligned to the current preregistration hash.
 
 - HybridKernel: native 5090 Nsight/vLLM full-matrix packet; if a prototype is
   later implemented, its quality smoke must pass

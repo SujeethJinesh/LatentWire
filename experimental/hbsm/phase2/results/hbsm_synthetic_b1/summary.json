@@ -31,6 +31,7 @@
     "random_flags"
   ],
   "decision": "SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1",
+  "evidence_kind": "schema_rehearsal",
   "expected_top_decile_count": 4,
   "fisher_p_boundary_top_decile": 0.002297844403107561,
   "fisher_p_random_boundary_top_decile": 1.0,
@@ -42,6 +43,7 @@
   "non_boundary_top_decile_count": 0,
   "non_boundary_top_decile_rate": 0.0,
   "primary_row_count": 480,
+  "promotable": false,
   "prompt_count": 12,
   "random_boundary_top_decile_enrichment": 0.0,
   "random_top_decile_count": 4,

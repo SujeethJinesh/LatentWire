@@ -387,7 +387,7 @@ def analyze(payload: dict[str, object]) -> dict[str, object]:
     return {"status": status, "rows": rows, "summary": summary, "decision": decision}
 
 
-def _write_markdown(result: dict[str, object], path: Path) -> None:
+def render_markdown(result: dict[str, object]) -> str:
     lines = [
         "# HybridKernel Profiler Analysis Gate",
         "",
@@ -433,7 +433,11 @@ def _write_markdown(result: dict[str, object], path: Path) -> None:
             "",
         ]
     )
-    path.write_text("\n".join(lines), encoding="utf-8")
+    return "\n".join(lines)
+
+
+def _write_markdown(result: dict[str, object], path: Path) -> None:
+    path.write_text(render_markdown(result), encoding="utf-8")
 
 
 def main() -> None:
