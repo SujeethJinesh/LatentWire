@@ -55,7 +55,7 @@ def test_colm_style_pdfs_are_present_and_bounded_for_active_projects() -> None:
         "ssq_lr/paper/ssq_lr_colm2026.pdf": 2,
         "horn/paper/horn_colm2026.pdf": 2,
         "hbsm/paper/hbsm_colm2026.pdf": 3,
-        "thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf": 7,
+        "thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf": 8,
     }
     for relative_path, page_count in expected_pages.items():
         pdf_path = EXPERIMENTAL / relative_path

@@ -338,7 +338,7 @@ such as `ibm-granite/granite-4.0-h-tiny`, the builder preserves it as
 `served_model_id` and canonicalizes row `model_id` to the shared architecture
 map slug before validation.
 
-Validate the first real S1 packet with:
+Historical/general S1 packets can be validated with:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
@@ -346,7 +346,11 @@ Validate the first real S1 packet with:
   --mode real --project ssq_lr
 ```
 
-Validate later S2/S3 follow-up packets only after real S1 promotes:
+Active gate status: held-out S1b is alive, but current S2 scouts fail because
+MXFP4 preserves quality while missing `4x` byte reduction and INT3 clears bytes
+while failing 12-prompt quality. Do not GPU-promote the current recipes. Only
+validate a new S2/S3 follow-up packet after freezing a new sub-4-bit recipe or
+native packed-state rationale with a plausible path to paired quality bounds:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \

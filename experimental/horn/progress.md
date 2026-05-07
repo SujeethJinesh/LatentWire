@@ -256,3 +256,21 @@ metrics.
 
 Decision: **H1A ROW METRICS MUST BE RECOMPUTABLE FROM SAVED BOUNDARY TENSORS**.
 The blocker remains the first real prompt-paired boundary dump.
+
+## 2026-05-07 H1a / H2 Scout Decision
+
+The first real Granite Tiny H1a screen is checker-passing but
+resource-limited and fails the magnitude-asymmetry gate: 288 rows, 12 prompts,
+all 8 planned boundaries, right-layer input hook tensors, selected ratio
+`1.06`, and cluster-bootstrap low `1.06`. This is too close to null to promote
+H1a/H1.
+
+The H2 noisy-continuation scout also fails: 20 rows over 2 prompts and 3 seeds,
+paired units `6/6`, hook-off max delta `0.0`, fixed H1-selected direction
+preserved, directional drift ratio `1.037`, and paired lower bound `1.072`.
+The packet is contract-valid but its decision is
+`FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION`.
+
+Decision: **HORN IS A DEMOTED CONTROL BRANCH**. Do not spend GPU time on a
+standalone HORN claim. Reopen only with a new preregistered full H2/H3 scope
+and a concrete reason the current near-null H2 scout should reverse.

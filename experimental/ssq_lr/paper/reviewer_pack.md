@@ -49,7 +49,7 @@ does not authorize a quantization recipe, byte-savings claim, or transfer claim.
 | S2 INT3 scouts | 4-prompt block-256 scout passes (`5.224x`, zero argmax delta), but 12-prompt block-64 and block-256 scouts fail because INT3 loses argmax fidelity on held-out prompts | fails held-out quality gate |
 | architecture provenance | shared config-derived hashes exist for live hybrid targets | packet provenance ready |
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl` enumerates 5,184 required S1 capture rows | execution checklist only |
-| model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
+| model eligibility | Granite Tiny is cached locally and used for real resource-limited S1b/S2 scouts; larger live targets remain uncached or GPU-sized. | Mac smoke path exercised; frontier validation still GPU-sized |
 | real-packet checker | rejects missing buckets, incomplete prompt/layer matrices, stale summary fields, too few prompts, promotable resource-limited decisions, mismatched model IDs, missing controls, missing trace-plan hash pinning, missing tensor artifacts, tensor hash mismatches, and row metrics that do not recompute from saved state tensors | ready for real S1 |
 | follow-up contract checker | `experimental.shared.followup_gate_contracts --gate ssq_lr_s2/ssq_lr_s3` enforces recipe/byte/CI/no-retuning fields before later evidence can be cited | contract ready, no model rows |
 

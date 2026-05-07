@@ -106,6 +106,7 @@ REQUIRED_REDUCTION_MANIFEST_FIELDS = [
     "reduction_script_sha256",
     "reduction_notes",
 ]
+REDUCTION_MANIFEST_VERSION = "hybridkernel_reduction_inputs_v1"
 ALLOWED_ROW_ROLES = {"primary_hybrid", "same_family_control", "cross_family_falsification"}
 SHA256_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 
@@ -674,8 +675,11 @@ def _validate_reduction_input_manifest(
         errors.append("reduction_input_manifest.json must be a JSON object")
         return
     manifest_version = str(payload.get("manifest_version", "")).strip()
-    if not manifest_version:
-        errors.append("reduction_input_manifest.json must contain manifest_version")
+    if manifest_version != REDUCTION_MANIFEST_VERSION:
+        errors.append(
+            "reduction_input_manifest.json manifest_version must be "
+            f"{REDUCTION_MANIFEST_VERSION!r}"
+        )
     rows = payload.get("rows")
     if not isinstance(rows, list) or not rows:
         errors.append("reduction_input_manifest.json must contain non-empty rows")
@@ -798,6 +802,12 @@ def _validate_reduction_input_manifest(
             errors.append(
                 f"reduction_input_manifest.json row {manifest_index} reduction_command "
                 f"must match profiler_metrics.json row {metric_index} reduction_command"
+            )
+        reduction_notes = str(manifest_row.get("reduction_notes", "")).strip()
+        if reduction_notes != str(metric_row.get("reduction_notes", "")).strip():
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} reduction_notes "
+                f"must match profiler_metrics.json row {metric_index} reduction_notes"
             )
         reduction_script_sha256 = str(manifest_row.get("reduction_script_sha256", "")).strip()
         if not SHA256_PATTERN.match(reduction_script_sha256):

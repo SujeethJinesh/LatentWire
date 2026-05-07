@@ -256,6 +256,9 @@ Expected final packet:
 
 - `metadata/environment.txt`
 - `metadata/profile_scope.json`
+- `metadata/architecture_map.json`
+- `metadata/native_control_matrix.json`
+- `metadata/reduction_input_manifest.json`
 - `logs/nsys_server*.log`
 - `logs/client*.log`
 - `nsys/*.nsys-rep`, `*.sqlite`, or `*.qdrep`

@@ -35,7 +35,7 @@ The packet is incomplete unless all of these exist:
 | `metadata/profile_scope.json` | server-side scope for both Nsight Systems and Nsight Compute |
 | `metadata/architecture_map.json` | copied HybridKernel architecture map used for boundary annotation |
 | `metadata/native_control_matrix.json` | copied control matrix fixing primary, same-family, and cross-family row roles before profiling |
-| `metadata/reduction_input_manifest.json` | row-level reduction audit trail tying each metric row to source Nsight exports, time windows, commands, and reducer script or worksheet SHA-256 digests |
+| `metadata/reduction_input_manifest.json` | row-level reduction audit trail with `manifest_version: "hybridkernel_reduction_inputs_v1"` tying each metric row to source Nsight exports, time windows, commands, and reducer script or worksheet SHA-256 digests |
 | `logs/*.log` or `logs/*.txt` | Nsight server profiler logs (`nsys_server*` or `ncu_server*`) and client replay logs. Server logs must contain real Nsight/vLLM/CUDA evidence markers; client logs must be valid `profiler_driver.py` JSON with a non-empty top-level `model`, `dry_run: false`, `token_counts_required: true`, a non-empty `token_count_source`, and non-empty `requests` rows whose `status` fields are all `ok` and whose prompt/decode token counts are positive. |
 | `nsys/*.nsys-rep`, `nsys/*.sqlite`, or `nsys/*.qdrep` | server-side Nsight Systems timeline artifacts, not placeholder files |
 | `ncu/*.ncu-rep` | server-side Nsight Compute artifacts for suspicious and matched control kernels, not placeholder files. Required for boundary-evidence packets; optional only with explicit `--packet-mode no_boundary_signal_kill` and row `ncu_artifact: "not_run_no_boundary_signal"`. |
@@ -89,10 +89,11 @@ matched Nsight artifact must be at least 1024 bytes and must not contain
 skeleton placeholder markers. Use the default threshold for submitted run
 packets.
 
-The checker also rejects empty, placeholder, dry-run, failed, or arbitrary log
-payloads. Do not replace the server/client logs with screenshots, shell
-comments, or manually written summaries. Keep the raw profiler/server stdout
-logs and the exact non-dry-run JSON printed by `phase2/profiler_driver.py`.
+The checker also rejects empty, placeholder, dry-run, or failed logs. Client
+logs must keep the exact non-dry-run JSON printed by
+`phase2/profiler_driver.py`; server logs must keep raw profiler/server stdout
+with Nsight, vLLM, CUDA, or model-loading markers. Do not replace the logs with
+screenshots, shell comments, or manually written summaries.
 
 ## Required Metric Rows
 

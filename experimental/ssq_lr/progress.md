@@ -196,3 +196,21 @@ tensor bytes is rejected even if its SHA-256 provenance fields are well formed.
 
 Decision: **S1 ROW METRICS MUST BE RECOMPUTABLE FROM SAVED STATE TENSORS**. The
 blocker remains a real tensor packet generated from the frozen S1 plan.
+
+## 2026-05-07 Held-Out S1b / S2 Scout Decision
+
+The Granite Tiny held-out S1b packet is the current positive Mac signal:
+192 saved-tensor rows over 12 held-out prompts and layers `0`, `12`, `18`,
+and `30`, with primary layers `0`, `12`, and `30` passing at selected ratio
+`2.459`, CI low `1.861`, and Holm p-min `2.78e-05`.
+
+The current S2 recipes do not promote. MXFP4 preserves BF16 argmax on the short
+continuation replay but reaches only `3.765x`--`3.938x` once scale bytes are
+counted, missing the preregistered `>=4x` state-memory gate. INT3 can clear the
+byte gate in the 4-prompt block-256 scout (`5.224x`, zero argmax delta), but
+the 12-prompt held-out block-64/block-256 scouts lose argmax fidelity.
+
+Decision: **SSQ-LR IS WEAKENED, NOT GPU-READY**. S1b heterogeneity stays alive,
+but the next gate must be a new frozen sub-4-bit/native-packed state recipe
+that clears S2 with paired quality bounds. Do not promote the current MXFP4 or
+INT3 scouts to GPU.

@@ -11,8 +11,8 @@
    separable attention/SSM boundary overhead.
 2. **SSQ-LR**: no GPU validation until a real Mac/shared trace packet clears
    S1--S3 without per-model retuning.
-3. **HORN**: no GPU validation until real H1a/H1/H3 boundary controls show
-   cross-model directional asymmetry.
+3. **HORN**: no GPU validation until real H1a/H1/H2/H3 boundary controls show
+   cross-model directional asymmetry and noise-propagation sensitivity.
 4. **HBSM**: no GPU validation until real B1/B2/B3 sensitivity and predictor
    gates survive the KL-style and activation/outlier baselines.
 5. **ThoughtFlow-FP8**: no GPU work for the current branch set (`rdu_topk`,
@@ -36,6 +36,9 @@ Minimum admissible packet:
 - at least three distinct primary metric rows;
 - at least three same-shape same-family control rows;
 - at least three same-shape cross-family falsification rows;
+- a completed `metadata/reduction_input_manifest.json` tying each metric row to
+  source Nsight artifacts, time windows, reducer command, and reducer script
+  SHA-256;
 - explicit `run_id`, dtype, CUDA graph state, batch shape, request count, and
   matched control label in every row;
 - local analyzer and artifact checker both pass.

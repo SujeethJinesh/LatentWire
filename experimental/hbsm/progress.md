@@ -226,3 +226,18 @@ JSON without a reviewable source artifact.
 Decision: **B1 ROWS MUST BE HASHED BACK TO THEIR SOURCE SENSITIVITY PACKET**.
 The blocker remains a real forward-sensitivity table with stronger comparator
 controls.
+
+## 2026-05-07 B1 Scout Decision
+
+Both Granite Tiny resource-limited B1 scouts fail the current sensitivity
+heterogeneity story. The one-prompt smoke has 56 checker-passing rows from one
+prompt and 8 layers, top drift layer `5`, Fisher p `0.375`, and cheap-predictor
+Spearman `-0.476`. The two-prompt prompt-repeat scout has 64 checker-passing
+rows, Fisher p `1.0`, boundary top-decile count `0`, non-boundary top-decile
+count `1`, and cheap-predictor Spearman `-0.667`.
+
+Decision: **HBSM IS WEAKENED AND SHOULD NOT SCALE B1 AS-IS**. Do not run a
+larger B1 table or GPU validation until a narrower mechanism hypothesis is
+pre-registered. If the mechanism remains indistinguishable from HORN's H2
+question, fold HBSM into the HORN control appendix rather than keeping a
+standalone branch.

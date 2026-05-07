@@ -7,7 +7,11 @@ PAPER = Path(__file__).resolve().parents[2] / "paper/thoughtflow_fp8_colm2026.te
 def test_paper_uses_preregistered_paired_interval_gate_language() -> None:
     paper = PAPER.read_text(encoding="utf-8")
 
-    assert "Promotion requires the preregistered mean margin and paired CI high below zero." in paper
+    assert (
+        "For $\\Delta=\\mathrm{NLL}_{candidate}-\\mathrm{NLL}_{baseline}$, "
+        "promotion requires mean $\\Delta\\leq -0.03$ and paired CI high below "
+        "zero versus both proxies."
+    ) in paper
     assert "Mean margin plus paired CI high must be below zero." not in paper
 
 

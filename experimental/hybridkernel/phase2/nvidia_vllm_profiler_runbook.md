@@ -129,7 +129,7 @@ unmanifested.
 ```bash
 cat > "$HWK_RUN/metadata/reduction_input_manifest.json" <<JSON
 {
-  "manifest_version": 1,
+  "manifest_version": "hybridkernel_reduction_inputs_v1",
   "rows": [
     {
       "run_id": "TODO_NATIVE_PROFILE_FILL",
@@ -418,7 +418,8 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --seed 1 \
   --tokenizer "$MODEL" \
   --require-token-counts \
-  2>&1 | tee "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.log"
+  > "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.log" \
+  2> "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.stderr.log"
 ```
 
 Fill `ncu_launch_selection` for every non-pending metric row from the exact

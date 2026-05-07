@@ -988,15 +988,19 @@ def test_rejects_reduction_manifest_that_does_not_match_metrics(tmp_path: Path) 
     _write_complete_run(tmp_path)
     manifest_path = tmp_path / "metadata/reduction_input_manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["manifest_version"] = 1
     manifest["rows"][0]["source_time_window_ms"] = {"start": 99.0, "end": 100.0}
     manifest["rows"][1]["reduction_script_sha256"] = "sha256:not-a-real-hash"
+    manifest["rows"][2]["reduction_notes"] = "Different manual reduction notes."
     manifest_path.write_text(json.dumps(manifest) + "\n", encoding="utf-8")
 
     result = check_run_artifacts(tmp_path)
 
     assert result["status"] == "FAIL"
+    assert any("manifest_version" in error for error in result["errors"])
     assert any("source_time_window_ms must match" in error for error in result["errors"])
     assert any("reduction_script_sha256" in error for error in result["errors"])
+    assert any("reduction_notes must match" in error for error in result["errors"])
 
 
 def test_rejects_metric_row_missing_artifact_path(tmp_path: Path) -> None:

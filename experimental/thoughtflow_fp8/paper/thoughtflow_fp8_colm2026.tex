@@ -38,7 +38,7 @@ Protocol check & Purpose & Stop condition \\
 Frozen surface & Prevent post-hoc tuning. & A successor is measured once after preregistration. \\
 Matched budget & Avoid full-cache comparisons. & Must beat R-KV-like and ThinKV-like rows at the same keep rate. \\
 Stopped/proxy split & Separate local family reuse from proxy-baseline robustness. & A stopped-family-only win is diagnostic, not a method claim. \\
-Paired intervals & Avoid mean-only promotion. & Promotion requires the preregistered mean margin and paired CI high below zero. \\
+Paired intervals & Avoid mean-only promotion. & For $\Delta=\mathrm{NLL}_{candidate}-\mathrm{NLL}_{baseline}$, promotion requires mean $\Delta\leq -0.03$ and paired CI high below zero versus both proxies. \\
 Oracle/headroom & Show whether a useful policy exists at the budget. & Large oracle gaps block method claims. \\
 Fresh surface & Test robustness. & Failure demotes or kills the signal. \\
 \bottomrule
@@ -198,8 +198,8 @@ Frozen 74-trace gate & \texttt{rdu\_topk} beats ThinKV-like and R-KV-like on the
 Same-slice rerun & Cached result reproduces exactly on the deterministic Mac stack. & Repro bookkeeping. \\
 Alternate surface & Cross-family rows still lose, but a stopped same-family row beats \texttt{rdu\_topk} by 0.006 NLL. & Weakened. \\
 Independent saved traces & R-KV-like is best compressed at NLL 3.981; \texttt{rdu\_topk} reaches 4.014. & Killed. \\
-Prefix-surprisal fresh surface & \texttt{psi\_topk} reaches NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960. & Killed. \\
-Value-weighted attention fresh surface & \texttt{vwac\_topk} reaches NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162. & Killed. \\
+Prefix-surprisal fresh saved-trace surface & On distilgpt2 C2C GSM saved traces, \texttt{psi\_topk} reaches NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960. & Killed. \\
+Value-weighted attention fresh saved-trace surface & On distilgpt2 C2C SVAMP saved traces, \texttt{vwac\_topk} reaches NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162. & Killed. \\
 \bottomrule
 \end{tabular}
 \caption{ThoughtFlow-FP8 evidence ladder. The first-surface pass is shown as one step that failed to reproduce, not as the headline result.}
@@ -213,8 +213,8 @@ Value-weighted attention fresh surface & \texttt{vwac\_topk} reaches NLL 4.336 v
 Registration & SHA-256 prefix & Measurement artifact \\
 \midrule
 \texttt{rdu\_topk} & \texttt{676d5239} & Same-surface pass, alternate-surface failure, and independent-trace failure are bundled in the diagnostic packet. \\
-\texttt{psi\_topk} & \texttt{04da2bd0} & One-shot fresh C2C GSM sparse-cache check, artifact SHA prefix \texttt{d0a08035}. \\
-\texttt{vwac\_topk} & \texttt{1574c853} & One-shot fresh C2C SVAMP sparse-cache check, artifact SHA prefix \texttt{80a35954}. \\
+\texttt{psi\_topk} & \texttt{04da2bd0} & One-shot fresh distilgpt2 C2C GSM saved-trace sparse-cache check, artifact SHA prefix \texttt{d0a08035}. \\
+\texttt{vwac\_topk} & \texttt{1574c853} & One-shot fresh distilgpt2 C2C SVAMP saved-trace sparse-cache check, artifact SHA prefix \texttt{80a35954}. \\
 \bottomrule
 \end{tabular}
 \caption{Registration-to-measurement ledger. Full hashes and artifact paths are
@@ -224,18 +224,19 @@ inside the paper.}
 
 \begin{table}[h]
 \centering
-\small
-\begin{tabular}{lrrrr}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}p{0.22\linewidth}rcccp{0.18\linewidth}@{}}
 \toprule
-FAILED policy & Traces & Keep rate & NLL & Paired $\Delta$ vs ThinKV-like \\
+Historical row & Traces & Keep & NLL & $\Delta$ vs ThinKV & Later decision \\
 \midrule
-full cache & 74 & 1.000 & 2.848 & -1.052 [-1.199,-0.919] \\
-\texttt{rdu\_topk} & 74 & 0.213 & 3.779 & -0.121 [-0.211,-0.037] \\
-ThinKV-like & 74 & 0.213 & 3.900 & 0.000 \\
-frozen sparse ThoughtFlow & 74 & 0.213 & 3.908 & +0.008 [-0.060,+0.085] \\
-ThoughtFlow-saliency-recent & 74 & 0.213 & 3.920 & +0.020 [-0.030,+0.074] \\
-R-KV-like & 74 & 0.214 & 3.939 & +0.039 [-0.015,+0.099] \\
-LongFlow-like & 74 & 0.213 & 4.158 & +0.258 [+0.178,+0.337] \\
+full cache & 74 & 1.000 & 2.848 & -1.052 [-1.199,-0.919] & reference only \\
+\texttt{rdu\_topk} & 74 & 0.213 & 3.779 & -0.121 [-0.211,-0.037] & reproduction kill \\
+ThinKV-like & 74 & 0.213 & 3.900 & 0.000 & proxy baseline \\
+frozen sparse TF & 74 & 0.213 & 3.908 & +0.008 [-0.060,+0.085] & stopped family \\
+TF-saliency-recent & 74 & 0.213 & 3.920 & +0.020 [-0.030,+0.074] & stopped family \\
+R-KV-like & 74 & 0.214 & 3.939 & +0.039 [-0.015,+0.099] & proxy baseline \\
+LongFlow-like & 74 & 0.213 & 4.158 & +0.258 [+0.178,+0.337] & proxy baseline \\
 \bottomrule
 \end{tabular}
 \caption{Historical failed-to-reproduce one-shot frozen sparse-cache successor evaluation. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050] on this first surface, but later alternate-surface and independent-trace gates fail to reproduce the promotion.}
@@ -286,7 +287,7 @@ Consumed signals should stay consumed. & \texttt{psi\_topk} and \texttt{vwac\_to
 A later consumed successor tested whether retaining high self-surprisal
 prefix tokens could preserve information that is hard to reconstruct. The signal
 uses only prefill logits, not continuation loss, trace labels, recent reserves,
-or RDU lag buckets. On a fresh 70-trace C2C GSM saved-trace surface,
+or RDU lag buckets. On a fresh 70-trace distilgpt2 C2C GSM saved-trace surface,
 \texttt{psi\_topk} fails decisively: ThinKV-like is best compressed at NLL 3.906,
 R-KV-like reaches 3.960, and \texttt{psi\_topk} reaches 7.899. Paired deltas are
 +3.939 [+3.720,+4.144] versus R-KV-like and +3.994 [+3.773,+4.205] versus
@@ -296,7 +297,7 @@ exact signal in the current Mac sparse-cache harness.
 \paragraph{Value-weighted attention successor.}
 The next consumed successor tested a cache-state utility: future prefix attention to a
 token multiplied by the token's cached value-vector norm. On a fresh 64-trace
-C2C SVAMP surface, \texttt{vwac\_topk} also fails. R-KV-like is best compressed at
+distilgpt2 C2C SVAMP saved-trace surface, \texttt{vwac\_topk} also fails. R-KV-like is best compressed at
 NLL 4.096, ThinKV-like reaches 4.162, and \texttt{vwac\_topk} reaches 4.336.
 Paired deltas are +0.241 [+0.030,+0.530] versus R-KV-like and +0.174
 [+0.002,+0.392] versus ThinKV-like.
@@ -388,14 +389,14 @@ TRITON_HOME="$PWD/.debug/triton_home" \
 \scriptsize
 \begin{tabular}{p{0.20\linewidth}p{0.35\linewidth}p{0.18\linewidth}p{0.15\linewidth}}
 \toprule
-Gate artifact & Rebuild command & Input surface & Hash prefix \\
+Gate artifact & Script & Input surface & Hash prefix \\
 \midrule
-frozen probe & \texttt{phase2/frozen\_sparse\_cache\_probe.py} & frozen mixed traces, 74 scored & \texttt{f79c286c} \\
-same-surface RDU & \texttt{phase2/rdu\_no\_retune\_reproduction\_check.py} & same frozen traces, 74 scored & \texttt{9a6420cf} \\
-alternate RDU & \texttt{phase2/rdu\_alt\_surface\_reproduction\_check.py} & alternate measured surface, 73 scored & \texttt{1302ce31} \\
-independent RDU & \texttt{phase2/rdu\_independent\_trace\_reproduction\_check.py} & saved chat traces, 89 scored & \texttt{5a568e1c} \\
-\texttt{psi\_topk} & \texttt{phase2/psi\_fresh\_sparse\_cache\_check.py} & C2C GSM, 70 scored & \texttt{d0a08035} \\
-\texttt{vwac\_topk} & \texttt{phase2/vwac\_fresh\_sparse\_cache\_check.py} & C2C SVAMP, 64 scored & \texttt{80a35954} \\
+frozen probe & \texttt{frozen\_sparse\_cache\_probe.py} & frozen mixed traces, 74 scored & \texttt{f79c286c} \\
+same-surface RDU & \texttt{rdu\_no\_retune\_check.py} & same frozen traces, 74 scored & \texttt{9a6420cf} \\
+alternate RDU & \texttt{rdu\_alt\_surface\_check.py} & alternate measured surface, 73 scored & \texttt{1302ce31} \\
+independent RDU & \texttt{rdu\_independent\_check.py} & saved chat traces, 89 scored & \texttt{5a568e1c} \\
+\texttt{psi\_topk} & \texttt{psi\_fresh\_check.py} & distilgpt2 C2C GSM, 70 scored & \texttt{d0a08035} \\
+\texttt{vwac\_topk} & \texttt{vwac\_fresh\_check.py} & distilgpt2 C2C SVAMP, 64 scored & \texttt{80a35954} \\
 \bottomrule
 \end{tabular}
 \caption{Diagnostic-packet command map. Full commands, source metadata, and

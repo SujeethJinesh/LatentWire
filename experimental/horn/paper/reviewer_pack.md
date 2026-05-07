@@ -48,7 +48,7 @@ positive claim; H3 has no model evidence.
 | Granite Tiny H2 scout | 20 rows, 2 prompts, 3 seeds, paired units `6/6`, hook-off max delta `0.0`, H1-selected direction preserved, directional drift ratio `1.037`, paired lower bound `1.072`, contract-valid decision `FAIL_REAL_HORN_H2_DIRECTIONAL_NOISE_PROPAGATION` | demotes HORN standalone |
 | architecture provenance | shared boundary IDs and direction counts exist | packet provenance ready |
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl` enumerates 1,404 boundary/control capture rows, including a matched non-boundary control for each observed boundary row | execution checklist only |
-| model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
+| model eligibility | Granite Tiny is cached locally and used for real resource-limited H1a/H2 scouts; larger live targets remain uncached or GPU-sized. | Mac demotion path exercised; frontier validation still GPU-sized |
 | real-packet checker | rejects missing directions, stale summary fields, too few prompts, non-finite rows, promotable resource-limited decisions, missing trace-plan hash pinning, missing tensor artifacts, tensor hash mismatches, row metrics that do not recompute from saved activation tensors, unpaired or independently measured permuted controls, near-boundary non-boundary controls, and permuted controls that preserve the selected directional effect | ready for real H1 |
 | follow-up contract checker | `experimental.shared.followup_gate_contracts --gate horn_h2/horn_h3` enforces noisy replay and cross-architecture control fields before later evidence can be cited | contract ready, no model rows |
 
