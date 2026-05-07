@@ -1,8 +1,8 @@
 # HBSM Reviewer Pack
 
-- status: preregistered Mac-gate scaffold; novelty wounded by adjacent
-  sensitivity work
-- current decision: blocked on real hybrid layer-sensitivity rows
+- status: weakened after resource-limited real-model B1 scouts
+- current decision: do not GPU-promote; treat as negative/control unless a new
+  narrower hypothesis is preregistered
 - camera-readiness: not submittable as a standalone paper until B1--B3 separate
   the mechanism from existing sensitivity tools
 
@@ -17,8 +17,8 @@
 HBSM asks whether sensitivity in current hybrid reasoners can be explained by
 boundary mechanisms and predicted more cheaply than repeated quantized forward
 passes. The current artifacts do not claim novelty or a positive predictor.
-They define the controls needed to decide whether HBSM survives or folds into
-HORN.
+They define the controls needed to decide whether HBSM survives as a later
+mechanism/control appendix.
 
 ## Promotion Ladder Boundary
 
@@ -34,10 +34,10 @@ Status shorthand: B2/B3 are not current evidence.
 
 | Axis | Reviewer read | Current decision |
 |---|---|---|
-| Benchmarks | B1 should measure KL/NLL drift on current hybrid reasoners, but no live sensitivity sweep exists yet. | Gate pending. |
+| Benchmarks | B1 now has one-prompt and two-prompt Granite Tiny resource-limited sweeps. Both are useful Mac filters, not task or GPU evidence. | B1 weakened. |
 | Ablations | Required baselines are perturbation-off, random flags, layer index, parameter count/norm, boundary-only, KL-style ranking, activation/outlier ranking, and train/test or leave-one-model-out splits. | Adequate before real B1 and B2. |
 | Correctness | The checker scores only primary `boundary_only` rows after aggregating prompt rows to `(model_id, layer)`, derives measured top deciles from aggregated `kl_or_nll_drift`, rejects supplied `top_decile_flag` disagreements on any prompt row, and requires prompt-level boundary/non-boundary coverage, finite metrics, true scoring-layer top-decile cardinality, a same-count non-enriched random baseline, train/test coverage, prompt hash provenance, architecture-map hash provenance tied to the claimed model, a `trace_plan_path` whose file hash matches the registered `trace_plan_hash`, every comparator control on the same `(model_id, layer)` scoring set as `boundary_only`, copied source sensitivity row-packet provenance, recomputed B1 `summary.json` enrichment/p-value/Spearman aggregates, and near-zero drift for perturbation-off rows. The shared builder now automatically marks resource-limited packets non-promotable. B2/B3 follow-up contracts additionally reject missing predictor registry hashes, hyperparameter hashes, train-only selection, held-out Spearman/baseline margins, HORN-alignment signs, noise-off controls, and direction-flip controls. | Artifact path is hardened. |
-| Reproducibility | Synthetic B1 real-schema rehearsal is deterministic, passes the real checker in non-promoting mode, and shared architecture maps fix boundary flags. | Not model evidence. |
+| Reproducibility | Synthetic B1 real-schema rehearsal is deterministic, passes the real checker in non-promoting mode, and shared architecture maps fix boundary flags. The two-prompt scout is reproducible from cached Granite Tiny weights with `hbsm_local_sensitivity_runner --prompt-limit 2`. | Strong enough to weaken B1; not positive evidence. |
 | Novelty | Broad forward-only sensitivity is crowded; the defensible wedge is mechanism plus cheaper predictor on current hybrid reasoners. | Narrow and fragile. |
 | Camera-readiness | The draft is a preregistration shell. It needs real B1/B2/B3 evidence before submission as a standalone paper. | Not camera-ready. |
 
@@ -46,6 +46,8 @@ Status shorthand: B2/B3 are not current evidence.
 | Gate | Result | Decision |
 |---|---|---|
 | synthetic B1 schema rehearsal | 720 real-schema rows, 480 primary prompt rows, 240 layer-aligned control rows, 40 scoring layers after aggregation, real checker passes with `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1` | validates packet contract only |
+| one-prompt B1 smoke | 56 checker-passing rows from one Granite Tiny prompt and 8 layers; top drift layer 5, Fisher p `0.375`, cheap-predictor Spearman `-0.476` | weak, non-promoting B1 failure |
+| two-prompt B1 scout | 64 checker-passing rows from two Granite Tiny prompts and 8 layers; Fisher p `1.0`, boundary top-decile count `0`, non-boundary top-decile count `1`, cheap-predictor Spearman `-0.667` | weakens B1 further; do not scale without new hypothesis |
 | architecture provenance | shared boundary flags and model hashes exist | packet provenance ready |
 | trace collection plan | `experimental/shared/results/hybrid_trace_plan_20260507/hbsm_trace_plan.jsonl` enumerates 2,304 layer-aligned B1 sensitivity/control rows | execution checklist only |
 | model eligibility | live targets are identified, but weights are not cached locally | blocked on model load |
@@ -54,7 +56,8 @@ Status shorthand: B2/B3 are not current evidence.
 
 ## Reviewer Risks
 
-- No real forward-sensitivity row exists.
+- Real forward-sensitivity rows exist only on resource-limited Granite Tiny
+  scouts, and both fail B1.
 - KL Lens-style forward sensitivity for mixed-precision hybrid models narrows
   the novelty claim; see arXiv:2604.13440
   (`https://arxiv.org/abs/2604.13440`).
@@ -64,7 +67,8 @@ Status shorthand: B2/B3 are not current evidence.
 
 ## Next Exact Gate
 
-Run B1 on the smallest available live hybrid model. The first packet must pass:
+Do not run GPU validation. Only run more HBSM Mac work if a narrower hypothesis
+is preregistered. Any future B1 packet must pass:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.check_gate_packet \

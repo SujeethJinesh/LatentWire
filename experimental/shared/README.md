@@ -90,6 +90,11 @@ Use them for preregistered Mac gates only.
   `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY`.
   This validates the HBSM row/provenance path only; it is one short prompt and
   cannot promote B1.
+  The prompt-repeat scout
+  `results/hbsm_prompt2_sensitivity_20260507/` uses the same runner with
+  `--prompt-limit 2`; it is checker-valid and fails B1 with Fisher p-value
+  `1.0`, boundary top-decile count `0`, and cheap-predictor Spearman `-0.667`.
+  This weakens HBSM and is still not promotable evidence.
 - `hybrid_gate_evaluators.py`: recomputes S1/H1/B1 pass/fail summaries from
   packet rows so real packets cannot promote from hand-written aggregate labels.
   The active evaluators use prompt-level S1 lower bounds, H1 non-boundary and

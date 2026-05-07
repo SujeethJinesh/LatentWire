@@ -16,7 +16,7 @@ This is a living paper shell for a preregistered Mac-first experiment. HBSM
 tests whether sensitivity in frontier hybrid reasoners can be explained and
 predicted cheaply. The broad forward-only sensitivity claim is wounded by
 KL Lens-style forward-sensitivity work, so no novelty or positive result is
-claimed yet.
+claimed yet. Current Granite Tiny resource-limited scouts fail B1.
 \end{abstract}
 
 \section{Current Gate}
@@ -52,14 +52,20 @@ accepted only when they match that measured ranking for every prompt row inside
 each measured layer.
 The metadata-only model eligibility packet identifies the current live hybrid
 targets and architecture hashes, but no corresponding weights are cached
-repo-locally. HBSM therefore has no real forward-sensitivity evidence on this
-Mac yet.
+repo-locally except Granite Tiny. HBSM now has two Granite Tiny
+resource-limited forward-sensitivity packets: a one-prompt smoke and a
+two-prompt prompt-repeat scout. Both are checker-valid, non-promoting B1
+failures; there is still no real forward-sensitivity evidence that promotes
+B1. The two-prompt scout removes the one-prompt boundary-top-decile hint:
+its boundary top-decile count is zero, Fisher \(p=1.0\), and cheap-predictor
+Spearman is \(-0.667\).
 
 \section{Next Evidence}
 
-The next admissible row is a real layer-sensitivity sweep on current hybrid
-reasoners. If cheap predictors fail to correlate with forward sensitivity, HBSM
-should be killed or folded into HORN rather than kept as a separate paper.
+The next admissible HBSM action is not GPU validation. Either preregister a
+narrower mechanism hypothesis that explains why the two-prompt B1 scout failed,
+or fold HBSM into the negative/control appendix of the hybrid-quantization
+workstream.
 
 \section{Admissible Real Packet}
 

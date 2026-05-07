@@ -22,6 +22,7 @@ from experimental.shared.hbsm_local_sensitivity_runner import (
     _replace_first_tensor,
     _top_decile_layers,
     select_hbsm_entries,
+    select_hbsm_entries_for_prompts,
 )
 from experimental.shared.hybrid_manifest_local_capture_runner import (
     _bucket_tokenized,
@@ -1215,6 +1216,48 @@ def test_hbsm_select_entries_keeps_layer_aligned_controls() -> None:
         row["control_type"]
         for row in selected
     } == {"boundary_only", *HBSM_CONTROLS}
+
+
+def test_hbsm_select_entries_for_prompts_keeps_controls_layer_aligned() -> None:
+    entries = []
+    for prompt_id in ("p0", "p1"):
+        for layer in range(4):
+            entries.append(
+                {
+                    "prompt_id": prompt_id,
+                    "layer": layer,
+                    "boundary_flag": layer in {1, 2},
+                    "control_type": "boundary_only",
+                }
+            )
+    for control_type in HBSM_CONTROLS:
+        for layer in range(4):
+            entries.append(
+                {
+                    "prompt_id": f"control_{control_type}",
+                    "layer": layer,
+                    "boundary_flag": layer in {1, 2},
+                    "control_type": control_type,
+                }
+            )
+
+    selected = select_hbsm_entries_for_prompts(
+        {"hbsm_entry_templates": entries},
+        prompt_ids=("p0", "p1"),
+        layer_limit=4,
+    )
+
+    primary = [row for row in selected if row["control_type"] == "boundary_only"]
+    controls = [row for row in selected if row["control_type"] != "boundary_only"]
+    assert len(primary) == 8
+    assert len(controls) == 4 * len(HBSM_CONTROLS)
+    assert {row["prompt_id"] for row in primary} == {"p0", "p1"}
+    for control_type in HBSM_CONTROLS:
+        assert {
+            int(row["layer"])
+            for row in controls
+            if row["control_type"] == control_type
+        } == {0, 1, 2, 3}
 
 
 def test_hbsm_replace_first_tensor_preserves_nested_structure() -> None:

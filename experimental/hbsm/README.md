@@ -5,13 +5,15 @@ explained and predicted more cheaply than full forward-pass KL sweeps.
 
 ## Current Readiness
 
-Status: **NEW / wounded novelty / weak resource-limited Mac smoke complete**.
+Status: **WEAKENED / resource-limited prompt-repeat B1 scout failed**.
 
 Estimated completion:
 
-- **20%** as a narrow mechanism paper: hypothesis, gates, packet checker,
-  trace-plan handoff, and one resource-limited real-model sensitivity packet
-  are scaffolded.
+- **12%** as a narrow mechanism paper: hypothesis, gates, packet checker,
+  trace-plan handoff, one resource-limited real-model sensitivity packet, and
+  one two-prompt prompt-repeat scout are scaffolded. Both real-model packets
+  fail B1; the prompt-repeat scout removes the one-prompt boundary-top-decile
+  hint.
 - **0%** as a broad sensitivity-discovery paper because recent KL Lens-style
   work narrows that novelty.
 
@@ -105,6 +107,23 @@ Resource-limited real-model smoke packet:
 - B1 readout: `fisher_p_boundary_top_decile=0.375`,
   `cheap_predictor_spearman=-0.476`, so the smoke packet is weak and
   non-promoting.
+
+Resource-limited prompt-repeat B1 scout:
+
+- `../shared/results/hbsm_prompt2_sensitivity_20260507/`
+- gate packet: `../shared/results/hbsm_prompt2_sensitivity_20260507/hbsm_gate_packet/`
+- decision: `RESOURCE_LIMITED_NOT_PROMOTABLE_FAIL_REAL_B1_SENSITIVITY_HETEROGENEITY`
+- checker: passes `check_gate_packet --mode real --project hbsm`
+- rows: `64` (`16` primary Granite Tiny rows from two prompts and six
+  layer-aligned control families)
+- B1 readout: `fisher_p_boundary_top_decile=1.0`,
+  `boundary_top_decile_count=0`, `non_boundary_top_decile_count=1`,
+  `cheap_predictor_spearman=-0.667`
+
+This weakens HBSM beyond the one-prompt smoke: the top sensitivity layer moves
+to a non-boundary layer after the first prompt repeat, and the cheap predictor
+stays negative. Do not spend a long 12-prompt Mac sweep or GPU validation on
+HBSM unless the hypothesis is narrowed or replaced.
 
 Regenerate it with:
 
@@ -244,11 +263,22 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   --max-input-tokens 8 --layer-limit 8 --block-size 32
 ```
 
+Resource-limited two-prompt prompt-repeat scout:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.hbsm_local_sensitivity_runner \
+  --prompt-limit 2 --max-input-tokens 8 --layer-limit 8 --block-size 32 \
+  --output-dir experimental/shared/results/hbsm_prompt2_sensitivity_20260507
+./venv_arm64/bin/python -m experimental.shared.check_gate_packet \
+  experimental/shared/results/hbsm_prompt2_sensitivity_20260507/hbsm_gate_packet \
+  --mode real --project hbsm
+```
+
 ## GPU Rule
 
-No GPU validation until B1--B3 pass. The current B1 smoke fails and the cheap
-predictor is negative, so no sensitivity-discovery, no-forward-pass predictor,
-or mechanism claim is allowed from the current packet. The next Mac decision is
-binary: run a full 12-prompt B1 packet, or demote HBSM into the SSQ-LR/HORN
-control appendix. If HORN passes and HBSM is redundant, fold HBSM into HORN
-instead of keeping a separate paper.
+No GPU validation until B1--B3 pass. The current B1 smoke and two-prompt scout
+both fail, and the cheap predictor is negative, so no sensitivity-discovery,
+no-forward-pass predictor, or mechanism claim is allowed. HBSM should now be
+treated as a negative/control branch unless a new, narrower hypothesis is
+pre-registered before any additional Mac or GPU run.

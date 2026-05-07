@@ -23,7 +23,8 @@ interpretable retention signal looking positive on one frozen surface and then
 failing stricter reproduction. Later prefix-surprisal and value-weighted
 attention-contribution successors also fail on fresh surfaces. The project does
 not currently claim a new KV-compression method, FP8 serving result, CUDA kernel
-result, or latency/throughput win.
+result, or latency/throughput win. All benchmark surfaces are Mac-local
+saved-trace falsification fixtures, not reasoning-model benchmark claims.
 
 ## COLM Review Readout
 
@@ -59,6 +60,7 @@ reviewer pack's Triton interpreter environment.
 | fresh prefix-surprisal utility | `psi_topk` NLL 7.899 versus ThinKV-like 3.906 and R-KV-like 3.960 on 70 fresh C2C GSM70 traces | killed |
 | fresh value-weighted attention utility | `vwac_topk` NLL 4.336 versus R-KV-like 4.096 and ThinKV-like 4.162 on 64 fresh C2C SVAMP70 traces | killed |
 | Triton interpreter | anchor/phase int8 primitive matches CPU reference | kernel logic only |
+| current authority | historical `ALIVE`/`PROMOTED` artifacts are superseded by the current decision manifest | manifest controls |
 
 ## Stable Owned-Test Command
 

@@ -14,7 +14,8 @@
 HybridKernel does not claim a GPU speedup. It provides a pre-registered native
 profiling packet for testing whether hybrid attention/SSM transitions have
 avoidable boundary-local overhead after current vLLM hybrid serving machinery is
-enabled.
+enabled. A kernel contribution exists only if native traces reveal boundary
+overhead not already handled by vLLM's hybrid SSM machinery.
 
 ## Strongest Evidence
 
@@ -37,6 +38,10 @@ are optional only for an explicit `no_boundary_signal_kill` packet whose rows
 are a clean below-1% kill, whose readout/reduction notes record no suspicious
 boundary-local Nsight Systems signal, and whose rows use
 `ncu_artifact: "not_run_no_boundary_signal"`.
+The runbook now also requires a reduction input manifest tying each reduced row
+to exact Nsight exports, windows, commands, and script hashes; analyst-selected
+timeline windows without that manifest are review risks, not camera-ready
+evidence.
 
 ## Reviewer Risks
 

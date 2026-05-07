@@ -12,7 +12,7 @@
 \maketitle
 
 \begin{abstract}
-We present a preregistered falsification protocol for training-free sparse KV-retention proposals on saved reasoning-style traces. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, require matched-budget wins against R-KV-like and ThinKV-like proxies, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics where those diagnostics are implemented. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
+We present a preregistered falsification protocol for training-free sparse KV-retention proposals on saved reasoning-style traces. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, require matched-budget wins against R-KV-like and ThinKV-like proxies, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics where those diagnostics are implemented. All benchmark surfaces here are Mac-local saved-trace falsification fixtures, not reasoning-model benchmark claims. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The original FP8 systems target is not part of this claim: the anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
 \end{abstract}
 
 \section{Contribution}
@@ -25,6 +25,8 @@ oracle/headroom diagnostics for the RDU demotion gates, and machine-checkable st
 is the case study showing why each check matters: one plausible signal looks
 positive on a frozen surface, then fails to reproduce under stricter reproduction, while
 two later signals fail fresh-surface gates outright.
+If older tracked artifacts say \texttt{ALIVE} or \texttt{PROMOTED}, the current
+decision manifest supersedes them.
 
 \begin{table}[h]
 \centering
@@ -236,7 +238,7 @@ R-KV-like & 74 & 0.214 & 3.939 & +0.039 [-0.015,+0.099] \\
 LongFlow-like & 74 & 0.213 & 4.158 & +0.258 [+0.178,+0.337] \\
 \bottomrule
 \end{tabular}
-\caption{Historical one-shot frozen sparse-cache successor evaluation. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050] on this first surface, but later alternate-surface and independent-trace gates fail to reproduce the promotion.}
+\caption{Historical failed-to-reproduce one-shot frozen sparse-cache successor evaluation. \texttt{rdu\_topk} also beats R-KV-like by -0.160 NLL with 95\% CI [-0.264,-0.050] on this first surface, but later alternate-surface and independent-trace gates fail to reproduce the promotion.}
 \end{table}
 
 \begin{table}[h]
@@ -311,7 +313,7 @@ Claimed & Not claimed \\
 Preregistered sparse-cache falsification ladder. & State-of-the-art KV compression. \\
 Matched-budget Mac sparse-cache scoring. & Native FP8 serving quality. \\
 Stopped-family/proxy-baseline and fresh-surface stop rules. & CUDA kernel speed, latency, throughput, or HBM savings. \\
-Triton-interpreter parity for an int8 anchor/phase primitive. & A live deployable compression method. \\
+Triton-interpreter parity for an int8 anchor/phase scaffold primitive. & A live deployable compression method or FP8/cache-serving correctness. \\
 \bottomrule
 \end{tabular}
 \caption{Boundary between the workshop claim and the stopped systems-method target.}

@@ -118,6 +118,37 @@ PY
 } | tee "$HWK_RUN/metadata/environment.txt"
 ```
 
+Create a reduction input manifest before reducing any timeline windows. This
+file is the row-reduction audit trail: every row in `profiler_metrics.json`
+should be traceable to exact Nsight exports, source time windows, commands, and
+reducer script hashes. If a row is reduced manually, record the manual
+worksheet or notebook path and SHA-256 here as the
+`reduction_script_sha256` value; do not leave analyst-selected windows
+unmanifested.
+
+```bash
+cat > "$HWK_RUN/metadata/reduction_input_manifest.json" <<JSON
+{
+  "manifest_version": 1,
+  "rows": [
+    {
+      "run_id": "TODO_NATIVE_PROFILE_FILL",
+      "row_role": "primary_hybrid",
+      "model": "$MODEL",
+      "source_nsys_artifact": "nsys/TODO_NATIVE_PROFILE_FILL.sqlite",
+      "source_nsys_artifact_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "source_time_window_ms": {"start": "TODO_NATIVE_PROFILE_FILL", "end": "TODO_NATIVE_PROFILE_FILL"},
+      "source_ncu_artifact": "ncu/TODO_NATIVE_PROFILE_FILL.ncu-rep",
+      "source_ncu_artifact_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_command": "TODO_NATIVE_PROFILE_FILL",
+      "reduction_script_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
+      "reduction_notes": "TODO_NATIVE_PROFILE_FILL"
+    }
+  ]
+}
+JSON
+```
+
 Record what process the profiler actually observes. A client-only profile is
 not admissible evidence for HybridKernel because the CUDA work lives in the
 vLLM server process:
@@ -461,6 +492,12 @@ Required fields:
 | `ncu_launch_selection` | object recording `kernel_regex`, `launch_skip`, positive `launch_count`, `source_nsys_artifact`, matching `source_time_window_ms`, and derivation notes for the NCU launch slice |
 | `reduction_command` | exact command or script invocation used to reduce the Nsight artifacts into this row |
 | `reduction_notes` | short non-placeholder explanation of the trace reduction |
+
+Also update `metadata/reduction_input_manifest.json` for every reduced row.
+The manifest should include the source Nsight Systems artifact, source time
+window, source Nsight Compute artifact when present, reducer command, reducer
+script or worksheet SHA-256, and row role. This does not replace
+`profiler_metrics.json`; it makes the human reduction path auditable.
 
 Use distinct `run_id` values, `nsys_artifact` paths, `ncu_artifact` paths, and
 `time_window_ms` intervals for independent repeated traces. Duplicating one

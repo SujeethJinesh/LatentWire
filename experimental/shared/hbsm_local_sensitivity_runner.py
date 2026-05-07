@@ -30,6 +30,7 @@ from experimental.shared.hybrid_manifest_local_capture_runner import (
     DEFAULT_PROMPTS,
     GRANITE_TINY_REVISION,
     _decoder_layers,
+    _first_prompt_ids,
     _first_tensor,
     _load_prompt,
     _tokenize_prompt,
@@ -78,22 +79,54 @@ def select_hbsm_entries(
 ) -> list[dict[str, Any]]:
     """Select a layer-aligned resource-limited HBSM B1 row subset."""
 
+    return select_hbsm_entries_for_prompts(
+        template,
+        prompt_ids=(prompt_id,),
+        layer_limit=layer_limit,
+    )
+
+
+def select_hbsm_entries_for_prompts(
+    template: dict[str, Any],
+    *,
+    prompt_ids: tuple[str, ...],
+    layer_limit: int,
+) -> list[dict[str, Any]]:
+    """Select prompt-repeat, layer-aligned HBSM B1 rows plus shared controls."""
+
     if layer_limit < 2:
         raise ValueError("--layer-limit must be at least 2")
+    if not prompt_ids:
+        raise ValueError("at least one prompt_id is required")
     templates = template.get("hbsm_entry_templates")
     if not isinstance(templates, list):
         raise ValueError("HBSM template missing hbsm_entry_templates")
+    prompt_set = set(prompt_ids)
+    available_prompt_ids = {str(entry.get("prompt_id")) for entry in templates}
+    missing_prompts = sorted(prompt_set - available_prompt_ids)
+    if missing_prompts:
+        raise ValueError(f"HBSM template missing prompt rows for {missing_prompts}")
     primary = [
         dict(entry)
         for entry in templates
-        if str(entry["control_type"]) == "boundary_only" and str(entry["prompt_id"]) == prompt_id
+        if str(entry["control_type"]) == "boundary_only" and str(entry["prompt_id"]) in prompt_set
     ]
-    primary = sorted(primary, key=lambda entry: int(entry["layer"]))[:layer_limit]
-    if len(primary) < layer_limit:
-        raise ValueError(f"HBSM template only has {len(primary)} primary rows for {prompt_id}")
-    flags = {bool(entry["boundary_flag"]) for entry in primary}
-    if flags != {False, True}:
-        raise ValueError("selected HBSM layers must include boundary and non-boundary rows")
+    layers = sorted({int(entry["layer"]) for entry in primary})[:layer_limit]
+    if len(layers) < layer_limit:
+        raise ValueError(f"HBSM template only has {len(layers)} layers, requested {layer_limit}")
+    selected_layer_set = set(layers)
+    primary = [
+        entry
+        for entry in sorted(primary, key=lambda item: (str(item["prompt_id"]), int(item["layer"])))
+        if int(entry["layer"]) in selected_layer_set
+    ]
+    for prompt_id in prompt_ids:
+        prompt_rows = [entry for entry in primary if str(entry["prompt_id"]) == prompt_id]
+        if len(prompt_rows) != layer_limit:
+            raise ValueError(f"HBSM template does not cover {layer_limit} layers for {prompt_id}")
+        flags = {bool(entry["boundary_flag"]) for entry in prompt_rows}
+        if flags != {False, True}:
+            raise ValueError("selected HBSM layers must include boundary and non-boundary rows")
     selected_layers = {int(entry["layer"]) for entry in primary}
     controls = [
         dict(entry)
@@ -120,6 +153,7 @@ def _filled_metadata(
     max_input_tokens: int,
     block_size: int,
     layer_count: int,
+    prompt_count: int,
 ) -> dict[str, Any]:
     metadata_template = template.get("metadata")
     if not isinstance(metadata_template, dict):
@@ -141,7 +175,7 @@ def _filled_metadata(
             "device": "cpu",
             "command": "python -m experimental.shared.hbsm_local_sensitivity_runner",
             "resource_limit_note": (
-                "HBSM local sensitivity runner used one short prompt, "
+                f"HBSM local sensitivity runner used {prompt_count} short prompt(s), "
                 f"{layer_count} layer(s), max_input_tokens={max_input_tokens}, "
                 f"and MXFP4 E2M1 block_size={block_size}; this validates "
                 "forward-sensitivity plumbing only and cannot promote B1."
@@ -322,6 +356,7 @@ def _fill_entries(
     selected_entries: list[dict[str, Any]],
     *,
     drift_by_layer: dict[int, float],
+    drift_by_prompt_layer: dict[str, dict[int, float]] | None = None,
     weight_stats: dict[int, dict[str, float]],
     activation_stats: dict[int, dict[str, float]],
 ) -> list[dict[str, Any]]:
@@ -352,7 +387,9 @@ def _fill_entries(
         row["top_decile_flag"] = layer in top_layers
         row["random_top_decile"] = layer in random_layers
         if control_type == "boundary_only":
-            row["kl_or_nll_drift"] = float(drift_by_layer[layer])
+            prompt_id = str(row.get("prompt_id", ""))
+            prompt_drift = (drift_by_prompt_layer or {}).get(prompt_id, {}).get(layer)
+            row["kl_or_nll_drift"] = float(prompt_drift if prompt_drift is not None else drift_by_layer[layer])
             row["cheap_predictor"] = float(weight_norm[layer])
         elif control_type == "perturbation_off":
             row["kl_or_nll_drift"] = 0.0
@@ -379,6 +416,8 @@ def run_hbsm_sensitivity(
     *,
     model_id: str = DEFAULT_MODEL_ID,
     prompt_id: str = "hrsmoke_0001",
+    prompt_ids: tuple[str, ...] | None = None,
+    prompt_limit: int = 1,
     prompt_path: Path = DEFAULT_PROMPTS,
     manifest_dir: Path = DEFAULT_MANIFEST_DIR,
     hf_home: Path = DEFAULT_HF_HOME,
@@ -389,7 +428,13 @@ def run_hbsm_sensitivity(
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     template = _load_hbsm_template(manifest_dir)
-    selected_entries = select_hbsm_entries(template, prompt_id=prompt_id, layer_limit=layer_limit)
+    if prompt_ids is None:
+        prompt_ids = _first_prompt_ids(prompt_path, prompt_limit) if prompt_limit > 1 else (prompt_id,)
+    selected_entries = select_hbsm_entries_for_prompts(
+        template,
+        prompt_ids=prompt_ids,
+        layer_limit=layer_limit,
+    )
     layer_indices = sorted(
         {
             int(entry["layer"])
@@ -397,40 +442,72 @@ def run_hbsm_sensitivity(
             if str(entry["control_type"]) == "boundary_only"
         }
     )
-    prompt = _load_prompt(prompt_path, prompt_id)
     tokenizer, model, load_seconds = _load_tiny_model_and_tokenizer(model_id=model_id, hf_home=hf_home)
-    tokenized = _tokenize_prompt(tokenizer, str(prompt["prompt"]), max_input_tokens)
-    baseline_logits, captures, baseline_seconds = _run_logits(
-        model,
-        tokenized,
-        capture_layers=layer_indices,
-        block_size=block_size,
-    )
-    missing_captures = set(layer_indices) - set(captures)
-    if missing_captures:
-        raise ValueError(f"missing baseline activation captures for layers {sorted(missing_captures)}")
-    activation_stats = {
-        layer: {
-            "max_abs": max_abs(tensor),
-            "kurtosis": kurtosis(tensor),
-        }
-        for layer, tensor in captures.items()
-    }
-    drift_by_layer: dict[int, float] = {}
-    perturb_seconds: dict[int, float] = {}
-    for layer in layer_indices:
-        candidate_logits, _, seconds = _run_logits(
+    prompt_drift_by_layer: dict[str, dict[int, float]] = {}
+    activation_stats_by_prompt: dict[str, dict[int, dict[str, float]]] = {}
+    baseline_seconds_by_prompt: dict[str, float] = {}
+    perturb_seconds: dict[str, dict[int, float]] = {}
+    input_tokens_by_prompt: dict[str, int] = {}
+    for current_prompt_id in prompt_ids:
+        prompt = _load_prompt(prompt_path, current_prompt_id)
+        tokenized = _tokenize_prompt(tokenizer, str(prompt["prompt"]), max_input_tokens)
+        input_tokens_by_prompt[current_prompt_id] = int(tokenized["input_ids"].shape[1])
+        baseline_logits, captures, baseline_seconds = _run_logits(
             model,
             tokenized,
-            perturb_layer=layer,
+            capture_layers=layer_indices,
             block_size=block_size,
         )
-        drift_by_layer[layer] = symmetric_kl_from_logits(baseline_logits, candidate_logits)
-        perturb_seconds[layer] = seconds
+        baseline_seconds_by_prompt[current_prompt_id] = baseline_seconds
+        missing_captures = set(layer_indices) - set(captures)
+        if missing_captures:
+            raise ValueError(f"missing baseline activation captures for layers {sorted(missing_captures)}")
+        activation_stats_by_prompt[current_prompt_id] = {
+            layer: {
+                "max_abs": max_abs(tensor),
+                "kurtosis": kurtosis(tensor),
+            }
+            for layer, tensor in captures.items()
+        }
+        prompt_drift_by_layer[current_prompt_id] = {}
+        perturb_seconds[current_prompt_id] = {}
+        for layer in layer_indices:
+            candidate_logits, _, seconds = _run_logits(
+                model,
+                tokenized,
+                perturb_layer=layer,
+                block_size=block_size,
+            )
+            prompt_drift_by_layer[current_prompt_id][layer] = symmetric_kl_from_logits(
+                baseline_logits,
+                candidate_logits,
+            )
+            perturb_seconds[current_prompt_id][layer] = seconds
+    drift_by_layer = {
+        layer: float(
+            sum(prompt_drift_by_layer[prompt][layer] for prompt in prompt_ids)
+            / max(len(prompt_ids), 1)
+        )
+        for layer in layer_indices
+    }
+    activation_stats = {
+        layer: {
+            "max_abs": float(
+                sum(activation_stats_by_prompt[prompt][layer]["max_abs"] for prompt in prompt_ids)
+                / max(len(prompt_ids), 1)
+            ),
+            "kurtosis": float(
+                sum(activation_stats_by_prompt[prompt][layer]["kurtosis"] for prompt in prompt_ids)
+                / max(len(prompt_ids), 1)
+            ),
+        }
+        for layer in layer_indices
+    }
     weight_stats = _layer_weight_stats(model, layer_indices)
     filled_entries = _fill_entries(
         selected_entries,
         drift_by_layer=drift_by_layer,
+        drift_by_prompt_layer=prompt_drift_by_layer,
         weight_stats=weight_stats,
         activation_stats=activation_stats,
     )
@@ -444,6 +521,7 @@ def run_hbsm_sensitivity(
             max_input_tokens=max_input_tokens,
             block_size=block_size,
             layer_count=len(layer_indices),
+            prompt_count=len(prompt_ids),
         ),
         "hbsm_entries": filled_entries,
     }
@@ -454,15 +532,21 @@ def run_hbsm_sensitivity(
         "surface": "hbsm_local_sensitivity_runner",
         "decision": "RESOURCE_LIMITED_HBSM_B1_PACKET_WRITTEN_NOT_PROMOTABLE",
         "model_id": model_id,
-        "prompt_id": prompt_id,
-        "input_tokens": int(tokenized["input_ids"].shape[1]),
+        "prompt_id": prompt_ids[0],
+        "prompt_ids": list(prompt_ids),
+        "prompt_count": len(prompt_ids),
+        "input_tokens_by_prompt": input_tokens_by_prompt,
+        "input_tokens": max(input_tokens_by_prompt.values()) if input_tokens_by_prompt else 0,
         "layer_indices": layer_indices,
         "block_size": block_size,
         "load_seconds": load_seconds,
-        "baseline_seconds": baseline_seconds,
+        "baseline_seconds": sum(baseline_seconds_by_prompt.values()),
+        "baseline_seconds_by_prompt": baseline_seconds_by_prompt,
         "perturb_seconds": perturb_seconds,
         "drift_by_layer": drift_by_layer,
+        "prompt_drift_by_layer": prompt_drift_by_layer,
         "activation_stats": activation_stats,
+        "activation_stats_by_prompt": activation_stats_by_prompt,
         "row_packet": str(row_packet),
         "gate_packet": str(gate_packet),
         "checker_ok": bool(report["ok"]),
@@ -490,7 +574,7 @@ def _summary_markdown(summary: dict[str, Any]) -> str:
         "This is a resource-limited local HBSM B1 packet. It cannot promote B1.",
         "",
         f"- Model: `{summary['model_id']}`",
-        f"- Prompt: `{summary['prompt_id']}`",
+        f"- Prompts: `{summary.get('prompt_ids', [summary['prompt_id']])}`",
         f"- Input tokens: `{summary['input_tokens']}`",
         f"- Layers: `{summary['layer_indices']}`",
         f"- Load seconds: `{summary['load_seconds']:.2f}`",
@@ -511,6 +595,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-id", default=DEFAULT_MODEL_ID)
     parser.add_argument("--prompt-id", default="hrsmoke_0001")
+    parser.add_argument("--prompt-ids", default=None, help="Comma-separated prompt IDs. Overrides --prompt-limit.")
+    parser.add_argument("--prompt-limit", type=int, default=1)
     parser.add_argument("--prompt-path", type=Path, default=DEFAULT_PROMPTS)
     parser.add_argument("--manifest-dir", type=Path, default=DEFAULT_MANIFEST_DIR)
     parser.add_argument("--hf-home", type=Path, default=DEFAULT_HF_HOME)
@@ -519,9 +605,12 @@ def main() -> None:
     parser.add_argument("--layer-limit", type=int, default=8)
     parser.add_argument("--block-size", type=int, default=32)
     args = parser.parse_args()
+    prompt_ids = tuple(item.strip() for item in args.prompt_ids.split(",") if item.strip()) if args.prompt_ids else None
     run_hbsm_sensitivity(
         model_id=args.model_id,
         prompt_id=args.prompt_id,
+        prompt_ids=prompt_ids,
+        prompt_limit=args.prompt_limit,
         prompt_path=args.prompt_path,
         manifest_dir=args.manifest_dir,
         hf_home=args.hf_home,
