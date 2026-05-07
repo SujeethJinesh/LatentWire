@@ -208,3 +208,25 @@ coverage.
 
 Decision: **H1A REAL BOUNDARY ROWS MUST BE TRACE-PLAN-CHECKABLE**. The blocker
 remains the first real boundary-activation packet.
+
+## 2026-05-07 Tensor Provenance Guard
+
+`activation_dumper.py` now writes a tensor manifest with original hook names,
+storage names, SHA-256 hashes, dtypes, shapes, and element counts. HORN builder
+rows copy that provenance into every boundary/control row, and
+`permuted_direction` rows must carry `tensor_alias_of` while reusing the
+observed boundary tensor source and hash.
+
+Decision: **H1A BOUNDARY METRICS MUST BE HASHED BACK TO THEIR SAVED TENSORS**.
+The blocker remains the first real prompt-paired boundary dump.
+
+## 2026-05-07 Promotable Trace-Plan Hash Guard
+
+After reviewer audit, H1a/H1 real packets cannot promote by pointing
+`trace_plan_path` at a caller-created subset plan. Non-resource-limited packets
+must cite trace-plan rows whose file SHA-256 equals the registered shared HORN
+`trace_plan_hash`. Resource-limited subset packets remain allowed only as
+`RESOURCE_LIMITED_NOT_PROMOTABLE` diagnostics.
+
+Decision: **H1A PROMOTION MUST USE THE REGISTERED FROZEN PLAN CONTENT**. The
+blocker remains the first real prompt-paired boundary dump.

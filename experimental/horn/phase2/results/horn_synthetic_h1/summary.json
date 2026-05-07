@@ -36,7 +36,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_00",
-      "rms": 0.75
+      "rms": 0.75,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_00/boundary_0/observed",
+      "tensor_sha256": "sha256:6e0b693bd5d84469f44d0809f8687156c15c7c8150433df4d64889c240b83b59",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_00/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_00_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -51,7 +60,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_00",
-      "rms": 0.95
+      "rms": 0.95,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_00/boundary_1/observed",
+      "tensor_sha256": "sha256:2a8064a66cffdcef72214ac930b7db812bcf6f4e04cbdff986b60621c5a1428c",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_00/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_00_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -66,7 +84,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_00",
-      "rms": 0.72
+      "rms": 0.72,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_00/non_boundary_0",
+      "tensor_sha256": "sha256:a3ea822a4e4658e5055ed6231cb1af79d03ec57dbb250632b61b313b997381aa",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_00/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_00_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -81,7 +108,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_00",
-      "rms": 0.73
+      "rms": 0.73,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_00/non_boundary_1",
+      "tensor_sha256": "sha256:d4b2be71857f6aec75ccb665bcebab073bccbd196d4165fe85d61a467af491d0",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_00/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_00_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -96,7 +132,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_00",
-      "rms": 0.75
+      "rms": 0.75,
+      "tensor_alias_of": "horn/synthetic_prompt_00/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_00/boundary_0/observed",
+      "tensor_sha256": "sha256:6e0b693bd5d84469f44d0809f8687156c15c7c8150433df4d64889c240b83b59",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_00/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_00_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -111,7 +157,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_00",
-      "rms": 0.95
+      "rms": 0.95,
+      "tensor_alias_of": "horn/synthetic_prompt_00/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_00/boundary_1/observed",
+      "tensor_sha256": "sha256:2a8064a66cffdcef72214ac930b7db812bcf6f4e04cbdff986b60621c5a1428c",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_00/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_00_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -126,7 +182,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_01",
-      "rms": 0.751
+      "rms": 0.751,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_01/boundary_0/observed",
+      "tensor_sha256": "sha256:4307997d3b05eb77996aae8bd12b391922d8660f18fcee094423a157cf19c74e",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_01/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_01_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -141,7 +206,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_01",
-      "rms": 0.951
+      "rms": 0.951,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_01/boundary_1/observed",
+      "tensor_sha256": "sha256:bf2175a2d8cf124aebe3ca34ece9164a45a744ef9b8e66bde39fe4c33fe5334d",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_01/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_01_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -156,7 +230,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_01",
-      "rms": 0.721
+      "rms": 0.721,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_01/non_boundary_0",
+      "tensor_sha256": "sha256:856f10790995980d07678985aee5415f98c22e5c150aaa7c2a1d9b6e51edae13",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_01/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_01_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -171,7 +254,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_01",
-      "rms": 0.731
+      "rms": 0.731,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_01/non_boundary_1",
+      "tensor_sha256": "sha256:f10f7258469ff399190c38b284c164ff9c20d20c7e2c5f450e1ff8934145b24c",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_01/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_01_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -186,7 +278,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_01",
-      "rms": 0.751
+      "rms": 0.751,
+      "tensor_alias_of": "horn/synthetic_prompt_01/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_01/boundary_0/observed",
+      "tensor_sha256": "sha256:4307997d3b05eb77996aae8bd12b391922d8660f18fcee094423a157cf19c74e",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_01/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_01_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -201,7 +303,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_01",
-      "rms": 0.951
+      "rms": 0.951,
+      "tensor_alias_of": "horn/synthetic_prompt_01/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_01/boundary_1/observed",
+      "tensor_sha256": "sha256:bf2175a2d8cf124aebe3ca34ece9164a45a744ef9b8e66bde39fe4c33fe5334d",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_01/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_01_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -216,7 +328,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_02",
-      "rms": 0.752
+      "rms": 0.752,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_02/boundary_0/observed",
+      "tensor_sha256": "sha256:2e62d2b2e9c51f16a2b8419509acb85e09bf7aeba876fb3e8e44282f288442cc",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_02/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_02_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -231,7 +352,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_02",
-      "rms": 0.952
+      "rms": 0.952,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_02/boundary_1/observed",
+      "tensor_sha256": "sha256:62791aa7ccd8681e7271cfa112fd40eb1c2fe52f30f1880334ee08b7724c363e",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_02/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_02_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -246,7 +376,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_02",
-      "rms": 0.722
+      "rms": 0.722,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_02/non_boundary_0",
+      "tensor_sha256": "sha256:47f5145ab5b8c7761fd9c6ce0561fada6d761348cd338972efca2ab5d71eb677",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_02/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_02_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -261,7 +400,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_02",
-      "rms": 0.732
+      "rms": 0.732,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_02/non_boundary_1",
+      "tensor_sha256": "sha256:21ac74723226544f971cc35bd4b707cb7956b6926d653a52f81e6148e3c845d0",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_02/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_02_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -276,7 +424,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_02",
-      "rms": 0.752
+      "rms": 0.752,
+      "tensor_alias_of": "horn/synthetic_prompt_02/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_02/boundary_0/observed",
+      "tensor_sha256": "sha256:2e62d2b2e9c51f16a2b8419509acb85e09bf7aeba876fb3e8e44282f288442cc",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_02/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_02_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -291,7 +449,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_02",
-      "rms": 0.952
+      "rms": 0.952,
+      "tensor_alias_of": "horn/synthetic_prompt_02/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_02/boundary_1/observed",
+      "tensor_sha256": "sha256:62791aa7ccd8681e7271cfa112fd40eb1c2fe52f30f1880334ee08b7724c363e",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_02/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_02_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -306,7 +474,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_03",
-      "rms": 0.753
+      "rms": 0.753,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_03/boundary_0/observed",
+      "tensor_sha256": "sha256:f6358063d32c6cfa1d0cac9d2bc830ce69b4a7f076574b16ffa091b8d6cf90a7",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_03/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_03_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -321,7 +498,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_03",
-      "rms": 0.953
+      "rms": 0.953,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_03/boundary_1/observed",
+      "tensor_sha256": "sha256:45285a09148278122fe3adeaf947a2edb9c5d7d39a15f4325fc9f75ddbe3a909",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_03/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_03_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -336,7 +522,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_03",
-      "rms": 0.723
+      "rms": 0.723,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_03/non_boundary_0",
+      "tensor_sha256": "sha256:f2796886a2cdd1773729988bee3accf6a99b02109dd73e3750bf08f4445d3c23",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_03/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_03_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -351,7 +546,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_03",
-      "rms": 0.733
+      "rms": 0.733,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_03/non_boundary_1",
+      "tensor_sha256": "sha256:7f921fbb810dcdf4a0777a362077287009eb798f58d7f097982c412b3a486eb9",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_03/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_03_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -366,7 +570,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_03",
-      "rms": 0.753
+      "rms": 0.753,
+      "tensor_alias_of": "horn/synthetic_prompt_03/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_03/boundary_0/observed",
+      "tensor_sha256": "sha256:f6358063d32c6cfa1d0cac9d2bc830ce69b4a7f076574b16ffa091b8d6cf90a7",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_03/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_03_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -381,7 +595,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_03",
-      "rms": 0.953
+      "rms": 0.953,
+      "tensor_alias_of": "horn/synthetic_prompt_03/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_03/boundary_1/observed",
+      "tensor_sha256": "sha256:45285a09148278122fe3adeaf947a2edb9c5d7d39a15f4325fc9f75ddbe3a909",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_03/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_03_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -396,7 +620,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_04",
-      "rms": 0.754
+      "rms": 0.754,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_04/boundary_0/observed",
+      "tensor_sha256": "sha256:8552d0eaffb20e4d9b8d8fee73942c033043483f857845baf8909f86736f5fb0",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_04/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_04_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -411,7 +644,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_04",
-      "rms": 0.954
+      "rms": 0.954,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_04/boundary_1/observed",
+      "tensor_sha256": "sha256:8c96d7a4cb01ede237b61dd0f3746bef98ba2c09b1e7a47bac42fa1d8549c9cc",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_04/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_04_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -426,7 +668,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_04",
-      "rms": 0.724
+      "rms": 0.724,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_04/non_boundary_0",
+      "tensor_sha256": "sha256:a09193549e32b4446d0739000fcb2462f9f2ef87a9b1f71b6006db93f2454ba0",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_04/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_04_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -441,7 +692,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_04",
-      "rms": 0.734
+      "rms": 0.734,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_04/non_boundary_1",
+      "tensor_sha256": "sha256:031ff06fd574c3b2af5f677de3b8d39eacad76eee1af1413634621d82e37d3ba",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_04/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_04_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -456,7 +716,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_04",
-      "rms": 0.754
+      "rms": 0.754,
+      "tensor_alias_of": "horn/synthetic_prompt_04/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_04/boundary_0/observed",
+      "tensor_sha256": "sha256:8552d0eaffb20e4d9b8d8fee73942c033043483f857845baf8909f86736f5fb0",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_04/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_04_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -471,7 +741,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_04",
-      "rms": 0.954
+      "rms": 0.954,
+      "tensor_alias_of": "horn/synthetic_prompt_04/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_04/boundary_1/observed",
+      "tensor_sha256": "sha256:8c96d7a4cb01ede237b61dd0f3746bef98ba2c09b1e7a47bac42fa1d8549c9cc",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_04/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_04_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -486,7 +766,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_05",
-      "rms": 0.755
+      "rms": 0.755,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_05/boundary_0/observed",
+      "tensor_sha256": "sha256:e2ac2220cb0cd93c5336db20e45929b016314653a6da6f3f84c330aee1e1be7d",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_05/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_05_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -501,7 +790,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_05",
-      "rms": 0.955
+      "rms": 0.955,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_05/boundary_1/observed",
+      "tensor_sha256": "sha256:8b59bb078947f712b4c187c79eb89a297848c7295fffe6324dadecf9d43913a2",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_05/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_05_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -516,7 +814,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_05",
-      "rms": 0.725
+      "rms": 0.725,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_05/non_boundary_0",
+      "tensor_sha256": "sha256:24238de1c75f3f985155f0083394c250a277f37264615a9dda66585933113ccb",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_05/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_05_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -531,7 +838,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_05",
-      "rms": 0.735
+      "rms": 0.735,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_05/non_boundary_1",
+      "tensor_sha256": "sha256:10dc3d90485d97d1e11673d661b21cf1cca8ad92814892f5a6072bfb3198dbd4",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_05/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_05_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -546,7 +862,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_05",
-      "rms": 0.755
+      "rms": 0.755,
+      "tensor_alias_of": "horn/synthetic_prompt_05/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_05/boundary_0/observed",
+      "tensor_sha256": "sha256:e2ac2220cb0cd93c5336db20e45929b016314653a6da6f3f84c330aee1e1be7d",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_05/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_05_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -561,7 +887,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_05",
-      "rms": 0.955
+      "rms": 0.955,
+      "tensor_alias_of": "horn/synthetic_prompt_05/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_05/boundary_1/observed",
+      "tensor_sha256": "sha256:8b59bb078947f712b4c187c79eb89a297848c7295fffe6324dadecf9d43913a2",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_05/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_05_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -576,7 +912,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_06",
-      "rms": 0.756
+      "rms": 0.756,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_06/boundary_0/observed",
+      "tensor_sha256": "sha256:7d01bcf8d71f7eeceb8c74a699d89af70cbe6415a1fe5b63169af80e28096619",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_06/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_06_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -591,7 +936,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_06",
-      "rms": 0.956
+      "rms": 0.956,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_06/boundary_1/observed",
+      "tensor_sha256": "sha256:5f60fc13eaf34262984284089fbb033174acd88c636d7135b0ac9016517e40f5",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_06/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_06_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -606,7 +960,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_06",
-      "rms": 0.726
+      "rms": 0.726,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_06/non_boundary_0",
+      "tensor_sha256": "sha256:96ade0e256f4015e6606d87fed1973a9ccdf4538ca2428145171be330bc537ee",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_06/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_06_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -621,7 +984,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_06",
-      "rms": 0.736
+      "rms": 0.736,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_06/non_boundary_1",
+      "tensor_sha256": "sha256:5b8578ca325a4cb03c58c01e7b48e418a71962072d556ade6e419acca38c0d30",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_06/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_06_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -636,7 +1008,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_06",
-      "rms": 0.756
+      "rms": 0.756,
+      "tensor_alias_of": "horn/synthetic_prompt_06/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_06/boundary_0/observed",
+      "tensor_sha256": "sha256:7d01bcf8d71f7eeceb8c74a699d89af70cbe6415a1fe5b63169af80e28096619",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_06/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_06_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -651,7 +1033,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_06",
-      "rms": 0.956
+      "rms": 0.956,
+      "tensor_alias_of": "horn/synthetic_prompt_06/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_06/boundary_1/observed",
+      "tensor_sha256": "sha256:5f60fc13eaf34262984284089fbb033174acd88c636d7135b0ac9016517e40f5",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_06/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_06_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -666,7 +1058,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_07",
-      "rms": 0.757
+      "rms": 0.757,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_07/boundary_0/observed",
+      "tensor_sha256": "sha256:54bc757343708cd01fc1a7f44012881360ed8dcb0d26bfe4cef184dbc765b97c",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_07/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_07_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -681,7 +1082,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_07",
-      "rms": 0.957
+      "rms": 0.957,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_07/boundary_1/observed",
+      "tensor_sha256": "sha256:796455c8fbb649055c6e4a904fe87043caec552b55e0fd10f1018e121065bd24",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_07/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_07_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -696,7 +1106,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_07",
-      "rms": 0.727
+      "rms": 0.727,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_07/non_boundary_0",
+      "tensor_sha256": "sha256:583bddbdf03d4d6c5302077cf162ebe1b095c9c2c0d0fa76c0808964d81760da",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_07/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_07_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -711,7 +1130,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_07",
-      "rms": 0.737
+      "rms": 0.737,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_07/non_boundary_1",
+      "tensor_sha256": "sha256:ba2b2b110b8ba8e31a2d37e969d738e4c597bb5aadd2278e1ff34a0a62e9b26d",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_07/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_07_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -726,7 +1154,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_07",
-      "rms": 0.757
+      "rms": 0.757,
+      "tensor_alias_of": "horn/synthetic_prompt_07/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_07/boundary_0/observed",
+      "tensor_sha256": "sha256:54bc757343708cd01fc1a7f44012881360ed8dcb0d26bfe4cef184dbc765b97c",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_07/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_07_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -741,7 +1179,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_07",
-      "rms": 0.957
+      "rms": 0.957,
+      "tensor_alias_of": "horn/synthetic_prompt_07/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_07/boundary_1/observed",
+      "tensor_sha256": "sha256:796455c8fbb649055c6e4a904fe87043caec552b55e0fd10f1018e121065bd24",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_07/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_07_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -756,7 +1204,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_08",
-      "rms": 0.758
+      "rms": 0.758,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_08/boundary_0/observed",
+      "tensor_sha256": "sha256:b788265cb3d77a0acb0013649835a207353fcea8e86771d9e7f7827530821e76",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_08/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_08_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -771,7 +1228,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_08",
-      "rms": 0.958
+      "rms": 0.958,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_08/boundary_1/observed",
+      "tensor_sha256": "sha256:3db8d94705e6ae03dd6cf400ed0b76725097e416f37de6c1956b40de58915ed6",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_08/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_08_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -786,7 +1252,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_08",
-      "rms": 0.728
+      "rms": 0.728,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_08/non_boundary_0",
+      "tensor_sha256": "sha256:33f4ab9a039bdc6bbddb772d7659198f08b4052a7f68b0d522981f6cb8a96736",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_08/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_08_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -801,7 +1276,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_08",
-      "rms": 0.738
+      "rms": 0.738,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_08/non_boundary_1",
+      "tensor_sha256": "sha256:dbf16995f59dc78b2b083772772348c3838c6cda80baa5792363c682f2a7bf10",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_08/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_08_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -816,7 +1300,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_08",
-      "rms": 0.758
+      "rms": 0.758,
+      "tensor_alias_of": "horn/synthetic_prompt_08/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_08/boundary_0/observed",
+      "tensor_sha256": "sha256:b788265cb3d77a0acb0013649835a207353fcea8e86771d9e7f7827530821e76",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_08/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_08_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -831,7 +1325,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_08",
-      "rms": 0.958
+      "rms": 0.958,
+      "tensor_alias_of": "horn/synthetic_prompt_08/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_08/boundary_1/observed",
+      "tensor_sha256": "sha256:3db8d94705e6ae03dd6cf400ed0b76725097e416f37de6c1956b40de58915ed6",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_08/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_08_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -846,7 +1350,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_09",
-      "rms": 0.759
+      "rms": 0.759,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_09/boundary_0/observed",
+      "tensor_sha256": "sha256:ddf428d694017654b9c12a57c17afd0e76d4d57519e704c610a4f8dd4e160bde",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_09/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_09_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -861,7 +1374,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_09",
-      "rms": 0.959
+      "rms": 0.959,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_09/boundary_1/observed",
+      "tensor_sha256": "sha256:7e0320be99c3533cd31afca3ff531905b110b15a4ddcbe722352057bd8410fcb",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_09/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_09_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -876,7 +1398,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_09",
-      "rms": 0.729
+      "rms": 0.729,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_09/non_boundary_0",
+      "tensor_sha256": "sha256:4e5e16de0cc36b818dc7c03e4a08697ddcdc0b0209d0cdd665cdaa5c697f4e8c",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_09/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_09_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -891,7 +1422,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_09",
-      "rms": 0.739
+      "rms": 0.739,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_09/non_boundary_1",
+      "tensor_sha256": "sha256:780660af47afe2825c6f41317c923f9ea643c4289ee5beb548a71f0b256e3a7c",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_09/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_09_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -906,7 +1446,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_09",
-      "rms": 0.759
+      "rms": 0.759,
+      "tensor_alias_of": "horn/synthetic_prompt_09/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_09/boundary_0/observed",
+      "tensor_sha256": "sha256:ddf428d694017654b9c12a57c17afd0e76d4d57519e704c610a4f8dd4e160bde",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_09/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_09_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -921,7 +1471,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_09",
-      "rms": 0.959
+      "rms": 0.959,
+      "tensor_alias_of": "horn/synthetic_prompt_09/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_09/boundary_1/observed",
+      "tensor_sha256": "sha256:7e0320be99c3533cd31afca3ff531905b110b15a4ddcbe722352057bd8410fcb",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_09/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_09_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -936,7 +1496,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_10",
-      "rms": 0.76
+      "rms": 0.76,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_10/boundary_0/observed",
+      "tensor_sha256": "sha256:6b68dd1e73f362471108195ce76e0c4479ee1f1eb742f6fc0a2489d8feb4c4f1",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_10/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_10_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -951,7 +1520,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_10",
-      "rms": 0.96
+      "rms": 0.96,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_10/boundary_1/observed",
+      "tensor_sha256": "sha256:fad34832aba7e1371c44c0a48018080e3f3e30c833f28062c29892dd6f2abc93",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_10/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_10_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -966,7 +1544,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_10",
-      "rms": 0.73
+      "rms": 0.73,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_10/non_boundary_0",
+      "tensor_sha256": "sha256:30f26603cebd643429339a671352ff7fb7e8fdb48141ad9f0b76e9aed9d1f273",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_10/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_10_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -981,7 +1568,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_10",
-      "rms": 0.74
+      "rms": 0.74,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_10/non_boundary_1",
+      "tensor_sha256": "sha256:b3c46a2c3d3d5573ad4131e550f5ce86da2e77224217a6c380a721135803dc6d",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_10/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_10_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -996,7 +1592,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_10",
-      "rms": 0.76
+      "rms": 0.76,
+      "tensor_alias_of": "horn/synthetic_prompt_10/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_10/boundary_0/observed",
+      "tensor_sha256": "sha256:6b68dd1e73f362471108195ce76e0c4479ee1f1eb742f6fc0a2489d8feb4c4f1",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_10/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_10_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -1011,7 +1617,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_10",
-      "rms": 0.96
+      "rms": 0.96,
+      "tensor_alias_of": "horn/synthetic_prompt_10/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_10/boundary_1/observed",
+      "tensor_sha256": "sha256:fad34832aba7e1371c44c0a48018080e3f3e30c833f28062c29892dd6f2abc93",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_10/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_10_boundary_1_observed.pt"
     },
     {
       "boundary_index": 0,
@@ -1026,7 +1642,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_11",
-      "rms": 0.761
+      "rms": 0.761,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_11/boundary_0/observed",
+      "tensor_sha256": "sha256:0ce9cec71d6f27c91fe399795080c1cfbd137b4aa66c44359a4bbfa3a7283943",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_11/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_11_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -1041,7 +1666,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_11",
-      "rms": 0.961
+      "rms": 0.961,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_11/boundary_1/observed",
+      "tensor_sha256": "sha256:41c96640f783ceac999ee1cddc977860da146edf21ee87b954fbe38ce826d714",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_11/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_11_boundary_1_observed.pt"
     },
     {
       "boundary_index": 2,
@@ -1056,7 +1690,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_11",
-      "rms": 0.731
+      "rms": 0.731,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_11/non_boundary_0",
+      "tensor_sha256": "sha256:a2a3014b86d525bcfc5d54656b77f560fd25b3a6266159597f7567b645976ac1",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_11/non_boundary_0",
+      "tensor_storage_name": "horn_synthetic_prompt_11_non_boundary_0.pt"
     },
     {
       "boundary_index": 3,
@@ -1071,7 +1714,16 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_11",
-      "rms": 0.741
+      "rms": 0.741,
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_11/non_boundary_1",
+      "tensor_sha256": "sha256:e3df41b0dda668cd3e4904ee78b85fa935978626399931fe2a65906bbcdcf1a3",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_11/non_boundary_1",
+      "tensor_storage_name": "horn_synthetic_prompt_11_non_boundary_1.pt"
     },
     {
       "boundary_index": 0,
@@ -1086,7 +1738,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_11",
-      "rms": 0.761
+      "rms": 0.761,
+      "tensor_alias_of": "horn/synthetic_prompt_11/boundary_0/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_11/boundary_0/observed",
+      "tensor_sha256": "sha256:0ce9cec71d6f27c91fe399795080c1cfbd137b4aa66c44359a4bbfa3a7283943",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_11/boundary_0/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_11_boundary_0_observed.pt"
     },
     {
       "boundary_index": 1,
@@ -1101,7 +1763,17 @@
       "post_norm_position": "pre_norm",
       "pre_norm_position": "post_norm",
       "prompt_id": "synthetic_prompt_11",
-      "rms": 0.961
+      "rms": 0.961,
+      "tensor_alias_of": "horn/synthetic_prompt_11/boundary_1/observed",
+      "tensor_dtype": "torch.float32",
+      "tensor_name": "horn/synthetic_prompt_11/boundary_1/observed",
+      "tensor_sha256": "sha256:41c96640f783ceac999ee1cddc977860da146edf21ee87b954fbe38ce826d714",
+      "tensor_shape": [
+        1,
+        1
+      ],
+      "tensor_source_name": "horn/synthetic_prompt_11/boundary_1/observed",
+      "tensor_storage_name": "horn_synthetic_prompt_11_boundary_1_observed.pt"
     }
   ],
   "seed": 20260506,

@@ -37,6 +37,18 @@ def _sha256_text(text: str) -> str:
     return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _tensor_provenance(name: str, shape: list[int]) -> dict[str, object]:
+    safe_name = name.replace("/", "_").replace(" ", "_")
+    return {
+        "tensor_name": name,
+        "tensor_source_name": name,
+        "tensor_storage_name": f"{safe_name}.pt",
+        "tensor_sha256": _sha256_text(f"{name}:{shape}:synthetic-ssq-lr"),
+        "tensor_dtype": "torch.float32",
+        "tensor_shape": shape,
+    }
+
+
 def _rms(tensor: torch.Tensor) -> float:
     values = tensor.float()
     return float(torch.sqrt(torch.mean(values * values)))
@@ -90,6 +102,10 @@ def _rows(seed: int) -> list[dict[str, object]]:
                         "kurtosis": kurtosis(state),
                         "outlier_mass": _outlier_mass(state),
                         "control_type": "bf16_no_quant",
+                        **_tensor_provenance(
+                            f"ssq_lr/{prompt_id}/layer_{layer}/{bucket}",
+                            list(state.shape),
+                        ),
                     }
                 )
     return rows

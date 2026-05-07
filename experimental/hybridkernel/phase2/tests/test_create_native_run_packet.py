@@ -74,6 +74,18 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     assert [row["row_role"] for row in metrics["rows"]].count("primary_hybrid") == 3
     assert [row["row_role"] for row in metrics["rows"]].count("same_family_control") == 3
     assert [row["row_role"] for row in metrics["rows"]].count("cross_family_falsification") == 3
+    assert {row["boundary_direction"] for row in metrics["rows"] if row["row_role"] == "primary_hybrid"} == {
+        "mixed_attention_ssm"
+    }
+    assert {row["boundary_direction"] for row in metrics["rows"] if row["row_role"] == "same_family_control"} == {
+        "non_boundary_same_family"
+    }
+    assert {row["boundary_direction"] for row in metrics["rows"] if row["row_role"] == "cross_family_falsification"} == {
+        "linear_attention_gated_delta_boundary"
+    }
+    assert {tuple(row["batch_shape"].values()) for row in metrics["rows"]} == {
+        (1, 128, 64, 16)
+    }
     assert {row["model"] for row in metrics["rows"] if row["row_role"] == "same_family_control"} == {
         "ibm-granite/granite-4.0-h-tiny"
     }
@@ -177,11 +189,47 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
 
     rows = []
     specs = [
-        ("primary", model, "primary_hybrid", "same_family_matched_segment", 8.0, 2.0),
-        ("same", same_family, "same_family_control", "same_model_non_boundary_segment_control", 2.0, 2.0),
-        ("cross", cross_family, "cross_family_falsification", "cross_family_hybrid_control", 2.0, 2.0),
+        (
+            "primary",
+            model,
+            "primary_hybrid",
+            "same_family_matched_segment",
+            "granite_hybrid_attention_ssm_boundary_windows",
+            "mixed_attention_ssm",
+            8.0,
+            2.0,
+        ),
+        (
+            "same",
+            same_family,
+            "same_family_control",
+            "same_model_non_boundary_segment_control",
+            "granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows",
+            "non_boundary_same_family",
+            2.0,
+            2.0,
+        ),
+        (
+            "cross",
+            cross_family,
+            "cross_family_falsification",
+            "cross_family_hybrid_control",
+            "qwen3_next_hybrid_boundary_windows",
+            "linear_attention_gated_delta_boundary",
+            2.0,
+            2.0,
+        ),
     ]
-    for spec_index, (label, row_model, role, family, boundary_ms, matched_ms) in enumerate(specs):
+    for spec_index, (
+        label,
+        row_model,
+        role,
+        family,
+        control_segment,
+        boundary_direction,
+        boundary_ms,
+        matched_ms,
+    ) in enumerate(specs):
         for repeat in range(3):
             row_id = f"{label}-{repeat}"
             nsys_path = run_dir / f"nsys/{row_id}.nsys-rep"
@@ -206,10 +254,10 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
                         "decode_tokens": 64,
                         "requests": 16,
                     },
-                    "control_model_or_segment": family,
+                    "control_model_or_segment": control_segment,
                     "row_role": role,
                     "control_family": family,
-                    "boundary_direction": "mixed_attention_ssm",
+                    "boundary_direction": boundary_direction,
                     "nsys_artifact": f"nsys/{row_id}.nsys-rep",
                     "nsys_artifact_sha256": _sha256(nsys_path),
                     "ncu_artifact": f"ncu/{row_id}.ncu-rep",

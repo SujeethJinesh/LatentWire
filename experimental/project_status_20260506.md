@@ -11,7 +11,7 @@ saturated ideas.
 
 | Rank | Project | Readiness | Current story | Exact blocking gap | Next experiment |
 |---:|---|---:|---|---|---|
-| 1 | HybridKernel | 70% if GPU gate passes; 0% as local-only result | Boundary-fusion may recover avoidable attention to SSM overhead in hybrid models, but Mac work is saturated. The packet checker now handles batch>1 replay as per-sample prefill plus aggregate completion tokens, and the opt-in Triton CPU-backend correctness gate passes locally. | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, at least 3% recoverable gain, three same-shape same-family control rows, three same-shape cross-family falsification rows that stay below 3%, fixed-length replay with `ignore_eos`, and matching client replay logs for every metric model. | Run `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`; verify with `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`. |
+| 1 | HybridKernel | 70% if GPU gate passes; 0% as local-only result | Boundary-fusion may recover avoidable attention to SSM overhead in hybrid models, but Mac work is saturated. The packet checker now handles batch>1 replay as per-sample prefill plus aggregate completion tokens, enforces the copied native control matrix's request shape/control segment/boundary direction, and the opt-in Triton CPU-backend correctness gate passes locally. | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, at least 3% recoverable gain, three same-shape same-family control rows, three same-shape cross-family falsification rows that stay below 3%, fixed-length replay with `ignore_eos`, matching client replay logs for every metric model, and a clean no-boundary negative if using `no_boundary_signal_kill`. | Run `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`; verify with `check_profiler_run_artifacts.py` and `analyze_profiler_metrics.py`. |
 | 2 | SSQ-LR | 15% positive method | Test whether recurrent SSM state in hybrid reasoners can go below FP16 with a stable quantization recipe. The current packet is a 288-row synthetic real-schema rehearsal, not model evidence; it exercises the real SSQ-LR checker through `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_SSQ_LR_S1`. | Mac Gate S1 must show state-distribution heterogeneity on real hybrid SSM state dumps. The checker now requires every prompt/layer pair to cover prefill_end, 2k_or_end, 8k_or_end, and final_minus_128 buckets, SSM/Mamba layer-kind and recurrent-state tensor-kind labels, decision-grade summary fields, bootstrap-style prompt-level lower bounds, Holm-corrected two-sample distribution tests with a 1.25x effect-size floor, full 64-hex SHA provenance, and at least 12 prompts unless explicitly resource-limited and non-promotable. | Run `experimental/ssq_lr/phase2/preregister_ssq_lr_20260506.md` Gate S1 on the smallest available hybrid state dumps. |
 | 3 | HORN | 15% control branch | Test whether attention-to-SSM and SSM-to-attention boundaries have asymmetric outlier/noise propagation. The current packet is a 72-row synthetic real-schema H1a rehearsal, not model evidence; a single-model real screen is labeled H1a, not H1 promotion. | Mac Gate H1 must show consistent directional magnitude or kurtosis asymmetry across real boundary dumps; otherwise HORN stays a control inside SSQ-LR/HBSM. The checker now requires both boundary directions, decision-grade summary fields, per-prompt non-boundary controls paired through `matched_boundary_direction` and below the selected H1 threshold, and permuted controls paired by prompt, boundary, layer, norm positions, metric values, and an actual flipped `direction` label whose selected-direction effect is erased. | Run `experimental/horn/phase2/preregister_horn_20260506.md` H1a once shared dumps exist; promote to H1 only after cross-model consistency. |
 | 4 | HBSM | 15% wounded branch | KL-Lens-like layer sensitivity is crowded; remaining wedge is frontier hybrid mechanism plus cheaper predictor. The current packet is a 504-row synthetic real-schema rehearsal, not model evidence; it exercises prompt-to-layer aggregation, B1 controls, summary recomputation, and per-prompt measured-drift top-decile derivation through `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`. | Gate B1 must replicate sensitivity heterogeneity on current hybrid reasoners, then B2 must show a cheaper predictor. The checker now scores only primary `boundary_only` rows after aggregating prompt rows to `(model_id, layer)`, derives top deciles from measured `kl_or_nll_drift`, rejects every prompt-row supplied flag mismatch, requires prompt-level coverage with boundary and non-boundary layers, exact aggregated top-decile cardinality, a non-enriched same-count random baseline, KL-style and activation/outlier comparator controls, finite metrics, and near-zero perturbation-off controls. | Run `experimental/hbsm/phase2/preregister_hbsm_20260506.md` after shared dumps exist. |
@@ -44,7 +44,9 @@ Shared Mac-local utilities live in `experimental/shared/`:
   entries. It is capture-template-only and cannot promote any gate.
 - `hybrid_trace_packet_builder.py`: converts future saved tensors into strict
   SSQ-LR/HORN real packets and resolves hook names sanitized by tensor-packet
-  storage. Resource-limited input metadata now forces a
+  storage. Tensor packets now include `tensor_manifest.json`, reject sanitized
+  filename collisions, and carry original tensor names, storage names, SHA-256,
+  dtype, and shape into every SSQ-LR/HORN row. Resource-limited input metadata now forces a
   `RESOURCE_LIMITED_NOT_PROMOTABLE_...` packet decision, even if the recomputed
   smoke-gate status would otherwise pass. The builder rejects unfilled capture
   templates marked `_template_only: true` or containing `TO_FILL_BEFORE_CAPTURE`
@@ -64,6 +66,9 @@ Shared Mac-local utilities live in `experimental/shared/`:
   unregistered `model_revision`/`tokenizer_revision` strings, decisions that do
   not equal the recomputed S1/H1/B1 gate status, unknown controls, and rows
   whose `config.json` omits `trace_plan_path` or falls outside that cited plan.
+  Promotable real packets must cite trace-plan rows whose file SHA-256 equals
+  the registered shared `trace_plan_hash`; caller-created subset plans are only
+  accepted for explicit `RESOURCE_LIMITED_NOT_PROMOTABLE` packets.
 - `hybrid_trace_packet_runbook.md`: required schema for the first real
   SSQ-LR/HORN/HBSM trace packet.
 - `prompts/hybrid_reasoning_smoke_12_20260506.jsonl`: frozen 12-prompt Mac
@@ -145,16 +150,18 @@ New packets also copy
 cross-family row roles before the GPU run starts.
 It now has an explicit `no_boundary_signal_kill` packet mode so a clean
 Nsight-Systems negative run can be reviewable without inventing an Nsight
-Compute target.
+Compute target; that mode requires the analysis to be a clean kill and each
+row to state explicit no-boundary-signal evidence before NCU can be skipped.
 Per-row `nsys_artifact` and `ncu_artifact` fields must resolve to reviewable
 files inside the run packet with valid Nsight extensions. This prevents a
 reduced metric row from citing a missing or external artifact.
 The checker also rejects reuse of the same Nsight Systems or Nsight Compute
 artifact across any non-pending metric rows, including across primary,
 same-family control, and cross-family falsification roles.
-It now also rejects metric rows outside the copied `native_control_matrix.json`
-and multi-model metric packets whose `profile_scope.json` lacks per-model
-`model_scopes`.
+It now also rejects metric rows outside the copied `native_control_matrix.json`,
+including mismatched model, control family, control segment, boundary direction,
+or request shape, and multi-model metric packets whose `profile_scope.json`
+lacks per-model `model_scopes`.
 The profiler reducer now refuses prototype promotion unless the same metric
 packet includes at least three matched same-family control rows and three
 cross-family falsification rows on the same request/runtime shape, and those

@@ -163,3 +163,25 @@ state rows are neither off-plan nor duplicated.
 
 Decision: **S1 REAL ROWS MUST BE TRACE-PLAN-CHECKABLE, NOT JUST HASH-SHAPED**.
 The blocker remains a real tensor packet generated from the frozen S1 plan.
+
+## 2026-05-07 Tensor Provenance Guard
+
+`activation_dumper.py` now writes `tensor_manifest.json` with original state
+hook names, packet-safe storage names, SHA-256 hashes, dtypes, shapes, and
+element counts. SSQ-LR builder rows copy that provenance into every S1 row and
+the checker requires `state_shape` to match `tensor_shape`.
+
+Decision: **S1 STATE METRICS MUST BE HASHED BACK TO THEIR SAVED TENSORS**. The
+blocker remains a real tensor packet generated from the frozen S1 plan.
+
+## 2026-05-07 Promotable Trace-Plan Hash Guard
+
+After reviewer audit, the real-packet checker no longer treats an arbitrary
+`trace_plan_path` as sufficient for a promotable S1 packet. A non-resource-
+limited packet must cite trace-plan rows whose file SHA-256 equals the
+registered shared `trace_plan_hash`. Small caller-created subset plans are only
+accepted when the packet is explicitly marked
+`RESOURCE_LIMITED_NOT_PROMOTABLE`.
+
+Decision: **S1 PROMOTION CANNOT SELF-CERTIFY WITH A CALLER-SUPPLIED PLAN**. The
+blocker remains a real tensor packet generated from the frozen S1 plan.

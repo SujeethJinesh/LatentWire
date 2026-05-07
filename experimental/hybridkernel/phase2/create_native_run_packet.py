@@ -155,6 +155,7 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
             "row_role": "primary_hybrid",
             "control_family": "same_family_matched_segment",
             "control_model_or_segment": "granite_hybrid_attention_ssm_boundary_windows",
+            "boundary_direction": "mixed_attention_ssm",
             "boundary_indices": [],
         },
         {
@@ -165,6 +166,7 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
             "control_model_or_segment": (
                 "granite_same_model_non_boundary_ssm_to_ssm_or_attention_internal_windows"
             ),
+            "boundary_direction": "non_boundary_same_family",
             "boundary_indices": [],
         },
         {
@@ -173,6 +175,7 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
             "row_role": "cross_family_falsification",
             "control_family": "cross_family_hybrid_control",
             "control_model_or_segment": "qwen3_next_hybrid_boundary_windows",
+            "boundary_direction": "linear_attention_gated_delta_boundary",
             "boundary_indices": [],
         },
     ]
@@ -196,15 +199,15 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
                 "trace_scope": "server-side CUDA kernels, not client-only HTTP replay",
                 "cuda_graph_enabled": None,
                 "batch_shape": {
-                    "batch_size": None,
+                    "batch_size": 1,
                     "prefill_tokens": 128,
                     "decode_tokens": 64,
-                    "requests": None,
+                    "requests": 16,
                 },
                 "control_model_or_segment": spec["control_model_or_segment"],
                 "row_role": spec["row_role"],
                 "control_family": spec["control_family"],
-                "boundary_direction": "mixed_attention_ssm",
+                "boundary_direction": spec["boundary_direction"],
                 "nsys_artifact": None,
                 "nsys_artifact_sha256": None,
                 "ncu_artifact": None,

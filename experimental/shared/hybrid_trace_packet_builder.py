@@ -16,7 +16,7 @@ from typing import Any
 
 import torch
 
-from experimental.shared.activation_dumper import load_tensor_packet
+from experimental.shared.activation_dumper import load_tensor_manifest, load_tensor_packet
 from experimental.shared.hybrid_gate_evaluators import (
     evaluate_hbsm_b1,
     evaluate_horn_h1,
@@ -47,13 +47,43 @@ def _tensor_lookup_name(name: str) -> str:
     return name.replace("/", "_").replace(" ", "_")
 
 
-def _lookup_tensor(tensors: dict[str, torch.Tensor], name: str) -> torch.Tensor:
-    if name in tensors:
-        return tensors[name]
-    safe_name = _tensor_lookup_name(name)
-    if safe_name in tensors:
-        return tensors[safe_name]
+def _lookup_tensor(
+    tensors: dict[str, torch.Tensor],
+    manifest: dict[str, dict[str, object]],
+    name: str,
+) -> tuple[torch.Tensor, dict[str, object]]:
+    lookup_name = name if name in tensors else _tensor_lookup_name(name)
+    if lookup_name in tensors:
+        tensor = tensors[lookup_name]
+        provenance = dict(manifest.get(lookup_name, {}))
+        if not provenance:
+            provenance = {
+                "original_name": name,
+                "safe_name": lookup_name,
+                "storage_name": f"{lookup_name}.pt",
+                "sha256": "sha256:unknown",
+                "dtype": str(tensor.dtype),
+                "shape": list(tensor.shape),
+                "numel": int(tensor.numel()),
+            }
+        return tensor, provenance
     raise KeyError(f"tensor {name!r} not found in packet")
+
+
+def _tensor_provenance_fields(
+    *,
+    row_tensor_name: str,
+    source_tensor_name: str,
+    provenance: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "tensor_name": row_tensor_name,
+        "tensor_source_name": source_tensor_name,
+        "tensor_storage_name": str(provenance.get("storage_name", "")),
+        "tensor_sha256": str(provenance.get("sha256", "")),
+        "tensor_dtype": str(provenance.get("dtype", "")),
+        "tensor_shape": list(provenance.get("shape", [])),
+    }
 
 
 def _require_bool(value: Any, field: str) -> bool:
@@ -201,6 +231,7 @@ def _summary_markdown(
 
 def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, Any]]:
     tensors, metadata = load_tensor_packet(tensor_packet)
+    manifest = load_tensor_manifest(tensor_packet)
     config = _base_config(metadata)
     entries = metadata.get("ssq_lr_entries")
     if not isinstance(entries, list):
@@ -208,7 +239,7 @@ def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str,
     rows: list[dict[str, Any]] = []
     for entry in entries:
         tensor_name = str(entry["tensor"])
-        tensor = _lookup_tensor(tensors, tensor_name)
+        tensor, provenance = _lookup_tensor(tensors, manifest, tensor_name)
         rows.append(
             {
                 "model_id": config["model_id"],
@@ -225,6 +256,11 @@ def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str,
                 "kurtosis": kurtosis(tensor),
                 "outlier_mass": _outlier_mass(tensor),
                 "control_type": str(entry.get("control_type", "bf16_no_quant")),
+                **_tensor_provenance_fields(
+                    row_tensor_name=tensor_name,
+                    source_tensor_name=str(provenance.get("original_name", tensor_name)),
+                    provenance=provenance,
+                ),
             }
         )
     summary_extra = evaluate_ssq_lr_s1(rows)
@@ -243,33 +279,41 @@ def build_ssq_lr_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str,
 
 def build_horn_packet(tensor_packet: Path, output_dir: Path) -> list[dict[str, Any]]:
     tensors, metadata = load_tensor_packet(tensor_packet)
+    manifest = load_tensor_manifest(tensor_packet)
     config = _base_config(metadata)
     entries = metadata.get("horn_entries")
     if not isinstance(entries, list):
         raise ValueError("metadata must contain list field horn_entries")
     rows: list[dict[str, Any]] = []
     for entry in entries:
-        tensor_name = str(entry.get("tensor_alias_of", entry["tensor"]))
-        tensor = _lookup_tensor(tensors, tensor_name)
-        rows.append(
-            {
-                "model_id": config["model_id"],
-                "prompt_id": str(entry["prompt_id"]),
-                "layer_left": int(entry["layer_left"]),
-                "layer_right": int(entry["layer_right"]),
-                "direction": str(entry["direction"]),
-                "matched_boundary_direction": str(
-                    entry.get("matched_boundary_direction", entry["direction"])
-                ),
-                "boundary_index": int(entry["boundary_index"]),
-                "pre_norm_position": str(entry["pre_norm_position"]),
-                "post_norm_position": str(entry["post_norm_position"]),
-                "max_abs": max_abs(tensor),
-                "rms": _rms(tensor),
-                "kurtosis": kurtosis(tensor),
-                "control_type": str(entry["control_type"]),
-            }
-        )
+        row_tensor_name = str(entry["tensor"])
+        source_tensor_name = str(entry.get("tensor_alias_of", row_tensor_name))
+        tensor, provenance = _lookup_tensor(tensors, manifest, source_tensor_name)
+        row = {
+            "model_id": config["model_id"],
+            "prompt_id": str(entry["prompt_id"]),
+            "layer_left": int(entry["layer_left"]),
+            "layer_right": int(entry["layer_right"]),
+            "direction": str(entry["direction"]),
+            "matched_boundary_direction": str(
+                entry.get("matched_boundary_direction", entry["direction"])
+            ),
+            "boundary_index": int(entry["boundary_index"]),
+            "pre_norm_position": str(entry["pre_norm_position"]),
+            "post_norm_position": str(entry["post_norm_position"]),
+            "max_abs": max_abs(tensor),
+            "rms": _rms(tensor),
+            "kurtosis": kurtosis(tensor),
+            "control_type": str(entry["control_type"]),
+            **_tensor_provenance_fields(
+                row_tensor_name=row_tensor_name,
+                source_tensor_name=str(provenance.get("original_name", source_tensor_name)),
+                provenance=provenance,
+            ),
+        }
+        if "tensor_alias_of" in entry:
+            row["tensor_alias_of"] = str(entry["tensor_alias_of"])
+        rows.append(row)
     summary_extra = evaluate_horn_h1(rows)
     decision = _packet_decision(config, summary_extra["gate_status"])
     _write_packet(

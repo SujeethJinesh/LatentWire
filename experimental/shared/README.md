@@ -153,7 +153,10 @@ random hash-shaped value is rejected. The `model_revision` and
 in `shared/results/hybrid_model_eligibility_20260506/raw_rows.jsonl`; arbitrary
 revision strings are rejected. Non-rehearsal real packets must also cite
 `trace_plan_path`; the checker rejects rows outside that frozen trace-plan row
-set instead of allowing uncited row coverage. Real packets
+set instead of allowing uncited row coverage. For a promotable packet, the
+file cited by `trace_plan_path` must hash to the registered project
+`trace_plan_hash`; caller-created subset plans are accepted only when
+`resource_limit_note` makes the packet explicitly non-promotable. Real packets
 need project-specific aggregate `summary.json` fields and a decision equal to
 the recomputed S1/H1/B1 gate status, or a non-promotable decision whenever
 `resource_limit_note` is present. The checker recomputes the active S1/H1/B1
@@ -167,3 +170,14 @@ hooks without accidentally promoting a gate.
 Passing these tests only means the local utilities are deterministic and
 internally consistent. Any promoted paper claim still requires the relevant
 project gate to pass.
+
+## Tensor Provenance
+
+`activation_dumper.py` writes `tensor_manifest.json` beside every tensor packet.
+The manifest records each tensor's original hook name, packet-safe storage name,
+SHA-256 digest, dtype, shape, and element count, and it rejects hook names that
+would collide after path/space normalization. SSQ-LR and HORN packet rows carry
+that manifest provenance through `tensor_name`, `tensor_source_name`,
+`tensor_storage_name`, `tensor_sha256`, `tensor_dtype`, and `tensor_shape`.
+HORN `permuted_direction` rows must additionally record `tensor_alias_of` and
+reuse the observed boundary tensor hash.

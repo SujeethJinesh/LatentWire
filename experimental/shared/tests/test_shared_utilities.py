@@ -1,10 +1,11 @@
+import hashlib
 import json
 from pathlib import Path
 
 import torch
 import pytest
 
-from experimental.shared.activation_dumper import load_tensor_packet, save_tensor_packet
+from experimental.shared.activation_dumper import load_tensor_manifest, load_tensor_packet, save_tensor_packet
 from experimental.shared.boundary_inspector import LayerKind, boundaries_from_module_names
 from experimental.shared.fp4_simulator import (
     gap_recovery_ratio,
@@ -94,6 +95,33 @@ def test_tensor_packet_roundtrip(tmp_path: Path) -> None:
     assert torch.equal(tensors["layer_0_state"], torch.ones(2, 3))
 
 
+def test_tensor_packet_manifest_records_original_name_and_sha256(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    save_tensor_packet(
+        packet,
+        tensors={"layer/0 state": torch.arange(6).reshape(2, 3)},
+        metadata={"model": "toy", "trace_count": 1},
+    )
+
+    manifest = load_tensor_manifest(packet)
+    row = manifest["layer_0_state"]
+    expected_hash = "sha256:" + hashlib.sha256((packet / "layer_0_state.pt").read_bytes()).hexdigest()
+
+    assert row["original_name"] == "layer/0 state"
+    assert row["storage_name"] == "layer_0_state.pt"
+    assert row["shape"] == [2, 3]
+    assert row["sha256"] == expected_hash
+
+
+def test_tensor_packet_rejects_sanitized_name_collisions(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="collide"):
+        save_tensor_packet(
+            tmp_path / "packet",
+            tensors={"layer/0": torch.ones(1), "layer_0": torch.zeros(1)},
+            metadata={"model": "toy"},
+        )
+
+
 def test_gate_packet_checker_accepts_valid_synthetic_packet(tmp_path: Path) -> None:
     packet = tmp_path / "packet"
     packet.mkdir()
@@ -165,6 +193,8 @@ def test_gate_packet_checker_accepts_real_ssq_lr_contract(tmp_path: Path) -> Non
         for prompt_index in range(12)
         for bucket in SSQ_BUCKETS
     ]
+    for index, row in enumerate(rows):
+        row.update(_fake_tensor_provenance(f"state_{index}", row["state_shape"]))
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
@@ -231,6 +261,8 @@ def test_gate_packet_checker_rejects_real_ssq_lr_incomplete_prompt_layer_matrix(
                     "control_type": "bf16_no_quant",
                 }
             )
+    for index, row in enumerate(rows):
+        row.update(_fake_tensor_provenance(f"state_{index}", row["state_shape"]))
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
@@ -261,6 +293,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_incomplete_prompt_layer_matrix(
     )
     (packet / "summary.md").write_text("# Summary\n")
     (packet / "decision.md").write_text("`CONTINUE_REAL_STATE_DUMPS`\n")
+    _attach_trace_plan_path_from_raw_rows(packet, tmp_path, "ssq_lr")
 
     report = validate_gate_packet(packet, mode="real", project="ssq_lr")
 
@@ -356,6 +389,8 @@ def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tm
         }
         for prompt_index in range(12)
     ]
+    for index, row in enumerate(rows):
+        row.update(_fake_tensor_provenance(f"state_{index}", row["state_shape"]))
     (packet / "raw_rows.jsonl").write_text(
         "\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n"
     )
@@ -375,6 +410,7 @@ def test_gate_packet_checker_rejects_real_ssq_lr_without_all_position_buckets(tm
     )
     (packet / "summary.md").write_text("# Summary\n")
     (packet / "decision.md").write_text("`CONTINUE_REAL_STATE_DUMPS`\n")
+    _attach_trace_plan_path_from_raw_rows(packet, tmp_path, "ssq_lr")
 
     report = validate_gate_packet(packet, mode="real", project="ssq_lr")
 
@@ -698,7 +734,27 @@ def _attach_trace_plan_path_from_raw_rows(packet_dir: Path, tmp_path: Path, proj
     trace_plan.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
     config = json.loads((packet_dir / "config.json").read_text(encoding="utf-8"))
     config["trace_plan_path"] = str(trace_plan)
+    config["resource_limit_note"] = "unit-test packet covers a deliberately small trace-plan subset"
     (packet_dir / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
+    summary = json.loads((packet_dir / "summary.json").read_text(encoding="utf-8"))
+    gate_status = str(summary.get("gate_status", ""))
+    if gate_status:
+        summary["decision"] = f"RESOURCE_LIMITED_NOT_PROMOTABLE_{gate_status}"
+        (packet_dir / "summary.json").write_text(json.dumps(summary, sort_keys=True) + "\n")
+        (packet_dir / "decision.md").write_text(summary["decision"] + "\n", encoding="utf-8")
+
+
+def _fake_tensor_provenance(name: str, shape: list[int] | None = None) -> dict[str, object]:
+    tensor_shape = shape or [1, 4]
+    safe_name = name.replace("/", "_").replace(" ", "_")
+    return {
+        "tensor_name": name,
+        "tensor_source_name": name,
+        "tensor_storage_name": f"{safe_name}.pt",
+        "tensor_sha256": "sha256:" + ("a" * 64),
+        "tensor_dtype": "torch.float32",
+        "tensor_shape": tensor_shape,
+    }
 
 
 def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: Path) -> None:
@@ -732,9 +788,14 @@ def test_ssq_lr_packet_builder_outputs_checker_compatible_real_packet(tmp_path: 
     build_ssq_lr_packet(tensor_packet, output_dir)
     _attach_trace_plan_path_from_raw_rows(output_dir, tmp_path, "ssq_lr")
     report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+    first_row = json.loads((output_dir / "raw_rows.jsonl").read_text().splitlines()[0])
 
     assert report["ok"]
     assert report["row_count"] == 48
+    assert first_row["tensor_name"] == "state_layer_0_prefill_end_p0"
+    assert first_row["tensor_source_name"] == "state_layer_0_prefill_end_p0"
+    assert first_row["tensor_sha256"].startswith("sha256:")
+    assert first_row["tensor_shape"] == [2, 4]
 
 
 def test_packet_builder_rejects_unfilled_capture_templates(tmp_path: Path) -> None:
@@ -924,6 +985,43 @@ def test_gate_packet_checker_rejects_wrong_project_trace_plan_hash(tmp_path: Pat
     assert any("trace_plan_hash must match shared trace-plan hash" in error for error in report["errors"])
 
 
+def test_gate_packet_checker_rejects_promotable_packet_with_unpinned_trace_plan_path(tmp_path: Path) -> None:
+    tensor_packet = tmp_path / "tensor_packet"
+    output_dir = tmp_path / "ssq_unpinned_trace_plan_path"
+    metadata = _base_trace_metadata()
+    entries = []
+    tensors = {}
+    for prompt_index in range(12):
+        for bucket in SSQ_BUCKETS:
+            tensor_name = f"state_layer_0_{bucket}_p{prompt_index}"
+            entries.append(
+                {
+                    "tensor": tensor_name,
+                    "prompt_id": f"p{prompt_index}",
+                    "layer": 0,
+                    "layer_kind": "mamba2",
+                    "position_bucket": bucket,
+                    "state_tensor_kind": "mamba2_recurrent_state",
+                    "control_type": "bf16_no_quant",
+                }
+            )
+            tensors[tensor_name] = torch.randn(2, 4)
+    metadata["ssq_lr_entries"] = entries
+    save_tensor_packet(tensor_packet, tensors=tensors, metadata=metadata)
+    build_ssq_lr_packet(tensor_packet, output_dir)
+    rows = [json.loads(line) for line in (output_dir / "raw_rows.jsonl").read_text().splitlines()]
+    trace_plan = tmp_path / "caller_supplied_subset_trace_plan.jsonl"
+    trace_plan.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
+    config = json.loads((output_dir / "config.json").read_text(encoding="utf-8"))
+    config["trace_plan_path"] = str(trace_plan)
+    (output_dir / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
+
+    report = validate_gate_packet(output_dir, mode="real", project="ssq_lr")
+
+    assert not report["ok"]
+    assert any("trace_plan_path must point to rows whose SHA-256" in error for error in report["errors"])
+
+
 def test_packet_builder_resolves_sanitized_tensor_names(tmp_path: Path) -> None:
     tensor_packet = tmp_path / "tensor_packet"
     output_dir = tmp_path / "ssq_sanitized"
@@ -1092,7 +1190,12 @@ def test_gate_packet_checker_rejects_rows_outside_cited_trace_plan(tmp_path: Pat
     trace_plan.write_text("\n".join(json.dumps(row, sort_keys=True) for row in rows) + "\n")
     config = json.loads((output_dir / "config.json").read_text(encoding="utf-8"))
     config["trace_plan_path"] = str(trace_plan)
+    config["resource_limit_note"] = "unit-test packet covers a deliberately small trace-plan subset"
     (output_dir / "config.json").write_text(json.dumps(config, sort_keys=True) + "\n")
+    summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
+    summary["decision"] = f"RESOURCE_LIMITED_NOT_PROMOTABLE_{summary['gate_status']}"
+    (output_dir / "summary.json").write_text(json.dumps(summary, sort_keys=True) + "\n")
+    (output_dir / "decision.md").write_text(summary["decision"] + "\n", encoding="utf-8")
 
     rows[0]["prompt_id"] = "unplanned_prompt"
     (output_dir / "raw_rows.jsonl").write_text(
@@ -1122,20 +1225,22 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
         ]:
             actual_direction = "ssm->ssm" if control_type == "non_boundary" else direction
             tensor_name = f"{stem}_p{prompt_index}"
-            entries.append(
-                {
-                    "tensor": tensor_name,
-                    "prompt_id": f"p{prompt_index}",
-                    "layer_left": layer_left,
-                    "layer_right": layer_right,
-                    "direction": actual_direction,
-                    "matched_boundary_direction": direction,
-                    "boundary_index": boundary_index,
-                    "pre_norm_position": "post_norm",
-                    "post_norm_position": "pre_norm",
-                    "control_type": control_type,
-                }
-            )
+            entry = {
+                "tensor": tensor_name,
+                "prompt_id": f"p{prompt_index}",
+                "layer_left": layer_left,
+                "layer_right": layer_right,
+                "direction": actual_direction,
+                "matched_boundary_direction": direction,
+                "boundary_index": boundary_index,
+                "pre_norm_position": "post_norm",
+                "post_norm_position": "pre_norm",
+                "control_type": control_type,
+            }
+            if control_type == "permuted_direction":
+                source = "boundary_attn_ssm" if boundary_index == 0 else "boundary_ssm_attn"
+                entry["tensor_alias_of"] = f"{source}_p{prompt_index}"
+            entries.append(entry)
             tensors[tensor_name] = torch.randn(2, 4)
         tensors[f"permuted_attn_ssm_p{prompt_index}"] = tensors[f"boundary_attn_ssm_p{prompt_index}"].clone()
         tensors[f"permuted_ssm_attn_p{prompt_index}"] = tensors[f"boundary_ssm_attn_p{prompt_index}"].clone()
@@ -1149,9 +1254,25 @@ def test_horn_packet_builder_outputs_required_controls(tmp_path: Path) -> None:
     build_horn_packet(tensor_packet, output_dir)
     _attach_trace_plan_path_from_raw_rows(output_dir, tmp_path, "horn")
     report = validate_gate_packet(output_dir, mode="real", project="horn")
+    rows = [json.loads(line) for line in (output_dir / "raw_rows.jsonl").read_text().splitlines()]
+    boundary = next(
+        row
+        for row in rows
+        if row["control_type"] == "boundary" and row["boundary_index"] == 0 and row["prompt_id"] == "p0"
+    )
+    permuted = next(
+        row
+        for row in rows
+        if row["control_type"] == "permuted_direction"
+        and row["boundary_index"] == 0
+        and row["prompt_id"] == "p0"
+    )
 
     assert report["ok"]
     assert report["row_count"] == 72
+    assert permuted["tensor_alias_of"] == boundary["tensor_name"]
+    assert permuted["tensor_source_name"] == boundary["tensor_source_name"]
+    assert permuted["tensor_sha256"] == boundary["tensor_sha256"]
 
 
 def test_horn_packet_builder_uses_tensor_alias_for_permuted_rows(tmp_path: Path) -> None:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import re
@@ -31,6 +32,14 @@ REAL_CONFIG_FIELDS = (
     "command",
     "architecture_map_hash",
 )
+TENSOR_PROVENANCE_FIELDS = (
+    "tensor_name",
+    "tensor_source_name",
+    "tensor_storage_name",
+    "tensor_sha256",
+    "tensor_dtype",
+    "tensor_shape",
+)
 REAL_ROW_FIELDS = {
     "ssq_lr": (
         "model_id",
@@ -47,6 +56,7 @@ REAL_ROW_FIELDS = {
         "kurtosis",
         "outlier_mass",
         "control_type",
+        *TENSOR_PROVENANCE_FIELDS,
     ),
     "horn": (
         "model_id",
@@ -62,6 +72,7 @@ REAL_ROW_FIELDS = {
         "rms",
         "kurtosis",
         "control_type",
+        *TENSOR_PROVENANCE_FIELDS,
     ),
     "hbsm": (
         "model_id",
@@ -274,6 +285,14 @@ def _load_trace_plan_rows(project: str, trace_plan_path: str | None = None) -> l
     return rows
 
 
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return "sha256:" + digest.hexdigest()
+
+
 def _missing_fields(row: dict[str, Any], fields: tuple[str, ...]) -> list[str]:
     return [field for field in fields if field not in row]
 
@@ -326,6 +345,27 @@ def _valid_positive_int_list(value: Any) -> bool:
 
 def _valid_nonnegative_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _validate_tensor_provenance(
+    *,
+    project: str,
+    row_index: int,
+    row: dict[str, Any],
+    errors: list[str],
+) -> None:
+    for field in ("tensor_name", "tensor_source_name", "tensor_storage_name", "tensor_dtype"):
+        value = row.get(field)
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{project} row {row_index} {field} must be a non-empty string")
+    storage_name = str(row.get("tensor_storage_name", ""))
+    if storage_name and not storage_name.endswith(".pt"):
+        errors.append(f"{project} row {row_index} tensor_storage_name must name a .pt tensor file")
+    digest = row.get("tensor_sha256")
+    if not isinstance(digest, str) or not re.fullmatch(r"sha256:[0-9a-f]{64}", digest):
+        errors.append(f"{project} row {row_index} tensor_sha256 must be sha256:<64 lowercase hex chars>")
+    if not _valid_positive_int_list(row.get("tensor_shape")):
+        errors.append(f"{project} row {row_index} tensor_shape must be a non-empty positive integer list")
 
 
 def _validate_ratio_field(
@@ -431,6 +471,22 @@ def _validate_trace_plan_coverage(
     if not isinstance(trace_plan_path, str):
         errors.append("config.json trace_plan_path must cite the frozen trace-plan rows for real packets")
         return
+    resolved_trace_plan_path = Path(trace_plan_path)
+    if not resolved_trace_plan_path.is_absolute():
+        resolved_trace_plan_path = REPO_ROOT / resolved_trace_plan_path
+    if not _resource_limited(config):
+        trace_plan_hash = str(config.get(TRACE_PLAN_HASH_FIELD, "")).strip().lower()
+        try:
+            actual_trace_plan_hash = _file_sha256(resolved_trace_plan_path)
+        except OSError as exc:
+            errors.append(f"trace plan rows unavailable for coverage validation: {exc}")
+            return
+        if trace_plan_hash and actual_trace_plan_hash != trace_plan_hash:
+            errors.append(
+                "config.json trace_plan_path must point to rows whose SHA-256 equals "
+                "config.json trace_plan_hash for promotable real packets"
+            )
+            return
     try:
         planned_rows = _load_trace_plan_rows(
             project,
@@ -829,6 +885,7 @@ def _validate_real_coverage(
                 "or config.json resource_limit_note"
             )
         for index, row in enumerate(rows):
+            _validate_tensor_provenance(project="ssq_lr", row_index=index, row=row, errors=errors)
             _validate_finite_fields(
                 project="ssq_lr",
                 row_index=index,
@@ -848,6 +905,8 @@ def _validate_real_coverage(
                 errors.append(f"ssq_lr row {index} outlier_mass must be in [0, 1]")
             if not _valid_positive_int_list(row.get("state_shape")):
                 errors.append(f"ssq_lr row {index} state_shape must be a non-empty positive integer list")
+            if row.get("state_shape") != row.get("tensor_shape"):
+                errors.append(f"ssq_lr row {index} state_shape must match tensor_shape")
             layer_kind = str(row.get("layer_kind", "")).strip().lower()
             if layer_kind not in {"ssm", "mamba", "mamba2", "ssm_recurrent"}:
                 errors.append(
@@ -962,6 +1021,15 @@ def _validate_real_coverage(
                     errors.append("horn permuted_direction row must flip the observed boundary direction")
                 if matched_direction and matched_direction != actual_direction:
                     errors.append("horn permuted_direction matched_boundary_direction must equal flipped direction")
+                source = str(row.get("tensor_source_name", "")).strip()
+                alias = str(row.get("tensor_alias_of", "")).strip()
+                original_source = str(original.get("tensor_source_name", "")).strip()
+                if not alias:
+                    errors.append("horn permuted_direction row must record tensor_alias_of")
+                if source and original_source and source != original_source:
+                    errors.append("horn permuted_direction row must reuse the observed boundary tensor source")
+                if row.get("tensor_sha256") != original.get("tensor_sha256"):
+                    errors.append("horn permuted_direction row must reuse the observed boundary tensor hash")
                 for field in ("max_abs", "rms", "kurtosis"):
                     value = row.get(field)
                     original_value = original.get(field)
@@ -971,6 +1039,7 @@ def _validate_real_coverage(
                                 "horn permuted_direction row must reuse the observed boundary metrics"
                             )
         for index, row in enumerate(rows):
+            _validate_tensor_provenance(project="horn", row_index=index, row=row, errors=errors)
             _validate_finite_fields(
                 project="horn",
                 row_index=index,

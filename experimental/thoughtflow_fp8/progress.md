@@ -576,3 +576,14 @@ fields.
 
 Decision: **THOUGHTFLOW INPUT PROVENANCE IS STRICT, BUT STILL DIAGNOSTIC-ONLY**.
 No fifth sparse-cache signal is being run.
+
+## 2026-05-07 Active-Only COLM Reviewer Audit
+
+Fresh COLM-style review of the active branch reaffirmed that ThoughtFlow should
+stay a falsification-methodology paper and should not consume GPU time. The
+reviewer risk is framing, not missing experiments: the draft should lead with
+the preregistered ladder and the long-prefix/high-density failure mode, and it
+should avoid reopening RDU/PSI/VWAC as positive methods.
+
+Decision: **THOUGHTFLOW REMAINS PAPER-POLISH ONLY**. The next edit is wording
+and evidence-table tightening, not another sparse-cache signal.

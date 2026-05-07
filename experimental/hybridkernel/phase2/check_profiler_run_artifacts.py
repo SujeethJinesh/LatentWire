@@ -70,6 +70,13 @@ CLIENT_LOG_EVIDENCE_MARKERS = ['"requests"', '"model"', '"status"']
 ALLOWED_PROFILED_PROCESSES = {"vllm_server", "single_process_vllm_benchmark"}
 PROFILED_PROCESS_FIELDS = ["profiled_process", "nsys_profiled_process", "ncu_profiled_process"]
 NO_BOUNDARY_SIGNAL_MODE = "no_boundary_signal_kill"
+NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL = "not_run_no_boundary_signal"
+NO_BOUNDARY_SIGNAL_EVIDENCE_MARKERS = [
+    "no suspicious boundary",
+    "no boundary-local",
+    "no boundary signal",
+    "no distinct boundary",
+]
 REQUIRED_METRIC_PROVENANCE_FIELDS = [
     "row_role",
     "control_family",
@@ -383,11 +390,16 @@ def _validate_metric_artifact_path(
     packet_mode: str,
     errors: list[str],
 ) -> None:
-    if field == "ncu_artifact" and packet_mode == NO_BOUNDARY_SIGNAL_MODE and value == "not_run_no_boundary_signal":
-        if expected_sha256 != "not_run_no_boundary_signal":
+    if (
+        field == "ncu_artifact"
+        and packet_mode == NO_BOUNDARY_SIGNAL_MODE
+        and value == NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL
+    ):
+        if expected_sha256 != NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL:
             errors.append(
                 f"metric row {row_index} ncu_artifact_sha256 must be "
-                "not_run_no_boundary_signal when ncu_artifact is not_run_no_boundary_signal"
+                f"{NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL} when ncu_artifact is "
+                f"{NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL}"
             )
         return
     artifact_path = Path(value)
@@ -660,6 +672,10 @@ def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[
     if not isinstance(rows, list) or not rows:
         errors.append("native_control_matrix.json must contain non-empty rows")
         return {}
+    request_shape = payload.get("request_shape") if isinstance(payload, dict) else None
+    if request_shape is not None and not isinstance(request_shape, dict):
+        errors.append("native_control_matrix.json request_shape must be an object when present")
+        request_shape = None
     specs: dict[str, list[dict[str, object]]] = {}
     for index, row in enumerate(rows):
         if not isinstance(row, dict):
@@ -669,7 +685,10 @@ def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[
         if role not in ALLOWED_ROW_ROLES:
             errors.append(f"native_control_matrix.json row {index} has invalid row_role")
             continue
-        specs.setdefault(role, []).append(row)
+        spec = dict(row)
+        if request_shape is not None:
+            spec["_request_shape"] = dict(request_shape)
+        specs.setdefault(role, []).append(spec)
     return specs
 
 
@@ -689,6 +708,9 @@ def _validate_native_control_matrix_rows(
             continue
         allowed_models: set[str] = set()
         allowed_families: set[str] = set()
+        allowed_controls: set[str] = set()
+        allowed_directions: set[str] = set()
+        request_shapes: list[dict[str, object]] = []
         for spec in specs:
             for field in ("model", "fallback_model_if_vram_allows"):
                 value = str(spec.get(field, "")).strip()
@@ -697,6 +719,15 @@ def _validate_native_control_matrix_rows(
             family = str(spec.get("control_family", "")).strip()
             if family:
                 allowed_families.add(family)
+            control = str(spec.get("control_model_or_segment", "")).strip()
+            if control:
+                allowed_controls.add(control)
+            direction = str(spec.get("boundary_direction", "")).strip()
+            if direction:
+                allowed_directions.add(direction)
+            request_shape = spec.get("_request_shape")
+            if isinstance(request_shape, dict):
+                request_shapes.append(request_shape)
         model = str(row.get("model", "")).strip()
         if allowed_models and model not in allowed_models:
             errors.append(
@@ -706,6 +737,93 @@ def _validate_native_control_matrix_rows(
         if allowed_families and family not in allowed_families:
             errors.append(
                 f"metric row {index} control_family is not allowed by native_control_matrix.json for {role}"
+            )
+        control = str(row.get("control_model_or_segment", "")).strip()
+        if allowed_controls and control not in allowed_controls:
+            errors.append(
+                f"metric row {index} control_model_or_segment is not allowed by "
+                f"native_control_matrix.json for {role}"
+            )
+        direction = str(row.get("boundary_direction", "")).strip()
+        if allowed_directions and direction not in allowed_directions:
+            errors.append(
+                f"metric row {index} boundary_direction is not allowed by "
+                f"native_control_matrix.json for {role}"
+            )
+        if request_shapes:
+            dtype = str(row.get("dtype", "")).strip()
+            batch_shape = row.get("batch_shape")
+            if not isinstance(batch_shape, dict):
+                errors.append(
+                    f"metric row {index} batch_shape must match native_control_matrix.json "
+                    "request_shape"
+                )
+                continue
+            row_shape = {
+                "batch_size": batch_shape.get("batch_size"),
+                "prefill_tokens": batch_shape.get("prefill_tokens"),
+                "decode_tokens": batch_shape.get("decode_tokens"),
+                "requests": batch_shape.get("requests"),
+                "dtype": dtype,
+            }
+            if not any(
+                all(row_shape.get(key) == spec_shape.get(key) for key in row_shape)
+                for spec_shape in request_shapes
+            ):
+                errors.append(
+                    f"metric row {index} request_shape does not match "
+                    f"native_control_matrix.json for {role}: {row_shape}"
+                )
+
+
+def _validate_no_boundary_signal_packet(
+    *,
+    raw_rows: list[dict[str, object]],
+    computed_analysis: dict[str, object] | None,
+    errors: list[str],
+) -> None:
+    """Require explicit negative Nsight Systems evidence when NCU is skipped."""
+
+    if not raw_rows:
+        return
+    if computed_analysis is not None:
+        status = str(computed_analysis.get("status", ""))
+        if not status.startswith("KILL or shelve"):
+            errors.append(
+                "no_boundary_signal_kill packets must analyze as a clean kill "
+                "before Nsight Compute can be skipped"
+            )
+    for index, row in enumerate(raw_rows):
+        ncu_artifact = str(row.get("ncu_artifact", "")).strip()
+        ncu_sha256 = str(row.get("ncu_artifact_sha256", "")).strip()
+        if ncu_artifact != NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL:
+            errors.append(
+                f"metric row {index} ncu_artifact must be "
+                f"{NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL} in no_boundary_signal_kill mode"
+            )
+        if ncu_sha256 != NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL:
+            errors.append(
+                f"metric row {index} ncu_artifact_sha256 must be "
+                f"{NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL} in no_boundary_signal_kill mode"
+            )
+        evidence_text = " ".join(
+            [
+                str(row.get("recoverable_fraction_basis", "")),
+                str(row.get("reduction_notes", "")),
+                " ".join(
+                    value
+                    for value in row.get("kernel_names", [])
+                    if isinstance(value, str)
+                )
+                if isinstance(row.get("kernel_names"), list)
+                else "",
+            ]
+        ).lower()
+        if not any(marker in evidence_text for marker in NO_BOUNDARY_SIGNAL_EVIDENCE_MARKERS):
+            errors.append(
+                f"metric row {index} must state explicit no-boundary-signal Nsight Systems "
+                "evidence in recoverable_fraction_basis, reduction_notes, or kernel_names "
+                "before skipping Nsight Compute"
             )
 
 
@@ -908,6 +1026,12 @@ def check_run_artifacts(
                 control_specs=control_specs,
                 errors=errors,
             )
+            if packet_mode == NO_BOUNDARY_SIGNAL_MODE:
+                _validate_no_boundary_signal_packet(
+                    raw_rows=raw_native_rows,
+                    computed_analysis=computed_analysis,
+                    errors=errors,
+                )
             if len(raw_native_rows) == len(rows):
                 _validate_repeated_artifact_identity(
                     metric_rows=rows,

@@ -17,7 +17,9 @@ Every real packet must contain:
 - `summary.md`: human-readable table and interpretation.
 - `decision.md`: pass/fail/continue decision tied to the preregistered gate.
 - optional `tensors/`: state or activation tensor packet written with
-  `activation_dumper.py`.
+  `activation_dumper.py`. Tensor packets must include `tensor_manifest.json`;
+  SSQ-LR/HORN rows copy the manifest's original tensor name, storage name,
+  SHA-256, dtype, and shape into the real packet.
 
 Validate any packet with:
 
@@ -52,7 +54,10 @@ registered served IDs into the map `model_id` and preserve the original value as
 `served_model_id` in `config.json`. The `model_revision` and
 `tokenizer_revision` values must match the registered eligibility snapshot SHA
 for the served/canonical model, and `trace_plan_path` rows are checked against
-that exact frozen row set. A packet that records
+that exact frozen row set. For promotable real packets, the trace-plan file
+cited by `trace_plan_path` must have the same SHA-256 as `trace_plan_hash`;
+caller-created subset plans are only accepted for explicit resource-limited
+diagnostics. A packet that records
 `resource_limit_note` is admissible only as a diagnostic artifact: its
 `summary.json` decision must start with
 `RESOURCE_LIMITED_NOT_PROMOTABLE`, and it cannot promote a gate.

@@ -26,6 +26,18 @@ def _sha256_text(text: str) -> str:
     return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _tensor_provenance(name: str) -> dict[str, object]:
+    safe_name = name.replace("/", "_").replace(" ", "_")
+    return {
+        "tensor_name": name,
+        "tensor_source_name": name,
+        "tensor_storage_name": f"{safe_name}.pt",
+        "tensor_sha256": _sha256_text(f"{name}:synthetic-horn"),
+        "tensor_dtype": "torch.float32",
+        "tensor_shape": [1, 1],
+    }
+
+
 def _config(seed: int) -> dict[str, object]:
     prompt_manifest = "\n".join(PROMPT_IDS) + "\n"
     architecture_manifest = json.dumps(
@@ -76,6 +88,7 @@ def _boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, object]]
             "rms": 0.75 + 0.001 * prompt_index,
             "kurtosis": low_kurtosis,
             "control_type": "boundary",
+            **_tensor_provenance(f"horn/{prompt_id}/boundary_0/observed"),
         },
         {
             "model_id": MODEL_ID,
@@ -91,6 +104,7 @@ def _boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, object]]
             "rms": 0.95 + 0.001 * prompt_index,
             "kurtosis": high_kurtosis,
             "control_type": "boundary",
+            **_tensor_provenance(f"horn/{prompt_id}/boundary_1/observed"),
         },
     ]
 
@@ -111,6 +125,7 @@ def _non_boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, obje
             "rms": 0.72 + 0.001 * prompt_index,
             "kurtosis": 3.1 + 0.01 * prompt_index,
             "control_type": "non_boundary",
+            **_tensor_provenance(f"horn/{prompt_id}/non_boundary_0"),
         },
         {
             "model_id": MODEL_ID,
@@ -126,6 +141,7 @@ def _non_boundary_rows(prompt_id: str, prompt_index: int) -> list[dict[str, obje
             "rms": 0.73 + 0.001 * prompt_index,
             "kurtosis": 3.2 + 0.01 * prompt_index,
             "control_type": "non_boundary",
+            **_tensor_provenance(f"horn/{prompt_id}/non_boundary_1"),
         },
     ]
 
@@ -139,6 +155,7 @@ def _permuted_row(boundary_row: dict[str, object]) -> dict[str, object]:
     )
     flipped["matched_boundary_direction"] = flipped["direction"]
     flipped["control_type"] = "permuted_direction"
+    flipped["tensor_alias_of"] = str(boundary_row["tensor_name"])
     return flipped
 
 

@@ -43,21 +43,34 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         json.dumps(
             {
                 "decision": "CONTROL_MATRIX_READY_NOT_NATIVE_EVIDENCE",
+                "request_shape": {
+                    "batch_size": 1,
+                    "prefill_tokens": 128,
+                    "decode_tokens": 64,
+                    "requests": 16,
+                    "dtype": "bfloat16",
+                },
                 "rows": [
                     {
                         "row_role": "primary_hybrid",
                         "model": "granite",
                         "control_family": "same_family_matched_segment",
+                        "control_model_or_segment": "matched_transformer_block",
+                        "boundary_direction": "mixed_attention_ssm",
                     },
                     {
                         "row_role": "same_family_control",
                         "model": "granite",
                         "control_family": "same_model_non_boundary_segment_control",
+                        "control_model_or_segment": "same_model_non_boundary_segment_control",
+                        "boundary_direction": "non_boundary_same_family",
                     },
                     {
                         "row_role": "cross_family_falsification",
                         "model": "qwen",
                         "control_family": "cross_family_hybrid_control",
+                        "control_model_or_segment": "qwen_hybrid_control",
+                        "boundary_direction": "linear_attention_gated_delta_boundary",
                     },
                 ],
             }
@@ -197,6 +210,7 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
                 "row_role": "cross_family_falsification",
                 "control_family": "cross_family_hybrid_control",
                 "control_model_or_segment": "qwen_hybrid_control",
+                "boundary_direction": "linear_attention_gated_delta_boundary",
                 "attention_ssm_boundary_ms": 2.0,
                 "matched_non_boundary_ms": 1.9,
                 "boundary_indices": [0],
@@ -307,14 +321,49 @@ def test_no_boundary_signal_kill_packet_allows_missing_ncu(tmp_path: Path) -> No
     metrics_path = tmp_path / "profiler_metrics.json"
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
     for row in payload["rows"]:
+        row["attention_ssm_boundary_ms"] = 2.0
+        row["matched_non_boundary_ms"] = 2.0
+        row["ncu_artifact"] = "not_run_no_boundary_signal"
+        row["ncu_artifact_sha256"] = "not_run_no_boundary_signal"
+        row["kernel_names"] = ["no_suspicious_boundary_kernel_in_nsys"]
+        row["reduction_notes"] = (
+            "No suspicious boundary kernel in Nsight Systems; no boundary signal "
+            "available for an Nsight Compute target."
+        )
+    analysis = analyze(payload)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "profiler_analysis_gate.md").write_text(
+        "# HybridKernel Profiler Analysis Gate\n\n"
+        f"Status: **{analysis['status']}**\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path, packet_mode="no_boundary_signal_kill")
+
+    assert result["status"] == "PASS"
+    assert any("Nsight Compute artifact is optional" in warning for warning in result["warnings"])
+
+
+def test_no_boundary_signal_kill_requires_clean_negative_nsys_evidence(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    for artifact in (tmp_path / "ncu").glob("*.ncu-rep"):
+        artifact.unlink()
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    for row in payload["rows"]:
         row["ncu_artifact"] = "not_run_no_boundary_signal"
         row["ncu_artifact_sha256"] = "not_run_no_boundary_signal"
     metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
     result = check_run_artifacts(tmp_path, packet_mode="no_boundary_signal_kill")
 
-    assert result["status"] == "PASS"
-    assert any("Nsight Compute artifact is optional" in warning for warning in result["warnings"])
+    assert result["status"] == "FAIL"
+    assert any("clean kill" in error for error in result["errors"])
+    assert any("explicit no-boundary-signal" in error for error in result["errors"])
 
 
 def test_requires_server_and_client_logs(tmp_path: Path) -> None:
@@ -564,6 +613,10 @@ def test_accepts_batch_replay_with_per_sample_prefill_tokens(tmp_path: Path) -> 
     for row in payload["rows"]:
         row["batch_shape"]["batch_size"] = 8
         row["batch_shape"]["prefill_tokens"] = 128
+    control_matrix_path = tmp_path / "metadata/native_control_matrix.json"
+    control_matrix = json.loads(control_matrix_path.read_text(encoding="utf-8"))
+    control_matrix["request_shape"]["batch_size"] = 8
+    control_matrix_path.write_text(json.dumps(control_matrix) + "\n", encoding="utf-8")
     analysis = analyze(payload)
     metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
     (tmp_path / "profiler_analysis_gate.json").write_text(
@@ -918,6 +971,60 @@ def test_rejects_metric_rows_outside_native_control_matrix(tmp_path: Path) -> No
 
     assert result["status"] == "FAIL"
     assert any("not allowed by native_control_matrix" in error for error in result["errors"])
+
+
+def test_rejects_metric_control_segment_outside_native_control_matrix(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["control_model_or_segment"] = "unregistered_boundary_window"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path, require_native_artifacts=False)
+
+    assert result["status"] == "FAIL"
+    assert any("control_model_or_segment is not allowed" in error for error in result["errors"])
+
+
+def test_rejects_metric_boundary_direction_outside_native_control_matrix(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["boundary_direction"] = "ssm_to_attention_only"
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path, require_native_artifacts=False)
+
+    assert result["status"] == "FAIL"
+    assert any("boundary_direction is not allowed" in error for error in result["errors"])
+
+
+def test_rejects_metric_request_shape_outside_native_control_matrix(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    metrics_path = tmp_path / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    payload["rows"][0]["batch_shape"]["decode_tokens"] = 128
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    analysis = analyze(payload)
+    (tmp_path / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    result = check_run_artifacts(tmp_path, require_native_artifacts=False)
+
+    assert result["status"] == "FAIL"
+    assert any("request_shape does not match" in error for error in result["errors"])
 
 
 def test_requires_repeated_rows_for_same_run_config(tmp_path: Path) -> None:

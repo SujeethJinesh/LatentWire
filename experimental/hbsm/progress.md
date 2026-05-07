@@ -200,3 +200,15 @@ checkable against a cited frozen row plan.
 
 Decision: **B1 REAL SENSITIVITY ROWS MUST BE TRACE-PLAN-CHECKABLE**. The
 blocker remains a real forward-sensitivity table.
+
+## 2026-05-07 Promotable Trace-Plan Hash Guard
+
+After reviewer audit, B1 real packets cannot promote by pointing
+`trace_plan_path` at a caller-created sensitivity table plan. Non-resource-
+limited packets must cite trace-plan rows whose file SHA-256 equals the
+registered shared HBSM `trace_plan_hash`. Resource-limited subset tables remain
+allowed only as `RESOURCE_LIMITED_NOT_PROMOTABLE` diagnostics.
+
+Decision: **B1 PROMOTION MUST USE THE REGISTERED FROZEN PLAN CONTENT**. The
+blocker remains a real forward-sensitivity table with stronger comparator
+controls.

@@ -712,3 +712,21 @@ locks this regression.
 
 Decision: **HYBRIDKERNEL CONTROLS NOW NEED DISTINCT REPEATS, NOT JUST THREE
 ROWS**. The blocker remains the user-operated NVIDIA/vLLM Nsight packet.
+
+## 2026-05-07 Native Request/Direction Matrix Guard
+
+After COLM-style review, the native artifact checker now enforces the copied
+`native_control_matrix.json` more completely. Non-pending metric rows must match
+the predeclared control segment, boundary direction, dtype, batch size,
+per-sample prefill tokens, decode tokens, and request count for their row role.
+The generated native skeleton also emits role-specific boundary directions
+instead of stamping every control row as `mixed_attention_ssm`.
+
+The `no_boundary_signal_kill` path is stricter as well: if Nsight Compute is
+skipped, the reduced rows must analyze as a clean kill and must explicitly
+record no-boundary-signal Nsight Systems evidence in row notes or kernel
+markers. This prevents a packet from skipping NCU while still carrying a
+positive-looking boundary signal.
+
+Decision: **NATIVE PACKETS NOW HAVE TO MATCH THE FROZEN RUN MATRIX EXACTLY**.
+The blocker remains the user-operated NVIDIA/vLLM Nsight packet.
