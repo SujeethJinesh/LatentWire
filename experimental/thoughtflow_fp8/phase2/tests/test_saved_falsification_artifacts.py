@@ -4,6 +4,10 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
+from experimental.thoughtflow_fp8.phase2 import build_diagnostic_packet
+
 
 PHASE2 = Path(__file__).resolve().parents[1]
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -101,3 +105,19 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
     assert "historical_positive_same_surface" in table
     assert "same_family_falsification" in table
     assert "cross_family_falsification" in table
+
+
+def test_diagnostic_packet_builder_refuses_dirty_thoughtflow_tree(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        build_diagnostic_packet,
+        "_thoughtflow_path_status",
+        lambda: " M experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
+    )
+
+    output_dir = tmp_path / "packet"
+    with pytest.raises(RuntimeError, match="refusing to build diagnostic packet"):
+        build_diagnostic_packet.build_packet(output_dir)
+
+    assert not output_dir.exists()

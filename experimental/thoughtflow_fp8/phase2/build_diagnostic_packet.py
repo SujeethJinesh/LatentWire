@@ -135,6 +135,26 @@ def _git_metadata() -> dict[str, str | bool]:
     }
 
 
+def _thoughtflow_path_status() -> str:
+    return subprocess.check_output(
+        ["git", "status", "--short", "--", "experimental/thoughtflow_fp8"],
+        cwd=REPO_ROOT,
+        text=True,
+    ).strip()
+
+
+def _require_clean_thoughtflow_tree() -> None:
+    try:
+        path_status = _thoughtflow_path_status()
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        raise RuntimeError("refusing to build diagnostic packet: git status unavailable") from exc
+    if path_status:
+        raise RuntimeError(
+            "refusing to build diagnostic packet while experimental/thoughtflow_fp8 is dirty:\n"
+            f"{path_status}"
+        )
+
+
 def _resolve_input_path(raw_path: str) -> Path | None:
     path = Path(raw_path)
     candidates = [path] if path.is_absolute() else [REPO_ROOT / path, PHASE2 / path]
@@ -244,7 +264,9 @@ def _artifact_summary(artifact_id: str, payload: dict[str, Any]) -> dict[str, An
     raise ValueError(f"unknown artifact id: {artifact_id}")
 
 
-def build_packet(output_dir: Path = DEFAULT_OUTPUT) -> dict[str, Any]:
+def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool = True) -> dict[str, Any]:
+    if require_clean_tree:
+        _require_clean_thoughtflow_tree()
     output_dir.mkdir(parents=True, exist_ok=True)
     artifacts = []
     for spec in ARTIFACTS:
