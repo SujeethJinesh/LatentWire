@@ -5,18 +5,18 @@ below FP16 without quality loss during long reasoning.
 
 ## Current Readiness
 
-Status: **WEAKENED / S1b signal alive, S2b mixed recipe revived as a Mac candidate**.
+Status: **WEAKENED / S1b signal alive, S2b failed longer-window replay**.
 
 Estimated completion:
 
-- **35%** as a positive-method paper: hypothesis, gates, packet checker,
+- **30%** as a positive-method paper: hypothesis, gates, packet checker,
   trace-plan handoff, one corrected one-layer S1 smoke pass, one four-layer S1
   smoke failure, one all-recurrent-layer metrics-only S1 failure, and one
   checker-passing selected-layer prompt-repeat packet are scaffolded. A fresh
-  held-out S1b packet reproduces the frozen layer hypothesis. S2b now has a
-  resource-limited mixed INT3/MXFP4 candidate that clears the executable local
-  S2 contract, but it is still short-continuation simulated replay rather than
-  task accuracy or GPU evidence.
+  held-out S1b packet reproduces the frozen layer hypothesis. A short-window
+  mixed INT3/MXFP4 S2b replay clears the executable local S2 contract, but the
+  same recipe fails a longer-window 12-prompt replay. SSQ-LR therefore has
+  state-heterogeneity evidence but no promotable state-quantization recipe.
 - **0%** as a systems-result paper: no native GPU state-cache integration or
   benchmark exists.
 
@@ -187,6 +187,7 @@ The current resource-limited S2 continuation replay scouts are:
 - `../shared/results/ssq_lr_s2_state_replay_scout_int3_block256_12p_20260507/`
 - `../shared/results/ssq_lr_s2_state_replay_scout_int3_block64_12p_20260507/`
 - `../shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_20260507/`
+- `../shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_20260507/`
 
 They replay short continuations from cached Granite Tiny recurrent states and
 mutate only the selected SSM state layers. Calibrated INT8/FP8/MXFP4 state
@@ -216,25 +217,25 @@ uniform MXFP4 or uniform INT3.
 The mixed-block S2b replay selects
 `mixed_int3_mxfp4_low_error_25pct` on the 12-prompt held-out replay with
 `4.192x` counted state-memory reduction, zero BF16-argmax delta, and
-`0.03956` selected NLL-delta CI high. This revives SSQ-LR as a Mac candidate
-but remains non-promotable because the replay is resource-limited,
-short-continuation, and simulated.
+`0.03956` selected NLL-delta CI high. This short-window pass remains
+non-promotable because the replay is resource-limited, short-continuation, and
+simulated.
+
+The longer-window replay then fails the same S2 contract: with
+`--max-input-tokens 24 --prefix-tokens 8`, the selected
+`mixed_int3_mxfp4_low_error_25pct` recipe keeps `4.192x` counted memory
+reduction but has selected accuracy CI high `0.0667` and selected NLL-delta CI
+high `0.0764`. This stops the mixed recipe before GPU.
 
 Highest-value next Mac-side S2 move:
 
-1. Promote `mixed_int3_mxfp4_low_error_25pct` to the next frozen S2 recipe
-   candidate. The 12-prompt resource-limited replay selects it with `4.192x`
-   counted state-memory reduction, zero BF16-argmax delta, and `0.03956`
-   NLL-delta CI high. This revives S2 as a Mac-side candidate but does not yet
-   promote to GPU because the replay is short-continuation, simulated
-   quantization only, and not task accuracy.
-2. The next admissible Mac gate is a non-resource-limited S2 packet with the
-   recipe hash frozen, longer continuation windows, paired uncertainty, and the
-   same controls. If that fails, the bounded fallback is layer-localization:
-   rerun S2 with single primary layers and only then freeze a layer-selective
-   mixed recipe. Do not lower the `>=4x` threshold or treat native MXFP4 scale
-   packing as free metadata without a separate hardware-backed byte-accounting
-   note.
+1. Do not GPU-promote `mixed_int3_mxfp4_low_error_25pct`: it passes only the
+   short-window replay and fails the longer-window replay.
+2. The only remaining bounded Mac move is layer-localization: rerun S2 with
+   single primary layers and only then freeze a layer-selective mixed recipe if
+   one layer survives the longer-window replay. Do not lower the `>=4x`
+   threshold or treat native MXFP4 scale packing as free metadata without a
+   separate hardware-backed byte-accounting note.
 
 Regenerate it with:
 
@@ -354,6 +355,19 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   --gate ssq_lr_s2
 ```
 
+Regenerate the longer-window mixed-block S2b falsification scout with:
+
+```bash
+HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
+  ./venv_arm64/bin/python -m experimental.shared.ssq_lr_s2_state_replay_scout \
+  --prompt-limit 12 --max-input-tokens 24 --prefix-tokens 8 \
+  --primary-layers 0,12,30 --block-size 256 \
+  --output-dir experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_20260507
+./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
+  experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_20260507 \
+  --gate ssq_lr_s2
+```
+
 The exact S1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/ssq_lr_trace_plan.jsonl`;
 regenerate it with:
@@ -388,11 +402,11 @@ Historical/general S1 packets can be validated with:
   --mode real --project ssq_lr
 ```
 
-Active gate status: held-out S1b is alive, and the resource-limited S2b mixed
-INT3/MXFP4 scout revives one frozen recipe candidate. Do not GPU-promote it yet.
-Only validate an S2/S3 follow-up packet after freezing
-`mixed_int3_mxfp4_low_error_25pct` into a non-resource-limited replay with
-longer continuations, paired quality bounds, and verbosity/length-drift bounds.
+Active gate status: held-out S1b is alive, but the resource-limited S2b mixed
+INT3/MXFP4 recipe fails the longer-window replay. Do not GPU-promote it. Only
+validate an S2/S3 follow-up packet after a new or layer-selective recipe clears
+the longer continuation replay with paired quality bounds and
+verbosity/length-drift bounds.
 Compare against the current hybrid-serving baseline from Nemotron-style
 recurrent-cache deployment: FP16 SSM cache with stochastic rounding, plus
 INT16/block-scaled controls. The local reference memo is
@@ -494,7 +508,7 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
 
 No 5090 work until S1b and a non-resource-limited S2/S3 packet pass with the
 exact state quantization recipe frozen. S1b now passes on a resource-limited
-held-out Mac packet, and S2b has a resource-limited mixed recipe candidate, but
-GPU work is justified only after the frozen recipe clears `>=4x` effective
-state-memory reduction with paired quality, verbosity/length-drift, and
-cross-model transfer bounds.
+held-out Mac packet, but S2b fails on the longer-window replay. GPU work is
+justified only after a frozen recipe clears `>=4x` effective state-memory
+reduction with paired quality, verbosity/length-drift, and cross-model transfer
+bounds.

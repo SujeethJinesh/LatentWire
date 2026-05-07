@@ -1,0 +1,40 @@
+{
+  "claim_boundary": [
+    "resource-limited local continuation replay",
+    "BF16-argmax fidelity proxy, not task accuracy",
+    "simulated quantization only",
+    "not GPU evidence",
+    "not a promotable S2 packet"
+  ],
+  "command": "python -m experimental.shared.ssq_lr_s2_state_replay_scout",
+  "gate_name": "ssq_lr_s2",
+  "max_input_tokens": 24,
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "model_revision": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "prefix_tokens": 8,
+  "preregistration_sha256": "sha256:e82292ec47200b5925bfbd264deb3c691891809c55302f1a612e8bed9b748d86",
+  "primary_layers": [
+    0,
+    12,
+    30
+  ],
+  "project": "ssq_lr",
+  "prompt_ids": [
+    "hrsmoke_0001",
+    "hrsmoke_0002",
+    "hrsmoke_0003",
+    "hrsmoke_0004",
+    "hrsmoke_0005",
+    "hrsmoke_0006",
+    "hrsmoke_0007",
+    "hrsmoke_0008",
+    "hrsmoke_0009",
+    "hrsmoke_0010",
+    "hrsmoke_0011",
+    "hrsmoke_0012"
+  ],
+  "seed_list": [
+    1729
+  ],
+  "source_gate_packet_sha256": "sha256:f61ff7290d9a8753f16c64c3e810862dc950aeae1495a8c8ef85520e9ac09a29"
+}

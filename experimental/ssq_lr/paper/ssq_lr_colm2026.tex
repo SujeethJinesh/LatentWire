@@ -55,17 +55,20 @@ and non-promoting.
 The newest resource-limited mixed-block S2b scout selects
 \texttt{mixed\_int3\_mxfp4\_low\_error\_25pct}: it reaches 4.192$\times$
 counted state-memory reduction on the 12-prompt held-out replay with zero
-BF16-argmax delta and 0.03956 selected NLL-delta CI high. This revives S2 as a
-Mac candidate, but the packet is still short-continuation simulated replay and
-cannot promote to GPU.
+BF16-argmax delta and 0.03956 selected NLL-delta CI high. This short-window
+pass is still simulated replay and cannot promote to GPU.
+The same recipe then fails a longer-window replay
+(\texttt{--max-input-tokens 24 --prefix-tokens 8}): it preserves the
+4.192$\times$ byte readout but has selected accuracy CI high 0.0667 and
+selected NLL-delta CI high 0.0764. The mixed recipe is therefore stopped before
+GPU validation.
 
 \section{Next Evidence}
 
-The next admissible action is not GPU validation. SSQ-LR should freeze the
-mixed-block recipe hash and rerun a non-resource-limited S2 packet with longer
-continuations, paired quality bounds, verbosity/length-drift readouts, and the
-same controls. Otherwise the S1b/S2b result is diagnostic evidence, not a
-positive method.
+The next admissible action is not GPU validation. SSQ-LR should either run a
+single-layer S2 localization scout under the same longer-window replay or stop
+the branch as diagnostic S1b evidence. Otherwise the S1b/S2b result is
+diagnostic evidence, not a positive method.
 
 \section{Admissible Real Packet}
 

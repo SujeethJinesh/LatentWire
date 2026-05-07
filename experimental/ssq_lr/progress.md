@@ -255,8 +255,27 @@ Selected recipe: `mixed_int3_mxfp4_low_error_25pct`.
 - prompts: `12`
 - rows: `156`
 
-Decision: **S2 IS REVIVED AS A MAC CANDIDATE, NOT GPU-READY**. Freeze
-`mixed_int3_mxfp4_low_error_25pct` for the next non-resource-limited S2 packet
-with longer continuation windows and the same controls. If the frozen packet
-fails, fall back to single-layer localization rather than changing the S2 byte
-or quality thresholds.
+Decision after this short-window packet: **S2 WAS REVIVED AS A MAC CANDIDATE,
+NOT GPU-READY**. The next packet must test the same recipe on a longer
+continuation window before any GPU discussion.
+
+## 2026-05-07 S2b Longer-Window Replay Result
+
+Packet:
+`experimental/shared/results/ssq_lr_s2_state_replay_scout_mixed_block256_12p_ctx24_20260507/`.
+The executable follow-up contract rejects the packet with
+`FAIL_REAL_SSQ_LR_S2_QUANTIZATION_SENSITIVITY`.
+
+Selected recipe: `mixed_int3_mxfp4_low_error_25pct`.
+
+- counted state-memory reduction: `4.192x`
+- selected accuracy CI high: `0.066667`
+- selected NLL-delta CI high: `0.07641`
+- prompts: `12`
+- rows: `156`
+- replay shape: `--max-input-tokens 24 --prefix-tokens 8`
+
+Decision: **THE MIXED RECIPE IS STOPPED BEFORE GPU**. S1b heterogeneity remains
+alive as a diagnostic, but SSQ-LR has no promotable S2 recipe. The only bounded
+Mac continuation is single-layer S2 localization; do not lower the `>=4x` byte
+threshold or send the current mixed recipe to GPU.
