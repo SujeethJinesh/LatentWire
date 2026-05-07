@@ -70,3 +70,13 @@ quantization/paper/*.out
 quantization/paper/*.fls
 quantization/paper/*.fdb_latexmk
 quantization/paper/*.synctex.gz
+
+# LaTeX build artifacts (experimental papers)
+experimental/*/paper/*.aux
+experimental/*/paper/*.bbl
+experimental/*/paper/*.blg
+experimental/*/paper/*.log
+experimental/*/paper/*.out
+experimental/*/paper/*.fls
+experimental/*/paper/*.fdb_latexmk
+experimental/*/paper/*.synctex.gz
