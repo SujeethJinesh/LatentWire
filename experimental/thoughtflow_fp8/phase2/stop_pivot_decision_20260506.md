@@ -11,7 +11,7 @@ ThoughtFlow-family candidates without retuning:
 - `tf_sparse_r0.55_p0.05_m0.12_a2`
 
 The 74-trace CPU sparse-cache slice weakens the family. ThinKV-like is the best
-compressed row at matched budget.
+compressed row under fixed nominal-budget accounting.
 
 | Row | NLL | Paired delta vs R-KV-like | Paired delta vs ThinKV-like |
 |---|---:|---:|---:|

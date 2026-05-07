@@ -21,7 +21,10 @@ def test_synthetic_h1a_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     assert report["ok"], report["errors"]
     assert report["row_count"] == 72
     assert summary["decision"] == "SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A"
+    # The synthetic fixture drives the metric evaluator through a passing path,
+    # but the packet decision remains schema-rehearsal/non-promoting.
     assert summary["gate_status"] == "PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN"
+    assert summary["decision"].startswith("SCHEMA_REHEARSAL_NOT_PROMOTABLE")
     assert summary["prompt_count"] == 12
     assert summary["selected_h1_direction"] == "ssm->attention"
     assert summary["permuted_direction_ratio"] <= 1.0

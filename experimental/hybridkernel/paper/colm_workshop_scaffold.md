@@ -80,7 +80,9 @@ Required traces:
   graph node tracing;
 - Nsight Compute counter pass on only suspicious boundary kernels;
 - repeated fixed-request runs with paired uncertainty;
-- same-family controls where available;
+- three repeated primary rows, three same-family control rows, and three
+  cross-family falsification rows under the active `--require-full-matrix`
+  packet gate;
 - explicit separation between source communication and target-cache/runtime
   cache effects.
 
@@ -89,8 +91,8 @@ Promotion threshold:
 - at least 3% estimated end-to-end gain, or a larger localized boundary cost
   with a concrete path to 3% end-to-end;
 - repeated-run stability;
-- one strict same-family control;
-- one cross-family falsification pair before widening benchmark claims.
+- three strict same-family controls;
+- three cross-family falsification rows before widening benchmark claims.
 
 ## 4. Current Evidence
 

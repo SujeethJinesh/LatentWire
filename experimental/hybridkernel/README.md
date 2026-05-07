@@ -120,9 +120,12 @@ cd /path/to/LatentWire
 python3 -m venv .venv_gpu
 source .venv_gpu/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r experimental/hybridkernel/requirements.txt
 export VLLM_VERSION=...  # fill exact release used on the GPU node
+export RUN_ID=...        # e.g., 20260507_5090_granite_small
+mkdir -p "experimental/hybridkernel/phase2/native_runs/${RUN_ID}/metadata"
 python -m pip install "vllm==${VLLM_VERSION:?set VLLM_VERSION}"
+python -m pip install -r experimental/hybridkernel/requirements-gpu-checkers.txt
+python -m pip freeze | tee "experimental/hybridkernel/phase2/native_runs/${RUN_ID}/metadata/environment_freeze.txt"
 
 nvidia-smi
 nsys --version

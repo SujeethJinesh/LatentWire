@@ -39,7 +39,7 @@ Saturated:
 - anchor/recent/phase/math sparse-cache sweeps on these saved traces
 - phase-marker recall without continuation-quality improvement
 
-Still alive:
+Still reusable:
 
 - CPU sparse-cache pruning as a falsification harness
 - hidden/KV telemetry for explaining eviction bias

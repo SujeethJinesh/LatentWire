@@ -15,6 +15,8 @@ from pathlib import Path
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
+DISTILGPT2_REVISION = "2290a62682d06624634c1f46a6ad5be0f47f38aa"
+
 try:
     from .kv_drop_quality_probe import (
         SparseSweepConfig,
@@ -210,11 +212,15 @@ def _score_continuation_with_cache(
     return float(outputs.loss.item()), scored_tokens
 
 
-def _load_model_for_prefill_attentions(model_name: str) -> AutoModelForCausalLM:
+def _load_model_for_prefill_attentions(model_name: str, model_revision: str) -> AutoModelForCausalLM:
     try:
-        return AutoModelForCausalLM.from_pretrained(model_name, attn_implementation="eager")
+        return AutoModelForCausalLM.from_pretrained(
+            model_name,
+            revision=model_revision,
+            attn_implementation="eager",
+        )
     except TypeError:  # pragma: no cover - older transformers versions.
-        return AutoModelForCausalLM.from_pretrained(model_name)
+        return AutoModelForCausalLM.from_pretrained(model_name, revision=model_revision)
 
 
 def _run(
@@ -224,14 +230,15 @@ def _run(
     max_length: int,
     continuation_tokens: int,
     trace_paths: list[Path] | None = None,
+    model_revision: str = DISTILGPT2_REVISION,
 ) -> dict[str, object]:
     cache_dir = ROOT / "experimental/thoughtflow_fp8/.debug/hf_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
     os.environ.setdefault("HF_HOME", str(cache_dir))
     os.environ.setdefault("TRANSFORMERS_CACHE", str(cache_dir))
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = _load_model_for_prefill_attentions(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, revision=model_revision)
+    model = _load_model_for_prefill_attentions(model_name, model_revision)
     model.eval()
     resolved_trace_paths = trace_paths or DEFAULT_TRACES
     prepared = _prepare_rows(tokenizer, max_traces, max_length, continuation_tokens, resolved_trace_paths)
@@ -319,6 +326,8 @@ def _run(
     paired_vs_thin = _paired_deltas(rows, baseline_policy="thin_kv_like")
     return {
         "model_name": model_name,
+        "model_revision": model_revision,
+        "tokenizer_revision": model_revision,
         "input_paths": [
             str(path.relative_to(ROOT)) if path.is_absolute() and path.is_relative_to(ROOT) else str(path)
             for path in resolved_trace_paths
@@ -508,9 +517,17 @@ def main() -> None:
     parser.add_argument("--max-traces", type=int, default=74)
     parser.add_argument("--max-length", type=int, default=96)
     parser.add_argument("--continuation-tokens", type=int, default=24)
+    parser.add_argument("--model-revision", default=DISTILGPT2_REVISION)
     args = parser.parse_args()
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    result = _run(args.model_name, args.keep_fraction, args.max_traces, args.max_length, args.continuation_tokens)
+    result = _run(
+        args.model_name,
+        args.keep_fraction,
+        args.max_traces,
+        args.max_length,
+        args.continuation_tokens,
+        model_revision=args.model_revision,
+    )
     (OUT_DIR / "frozen_sparse_cache_probe.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     _write_markdown(result)
     print(json.dumps({"status": result["status"], "summary": result["summary"]}, indent=2))

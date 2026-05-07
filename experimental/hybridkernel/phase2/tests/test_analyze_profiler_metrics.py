@@ -240,18 +240,20 @@ def test_kills_when_recoverable_gain_is_tiny() -> None:
 
 
 def test_rejects_invalid_recoverable_fraction() -> None:
-    try:
-        analyze(
-            {
-                "rows": [
-                    _native_row(0, recoverable_fraction=1.5)
-                ]
-            }
-        )
-    except ValueError as exc:
-        assert "recoverable_fraction" in str(exc)
-    else:
-        raise AssertionError("expected invalid recoverable_fraction to be rejected")
+    for value in (0.95, 1.5):
+        try:
+            analyze(
+                {
+                    "rows": [
+                        _native_row(0, recoverable_fraction=value)
+                    ]
+                }
+            )
+        except ValueError as exc:
+            assert "recoverable_fraction" in str(exc)
+            assert "0.60" in str(exc)
+        else:
+            raise AssertionError("expected invalid recoverable_fraction to be rejected")
 
 
 def test_rejects_impossible_local_timings() -> None:

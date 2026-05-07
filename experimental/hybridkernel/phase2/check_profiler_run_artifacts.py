@@ -118,6 +118,29 @@ ENVIRONMENT_PROVENANCE_VERSION = "hybridkernel_environment_v1"
 MODEL_PROVENANCE_VERSION = "hybridkernel_model_provenance_v1"
 REPLACEMENT_METADATA_PATH = "metadata/cross_family_control_replacement_template.json"
 MAX_RECOVERABLE_FRACTION = 0.60
+REQUIRED_REPLACEMENT_ROW_FIELDS = [
+    "row_role",
+    "model",
+    "model_revision",
+    "served_dtype",
+    "control_family",
+    "control_model_or_segment",
+    "boundary_direction",
+    "boundary_indices",
+    "required_repeats",
+    "request_shape",
+    "feasibility_reason",
+    "architecture_map_path",
+    "architecture_map_sha256",
+    "operator_initials",
+    "preregistration_timestamp_utc",
+]
+REPLACEMENT_MATRIX_MATCH_FIELDS = [
+    "model",
+    "control_family",
+    "control_model_or_segment",
+    "boundary_direction",
+]
 MUTABLE_REVISION_NAMES = {"main", "master", "head", "latest", "dev", "trunk"}
 REQUIRED_ENVIRONMENT_FIELDS = [
     "timestamp_utc",
@@ -1277,6 +1300,9 @@ def _validate_cross_family_replacement(
     if not isinstance(replacement_row, dict):
         errors.append(f"{REPLACEMENT_METADATA_PATH} must contain replacement_row")
         return
+    for field in REQUIRED_REPLACEMENT_ROW_FIELDS:
+        if field not in replacement_row or _is_unfilled_text(replacement_row.get(field)):
+            errors.append(f"{REPLACEMENT_METADATA_PATH} replacement_row.{field} must be filled")
     replacement_model = str(replacement_row.get("model", "")).strip()
     if replacement_model not in replacement_models:
         errors.append(
@@ -1285,13 +1311,77 @@ def _validate_cross_family_replacement(
         )
     if str(replacement_row.get("row_role", "")).strip() != "cross_family_falsification":
         errors.append(f"{REPLACEMENT_METADATA_PATH} replacement_row.row_role must be cross_family_falsification")
+    if replacement_row.get("required_repeats") != 3:
+        errors.append(f"{REPLACEMENT_METADATA_PATH} replacement_row.required_repeats must be 3")
+    boundary_indices = replacement_row.get("boundary_indices")
+    if (
+        not isinstance(boundary_indices, list)
+        or not boundary_indices
+        or any(isinstance(value, bool) or not isinstance(value, int) for value in boundary_indices)
+    ):
+        errors.append(f"{REPLACEMENT_METADATA_PATH} replacement_row.boundary_indices must be non-empty integer list")
+    architecture_map_path = str(replacement_row.get("architecture_map_path", "")).strip()
+    architecture_map_sha256 = str(replacement_row.get("architecture_map_sha256", "")).strip().lower()
+    if architecture_map_path:
+        resolved_architecture_map = run_dir / architecture_map_path
+        if not resolved_architecture_map.is_file():
+            errors.append(
+                f"{REPLACEMENT_METADATA_PATH} replacement_row.architecture_map_path "
+                "must point to a packet file"
+            )
+        elif not SHA256_PATTERN.match(architecture_map_sha256):
+            errors.append(
+                f"{REPLACEMENT_METADATA_PATH} replacement_row.architecture_map_sha256 "
+                "must be sha256:<64 lowercase hex chars>"
+            )
+        else:
+            actual_sha256 = _file_sha256(resolved_architecture_map)
+            if actual_sha256 != architecture_map_sha256:
+                errors.append(
+                    f"{REPLACEMENT_METADATA_PATH} replacement_row.architecture_map_sha256 "
+                    f"mismatch for {architecture_map_path}: expected {architecture_map_sha256}, "
+                    f"got {actual_sha256}"
+                )
+    preregistration_timestamp = str(
+        replacement_row.get("preregistration_timestamp_utc", "")
+    ).strip()
+    if preregistration_timestamp and not re.match(
+        r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$",
+        preregistration_timestamp,
+    ):
+        errors.append(
+            f"{REPLACEMENT_METADATA_PATH} replacement_row.preregistration_timestamp_utc "
+            "must use YYYY-MM-DDTHH:MM:SSZ"
+        )
     request_shape = replacement_row.get("request_shape")
     if not isinstance(request_shape, dict):
         errors.append(f"{REPLACEMENT_METADATA_PATH} replacement_row.request_shape must be an object")
     elif control_specs.get("cross_family_falsification"):
+        matching_specs = [
+            spec
+            for spec in control_specs.get("cross_family_falsification", [])
+            if str(spec.get("model", "")).strip() == replacement_model
+        ]
+        if not matching_specs:
+            errors.append(
+                f"{REPLACEMENT_METADATA_PATH} replacement_row.model must also appear "
+                "in native_control_matrix.json as a cross_family_falsification row"
+            )
+        elif not any(
+            all(
+                str(spec.get(field, "")).strip()
+                == str(replacement_row.get(field, "")).strip()
+                for field in REPLACEMENT_MATRIX_MATCH_FIELDS
+            )
+            for spec in matching_specs
+        ):
+            errors.append(
+                f"{REPLACEMENT_METADATA_PATH} replacement_row must match the copied "
+                "native_control_matrix.json cross-family row"
+            )
         spec_shapes = [
             spec.get("_request_shape")
-            for spec in control_specs.get("cross_family_falsification", [])
+            for spec in matching_specs
             if isinstance(spec.get("_request_shape"), dict)
         ]
         expected_shape = dict(request_shape)

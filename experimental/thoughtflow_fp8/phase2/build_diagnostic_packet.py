@@ -400,6 +400,10 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
         "script": {
             "path": str(Path(__file__).relative_to(REPO_ROOT)),
             "sha256": _sha256(Path(__file__)),
+            "sha256_role": (
+                "current builder-file integrity hash for verifier drift detection; "
+                "git.head_at_generation records the historical packet generation commit"
+            ),
             "command": (
                 "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py "
                 "--output .debug/thoughtflow_diagnostic_packet_check"

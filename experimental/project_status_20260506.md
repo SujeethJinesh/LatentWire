@@ -9,6 +9,22 @@ saturated ideas.
 
 ## Current Decision Surface
 
+2026-05-07 local hardening addendum: the in-scope suite is now
+`309 passed, 1 skipped, 2 warnings`. HybridKernel's analyzer enforces the
+pre-registered `recoverable_fraction <= 0.60` cap directly, replacement
+cross-family controls must provide filled preregistration metadata with a
+matching architecture-map hash and copied control-matrix row, and the GPU setup
+installs pinned vLLM before lightweight checker dependencies. The future
+prototype quality-smoke checker now recomputes answer mismatches and
+output-length drift from stock/prototype JSONL outputs. SSQ-LR, HORN, and HBSM
+competitor matrices are explicitly historical guardrails, and their synthetic
+passing fixtures now assert schema-rehearsal/non-promoting packet decisions.
+ThoughtFlow's diagnostic packet now force-tracks every hashed input path needed
+by clean-checkout tests, distinguishes historical packet git head from current
+builder-hash drift checks, pins the frozen sparse-cache builder's `distilgpt2`
+revision for future rebuilds, and keeps the rebuilt PDF at the 8-page gate after
+adding the recent KV-cache related-work boundary.
+
 | Rank | Project | Readiness | Current story | Exact blocking gap | Next experiment |
 |---:|---|---:|---|---|---|
 | 1 | HybridKernel | 70% if GPU gate passes; 0% as local-only result | Boundary-fusion may recover avoidable attention to SSM overhead in hybrid models, but Mac work is saturated. The packet checker now handles batch>1 replay as per-sample prefill plus aggregate completion tokens, enforces the copied native control matrix's request shape/control segment/boundary direction/CUDA-graph state, and the driver synthesizes exact tokenizer-roundtrip prompts when token counts are required, failing before profiling if exact prefill length cannot be proven. Client replay logs now include per-request `prompt_sha256` and `payload_sha256`, model provenance requires snapshot manifests plus immutable revision attestations and rejects mutable aliases, and a standalone quality-smoke checker now gates any future prototype speed table. The analyzer also requires same-family controls from the same primary model, and the GPU gate command uses `--require-full-matrix` so primary-only packets are audit-only. The artifact checker now requires three distinct rows and run IDs for each primary, same-family-control, and cross-family-falsification role before a full-matrix packet can pass. It also requires row-specific client replay logs keyed by `(model, run_id, batch, prefill, decode, requests)`, `metadata/reduction_input_manifest.json`, and a filled reduction worksheet so every metric row is tied to its source Nsight artifacts, SHA-256 digests, time window, reduction command, reducer script/worksheet digest, and reduction notes. If Qwen3-Next is infeasible, a smaller cross-family hybrid can only be used through the checked-in preregistration replacement template before profiling. | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, at least 3% recoverable gain, three same-model same-shape same-family control rows, three same-shape cross-family falsification rows that stay below 3%, fixed-length replay with `ignore_eos`, matching row-specific client replay logs for every metric row, a completed row-level reduction manifest/worksheet, and a clean no-boundary negative if using `no_boundary_signal_kill`. | Run `experimental/hybridkernel/phase2/nvidia_vllm_profiler_runbook.md`; verify with `check_profiler_run_artifacts.py --require-full-matrix` and `analyze_profiler_metrics.py`. |

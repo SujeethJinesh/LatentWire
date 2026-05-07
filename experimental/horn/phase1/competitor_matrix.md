@@ -1,6 +1,9 @@
 # HORN Competitor Matrix
 
-Status: local novelty guardrail before boundary measurements.
+Status: historical novelty guardrail; current branch evidence is demoted by
+H1a/H2 failures as of 2026-05-07. Use the README, reviewer pack, and
+preregistration closure before treating this matrix as evidence for any live or
+GPU-ready claim.
 
 ## Claim Boundary
 

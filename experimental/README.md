@@ -221,7 +221,7 @@ into a stronger branch before spending GPU time. HybridKernel is the exception:
 its Mac work is saturated, so the next discriminative bit is the native GPU
 profiler packet.
 
-For SSQ-LR, HORN, and HBSM, the first live trace packet builders/checkers are
+For SSQ-LR, HORN, and HBSM, the strict real-packet builders/checkers are
 S1, H1a/H1, and B1 respectively. The S2/S3, H2/H3, and B2/B3 follow-up
 contracts are now executable through `shared/followup_gate_contracts.py`.
 Current SSQ-LR S2b and HORN H2 model packets are non-promoting Mac failures;

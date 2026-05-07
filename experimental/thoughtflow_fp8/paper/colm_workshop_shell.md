@@ -193,9 +193,9 @@ diagnostics.
 
 Saturated: synthetic marker-retention, text-prefix-only policy tuning, the
 current anchor/recent/phase/math frozen candidates, `rdu_topk`, `psi_topk`, and
-`vwac_topk` on the available Mac-local surfaces. Still alive: the sparse-cache
-probe as diagnostic infrastructure and real KV/hidden telemetry to explain
-eviction bias.
+`vwac_topk` on the available Mac-local surfaces. Still reusable: the
+sparse-cache probe as diagnostic infrastructure and real KV/hidden telemetry
+to explain eviction bias.
 
 ## Limitations
 

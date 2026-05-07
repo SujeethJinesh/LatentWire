@@ -9,7 +9,7 @@
 ## Result
 
 ```text
-303 passed, 1 skipped, 2 warnings in 7.22s
+309 passed, 1 skipped, 2 warnings in 7.61s
 ```
 
 The skipped test is the opt-in non-interpreter Triton CPU-backend check for the
@@ -51,6 +51,15 @@ ready to evaluate the next admissible artifacts:
 
 After the paper edits, the HORN and ThoughtFlow-FP8 PDFs were rebuilt with
 `latexmk -pdf -interaction=nonstopmode -halt-on-error`.
+
+Follow-up hardening on 2026-05-07 added six local checks without changing the
+project decisions: HybridKernel analyzer recovery is capped at the
+pre-registered `0.60`, replacement cross-family controls must carry filled
+preregistration metadata and matching architecture-map hashes, the future
+prototype quality-smoke checker recomputes answer mismatches and output-length
+drift from JSONL outputs, SSQ-LR/HORN/HBSM synthetic gates explicitly assert
+non-promoting packet decisions, and the ThoughtFlow diagnostic packet now
+requires every hashed input path to be tracked for clean-checkout replay.
 
 - HybridKernel: native 5090 Nsight/vLLM full-matrix packet; if a prototype is
   later implemented, its quality smoke must pass

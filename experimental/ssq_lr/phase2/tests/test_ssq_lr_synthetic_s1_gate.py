@@ -16,7 +16,10 @@ def test_synthetic_s1_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     assert report["ok"], report["errors"]
     assert report["decision"] == "SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_SSQ_LR_S1"
     assert report["row_count"] == 12 * 6 * 4
+    # The synthetic fixture drives the metric evaluator through a passing path,
+    # but the packet decision remains schema-rehearsal/non-promoting.
     assert summary["gate_status"] == "PASS_REAL_S1_HETEROGENEITY"
+    assert summary["decision"].startswith("SCHEMA_REHEARSAL_NOT_PROMOTABLE")
     assert "synthetic-only" in summary["claim_boundary"]
     assert (output_dir / "summary.md").is_file()
 

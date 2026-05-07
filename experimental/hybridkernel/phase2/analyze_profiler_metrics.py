@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[3]
 OUT_DIR = ROOT / "experimental/hybridkernel/phase2"
 DEFAULT_INPUT = OUT_DIR / "profiler_metrics_template.json"
 DEFAULT_OUTPUT = OUT_DIR / "profiler_analysis_gate.json"
+MAX_RECOVERABLE_FRACTION = 0.60
 
 
 TEMPLATE = {
@@ -211,8 +212,11 @@ def _valid_rows(payload: dict[str, object]) -> list[dict[str, float | str]]:
             raise ValueError("attention_ssm_boundary_ms cannot exceed total_step_ms")
         if matched > total:
             raise ValueError("matched_non_boundary_ms cannot exceed total_step_ms")
-        if not 0.0 <= recoverable <= 1.0:
-            raise ValueError("recoverable_fraction must be between 0 and 1")
+        if not 0.0 <= recoverable <= MAX_RECOVERABLE_FRACTION:
+            raise ValueError(
+                "recoverable_fraction must be between 0 and "
+                f"{MAX_RECOVERABLE_FRACTION:.2f} for the pre-registered gate"
+            )
         _validate_time_window(raw, total=total)
         analysis_group_key, _ = _analysis_group_key(config)
         avoidable = max(0.0, boundary - matched)

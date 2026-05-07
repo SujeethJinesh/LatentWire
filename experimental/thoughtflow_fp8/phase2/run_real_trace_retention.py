@@ -250,7 +250,7 @@ def _write_markdown(result: dict[str, object]) -> None:
         [
             "## Decision",
             "",
-            "The branch remains useful only if the protected-token policy keeps phase/control markers at matched budget on real traces.",
+            "The branch remains useful only if the protected-token policy keeps phase/control markers under fixed nominal-budget accounting on real traces.",
             "If advanced, the next gate must move from text heuristics to real KV/cache telemetry and accuracy or perplexity impact.",
         ]
     )

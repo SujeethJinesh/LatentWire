@@ -33,7 +33,7 @@ def _write_packet(tmp_path: Path) -> Path:
                 "prompt_count": 12,
                 "normalized_answer_mismatch_count": 0,
                 "accuracy_delta_prototype_minus_stock": 0.0,
-                "mean_output_length_drift_fraction": 0.02,
+                "mean_output_length_drift_fraction": 0.0,
                 "stock_outputs_path": "stock_outputs.jsonl",
                 "stock_outputs_sha256": _sha256(stock),
                 "prototype_outputs_path": "prototype_outputs.jsonl",
@@ -58,9 +58,15 @@ def test_accepts_complete_quality_smoke_packet(tmp_path: Path) -> None:
 def test_rejects_answer_or_length_regressions(tmp_path: Path) -> None:
     path = _write_packet(tmp_path)
     payload = json.loads(path.read_text(encoding="utf-8"))
+    prototype = tmp_path / "prototype_outputs.jsonl"
+    prototype.write_text(
+        "\n".join(f'{{"id": {idx}, "answer": "A extra"}}' for idx in range(12)) + "\n",
+        encoding="utf-8",
+    )
     payload["rows"][0]["normalized_answer_mismatch_count"] = 1
     payload["rows"][0]["accuracy_delta_prototype_minus_stock"] = -0.02
     payload["rows"][0]["mean_output_length_drift_fraction"] = 0.15
+    payload["rows"][0]["prototype_outputs_sha256"] = _sha256(prototype)
     path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
 
     result = check_quality_smoke(path, repo_root=tmp_path)
@@ -69,3 +75,24 @@ def test_rejects_answer_or_length_regressions(tmp_path: Path) -> None:
     assert any("normalized_answer_mismatch_count" in error for error in result["errors"])
     assert any("accuracy drop" in error for error in result["errors"])
     assert any("output length drift" in error for error in result["errors"])
+
+
+def test_rejects_self_reported_metrics_that_do_not_match_outputs(tmp_path: Path) -> None:
+    path = _write_packet(tmp_path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["rows"][0]["normalized_answer_mismatch_count"] = 0
+    payload["rows"][0]["accuracy_delta_prototype_minus_stock"] = 0.0
+    payload["rows"][0]["mean_output_length_drift_fraction"] = 0.0
+    prototype = tmp_path / "prototype_outputs.jsonl"
+    prototype.write_text(
+        "\n".join(f'{{"id": {idx}, "answer": "B"}}' for idx in range(12)) + "\n",
+        encoding="utf-8",
+    )
+    payload["rows"][0]["prototype_outputs_sha256"] = _sha256(prototype)
+    path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+
+    result = check_quality_smoke(path, repo_root=tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("normalized_answer_mismatch_count must match outputs" in error for error in result["errors"])
+    assert any("accuracy_delta_prototype_minus_stock must match outputs" in error for error in result["errors"])

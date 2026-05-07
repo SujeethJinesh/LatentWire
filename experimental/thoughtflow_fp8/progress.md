@@ -90,11 +90,11 @@ high-importance reasoning tokens. On 24 distilgpt2 traces at 0.20 keep
 fraction, it improves the best ThoughtFlow-family NLL from 3.562 to 3.434,
 nearly tying but still losing to the R-KV-like retained-prefix proxy at 3.419.
 
-`phase2/policy_sweep.md` runs the next ablation with matched budgets: select a
-small recency/phase/math-state policy on 12 train traces and report on 12
-held-out traces. The train-selected policy ties R-KV-like on held-out traces
-with NLL 3.480 versus 3.482, margin +0.001 in favor of the ThoughtFlow-family
-policy. This is a tie-range result, not a robust win.
+`phase2/policy_sweep.md` runs the next ablation under fixed nominal-budget
+accounting: select a small recency/phase/math-state policy on 12 train traces
+and report on 12 held-out traces. The train-selected policy ties R-KV-like on
+held-out traces with NLL 3.480 versus 3.482, margin +0.001 in favor of the
+ThoughtFlow-family policy. This is a tie-range result, not a robust win.
 
 Historical status: **MIXED, not revived as a positive method**. The next useful gate was
 real hidden/KV saliency telemetry; GPU sparse-KV work should wait until the
@@ -166,7 +166,7 @@ sparse candidate's paired delta is `-0.031` versus R-KV-like with 95% CI
 
 Status: **WEAKENED/NOT REVIVED**. Ruled out for now: the small-split
 train-selected sparse policy as a robust positive method on the available
-Mac-local distilgpt2 sparse-cache slice. Still alive only as diagnostic
+Mac-local distilgpt2 sparse-cache slice. Still reusable only as diagnostic
 infrastructure. The next exact gate is not further policy tuning on these
 traces; it is either a pre-registered new utility signal evaluated once on this
 frozen probe, or a stop/pivot decision for ThoughtFlow-FP8.
@@ -267,7 +267,7 @@ sparse ThoughtFlow row is oracle, `rdu_topk` is `+0.174` worse.
 
 Status: **NOT REPRODUCED / DEMOTED TO DIAGNOSTIC**. Ruled out: claiming
 `rdu_topk` as a robust positive method on the available Mac-local sparse-cache
-surfaces. Still alive: the sparse-cache falsification harness and
+surfaces. Still reusable: the sparse-cache falsification harness and
 oracle/headroom reporting. Highest-priority next gate: do not retune
 `rdu_topk`; either stop/pivot ThoughtFlow-FP8 or pre-register a genuinely new
 utility signal and evaluate it once on a fresh/larger frozen surface.

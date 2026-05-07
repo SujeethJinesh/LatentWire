@@ -21,7 +21,10 @@ def test_synthetic_b1_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     assert report["ok"], report["errors"]
     assert report["row_count"] == 720
     assert summary["decision"] == "SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1"
+    # The synthetic fixture drives the metric evaluator through a passing path,
+    # but the packet decision remains schema-rehearsal/non-promoting.
     assert summary["gate_status"] == "PASS_REAL_B1_SENSITIVITY_HETEROGENEITY"
+    assert summary["decision"].startswith("SCHEMA_REHEARSAL_NOT_PROMOTABLE")
     assert summary["primary_row_count"] == 480
     assert summary["scoring_layer_count"] == 40
     assert "synthetic-only" in summary["claim_boundary"]

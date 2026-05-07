@@ -408,6 +408,170 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
     )
 
 
+def _add_replacement_cross_family_rows(
+    run_dir: Path,
+    *,
+    metadata_overrides: dict[str, object] | None = None,
+    matrix_overrides: dict[str, object] | None = None,
+) -> None:
+    replacement_model = "replacement-hybrid"
+    architecture_map_path = run_dir / "metadata/architecture_map.json"
+    architecture_map_path.write_text(
+        json.dumps(
+            [
+                {"model": "granite", "boundary_count": 1},
+                {"model": replacement_model, "boundary_count": 1, "boundary_indices": [3]},
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    architecture_map_sha = _sha256(architecture_map_path)
+
+    control_matrix_path = run_dir / "metadata/native_control_matrix.json"
+    control_matrix = json.loads(control_matrix_path.read_text(encoding="utf-8"))
+    replacement_spec = {
+        "row_role": "cross_family_falsification",
+        "model": replacement_model,
+        "control_family": "cross_family_hybrid_control",
+        "control_model_or_segment": "replacement_hybrid_control",
+        "boundary_direction": "replacement_attention_ssm_boundary",
+    }
+    if matrix_overrides:
+        replacement_spec.update(matrix_overrides)
+    control_matrix["rows"] = [
+        replacement_spec if row["row_role"] == "cross_family_falsification" else row
+        for row in control_matrix["rows"]
+    ]
+    control_matrix_path.write_text(json.dumps(control_matrix) + "\n", encoding="utf-8")
+
+    provenance_path = run_dir / "metadata/model_provenance.json"
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    replacement_manifest_path, replacement_manifest_sha = _write_snapshot_manifest(
+        run_dir, "replacement"
+    )
+    provenance["models"].append(
+        {
+            "model_id": replacement_model,
+            "served_model_id": replacement_model,
+            "model_revision": "test-replacement-model-revision",
+            "tokenizer_revision": "test-replacement-tokenizer-revision",
+            "model_revision_is_immutable": True,
+            "tokenizer_revision_is_immutable": True,
+            "cache_source": "synthetic fixture",
+            "snapshot_manifest_path": replacement_manifest_path,
+            "snapshot_manifest_sha256": replacement_manifest_sha,
+            "local_files_only": True,
+            "trust_remote_code": True,
+        }
+    )
+    provenance_path.write_text(json.dumps(provenance) + "\n", encoding="utf-8")
+    profile_scope_path = run_dir / "metadata/profile_scope.json"
+    profile_scope = json.loads(profile_scope_path.read_text(encoding="utf-8"))
+    profile_scope["model_scopes"] = [
+        {
+            "model": "granite",
+            "row_roles": ["primary_hybrid"],
+            "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
+        },
+        {
+            "model": replacement_model,
+            "row_roles": ["cross_family_falsification"],
+            "vllm_command": (
+                "python -m vllm.entrypoints.openai.api_server "
+                f"--model {replacement_model}"
+            ),
+        },
+    ]
+    profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
+
+    metrics_path = run_dir / "profiler_metrics.json"
+    payload = json.loads(metrics_path.read_text(encoding="utf-8"))
+    replacement_rows = []
+    for idx, base in enumerate(payload["rows"]):
+        _write_client_replay_log(
+            run_dir,
+            f"client_replay_replacement_run{idx}.log",
+            model=replacement_model,
+            run_id=f"replacement-{idx}",
+        )
+        nsys_artifact = f"nsys/replacement_hybrid_run{idx}.nsys-rep"
+        ncu_artifact = f"ncu/replacement_boundary_kernel_run{idx}.ncu-rep"
+        _write_profiler_artifact(run_dir / nsys_artifact)
+        _write_profiler_artifact(run_dir / ncu_artifact)
+        row = dict(base)
+        row.update(
+            {
+                "model": replacement_model,
+                "run_id": f"replacement-{idx}",
+                "row_role": "cross_family_falsification",
+                "control_family": "cross_family_hybrid_control",
+                "control_model_or_segment": "replacement_hybrid_control",
+                "boundary_direction": "replacement_attention_ssm_boundary",
+                "attention_ssm_boundary_ms": 2.0,
+                "matched_non_boundary_ms": 2.0,
+                "boundary_indices": [3],
+                "nsys_artifact": nsys_artifact,
+                "nsys_artifact_sha256": _sha256(run_dir / nsys_artifact),
+                "ncu_artifact": ncu_artifact,
+                "ncu_artifact_sha256": _sha256(run_dir / ncu_artifact),
+                "ncu_launch_selection": {
+                    "kernel_regex": "replacement_boundary_kernel",
+                    "launch_skip": idx,
+                    "launch_count": 1,
+                    "source_nsys_artifact": nsys_artifact,
+                    "source_time_window_ms": {"start": float(idx), "end": float(idx) + 1.0},
+                    "derivation_notes": "Selected from the replacement synthetic Nsight window.",
+                },
+            }
+        )
+        replacement_rows.append(row)
+    payload["rows"].extend(replacement_rows)
+    metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    _write_reduction_manifest(run_dir, payload)
+    analysis = analyze(payload)
+    (run_dir / "profiler_analysis_gate.json").write_text(
+        json.dumps(analysis, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (run_dir / "profiler_analysis_gate.md").write_text(
+        "# HybridKernel Profiler Analysis Gate\n\n"
+        f"Status: **{analysis['status']}**\n",
+        encoding="utf-8",
+    )
+
+    replacement_metadata = {
+        "status": "PREREGISTERED_REPLACEMENT_NOT_NATIVE_EVIDENCE",
+        "purpose": "Synthetic test replacement preregistration.",
+        "allowed_use": "Synthetic test only.",
+        "architecture_map_requirement": "Synthetic test map is hashed before profiling.",
+        "replacement_row": {
+            "row_role": "cross_family_falsification",
+            "model": replacement_model,
+            "model_revision": "test-replacement-model-revision",
+            "served_dtype": "bfloat16",
+            "control_family": "cross_family_hybrid_control",
+            "control_model_or_segment": "replacement_hybrid_control",
+            "boundary_direction": "replacement_attention_ssm_boundary",
+            "boundary_indices": [3],
+            "required_repeats": 3,
+            "request_shape": control_matrix["request_shape"],
+            "feasibility_reason": "Synthetic replacement is a hybrid control and fits the fixture budget.",
+            "architecture_map_path": "metadata/architecture_map.json",
+            "architecture_map_sha256": architecture_map_sha,
+            "operator_initials": "SJ",
+            "preregistration_timestamp_utc": "2026-05-07T00:00:00Z",
+        },
+        "must_not_do": [],
+    }
+    if metadata_overrides:
+        replacement_metadata["replacement_row"].update(metadata_overrides)
+    (run_dir / "metadata/cross_family_control_replacement_template.json").write_text(
+        json.dumps(replacement_metadata, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
 def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
 
@@ -418,6 +582,55 @@ def test_complete_native_run_artifacts_pass(tmp_path: Path) -> None:
     assert result["model_run_counts"] == {"granite": 3}
     assert result["model_distinct_run_counts"] == {"granite": 3}
     assert max(result["model_config_run_counts"].values()) == 3
+
+
+def test_accepts_filled_cross_family_replacement_metadata(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    _add_replacement_cross_family_rows(tmp_path)
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "PASS"
+    assert result["model_distinct_run_counts"]["replacement-hybrid"] == 3
+
+
+def test_rejects_cross_family_replacement_missing_preregistration_fields(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    _add_replacement_cross_family_rows(tmp_path, metadata_overrides={"feasibility_reason": ""})
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("replacement_row.feasibility_reason must be filled" in error for error in result["errors"])
+
+
+def test_rejects_cross_family_replacement_architecture_sha_mismatch(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    _add_replacement_cross_family_rows(
+        tmp_path,
+        metadata_overrides={"architecture_map_sha256": "sha256:" + ("0" * 64)},
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("replacement_row.architecture_map_sha256 mismatch" in error for error in result["errors"])
+
+
+def test_rejects_cross_family_replacement_matrix_mismatch(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    _add_replacement_cross_family_rows(
+        tmp_path,
+        matrix_overrides={"control_model_or_segment": "different_copied_control"},
+    )
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any(
+        "replacement_row must match the copied native_control_matrix" in error
+        for error in result["errors"]
+    )
 
 
 def test_rejects_missing_run_specific_client_replay_log(tmp_path: Path) -> None:

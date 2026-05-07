@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -83,6 +84,7 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
     script_path = REPO_ROOT / str(manifest["script"]["path"])
     expected_script_hash = "sha256:" + hashlib.sha256(script_path.read_bytes()).hexdigest()
     assert manifest["script"]["sha256"] == expected_script_hash
+    assert "current builder-file integrity hash" in manifest["script"]["sha256_role"]
     artifacts = manifest["artifacts"]
     preregistrations = manifest["preregistrations"]
     assert {artifact["id"] for artifact in artifacts} == {
@@ -127,6 +129,7 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
                 "n_scored_traces",
             ):
                 assert field in measured
+
         if artifact["role"].startswith(("stale_positive", "historical_positive")):
             assert artifact["historical_status"] in {"ALIVE", "PROMOTED", "REPRODUCED"}
             assert str(artifact["summary"]["status"]).startswith("HISTORICAL/SUPERSEDED: ")
@@ -158,6 +161,22 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
     assert "same_family_falsification" in table
     assert "cross_family_falsification" in table
     assert "## Preregistrations" in table
+
+
+def test_diagnostic_packet_input_hashes_are_tracked_for_clean_checkout() -> None:
+    manifest = json.loads((DIAGNOSTIC_PACKET / "manifest.json").read_text(encoding="utf-8"))
+    tracked_paths = set(
+        subprocess.check_output(["git", "ls-files"], cwd=REPO_ROOT, text=True).splitlines()
+    )
+
+    input_paths = {
+        input_path
+        for artifact in manifest["artifacts"]
+        for input_path in artifact["provenance"].get("input_hashes", {})
+    }
+
+    assert input_paths
+    assert input_paths.issubset(tracked_paths)
 
 
 def test_diagnostic_packet_has_no_stale_results_duplicate() -> None:

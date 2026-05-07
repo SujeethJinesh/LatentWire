@@ -143,12 +143,20 @@ verification, rebuild the same packet shape into `.debug` from a clean
   --output .debug/thoughtflow_diagnostic_packet_check
 ```
 
+Use `experimental/thoughtflow_fp8/requirements-repro.txt` when rebuilding the
+saved sparse-cache fixtures; `requirements.txt` remains the loose Mac-local dev
+scaffold. The frozen sparse-cache builder pins `distilgpt2` to Hugging Face
+revision `2290a62682d06624634c1f46a6ad5be0f47f38aa` and writes the model and
+tokenizer revision into newly generated JSON artifacts.
+
 The builder refuses dirty-path regeneration, and the saved-artifact tests assert
 that the manifest records a clean ThoughtFlow path. This protects the
 falsification packet from mixing stale JSON evidence with uncommitted paper or
 script edits. The fresh C2C input JSONL files referenced by the PSI/VWAC
 artifacts are force-tracked under the root `results/` directory so a clean
-checkout can resolve all hashed packet inputs.
+checkout can resolve all hashed packet inputs. The manifest's git head records
+the historical packet-generation commit; the script SHA is intentionally checked
+against the current builder file to catch verifier drift.
 
 If a future preregistered sparse-cache signal promotes, the next native gate is
 limited GPU validation of that exact frozen policy only, not GPU-side method
