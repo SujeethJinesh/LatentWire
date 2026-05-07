@@ -160,7 +160,7 @@ Latest recorded result:
 `experimental/local_readiness_recheck_20260507.md`.
 
 ```text
-287 passed, 1 skipped, 2 warnings in 12.34s
+288 passed, 1 skipped, 2 warnings in 10.93s
 ```
 
 Before interpreting any new native packet, rerun the owned Mac suite:

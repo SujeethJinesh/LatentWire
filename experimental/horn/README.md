@@ -159,8 +159,9 @@ any packet beginning `PASS_REAL_H1A` must be a new preregistered full H1a/H1
 capture, not a relabeling of the current scout.
 
 Validate promotable H2/H3 follow-up packets only after real H1a/H1 promotes.
-Resource-limited H2/H3 demotion scouts are allowed only as explicitly
-non-promoting evidence:
+Under the current demoted scope, H2/H3 work is limited to reproducing existing
+stop packets or to a new preregistered reopening. Historical resource-limited
+H2/H3 demotion scouts remain explicitly non-promoting evidence:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \
@@ -281,8 +282,8 @@ directional recipe is frozen. The current real H1a packet fails with selected
 ratio `1.06`, and the H2 scout also stays near null with directional drift
 ratio `1.037` and selected-direction support `0.5`. HORN must not be promoted
 to GPU as a standalone branch. Keep it as negative/control evidence for
-SSQ-LR/HBSM unless a future full H2/H3 reopening has a new preregistered
-reason.
+the active project ledger unless a future full H2/H3 reopening has a new
+preregistered reason.
 Allowed Mac-local work is limited to revalidating the existing H1a/H2 stop
 packets, docs/tests/runbook hygiene, or writing a new preregistered reopening.
 Do not add exploratory H2 rows under the current demoted scope.

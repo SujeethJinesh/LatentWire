@@ -778,7 +778,15 @@ before any systems claim:
 - 1K, 4K, 16K, and 32K prompt lengths with 256 decode tokens;
 - batch 1 as the primary setting and batch 8 as an audit packet if memory allows;
 - latency breakdown from Nsight Systems and HBM counters from Nsight Compute;
-- a quality-invariance smoke table on the frozen reasoning prompt set.
+- a quality-invariance smoke table on
+  `experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl`
+  (`sha256:48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`).
+  Run stock vLLM and the prototype with greedy decoding, temperature 0, and
+  256 max new tokens. The table must report normalized exact-answer changes,
+  output-token count drift, and any available continuation logprob/NLL drift.
+  Pass criterion for a prototype claim: zero normalized exact-answer
+  regressions on this 12-prompt smoke set and mean output-length drift within
+  10%. This is only a smoke guard, not a benchmark-accuracy claim.
 
 Do not add these tables unless the strict profiler packet promotes first.
 

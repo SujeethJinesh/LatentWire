@@ -301,6 +301,11 @@ control rows plus three same-shape cross-family falsification rows that do not
 reproduce the signal. Kill or shelve if no separable boundary overhead appears,
 the mean recoverable gain is below 1%, or the signal is explained by existing
 vLLM hybrid SSM layout/transfer machinery.
+If a prototype is later implemented after promotion, its first quality smoke
+uses `experimental/shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl`
+with greedy decoding and 256 max new tokens. It must show zero normalized
+exact-answer regressions versus stock vLLM and mean output-length drift within
+10% before any speed table is cited.
 
 Before renting time, confirm that the planned cross-family falsification model
 fits the node. A Granite-only 5090 packet is useful as an audit/kill packet, but

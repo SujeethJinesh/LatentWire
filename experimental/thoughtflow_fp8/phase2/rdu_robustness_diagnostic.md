@@ -6,7 +6,7 @@
 > ThoughtFlow-FP8 positive-method branch after independent reproduction and
 > fresh successor gates.
 
-Status: **PROMOTED on cached full gate; deterministic trace splits keep positive margins and paired means, but split CIs are not uniformly below zero.**
+Historical status: **PROMOTED on cached full gate; deterministic trace splits keep positive margins and paired means, but split CIs are not uniformly below zero.**
 
 - source artifact: `frozen_sparse_cache_probe.json`
 - model: `distilgpt2`

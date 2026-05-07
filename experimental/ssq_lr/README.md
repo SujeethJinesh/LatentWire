@@ -136,10 +136,11 @@ The current multilayer local capture packet is:
 - per-layer max-abs ratios: layer `0` = `3.2938`, layer `1` = `1.3736`,
   layer `2` = `0.8811`, layer `3` = `0.8680`
 
-This weakens SSQ-LR: the one-layer pass appears isolated on this short local
-surface. Do not move SSQ-LR to GPU until either an all-layer/limited-prompt
-scout or a prompt repeat shows broader S1 support. Only the compact readout is
-tracked; regenerate the full local tensor packet before rerunning the checker.
+Historical interpretation: this weakened SSQ-LR because the one-layer pass
+appeared isolated on this short local surface. It is superseded by the later
+held-out S1b/S2/S3 packets; do not use this packet for GPU promotion. Only the
+compact readout is tracked; regenerate the full local tensor packet before
+rerunning the checker.
 
 The current all-recurrent-layer metrics scout is:
 
@@ -150,9 +151,9 @@ The current all-recurrent-layer metrics scout is:
 - passing local layers: `0`, `12`, `18`, `30`
 - selected global S1 ratio: `0.806153`
 
-This further weakens SSQ-LR on the current Mac surface. The branch should not
-move to GPU unless a prompt-repeat scout shows those four layers reproduce
-across prompts, or a full S1 packet changes the conclusion.
+Historical interpretation: this further weakened SSQ-LR on the initial Mac
+surface. It is superseded by the later held-out S1b/S2/S3 packets and must not
+be used as GPU-promotion evidence.
 
 The selected-layer prompt-repeat tensor packet is:
 
@@ -166,12 +167,11 @@ The selected-layer prompt-repeat tensor packet is:
 - distribution passing layers: `4`
 - Holm minimum p-value: `2.775512e-05`
 
-This kept SSQ-LR worth testing as a layer-selective hypothesis, but it was
-explicitly non-promoting because the layer subset was selected after the
-all-layer scout. Treat layers `0`, `12`, and `30` as the current frozen primary
-set and layer `18` as a near-miss/control. The next local gate must be either a
-fresh/held-out layer-selective S1b or an S2 state-quantization sensitivity gate;
-do not move to GPU from this packet alone.
+Historical interpretation: this kept SSQ-LR worth testing as a layer-selective
+hypothesis, but it was explicitly non-promoting because the layer subset was
+selected after the all-layer scout. Layers `0`, `12`, and `30` became the
+frozen primary set and layer `18` became a near-miss/control. This packet is now
+superseded by the S2/S3 stop evidence; do not move to GPU from it.
 
 The fresh held-out S1b tensor packet is:
 
@@ -353,7 +353,7 @@ HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \
   --output-dir experimental/shared/results/ssq_lr_s2_state_replay_scout_block256_20260507
 ```
 
-Regenerate the INT3 held-out S2 scouts with:
+Regenerate the historical INT3 held-out S2 audit rows with:
 
 ```bash
 HF_HOME="$PWD/.debug/hf_home" HF_HUB_CACHE="$PWD/.debug/hf_home/hub" \

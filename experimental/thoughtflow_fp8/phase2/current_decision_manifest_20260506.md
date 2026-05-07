@@ -35,9 +35,10 @@ systems result.
 
 ## Stale Positive Artifacts
 
-Older artifacts such as `frozen_sparse_cache_probe.md` and
-`rdu_robustness_diagnostic.md` contain historical `ALIVE` or `PROMOTED`
-statuses. They now carry supersession banners and are preserved for
+Older artifacts such as `frozen_sparse_cache_probe.md`,
+`rdu_robustness_diagnostic.md`, and `rdu_no_retune_reproduction_check.md`
+contain historical `ALIVE`, `REPRODUCED`, or `PROMOTED` statuses. They now
+carry supersession banners and are preserved for
 auditability only. The current decision is the demotion recorded here, in `progress.md`, in
 `phase2/stop_pivot_decision_20260506.md`, and in the COLM-style draft.
 

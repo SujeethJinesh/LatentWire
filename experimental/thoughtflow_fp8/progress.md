@@ -367,15 +367,16 @@ latency, throughput, or Blackwell evidence.
   recurrence-distance utility signal based on delayed prefix self-attention
   reuse. No code was changed and no frozen probe was run.
 - 2026-05-06: Implemented the pre-registered `rdu_topk` signal in the frozen
-  sparse-cache probe and ran the one allowed frozen evaluation. Result: revived
+  sparse-cache probe and ran the one allowed frozen evaluation. Historical
+  result: temporarily revived
   on this Mac-local decision surface. `rdu_topk` NLL is 3.779 versus ThinKV-like
   3.900 and R-KV-like 3.939, with paired CIs below zero against both baselines.
   Do not tune this signal on the same saved traces.
 - 2026-05-06: Added a cached deterministic split/paired diagnostic for the
-  promoted `rdu_topk` row. All four half-size partitions keep positive mean
+  historical `rdu_topk` row. All four half-size partitions keep positive mean
   margins versus R-KV-like and ThinKV-like, but only 2/4 partitions clear both
-  paired CI highs below zero. `rdu_topk` remains promoted on the current frozen
-  gate; the next gate remains real reproduction without retuning.
+  paired CI highs below zero. `rdu_topk` was promoted on that frozen
+  gate, but this row is now superseded by later demotion evidence.
 - 2026-05-06: Added and ran the measured no-retuning reproduction check for
   `rdu_topk` on the same 74-trace frozen sparse-cache surface. The measured
   rerun exactly matches the cached promoted gate on this deterministic Mac

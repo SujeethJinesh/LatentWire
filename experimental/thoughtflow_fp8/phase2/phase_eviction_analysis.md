@@ -4,7 +4,7 @@
 > auditability only. It does not revive the current branch; see
 > `current_decision_manifest_20260506.md` for the active stop decision.
 
-Status: **ALIVE, but only as a synthetic Mac-local gate.** Real current-model traces are still required before a reviewer pack.
+Historical status: **ALIVE, but only as a synthetic Mac-local gate.** Real current-model traces are still required before a reviewer pack.
 
 | Policy | Keep rate | Anchor recall | Phase recall | Math-state recall |
 |---|---:|---:|---:|---:|

@@ -112,6 +112,19 @@ def test_native_gpu_handoff_has_strict_active_project_commands() -> None:
     assert "Only after a real HBSM B1 packet establishes sensitivity heterogeneity" in handoff
 
 
+def test_hybridkernel_gpu_runbook_pins_post_promotion_quality_smoke() -> None:
+    runbook = (EXPERIMENTAL / "hybridkernel/phase2/nvidia_vllm_profiler_runbook.md").read_text()
+    readme = (EXPERIMENTAL / "hybridkernel/README.md").read_text()
+
+    for text in [runbook, readme]:
+        assert "hybrid_reasoning_smoke_12_20260506.jsonl" in text
+        assert "zero normalized" in text
+        assert "exact-answer" in text
+        assert "regressions" in text
+        assert "mean output-length drift within" in text
+        assert "10%" in text
+
+
 def test_killed_markers_are_one_page_decision_records() -> None:
     for readme_path in EXPERIMENTAL.glob("KILLED_*/README.md"):
         text = readme_path.read_text()

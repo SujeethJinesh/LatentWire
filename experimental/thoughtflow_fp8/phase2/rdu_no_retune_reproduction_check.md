@@ -1,6 +1,6 @@
 # ThoughtFlow-FP8 RDU No-Retuning Reproduction Check
 
-Status: **REPRODUCED on the same measured no-retuning surface; later gates still demote rdu_topk.**
+Historical status: **REPRODUCED on the same measured no-retuning surface; later gates still demote rdu_topk.**
 
 - diagnostic type: `measured_no_retuning_rerun_against_cached_frozen_gate`
 - cached label: `cached_promoted_gate`

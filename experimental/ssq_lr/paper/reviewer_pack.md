@@ -1,7 +1,8 @@
 # SSQ-LR Reviewer Pack
 
-- status: weakened diagnostic branch; S1b state heterogeneity is real but the
-  current frozen state-quantization recipe fails transfer
+- status: stopped current recipe; diagnostic only unless newly preregistered.
+  S1b state heterogeneity is real but the current frozen state-quantization
+  recipe fails transfer
 - current decision: no GPU handoff under the current recipe; Granite 350M
   closes the prior cache-only blocker and exposes a quality/transfer failure
 - camera-readiness: not submittable as a method paper until S2/S3 have real
@@ -32,9 +33,9 @@ that a usable state-quantization recipe exists.
 
 S1 has a real trace packet builder/checker, and S2/S3 have follow-up contract
 checks in `experimental/shared/followup_gate_contracts.py`. Resource-limited S2
-scouts are current evidence for narrowing the recipe to layers `0,30`, not for
-promotion. S1b/S2b do not authorize a quantization recipe, byte-savings claim,
-or transfer claim.
+scouts were historical narrowing evidence for layers `0,30`, but they are
+superseded by the S3 transfer failure. S1b/S2b do not authorize a quantization
+recipe, byte-savings claim, or transfer claim.
 
 Byte accounting is counted, not nominal:
 

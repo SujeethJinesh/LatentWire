@@ -7,7 +7,7 @@ Older "next B1" entries below are historical. The controlling evidence as of
 cheap predictor has the wrong sign. Do not scale B1 to a larger Mac sweep or
 GPU validation unless a narrower mechanism hypothesis is preregistered first;
 otherwise HBSM remains demoted/control evidence and any useful mechanism claim
-should be folded into HORN/SSQ-LR context.
+should be folded into negative/control appendix context.
 
 ## 2026-05-06 Historical Setup Entry
 
@@ -251,5 +251,5 @@ are wrong, not because this tiny subset alone formally falsifies B1.
 Decision: **HBSM IS WEAKENED AND SHOULD NOT SCALE B1 AS-IS**. Do not run a
 larger B1 table or GPU validation until a narrower mechanism hypothesis is
 pre-registered. If the mechanism remains indistinguishable from HORN's H2
-question, fold HBSM into the HORN control appendix rather than keeping a
-standalone branch.
+question, fold HBSM into negative/control appendix context rather than keeping
+a standalone branch.
