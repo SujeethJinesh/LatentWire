@@ -235,6 +235,44 @@ def _metrics_template(model: str, min_runs: int) -> dict[str, object]:
     }
 
 
+def _reduction_input_manifest_template(metrics_payload: dict[str, object]) -> dict[str, object]:
+    def filled_or_todo(value: object) -> object:
+        if value is None or value == "":
+            return SKELETON_TODO_MARKER
+        return value
+
+    rows = []
+    for row in metrics_payload.get("rows", []):
+        if not isinstance(row, dict):
+            continue
+        rows.append(
+            {
+                "run_id": row.get("run_id"),
+                "row_role": row.get("row_role"),
+                "model": row.get("model"),
+                "source_nsys_artifact": filled_or_todo(row.get("nsys_artifact")),
+                "source_nsys_artifact_sha256": filled_or_todo(
+                    row.get("nsys_artifact_sha256")
+                ),
+                "source_time_window_ms": filled_or_todo(row.get("time_window_ms")),
+                "source_ncu_artifact": filled_or_todo(row.get("ncu_artifact")),
+                "source_ncu_artifact_sha256": filled_or_todo(row.get("ncu_artifact_sha256")),
+                "reduction_command": filled_or_todo(row.get("reduction_command")),
+                "reduction_script_sha256": f"sha256:{SKELETON_TODO_MARKER}",
+                "reduction_notes": filled_or_todo(row.get("reduction_notes")),
+            }
+        )
+    return {
+        "manifest_version": "hybridkernel_reduction_inputs_v1",
+        "description": (
+            f"{SKELETON_TODO_MARKER}: replace every source artifact, time window, "
+            "command, script hash, and note with the exact inputs used to reduce "
+            "profiler_metrics.json."
+        ),
+        "rows": rows,
+    }
+
+
 def _directory_readme(kind: str, required_artifact: str) -> str:
     return f"""# {kind}
 
@@ -299,6 +337,10 @@ def create_run_packet(
     _write_new(output_dir / "readout.md", _readout_template())
 
     metrics_payload = _metrics_template(model, min_runs)
+    _write_new(
+        output_dir / "metadata/reduction_input_manifest.json",
+        json.dumps(_reduction_input_manifest_template(metrics_payload), indent=2) + "\n",
+    )
     _write_new(
         output_dir / "profiler_metrics.json",
         json.dumps(metrics_payload, indent=2) + "\n",

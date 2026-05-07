@@ -13,7 +13,7 @@ The current sprint ledger is `project_status_20260506.md`.
 
 | Project | Current status | Best local evidence | Blocking gap |
 |---|---|---|---|
-| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, and at least 3% recoverable boundary overhead |
+| `hybridkernel/` | Mac-saturated GPU handoff | Architecture/runtime audit, threshold model, exact-token fixed-request vLLM driver, profiler packet verifier, batch-aware client replay checker, mandatory reduction-input manifest checker, Triton interpreter and opt-in CPU-backend toy-kernel tests | User-operated NVIDIA/vLLM Nsight packet with three distinct repeats, same-family control, cross-family falsification, row-level reduction provenance, and at least 3% recoverable boundary overhead |
 | `ssq_lr/` | Mac S1b alive; S2 weakened | Non-promoting 288-row synthetic S1 rehearsal passes the real checker; one-layer smoke passed, four-layer packet failed, and all-layer metrics scout failed (`4/36` passing layers; required `9/36`). The fresh held-out S1b packet `shared/results/ssq_lr_s1b_holdout_tensor_capture_20260507/` is checker-passing with layers `0`, `12`, `30` passing, layer `18` staying as control, selected S1 ratio `2.459`, and CI low `1.861`. S2 now has contract-valid scouts: MXFP4 preserves 12-prompt argmax but fails bytes (`3.765x`--`3.938x`), INT3 clears bytes (`4.923x`--`5.224x`) but fails 12-prompt quality; only the 4-prompt INT3 scout passes and is explicitly resource-limited | Do not GPU-promote SSQ-LR from current Mac evidence. Continue only with a new frozen sub-4-bit recipe/native-packing rationale, or treat S1b as diagnostic evidence |
 | `horn/` | Demoted control branch; H1a and H2 scouts failed | Non-promoting 72-row synthetic H1a real-schema rehearsal passes the checker; HORN trace plans/templates preserve `prompt_cluster_id`; the manifest local runner wrote a checker-passing 288-row resource-limited H1a packet from 12 real Granite Tiny prompts and all 8 planned boundaries using right-layer input hooks, but selected ratio is only `1.06` with cluster-bootstrap low `1.06`. The H2 scout `shared/results/horn_h2_noise_replay_scout_20260507/` passes the follow-up contract but fails with directional drift ratio `1.037`, paired units `6/6`, hook-off max delta `0.0`, and demotion `DEMOTE_HORN_STANDALONE_WEAK_H2` | Do not GPU-promote HORN standalone. Keep it as negative/control evidence unless a deliberately reopened full H2/H3 run has new preregistered scope |
 | `hbsm/` | Weakened control branch; B1 scouts failed | Non-promoting 720-row synthetic B1 real-schema rehearsal validates prompt-to-layer aggregation, controls, and per-prompt measured-drift top-decile derivation. `shared/results/hbsm_local_sensitivity_20260507/` is a checker-passing 56-row one-prompt Granite Tiny B1 failure (`fisher_p=0.375`, cheap-predictor Spearman `-0.476`). `shared/results/hbsm_prompt2_sensitivity_20260507/` is a checker-passing 64-row two-prompt B1 failure (`fisher_p=1.0`, boundary top-decile count `0`, cheap-predictor Spearman `-0.667`) | Do not GPU-promote HBSM. Continue only with a new preregistered mechanism hypothesis; otherwise fold into negative/control evidence |
@@ -174,9 +174,9 @@ Current resource-limited local capture packet:
 3. **HORN**: demoted as a standalone branch after weak H1a and H2 scouts. Do
    not spend GPU on HORN unless a future full H2/H3 reopening has a new reason
    and preregistered scope.
-4. **HBSM**: decide whether the weak Granite Tiny smoke packet justifies a full
-   B1 run; if yes, scale the same runner to the frozen 12-prompt/layer matrix,
-   otherwise fold HBSM into HORN/SSQ-LR as a negative control.
+4. **HBSM**: do not scale B1 under the current hypothesis. Continue only if a
+   narrower mechanism hypothesis is preregistered; otherwise keep HBSM as
+   negative/control evidence for the active hybrid-quantization story.
 5. **ThoughtFlow-FP8**: continue paper reframing and citation/table polish; do
    not run a new signal without a fresh preregistered surface.
 
@@ -189,8 +189,9 @@ profiler packet.
 
 For SSQ-LR, HORN, and HBSM, the first live trace packet builders/checkers are
 S1, H1a/H1, and B1 respectively. The S2/S3, H2/H3, and B2/B3 follow-up
-contracts are now executable through `shared/followup_gate_contracts.py`, but
-they have no model packets yet and cannot be cited as current evidence.
+contracts are now executable through `shared/followup_gate_contracts.py`.
+Current SSQ-LR S2 and HORN H2 model packets are non-promoting failures; HBSM
+B2/B3 still have no model packet evidence.
 
 ## Killed Marker Convention
 

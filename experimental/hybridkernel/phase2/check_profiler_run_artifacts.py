@@ -27,6 +27,7 @@ REQUIRED_FILES = [
     "metadata/architecture_map.json",
     "metadata/native_control_matrix.json",
     "metadata/profile_scope.json",
+    "metadata/reduction_input_manifest.json",
     "profiler_metrics.json",
     "profiler_analysis_gate.json",
     "profiler_analysis_gate.md",
@@ -90,6 +91,19 @@ REQUIRED_METRIC_PROVENANCE_FIELDS = [
     "time_window_ms",
     "recoverable_fraction_basis",
     "reduction_command",
+    "reduction_notes",
+]
+REQUIRED_REDUCTION_MANIFEST_FIELDS = [
+    "run_id",
+    "row_role",
+    "model",
+    "source_nsys_artifact",
+    "source_nsys_artifact_sha256",
+    "source_time_window_ms",
+    "source_ncu_artifact",
+    "source_ncu_artifact_sha256",
+    "reduction_command",
+    "reduction_script_sha256",
     "reduction_notes",
 ]
 ALLOWED_ROW_ROLES = {"primary_hybrid", "same_family_control", "cross_family_falsification"}
@@ -617,6 +631,189 @@ def _validate_metric_provenance(
     return roles
 
 
+def _reduction_manifest_key(row: dict[str, object]) -> tuple[str, str, str]:
+    return (
+        str(row.get("run_id", "")).strip(),
+        str(row.get("row_role", "")).strip(),
+        str(row.get("model", "")).strip(),
+    )
+
+
+def _validate_reduction_manifest_text(
+    *,
+    row_index: int,
+    field: str,
+    value: object,
+    errors: list[str],
+) -> str:
+    text = str(value or "").strip()
+    if not text or SKELETON_TODO_MARKER in text or "placeholder" in text.lower():
+        errors.append(
+            f"reduction_input_manifest.json row {row_index} {field} must be "
+            "filled with non-placeholder text"
+        )
+    return text
+
+
+def _validate_reduction_input_manifest(
+    *,
+    path: Path,
+    raw_rows: list[dict[str, object]],
+    packet_mode: str,
+    errors: list[str],
+) -> None:
+    if not path.is_file():
+        return
+    _reject_skeleton_todo(path, "metadata/reduction_input_manifest.json", errors)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"reduction_input_manifest.json is invalid: {exc}")
+        return
+    if not isinstance(payload, dict):
+        errors.append("reduction_input_manifest.json must be a JSON object")
+        return
+    manifest_version = str(payload.get("manifest_version", "")).strip()
+    if not manifest_version:
+        errors.append("reduction_input_manifest.json must contain manifest_version")
+    rows = payload.get("rows")
+    if not isinstance(rows, list) or not rows:
+        errors.append("reduction_input_manifest.json must contain non-empty rows")
+        return
+
+    metric_by_key: dict[tuple[str, str, str], tuple[int, dict[str, object]]] = {}
+    for metric_index, metric_row in enumerate(raw_rows):
+        key = _reduction_manifest_key(metric_row)
+        if not all(key):
+            continue
+        if key in metric_by_key:
+            errors.append(
+                "profiler_metrics.json has duplicate reduction manifest key "
+                f"{key!r}; run_id, row_role, and model must identify one row"
+            )
+        else:
+            metric_by_key[key] = (metric_index, metric_row)
+
+    manifest_keys: set[tuple[str, str, str]] = set()
+    for manifest_index, manifest_row in enumerate(rows):
+        if not isinstance(manifest_row, dict):
+            errors.append(f"reduction_input_manifest.json row {manifest_index} must be an object")
+            continue
+        missing = [
+            field for field in REQUIRED_REDUCTION_MANIFEST_FIELDS if field not in manifest_row
+        ]
+        if missing:
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} missing fields: "
+                + ", ".join(missing)
+            )
+            continue
+
+        key = _reduction_manifest_key(manifest_row)
+        if not all(key):
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} must contain non-empty "
+                "run_id, row_role, and model"
+            )
+            continue
+        if key in manifest_keys:
+            errors.append(f"reduction_input_manifest.json duplicates row key {key!r}")
+            continue
+        manifest_keys.add(key)
+
+        metric_entry = metric_by_key.get(key)
+        if metric_entry is None:
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} does not match any "
+                f"non-pending profiler_metrics.json row: {key!r}"
+            )
+            continue
+        metric_index, metric_row = metric_entry
+
+        for field in [
+            "source_nsys_artifact",
+            "source_nsys_artifact_sha256",
+            "source_ncu_artifact",
+            "source_ncu_artifact_sha256",
+            "reduction_command",
+            "reduction_notes",
+        ]:
+            _validate_reduction_manifest_text(
+                row_index=manifest_index,
+                field=field,
+                value=manifest_row.get(field),
+                errors=errors,
+            )
+
+        nsys_artifact = str(manifest_row.get("source_nsys_artifact", "")).strip()
+        nsys_sha256 = str(manifest_row.get("source_nsys_artifact_sha256", "")).strip()
+        if nsys_artifact != str(metric_row.get("nsys_artifact", "")).strip():
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} source_nsys_artifact "
+                f"must match profiler_metrics.json row {metric_index} nsys_artifact"
+            )
+        if nsys_sha256 != str(metric_row.get("nsys_artifact_sha256", "")).strip():
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} source_nsys_artifact_sha256 "
+                f"must match profiler_metrics.json row {metric_index} nsys_artifact_sha256"
+            )
+        elif not SHA256_PATTERN.match(nsys_sha256):
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} "
+                "source_nsys_artifact_sha256 must be sha256:<64 lowercase hex chars>"
+            )
+
+        ncu_artifact = str(manifest_row.get("source_ncu_artifact", "")).strip()
+        ncu_sha256 = str(manifest_row.get("source_ncu_artifact_sha256", "")).strip()
+        metric_ncu_artifact = str(metric_row.get("ncu_artifact", "")).strip()
+        metric_ncu_sha256 = str(metric_row.get("ncu_artifact_sha256", "")).strip()
+        if ncu_artifact != metric_ncu_artifact:
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} source_ncu_artifact "
+                f"must match profiler_metrics.json row {metric_index} ncu_artifact"
+            )
+        if ncu_sha256 != metric_ncu_sha256:
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} source_ncu_artifact_sha256 "
+                f"must match profiler_metrics.json row {metric_index} ncu_artifact_sha256"
+            )
+        elif (
+            packet_mode != NO_BOUNDARY_SIGNAL_MODE
+            or ncu_sha256 != NO_BOUNDARY_SIGNAL_ARTIFACT_SENTINEL
+        ) and not SHA256_PATTERN.match(ncu_sha256):
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} "
+                "source_ncu_artifact_sha256 must be sha256:<64 lowercase hex chars>"
+            )
+
+        source_window = manifest_row.get("source_time_window_ms")
+        if source_window != metric_row.get("time_window_ms"):
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} "
+                f"source_time_window_ms must match profiler_metrics.json row {metric_index} "
+                "time_window_ms"
+            )
+        reduction_command = str(manifest_row.get("reduction_command", "")).strip()
+        if reduction_command != str(metric_row.get("reduction_command", "")).strip():
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} reduction_command "
+                f"must match profiler_metrics.json row {metric_index} reduction_command"
+            )
+        reduction_script_sha256 = str(manifest_row.get("reduction_script_sha256", "")).strip()
+        if not SHA256_PATTERN.match(reduction_script_sha256):
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} "
+                "reduction_script_sha256 must be sha256:<64 lowercase hex chars>"
+            )
+
+    missing_keys = set(metric_by_key) - manifest_keys
+    for key in sorted(missing_keys):
+        errors.append(
+            "reduction_input_manifest.json is missing the non-pending "
+            f"profiler_metrics.json row {key!r}"
+        )
+
+
 def _validate_repeated_artifact_identity(
     *,
     metric_rows: list[dict[str, float | str]],
@@ -1085,6 +1282,12 @@ def check_run_artifacts(
                 for row in payload.get("rows", [])
                 if isinstance(row, dict) and not _is_pending_metric_row(row)
             ]
+            _validate_reduction_input_manifest(
+                path=run_dir / "metadata/reduction_input_manifest.json",
+                raw_rows=raw_native_rows,
+                packet_mode=packet_mode,
+                errors=errors,
+            )
             _validate_native_control_matrix_rows(
                 raw_rows=raw_native_rows,
                 control_specs=control_specs,

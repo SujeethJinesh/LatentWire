@@ -25,6 +25,37 @@ def _write_profiler_artifact(path: Path) -> None:
     path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
 
 
+def _write_reduction_manifest(run_dir: Path, payload: dict[str, object]) -> None:
+    rows = []
+    for row in payload["rows"]:
+        rows.append(
+            {
+                "run_id": row["run_id"],
+                "row_role": row["row_role"],
+                "model": row["model"],
+                "source_nsys_artifact": row["nsys_artifact"],
+                "source_nsys_artifact_sha256": row["nsys_artifact_sha256"],
+                "source_time_window_ms": row["time_window_ms"],
+                "source_ncu_artifact": row["ncu_artifact"],
+                "source_ncu_artifact_sha256": row["ncu_artifact_sha256"],
+                "reduction_command": row["reduction_command"],
+                "reduction_script_sha256": "sha256:" + ("1" * 64),
+                "reduction_notes": row["reduction_notes"],
+            }
+        )
+    (run_dir / "metadata/reduction_input_manifest.json").write_text(
+        json.dumps(
+            {
+                "manifest_version": "hybridkernel_reduction_inputs_v1",
+                "rows": rows,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> None:
     run_dir = create_run_packet(
         output_dir=tmp_path / "packet",
@@ -37,6 +68,7 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
         "metadata/profile_scope.json",
         "metadata/architecture_map.json",
         "metadata/native_control_matrix.json",
+        "metadata/reduction_input_manifest.json",
         "logs/README.md",
         "nsys/README.md",
         "ncu/README.md",
@@ -63,7 +95,19 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
     } == {("primary_hybrid", "same_family_control"), ("cross_family_falsification",)}
 
     metrics = json.loads((run_dir / "profiler_metrics.json").read_text())
+    reduction_manifest = json.loads(
+        (run_dir / "metadata/reduction_input_manifest.json").read_text()
+    )
     assert len(metrics["rows"]) == 9
+    assert len(reduction_manifest["rows"]) == 9
+    assert reduction_manifest["manifest_version"] == "hybridkernel_reduction_inputs_v1"
+    assert {
+        (row["run_id"], row["row_role"], row["model"])
+        for row in reduction_manifest["rows"]
+    } == {
+        (row["run_id"], row["row_role"], row["model"])
+        for row in metrics["rows"]
+    }
     assert [row["run_id"] for row in metrics["rows"]] == [
         "primary-repeat-0",
         "primary-repeat-1",
@@ -121,6 +165,7 @@ def test_skeleton_is_not_mistaken_for_complete_native_evidence(tmp_path: Path) -
     assert any("no valid native rows" in error for error in result["errors"])
     assert any(SKELETON_TODO_MARKER in (run_dir / path).read_text() for path in [
         "metadata/environment.txt",
+        "metadata/reduction_input_manifest.json",
         "readout.md",
         "profiler_metrics.json",
     ])
@@ -297,6 +342,7 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
         json.dumps(metrics_payload, indent=2) + "\n",
         encoding="utf-8",
     )
+    _write_reduction_manifest(run_dir, metrics_payload)
     (run_dir / "profiler_analysis_gate.json").write_text(
         json.dumps(analysis, indent=2) + "\n",
         encoding="utf-8",

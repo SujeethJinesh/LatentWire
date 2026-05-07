@@ -5,14 +5,14 @@
 \usepackage{hyperref}
 \usepackage{url}
 
-\title{ThoughtFlow: A Preregistered Falsification Ladder for Sparse-Cache Retention}
+\title{ThoughtFlow: A Negative-Result Falsification Ladder for Sparse-Cache Retention}
 \author{Anonymous authors\\Paper under double-blind review}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We present a preregistered falsification protocol for training-free sparse KV-retention proposals on saved reasoning-style traces. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, require matched-budget wins against R-KV-like and ThinKV-like proxies, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics where those diagnostics are implemented. All benchmark surfaces here are Mac-local saved-trace falsification fixtures, not reasoning-model benchmark claims. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The original FP8 systems target is not part of this claim: the anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
+We present a preregistered falsification protocol for training-free sparse KV-retention proposals on Mac-local saved sparse-cache fixtures. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, use matched-budget proxy rows as promotion tests and stop signals that fail them, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics where those diagnostics are implemented. All benchmark surfaces here are Mac-local saved-trace falsification fixtures, not reasoning-model benchmark claims. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The original FP8 systems target is not part of this claim: the anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
 \end{abstract}
 
 \section{Contribution}
@@ -22,8 +22,8 @@ policy. The protocol combines seven checks: no-retune frozen surfaces,
 pre-registered successor utilities, matched-budget proxy baselines,
 stopped-family/proxy-baseline separation, paired uncertainty,
 oracle/headroom diagnostics for the RDU demotion gates, and machine-checkable stop artifacts. ThoughtFlow-FP8
-is the case study showing why each check matters: one plausible signal looks
-positive on a frozen surface, then fails to reproduce under stricter reproduction, while
+is the case study showing why each check matters: one plausible signal appears
+positive on an initial frozen surface, then fails to reproduce under stricter reproduction, while
 two later signals fail fresh-surface gates outright.
 If older tracked artifacts say \texttt{ALIVE} or \texttt{PROMOTED}, the current
 decision manifest supersedes them.
@@ -47,7 +47,7 @@ Fresh surface & Test robustness. & Failure demotes or kills the signal. \\
 \end{table}
 
 The next table is included only to show why the branch looked promising before
-the fresh gates. It is not a current leaderboard: every compressed method row in
+the fresh gates. It is not a current leaderboard: every candidate policy row in
 the table is superseded by the demotion ladder that follows.
 
 \begin{table}[h]
@@ -69,7 +69,7 @@ and its failure modes, not a live sparse-cache method.}
 
 \section{Signals Under Test}
 
-The original policy protects anchors and phase labels. The first successor adds a small recent-token reserve. The second successor protects anchors, reserves half the retained budget for recent tokens, and lets phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The pre-registered \texttt{rdu\_topk} successor is demoted after stricter reproduction; later \texttt{psi\_topk} and \texttt{vwac\_topk} successors are killed by fresh-surface gates.
+The original policy attempted to protect anchors and phase labels. The first successor adds a small recent-token reserve. The second successor attempted to protect anchors, reserve half the retained budget for recent tokens, and let phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The pre-registered \texttt{rdu\_topk} successor is demoted after stricter reproduction; later \texttt{psi\_topk} and \texttt{vwac\_topk} successors are killed by fresh-surface gates.
 
 The proxy rows in Table~\ref{tab:case-study-retention} are deliberately simple
 matched-budget controls, not faithful reimplementations of the cited systems:
@@ -120,7 +120,7 @@ ThinKV-like & 0.207 & 1.000 & 0.948 & 0.848 \\
 train-selected sweep & 0.207 & 1.000 & 0.430 & 0.956 \\
 \bottomrule
 \end{tabular}
-\caption{Hidden/KV saliency telemetry on 24 distilgpt2 traces. The strongest real-saliency proxy by phase+math recall is \texttt{value\_norm\_topk}. ThoughtFlow beats it on phase recall, but LongFlow-like ties ThoughtFlow under the local importance heuristic.}
+\caption{Hidden/KV saliency telemetry on 24 distilgpt2 traces. The strongest real-saliency proxy by phase+math recall is \texttt{value\_norm\_topk}. ThoughtFlow has higher phase recall than it, but LongFlow-like ties ThoughtFlow under the local importance heuristic.}
 \end{table}
 
 Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +0.508 with 95\% CI [+0.436, +0.579]. The math-state delta is only +0.073 with 95\% CI [-0.078, +0.223]. This rules out a method claim based on phase recall alone: it may be marker preservation rather than useful cache retention.
@@ -130,8 +130,8 @@ Paired against \texttt{value\_norm\_topk}, ThoughtFlow's phase-recall delta is +
 We next ran a CPU-only sparse-cache probe. The model processes the full
 prefix once, each policy prunes the returned KV cache to the same 0.20 budget,
 and the continuation is scored from the pruned cache. This is not a Triton,
-CUDA, FP8, latency, or throughput result, but it is stronger than retained-text
-NLL because the model actually receives a sparse cache.
+CUDA, FP8, latency, or throughput result. It is closer to the cache-use
+failure mode than retained-text NLL, but still CPU-only diagnostic evidence.
 
 \begin{table}[h]
 \centering
@@ -227,7 +227,7 @@ inside the paper.}
 \small
 \begin{tabular}{lrrrr}
 \toprule
-Policy & Traces & Keep rate & NLL & Paired $\Delta$ vs ThinKV-like \\
+FAILED policy & Traces & Keep rate & NLL & Paired $\Delta$ vs ThinKV-like \\
 \midrule
 full cache & 74 & 1.000 & 2.848 & -1.052 [-1.199,-0.919] \\
 \texttt{rdu\_topk} & 74 & 0.213 & 3.779 & -0.121 [-0.211,-0.037] \\
@@ -335,7 +335,7 @@ LongFlow, LazyEviction, ForesightKV, PM-KVQ, or KVQuant.
 The branch now contributes a diagnostic falsification ladder. The stopped
 anchor/recent/phase/math policy family remains ruled out as a tunable branch on this trace set,
 \texttt{rdu\_topk} fails reproduction, and \texttt{psi\_topk}/\texttt{vwac\_topk}
-fail their fresh-surface gates. A paper-ready method claim now requires a genuinely new
+fail their fresh-surface gates. Any future positive-method claim requires a genuinely new
 pre-registered utility signal evaluated once on a fresh/larger frozen surface
 with strict stopped-family, proxy-baseline, and oracle/headroom reporting. The Triton
 interpreter gate is no longer the blocker for the quantization scaffold; method
@@ -406,19 +406,13 @@ input SHA-256 values are in the tracked manifest.}
 \section{Artifacts}
 
 Key artifacts are the current decision manifest, tracked diagnostic provenance
-packet, reviewer pack, workshop shell, README/progress handoff, RDU independent
-reproduction check, PSI/VWAC fresh-surface checks, and repo-local Triton
-interpreter note:
+packet, and reviewer pack:
 \url{experimental/thoughtflow_fp8/phase2/current_decision_manifest_20260506.md},
 \url{experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/manifest.json},
-\url{experimental/thoughtflow_fp8/paper/reviewer_pack.md},
-\url{experimental/thoughtflow_fp8/paper/colm_workshop_shell.md},
-\url{experimental/thoughtflow_fp8/README.md},
-\url{experimental/thoughtflow_fp8/progress.md},
-\url{experimental/thoughtflow_fp8/phase2/rdu_independent_trace_reproduction_check.md},
-\url{experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.md},
-\url{experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.md}, and
-\url{experimental/thoughtflow_fp8/phase4/triton_interpreter_note_20260506.md}.
+and \url{experimental/thoughtflow_fp8/paper/reviewer_pack.md}. The diagnostic
+packet records the RDU reproduction check, PSI/VWAC fresh-surface checks,
+README/progress handoff, workshop shell, and repo-local Triton interpreter note
+at \path{experimental/thoughtflow_fp8/phase4/triton_interpreter_note_20260506.md}.
 
 \begin{thebibliography}{9}
 \bibitem[ThinKV(2026)]{thinkv}

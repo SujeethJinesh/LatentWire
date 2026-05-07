@@ -1,0 +1,54 @@
+{
+  "manifest_version": "hybridkernel_reduction_inputs_v1",
+  "description": "Synthetic checker fixture only; not native profiler evidence.",
+  "rows": [
+    {
+      "run_id": "repeat-0",
+      "row_role": "primary_hybrid",
+      "model": "synthetic-granite-fixture",
+      "source_nsys_artifact": "nsys/synthetic_boundary_timeline.nsys-rep",
+      "source_nsys_artifact_sha256": "sha256:3066f48f4fa4fb1480785918b4d4799a9e52640edb6e676d57930c7f29b2e315",
+      "source_time_window_ms": {
+        "start": 0.0,
+        "end": 1.0
+      },
+      "source_ncu_artifact": "ncu/synthetic_suspicious_boundary_kernel.ncu-rep",
+      "source_ncu_artifact_sha256": "sha256:a5b54dc3c14ced2590db09320932547cafd164d84cb825a77452cc68332a350e",
+      "reduction_command": "python experimental/hybridkernel/phase2/analyze_profiler_metrics.py --input profiler_metrics.json",
+      "reduction_script_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "reduction_notes": "Synthetic fixture row; not a native measurement."
+    },
+    {
+      "run_id": "repeat-1",
+      "row_role": "primary_hybrid",
+      "model": "synthetic-granite-fixture",
+      "source_nsys_artifact": "nsys/synthetic_boundary_timeline.nsys-rep",
+      "source_nsys_artifact_sha256": "sha256:3066f48f4fa4fb1480785918b4d4799a9e52640edb6e676d57930c7f29b2e315",
+      "source_time_window_ms": {
+        "start": 1.0,
+        "end": 2.0
+      },
+      "source_ncu_artifact": "ncu/synthetic_suspicious_boundary_kernel.ncu-rep",
+      "source_ncu_artifact_sha256": "sha256:a5b54dc3c14ced2590db09320932547cafd164d84cb825a77452cc68332a350e",
+      "reduction_command": "python experimental/hybridkernel/phase2/analyze_profiler_metrics.py --input profiler_metrics.json",
+      "reduction_script_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "reduction_notes": "Synthetic fixture row; not a native measurement."
+    },
+    {
+      "run_id": "repeat-2",
+      "row_role": "primary_hybrid",
+      "model": "synthetic-granite-fixture",
+      "source_nsys_artifact": "nsys/synthetic_boundary_timeline.nsys-rep",
+      "source_nsys_artifact_sha256": "sha256:3066f48f4fa4fb1480785918b4d4799a9e52640edb6e676d57930c7f29b2e315",
+      "source_time_window_ms": {
+        "start": 2.0,
+        "end": 3.0
+      },
+      "source_ncu_artifact": "ncu/synthetic_suspicious_boundary_kernel.ncu-rep",
+      "source_ncu_artifact_sha256": "sha256:a5b54dc3c14ced2590db09320932547cafd164d84cb825a77452cc68332a350e",
+      "reduction_command": "python experimental/hybridkernel/phase2/analyze_profiler_metrics.py --input profiler_metrics.json",
+      "reduction_script_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "reduction_notes": "Synthetic fixture row; not a native measurement."
+    }
+  ]
+}

@@ -27,6 +27,39 @@ def _write_profiler_artifact(path: Path) -> None:
     path.write_bytes((b"\x93NSIGHT\x00\xffnative-binary-export\x00" * 128)[:4096])
 
 
+def _write_reduction_manifest(run_dir: Path, payload: dict[str, object] | None = None) -> None:
+    if payload is None:
+        payload = json.loads((run_dir / "profiler_metrics.json").read_text(encoding="utf-8"))
+    rows = []
+    for row in payload["rows"]:
+        rows.append(
+            {
+                "run_id": row["run_id"],
+                "row_role": row["row_role"],
+                "model": row["model"],
+                "source_nsys_artifact": row["nsys_artifact"],
+                "source_nsys_artifact_sha256": row["nsys_artifact_sha256"],
+                "source_time_window_ms": row["time_window_ms"],
+                "source_ncu_artifact": row["ncu_artifact"],
+                "source_ncu_artifact_sha256": row["ncu_artifact_sha256"],
+                "reduction_command": row["reduction_command"],
+                "reduction_script_sha256": "sha256:" + ("1" * 64),
+                "reduction_notes": row["reduction_notes"],
+            }
+        )
+    (run_dir / "metadata/reduction_input_manifest.json").write_text(
+        json.dumps(
+            {
+                "manifest_version": "hybridkernel_reduction_inputs_v1",
+                "rows": rows,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+
 def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
     (run_dir / "metadata").mkdir(parents=True)
     (run_dir / "logs").mkdir()
@@ -184,6 +217,7 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
         json.dumps(metrics_payload) + "\n",
         encoding="utf-8",
     )
+    _write_reduction_manifest(run_dir, metrics_payload)
     (run_dir / "profiler_analysis_gate.json").write_text(
         json.dumps(analysis, indent=2) + "\n",
         encoding="utf-8",
@@ -227,6 +261,7 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
         qwen_rows.append(row)
     payload["rows"].extend(qwen_rows)
     metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    _write_reduction_manifest(run_dir, payload)
     analysis = analyze(payload)
     (run_dir / "profiler_analysis_gate.json").write_text(
         json.dumps(analysis, indent=2) + "\n",
@@ -313,6 +348,7 @@ def test_primary_gate_clear_without_controls_stays_audit_only(tmp_path: Path) ->
         row["attention_ssm_boundary_ms"] = 8.0
     analysis = analyze(payload)
     metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    _write_reduction_manifest(tmp_path, payload)
     (tmp_path / "profiler_analysis_gate.json").write_text(
         json.dumps(analysis, indent=2) + "\n",
         encoding="utf-8",
@@ -461,6 +497,7 @@ def test_no_boundary_signal_kill_packet_allows_missing_ncu(tmp_path: Path) -> No
         )
     analysis = analyze(payload)
     metrics_path.write_text(json.dumps(payload) + "\n", encoding="utf-8")
+    _write_reduction_manifest(tmp_path, payload)
     (tmp_path / "profiler_analysis_gate.json").write_text(
         json.dumps(analysis, indent=2) + "\n",
         encoding="utf-8",
@@ -935,6 +972,31 @@ def test_requires_metric_row_provenance(tmp_path: Path) -> None:
 
     assert result["status"] == "FAIL"
     assert any("missing provenance fields" in error for error in result["errors"])
+
+
+def test_requires_reduction_input_manifest(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    (tmp_path / "metadata/reduction_input_manifest.json").unlink()
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("reduction_input_manifest.json" in error for error in result["errors"])
+
+
+def test_rejects_reduction_manifest_that_does_not_match_metrics(tmp_path: Path) -> None:
+    _write_complete_run(tmp_path)
+    manifest_path = tmp_path / "metadata/reduction_input_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["rows"][0]["source_time_window_ms"] = {"start": 99.0, "end": 100.0}
+    manifest["rows"][1]["reduction_script_sha256"] = "sha256:not-a-real-hash"
+    manifest_path.write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+
+    result = check_run_artifacts(tmp_path)
+
+    assert result["status"] == "FAIL"
+    assert any("source_time_window_ms must match" in error for error in result["errors"])
+    assert any("reduction_script_sha256" in error for error in result["errors"])
 
 
 def test_rejects_metric_row_missing_artifact_path(tmp_path: Path) -> None:
