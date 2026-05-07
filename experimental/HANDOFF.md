@@ -119,8 +119,9 @@ Phase 0 binary gate:
 - Kill: 1-5% migration (effect too small to characterize cleanly, ambiguous
   result not worth a paper).
 
-Phase 1 (GPU): scale to Granite-4-H-Small (full-size hybrid) and
-Apriel-H1-15B-Thinker, with formal statistical testing. Pipeline: COLM 2026
+Phase 1 (GPU): scale to Granite-4-H-Small (full-size hybrid), with formal
+statistical testing. Phase 2 cross-model validation uses
+Nemotron-3-Nano-30B-A3B-BF16 and Qwen3.6-35B-A3B. Pipeline: COLM 2026
 characterization paper -> MLSys 2027 dynamic-protection recipe paper.
 
 ### Branch B: Residual Migration in Hybrid Reasoners
@@ -155,8 +156,8 @@ Phase 0 binary gate:
   than transformers).
 - Kill: 1.5-3% drop (ambiguous, not strong enough either way).
 
-Phase 1 (GPU): cross-model validation on Apriel-H1-15B-Thinker and
-Nemotron-Nano-9B-v2, plus mechanistic ablations isolating attention vs SSM
+Phase 1 (GPU): cross-model validation on Nemotron-3-Nano-30B-A3B-BF16 and
+Qwen3.6-35B-A3B, plus mechanistic ablations isolating attention vs SSM
 contribution to the effect. Pipeline: COLM 2026 -> MLSys 2027.
 
 ### Branch C: SSM-State Lifecycle Compression
@@ -267,7 +268,7 @@ The queue, in priority order:
 5. HybridKernel kernel prototype (conditional on entry 1 passing). Triton
    implementation matching profiler-predicted gain within ±20%.
 6. Cross-model hybrid validation (conditional on any of entries 2-4 passing).
-   Apriel-H1-15B-Thinker and Nemotron-Nano-9B-v2.
+   Nemotron-3-Nano-30B-A3B-BF16 and Qwen3.6-35B-A3B.
 
 The orchestrator is a single Codex `/goal` issued on the GPU node inside a tmux
 session:

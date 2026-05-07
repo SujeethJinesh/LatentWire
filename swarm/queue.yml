@@ -280,8 +280,8 @@ entries:
     on_kill: []
     estimated_gpu_hours: 10
     models:
-      apriel: ServiceNow/Apriel-H1-15B-Thinker
-      nemotron: nvidia/Nemotron-Nano-9B-v2
+      nemotron3_nano: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16
+      qwen36: Qwen/Qwen3.6-35B-A3B
 
   - id: cross_model_validation_residual_migration
     project: residual_migration
@@ -299,6 +299,9 @@ entries:
     on_pass: []
     on_kill: []
     estimated_gpu_hours: 10
+    models:
+      nemotron3_nano: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16
+      qwen36: Qwen/Qwen3.6-35B-A3B
 
   - id: cross_model_validation_ssm_lifecycle
     project: ssm_lifecycle
@@ -316,3 +319,6 @@ entries:
     on_pass: []
     on_kill: []
     estimated_gpu_hours: 10
+    models:
+      nemotron3_nano: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16
+      qwen36: Qwen/Qwen3.6-35B-A3B
