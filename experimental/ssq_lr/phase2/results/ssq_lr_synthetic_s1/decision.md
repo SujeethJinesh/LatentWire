@@ -2,7 +2,7 @@
 
 `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_SSQ_LR_S1`
 
-- evaluator gate status: `PASS_REAL_S1_HETEROGENEITY`
+- evaluator gate status: `PASS_REAL_S1_HETEROGENEITY` (raw evaluator readout only; not the packet decision)
 - selected S1 ratio: `3.889`
 - selected S1 CI low: `3.889`
 

@@ -31,7 +31,9 @@ def test_synthetic_h1a_rehearsal_exercises_real_schema(tmp_path: Path) -> None:
     assert summary["selected_h1_direction"] == "ssm->attention"
     assert summary["permuted_direction_ratio"] <= 1.0
     assert "synthetic-only" in summary["claim_boundary"]
-    assert (output_dir / "summary.md").exists()
+    summary_md = (output_dir / "summary.md").read_text(encoding="utf-8")
+    assert "Fixture-only evaluator fields, not a promotion decision" in summary_md
+    assert "raw evaluator readout only" in summary_md
 
 
 def test_synthetic_h1a_rehearsal_cannot_use_promoting_decision(tmp_path: Path) -> None:

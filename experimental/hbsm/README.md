@@ -129,6 +129,9 @@ This weakens HBSM beyond the one-prompt smoke: the top sensitivity layer moves
 to a non-boundary layer after the first prompt repeat, and the cheap predictor
 stays negative. Do not spend a long 12-prompt Mac sweep or GPU validation on
 HBSM unless the hypothesis is narrowed or replaced.
+The exact reproduction command, artifact hashes, model revision, prompt hash,
+trace-plan hash, row-packet hash, and checker output are recorded in
+`phase2/b1_prompt2_repro_manifest_20260507.md`.
 
 The following commands are archival reproduction only. Do not vary prompts,
 layers, perturbations, or scale B1 under the current hypothesis.

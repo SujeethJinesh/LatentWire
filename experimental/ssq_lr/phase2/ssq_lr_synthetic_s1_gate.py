@@ -152,8 +152,9 @@ def _summary_markdown(summary: dict[str, object]) -> str:
             "It validates the real S1 row schema, provenance fields, and",
             "recomputed evaluator summary using synthetic CPU tensors.",
             "",
-            "Selected evaluator fields:",
-            f"- `gate_status`: `{summary['gate_status']}`",
+            "Fixture-only evaluator fields, not a promotion decision:",
+            f"- `gate_status`: `{summary['gate_status']}` (raw evaluator readout only; "
+            f"decision remains `{summary['decision']}`)",
             f"- `prompt_count`: `{summary['prompt_count']}`",
             f"- `ssm_layer_count`: `{summary['ssm_layer_count']}`",
             f"- `selected_s1_ratio`: `{summary['selected_s1_ratio']:.3f}`",
@@ -192,7 +193,8 @@ def run_gate(*, seed: int = 20260506, output_dir: Path = DEFAULT_OUTPUT) -> dict
     (output_dir / "summary.md").write_text(_summary_markdown(summary), encoding="utf-8")
     (output_dir / "decision.md").write_text(
         f"# SSQ-LR Synthetic S1 Real-Schema Rehearsal\n\n`{decision}`\n\n"
-        f"- evaluator gate status: `{evaluated['gate_status']}`\n"
+        f"- evaluator gate status: `{evaluated['gate_status']}` "
+        "(raw evaluator readout only; not the packet decision)\n"
         f"- selected S1 ratio: `{evaluated['selected_s1_ratio']:.3f}`\n"
         f"- selected S1 CI low: `{evaluated['selected_s1_ci_low']:.3f}`\n\n"
         "Synthetic CPU tensors validate the real packet schema and checker path only. "

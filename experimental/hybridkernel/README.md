@@ -207,7 +207,11 @@ If the exact vLLM command differs from the one in
 
 ### 4. Run A Single-Row Smoke Profile
 
-Start the vLLM server under Nsight Systems:
+Start the vLLM server under Nsight Systems, run warmup outside the reduced
+window, run the bracketed profiled replay from a second terminal, stop the
+server, verify the export, and hash the artifacts before starting the next row.
+The detailed row lifecycle is in
+`phase2/nvidia_vllm_profiler_runbook.md`.
 
 ```bash
 nsys profile \

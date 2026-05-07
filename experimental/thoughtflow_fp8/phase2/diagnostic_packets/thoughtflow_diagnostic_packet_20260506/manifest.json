@@ -9,7 +9,7 @@
       "path": "frozen_sparse_cache_probe.json",
       "positive_method_claim_allowed": false,
       "provenance": {
-        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py --model-name distilgpt2 --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --keep-fraction 0.20 --max-traces 74 --max-length 96 --continuation-tokens 24",
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py --model-name distilgpt2 --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --keep-fraction 0.20 --max-traces 74 --max-length 96 --continuation-tokens 24 --json-output .debug/thoughtflow_replay/frozen_sparse_cache_probe.json --md-output .debug/thoughtflow_replay/frozen_sparse_cache_probe.md",
         "input_hashes": {
           "results/prompt_control_20260419/qwen_gsm10_target_alone_chat_thinking_false.jsonl": "sha256:5e43164b8f6afc55abacff6e183d96eb859f8af4521a8ed142915329498d0d6c",
           "results/surface_scout_qwen25math_instruct_qwen3_svamp32_20260426/source_alone.jsonl": "sha256:dc610e04de1bb74bdb577b3ce39f9f82f64fe07bac58905c55503a69db0c3955",
@@ -30,7 +30,9 @@
           "max_length": 96,
           "max_traces": 74,
           "model_name": "distilgpt2",
-          "n_scored_traces": 74
+          "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
+          "n_scored_traces": 74,
+          "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
         }
       },
       "role": "stale_positive_first_surface",
@@ -277,7 +279,7 @@
       "path": "psi_fresh_sparse_cache_check.json",
       "positive_method_claim_allowed": false,
       "provenance": {
-        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py --model-name distilgpt2 --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --keep-fraction 0.20 --max-traces 70 --max-length 96 --continuation-tokens 24 --input-jsonl results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl",
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py --model-name distilgpt2 --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --keep-fraction 0.20 --max-traces 70 --max-length 96 --continuation-tokens 24 --input-jsonl results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl --json-output .debug/thoughtflow_replay/psi_fresh_sparse_cache_check.json --md-output .debug/thoughtflow_replay/psi_fresh_sparse_cache_check.md",
         "input_hashes": {
           "results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl": "sha256:d9e51779e76ff8c16074150689780ccc3197b0a058e9fa8d8bff472052283f09"
         },
@@ -290,8 +292,10 @@
           "max_length": 96,
           "max_traces": 70,
           "model_name": "distilgpt2",
+          "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
           "n_scored_traces": 70,
-          "policy_name": "psi_topk"
+          "policy_name": "psi_topk",
+          "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
         }
       },
       "role": "fresh_successor_kill",
@@ -314,7 +318,7 @@
       "path": "vwac_fresh_sparse_cache_check.json",
       "positive_method_claim_allowed": false,
       "provenance": {
-        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py --model-name distilgpt2 --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --keep-fraction 0.20 --max-traces 70 --max-length 96 --continuation-tokens 24 --input-jsonl results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl",
+        "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py --model-name distilgpt2 --model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa --keep-fraction 0.20 --max-traces 70 --max-length 96 --continuation-tokens 24 --input-jsonl results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl --json-output .debug/thoughtflow_replay/vwac_fresh_sparse_cache_check.json --md-output .debug/thoughtflow_replay/vwac_fresh_sparse_cache_check.md",
         "input_hashes": {
           "results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl": "sha256:a5788e39b4340b90a7f3573c51e3a5bf9f783035382795a7f3f7a1d6e771a134"
         },
@@ -327,8 +331,10 @@
           "max_length": 96,
           "max_traces": 70,
           "model_name": "distilgpt2",
+          "model_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa",
           "n_scored_traces": 64,
-          "policy_name": "vwac_topk"
+          "policy_name": "vwac_topk",
+          "tokenizer_revision": "2290a62682d06624634c1f46a6ad5be0f47f38aa"
         }
       },
       "role": "fresh_successor_kill",
@@ -389,7 +395,7 @@
   "script": {
     "command": "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py --output .debug/thoughtflow_diagnostic_packet_check",
     "path": "experimental/thoughtflow_fp8/phase2/build_diagnostic_packet.py",
-    "sha256": "sha256:a6482d828930b12401de6c9452d5d338fd7b400a94b901117d642dd5633cc8b5",
+    "sha256": "sha256:7ec9548fcbd7d12af7a9fcf13e3c881f6da3ba85fcf4ee5a362d9de0a5938b49",
     "sha256_role": "current builder-file integrity hash for verifier drift detection; git.head_at_generation records the historical packet generation commit"
   }
 }

@@ -12,14 +12,14 @@
 \maketitle
 
 \begin{abstract}
-We present a falsification protocol using preregistered successor signals for training-free sparse KV-retention proposals on Mac-local saved sparse-cache fixtures. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, preregister each successor signal before measurement, use nominal 0.20-budget proxy rows with achieved keep rates reported as promotion tests and stop signals that fail them, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics where those diagnostics are implemented. All benchmark surfaces here are Mac-local saved-trace falsification fixtures, not reasoning-model benchmark claims. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The original FP8 systems target is not part of this claim: the anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
+We present a falsification protocol using repo-local registered successor signals for training-free sparse KV-retention proposals on Mac-local saved sparse-cache fixtures. The contribution is diagnostic, not a positive method: freeze a sparse-cache quality surface, write a signal rule and stop criterion before reading the corresponding saved measurement row, use nominal 0.20-budget proxy rows with achieved keep rates reported as promotion tests and stop signals that fail them, separate stopped-family rows from proxy-baseline rows, and report paired uncertainty plus oracle/headroom diagnostics where those diagnostics are implemented. All benchmark surfaces here are Mac-local saved-trace falsification fixtures, not reasoning-model benchmark claims. As a case study, the original anchor/recent/phase/math family is stopped, recurrence-distance utility (\texttt{rdu\_topk}) clears one frozen 74-trace surface but fails stricter reproduction, prefix-surprisal utility (\texttt{psi\_topk}) fails on a fresh 70-trace C2C GSM surface, and value-weighted attention contribution (\texttt{vwac\_topk}) fails on a fresh 64-trace C2C SVAMP surface. The packet hashes the registration files and measurement artifacts but does not provide an external timestamp service, so we frame the evidence as an auditable repo-local stop ladder. The original FP8 systems target is not part of this claim: the anchor/phase int8 quantization primitive passes Triton interpreter correctness tests against its CPU reference, but no real FP8, CUDA, latency, throughput, or live compression-method claim is made.
 \end{abstract}
 
 \section{Contribution}
 
 The contribution is a reusable stop-rule protocol, not another sparse-cache
 policy. The protocol combines seven checks: no-retune frozen surfaces,
-pre-registered successor utilities, nominal-budget proxy baselines with
+repo-local registered successor utilities, nominal-budget proxy baselines with
 achieved keep-rate reporting,
 stopped-family/proxy-baseline separation, paired uncertainty,
 oracle/headroom diagnostics for the RDU demotion gates, and a tracked
@@ -39,8 +39,8 @@ If older tracked artifacts say \texttt{ALIVE}, \texttt{REPRODUCED}, or
 \toprule
 Protocol check & Purpose & Stop condition \\
 \midrule
-Frozen surface & Prevent post-hoc tuning. & A successor is measured once after preregistration. \\
-Nominal budget accounting & Avoid full-cache comparisons. & Must beat R-KV-like and ThinKV-like rows at the preregistered nominal budget, with achieved keep rates reported rather than assumed equal. \\
+Frozen surface & Prevent post-hoc tuning. & A successor is measured once after its repo-local rule and stop criterion are written. \\
+Nominal budget accounting & Avoid full-cache comparisons. & Must beat R-KV-like and ThinKV-like rows at the registered nominal budget, with achieved keep rates reported rather than assumed equal. \\
 Stopped/proxy split & Separate local family reuse from proxy-baseline robustness. & A stopped-family-only win is diagnostic, not a method claim. \\
 Paired intervals & Avoid mean-only promotion. & For $\Delta=\mathrm{NLL}_{candidate}-\mathrm{NLL}_{baseline}$, promotion requires mean $\Delta\leq -0.03$ and paired CI high below zero versus both proxies. \\
 Oracle/headroom & Show whether a useful policy exists at the budget. & Large oracle gaps block method claims. \\
@@ -79,7 +79,7 @@ and its failure modes, not a live sparse-cache method.}
 
 \section{Signals Under Test}
 
-The original policy attempted to protect anchors and phase labels. The first successor adds a small recent-token reserve. The second successor attempted to protect anchors, reserve half the retained budget for recent tokens, and let phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The pre-registered \texttt{rdu\_topk} successor is demoted after stricter reproduction; later \texttt{psi\_topk} and \texttt{vwac\_topk} successors are killed by fresh-surface gates.
+The original policy attempted to protect anchors and phase labels. The first successor adds a small recent-token reserve. The second successor attempted to protect anchors, reserve half the retained budget for recent tokens, and let phase markers compete with math-state and high-importance reasoning tokens under a saliency bonus. Those policies are now stopped on the current saved traces. The registered \texttt{rdu\_topk} successor is demoted after stricter reproduction; later \texttt{psi\_topk} and \texttt{vwac\_topk} successors are killed by fresh-surface gates.
 
 The proxy rows in Table~\ref{tab:case-study-retention} are deliberately simple
 nominal 0.20-budget controls with achieved keep rates reported, not faithful
@@ -163,7 +163,7 @@ LongFlow-like & 0.210 & 3.588 & +0.150 [-0.016,+0.300] \\
 ThoughtFlow & 0.210 & 3.588 & +0.150 [-0.006,+0.297] \\
 \bottomrule
 \end{tabular}
-\caption{CPU sparse-KV continuation quality on 24 distilgpt2 traces. R-KV-like, ThinKV-like, and LongFlow-like rows are Mac-local proxy baselines, not faithful implementations. Negative paired delta is better than R-KV-like. ThoughtFlow-saliency-recent is best in mean NLL, but it clears the strongest non-ThoughtFlow row by only 0.017 NLL and remains below the pre-registered 0.03 promotion margin.}
+\caption{CPU sparse-KV continuation quality on 24 distilgpt2 traces. R-KV-like, ThinKV-like, and LongFlow-like rows are Mac-local proxy baselines, not faithful implementations. Negative paired delta is better than R-KV-like. ThoughtFlow-saliency-recent is best in mean NLL, but it clears the strongest non-ThoughtFlow row by only 0.017 NLL and remains below the registered 0.03 promotion margin.}
 \end{table}
 
 A bounded sparse-cache sweep over 24 nearby anchor/recent/phase/math
@@ -185,12 +185,13 @@ stopped family comparison at NLL 3.900. The frozen sparse ThoughtFlow row gets
 [-0.060,+0.085]. ThoughtFlow-saliency-recent gets 3.920. The larger
 no-retuning gate therefore stops this policy family.
 
-After that stop decision, we pre-registered \texttt{rdu\_topk}. It computes
+After that stop decision, we registered \texttt{rdu\_topk} in the repo-local
+stop ladder. It computes
 recurrence-distance utility from full-prefix prefill attentions using lag buckets
 [8,15], [16,31], [32,63], and [64,$\infty$], then keeps the top budget by utility
 with ties broken by lower position. It does not use continuation tokens, trace
 labels, recent reserves, anchors, phase markers, or math-state bonuses. After
-\texttt{rdu\_topk} failed reproduction, we pre-registered \texttt{psi\_topk}
+\texttt{rdu\_topk} failed reproduction, we registered \texttt{psi\_topk}
 (high self-surprisal prefix tokens) and \texttt{vwac\_topk} (future attention
 weighted by cached value-vector norm).
 
@@ -231,8 +232,9 @@ Registration & SHA-256 prefix & Measurement artifact \\
 \bottomrule
 \end{tabular}
 \caption{Registration-to-measurement ledger. Full hashes and artifact paths are
-recorded in the tracked diagnostic packet; this table exposes the audit chain
-inside the paper.}
+recorded in the tracked diagnostic packet; this table exposes the repo-local
+audit chain inside the paper. The packet does not independently prove external
+timestamp ordering.}
 \end{table}
 
 \begin{table}[h]
@@ -340,7 +342,7 @@ The ladder is demonstrated on Mac-local saved traces and CPU sparse-cache
 scoring, not native serving. The trace families are useful falsification
 surfaces, but they do not establish broad task coverage. The stopped signals
 also do not rule out future sparse-cache utilities; they only rule out the
-pre-registered policies under the reported surfaces and budgets.
+registered policies under the reported surfaces and budgets.
 The scored surfaces use \texttt{distilgpt2} saved continuations and saved
 prefix/KV telemetry as falsification fixtures; they are not reasoning-model benchmarks
 and not faithful external implementations of ThinKV, R-KV,
@@ -352,7 +354,7 @@ The branch now contributes a diagnostic falsification ladder. The stopped
 anchor/recent/phase/math policy family remains ruled out as a tunable branch on this trace set,
 \texttt{rdu\_topk} fails reproduction, and \texttt{psi\_topk}/\texttt{vwac\_topk}
 fail their fresh-surface gates. Any future positive-method claim requires a genuinely new
-pre-registered utility signal evaluated once on a fresh/larger frozen surface
+registered utility signal evaluated once on a fresh/larger frozen surface
 with strict stopped-family, proxy-baseline, and oracle/headroom reporting. The Triton
 interpreter gate is no longer the blocker for the quantization scaffold; method
 evidence is. This means no real FP8, CUDA, latency, or throughput result is claimed.
@@ -448,7 +450,7 @@ packet, and reviewer pack:
 \url{experimental/thoughtflow_fp8/phase2/current_decision_manifest_20260506.md},
 \url{experimental/thoughtflow_fp8/phase2/diagnostic_packets/thoughtflow_diagnostic_packet_20260506/manifest.json},
 and \url{experimental/thoughtflow_fp8/paper/reviewer_pack.md}. The diagnostic
-packet hashes the saved falsification JSON artifacts and preregistrations;
+packet hashes the saved falsification JSON artifacts and registration files;
 README, progress, reviewer pack, and the repo-local Triton
 interpreter note at
 \path{experimental/thoughtflow_fp8/phase4/triton_interpreter_note_20260506.md}

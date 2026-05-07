@@ -9,8 +9,17 @@ saturated ideas.
 
 ## Current Decision Surface
 
-2026-05-07 local hardening addendum: the in-scope suite is now
-`309 passed, 1 skipped, 2 warnings`. HybridKernel's analyzer enforces the
+2026-05-07 final local hardening addendum: the in-scope suite is now
+`317 passed, 1 skipped, 2 warnings`, and the opt-in HybridKernel Triton
+CPU-backend gate is `1 passed`. HORN/HBSM now have branch-local stop manifests
+for the real Granite Tiny H2/B1 packets; SSQ-LR/HORN/HBSM synthetic summaries
+label raw `PASS_REAL_*` evaluator fields as fixture-only rather than packet
+decisions; HybridKernel's NVIDIA runbook now requires explicit per-row
+warmup/profile/stop/export/hash lifecycle notes; and ThoughtFlow replay commands
+write to `.debug` while the paper frames the registration ledger as repo-local
+provenance rather than external timestamp proof.
+
+Earlier 2026-05-07 local hardening addendum: HybridKernel's analyzer enforces the
 pre-registered `recoverable_fraction <= 0.60` cap directly, replacement
 cross-family controls must provide filled preregistration metadata with a
 matching architecture-map hash and copied control-matrix row, and the GPU setup

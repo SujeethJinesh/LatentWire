@@ -494,11 +494,12 @@ INT16/block-scaled controls. The local reference memo is
 
 The S2 contract requires frozen recipe IDs, effective bits, state/scale/metadata
 bytes, BF16 no-op drift, same-byte controls, explicit INT8/FP8/MXFP4 state
-baselines, random same-L2 noise controls, shuffled-scale controls, paired
-uncertainty, and a recipe that clears both the quality and 4x state-memory
-gates. The S3 contract requires one frozen recipe hash, one source S2 packet
-hash, no retuning rows, and transfer quality within the preregistered tolerance
-on at least two validation models. As of 2026-05-07, the executable S3 checker
+baselines, FP16 stochastic-rounding SSM-cache controls, INT16/block-scaled
+SSM-cache deployment controls, random same-L2 noise controls, shuffled-scale
+controls, paired uncertainty, and a recipe that clears both the quality and 4x
+state-memory gates. The S3 contract requires one frozen recipe hash, one source
+S2 packet hash, no retuning rows, and transfer quality within the preregistered
+tolerance on at least two validation models. As of 2026-05-07, the executable S3 checker
 gates on the 2% absolute-accuracy bound and requires max absolute NLL drift in
 the summary; NLL-only S3 promotion is disallowed until a numeric NLL tolerance
 is preregistered before transfer rows are inspected.

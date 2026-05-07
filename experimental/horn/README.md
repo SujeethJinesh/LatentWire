@@ -117,6 +117,9 @@ preserved in the aggregate, directional drift ratio `1.037`, signed
 selected-direction lower bound `0.324`, selected-direction support fraction
 `0.5`, and demotion recommendation `DEMOTE_HORN_STANDALONE_WEAK_H2`. This weak
 H2 result demotes HORN as a standalone branch.
+The exact reproduction command, artifact hashes, model revision, prompt source
+hash, source H1a packet hash, and checker output are recorded in
+`phase2/h2_noise_replay_repro_manifest_20260507.md`.
 
 The exact H1a/H1 capture checklist is
 `../shared/results/hybrid_trace_plan_20260507/horn_trace_plan.jsonl`;

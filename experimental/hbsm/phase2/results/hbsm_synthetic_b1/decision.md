@@ -2,7 +2,7 @@
 
 `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HBSM_B1`
 
-- evaluator gate status: `PASS_REAL_B1_SENSITIVITY_HETEROGENEITY`
+- evaluator gate status: `PASS_REAL_B1_SENSITIVITY_HETEROGENEITY` (raw evaluator readout only; not the packet decision)
 - boundary top-decile enrichment: `400000000.000`
 - cheap-predictor Spearman: `1.000`
 

@@ -25,8 +25,8 @@ Interpretation: synthetic-only schema validation. It exercises the real S1 row
 schema, provenance fields, recomputed evaluator summary, and checker path, but
 does not promote the branch or replace real hybrid SSM state dumps.
 
-Next exact gate: S1 state distribution heterogeneity on the smallest available
-hybrid model traces using shared activation/state dump utilities.
+Historical planned gate: S1 state distribution heterogeneity on the smallest
+available hybrid model traces using shared activation/state dump utilities.
 
 ## 2026-05-06 Architecture Provenance Update
 
@@ -64,9 +64,10 @@ all preregistered buckets for every `(prompt_id, layer)` pair. Resource-limited
 runs are still admissible for diagnosis, but their decision must start with
 `RESOURCE_LIMITED_NOT_PROMOTABLE` and they cannot promote S1.
 
-Decision: **S1 PROMOTION NOW REQUIRES A COMPLETE REAL STATE MATRIX**. The next
-exact gate is unchanged: live hybrid SSM-state dumps on the smallest available
-hybrid model.
+Decision: **S1 PROMOTION NOW REQUIRES A COMPLETE REAL STATE MATRIX**. The
+historical planned gate was live hybrid SSM-state dumps on the smallest
+available hybrid model; the current controlling gate is the 2026-05-07 S3
+transfer stop.
 
 ## 2026-05-06 Recomputed Gate Evaluator Update
 

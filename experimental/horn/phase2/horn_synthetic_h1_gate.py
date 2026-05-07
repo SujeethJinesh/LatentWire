@@ -186,8 +186,9 @@ def _summary_markdown(summary: dict[str, object]) -> str:
             "It validates the real H1a row schema, prompt-paired controls, and",
             "recomputed evaluator summary using synthetic rows.",
             "",
-            "Selected evaluator fields:",
-            f"- `gate_status`: `{summary['gate_status']}`",
+            "Fixture-only evaluator fields, not a promotion decision:",
+            f"- `gate_status`: `{summary['gate_status']}` (raw evaluator readout only; "
+            f"decision remains `{summary['decision']}`)",
             f"- `prompt_count`: `{summary['prompt_count']}`",
             f"- `selected_h1_metric`: `{summary['selected_h1_metric']}`",
             f"- `selected_h1_direction`: `{summary['selected_h1_direction']}`",
@@ -227,7 +228,8 @@ def run_gate(*, seed: int = 20260506, output_dir: Path = DEFAULT_OUTPUT) -> dict
     (output_dir / "summary.md").write_text(_summary_markdown(summary), encoding="utf-8")
     (output_dir / "decision.md").write_text(
         f"# HORN Synthetic H1a Real-Schema Rehearsal\n\n`{decision}`\n\n"
-        f"- evaluator gate status: `{evaluated['gate_status']}`\n"
+        f"- evaluator gate status: `{evaluated['gate_status']}` "
+        "(raw evaluator readout only; not the packet decision)\n"
         f"- selected metric: `{evaluated['selected_h1_metric']}`\n"
         f"- selected direction: `{evaluated['selected_h1_direction']}`\n"
         f"- selected H1a ratio: `{evaluated['selected_h1_ratio']:.3f}`\n\n"

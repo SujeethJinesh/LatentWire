@@ -6,8 +6,8 @@ This packet is intentionally a schema rehearsal and non-promotable.
 It validates the real H1a row schema, prompt-paired controls, and
 recomputed evaluator summary using synthetic rows.
 
-Selected evaluator fields:
-- `gate_status`: `PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN`
+Fixture-only evaluator fields, not a promotion decision:
+- `gate_status`: `PASS_REAL_H1A_DIRECTIONAL_ASYMMETRY_SCREEN` (raw evaluator readout only; decision remains `SCHEMA_REHEARSAL_NOT_PROMOTABLE_SYNTHETIC_HORN_H1A`)
 - `prompt_count`: `12`
 - `selected_h1_metric`: `max_abs`
 - `selected_h1_direction`: `ssm->attention`

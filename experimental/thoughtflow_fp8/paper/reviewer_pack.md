@@ -42,7 +42,8 @@ saved-trace falsification fixtures, not reasoning-model benchmark claims.
 
 The paper now places a final signal-status matrix immediately after the
 protocol contribution and includes a registration-to-measurement ledger with
-preregistration and artifact hash prefixes. The stop-rule section has been
+registration and artifact hash prefixes. The ledger is described as repo-local
+artifact provenance, not independent external timestamp proof. The stop-rule section has been
 reworded around the diagnostic ladder contribution rather than apologizing for
 the lack of a positive method, and the stable TeX test command now matches this
 reviewer pack's Triton interpreter environment.

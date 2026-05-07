@@ -28,8 +28,9 @@ schema, prompt-to-layer aggregation, controls, provenance fields, and recomputed
 evaluator summary, but does not promote the branch or replace real hybrid
 layer-sensitivity measurements.
 
-Next exact gate: B1 sensitivity heterogeneity replication on current hybrid
-models. Kill or fold into HORN if the mechanism wedge does not differentiate.
+Historical planned gate: B1 sensitivity heterogeneity replication on current
+hybrid models. The current B1 scouts fail, so this is not an active gate unless a
+new narrower mechanism is preregistered.
 
 ## 2026-05-06 Architecture Provenance Update
 
@@ -75,9 +76,9 @@ counts, train/test counts, and the existing no-op plus baseline controls.
 Resource-limited runs are diagnostic only and must use
 `RESOURCE_LIMITED_NOT_PROMOTABLE`.
 
-Decision: **B1 PROMOTION NOW REQUIRES A COMPLETE REAL SENSITIVITY TABLE**. The
-next exact gate remains a live layer-sensitivity sweep on current hybrid
-reasoners.
+Decision: **B1 PROMOTION NOW REQUIRES A COMPLETE REAL SENSITIVITY TABLE**. This
+was the historical planned gate; the current controlling evidence is the failing
+one-prompt and two-prompt Granite Tiny B1 scout pair.
 
 ## 2026-05-06 Recomputed Gate Evaluator Update
 

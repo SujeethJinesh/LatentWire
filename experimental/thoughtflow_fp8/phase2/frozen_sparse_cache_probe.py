@@ -399,7 +399,7 @@ def _status(
     return f"MIXED on frozen sparse-cache probe; {best_name} remains inside 0.03 NLL vs {strongest_other_name}."
 
 
-def _write_markdown(result: dict[str, object]) -> None:
+def _write_markdown(result: dict[str, object], output_path: Path = OUT_DIR / "frozen_sparse_cache_probe.md") -> None:
     lines = [
         "# ThoughtFlow-FP8 Frozen Sparse-Cache Probe",
         "",
@@ -507,7 +507,7 @@ def _write_markdown(result: dict[str, object]) -> None:
             "Promote `rdu_topk` only if it beats both R-KV-like and ThinKV-like by at least 0.03 NLL with paired CIs below zero.",
         ]
     )
-    (OUT_DIR / "frozen_sparse_cache_probe.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main() -> None:
@@ -518,8 +518,11 @@ def main() -> None:
     parser.add_argument("--max-length", type=int, default=96)
     parser.add_argument("--continuation-tokens", type=int, default=24)
     parser.add_argument("--model-revision", default=DISTILGPT2_REVISION)
+    parser.add_argument("--json-output", type=Path, default=OUT_DIR / "frozen_sparse_cache_probe.json")
+    parser.add_argument("--md-output", type=Path, default=OUT_DIR / "frozen_sparse_cache_probe.md")
     args = parser.parse_args()
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.md_output.parent.mkdir(parents=True, exist_ok=True)
     result = _run(
         args.model_name,
         args.keep_fraction,
@@ -528,8 +531,8 @@ def main() -> None:
         args.continuation_tokens,
         model_revision=args.model_revision,
     )
-    (OUT_DIR / "frozen_sparse_cache_probe.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    _write_markdown(result)
+    args.json_output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    _write_markdown(result, args.md_output)
     print(json.dumps({"status": result["status"], "summary": result["summary"]}, indent=2))
 
 

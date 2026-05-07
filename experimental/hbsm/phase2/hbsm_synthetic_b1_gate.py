@@ -145,8 +145,9 @@ def _summary_markdown(summary: dict[str, object]) -> str:
             "It validates the real B1 row schema, controls, prompt-to-layer",
             "aggregation, and recomputed evaluator summary using synthetic rows.",
             "",
-            "Selected evaluator fields:",
-            f"- `gate_status`: `{summary['gate_status']}`",
+            "Fixture-only evaluator fields, not a promotion decision:",
+            f"- `gate_status`: `{summary['gate_status']}` (raw evaluator readout only; "
+            f"decision remains `{summary['decision']}`)",
             f"- `primary_row_count`: `{summary['primary_row_count']}`",
             f"- `scoring_layer_count`: `{summary['scoring_layer_count']}`",
             f"- `boundary_top_decile_enrichment`: `{summary['boundary_top_decile_enrichment']:.3f}`",
@@ -184,7 +185,8 @@ def run_gate(*, seed: int = 20260506, output_dir: Path = DEFAULT_OUTPUT) -> dict
     (output_dir / "summary.md").write_text(_summary_markdown(summary), encoding="utf-8")
     (output_dir / "decision.md").write_text(
         f"# HBSM Synthetic B1 Real-Schema Rehearsal\n\n`{decision}`\n\n"
-        f"- evaluator gate status: `{evaluated['gate_status']}`\n"
+        f"- evaluator gate status: `{evaluated['gate_status']}` "
+        "(raw evaluator readout only; not the packet decision)\n"
         f"- boundary top-decile enrichment: `{evaluated['boundary_top_decile_enrichment']:.3f}`\n"
         f"- cheap-predictor Spearman: `{evaluated['cheap_predictor_spearman']:.3f}`\n\n"
         "Synthetic CPU rows validate the real packet schema and checker path only. "

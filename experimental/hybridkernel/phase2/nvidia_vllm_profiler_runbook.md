@@ -344,6 +344,7 @@ the run ID in every output path:
 ```bash
 export RUN_ID=granite_primary_r1
 export MODEL="$GRANITE_MODEL"
+export SEED=1
 
 nsys profile \
   --trace=cuda,nvtx,osrt \
@@ -360,10 +361,29 @@ nsys profile \
     --max-model-len 2048 \
     --disable-log-requests \
     --profiler-config.profiler cuda \
-  2>&1 | tee "$HWK_RUN/logs/nsys_server_${RUN_ID}.log"
+	  2>&1 | tee "$HWK_RUN/logs/nsys_server_${RUN_ID}.log"
 ```
 
-In a second terminal, use the same `RUN_ID`, `MODEL`, and seed:
+In a second terminal, use the same `RUN_ID`, `MODEL`, and seed. First run a
+short warmup request stream before the profiled replay; the warmup log must not
+be reduced into the metric row:
+
+```bash
+python "$HWK_ROOT/phase2/profiler_driver.py" \
+  --model "$MODEL" \
+  --run-id "${RUN_ID}_warmup" \
+  --batch-size 1 \
+  --prefill-tokens 128 \
+  --decode-tokens 16 \
+  --requests 2 \
+  --seed "$SEED" \
+  --tokenizer "$MODEL" \
+  --require-token-counts \
+  > "$HWK_RUN/logs/client_${RUN_ID}_warmup.log" \
+  2> "$HWK_RUN/logs/client_${RUN_ID}_warmup.stderr.log"
+```
+
+Then bracket and replay the fixed profiled request stream:
 
 ```bash
 python "$HWK_ROOT/phase2/profiler_driver.py" \
@@ -378,10 +398,35 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --require-token-counts \
   --profile-bracket \
   > "$HWK_RUN/logs/client_${RUN_ID}.log" \
-  2> "$HWK_RUN/logs/client_${RUN_ID}.stderr.log"
+	  2> "$HWK_RUN/logs/client_${RUN_ID}.stderr.log"
 ```
 
-Repeat with `RUN_ID=granite_primary_r2` and seed `2`, then
+After the profiled replay exits successfully, stop the profiled server cleanly
+before moving to the next row:
+
+```bash
+pkill -TERM -f "vllm.entrypoints.openai.api_server.*${MODEL}" || true
+sleep 10
+pgrep -af "vllm.entrypoints.openai.api_server" || true
+```
+
+If the server does not stop on `TERM`, record the full command and reason in
+`$HWK_RUN/metadata/command_notes.md` before using a stronger signal. Verify that
+the corresponding server log contains this `RUN_ID` or model ID, the client log
+contains JSON with `run_id="$RUN_ID"` and every request status `ok`, and the
+Nsight export exists and is non-empty:
+
+```bash
+ls -lh "$HWK_RUN/nsys/${RUN_ID}".* "$HWK_RUN/logs/nsys_server_${RUN_ID}.log" \
+  "$HWK_RUN/logs/client_${RUN_ID}.log"
+shasum -a 256 "$HWK_RUN/nsys/${RUN_ID}".* \
+  "$HWK_RUN/logs/nsys_server_${RUN_ID}.log" \
+  "$HWK_RUN/logs/client_${RUN_ID}.log" \
+  >> "$HWK_RUN/metadata/artifact_hashes.sha256"
+```
+
+Only after these checks pass should you repeat with `RUN_ID=granite_primary_r2`
+and seed `2`, then
 `RUN_ID=granite_primary_r3` and seed `3`. Repeat the same pattern for
 `granite_same_family_*` and `cross_family_*`, changing only `RUN_ID`, `MODEL`,
 and seed. For a replacement cross-family model, use the preregistered
@@ -519,6 +564,15 @@ through a local tokenizer decode/encode roundtrip and rejects the run before
 the profile window if any prompt cannot be proven to have exactly
 `--prefill-tokens` tokens.
 
+For every dynamic or static Nsight Systems row, perform the row lifecycle in this
+order: start a fresh server, run warmup outside the reduced window, run the
+profiled replay, stop the server, verify exported artifacts, append SHA-256
+hashes, and only then start the next repeat. The checker can reject many
+placeholder, dry-run, failed-request, and hash-mismatched artifacts, but it
+cannot infer lifecycle mistakes if a startup-heavy trace is reduced as the
+benchmark window. Record the reduction window and lifecycle note in
+`$HWK_RUN/metadata/reduction_input_manifest.jsonl`.
+
 `profiler_driver.py` is tracked in this repository and can be sanity-checked on
 Mac with:
 
@@ -607,8 +661,15 @@ python "$HWK_ROOT/phase2/profiler_driver.py" \
   --tokenizer "$MODEL" \
   --require-token-counts \
   > "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.log" \
-  2> "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.stderr.log"
+	  2> "$HWK_RUN/logs/client_ncu_suspicious_boundary_kernel.stderr.log"
 ```
+
+After the replay exits, stop the NCU-profiled server, verify the exported
+`$HWK_RUN/ncu/suspicious_boundary_kernel.*` file, append its hash to
+`$HWK_RUN/metadata/artifact_hashes.sha256`, and record the exact
+`--kernel-name`, `--launch-skip`, `--launch-count`, source Nsight Systems
+artifact, and time window in the reduction input manifest. Do not reuse one
+long-running NCU server across multiple metric rows.
 
 Fill `ncu_launch_selection` for every non-pending metric row from the exact
 Nsight Systems timeline used to choose the NCU slice. The checker requires the

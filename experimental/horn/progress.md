@@ -29,8 +29,8 @@ Interpretation: synthetic-only schema validation. It exercises the real H1a
 row schema, paired controls, hash provenance, and recomputed evaluator summary,
 but does not promote the branch or replace real hybrid boundary dumps.
 
-Next exact gate: H1 activation magnitude and kurtosis characterization using
-shared boundary-inspection utilities.
+Historical planned gate: H1 activation magnitude and kurtosis characterization
+using shared boundary-inspection utilities.
 
 ## 2026-05-06 Architecture Provenance Update
 
@@ -71,8 +71,9 @@ boundary index, layer IDs, and normalization positions. Resource-limited runs
 are diagnostic only and must use `RESOURCE_LIMITED_NOT_PROMOTABLE`.
 
 Decision: **H1 PROMOTION NOW REQUIRES PROMPT-PAIRED DIRECTIONAL CONTROLS**. The
-next exact gate remains a live boundary-activation dump on the smallest
-available hybrid model.
+historical planned gate was a live boundary-activation dump on the smallest
+available hybrid model; the current controlling evidence is the failing H1a/H2
+scout pair.
 
 ## 2026-05-06 Recomputed Gate Evaluator Update
 
@@ -85,8 +86,9 @@ matching boundary rows. The shared Mac smoke prompt
 manifest is `../shared/prompts/hybrid_reasoning_smoke_12_20260506.jsonl` with
 SHA-256 `48e68434371a648c3984e85a7207d71d2ac68617c640b37da04bd1aaeea45fe0`.
 
-Decision: **NEXT H1 MUST BE GENERATED FROM RAW BOUNDARY ROWS**. The blocker is
-still a live hybrid activation dump.
+Decision: **ANY FUTURE H1 MUST BE GENERATED FROM RAW BOUNDARY ROWS**. This is a
+historical setup note; the current branch is demoted by the failing H1a/H2 scout
+pair unless reopened with a new preregistration.
 
 ## 2026-05-06 Permuted-Control Semantics Fix
 

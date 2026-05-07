@@ -3,10 +3,10 @@
 Diagnostic falsification package for the stopped ThoughtFlow-FP8 experiment.
 
 Current status: the original anchor/recent/phase/math policy family and the
-pre-registered `rdu_topk`, `psi_topk`, and `vwac_topk` successors are stopped
-or killed on the available Mac-local sparse-cache surfaces. The folder is now a
-falsification/diagnostic harness unless a genuinely new pre-registered signal
-is evaluated once on a fresh/larger frozen sparse-cache surface with
+repo-local registered `rdu_topk`, `psi_topk`, and `vwac_topk` successors are
+stopped or killed on the available Mac-local sparse-cache surfaces. The folder
+is now a falsification/diagnostic harness unless a genuinely new registered
+signal is evaluated once on a fresh/larger frozen sparse-cache surface with
 nominal-budget quality wins with achieved keep rates reported,
 stopped-family/proxy-baseline separation, paired uncertainty, and
 oracle/headroom diagnostics.
@@ -33,7 +33,7 @@ Estimated completion as a positive method paper: **0% on the current branch**.
 What is already complete:
 
 - original anchor/recent/phase/math branch evaluation;
-- `rdu_topk`, `psi_topk`, and `vwac_topk` preregistrations and fresh-surface
+- `rdu_topk`, `psi_topk`, and `vwac_topk` registration files and fresh-surface
   failures;
 - sparse-cache falsification ladder, decision manifest, reviewer pack,
   COLM-style draft, and Triton interpreter primitive.
@@ -44,7 +44,7 @@ What remains for the diagnostic note:
 
 What remains for a positive method:
 
-- a genuinely new utility family, preregistered before measurement;
+- a genuinely new utility family, registered before measurement;
 - one no-retune evaluation on a fresh/larger frozen sparse-cache surface;
 - nominal-budget quality wins over R-KV-like and ThinKV-like controls with
   achieved keep rates reported;

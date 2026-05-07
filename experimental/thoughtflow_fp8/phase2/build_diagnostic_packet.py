@@ -12,6 +12,7 @@ import hashlib
 import importlib.metadata as metadata
 import json
 import platform
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -26,6 +27,7 @@ except ImportError:  # pragma: no cover - supports direct script execution.
 PHASE2 = Path(__file__).resolve().parent
 REPO_ROOT = PHASE2.parents[2]
 DEFAULT_OUTPUT = PHASE2 / "diagnostic_packets/thoughtflow_diagnostic_packet_20260506"
+DISTILGPT2_REVISION = "2290a62682d06624634c1f46a6ad5be0f47f38aa"
 
 ARTIFACTS = [
     {
@@ -76,8 +78,10 @@ ARTIFACT_COMMANDS = {
     "frozen_sparse_cache_probe": (
         "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/frozen_sparse_cache_probe.py "
         "--model-name distilgpt2 "
-        "--model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa "
-        "--keep-fraction 0.20 --max-traces 74 --max-length 96 --continuation-tokens 24"
+        f"--model-revision {DISTILGPT2_REVISION} "
+        "--keep-fraction 0.20 --max-traces 74 --max-length 96 --continuation-tokens 24 "
+        "--json-output .debug/thoughtflow_replay/frozen_sparse_cache_probe.json "
+        "--md-output .debug/thoughtflow_replay/frozen_sparse_cache_probe.md"
     ),
     "rdu_robustness_diagnostic": (
         "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/rdu_robustness_diagnostic.py"
@@ -94,16 +98,20 @@ ARTIFACT_COMMANDS = {
     "psi_fresh_surface": (
         "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/psi_fresh_sparse_cache_check.py "
         "--model-name distilgpt2 "
-        "--model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa "
+        f"--model-revision {DISTILGPT2_REVISION} "
         "--keep-fraction 0.20 --max-traces 70 --max-length 96 --continuation-tokens 24 "
-        "--input-jsonl results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl"
+        "--input-jsonl results/c2c_gsm70_20260418/qwen_gsm70_c2c.jsonl "
+        "--json-output .debug/thoughtflow_replay/psi_fresh_sparse_cache_check.json "
+        "--md-output .debug/thoughtflow_replay/psi_fresh_sparse_cache_check.md"
     ),
     "vwac_fresh_surface": (
         "./venv_arm64/bin/python experimental/thoughtflow_fp8/phase2/vwac_fresh_sparse_cache_check.py "
         "--model-name distilgpt2 "
-        "--model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa "
+        f"--model-revision {DISTILGPT2_REVISION} "
         "--keep-fraction 0.20 --max-traces 70 --max-length 96 --continuation-tokens 24 "
-        "--input-jsonl results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl"
+        "--input-jsonl results/c2c_svamp70_20260418/qwen_svamp70_c2c.jsonl "
+        "--json-output .debug/thoughtflow_replay/vwac_fresh_sparse_cache_check.json "
+        "--md-output .debug/thoughtflow_replay/vwac_fresh_sparse_cache_check.md"
     ),
 }
 
@@ -264,6 +272,14 @@ def _artifact_provenance(artifact_id: str, payload: dict[str, Any]) -> dict[str,
             selected = {key: section_payload[key] for key in metadata_keys if key in section_payload}
             if selected:
                 source_metadata[section] = selected
+    command = ARTIFACT_COMMANDS.get(artifact_id, "not_recorded")
+    if command != "not_recorded":
+        command_parts = shlex.split(command)
+        if "--model-revision" in command_parts:
+            revision_index = command_parts.index("--model-revision") + 1
+            if revision_index < len(command_parts):
+                source_metadata.setdefault("model_revision", command_parts[revision_index])
+                source_metadata.setdefault("tokenizer_revision", command_parts[revision_index])
     input_paths: list[str] = []
     for key in ("source_artifact", "input_paths", "trace_input_paths"):
         value = payload.get(key)
@@ -284,7 +300,7 @@ def _artifact_provenance(artifact_id: str, payload: dict[str, Any]) -> dict[str,
             ),
         }
     provenance = {
-        "command": ARTIFACT_COMMANDS.get(artifact_id, "not_recorded"),
+        "command": command,
         "input_paths": input_paths,
         "source_metadata": source_metadata,
         "input_hashes": _hash_existing_input_paths(input_paths),
@@ -490,7 +506,9 @@ def build_packet(output_dir: Path = DEFAULT_OUTPUT, *, require_clean_tree: bool 
                 "  claim boundary.",
                 "",
                 "This tracked packet lives outside ignored `results/` directories so",
-                "clean checkouts can run the saved-artifact tests.",
+                "clean checkouts can run the saved-artifact tests. The manifest's git",
+                "head is the historical packet-generation commit; its script SHA is",
+                "the current builder file hash used by the verifier to detect drift.",
                 "This packet does not reopen the stopped RDU/PSI/VWAC branches.",
                 "",
                 "Local correctness command:",

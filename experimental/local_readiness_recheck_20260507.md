@@ -9,7 +9,7 @@
 ## Result
 
 ```text
-317 passed, 1 skipped, 2 warnings in 7.84s
+317 passed, 1 skipped, 2 warnings in 7.67s
 ```
 
 The skipped test is the opt-in non-interpreter Triton CPU-backend check for the
@@ -24,7 +24,7 @@ That opt-in gate was run separately outside interpreter mode on the same Mac
 install and passed:
 
 ```text
-1 passed in 1.35s
+1 passed in 1.09s
 ```
 
 Command:
@@ -91,6 +91,15 @@ rejects synthetic packets that omit or contradict those fields. ThoughtFlow
 PSI/VWAC fresh-surface scripts now accept and record the pinned model/tokenizer
 revision used by the runnable replay path, and the paper/diagnostic packet hash
 readouts were aligned to the current preregistration hash.
+
+Third follow-up hardening on 2026-05-07 addressed COLM-reviewer audit risks
+without changing project decisions: HORN and HBSM now have branch-local stop
+manifests with exact checker commands and artifact hashes; synthetic
+SSQ-LR/HORN/HBSM summaries label raw evaluator `PASS_REAL_*` fields as
+fixture-only and non-promoting; HybridKernel's GPU runbook spells out per-row
+server lifecycle, warmup exclusion, export verification, and hashing; and
+ThoughtFlow replay commands now write to `.debug` while the paper/packet tests
+avoid overclaiming independent preregistration timestamp ordering.
 
 - HybridKernel: native 5090 Nsight/vLLM full-matrix packet; if a prototype is
   later implemented, its quality smoke must pass

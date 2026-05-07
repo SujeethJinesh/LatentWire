@@ -41,7 +41,9 @@ def test_paper_reports_nominal_budget_and_packet_boundary() -> None:
     assert "nominal 0.20-budget proxy rows with achieved keep rates reported" in paper
     assert "Achieved keep rates are\n0.2199" in paper
     assert "Achieved keep rates are 0.2389" in paper
-    assert "The diagnostic\npacket hashes the saved falsification JSON artifacts and preregistrations" in paper
+    assert "The packet hashes the registration files and measurement artifacts" in paper
+    assert "does not provide an external timestamp service" in paper
+    assert "packet hashes the saved falsification JSON artifacts and registration files" in paper
     assert "README, progress, reviewer pack, and the repo-local Triton" in paper
     assert "workshop shell" not in paper
     assert "The positive value of the artifact" not in paper

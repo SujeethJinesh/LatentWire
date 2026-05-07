@@ -25,7 +25,7 @@ overhead not already handled by vLLM's hybrid SSM machinery.
 | runtime/source audit | vLLM hybrid SSM support already handles important layout and transfer paths | broad novelty weakened |
 | threshold model | Granite needs about 25% avoidable boundary traffic at 60% recovery to clear a 3% proxy gain | Mac kernels not justified |
 | fixed-request driver | local dry-run plus optional `/start_profile`/`/stop_profile` bracketing | reduces client-only or startup-trace risk |
-| parser/checker | metric rows require dtype, graph state, batch shape, prompt/decode/request-token shape, control segment, boundary direction, model/control-family role, explicit same-family `control_window_ids`, explicit NCU launch-selection provenance, reduction command, recoverable-fraction basis, SHA-256 artifact hashes, structured `environment.json`, model snapshot manifests with matching hashes, three distinct same-config repeats, primary-repeat bootstrap CI low above zero, matching analysis outputs, separate Nsight server logs, and non-dry-run client replay JSON with all request statuses `ok`; the GPU gate command now runs the checker with `--require-full-matrix` so primary-only packets fail promotion | stale, mixed-config, wrong-control, missing-control, warmup-only, dry-run, failed-request, shape-mismatched, incomplete-log, hash-mismatched, weak-CI, and placeholder evidence rejected |
+| parser/checker | metric rows require dtype, graph state, batch shape, prompt/decode/request-token shape, control segment, boundary direction, model/control-family role, explicit same-family `control_window_ids`, explicit NCU launch-selection provenance, reduction command, recoverable-fraction basis, SHA-256 artifact hashes, structured `environment.json`, model snapshot manifests with matching hashes, three distinct same-config repeats, primary-repeat bootstrap CI low above zero, matching analysis outputs, separate Nsight server logs, and non-dry-run client replay JSON with all request statuses `ok`; the GPU gate command now runs the checker with `--require-full-matrix` so primary-only packets fail promotion | stale, mixed-config, wrong-control, missing-control, dry-run, failed-request, shape-mismatched, incomplete-log, hash-mismatched, weak-CI, and obvious placeholder/plain-text evidence rejected; lifecycle errors such as startup-heavy reductions remain a reviewer risk unless the runbook's stop/export/hash notes and reduction manifest are filled |
 | Triton interpreter | toy boundary primitive matches CPU reference under `TRITON_INTERPRET=1` | indexing/kernel-plumbing only |
 
 The real native row schema also requires row role, control family, boundary
@@ -43,6 +43,11 @@ The runbook now also requires a reduction input manifest tying each reduced row
 to exact Nsight exports, windows, commands, and script hashes; analyst-selected
 timeline windows without that manifest are review risks, not camera-ready
 evidence.
+Native profiler export validation currently checks file presence, size,
+non-placeholder markers, hashes, plain-text rejection, and SQLite headers where
+SQLite exports are supplied. It does not prove an arbitrary binary is an
+importable Nsight report, so reviewer-facing packets should include exported
+SQLite/CSV summaries or parsed Nsight reports whenever available.
 Structured environment metadata and model snapshot manifests are now part of
 the packet contract: `metadata/environment.json` records parseable GPU, profiler,
 Python, and package versions, while each model provenance row points to a

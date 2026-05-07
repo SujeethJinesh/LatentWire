@@ -105,6 +105,24 @@ def test_diagnostic_packet_hashes_saved_falsification_artifacts() -> None:
         assert isinstance(artifact["provenance"]["input_hashes"], dict)
         assert artifact["provenance"]["input_paths"]
         assert artifact["provenance"]["input_hashes"]
+        if artifact["id"] in {
+            "frozen_sparse_cache_probe",
+            "psi_fresh_surface",
+            "vwac_fresh_surface",
+        }:
+            command = artifact["provenance"]["command"]
+            assert "--model-revision 2290a62682d06624634c1f46a6ad5be0f47f38aa" in command
+            assert "--json-output .debug/thoughtflow_replay/" in command
+            assert "--md-output .debug/thoughtflow_replay/" in command
+            source_metadata = artifact["provenance"]["source_metadata"]
+            assert source_metadata["model_revision"] == "2290a62682d06624634c1f46a6ad5be0f47f38aa"
+            assert (
+                source_metadata["tokenizer_revision"]
+                == "2290a62682d06624634c1f46a6ad5be0f47f38aa"
+            )
+        if artifact["id"] in {"psi_fresh_surface", "vwac_fresh_surface"}:
+            command = artifact["provenance"]["command"]
+            assert "--input-jsonl results/c2c_" in command
         for input_path in artifact["provenance"]["input_hashes"]:
             assert (REPO_ROOT / input_path).is_file()
         if artifact["id"] in {
