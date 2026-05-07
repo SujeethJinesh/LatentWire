@@ -453,7 +453,9 @@ the current traces.
 Decision: **NO FURTHER MAC/TRITON METHOD WORK REMAINS FOR THE CURRENT
 RDU/PSI/VWAC BRANCHES**. The remaining blocker is method evidence from a future
 preregistered branch, not local packaging, tests, Triton interpreter correctness,
-`rdu_topk` analysis, `psi_topk` analysis, or `vwac_topk` analysis.
+`rdu_topk` analysis, `psi_topk` analysis, or `vwac_topk` analysis. Paper-facing
+historical-doc cleanup remains allowed so older phase notes cannot be mistaken
+for current method claims.
 
 ## 2026-05-06 README Environment Alignment
 

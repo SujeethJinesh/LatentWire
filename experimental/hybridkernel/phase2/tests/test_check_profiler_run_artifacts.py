@@ -7,6 +7,7 @@ from pathlib import Path
 
 from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
 from experimental.hybridkernel.phase2.check_profiler_run_artifacts import (
+    DEFAULT_CROSS_FAMILY_MODEL,
     READOUT_MARKERS,
     check_run_artifacts,
 )
@@ -37,13 +38,14 @@ def _write_reduction_manifest(run_dir: Path, payload: dict[str, object] | None =
                 "run_id": row["run_id"],
                 "row_role": row["row_role"],
                 "model": row["model"],
+                "reduction_source_path": "metadata/reduction_worksheet.tsv",
                 "source_nsys_artifact": row["nsys_artifact"],
                 "source_nsys_artifact_sha256": row["nsys_artifact_sha256"],
                 "source_time_window_ms": row["time_window_ms"],
                 "source_ncu_artifact": row["ncu_artifact"],
                 "source_ncu_artifact_sha256": row["ncu_artifact_sha256"],
                 "reduction_command": row["reduction_command"],
-                "reduction_script_sha256": "sha256:" + ("1" * 64),
+                "reduction_script_sha256": _sha256(run_dir / "metadata/reduction_worksheet.tsv"),
                 "reduction_notes": row["reduction_notes"],
             }
         )
@@ -67,6 +69,31 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
     (run_dir / "ncu").mkdir()
     (run_dir / "metadata/environment.txt").write_text(
         "nvidia-smi\nnsys version\nncu version\npython -VV\n",
+        encoding="utf-8",
+    )
+    (run_dir / "metadata/model_provenance.json").write_text(
+        json.dumps(
+            {
+                "provenance_version": "hybridkernel_model_provenance_v1",
+                "models": [
+                    {
+                        "model_id": "granite",
+                        "served_model_id": "granite",
+                        "model_revision": "test-granite-model-revision",
+                        "tokenizer_revision": "test-granite-tokenizer-revision",
+                        "cache_source": "synthetic fixture",
+                        "local_files_only": True,
+                        "trust_remote_code": True,
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (run_dir / "metadata/reduction_worksheet.tsv").write_text(
+        "run_id\trow_role\tmodel\tnotes\nfixture\tprimary_hybrid\tgranite\tfilled\n",
         encoding="utf-8",
     )
     (run_dir / "metadata/architecture_map.json").write_text(
@@ -100,7 +127,7 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
                     },
                     {
                         "row_role": "cross_family_falsification",
-                        "model": "qwen",
+                        "model": DEFAULT_CROSS_FAMILY_MODEL,
                         "control_family": "cross_family_hybrid_control",
                         "control_model_or_segment": "qwen_hybrid_control",
                         "boundary_direction": "linear_attention_gated_delta_boundary",
@@ -231,15 +258,35 @@ def _write_complete_run(run_dir: Path, runs: int = 3) -> None:
 
 def _add_qwen_control_rows(run_dir: Path) -> None:
     (run_dir / "metadata/architecture_map.json").write_text(
-        '[{"model":"granite","boundary_count":1},{"model":"qwen","boundary_count":1}]\n',
+        json.dumps(
+            [
+                {"model": "granite", "boundary_count": 1},
+                {"model": DEFAULT_CROSS_FAMILY_MODEL, "boundary_count": 1},
+            ]
+        )
+        + "\n",
         encoding="utf-8",
     )
     client_payload = json.loads((run_dir / "logs/client_replay_b1.log").read_text(encoding="utf-8"))
-    client_payload["model"] = "qwen"
+    client_payload["model"] = DEFAULT_CROSS_FAMILY_MODEL
     (run_dir / "logs/client_replay_qwen.log").write_text(
         json.dumps(client_payload) + "\n",
         encoding="utf-8",
     )
+    provenance_path = run_dir / "metadata/model_provenance.json"
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["models"].append(
+        {
+            "model_id": DEFAULT_CROSS_FAMILY_MODEL,
+            "served_model_id": DEFAULT_CROSS_FAMILY_MODEL,
+            "model_revision": "test-qwen-model-revision",
+            "tokenizer_revision": "test-qwen-tokenizer-revision",
+            "cache_source": "synthetic fixture",
+            "local_files_only": True,
+            "trust_remote_code": True,
+        }
+    )
+    provenance_path.write_text(json.dumps(provenance) + "\n", encoding="utf-8")
     metrics_path = run_dir / "profiler_metrics.json"
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
     qwen_rows = []
@@ -247,7 +294,7 @@ def _add_qwen_control_rows(run_dir: Path) -> None:
         row = dict(base)
         row.update(
             {
-                "model": "qwen",
+                "model": DEFAULT_CROSS_FAMILY_MODEL,
                 "run_id": f"qwen-{idx}",
                 "row_role": "cross_family_falsification",
                 "control_family": "cross_family_hybrid_control",
@@ -327,9 +374,9 @@ def test_accepts_multi_model_metrics_with_profile_model_scopes(tmp_path: Path) -
             "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
         },
         {
-            "model": "qwen",
+            "model": DEFAULT_CROSS_FAMILY_MODEL,
             "row_roles": ["cross_family_falsification"],
-            "vllm_command": "python -m vllm.entrypoints.openai.api_server --model qwen",
+            "vllm_command": f"python -m vllm.entrypoints.openai.api_server --model {DEFAULT_CROSS_FAMILY_MODEL}",
         },
     ]
     profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
@@ -337,7 +384,7 @@ def test_accepts_multi_model_metrics_with_profile_model_scopes(tmp_path: Path) -
     result = check_run_artifacts(tmp_path, require_native_artifacts=False)
 
     assert result["status"] == "PASS"
-    assert set(result["model_run_counts"]) == {"granite", "qwen"}
+    assert set(result["model_run_counts"]) == {"granite", DEFAULT_CROSS_FAMILY_MODEL}
 
 
 def test_primary_gate_clear_without_controls_stays_audit_only(tmp_path: Path) -> None:
@@ -379,7 +426,13 @@ def test_require_full_matrix_rejects_audit_only_primary_rows(tmp_path: Path) -> 
 def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     (tmp_path / "metadata/architecture_map.json").write_text(
-        '[{"model":"granite","boundary_count":1},{"model":"qwen","boundary_count":1}]\n',
+        json.dumps(
+            [
+                {"model": "granite", "boundary_count": 1},
+                {"model": DEFAULT_CROSS_FAMILY_MODEL, "boundary_count": 1},
+            ]
+        )
+        + "\n",
         encoding="utf-8",
     )
     profile_scope_path = tmp_path / "metadata/profile_scope.json"
@@ -391,15 +444,29 @@ def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None
             "vllm_command": "python -m vllm.entrypoints.openai.api_server --model granite",
         },
         {
-            "model": "qwen",
+            "model": DEFAULT_CROSS_FAMILY_MODEL,
             "row_roles": ["cross_family_falsification"],
-            "vllm_command": "python -m vllm.entrypoints.openai.api_server --model qwen",
+            "vllm_command": f"python -m vllm.entrypoints.openai.api_server --model {DEFAULT_CROSS_FAMILY_MODEL}",
         },
     ]
     profile_scope_path.write_text(json.dumps(profile_scope) + "\n", encoding="utf-8")
     client_payload = json.loads((tmp_path / "logs/client_replay_b1.log").read_text(encoding="utf-8"))
-    client_payload["model"] = "qwen"
+    client_payload["model"] = DEFAULT_CROSS_FAMILY_MODEL
     (tmp_path / "logs/client_replay_qwen.log").write_text(json.dumps(client_payload) + "\n", encoding="utf-8")
+    provenance_path = tmp_path / "metadata/model_provenance.json"
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["models"].append(
+        {
+            "model_id": DEFAULT_CROSS_FAMILY_MODEL,
+            "served_model_id": DEFAULT_CROSS_FAMILY_MODEL,
+            "model_revision": "test-qwen-model-revision",
+            "tokenizer_revision": "test-qwen-tokenizer-revision",
+            "cache_source": "synthetic fixture",
+            "local_files_only": True,
+            "trust_remote_code": True,
+        }
+    )
+    provenance_path.write_text(json.dumps(provenance) + "\n", encoding="utf-8")
 
     metrics_path = tmp_path / "profiler_metrics.json"
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
@@ -418,7 +485,7 @@ def test_require_full_matrix_rejects_single_control_rows(tmp_path: Path) -> None
         ),
         (
             "cross_family_falsification",
-            "qwen",
+            DEFAULT_CROSS_FAMILY_MODEL,
             "cross-family-single",
             "nsys/cross_family_single.nsys-rep",
             "ncu/cross_family_single.ncu-rep",
@@ -1104,9 +1171,29 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
     _write_complete_run(tmp_path)
     architecture_map_path = tmp_path / "metadata/architecture_map.json"
     architecture_map_path.write_text(
-        '[{"model":"granite","boundary_count":1},{"model":"qwen","boundary_count":1}]\n',
+        json.dumps(
+            [
+                {"model": "granite", "boundary_count": 1},
+                {"model": DEFAULT_CROSS_FAMILY_MODEL, "boundary_count": 1},
+            ]
+        )
+        + "\n",
         encoding="utf-8",
     )
+    provenance_path = tmp_path / "metadata/model_provenance.json"
+    provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+    provenance["models"].append(
+        {
+            "model_id": DEFAULT_CROSS_FAMILY_MODEL,
+            "served_model_id": DEFAULT_CROSS_FAMILY_MODEL,
+            "model_revision": "test-qwen-model-revision",
+            "tokenizer_revision": "test-qwen-tokenizer-revision",
+            "cache_source": "synthetic fixture",
+            "local_files_only": True,
+            "trust_remote_code": True,
+        }
+    )
+    provenance_path.write_text(json.dumps(provenance) + "\n", encoding="utf-8")
     metrics_path = tmp_path / "profiler_metrics.json"
     payload = json.loads(metrics_path.read_text(encoding="utf-8"))
     rows = list(payload["rows"])
@@ -1125,7 +1212,7 @@ def test_rejects_reused_artifacts_across_profiler_roles(tmp_path: Path) -> None:
         cross_family = dict(base)
         cross_family.update(
             {
-                "model": "qwen",
+                "model": DEFAULT_CROSS_FAMILY_MODEL,
                 "row_role": "cross_family_falsification",
                 "control_family": "cross_family_hybrid_control",
                 "control_model_or_segment": "qwen_hybrid_control",

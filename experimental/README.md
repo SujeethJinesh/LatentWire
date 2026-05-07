@@ -6,10 +6,13 @@ This folder currently tracks five relevant COLM/ICLR branches only:
 HybridKernel, SSQ-LR, HORN, HBSM, and ThoughtFlow-FP8. The control objective is
 to finish every Mac-local artifact that can be finished before NVIDIA GPU time,
 then move only surviving branches to the 5090 gate.
+For SSQ-LR, HORN, and HBSM, "finish" now means existing-packet
+reproducibility, documentation, and validator checks only unless a new
+preregistration explicitly reopens the branch.
 
 The current sprint ledger is `project_status_20260506.md`.
 The latest full local readiness recheck is
-`local_readiness_recheck_20260507.md` (`284 passed, 1 skipped, 2 warnings`).
+`local_readiness_recheck_20260507.md` (`286 passed, 1 skipped, 2 warnings`).
 
 ## Active Branches
 

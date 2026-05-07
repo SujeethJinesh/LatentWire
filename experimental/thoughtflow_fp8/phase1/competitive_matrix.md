@@ -2,6 +2,12 @@
 
 Date: 2026-05-05
 
+Status: **HISTORICAL PRE-FALSIFICATION SCOPING**. This matrix records the
+positive-method target before the RDU/PSI/VWAC stop ladder. It is superseded by
+`../phase2/current_decision_manifest_20260506.md` and
+`../paper/reviewer_pack.md`; the current camera-ready contribution is the
+falsification ladder, not a live FP8/cache-compression method.
+
 Legend: `Y` yes, `N` no, `Partial` limited/indirect, `Unknown` not verified in
 quick Phase 1.
 

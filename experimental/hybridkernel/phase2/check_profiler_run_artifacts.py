@@ -25,6 +25,7 @@ from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze
 REQUIRED_FILES = [
     "metadata/environment.txt",
     "metadata/architecture_map.json",
+    "metadata/model_provenance.json",
     "metadata/native_control_matrix.json",
     "metadata/profile_scope.json",
     "metadata/reduction_input_manifest.json",
@@ -97,6 +98,7 @@ REQUIRED_REDUCTION_MANIFEST_FIELDS = [
     "run_id",
     "row_role",
     "model",
+    "reduction_source_path",
     "source_nsys_artifact",
     "source_nsys_artifact_sha256",
     "source_time_window_ms",
@@ -109,6 +111,9 @@ REQUIRED_REDUCTION_MANIFEST_FIELDS = [
 REDUCTION_MANIFEST_VERSION = "hybridkernel_reduction_inputs_v1"
 ALLOWED_ROW_ROLES = {"primary_hybrid", "same_family_control", "cross_family_falsification"}
 SHA256_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
+DEFAULT_CROSS_FAMILY_MODEL = "Qwen/Qwen3-Next-80B-A3B-Instruct"
+MODEL_PROVENANCE_VERSION = "hybridkernel_model_provenance_v1"
+REPLACEMENT_METADATA_PATH = "metadata/cross_family_control_replacement_template.json"
 
 
 def _matching_artifacts(root: Path, patterns: list[str]) -> list[Path]:
@@ -656,9 +661,28 @@ def _validate_reduction_manifest_text(
     return text
 
 
+def _resolve_packet_relative_path(run_dir: Path, value: str, label: str, errors: list[str]) -> Path | None:
+    relative = Path(value)
+    if relative.is_absolute() or ".." in relative.parts:
+        errors.append(f"{label} must be a relative path inside the run packet")
+        return None
+    resolved = (run_dir / relative).resolve()
+    if run_dir.resolve() not in (resolved, *resolved.parents):
+        errors.append(f"{label} must stay inside the run packet")
+        return None
+    if not resolved.is_file():
+        errors.append(f"{label} file does not exist inside run packet: {value}")
+        return None
+    text = _read_text(resolved)
+    if SKELETON_TODO_MARKER in text or "TO_FILL" in text:
+        errors.append(f"{label} file still contains unfilled template markers: {value}")
+    return resolved
+
+
 def _validate_reduction_input_manifest(
     *,
     path: Path,
+    run_dir: Path,
     raw_rows: list[dict[str, object]],
     packet_mode: str,
     errors: list[str],
@@ -735,6 +759,7 @@ def _validate_reduction_input_manifest(
         metric_index, metric_row = metric_entry
 
         for field in [
+            "reduction_source_path",
             "source_nsys_artifact",
             "source_nsys_artifact_sha256",
             "source_ncu_artifact",
@@ -748,6 +773,14 @@ def _validate_reduction_input_manifest(
                 value=manifest_row.get(field),
                 errors=errors,
             )
+
+        reduction_source_path = str(manifest_row.get("reduction_source_path", "")).strip()
+        source_path = _resolve_packet_relative_path(
+            run_dir,
+            reduction_source_path,
+            f"reduction_input_manifest.json row {manifest_index} reduction_source_path",
+            errors,
+        )
 
         nsys_artifact = str(manifest_row.get("source_nsys_artifact", "")).strip()
         nsys_sha256 = str(manifest_row.get("source_nsys_artifact_sha256", "")).strip()
@@ -814,6 +847,11 @@ def _validate_reduction_input_manifest(
             errors.append(
                 f"reduction_input_manifest.json row {manifest_index} "
                 "reduction_script_sha256 must be sha256:<64 lowercase hex chars>"
+            )
+        elif source_path is not None and _file_sha256(source_path) != reduction_script_sha256:
+            errors.append(
+                f"reduction_input_manifest.json row {manifest_index} "
+                "reduction_script_sha256 must match reduction_source_path file"
             )
 
     missing_keys = set(metric_by_key) - manifest_keys
@@ -957,6 +995,127 @@ def _native_control_specs(path: Path, errors: list[str]) -> dict[str, list[dict[
             spec["_request_shape"] = dict(request_shape)
         specs.setdefault(role, []).append(spec)
     return specs
+
+
+def _validate_model_provenance(path: Path, required_models: set[str], errors: list[str]) -> None:
+    if not path.is_file():
+        return
+    _reject_skeleton_todo(path, "metadata/model_provenance.json", errors)
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        errors.append(f"model_provenance.json is invalid: {exc}")
+        return
+    if not isinstance(payload, dict):
+        errors.append("model_provenance.json must be a JSON object")
+        return
+    if str(payload.get("provenance_version", "")).strip() != MODEL_PROVENANCE_VERSION:
+        errors.append(
+            "model_provenance.json provenance_version must be "
+            f"{MODEL_PROVENANCE_VERSION!r}"
+        )
+    rows = payload.get("models")
+    if not isinstance(rows, list) or not rows:
+        errors.append("model_provenance.json must contain non-empty models rows")
+        return
+    covered: set[str] = set()
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            errors.append(f"model_provenance.json row {index} must be an object")
+            continue
+        for field in [
+            "model_id",
+            "served_model_id",
+            "model_revision",
+            "tokenizer_revision",
+            "cache_source",
+        ]:
+            value = str(row.get(field, "")).strip()
+            if not value or SKELETON_TODO_MARKER in value or "TO_FILL" in value:
+                errors.append(f"model_provenance.json row {index} {field} must be filled")
+        trust_remote_code = row.get("trust_remote_code")
+        if not isinstance(trust_remote_code, bool):
+            errors.append(f"model_provenance.json row {index} trust_remote_code must be boolean")
+        local_files_only = row.get("local_files_only")
+        if not isinstance(local_files_only, bool):
+            errors.append(f"model_provenance.json row {index} local_files_only must be boolean")
+        for field in ("model_id", "served_model_id"):
+            value = str(row.get(field, "")).strip()
+            if value:
+                covered.add(value)
+    missing = required_models - covered
+    if missing:
+        errors.append(
+            "model_provenance.json models do not cover profiled/metric models: "
+            + ", ".join(sorted(missing))
+        )
+
+
+def _validate_cross_family_replacement(
+    *,
+    run_dir: Path,
+    control_specs: dict[str, list[dict[str, object]]],
+    raw_rows: list[dict[str, object]],
+    errors: list[str],
+) -> None:
+    cross_models = {
+        str(row.get("model", "")).strip()
+        for row in raw_rows
+        if str(row.get("row_role", "")).strip() == "cross_family_falsification"
+    }
+    replacement_models = {model for model in cross_models if model and model != DEFAULT_CROSS_FAMILY_MODEL}
+    if not replacement_models:
+        return
+    replacement_path = run_dir / REPLACEMENT_METADATA_PATH
+    if not replacement_path.is_file():
+        errors.append(
+            "cross-family replacement requires a filled "
+            f"{REPLACEMENT_METADATA_PATH} copied into packet metadata before profiling"
+        )
+        return
+    text = _read_text(replacement_path)
+    if "TO_FILL" in text or "TEMPLATE_ONLY_NOT_NATIVE_EVIDENCE" in text or SKELETON_TODO_MARKER in text:
+        errors.append(
+            f"{REPLACEMENT_METADATA_PATH} must be filled before a replacement cross-family model is admissible"
+        )
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        errors.append(f"{REPLACEMENT_METADATA_PATH} is invalid: {exc}")
+        return
+    if not isinstance(payload, dict):
+        errors.append(f"{REPLACEMENT_METADATA_PATH} must be a JSON object")
+        return
+    replacement_row = payload.get("replacement_row")
+    if not isinstance(replacement_row, dict):
+        errors.append(f"{REPLACEMENT_METADATA_PATH} must contain replacement_row")
+        return
+    replacement_model = str(replacement_row.get("model", "")).strip()
+    if replacement_model not in replacement_models:
+        errors.append(
+            f"{REPLACEMENT_METADATA_PATH} replacement_row.model must match the "
+            "non-Qwen cross-family model in native_control_matrix/profiler_metrics"
+        )
+    if str(replacement_row.get("row_role", "")).strip() != "cross_family_falsification":
+        errors.append(f"{REPLACEMENT_METADATA_PATH} replacement_row.row_role must be cross_family_falsification")
+    request_shape = replacement_row.get("request_shape")
+    if not isinstance(request_shape, dict):
+        errors.append(f"{REPLACEMENT_METADATA_PATH} replacement_row.request_shape must be an object")
+    elif control_specs.get("cross_family_falsification"):
+        spec_shapes = [
+            spec.get("_request_shape")
+            for spec in control_specs.get("cross_family_falsification", [])
+            if isinstance(spec.get("_request_shape"), dict)
+        ]
+        expected_shape = dict(request_shape)
+        expected_shape.setdefault("dtype", replacement_row.get("served_dtype", ""))
+        if spec_shapes and not any(
+            all(expected_shape.get(key) == spec_shape.get(key) for key in expected_shape)
+            for spec_shape in spec_shapes
+        ):
+            errors.append(
+                f"{REPLACEMENT_METADATA_PATH} replacement_row.request_shape must match native_control_matrix.json"
+            )
 
 
 def _validate_native_control_matrix_rows(
@@ -1294,6 +1453,7 @@ def check_run_artifacts(
             ]
             _validate_reduction_input_manifest(
                 path=run_dir / "metadata/reduction_input_manifest.json",
+                run_dir=run_dir,
                 raw_rows=raw_native_rows,
                 packet_mode=packet_mode,
                 errors=errors,
@@ -1301,6 +1461,12 @@ def check_run_artifacts(
             _validate_native_control_matrix_rows(
                 raw_rows=raw_native_rows,
                 control_specs=control_specs,
+                errors=errors,
+            )
+            _validate_cross_family_replacement(
+                run_dir=run_dir,
+                control_specs=control_specs,
+                raw_rows=raw_native_rows,
                 errors=errors,
             )
             if packet_mode == NO_BOUNDARY_SIGNAL_MODE:
@@ -1439,6 +1605,14 @@ def check_run_artifacts(
         errors.append("client replay model does not match profiler_metrics.json models")
     if architecture_models and metric_models and not metric_models.issubset(architecture_models):
         errors.append("architecture_map.json models do not cover profiler_metrics.json models")
+    required_provenance_models = set(metric_models) | set(client_models)
+    if profile_model:
+        required_provenance_models.add(profile_model)
+    _validate_model_provenance(
+        run_dir / "metadata/model_provenance.json",
+        required_provenance_models,
+        errors,
+    )
 
     analysis_json_path = run_dir / "profiler_analysis_gate.json"
     if analysis_json_path.is_file():
@@ -1504,7 +1678,11 @@ def main() -> None:
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--min-repeated-runs", type=int, default=3)
     parser.add_argument("--min-native-artifact-bytes", type=int, default=MIN_NATIVE_ARTIFACT_BYTES)
-    parser.add_argument("--allow-missing-native-artifacts", action="store_true")
+    parser.add_argument(
+        "--allow-missing-native-artifacts",
+        action="store_true",
+        help="Schema-test-only escape hatch; rejected with --require-full-matrix.",
+    )
     parser.add_argument("--packet-mode", choices=("full", NO_BOUNDARY_SIGNAL_MODE), default="full")
     parser.add_argument(
         "--require-full-matrix",
@@ -1512,6 +1690,11 @@ def main() -> None:
         help="Fail unless primary, same-family control, and cross-family falsification rows are present.",
     )
     args = parser.parse_args()
+    if args.allow_missing_native_artifacts and args.require_full_matrix:
+        parser.error(
+            "--allow-missing-native-artifacts is schema-test-only and cannot be used "
+            "with --require-full-matrix"
+        )
 
     result = check_run_artifacts(
         args.run_dir,

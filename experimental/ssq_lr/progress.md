@@ -1,8 +1,16 @@
 # SSQ-LR Progress
 
+## Current Supersession Note
+
+The current SSQ-LR recipe is stopped by the 2026-05-07 no-retuning S3 transfer
+failure. Older "next gate" entries below are historical. Admissible local work
+is limited to reproducing existing stop packets, documentation/test hardening,
+or writing a new preregistration for a genuinely new rescue rule before any new
+rows are generated.
+
 ## 2026-05-06
 
-Status: **NEW / Mac gates pending**.
+Status: **HISTORICAL / superseded Mac-gate setup**.
 
 Added and ran a deterministic synthetic S1 packet. This has now been upgraded to
 a real-schema rehearsal:
@@ -382,11 +390,12 @@ recipe is `mixed_int3_mxfp4_low_error_25pct` on layers `0,30`; the layer-0
 mixed25 and INT3 follow-ups are post-hoc diagnostics and cannot be converted
 into promotion rows.
 
-Only one bounded Mac rescue is admissible before revival or GPU
-reconsideration: write a new preregistration before running it, freeze a fresh
-held-out prompt file, freeze a single layer-selection rule and recipe-selection
-rule before transfer rows are inspected, keep the `>=4x` counted state-memory
-threshold and the S3 no-retuning transfer contract, include Granite Tiny and
-Granite 350M with at least 12 prompts each, and add verbosity/length drift
-before any GPU handoff. If that rescue fails, SSQ-LR should remain diagnostic
-evidence rather than an active positive-method paper.
+No additional rows under the current recipe are admissible. Only one bounded
+Mac rescue is admissible before revival or GPU reconsideration, and it must be
+a new preregistered branch: write a new preregistration before running it,
+freeze a fresh held-out prompt file, freeze a single layer-selection rule and
+recipe-selection rule before transfer rows are inspected, keep the `>=4x`
+counted state-memory threshold and the S3 no-retuning transfer contract,
+include Granite Tiny and Granite 350M with at least 12 prompts each, and add
+verbosity/length drift before any GPU handoff. If that rescue fails, SSQ-LR
+should remain diagnostic evidence rather than an active positive-method paper.

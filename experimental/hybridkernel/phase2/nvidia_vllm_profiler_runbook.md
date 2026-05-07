@@ -96,6 +96,13 @@ size of 1024 bytes and no skeleton placeholder markers.
 It also fails the packet if `metadata/environment.txt` omits `nvidia-smi`,
 `nsys`, `ncu`, or `python` capture lines.
 
+The generated packet also includes `metadata/model_provenance.json`. Fill it
+before profiling with exact model and tokenizer revisions for every served
+model in the metric rows, including the vLLM served model string, cache source,
+`local_files_only`, and `trust_remote_code` values. The checker rejects a packet
+whose model provenance does not cover the profiler metrics and client replay
+logs.
+
 Record immutable metadata before profiling:
 
 ```bash
@@ -159,11 +166,11 @@ cross-family hybrid row remains audit-only.
 
 Create a reduction input manifest before reducing any timeline windows. This
 file is the row-reduction audit trail: every row in `profiler_metrics.json`
-should be traceable to exact Nsight exports, source time windows, commands, and
-reducer script hashes. If a row is reduced manually, record the manual
-worksheet or notebook path and SHA-256 here as the
-`reduction_script_sha256` value; do not leave analyst-selected windows
-unmanifested.
+should be traceable to exact Nsight exports, source time windows, commands,
+reducer source paths, and reducer source hashes. If a row is reduced manually,
+record the manual worksheet path inside the packet as `reduction_source_path`
+and its SHA-256 as `reduction_script_sha256`; do not leave analyst-selected
+windows unmanifested.
 
 ```bash
 cat > "$HWK_RUN/metadata/reduction_input_manifest.json" <<JSON
@@ -174,6 +181,7 @@ cat > "$HWK_RUN/metadata/reduction_input_manifest.json" <<JSON
       "run_id": "TODO_NATIVE_PROFILE_FILL",
       "row_role": "primary_hybrid",
       "model": "$MODEL",
+      "reduction_source_path": "metadata/reduction_worksheet.tsv",
       "source_nsys_artifact": "nsys/TODO_NATIVE_PROFILE_FILL.sqlite",
       "source_nsys_artifact_sha256": "sha256:TODO_NATIVE_PROFILE_FILL",
       "source_time_window_ms": {"start": "TODO_NATIVE_PROFILE_FILL", "end": "TODO_NATIVE_PROFILE_FILL"},

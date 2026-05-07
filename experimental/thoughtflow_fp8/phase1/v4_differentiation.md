@@ -2,6 +2,13 @@
 
 Date: 2026-05-05
 
+Status: **HISTORICAL PRE-FALSIFICATION SCOPING**. This document records the
+original positive-method target before the current sparse-cache signal family
+was stopped. It is superseded by
+`../phase2/current_decision_manifest_20260506.md` and
+`../paper/reviewer_pack.md`; the current camera-ready contribution is the
+falsification ladder, not a retrofit FP8/phase-retention method.
+
 ## What DeepSeek V4 Does
 
 The April 25, 2026 LMSYS/SGLang post describes DeepSeek V4 as a trained hybrid
@@ -35,9 +42,9 @@ distinction is:
 > retrofit compression policy for existing reasoning models whose attention
 > architecture and weights are fixed.
 
-## What ThoughtFlow Can Still Claim
+## Historical Target Only: What ThoughtFlow Would Have Needed To Claim
 
-If evidence supports it:
+This was the target before the branch was falsified. It is not a current claim:
 
 1. Retrofit: no model pretraining or architecture-specific indexer training.
 2. Bias-controlled retention: explicit anchor/fair-span/phase-transition keep
@@ -54,15 +61,14 @@ If evidence supports it:
 - Novelty from compressed attention alone.
 - Novelty from fusing compression kernels alone.
 
-## Recommended Framing
+## Superseded Recommended Framing
 
-COLM_v3 workshop framing should be:
+This historical framing is superseded by the current falsification-methodology
+framing. The current paper should say:
 
-> Production compressed-attention models such as DeepSeek V4 show where the
-> field is going, but most deployers need training-free compression for already
-> released reasoning models. ThoughtFlow-FP8 studies whether explicit
-> anchor/fair-span/phase-transition retention plus FP8 byte budgeting can close
-> LongFlow's reviewer-identified quality gap while preserving a systems path.
+> ThoughtFlow-FP8 is a preregistered sparse-cache falsification ladder: it
+> shows how attractive retrofit utility signals can pass one frozen surface,
+> fail stricter reproduction, and be stopped before GPU/kernel work.
 
 ## Proceed Gate Against V4
 

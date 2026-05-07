@@ -264,6 +264,10 @@ Historical next Mac-side S2/S3 move, now completed and superseded:
    not lower the `>=4x` threshold or treat native MXFP4 scale packing as free
    metadata without a separate hardware-backed byte-accounting note.
 
+The following commands are archival reproduction commands only. They may
+recreate existing stop packets for audit, but they cannot create promotable
+evidence or justify GPU work under the stopped recipe.
+
 Regenerate it with:
 
 ```bash

@@ -30,6 +30,7 @@ DEFAULT_RUN_ROOT = PHASE2_DIR / "profiler_runs"
 DEFAULT_MODEL = "ibm-granite/granite-4.0-h-tiny"
 DEFAULT_LABEL = "granite_boundary"
 CONTROL_MATRIX_PATH = PHASE2_DIR / "native_control_matrix.json"
+DEFAULT_CROSS_FAMILY_MODEL = "Qwen/Qwen3-Next-80B-A3B-Instruct"
 
 
 def _utc_timestamp() -> str:
@@ -97,7 +98,7 @@ PY
 
 
 def _profile_scope(model: str) -> dict[str, object]:
-    qwen_model = "Qwen/Qwen3-Next-80B-A3B-Instruct"
+    qwen_model = DEFAULT_CROSS_FAMILY_MODEL
     return {
         "profiled_process": "vllm_server",
         "nsys_profiled_process": "vllm_server",
@@ -250,6 +251,7 @@ def _reduction_input_manifest_template(metrics_payload: dict[str, object]) -> di
                 "run_id": row.get("run_id"),
                 "row_role": row.get("row_role"),
                 "model": row.get("model"),
+                "reduction_source_path": "metadata/reduction_worksheet.tsv",
                 "source_nsys_artifact": filled_or_todo(row.get("nsys_artifact")),
                 "source_nsys_artifact_sha256": filled_or_todo(
                     row.get("nsys_artifact_sha256")
@@ -270,6 +272,36 @@ def _reduction_input_manifest_template(metrics_payload: dict[str, object]) -> di
             "profiler_metrics.json."
         ),
         "rows": rows,
+    }
+
+
+def _model_provenance_template(model: str) -> dict[str, object]:
+    return {
+        "provenance_version": "hybridkernel_model_provenance_v1",
+        "description": (
+            f"{SKELETON_TODO_MARKER}: replace every revision/cache field with "
+            "resolved model and tokenizer snapshot provenance before profiling."
+        ),
+        "models": [
+            {
+                "model_id": model,
+                "served_model_id": model,
+                "model_revision": SKELETON_TODO_MARKER,
+                "tokenizer_revision": SKELETON_TODO_MARKER,
+                "cache_source": SKELETON_TODO_MARKER,
+                "local_files_only": False,
+                "trust_remote_code": True,
+            },
+            {
+                "model_id": DEFAULT_CROSS_FAMILY_MODEL,
+                "served_model_id": DEFAULT_CROSS_FAMILY_MODEL,
+                "model_revision": SKELETON_TODO_MARKER,
+                "tokenizer_revision": SKELETON_TODO_MARKER,
+                "cache_source": SKELETON_TODO_MARKER,
+                "local_files_only": False,
+                "trust_remote_code": True,
+            },
+        ],
     }
 
 
@@ -321,6 +353,14 @@ def create_run_packet(
     _write_new(
         output_dir / "metadata/native_control_matrix.json",
         CONTROL_MATRIX_PATH.read_text(encoding="utf-8"),
+    )
+    _write_new(
+        output_dir / "metadata/model_provenance.json",
+        json.dumps(_model_provenance_template(model), indent=2) + "\n",
+    )
+    _write_new(
+        output_dir / "metadata/reduction_worksheet.tsv",
+        (PHASE2_DIR / "reduction_worksheet_template.tsv").read_text(encoding="utf-8"),
     )
     _write_new(
         output_dir / "logs/README.md",

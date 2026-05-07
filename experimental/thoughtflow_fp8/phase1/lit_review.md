@@ -138,6 +138,11 @@ enabler inside a retention policy, and must test cumulative-error effects.
 
 ## Quick COLM_v3-Useful Artifact
 
+Status: **HISTORICAL PRE-FALSIFICATION SCOPING**. The checklist below is
+preserved as reviewer context for why the branch needed strict gates. It is not
+the current paper framing; the current contribution is the falsification ladder
+documented in `../phase2/current_decision_manifest_20260506.md`.
+
 Yes: a reviewer-grounded failure matrix emerged. The most useful systems artifact
 is not an implementation yet; it is a concrete design checklist:
 
@@ -149,11 +154,13 @@ is not an implementation yet; it is a concrete design checklist:
 5. Quantify numerical error from FP8 and LongFlow-like approximations separately.
 6. Test recurrence and phase-transition tokens, not just first/recent tokens.
 
-## Recommendation
+## Superseded Recommendation
 
-Pivot, not kill. Do not proceed as "LongFlow + FP8 + phase awareness." The field
-is too crowded and ThinKV already claims thought-adaptive quantization/eviction.
-Proceed only if the project is reframed as:
+Historical recommendation before the RDU/PSI/VWAC stop ladder: pivot, not kill.
+Do not proceed as "LongFlow + FP8 + phase awareness." The field is too crowded
+and ThinKV already claims thought-adaptive quantization/eviction. That positive
+method branch is now stopped; the current camera-ready contribution is the
+falsification ladder rather than:
 
 > Retrofit, bias-controlled reasoning KV compression for existing models:
 > FP8 byte budget plus explicit anchor/fair-span/phase-transition protection,

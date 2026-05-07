@@ -281,3 +281,6 @@ ratio `1.037` and selected-direction support `0.5`. HORN must not be promoted
 to GPU as a standalone branch. Keep it as negative/control evidence for
 SSQ-LR/HBSM unless a future full H2/H3 reopening has a new preregistered
 reason.
+Allowed Mac-local work is limited to revalidating the existing H1a/H2 stop
+packets, docs/tests/runbook hygiene, or writing a new preregistered reopening.
+Do not add exploratory H2 rows under the current demoted scope.

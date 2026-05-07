@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 from experimental.hybridkernel.phase2.analyze_profiler_metrics import analyze, _write_markdown
@@ -9,6 +11,7 @@ from experimental.hybridkernel.phase2.check_profiler_run_artifacts import (
     READOUT_MARKERS,
     SKELETON_TODO_MARKER,
     check_run_artifacts,
+    _validate_cross_family_replacement,
 )
 from experimental.hybridkernel.phase2.create_native_run_packet import create_run_packet
 
@@ -33,13 +36,14 @@ def _write_reduction_manifest(run_dir: Path, payload: dict[str, object]) -> None
                 "run_id": row["run_id"],
                 "row_role": row["row_role"],
                 "model": row["model"],
+                "reduction_source_path": "metadata/reduction_worksheet.tsv",
                 "source_nsys_artifact": row["nsys_artifact"],
                 "source_nsys_artifact_sha256": row["nsys_artifact_sha256"],
                 "source_time_window_ms": row["time_window_ms"],
                 "source_ncu_artifact": row["ncu_artifact"],
                 "source_ncu_artifact_sha256": row["ncu_artifact_sha256"],
                 "reduction_command": row["reduction_command"],
-                "reduction_script_sha256": "sha256:" + ("1" * 64),
+                "reduction_script_sha256": _sha256(run_dir / "metadata/reduction_worksheet.tsv"),
                 "reduction_notes": row["reduction_notes"],
             }
         )
@@ -67,8 +71,10 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
         "metadata/environment.txt",
         "metadata/profile_scope.json",
         "metadata/architecture_map.json",
+        "metadata/model_provenance.json",
         "metadata/native_control_matrix.json",
         "metadata/reduction_input_manifest.json",
+        "metadata/reduction_worksheet.tsv",
         "logs/README.md",
         "nsys/README.md",
         "ncu/README.md",
@@ -152,6 +158,13 @@ def test_create_native_run_packet_writes_required_skeleton(tmp_path: Path) -> No
         "same_family_control",
         "cross_family_falsification",
     }
+    model_provenance = json.loads((run_dir / "metadata/model_provenance.json").read_text())
+    assert model_provenance["provenance_version"] == "hybridkernel_model_provenance_v1"
+    assert {row["model_id"] for row in model_provenance["models"]} == {
+        "ibm-granite/granite-4.0-h-tiny",
+        "Qwen/Qwen3-Next-80B-A3B-Instruct",
+    }
+    assert SKELETON_TODO_MARKER in (run_dir / "metadata/reduction_worksheet.tsv").read_text()
 
 
 def test_skeleton_is_not_mistaken_for_complete_native_evidence(tmp_path: Path) -> None:
@@ -165,7 +178,9 @@ def test_skeleton_is_not_mistaken_for_complete_native_evidence(tmp_path: Path) -
     assert any("no valid native rows" in error for error in result["errors"])
     assert any(SKELETON_TODO_MARKER in (run_dir / path).read_text() for path in [
         "metadata/environment.txt",
+        "metadata/model_provenance.json",
         "metadata/reduction_input_manifest.json",
+        "metadata/reduction_worksheet.tsv",
         "readout.md",
         "profiler_metrics.json",
     ])
@@ -204,6 +219,41 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
     cross_family = "Qwen/Qwen3-Next-80B-A3B-Instruct"
     (run_dir / "metadata/environment.txt").write_text(
         "nvidia-smi\nnsys version\nncu version\npython -VV\n", encoding="utf-8"
+    )
+    (run_dir / "metadata/model_provenance.json").write_text(
+        json.dumps(
+            {
+                "provenance_version": "hybridkernel_model_provenance_v1",
+                "models": [
+                    {
+                        "model_id": model,
+                        "served_model_id": model,
+                        "model_revision": "test-granite-commit",
+                        "tokenizer_revision": "test-granite-tokenizer-commit",
+                        "cache_source": "synthetic test fixture",
+                        "local_files_only": True,
+                        "trust_remote_code": True,
+                    },
+                    {
+                        "model_id": cross_family,
+                        "served_model_id": cross_family,
+                        "model_revision": "test-qwen-commit",
+                        "tokenizer_revision": "test-qwen-tokenizer-commit",
+                        "cache_source": "synthetic test fixture",
+                        "local_files_only": True,
+                        "trust_remote_code": True,
+                    },
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (run_dir / "metadata/reduction_worksheet.tsv").write_text(
+        "run_id\trow_role\tmodel\tnotes\nsynthetic\tprimary_hybrid\t"
+        f"{model}\tfilled synthetic worksheet\n",
+        encoding="utf-8",
     )
     (run_dir / "logs/nsys_server_b1.log").write_text(
         "nsys vllm server cuda profiler log\n", encoding="utf-8"
@@ -354,3 +404,48 @@ def test_generated_packet_can_be_filled_into_complete_promotable_shape(tmp_path:
     assert result["status"] == "PASS"
     assert result["metrics_status"].startswith("PROMOTE")
     assert result["metrics_rows"] == 9
+
+
+def test_generated_packet_rejects_replacement_without_preregistered_metadata(tmp_path: Path) -> None:
+    run_dir = create_run_packet(
+        output_dir=tmp_path / "packet",
+        model="ibm-granite/granite-4.0-h-tiny",
+    )
+    errors: list[str] = []
+
+    _validate_cross_family_replacement(
+        run_dir=run_dir,
+        control_specs={},
+        raw_rows=[
+            {
+                "row_role": "cross_family_falsification",
+                "model": "replacement/hybrid-small",
+            }
+        ],
+        errors=errors,
+    )
+
+    assert any("cross-family replacement requires" in error for error in errors)
+
+
+def test_checker_cli_rejects_schema_escape_with_full_matrix(tmp_path: Path) -> None:
+    run_dir = create_run_packet(output_dir=tmp_path / "packet")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "experimental.hybridkernel.phase2.check_profiler_run_artifacts",
+            "--run-dir",
+            str(run_dir),
+            "--allow-missing-native-artifacts",
+            "--require-full-matrix",
+        ],
+        cwd=Path(__file__).resolve().parents[4],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "schema-test-only" in result.stderr

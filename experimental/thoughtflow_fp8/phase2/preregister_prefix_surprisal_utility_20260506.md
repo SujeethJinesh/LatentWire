@@ -1,6 +1,8 @@
 # ThoughtFlow-FP8 Pre-Registration: Prefix-Surprisal Utility
 
-Status: **PRE-REGISTERED BEFORE ONE-SHOT FRESH-SURFACE RUN.**
+Status: **SUPERSEDED / KILLED AFTER ONE-SHOT FRESH-SURFACE RUN**. This was
+pre-registered before measurement and is preserved for audit only; the
+`psi_topk` branch failed its fresh-surface gate and is not a live utility.
 
 This artifact defines one successor utility signal after the `rdu_topk` branch was
 demoted. It is intentionally different from recurrence-distance utility and from
@@ -100,4 +102,3 @@ If `psi_topk` does not clear the promotion rule in this one run, this specific
 signal is ruled out for the current Mac-local sparse-cache harness. Do not tune
 surprisal normalization, add recency, mix with RDU, or switch trace inputs after
 seeing the result.
-

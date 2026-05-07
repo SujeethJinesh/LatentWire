@@ -17,8 +17,8 @@ Status: diagnostic only; not a positive-method packet.
 | File | Role | SHA-256 |
 |---|---|---|
 | `preregister_recurrence_distance_utility_20260506.md` | one_shot_method_preregistration | `sha256:676d5239dddf00668368161df31f90b9a2a91ee2f3b47da378bd65887fd4d832` |
-| `preregister_prefix_surprisal_utility_20260506.md` | fresh_successor_preregistration | `sha256:04da2bd048c18b1656a7fcfacaf5ed2f07a6c18c16610a4993224a37a6f74d32` |
-| `preregister_value_weighted_attention_contribution_20260506.md` | fresh_successor_preregistration | `sha256:1574c8531664316124b17cd016d47a2a5e4dd78cf39a94981f25d8f1bc1c5339` |
+| `preregister_prefix_surprisal_utility_20260506.md` | fresh_successor_preregistration | `sha256:cd8a6a108636bfaf427d3e71752b140f559c7438eb51930abe1a8aa82feeeec5` |
+| `preregister_value_weighted_attention_contribution_20260506.md` | fresh_successor_preregistration | `sha256:a701495b06ecbb9d0133f106539a59f4932e7c81a6e25888d6165e36714c2204` |
 
 ## Interpretation
 

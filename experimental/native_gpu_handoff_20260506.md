@@ -34,12 +34,14 @@ Minimum admissible packet:
   `python` lines;
 - copied `metadata/native_control_matrix.json` from
   `experimental/hybridkernel/phase2/native_control_matrix.json`;
+- filled `metadata/model_provenance.json` covering every served metric model
+  and tokenizer revision;
 - at least three distinct primary metric rows;
 - at least three same-shape same-family control rows;
 - at least three same-shape cross-family falsification rows;
 - a completed `metadata/reduction_input_manifest.json` tying each metric row to
   source Nsight artifacts, time windows, reducer command, and reducer script
-  SHA-256;
+  or worksheet path plus SHA-256;
 - explicit `run_id`, dtype, CUDA graph state, batch shape, request count, and
   matched control label in every row;
 - local analyzer and artifact checker both pass.
@@ -155,7 +157,7 @@ Latest recorded result:
 `experimental/local_readiness_recheck_20260507.md`.
 
 ```text
-284 passed, 1 skipped, 2 warnings in 8.61s
+286 passed, 1 skipped, 2 warnings in 6.97s
 ```
 
 Before interpreting any new native packet, rerun the owned Mac suite:

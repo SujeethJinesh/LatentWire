@@ -49,7 +49,8 @@ run, the packet remains audit-only.
 
 ## Completion Estimate And Roadmap
 
-Estimated workshop-paper completion: **70%**.
+Estimated workshop-paper completion: **70% if the GPU gate passes; 0% as a
+local-only systems result**.
 
 What is already complete:
 
@@ -68,6 +69,20 @@ What remains:
 Do not add more Mac kernels or paper claims before the native packet exists.
 The consumed Mac-only implementation lane is explicitly marked in
 `KILLED_mac_only_kernel_iteration/`.
+
+### Final Mac Preflight Before GPU
+
+Run this from the repository root immediately before copying the packet
+runbook to a GPU node:
+
+```bash
+TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
+  ./venv_arm64/bin/python -m pytest \
+  experimental/hybridkernel/phase0/tests \
+  experimental/hybridkernel/phase2/tests \
+  experimental/hybridkernel/phase3/tests \
+  experimental/hybridkernel/phase4/tests -q -rs
+```
 
 ### Optional Triton CPU Backend Check
 
@@ -261,6 +276,7 @@ Expected final packet:
 - `metadata/environment.txt`
 - `metadata/profile_scope.json`
 - `metadata/architecture_map.json`
+- `metadata/model_provenance.json`
 - `metadata/native_control_matrix.json`
 - `metadata/reduction_input_manifest.json`
 - `metadata/reduction_worksheet.tsv` or equivalent filled row worksheet

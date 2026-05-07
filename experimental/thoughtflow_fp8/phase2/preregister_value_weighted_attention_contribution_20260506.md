@@ -1,6 +1,8 @@
 # ThoughtFlow-FP8 Pre-Registration: Value-Weighted Attention Contribution
 
-Status: **PRE-REGISTERED BEFORE ONE-SHOT FRESH-SURFACE RUN.**
+Status: **SUPERSEDED / KILLED AFTER ONE-SHOT FRESH-SURFACE RUN**. This was
+pre-registered before measurement and is preserved for audit only; the
+`vwac_topk` branch failed its fresh-surface gate and is not a live utility.
 
 This artifact defines one successor utility after the stopped `rdu_topk` and
 `psi_topk` branches. It is intentionally different from RDU lag-bucket
@@ -88,4 +90,3 @@ Promote `vwac_topk` only if all conditions hold on the one-shot fresh surface:
 If `vwac_topk` does not clear the promotion rule in this one run, this exact
 signal is ruled out for the current Mac-local sparse-cache harness. Do not tune
 the formula or rerun it on a different surface after seeing the result.
-

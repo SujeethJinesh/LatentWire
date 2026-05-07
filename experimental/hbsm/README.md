@@ -208,7 +208,9 @@ Validate the first real B1 packet with:
   --mode real --project hbsm
 ```
 
-Validate later B2/B3 follow-up packets only after real B1 promotes:
+Validate later B2/B3 follow-up packets only after real B1 promotes. Under the
+current demoted status, resource-limited B2/B3 scouts are not admissible unless
+they are part of a new preregistered narrower mechanism:
 
 ```bash
 ./venv_arm64/bin/python -m experimental.shared.followup_gate_contracts \

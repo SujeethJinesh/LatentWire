@@ -9,9 +9,9 @@ control/negative evidence and should not be GPU-promoted unless a new
 preregistered full H2/H3 reopening explains why the current near-null,
 direction-flipping scout should not generalize.
 
-## 2026-05-06
+## 2026-05-06 Historical Setup Entry
 
-Status: **NEW / Mac gates pending**.
+Status: **HISTORICAL / superseded Mac-gate setup**.
 
 Added and ran a deterministic synthetic H1 packet. It has now been upgraded to
 a non-promoting real-schema H1a rehearsal:

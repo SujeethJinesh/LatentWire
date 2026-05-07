@@ -9,9 +9,9 @@ GPU validation unless a narrower mechanism hypothesis is preregistered first;
 otherwise HBSM remains demoted/control evidence and any useful mechanism claim
 should be folded into HORN/SSQ-LR context.
 
-## 2026-05-06
+## 2026-05-06 Historical Setup Entry
 
-Status: **NEW / wounded novelty / Mac gates pending**.
+Status: **HISTORICAL / superseded Mac-gate setup**.
 
 Added and ran a deterministic synthetic B1 packet. It has now been upgraded
 to a real-schema rehearsal:

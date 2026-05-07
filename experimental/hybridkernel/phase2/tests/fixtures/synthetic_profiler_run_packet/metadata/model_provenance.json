@@ -1,0 +1,14 @@
+{
+  "provenance_version": "hybridkernel_model_provenance_v1",
+  "models": [
+    {
+      "model_id": "synthetic-granite-fixture",
+      "served_model_id": "synthetic-granite-fixture",
+      "model_revision": "synthetic-model-revision",
+      "tokenizer_revision": "synthetic-tokenizer-revision",
+      "cache_source": "checked-in synthetic fixture",
+      "local_files_only": true,
+      "trust_remote_code": false
+    }
+  ]
+}
