@@ -1,0 +1,22 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_SSC_PHASE0_NO_CODEC_GAIN",
+  "reasons": [
+    "shape-codec kill: mean relative NMSE reduction 0.07133119, CI low 0.06882071, method_non_worse_each_position=True"
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "raw_state_manifest.json",
+    "codec_metrics.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "experimental/ssm_shape_codec/phase0/results/ssc_phase0_20260508T173705Z",
+  "schema_version": "ssc_phase0_v1_artifact_check"
+}

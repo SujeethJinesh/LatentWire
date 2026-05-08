@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "experimental/ssm_shape_codec/phase0/run_ssc_phase0.py"
+  ],
+  "branch": "ssm_shape_codec",
+  "created_at_utc": "2026-05-08T17:39:37Z",
+  "cwd": "/workspace/LatentWire",
+  "generation": {
+    "do_sample": false,
+    "local_files_only": true,
+    "manual_cache_decode": true,
+    "max_new_tokens": 10000,
+    "num_beams": 1
+  },
+  "positions": [
+    100,
+    10000
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/ssm_shape_codec/phase0/results/ssc_phase0_20260508T173705Z",
+  "schema_version": "ssc_phase0_v1_command"
+}

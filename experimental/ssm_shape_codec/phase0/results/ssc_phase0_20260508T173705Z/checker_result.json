@@ -1,0 +1,36 @@
+{
+  "artifact_complete": true,
+  "bootstrap_ci95": {
+    "ci95_high": 0.073901076081768,
+    "ci95_low": 0.06882070525106689
+  },
+  "decision": "KILL_SSC_PHASE0_NO_CODEC_GAIN",
+  "mean_relative_nmse_reduction": 0.07133119147037506,
+  "position_summaries": {
+    "100": {
+      "mean_baseline_nmse": 0.6804698470428034,
+      "mean_method_nmse": 0.6095295439439791,
+      "mean_relative_nmse_reduction": 0.09574283944620796,
+      "method_non_worse": true
+    },
+    "10000": {
+      "mean_baseline_nmse": 0.7150237249831358,
+      "mean_method_nmse": 0.6783487142788039,
+      "mean_relative_nmse_reduction": 0.04691954349454216,
+      "method_non_worse": true
+    }
+  },
+  "reasons": [
+    "shape-codec kill: mean relative NMSE reduction 0.07133119, CI low 0.06882071, method_non_worse_each_position=True"
+  ],
+  "run_dir": "experimental/ssm_shape_codec/phase0/results/ssc_phase0_20260508T173705Z",
+  "thresholds": {
+    "bootstrap_ci95_low_gt": 0.05,
+    "bootstrap_samples": 1000,
+    "bootstrap_seed": 20260508,
+    "codebook_size": 16,
+    "mean_relative_nmse_reduction_min": 0.1,
+    "normalization_epsilon": 1e-12,
+    "position_non_worse_required": true
+  }
+}
