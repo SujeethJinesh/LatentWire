@@ -25,12 +25,14 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 OUTLIER_RESULTS_DIR = ROOT / "experimental/outlier_migrate/phase0/results"
 RM_RESULTS_DIR = ROOT / "experimental/residual_migration/phase0/results"
+SSML_RESULTS_DIR = ROOT / "experimental/ssm_lifecycle/phase0/results"
 DEFAULT_PROMPT_FILE = ROOT / "experimental/shared/prompts/aime_2025_indices_0_11.jsonl"
 DEFAULT_MODEL_ID = "ibm-granite/granite-4.0-h-tiny"
 DEFAULT_POSITIONS = (100, 500, 1000, 5000, 10000)
 DEFAULT_SEED = 20260508
 SCHEMA_VERSION = "om_phase0_v1"
 RM_SCHEMA_VERSION = "rm_phase0_v1"
+SSML_SCHEMA_VERSION = "ssml_phase0_v1"
 RM_DEFAULT_MAX_NEW_TOKENS = 2048
 RM_CLIP_QUANTILE = 0.95
 EXPECTED_PROMPT_SOURCE_DATASET = "opencompass/AIME2025"
@@ -49,6 +51,55 @@ RM_THRESHOLDS = {
     "bootstrap_samples": 1000,
     "bootstrap_ci": 0.95,
 }
+SSML_THRESHOLDS = {
+    "ks_alpha": 0.01,
+    "drift_ratio_min": 2.0,
+    "layer_pass_fraction_min": 0.5,
+    "trace_pvalue_aggregation": "fisher",
+}
+GRANITE_TINY_LAYER_TYPES = (
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "attention",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "attention",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "attention",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "attention",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+)
+GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH = (48, 64, 128)
 
 
 class Tee:
@@ -123,7 +174,7 @@ def parse_positions(text: str) -> tuple[int, ...]:
         positions.append(value)
     if tuple(positions) != DEFAULT_POSITIONS:
         raise argparse.ArgumentTypeError(
-            f"OutlierMigrate Phase 0 requires positions {DEFAULT_POSITIONS}; got {tuple(positions)}"
+            f"shared Phase 0 position-gated branches require positions {DEFAULT_POSITIONS}; got {tuple(positions)}"
         )
     return tuple(positions)
 
@@ -246,7 +297,7 @@ def build_environment(*, schema_version: str = SCHEMA_VERSION) -> dict[str, Any]
         "torch": torch_info,
         "packages": {
             name: package_version(name)
-            for name in ["torch", "transformers", "accelerate", "huggingface_hub", "numpy"]
+            for name in ["torch", "transformers", "accelerate", "huggingface_hub", "numpy", "scipy"]
         },
         "commands": {
             "nvidia_smi": command_output(["nvidia-smi"], timeout=30),
@@ -916,6 +967,471 @@ def compute_residual_migration_metrics(
     }
 
 
+def is_mamba_layer_type(layer_type: Any) -> bool:
+    text = str(layer_type).lower()
+    return "mamba" in text or "ssm" in text
+
+
+def configured_layer_types(model: Any) -> list[Any]:
+    config = getattr(model, "config", None)
+    for attr in ["layer_types", "layers_block_type"]:
+        value = getattr(config, attr, None)
+        if isinstance(value, (list, tuple)) and value:
+            return list(value)
+    return []
+
+
+def infer_ssml_layers(model: Any, ssm_states: Any | None = None) -> tuple[list[dict[str, Any]], str]:
+    layer_types = configured_layer_types(model)
+    source = "model.config.layer_types_or_layers_block_type"
+    if layer_types:
+        normalized = tuple(str(layer_type).lower() for layer_type in layer_types)
+        if normalized != GRANITE_TINY_LAYER_TYPES:
+            raise RuntimeError(
+                "Granite Tiny layer layout drifted from the preregistered SSM-State Lifecycle gate: "
+                f"expected {GRANITE_TINY_LAYER_TYPES}, got {normalized}"
+            )
+        return (
+            [
+                {
+                    "layer_index": index,
+                    "layer_type": str(layer_type).lower(),
+                    "is_mamba": is_mamba_layer_type(layer_type),
+                }
+                for index, layer_type in enumerate(layer_types)
+            ],
+            source,
+        )
+    if isinstance(ssm_states, (list, tuple)) and ssm_states:
+        source = "past_key_values.ssm_states_nonempty_inference"
+        layers: list[dict[str, Any]] = []
+        for index, state in enumerate(ssm_states):
+            shape = list(getattr(state, "shape", []))
+            is_mamba = bool(shape) and all(int(dim) > 0 for dim in shape)
+            layers.append(
+                {
+                    "layer_index": index,
+                    "layer_type": "mamba_inferred_from_nonempty_ssm_state" if is_mamba else "attention_or_empty",
+                    "is_mamba": is_mamba,
+                }
+            )
+        return layers, source
+    raise RuntimeError("could not infer Granite hybrid layer types for SSM-state capture")
+
+
+def extract_ssm_state_sequence(past_key_values: Any) -> tuple[list[Any], str]:
+    if hasattr(past_key_values, "ssm_states"):
+        states = list(getattr(past_key_values, "ssm_states"))
+        return states, "past_key_values.ssm_states"
+    layers = getattr(past_key_values, "layers", None)
+    if isinstance(layers, (list, tuple)):
+        states: list[Any] = []
+        for layer in layers:
+            if hasattr(layer, "ssm_states"):
+                states.append(getattr(layer, "ssm_states"))
+            elif hasattr(layer, "recurrent_states"):
+                states.append(getattr(layer, "recurrent_states"))
+            else:
+                states.append(None)
+        return states, "past_key_values.layers.[ssm_states|recurrent_states]"
+    raise RuntimeError("model cache did not expose SSM states through a supported cache layout")
+
+
+def npz_key(prompt_index: int, decode_position: int) -> str:
+    return f"p{prompt_index:03d}_pos{decode_position:05d}"
+
+
+def capture_ssm_states(
+    *,
+    model: Any,
+    tokenizer: Any,
+    device: Any,
+    prompts: list[dict[str, Any]],
+    positions: tuple[int, ...],
+    max_new_tokens: int,
+    batch_size: int,
+    states_dir: Path,
+    run_events_path: Path,
+) -> dict[str, Any]:
+    import numpy as np
+    import torch
+
+    states_dir.mkdir(parents=True, exist_ok=True)
+    eos_token_id = getattr(tokenizer, "eos_token_id", None)
+    layer_manifest: list[dict[str, Any]] | None = None
+    layer_source = ""
+    cache_state_source = ""
+    arrays_by_layer: dict[int, dict[str, Any]] = defaultdict(dict)
+    prompt_events: list[dict[str, Any]] = []
+    capture_records: list[dict[str, Any]] = []
+    observed_shapes: dict[int, list[int]] = {}
+
+    with torch.inference_mode():
+        for start in range(0, len(prompts), batch_size):
+            batch = prompts[start : start + batch_size]
+            batch_indices = [int(item["index"]) for item in batch]
+            texts = [make_prompt_text(str(item["prompt"])) for item in batch]
+            encoded = tokenizer(texts, padding=True, return_tensors="pt")
+            input_ids = encoded["input_ids"].to(device)
+            attention_mask = encoded["attention_mask"].to(device)
+            cache_position = torch.arange(input_ids.shape[1], device=device)
+            model_inputs = model.prepare_inputs_for_generation(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                cache_position=cache_position,
+                use_cache=True,
+            )
+            outputs = model(**model_inputs)
+            past_key_values = getattr(outputs, "past_key_values", None)
+            if past_key_values is None:
+                raise RuntimeError("model did not expose past_key_values")
+            ssm_states, current_cache_source = extract_ssm_state_sequence(past_key_values)
+            cache_state_source = cache_state_source or current_cache_source
+            if layer_manifest is None:
+                layer_manifest, layer_source = infer_ssml_layers(model, ssm_states)
+                if len(ssm_states) != len(layer_manifest):
+                    raise RuntimeError(
+                        f"SSM cache layer count {len(ssm_states)} does not match Granite layer manifest "
+                        f"{len(layer_manifest)}"
+                    )
+            next_token = torch.argmax(outputs.logits[:, -1, :], dim=-1)
+            eos_first_seen: dict[int, int | None] = {index: None for index in batch_indices}
+
+            for decode_position in range(1, max_new_tokens + 1):
+                attention_mask = torch.cat(
+                    [
+                        attention_mask,
+                        torch.ones((attention_mask.shape[0], 1), device=device, dtype=attention_mask.dtype),
+                    ],
+                    dim=1,
+                )
+                cache_position = torch.tensor([attention_mask.shape[1] - 1], device=device, dtype=torch.long)
+                model_inputs = model.prepare_inputs_for_generation(
+                    input_ids=next_token[:, None],
+                    attention_mask=attention_mask,
+                    past_key_values=past_key_values,
+                    cache_position=cache_position,
+                    use_cache=True,
+                )
+                outputs = model(**model_inputs)
+                past_key_values = getattr(outputs, "past_key_values", None)
+                if past_key_values is None:
+                    raise RuntimeError(f"model dropped past_key_values at decode position {decode_position}")
+                ssm_states, current_cache_source = extract_ssm_state_sequence(past_key_values)
+                if current_cache_source != cache_state_source:
+                    raise RuntimeError(
+                        f"model cache SSM-state source changed from {cache_state_source} "
+                        f"to {current_cache_source}"
+                    )
+                if decode_position in positions:
+                    if len(ssm_states) != len(layer_manifest):
+                        raise RuntimeError(
+                            f"SSM cache layer count {len(ssm_states)} does not match manifest {len(layer_manifest)}"
+                        )
+                    for layer in layer_manifest:
+                        layer_index = int(layer["layer_index"])
+                        state = ssm_states[layer_index]
+                        shape = list(getattr(state, "shape", []))
+                        layer["observed_cache_state_shape"] = shape
+                        if not bool(layer["is_mamba"]):
+                            continue
+                        if not torch.is_tensor(state) or state.numel() == 0:
+                            raise RuntimeError(f"Mamba layer {layer_index} has empty SSM state at {decode_position}")
+                        if state.shape[0] != len(batch_indices):
+                            raise RuntimeError(
+                                f"Mamba layer {layer_index} state batch dimension {state.shape[0]} "
+                                f"does not match prompt batch size {len(batch_indices)}"
+                            )
+                        if tuple(int(dim) for dim in state.shape[1:]) != GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH:
+                            raise RuntimeError(
+                                f"Mamba layer {layer_index} state shape without batch {tuple(state.shape[1:])} "
+                                f"does not match expected Granite Tiny SSM shape "
+                                f"{GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH}"
+                            )
+                        cpu_state = state.detach().to(torch.float32).cpu()
+                        observed_shapes.setdefault(layer_index, list(cpu_state.shape[1:]))
+                        for batch_offset, prompt_index in enumerate(batch_indices):
+                            key = npz_key(prompt_index, decode_position)
+                            arrays_by_layer[layer_index][key] = cpu_state[batch_offset].numpy()
+                            capture_records.append(
+                                {
+                                    "prompt_index": prompt_index,
+                                    "layer_index": layer_index,
+                                    "decode_position": decode_position,
+                                    "artifact_key": key,
+                                }
+                            )
+                if eos_token_id is not None:
+                    for batch_offset, token in enumerate(next_token.tolist()):
+                        prompt_index = batch_indices[batch_offset]
+                        if int(token) == int(eos_token_id) and eos_first_seen[prompt_index] is None:
+                            eos_first_seen[prompt_index] = decode_position
+                next_token = torch.argmax(outputs.logits[:, -1, :], dim=-1)
+
+            prompt_events.extend(
+                {
+                    "prompt_index": index,
+                    "prompt_id": batch[offset]["prompt_id"],
+                    "input_token_count": int(encoded["attention_mask"][offset].sum().item()),
+                    "first_eos_decode_position": eos_first_seen[index],
+                }
+                for offset, index in enumerate(batch_indices)
+            )
+            with run_events_path.open("a", encoding="utf-8") as event_handle:
+                event_handle.write(
+                    json.dumps(
+                        {
+                            "created_at_utc": utc_now(),
+                            "event": "completed_ssm_prompt_batch",
+                            "prompt_indices": batch_indices,
+                            "max_new_tokens": max_new_tokens,
+                        },
+                        sort_keys=True,
+                    )
+                    + "\n"
+                )
+
+    if layer_manifest is None:
+        raise RuntimeError("no prompts were available for SSM-state capture")
+    mamba_layers = [layer for layer in layer_manifest if bool(layer["is_mamba"])]
+    artifacts: list[dict[str, Any]] = []
+    for layer in mamba_layers:
+        layer_index = int(layer["layer_index"])
+        rel = Path("ssm_states") / f"layer_{layer_index:03d}.npz"
+        path = states_dir / rel.name
+        np.savez_compressed(path, **arrays_by_layer[layer_index])
+        layer["artifact"] = str(rel)
+        layer["state_shape_without_batch"] = observed_shapes.get(layer_index)
+        layer["record_count"] = len(arrays_by_layer[layer_index])
+        layer["artifact_sha256"] = file_sha256(path)
+        layer["artifact_bytes"] = path.stat().st_size
+        artifacts.append(
+            {
+                "layer_index": layer_index,
+                "path": str(rel),
+                "bytes": path.stat().st_size,
+                "sha256": file_sha256(path),
+            }
+        )
+
+    return {
+        "schema_version": f"{SSML_SCHEMA_VERSION}_ssm_state_manifest",
+        "created_at_utc": utc_now(),
+        "artifact_format": "numpy_npz_compressed_per_mamba_layer",
+        "artifact_key_format": "p{prompt_index:03d}_pos{decode_position:05d}",
+        "trace_count": len(prompts),
+        "positions": list(positions),
+        "layer_count": len(layer_manifest),
+        "mamba_layer_count": len(mamba_layers),
+        "layer_type_source": layer_source,
+        "cache_state_source": cache_state_source,
+        "layers": layer_manifest,
+        "capture_record_count": len(capture_records),
+        "expected_capture_record_count": len(prompts) * len(mamba_layers) * len(positions),
+        "artifacts": artifacts,
+        "prompt_events": prompt_events,
+        "capture_semantics": {
+            "cache": "SSM cache states after each manual greedy decode model step",
+            "attention_policy": "attention/empty cache layers are recorded in the layer manifest but excluded from state artifacts and metrics",
+            "decode_position_basis": "generated-token count after prompt; position 100 is the 100th generated token",
+            "eos_policy": "continue decoding until max_new_tokens so every preregistered position is observable",
+        },
+    }
+
+
+def compute_ssml_metrics_from_artifacts(run_dir: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    import numpy as np
+    from scipy.stats import combine_pvalues, ks_2samp
+
+    eps = 1e-12
+    prompts = range(int(manifest["trace_count"]))
+    mamba_layers = [layer for layer in manifest["layers"] if bool(layer.get("is_mamba"))]
+    layer_metrics: list[dict[str, Any]] = []
+    for layer in mamba_layers:
+        layer_index = int(layer["layer_index"])
+        artifact = run_dir / str(layer["artifact"])
+        trace_metrics: list[dict[str, Any]] = []
+        with np.load(artifact) as data:
+            for prompt_index in prompts:
+                base = data[npz_key(prompt_index, DEFAULT_POSITIONS[0])].reshape(-1)
+                final = data[npz_key(prompt_index, DEFAULT_POSITIONS[-1])].reshape(-1)
+                ks = ks_2samp(base, final)
+                base_abs = float(np.mean(np.abs(base)))
+                final_abs = float(np.mean(np.abs(final)))
+                trace_metrics.append(
+                    {
+                        "prompt_index": prompt_index,
+                        "ks_statistic": float(ks.statistic),
+                        "ks_pvalue": float(ks.pvalue),
+                        "mean_abs_state_100": base_abs,
+                        "mean_abs_state_10000": final_abs,
+                        "drift_ratio": float(final_abs / max(base_abs, eps)),
+                    }
+                )
+        combined = combine_pvalues(
+            [float(row["ks_pvalue"]) for row in trace_metrics],
+            method=SSML_THRESHOLDS["trace_pvalue_aggregation"],
+        )
+        drift_values = sorted(float(row["drift_ratio"]) for row in trace_metrics)
+        mid = len(drift_values) // 2
+        median_drift = (
+            drift_values[mid]
+            if len(drift_values) % 2
+            else (drift_values[mid - 1] + drift_values[mid]) / 2.0
+        )
+        passes = float(combined.pvalue) < SSML_THRESHOLDS["ks_alpha"] and median_drift >= SSML_THRESHOLDS[
+            "drift_ratio_min"
+        ]
+        layer_metrics.append(
+            {
+                "layer_index": layer_index,
+                "combined_ks_statistic": float(combined.statistic),
+                "combined_ks_pvalue": float(combined.pvalue),
+                "median_drift_ratio": float(median_drift),
+                "passes": bool(passes),
+                "trace_count": len(trace_metrics),
+                "trace_metrics": trace_metrics,
+            }
+        )
+    pass_count = sum(1 for row in layer_metrics if bool(row["passes"]))
+    pass_fraction = pass_count / len(layer_metrics) if layer_metrics else 0.0
+    return {
+        "schema_version": f"{SSML_SCHEMA_VERSION}_metrics",
+        "metric_name": "ssm_state_age_distribution_shift",
+        "positions": list(DEFAULT_POSITIONS),
+        "comparison_positions": [DEFAULT_POSITIONS[0], DEFAULT_POSITIONS[-1]],
+        "trace_count": int(manifest["trace_count"]),
+        "layer_count": int(manifest["layer_count"]),
+        "mamba_layer_count": len(layer_metrics),
+        "mamba_layer_pass_count": pass_count,
+        "mamba_layer_pass_fraction": float(pass_fraction),
+        "layer_metrics": layer_metrics,
+        "thresholds": SSML_THRESHOLDS,
+        "statistical_readout": {
+            "per_trace": "scipy.stats.ks_2samp over flattened SSM states at decode positions 100 and 10000",
+            "per_layer_pvalue": "scipy.stats.combine_pvalues(method='fisher') across 12 trace p-values",
+            "per_layer_drift": "median across traces of mean(abs(state_10000)) / mean(abs(state_100))",
+            "drift_denominator_epsilon": eps,
+        },
+    }
+
+
+def run_ssm_lifecycle(args: argparse.Namespace, argv: list[str] | None) -> int:
+    if args.model_id != DEFAULT_MODEL_ID:
+        raise SystemExit(f"SSM-State Lifecycle Phase 0 requires {DEFAULT_MODEL_ID}; got {args.model_id}")
+    if args.prompt_file.resolve() != DEFAULT_PROMPT_FILE.resolve():
+        raise SystemExit(f"SSM-State Lifecycle Phase 0 requires canonical prompt file {DEFAULT_PROMPT_FILE}")
+    if args.positions != DEFAULT_POSITIONS:
+        raise SystemExit(f"SSM-State Lifecycle Phase 0 requires positions {DEFAULT_POSITIONS}")
+    if args.max_new_tokens < max(args.positions):
+        raise SystemExit("--max-new-tokens must reach the preregistered 10000-token position")
+    if args.seed != DEFAULT_SEED:
+        raise SystemExit(f"SSM-State Lifecycle Phase 0 requires analysis seed {DEFAULT_SEED}")
+
+    run_dir = args.results_dir / args.run_id
+    if run_dir.exists():
+        raise SystemExit(f"run directory already exists: {run_dir}")
+    (run_dir / "logs").mkdir(parents=True)
+    stdout_log = (run_dir / "logs/stdout.log").open("w", encoding="utf-8", buffering=1)
+    stderr_log = (run_dir / "logs/stderr.log").open("w", encoding="utf-8", buffering=1)
+    sys.stdout = Tee(sys.__stdout__, stdout_log)
+    sys.stderr = Tee(sys.__stderr__, stderr_log)
+    run_events_path = run_dir / "run_events.jsonl"
+    run_events_path.write_text(
+        json.dumps({"created_at_utc": utc_now(), "event": "run_started"}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    random.seed(args.seed)
+    try:
+        import torch
+
+        torch.manual_seed(args.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(args.seed)
+    except Exception:
+        pass
+
+    prompt_manifest, prompt_reasons = build_prompt_manifest(args.prompt_file, schema_version=SSML_SCHEMA_VERSION)
+    environment = build_environment(schema_version=SSML_SCHEMA_VERSION)
+    model_provenance = resolve_model_snapshot(args.model_id, schema_version=SSML_SCHEMA_VERSION)
+    command_metadata = {
+        "schema_version": f"{SSML_SCHEMA_VERSION}_command",
+        "created_at_utc": utc_now(),
+        "argv": sys.argv if argv is None else ["run_phase0_branch.py", *argv],
+        "cwd": str(Path.cwd()),
+        "branch": args.branch,
+        "run_dir": str(run_dir),
+        "positions": list(args.positions),
+        "generation": {
+            "do_sample": False,
+            "num_beams": 1,
+            "local_files_only": True,
+            "prompt_template": "shared Phase 0 AIME solve/final-answer template",
+            "manual_cache_decode": True,
+        },
+    }
+    random_seed = {
+        "schema_version": f"{SSML_SCHEMA_VERSION}_random_seed",
+        "seed": args.seed,
+        "determinism": {"do_sample": False, "num_beams": 1, "torch_manual_seed": args.seed},
+        "use": "bootstrap/analysis seed preregistered for SSM-State Lifecycle Phase 0",
+    }
+    write_json(run_dir / "prompt_manifest.json", prompt_manifest)
+    write_json(run_dir / "environment.json", environment)
+    write_json(run_dir / "model_provenance.json", model_provenance)
+    write_json(run_dir / "command_metadata.json", command_metadata)
+    write_json(run_dir / "random_seed.json", random_seed)
+    if prompt_reasons:
+        write_json(run_dir / "infra_error.json", {"reasons": prompt_reasons})
+        print(f"prompt manifest failed preregistered invariants: {prompt_reasons}", file=sys.stderr)
+        write_json(run_dir / "artifact_hashes.json", build_artifact_hashes(run_dir, schema_version=SSML_SCHEMA_VERSION))
+        return 1
+    if not model_provenance.get("snapshot_path"):
+        write_json(run_dir / "infra_error.json", {"reasons": [model_provenance.get("error")]})
+        print("model snapshot could not be resolved locally; see infra_error.json", file=sys.stderr)
+        write_json(run_dir / "artifact_hashes.json", build_artifact_hashes(run_dir, schema_version=SSML_SCHEMA_VERSION))
+        return 1
+
+    prompts = prompt_manifest["prompts"]
+    model, tokenizer, device = load_model_and_tokenizer(
+        model_provenance, dtype_name=args.dtype, device_name=args.device
+    )
+    ssm_manifest = capture_ssm_states(
+        model=model,
+        tokenizer=tokenizer,
+        device=device,
+        prompts=prompts,
+        positions=args.positions,
+        max_new_tokens=args.max_new_tokens,
+        batch_size=args.batch_size,
+        states_dir=run_dir / "ssm_states",
+        run_events_path=run_events_path,
+    )
+    write_json(run_dir / "ssm_state_manifest.json", ssm_manifest)
+    metrics = compute_ssml_metrics_from_artifacts(run_dir, ssm_manifest)
+    metrics.update(
+        {
+            "created_at_utc": utc_now(),
+            "branch": args.branch,
+            "model_id": args.model_id,
+            "model_snapshot_commit": model_provenance.get("hf_snapshot_commit"),
+            "prompt_source": "AIME-2025",
+            "prompt_selection": "deterministic_indices_0_11",
+            "prompt_sha256": prompt_manifest["prompt_sha256"],
+        }
+    )
+    write_json(run_dir / "metrics.json", metrics)
+    run_events_path.open("a", encoding="utf-8").write(
+        json.dumps({"created_at_utc": utc_now(), "event": "run_completed"}, sort_keys=True) + "\n"
+    )
+    print(json.dumps({"run_dir": str(run_dir), "metrics": metrics}, indent=2, sort_keys=True))
+    sys.stdout.flush()
+    sys.stderr.flush()
+    write_json(run_dir / "artifact_hashes.json", build_artifact_hashes(run_dir, schema_version=SSML_SCHEMA_VERSION))
+    return 0
+
+
 def write_generations(path: Path, *, baseline_rows: list[dict[str, Any]], ablation_rows: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8") as handle:
         for phase, rows in [("baseline", baseline_rows), ("ablation", ablation_rows)]:
@@ -1117,7 +1633,7 @@ def build_artifact_hashes(run_dir: Path, *, schema_version: str = SCHEMA_VERSION
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--branch", required=True, choices=["outlier_migrate", "residual_migration"])
+    parser.add_argument("--branch", required=True, choices=["outlier_migrate", "residual_migration", "ssm_lifecycle"])
     parser.add_argument("--run-id")
     parser.add_argument("--results-dir", type=Path)
     parser.add_argument("--prompt-file", type=Path, default=DEFAULT_PROMPT_FILE)
@@ -1139,6 +1655,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.positions is not None:
             raise SystemExit("Residual Migration Phase 0 does not use --positions")
         return run_residual_migration(args, argv)
+
+    if args.branch == "ssm_lifecycle":
+        args.run_id = args.run_id or f"ssml_phase0_{timestamp}"
+        args.results_dir = args.results_dir or SSML_RESULTS_DIR
+        args.positions = parse_positions(args.positions or ",".join(map(str, DEFAULT_POSITIONS)))
+        args.max_new_tokens = max(DEFAULT_POSITIONS) if args.max_new_tokens is None else args.max_new_tokens
+        return run_ssm_lifecycle(args, argv)
 
     args.run_id = args.run_id or f"om_phase0_{timestamp}"
     args.results_dir = args.results_dir or OUTLIER_RESULTS_DIR

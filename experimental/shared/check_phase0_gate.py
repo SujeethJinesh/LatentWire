@@ -18,6 +18,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS_DIR = ROOT / "experimental/outlier_migrate/phase0/results"
 RM_RESULTS_DIR = ROOT / "experimental/residual_migration/phase0/results"
+SSML_RESULTS_DIR = ROOT / "experimental/ssm_lifecycle/phase0/results"
 DEFAULT_PROMPT_FILE = ROOT / "experimental/shared/prompts/aime_2025_indices_0_11.jsonl"
 MODEL_ID = "ibm-granite/granite-4.0-h-tiny"
 POSITIONS = (100, 500, 1000, 5000, 10000)
@@ -27,6 +28,7 @@ EXPECTED_PROMPT_SOURCE_FILE = "aime2025-I.jsonl"
 EXPECTED_PROMPT_SOURCE_COMMIT = "a6ad95f611d72cf628a80b58bd0432ef6638f958"
 SCHEMA_VERSION = "om_phase0_v1"
 RM_SCHEMA_VERSION = "rm_phase0_v1"
+SSML_SCHEMA_VERSION = "ssml_phase0_v1"
 
 PASS_DYNAMIC = "PASS_OM_PHASE0_DECODE_TIME_MIGRATION"
 PASS_STATIC = "PASS_OM_PHASE0_STATIC_OUTLIERS"
@@ -36,6 +38,9 @@ PASS_RM_REPLICATES = "PASS_RM_PHASE0_RETHINKING_REPLICATES"
 PASS_RM_REJECTS = "PASS_RM_PHASE0_HYBRIDS_DEPEND_ON_RESIDUAL"
 KILL_RM_AMBIGUOUS = "KILL_RM_PHASE0_AMBIGUOUS_DROP"
 FAIL_INFRA_RM = "FAIL_INFRA_RM_PHASE0"
+PASS_SSML = "PASS_SSML_PHASE0_STATE_AGES"
+KILL_SSML = "KILL_SSML_PHASE0_STATE_STABLE"
+FAIL_INFRA_SSML = "FAIL_INFRA_SSML_PHASE0"
 
 THRESHOLDS = {
     "migration_fraction_threshold": 0.05,
@@ -49,6 +54,63 @@ RM_THRESHOLDS = {
     "hybrids_depend_ci_lower_gt": 0.03,
     "bootstrap_samples": 1000,
     "bootstrap_ci": 0.95,
+}
+SSML_THRESHOLDS = {
+    "ks_alpha": 0.01,
+    "drift_ratio_min": 2.0,
+    "layer_pass_fraction_min": 0.5,
+    "trace_pvalue_aggregation": "fisher",
+}
+GRANITE_TINY_LAYER_TYPES = (
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "attention",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "attention",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "attention",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+    "attention",
+    "mamba",
+    "mamba",
+    "mamba",
+    "mamba",
+)
+GRANITE_TINY_MAMBA_LAYER_INDICES = {
+    index for index, layer_type in enumerate(GRANITE_TINY_LAYER_TYPES) if layer_type == "mamba"
+}
+GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH = (48, 64, 128)
+REAL_SSML_LAYER_TYPE_SOURCE = "model.config.layer_types_or_layers_block_type"
+REAL_SSML_CACHE_STATE_SOURCES = {
+    "past_key_values.ssm_states",
+    "past_key_values.layers.[ssm_states|recurrent_states]",
 }
 
 REQUIRED_FILES = [
@@ -83,6 +145,20 @@ RM_REQUIRED_FILES = [
     "run_events.jsonl",
 ]
 RM_HASHED_FILES = [rel for rel in RM_REQUIRED_FILES if rel != "artifact_hashes.json"]
+SSML_REQUIRED_FILES = [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "ssm_state_manifest.json",
+    "metrics.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl",
+]
+SSML_HASHED_FILES = [rel for rel in SSML_REQUIRED_FILES if rel != "artifact_hashes.json"]
 
 
 def load_json(path: Path) -> Any:
@@ -110,7 +186,13 @@ def is_close(left: float, right: float, *, tol: float = 1e-9) -> bool:
 
 
 def latest_run_dir(*, branch: str = "outlier_migrate") -> Path:
-    results_dir = RM_RESULTS_DIR if branch == "residual_migration" else RESULTS_DIR
+    results_dir = (
+        RM_RESULTS_DIR
+        if branch == "residual_migration"
+        else SSML_RESULTS_DIR
+        if branch == "ssm_lifecycle"
+        else RESULTS_DIR
+    )
     candidates = [path for path in results_dir.iterdir() if path.is_dir()] if results_dir.is_dir() else []
     if not candidates:
         raise FileNotFoundError(f"no {branch} Phase 0 result dirs found under {results_dir}")
@@ -297,6 +379,42 @@ def validate_artifact_hashes(
             infra.append(f"artifact_hashes byte mismatch for {rel}")
         if item.get("sha256") != file_sha256(path):
             infra.append(f"artifact_hashes sha256 mismatch for {rel}")
+
+
+def validate_all_artifact_hashes(run_dir: Path, artifact_hashes: dict[str, Any], infra: list[str]) -> None:
+    entries = artifact_hashes.get("artifacts", [])
+    if not isinstance(entries, list):
+        infra.append("artifact_hashes.artifacts must be a list")
+        return
+    seen: set[str] = set()
+    for row in entries:
+        if not isinstance(row, dict):
+            infra.append("artifact_hashes contains a non-object row")
+            continue
+        rel = str(row.get("path"))
+        if rel in seen:
+            infra.append(f"artifact_hashes duplicate path {rel}")
+        seen.add(rel)
+        if rel in {"artifact_hashes.json", "checker_result.json", "artifact_check.json"}:
+            infra.append(f"artifact_hashes must not include checker/self artifact {rel}")
+            continue
+        path = run_dir / rel
+        if not path.is_file():
+            infra.append(f"hashed artifact missing on disk: {rel}")
+            continue
+        if row.get("bytes") != path.stat().st_size:
+            infra.append(f"artifact_hashes byte mismatch for {rel}")
+        if row.get("sha256") != file_sha256(path):
+            infra.append(f"artifact_hashes sha256 mismatch for {rel}")
+    excluded = {"artifact_hashes.json", "checker_result.json", "artifact_check.json"}
+    disk_paths = {
+        str(path.relative_to(run_dir))
+        for path in run_dir.rglob("*")
+        if path.is_file() and str(path.relative_to(run_dir)) not in excluded
+    }
+    missing_hash_rows = sorted(disk_paths.difference(seen))
+    for rel in missing_hash_rows:
+        infra.append(f"artifact_hashes missing on-disk artifact {rel}")
 
 
 def validate_activation_rows(
@@ -742,7 +860,375 @@ def evaluate_residual_migration(run_dir: Path) -> dict[str, Any]:
     return result
 
 
+def ssml_npz_key(prompt_index: int, decode_position: int) -> str:
+    return f"p{prompt_index:03d}_pos{decode_position:05d}"
+
+
+def compute_ssml_metrics(run_dir: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    import numpy as np
+    from scipy.stats import combine_pvalues, ks_2samp
+
+    eps = 1e-12
+    layer_metrics: list[dict[str, Any]] = []
+    mamba_layers = [layer for layer in manifest.get("layers", []) if isinstance(layer, dict) and bool(layer.get("is_mamba"))]
+    for layer in mamba_layers:
+        layer_index = int(layer["layer_index"])
+        artifact = run_dir / str(layer["artifact"])
+        trace_metrics: list[dict[str, Any]] = []
+        with np.load(artifact) as data:
+            for prompt_index in range(TRACE_COUNT):
+                base = data[ssml_npz_key(prompt_index, POSITIONS[0])].reshape(-1)
+                final = data[ssml_npz_key(prompt_index, POSITIONS[-1])].reshape(-1)
+                ks = ks_2samp(base, final)
+                base_abs = float(np.mean(np.abs(base)))
+                final_abs = float(np.mean(np.abs(final)))
+                trace_metrics.append(
+                    {
+                        "prompt_index": prompt_index,
+                        "ks_statistic": float(ks.statistic),
+                        "ks_pvalue": float(ks.pvalue),
+                        "mean_abs_state_100": base_abs,
+                        "mean_abs_state_10000": final_abs,
+                        "drift_ratio": float(final_abs / max(base_abs, eps)),
+                    }
+                )
+        combined = combine_pvalues(
+            [float(row["ks_pvalue"]) for row in trace_metrics],
+            method=SSML_THRESHOLDS["trace_pvalue_aggregation"],
+        )
+        drift_values = sorted(float(row["drift_ratio"]) for row in trace_metrics)
+        mid = len(drift_values) // 2
+        median_drift = (
+            drift_values[mid]
+            if len(drift_values) % 2
+            else (drift_values[mid - 1] + drift_values[mid]) / 2.0
+        )
+        passes = float(combined.pvalue) < SSML_THRESHOLDS["ks_alpha"] and median_drift >= SSML_THRESHOLDS[
+            "drift_ratio_min"
+        ]
+        layer_metrics.append(
+            {
+                "layer_index": layer_index,
+                "combined_ks_statistic": float(combined.statistic),
+                "combined_ks_pvalue": float(combined.pvalue),
+                "median_drift_ratio": float(median_drift),
+                "passes": bool(passes),
+                "trace_count": len(trace_metrics),
+                "trace_metrics": trace_metrics,
+            }
+        )
+    pass_count = sum(1 for row in layer_metrics if bool(row["passes"]))
+    pass_fraction = pass_count / len(layer_metrics) if layer_metrics else 0.0
+    return {
+        "schema_version": f"{SSML_SCHEMA_VERSION}_metrics",
+        "metric_name": "ssm_state_age_distribution_shift",
+        "positions": list(POSITIONS),
+        "comparison_positions": [POSITIONS[0], POSITIONS[-1]],
+        "trace_count": TRACE_COUNT,
+        "layer_count": int(manifest.get("layer_count", 0) or 0),
+        "mamba_layer_count": len(layer_metrics),
+        "mamba_layer_pass_count": pass_count,
+        "mamba_layer_pass_fraction": float(pass_fraction),
+        "layer_metrics": layer_metrics,
+        "thresholds": SSML_THRESHOLDS,
+        "statistical_readout": {
+            "per_trace": "scipy.stats.ks_2samp over flattened SSM states at decode positions 100 and 10000",
+            "per_layer_pvalue": "scipy.stats.combine_pvalues(method='fisher') across 12 trace p-values",
+            "per_layer_drift": "median across traces of mean(abs(state_10000)) / mean(abs(state_100))",
+            "drift_denominator_epsilon": eps,
+        },
+    }
+
+
+def validate_ssml_manifest_and_artifacts(
+    run_dir: Path,
+    manifest: dict[str, Any],
+    metrics: dict[str, Any],
+    infra: list[str],
+) -> None:
+    if list(manifest.get("positions", [])) != list(POSITIONS):
+        infra.append("ssm_state_manifest.positions must equal the preregistered position grid")
+    if list(metrics.get("positions", [])) != list(POSITIONS):
+        infra.append("metrics.positions must equal the preregistered position grid")
+    if list(metrics.get("comparison_positions", [])) != [POSITIONS[0], POSITIONS[-1]]:
+        infra.append("metrics.comparison_positions must be [100, 10000]")
+    if int(manifest.get("trace_count", 0) or 0) != TRACE_COUNT:
+        infra.append("ssm_state_manifest.trace_count must be 12")
+    if int(metrics.get("trace_count", 0) or 0) != TRACE_COUNT:
+        infra.append("metrics.trace_count must be 12")
+    if manifest.get("layer_type_source") != REAL_SSML_LAYER_TYPE_SOURCE:
+        infra.append("ssm_state_manifest.layer_type_source must come from the real Granite model config")
+    if manifest.get("cache_state_source") not in REAL_SSML_CACHE_STATE_SOURCES:
+        infra.append("ssm_state_manifest.cache_state_source must identify a supported real model cache path")
+    layers = manifest.get("layers")
+    if not isinstance(layers, list) or not layers:
+        infra.append("ssm_state_manifest.layers must be a nonempty list")
+        return
+    if len(layers) != len(GRANITE_TINY_LAYER_TYPES):
+        infra.append("ssm_state_manifest.layers must contain all 40 Granite-4.0-H-Tiny layers")
+    if int(manifest.get("layer_count", -1)) != len(GRANITE_TINY_LAYER_TYPES):
+        infra.append("ssm_state_manifest.layer_count must be 40 for Granite-4.0-H-Tiny")
+    if int(metrics.get("layer_count", -1)) != len(GRANITE_TINY_LAYER_TYPES):
+        infra.append("metrics.layer_count must be 40 for Granite-4.0-H-Tiny")
+    layer_indices: list[int] = []
+    mamba_layers: list[dict[str, Any]] = []
+    for row in layers:
+        if not isinstance(row, dict):
+            infra.append("ssm_state_manifest.layers contains a non-object row")
+            continue
+        try:
+            layer_index = int(row["layer_index"])
+        except Exception:
+            infra.append("ssm_state_manifest layer missing integer layer_index")
+            continue
+        layer_indices.append(layer_index)
+        if layer_index >= len(GRANITE_TINY_LAYER_TYPES) or layer_index < 0:
+            infra.append(f"ssm_state_manifest contains out-of-range layer {layer_index}")
+            continue
+        expected_layer_type = GRANITE_TINY_LAYER_TYPES[layer_index]
+        observed_layer_type = str(row.get("layer_type", "")).lower()
+        if observed_layer_type != expected_layer_type:
+            infra.append(
+                f"ssm_state_manifest layer {layer_index} type {observed_layer_type!r} "
+                f"does not match Granite-4.0-H-Tiny expected type {expected_layer_type!r}"
+            )
+        if bool(row.get("is_mamba")) != (expected_layer_type == "mamba"):
+            infra.append(f"ssm_state_manifest layer {layer_index} is_mamba flag does not match expected layout")
+        if bool(row.get("is_mamba")):
+            mamba_layers.append(row)
+            if tuple(row.get("state_shape_without_batch", [])) != GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH:
+                infra.append(
+                    f"Mamba layer {layer_index} state_shape_without_batch must be "
+                    f"{list(GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH)}"
+                )
+            observed_cache_shape = row.get("observed_cache_state_shape")
+            expected_cache_shape_len = 1 + len(GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH)
+            if not isinstance(observed_cache_shape, list) or len(observed_cache_shape) != expected_cache_shape_len:
+                infra.append(
+                    f"Mamba layer {layer_index} observed_cache_state_shape must be "
+                    f"[batch, *{list(GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH)}]"
+                )
+            elif tuple(observed_cache_shape[1:]) != GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH:
+                infra.append(
+                    f"Mamba layer {layer_index} observed_cache_state_shape suffix must be "
+                    f"{list(GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH)}"
+                )
+            elif int(observed_cache_shape[0]) <= 0:
+                infra.append(f"Mamba layer {layer_index} observed_cache_state_shape batch must be positive")
+        elif row.get("artifact"):
+            infra.append(f"non-Mamba layer {layer_index} must not have a state artifact")
+    if sorted(layer_indices) != list(range(len(GRANITE_TINY_LAYER_TYPES))):
+        infra.append("ssm_state_manifest layer indices must be contiguous 0..39")
+    if int(manifest.get("layer_count", -1)) != len(layers):
+        infra.append("ssm_state_manifest.layer_count must match layers length")
+    if int(metrics.get("layer_count", -1)) != len(layers):
+        infra.append("metrics.layer_count must match manifest layer_count")
+    if {int(row["layer_index"]) for row in mamba_layers if "layer_index" in row} != GRANITE_TINY_MAMBA_LAYER_INDICES:
+        infra.append("ssm_state_manifest Mamba layer set must match Granite-4.0-H-Tiny expected Mamba layers")
+    if int(manifest.get("mamba_layer_count", -1)) != len(mamba_layers):
+        infra.append("ssm_state_manifest.mamba_layer_count must match Mamba layers")
+    if int(metrics.get("mamba_layer_count", -1)) != len(mamba_layers):
+        infra.append("metrics.mamba_layer_count must match Mamba layers")
+    if int(manifest.get("mamba_layer_count", -1)) != len(GRANITE_TINY_MAMBA_LAYER_INDICES):
+        infra.append("ssm_state_manifest.mamba_layer_count must be 36 for Granite-4.0-H-Tiny")
+    if int(metrics.get("mamba_layer_count", -1)) != len(GRANITE_TINY_MAMBA_LAYER_INDICES):
+        infra.append("metrics.mamba_layer_count must be 36 for Granite-4.0-H-Tiny")
+    expected_records = TRACE_COUNT * len(mamba_layers) * len(POSITIONS)
+    if int(manifest.get("expected_capture_record_count", -1)) != expected_records:
+        infra.append("ssm_state_manifest.expected_capture_record_count mismatch")
+    if int(manifest.get("capture_record_count", -1)) != expected_records:
+        infra.append("ssm_state_manifest.capture_record_count must cover every prompt x Mamba layer x position")
+
+    artifact_rows = manifest.get("artifacts", [])
+    if not isinstance(artifact_rows, list):
+        infra.append("ssm_state_manifest.artifacts must be a list")
+        artifact_rows = []
+    artifacts_by_layer = {int(row.get("layer_index")): row for row in artifact_rows if isinstance(row, dict) and "layer_index" in row}
+    for layer in mamba_layers:
+        layer_index = int(layer["layer_index"])
+        artifact_rel = str(layer.get("artifact", ""))
+        if not artifact_rel:
+            infra.append(f"Mamba layer {layer_index} missing artifact")
+            continue
+        artifact = run_dir / artifact_rel
+        if not artifact.is_file():
+            infra.append(f"Mamba layer {layer_index} artifact missing: {artifact_rel}")
+            continue
+        if layer_index not in artifacts_by_layer:
+            infra.append(f"ssm_state_manifest.artifacts missing layer {layer_index}")
+        if layer.get("artifact_bytes") != artifact.stat().st_size:
+            infra.append(f"Mamba layer {layer_index} artifact byte size mismatch")
+        if layer.get("artifact_sha256") != file_sha256(artifact):
+            infra.append(f"Mamba layer {layer_index} artifact sha256 mismatch")
+        try:
+            import numpy as np
+
+            with np.load(artifact) as data:
+                expected_keys = {
+                    ssml_npz_key(prompt_index, position)
+                    for prompt_index in range(TRACE_COUNT)
+                    for position in POSITIONS
+                }
+                actual_keys = set(data.files)
+                if actual_keys != expected_keys:
+                    infra.append(f"Mamba layer {layer_index} artifact keys do not cover every prompt x position")
+                shapes = {tuple(data[key].shape) for key in data.files}
+                if len(shapes) != 1:
+                    infra.append(f"Mamba layer {layer_index} artifact states do not have a consistent shape")
+                if shapes and shapes != {GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH}:
+                    infra.append(
+                        f"Mamba layer {layer_index} artifact state shape must be "
+                        f"{list(GRANITE_TINY_SSM_STATE_SHAPE_WITHOUT_BATCH)}"
+                    )
+                for key in data.files:
+                    arr = data[key]
+                    if arr.size <= 0:
+                        infra.append(f"Mamba layer {layer_index} artifact key {key} is empty")
+                    if not np.isfinite(arr).all():
+                        infra.append(f"Mamba layer {layer_index} artifact key {key} contains nonfinite values")
+                        break
+        except Exception as exc:
+            infra.append(f"cannot read Mamba layer {layer_index} artifact {artifact_rel}: {exc!r}")
+
+
+def ssml_decision_from_metrics(pass_fraction: float) -> tuple[str, list[str]]:
+    threshold = float(SSML_THRESHOLDS["layer_pass_fraction_min"])
+    if pass_fraction >= threshold:
+        return PASS_SSML, [
+            f"state-aging pass: Mamba layer pass fraction {pass_fraction:.8f} >= {threshold:.2f}"
+        ]
+    return KILL_SSML, [
+        f"state-stable kill: Mamba layer pass fraction {pass_fraction:.8f} < {threshold:.2f}"
+    ]
+
+
+def evaluate_ssm_lifecycle(run_dir: Path) -> dict[str, Any]:
+    infra: list[str] = []
+    for rel in SSML_REQUIRED_FILES:
+        if not (run_dir / rel).is_file():
+            infra.append(f"missing required artifact: {rel}")
+    try:
+        environment = load_json(run_dir / "environment.json")
+        model = load_json(run_dir / "model_provenance.json")
+        prompt_manifest = load_json(run_dir / "prompt_manifest.json")
+        command = load_json(run_dir / "command_metadata.json")
+        random_seed = load_json(run_dir / "random_seed.json")
+        ssm_manifest = load_json(run_dir / "ssm_state_manifest.json")
+        metrics = load_json(run_dir / "metrics.json")
+        artifact_hashes = load_json(run_dir / "artifact_hashes.json")
+    except Exception as exc:
+        result = {
+            "decision": FAIL_INFRA_SSML,
+            "run_dir": str(run_dir),
+            "reasons": [*infra, f"bad JSON artifacts: {exc!r}"],
+            "artifact_complete": False,
+        }
+        if run_dir.is_dir():
+            write_json(run_dir / "checker_result.json", result)
+            write_json(
+                run_dir / "artifact_check.json",
+                {
+                    "schema_version": f"{SSML_SCHEMA_VERSION}_artifact_check",
+                    "decision": FAIL_INFRA_SSML,
+                    "run_dir": str(run_dir),
+                    "required_files": SSML_REQUIRED_FILES,
+                    "artifact_complete": False,
+                    "reasons": result["reasons"],
+                },
+            )
+        return result
+
+    if environment.get("schema_version") != f"{SSML_SCHEMA_VERSION}_environment":
+        infra.append("environment schema_version mismatch")
+    if command.get("branch") != "ssm_lifecycle":
+        infra.append("command_metadata.branch must be ssm_lifecycle")
+    if command.get("generation", {}).get("do_sample") is not False or int(command.get("generation", {}).get("num_beams", 0)) != 1:
+        infra.append("command_metadata.generation must document deterministic greedy decoding")
+    if command.get("generation", {}).get("local_files_only") is not True:
+        infra.append("command_metadata.generation.local_files_only must be true")
+    if list(command.get("positions", [])) != list(POSITIONS):
+        infra.append("command_metadata.positions must equal the preregistered position grid")
+    if model.get("model_id") != MODEL_ID:
+        infra.append("model_provenance.model_id mismatch")
+    if model.get("local_files_only") is not True:
+        infra.append("model provenance must record local_files_only true")
+    if not model.get("hf_snapshot_commit") or not model.get("snapshot_path"):
+        infra.append("model provenance must record local HF snapshot commit and path")
+    if metrics.get("branch") != "ssm_lifecycle":
+        infra.append("metrics.branch must be ssm_lifecycle")
+    if metrics.get("model_id") != MODEL_ID:
+        infra.append("metrics.model_id mismatch")
+    if metrics.get("thresholds") != SSML_THRESHOLDS:
+        infra.append("metrics.thresholds mismatch preregistered SSM lifecycle thresholds")
+    if int(random_seed.get("seed", -1)) != 20260508:
+        infra.append("random_seed.seed must be 20260508")
+
+    validate_prompt_manifest(prompt_manifest, metrics, infra)
+    validate_artifact_hashes(run_dir, artifact_hashes, infra, hashed_files=SSML_HASHED_FILES)
+    validate_all_artifact_hashes(run_dir, artifact_hashes, infra)
+    validate_ssml_manifest_and_artifacts(run_dir, ssm_manifest, metrics, infra)
+
+    computed: dict[str, Any] | None = None
+    if not infra:
+        try:
+            computed = compute_ssml_metrics(run_dir, ssm_manifest)
+        except Exception as exc:
+            infra.append(f"cannot recompute SSM lifecycle metrics from raw artifacts: {exc!r}")
+    if computed is not None and not infra:
+        for key in [
+            "mamba_layer_count",
+            "mamba_layer_pass_count",
+            "mamba_layer_pass_fraction",
+            "trace_count",
+            "layer_count",
+        ]:
+            if isinstance(computed[key], float):
+                if not is_close(float(metrics[key]), float(computed[key])):
+                    infra.append(f"metrics.{key} does not match recomputation")
+            elif metrics.get(key) != computed[key]:
+                infra.append(f"metrics.{key} does not match recomputation")
+        if metrics.get("layer_metrics") != computed.get("layer_metrics"):
+            infra.append("metrics.layer_metrics does not match recomputation")
+        if metrics.get("statistical_readout") != computed.get("statistical_readout"):
+            infra.append("metrics.statistical_readout does not match recomputation")
+
+    if infra:
+        result = {
+            "decision": FAIL_INFRA_SSML,
+            "run_dir": str(run_dir),
+            "reasons": infra,
+            "artifact_complete": False,
+        }
+    else:
+        assert computed is not None
+        decision, reasons = ssml_decision_from_metrics(float(computed["mamba_layer_pass_fraction"]))
+        result = {
+            "decision": decision,
+            "run_dir": str(run_dir),
+            "reasons": reasons,
+            "artifact_complete": True,
+            "mamba_layer_pass_fraction": computed["mamba_layer_pass_fraction"],
+            "mamba_layer_pass_count": computed["mamba_layer_pass_count"],
+            "mamba_layer_count": computed["mamba_layer_count"],
+            "thresholds": SSML_THRESHOLDS,
+            "layer_metrics": computed["layer_metrics"],
+        }
+    artifact_check = {
+        "schema_version": f"{SSML_SCHEMA_VERSION}_artifact_check",
+        "decision": result["decision"],
+        "run_dir": str(run_dir),
+        "required_files": SSML_REQUIRED_FILES,
+        "artifact_complete": result.get("artifact_complete", False),
+        "reasons": result["reasons"],
+    }
+    write_json(run_dir / "checker_result.json", result)
+    write_json(run_dir / "artifact_check.json", artifact_check)
+    return result
+
+
 def evaluate(run_dir: Path, *, branch: str = "outlier_migrate") -> dict[str, Any]:
+    if branch == "ssm_lifecycle":
+        return evaluate_ssm_lifecycle(run_dir)
     if branch == "residual_migration":
         return evaluate_residual_migration(run_dir)
     infra: list[str] = []
@@ -877,13 +1363,13 @@ def evaluate(run_dir: Path, *, branch: str = "outlier_migrate") -> dict[str, Any
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--branch", required=True, choices=["outlier_migrate", "residual_migration"])
+    parser.add_argument("--branch", required=True, choices=["outlier_migrate", "residual_migration", "ssm_lifecycle"])
     parser.add_argument("--run-dir", type=Path)
     args = parser.parse_args(argv)
     run_dir = args.run_dir.resolve() if args.run_dir else latest_run_dir(branch=args.branch).resolve()
     result = evaluate(run_dir, branch=args.branch)
     print(json.dumps(result, indent=2, sort_keys=True))
-    pass_decisions = {PASS_DYNAMIC, PASS_STATIC, PASS_RM_REPLICATES, PASS_RM_REJECTS}
+    pass_decisions = {PASS_DYNAMIC, PASS_STATIC, PASS_RM_REPLICATES, PASS_RM_REJECTS, PASS_SSML}
     return 0 if result["decision"] in pass_decisions else 1
 
 
