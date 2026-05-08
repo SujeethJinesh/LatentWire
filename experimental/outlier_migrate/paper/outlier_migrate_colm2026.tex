@@ -1,9 +1,11 @@
 \documentclass{article}
 
 \usepackage[submission]{../../../colm/2026/colm2026_conference}
+\usepackage{array}
 \usepackage{booktabs}
-\usepackage{hyperref}
 \usepackage{url}
+\usepackage{xurl}
+\usepackage{hyperref}
 
 \title{Outlier Migration in Long Decode Traces}
 \author{Anonymous authors\\Paper under double-blind review}
@@ -12,16 +14,19 @@
 \maketitle
 
 \begin{abstract}
-This draft reports a conservative Phase 0 result for OutlierMigrate, a
+This draft reports the first two preregistered gates for OutlierMigrate, a
 candidate positive-method branch studying whether high-magnitude activation
-channels remain stationary during long decode. The preregistered Phase 0 gate
-passes on Granite-4.0-H-Tiny: the fraction of top-1\% position-100 channels
-whose rank changes by more than two channel positions by decode position
-10000 is 0.8178385416666667 with bootstrap 95\% CI
-[0.797265625, 0.8368489583333334]. This is not camera-ready, is not a full
-positive-method claim, and does not provide cross-model evidence. Phase 1
-scale validation is required before the work can support submission-level
-claims.
+channels remain stationary during long decode. Phase 0 passes on
+Granite-4.0-H-Tiny: the fraction of top-1\% position-100 channels whose rank
+changes by more than two channel positions by decode position 10000 is
+0.8178385416666667 with bootstrap 95\% CI
+[0.797265625, 0.8368489583333334]. Phase 1 replicates the dynamic-outlier
+direction at larger scale on Granite-4.0-H-Small: the migration fraction is
+0.843165650406504 with bootstrap 95\% CI
+[0.8334349593495936, 0.8511432926829268]. This is a strong positive-method
+finding for the same model family, but it is not camera-ready and does not yet
+support cross-model claims. Cross-model validation and audit checks remain
+required before submission-level claims.
 \end{abstract}
 
 \section{Introduction}
@@ -30,27 +35,63 @@ OutlierMigrate asks whether the channels carrying high-magnitude decode-time
 activations are fixed or whether they move during long reasoning traces. Static
 outliers would support static channel-protection recipes. Dynamic outliers
 would motivate migration-aware protection or routing methods, but only after
-larger validation shows that the effect is stable and useful.
+validation shows that the effect is stable, useful, and not specific to one
+model family.
 
-The current paper status is deliberately limited. Phase 0 is a screen on one
-model family, one model size, and 12 deterministic AIME-2025 reasoning traces.
-It supports a dynamic-outlier observation under the preregistered metric. It
-does not support a camera-ready method claim, an end-to-end efficiency claim,
-or any cross-model claim.
+The current paper status is deliberately limited. Phase 0 is a screen on
+\texttt{ibm-granite/granite-4.0-h-tiny} with 12 deterministic AIME-2025
+reasoning traces. Phase 1 scales the same dynamic path to
+\texttt{ibm-granite/granite-4.0-h-small} with 24 deterministic traces and an
+extended decode-position grid. Together they support a replicated
+same-family dynamic-outlier observation under the preregistered metric. They
+do not support a camera-ready method claim, an end-to-end efficiency claim, or
+any cross-model claim.
+
+\section{Related Work}
+
+Recent efficient-recurrence and linear-attention architectures make
+data-dependent channel-wise memory control a central design axis. Gated Linear
+Attention (GLA) formulates linear attention as recurrent matrix-valued state
+with data-dependent gating \citep{yang2023gla}. Gated DeltaNet combines
+adaptive memory erasure with delta-rule updates and reports hybrids that mix
+Gated DeltaNet with attention or Mamba2 layers \citep{yang2024gdn}. Kimi Linear
+extends this direction: its Kimi Delta Attention (KDA) is described as an
+extension of Gated DeltaNet with finer-grained gating, and the released Kimi
+Linear model is a layerwise hybrid of KDA and Multi-Head Latent Attention
+\citep{kimilinear2025}. The official Qwen3.6 model card likewise describes a
+hybrid layout that interleaves Gated DeltaNet blocks with gated attention
+\citep{qwen36hf}. These sources motivate OutlierMigrate as an empirical test
+of whether high-magnitude channels stay fixed during long decode in hybrid
+sequence models. They do not imply that Kimi Linear, Qwen3.6, GLA, or other
+unmeasured models exhibit the migration measured in this draft.
 
 \section{Method}
 
-The Phase 0 procedure follows the frozen preregistration at
+Phase 0 follows the frozen preregistration at
 \url{experimental/outlier_migrate/phase0/preregister_om_phase0.md}. The model
 is \texttt{ibm-granite/granite-4.0-h-tiny} at HuggingFace snapshot commit
 \texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}. The prompt set contains 12
-deterministically selected AIME-2025 traces, indices 0--11.
+deterministically selected AIME-2025 traces, indices 0--11, with prompt SHA
+\texttt{sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd}
+from
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/prompt_manifest.json}.
+
+Phase 1 follows the frozen preregistration at
+\url{experimental/outlier_migrate/phase1/preregister_om_phase1.md}. The model
+is \texttt{ibm-granite/granite-4.0-h-small} at HuggingFace snapshot commit
+\texttt{b8c0982bab7fde4eb48110f5a069527c008fab39}. The prompt set contains 24
+deterministically selected AIME-2025 traces, indices 0--23, with prompt SHA
+\texttt{sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e}
+from
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/prompt_manifest.json}.
 
 For every transformer layer, the runner records per-channel activation
-magnitudes at decode positions \{100, 500, 1000, 5000, 10000\}. It selects the
+magnitudes. Phase 0 records decode positions \{100, 500, 1000, 5000, 10000\};
+Phase 1 records \{100, 500, 1000, 5000, 10000, 20000\}. Each gate selects the
 top 1\% channels by mean magnitude at position 100 and computes the fraction
-whose rank at position 10000 differs by more than two channel positions. The
-reported gate metric is the trace-bootstrap aggregate over layers.
+whose rank at the final preregistered position differs by more than two
+channel positions. The reported gate metric is the trace-bootstrap aggregate
+over layers with equal layer weighting.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -63,89 +104,206 @@ the metrics file is
 \url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/metrics.json},
 and artifact completeness is recorded in
 \url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/artifact_check.json}.
+The activation artifact SHA is
+\texttt{sha256:2783aa329d82e8f43ea4f342e52f0a25fc283b0b8971880f2da093739474d687}
+from
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/activation_magnitude_manifest.json}.
 
-The preregistered dynamic-outlier pass rule requires migration fraction
-at least 0.05 and bootstrap CI lower bound greater than 0.05. The static pass
-rule and ambiguous-effect kill rule are not used because the dynamic pass rule
-is satisfied.
+The Phase 1 result packet is
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z}.
+The checker output is
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/checker_result.json},
+the metrics file is
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/metrics.json},
+and artifact completeness is recorded in
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/artifact_check.json}.
+The activation artifact SHA is
+\texttt{sha256:326a04351e0dda28cf919fe4745d7d9341011db13d940a06cf9c8470633003e1}
+from
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitude_manifest.json}.
+
+The preregistered dynamic-outlier pass rule in both gates requires migration
+fraction at least 0.05 and bootstrap CI lower bound greater than 0.05. Phase 1
+uses the same dynamic path because Phase 0 returned
+\texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION}.
 
 \section{Results}
 
 \begin{table}[t]
 \centering
 \small
-\begin{tabular}{ll}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\linewidth}
+                >{\raggedright\arraybackslash}p{0.32\linewidth}
+                >{\raggedright\arraybackslash}p{0.32\linewidth}}
 \toprule
-Quantity & Value \\
+Quantity & Phase 0 & Phase 1 \\
 \midrule
-Decision & \texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION} \\
-Migration fraction & 0.8178385416666667 \\
-Bootstrap 95\% CI & [0.797265625, 0.8368489583333334] \\
-Dynamic threshold & migration fraction $\geq$ 0.05 and CI lower $>$ 0.05 \\
-Model snapshot commit & \texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124} \\
-Layer count / hidden size & 40 / 1536 \\
-Trace count & 12 \\
+Decision & dynamic-outlier pass & replicated-at-scale pass \\
+Migration fraction & 0.8178385416666667 & 0.843165650406504 \\
+Bootstrap 95\% CI & [0.797265625, 0.8368489583333334] &
+[0.8334349593495936, 0.8511432926829268] \\
+Preregistered threshold & $\geq$0.05 and CI lower $>$0.05 &
+$\geq$0.05 and CI lower $>$0.05 \\
+Artifact complete & true & true \\
+Model & \url{ibm-granite/granite-4.0-h-tiny} &
+\url{ibm-granite/granite-4.0-h-small} \\
+Trace count & 12 & 24 \\
+Layer count / hidden size & 40 / 1536 & 40 / 4096 \\
+Decode positions & 100, 500, 1000, 5000, 10000 &
+100, 500, 1000, 5000, 10000, 20000 \\
+Bootstrap seed & 20260508 & 20260508 \\
 \bottomrule
 \end{tabular}
-\caption{Phase 0 gate result from the checker and metrics artifacts cited in
-Section~\ref{sec:experiments}. The result clears the preregistered dynamic
-threshold because 0.8178385416666667 $\geq$ 0.05 and the CI lower bound
-0.797265625 is greater than 0.05.}
+\caption{OutlierMigrate Phase 0 and Phase 1 gate results. Phase 0 values are
+from
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/checker_result.json}
+and
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/metrics.json}.
+Phase 1 values are from
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/checker_result.json}
+and
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/metrics.json}.}
+\label{tab:phase-results}
 \end{table}
 
-The checker returned
-\texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION}. The exact checker reason
+The exact Phase 0 provenance values are: model snapshot commit
+\url{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}, prompt SHA
+\url{sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd},
+and activation artifact SHA
+\url{sha256:2783aa329d82e8f43ea4f342e52f0a25fc283b0b8971880f2da093739474d687};
+these are recorded in
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/model_provenance.json},
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/prompt_manifest.json},
+and
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/activation_magnitude_manifest.json}.
+The exact Phase 1 provenance values are: model snapshot commit
+\url{b8c0982bab7fde4eb48110f5a069527c008fab39}, prompt SHA
+\url{sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e},
+and activation artifact SHA
+\url{sha256:326a04351e0dda28cf919fe4745d7d9341011db13d940a06cf9c8470633003e1};
+these are recorded in
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/model_provenance.json},
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/prompt_manifest.json},
+and
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitude_manifest.json}.
+
+The Phase 0 checker returned
+\texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION}. Its exact artifact reason
 was that the point estimate 0.81783854 is at least 0.05 and the CI lower bound
-0.79726562 is greater than 0.05.
+0.79726562 is greater than 0.05. The Phase 1 checker returned
+\texttt{PASS\_OM\_PHASE1\_REPLICATED\_AT\_SCALE}. Its exact artifact reason
+was that the point estimate 0.84316565 is at least 0.05 and the CI lower bound
+0.83343496 is greater than 0.05.
 
 \section{Discussion}
 
-The Phase 0 result weakens the static-outlier hypothesis on this exact
+The Phase 0 result weakens the static-outlier hypothesis on the small Granite
 surface: under the preregistered rank-migration metric, most position-100
-top-1\% channels do not remain rank-stationary through position 10000.
-This keeps OutlierMigrate alive as a candidate branch. It does not establish
-that migration-aware intervention improves model quality, latency, memory, or
-robustness.
+top-1\% channels do not remain rank-stationary through position 10000. Phase 1
+promotes the dynamic-outlier hypothesis within the Granite family because the
+effect direction replicated on a larger model, twice as many traces, and an
+extended decode-position grid.
 
-The highest-priority next branch is Phase 1 scale validation. Phase 1 must test
-whether the same observation survives a larger frozen surface before any method
-paper can claim a reusable mechanism.
+This is the strongest OutlierMigrate evidence so far and keeps the branch
+alive as a positive-method candidate. It does not establish that
+migration-aware intervention improves model quality, latency, memory, or
+robustness. The highest-priority next gate is cross-model validation with
+audit checks that separate a reusable migration mechanism from a
+same-family artifact.
+
+The theoretical mechanism is plausible but not yet empirically validated
+outside Granite. In channel-wise gated recurrence or linear-attention layers,
+independent per-channel decay can make low-decay channels accumulate magnitude
+over long decode while high-decay channels shed magnitude. Under that
+mechanism, the top 1\% channels by magnitude at position 100 need not remain
+the top 1\% at later positions. Kimi Linear's KDA, Qwen3.6-style Gated
+DeltaNet blocks, and GLA-style gated recurrence provide architectural examples
+where channel-wise or fine-grained data-dependent gating is a first-class
+operation \citep{kimilinear2025,qwen36hf,yang2024gdn,yang2023gla}. This
+paragraph is a mechanism argument only; this draft has not measured migration
+on Kimi Linear, Qwen3.6, or GLA variants.
 
 \section{Limitations}
 
-This draft is not camera-ready. It reports one Phase 0 screen on one model
-snapshot, one prompt source, and 12 traces. There is no cross-model evidence,
-no same-family scale validation, no cross-family falsification pair, no seed
-repeat beyond the recorded bootstrap procedure, and no intervention showing
-that migration-aware handling improves an application metric. The result may
-also depend on the chosen decode positions, top-channel fraction, and rank
-delta threshold, all of which were fixed before analysis and should not be
-retuned on this packet.
+This draft is not camera-ready. It reports two positive gates in one model
+family. There is no cross-model validation, no strict cross-family
+falsification pair, no contamination audit, no independent seed repeat beyond
+the recorded bootstrap procedure, and no intervention showing that
+migration-aware handling improves an application metric. The result may also
+depend on the chosen decode positions, top-channel fraction, and rank-delta
+threshold, all of which were fixed before analysis and should not be retuned
+on these packets.
+
+The empirical measurement here is on Granite Mamba-2-style SSM hybrids. The
+planned Phase 2 cross-validation should extend the same preregistered logic to
+delta-rule linear-attention hybrids such as Qwen3.6 and Kimi Linear before the
+paper claims architectural generality. Generalization to other gated
+recurrence variants, including RWKV-7 and GLA-style systems, is not
+established by these results.
 
 \section{Reproducibility Statement}
 
-The result packet is
+The Phase 0 result packet is
 \url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z}.
 It includes \texttt{environment.json}, \texttt{model\_provenance.json},
 \texttt{prompt\_manifest.json}, \texttt{command\_metadata.json},
 \texttt{random\_seed.json}, \texttt{metrics.json},
-\texttt{checker\_result.json}, and \texttt{artifact\_check.json}. The model
-snapshot commit is
-\texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}. The recorded command was:
+\texttt{bootstrap\_ci.json}, \texttt{checker\_result.json}, and
+\texttt{artifact\_check.json}. The recorded Phase 0 command was:
 
 \begin{verbatim}
 experimental/shared/run_phase0_branch.py --branch outlier_migrate
 \end{verbatim}
 
-The checker decision and exact Phase 0 numbers in this draft are taken from
-the result directory above.
+The Phase 1 result packet is
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z}.
+It includes the same artifact classes and records the Granite-4.0-H-Small
+snapshot commit
+\texttt{b8c0982bab7fde4eb48110f5a069527c008fab39}. The recorded Phase 1
+command was:
+
+\begin{verbatim}
+experimental/outlier_migrate/phase1/run_om_phase1.py
+\end{verbatim}
+
+The checker decisions and exact numbers in this draft are taken from the two
+result directories above.
 
 \section{Ethics Statement}
 
 This is an activation-analysis systems study on benchmark prompts. The current
 artifact does not make deployment, user-data, safety, or capability-improvement
-claims. The main ethical risk is overclaiming a Phase 0 screen as a validated
-positive method; this draft explicitly rejects that interpretation until Phase
-1 scale validation passes.
+claims. The main ethical risk is overclaiming same-family Phase 0 and Phase 1
+evidence as a validated cross-model positive method; this draft explicitly
+rejects that interpretation until cross-model validation and audits pass.
+
+\begin{thebibliography}{9}
+
+\bibitem[Qwen Team(2026)]{qwen36hf}
+Qwen Team.
+\newblock Qwen3.6-35B-A3B model card.
+\newblock Hugging Face, 2026.
+\newblock \url{https://huggingface.co/Qwen/Qwen3.6-35B-A3B}.
+
+\bibitem[Yang et~al.(2023)]{yang2023gla}
+Songlin Yang, Bailin Wang, Yikang Shen, Rameswar Panda, and Yoon Kim.
+\newblock Gated Linear Attention Transformers with Hardware-Efficient
+Training.
+\newblock arXiv:2312.06635, 2023.
+\newblock \url{https://arxiv.org/abs/2312.06635}.
+
+\bibitem[Yang et~al.(2024)]{yang2024gdn}
+Songlin Yang, Jan Kautz, and Ali Hatamizadeh.
+\newblock Gated Delta Networks: Improving Mamba2 with Delta Rule.
+\newblock arXiv:2412.06464, 2024.
+\newblock \url{https://arxiv.org/abs/2412.06464}.
+
+\bibitem[Zhang et~al.(2025)]{kimilinear2025}
+Kimi Team: Yu Zhang et~al.
+\newblock Kimi Linear: An Expressive, Efficient Attention Architecture.
+\newblock arXiv:2510.26692, 2025.
+\newblock \url{https://arxiv.org/abs/2510.26692}.
+
+\end{thebibliography}
 
 \end{document}
