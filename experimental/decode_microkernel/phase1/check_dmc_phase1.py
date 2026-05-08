@@ -203,6 +203,7 @@ def validate_fixed_inputs(
     for source_row in hybrid_metrics.get("rows", []):
         hybrid_required.append(str(source_row["nsys_artifact"]))
         hybrid_required.append(f"logs/client_{source_row['run_id']}.log")
+        hybrid_required.append(f"logs/nsys_server_{source_row['run_id']}.log")
     validate_manifest_packet(
         packet=packet_by_role(manifest, "phase0_pass_packet"),
         packet_role="phase0_pass_packet",
@@ -254,6 +255,18 @@ def validate_fixed_inputs(
             infra_reasons.append(f"{run_id}: missing source_client_log")
         elif row.get("source_client_log_sha256") != file_sha256(client_path):
             infra_reasons.append(f"{run_id}: source_client_log_sha256 mismatch")
+        server_rel = source_relative(str(row.get("source_server_log", "")))
+        if server_rel is None:
+            infra_reasons.append(f"{run_id}: source_server_log must be packet-relative")
+        else:
+            expected_server_rel = Path("logs") / f"nsys_server_{run_id}.log"
+            server_path = HYBRID_PACKET / server_rel
+            if server_rel != expected_server_rel:
+                infra_reasons.append(f"{run_id}: source_server_log does not match fixed trace row")
+            if not server_path.is_file():
+                infra_reasons.append(f"{run_id}: missing source_server_log")
+            elif row.get("source_server_log_sha256") != file_sha256(server_path):
+                infra_reasons.append(f"{run_id}: source_server_log_sha256 mismatch")
 
 
 def load_timing_samples(run_dir: Path, row: dict[str, Any], infra_reasons: list[str]) -> dict[str, Any] | None:
@@ -278,6 +291,90 @@ def load_timing_samples(run_dir: Path, row: dict[str, Any], infra_reasons: list[
     return samples
 
 
+def load_hashed_json_artifact(
+    run_dir: Path,
+    *,
+    rel_field: str,
+    sha_field: str,
+    row: dict[str, Any],
+    infra_reasons: list[str],
+) -> dict[str, Any] | None:
+    run_id = str(row.get("run_id"))
+    rel = source_relative(str(row.get(rel_field, "")))
+    if rel is None:
+        infra_reasons.append(f"{run_id}: {rel_field} must be relative")
+        return None
+    path = run_dir / rel
+    if not path.is_file():
+        infra_reasons.append(f"{run_id}: missing {rel_field} artifact")
+        return None
+    if row.get(sha_field) != file_sha256(path):
+        infra_reasons.append(f"{run_id}: {sha_field} mismatch")
+    try:
+        return load_json(path)
+    except Exception as exc:
+        infra_reasons.append(f"{run_id}: invalid {rel_field} JSON: {exc!r}")
+        return None
+
+
+def validate_launch_audit(run_dir: Path, row: dict[str, Any], infra_reasons: list[str]) -> None:
+    run_id = str(row.get("run_id"))
+    audit = load_hashed_json_artifact(
+        run_dir,
+        rel_field="launch_audit_path",
+        sha_field="launch_audit_sha256",
+        row=row,
+        infra_reasons=infra_reasons,
+    )
+    if audit is None:
+        return
+    if audit.get("schema_version") != "dmc_phase1_launch_audit_v1":
+        infra_reasons.append(f"{run_id}: launch audit schema mismatch")
+    if audit.get("profiler") != "torch.profiler":
+        infra_reasons.append(f"{run_id}: launch audit was not recorded with torch.profiler")
+    baseline = audit.get("baseline", {})
+    consolidated = audit.get("consolidated", {})
+    if int(baseline.get("kernel_call_count", -1)) != int(row.get("baseline_launch_count", -2)):
+        infra_reasons.append(f"{run_id}: baseline launch count does not match launch audit")
+    if int(consolidated.get("kernel_call_count", -1)) != int(row.get("consolidated_launch_count", -2)):
+        infra_reasons.append(f"{run_id}: consolidated launch count does not match launch audit")
+    if not baseline.get("kernel_names") or not consolidated.get("kernel_names"):
+        infra_reasons.append(f"{run_id}: launch audit missing CUDA kernel names")
+
+
+def validate_output_error(run_dir: Path, row: dict[str, Any], infra_reasons: list[str]) -> None:
+    run_id = str(row.get("run_id"))
+    baseline_rel = source_relative(str(row.get("baseline_output_path", "")))
+    consolidated_rel = source_relative(str(row.get("consolidated_output_path", "")))
+    if baseline_rel is None or consolidated_rel is None:
+        infra_reasons.append(f"{run_id}: output paths must be relative")
+        return
+    baseline_path = run_dir / baseline_rel
+    consolidated_path = run_dir / consolidated_rel
+    if not baseline_path.is_file() or not consolidated_path.is_file():
+        infra_reasons.append(f"{run_id}: missing saved output tensors")
+        return
+    if row.get("baseline_output_sha256") != file_sha256(baseline_path):
+        infra_reasons.append(f"{run_id}: baseline_output_sha256 mismatch")
+    if row.get("consolidated_output_sha256") != file_sha256(consolidated_path):
+        infra_reasons.append(f"{run_id}: consolidated_output_sha256 mismatch")
+    try:
+        import torch
+
+        baseline = torch.load(baseline_path, map_location="cpu")
+        consolidated = torch.load(consolidated_path, map_location="cpu")
+        diff = (baseline - consolidated).abs()
+        max_abs_error = float(diff.max().item())
+        max_rel_error = float((diff / baseline.abs().clamp_min(1e-4)).max().item())
+    except Exception as exc:
+        infra_reasons.append(f"{run_id}: cannot recompute output error from saved tensors: {exc!r}")
+        return
+    if not is_close(float(row.get("max_abs_error")), max_abs_error, tol=1e-7):
+        infra_reasons.append(f"{run_id}: max_abs_error does not match saved output tensors")
+    if not is_close(float(row.get("max_rel_error")), max_rel_error, tol=1e-7):
+        infra_reasons.append(f"{run_id}: max_rel_error does not match saved output tensors")
+
+
 def validate_row_infra(run_dir: Path, row: dict[str, Any], infra_reasons: list[str]) -> None:
     run_id = str(row.get("run_id"))
     if row.get("timing_source") != "torch.cuda.Event" or row.get("gpu_side_timing") is not True:
@@ -296,6 +393,8 @@ def validate_row_infra(run_dir: Path, row: dict[str, Any], infra_reasons: list[s
         infra_reasons.append(f"{run_id}: launch counts must be positive")
     if int(row.get("baseline_launch_count", 0)) <= int(row.get("consolidated_launch_count", 0)):
         infra_reasons.append(f"{run_id}: consolidated path does not have fewer launches")
+    validate_launch_audit(run_dir, row, infra_reasons)
+    validate_output_error(run_dir, row, infra_reasons)
     if float(row.get("baseline_ms_median", 0.0)) <= 0.0:
         infra_reasons.append(f"{run_id}: nonpositive baseline_ms_median")
     if float(row.get("consolidated_ms_median", 0.0)) <= 0.0:
@@ -433,7 +532,7 @@ def evaluate(run_dir: Path) -> dict[str, Any]:
     if metrics.get("thresholds") != THRESHOLDS:
         infra_reasons.append("threshold metadata mismatch")
     method = metrics.get("method", {})
-    if method.get("name") != "trace_derived_triton_packed_affine_replay":
+    if method.get("name") != "trace_derived_triton_packed_gating_replay":
         infra_reasons.append("method.name is not the preregistered consolidated replay method")
     if method.get("boundary_fusion_claim") is not False:
         infra_reasons.append("method metadata must explicitly reject boundary-fusion claim scope")
@@ -442,6 +541,15 @@ def evaluate(run_dir: Path) -> dict[str, Any]:
     timing = metrics.get("timing", {})
     if timing.get("source") != "torch.cuda.Event" or timing.get("gpu_side") is not True:
         infra_reasons.append("metrics timing source is not GPU-side CUDA event timing")
+    try:
+        environment = load_json(run_dir / "environment.json")
+        torch_env = environment.get("torch", {})
+        if torch_env.get("cuda_available") is not True:
+            infra_reasons.append("environment torch.cuda_available is not true")
+        if not torch_env.get("devices"):
+            infra_reasons.append("environment does not record a CUDA device")
+    except Exception as exc:
+        infra_reasons.append(f"cannot validate environment.json: {exc!r}")
 
     rows = metrics.get("rows", [])
     if not isinstance(rows, list):
@@ -475,10 +583,13 @@ def evaluate(run_dir: Path) -> dict[str, Any]:
                 infra_reasons.append(f"{row.get('run_id')}: latency_reduction_fraction formula mismatch")
             if not is_close(float(row["launch_reduction_fraction"]), expected_launch):
                 infra_reasons.append(f"{row.get('run_id')}: launch_reduction_fraction formula mismatch")
-            if not str(row.get("trace_derivation", "")).startswith(
-                ("phase0_", "source_", "role_template_from_phase0_")
-            ):
-                infra_reasons.append(f"{row.get('run_id')}: trace derivation is not auditable")
+            if not str(row.get("trace_derivation", "")).startswith("hybridkernel_server_log_"):
+                infra_reasons.append(f"{row.get('run_id')}: trace derivation is not fixed server-log based")
+            labels = row.get("trace_operation_labels", [])
+            if not isinstance(labels, list) or not labels:
+                infra_reasons.append(f"{row.get('run_id')}: missing trace operation labels")
+            if int(row.get("packed_gating_stages", 0)) != len(labels):
+                infra_reasons.append(f"{row.get('run_id')}: packed_gating_stages does not match labels")
         except Exception as exc:
             infra_reasons.append(f"{row.get('run_id')}: malformed metric row: {exc!r}")
 

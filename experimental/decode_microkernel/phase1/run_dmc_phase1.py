@@ -75,10 +75,13 @@ class Schedule:
     element_count: int
     stages: int
     class_weights: dict[str, float]
+    operation_labels: list[str]
     trace_derivation: str
     phase0_status: str
     source_nsys_artifact: str
     source_nsys_artifact_sha256: str
+    source_server_log: str
+    source_server_log_sha256: str
     source_client_log: str
     source_client_log_sha256: str
 
@@ -143,17 +146,64 @@ def ensure_fixed_packet(actual: Path, expected: Path, label: str) -> None:
 def classify_kernel(name: str) -> set[str]:
     lower = name.lower()
     classes: set[str] = set()
-    if "gemv" in lower:
+    if "gemv" in lower or "cutlass" in lower or "cublas" in lower:
         classes.add("gemv")
-    if "moe" in lower or "expert" in lower:
+    if "moe" in lower or "expert" in lower or "topkgating" in lower or "act_and_mul" in lower:
         classes.add("moe")
-    if "selective_scan" in lower or "devicescan" in lower:
+    if "selective_scan" in lower or "devicescan" in lower or "scan" in lower:
         classes.add("selective_scan")
-    if "elementwise" in lower or "copy" in lower or "add" in lower or "mul" in lower:
+    if "elementwise" in lower or "copy" in lower or "add" in lower or "mul" in lower or "silu" in lower:
         classes.add("elementwise")
     if "reduce" in lower or "red_" in lower or "scan" in lower:
         classes.add("reduction")
     return classes
+
+
+def server_log_kernel_summary(log_path: Path) -> list[tuple[str, int, int]]:
+    """Parse the committed Nsight Systems cuda_gpu_kern_sum text table."""
+
+    rows: list[tuple[str, int, int]] = []
+    in_table = False
+    for line in log_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if "Executing 'cuda_gpu_kern_sum'" in line:
+            in_table = True
+            continue
+        if not in_table:
+            continue
+        stripped = line.strip()
+        if not stripped:
+            if rows:
+                break
+            continue
+        if stripped.startswith("[7/") or stripped.startswith("Generated:"):
+            break
+        if not stripped[0].isdigit():
+            continue
+        parts = stripped.split(maxsplit=8)
+        if len(parts) < 9:
+            continue
+        try:
+            total_ns = int(parts[1])
+            launches = int(parts[2])
+        except ValueError:
+            continue
+        rows.append((parts[8], launches, total_ns))
+    if not rows:
+        raise ValueError(f"no cuda_gpu_kern_sum rows parsed from {log_path}")
+    return rows
+
+
+def class_breakdown_from_kernel_rows(rows: list[tuple[str, int, int]]) -> dict[str, dict[str, float | int]]:
+    breakdown: dict[str, dict[str, float | int]] = {}
+    for name, launches, total_ns in rows:
+        classes = classify_kernel(name)
+        if not classes:
+            classes = {"elementwise"}
+        for class_name in classes:
+            item = breakdown.setdefault(class_name, {"launches": 0, "time_ms": 0.0})
+            item["launches"] = int(item["launches"]) + int(launches)
+            item["time_ms"] = float(item["time_ms"]) + int(total_ns) / 1e6
+    return breakdown
 
 
 def parse_seed(row: dict[str, Any], fallback: int) -> int:
@@ -200,26 +250,22 @@ def stage_count_from_weights(class_weights: dict[str, float], decode_tokens: int
     return max(4, min(10, 3 + diversity_bonus + token_bonus + dominant_bonus))
 
 
-def build_role_templates(phase0_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
-    grouped: dict[str, list[dict[str, Any]]] = {}
-    for row in phase0_rows:
-        grouped.setdefault(str(row["row_role"]), []).append(row)
-    templates: dict[str, dict[str, Any]] = {}
-    for role, rows in grouped.items():
-        aggregate: dict[str, dict[str, float | int]] = {}
-        for row in rows:
-            for class_name, values in row.get("candidate_class_breakdown", {}).items():
-                item = aggregate.setdefault(class_name, {"launches": 0, "time_ms": 0.0})
-                item["launches"] = int(item["launches"]) + int(values.get("launches", 0))
-                item["time_ms"] = float(item["time_ms"]) + float(values.get("time_ms", 0.0))
-        decode_tokens = int(median(int(row.get("decode_tokens_total", 1024)) for row in rows))
-        weights = normalize_launch_weights(aggregate)
-        templates[role] = {
-            "decode_tokens": decode_tokens,
-            "class_weights": weights,
-            "stages": stage_count_from_weights(weights, decode_tokens),
-        }
-    return templates
+def operation_labels_from_weights(class_weights: dict[str, float], stages: int) -> list[str]:
+    weighted_classes = sorted(class_weights, key=lambda name: (-class_weights[name], name))
+    labels: list[str] = []
+    for index in range(stages):
+        class_name = weighted_classes[index % len(weighted_classes)]
+        if class_name == "moe":
+            labels.append("moe_gating_mix")
+        elif class_name == "selective_scan":
+            labels.append("selective_scan_state_update")
+        elif class_name == "gemv":
+            labels.append("gemv_epilogue_gated_affine")
+        elif class_name == "reduction":
+            labels.append("normalization_epilogue_mix")
+        else:
+            labels.append("elementwise_residual_mix")
+    return labels
 
 
 def build_schedules(*, phase0_packet: Path, hybrid_packet: Path) -> list[Schedule]:
@@ -227,7 +273,6 @@ def build_schedules(*, phase0_packet: Path, hybrid_packet: Path) -> list[Schedul
     hybrid_metrics = load_json(hybrid_packet / "profiler_metrics.json")
     phase0_by_run = {str(row["run_id"]): row for row in phase0_metrics.get("admitted_rows", [])}
     excluded_by_run = {str(row["run_id"]): row for row in phase0_metrics.get("excluded_rows", [])}
-    role_templates = build_role_templates(list(phase0_by_run.values()))
     schedules: list[Schedule] = []
 
     for index, source_row in enumerate(hybrid_metrics.get("rows", [])):
@@ -237,31 +282,21 @@ def build_schedules(*, phase0_packet: Path, hybrid_packet: Path) -> list[Schedul
         decode_tokens = decode_tokens_from_source_row(source_row)
         client_rel = f"logs/client_{run_id}.log"
         client_path = hybrid_packet / client_rel
+        server_log_rel = f"logs/nsys_server_{run_id}.log"
+        server_log_path = hybrid_packet / server_log_rel
         nsys_rel = str(source_row["nsys_artifact"])
-        nsys_path = hybrid_packet / nsys_rel
         phase0_row = phase0_by_run.get(run_id)
+        kernel_rows = server_log_kernel_summary(server_log_path)
+        class_weights = normalize_launch_weights(class_breakdown_from_kernel_rows(kernel_rows))
+        stages = stage_count_from_weights(class_weights, decode_tokens)
+        operation_labels = operation_labels_from_weights(class_weights, stages)
+        element_count = min(65536, max(4096, decode_tokens * 8))
         if phase0_row is not None:
-            class_weights = normalize_launch_weights(phase0_row["candidate_class_breakdown"])
-            element_count = int(phase0_row["decode_tokens_total"])
-            stages = stage_count_from_weights(class_weights, element_count)
-            derivation = "phase0_admitted_row_candidate_launch_weights"
             phase0_status = "admitted"
+            derivation = "hybridkernel_server_log_cuda_gpu_kern_sum_and_phase0_admitted_row"
         else:
-            try:
-                class_weights = normalize_launch_weights(sqlite_class_breakdown(nsys_path))
-                if class_weights == {"elementwise": 1.0}:
-                    raise ValueError("empty source KERNEL_SUMMARY")
-                stages = stage_count_from_weights(class_weights, decode_tokens)
-                derivation = "source_sqlite_kernel_summary_launch_weights"
-            except Exception:
-                template = role_templates[role]
-                class_weights = dict(template["class_weights"])
-                stages = int(template["stages"])
-                derivation = (
-                    "role_template_from_phase0_admitted_rows_due_empty_source_kernel_summary"
-                )
-            element_count = decode_tokens
             phase0_status = "excluded:" + str(excluded_by_run.get(run_id, {}).get("reason", "not_admitted"))
+            derivation = "hybridkernel_server_log_cuda_gpu_kern_sum_phase0_excluded_source_row"
 
         schedules.append(
             Schedule(
@@ -272,10 +307,13 @@ def build_schedules(*, phase0_packet: Path, hybrid_packet: Path) -> list[Schedul
                 element_count=element_count,
                 stages=stages,
                 class_weights=class_weights,
+                operation_labels=operation_labels,
                 trace_derivation=derivation,
                 phase0_status=phase0_status,
                 source_nsys_artifact=nsys_rel,
                 source_nsys_artifact_sha256=str(source_row["nsys_artifact_sha256"]),
+                source_server_log=server_log_rel,
+                source_server_log_sha256=file_sha256(server_log_path),
                 source_client_log=client_rel,
                 source_client_log_sha256=file_sha256(client_path),
             )
@@ -309,10 +347,14 @@ def load_triton_kernel() -> tuple[Any, Any]:
     import triton.language as tl
 
     @triton.jit
-    def packed_affine_replay_kernel(
+    def packed_gating_replay_kernel(
         x_ptr,
         scale_ptr,
         bias_ptr,
+        gate_scale_ptr,
+        gate_bias_ptr,
+        gate_base_ptr,
+        residual_ptr,
         out_ptr,
         n_elements,
         STAGES: tl.constexpr,
@@ -321,13 +363,20 @@ def load_triton_kernel() -> tuple[Any, Any]:
         offsets = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)
         mask = offsets < n_elements
         value = tl.load(x_ptr + offsets, mask=mask, other=0.0).to(tl.float32)
+        gate_base = tl.load(gate_base_ptr + offsets, mask=mask, other=0.0).to(tl.float32)
+        residual = tl.load(residual_ptr + offsets, mask=mask, other=0.0).to(tl.float32)
         for index in tl.static_range(0, STAGES):
             scale = tl.load(scale_ptr + index).to(tl.float32)
             bias = tl.load(bias_ptr + index).to(tl.float32)
-            value = value * scale + bias
+            gate_scale = tl.load(gate_scale_ptr + index).to(tl.float32)
+            gate_bias = tl.load(gate_bias_ptr + index).to(tl.float32)
+            gate_arg = gate_base * gate_scale + gate_bias
+            gate = 1.0 / (1.0 + tl.exp(-gate_arg))
+            value = (value * scale + bias) * gate + residual * (1.0 - gate)
+            residual = residual * 0.998 + value * 0.002
         tl.store(out_ptr + offsets, value, mask=mask)
 
-    return triton, packed_affine_replay_kernel
+    return triton, packed_gating_replay_kernel
 
 
 def make_inputs(schedule: Schedule) -> dict[str, Any]:
@@ -337,27 +386,54 @@ def make_inputs(schedule: Schedule) -> dict[str, Any]:
     torch.cuda.manual_seed_all(schedule.seed)
     generator = torch.Generator(device="cuda")
     generator.manual_seed(schedule.seed)
-    x = torch.randn(schedule.element_count, device="cuda", dtype=torch.float32, generator=generator)
+    x = torch.rand(schedule.element_count, device="cuda", dtype=torch.float32, generator=generator) + 0.25
+    gate_base = torch.rand(
+        schedule.element_count, device="cuda", dtype=torch.float32, generator=generator
+    ) - 0.5
+    residual = torch.rand(
+        schedule.element_count, device="cuda", dtype=torch.float32, generator=generator
+    ) + 0.1
     names = sorted(schedule.class_weights)
     scales: list[float] = []
     biases: list[float] = []
+    gate_scales: list[float] = []
+    gate_biases: list[float] = []
     for index in range(schedule.stages):
         name = names[index % len(names)]
         weight = float(schedule.class_weights[name])
         scales.append(1.0 + 0.003 * (index + 1) + 0.002 * weight)
         biases.append(0.0005 * (index + 1) * (1.0 + weight))
+        gate_scales.append(0.70 + 0.01 * (index + 1) + 0.03 * weight)
+        gate_biases.append(-0.05 + 0.004 * (index + 1) + 0.02 * weight)
     return {
         "x": x,
+        "gate_base": gate_base,
+        "residual": residual,
         "scales": torch.tensor(scales, device="cuda", dtype=torch.float32),
         "biases": torch.tensor(biases, device="cuda", dtype=torch.float32),
+        "gate_scales": torch.tensor(gate_scales, device="cuda", dtype=torch.float32),
+        "gate_biases": torch.tensor(gate_biases, device="cuda", dtype=torch.float32),
     }
 
 
-def baseline_replay(x: Any, scales: Any, biases: Any, stages: int) -> Any:
+def baseline_replay(
+    x: Any,
+    scales: Any,
+    biases: Any,
+    gate_scales: Any,
+    gate_biases: Any,
+    gate_base: Any,
+    residual: Any,
+    stages: int,
+) -> Any:
+    import torch
+
     output = x
+    residual_state = residual
     for index in range(stages):
-        output = output * scales[index]
-        output = output + biases[index]
+        gate = torch.sigmoid(gate_base * gate_scales[index] + gate_biases[index])
+        output = (output * scales[index] + biases[index]) * gate + residual_state * (1.0 - gate)
+        residual_state = residual_state * 0.998 + output * 0.002
     return output
 
 
@@ -366,6 +442,10 @@ def consolidated_replay(
     x: Any,
     scales: Any,
     biases: Any,
+    gate_scales: Any,
+    gate_biases: Any,
+    gate_base: Any,
+    residual: Any,
     stages: int,
     triton_module: Any,
     kernel: Any,
@@ -375,7 +455,19 @@ def consolidated_replay(
     block = 256
     output = torch.empty_like(x)
     grid = (triton_module.cdiv(x.numel(), block),)
-    kernel[grid](x, scales, biases, output, x.numel(), STAGES=stages, BLOCK=block)
+    kernel[grid](
+        x,
+        scales,
+        biases,
+        gate_scales,
+        gate_biases,
+        gate_base,
+        residual,
+        output,
+        x.numel(),
+        STAGES=stages,
+        BLOCK=block,
+    )
     return output
 
 
@@ -404,6 +496,29 @@ def measure_cuda_event_medians(
     return times, last_output
 
 
+def cuda_kernel_events_from_profile(fn: Callable[[], Any]) -> dict[str, Any]:
+    import torch
+    from torch.profiler import ProfilerActivity, profile
+
+    torch.cuda.synchronize()
+    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA]) as prof:
+        fn()
+        torch.cuda.synchronize()
+    events = [
+        {
+            "name": event.name,
+            "device_time_us": float(getattr(event, "device_time_total", 0.0)),
+        }
+        for event in prof.events()
+        if str(getattr(event, "device_type", "")).endswith("CUDA")
+    ]
+    return {
+        "kernel_call_count": len(events),
+        "kernel_names": [event["name"] for event in events],
+        "events": events,
+    }
+
+
 def run_schedule(
     *,
     schedule: Schedule,
@@ -417,14 +532,31 @@ def run_schedule(
 
     inputs = make_inputs(schedule)
     x = inputs["x"]
+    gate_base = inputs["gate_base"]
+    residual = inputs["residual"]
     scales = inputs["scales"]
     biases = inputs["biases"]
+    gate_scales = inputs["gate_scales"]
+    gate_biases = inputs["gate_biases"]
     input_sha = tensor_sha256(x)
+    gate_base_sha = tensor_sha256(gate_base)
+    residual_sha = tensor_sha256(residual)
     scale_sha = tensor_sha256(scales)
     bias_sha = tensor_sha256(biases)
+    gate_scale_sha = tensor_sha256(gate_scales)
+    gate_bias_sha = tensor_sha256(gate_biases)
 
     baseline_times, baseline_output = measure_cuda_event_medians(
-        lambda: baseline_replay(x, scales, biases, schedule.stages),
+        lambda: baseline_replay(
+            x,
+            scales,
+            biases,
+            gate_scales,
+            gate_biases,
+            gate_base,
+            residual,
+            schedule.stages,
+        ),
         warmup=warmup,
         measured=measured,
     )
@@ -433,6 +565,10 @@ def run_schedule(
             x=x,
             scales=scales,
             biases=biases,
+            gate_scales=gate_scales,
+            gate_biases=gate_biases,
+            gate_base=gate_base,
+            residual=residual,
             stages=schedule.stages,
             triton_module=triton_module,
             kernel=kernel,
@@ -440,15 +576,41 @@ def run_schedule(
         warmup=warmup,
         measured=measured,
     )
+    baseline_launch_audit = cuda_kernel_events_from_profile(
+        lambda: baseline_replay(
+            x,
+            scales,
+            biases,
+            gate_scales,
+            gate_biases,
+            gate_base,
+            residual,
+            schedule.stages,
+        )
+    )
+    consolidated_launch_audit = cuda_kernel_events_from_profile(
+        lambda: consolidated_replay(
+            x=x,
+            scales=scales,
+            biases=biases,
+            gate_scales=gate_scales,
+            gate_biases=gate_biases,
+            gate_base=gate_base,
+            residual=residual,
+            stages=schedule.stages,
+            triton_module=triton_module,
+            kernel=kernel,
+        )
+    )
 
     diff = (baseline_output - consolidated_output).abs()
     max_abs_error = float(diff.max().item())
-    denom = baseline_output.abs().clamp_min(1e-8)
+    denom = baseline_output.abs().clamp_min(1e-4)
     max_rel_error = float((diff / denom).max().item())
     baseline_ms_median = float(median(baseline_times))
     consolidated_ms_median = float(median(consolidated_times))
-    baseline_launch_count = 2 * schedule.stages
-    consolidated_launch_count = 1
+    baseline_launch_count = int(baseline_launch_audit["kernel_call_count"])
+    consolidated_launch_count = int(consolidated_launch_audit["kernel_call_count"])
     latency_reduction_fraction = (
         (baseline_ms_median - consolidated_ms_median) / baseline_ms_median
         if baseline_ms_median > 0
@@ -469,6 +631,22 @@ def run_schedule(
             "consolidated_ms": consolidated_times,
         },
     )
+    launch_audit_rel = Path("launch_audits") / f"{schedule.run_id}.json"
+    write_json(
+        run_dir / launch_audit_rel,
+        {
+            "schema_version": "dmc_phase1_launch_audit_v1",
+            "run_id": schedule.run_id,
+            "profiler": "torch.profiler",
+            "baseline": baseline_launch_audit,
+            "consolidated": consolidated_launch_audit,
+        },
+    )
+    baseline_output_rel = Path("outputs") / f"{schedule.run_id}_baseline.pt"
+    consolidated_output_rel = Path("outputs") / f"{schedule.run_id}_consolidated.pt"
+    (run_dir / baseline_output_rel).parent.mkdir(parents=True, exist_ok=True)
+    torch.save(baseline_output.detach().cpu(), run_dir / baseline_output_rel)
+    torch.save(consolidated_output.detach().cpu(), run_dir / consolidated_output_rel)
 
     return {
         "run_id": schedule.run_id,
@@ -482,13 +660,16 @@ def run_schedule(
         "gpu_side_timing": True,
         "source_nsys_artifact": schedule.source_nsys_artifact,
         "source_nsys_artifact_sha256": schedule.source_nsys_artifact_sha256,
+        "source_server_log": schedule.source_server_log,
+        "source_server_log_sha256": schedule.source_server_log_sha256,
         "source_client_log": schedule.source_client_log,
         "source_client_log_sha256": schedule.source_client_log_sha256,
         "phase0_row_status": schedule.phase0_status,
         "trace_derivation": schedule.trace_derivation,
         "element_count": schedule.element_count,
-        "packed_affine_stages": schedule.stages,
+        "packed_gating_stages": schedule.stages,
         "trace_class_weights": schedule.class_weights,
+        "trace_operation_labels": schedule.operation_labels,
         "baseline_launch_count": baseline_launch_count,
         "consolidated_launch_count": consolidated_launch_count,
         "launch_reduction_fraction": launch_reduction_fraction,
@@ -499,10 +680,20 @@ def run_schedule(
         "max_rel_error": max_rel_error,
         "baseline_input_tensor_sha256": input_sha,
         "consolidated_input_tensor_sha256": input_sha,
+        "gate_base_tensor_sha256": gate_base_sha,
+        "residual_tensor_sha256": residual_sha,
         "scale_tensor_sha256": scale_sha,
         "bias_tensor_sha256": bias_sha,
+        "gate_scale_tensor_sha256": gate_scale_sha,
+        "gate_bias_tensor_sha256": gate_bias_sha,
         "timing_samples_path": str(samples_rel),
         "timing_samples_sha256": file_sha256(run_dir / samples_rel),
+        "launch_audit_path": str(launch_audit_rel),
+        "launch_audit_sha256": file_sha256(run_dir / launch_audit_rel),
+        "baseline_output_path": str(baseline_output_rel),
+        "baseline_output_sha256": file_sha256(run_dir / baseline_output_rel),
+        "consolidated_output_path": str(consolidated_output_rel),
+        "consolidated_output_sha256": file_sha256(run_dir / consolidated_output_rel),
     }
 
 
@@ -560,6 +751,7 @@ def build_manifest(phase0_packet: Path, hybrid_packet: Path, hybrid_metrics: dic
     for row in hybrid_metrics.get("rows", []):
         hybrid_files.append(str(row["nsys_artifact"]))
         hybrid_files.append(f"logs/client_{row['run_id']}.log")
+        hybrid_files.append(f"logs/nsys_server_{row['run_id']}.log")
     return {
         "schema_version": "dmc_phase1_input_manifest_v1",
         "created_at_utc": utc_now(),
@@ -714,12 +906,16 @@ def main(argv: list[str] | None = None) -> int:
             "hybrid_profiler_metrics_sha256": file_sha256(hybrid_packet / "profiler_metrics.json"),
             "thresholds": THRESHOLDS,
             "method": {
-                "name": "trace_derived_triton_packed_affine_replay",
-                "baseline": "repeated small PyTorch CUDA affine micro-operations",
-                "consolidated": "single Triton packed affine replay kernel",
+                "name": "trace_derived_triton_packed_gating_replay",
+                "baseline": (
+                    "repeated PyTorch CUDA gating/routing/state-update micro-operations "
+                    "selected from fixed Nsight kernel-family summaries"
+                ),
+                "consolidated": "single Triton packed gating replay kernel",
                 "claim_scope": "decode micro-operation replay only",
                 "boundary_fusion_claim": False,
                 "cpu_only_benchmark": False,
+                "trace_selection_source": "committed HybridKernel logs/nsys_server_<run_id>.log cuda_gpu_kern_sum tables",
             },
             "timing": {
                 "source": "torch.cuda.Event",
