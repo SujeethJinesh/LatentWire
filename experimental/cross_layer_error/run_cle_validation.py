@@ -83,8 +83,10 @@ def build_command_metadata(args: argparse.Namespace, run_dir: Path, argv: list[s
 def fail_infra(run_dir: Path, run_events_path: Path, reasons: list[str]) -> int:
     append_event(run_events_path, "infra_failed", reasons=reasons)
     write_json(run_dir / "infra_error.json", {"schema_version": f"{SCHEMA_VERSION}_infra_error", "reasons": reasons})
-    write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
     print(json.dumps({"run_dir": str(run_dir), "status": checker.FAIL_INFRA, "reasons": reasons}, indent=2))
+    sys.stdout.flush()
+    sys.stderr.flush()
+    write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
     return 1
 
 
@@ -712,8 +714,14 @@ def run(args: argparse.Namespace, argv: list[str] | None) -> int:
                         depth=depth,
                     )
                     logit_entries.append(entry)
-                    diff = bf16_logits[prompt_index].to("cpu").to(dtype=logits.dtype) - logits.to("cpu")
-                    l2 = float(__import__("torch").linalg.vector_norm(diff.to(__import__("torch").float32)).item())
+                    import numpy as np
+
+                    bf16_array = np.fromfile(
+                        run_dir / f"logits/bf16_prompt_{prompt_index:03d}.f32",
+                        dtype="<f4",
+                    )
+                    fp4_array = np.fromfile(run_dir / entry["path"], dtype="<f4")
+                    l2 = float(np.sqrt(float(np.sum((bf16_array - fp4_array) ** 2))))
                     row = {
                         "schema_version": f"{SCHEMA_VERSION}_raw_drift_row",
                         "prompt_index": prompt_index,
@@ -751,8 +759,10 @@ def run(args: argparse.Namespace, argv: list[str] | None) -> int:
         write_json(run_dir / "drift_metrics.json", metrics)
         write_json(run_dir / "bootstrap_ci.json", bootstrap_ci)
         append_event(run_events_path, "run_completed")
-        write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
         print(json.dumps({"run_dir": str(run_dir), "depth_metrics": metrics["depth_metrics"]}, indent=2, sort_keys=True))
+        sys.stdout.flush()
+        sys.stderr.flush()
+        write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
         return 0
     except Exception as exc:
         return fail_infra(run_dir, run_events_path, [repr(exc)])
