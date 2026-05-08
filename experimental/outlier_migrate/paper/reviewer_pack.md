@@ -21,6 +21,12 @@ but it is not a camera-ready paper, not cross-model evidence, and not yet
 evidence that a migration-aware intervention improves quality, latency,
 memory, or robustness.
 
+Important novelty boundary: do not claim this is the first dynamic-outlier
+finding in Mamba. QMamba and OuroMamba already document dynamic hidden-state
+or activation-outlier behavior in vision Mamba settings. The paper's narrow
+new contribution is measuring the dynamic regime in hybrid language-model
+long reasoning traces under preregistered Phase 0/1 gates.
+
 ## Strongest Evidence
 
 | Gate item | Phase 0 exact value | Phase 1 exact value | Decision relevance |
@@ -62,14 +68,26 @@ memory, or robustness.
 
 ## Related-Work Sources Added
 
+- QMamba primary source: `https://arxiv.org/abs/2501.13624`
+- OuroMamba primary source: `https://arxiv.org/abs/2503.10959`
+- Quamba primary source: `https://arxiv.org/abs/2410.13229`
+- Quamba-SE primary source: `https://arxiv.org/abs/2601.09451`
+- Mamba-PTQ primary source: `https://arxiv.org/abs/2407.12397`
+- MambaQuant primary source: `https://arxiv.org/abs/2501.13484`
+- SmoothQuant primary source: `https://arxiv.org/abs/2211.10438`
+- AWQ primary source: `https://arxiv.org/abs/2306.00978`
+- QuaRot primary source: `https://arxiv.org/abs/2404.00456`
+- KVQuant primary source: `https://arxiv.org/abs/2401.18079`
+- BlockDialect primary source: `https://arxiv.org/abs/2501.01144`
 - Kimi Linear primary source: `https://arxiv.org/abs/2510.26692`
 - Qwen3.6 official model card: `https://huggingface.co/Qwen/Qwen3.6-35B-A3B`
 - Gated Delta Networks primary source: `https://arxiv.org/abs/2412.06464`
 - Gated Linear Attention primary source: `https://arxiv.org/abs/2312.06635`
 
 Use these sources only for theoretical motivation and architectural context.
-Do not claim that Kimi Linear, Qwen3.6, GLA, or RWKV-7 empirically exhibit
-OutlierMigrate migration until those models are measured.
+Do not claim that Kimi Linear, Qwen3.6, GLA, RWKV-7, or any other unmeasured
+language model empirically exhibits OutlierMigrate migration until that model
+is measured.
 
 ## Reviewer Risks
 
@@ -80,6 +98,12 @@ OutlierMigrate migration until those models are measured.
   procedure.
 - The result says outlier ranks migrate; it does not show that any
   migration-aware intervention improves quality, latency, memory, or robustness.
+- Dynamic outliers are not novel to Mamba broadly; QMamba and OuroMamba are
+  prior evidence in vision Mamba. The paper must keep the claim scoped to
+  hybrid LLM long reasoning traces.
+- Static-protection systems (BlockDialect, AWQ, SmoothQuant, QuaRot, KVQuant)
+  are deployment motivation, not defeated baselines. The paper can say they
+  motivate validation of static maps on hybrid decode, not that they fail.
 - The mechanism discussion is theoretical. Channel-wise gating, KDA,
   Qwen3.6-style Gated DeltaNet, and GLA-style mechanisms plausibly explain why
   top-magnitude channels can change over decode, but no unmeasured model should
@@ -93,9 +117,11 @@ OutlierMigrate migration until those models are measured.
 - saturated: Phase 0 and Phase 1 decision surfaces are closed and passed.
 - alive: same-family dynamic outlier migration in Granite hybrid decode traces.
 - promoted: the dynamic-outlier hypothesis within Granite-family hybrids.
-- weakened: the static-outlier explanation on the Phase 0 and Phase 1 surfaces.
+- weakened: a fixed position-100 outlier-map interpretation on the Granite
+  Phase 0 and Phase 1 rank-migration surfaces.
 - not established: cross-model transfer, delta-rule linear-attention validation,
   RWKV-7/GLA generalization, or a positive intervention method.
-- next exact gate: preregistered cross-model validation with audits, including
-  delta-rule linear-attention hybrids such as Qwen3.6 and Kimi Linear, before
-  making any submission-level method claim.
+- next exact gate during the 10-hour authorized window: partial Phase 2
+  cross-validation on `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16` only.
+  Qwen3.6 and Kimi Linear are deferred pending vLLM compatibility and must not
+  be downloaded during this window.

@@ -385,6 +385,7 @@ entries:
     models:
       nemotron3_nano: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16
       qwen36: Qwen/Qwen3.6-35B-A3B
+      kimi_linear: moonshotai/Kimi-Linear-48B-A3B-Instruct
 
   - id: cross_model_validation_residual_migration
     project: residual_migration
@@ -405,6 +406,7 @@ entries:
     models:
       nemotron3_nano: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16
       qwen36: Qwen/Qwen3.6-35B-A3B
+      kimi_linear: moonshotai/Kimi-Linear-48B-A3B-Instruct
 
   - id: cross_model_validation_ssm_lifecycle
     project: ssm_lifecycle
@@ -425,3 +427,4 @@ entries:
     models:
       nemotron3_nano: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16
       qwen36: Qwen/Qwen3.6-35B-A3B
+      kimi_linear: moonshotai/Kimi-Linear-48B-A3B-Instruct

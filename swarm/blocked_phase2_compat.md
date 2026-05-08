@@ -2,6 +2,14 @@
 
 Blocked at: 2026-05-08T21:28:19Z
 
+Resolved for the 10-hour authorized window at: 2026-05-08T21:44:47Z
+
+Resolution: `swarm/goal.md` now authorizes a non-vLLM-upgrade path. The
+Qwen3.6/Kimi Linear compatibility block remains for full Phase 2 validation,
+but the swarm may resume by running Nemotron-3-only partial cross-validation
+and documenting Qwen3.6/Kimi Linear as deferred. vLLM upgrade and Qwen3.6/Kimi
+weight downloads remain forbidden during the window.
+
 Current entry: `cross_model_validation_outlier_migrate`
 
 ## Summary
