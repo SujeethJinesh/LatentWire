@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "experimental/cross_layer_error/run_cle_validation.py"
+  ],
+  "batch_size": 1,
+  "branch": "cross_layer_error",
+  "created_at_utc": "2026-05-08T19:16:03Z",
+  "cwd": "/workspace/LatentWire",
+  "decode_position": 1000,
+  "depths": [
+    1,
+    5,
+    10,
+    15
+  ],
+  "device": "auto",
+  "dtype": "bfloat16",
+  "generation": {
+    "do_sample": false,
+    "eos_policy": "continue decoding until decode_position so every prompt has logits at position 1000",
+    "manual_cache_decode": true,
+    "num_beams": 1
+  },
+  "measurement_semantics": "A BF16 greedy trace token prefix is generated once and written to trace_tokens.jsonl. BF16 and each FP4-depth variant are then teacher-forced over that exact prefix; drift compares logits after consuming generated token 1000.",
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "prompt_file": "/workspace/LatentWire/experimental/shared/prompts/aime_2025_indices_0_11.jsonl",
+  "run_dir": "/workspace/LatentWire/experimental/cross_layer_error/results/cle_theoretical_20260508T191327Z",
+  "schema_version": "cle_theoretical_v1_command"
+}

@@ -1,0 +1,49 @@
+{
+  "depth_metrics": [
+    {
+      "bootstrap_ci95": {
+        "ci95_high": 321.07791007647427,
+        "ci95_low": 199.47787392131627
+      },
+      "depth": 1,
+      "mean_l2_drift": 252.78462756756122,
+      "predicted_bound_l2": 1323.2819430699453,
+      "predicted_to_measured_ratio": 5.2348196795166055,
+      "prompt_count": 12
+    },
+    {
+      "bootstrap_ci95": {
+        "ci95_high": 472.0482870268835,
+        "ci95_low": 341.61210200894214
+      },
+      "depth": 5,
+      "mean_l2_drift": 402.63182934109807,
+      "predicted_bound_l2": 2011.7596640493757,
+      "predicted_to_measured_ratio": 4.996524162884974,
+      "prompt_count": 12
+    },
+    {
+      "bootstrap_ci95": {
+        "ci95_high": 531.0936687232418,
+        "ci95_low": 398.27372784149634
+      },
+      "depth": 10,
+      "mean_l2_drift": 466.36588408768,
+      "predicted_bound_l2": 2669.6676375036664,
+      "predicted_to_measured_ratio": 5.724405940898007,
+      "prompt_count": 12
+    },
+    {
+      "bootstrap_ci95": {
+        "ci95_high": 546.8640814839874,
+        "ci95_low": 398.9710663600348
+      },
+      "depth": 15,
+      "mean_l2_drift": 472.08004427928694,
+      "predicted_bound_l2": 3267.8287115543008,
+      "predicted_to_measured_ratio": 6.922192012041549,
+      "prompt_count": 12
+    }
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/cross_layer_error/results/cle_theoretical_20260508T191327Z"
+}

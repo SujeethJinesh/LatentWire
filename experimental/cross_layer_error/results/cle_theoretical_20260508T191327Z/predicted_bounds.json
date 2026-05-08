@@ -1,0 +1,2923 @@
+{
+  "bound_formula": "C_out * sqrt(sum_{l in first N layers} eta_l^2)",
+  "bounds_by_depth": [
+    {
+      "depth": 1,
+      "layer_error_l2_quadrature": 136.00490712836736,
+      "layer_error_l2_sum": 136.00490712836736,
+      "output_scale": 9.729663223261305,
+      "predicted_bound_l2": 1323.2819430699453,
+      "quantized_layers": [
+        "model.layers.0"
+      ],
+      "sigma_block_sum": 0.00010402658353270616,
+      "sigma_outlier_sum": 0.00044062881948364905
+    },
+    {
+      "depth": 5,
+      "layer_error_l2_quadrature": 206.76560101687159,
+      "layer_error_l2_sum": 446.9952343752333,
+      "output_scale": 9.729663223261305,
+      "predicted_bound_l2": 2011.7596640493757,
+      "quantized_layers": [
+        "model.layers.0",
+        "model.layers.1",
+        "model.layers.2",
+        "model.layers.3",
+        "model.layers.4"
+      ],
+      "sigma_block_sum": 0.00024123362562706593,
+      "sigma_outlier_sum": 0.0009397864970181952
+    },
+    {
+      "depth": 10,
+      "layer_error_l2_quadrature": 274.3843827113283,
+      "layer_error_l2_sum": 827.0824285879036,
+      "output_scale": 9.729663223261305,
+      "predicted_bound_l2": 2669.6676375036664,
+      "quantized_layers": [
+        "model.layers.0",
+        "model.layers.1",
+        "model.layers.2",
+        "model.layers.3",
+        "model.layers.4",
+        "model.layers.5",
+        "model.layers.6",
+        "model.layers.7",
+        "model.layers.8",
+        "model.layers.9"
+      ],
+      "sigma_block_sum": 0.0004267404374003517,
+      "sigma_outlier_sum": 0.0014815705014436288
+    },
+    {
+      "depth": 15,
+      "layer_error_l2_quadrature": 335.8624688819343,
+      "layer_error_l2_sum": 1257.3916714277268,
+      "output_scale": 9.729663223261305,
+      "predicted_bound_l2": 3267.8287115543008,
+      "quantized_layers": [
+        "model.layers.0",
+        "model.layers.1",
+        "model.layers.2",
+        "model.layers.3",
+        "model.layers.4",
+        "model.layers.5",
+        "model.layers.6",
+        "model.layers.7",
+        "model.layers.8",
+        "model.layers.9",
+        "model.layers.10",
+        "model.layers.11",
+        "model.layers.12",
+        "model.layers.13",
+        "model.layers.14"
+      ],
+      "sigma_block_sum": 0.0006410688255614071,
+      "sigma_outlier_sum": 0.0020460852650397766
+    }
+  ],
+  "created_at_utc": "2026-05-08T19:16:15Z",
+  "created_before_measurement": true,
+  "depths": [
+    1,
+    5,
+    10,
+    15
+  ],
+  "derivation": "derivation.md",
+  "derivation_sha256": "sha256:eaeb0d6596ec1e38d499fd77052d9d1412ac85b4316627758a70163779ad2004",
+  "layer_origin": "model.layers",
+  "layer_stats": [
+    {
+      "layer_error_l2": 136.00490712836736,
+      "layer_index": 0,
+      "layer_name": "model.layers.0",
+      "mean_block_scale": 0.4488794329886635,
+      "outlier_count": 1736665,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 765.2246487885714,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1018447,
+          "outlier_squared_error_sum": 9.98369026184082,
+          "outlier_threshold_abs": 0.050048828125,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 293.5364074707031
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 519000,
+          "outlier_squared_error_sum": 1.9879803657531738,
+          "outlier_threshold_abs": 0.04833984375,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 145.02911376953125
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 996,
+          "outlier_squared_error_sum": 0.0008570104837417603,
+          "outlier_threshold_abs": 0.0277099609375,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.05353087931871414
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0035400390625,
+          "outlier_threshold_abs": 1.046875,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 2.17645263671875
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.20751953125,
+          "outlier_threshold_abs": 2.6875,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 34.53450012207031
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31699,
+          "outlier_squared_error_sum": 0.49998676776885986,
+          "outlier_threshold_abs": 0.0595703125,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 6.896026134490967
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 15981,
+          "outlier_squared_error_sum": 0.12828439474105835,
+          "outlier_threshold_abs": 0.07080078125,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 6.49113655090332
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 11.9375,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 10.990055084228516
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.47265625,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.010591447353363037
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.0751953125,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0011195370461791754
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 138,
+          "outlier_squared_error_sum": 0.004002571105957031,
+          "outlier_threshold_abs": 0.201171875,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.40513187646865845
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 1.483642578125,
+          "outlier_threshold_abs": 2.234375,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 8.201714515686035
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 101638,
+          "outlier_squared_error_sum": 0.5976763963699341,
+          "outlier_threshold_abs": 0.0498046875,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 29.008424758911133
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 750.0,
+          "outlier_threshold_abs": 98.5,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 17181.546875
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 48666,
+          "outlier_squared_error_sum": 0.3274688720703125,
+          "outlier_threshold_abs": 0.04833984375,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 13.229034423828125
+        }
+      ],
+      "sigma_block": 0.00010402658353270616,
+      "sigma_outlier": 0.00044062881948364905,
+      "squared_error_sum": 17732.11011420726
+    },
+    {
+      "layer_error_l2": 79.43725914583261,
+      "layer_index": 1,
+      "layer_name": "model.layers.1",
+      "mean_block_scale": 0.35424004777645074,
+      "outlier_count": 1737812,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 424.2631009668112,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1032957,
+          "outlier_squared_error_sum": 6.115882396697998,
+          "outlier_threshold_abs": 0.04833984375,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 291.39105224609375
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 507893,
+          "outlier_squared_error_sum": 1.7619421482086182,
+          "outlier_threshold_abs": 0.046875,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 138.45748901367188
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 1002,
+          "outlier_squared_error_sum": 0.0015961378812789917,
+          "outlier_threshold_abs": 0.033203125,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.07328048348426819
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 17,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.9453125,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 6.188581466674805
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 18,
+          "outlier_squared_error_sum": 0.240478515625,
+          "outlier_threshold_abs": 2.21875,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 53.922340393066406
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31995,
+          "outlier_squared_error_sum": 0.2689560055732727,
+          "outlier_threshold_abs": 0.047119140625,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 5.113960266113281
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 15954,
+          "outlier_squared_error_sum": 0.08955943584442139,
+          "outlier_threshold_abs": 0.053466796875,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 4.142544269561768
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 7.0625,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 3.53076171875
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.6640625,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.014213607646524906
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.1044921875,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0005566743202507496
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 140,
+          "outlier_squared_error_sum": 0.009849786758422852,
+          "outlier_threshold_abs": 0.1298828125,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.28867271542549133
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 0.0254669189453125,
+          "outlier_threshold_abs": 0.92578125,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 2.7442355155944824
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99879,
+          "outlier_squared_error_sum": 0.5003371238708496,
+          "outlier_threshold_abs": 0.04931640625,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.166744232177734
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 415.0625,
+          "outlier_threshold_abs": 43.75,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 5339.615234375
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 47889,
+          "outlier_squared_error_sum": 0.18653249740600586,
+          "outlier_threshold_abs": 0.047607421875,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 12.365372657775879
+        }
+      ],
+      "sigma_block": 3.45306921314912e-05,
+      "sigma_outlier": 0.0002441363628325798,
+      "squared_error_sum": 5886.0150396353565
+    },
+    {
+      "layer_error_l2": 70.25077085029663,
+      "layer_index": 2,
+      "layer_name": "model.layers.2",
+      "mean_block_scale": 0.3453825282553832,
+      "outlier_count": 1734883,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 145.38149160146713,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1030602,
+          "outlier_squared_error_sum": 3.983372211456299,
+          "outlier_threshold_abs": 0.046875,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 286.3727111816406
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 505517,
+          "outlier_squared_error_sum": 2.399658679962158,
+          "outlier_threshold_abs": 0.04638671875,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 136.27915954589844
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 987,
+          "outlier_squared_error_sum": 0.002100646495819092,
+          "outlier_threshold_abs": 0.04052734375,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.11945782601833344
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.019775390625,
+          "outlier_threshold_abs": 1.75,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 35.37194061279297
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.000244140625,
+          "outlier_threshold_abs": 2.125,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 52.26898956298828
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 32296,
+          "outlier_squared_error_sum": 0.13653111457824707,
+          "outlier_threshold_abs": 0.041015625,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 4.854016304016113
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 15961,
+          "outlier_squared_error_sum": 0.04259002208709717,
+          "outlier_threshold_abs": 0.0439453125,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 3.248861312866211
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 4.28125,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.8329139351844788
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.3125,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.008736447431147099
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.062255859375,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0003568163374438882
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 134,
+          "outlier_squared_error_sum": 0.030803442001342773,
+          "outlier_threshold_abs": 0.12060546875,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.21770000457763672
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 35,
+          "outlier_squared_error_sum": 0.4317474365234375,
+          "outlier_threshold_abs": 0.87109375,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 5.0850067138671875
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 101060,
+          "outlier_squared_error_sum": 0.6170985102653503,
+          "outlier_threshold_abs": 0.049072265625,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.115154266357422
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 137.5,
+          "outlier_threshold_abs": 36.75,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 4225.2021484375
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 48225,
+          "outlier_squared_error_sum": 0.2175700068473816,
+          "outlier_threshold_abs": 0.04638671875,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.81216049194336
+        }
+      ],
+      "sigma_block": 2.809961222389608e-05,
+      "sigma_outlier": 8.379901791732764e-05,
+      "squared_error_sum": 4789.78931345942
+    },
+    {
+      "layer_error_l2": 80.73631325047546,
+      "layer_index": 3,
+      "layer_name": "model.layers.3",
+      "mean_block_scale": 0.42510377016539375,
+      "outlier_count": 1726916,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 151.6913271099329,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1018672,
+          "outlier_squared_error_sum": 2.2185020446777344,
+          "outlier_threshold_abs": 0.04541015625,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 273.74725341796875
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 510629,
+          "outlier_squared_error_sum": 1.9272499084472656,
+          "outlier_threshold_abs": 0.045654296875,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 134.54086303710938
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 984,
+          "outlier_squared_error_sum": 0.002723991870880127,
+          "outlier_threshold_abs": 0.0556640625,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.2712726294994354
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 2.78125,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 87.12860107421875
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 19,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 2.015625,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 32.674617767333984
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31843,
+          "outlier_squared_error_sum": 0.08257901668548584,
+          "outlier_threshold_abs": 0.0380859375,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 4.775300025939941
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 16145,
+          "outlier_squared_error_sum": 0.06510360538959503,
+          "outlier_threshold_abs": 0.038818359375,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 2.5741665363311768
+        },
+        {
+          "numel": 48,
+          "outlier_count": 2,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 9.4375,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 1.3254841566085815
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.83984375,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.019653232768177986
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.10107421875,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0004609059542417526
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 135,
+          "outlier_squared_error_sum": 0.010760307312011719,
+          "outlier_threshold_abs": 0.10400390625,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.17225569486618042
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 35,
+          "outlier_squared_error_sum": 1.89892578125,
+          "outlier_threshold_abs": 0.6484375,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 6.94648551940918
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99869,
+          "outlier_squared_error_sum": 0.48274707794189453,
+          "outlier_threshold_abs": 0.048828125,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.019611358642578
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 144.75,
+          "outlier_threshold_abs": 34.5,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 5782.701171875
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 48534,
+          "outlier_squared_error_sum": 0.2527353763580322,
+          "outlier_threshold_abs": 0.046142578125,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.763752937316895
+        }
+      ],
+      "sigma_block": 3.7350432796293277e-05,
+      "sigma_outlier": 8.783943579764905e-05,
+      "squared_error_sum": 6366.660950168967
+    },
+    {
+      "layer_error_l2": 80.56598400026124,
+      "layer_index": 4,
+      "layer_name": "model.layers.4",
+      "mean_block_scale": 0.37613949573909244,
+      "outlier_count": 1743468,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 145.37534987926483,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1032505,
+          "outlier_squared_error_sum": 2.041682243347168,
+          "outlier_threshold_abs": 0.044921875,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 269.237548828125
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 511979,
+          "outlier_squared_error_sum": 1.120640516281128,
+          "outlier_threshold_abs": 0.044921875,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 132.9744873046875
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 986,
+          "outlier_squared_error_sum": 0.0044013261795043945,
+          "outlier_threshold_abs": 0.0693359375,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.4232783019542694
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 3.1875,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 104.73908233642578
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 17,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 2.09375,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 39.08417892456055
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 32112,
+          "outlier_squared_error_sum": 0.14698293805122375,
+          "outlier_threshold_abs": 0.034912109375,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 4.079458236694336
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 16157,
+          "outlier_squared_error_sum": 0.027444392442703247,
+          "outlier_threshold_abs": 0.033935546875,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.9187428951263428
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 5.46875,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 1.265014886856079
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.296875,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.020868882536888123
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.17578125,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0011779479682445526
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 134,
+          "outlier_squared_error_sum": 0.03256416320800781,
+          "outlier_threshold_abs": 0.12890625,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.23927736282348633
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 0.00390625,
+          "outlier_threshold_abs": 1.015625,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 2.174875497817993
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 101925,
+          "outlier_squared_error_sum": 0.5812286734580994,
+          "outlier_threshold_abs": 0.04931640625,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.575960159301758
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 141.125,
+          "outlier_threshold_abs": 35.0,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 5748.94287109375
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 47569,
+          "outlier_squared_error_sum": 0.29149937629699707,
+          "outlier_threshold_abs": 0.046142578125,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.825605392456055
+        }
+      ],
+      "sigma_block": 3.722630494267922e-05,
+      "sigma_outlier": 8.338286098698963e-05,
+      "squared_error_sum": 6345.502428051084
+    },
+    {
+      "layer_error_l2": 23.645883735142288,
+      "layer_index": 5,
+      "layer_name": "model.layers.5",
+      "mean_block_scale": 0.051740732954137704,
+      "outlier_count": 1662051,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 7.681929782032967,
+      "parameter_count": 162106368,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1028344,
+          "outlier_squared_error_sum": 1.9817075729370117,
+          "outlier_threshold_abs": 0.044921875,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 269.1357421875
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 520837,
+          "outlier_squared_error_sum": 1.4140405654907227,
+          "outlier_threshold_abs": 0.045166015625,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 133.70071411132812
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 990,
+          "outlier_squared_error_sum": 0.005736708641052246,
+          "outlier_threshold_abs": 0.06689453125,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.4056377708911896
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.01373291015625,
+          "outlier_threshold_abs": 0.703125,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 1.7925727367401123
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 18,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 2.265625,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 57.50925064086914
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 32353,
+          "outlier_squared_error_sum": 0.11335007846355438,
+          "outlier_threshold_abs": 0.035888671875,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 4.292596817016602
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 16002,
+          "outlier_squared_error_sum": 0.07953010499477386,
+          "outlier_threshold_abs": 0.036376953125,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 2.092263698577881
+        },
+        {
+          "numel": 2359296,
+          "outlier_count": 23782,
+          "outlier_squared_error_sum": 1.912132978439331,
+          "outlier_threshold_abs": 0.1357421875,
+          "parameter": "self_attn.q_proj.weight",
+          "shape": [
+            1536,
+            1536
+          ],
+          "squared_error_sum": 36.124267578125
+        },
+        {
+          "numel": 786432,
+          "outlier_count": 7974,
+          "outlier_squared_error_sum": 1.6560916900634766,
+          "outlier_threshold_abs": 0.2451171875,
+          "parameter": "self_attn.k_proj.weight",
+          "shape": [
+            512,
+            1536
+          ],
+          "squared_error_sum": 42.68360900878906
+        },
+        {
+          "numel": 786432,
+          "outlier_count": 7969,
+          "outlier_squared_error_sum": 0.0137663334608078,
+          "outlier_threshold_abs": 0.032958984375,
+          "parameter": "self_attn.v_proj.weight",
+          "shape": [
+            512,
+            1536
+          ],
+          "squared_error_sum": 0.9701395034790039
+        },
+        {
+          "numel": 2359296,
+          "outlier_count": 23766,
+          "outlier_squared_error_sum": 0.49184083938598633,
+          "outlier_threshold_abs": 0.0306396484375,
+          "parameter": "self_attn.o_proj.weight",
+          "shape": [
+            1536,
+            1536
+          ],
+          "squared_error_sum": 2.739093780517578
+        }
+      ],
+      "sigma_block": 3.4017533958556996e-06,
+      "sigma_outlier": 4.621957919481993e-06,
+      "squared_error_sum": 551.4458878338337
+    },
+    {
+      "layer_error_l2": 81.72496279764191,
+      "layer_index": 6,
+      "layer_name": "model.layers.6",
+      "mean_block_scale": 0.45547769526019694,
+      "outlier_count": 1730904,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 124.19178587198257,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1023193,
+          "outlier_squared_error_sum": 2.482997417449951,
+          "outlier_threshold_abs": 0.0458984375,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 277.691650390625
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 510772,
+          "outlier_squared_error_sum": 1.657849907875061,
+          "outlier_threshold_abs": 0.046142578125,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 136.58306884765625
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 995,
+          "outlier_squared_error_sum": 0.003065347671508789,
+          "outlier_threshold_abs": 0.0595703125,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.29140371084213257
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 3.703125,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 67.61085510253906
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 2.734375,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 76.9505615234375
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31713,
+          "outlier_squared_error_sum": 0.08831280469894409,
+          "outlier_threshold_abs": 0.033203125,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.6804447174072266
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 16042,
+          "outlier_squared_error_sum": 0.07462143898010254,
+          "outlier_threshold_abs": 0.033447265625,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.8761508464813232
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 6.25,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 6.955489158630371
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.2314453125,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.005622334778308868
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.1455078125,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0008963712607510388
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 136,
+          "outlier_squared_error_sum": 0.018032073974609375,
+          "outlier_threshold_abs": 0.13671875,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.20201563835144043
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 5.7587890625,
+          "outlier_threshold_abs": 1.3984375,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 9.497712135314941
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99574,
+          "outlier_squared_error_sum": 0.6613830327987671,
+          "outlier_threshold_abs": 0.050537109375,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.683231353759766
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 113.0625,
+          "outlier_threshold_abs": 45.0,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 5933.18017578125
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 48379,
+          "outlier_squared_error_sum": 0.38423478603363037,
+          "outlier_threshold_abs": 0.046630859375,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.568480491638184
+        }
+      ],
+      "sigma_block": 3.8454032353239724e-05,
+      "sigma_outlier": 7.174966715195214e-05,
+      "squared_error_sum": 6554.777758403972
+    },
+    {
+      "layer_error_l2": 100.92172717552806,
+      "layer_index": 7,
+      "layer_name": "model.layers.7",
+      "mean_block_scale": 0.43502034042030574,
+      "outlier_count": 1746126,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 455.12963186204433,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1029489,
+          "outlier_squared_error_sum": 2.9603705406188965,
+          "outlier_threshold_abs": 0.046630859375,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 283.4831848144531
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 520470,
+          "outlier_squared_error_sum": 1.8672163486480713,
+          "outlier_threshold_abs": 0.046630859375,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 138.72122192382812
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 992,
+          "outlier_squared_error_sum": 0.0024021267890930176,
+          "outlier_threshold_abs": 0.054443359375,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.20899872481822968
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.015625,
+          "outlier_threshold_abs": 3.78125,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 66.3872299194336
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.041259765625,
+          "outlier_threshold_abs": 2.9375,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 73.14564514160156
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31888,
+          "outlier_squared_error_sum": 0.09638844430446625,
+          "outlier_threshold_abs": 0.033935546875,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.6304192543029785
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 15852,
+          "outlier_squared_error_sum": 0.060240089893341064,
+          "outlier_threshold_abs": 0.034912109375,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.9302916526794434
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 6.5625,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 5.407422065734863
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.62890625,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0065818605944514275
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.19140625,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0004601059772539884
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 137,
+          "outlier_squared_error_sum": 0.02935791015625,
+          "outlier_threshold_abs": 0.1611328125,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.27806973457336426
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 2.44140625,
+          "outlier_threshold_abs": 0.8046875,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 4.727863311767578
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99501,
+          "outlier_squared_error_sum": 0.6356790661811829,
+          "outlier_threshold_abs": 0.051025390625,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.362327575683594
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 446.5,
+          "outlier_threshold_abs": 49.5,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 9112.19140625
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 47697,
+          "outlier_squared_error_sum": 0.47968631982803345,
+          "outlier_threshold_abs": 0.046875,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.584261894226074
+        }
+      ],
+      "sigma_block": 5.708206485026738e-05,
+      "sigma_outlier": 0.0002606510823743787,
+      "squared_error_sum": 9730.065384229674
+    },
+    {
+      "layer_error_l2": 84.75275016930492,
+      "layer_index": 8,
+      "layer_name": "model.layers.8",
+      "mean_block_scale": 0.47975733779991664,
+      "outlier_count": 1737597,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 259.7790680527687,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1029307,
+          "outlier_squared_error_sum": 3.491640090942383,
+          "outlier_threshold_abs": 0.04736328125,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 288.82904052734375
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 511959,
+          "outlier_squared_error_sum": 1.5377421379089355,
+          "outlier_threshold_abs": 0.046875,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 139.78956604003906
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 994,
+          "outlier_squared_error_sum": 0.0023447275161743164,
+          "outlier_threshold_abs": 0.050048828125,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.16123832762241364
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 17,
+          "outlier_squared_error_sum": 0.3525390625,
+          "outlier_threshold_abs": 4.46875,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 77.45596313476562
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0478515625,
+          "outlier_threshold_abs": 3.109375,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 73.9717025756836
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31512,
+          "outlier_squared_error_sum": 0.0927586704492569,
+          "outlier_threshold_abs": 0.032958984375,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.470874786376953
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 15931,
+          "outlier_squared_error_sum": 0.0582607239484787,
+          "outlier_threshold_abs": 0.033935546875,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.8869891166687012
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 5.21875,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 2.1961917877197266
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.263671875,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.013600457459688187
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.150390625,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0014451651368290186
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 134,
+          "outlier_squared_error_sum": 0.03220653533935547,
+          "outlier_threshold_abs": 0.1845703125,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.24746258556842804
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 0.33355712890625,
+          "outlier_threshold_abs": 1.140625,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 2.452065944671631
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99926,
+          "outlier_squared_error_sum": 0.7372238636016846,
+          "outlier_threshold_abs": 0.05029296875,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.170616149902344
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 252.75,
+          "outlier_threshold_abs": 55.0,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 6293.0908203125
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 47733,
+          "outlier_squared_error_sum": 0.34294354915618896,
+          "outlier_threshold_abs": 0.046875,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.512016296386719
+        }
+      ],
+      "sigma_block": 4.0615696467425625e-05,
+      "sigma_outlier": 0.0001495047862379877,
+      "squared_error_sum": 6923.2495932078455
+    },
+    {
+      "layer_error_l2": 89.04187033505308,
+      "layer_index": 9,
+      "layer_name": "model.layers.9",
+      "mean_block_scale": 0.48103235187008975,
+      "outlier_count": 1726070,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 95.37660549581051,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1020090,
+          "outlier_squared_error_sum": 3.702909469604492,
+          "outlier_threshold_abs": 0.047607421875,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 288.8031005859375
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 508423,
+          "outlier_squared_error_sum": 1.8055815696716309,
+          "outlier_threshold_abs": 0.04736328125,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 140.80795288085938
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 993,
+          "outlier_squared_error_sum": 0.002011597156524658,
+          "outlier_threshold_abs": 0.050537109375,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.13940924406051636
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.1650390625,
+          "outlier_threshold_abs": 4.46875,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 83.61935424804688
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 18,
+          "outlier_squared_error_sum": 0.015625,
+          "outlier_threshold_abs": 2.953125,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 74.88307189941406
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 32334,
+          "outlier_squared_error_sum": 0.10041852295398712,
+          "outlier_threshold_abs": 0.033935546875,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.5311529636383057
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 15979,
+          "outlier_squared_error_sum": 0.05394676327705383,
+          "outlier_threshold_abs": 0.03564453125,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 2.0291244983673096
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 6.59375,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 7.648286819458008
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.447265625,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.007520873565226793
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.1455078125,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0003672902239486575
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 134,
+          "outlier_squared_error_sum": 0.032436370849609375,
+          "outlier_threshold_abs": 0.1787109375,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.28227120637893677
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 0.38232421875,
+          "outlier_threshold_abs": 1.125,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 1.3692337274551392
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 100568,
+          "outlier_squared_error_sum": 0.8561257719993591,
+          "outlier_threshold_abs": 0.051513671875,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.334287643432617
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 32,
+          "outlier_squared_error_sum": 87.875,
+          "outlier_threshold_abs": 45.0,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 7190.1298828125
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 47446,
+          "outlier_squared_error_sum": 0.38518714904785156,
+          "outlier_threshold_abs": 0.04736328125,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.493050575256348
+        }
+      ],
+      "sigma_block": 4.595326470649734e-05,
+      "sigma_outlier": 5.525651074163302e-05,
+      "squared_error_sum": 7833.078067268594
+    },
+    {
+      "layer_error_l2": 90.0882400981242,
+      "layer_index": 10,
+      "layer_name": "model.layers.10",
+      "mean_block_scale": 0.554298267296205,
+      "outlier_count": 1736270,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 131.97281217575073,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1035593,
+          "outlier_squared_error_sum": 3.5351364612579346,
+          "outlier_threshold_abs": 0.047119140625,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 285.3612365722656
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 504266,
+          "outlier_squared_error_sum": 1.4472262859344482,
+          "outlier_threshold_abs": 0.047119140625,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 140.71243286132812
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 991,
+          "outlier_squared_error_sum": 0.001813054084777832,
+          "outlier_threshold_abs": 0.048828125,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.1393837034702301
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.09765625,
+          "outlier_threshold_abs": 4.15625,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 73.35232543945312
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.006103515625,
+          "outlier_threshold_abs": 3.171875,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 88.11033630371094
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31608,
+          "outlier_squared_error_sum": 0.11043508350849152,
+          "outlier_threshold_abs": 0.033447265625,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.282020092010498
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 15760,
+          "outlier_squared_error_sum": 0.06143753230571747,
+          "outlier_threshold_abs": 0.034912109375,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.8626275062561035
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 6.125,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 8.395782470703125
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.49609375,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.007304280996322632
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.1591796875,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0009701957460492849
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 134,
+          "outlier_squared_error_sum": 0.017986297607421875,
+          "outlier_threshold_abs": 0.171875,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.21687465906143188
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 0.4339599609375,
+          "outlier_threshold_abs": 1.1796875,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 1.9783530235290527
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99539,
+          "outlier_squared_error_sum": 0.6291362047195435,
+          "outlier_threshold_abs": 0.050537109375,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 27.311973571777344
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 32,
+          "outlier_squared_error_sum": 125.25,
+          "outlier_threshold_abs": 66.0,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 7341.634765625
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 48278,
+          "outlier_squared_error_sum": 0.38192152976989746,
+          "outlier_threshold_abs": 0.04736328125,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.55180549621582
+        }
+      ],
+      "sigma_block": 4.683817816088856e-05,
+      "sigma_outlier": 7.60093834344605e-05,
+      "squared_error_sum": 7983.918191801524
+    },
+    {
+      "layer_error_l2": 84.32925489516667,
+      "layer_index": 11,
+      "layer_name": "model.layers.11",
+      "mean_block_scale": 0.584122599940747,
+      "outlier_count": 1726557,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 215.47694917023182,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1017501,
+          "outlier_squared_error_sum": 3.508403778076172,
+          "outlier_threshold_abs": 0.047119140625,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 283.1129150390625
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 511769,
+          "outlier_squared_error_sum": 1.5895224809646606,
+          "outlier_threshold_abs": 0.047119140625,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 140.32406616210938
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 985,
+          "outlier_squared_error_sum": 0.001231074333190918,
+          "outlier_threshold_abs": 0.049072265625,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.1413293331861496
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.00390625,
+          "outlier_threshold_abs": 4.9375,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 108.61868286132812
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.09765625,
+          "outlier_threshold_abs": 3.40625,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 97.1236343383789
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31658,
+          "outlier_squared_error_sum": 0.11339323222637177,
+          "outlier_threshold_abs": 0.033203125,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.2179079055786133
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 16184,
+          "outlier_squared_error_sum": 0.07067152857780457,
+          "outlier_threshold_abs": 0.033447265625,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.7579517364501953
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 13.25,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 12.564407348632812
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 1.390625,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.09730331599712372
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.04638671875,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 8.684837666805834e-05
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 137,
+          "outlier_squared_error_sum": 0.021859169006347656,
+          "outlier_threshold_abs": 0.25,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.3061061501502991
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 3.30517578125,
+          "outlier_threshold_abs": 2.4375,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 5.14397668838501
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99904,
+          "outlier_squared_error_sum": 1.0141596794128418,
+          "outlier_threshold_abs": 0.052978515625,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.715301513671875
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 205.125,
+          "outlier_threshold_abs": 47.25,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 6203.38916015625
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 48319,
+          "outlier_squared_error_sum": 0.6259699463844299,
+          "outlier_threshold_abs": 0.046875,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.433452606201172
+        }
+      ],
+      "sigma_block": 4.0455519806814e-05,
+      "sigma_outlier": 0.00012480152648897884,
+      "squared_error_sum": 6895.946282003759
+    },
+    {
+      "layer_error_l2": 82.82228277307523,
+      "layer_index": 12,
+      "layer_name": "model.layers.12",
+      "mean_block_scale": 0.5892963722969095,
+      "outlier_count": 1732813,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 37.23379483819008,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1033601,
+          "outlier_squared_error_sum": 3.7457098960876465,
+          "outlier_threshold_abs": 0.046875,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 280.0798645019531
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 503632,
+          "outlier_squared_error_sum": 1.3933262825012207,
+          "outlier_threshold_abs": 0.047119140625,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 139.46023559570312
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 991,
+          "outlier_squared_error_sum": 0.0012189745903015137,
+          "outlier_threshold_abs": 0.049560546875,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.14754408597946167
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 5.6875,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 126.89059448242188
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 18,
+          "outlier_squared_error_sum": 0.011962890625,
+          "outlier_threshold_abs": 3.640625,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 106.50726318359375
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31683,
+          "outlier_squared_error_sum": 0.10819296538829803,
+          "outlier_threshold_abs": 0.032470703125,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.021599054336548
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 15795,
+          "outlier_squared_error_sum": 0.08021603524684906,
+          "outlier_threshold_abs": 0.03271484375,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.615351676940918
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 19.5,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 11.287338256835938
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.2890625,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.003682415932416916
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.072265625,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.00023038660583551973
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 134,
+          "outlier_squared_error_sum": 0.0071468353271484375,
+          "outlier_threshold_abs": 0.197265625,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.2683897018432617
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 0.05230712890625,
+          "outlier_threshold_abs": 1.015625,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 0.9877495765686035
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99506,
+          "outlier_squared_error_sum": 1.0572435855865479,
+          "outlier_threshold_abs": 0.051513671875,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 28.026029586791992
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 32,
+          "outlier_squared_error_sum": 30.3125,
+          "outlier_threshold_abs": 53.0,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 6112.51708984375
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 47368,
+          "outlier_squared_error_sum": 0.46397024393081665,
+          "outlier_threshold_abs": 0.04736328125,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.483766555786133
+        }
+      ],
+      "sigma_block": 4.0023449887429074e-05,
+      "sigma_outlier": 2.148748586153848e-05,
+      "squared_error_sum": 6822.296728905043
+    },
+    {
+      "layer_error_l2": 71.47744363250011,
+      "layer_index": 13,
+      "layer_name": "model.layers.13",
+      "mean_block_scale": 0.5080804496693114,
+      "outlier_count": 1748678,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 173.84616202116013,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1033017,
+          "outlier_squared_error_sum": 3.6608283519744873,
+          "outlier_threshold_abs": 0.046630859375,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 277.72406005859375
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 518550,
+          "outlier_squared_error_sum": 1.4105706214904785,
+          "outlier_threshold_abs": 0.045654296875,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 132.09262084960938
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 994,
+          "outlier_squared_error_sum": 0.0009195208549499512,
+          "outlier_threshold_abs": 0.041015625,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.11018308997154236
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 1.126953125,
+          "outlier_threshold_abs": 4.53125,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 99.17403411865234
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 3.890625,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 134.13845825195312
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31510,
+          "outlier_squared_error_sum": 0.13469775021076202,
+          "outlier_threshold_abs": 0.033203125,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.008466958999634
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 16131,
+          "outlier_squared_error_sum": 0.06743620336055756,
+          "outlier_threshold_abs": 0.03369140625,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.6366312503814697
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 15.3125,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 8.689697265625
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 1.65625,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.05034675449132919
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.1162109375,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0004886740352958441
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 136,
+          "outlier_squared_error_sum": 0.019766807556152344,
+          "outlier_threshold_abs": 0.2021484375,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.255417138338089
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 17.024139404296875,
+          "outlier_threshold_abs": 0.74609375,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 17.50619888305664
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99679,
+          "outlier_squared_error_sum": 0.6252989172935486,
+          "outlier_threshold_abs": 0.050048828125,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 27.113954544067383
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 149.3125,
+          "outlier_threshold_abs": 43.75,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 4222.27734375
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 48561,
+          "outlier_squared_error_sum": 0.46305131912231445,
+          "outlier_threshold_abs": 0.047119140625,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.400884628295898
+        }
+      ],
+      "sigma_block": 2.89525490732098e-05,
+      "sigma_outlier": 9.941576552181713e-05,
+      "squared_error_sum": 4935.178786216071
+    },
+    {
+      "layer_error_l2": 101.59202144095707,
+      "layer_index": 14,
+      "layer_name": "model.layers.14",
+      "mean_block_scale": 0.5791528009343893,
+      "outlier_count": 1747937,
+      "outlier_fraction": 0.01,
+      "outlier_squared_error_sum": 424.40015636384487,
+      "parameter_count": 170457488,
+      "parameters": [
+        {
+          "numel": 100663296,
+          "outlier_count": 1034080,
+          "outlier_squared_error_sum": 4.0947370529174805,
+          "outlier_threshold_abs": 0.048583984375,
+          "parameter": "block_sparse_moe.input_linear.weight",
+          "shape": [
+            64,
+            1024,
+            1536
+          ],
+          "squared_error_sum": 298.73089599609375
+        },
+        {
+          "numel": 50331648,
+          "outlier_count": 517797,
+          "outlier_squared_error_sum": 1.775130271911621,
+          "outlier_threshold_abs": 0.04736328125,
+          "parameter": "block_sparse_moe.output_linear.weight",
+          "shape": [
+            64,
+            1536,
+            512
+          ],
+          "squared_error_sum": 140.8414306640625
+        },
+        {
+          "numel": 98304,
+          "outlier_count": 1000,
+          "outlier_squared_error_sum": 0.0007508397102355957,
+          "outlier_threshold_abs": 0.04150390625,
+          "parameter": "block_sparse_moe.router.layer.weight",
+          "shape": [
+            64,
+            1536
+          ],
+          "squared_error_sum": 0.11008541285991669
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 3.921875,
+          "parameter": "input_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 58.98621368408203
+        },
+        {
+          "numel": 1536,
+          "outlier_count": 16,
+          "outlier_squared_error_sum": 0.0009765625,
+          "outlier_threshold_abs": 3.234375,
+          "parameter": "post_attention_layernorm.weight",
+          "shape": [
+            1536
+          ],
+          "squared_error_sum": 99.21774291992188
+        },
+        {
+          "numel": 3145728,
+          "outlier_count": 31526,
+          "outlier_squared_error_sum": 0.19492492079734802,
+          "outlier_threshold_abs": 0.034912109375,
+          "parameter": "shared_mlp.input_linear.weight",
+          "shape": [
+            2048,
+            1536
+          ],
+          "squared_error_sum": 3.160454511642456
+        },
+        {
+          "numel": 1572864,
+          "outlier_count": 16163,
+          "outlier_squared_error_sum": 0.11306466162204742,
+          "outlier_threshold_abs": 0.035888671875,
+          "parameter": "shared_mlp.output_linear.weight",
+          "shape": [
+            1536,
+            1024
+          ],
+          "squared_error_sum": 1.8393418788909912
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 7.09375,
+          "parameter": "mamba.dt_bias",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 4.531359672546387
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.625,
+          "parameter": "mamba.A_log",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.008111989125609398
+        },
+        {
+          "numel": 48,
+          "outlier_count": 1,
+          "outlier_squared_error_sum": 0.0,
+          "outlier_threshold_abs": 0.1796875,
+          "parameter": "mamba.D",
+          "shape": [
+            48
+          ],
+          "squared_error_sum": 0.0014991788193583488
+        },
+        {
+          "numel": 13312,
+          "outlier_count": 134,
+          "outlier_squared_error_sum": 0.023126602172851562,
+          "outlier_threshold_abs": 0.1552734375,
+          "parameter": "mamba.conv1d.weight",
+          "shape": [
+            3328,
+            1,
+            4
+          ],
+          "squared_error_sum": 0.1772266924381256
+        },
+        {
+          "numel": 3328,
+          "outlier_count": 34,
+          "outlier_squared_error_sum": 0.31536865234375,
+          "outlier_threshold_abs": 1.2265625,
+          "parameter": "mamba.conv1d.bias",
+          "shape": [
+            3328
+          ],
+          "squared_error_sum": 1.7848302125930786
+        },
+        {
+          "numel": 9904128,
+          "outlier_count": 99046,
+          "outlier_squared_error_sum": 0.6873942613601685,
+          "outlier_threshold_abs": 0.050537109375,
+          "parameter": "mamba.in_proj.weight",
+          "shape": [
+            6448,
+            1536
+          ],
+          "squared_error_sum": 27.318721771240234
+        },
+        {
+          "numel": 3072,
+          "outlier_count": 31,
+          "outlier_squared_error_sum": 416.75,
+          "outlier_threshold_abs": 70.0,
+          "parameter": "mamba.norm.weight",
+          "shape": [
+            3072
+          ],
+          "squared_error_sum": 9248.76171875
+        },
+        {
+          "numel": 4718592,
+          "outlier_count": 48091,
+          "outlier_squared_error_sum": 0.4446825385093689,
+          "outlier_threshold_abs": 0.046875,
+          "parameter": "mamba.out_proj.weight",
+          "shape": [
+            1536,
+            3072
+          ],
+          "squared_error_sum": 11.06903076171875
+        }
+      ],
+      "sigma_block": 5.80586912327139e-05,
+      "sigma_outlier": 0.00024280060228935304,
+      "squared_error_sum": 9896.538664096035
+    }
+  ],
+  "measurement_free_inputs_only": true,
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "output_scale": {
+    "hidden_size": 1536,
+    "scale": 9.729663223261305,
+    "source": "lm_head_frobenius_norm_over_sqrt_hidden",
+    "vocab_size": 100352
+  },
+  "schema_version": "cle_theoretical_v1_predicted_bounds"
+}

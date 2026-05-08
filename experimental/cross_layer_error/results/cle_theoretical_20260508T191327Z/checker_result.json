@@ -1,0 +1,72 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_CLE_BOUND_LOOSE",
+  "depth_metrics": [
+    {
+      "bootstrap_ci95": {
+        "ci95_high": 321.07791007647427,
+        "ci95_low": 199.47787392131627
+      },
+      "depth": 1,
+      "mean_l2_drift": 252.78462756756122,
+      "predicted_bound_l2": 1323.2819430699453,
+      "predicted_to_measured_ratio": 5.2348196795166055,
+      "prompt_count": 12
+    },
+    {
+      "bootstrap_ci95": {
+        "ci95_high": 472.0482870268835,
+        "ci95_low": 341.61210200894214
+      },
+      "depth": 5,
+      "mean_l2_drift": 402.63182934109807,
+      "predicted_bound_l2": 2011.7596640493757,
+      "predicted_to_measured_ratio": 4.996524162884974,
+      "prompt_count": 12
+    },
+    {
+      "bootstrap_ci95": {
+        "ci95_high": 531.0936687232418,
+        "ci95_low": 398.27372784149634
+      },
+      "depth": 10,
+      "mean_l2_drift": 466.36588408768,
+      "predicted_bound_l2": 2669.6676375036664,
+      "predicted_to_measured_ratio": 5.724405940898007,
+      "prompt_count": 12
+    },
+    {
+      "bootstrap_ci95": {
+        "ci95_high": 546.8640814839874,
+        "ci95_low": 398.9710663600348
+      },
+      "depth": 15,
+      "mean_l2_drift": 472.08004427928694,
+      "predicted_bound_l2": 3267.8287115543008,
+      "predicted_to_measured_ratio": 6.922192012041549,
+      "prompt_count": 12
+    }
+  ],
+  "functional_form": {
+    "constant_predicted_vs_growing_measured": false,
+    "functional_form_mismatch": false,
+    "measured_growth_factor_depth15_over_depth1": 1.8675187997858576,
+    "opposite_endpoint_direction": false,
+    "predicted_growth_factor_depth15_over_depth1": 2.469487873440718,
+    "predicted_relative_range": 0.59505774020801
+  },
+  "reasons": [
+    "ratio > 5.0 at depths [1, 10, 15]"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/cross_layer_error/results/cle_theoretical_20260508T191327Z",
+  "thresholds": {
+    "bootstrap_ci": 0.95,
+    "bootstrap_samples": 1000,
+    "functional_constant_predicted_relative_range_max": 0.05,
+    "functional_measured_growth_factor_min": 1.5,
+    "functional_opposite_endpoint_relative_change_min": 0.25,
+    "loose_ratio_gt": 5.0,
+    "tight_ratio_max": 2.0,
+    "tight_ratio_min": 1.0
+  }
+}

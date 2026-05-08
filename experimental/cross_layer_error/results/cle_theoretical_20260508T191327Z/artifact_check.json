@@ -1,0 +1,28 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_CLE_BOUND_LOOSE",
+  "reasons": [
+    "ratio > 5.0 at depths [1, 10, 15]"
+  ],
+  "required_files": [
+    "derivation.md",
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "quantization_config.json",
+    "predicted_bounds.json",
+    "trace_tokens.jsonl",
+    "logits_manifest.json",
+    "raw_drift_rows.jsonl",
+    "drift_metrics.json",
+    "bootstrap_ci.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/cross_layer_error/results/cle_theoretical_20260508T191327Z",
+  "schema_version": "cle_theoretical_v1_artifact_check"
+}

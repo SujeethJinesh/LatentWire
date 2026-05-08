@@ -1,0 +1,78 @@
+{"created_at_utc": "2026-05-08T19:13:27Z", "event": "run_started"}
+{"created_at_utc": "2026-05-08T19:16:15Z", "depths": [1, 5, 10, 15], "event": "bound_predictions_written"}
+{"created_at_utc": "2026-05-08T19:16:15Z", "derivation_sha256": "sha256:eaeb0d6596ec1e38d499fd77052d9d1412ac85b4316627758a70163779ad2004", "event": "derivation_locked"}
+{"created_at_utc": "2026-05-08T19:16:15Z", "event": "measurement_started"}
+{"created_at_utc": "2026-05-08T19:16:49Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [0]}
+{"created_at_utc": "2026-05-08T19:17:22Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [1]}
+{"created_at_utc": "2026-05-08T19:17:55Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [2]}
+{"created_at_utc": "2026-05-08T19:18:29Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [3]}
+{"created_at_utc": "2026-05-08T19:19:02Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [4]}
+{"created_at_utc": "2026-05-08T19:19:35Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [5]}
+{"created_at_utc": "2026-05-08T19:20:08Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [6]}
+{"created_at_utc": "2026-05-08T19:20:42Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [7]}
+{"created_at_utc": "2026-05-08T19:21:15Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [8]}
+{"created_at_utc": "2026-05-08T19:21:49Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [9]}
+{"created_at_utc": "2026-05-08T19:22:22Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [10]}
+{"created_at_utc": "2026-05-08T19:22:56Z", "decode_position": 1000, "event": "trace_tokens_batch_completed", "prompt_indices": [11]}
+{"artifact_path": "trace_tokens.jsonl", "created_at_utc": "2026-05-08T19:22:56Z", "event": "trace_tokens_written"}
+{"created_at_utc": "2026-05-08T19:23:29Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [0], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:24:03Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [1], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:24:37Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [2], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:25:11Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [3], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:25:44Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [4], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:26:18Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [5], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:26:52Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [6], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:27:26Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [7], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:28:00Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [8], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:28:34Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [9], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:29:08Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [10], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:29:42Z", "decode_position": 1000, "depth": null, "event": "completed_prompt_batch", "prompt_indices": [11], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "bf16"}
+{"created_at_utc": "2026-05-08T19:30:16Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [0], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:30:50Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [1], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:31:24Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [2], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:31:58Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [3], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:32:31Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [4], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:33:05Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [5], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:33:39Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [6], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:34:13Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [7], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:34:46Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [8], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:35:20Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [9], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:35:54Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [10], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:36:28Z", "decode_position": 1000, "depth": 1, "event": "completed_prompt_batch", "prompt_indices": [11], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:37:04Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [0], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:37:39Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [1], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:38:13Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [2], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:38:48Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [3], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:39:22Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [4], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:39:57Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [5], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:40:32Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [6], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:41:06Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [7], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:41:39Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [8], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:42:13Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [9], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:42:47Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [10], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:43:21Z", "decode_position": 1000, "depth": 5, "event": "completed_prompt_batch", "prompt_indices": [11], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:43:57Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [0], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:44:31Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [1], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:45:05Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [2], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:45:39Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [3], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:46:13Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [4], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:46:46Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [5], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:47:20Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [6], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:47:54Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [7], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:48:28Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [8], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:49:02Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [9], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:49:36Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [10], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:50:10Z", "decode_position": 1000, "depth": 10, "event": "completed_prompt_batch", "prompt_indices": [11], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:50:48Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [0], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:51:22Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [1], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:51:55Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [2], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:52:29Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [3], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:53:03Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [4], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:53:37Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [5], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:54:11Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [6], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:54:44Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [7], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:55:18Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [8], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:55:52Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [9], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:56:26Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [10], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:57:00Z", "decode_position": 1000, "depth": 15, "event": "completed_prompt_batch", "prompt_indices": [11], "teacher_forced_trace": "trace_tokens.jsonl", "variant": "fp4"}
+{"created_at_utc": "2026-05-08T19:57:02Z", "event": "run_completed"}

@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "cross_layer_error_theoretical",
+  "current_entry": "residual_migration_phase1",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -174,6 +174,31 @@
         "method_non_worse_each_position": true,
         "artifact_complete": true
       }
+    },
+    {
+      "id": "cross_layer_error_theoretical",
+      "project": "cross_layer_error",
+      "phase": "theoretical",
+      "decision": "KILL_CLE_BOUND_LOOSE",
+      "result_dir": "experimental/cross_layer_error/results/cle_theoretical_20260508T191327Z",
+      "checker": "experimental/cross_layer_error/check_cle_bound.py",
+      "checker_output": "experimental/cross_layer_error/results/cle_theoretical_20260508T191327Z/checker_result.json",
+      "artifact_check": "experimental/cross_layer_error/results/cle_theoretical_20260508T191327Z/artifact_check.json",
+      "killed_manifest": "experimental/KILLED_cross_layer_error_bound_loose/README.md",
+      "diagnostic": "experimental/cross_layer_error/diagnostic.md",
+      "reason": "predicted/measured ratios exceeded the preregistered >5.0 kill threshold at depths 1, 10, and 15; ratios were 5.2348196795166055, 5.724405940898007, and 6.922192012041549.",
+      "completed_at": "2026-05-08T20:00:03Z",
+      "summary": {
+        "artifact_complete": true,
+        "loose_ratio_threshold": 5.0,
+        "depth1_ratio": 5.2348196795166055,
+        "depth5_ratio": 4.996524162884974,
+        "depth10_ratio": 5.724405940898007,
+        "depth15_ratio": 6.922192012041549,
+        "functional_form_mismatch": false,
+        "measured_growth_factor_depth15_over_depth1": 1.8675187997858576,
+        "predicted_growth_factor_depth15_over_depth1": 2.469487873440718
+      }
     }
   ],
   "infra_failed_entries": [
@@ -192,10 +217,10 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 6.97,
+  "gpu_hours_used": 8.64,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-08T17:53:13Z",
-  "last_commit_sha": "719d75ebfad66054d26fed3f72b32e2324f43125",
+  "last_audit_at": "2026-05-08T20:00:03Z",
+  "last_commit_sha": "cc39ca6613d71a8ab9ff284ad54023eac5d3bba3",
   "papers_camera_ready_candidate": [],
-  "notes": "RESUMED 2026-05-08T15:47:56Z at git SHA 71e88c3ed4eda4b07fce47e924ef5276ab903926 after human resolved preregistration drift policy in swarm/goal.md. Audit policy now applies the six-pivot-condition check. Applied human-verified OutlierMigrate Phase 1 PASS_OM_PHASE1_REPLICATED_AT_SCALE from experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z; migration_fraction=0.843165650406504, CI95=[0.8334349593495936, 0.8511432926829268], artifact_complete=true. Residual Migration Phase 0 passed the preregistered replication path at 2026-05-08T16:22:49Z with accuracy_drop=0.0 and CI95=[0.0, 0.0], but baseline accuracy was also 0.0; treat as a gate PASS with severe headroom limitation. SSM-State Lifecycle Phase 0 killed cleanly at 2026-05-08T17:17:13Z: artifact_complete=true, 0/36 Mamba layers passed the preregistered KS+2x median-drift rule, pass_fraction=0.0 < 0.5. Its diagnostic identified one plausible fresh positive-method pivot, so ssm_shape_codec_phase0 was inserted before lower-priority original entries. SSM Shape-Conditioned Codec Phase 0 killed cleanly at 2026-05-08T17:53:13Z: artifact_complete=true, mean relative NMSE reduction 0.07133119147037506 missed the preregistered 0.10 shelf despite CI95=[0.06882070525106689, 0.073901076081768] and non-worse positions. Diagnostic recommends stopping this branch rather than mining layer/position pockets. Next queued entry is cross_layer_error_theoretical."
+  "notes": "RESUMED 2026-05-08T15:47:56Z at git SHA 71e88c3ed4eda4b07fce47e924ef5276ab903926 after human resolved preregistration drift policy in swarm/goal.md. Audit policy now applies the six-pivot-condition check. Applied human-verified OutlierMigrate Phase 1 PASS_OM_PHASE1_REPLICATED_AT_SCALE from experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z; migration_fraction=0.843165650406504, CI95=[0.8334349593495936, 0.8511432926829268], artifact_complete=true. Residual Migration Phase 0 passed the preregistered replication path at 2026-05-08T16:22:49Z with accuracy_drop=0.0 and CI95=[0.0, 0.0], but baseline accuracy was also 0.0; treat as a gate PASS with severe headroom limitation. SSM-State Lifecycle Phase 0 killed cleanly at 2026-05-08T17:17:13Z: artifact_complete=true, 0/36 Mamba layers passed the preregistered KS+2x median-drift rule, pass_fraction=0.0 < 0.5. Its diagnostic identified one plausible fresh positive-method pivot, so ssm_shape_codec_phase0 was inserted before lower-priority original entries. SSM Shape-Conditioned Codec Phase 0 killed cleanly at 2026-05-08T17:53:13Z: artifact_complete=true, mean relative NMSE reduction 0.07133119147037506 missed the preregistered 0.10 shelf despite CI95=[0.06882070525106689, 0.073901076081768] and non-worse positions. Diagnostic recommends stopping this branch rather than mining layer/position pockets. Cross-Layer Error theoretical gate killed cleanly at 2026-05-08T20:00:03Z: artifact_complete=true, predicted/measured ratios exceeded the >5.0 kill threshold at depths 1, 10, and 15. Diagnostic identifies damped_fp4_precision_allocator as the best fresh positive-method pivot candidate requiring new preregistration before any data. Next queued entry is residual_migration_phase1."
 }

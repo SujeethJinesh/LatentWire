@@ -1,0 +1,777 @@
+{
+  "created_at_utc": "2026-05-08T19:57:02Z",
+  "decode_position": 1000,
+  "dtype": "float32_le",
+  "entries": [
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_000.f32",
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0,
+      "role": "bf16",
+      "sha256": "sha256:9c0a27a3c308256557a54d7a93f39aea4d6bdd6660904206e1aa54e915633183",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_001.f32",
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "role": "bf16",
+      "sha256": "sha256:384850ca388ace37102a83c0f295a0d586e244144f0e324da2b561ec5d37ad90",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_002.f32",
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "role": "bf16",
+      "sha256": "sha256:02bdaa41a6e16b61b07c4f9e4b5ae7275b2b1fb23973275411e4f918cfdba49d",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_003.f32",
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3,
+      "role": "bf16",
+      "sha256": "sha256:8cca4815c1a5d6a80f8abcd9b5a66d1e1ce817e319faee0e8017ac8847d97f9d",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_004.f32",
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "role": "bf16",
+      "sha256": "sha256:cee3d953fbd916c18e4feca7c50081c2f5b1dbd82aa9b949ce62157c4f0091ae",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_005.f32",
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "role": "bf16",
+      "sha256": "sha256:c732ed7e68cbe76ee111dabe952aac92af27720d4fc1b5d2e4c5322867ff9213",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_006.f32",
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6,
+      "role": "bf16",
+      "sha256": "sha256:7dedd0131de7bf1d2aab8278d13ed2c29ed58e08c0756b80e9fcb1c0da762ade",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_007.f32",
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "role": "bf16",
+      "sha256": "sha256:e4c4c63d1e032c69355a38c1b076a2631859c08bc4fed9fb657d8cb09c329799",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_008.f32",
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8,
+      "role": "bf16",
+      "sha256": "sha256:1f52757ac50465aa66927f83e4e347b06c8da207cc81c84a72b81e1d3abcf4c7",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_009.f32",
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "role": "bf16",
+      "sha256": "sha256:386639a72c4d74e6d7ed955d8b67870b4e565f31ed554be9a651a37fc3a3136f",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_010.f32",
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "role": "bf16",
+      "sha256": "sha256:06d1a8cea10d7a41688246e5e942e1f8b55c53c803fc0967af2800a6f3e2984f",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "dtype": "float32_le",
+      "path": "logits/bf16_prompt_011.f32",
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11,
+      "role": "bf16",
+      "sha256": "sha256:7a80e86897d23395bdeba14e309b869725e7b339a1d5aa361e0c2409baed84cb",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_000.f32",
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0,
+      "role": "fp4",
+      "sha256": "sha256:f3ea0ecb9cdf9b9f3428df843718985025a5feee6a94703472f4406e11b9c97a",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_001.f32",
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "role": "fp4",
+      "sha256": "sha256:eed1a6c7da1c0c7fd73f94e652df23610dffe561b7f98d8a1c28b84dba905cc5",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_002.f32",
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "role": "fp4",
+      "sha256": "sha256:d57a97a9cad8b9d72a609f9ef05a2418bcff337866b13667f1e39b9eaf121bdf",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_003.f32",
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3,
+      "role": "fp4",
+      "sha256": "sha256:627af69078f8cc74bdc4bf68090eae440df5027389bd13162dd1c3f488eff1c9",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_004.f32",
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "role": "fp4",
+      "sha256": "sha256:b1eb987120543f3526c95264d0543e34285c179f2619e7cc45fd3a220d2f2c00",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_005.f32",
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "role": "fp4",
+      "sha256": "sha256:6daeda26072aae0f9bb90fba9b87b741b0940975da861e40fbe225fe8a9614d7",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_006.f32",
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6,
+      "role": "fp4",
+      "sha256": "sha256:76332229bbfaf698dbf1ac85963e38608171cfe9b8be42925e834eaac9732431",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_007.f32",
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "role": "fp4",
+      "sha256": "sha256:74533792d896eff928d86d15942f55eacadf1cca1e14a610f4bb0dcdbd27b147",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_008.f32",
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8,
+      "role": "fp4",
+      "sha256": "sha256:d56c47077957d47d77803adef4b09bd7a851cf0d3d61d9659d803617e2fe4dbf",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_009.f32",
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "role": "fp4",
+      "sha256": "sha256:7ffe055341c17352e69c46e4cce4357b7105c7ba43ad3c8b8038464640659428",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_010.f32",
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "role": "fp4",
+      "sha256": "sha256:405464493e26dba3ff9ccfb4951708520de98013209f69582f9980eb7993ba97",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 1,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_01_prompt_011.f32",
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11,
+      "role": "fp4",
+      "sha256": "sha256:f6d8ee5ff6c7d65d3a57dce12819c0b2ed03d004a07555aec8b7dd87f28127f4",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_000.f32",
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0,
+      "role": "fp4",
+      "sha256": "sha256:937c29945a3fdb98d5080614f1749fad6dd70a7c6bce6c12b2383b6cfc53a95d",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_001.f32",
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "role": "fp4",
+      "sha256": "sha256:8cb9bd6e69a180da20d5e7559009fad9244c65262e652222f27c4a4ff800fed1",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_002.f32",
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "role": "fp4",
+      "sha256": "sha256:c8db0452b1b25aedc02b753a49f8005caec4e914068c3532827a1b8b3f036e0e",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_003.f32",
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3,
+      "role": "fp4",
+      "sha256": "sha256:d0c4eb10461166f03aae0a7cd54b1b3ab4fa0aadba982eeaa2ec47d7d568d6c0",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_004.f32",
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "role": "fp4",
+      "sha256": "sha256:8b26f26e4f25f49a5d8ffaaf69b38c9d8948ea7a1a1736bd897b424e8f8b4889",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_005.f32",
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "role": "fp4",
+      "sha256": "sha256:d055bc8b72a3f216d36683fa2b73276d4b21baff45b4753364e59d04bc36bb66",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_006.f32",
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6,
+      "role": "fp4",
+      "sha256": "sha256:615ad041f71f85b54f6b61c8dc4eb044f54e009c1bfb0ba0ca8b1dd6be03b9ac",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_007.f32",
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "role": "fp4",
+      "sha256": "sha256:691fcd4a7f37765379acf88c2b15dff6e01905e25e29a265f26b57792e887e83",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_008.f32",
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8,
+      "role": "fp4",
+      "sha256": "sha256:6d9ac458c2f244561335f9dba206aaf2ecc9057ea1a1778cd5cc468accc2ba44",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_009.f32",
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "role": "fp4",
+      "sha256": "sha256:69baf6dcf70ed72408d754a92000aca88abaa292e923a4d2d2b3d802c1a7ea85",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_010.f32",
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "role": "fp4",
+      "sha256": "sha256:757722b8c9a9301eea85784c9e858a221690b78d1548a605a909a12d69ff06f9",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 5,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_05_prompt_011.f32",
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11,
+      "role": "fp4",
+      "sha256": "sha256:bdd7bec9c9e13029f74aaea0344dfd56d4cee7b3cc31ef3f0193f39d00b5bc99",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_000.f32",
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0,
+      "role": "fp4",
+      "sha256": "sha256:a30fb7409b326dbd4bac892c685894c87187acd3bf60e5c880e2db3869b5c38b",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_001.f32",
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "role": "fp4",
+      "sha256": "sha256:9c6a2e43bb406a98dcfc6c1d2d7c15af3ce80f477f51e8629f2257e3f453fca4",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_002.f32",
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "role": "fp4",
+      "sha256": "sha256:b1c231d67291dd5036b6969e5a6b25e0cf22221f4c11fac67842a9ff67d2b088",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_003.f32",
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3,
+      "role": "fp4",
+      "sha256": "sha256:b9ec7affa3412f0640c3a52d3fdba50faf0beba72e174e5746aec82764111c1c",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_004.f32",
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "role": "fp4",
+      "sha256": "sha256:42d81b6b885967f8d6978bc7a8180d9b5fb5e364d0cd166ecebf83e181dd0b53",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_005.f32",
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "role": "fp4",
+      "sha256": "sha256:9a16cac4bf3e288495419f593351bb60ff3bde9be77b5641a734bdf391fbd350",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_006.f32",
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6,
+      "role": "fp4",
+      "sha256": "sha256:7246b7253fdbde4f06874b5184e732b198f7cec68e34a1b9a828101056eabfc8",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_007.f32",
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "role": "fp4",
+      "sha256": "sha256:4f28c728ff7cfed9aa337f31a8e69495618a6633592e61b839fc6a0b370affee",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_008.f32",
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8,
+      "role": "fp4",
+      "sha256": "sha256:8989ea0ea385f159551c254e75eb5052d566e0b567620f4873f68fe9f711781f",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_009.f32",
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "role": "fp4",
+      "sha256": "sha256:632798e8b47158420d1828eb191b1ed38ee440f78a410526812b465e4e7fcde8",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_010.f32",
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "role": "fp4",
+      "sha256": "sha256:cc8bc85bf4ccc8dd807a014f29d322b0611ffa905f3f8b8b2fdb9cc2744abf15",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 10,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_10_prompt_011.f32",
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11,
+      "role": "fp4",
+      "sha256": "sha256:b735ed699e806538f54efe39edba34157a6b2100567467b1e7573d0de3b2b39a",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_000.f32",
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0,
+      "role": "fp4",
+      "sha256": "sha256:7e148b22d8adf6a19dab17e6254963f9886111ec678d612d9a183eab8f02577a",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_001.f32",
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "role": "fp4",
+      "sha256": "sha256:8c364d2494d68675890ba89390847afbed56d0f9b06570af01f6107fda999629",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_002.f32",
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "role": "fp4",
+      "sha256": "sha256:ba7c79ac8f131c2116ea6dc6417205b6b879f870a53418e30c6631143607e87d",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_003.f32",
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3,
+      "role": "fp4",
+      "sha256": "sha256:30833aaa4462d8f3e8fcb61fc8e5d3897b9e3c5be77a285372a3eb85b02f1662",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_004.f32",
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "role": "fp4",
+      "sha256": "sha256:58d19e640fc1cbad0cddd852f6a2ef9ad9e11117bf3a14a29ca7c9f3f9fd4ef8",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_005.f32",
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "role": "fp4",
+      "sha256": "sha256:78264b12c06cd1c9d1c0d6a5d4c00468b29076a9497f464db303d6bc26930ebd",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_006.f32",
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6,
+      "role": "fp4",
+      "sha256": "sha256:5d552b94970d30c919ddd77a045d9e7bea9a224029f2063cbbcb1e1da25e34d0",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_007.f32",
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "role": "fp4",
+      "sha256": "sha256:3d4acff00b5655ac9677f750054f9e58d44d5632ed7bfd29ec3da1f9a3aaf2fe",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_008.f32",
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8,
+      "role": "fp4",
+      "sha256": "sha256:69eafe9b3eb88fc49ca172f2e443805613d90d155560a60c7c524dc01d034fd5",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_009.f32",
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "role": "fp4",
+      "sha256": "sha256:d01105bbf42c8b2fab78dd385b035d34391dce947370b19d1db040715c4136a7",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_010.f32",
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "role": "fp4",
+      "sha256": "sha256:67c90a16bd055c375072ebc8d8a9fd693656dea1c5f7977a34f29e4df584adc0",
+      "shape": [
+        100352
+      ]
+    },
+    {
+      "bytes": 401408,
+      "depth": 15,
+      "dtype": "float32_le",
+      "path": "logits/fp4_depth_15_prompt_011.f32",
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11,
+      "role": "fp4",
+      "sha256": "sha256:8e9abffdd940e443c56b990e2b4ac291f0dff04b822eaf46760ef74c4b445fbc",
+      "shape": [
+        100352
+      ]
+    }
+  ],
+  "schema_version": "cle_theoretical_v1_logits_manifest",
+  "storage": "raw little-endian float32 logits, one vector per file"
+}

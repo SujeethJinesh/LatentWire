@@ -1,0 +1,17 @@
+{
+  "block_size": 16,
+  "block_size_note": "NVFP4-compatible E2M1 simulation with 16-value blocks; simulator uses float32 scale values and does not claim native Blackwell NVFP4 kernel behavior.",
+  "decode_position": 1000,
+  "depth_pattern": "first N transformer layers are quantized; all other modules remain in BF16",
+  "depths": [
+    1,
+    5,
+    10,
+    15
+  ],
+  "native_kernel_claim": false,
+  "outlier_fraction": 0.01,
+  "quantization_format": "nvfp4_e2m1_weight_sim",
+  "schema_version": "cle_theoretical_v1_quantization_config",
+  "simulator": "experimental.shared.fp4_simulator.simulate_mxfp4_e2m1"
+}
