@@ -1,0 +1,24 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_RM_PHASE0_RETHINKING_REPLICATES",
+  "reasons": [
+    "replicates pass: ci_high=0.00000000 < 0.015"
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "ablation_config.json",
+    "generations.jsonl",
+    "metrics.json",
+    "bootstrap_ci.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z",
+  "schema_version": "rm_phase0_v1_artifact_check"
+}

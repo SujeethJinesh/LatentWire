@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "experimental/shared/run_phase0_branch.py",
+    "--branch",
+    "residual_migration"
+  ],
+  "branch": "residual_migration",
+  "created_at_utc": "2026-05-08T16:18:31Z",
+  "cwd": "/workspace/LatentWire",
+  "frozen_generation_limit": {
+    "max_new_tokens": 2048,
+    "reason": "pre-analysis Phase 0 cap for deterministic greedy AIME-2025 scoring",
+    "set_before_analysis": true
+  },
+  "generation": {
+    "do_sample": false,
+    "local_files_only": true,
+    "num_beams": 1,
+    "prompt_template": "shared Phase 0 AIME solve/final-answer template"
+  },
+  "layer_count": 40,
+  "layer_origin": "model.layers",
+  "run_dir": "/workspace/LatentWire/experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z",
+  "schema_version": "rm_phase0_v1_command"
+}

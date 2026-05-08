@@ -1,0 +1,167 @@
+\documentclass{article}
+
+\usepackage[submission]{../../../colm/2026/colm2026_conference}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{xurl}
+
+\title{Residual Migration Phase 0: A Headroom-Limited Residual-Clipping Gate}
+\author{Anonymous authors\\Paper under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This draft packet reports the first Residual Migration Phase 0 gate after the
+checker returned
+\texttt{PASS\_RM\_PHASE0\_RETHINKING\_REPLICATES} for
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/checker_result.json}.
+The measured accuracy drop after residual 95th-percentile clipping is 0.0 with
+bootstrap 95\% CI [0.0, 0.0], clearing the preregistered replicates threshold
+that the CI upper bound be below 0.015 according to
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/checker_result.json}
+and
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/bootstrap_ci.json}.
+This is a mechanical Phase 0 PASS, not a paper-ready positive method:
+baseline accuracy is 0.0 and ablation accuracy is 0.0 in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/metrics.json},
+so the zero drop cannot support a capability-preservation claim. Phase 1 must
+add headroom and oracle safeguards before any residual-quantization recipe
+claim is made.
+\end{abstract}
+
+\section{Introduction}
+
+Residual Migration asks whether high-magnitude residual values can be clipped
+or migrated without destroying downstream reasoning accuracy. The Phase 0
+surface is intentionally narrow: it tests whether a severe residual clipping
+ablation causes a measurable exact-match accuracy drop on 12 frozen AIME-2025
+traces from \texttt{ibm-granite/granite-4.0-h-tiny}. The run directory is
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z},
+with artifact completeness recorded in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/artifact_check.json}.
+
+The current paper status is not COLM- or ICLR-ready. The checker PASS says
+that this frozen packet did not show an accuracy drop under the preregistered
+replicates rule. It does not show preserved capability, because the unablated
+baseline answered zero of the 12 prompts correctly. That headroom failure is
+the central limitation of this draft and is recorded in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/metrics.json}
+and
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/checker_result.json}.
+
+\section{Phase 0 Method}
+
+The Phase 0 model is \texttt{ibm-granite/granite-4.0-h-tiny} at HuggingFace
+snapshot commit
+\texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}, recorded in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/model_provenance.json}
+and repeated in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/metrics.json}.
+The prompt packet contains deterministic AIME-2025 indices 0--11 with prompt
+SHA
+\texttt{sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd},
+recorded in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/prompt_manifest.json}
+and
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/metrics.json}.
+
+Generation length is frozen at 2048 \texttt{max\_new\_tokens}; the generation
+artifact is \url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/generations.jsonl}
+with SHA
+\texttt{sha256:5ce5d78cd10ec8a5fe92502d23624919fa286900f3ca769fd4f6979457eee8ad}
+in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/metrics.json}
+and
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/artifact_hashes.json}.
+
+The ablation attaches a forward pre-hook at every discovered transformer layer.
+For each layer and token position, residual values whose absolute magnitude
+exceeds that layer-position 95th percentile are clipped to the threshold while
+preserving sign. The ablation definition and per-layer thresholds are stored in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/ablation_config.json}.
+
+\section{Results}
+
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.30\linewidth}
+                >{\raggedright\arraybackslash}p{0.62\linewidth}}
+\toprule
+Quantity & Phase 0 value \\
+\midrule
+Checker decision & \url{PASS_RM_PHASE0_RETHINKING_REPLICATES} \\
+Artifact complete & true \\
+Baseline accuracy & 0.0 \\
+Ablation accuracy & 0.0 \\
+Accuracy drop & 0.0 \\
+Bootstrap 95\% CI & [0.0, 0.0] \\
+Preregistered pass-replicates threshold & CI upper $<$ 0.015 \\
+Model & \texttt{ibm-granite/granite-4.0-h-tiny} \\
+Model snapshot commit & \url{791e0d3d28c86e106c9b6e0b4cecdee0375b6124} \\
+Prompt SHA & \url{sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd} \\
+Generation artifact SHA & \url{sha256:5ce5d78cd10ec8a5fe92502d23624919fa286900f3ca769fd4f6979457eee8ad} \\
+Trace count & 12 \\
+Generation length & frozen 2048 \texttt{max\_new\_tokens} \\
+\bottomrule
+\end{tabular}
+\caption{Residual Migration Phase 0 gate result. Decision, artifact
+completeness, threshold, and reasons are from
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/checker_result.json}
+and
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/artifact_check.json}.
+Accuracy, bootstrap, model, prompt, and generation SHA values are from
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/metrics.json},
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/bootstrap_ci.json},
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/model_provenance.json},
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/prompt_manifest.json},
+and
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/artifact_hashes.json}.}
+\label{tab:phase0}
+\end{table}
+
+The checker reason is exactly ``replicates pass: ci\_high=0.00000000 < 0.015''
+in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/checker_result.json}.
+The aggregation is prompt-level binary exact-match correctness and a
+gate-level mean baseline correctness minus mean ablation correctness across 12
+prompts, as recorded in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/metrics.json}.
+
+\section{Interpretation}
+
+The saturated Phase 0 fact is narrow: under this exact frozen packet, the
+95th-percentile residual clipping ablation produced no measured accuracy drop.
+The live scientific branch is not yet a positive method, because the baseline
+also had no correct answers. A zero drop from 0.0 baseline accuracy cannot
+distinguish harmless residual migration from an evaluation surface with no
+headroom.
+
+The highest-priority next branch is Phase 1 with headroom and oracle safeguards.
+Before any residual-quantization recipe claim, the evaluation must include a
+surface where the baseline succeeds often enough for a drop to be meaningful,
+an oracle or diagnostic showing recoverable task headroom, paired uncertainty,
+and a strict separation between same-family replication and cross-family
+falsification.
+
+\section{Limitations}
+
+This packet should not be cited as evidence that residual clipping preserves
+reasoning capability. The relevant artifact facts are baseline accuracy 0.0,
+ablation accuracy 0.0, and accuracy drop 0.0 in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/metrics.json}
+and
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/checker_result.json}.
+Because no baseline prompt was correct, the CI [0.0, 0.0] in
+\url{experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/bootstrap_ci.json}
+is a replicate-pass diagnostic, not capability-preservation evidence.
+
+The result is single-model, 12-trace, and Phase-0-only. It does not yet include
+larger frozen slices, seed repeats beyond the recorded prompt bootstrap,
+cross-family falsification, oracle/headroom diagnostics, latency measurements,
+or a deployable compression method.
+
+\end{document}

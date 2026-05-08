@@ -293,6 +293,8 @@ entries:
     phase: 1
     priority: 9
     gated_by: residual_migration_phase0
+    activated_by_decision: PASS_RM_PHASE0_RETHINKING_REPLICATES
+    activated_at: "2026-05-08T16:22:49Z"
     preregistration: experimental/residual_migration/phase1/preregister_rm_phase1.md
     runner: experimental/residual_migration/phase1/run_rm_phase1.py
     runner_args: ["--full-scale"]

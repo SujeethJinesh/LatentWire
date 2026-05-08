@@ -1,0 +1,159 @@
+{
+  "metrics": {
+    "ablation_accuracy": 0.0,
+    "accuracy_drop": 0.0,
+    "aggregation": {
+      "bootstrap_unit": "prompt",
+      "gate_level": "mean baseline correctness minus mean ablation correctness across 12 prompts",
+      "prompt_level": "binary exact-match correctness"
+    },
+    "baseline_accuracy": 0.0,
+    "bootstrap_ci95": {
+      "ci95_high": 0.0,
+      "ci95_low": 0.0
+    },
+    "bootstrap_samples": 1000,
+    "bootstrap_seed": 20260508,
+    "branch": "residual_migration",
+    "created_at_utc": "2026-05-08T16:22:11Z",
+    "generation_artifact": "generations.jsonl",
+    "generation_artifact_sha256": "sha256:5ce5d78cd10ec8a5fe92502d23624919fa286900f3ca769fd4f6979457eee8ad",
+    "metric_name": "aime_accuracy_drop_after_residual_95p_clip",
+    "model_id": "ibm-granite/granite-4.0-h-tiny",
+    "model_snapshot_commit": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+    "per_prompt": [
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "35",
+        "canonical_answer": "70",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_0",
+        "prompt_index": 0
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "720",
+        "canonical_answer": "588",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_1",
+        "prompt_index": 1
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "932",
+        "canonical_answer": "16",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_2",
+        "prompt_index": 2
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "151",
+        "canonical_answer": "117",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_3",
+        "prompt_index": 3
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "130",
+        "canonical_answer": "279",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_4",
+        "prompt_index": 4
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "432",
+        "canonical_answer": "504",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_5",
+        "prompt_index": 5
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "13",
+        "canonical_answer": "821",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_6",
+        "prompt_index": 6
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "27",
+        "canonical_answer": "77",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_7",
+        "prompt_index": 7
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "9",
+        "canonical_answer": "62",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_8",
+        "prompt_index": 8
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "68",
+        "canonical_answer": "81",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_9",
+        "prompt_index": 9
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": null,
+        "canonical_answer": "259",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_10",
+        "prompt_index": 10
+      },
+      {
+        "ablation_correct": false,
+        "ablation_extracted_answer": null,
+        "baseline_correct": false,
+        "baseline_extracted_answer": "628",
+        "canonical_answer": "510",
+        "drop": 0.0,
+        "prompt_id": "opencompass_AIME2025_I_11",
+        "prompt_index": 11
+      }
+    ],
+    "prompt_selection": "deterministic_indices_0_11",
+    "prompt_sha256": "sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd",
+    "prompt_source": "AIME-2025",
+    "schema_version": "rm_phase0_v1_metrics",
+    "thresholds": {
+      "bootstrap_ci": 0.95,
+      "bootstrap_samples": 1000,
+      "hybrids_depend_ci_lower_gt": 0.03,
+      "replicates_ci_upper_lt": 0.015
+    },
+    "trace_count": 12
+  },
+  "run_dir": "/workspace/LatentWire/experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z"
+}

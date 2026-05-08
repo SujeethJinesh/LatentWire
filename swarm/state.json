@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "residual_migration_phase0",
+  "current_entry": "ssm_lifecycle_phase0",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -93,6 +93,27 @@
         "artifact_complete": true,
         "phase2_promoted": true
       }
+    },
+    {
+      "id": "residual_migration_phase0",
+      "project": "residual_migration",
+      "phase": 0,
+      "decision": "PASS_RM_PHASE0_RETHINKING_REPLICATES",
+      "result_dir": "experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z",
+      "checker": "experimental/shared/check_phase0_gate.py",
+      "checker_output": "experimental/residual_migration/phase0/results/rm_phase0_20260508T161556Z/checker_result.json",
+      "completed_at": "2026-05-08T16:22:49Z",
+      "summary": {
+        "baseline_accuracy": 0.0,
+        "ablation_accuracy": 0.0,
+        "accuracy_drop": 0.0,
+        "bootstrap_ci95_low": 0.0,
+        "bootstrap_ci95_high": 0.0,
+        "replicates_ci_upper_threshold": 0.015,
+        "artifact_complete": true,
+        "phase1_promoted": true,
+        "interpretation_note": "Mechanically passes the preregistered replication path because CI upper is below 0.015, but baseline accuracy is zero, so paper claims must not treat this as evidence of preserved capability headroom."
+      }
     }
   ],
   "killed_entries": [
@@ -125,10 +146,10 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 6.33,
+  "gpu_hours_used": 6.43,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-08T15:57:20Z",
-  "last_commit_sha": "4d523b7e26c6c914f192ee86d9d3f5cf12382172",
+  "last_audit_at": "2026-05-08T16:22:49Z",
+  "last_commit_sha": "bcd6e4a5e3b5fbdfa03cf4d406a6cd6bdaabed4e",
   "papers_camera_ready_candidate": [],
-  "notes": "RESUMED 2026-05-08T15:47:56Z at git SHA 71e88c3ed4eda4b07fce47e924ef5276ab903926 after human resolved preregistration drift policy in swarm/goal.md. Audit policy now applies the six-pivot-condition check. Applied human-verified OutlierMigrate Phase 1 PASS_OM_PHASE1_REPLICATED_AT_SCALE from experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z; migration_fraction=0.843165650406504, CI95=[0.8334349593495936, 0.8511432926829268], artifact_complete=true. Paper iteration commit 4d523b7e26c6c914f192ee86d9d3f5cf12382172 updated the draft and reviewer pack; follow-up committee wording fix weakens positive-method overclaim to same-family observational gate. Next queued entry is residual_migration_phase0."
+  "notes": "RESUMED 2026-05-08T15:47:56Z at git SHA 71e88c3ed4eda4b07fce47e924ef5276ab903926 after human resolved preregistration drift policy in swarm/goal.md. Audit policy now applies the six-pivot-condition check. Applied human-verified OutlierMigrate Phase 1 PASS_OM_PHASE1_REPLICATED_AT_SCALE from experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z; migration_fraction=0.843165650406504, CI95=[0.8334349593495936, 0.8511432926829268], artifact_complete=true. Residual Migration Phase 0 passed the preregistered replication path at 2026-05-08T16:22:49Z with accuracy_drop=0.0 and CI95=[0.0, 0.0], but baseline accuracy was also 0.0; treat as a gate PASS with severe headroom limitation. Next queued entry is ssm_lifecycle_phase0."
 }

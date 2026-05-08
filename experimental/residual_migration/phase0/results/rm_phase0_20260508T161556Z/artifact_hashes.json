@@ -1,0 +1,66 @@
+{
+  "artifacts": [
+    {
+      "bytes": 1621358,
+      "path": "ablation_config.json",
+      "sha256": "sha256:7d7f1e7b113d6d44cfef3a387a5bc48b7d174b3fcb7a2d024824a0c2e53db919"
+    },
+    {
+      "bytes": 267,
+      "path": "bootstrap_ci.json",
+      "sha256": "sha256:a37a08b0da5cefbd08f2377f304e2ded77de14bf7764214861a12dd4b721619a"
+    },
+    {
+      "bytes": 783,
+      "path": "command_metadata.json",
+      "sha256": "sha256:4f00fe7633c9f361ff6481d9f1dcc6a2376ee7439c01b3c625349b3257d6e427"
+    },
+    {
+      "bytes": 8217,
+      "path": "environment.json",
+      "sha256": "sha256:f415aac899b941ecdcfb4afee54a32ea7b67b4b5c58b011984dbe02cb9657250"
+    },
+    {
+      "bytes": 143718,
+      "path": "generations.jsonl",
+      "sha256": "sha256:5ce5d78cd10ec8a5fe92502d23624919fa286900f3ca769fd4f6979457eee8ad"
+    },
+    {
+      "bytes": 652,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:babead03512e433f230d97acd7a473474b90c6c8def1ce5e9c93117a8efca956"
+    },
+    {
+      "bytes": 5102,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:0b700bbc1ffa7e71a95648c8aa6ba3765337f537b3a60f7571e003ab3edb7ab2"
+    },
+    {
+      "bytes": 4663,
+      "path": "metrics.json",
+      "sha256": "sha256:fc6fd38e8defd0e4fa54ba8f7c9d68d17a89b78e8ab7f7e06fd10ea99f5b8a9d"
+    },
+    {
+      "bytes": 5159,
+      "path": "model_provenance.json",
+      "sha256": "sha256:9998019712c1d8a874cfb28eedf839581ab379f1cdd44b16e1f5f1da74574527"
+    },
+    {
+      "bytes": 8237,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:a1738fd5881825422e033b81b16047156245a4a8ae6d5145b56335f36b35716c"
+    },
+    {
+      "bytes": 173,
+      "path": "random_seed.json",
+      "sha256": "sha256:6bf685129983a80e7c1fec9a9ca0e7eead3e855cad2298b7e7573f7dcee1e2a3"
+    },
+    {
+      "bytes": 284,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:c5ad4bb3983e2ea80bb51a39efb8df3380fc04df3e082c3f38e5ab03acad5658"
+    }
+  ],
+  "created_at_utc": "2026-05-08T16:22:12Z",
+  "schema_version": "rm_phase0_v1_artifact_hashes"
+}
