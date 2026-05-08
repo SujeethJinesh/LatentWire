@@ -1,0 +1,24 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_OM_PHASE0_DECODE_TIME_MIGRATION",
+  "reasons": [
+    "dynamic pass: point=0.81783854 >= 0.05 and ci_low=0.79726562 > 0.05"
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "activation_magnitude_manifest.json",
+    "activation_magnitudes.jsonl.gz",
+    "metrics.json",
+    "bootstrap_ci.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z",
+  "schema_version": "om_phase0_v1_artifact_check"
+}

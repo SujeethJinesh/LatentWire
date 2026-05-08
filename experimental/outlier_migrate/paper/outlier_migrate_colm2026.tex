@@ -1,0 +1,151 @@
+\documentclass{article}
+
+\usepackage[submission]{../../../colm/2026/colm2026_conference}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Outlier Migration in Long Decode Traces}
+\author{Anonymous authors\\Paper under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This draft reports a conservative Phase 0 result for OutlierMigrate, a
+candidate positive-method branch studying whether high-magnitude activation
+channels remain stationary during long decode. The preregistered Phase 0 gate
+passes on Granite-4.0-H-Tiny: the fraction of top-1\% position-100 channels
+whose rank changes by more than two channel positions by decode position
+10000 is 0.8178385416666667 with bootstrap 95\% CI
+[0.797265625, 0.8368489583333334]. This is not camera-ready, is not a full
+positive-method claim, and does not provide cross-model evidence. Phase 1
+scale validation is required before the work can support submission-level
+claims.
+\end{abstract}
+
+\section{Introduction}
+
+OutlierMigrate asks whether the channels carrying high-magnitude decode-time
+activations are fixed or whether they move during long reasoning traces. Static
+outliers would support static channel-protection recipes. Dynamic outliers
+would motivate migration-aware protection or routing methods, but only after
+larger validation shows that the effect is stable and useful.
+
+The current paper status is deliberately limited. Phase 0 is a screen on one
+model family, one model size, and 12 deterministic AIME-2025 reasoning traces.
+It supports a dynamic-outlier observation under the preregistered metric. It
+does not support a camera-ready method claim, an end-to-end efficiency claim,
+or any cross-model claim.
+
+\section{Method}
+
+The Phase 0 procedure follows the frozen preregistration at
+\url{experimental/outlier_migrate/phase0/preregister_om_phase0.md}. The model
+is \texttt{ibm-granite/granite-4.0-h-tiny} at HuggingFace snapshot commit
+\texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}. The prompt set contains 12
+deterministically selected AIME-2025 traces, indices 0--11.
+
+For every transformer layer, the runner records per-channel activation
+magnitudes at decode positions \{100, 500, 1000, 5000, 10000\}. It selects the
+top 1\% channels by mean magnitude at position 100 and computes the fraction
+whose rank at position 10000 differs by more than two channel positions. The
+reported gate metric is the trace-bootstrap aggregate over layers.
+
+\section{Experiments}
+\label{sec:experiments}
+
+The Phase 0 result packet is
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z}.
+The checker output is
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/checker_result.json},
+the metrics file is
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/metrics.json},
+and artifact completeness is recorded in
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/artifact_check.json}.
+
+The preregistered dynamic-outlier pass rule requires migration fraction
+at least 0.05 and bootstrap CI lower bound greater than 0.05. The static pass
+rule and ambiguous-effect kill rule are not used because the dynamic pass rule
+is satisfied.
+
+\section{Results}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+Quantity & Value \\
+\midrule
+Decision & \texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION} \\
+Migration fraction & 0.8178385416666667 \\
+Bootstrap 95\% CI & [0.797265625, 0.8368489583333334] \\
+Dynamic threshold & migration fraction $\geq$ 0.05 and CI lower $>$ 0.05 \\
+Model snapshot commit & \texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124} \\
+Layer count / hidden size & 40 / 1536 \\
+Trace count & 12 \\
+\bottomrule
+\end{tabular}
+\caption{Phase 0 gate result from the checker and metrics artifacts cited in
+Section~\ref{sec:experiments}. The result clears the preregistered dynamic
+threshold because 0.8178385416666667 $\geq$ 0.05 and the CI lower bound
+0.797265625 is greater than 0.05.}
+\end{table}
+
+The checker returned
+\texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION}. The exact checker reason
+was that the point estimate 0.81783854 is at least 0.05 and the CI lower bound
+0.79726562 is greater than 0.05.
+
+\section{Discussion}
+
+The Phase 0 result weakens the static-outlier hypothesis on this exact
+surface: under the preregistered rank-migration metric, most position-100
+top-1\% channels do not remain rank-stationary through position 10000.
+This keeps OutlierMigrate alive as a candidate branch. It does not establish
+that migration-aware intervention improves model quality, latency, memory, or
+robustness.
+
+The highest-priority next branch is Phase 1 scale validation. Phase 1 must test
+whether the same observation survives a larger frozen surface before any method
+paper can claim a reusable mechanism.
+
+\section{Limitations}
+
+This draft is not camera-ready. It reports one Phase 0 screen on one model
+snapshot, one prompt source, and 12 traces. There is no cross-model evidence,
+no same-family scale validation, no cross-family falsification pair, no seed
+repeat beyond the recorded bootstrap procedure, and no intervention showing
+that migration-aware handling improves an application metric. The result may
+also depend on the chosen decode positions, top-channel fraction, and rank
+delta threshold, all of which were fixed before analysis and should not be
+retuned on this packet.
+
+\section{Reproducibility Statement}
+
+The result packet is
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z}.
+It includes \texttt{environment.json}, \texttt{model\_provenance.json},
+\texttt{prompt\_manifest.json}, \texttt{command\_metadata.json},
+\texttt{random\_seed.json}, \texttt{metrics.json},
+\texttt{checker\_result.json}, and \texttt{artifact\_check.json}. The model
+snapshot commit is
+\texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}. The recorded command was:
+
+\begin{verbatim}
+experimental/shared/run_phase0_branch.py --branch outlier_migrate
+\end{verbatim}
+
+The checker decision and exact Phase 0 numbers in this draft are taken from
+the result directory above.
+
+\section{Ethics Statement}
+
+This is an activation-analysis systems study on benchmark prompts. The current
+artifact does not make deployment, user-data, safety, or capability-improvement
+claims. The main ethical risk is overclaiming a Phase 0 screen as a validated
+positive method; this draft explicitly rejects that interpretation until Phase
+1 scale validation passes.
+
+\end{document}

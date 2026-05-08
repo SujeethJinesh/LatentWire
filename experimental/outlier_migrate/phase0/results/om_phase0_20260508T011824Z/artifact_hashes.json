@@ -1,0 +1,66 @@
+{
+  "artifacts": [
+    {
+      "bytes": 3676,
+      "path": "activation_magnitude_manifest.json",
+      "sha256": "sha256:3c20a6f2b3b339a36d9b9ed3f97cbe0f52148c603afefab31e3fe6b355c88c30"
+    },
+    {
+      "bytes": 8302657,
+      "path": "activation_magnitudes.jsonl.gz",
+      "sha256": "sha256:2783aa329d82e8f43ea4f342e52f0a25fc283b0b8971880f2da093739474d687"
+    },
+    {
+      "bytes": 299,
+      "path": "bootstrap_ci.json",
+      "sha256": "sha256:889812f9b279c7942942bb9e57d37afdc8b9605f0ebe271e4da5f23c0519cb29"
+    },
+    {
+      "bytes": 671,
+      "path": "command_metadata.json",
+      "sha256": "sha256:b3f3a035e5ff2edce78c0e092d83b2c89b2cef2a4102479b42f9d3b31f230c16"
+    },
+    {
+      "bytes": 8200,
+      "path": "environment.json",
+      "sha256": "sha256:d1a0b6c5697296dbd041372596e5d79b7299c94bec982058802b0b1e0cbf243b"
+    },
+    {
+      "bytes": 421,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:bfd82ab29d4cd2b78efcf75302495588159fe1795eafe60388c31d4a6cb93e45"
+    },
+    {
+      "bytes": 17261,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:197e14a59eb699c28875aefb8808f581dd5e97b29eb740d79ca5388389a88541"
+    },
+    {
+      "bytes": 15079,
+      "path": "metrics.json",
+      "sha256": "sha256:0469531b0c514df4d1a29273d890d1030180c2042e97aa658738ac4fc2331817"
+    },
+    {
+      "bytes": 5159,
+      "path": "model_provenance.json",
+      "sha256": "sha256:6a85b90de1b85e61dff15c52cf859559efda8efd75b8d536ae811b23881df174"
+    },
+    {
+      "bytes": 8237,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:ae67f15d81f0f9ebb4759b941f25c43699b4aff167080f909c9d0db7f79fc75b"
+    },
+    {
+      "bytes": 173,
+      "path": "random_seed.json",
+      "sha256": "sha256:72f4ccd6b68af13a36bb68805aeda1f678cad404c58ca6557411f0359da5b423"
+    },
+    {
+      "bytes": 297,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:4eb048f02fd7fa6d2eacdef014da512d8113b3f669d607a0561d1e2ffa3fdecd"
+    }
+  ],
+  "created_at_utc": "2026-05-08T01:27:27Z",
+  "schema_version": "om_phase0_v1_artifact_hashes"
+}

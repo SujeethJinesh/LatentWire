@@ -1,0 +1,104 @@
+{
+  "cache_repo_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny",
+  "checked_cache_paths": [
+    "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny"
+  ],
+  "created_at_utc": "2026-05-08T01:19:02Z",
+  "files": [
+    {
+      "bytes": 1519,
+      "path": ".gitattributes",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/a6344aac8c09253b3b630fb776ae94478aa0275b",
+      "sha256": "sha256:11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361"
+    },
+    {
+      "bytes": 34467,
+      "path": "README.md",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/afd2a759ed61c5d3ea5c89a84f344484b18e73a5",
+      "sha256": "sha256:9a2b7bc35ca60174c314e16e61260214f329eaf2372dccdc27814fe719990d95"
+    },
+    {
+      "bytes": 6418,
+      "path": "chat_template.jinja",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/82e3ebf57b6de47c0c4e722dde0e33915f73bfe8",
+      "sha256": "sha256:9524df67b77a7b25a2dfee898f75b316a157eb9d855b51e32aeac79d7c8a83ce"
+    },
+    {
+      "bytes": 1796,
+      "path": "config.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/8c88003f7058ba98f4fd51912870b701e622e512",
+      "sha256": "sha256:bda8fd574ace7d968d82397f59ea6b9a702a077bbeab279a65b9dad7386a82c6"
+    },
+    {
+      "bytes": 147,
+      "path": "generation_config.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/2eed7ca2d26ec1a753b8800e0bae20c824e8b015",
+      "sha256": "sha256:7c04cb9d2ba771f7528fba5a7104999cdaf7566d02b5fbd58472829f62716177"
+    },
+    {
+      "bytes": 916646,
+      "path": "merges.txt",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/354558edcdbd64ca7abd407b8be3d5d09d39d781",
+      "sha256": "sha256:b6fe424e334903f7fb84d3a106d9730455f4744b9fe3c21ee136d97a00e72502"
+    },
+    {
+      "bytes": 4924822608,
+      "path": "model-00001-of-00003.safetensors",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/d79109218e59c850b26146a40d5c2dd7084ac8e569e53a59e2dcb78a16529f73",
+      "sha256": "sha256:d79109218e59c850b26146a40d5c2dd7084ac8e569e53a59e2dcb78a16529f73"
+    },
+    {
+      "bytes": 4879018632,
+      "path": "model-00002-of-00003.safetensors",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/f15b2625114d52bbe658050732687683a3596e14fab4a817d3147549ac609ef3",
+      "sha256": "sha256:f15b2625114d52bbe658050732687683a3596e14fab4a817d3147549ac609ef3"
+    },
+    {
+      "bytes": 4074301016,
+      "path": "model-00003-of-00003.safetensors",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/825bf48c51808ce93042dc9ff65e6b8b76131fac76b8bda4183cff32abf39c83",
+      "sha256": "sha256:825bf48c51808ce93042dc9ff65e6b8b76131fac76b8bda4183cff32abf39c83"
+    },
+    {
+      "bytes": 48924,
+      "path": "model.safetensors.index.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/f7926ed90bd16db563554b4ae0f2b84da40f33c3",
+      "sha256": "sha256:a6cb7ba94a194b5c16c2f2fb4d1abce97e84fa75c2db011bbb0a6ba4b16c8904"
+    },
+    {
+      "bytes": 10740,
+      "path": "model.sig",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/b667dc6a1d5c41dd22d6d5fb9a4366f5861684fd",
+      "sha256": "sha256:832f8ba1abb1979c1b4cb2368dde13433deed0bc676e9d231df34c6264696a0e"
+    },
+    {
+      "bytes": 579,
+      "path": "special_tokens_map.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/3f67e7c50d57b16925f4f15469a774e7bf439047",
+      "sha256": "sha256:c08676c49fd7969a3130f72be6d4bf34da66aa484a6e21dffe359893a1bd5f2e"
+    },
+    {
+      "bytes": 7153421,
+      "path": "tokenizer.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/d7e1714703eb97dcef3435aa50eb1de1cf241d62",
+      "sha256": "sha256:e2bad66439538cb4d5a7580680932432ed9ece9d3b8577e675512bdf11599253"
+    },
+    {
+      "bytes": 17659,
+      "path": "tokenizer_config.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/7a6b382740c0c6587ae8af40aeb4b40f8fb8c431",
+      "sha256": "sha256:a5ec5daab12ba090a90f3dd169c8f9c275557013a87b9c1258dc7cb497a35c86"
+    },
+    {
+      "bytes": 2014114,
+      "path": "vocab.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/blobs/8db038edfaa23127de4dbf4aee931fbba92183cb",
+      "sha256": "sha256:3efa1cc7301ba3f2c0cb36f4c9ec1ece4e10eaadc60d29462013269769c161fb"
+    }
+  ],
+  "hf_snapshot_commit": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "local_files_only": true,
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "schema_version": "om_phase0_v1_model_provenance",
+  "snapshot_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny/snapshots/791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
+}
