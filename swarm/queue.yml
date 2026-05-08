@@ -344,6 +344,8 @@ entries:
     phase: 2
     priority: 11
     gated_by: outlier_migrate_phase1
+    activated_by_decision: PASS_OM_PHASE1_REPLICATED_AT_SCALE
+    activated_at: "2026-05-08T15:47:56Z"
     preregistration: experimental/outlier_migrate/phase1/preregister_om_phase1.md
     runner: experimental/outlier_migrate/phase2/run_cross_model.py
     runner_args: []
