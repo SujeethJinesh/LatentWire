@@ -2,7 +2,7 @@
   "schema_version": 0,
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
-  "status": "RUNNING",
+  "status": "BLOCKED",
   "current_entry": "outlier_migrate_phase1",
   "completed_entries": [
     {
@@ -109,8 +109,8 @@
   "consecutive_infra_failures": 0,
   "gpu_hours_used": 0.91,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-08T01:27:27Z",
+  "last_audit_at": "2026-05-08T05:04:10Z",
   "last_commit_sha": "913c8bb785695392c829ed7ec2d37cf7a0dc7198",
   "papers_camera_ready_candidate": [],
-  "notes": "HybridKernel killed; Decode Microkernel Phase 0 and Phase 1 replay gates passed; Decode Microkernel Phase 2 returned FAIL_INFRA_DMC_PHASE2 because no real vLLM DMC serving integration exists. ThoughtFlow paper-polish gate passed as a buildable falsification-methodology diagnostic, not camera-ready. OutlierMigrate Phase 0 passed the dynamic outlier migration gate and promotes to Phase 1."
+  "notes": "BLOCKED by periodic audit: post-start Decode Microkernel pivot preregistration files were added after started_at_sha. This may be allowed fresh-pivot preregistration work under revised swarm/goal.md, but the prereg-drift stop rule and audit predicate currently treat all post-start preregister*.md additions as drift. See swarm/blocked_prereg_drift_20260508T050410Z.md. OutlierMigrate Phase 1 packet collection is in flight and uninterpreted."
 }
