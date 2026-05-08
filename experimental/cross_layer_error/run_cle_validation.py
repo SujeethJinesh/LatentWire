@@ -661,7 +661,7 @@ def run(args: argparse.Namespace, argv: list[str] | None) -> int:
             run_events_path=run_events_path,
         )
         write_trace_tokens(run_dir, prompts=prompts, tokens_by_prompt=tokens_by_prompt)
-        append_event(run_events_path, "trace_tokens_written", path="trace_tokens.jsonl")
+        append_event(run_events_path, "trace_tokens_written", artifact_path="trace_tokens.jsonl")
         bf16_logits = capture_logits_for_trace(
             model=model,
             tokenizer=tokenizer,
