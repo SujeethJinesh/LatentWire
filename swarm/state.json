@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "cross_layer_error_theoretical",
+  "current_entry": "ssm_shape_codec_phase0",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -171,7 +171,7 @@
   "gpu_hours_used": 6.73,
   "gpu_hours_budget": 160.0,
   "last_audit_at": "2026-05-08T17:17:13Z",
-  "last_commit_sha": "7355fce51c202930893c1ceaac8e02b8bbfac7d5",
+  "last_commit_sha": "e6329d148edeb1707f69b09711072deaee6554ec",
   "papers_camera_ready_candidate": [],
-  "notes": "RESUMED 2026-05-08T15:47:56Z at git SHA 71e88c3ed4eda4b07fce47e924ef5276ab903926 after human resolved preregistration drift policy in swarm/goal.md. Audit policy now applies the six-pivot-condition check. Applied human-verified OutlierMigrate Phase 1 PASS_OM_PHASE1_REPLICATED_AT_SCALE from experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z; migration_fraction=0.843165650406504, CI95=[0.8334349593495936, 0.8511432926829268], artifact_complete=true. Residual Migration Phase 0 passed the preregistered replication path at 2026-05-08T16:22:49Z with accuracy_drop=0.0 and CI95=[0.0, 0.0], but baseline accuracy was also 0.0; treat as a gate PASS with severe headroom limitation. SSM-State Lifecycle Phase 0 killed cleanly at 2026-05-08T17:17:13Z: artifact_complete=true, 0/36 Mamba layers passed the preregistered KS+2x median-drift rule, pass_fraction=0.0 < 0.5. Next queued entry is cross_layer_error_theoretical."
+  "notes": "RESUMED 2026-05-08T15:47:56Z at git SHA 71e88c3ed4eda4b07fce47e924ef5276ab903926 after human resolved preregistration drift policy in swarm/goal.md. Audit policy now applies the six-pivot-condition check. Applied human-verified OutlierMigrate Phase 1 PASS_OM_PHASE1_REPLICATED_AT_SCALE from experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z; migration_fraction=0.843165650406504, CI95=[0.8334349593495936, 0.8511432926829268], artifact_complete=true. Residual Migration Phase 0 passed the preregistered replication path at 2026-05-08T16:22:49Z with accuracy_drop=0.0 and CI95=[0.0, 0.0], but baseline accuracy was also 0.0; treat as a gate PASS with severe headroom limitation. SSM-State Lifecycle Phase 0 killed cleanly at 2026-05-08T17:17:13Z: artifact_complete=true, 0/36 Mamba layers passed the preregistered KS+2x median-drift rule, pass_fraction=0.0 < 0.5. Its diagnostic identified one plausible fresh positive-method pivot, so ssm_shape_codec_phase0 was inserted before lower-priority original entries. Next queued entry is ssm_shape_codec_phase0."
 }

@@ -202,6 +202,29 @@ entries:
       Conceptually adjacent to killed SSQ-LR. If Phase 0 fails, kill
       cleanly with fresh KILL manifest; do not reopen as SSQ-LR.
 
+  - id: ssm_shape_codec_phase0
+    project: ssm_shape_codec
+    phase: 0
+    priority: 5.5
+    pivot_from: ssm_lifecycle_phase0
+    preregistration: experimental/ssm_shape_codec/phase0/preregister_ssc_phase0.md
+    runner: experimental/ssm_shape_codec/phase0/run_ssc_phase0.py
+    runner_args: []
+    checker: experimental/ssm_shape_codec/phase0/check_ssc_phase0.py
+    checker_args: []
+    expected_pass_decision: PASS_SSC_PHASE0_SHAPE_CODEC_GAIN
+    expected_kill_decision: KILL_SSC_PHASE0_NO_CODEC_GAIN
+    expected_infra_decision: FAIL_INFRA_SSC_PHASE0
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 3
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+    notes: |
+      Fresh positive-method pivot authorized by experimental/ssm_lifecycle/diagnostic.md.
+      Tests held-out AIME indices 12-23 only; thresholds are for offline
+      shape-conditioned SSM state codec reconstruction, not decode quality.
+
   - id: cross_layer_error_theoretical
     project: cross_layer_error
     phase: theoretical
