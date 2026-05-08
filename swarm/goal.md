@@ -243,3 +243,58 @@ The following preregistration files were created after started_at_sha and are ex
 These preregistrations were authored in response to the HybridKernel KILL_HYBRIDKERNEL_BELOW_SHELF decision. The HybridKernel diagnostic identified decode-path microkernel optimization as a plausible alternative positive hypothesis. Decode Microkernel preregistrations were authored before any decode-microkernel-specific data was observed. Pivot depth is 1 from HybridKernel (within the limit).
 
 Audit subagents must consider the files in this manifest as authorized creations and not flag them as preregistration drift.
+
+## 10-hour authorized work window — May 8 2026
+
+Context: Swarm is BLOCKED on Phase 2 cross-model validation requiring Qwen3.6 (vLLM 0.10.2 incompatibility). Human is unreachable for approximately 10 hours. The Qwen3.6 block remains. Do NOT upgrade vLLM. Do NOT download Qwen3.6 or Kimi Linear weights. The following work is authorized and high-value for this window.
+
+### Authorized work (priority order)
+
+1. **OutlierMigrate related-work reframing**: Earlier portfolio audits missed prior dynamic-outlier-in-Mamba literature. Update experimental/outlier_migrate/paper/outlier_migrate_colm2026.tex related work section to cite:
+   - QMamba (Li et al., arXiv 2501.13624, January 2025): first PTQ for vision SSMs; identifies highly dynamic hidden-state behavior and proposes Temporal Group Quantization
+   - OuroMamba (Ramachandran et al., arXiv 2503.10959, ICCV 2025): explicitly contrasts dynamic VMM outlier patterns vs static ViT patterns; proposes adaptive outlier selection in hybrid Transformer-Mamba vision models
+   - Quamba (arXiv 2410.13229), Quamba-SE (arXiv 2601.09451), Mamba-PTQ (arXiv 2407.12397), MambaQuant (arXiv 2501.13484): language Mamba PTQ work that assumes static outlier behavior
+
+   Reframe the OutlierMigrate contribution: the language Mamba PTQ literature treats outliers as statistically stationary; the vision Mamba PTQ literature found them dynamic. We test which regime applies to hybrid LLMs in long reasoning traces, find the dynamic regime at 84% migration, and position the implications for static-protection methods (BlockDialect, AWQ, SmoothQuant, QuaRot, KVQuant) used in language deployments.
+
+   Forbidden claims: do NOT claim "first to find dynamic outliers in Mamba" — vision Mamba literature established this. The novel empirical contribution is the language reasoning quantification on hybrid LLMs.
+
+   Run a fresh 3-member committee review after reframing. Iterate up to 3 review→fix cycles. Do not mark camera-ready-final.
+
+2. **Continue queued Phase 0 entries in priority order** (all preregistered, all unaffected by the Qwen3.6 block):
+   - residual_migration_phase0
+   - ssm_lifecycle_phase0
+   - cross_layer_error_theoretical
+
+   For each: execute runner, run checker, apply PASS/KILL decision per the preregistration, update queue.yml on_pass conditionals, drive paper iteration on any pass.
+
+3. **Add Kimi Linear to cross-validation queue.yml entries** (queue-only edit, not preregistration). The model `moonshotai/Kimi-Linear-48B-A3B-Instruct` should appear in cross_model_validation_outlier_migrate, cross_model_validation_residual_migration, and cross_model_validation_ssm_lifecycle entries' models blocks alongside the existing entries. This is operational layer scope and is permitted. Do not download the weights; this is a queue-config change only.
+
+4. **Partial Phase 2 cross-validation on Nemotron-3 only**: When cross_model_validation_outlier_migrate becomes runnable (after RM/SSML/CLE Phase 0 complete), execute it with ONLY nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16 (vLLM 0.10.2 supports NemotronHForCausalLM). Document explicitly in the result packet and any paper updates that Qwen3.6 and Kimi Linear validation are deferred pending vLLM compatibility resolution. Do not claim full cross-validation; claim partial cross-validation on one cross-family hybrid model.
+
+   Allowed: download Nemotron-3-Nano-30B-A3B-BF16 weights (~60GB), execute inference matching the Phase 1 protocol, produce migration metrics with full bootstrap CI, integrate results into OutlierMigrate paper.
+   Forbidden: download Qwen3.6 or Kimi Linear weights, modify any preregistration to relax full-cross-validation requirements, claim the Nemotron-only result is full cross-validation.
+
+5. **ThoughtFlow paper polish**: If committee scores are not yet >=7/10 from all three reviewers across recent rounds, run additional committee review rounds and polish accordingly. Do not mark camera-ready-final.
+
+### Forbidden during this window (hard rules)
+
+- Upgrading vLLM (would break validated torch/triton/CUDA stack)
+- Downloading Qwen3.6 or Kimi Linear weights (cannot be loaded with current vLLM)
+- Marking any paper "camera-ready final" (candidate is the ceiling without human review)
+- Modifying any preregistration file (drift policy unchanged)
+- Acting on Decode Microkernel beyond documenting current Phase 2 infra-block status (engineering resources required, not LLM resources)
+- Making decisions about HybridFPGA collaboration or any Tambe lab outreach (human-only)
+- Issuing any new pivot preregistration without explicit diagnostic.md justification
+
+### Window-specific stop rules (additive to existing rules)
+
+- Any model download fails twice for non-network reasons → blocked note, pause
+- vLLM produces a load error that cannot be self-resolved by configuration changes within the no-upgrade constraint → blocked note, pause
+- gpu_hours_used would exceed 100 cumulative → graceful wrap-up, write swarm/final_report.md, push, pause
+- An audit subagent identifies that one of the previously committee-passed papers regressed → pause
+- Three consecutive infra failures (existing rule, restated)
+
+### Reporting during this window
+
+Write swarm/progress_<date>_<hour>.md every 2 hours (denser than the usual 4-hour cadence) so the human has clear visibility on landing. Each progress note must include: what completed, what's currently running, any concerns, cumulative gpu_hours_used, and the camera-ready-candidate status of every alive paper.
