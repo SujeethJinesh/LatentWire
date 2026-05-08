@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "/workspace/LatentWire/.venv_gpu/bin/python",
+    "/workspace/LatentWire/experimental/decode_microkernel/phase2/run_dmc_phase2.py",
+    "--run-id",
+    "dmc_phase2_20260508T0045Z"
+  ],
+  "attempt_vllm_model_load": false,
+  "bootstrap_samples": 2000,
+  "cwd": "/workspace/LatentWire",
+  "ended_at_utc": "2026-05-08T00:45:52Z",
+  "environment_variables": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/workspace/hf_cache",
+    "HF_HUB_CACHE": "/workspace/hf_cache/hub",
+    "TRANSFORMERS_CACHE": null,
+    "VLLM_ATTENTION_BACKEND": null,
+    "VLLM_USE_V1": null
+  },
+  "git_sha": "191929d2ec5cd06c9661e7f90c8b6e129c81fe92",
+  "path_python": "/usr/local/bin/python",
+  "phase1_packet": "/workspace/LatentWire/experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z",
+  "prompt_file": "/workspace/LatentWire/experimental/shared/prompts/aime_2025_indices_0_11.jsonl",
+  "run_dir": "/workspace/LatentWire/experimental/decode_microkernel/phase2/results/dmc_phase2_20260508T0045Z",
+  "schema_version": "dmc_phase2_command_v1",
+  "script_path": "experimental/decode_microkernel/phase2/run_dmc_phase2.py",
+  "script_sha256": "sha256:94bbc135e3d50bf80c5186603c3f4d15442a1d14d24eece87c3b5a83ecf074c2",
+  "started_at_utc": "2026-05-08T00:45:38Z"
+}

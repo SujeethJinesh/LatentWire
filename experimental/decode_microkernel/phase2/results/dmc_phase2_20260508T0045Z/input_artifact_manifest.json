@@ -1,0 +1,67 @@
+{
+  "created_at_utc": "2026-05-08T00:45:50Z",
+  "packets": [
+    {
+      "files": [
+        {
+          "bytes": 1378,
+          "exists": true,
+          "path": "checker_result.json",
+          "sha256": "sha256:d4a4a20a03c672982a4fec88bb982c76221ad515d3526a53542e45ec92493643"
+        },
+        {
+          "bytes": 1239,
+          "exists": true,
+          "path": "command_metadata.json",
+          "sha256": "sha256:8646e8c47d9d58054a414d79496fbfb652362a890f227d1501012e7cf9129a29"
+        },
+        {
+          "bytes": 8126,
+          "exists": true,
+          "path": "environment.json",
+          "sha256": "sha256:7ffedd490b806c9d81381e9d6b463dfa011dee4d5345c95118cf38bc968f30ea"
+        },
+        {
+          "bytes": 9065,
+          "exists": true,
+          "path": "input_artifact_manifest.json",
+          "sha256": "sha256:14880299d8b9734a2df0f6c3175f58f91205745d3ba69cc1609fd17e8dae8a3e"
+        },
+        {
+          "bytes": 1,
+          "exists": true,
+          "path": "logs/stderr.log",
+          "sha256": "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "bytes": 1979,
+          "exists": true,
+          "path": "logs/stdout.log",
+          "sha256": "sha256:3aee0c0f3e6aabd92d594928787c32962d3561d00f4df6bd402d2c7b772d8044"
+        },
+        {
+          "bytes": 36604,
+          "exists": true,
+          "path": "metrics.json",
+          "sha256": "sha256:c526011afab795008d87a65e002afbe3c118b8fa16e7f27621b42c2b48310019"
+        },
+        {
+          "bytes": 13735,
+          "exists": true,
+          "path": "replay_schedule.json",
+          "sha256": "sha256:94f7e50d5b88a14f068a60faba3bbec1dafaa2477f199e7fee29cf990936264a"
+        }
+      ],
+      "packet_id": "dmc_phase1_20260508T000525Z",
+      "packet_path": "experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z",
+      "packet_role": "phase1_pass_packet"
+    }
+  ],
+  "prompt_source_file": {
+    "bytes": 7003,
+    "exists": true,
+    "path": "experimental/shared/prompts/aime_2025_indices_0_11.jsonl",
+    "sha256": "sha256:e88abac9781a95b55a3487e2d96bd1a7d74cf626eaef550dc24caa5565eb0d48"
+  },
+  "schema_version": "dmc_phase2_input_manifest_v1"
+}

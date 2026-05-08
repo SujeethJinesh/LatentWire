@@ -1,0 +1,130 @@
+{
+  "interpretation": "The node can load Granite Tiny, generate deterministic tokens, record lower-level per-token step timings, and capture launch activity in an NVTX decode range. The DMC-disabled harness is behavior-identical to baseline. This diagnostic does not implement DMC and does not satisfy Phase 2 serving-row requirements.",
+  "purpose": "non_gate_hard_infra_checklist_diagnostic",
+  "rows": [
+    {
+      "decode_wall_s": 5.736383457900956,
+      "dmc_serving_integration_enabled": false,
+      "generated_text": " Express your answer in",
+      "generated_token_ids": [
+        17855,
+        701,
+        4320,
+        304
+      ],
+      "harness": "baseline",
+      "is_phase2_gate_row": false,
+      "json_artifact": ".debug/dmc_phase2_observability_20260508T0038Z/eager_baseline.json",
+      "kernel_count_in_decode_range": 61456,
+      "launch_api_counts_in_decode_range": {
+        "cuLaunchKernel": 200,
+        "cuLaunchKernelEx": 32538,
+        "cudaLaunchKernel_v7000": 28718
+      },
+      "mode": "eager",
+      "nsys_sqlite_artifact": ".debug/dmc_phase2_observability_20260508T0038Z/eager_baseline_nsys.sqlite",
+      "nvtx_decode_range_ns": 5736312171,
+      "per_step_wall_ms": [
+        5548.650551121682,
+        142.80803920701146,
+        22.62708800844848,
+        22.172475000843406
+      ],
+      "runtime_api_count_in_decode_range": 313554
+    },
+    {
+      "decode_wall_s": 5.8281731239985675,
+      "dmc_serving_integration_enabled": false,
+      "generated_text": " Express your answer in",
+      "generated_token_ids": [
+        17855,
+        701,
+        4320,
+        304
+      ],
+      "harness": "dmc_disabled",
+      "is_phase2_gate_row": false,
+      "json_artifact": ".debug/dmc_phase2_observability_20260508T0038Z/eager_dmc_disabled.json",
+      "kernel_count_in_decode_range": 61432,
+      "launch_api_counts_in_decode_range": {
+        "cuLaunchKernel": 200,
+        "cuLaunchKernelEx": 32524,
+        "cudaLaunchKernel_v7000": 28708
+      },
+      "mode": "eager",
+      "nsys_sqlite_artifact": ".debug/dmc_phase2_observability_20260508T0038Z/eager_dmc_disabled_nsys.sqlite",
+      "nvtx_decode_range_ns": 5828093397,
+      "per_step_wall_ms": [
+        5644.512121099979,
+        140.31484094448388,
+        21.876637125387788,
+        21.312031894922256
+      ],
+      "runtime_api_count_in_decode_range": 313430
+    },
+    {
+      "decode_wall_s": 5.525317658903077,
+      "dmc_serving_integration_enabled": false,
+      "generated_text": " Express your answer in",
+      "generated_token_ids": [
+        17855,
+        701,
+        4320,
+        304
+      ],
+      "harness": "baseline",
+      "is_phase2_gate_row": false,
+      "json_artifact": ".debug/dmc_phase2_observability_20260508T0038Z/graph_baseline.json",
+      "kernel_count_in_decode_range": 57221,
+      "launch_api_counts_in_decode_range": {
+        "cuLaunchKernel": 72,
+        "cuLaunchKernelEx": 31472,
+        "cudaGraphLaunch_v10000": 44,
+        "cudaLaunchKernel_v7000": 25677
+      },
+      "mode": "graph",
+      "nsys_sqlite_artifact": ".debug/dmc_phase2_observability_20260508T0038Z/graph_baseline_nsys.sqlite",
+      "nvtx_decode_range_ns": 5525257949,
+      "per_step_wall_ms": [
+        5505.523472791538,
+        7.4964710511267185,
+        6.07872405089438,
+        6.063071079552174
+      ],
+      "runtime_api_count_in_decode_range": 305966
+    },
+    {
+      "decode_wall_s": 5.535264885984361,
+      "dmc_serving_integration_enabled": false,
+      "generated_text": " Express your answer in",
+      "generated_token_ids": [
+        17855,
+        701,
+        4320,
+        304
+      ],
+      "harness": "dmc_disabled",
+      "is_phase2_gate_row": false,
+      "json_artifact": ".debug/dmc_phase2_observability_20260508T0038Z/graph_dmc_disabled.json",
+      "kernel_count_in_decode_range": 57479,
+      "launch_api_counts_in_decode_range": {
+        "cuLaunchKernel": 72,
+        "cuLaunchKernelEx": 31614,
+        "cudaGraphLaunch_v10000": 44,
+        "cudaLaunchKernel_v7000": 25793
+      },
+      "mode": "graph",
+      "nsys_sqlite_artifact": ".debug/dmc_phase2_observability_20260508T0038Z/graph_dmc_disabled_nsys.sqlite",
+      "nvtx_decode_range_ns": 5535197506,
+      "per_step_wall_ms": [
+        5516.709001967683,
+        6.782925920560956,
+        5.875593982636929,
+        5.781513871625066
+      ],
+      "runtime_api_count_in_decode_range": 307384
+    }
+  ],
+  "schema_version": "dmc_phase2_observability_diagnostic_v1",
+  "source_debug_dir": ".debug/dmc_phase2_observability_20260508T0038Z"
+}

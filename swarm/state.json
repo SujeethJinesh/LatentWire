@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "decode_microkernel_phase2",
+  "current_entry": "thoughtflow_paper_polish",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -57,12 +57,26 @@
       "completed_at": "2026-05-07T22:56:58Z"
     }
   ],
-  "infra_failed_entries": [],
-  "consecutive_infra_failures": 0,
-  "gpu_hours_used": 0.67,
+  "infra_failed_entries": [
+    {
+      "id": "decode_microkernel_phase2",
+      "project": "decode_microkernel",
+      "phase": 2,
+      "decision": "FAIL_INFRA_DMC_PHASE2",
+      "result_dir": "experimental/decode_microkernel/phase2/results/dmc_phase2_20260508T0045Z",
+      "checker": "experimental/decode_microkernel/phase2/check_dmc_phase2.py",
+      "checker_output": "experimental/decode_microkernel/phase2/results/dmc_phase2_20260508T0045Z/checker_result.json",
+      "infra_diagnostic": "experimental/decode_microkernel/phase2/results/dmc_phase2_20260508T0045Z/infra_diagnostic.md",
+      "observability_diagnostic": "experimental/decode_microkernel/phase2/results/dmc_phase2_20260508T0045Z/observability_diagnostic.json",
+      "reason": "no supported vLLM decode micro-operation replacement hook or serving-side DMC integration exists; current packet contains zero real serving rows",
+      "completed_at": "2026-05-08T00:45:00Z"
+    }
+  ],
+  "consecutive_infra_failures": 1,
+  "gpu_hours_used": 0.75,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-08T00:05:35Z",
-  "last_commit_sha": "3a7acb6b922162890e4c951cd63a450c6c45bd8b",
+  "last_audit_at": "2026-05-08T00:45:00Z",
+  "last_commit_sha": "191929d2ec5cd06c9661e7f90c8b6e129c81fe92",
   "papers_camera_ready_candidate": [],
-  "notes": "HybridKernel killed; Decode Microkernel Phase 0 and Phase 1 replay gates passed. DMC is promoted to Phase 2 serving integration before any paper-level speedup claim."
+  "notes": "HybridKernel killed; Decode Microkernel Phase 0 and Phase 1 replay gates passed; Decode Microkernel Phase 2 returned FAIL_INFRA_DMC_PHASE2 because no real vLLM DMC serving integration exists. DMC remains non-paper-eligible for serving speedup claims. Continue queue with ThoughtFlow paper polish, then original Phase 0 positive-method branches."
 }

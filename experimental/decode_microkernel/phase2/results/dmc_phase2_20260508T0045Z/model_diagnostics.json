@@ -1,0 +1,93 @@
+{
+  "attempted_vllm_model_load": false,
+  "models": {
+    "cross_family": {
+      "hf_cache": {
+        "repo_path": "/workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-Nano-9B-v2",
+        "revisions": [
+          "6533e8de2c68e4536bf7c411d7a3ce5734111476"
+        ]
+      },
+      "huggingface_model_info": {
+        "gated": false,
+        "last_modified": "2026-03-05 14:59:25+00:00",
+        "private": false,
+        "sha": "6533e8de2c68e4536bf7c411d7a3ce5734111476"
+      },
+      "model_id": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+      "role": "cross_family",
+      "transformers_config": {
+        "architectures": [
+          "NemotronHForCausalLM"
+        ],
+        "model_type": "nemotron_h",
+        "ok": true,
+        "torch_dtype": "torch.bfloat16"
+      },
+      "transformers_tokenizer": {
+        "class": "PreTrainedTokenizerFast",
+        "ok": true,
+        "vocab_size": 131072
+      }
+    },
+    "primary": {
+      "hf_cache": {
+        "repo_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-tiny",
+        "revisions": [
+          "791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
+        ]
+      },
+      "huggingface_model_info": {
+        "gated": false,
+        "last_modified": "2025-11-03 19:42:57+00:00",
+        "private": false,
+        "sha": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124"
+      },
+      "model_id": "ibm-granite/granite-4.0-h-tiny",
+      "role": "primary",
+      "transformers_config": {
+        "architectures": [
+          "GraniteMoeHybridForCausalLM"
+        ],
+        "model_type": "granitemoehybrid",
+        "ok": true,
+        "torch_dtype": "torch.bfloat16"
+      },
+      "transformers_tokenizer": {
+        "class": "GPT2TokenizerFast",
+        "ok": true,
+        "vocab_size": 100352
+      }
+    },
+    "same_family": {
+      "hf_cache": {
+        "repo_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small",
+        "revisions": [
+          "b8c0982bab7fde4eb48110f5a069527c008fab39"
+        ]
+      },
+      "huggingface_model_info": {
+        "gated": false,
+        "last_modified": "2025-11-03 19:45:37+00:00",
+        "private": false,
+        "sha": "b8c0982bab7fde4eb48110f5a069527c008fab39"
+      },
+      "model_id": "ibm-granite/granite-4.0-h-small",
+      "role": "same_family",
+      "transformers_config": {
+        "architectures": [
+          "GraniteMoeHybridForCausalLM"
+        ],
+        "model_type": "granitemoehybrid",
+        "ok": true,
+        "torch_dtype": "torch.bfloat16"
+      },
+      "transformers_tokenizer": {
+        "class": "GPT2TokenizerFast",
+        "ok": true,
+        "vocab_size": 100352
+      }
+    }
+  },
+  "schema_version": "dmc_phase2_model_diagnostics_v1"
+}

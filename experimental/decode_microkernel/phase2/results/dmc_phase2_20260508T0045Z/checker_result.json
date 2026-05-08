@@ -1,0 +1,11 @@
+{
+  "decision": "FAIL_INFRA_DMC_PHASE2",
+  "reasons": [
+    "method does not declare a real serving integration",
+    "method does not declare real serving rows",
+    "primary: row count 0 below required 12",
+    "same_family: row count 0 below required 12",
+    "cross_family: row count 0 below required 12"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/decode_microkernel/phase2/results/dmc_phase2_20260508T0045Z"
+}

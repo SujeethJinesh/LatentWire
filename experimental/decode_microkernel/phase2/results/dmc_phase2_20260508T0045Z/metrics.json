@@ -1,0 +1,50 @@
+{
+  "bootstrap_samples": 2000,
+  "created_at_utc": "2026-05-08T00:45:50Z",
+  "decision_hint": "FAIL_INFRA_DMC_PHASE2",
+  "infra_reasons": [
+    "no supported vLLM decode micro-operation replacement hook is implemented in this repo; Phase 2 requires real serving rows, so replay latency is not used as a proxy"
+  ],
+  "interpretation": "This is an explicit infrastructure packet. It is not a serving benchmark and cannot support a DMC serving-speedup claim.",
+  "method": {
+    "boundary_fusion_claim": false,
+    "cpu_only_timing": false,
+    "model_substitution": false,
+    "name": "dmc_vllm_serving_integration",
+    "phase1_replay_latency_used_as_proxy": false,
+    "serving_backend": "vllm",
+    "serving_integration_implemented": false,
+    "serving_rows_are_real": false
+  },
+  "phase1_checker_decision": "PASS_DMC_PHASE1_CONSOLIDATED_REPLAY",
+  "phase1_checker_result_sha256": "sha256:d4a4a20a03c672982a4fec88bb982c76221ad515d3526a53542e45ec92493643",
+  "phase1_metrics_sha256": "sha256:c526011afab795008d87a65e002afbe3c118b8fa16e7f27621b42c2b48310019",
+  "phase1_packet": "experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z",
+  "phase1_packet_id": "dmc_phase1_20260508T000525Z",
+  "prompt_selection": "deterministic_indices_0_11",
+  "prompt_sha256": "sha256:765a5486376dbf8ff24d8e0d2c30da0ef26fc13077f18ded9ec66a24d9abe266",
+  "prompt_source": "AIME-2025",
+  "required_models": {
+    "cross_family": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+    "primary": "ibm-granite/granite-4.0-h-tiny",
+    "same_family": "ibm-granite/granite-4.0-h-small"
+  },
+  "role_summary": {},
+  "rows": [],
+  "schema_version": "dmc_phase2_metrics_v1",
+  "thresholds": {
+    "bootstrap_ci95_lower_bound_min_exclusive": 0.0,
+    "min_role_median_decode_latency_reduction": {
+      "cross_family": 0.03,
+      "primary": 0.05,
+      "same_family": 0.05
+    },
+    "min_row_launch_reduction_fraction": 0.1,
+    "min_rows_by_role": {
+      "cross_family": 12,
+      "primary": 12,
+      "same_family": 12
+    },
+    "require_positive_median_tokens_per_second_gain": true
+  }
+}

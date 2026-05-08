@@ -1,0 +1,99 @@
+{
+  "commands": {
+    "nsys_version": {
+      "command": [
+        "nsys",
+        "--version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "NVIDIA Nsight Systems version 2024.6.2.225-246235244400v0"
+    },
+    "nvcc_version": {
+      "command": [
+        "nvcc",
+        "--version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Fri_Feb_21_20:23:50_PST_2025\nCuda compilation tools, release 12.8, V12.8.93\nBuild cuda_12.8.r12.8/compiler.35583870_0"
+    },
+    "nvidia_smi": {
+      "command": [
+        "nvidia-smi"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Fri May  8 00:45:52 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.142                Driver Version: 580.142        CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA RTX PRO 6000 Blac...    On  |   00000000:11:00.0 Off |                    0 |\n| N/A   26C    P8             38W /  600W |       3MiB /  97887MiB |      0%      Default |\n|                                         |                        |             Disabled |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|  No running processes found                                                             |\n+-----------------------------------------------------------------------------------------+"
+    },
+    "pip_freeze": {
+      "command": [
+        "/workspace/LatentWire/.venv_gpu/bin/python",
+        "-m",
+        "pip",
+        "freeze"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "accelerate==1.13.0\naiohappyeyeballs==2.6.1\naiohttp==3.13.5\naiosignal==1.4.0\nannotated-doc==0.0.4\nannotated-types==0.7.0\nanyio==4.11.0\nargon2-cffi==25.1.0\nargon2-cffi-bindings==25.1.0\narrow==1.3.0\nastor==0.8.1\nasttokens==3.0.0\nasync-lru==2.0.5\nattrs==25.4.0\nbabel==2.17.0\nbeautifulsoup4==4.14.2\nblake3==1.0.8\nbleach==6.2.0\nblinker==1.7.0\ncachetools==7.1.1\ncbor2==6.0.1\ncertifi==2025.10.5\ncffi==2.0.0\ncharset-normalizer==3.4.3\nclick==8.3.3\ncloudpickle==3.1.2\ncomm==0.2.3\ncompressed-tensors==0.11.0\ncryptography==41.0.7\ncuda-pathfinder==1.5.4\ncupy-cuda12x==14.0.1\ndbus-python==1.3.2\ndebugpy==1.8.17\ndecorator==5.2.1\ndefusedxml==0.7.1\ndepyf==0.19.0\ndill==0.4.1\ndiskcache==5.6.3\ndistlib==0.4.0\ndistro==1.9.0\ndnspython==2.8.0\neinops==0.8.2\nemail-validator==2.3.0\nexecuting==2.2.1\nfastapi==0.136.1\nfastapi-cli==0.0.24\nfastapi-cloud-cli==0.17.1\nfastar==0.11.0\nfastjsonschema==2.21.2\nfilelock==3.20.0\nfqdn==1.5.1\nfrozendict==2.4.7\nfrozenlist==1.8.0\nfsspec==2024.6.1\ngguf==0.19.0\nh11==0.16.0\nhf-xet==1.5.0\nhf_transfer==0.1.9\nhttpcore==1.0.9\nhttplib2==0.20.4\nhttptools==0.7.1\nhttpx==0.28.1\nhuggingface_hub==0.36.2\nidna==3.10\niniconfig==2.3.0\ninteregular==0.3.3\nipykernel==6.30.1\nipython==9.6.0\nipython_pygments_lexers==1.1.1\nipywidgets==8.1.7\nisoduration==20.11.0\njedi==0.19.2\nJinja2==3.1.6\njiter==0.14.0\njson5==0.12.1\njsonpointer==3.0.0\njsonschema==4.25.1\njsonschema-specifications==2025.9.1\njupyter-archive==3.4.0\njupyter-events==0.12.0\njupyter-lsp==2.3.0\njupyter_client==8.6.3\njupyter_core==5.8.1\njupyter_server==2.17.0\njupyter_server_terminals==0.5.3\njupyterlab==4.4.9\njupyterlab_pygments==0.3.0\njupyterlab_server==2.27.3\njupyterlab_widgets==3.0.15\nlark==1.2.2\nlaunchpadlib==1.11.0\nlazr.restfulclient==0.14.6\nlazr.uri==1.0.6\nllguidance==0.7.30\nllvmlite==0.44.0\nlm-format-enforcer==0.11.3\nmarkdown-it-py==4.2.0\nMarkupSafe==3.0.3\nmatplotlib-inline==0.1.7\nmdurl==0.1.2\nmistral_common==1.11.2\nmistune==3.1.4\nmpmath==1.3.0\nmsgpack==1.1.2\nmsgspec==0.21.1\nmultidict==6.7.1\nnbclient==0.10.2\nnbconvert==7.16.6\nnbformat==5.10.4\nnest-asyncio==1.6.0\nnetworkx==3.3\nninja==1.13.0\nnotebook==7.4.2\nnotebook_shim==0.2.4\nnumba==0.61.2\nnumpy==2.1.2\nnvidia-cublas-cu12==12.8.4.1\nnvidia-cuda-cupti-cu12==12.8.90\nnvidia-cuda-nvrtc-cu12==12.8.93\nnvidia-cuda-runtime-cu12==12.8.90\nnvidia-cudnn-cu12==9.10.2.21\nnvidia-cufft-cu12==11.3.3.83\nnvidia-cufile-cu12==1.13.1.3\nnvidia-curand-cu12==10.3.9.90\nnvidia-cusolver-cu12==11.7.3.90\nnvidia-cusparse-cu12==12.5.8.93\nnvidia-cusparselt-cu12==0.7.1\nnvidia-nccl-cu12==2.27.3\nnvidia-nvjitlink-cu12==12.8.93\nnvidia-nvtx-cu12==12.8.90\noauthlib==3.2.2\nopenai==2.36.0\nopenai-harmony==0.0.8\nopencv-python-headless==4.13.0.92\noutlines_core==0.2.11\npackaging==25.0\npandocfilters==1.5.1\nparso==0.8.5\npartial-json-parser==0.2.1.1.post7\npexpect==4.9.0\npillow==11.0.0\nplatformdirs==4.5.0\npluggy==1.6.0\nprometheus-fastapi-instrumentator==7.1.0\nprometheus_client==0.23.1\nprompt_toolkit==3.0.52\npropcache==0.4.1\nprotobuf==7.34.1\npsutil==7.1.0\nptyprocess==0.7.0\npure_eval==0.2.3\npy-cpuinfo==9.0.0\npybase64==1.4.3\npycountry==26.2.16\npycparser==2.23\npydantic==2.13.4\npydantic-extra-types==2.11.1\npydantic-settings==2.14.0\npydantic_core==2.46.4\nPygments==2.19.2\nPyGObject==3.48.2\nPyJWT==2.7.0\npyparsing==3.1.1\npytest==9.0.3\npython-apt==2.7.7+ubuntu5\npython-dateutil==2.9.0.post0\npython-dotenv==1.2.2\npython-json-logger==4.0.0\npython-multipart==0.0.27\nPyYAML==6.0.3\npyzmq==27.1.0\nray==2.55.1\nreferencing==0.36.2\nregex==2026.4.4\nrequests==2.32.5\nrfc3339-validator==0.1.4\nrfc3986-validator==0.1.1\nrfc3987-syntax==1.1.0\nrich==15.0.0\nrich-toolkit==0.19.7\nrignore==0.7.6\nrpds-py==0.27.1\nsafetensors==0.7.0\nscipy==1.17.1\nSend2Trash==1.8.3\nsentencepiece==0.2.1\nsentry-sdk==2.59.0\nsetproctitle==1.3.7\nsetuptools==79.0.1\nshellingham==1.5.4\nsix==1.16.0\nsniffio==1.3.1\nsoundfile==0.13.1\nsoupsieve==2.8\nsoxr==1.1.0\nstack-data==0.6.3\nstarlette==0.52.1\nsympy==1.13.3\nterminado==0.18.1\ntiktoken==0.12.0\ntinycss2==1.4.0\ntokenizers==0.22.2\ntorch==2.8.0+cu128\ntorchaudio==2.8.0+cu128\ntorchvision==0.23.0+cu128\ntornado==6.5.2\ntqdm==4.67.3\ntraitlets==5.14.3\ntransformers==4.57.6\ntriton==3.4.0\ntyper==0.25.1\ntypes-python-dateutil==2.9.0.20251008\ntyping-inspection==0.4.2\ntyping_extensions==4.15.0\nuri-template==1.3.0\nurllib3==2.5.0\nuvicorn==0.46.0\nuvloop==0.22.1\nvirtualenv==20.34.0\nvllm==0.10.2\nwadllib==1.3.6\nwatchfiles==1.1.1\nwcwidth==0.2.14\nwebcolors==24.11.1\nwebencodings==0.5.1\nwebsocket-client==1.9.0\nwebsockets==16.0\nwheel==0.47.0\nwidgetsnbextension==4.0.14\nxformers==0.0.32.post1\nxgrammar==0.1.23\nyarl==1.23.0"
+    }
+  },
+  "created_at_utc": "2026-05-08T00:45:50Z",
+  "cwd": "/workspace/LatentWire",
+  "environment_variables": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/workspace/hf_cache",
+    "HF_HUB_CACHE": "/workspace/hf_cache/hub",
+    "PYTHONPATH": null,
+    "TRANSFORMERS_CACHE": null,
+    "TRITON_CACHE_DIR": "/workspace/.triton_cache",
+    "VLLM_ATTENTION_BACKEND": null,
+    "VLLM_USE_V1": null
+  },
+  "git_sha": "191929d2ec5cd06c9661e7f90c8b6e129c81fe92",
+  "packages": {
+    "huggingface_hub": {
+      "available": true,
+      "version": "0.36.2"
+    },
+    "transformers": {
+      "available": true,
+      "version": "4.57.6"
+    },
+    "triton": {
+      "available": true,
+      "version": "3.4.0"
+    },
+    "vllm": {
+      "available": true,
+      "version": "0.10.2"
+    }
+  },
+  "platform": {
+    "machine": "x86_64",
+    "platform": "Linux-6.8.0-110-generic-x86_64-with-glibc2.39",
+    "system": "Linux"
+  },
+  "python": {
+    "executable": "/workspace/LatentWire/.venv_gpu/bin/python",
+    "version": "3.12.3"
+  },
+  "schema_version": "dmc_phase2_environment_v1",
+  "torch": {
+    "cuda_available": true,
+    "cuda_version": "12.8",
+    "device_count": 1,
+    "devices": [
+      {
+        "capability": [
+          12,
+          0
+        ],
+        "index": 0,
+        "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "total_memory_bytes": 101973950464
+      }
+    ],
+    "version": "2.8.0+cu128"
+  }
+}
