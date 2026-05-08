@@ -1,0 +1,26 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_RM_PHASE1_FAILED_AT_SCALE",
+  "reasons": [
+    "failed at scale: point=0.08333333 >= 0.015"
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "ablation_config.json",
+    "generations.jsonl",
+    "metrics.json",
+    "bootstrap_ci.json",
+    "stratified_metrics.json",
+    "headroom_diagnostics.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/residual_migration/phase1/results/rm_phase1_20260508T204839Z",
+  "schema_version": "rm_phase1_v1_artifact_check"
+}

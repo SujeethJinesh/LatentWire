@@ -1,0 +1,76 @@
+{
+  "artifacts": [
+    {
+      "bytes": 45252,
+      "path": "ablation_config.json",
+      "sha256": "sha256:fb0873a0f508b8e65ee2686969d19ce39347d936e859784fef4286a9d90e0903"
+    },
+    {
+      "bytes": 299,
+      "path": "bootstrap_ci.json",
+      "sha256": "sha256:46244e78cafd7bd75e3f11085d7be822ab41cbac988361508b97ade66e84c93b"
+    },
+    {
+      "bytes": 1629,
+      "path": "command_metadata.json",
+      "sha256": "sha256:691e333ab6809066e04c2a73b54d78510cb972caef0f3f8ddcf490c27c728d6d"
+    },
+    {
+      "bytes": 8330,
+      "path": "environment.json",
+      "sha256": "sha256:ddcbf2c480b6be3681ad929086a87b58838c864ad54ca9ac43dc864081b829ce"
+    },
+    {
+      "bytes": 424043,
+      "path": "generations.jsonl",
+      "sha256": "sha256:759f0bfc03bba92445e93f666c02bfde3d3f284eefe93ff5b4e11fb26de3feea"
+    },
+    {
+      "bytes": 824,
+      "path": "headroom_diagnostics.json",
+      "sha256": "sha256:e8f0fdd724e87708156469ad4300a96496e6d2abda340a394f8b86083f2897e6"
+    },
+    {
+      "bytes": 1194,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:543faa6bbd5a046021e533de4e392a923d3ca202b5e8b7bf45968e656f452e66"
+    },
+    {
+      "bytes": 12442,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:85188e03af870279e2ab33743a7d7df9996a3d0a8f035ab5cfa3e0da576acbd4"
+    },
+    {
+      "bytes": 10778,
+      "path": "metrics.json",
+      "sha256": "sha256:a7252bc6f80ed907980a4f9c556685fed7d4ff9cc0f8ca2d7469d4415608bb86"
+    },
+    {
+      "bytes": 8940,
+      "path": "model_provenance.json",
+      "sha256": "sha256:cb9108be982d10c26abc90e71d68dba8439531d70afbd58811cad17f20dad425"
+    },
+    {
+      "bytes": 16595,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:229931fe29fb7c10777d6f4c5f06ed4a5df1e98463b5a54b79114b8d3bda107f"
+    },
+    {
+      "bytes": 173,
+      "path": "random_seed.json",
+      "sha256": "sha256:99c673c81bcd881e427a54797c2474c1550c46c3a6013f0b757043b35aad451d"
+    },
+    {
+      "bytes": 598,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:7a0f6ef5339321c2008db4846d70d587602d3dce3048321af088a4c82aac9cca"
+    },
+    {
+      "bytes": 55603,
+      "path": "stratified_metrics.json",
+      "sha256": "sha256:2f6e538f53f63358918006e575043fd3934452dfabad389f9b9b665da5a02275"
+    }
+  ],
+  "created_at_utc": "2026-05-08T21:19:25Z",
+  "schema_version": "rm_phase1_v1_artifact_hashes"
+}

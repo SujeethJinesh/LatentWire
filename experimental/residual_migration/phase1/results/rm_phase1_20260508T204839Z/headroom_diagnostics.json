@@ -1,0 +1,18 @@
+{
+  "baseline_accuracy": 0.08333333333333333,
+  "baseline_correct_count": 2,
+  "capability_claim_blocked": false,
+  "created_at_utc": "2026-05-08T21:19:24Z",
+  "decision_thresholds_unchanged": true,
+  "extractor_failure_count": 3,
+  "full_ablation_accuracy": 0.0,
+  "headroom_status": "LOW_BASELINE_HEADROOM",
+  "lenient_oracle_accuracy": 0.125,
+  "lenient_oracle_answer_mention_count": 3,
+  "oracle_answer_key_available": true,
+  "oracle_answer_key_correct_count": 24,
+  "oracle_answer_key_source": "prompt_manifest canonical AIME-2025 answers",
+  "paper_claim_guard": "A zero-drop gate pass is not evidence of preserved capability when baseline_correct_count is zero; paper claims must cite this file before interpreting residual clipping.",
+  "prompt_count": 24,
+  "schema_version": "rm_phase1_v1_headroom_diagnostics"
+}
