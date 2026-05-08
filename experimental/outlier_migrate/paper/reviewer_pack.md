@@ -16,9 +16,10 @@ hybrid model sizes, top-1% high-magnitude activation channels at decode
 position 100 are not rank-stationary by the final preregistered decode
 position under the preregistered migration metric.
 
-This is a strong positive-method finding, but it is not a camera-ready paper,
-not cross-model evidence, and not yet evidence that a migration-aware
-intervention improves quality, latency, memory, or robustness.
+This is a strong same-family observational gate for a positive-method branch,
+but it is not a camera-ready paper, not cross-model evidence, and not yet
+evidence that a migration-aware intervention improves quality, latency,
+memory, or robustness.
 
 ## Strongest Evidence
 
