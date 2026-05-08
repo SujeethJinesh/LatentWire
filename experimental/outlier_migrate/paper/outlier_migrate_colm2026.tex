@@ -54,16 +54,17 @@ data-dependent channel-wise memory control a central design axis. Gated Linear
 Attention (GLA) formulates linear attention as recurrent matrix-valued state
 with data-dependent gating \citep{yang2023gla}. Gated DeltaNet combines
 adaptive memory erasure with delta-rule updates and reports hybrids that mix
-Gated DeltaNet with attention or Mamba2 layers \citep{yang2024gdn}. Kimi Linear
-extends this direction: its Kimi Delta Attention (KDA) is described as an
-extension of Gated DeltaNet with finer-grained gating, and the released Kimi
-Linear model is a layerwise hybrid of KDA and Multi-Head Latent Attention
-\citep{kimilinear2025}. The official Qwen3.6 model card likewise describes a
-hybrid layout that interleaves Gated DeltaNet blocks with gated attention
-\citep{qwen36hf}. These sources motivate OutlierMigrate as an empirical test
-of whether high-magnitude channels stay fixed during long decode in hybrid
-sequence models. They do not imply that Kimi Linear, Qwen3.6, GLA, or other
-unmeasured models exhibit the migration measured in this draft.
+Gated DeltaNet with attention or Mamba2 layers \citep{yang2024gdn}. Moonshot
+AI's October 2025 Kimi Linear report is the most recent example in this line:
+its Kimi Delta Attention (KDA) is described as channel-wise gated linear
+attention that extends Gated DeltaNet with finer-grained gating, and the
+released Kimi Linear model is a layerwise hybrid of KDA and Multi-Head Latent
+Attention \citep{kimilinear2025}. The official Qwen3.6 model card likewise
+describes a hybrid layout that interleaves Gated DeltaNet blocks with gated
+attention \citep{qwen36hf}. These sources motivate OutlierMigrate as an
+empirical test of whether high-magnitude channels stay fixed during long
+decode in hybrid sequence models. They do not imply that Kimi Linear, Qwen3.6,
+GLA, or other unmeasured models exhibit the migration measured in this draft.
 
 \section{Method}
 
@@ -214,10 +215,12 @@ same-family artifact.
 
 The theoretical mechanism is plausible but not yet empirically validated
 outside Granite. In channel-wise gated recurrence or linear-attention layers,
-independent per-channel decay can make low-decay channels accumulate magnitude
-over long decode while high-decay channels shed magnitude. Under that
-mechanism, the top 1\% channels by magnitude at position 100 need not remain
-the top 1\% at later positions. Kimi Linear's KDA, Qwen3.6-style Gated
+independent per-channel decay rates imply that channels retain state at
+different rates. Low-decay channels can accumulate magnitude over long decode,
+while high-decay channels shed magnitude. Under heterogeneous inputs and
+heterogeneous decay rates, the composition of the top 1\% channels by
+magnitude should therefore change across decode positions rather than remain
+fixed to the position-100 set. Kimi Linear's KDA, Qwen3.6-style Gated
 DeltaNet blocks, and GLA-style gated recurrence provide architectural examples
 where channel-wise or fine-grained data-dependent gating is a first-class
 operation \citep{kimilinear2025,qwen36hf,yang2024gdn,yang2023gla}. This
@@ -235,12 +238,12 @@ depend on the chosen decode positions, top-channel fraction, and rank-delta
 threshold, all of which were fixed before analysis and should not be retuned
 on these packets.
 
-The empirical measurement here is on Granite Mamba-2-style SSM hybrids. The
-planned Phase 2 cross-validation should extend the same preregistered logic to
-delta-rule linear-attention hybrids such as Qwen3.6 and Kimi Linear before the
-paper claims architectural generality. Generalization to other gated
-recurrence variants, including RWKV-7 and GLA-style systems, is not
-established by these results.
+The empirical measurement here is on Granite Mamba-2-style SSM hybrids. Phase
+2 cross-validation must extend the same preregistered logic to delta-rule
+linear-attention hybrids such as Qwen3.6 and Kimi Linear before the paper
+claims architectural generality. Generalization to other gated recurrence
+variants, including RWKV-7 and GLA-style systems, is not established by these
+results.
 
 \section{Reproducibility Statement}
 
@@ -299,10 +302,10 @@ Songlin Yang, Jan Kautz, and Ali Hatamizadeh.
 \newblock arXiv:2412.06464, 2024.
 \newblock \url{https://arxiv.org/abs/2412.06464}.
 
-\bibitem[Zhang et~al.(2025)]{kimilinear2025}
-Kimi Team: Yu Zhang et~al.
+\bibitem[Moonshot AI Kimi Team(2025)]{kimilinear2025}
+Moonshot AI Kimi Team: Yu Zhang et~al.
 \newblock Kimi Linear: An Expressive, Efficient Attention Architecture.
-\newblock arXiv:2510.26692, 2025.
+\newblock arXiv:2510.26692, October 2025.
 \newblock \url{https://arxiv.org/abs/2510.26692}.
 
 \end{thebibliography}
