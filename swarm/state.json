@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "thoughtflow_paper_polish",
+  "current_entry": "outlier_migrate_phase0",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -41,6 +41,23 @@
         "max_rel_error": 8.915998250813573e-7,
         "phase2_promoted": true
       }
+    },
+    {
+      "id": "thoughtflow_paper_polish",
+      "project": "thoughtflow_fp8",
+      "phase": "paper",
+      "decision": "PASS_THOUGHTFLOW_PAPER_BUILDABLE",
+      "result_dir": "experimental/thoughtflow_fp8/phase2/results/thoughtflow_paper_polish_20260508T0050Z",
+      "checker": "experimental/thoughtflow_fp8/phase2/check_paper_buildable.py",
+      "checker_output": "experimental/thoughtflow_fp8/phase2/results/thoughtflow_paper_polish_20260508T0050Z/checker_result.json",
+      "committee_review": "experimental/thoughtflow_fp8/paper/committee_reviews/20260508_paper_polish_gate.md",
+      "completed_at": "2026-05-08T00:50:00Z",
+      "summary": {
+        "build_returncode": 0,
+        "owned_tests_passed": 70,
+        "paper_mode": "copyedit_only_falsification_methodology",
+        "camera_ready_candidate": false
+      }
     }
   ],
   "killed_entries": [
@@ -72,11 +89,11 @@
       "completed_at": "2026-05-08T00:45:00Z"
     }
   ],
-  "consecutive_infra_failures": 1,
-  "gpu_hours_used": 0.75,
+  "consecutive_infra_failures": 0,
+  "gpu_hours_used": 0.76,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-08T00:45:00Z",
-  "last_commit_sha": "191929d2ec5cd06c9661e7f90c8b6e129c81fe92",
+  "last_audit_at": "2026-05-08T00:50:00Z",
+  "last_commit_sha": "64b5268070e8b6090c8dcd2b18bc2663cafb12b3",
   "papers_camera_ready_candidate": [],
-  "notes": "HybridKernel killed; Decode Microkernel Phase 0 and Phase 1 replay gates passed; Decode Microkernel Phase 2 returned FAIL_INFRA_DMC_PHASE2 because no real vLLM DMC serving integration exists. DMC remains non-paper-eligible for serving speedup claims. Continue queue with ThoughtFlow paper polish, then original Phase 0 positive-method branches."
+  "notes": "HybridKernel killed; Decode Microkernel Phase 0 and Phase 1 replay gates passed; Decode Microkernel Phase 2 returned FAIL_INFRA_DMC_PHASE2 because no real vLLM DMC serving integration exists. ThoughtFlow paper-polish gate passed as a buildable falsification-methodology diagnostic, not camera-ready. Continue queue with original Phase 0 positive-method branches."
 }

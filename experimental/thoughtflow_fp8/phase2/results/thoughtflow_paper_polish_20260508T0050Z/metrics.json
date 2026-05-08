@@ -1,0 +1,25 @@
+{
+  "build": {
+    "command": "/workspace/bin/tectonic --outdir <run_dir>/build experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.tex",
+    "stderr_path": "logs/build_stderr.log",
+    "stdout_path": "logs/build_stdout.log"
+  },
+  "build_returncode": 0,
+  "built_pdf": "experimental/thoughtflow_fp8/phase2/results/thoughtflow_paper_polish_20260508T0050Z/build/thoughtflow_fp8_colm2026.pdf",
+  "built_pdf_sha256": "sha256:6b8d17f2e068d0a0c77ab2121433058539dbf980c7226f8cc3743b5bbbb4bdb3",
+  "decision_hint": "PASS_THOUGHTFLOW_PAPER_BUILDABLE",
+  "paper_mode": "copyedit_only_falsification_methodology",
+  "paper_tex": "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.tex",
+  "paper_tex_sha256": "sha256:537be94cb2d8113ef3f5cefd2546a6bb216c6c4a098d5271cb6bd5f57f4c7ed4",
+  "pytest_returncode": 0,
+  "reviewer_pack": "experimental/thoughtflow_fp8/paper/reviewer_pack.md",
+  "reviewer_pack_sha256": "sha256:12de878acd0db4c5bbb8efd395d5b48b1e2785846b194959d05eb30bc41b697a",
+  "schema_version": "thoughtflow_paper_polish_metrics_v1",
+  "tests": {
+    "command": "TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME=$PWD/.debug/triton_home ./.venv_gpu/bin/python -m pytest experimental/thoughtflow_fp8/phase2/tests experimental/thoughtflow_fp8/phase4/tests -rs -q",
+    "stderr_path": "logs/pytest_stderr.log",
+    "stdout_path": "logs/pytest_stdout.log"
+  },
+  "tracked_pdf": "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
+  "tracked_pdf_sha256": "sha256:21b874bf69f9a111300d424fcafea05f043c537ee8129b88f9f14ab0d5584322"
+}

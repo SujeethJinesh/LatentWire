@@ -14,7 +14,7 @@ Latest pushed commit before this handoff file: `f29da91a458605f223ada0c6567ccddf
 |---|---:|---:|---|---|
 | HybridKernel | killed by Phase 2 profiler gate below shelf/no boundary signal | 0% active | no GPU allowed under killed prereg | preserve artifacts; use diagnostic only for fresh positive-method pivots |
 | Decode Microkernel Consolidation | fresh positive-method pivot; Phase 0 PASS and Phase 1 replay PASS; Phase 2 infra failed because no supported vLLM DMC serving hook exists | Phase 2 blocked | yes | implement a real DMC serving integration or fresh positive-method pivot before any paper-level speedup claim |
-| ThoughtFlow-FP8 | alive as falsification-methodology paper only | ~90-93% | no | paper copyedit/human review; no new experiments |
+| ThoughtFlow-FP8 | alive as falsification-methodology paper only; paper-polish gate PASS/buildable | ~90-93% | no | human copyedit/venue-framing review; no new experiments |
 | OutlierMigrate | new Phase 0 characterization branch | Phase 0 not yet started | Phase 0 = no, Phase 1 = yes | run shared activation dump pass; analyze decode-time channel migration |
 | Residual Migration in Hybrid Reasoners | new Phase 0 characterization branch | Phase 0 not yet started | Phase 0 = no, Phase 1 = yes | run shared activation dump pass; ablate residual-stream high-magnitude tokens |
 | SSM-State Lifecycle Compression | new Phase 0 characterization branch | Phase 0 not yet started | Phase 0 = no, Phase 1 = yes | run shared SSM state dump; KS-test state distributions across decode positions |

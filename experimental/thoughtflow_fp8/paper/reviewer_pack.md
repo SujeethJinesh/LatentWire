@@ -51,6 +51,24 @@ The latest polish adds an explicit first-page reviewer takeaway and a final
 paragraph stating the artifact's methodological value: it prevents narrow false
 positives from becoming GPU/kernel work before robustness exists.
 
+## 2026-05-08 GPU Paper-Polish Gate
+
+- Result packet:
+  `experimental/thoughtflow_fp8/phase2/results/thoughtflow_paper_polish_20260508T0050Z`
+- Checker decision: `PASS_THOUGHTFLOW_PAPER_BUILDABLE`
+- Built PDF artifact:
+  `experimental/thoughtflow_fp8/phase2/results/thoughtflow_paper_polish_20260508T0050Z/build/thoughtflow_fp8_colm2026.pdf`
+- Owned tests: 70 passed under `.venv_gpu` with `TRITON_CPU_BACKEND=1`
+  and `TRITON_INTERPRET=1`
+- Committee review:
+  `experimental/thoughtflow_fp8/paper/committee_reviews/20260508_paper_polish_gate.md`
+
+Supervising status: buildable diagnostic/falsification submission candidate,
+not a camera-ready positive-method paper and not an MLSys systems paper. The
+committee flags fixable human-copyedit issues around title/framing, artifact
+replay packaging, and omnibus citation cleanup. Per HANDOFF scope, the paper
+body itself was not modified in this gate.
+
 ## Strongest Evidence
 
 | Gate | Result | Decision |
