@@ -1,0 +1,236 @@
+{
+  "artifacts": [
+    {
+      "bytes": 639,
+      "path": "command_metadata.json",
+      "sha256": "sha256:046567963401683d72959e71252bd355fa98f9b5ffb64f4c4a4d699032a273f0"
+    },
+    {
+      "bytes": 8292,
+      "path": "environment.json",
+      "sha256": "sha256:d4bd9fe557bf492ce59761bdec4c8dfb14909e88c7430140de4e25011a3947fb"
+    },
+    {
+      "bytes": 993,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:286d77c20f31966aa5c0114b476e46f95ba471739b6f995b13e19a13a138ee40"
+    },
+    {
+      "bytes": 145180,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:b8b834b0f4e2e9dbfebebb9f9ffeca8cf6330a3bfe18fec3607562483f89acb9"
+    },
+    {
+      "bytes": 137342,
+      "path": "metrics.json",
+      "sha256": "sha256:7726db1607918671e7c3fd1960c05dda36c4e8016727bdc64f0b4a2caf2f392b"
+    },
+    {
+      "bytes": 5161,
+      "path": "model_provenance.json",
+      "sha256": "sha256:ed159852a7bcdd502385cb8d52beab2a9e68c04552afc686e590971cfe7a992e"
+    },
+    {
+      "bytes": 8239,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:db166c85d0c94e875ace071dcadde266325fb996e06aca70f024067b053cb7c7"
+    },
+    {
+      "bytes": 257,
+      "path": "random_seed.json",
+      "sha256": "sha256:4d7950dbf4167a9322e7fe23868960cbc9493b00f3c81b844b171db590c6ddfc"
+    },
+    {
+      "bytes": 301,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:c036b3029a47b92e59d12d9221bebf2fbfc1a6662f0d2ef2398588a5a3ef1f93"
+    },
+    {
+      "bytes": 27665,
+      "path": "ssm_state_manifest.json",
+      "sha256": "sha256:153aa3e643af03408c08e0692662e8a6da4b1536ec7bf3e6e8cb3b7cfa4245db"
+    },
+    {
+      "bytes": 46413047,
+      "path": "ssm_states/layer_000.npz",
+      "sha256": "sha256:2d148a92d95a5dab77813f55828e5d934f018957a8dbf237276721d75b445d62"
+    },
+    {
+      "bytes": 46456665,
+      "path": "ssm_states/layer_001.npz",
+      "sha256": "sha256:9fb0fcebcaf46b1355d3a482cba9d61abc82f96d400ff157582cd0e6a886fdc7"
+    },
+    {
+      "bytes": 46571645,
+      "path": "ssm_states/layer_002.npz",
+      "sha256": "sha256:4460e650f4f296287133c98804f89d1397140e5d6e89e4cad085bc23884b575d"
+    },
+    {
+      "bytes": 46785371,
+      "path": "ssm_states/layer_003.npz",
+      "sha256": "sha256:3efc29a719e9186d6a330bd805459bd137f23be44b96dadf5818857fc590d60a"
+    },
+    {
+      "bytes": 46670885,
+      "path": "ssm_states/layer_004.npz",
+      "sha256": "sha256:f65271aa910a72b582e9aa705473601ccaed6114be1cb46c5ec85f0a05bd41ff"
+    },
+    {
+      "bytes": 46834768,
+      "path": "ssm_states/layer_006.npz",
+      "sha256": "sha256:eff0fcc727d9f1900947e781ca7a5bc1a2dc12ca8972acee7f0985618331f255"
+    },
+    {
+      "bytes": 45984613,
+      "path": "ssm_states/layer_007.npz",
+      "sha256": "sha256:75a0564bb29927a4dcbc4bbd15a55ce23fcd5973010a80c6f0b79abbd7555d68"
+    },
+    {
+      "bytes": 46843175,
+      "path": "ssm_states/layer_008.npz",
+      "sha256": "sha256:0ed0194fb347d7affdf0677b3f3b9d7fcd3a799004dd53d8b0da91bfb914d20e"
+    },
+    {
+      "bytes": 46022275,
+      "path": "ssm_states/layer_009.npz",
+      "sha256": "sha256:835b15a93bebaa69ddca6073db15a8849cbba66193a79ad7567ac88cd2131439"
+    },
+    {
+      "bytes": 46988325,
+      "path": "ssm_states/layer_010.npz",
+      "sha256": "sha256:04109440d58ab8fa8b1fee9bc2185b604f2d7a0a998d9390c8f18d1c989d454c"
+    },
+    {
+      "bytes": 46268337,
+      "path": "ssm_states/layer_011.npz",
+      "sha256": "sha256:3c527057cd20f4c6409a2a2b69db72c5757859c85fbe00cc1fa3efe3f08e96e8"
+    },
+    {
+      "bytes": 46655042,
+      "path": "ssm_states/layer_012.npz",
+      "sha256": "sha256:d31eed4c1c2da4a2cda26790021ad55a03b337da5c48fcc4cb5ab7c78c25594b"
+    },
+    {
+      "bytes": 46912245,
+      "path": "ssm_states/layer_013.npz",
+      "sha256": "sha256:a153901e68e307c46536b7ecb601d9eef4661138dcbd81104d84c0293f95ea62"
+    },
+    {
+      "bytes": 47084993,
+      "path": "ssm_states/layer_014.npz",
+      "sha256": "sha256:77c45eff81f6e2aebf24222deb33a1710b19a27f8d42802ba4c88921b0ed831f"
+    },
+    {
+      "bytes": 46825902,
+      "path": "ssm_states/layer_016.npz",
+      "sha256": "sha256:acf5c9b205d657198ca83fdfa811fd702a0532bea713912d7566bed93c3fcc86"
+    },
+    {
+      "bytes": 46973454,
+      "path": "ssm_states/layer_017.npz",
+      "sha256": "sha256:1961c3c35d0324665daa63bb677ed52c7b6a152d5f76233b9278b2ee16428594"
+    },
+    {
+      "bytes": 46376016,
+      "path": "ssm_states/layer_018.npz",
+      "sha256": "sha256:cbbb91a4d78b92dc8adf2b806112406e67da9001caf82845d0bee2dabe7c62c3"
+    },
+    {
+      "bytes": 46803817,
+      "path": "ssm_states/layer_019.npz",
+      "sha256": "sha256:fcc0c431dbe20752351803f9469e20da48beed39c3a7f3b34b22bffba91d56f7"
+    },
+    {
+      "bytes": 46790001,
+      "path": "ssm_states/layer_020.npz",
+      "sha256": "sha256:5d6620e25bffa289d77d394152c04e4cc661b8c47285cc6952a259cc1f91f4d5"
+    },
+    {
+      "bytes": 46453772,
+      "path": "ssm_states/layer_021.npz",
+      "sha256": "sha256:5d8c0cdd6fd11e7ca96997e71fdfedb785bb2bf84aabd0e49c9f44084a110ca1"
+    },
+    {
+      "bytes": 46840505,
+      "path": "ssm_states/layer_022.npz",
+      "sha256": "sha256:2c81460f85e37c6f84ceb589b58eed13cd05f3815053c50169e2ce8aa49b8959"
+    },
+    {
+      "bytes": 46490544,
+      "path": "ssm_states/layer_023.npz",
+      "sha256": "sha256:b60a6591d467f1b8fc93eceb21c855a7c5c2d5895c7c522876a1e3c714d85320"
+    },
+    {
+      "bytes": 46873069,
+      "path": "ssm_states/layer_024.npz",
+      "sha256": "sha256:d10c9d864be6f858c19ae7518353524722b312c1cd7c9949641337c57d783021"
+    },
+    {
+      "bytes": 46178507,
+      "path": "ssm_states/layer_026.npz",
+      "sha256": "sha256:564d9bb751081a4b3ad87e2a9bd6e40459d027dee330cfaa8bf0280cfe5145a0"
+    },
+    {
+      "bytes": 47483059,
+      "path": "ssm_states/layer_027.npz",
+      "sha256": "sha256:0cef72e7ca1b1e0ebc012c1969e80c295a6043493ba7d51c1a5779f908770ac0"
+    },
+    {
+      "bytes": 46837577,
+      "path": "ssm_states/layer_028.npz",
+      "sha256": "sha256:9439fc017cefd60127d5a32ed8244a978095244879ea1f6874e22ef6eb9a6cc7"
+    },
+    {
+      "bytes": 46833094,
+      "path": "ssm_states/layer_029.npz",
+      "sha256": "sha256:9507b8eb7221d8d0499507fed1733560d272b3d7cd552442ad17f414253cc28e"
+    },
+    {
+      "bytes": 46637096,
+      "path": "ssm_states/layer_030.npz",
+      "sha256": "sha256:23335d9850f3724da6dfe745d291d61a8b27399455d26efd207abe78786c9675"
+    },
+    {
+      "bytes": 47151430,
+      "path": "ssm_states/layer_031.npz",
+      "sha256": "sha256:3069fe0d82c9ff05eb02a9a6df54c2a4ebc77664576b245901c38f4c5fd7ed94"
+    },
+    {
+      "bytes": 46978539,
+      "path": "ssm_states/layer_032.npz",
+      "sha256": "sha256:20bd88c2bb23919cf8413d014970e17e11fb067a77f71a97c0cf9ddaceeae7c0"
+    },
+    {
+      "bytes": 47495350,
+      "path": "ssm_states/layer_033.npz",
+      "sha256": "sha256:c8c4951444c9117cf372d59f7fce52ee3696c9f0e45ad8449fe8b31270718aa9"
+    },
+    {
+      "bytes": 46557739,
+      "path": "ssm_states/layer_034.npz",
+      "sha256": "sha256:a475bf0dc1f3ac985ddfc74fc92d4ae7ccfb210abc3b9e198e136799cf92b624"
+    },
+    {
+      "bytes": 46685406,
+      "path": "ssm_states/layer_036.npz",
+      "sha256": "sha256:edf5ebf28f2549d78ebc700a6c927b4a99efab72b24b0c60c9f58f0d6bd9c4de"
+    },
+    {
+      "bytes": 47253155,
+      "path": "ssm_states/layer_037.npz",
+      "sha256": "sha256:b79d622ba22d0466df84e901e270c5671d341f852028f8744ecb80222baafef5"
+    },
+    {
+      "bytes": 48112915,
+      "path": "ssm_states/layer_038.npz",
+      "sha256": "sha256:bae9fe157063339c56e433ec82ad5ff8e601866afa332d97b3d9eee91cfa4532"
+    },
+    {
+      "bytes": 46751762,
+      "path": "ssm_states/layer_039.npz",
+      "sha256": "sha256:618320a4d59ce253d1e82cca23aa8638b19832f20e5b0d6dd3af1b0c7e71c00d"
+    }
+  ],
+  "created_at_utc": "2026-05-08T17:14:58Z",
+  "schema_version": "ssml_phase0_v1_artifact_hashes"
+}

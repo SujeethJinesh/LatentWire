@@ -1,0 +1,1076 @@
+{
+  "artifact_format": "numpy_npz_compressed_per_mamba_layer",
+  "artifact_key_format": "p{prompt_index:03d}_pos{decode_position:05d}",
+  "artifacts": [
+    {
+      "bytes": 46413047,
+      "layer_index": 0,
+      "path": "ssm_states/layer_000.npz",
+      "sha256": "sha256:2d148a92d95a5dab77813f55828e5d934f018957a8dbf237276721d75b445d62"
+    },
+    {
+      "bytes": 46456665,
+      "layer_index": 1,
+      "path": "ssm_states/layer_001.npz",
+      "sha256": "sha256:9fb0fcebcaf46b1355d3a482cba9d61abc82f96d400ff157582cd0e6a886fdc7"
+    },
+    {
+      "bytes": 46571645,
+      "layer_index": 2,
+      "path": "ssm_states/layer_002.npz",
+      "sha256": "sha256:4460e650f4f296287133c98804f89d1397140e5d6e89e4cad085bc23884b575d"
+    },
+    {
+      "bytes": 46785371,
+      "layer_index": 3,
+      "path": "ssm_states/layer_003.npz",
+      "sha256": "sha256:3efc29a719e9186d6a330bd805459bd137f23be44b96dadf5818857fc590d60a"
+    },
+    {
+      "bytes": 46670885,
+      "layer_index": 4,
+      "path": "ssm_states/layer_004.npz",
+      "sha256": "sha256:f65271aa910a72b582e9aa705473601ccaed6114be1cb46c5ec85f0a05bd41ff"
+    },
+    {
+      "bytes": 46834768,
+      "layer_index": 6,
+      "path": "ssm_states/layer_006.npz",
+      "sha256": "sha256:eff0fcc727d9f1900947e781ca7a5bc1a2dc12ca8972acee7f0985618331f255"
+    },
+    {
+      "bytes": 45984613,
+      "layer_index": 7,
+      "path": "ssm_states/layer_007.npz",
+      "sha256": "sha256:75a0564bb29927a4dcbc4bbd15a55ce23fcd5973010a80c6f0b79abbd7555d68"
+    },
+    {
+      "bytes": 46843175,
+      "layer_index": 8,
+      "path": "ssm_states/layer_008.npz",
+      "sha256": "sha256:0ed0194fb347d7affdf0677b3f3b9d7fcd3a799004dd53d8b0da91bfb914d20e"
+    },
+    {
+      "bytes": 46022275,
+      "layer_index": 9,
+      "path": "ssm_states/layer_009.npz",
+      "sha256": "sha256:835b15a93bebaa69ddca6073db15a8849cbba66193a79ad7567ac88cd2131439"
+    },
+    {
+      "bytes": 46988325,
+      "layer_index": 10,
+      "path": "ssm_states/layer_010.npz",
+      "sha256": "sha256:04109440d58ab8fa8b1fee9bc2185b604f2d7a0a998d9390c8f18d1c989d454c"
+    },
+    {
+      "bytes": 46268337,
+      "layer_index": 11,
+      "path": "ssm_states/layer_011.npz",
+      "sha256": "sha256:3c527057cd20f4c6409a2a2b69db72c5757859c85fbe00cc1fa3efe3f08e96e8"
+    },
+    {
+      "bytes": 46655042,
+      "layer_index": 12,
+      "path": "ssm_states/layer_012.npz",
+      "sha256": "sha256:d31eed4c1c2da4a2cda26790021ad55a03b337da5c48fcc4cb5ab7c78c25594b"
+    },
+    {
+      "bytes": 46912245,
+      "layer_index": 13,
+      "path": "ssm_states/layer_013.npz",
+      "sha256": "sha256:a153901e68e307c46536b7ecb601d9eef4661138dcbd81104d84c0293f95ea62"
+    },
+    {
+      "bytes": 47084993,
+      "layer_index": 14,
+      "path": "ssm_states/layer_014.npz",
+      "sha256": "sha256:77c45eff81f6e2aebf24222deb33a1710b19a27f8d42802ba4c88921b0ed831f"
+    },
+    {
+      "bytes": 46825902,
+      "layer_index": 16,
+      "path": "ssm_states/layer_016.npz",
+      "sha256": "sha256:acf5c9b205d657198ca83fdfa811fd702a0532bea713912d7566bed93c3fcc86"
+    },
+    {
+      "bytes": 46973454,
+      "layer_index": 17,
+      "path": "ssm_states/layer_017.npz",
+      "sha256": "sha256:1961c3c35d0324665daa63bb677ed52c7b6a152d5f76233b9278b2ee16428594"
+    },
+    {
+      "bytes": 46376016,
+      "layer_index": 18,
+      "path": "ssm_states/layer_018.npz",
+      "sha256": "sha256:cbbb91a4d78b92dc8adf2b806112406e67da9001caf82845d0bee2dabe7c62c3"
+    },
+    {
+      "bytes": 46803817,
+      "layer_index": 19,
+      "path": "ssm_states/layer_019.npz",
+      "sha256": "sha256:fcc0c431dbe20752351803f9469e20da48beed39c3a7f3b34b22bffba91d56f7"
+    },
+    {
+      "bytes": 46790001,
+      "layer_index": 20,
+      "path": "ssm_states/layer_020.npz",
+      "sha256": "sha256:5d6620e25bffa289d77d394152c04e4cc661b8c47285cc6952a259cc1f91f4d5"
+    },
+    {
+      "bytes": 46453772,
+      "layer_index": 21,
+      "path": "ssm_states/layer_021.npz",
+      "sha256": "sha256:5d8c0cdd6fd11e7ca96997e71fdfedb785bb2bf84aabd0e49c9f44084a110ca1"
+    },
+    {
+      "bytes": 46840505,
+      "layer_index": 22,
+      "path": "ssm_states/layer_022.npz",
+      "sha256": "sha256:2c81460f85e37c6f84ceb589b58eed13cd05f3815053c50169e2ce8aa49b8959"
+    },
+    {
+      "bytes": 46490544,
+      "layer_index": 23,
+      "path": "ssm_states/layer_023.npz",
+      "sha256": "sha256:b60a6591d467f1b8fc93eceb21c855a7c5c2d5895c7c522876a1e3c714d85320"
+    },
+    {
+      "bytes": 46873069,
+      "layer_index": 24,
+      "path": "ssm_states/layer_024.npz",
+      "sha256": "sha256:d10c9d864be6f858c19ae7518353524722b312c1cd7c9949641337c57d783021"
+    },
+    {
+      "bytes": 46178507,
+      "layer_index": 26,
+      "path": "ssm_states/layer_026.npz",
+      "sha256": "sha256:564d9bb751081a4b3ad87e2a9bd6e40459d027dee330cfaa8bf0280cfe5145a0"
+    },
+    {
+      "bytes": 47483059,
+      "layer_index": 27,
+      "path": "ssm_states/layer_027.npz",
+      "sha256": "sha256:0cef72e7ca1b1e0ebc012c1969e80c295a6043493ba7d51c1a5779f908770ac0"
+    },
+    {
+      "bytes": 46837577,
+      "layer_index": 28,
+      "path": "ssm_states/layer_028.npz",
+      "sha256": "sha256:9439fc017cefd60127d5a32ed8244a978095244879ea1f6874e22ef6eb9a6cc7"
+    },
+    {
+      "bytes": 46833094,
+      "layer_index": 29,
+      "path": "ssm_states/layer_029.npz",
+      "sha256": "sha256:9507b8eb7221d8d0499507fed1733560d272b3d7cd552442ad17f414253cc28e"
+    },
+    {
+      "bytes": 46637096,
+      "layer_index": 30,
+      "path": "ssm_states/layer_030.npz",
+      "sha256": "sha256:23335d9850f3724da6dfe745d291d61a8b27399455d26efd207abe78786c9675"
+    },
+    {
+      "bytes": 47151430,
+      "layer_index": 31,
+      "path": "ssm_states/layer_031.npz",
+      "sha256": "sha256:3069fe0d82c9ff05eb02a9a6df54c2a4ebc77664576b245901c38f4c5fd7ed94"
+    },
+    {
+      "bytes": 46978539,
+      "layer_index": 32,
+      "path": "ssm_states/layer_032.npz",
+      "sha256": "sha256:20bd88c2bb23919cf8413d014970e17e11fb067a77f71a97c0cf9ddaceeae7c0"
+    },
+    {
+      "bytes": 47495350,
+      "layer_index": 33,
+      "path": "ssm_states/layer_033.npz",
+      "sha256": "sha256:c8c4951444c9117cf372d59f7fce52ee3696c9f0e45ad8449fe8b31270718aa9"
+    },
+    {
+      "bytes": 46557739,
+      "layer_index": 34,
+      "path": "ssm_states/layer_034.npz",
+      "sha256": "sha256:a475bf0dc1f3ac985ddfc74fc92d4ae7ccfb210abc3b9e198e136799cf92b624"
+    },
+    {
+      "bytes": 46685406,
+      "layer_index": 36,
+      "path": "ssm_states/layer_036.npz",
+      "sha256": "sha256:edf5ebf28f2549d78ebc700a6c927b4a99efab72b24b0c60c9f58f0d6bd9c4de"
+    },
+    {
+      "bytes": 47253155,
+      "layer_index": 37,
+      "path": "ssm_states/layer_037.npz",
+      "sha256": "sha256:b79d622ba22d0466df84e901e270c5671d341f852028f8744ecb80222baafef5"
+    },
+    {
+      "bytes": 48112915,
+      "layer_index": 38,
+      "path": "ssm_states/layer_038.npz",
+      "sha256": "sha256:bae9fe157063339c56e433ec82ad5ff8e601866afa332d97b3d9eee91cfa4532"
+    },
+    {
+      "bytes": 46751762,
+      "layer_index": 39,
+      "path": "ssm_states/layer_039.npz",
+      "sha256": "sha256:618320a4d59ce253d1e82cca23aa8638b19832f20e5b0d6dd3af1b0c7e71c00d"
+    }
+  ],
+  "cache_state_source": "past_key_values.ssm_states",
+  "capture_record_count": 2160,
+  "capture_semantics": {
+    "attention_policy": "attention/empty cache layers are recorded in the layer manifest but excluded from state artifacts and metrics",
+    "cache": "SSM cache states after each manual greedy decode model step",
+    "decode_position_basis": "generated-token count after prompt; position 100 is the 100th generated token",
+    "eos_policy": "continue decoding until max_new_tokens so every preregistered position is observable"
+  },
+  "created_at_utc": "2026-05-08T17:14:02Z",
+  "expected_capture_record_count": 2160,
+  "layer_count": 40,
+  "layer_type_source": "model.config.layer_types_or_layers_block_type",
+  "layers": [
+    {
+      "artifact": "ssm_states/layer_000.npz",
+      "artifact_bytes": 46413047,
+      "artifact_sha256": "sha256:2d148a92d95a5dab77813f55828e5d934f018957a8dbf237276721d75b445d62",
+      "is_mamba": true,
+      "layer_index": 0,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_001.npz",
+      "artifact_bytes": 46456665,
+      "artifact_sha256": "sha256:9fb0fcebcaf46b1355d3a482cba9d61abc82f96d400ff157582cd0e6a886fdc7",
+      "is_mamba": true,
+      "layer_index": 1,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_002.npz",
+      "artifact_bytes": 46571645,
+      "artifact_sha256": "sha256:4460e650f4f296287133c98804f89d1397140e5d6e89e4cad085bc23884b575d",
+      "is_mamba": true,
+      "layer_index": 2,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_003.npz",
+      "artifact_bytes": 46785371,
+      "artifact_sha256": "sha256:3efc29a719e9186d6a330bd805459bd137f23be44b96dadf5818857fc590d60a",
+      "is_mamba": true,
+      "layer_index": 3,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_004.npz",
+      "artifact_bytes": 46670885,
+      "artifact_sha256": "sha256:f65271aa910a72b582e9aa705473601ccaed6114be1cb46c5ec85f0a05bd41ff",
+      "is_mamba": true,
+      "layer_index": 4,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "is_mamba": false,
+      "layer_index": 5,
+      "layer_type": "attention",
+      "observed_cache_state_shape": [
+        12,
+        0
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_006.npz",
+      "artifact_bytes": 46834768,
+      "artifact_sha256": "sha256:eff0fcc727d9f1900947e781ca7a5bc1a2dc12ca8972acee7f0985618331f255",
+      "is_mamba": true,
+      "layer_index": 6,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_007.npz",
+      "artifact_bytes": 45984613,
+      "artifact_sha256": "sha256:75a0564bb29927a4dcbc4bbd15a55ce23fcd5973010a80c6f0b79abbd7555d68",
+      "is_mamba": true,
+      "layer_index": 7,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_008.npz",
+      "artifact_bytes": 46843175,
+      "artifact_sha256": "sha256:0ed0194fb347d7affdf0677b3f3b9d7fcd3a799004dd53d8b0da91bfb914d20e",
+      "is_mamba": true,
+      "layer_index": 8,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_009.npz",
+      "artifact_bytes": 46022275,
+      "artifact_sha256": "sha256:835b15a93bebaa69ddca6073db15a8849cbba66193a79ad7567ac88cd2131439",
+      "is_mamba": true,
+      "layer_index": 9,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_010.npz",
+      "artifact_bytes": 46988325,
+      "artifact_sha256": "sha256:04109440d58ab8fa8b1fee9bc2185b604f2d7a0a998d9390c8f18d1c989d454c",
+      "is_mamba": true,
+      "layer_index": 10,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_011.npz",
+      "artifact_bytes": 46268337,
+      "artifact_sha256": "sha256:3c527057cd20f4c6409a2a2b69db72c5757859c85fbe00cc1fa3efe3f08e96e8",
+      "is_mamba": true,
+      "layer_index": 11,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_012.npz",
+      "artifact_bytes": 46655042,
+      "artifact_sha256": "sha256:d31eed4c1c2da4a2cda26790021ad55a03b337da5c48fcc4cb5ab7c78c25594b",
+      "is_mamba": true,
+      "layer_index": 12,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_013.npz",
+      "artifact_bytes": 46912245,
+      "artifact_sha256": "sha256:a153901e68e307c46536b7ecb601d9eef4661138dcbd81104d84c0293f95ea62",
+      "is_mamba": true,
+      "layer_index": 13,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_014.npz",
+      "artifact_bytes": 47084993,
+      "artifact_sha256": "sha256:77c45eff81f6e2aebf24222deb33a1710b19a27f8d42802ba4c88921b0ed831f",
+      "is_mamba": true,
+      "layer_index": 14,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "is_mamba": false,
+      "layer_index": 15,
+      "layer_type": "attention",
+      "observed_cache_state_shape": [
+        12,
+        0
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_016.npz",
+      "artifact_bytes": 46825902,
+      "artifact_sha256": "sha256:acf5c9b205d657198ca83fdfa811fd702a0532bea713912d7566bed93c3fcc86",
+      "is_mamba": true,
+      "layer_index": 16,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_017.npz",
+      "artifact_bytes": 46973454,
+      "artifact_sha256": "sha256:1961c3c35d0324665daa63bb677ed52c7b6a152d5f76233b9278b2ee16428594",
+      "is_mamba": true,
+      "layer_index": 17,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_018.npz",
+      "artifact_bytes": 46376016,
+      "artifact_sha256": "sha256:cbbb91a4d78b92dc8adf2b806112406e67da9001caf82845d0bee2dabe7c62c3",
+      "is_mamba": true,
+      "layer_index": 18,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_019.npz",
+      "artifact_bytes": 46803817,
+      "artifact_sha256": "sha256:fcc0c431dbe20752351803f9469e20da48beed39c3a7f3b34b22bffba91d56f7",
+      "is_mamba": true,
+      "layer_index": 19,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_020.npz",
+      "artifact_bytes": 46790001,
+      "artifact_sha256": "sha256:5d6620e25bffa289d77d394152c04e4cc661b8c47285cc6952a259cc1f91f4d5",
+      "is_mamba": true,
+      "layer_index": 20,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_021.npz",
+      "artifact_bytes": 46453772,
+      "artifact_sha256": "sha256:5d8c0cdd6fd11e7ca96997e71fdfedb785bb2bf84aabd0e49c9f44084a110ca1",
+      "is_mamba": true,
+      "layer_index": 21,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_022.npz",
+      "artifact_bytes": 46840505,
+      "artifact_sha256": "sha256:2c81460f85e37c6f84ceb589b58eed13cd05f3815053c50169e2ce8aa49b8959",
+      "is_mamba": true,
+      "layer_index": 22,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_023.npz",
+      "artifact_bytes": 46490544,
+      "artifact_sha256": "sha256:b60a6591d467f1b8fc93eceb21c855a7c5c2d5895c7c522876a1e3c714d85320",
+      "is_mamba": true,
+      "layer_index": 23,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_024.npz",
+      "artifact_bytes": 46873069,
+      "artifact_sha256": "sha256:d10c9d864be6f858c19ae7518353524722b312c1cd7c9949641337c57d783021",
+      "is_mamba": true,
+      "layer_index": 24,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "is_mamba": false,
+      "layer_index": 25,
+      "layer_type": "attention",
+      "observed_cache_state_shape": [
+        12,
+        0
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_026.npz",
+      "artifact_bytes": 46178507,
+      "artifact_sha256": "sha256:564d9bb751081a4b3ad87e2a9bd6e40459d027dee330cfaa8bf0280cfe5145a0",
+      "is_mamba": true,
+      "layer_index": 26,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_027.npz",
+      "artifact_bytes": 47483059,
+      "artifact_sha256": "sha256:0cef72e7ca1b1e0ebc012c1969e80c295a6043493ba7d51c1a5779f908770ac0",
+      "is_mamba": true,
+      "layer_index": 27,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_028.npz",
+      "artifact_bytes": 46837577,
+      "artifact_sha256": "sha256:9439fc017cefd60127d5a32ed8244a978095244879ea1f6874e22ef6eb9a6cc7",
+      "is_mamba": true,
+      "layer_index": 28,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_029.npz",
+      "artifact_bytes": 46833094,
+      "artifact_sha256": "sha256:9507b8eb7221d8d0499507fed1733560d272b3d7cd552442ad17f414253cc28e",
+      "is_mamba": true,
+      "layer_index": 29,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_030.npz",
+      "artifact_bytes": 46637096,
+      "artifact_sha256": "sha256:23335d9850f3724da6dfe745d291d61a8b27399455d26efd207abe78786c9675",
+      "is_mamba": true,
+      "layer_index": 30,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_031.npz",
+      "artifact_bytes": 47151430,
+      "artifact_sha256": "sha256:3069fe0d82c9ff05eb02a9a6df54c2a4ebc77664576b245901c38f4c5fd7ed94",
+      "is_mamba": true,
+      "layer_index": 31,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_032.npz",
+      "artifact_bytes": 46978539,
+      "artifact_sha256": "sha256:20bd88c2bb23919cf8413d014970e17e11fb067a77f71a97c0cf9ddaceeae7c0",
+      "is_mamba": true,
+      "layer_index": 32,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_033.npz",
+      "artifact_bytes": 47495350,
+      "artifact_sha256": "sha256:c8c4951444c9117cf372d59f7fce52ee3696c9f0e45ad8449fe8b31270718aa9",
+      "is_mamba": true,
+      "layer_index": 33,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_034.npz",
+      "artifact_bytes": 46557739,
+      "artifact_sha256": "sha256:a475bf0dc1f3ac985ddfc74fc92d4ae7ccfb210abc3b9e198e136799cf92b624",
+      "is_mamba": true,
+      "layer_index": 34,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "is_mamba": false,
+      "layer_index": 35,
+      "layer_type": "attention",
+      "observed_cache_state_shape": [
+        12,
+        0
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_036.npz",
+      "artifact_bytes": 46685406,
+      "artifact_sha256": "sha256:edf5ebf28f2549d78ebc700a6c927b4a99efab72b24b0c60c9f58f0d6bd9c4de",
+      "is_mamba": true,
+      "layer_index": 36,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_037.npz",
+      "artifact_bytes": 47253155,
+      "artifact_sha256": "sha256:b79d622ba22d0466df84e901e270c5671d341f852028f8744ecb80222baafef5",
+      "is_mamba": true,
+      "layer_index": 37,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_038.npz",
+      "artifact_bytes": 48112915,
+      "artifact_sha256": "sha256:bae9fe157063339c56e433ec82ad5ff8e601866afa332d97b3d9eee91cfa4532",
+      "is_mamba": true,
+      "layer_index": 38,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    },
+    {
+      "artifact": "ssm_states/layer_039.npz",
+      "artifact_bytes": 46751762,
+      "artifact_sha256": "sha256:618320a4d59ce253d1e82cca23aa8638b19832f20e5b0d6dd3af1b0c7e71c00d",
+      "is_mamba": true,
+      "layer_index": 39,
+      "layer_type": "mamba",
+      "observed_cache_state_shape": [
+        12,
+        48,
+        64,
+        128
+      ],
+      "record_count": 60,
+      "state_shape_without_batch": [
+        48,
+        64,
+        128
+      ]
+    }
+  ],
+  "mamba_layer_count": 36,
+  "positions": [
+    100,
+    500,
+    1000,
+    5000,
+    10000
+  ],
+  "prompt_events": [
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 56,
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 163,
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1
+    },
+    {
+      "first_eos_decode_position": 791,
+      "input_token_count": 135,
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2
+    },
+    {
+      "first_eos_decode_position": 492,
+      "input_token_count": 78,
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 94,
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4
+    },
+    {
+      "first_eos_decode_position": 445,
+      "input_token_count": 110,
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 147,
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 121,
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7
+    },
+    {
+      "first_eos_decode_position": 1378,
+      "input_token_count": 127,
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 267,
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 225,
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 132,
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11
+    }
+  ],
+  "schema_version": "ssml_phase0_v1_ssm_state_manifest",
+  "trace_count": 12
+}

@@ -1,0 +1,22 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_SSML_PHASE0_STATE_STABLE",
+  "reasons": [
+    "state-stable kill: Mamba layer pass fraction 0.00000000 < 0.50"
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "ssm_state_manifest.json",
+    "metrics.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/ssm_lifecycle/phase0/results/ssml_phase0_20260508T165752Z",
+  "schema_version": "ssml_phase0_v1_artifact_check"
+}

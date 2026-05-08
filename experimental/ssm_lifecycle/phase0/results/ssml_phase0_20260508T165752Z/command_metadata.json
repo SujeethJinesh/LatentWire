@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "experimental/shared/run_phase0_branch.py",
+    "--branch",
+    "ssm_lifecycle"
+  ],
+  "branch": "ssm_lifecycle",
+  "created_at_utc": "2026-05-08T16:59:59Z",
+  "cwd": "/workspace/LatentWire",
+  "generation": {
+    "do_sample": false,
+    "local_files_only": true,
+    "manual_cache_decode": true,
+    "num_beams": 1,
+    "prompt_template": "shared Phase 0 AIME solve/final-answer template"
+  },
+  "positions": [
+    100,
+    500,
+    1000,
+    5000,
+    10000
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/ssm_lifecycle/phase0/results/ssml_phase0_20260508T165752Z",
+  "schema_version": "ssml_phase0_v1_command"
+}
