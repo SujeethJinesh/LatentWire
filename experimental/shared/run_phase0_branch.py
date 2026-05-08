@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import hashlib
+import inspect
 import json
 import math
 import os
@@ -15,6 +16,7 @@ import re
 import shutil
 import subprocess
 import sys
+import types
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -465,6 +467,73 @@ def capture_activation_magnitudes(
     import torch
 
     layers, layer_origin = discover_transformer_layers(model)
+    forward_parameters = set(inspect.signature(model.forward).parameters)
+    cache_input_name = "cache_params" if "cache_params" in forward_parameters else "past_key_values"
+
+    def patch_hybrid_cache(cache: Any) -> Any:
+        if getattr(cache, "_latentwire_cache_patch", False):
+            return cache
+        config = getattr(model, "config", None)
+        conv_states = getattr(cache, "conv_states", None)
+        ssm_states = getattr(cache, "ssm_states", None)
+        if config is None or not isinstance(conv_states, list) or not isinstance(ssm_states, list):
+            return cache
+        conv_kernel = getattr(config, "conv_kernel", None)
+        if conv_kernel is not None and not hasattr(cache, "conv_kernel_size"):
+            cache.conv_kernel_size = int(conv_kernel)
+        needed = [
+            getattr(config, "mamba_num_heads", None),
+            getattr(config, "mamba_head_dim", None),
+            getattr(config, "n_groups", None),
+            getattr(config, "ssm_state_size", None),
+            conv_kernel,
+        ]
+        if all(value is not None for value in needed):
+            conv_dim = (
+                int(config.mamba_num_heads) * int(config.mamba_head_dim)
+                + 2 * int(config.n_groups) * int(config.ssm_state_size)
+            )
+            for layer_idx, state_tensor in enumerate(list(conv_states)):
+                if not torch.is_tensor(state_tensor) or state_tensor.numel() == 0 or state_tensor.ndim != 3:
+                    continue
+                if state_tensor.shape[1] == conv_dim and state_tensor.shape[2] == int(conv_kernel):
+                    continue
+                conv_states[layer_idx] = torch.zeros(
+                    state_tensor.shape[0],
+                    conv_dim,
+                    int(conv_kernel),
+                    device=state_tensor.device,
+                    dtype=state_tensor.dtype,
+                )
+
+        def update_conv_state(self: Any, layer_idx: int, new_conv_state: Any, cache_init: bool = False) -> Any:
+            target_device = self.conv_states[layer_idx].device
+            if cache_init:
+                self.conv_states[layer_idx] = new_conv_state.to(target_device)
+            else:
+                self.conv_states[layer_idx] = self.conv_states[layer_idx].roll(shifts=-1, dims=-1)
+                self.conv_states[layer_idx][:, :, -1] = new_conv_state[:, 0, :].to(target_device)
+            return self.conv_states[layer_idx]
+
+        def update_ssm_state(self: Any, layer_idx: int, new_ssm_state: Any) -> Any:
+            self.ssm_states[layer_idx] = new_ssm_state.to(self.ssm_states[layer_idx].device)
+            return self.ssm_states[layer_idx]
+
+        cache.update_conv_state = types.MethodType(update_conv_state, cache)
+        cache.update_ssm_state = types.MethodType(update_ssm_state, cache)
+        cache._latentwire_cache_patch = True
+        return cache
+
+    def normalize_cache_inputs(model_inputs: dict[str, Any]) -> dict[str, Any]:
+        if cache_input_name == "cache_params" and "past_key_values" in model_inputs:
+            model_inputs["cache_params"] = model_inputs.pop("past_key_values")
+        if "cache_params" in model_inputs:
+            model_inputs["cache_params"] = patch_hybrid_cache(model_inputs["cache_params"])
+        return model_inputs
+
+    def output_cache(outputs: Any) -> Any:
+        return getattr(outputs, "past_key_values", None) or getattr(outputs, "cache_params", None)
+
     state: dict[str, Any] = {
         "capture_enabled": False,
         "decode_position": None,
@@ -509,12 +578,13 @@ def capture_activation_magnitudes(
                     cache_position=cache_position,
                     use_cache=True,
                 )
+                model_inputs = normalize_cache_inputs(model_inputs)
                 outputs = model(**model_inputs)
-                past_key_values = getattr(outputs, "past_key_values", None)
+                past_key_values = output_cache(outputs)
                 if past_key_values is None:
                     raise RuntimeError(
                         "model did not return past_key_values after prepare_inputs_for_generation; "
-                        "GraniteMoeHybrid requires its HybridMambaAttentionDynamicCache path"
+                        "hybrid models require their architecture-specific dynamic cache path"
                     )
                 next_token = torch.argmax(outputs.logits[:, -1, :], dim=-1)
                 eos_first_seen: dict[int, int | None] = {index: None for index in batch_indices}
@@ -535,8 +605,9 @@ def capture_activation_magnitudes(
                         cache_position=cache_position,
                         use_cache=True,
                     )
+                    model_inputs = normalize_cache_inputs(model_inputs)
                     outputs = model(**model_inputs)
-                    past_key_values = getattr(outputs, "past_key_values", None)
+                    past_key_values = output_cache(outputs)
                     if past_key_values is None:
                         raise RuntimeError(
                             f"model dropped past_key_values at decode position {decode_position}"
