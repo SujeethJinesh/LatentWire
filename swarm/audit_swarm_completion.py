@@ -28,6 +28,7 @@ PREREG_GLOBS = [
 ]
 
 ALIVE_PAPER_DIRS = [
+    "experimental/decode_microkernel/paper",
     "experimental/hybridkernel/paper",
     "experimental/thoughtflow_fp8/paper",
     "experimental/outlier_migrate/paper",
@@ -105,6 +106,11 @@ def check_no_prereg_drift(state: dict) -> None:
 def check_results_for_completed_entries(state: dict) -> None:
     for entry in state.get("completed_entries", []):
         entry_id = entry["id"] if isinstance(entry, dict) else entry
+        if isinstance(entry, dict) and entry.get("result_dir"):
+            result_dir = REPO_ROOT / str(entry["result_dir"])
+            if not result_dir.exists():
+                fail(f"result_dir missing for completed entry {entry_id}: {entry['result_dir']}")
+            continue
         # Result packet location is /experimental/<project>/phase<N>/results/
         # Loose check: at least one results dir exists for this entry
         candidates = list(REPO_ROOT.glob(f"experimental/*/phase*/results/*{entry_id}*"))

@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "decode_microkernel_phase1",
+  "current_entry": "decode_microkernel_phase2",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -21,6 +21,25 @@
         "same_family_median_launches_per_decode_token": 1158.59375,
         "cross_family_median_launches_per_decode_token": 558.28125,
         "phase1_promoted": true
+      }
+    },
+    {
+      "id": "decode_microkernel_phase1",
+      "project": "decode_microkernel",
+      "phase": 1,
+      "decision": "PASS_DMC_PHASE1_CONSOLIDATED_REPLAY",
+      "result_dir": "experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z",
+      "checker": "experimental/decode_microkernel/phase1/check_dmc_phase1.py",
+      "checker_output": "experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z/checker_result.json",
+      "completed_at": "2026-05-08T00:05:35Z",
+      "summary": {
+        "primary_median_latency_reduction": 0.9650953811812909,
+        "same_family_median_latency_reduction": 0.9657258621103347,
+        "cross_family_median_latency_reduction": 0.9655504614632344,
+        "minimum_launch_reduction": 0.9916666666666667,
+        "max_abs_error": 7.152557373046875e-7,
+        "max_rel_error": 8.915998250813573e-7,
+        "phase2_promoted": true
       }
     }
   ],
@@ -40,10 +59,10 @@
   ],
   "infra_failed_entries": [],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 0.66,
+  "gpu_hours_used": 0.67,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-07T23:31:30Z",
-  "last_commit_sha": "1dae37a98df78e0c1a994ad8d63d77bb399f7a57",
+  "last_audit_at": "2026-05-08T00:05:35Z",
+  "last_commit_sha": "3a7acb6b922162890e4c951cd63a450c6c45bd8b",
   "papers_camera_ready_candidate": [],
-  "notes": "HybridKernel killed; Decode Microkernel Phase 0 pivot passed and promoted to a freshly preregistered Phase 1 implementation gate."
+  "notes": "HybridKernel killed; Decode Microkernel Phase 0 and Phase 1 replay gates passed. DMC is promoted to Phase 2 serving integration before any paper-level speedup claim."
 }

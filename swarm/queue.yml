@@ -71,7 +71,7 @@ entries:
     expected_pass_decision: PASS_DMC_PHASE1_CONSOLIDATED_REPLAY
     expected_kill_decision: KILL_DMC_PHASE1_NO_REPLAY_GAIN
     expected_infra_decision: FAIL_INFRA_DMC_PHASE1
-    on_pass: []
+    on_pass: [decode_microkernel_phase2]
     on_kill: []
     estimated_gpu_hours: 6
     models:
@@ -79,8 +79,34 @@ entries:
       cross_family: nvidia/NVIDIA-Nemotron-Nano-9B-v2
     notes: |
       Conditional implementation gate authored after Decode Microkernel
-      Phase 0 passed. Runner/checker are not authored yet; /goal must author
-      them from preregister_dmc_phase1.md before any Phase 1 timing rows.
+      Phase 0 passed. Phase 1 is replay evidence only; a PASS promotes to
+      Phase 2 serving integration before any paper-level speedup claim.
+
+  - id: decode_microkernel_phase2
+    project: decode_microkernel
+    phase: 2
+    priority: 2
+    gated_by: decode_microkernel_phase1
+    preregistration: experimental/decode_microkernel/phase2/preregister_dmc_phase2.md
+    runner: experimental/decode_microkernel/phase2/run_dmc_phase2.py
+    runner_args: []
+    checker: experimental/decode_microkernel/phase2/check_dmc_phase2.py
+    checker_args: []
+    expected_pass_decision: PASS_DMC_PHASE2_SERVING_GAIN
+    expected_kill_decision: KILL_DMC_PHASE2_NO_SERVING_GAIN
+    expected_infra_decision: FAIL_INFRA_DMC_PHASE2
+    on_pass: []
+    on_kill: []
+    estimated_gpu_hours: 12
+    models:
+      primary: ibm-granite/granite-4.0-h-tiny
+      same_family: ibm-granite/granite-4.0-h-small
+      cross_family: nvidia/NVIDIA-Nemotron-Nano-9B-v2
+    notes: |
+      Conditional serving-integration gate promoted by the Phase 1 replay PASS.
+      Runner/checker are not authored yet; /goal must author them from
+      preregister_dmc_phase2.md before any Phase 2 serving rows. This gate is
+      required before any COLM paper claims DMC accelerates real serving.
 
   - id: thoughtflow_paper_polish
     project: thoughtflow_fp8

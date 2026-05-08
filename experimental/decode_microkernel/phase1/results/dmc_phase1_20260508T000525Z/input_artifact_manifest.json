@@ -1,0 +1,248 @@
+{
+  "created_at_utc": "2026-05-08T00:05:33Z",
+  "packets": [
+    {
+      "files": [
+        {
+          "bytes": 1335,
+          "exists": true,
+          "path": "checker_result.json",
+          "sha256": "sha256:a71fc5e3e2380248a65b4c3eaa59dc49d1e425330f425e8f415e27eac173d4bc"
+        },
+        {
+          "bytes": 1044,
+          "exists": true,
+          "path": "command_metadata.json",
+          "sha256": "sha256:0cbac611d2b8e3d44222fc09528150becd4b2effd0c712f4898efda444c51fd9"
+        },
+        {
+          "bytes": 3346,
+          "exists": true,
+          "path": "environment.json",
+          "sha256": "sha256:9f42f6a86d47443922bf1f0c4c6b19855bb1c6cc214e251a5366895cbd07e8d7"
+        },
+        {
+          "bytes": 4695,
+          "exists": true,
+          "path": "input_artifact_manifest.json",
+          "sha256": "sha256:bbf17c4d0b36bf3151074dbf16d55568f2994722b0de9f30124880739f859587"
+        },
+        {
+          "bytes": 1,
+          "exists": true,
+          "path": "logs/stderr.log",
+          "sha256": "sha256:01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "bytes": 1071,
+          "exists": true,
+          "path": "logs/stdout.log",
+          "sha256": "sha256:a1a4347af7a55a016e85cbdea747d160fd64062441598f8e1c9a1be28d1d8ddc"
+        },
+        {
+          "bytes": 70762,
+          "exists": true,
+          "path": "metrics.json",
+          "sha256": "sha256:6959736f9c66bf5a7f240ddac720ccf57f2102242f57811cdfafb726581d566e"
+        }
+      ],
+      "packet_id": "decode_microkernel_phase0_20260507T233130Z",
+      "packet_path": "experimental/decode_microkernel/phase0/results/decode_microkernel_phase0_20260507T233130Z",
+      "packet_role": "phase0_pass_packet"
+    },
+    {
+      "files": [
+        {
+          "bytes": 2718,
+          "exists": true,
+          "path": "artifact_check.json",
+          "sha256": "sha256:a12b41d8412e4b65b7b93c137df1d88f1249a36541e9c791b82aa9b361622451"
+        },
+        {
+          "bytes": 15523,
+          "exists": true,
+          "path": "logs/client_cross_family_r1.log",
+          "sha256": "sha256:cc75613230dcf83bf186cd8bbb207df275b0af2c7e02d1cea9c24660633cff39"
+        },
+        {
+          "bytes": 15524,
+          "exists": true,
+          "path": "logs/client_cross_family_r2.log",
+          "sha256": "sha256:2791e18440fed31489fcbf970601253c7b1026477edd9e8aceb1381511a9a252"
+        },
+        {
+          "bytes": 15524,
+          "exists": true,
+          "path": "logs/client_cross_family_r3.log",
+          "sha256": "sha256:34a122b0a93013191e641e1665d5e8a61c726018b9f88d47effb467ab9325642"
+        },
+        {
+          "bytes": 15443,
+          "exists": true,
+          "path": "logs/client_granite_primary_r1.log",
+          "sha256": "sha256:50b5c5201c95d84ecfc0911d44b6e341a047bec3ae76c0decf0927b314c8f9b1"
+        },
+        {
+          "bytes": 15442,
+          "exists": true,
+          "path": "logs/client_granite_primary_r2.log",
+          "sha256": "sha256:50fd0ef5aa77c06c5f04e802143f2e3b153977a9b9880d901e3c98ca252dd8d1"
+        },
+        {
+          "bytes": 15440,
+          "exists": true,
+          "path": "logs/client_granite_primary_r3.log",
+          "sha256": "sha256:f2a6ad89012c921e6f11dfd03116d700fc16510b26c877743ce86580a81fb0da"
+        },
+        {
+          "bytes": 15445,
+          "exists": true,
+          "path": "logs/client_granite_same_family_r1.log",
+          "sha256": "sha256:af4feed1c5d05c0781a12c63b20b654eecf64602393a74532ea60e3c06dac080"
+        },
+        {
+          "bytes": 15445,
+          "exists": true,
+          "path": "logs/client_granite_same_family_r2.log",
+          "sha256": "sha256:4be42b1d436bc6f5b6431253f356a9a750090516d1d8cba758f10797dac8e278"
+        },
+        {
+          "bytes": 15445,
+          "exists": true,
+          "path": "logs/client_granite_same_family_r3.log",
+          "sha256": "sha256:8eb1779fabb1def14a2ede131141933db120597be06f81dbb29f215b51dbc0e0"
+        },
+        {
+          "bytes": 70027,
+          "exists": true,
+          "path": "logs/nsys_server_cross_family_r1.log",
+          "sha256": "sha256:4d7d777b235cd781031ce4017eed33aa34294c6b9c1a4889d35d546f5b7e0d6f"
+        },
+        {
+          "bytes": 69789,
+          "exists": true,
+          "path": "logs/nsys_server_cross_family_r2.log",
+          "sha256": "sha256:ff875226a8f76c4d9574f7d4d9e3e054a813a0f9471264547a05eb58b24da987"
+        },
+        {
+          "bytes": 69385,
+          "exists": true,
+          "path": "logs/nsys_server_cross_family_r3.log",
+          "sha256": "sha256:a80bf592bcd3019b4999412d24736f9feaa288127d882c77acb396a4153919b9"
+        },
+        {
+          "bytes": 74308,
+          "exists": true,
+          "path": "logs/nsys_server_granite_primary_r1.log",
+          "sha256": "sha256:e2b8cccdef989b53ec0138476f3a5854911e076248da8c49a0c284b73e14e38d"
+        },
+        {
+          "bytes": 74236,
+          "exists": true,
+          "path": "logs/nsys_server_granite_primary_r2.log",
+          "sha256": "sha256:74eed43071de7e952078146286d11780b2531198de49c76ca5fc3db3f05e2cdc"
+        },
+        {
+          "bytes": 74242,
+          "exists": true,
+          "path": "logs/nsys_server_granite_primary_r3.log",
+          "sha256": "sha256:22eff48a9909e72fa7af1d72599ad5926fcb245eb691c90655a11736a45da27e"
+        },
+        {
+          "bytes": 65954,
+          "exists": true,
+          "path": "logs/nsys_server_granite_same_family_r1.log",
+          "sha256": "sha256:d276878083cad2bde18998f3ecb14cdfab7fd9caf2d0ab5f1fea7846c0ba11a2"
+        },
+        {
+          "bytes": 74609,
+          "exists": true,
+          "path": "logs/nsys_server_granite_same_family_r2.log",
+          "sha256": "sha256:ea81f0b0a66ac8ff9bf163118e9c73c191f42309a0be3416441fde83ae1bc3a6"
+        },
+        {
+          "bytes": 75075,
+          "exists": true,
+          "path": "logs/nsys_server_granite_same_family_r3.log",
+          "sha256": "sha256:0f527db58f75e09c2f29f2f7f6279b03cd5d6d6927dab791c79d6550e10f111e"
+        },
+        {
+          "bytes": 2639,
+          "exists": true,
+          "path": "metadata/environment.json",
+          "sha256": "sha256:5a0fe97c4285648208f0193b4d852cd2d7a433377ac9dbd1ee155942989a2c68"
+        },
+        {
+          "bytes": 23190,
+          "exists": true,
+          "path": "metadata/reduction_input_manifest.json",
+          "sha256": "sha256:3c81bcff1280f76c98aaf5cb7b317dcedad021cea980eda03f0ad92a4b7d3198"
+        },
+        {
+          "bytes": 98304,
+          "exists": true,
+          "path": "nsys/cross_family_r1.sanitized.sqlite",
+          "sha256": "sha256:7c27436b821317090f9205ccf236acc0dab4dd3964470d626ec1271157fed1c2"
+        },
+        {
+          "bytes": 98304,
+          "exists": true,
+          "path": "nsys/cross_family_r2.sanitized.sqlite",
+          "sha256": "sha256:1ebdfe30832be8bbbdca0b26d10980f2868109fd7eba197247b688620058605c"
+        },
+        {
+          "bytes": 98304,
+          "exists": true,
+          "path": "nsys/cross_family_r3.sanitized.sqlite",
+          "sha256": "sha256:17ac91ed01be4c87f0812b5055d584ef3144ec3487c68aa55f465ae45c85f12d"
+        },
+        {
+          "bytes": 98304,
+          "exists": true,
+          "path": "nsys/granite_primary_r1.sanitized.sqlite",
+          "sha256": "sha256:16a4ff21cca1bb7aa213ba00f5aa182e837c9c2fcd0ee220dfe3a93aff6ae09b"
+        },
+        {
+          "bytes": 98304,
+          "exists": true,
+          "path": "nsys/granite_primary_r2.sanitized.sqlite",
+          "sha256": "sha256:86bca506bf72bb6a64cf7ad2980625b49f9e01c645817d579c9a95238ea1f8a0"
+        },
+        {
+          "bytes": 98304,
+          "exists": true,
+          "path": "nsys/granite_primary_r3.sanitized.sqlite",
+          "sha256": "sha256:746761bd1f702100ac6908e5ade4a93081ce5ea6fa8f93d634f0bd7c8d30c5b8"
+        },
+        {
+          "bytes": 36864,
+          "exists": true,
+          "path": "nsys/granite_same_family_r1.sanitized.sqlite",
+          "sha256": "sha256:adad4d880a7f70e8ddc71ee19aad94111e72545fc9e3d8a323fc7eeb9c517a82"
+        },
+        {
+          "bytes": 98304,
+          "exists": true,
+          "path": "nsys/granite_same_family_r2.sanitized.sqlite",
+          "sha256": "sha256:77cb3b8e9cd2052b329e447802f512e7a4d8ba2a82d7a7b70c2c73afacc6c9d0"
+        },
+        {
+          "bytes": 98304,
+          "exists": true,
+          "path": "nsys/granite_same_family_r3.sanitized.sqlite",
+          "sha256": "sha256:c49d369044e3c0ca0204640a387c3ae3d6e430492997ddbc8c6c346c697597dd"
+        },
+        {
+          "bytes": 48441,
+          "exists": true,
+          "path": "profiler_metrics.json",
+          "sha256": "sha256:5a629fe9a7f61e84df574b88891c1f3b988231c8792cb5346f0c6487aa44be6e"
+        }
+      ],
+      "packet_id": "hybridkernel_profiler_gate_20260507T212428Z",
+      "packet_path": "experimental/hybridkernel/phase2/results/hybridkernel_profiler_gate_20260507T212428Z",
+      "packet_role": "hybridkernel_trace_packet"
+    }
+  ],
+  "schema_version": "dmc_phase1_input_manifest_v1"
+}

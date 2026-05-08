@@ -1,0 +1,40 @@
+{
+  "decision": "PASS_DMC_PHASE1_CONSOLIDATED_REPLAY",
+  "reasons": [],
+  "role_metrics": {
+    "cross_family_falsification": {
+      "latency_reduction_bootstrap_ci95": {
+        "ci95_high": 0.9657021003180605,
+        "ci95_low": 0.9654552838317912
+      },
+      "latency_reduction_median": 0.9655504614632344,
+      "launch_reduction_min": 0.9916666666666667,
+      "max_abs_error_max": 5.960464477539062e-07,
+      "max_rel_error_max": 5.919890782024595e-07,
+      "rows": 3
+    },
+    "primary_hybrid": {
+      "latency_reduction_bootstrap_ci95": {
+        "ci95_high": 0.965681052002782,
+        "ci95_low": 0.9618806519742926
+      },
+      "latency_reduction_median": 0.9650953811812909,
+      "launch_reduction_min": 0.9916666666666667,
+      "max_abs_error_max": 7.152557373046875e-07,
+      "max_rel_error_max": 6.628101232308836e-07,
+      "rows": 3
+    },
+    "same_family_control": {
+      "latency_reduction_bootstrap_ci95": {
+        "ci95_high": 0.9659077770278357,
+        "ci95_low": 0.9656092336667471
+      },
+      "latency_reduction_median": 0.9657258621103347,
+      "launch_reduction_min": 0.9916666666666667,
+      "max_abs_error_max": 5.960464477539062e-07,
+      "max_rel_error_max": 8.915998250813573e-07,
+      "rows": 3
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z"
+}

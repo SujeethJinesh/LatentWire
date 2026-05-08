@@ -1,0 +1,155 @@
+\documentclass{article}
+
+\usepackage[submission]{../../../colm/2026/colm2026_conference}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{url}
+
+\title{Decode Microkernel Consolidation for Hybrid Reasoner Serving}
+\author{Anonymous authors\\Paper under double-blind review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This draft reports the current state of Decode Microkernel Consolidation
+(DMC), a positive-method pivot produced after a preregistered HybridKernel
+boundary-fusion gate failed. DMC targets repeated launch-heavy decode
+micro-operations rather than attention/SSM boundaries. The current evidence is
+a preregistered Phase 1 replay gate: a trace-derived packed Triton replay path
+reduces GPU-side replay latency while preserving numerical equivalence on
+three primary, three same-family, and three cross-family schedules. This is not
+yet an end-to-end serving speedup claim. The next preregistered gate must show
+that the same method improves real vLLM/serving decode latency on frozen
+prompt slices.
+\end{abstract}
+
+\section{Introduction}
+
+Hybrid and mixture-of-experts language models expose many small decode-time GPU
+operations. A failed HybridKernel profiler gate found no separable
+attention/SSM boundary-local overhead, but the same server-side Nsight
+artifacts showed dense repeated micro-operation families during decode. DMC
+asks whether those repeated operations can be consolidated into fewer GPU
+launches without changing outputs.
+
+The submission status is deliberately conservative. Phase 1 is a replay
+implementation gate, not a serving result. The paper is not camera-ready until
+Phase 2 shows an end-to-end serving gain with frozen prompts, model outputs,
+launch audits, and paired uncertainty.
+
+\section{Related Work}
+
+This interim draft does not make external novelty claims beyond the repository
+audit. The camera-ready candidate must include a hand-verified citation audit
+covering serving launch overhead, compiler fusion, CUDA Graphs, Triton kernels,
+and hybrid/MoE decode systems. Until that audit is complete, the only cited
+evidence is internal artifact evidence listed in the reviewer pack.
+
+\section{Method}
+
+DMC builds a fixed replay schedule from committed server-side Nsight Systems
+\texttt{cuda\_gpu\_kern\_sum} logs in the killed HybridKernel packet. For each
+source row, the runner maps kernel-family weights into a packed
+gating/routing/state-update replay schedule. The baseline executes repeated
+PyTorch CUDA micro-operations; the consolidated path executes one Triton packed
+gating replay kernel. The checker verifies CUDA-event timing samples, launch
+audit artifacts from \texttt{torch.profiler}, saved output tensors, source
+artifact hashes, fixed packet identity, and numerical equivalence.
+
+The claim boundary is strict: DMC Phase 1 validates a replay mechanism. It does
+not validate model quality, vLLM integration, attention/SSM boundary fusion, or
+end-to-end serving acceleration.
+
+\section{Experiments}
+\label{sec:experiments}
+
+Phase 1 used the fixed PASS packet
+\url{experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z}.
+The gate was preregistered in
+\url{experimental/decode_microkernel/phase1/preregister_dmc_phase1.md}. The
+checker output is
+\url{experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z/checker_result.json}.
+
+Each row used at least 100 warmup iterations and 1000 measured CUDA-event
+iterations. All nine rows were checked against saved output tensors and
+per-row launch-audit artifacts.
+
+\section{Results}
+
+\begin{table}[t]
+\centering
+\scriptsize
+\begin{tabular}{lrrrr}
+\toprule
+Role & Rows & Median latency reduction & 95\% CI low & Max abs error \\
+\midrule
+Primary hybrid & 3 & 0.9650953811812909 & 0.9618806519742926 & 7.152557373046875e-07 \\
+Same-family control & 3 & 0.9657258621103347 & 0.9656092336667471 & 5.960464477539062e-07 \\
+Cross-family falsification & 3 & 0.9655504614632344 & 0.9654552838317912 & 5.960464477539062e-07 \\
+\bottomrule
+\end{tabular}
+\caption{Phase 1 replay-gate metrics from the checker output cited in
+Section~\ref{sec:experiments}.
+The preregistered thresholds were median latency reduction at least 0.08 for
+primary and same-family roles, at least 0.05 for cross-family roles, bootstrap
+95\% CI lower bound greater than 0 for every role, launch reduction at least
+0.25 in every row, max absolute error at most 1e-2, and max relative error at
+most 1e-2.}
+\end{table}
+
+The checker returned
+\texttt{PASS\_DMC\_PHASE1\_CONSOLIDATED\_REPLAY}. The minimum row-level launch
+reduction was 0.9916666666666667. The maximum relative error was
+8.915998250813573e-07.
+
+\section{Discussion}
+
+The Phase 1 result is a useful positive signal because it shows that a
+trace-conditioned packed replay can consolidate launch-heavy decode
+micro-operations with exact artifact checks. It is not sufficient for a COLM
+method paper by itself. The replay baseline intentionally exposes launch
+overhead; an optimized serving stack may already remove some of that overhead.
+The next gate therefore measures real serving rows and requires generated-token
+matches, end-to-end decode latency reduction, tokens/sec gain, and launch
+audits.
+
+\section{Limitations}
+
+Phase 1 has only nine replay rows and three rows per role. Bootstrap intervals
+over three rows should not be treated as paper-strength uncertainty. The
+workload is trace-derived but synthetic; it does not exercise full model
+generation, KV-cache behavior, batching, sampling, prefill/decode interaction,
+or existing vLLM compiler and CUDA Graph optimizations. Same-family evidence
+includes one row whose Phase 0 SQLite summary was empty, although Phase 1
+derives that schedule from the committed server-side Nsight log and records
+that provenance explicitly. Phase 2 must resolve these limitations before
+camera-ready status.
+
+\section{Reproducibility Statement}
+
+The current Phase 1 packet was produced on commit
+\texttt{86fd5b027ea6259cbba9be60a81427efa2d525f5} on an NVIDIA RTX PRO 6000
+Blackwell Server Edition GPU. Runtime was less than 0.01 GPU-hours for the
+canonical replay packet. Reproduction uses:
+
+\begin{verbatim}
+HF_HOME=/workspace/hf_cache TRITON_CACHE_DIR=/workspace/.triton_cache \
+./.venv_gpu/bin/python experimental/decode_microkernel/phase1/run_dmc_phase1.py \
+  --run-id dmc_phase1_20260508T000525Z
+
+./.venv_gpu/bin/python experimental/decode_microkernel/phase1/check_dmc_phase1.py \
+  experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z
+\end{verbatim}
+
+All claims in this draft cite
+\url{experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z}.
+
+\section{Ethics Statement}
+
+This work is a systems optimization study. The current artifacts do not involve
+human-subject data, user data, or deployment claims. The main ethical risk is
+overclaiming a replay microbenchmark as a serving speedup; the paper explicitly
+forbids that interpretation until Phase 2 passes.
+
+\end{document}

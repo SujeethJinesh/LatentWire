@@ -1,0 +1,27 @@
+{
+  "argv": [
+    "/workspace/LatentWire/.venv_gpu/bin/python",
+    "/workspace/LatentWire/experimental/decode_microkernel/phase1/run_dmc_phase1.py",
+    "--run-id",
+    "dmc_phase1_20260508T000525Z"
+  ],
+  "bootstrap_samples": 2000,
+  "cwd": "/workspace/LatentWire",
+  "ended_at_utc": "2026-05-08T00:05:34Z",
+  "environment_variables": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "HF_HOME": "/workspace/hf_cache",
+    "TRITON_CACHE_DIR": "/workspace/.triton_cache"
+  },
+  "git_sha": "86fd5b027ea6259cbba9be60a81427efa2d525f5",
+  "hybrid_packet": "/workspace/LatentWire/experimental/hybridkernel/phase2/results/hybridkernel_profiler_gate_20260507T212428Z",
+  "measured": 1000,
+  "path_python": "/usr/local/bin/python",
+  "phase0_packet": "/workspace/LatentWire/experimental/decode_microkernel/phase0/results/decode_microkernel_phase0_20260507T233130Z",
+  "run_dir": "/workspace/LatentWire/experimental/decode_microkernel/phase1/results/dmc_phase1_20260508T000525Z",
+  "schema_version": "dmc_phase1_command_v1",
+  "script_path": "experimental/decode_microkernel/phase1/run_dmc_phase1.py",
+  "script_sha256": "sha256:edf48d6dcd116dcbf3bec4ba708c495e7f55b742f1172006a9a132213efb71d2",
+  "started_at_utc": "2026-05-08T00:05:25Z",
+  "warmup": 100
+}
