@@ -169,3 +169,50 @@ ThoughtFlow-FP8 must cite:
 - build command and PDF path;
 - reviewer pack path;
 - all result packet paths used by paper claims.
+
+## Phase 3 Intervention Sprint Status (2026-05-09)
+
+Human authorized a 10-12 hour OutlierMigrate Phase 3 intervention sprint to
+convert the paper from characterization toward a positive-method claim.
+
+Completed before the first Phase 3 quantization run:
+
+- Phase 3 preregistration authored and pushed:
+  `experimental/outlier_migrate/phase3/preregister_om_phase3_intervention.md`
+  at commit `c0031574`.
+- Phase 3 core runner/checker/test tooling authored and pushed at commit
+  `fc394bcb`.
+- Sprint state/progress note pushed at commit `cda8cc92`.
+
+Active:
+
+- Core Granite-4.0-H-Tiny Phase 3 intervention run:
+  `experimental/outlier_migrate/phase3/results/om_phase3_20260509T174000Z`.
+- Started at `2026-05-09T17:38:58Z`.
+- First activation-capture batch completed at `2026-05-09T17:47:43Z`.
+- No Phase 3 decision metrics have been produced yet.
+
+Completed no-GPU analysis:
+
+- Layer-stratified migration analysis generated from existing Phase 0/1/2
+  packets:
+  `experimental/outlier_migrate/phase3/results/layer_stratified_migration.md`.
+- The analysis reports strict set-leaving, within-set rank shuffling, and
+  original migration by layer type.
+- Key layer-type means:
+  - Phase 0 Granite-Tiny: attention strict set-leaving `0.618490`, SSM/Mamba
+    `0.635995`; original migration `0.798177` / `0.820023`.
+  - Phase 1 Granite-Small: attention strict set-leaving `0.557165`,
+    SSM/Mamba `0.567243`; original migration `0.843242` / `0.843157`.
+  - Phase 2 Nemotron-3 partial: attention strict set-leaving `0.563014`,
+    MoE `0.526503`, SSM/Mamba `0.533280`; original migration `0.832562` /
+    `0.820384` / `0.818170`.
+
+Pending:
+
+1. Let the core Phase 3 intervention run complete.
+2. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
+   the packet.
+3. Stop and block if either mandatory control outperforms union protection by
+   more than `0.10` median recovery.
+4. Integrate Phase 3 outcome into the paper and run committee review.
