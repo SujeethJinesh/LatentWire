@@ -1,14 +1,14 @@
 # Swarm Final Report Draft
 
-Status: draft after `cross_model_validation_outlier_migrate` completed with a
-partial Nemotron-3 PASS. Do not treat this file as final until committee
-reviews, audit, and any camera-ready-candidate decision are incorporated.
+Status: authorized-window landing report draft after partial Nemotron-3 PASS
+and ThoughtFlow fallback-candidate audit. Do not treat this as human-approved
+final; it is the machine-readable handoff for the returning human.
 
 ## Executive Status
 
 - Primary positive-method candidate: OutlierMigrate.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
-- Current active work: OutlierMigrate paper iteration after partial Phase 2 PASS.
+- Current active work: authorized-window wrap-up and human handoff.
 - Completed run: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z`.
 - Phase 2 scope: partial Nemotron-3 validation only; Qwen3.6 and Kimi
   Linear are deferred by the no-vLLM-upgrade authorized window.
@@ -16,6 +16,8 @@ reviews, audit, and any camera-ready-candidate decision are incorporated.
 - Camera-ready candidate: ThoughtFlow-FP8 fallback candidate only, under the
   falsification-methodology workshop framing. It is not a positive-method
   candidate.
+- Candidate commit: `e25a45d6c56151a31ef7f788d3d8d515eb46d649` for the
+  ThoughtFlow fallback candidate review/audit packet.
 
 ## Portfolio
 
@@ -84,6 +86,10 @@ Kill manifests exist and now include explicit non-publication rationale:
 - `experimental/KILLED_ssm_shape_codec_no_gain/README.md`
 - `experimental/KILLED_cross_layer_error_bound_loose/README.md`
 
+Verified on 2026-05-09: each listed manifest contains the decision string,
+date, measured value/threshold summary, artifact SHA references, and a
+non-publication rationale paragraph.
+
 ## GPU Hours And Cost
 
 - `swarm/state.json` recorded `gpu_hours_used=9.84` before the active
@@ -136,7 +142,8 @@ Kill manifests exist and now include explicit non-publication rationale:
 
 OutlierMigrate must cite:
 
-- commit SHA after final Phase 2 commit;
+- Phase 2 packet commit SHA:
+  `3e2fdc8d3adbfbf67da6b02cda16bb0f58e2229b`;
 - RTX PRO 6000 Blackwell GPU;
 - exact runtime hours;
 - model snapshot commits from `model_provenance.json`;
@@ -146,7 +153,8 @@ OutlierMigrate must cite:
 
 ThoughtFlow-FP8 must cite:
 
-- commit SHA after final paper-polish commit;
+- fallback candidate commit SHA:
+  `e25a45d6c56151a31ef7f788d3d8d515eb46d649`;
 - build command and PDF path;
 - reviewer pack path;
 - all result packet paths used by paper claims.
