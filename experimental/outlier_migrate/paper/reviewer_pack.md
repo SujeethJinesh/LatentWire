@@ -1,8 +1,8 @@
 # OutlierMigrate Reviewer Pack
 
-- status: Phase 0 dynamic-outlier gate passed; Phase 1 replicated at scale; not camera-ready
-- current decision: `PASS_OM_PHASE1_REPLICATED_AT_SCALE`
-- current paper readiness: not COLM/ICLR-ready; cross-model validation and audits required
+- status: observational measurement candidate only; Phase 0 dynamic-outlier gate passed; Phase 1 replicated at scale; partial Phase 2 Nemotron-3 validation passed; not camera-ready final
+- current decision: `PARTIAL_PASS_OM_PHASE2_NEMOTRON3_ONLY_QWEN36_KIMI_DEFERRED`
+- current paper readiness: not a positive-method or systems paper; missing intervention, audit, and deferred Qwen3.6/Kimi validation block any camera-ready claim
 
 ## Paper Link
 
@@ -11,15 +11,18 @@
 
 ## Current Claim
 
-OutlierMigrate now supports this narrow claim: on two same-family Granite
+OutlierMigrate now supports this narrow observational measurement claim: on two same-family Granite
 hybrid model sizes, top-1% high-magnitude activation channels at decode
 position 100 are not rank-stationary by the final preregistered decode
-position under the preregistered migration metric.
+position under the preregistered migration metric. A partial cross-family
+Nemotron-3 check also passes under the same metric.
 
-This is a strong same-family observational gate for a positive-method branch,
-but it is not a camera-ready paper, not cross-model evidence, and not yet
-evidence that a migration-aware intervention improves quality, latency,
-memory, or robustness.
+This is not full cross-validation and not evidence that a migration-aware
+intervention improves quality, latency, memory, or robustness. It should be
+read as a measurement-paper candidate only, not as a positive systems method
+or camera-ready positive-method submission. Qwen3.6 and Kimi Linear are
+deferred pending runtime compatibility, and the missing intervention plus
+deferred Qwen3.6/Kimi validation are blockers.
 
 Important novelty boundary: do not claim this is the first dynamic-outlier
 finding in Mamba. QMamba and OuroMamba already document dynamic hidden-state
@@ -27,27 +30,31 @@ or activation-outlier behavior in vision Mamba settings. The paper's narrow
 new contribution is measuring the dynamic regime in hybrid language-model
 long reasoning traces under preregistered Phase 0/1 gates.
 
+The strict set-leaving decomposition is post-hoc interpretability for static
+channel-protection relevance. It is not the preregistered gate metric; checker
+decisions remain based on the original preregistered migration fraction.
+
 ## Strongest Evidence
 
-| Gate item | Phase 0 exact value | Phase 1 exact value | Decision relevance |
-|---|---:|---:|---|
-| Checker decision | `PASS_OM_PHASE0_DECODE_TIME_MIGRATION` | `PASS_OM_PHASE1_REPLICATED_AT_SCALE` | dynamic-outlier pass replicated at scale |
-| Strict set-leaving fraction | 0.634244791667 | 0.566234756098 | base top-1% channels leaving the top-1% set entirely |
-| Strict set-leaving 95% CI | [0.605208333333, 0.664192708333] | [0.550076219512, 0.581707317073] | post-hoc interpretability readout |
-| Within-set rank-shuffling fraction | 0.175260416667 | 0.270934959350 | base top-1% channels staying in-set but moving >2 ranks |
-| Within-set rank-shuffling 95% CI | [0.160156250000, 0.191015625000] | [0.260797764228, 0.280614837398] | post-hoc interpretability readout |
-| Original preregistered migration fraction | 0.8178385416666667 | 0.843165650406504 | clears threshold >= 0.05 |
-| Original migration bootstrap 95% CI | [0.797265625, 0.8368489583333334] | [0.8334349593495936, 0.8511432926829268] | CI lower > 0.05 |
-| Preregistered dynamic threshold | point >= 0.05 and CI lower > 0.05 | point >= 0.05 and CI lower > 0.05 | preregistered rule |
-| Artifact complete | true | true | artifact gate passed |
-| Model | `ibm-granite/granite-4.0-h-tiny` | `ibm-granite/granite-4.0-h-small` | same-family scale validation |
-| Model commit | `791e0d3d28c86e106c9b6e0b4cecdee0375b6124` | `b8c0982bab7fde4eb48110f5a069527c008fab39` | fixed snapshots |
-| Prompt SHA | `sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd` | `sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e` | fixed prompt packets |
-| Activation artifact SHA | `sha256:2783aa329d82e8f43ea4f342e52f0a25fc283b0b8971880f2da093739474d687` | `sha256:326a04351e0dda28cf919fe4745d7d9341011db13d940a06cf9c8470633003e1` | fixed activation artifacts |
-| Trace count | 12 | 24 | Phase 1 doubles traces |
-| Layer count | 40 | 40 | same layer count, larger hidden size in Phase 1 |
-| Decode positions | 100, 500, 1000, 5000, 10000 | 100, 500, 1000, 5000, 10000, 20000 | Phase 1 extends decode surface |
-| Bootstrap seed | 20260508 | 20260508 | recorded seed |
+| Gate item | Phase 0 exact value | Phase 1 exact value | Partial Phase 2 Nemotron-3 exact value |
+|---|---:|---:|---:|
+| Checker decision | `PASS_OM_PHASE0_DECODE_TIME_MIGRATION` | `PASS_OM_PHASE1_REPLICATED_AT_SCALE` | `PARTIAL_PASS_OM_PHASE2_NEMOTRON3_ONLY_QWEN36_KIMI_DEFERRED` |
+| Strict set-leaving fraction | 0.634244791667 | 0.566234756098 | 0.533713200380 |
+| Strict set-leaving 95% CI | [0.605208333333, 0.664192708333] | [0.550076219512, 0.581707317073] | [0.467414529915, 0.599982193732] |
+| Within-set rank-shuffling fraction | 0.175260416667 | 0.270934959350 | 0.269082383666 |
+| Within-set rank-shuffling 95% CI | [0.160156250000, 0.191015625000] | [0.260797764228, 0.280614837398] | [0.238841405508, 0.299056267806] |
+| Original preregistered migration fraction | 0.8178385416666667 | 0.843165650406504 | 0.820809591642925 |
+| Original migration bootstrap 95% CI | [0.797265625, 0.8368489583333334] | [0.8334349593495936, 0.8511432926829268] | [0.7865325261158594, 0.8544931149097815] |
+| Preregistered dynamic threshold | point >= 0.05 and CI lower > 0.05 | point >= 0.05 and CI lower > 0.05 | point >= 0.05 and CI lower > 0.05 |
+| Artifact complete | true | true | true |
+| Model | `ibm-granite/granite-4.0-h-tiny` | `ibm-granite/granite-4.0-h-small` | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16` |
+| Model commit | `791e0d3d28c86e106c9b6e0b4cecdee0375b6124` | `b8c0982bab7fde4eb48110f5a069527c008fab39` | `cbd3fa9f933d55ef16a84236559f4ee2a0526848` |
+| Prompt SHA | `sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd` | `sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e` | `sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e` |
+| Activation artifact SHA | `sha256:2783aa329d82e8f43ea4f342e52f0a25fc283b0b8971880f2da093739474d687` | `sha256:326a04351e0dda28cf919fe4745d7d9341011db13d940a06cf9c8470633003e1` | `sha256:bc841b938a125f05649f84577c0ddb7ab287213a683892cb81ea6ca06296206d` |
+| Trace count | 12 | 24 | 24 |
+| Layer count | 40 | 40 | 52 |
+| Decode positions | 100, 500, 1000, 5000, 10000 | 100, 500, 1000, 5000, 10000, 20000 | 100, 500, 1000, 5000, 10000, 20000 |
+| Bootstrap seed | 20260508 | 20260508 | 20260508 |
 
 ## Artifact Paths
 
@@ -71,6 +78,16 @@ long reasoning traces under preregistered Phase 0/1 gates.
 - Phase 1 prompt manifest: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/prompt_manifest.json`
 - Phase 1 activation manifest: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitude_manifest.json`
 - Phase 1 activation artifact: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitudes.jsonl.gz`
+- Partial Phase 2 result packet: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z`
+- Partial Phase 2 checker output: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/checker_result.json`
+- Partial Phase 2 metrics: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/metrics.json`
+  (artifact-checked OutlierMigrate metrics file; this runner does not emit a
+  separate `profiler_metrics.json`)
+- Partial Phase 2 artifact completeness: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/artifact_check.json`
+- Partial Phase 2 migration decomposition: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/migration_decomposition.md`
+- Partial Phase 2 model provenance: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/model_provenance.json`
+- Partial Phase 2 activation manifest: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/activation_magnitude_manifest.json`
+- Partial Phase 2 activation artifact: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/activation_magnitudes.jsonl.gz`
 
 ## Related-Work Sources Added
 
@@ -97,11 +114,12 @@ is measured.
 
 ## Reviewer Risks
 
-- Phase 0 and Phase 1 are same-family Granite evidence, not cross-model
-  validation.
-- The paper does not yet include a strict cross-family falsification pair,
-  contamination audit, or independent seed repeat beyond the recorded bootstrap
-  procedure.
+- Phase 0 and Phase 1 are same-family Granite measurement evidence; Phase 2 is a partial
+  Nemotron-3 check, not completed Qwen3.6/Kimi cross-validation.
+- Do not describe the packet as camera-ready, full cross-validation, a
+  positive systems method, or a validated positive-method branch.
+- The paper does not yet include a contamination audit or independent seed
+  repeat beyond the recorded bootstrap procedure.
 - The result says outlier ranks migrate; it does not show that any
   migration-aware intervention improves quality, latency, memory, or robustness.
 - Dynamic outliers are not novel to Mamba broadly; QMamba and OuroMamba are
@@ -121,13 +139,14 @@ is measured.
 ## Saturated / Alive / Next Branch
 
 - saturated: Phase 0 and Phase 1 decision surfaces are closed and passed.
-- alive: same-family dynamic outlier migration in Granite hybrid decode traces.
-- promoted: the dynamic-outlier hypothesis within Granite-family hybrids.
+- alive: observational measurement paper candidate for dynamic outlier migration
+  in Granite hybrid decode traces with a partial Nemotron-3 cross-family pass.
+- promoted: the dynamic-outlier hypothesis beyond Granite-family-only framing,
+  while Qwen3.6/Kimi remain deferred.
 - weakened: a fixed position-100 outlier-map interpretation on the Granite
   Phase 0 and Phase 1 rank-migration surfaces.
-- not established: cross-model transfer, delta-rule linear-attention validation,
-  RWKV-7/GLA generalization, or a positive intervention method.
-- next exact gate during the 10-hour authorized window: partial Phase 2
-  cross-validation on `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16` only.
-  Qwen3.6 and Kimi Linear are deferred pending vLLM compatibility and must not
-  be downloaded during this window.
+- not established: completed cross-model transfer, delta-rule linear-attention
+  validation, RWKV-7/GLA generalization, or a positive intervention method.
+- next exact gate: decide whether to pursue a measurement-paper route or run
+  the blocked validation/intervention gates; positive-method submission remains
+  blocked until Qwen3.6/Kimi validation and a migration-aware intervention pass.

@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase2/run_cross_model.py",
+    "--partial-nemotron3-only",
+    "--run-id",
+    "om_phase2_nemotron3_20260508T231723Z",
+    "--batch-size",
+    "4",
+    "--dtype",
+    "bfloat16",
+    "--device",
+    "auto"
+  ],
+  "assumptions": [
+    "Nemotron-3 is the only model executed in this authorized-window packet",
+    "Qwen3.6 and Kimi Linear are explicitly deferred; their weights must not be downloaded here",
+    "manual greedy decoding is used to expose deterministic decode-step activation hooks",
+    "model.prepare_inputs_for_generation is used for the local Transformers cache path",
+    "layer forward output absolute values are treated as per-channel activation magnitudes",
+    "EOS is recorded but decoding continues to 20000 generated tokens to preserve the Phase 1 grid"
+  ],
+  "batch_size": 4,
+  "branch": "outlier_migrate_phase2_partial_nemotron3",
+  "created_at_utc": "2026-05-08T23:17:35Z",
+  "cwd": "/workspace/LatentWire",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z",
+  "schema_version": "om_phase2_partial_nemotron3_v1_command"
+}

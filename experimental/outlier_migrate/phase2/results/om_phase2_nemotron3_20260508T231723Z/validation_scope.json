@@ -1,0 +1,22 @@
+{
+  "authorization_source": "swarm/goal.md#10-hour-authorized-work-window--may-8-2026",
+  "created_at_utc": "2026-05-08T23:17:35Z",
+  "deferred_models": [
+    "Qwen/Qwen3.6-35B-A3B",
+    "moonshotai/Kimi-Linear-48B-A3B-Instruct"
+  ],
+  "forbidden_during_window": [
+    "upgrade_vllm",
+    "download_qwen36_or_kimi_weights",
+    "modify_preregistration_files",
+    "claim_full_cross_validation"
+  ],
+  "full_cross_validation_complete": false,
+  "interpretation": "This packet can support a partial cross-family check on Nemotron-3 only. It must not be used as PASS_OM_TRANSFERS_CROSS_MODEL until Qwen3.6 and Kimi Linear validation are resolved or the human author changes the queue contract.",
+  "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+  "model_key": "nemotron3_nano",
+  "not_full_phase2_gate": true,
+  "queue_entry": "cross_model_validation_outlier_migrate",
+  "schema_version": "om_phase2_partial_nemotron3_v1_validation_scope",
+  "scope": "partial_nemotron3_only_authorized_window"
+}

@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "cross_model_validation_outlier_migrate",
+  "current_entry": "outlier_migrate_paper_iteration",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -37,8 +37,8 @@
         "same_family_median_latency_reduction": 0.9657258621103347,
         "cross_family_median_latency_reduction": 0.9655504614632344,
         "minimum_launch_reduction": 0.9916666666666667,
-        "max_abs_error": 7.152557373046875e-7,
-        "max_rel_error": 8.915998250813573e-7,
+        "max_abs_error": 7.152557373046875e-07,
+        "max_rel_error": 8.915998250813573e-07,
         "phase2_promoted": true
       }
     },
@@ -113,6 +113,37 @@
         "artifact_complete": true,
         "phase1_promoted": true,
         "interpretation_note": "Mechanically passes the preregistered replication path because CI upper is below 0.015, but baseline accuracy is zero, so paper claims must not treat this as evidence of preserved capability headroom."
+      }
+    },
+    {
+      "id": "cross_model_validation_outlier_migrate",
+      "project": "outlier_migrate",
+      "phase": 2,
+      "decision": "PARTIAL_PASS_OM_PHASE2_NEMOTRON3_ONLY_QWEN36_KIMI_DEFERRED",
+      "result_dir": "experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z",
+      "checker": "experimental/outlier_migrate/phase2/check_cross_model.py",
+      "checker_output": "experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/checker_result.json",
+      "artifact_check": "experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/artifact_check.json",
+      "completed_at": "2026-05-09T06:40:49Z",
+      "summary": {
+        "artifact_complete": true,
+        "full_cross_validation_complete": false,
+        "migration_fraction": 0.820809591642925,
+        "bootstrap_ci95_low": 0.7865325261158594,
+        "bootstrap_ci95_high": 0.8544931149097815,
+        "strict_set_leaving_fraction": 0.533713200379867,
+        "strict_set_leaving_ci95_low": 0.4674145299145299,
+        "strict_set_leaving_ci95_high": 0.5999821937321937,
+        "within_set_rank_shuffle_fraction": 0.26908238366571696,
+        "within_set_rank_shuffle_ci95_low": 0.23884140550807217,
+        "within_set_rank_shuffle_ci95_high": 0.2990562678062678,
+        "threshold": 0.05,
+        "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+        "deferred_models": [
+          "Qwen/Qwen3.6-35B-A3B",
+          "moonshotai/Kimi-Linear-48B-A3B-Instruct"
+        ],
+        "interpretation_note": "Partial cross-family validation only; does not complete Qwen3.6/Kimi Linear validation and must not be described as full cross-validation."
       }
     }
   ],
@@ -249,10 +280,10 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 9.84,
+  "gpu_hours_used": 17.2294,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-08T21:44:47Z",
+  "last_audit_at": "2026-05-09T06:53:06Z",
   "last_commit_sha": "ec74738f095a4f98995875082d78fd40e8c72259",
   "papers_camera_ready_candidate": [],
-  "notes": "RESUMED 2026-05-08T15:47:56Z at git SHA 71e88c3ed4eda4b07fce47e924ef5276ab903926 after human resolved preregistration drift policy in swarm/goal.md. Audit policy now applies the six-pivot-condition check. Applied human-verified OutlierMigrate Phase 1 PASS_OM_PHASE1_REPLICATED_AT_SCALE from experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z; migration_fraction=0.843165650406504, CI95=[0.8334349593495936, 0.8511432926829268], artifact_complete=true. Residual Migration Phase 0 passed the preregistered replication path at 2026-05-08T16:22:49Z with accuracy_drop=0.0 and CI95=[0.0, 0.0], but baseline accuracy was also 0.0; treat as a gate PASS with severe headroom limitation. SSM-State Lifecycle Phase 0 killed cleanly at 2026-05-08T17:17:13Z: artifact_complete=true, 0/36 Mamba layers passed the preregistered KS+2x median-drift rule, pass_fraction=0.0 < 0.5. Its diagnostic identified one plausible fresh positive-method pivot, so ssm_shape_codec_phase0 was inserted before lower-priority original entries. SSM Shape-Conditioned Codec Phase 0 killed cleanly at 2026-05-08T17:53:13Z: artifact_complete=true, mean relative NMSE reduction 0.07133119147037506 missed the preregistered 0.10 shelf despite CI95=[0.06882070525106689, 0.073901076081768] and non-worse positions. Diagnostic recommends stopping this branch rather than mining layer/position pockets. Cross-Layer Error theoretical gate killed cleanly at 2026-05-08T20:00:03Z: artifact_complete=true, predicted/measured ratios exceeded the >5.0 kill threshold at depths 1, 10, and 15. Diagnostic identifies damped_fp4_precision_allocator as the best fresh positive-method pivot candidate requiring new preregistration before any data. Residual Migration Phase 1 killed cleanly at 2026-05-08T21:20:03Z: artifact_complete=true, accuracy_drop=0.08333333333333333 with CI95=[0.0, 0.20833333333333334], exceeding the preregistered 0.015 kill threshold; all stratified ablations showed the same drop and headroom was LOW_BASELINE_HEADROOM. BLOCKED 2026-05-08T21:28:19Z on cross_model_validation_outlier_migrate because Qwen/Qwen3.6-35B-A3B requires Qwen3_5MoeForConditionalGeneration/qwen3_5_moe support absent from local vLLM 0.10.2; documented newer vLLM support requires a dependency upgrade with torch/triton blast radius. RESUMED 2026-05-08T21:44:47Z at git SHA ec74738f095a4f98995875082d78fd40e8c72259 after swarm/goal.md authorized a 10-hour no-upgrade work window: proceed with OutlierMigrate reframing, skip already-completed Phase 0 entries, add Kimi Linear to queue config only, and run partial Nemotron-3 cross-validation while deferring Qwen3.6/Kimi weights."
+  "notes": "RESUMED 2026-05-08T15:47:56Z at git SHA 71e88c3ed4eda4b07fce47e924ef5276ab903926 after human resolved preregistration drift policy in swarm/goal.md. Audit policy now applies the six-pivot-condition check. Applied human-verified OutlierMigrate Phase 1 PASS_OM_PHASE1_REPLICATED_AT_SCALE from experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z; migration_fraction=0.843165650406504, CI95=[0.8334349593495936, 0.8511432926829268], artifact_complete=true. Residual Migration Phase 0 passed the preregistered replication path at 2026-05-08T16:22:49Z with accuracy_drop=0.0 and CI95=[0.0, 0.0], but baseline accuracy was also 0.0; treat as a gate PASS with severe headroom limitation. SSM-State Lifecycle Phase 0 killed cleanly at 2026-05-08T17:17:13Z: artifact_complete=true, 0/36 Mamba layers passed the preregistered KS+2x median-drift rule, pass_fraction=0.0 < 0.5. Its diagnostic identified one plausible fresh positive-method pivot, so ssm_shape_codec_phase0 was inserted before lower-priority original entries. SSM Shape-Conditioned Codec Phase 0 killed cleanly at 2026-05-08T17:53:13Z: artifact_complete=true, mean relative NMSE reduction 0.07133119147037506 missed the preregistered 0.10 shelf despite CI95=[0.06882070525106689, 0.073901076081768] and non-worse positions. Diagnostic recommends stopping this branch rather than mining layer/position pockets. Cross-Layer Error theoretical gate killed cleanly at 2026-05-08T20:00:03Z: artifact_complete=true, predicted/measured ratios exceeded the >5.0 kill threshold at depths 1, 10, and 15. Diagnostic identifies damped_fp4_precision_allocator as the best fresh positive-method pivot candidate requiring new preregistration before any data. Residual Migration Phase 1 killed cleanly at 2026-05-08T21:20:03Z: artifact_complete=true, accuracy_drop=0.08333333333333333 with CI95=[0.0, 0.20833333333333334], exceeding the preregistered 0.015 kill threshold; all stratified ablations showed the same drop and headroom was LOW_BASELINE_HEADROOM. BLOCKED 2026-05-08T21:28:19Z on cross_model_validation_outlier_migrate because Qwen/Qwen3.6-35B-A3B requires Qwen3_5MoeForConditionalGeneration/qwen3_5_moe support absent from local vLLM 0.10.2; documented newer vLLM support requires a dependency upgrade with torch/triton blast radius. RESUMED 2026-05-08T21:44:47Z at git SHA ec74738f095a4f98995875082d78fd40e8c72259 after swarm/goal.md authorized a 10-hour no-upgrade work window: proceed with OutlierMigrate reframing, skip already-completed Phase 0 entries, add Kimi Linear to queue config only, and run partial Nemotron-3 cross-validation while deferring Qwen3.6/Kimi weights. OutlierMigrate partial Phase 2 Nemotron-3 validation completed at 2026-05-09T06:40:49Z with checker decision PARTIAL_PASS_OM_PHASE2_NEMOTRON3_ONLY_QWEN36_KIMI_DEFERRED; migration_fraction=0.820809591642925, CI95=[0.7865325261158594, 0.8544931149097815], artifact_complete=true, full_cross_validation_complete=false, Qwen3.6/Kimi deferred. Strict decomposition: set_leaving=0.533713200379867 CI95=[0.4674145299145299, 0.5999821937321937], within_set_rank_shuffle=0.26908238366571696 CI95=[0.23884140550807217, 0.2990562678062678]. Paper iteration now in progress."
 }

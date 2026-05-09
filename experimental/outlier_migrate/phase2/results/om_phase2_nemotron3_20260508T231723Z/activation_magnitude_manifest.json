@@ -1,0 +1,225 @@
+{
+  "artifact": "activation_magnitudes.jsonl.gz",
+  "artifact_sha256": "sha256:bc841b938a125f05649f84577c0ddb7ab287213a683892cb81ea6ca06296206d",
+  "capture_semantics": {
+    "decode_position_basis": "generated-token count after prompt; position 100 is the 100th generated token",
+    "eos_policy": "continue decoding until max_new_tokens so every preregistered position is observable",
+    "module": "transformer_layer_forward_output",
+    "token": "last generated token in manual greedy decode step",
+    "value": "absolute activation magnitude per output channel"
+  },
+  "created_at_utc": "2026-05-09T06:40:42Z",
+  "layer_count": 52,
+  "layer_names": [
+    "backbone.layers.0",
+    "backbone.layers.1",
+    "backbone.layers.2",
+    "backbone.layers.3",
+    "backbone.layers.4",
+    "backbone.layers.5",
+    "backbone.layers.6",
+    "backbone.layers.7",
+    "backbone.layers.8",
+    "backbone.layers.9",
+    "backbone.layers.10",
+    "backbone.layers.11",
+    "backbone.layers.12",
+    "backbone.layers.13",
+    "backbone.layers.14",
+    "backbone.layers.15",
+    "backbone.layers.16",
+    "backbone.layers.17",
+    "backbone.layers.18",
+    "backbone.layers.19",
+    "backbone.layers.20",
+    "backbone.layers.21",
+    "backbone.layers.22",
+    "backbone.layers.23",
+    "backbone.layers.24",
+    "backbone.layers.25",
+    "backbone.layers.26",
+    "backbone.layers.27",
+    "backbone.layers.28",
+    "backbone.layers.29",
+    "backbone.layers.30",
+    "backbone.layers.31",
+    "backbone.layers.32",
+    "backbone.layers.33",
+    "backbone.layers.34",
+    "backbone.layers.35",
+    "backbone.layers.36",
+    "backbone.layers.37",
+    "backbone.layers.38",
+    "backbone.layers.39",
+    "backbone.layers.40",
+    "backbone.layers.41",
+    "backbone.layers.42",
+    "backbone.layers.43",
+    "backbone.layers.44",
+    "backbone.layers.45",
+    "backbone.layers.46",
+    "backbone.layers.47",
+    "backbone.layers.48",
+    "backbone.layers.49",
+    "backbone.layers.50",
+    "backbone.layers.51"
+  ],
+  "layer_origin": "backbone.layers",
+  "positions": [
+    100,
+    500,
+    1000,
+    5000,
+    10000,
+    20000
+  ],
+  "prompt_events": [
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 57,
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 166,
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 140,
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 80,
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 100,
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 104,
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 146,
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 119,
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 119,
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 263,
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9
+    },
+    {
+      "first_eos_decode_position": 19281,
+      "input_token_count": 206,
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 131,
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 102,
+      "prompt_id": "opencompass_AIME2025_I_12",
+      "prompt_index": 12
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 151,
+      "prompt_id": "opencompass_AIME2025_I_13",
+      "prompt_index": 13
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 94,
+      "prompt_id": "opencompass_AIME2025_I_14",
+      "prompt_index": 14
+    },
+    {
+      "first_eos_decode_position": 111,
+      "input_token_count": 135,
+      "prompt_id": "opencompass_AIME2025_II_0",
+      "prompt_index": 15
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 65,
+      "prompt_id": "opencompass_AIME2025_II_1",
+      "prompt_index": 16
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 89,
+      "prompt_id": "opencompass_AIME2025_II_2",
+      "prompt_index": 17
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 209,
+      "prompt_id": "opencompass_AIME2025_II_3",
+      "prompt_index": 18
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 239,
+      "prompt_id": "opencompass_AIME2025_II_4",
+      "prompt_index": 19
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 228,
+      "prompt_id": "opencompass_AIME2025_II_5",
+      "prompt_index": 20
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 118,
+      "prompt_id": "opencompass_AIME2025_II_6",
+      "prompt_index": 21
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 277,
+      "prompt_id": "opencompass_AIME2025_II_7",
+      "prompt_index": 22
+    },
+    {
+      "first_eos_decode_position": null,
+      "input_token_count": 114,
+      "prompt_id": "opencompass_AIME2025_II_8",
+      "prompt_index": 23
+    }
+  ],
+  "row_count": 7488,
+  "schema_version": "om_phase2_partial_nemotron3_v1_activation_manifest",
+  "trace_count": 24
+}

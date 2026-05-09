@@ -1,0 +1,81 @@
+{
+  "artifacts": [
+    {
+      "bytes": 6053,
+      "path": "activation_magnitude_manifest.json",
+      "sha256": "sha256:6311aa7cb3a0949020923830dd374f50cddd78f897dad2470d519927ffe2087e"
+    },
+    {
+      "bytes": 41868735,
+      "path": "activation_magnitudes.jsonl.gz",
+      "sha256": "sha256:bc841b938a125f05649f84577c0ddb7ab287213a683892cb81ea6ca06296206d"
+    },
+    {
+      "bytes": 323,
+      "path": "bootstrap_ci.json",
+      "sha256": "sha256:566c6236342ef2c20e6b08320ab8a112909012f10610be3606d88800ea51619d"
+    },
+    {
+      "bytes": 1168,
+      "path": "command_metadata.json",
+      "sha256": "sha256:935cb9a09013fa2f9d89f001e14e34dea2e14270841b2949a3cdf699c1279580"
+    },
+    {
+      "bytes": 8352,
+      "path": "environment.json",
+      "sha256": "sha256:aa422afe3b0d3f9cef42cf22be1fe47e831c152b7ebe906ea82fd65bd5d33845"
+    },
+    {
+      "bytes": 1339,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:d8259856bcfb45bc7178b28d88eae4bb7904e9d171e2af00015ec8ee5598127c"
+    },
+    {
+      "bytes": 31884,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:2010a4d7c47f28bb804c5d13084c5f0b7f2e50d01d0c8eccec66c3f8faa70bc3"
+    },
+    {
+      "bytes": 27854,
+      "path": "metrics.json",
+      "sha256": "sha256:2894702b1b85dfcebf0046c5b367d69620db9728a40722021c9d6dc6cf12f932"
+    },
+    {
+      "bytes": 16977,
+      "path": "migration_decomposition.md",
+      "sha256": "sha256:29604daf5874d11bac7e28b348baf9b16c04572e2818c6abe81bc6970bc1c517"
+    },
+    {
+      "bytes": 11360,
+      "path": "model_provenance.json",
+      "sha256": "sha256:1a77bd4e7baf4bf362a3c5ec35a865a27fb3f71db0a8a93adb83047b49ea1329"
+    },
+    {
+      "bytes": 638,
+      "path": "phase1_reference.json",
+      "sha256": "sha256:f7eaa4ac0ef3563818475fb0e0fb74fa00bf2076bbb980d44bd38acb787e5c42"
+    },
+    {
+      "bytes": 16613,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:65f5c5ed175f2f391c3cb74bc1fdada654ff0c6f4f1bc5fe94d141031df2debe"
+    },
+    {
+      "bytes": 191,
+      "path": "random_seed.json",
+      "sha256": "sha256:75c2d0d6fa58640957ce281f1dec42a7780b82b356675d5026caf625eab04493"
+    },
+    {
+      "bytes": 960,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:b60adb888de56ae898902d8093cccf0574468215db03ec4f04e828af5f6a6b41"
+    },
+    {
+      "bytes": 1004,
+      "path": "validation_scope.json",
+      "sha256": "sha256:94e3382e14e6ce4278ea7eef934fcf5f2406667765c763d4d4db18182b6ce9d9"
+    }
+  ],
+  "created_at_utc": "2026-05-09T06:42:06Z",
+  "schema_version": "om_phase2_partial_nemotron3_v1_artifact_hashes"
+}

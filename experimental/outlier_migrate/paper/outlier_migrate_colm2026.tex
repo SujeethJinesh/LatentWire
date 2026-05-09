@@ -14,38 +14,47 @@
 \maketitle
 
 \begin{abstract}
-This draft reports the first two preregistered gates for OutlierMigrate, a
-candidate positive-method branch studying whether high-magnitude activation
-channels remain stationary during long decode. Phase 0 passes on
+This draft reports an observational measurement candidate for OutlierMigrate,
+studying whether high-magnitude activation channels remain stationary during
+long decode. It is not a camera-ready positive systems method: Phase 0 passes on
 Granite-4.0-H-Tiny: the fraction of top-1\% position-100 channels whose rank
 changes by more than two channel positions by decode position 10000 is
 0.8178385416666667 with bootstrap 95\% CI
 [0.797265625, 0.8368489583333334]. Phase 1 replicates the dynamic-outlier
 direction at larger scale on Granite-4.0-H-Small: the migration fraction is
 0.843165650406504 with bootstrap 95\% CI
-[0.8334349593495936, 0.8511432926829268]. This is a strong same-family
-observational gate for a positive-method branch, but it is not camera-ready
-and does not yet support cross-model or intervention claims. Cross-model
-validation and audit checks remain required before submission-level claims.
+[0.8334349593495936, 0.8511432926829268]. A partial Phase 2 cross-family check
+on \texttt{nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16} also passes:
+migration fraction 0.820809591642925 with bootstrap 95\% CI
+[0.7865325261158594, 0.8544931149097815]. This is evidence that the
+rank-migration surface is not limited to the measured Granite runs, but it is
+not full cross-validation: Qwen3.6 and Kimi Linear are deferred pending runtime
+compatibility. The missing migration-aware intervention and the deferred
+Qwen3.6/Kimi runs are blockers for any positive-method or systems-efficiency
+claim.
 \end{abstract}
 
 \section{Introduction}
 
-OutlierMigrate asks whether the channels carrying high-magnitude decode-time
-activations are fixed or whether they move during long reasoning traces. Static
+OutlierMigrate is currently scoped as an observational measurement study: it
+asks whether the channels carrying high-magnitude decode-time activations are
+fixed or whether they move during long reasoning traces. Static
 outliers would support static channel-protection recipes. Dynamic outliers
-would motivate migration-aware protection or routing methods, but only after
-validation shows that the effect is stable, useful, and not specific to one
-model family.
+could motivate migration-aware protection or routing methods, but this draft
+does not implement or validate such a method. That step requires intervention
+evidence showing the effect is stable, useful, and not specific to one model
+family.
 
 The current paper status is deliberately limited. Phase 0 is a screen on
 \texttt{ibm-granite/granite-4.0-h-tiny} with 12 deterministic AIME-2025
 reasoning traces. Phase 1 scales the same dynamic path to
 \texttt{ibm-granite/granite-4.0-h-small} with 24 deterministic traces and an
-extended decode-position grid. Together they support a replicated
-same-family dynamic-outlier observation under the preregistered metric. They
-do not support a camera-ready method claim, an end-to-end efficiency claim, or
-any cross-model claim.
+extended decode-position grid. A partial Phase 2 run applies the same
+measurement to Nemotron-3-Nano-30B-A3B-BF16 under the authorized no-upgrade
+window. Together they support replicated same-family measurement evidence and
+one partial cross-family check under the preregistered metric. They do not
+support a camera-ready final claim, a positive systems method, an end-to-end
+efficiency claim, or a completed Qwen3.6/Kimi Linear validation claim.
 
 \section{Related Work}
 
@@ -170,6 +179,25 @@ The activation artifact SHA is
 from
 \url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitude_manifest.json}.
 
+The partial Phase 2 result packet is
+\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z}.
+The checker output is
+\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/checker_result.json},
+the metrics file is
+\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/metrics.json},
+and artifact completeness is recorded in
+\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/artifact_check.json}.
+The model is
+\url{nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16} at snapshot commit
+\texttt{cbd3fa9f933d55ef16a84236559f4ee2a0526848}. The activation artifact
+SHA is
+\texttt{sha256:bc841b938a125f05649f84577c0ddb7ab287213a683892cb81ea6ca06296206d}
+from
+\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/activation_magnitude_manifest.json}.
+This packet is explicitly scoped as partial Nemotron-3-only validation:
+Qwen3.6 and Kimi Linear are deferred, and
+\texttt{full\_cross\_validation\_complete=false}.
+
 The preregistered dynamic-outlier pass rule in both gates requires migration
 fraction at least 0.05 and bootstrap CI lower bound greater than 0.05. Phase 1
 uses the same dynamic path because Phase 0 returned
@@ -227,8 +255,9 @@ strict decomposition values are from
 The original preregistered migration fraction intentionally conflates two
 effects: channels can leave the top-1\% set entirely, or they can remain in
 the set while shuffling rank by more than two positions. For static channel
-protection, the stricter set-membership readout is the more direct failure
-mode. A channel is counted as strict set-leaving only if it is in the
+protection, the stricter set-membership readout is the more direct
+post-hoc interpretability measure, not the preregistered gate criterion.
+A channel is counted as strict set-leaving only if it is in the
 per-trace, per-layer top-1\% set at decode position 100 and has final rank
 greater than the top-1\% boundary at decode position 10000 in Phase 0 or
 20000 in Phase 1. Under that definition, 0.634244791667 of Phase 0 base
@@ -266,6 +295,35 @@ was that the point estimate 0.81783854 is at least 0.05 and the CI lower bound
 was that the point estimate 0.84316565 is at least 0.05 and the CI lower bound
 0.83343496 is greater than 0.05.
 
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.42\linewidth}
+                >{\raggedright\arraybackslash}p{0.43\linewidth}}
+\toprule
+Quantity & Partial Phase 2 Nemotron-3 \\
+\midrule
+Decision & partial PASS; Qwen3.6/Kimi deferred \\
+Strict set-leaving fraction & 0.533713200380 \\
+Strict set-leaving 95\% CI & [0.467414529915, 0.599982193732] \\
+Within-set rank-shuffling fraction & 0.269082383666 \\
+Within-set rank-shuffling 95\% CI & [0.238841405508, 0.299056267806] \\
+Original preregistered migration fraction & 0.820809591642925 \\
+Original migration 95\% CI & [0.7865325261158594, 0.8544931149097815] \\
+Preregistered threshold & $\geq$0.05 and CI lower $>$0.05 \\
+Artifact complete & true \\
+Model & \url{nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16} \\
+Trace count & 24 \\
+Layer count / hidden size & 52 / 2688 \\
+Decode positions & 100, 500, 1000, 5000, 10000, 20000 \\
+\bottomrule
+\end{tabular}
+\caption{Partial Phase 2 cross-family validation. The checker-backed packet is
+\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z}.
+This is not full cross-validation because Qwen3.6 and Kimi Linear are deferred.}
+\label{tab:phase2-partial}
+\end{table}
+
 \section{Discussion}
 
 On this Granite rank-migration surface, the Phase 0 result weakens a fixed
@@ -279,13 +337,15 @@ establish dynamic hidden-state or activation-outlier behavior in vision Mamba.
 The new evidence here is that the dynamic regime also appears under a frozen
 metric in hybrid LLM long-reasoning traces.
 
-This is the strongest OutlierMigrate evidence so far and keeps the branch
-alive as a positive-method candidate. It does not establish a positive method
-yet, and it does not establish that
-migration-aware intervention improves model quality, latency, memory, or
-robustness. The highest-priority next gate is cross-model validation with
-audit checks that separate a reusable migration mechanism from a
-same-family artifact.
+This is the strongest OutlierMigrate measurement evidence so far, but it only
+supports an observational paper candidate. The Nemotron-3 packet reduces the
+risk that the signal is merely a Granite-family artifact, but it remains
+partial: Qwen3.6 and Kimi Linear validation are deferred, and a
+migration-aware intervention still has not been shown to improve model quality,
+latency, memory, or robustness. Those two gaps are blockers for reading this
+as a positive-method or systems paper. The highest-priority next gate is either
+completing the deferred cross-validation under a compatible runtime or turning
+the measured migration into a predeclared protection/update method.
 
 The theoretical mechanism is plausible but not yet empirically validated
 outside Granite. In channel-wise gated recurrence or linear-attention layers,
@@ -306,22 +366,22 @@ on Kimi Linear, Qwen3.6, or GLA variants.
 
 \section{Limitations}
 
-This draft is not camera-ready. It reports two positive gates in one model
-family. There is no cross-model validation, no strict cross-family
-falsification pair, no contamination audit, no independent seed repeat beyond
-the recorded bootstrap procedure, and no intervention showing that
-migration-aware handling improves an application metric. The result may also
-depend on the chosen decode positions, top-channel fraction, and rank-delta
-threshold, all of which were fixed before analysis and should not be retuned
-on these packets.
+This draft is not camera-ready final and should not be read as a positive
+systems method. It reports two passed observational measurement gates in one
+model family and one partial cross-family validation on Nemotron-3. It still
+lacks Qwen3.6 and Kimi Linear validation, contamination audit, independent seed
+repeat beyond the recorded bootstrap procedure, and any intervention showing
+that migration-aware handling improves an application metric. The missing
+intervention and deferred Qwen3.6/Kimi validation are explicit submission
+blockers for a positive-method claim. The result may also depend on the chosen
+decode positions, top-channel fraction, and rank-delta threshold, all of which
+were fixed before analysis and should not be retuned on these packets.
 
-The empirical measurement here is on Granite Mamba-2-style SSM hybrids. Phase
-2 cross-validation must extend the same logic to additional hybrid model
-families before the paper claims architectural generality. A Nemotron-3-only
-validation would be a partial cross-family check, not a complete substitute
-for broader validation on delta-rule linear-attention hybrids such as Qwen3.6
-and Kimi Linear. Generalization to RWKV-7, GLA-style systems, and other
-efficient-recurrence variants is not established by these results.
+The primary empirical measurement here is on Granite Mamba-2-style SSM
+hybrids. Nemotron-3 provides one additional hybrid family check, but it is not
+a complete substitute for validation on delta-rule linear-attention hybrids
+such as Qwen3.6 and Kimi Linear. Generalization to RWKV-7, GLA-style systems,
+and other efficient-recurrence variants is not established by these results.
 
 \section{Reproducibility Statement}
 
@@ -349,15 +409,28 @@ experimental/outlier_migrate/phase1/run_om_phase1.py
 \end{verbatim}
 
 The checker decisions and exact numbers in this draft are taken from the two
-result directories above.
+Granite result directories above and the partial Phase 2 directory
+\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z}.
+The OutlierMigrate runners emit the artifact-checked metric file
+\texttt{metrics.json}; they do not emit a separate
+\texttt{profiler\_metrics.json}.
+The recorded Phase 2 command was:
+
+\begin{verbatim}
+experimental/outlier_migrate/phase2/run_cross_model.py \
+  --partial-nemotron3-only \
+  --run-id om_phase2_nemotron3_20260508T231723Z \
+  --batch-size 4 --dtype bfloat16 --device auto
+\end{verbatim}
 
 \section{Ethics Statement}
 
-This is an activation-analysis systems study on benchmark prompts. The current
-artifact does not make deployment, user-data, safety, or capability-improvement
-claims. The main ethical risk is overclaiming same-family Phase 0 and Phase 1
-evidence as a validated cross-model positive method; this draft explicitly
-rejects that interpretation until cross-model validation and audits pass.
+This is an activation-analysis measurement study on benchmark prompts. The
+current artifact does not make deployment, user-data, safety, systems-efficiency,
+or capability-improvement claims. The main ethical risk is overclaiming
+same-family Phase 0 and Phase 1 evidence, plus the partial Nemotron-3 packet,
+as a validated cross-model positive method; this draft explicitly rejects that
+interpretation until deferred validation, audits, and an intervention pass.
 
 \begin{thebibliography}{16}
 

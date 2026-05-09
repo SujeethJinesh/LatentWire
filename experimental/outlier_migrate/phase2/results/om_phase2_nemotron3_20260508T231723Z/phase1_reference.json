@@ -1,0 +1,13 @@
+{
+  "created_at_utc": "2026-05-08T23:17:35Z",
+  "phase1_artifact_check_sha256": "sha256:7dbcdbc0dc9c7ba1fcab6969e86e59a0c8527adf9880193f67de7ece12d72550",
+  "phase1_bootstrap_ci95": {
+    "ci95_high": 0.8511432926829268,
+    "ci95_low": 0.8334349593495936
+  },
+  "phase1_decision": "PASS_OM_PHASE1_REPLICATED_AT_SCALE",
+  "phase1_metrics_sha256": "sha256:539c6d43f5034b26f38f517af6809dbcf669f837ccccc62606c849f9515c78e3",
+  "phase1_migration_fraction": 0.843165650406504,
+  "phase1_run_dir": "experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z",
+  "schema_version": "om_phase2_partial_nemotron3_v1_phase1_reference"
+}

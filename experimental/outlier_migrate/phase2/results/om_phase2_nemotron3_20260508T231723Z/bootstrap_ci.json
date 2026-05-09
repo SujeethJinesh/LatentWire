@@ -1,0 +1,11 @@
+{
+  "bootstrap_ci95": {
+    "ci95_high": 0.8544931149097815,
+    "ci95_low": 0.7865325261158594
+  },
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260508,
+  "metric_name": "outlier_rank_migration_fraction",
+  "migration_fraction": 0.820809591642925,
+  "schema_version": "om_phase2_partial_nemotron3_v1_bootstrap_ci"
+}

@@ -1,0 +1,410 @@
+{
+  "artifact_complete": true,
+  "bootstrap_ci95": {
+    "ci95_high": 0.8544931149097815,
+    "ci95_low": 0.7865325261158594
+  },
+  "decision": "PARTIAL_PASS_OM_PHASE2_NEMOTRON3_ONLY_QWEN36_KIMI_DEFERRED",
+  "deferred_models": [
+    "Qwen/Qwen3.6-35B-A3B",
+    "moonshotai/Kimi-Linear-48B-A3B-Instruct"
+  ],
+  "full_cross_validation_complete": false,
+  "layer_metrics": [
+    {
+      "layer_index": 0,
+      "migration_fraction_mean": 0.6558641975308642,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 1,
+      "migration_fraction_mean": 0.7114197530864197,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 2,
+      "migration_fraction_mean": 0.7638888888888888,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 3,
+      "migration_fraction_mean": 0.7623456790123456,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 4,
+      "migration_fraction_mean": 0.7854938271604938,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 5,
+      "migration_fraction_mean": 0.8194444444444444,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 6,
+      "migration_fraction_mean": 0.8657407407407407,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 7,
+      "migration_fraction_mean": 0.8425925925925926,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 8,
+      "migration_fraction_mean": 0.8487654320987654,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 9,
+      "migration_fraction_mean": 0.8580246913580246,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 10,
+      "migration_fraction_mean": 0.845679012345679,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 11,
+      "migration_fraction_mean": 0.8395061728395061,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 12,
+      "migration_fraction_mean": 0.8626543209876543,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 13,
+      "migration_fraction_mean": 0.8549382716049383,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 14,
+      "migration_fraction_mean": 0.845679012345679,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 15,
+      "migration_fraction_mean": 0.8641975308641975,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 16,
+      "migration_fraction_mean": 0.8873456790123456,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 17,
+      "migration_fraction_mean": 0.8888888888888888,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 18,
+      "migration_fraction_mean": 0.8966049382716049,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 19,
+      "migration_fraction_mean": 0.875,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 20,
+      "migration_fraction_mean": 0.8796296296296297,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 21,
+      "migration_fraction_mean": 0.8780864197530864,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 22,
+      "migration_fraction_mean": 0.875,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 23,
+      "migration_fraction_mean": 0.8672839506172839,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 24,
+      "migration_fraction_mean": 0.845679012345679,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 25,
+      "migration_fraction_mean": 0.8580246913580246,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 26,
+      "migration_fraction_mean": 0.8425925925925926,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 27,
+      "migration_fraction_mean": 0.8240740740740741,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 28,
+      "migration_fraction_mean": 0.8348765432098765,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 29,
+      "migration_fraction_mean": 0.8256172839506173,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 30,
+      "migration_fraction_mean": 0.8148148148148148,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 31,
+      "migration_fraction_mean": 0.808641975308642,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 32,
+      "migration_fraction_mean": 0.7947530864197531,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 33,
+      "migration_fraction_mean": 0.8117283950617283,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 34,
+      "migration_fraction_mean": 0.7700617283950617,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 35,
+      "migration_fraction_mean": 0.7824074074074074,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 36,
+      "migration_fraction_mean": 0.7716049382716049,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 37,
+      "migration_fraction_mean": 0.787037037037037,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 38,
+      "migration_fraction_mean": 0.7777777777777778,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 39,
+      "migration_fraction_mean": 0.7762345679012346,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 40,
+      "migration_fraction_mean": 0.7885802469135802,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 41,
+      "migration_fraction_mean": 0.7716049382716049,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 42,
+      "migration_fraction_mean": 0.7839506172839507,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 43,
+      "migration_fraction_mean": 0.7993827160493827,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 44,
+      "migration_fraction_mean": 0.8348765432098766,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 45,
+      "migration_fraction_mean": 0.8055555555555556,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 46,
+      "migration_fraction_mean": 0.816358024691358,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 47,
+      "migration_fraction_mean": 0.8240740740740741,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 48,
+      "migration_fraction_mean": 0.7993827160493827,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 49,
+      "migration_fraction_mean": 0.8070987654320988,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 50,
+      "migration_fraction_mean": 0.8271604938271605,
+      "trace_count": 24
+    },
+    {
+      "layer_index": 51,
+      "migration_fraction_mean": 0.8240740740740741,
+      "trace_count": 24
+    }
+  ],
+  "migration_fraction": 0.820809591642925,
+  "reasons": [
+    "partial Nemotron-3 transfer: point=0.82080959 >= 0.05 and ci_low=0.78653253 > 0.05; Qwen3.6/Kimi validation deferred"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z",
+  "thresholds": {
+    "bootstrap_ci": 0.95,
+    "bootstrap_samples": 1000,
+    "migration_fraction_threshold": 0.05,
+    "rank_delta_strictly_greater_than": 2,
+    "top_channel_fraction": 0.01
+  },
+  "trace_metrics": [
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7962962962962963,
+      "prompt_index": 0
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7407407407407407,
+      "prompt_index": 1
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.915954415954416,
+      "prompt_index": 2
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9002849002849003,
+      "prompt_index": 3
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7564102564102564,
+      "prompt_index": 4
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9180911680911681,
+      "prompt_index": 5
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7307692307692307,
+      "prompt_index": 6
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9145299145299145,
+      "prompt_index": 7
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9458689458689459,
+      "prompt_index": 8
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7236467236467237,
+      "prompt_index": 9
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9109686609686609,
+      "prompt_index": 10
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.73005698005698,
+      "prompt_index": 11
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7386039886039886,
+      "prompt_index": 12
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7414529914529915,
+      "prompt_index": 13
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7279202279202279,
+      "prompt_index": 14
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.8660968660968661,
+      "prompt_index": 15
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9266381766381766,
+      "prompt_index": 16
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9294871794871795,
+      "prompt_index": 17
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7421652421652422,
+      "prompt_index": 18
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7443019943019943,
+      "prompt_index": 19
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7414529914529915,
+      "prompt_index": 20
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9045584045584045,
+      "prompt_index": 21
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.7193732193732194,
+      "prompt_index": 22
+    },
+    {
+      "layer_count": 52,
+      "migration_fraction": 0.9337606837606838,
+      "prompt_index": 23
+    }
+  ],
+  "validation_scope": "partial_nemotron3_only_authorized_window"
+}

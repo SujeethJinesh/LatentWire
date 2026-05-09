@@ -1,0 +1,32 @@
+{
+  "artifact_complete": true,
+  "decision": "PARTIAL_PASS_OM_PHASE2_NEMOTRON3_ONLY_QWEN36_KIMI_DEFERRED",
+  "deferred_models": [
+    "Qwen/Qwen3.6-35B-A3B",
+    "moonshotai/Kimi-Linear-48B-A3B-Instruct"
+  ],
+  "full_cross_validation_complete": false,
+  "reasons": [
+    "partial Nemotron-3 transfer: point=0.82080959 >= 0.05 and ci_low=0.78653253 > 0.05; Qwen3.6/Kimi validation deferred"
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "validation_scope.json",
+    "phase1_reference.json",
+    "activation_magnitude_manifest.json",
+    "activation_magnitudes.jsonl.gz",
+    "metrics.json",
+    "bootstrap_ci.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z",
+  "schema_version": "om_phase2_partial_nemotron3_v1_artifact_check",
+  "validation_scope": "partial_nemotron3_only_authorized_window"
+}

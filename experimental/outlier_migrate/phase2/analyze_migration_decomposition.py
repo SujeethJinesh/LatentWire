@@ -20,11 +20,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from experimental.outlier_migrate.phase1 import check_om_phase1 as phase1_checker
+from experimental.outlier_migrate.phase2 import check_cross_model as phase2_checker
 from experimental.shared import check_phase0_gate as phase0_checker
 
 
 DEFAULT_PHASE0_RUN = ROOT / "experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z"
 DEFAULT_PHASE1_RUN = ROOT / "experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z"
+DEFAULT_PHASE2_RUN = ROOT / "experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z"
 BOOTSTRAP_SAMPLES = 1000
 BOOTSTRAP_SEED = 20260508
 
@@ -74,6 +76,12 @@ def decompose(run_dir: Path, *, phase: int) -> dict[str, Any]:
         expected_original = expected_original_payload["migration_fraction"]
         expected_original_ci = expected_original_payload["bootstrap_ci95"]
         trace_count = phase1_checker.TRACE_COUNT
+    elif phase == 2:
+        positions = phase2_checker.POSITIONS
+        expected_original_payload = load_json(run_dir / "metrics.json")
+        expected_original = expected_original_payload["migration_fraction"]
+        expected_original_ci = expected_original_payload["bootstrap_ci95"]
+        trace_count = phase2_checker.TRACE_COUNT
     else:
         raise ValueError(f"unsupported phase: {phase}")
 
@@ -235,9 +243,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phase0-run-dir", type=Path, default=DEFAULT_PHASE0_RUN)
     parser.add_argument("--phase1-run-dir", type=Path, default=DEFAULT_PHASE1_RUN)
+    parser.add_argument("--phase2-run-dir", type=Path, default=DEFAULT_PHASE2_RUN)
     args = parser.parse_args(argv)
 
-    for phase, run_dir in [(0, args.phase0_run_dir), (1, args.phase1_run_dir)]:
+    for phase, run_dir in [(0, args.phase0_run_dir), (1, args.phase1_run_dir), (2, args.phase2_run_dir)]:
+        if not run_dir.exists():
+            continue
         payload = decompose(run_dir.resolve(), phase=phase)
         write_report(run_dir.resolve(), payload)
         print(
