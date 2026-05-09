@@ -298,3 +298,142 @@ Context: Swarm is BLOCKED on Phase 2 cross-model validation requiring Qwen3.6 (v
 ### Reporting during this window
 
 Write swarm/progress_<date>_<hour>.md every 2 hours (denser than the usual 4-hour cadence) so the human has clear visibility on landing. Each progress note must include: what completed, what's currently running, any concerns, cumulative gpu_hours_used, and the camera-ready-candidate status of every alive paper.
+
+## 15-20 hour authorized work window — May 8/9 2026
+
+Context: Swarm is RUNNING. Cross_model_validation_outlier_migrate Nemotron-3 partial run is in flight. Human is unreachable for 15-20 hours. Portfolio is now a 2-paper bet: OutlierMigrate (positive-method, awaiting Phase 2) and ThoughtFlow-FP8 (falsification, paper-ready). Five branches killed cleanly via preregistration gates. One branch (Decode Microkernel) infra-blocked, deferred. This window supersedes the 10-hour authorized window from May 8.
+
+### Authorized work — priority order
+
+1. **Drive cross_model_validation_outlier_migrate Nemotron-3 partial run to completion**:
+   - Let runner finish all decode positions
+   - Run checker
+   - Apply PASS/KILL/AMBIGUOUS decision per the existing preregistration; do not invent new decision rules
+   - Commit and push the result packet, checker output, and decision string
+   - Update swarm/state.json with completion
+
+2. **Branch on the Phase 2 outcome** (handle all four outcomes without human input):
+
+   **2a. If Phase 2 PASSES**:
+   - Spawn paper iteration loop on OutlierMigrate
+   - Update related work, results, discussion sections with Nemotron-3 numbers
+   - Add the QMamba (arXiv 2501.13624), OuroMamba (arXiv 2503.10959), MambaQuant (arXiv 2501.13484) citations and reframing per the previous window's instructions if not already present
+   - Write cross-validation section honestly: Nemotron-3 confirms; Qwen3.6 and Kimi Linear deferred pending vLLM upgrade
+   - Run 3 committee review rounds with the standard 3-member committee (COLM area chair, MLSys reviewer, adversarial reviewer)
+   - Iterate up to 3 review->fix cycles per round
+   - Mark as camera-ready-candidate (NOT camera-ready-final) when all committee scores >= 7/10
+
+   **2b. If Phase 2 KILLS** (Nemotron-3 shows <5% migration):
+   - Write experimental/outlier_migrate/phase2/diagnostic.md analyzing why
+   - Specifically address: (i) is this a Granite-family architectural property rather than a hybrid-reasoner property, (ii) is the Nemotron-3 architecture sufficiently different (Mamba-2 + 6 GQA + 128-expert MoE vs Granite's 9:1 Mamba-2:GQA) to explain the divergence, (iii) what extended within-Granite work could recover scientific value
+   - Do NOT claim cross-architectural validation in any paper update
+   - Demote OutlierMigrate paper framing from "hybrid reasoner property" to "Granite-family characterization with cross-architectural validation as future work"
+   - Update limitations section to be explicit about scope
+   - Run committee review on the demoted draft
+   - Submit-track decision is "Granite-family characterization paper" — still publishable but more modest
+
+   **2c. If Phase 2 is AMBIGUOUS** (1-5% migration on Nemotron-3):
+   - This is preregistered as a kill of cross-validation. Apply the kill decision.
+   - Same actions as 2b but with explicit acknowledgment that the result is ambiguous, not negative
+   - Frame paper as "strong on Granite family, intermediate on Nemotron-3, deferred on Qwen3.6/Kimi"
+
+   **2d. If Phase 2 hits infrastructure failure**:
+   - Apply standard infra-fail handling (max 3 retries with config changes, no vLLM upgrade)
+   - If unrecoverable, document in swarm/blocked_phase2_nemotron_infra.md
+   - Continue to authorized work item 3 with OutlierMigrate as Granite-only
+
+3. **Within-set vs set-membership migration disambiguation**:
+   On the existing Phase 0 and Phase 1 result packets (data already collected; no new experiments), produce a post-hoc analysis distinguishing:
+   - (a) fraction of top-1% channels at position 100 that have LEFT the top-1% set entirely by position 10000/20000 (set-membership migration)
+   - (b) fraction of top-1% channels that remained IN the set but moved by more than 2 positions in rank (within-set rank shuffling)
+   This is data-only post-processing, no new model runs. Output: experimental/outlier_migrate/phase{0,1}/results/<run_id>/migration_decomposition.md
+   Update OutlierMigrate paper to report both numbers separately. Reviewer-anticipated objection neutralized.
+
+4. **OutlierMigrate related-work modernization**:
+   Ensure the OutlierMigrate paper draft cites the following with correct framing (do NOT claim "first to find dynamic outliers in Mamba" — vision Mamba literature established this):
+   - LLM.int8 (arXiv 2208.07339) - origin of static channel outlier protection
+   - SmoothQuant (arXiv 2211.10438) - canonical static-protection method
+   - AWQ (arXiv 2306.00978) - 1% salient channel protection paradigm
+   - Mamba-PTQ (arXiv 2407.12397) - first Mamba LLM PTQ characterization
+   - Quamba (arXiv 2410.13229) - language Mamba PTQ baseline
+   - MambaQuant (arXiv 2501.13484) - PScan amplification mechanism
+   - QMamba (arXiv 2501.13624) - first vision Mamba dynamic outlier identification
+   - OuroMamba (arXiv 2503.10959) - vision Mamba adaptive online outlier list
+   - Kimi Linear (arXiv 2510.26692) - architectural mechanism for migration via channel-wise gating
+   Frame contribution as: vision Mamba literature established dynamics, language Mamba literature assumed static, we test which regime applies to language hybrid reasoners and find dynamic at quantified rates.
+
+5. **ThoughtFlow paper polish**:
+   Run additional committee review rounds if scores not yet >=7/10 across all three reviewers. Iterate. Do NOT mark camera-ready-final (human must do final framing review on landing). The paper is currently at ~90-93% readiness; aim for 95%+ via committee polish.
+
+6. **Kill manifest completion**:
+   For each of the 5 killed branches (HybridKernel, Residual Migration, SSM-State Lifecycle, SSM Shape Codec, Cross-Layer Error), verify the KILLED_*/README.md exists and contains:
+   - Decision string
+   - Measured value vs preregistered threshold
+   - Artifact SHAs from the result packet
+   - Date of kill
+   - One paragraph explaining why the result is not publishable as a negative result (this is for the human's reference, not for a paper)
+   Any missing manifest fields, fill in from the result packets. Documentation only, zero scientific judgment required.
+
+7. **HANDOFF.md status table refresh**:
+   Update experimental/HANDOFF.md status table to reflect current portfolio reality (5 kills, 1 infra-block, 2 alive, 1 in-flight). Status updates only, no operating-rule changes.
+
+8. **Draft swarm/final_report.md**:
+   Pre-draft the final report so the human can read it as the executive summary on landing. Include:
+   - Portfolio status: alive papers, killed branches with kill manifests linked, infra-blocked branches
+   - Phase 2 outcome (whichever of 2a/2b/2c/2d landed) with measured numbers
+   - Camera-ready-candidate status of each alive paper
+   - Committee review scores
+   - GPU hours used and unused
+   - Workshop submission readiness assessment (1 paper / 2 papers / partial)
+   - Explicit "human must decide on landing" list with prioritized actions
+   - The exact commit SHAs for each camera-ready-candidate
+   - Reproducibility statement scaffold for each alive paper
+
+9. **Presubmission checklist drafting** (paper-iteration adjacent, no scientific decisions):
+   For each alive paper, create paper/presubmission_checklist.md with:
+   - Anonymization audit (author names, GitHub URLs, acknowledgments)
+   - Page limit check (vs likely COLM workshop limit of 4-8 pages)
+   - BibTeX entry verification (every cited paper exists, abstract roughly matches what we claim)
+   - Reproducibility Statement exact wording
+   - Limitations section completeness check
+   - Ethics Statement applicability check
+   - Tables: booktabs format, no raster screenshots
+   - Figures: PDF format, not raster
+   These are checklists, not changes. Human applies the checklist on landing.
+
+### Forbidden during this window — hard rules
+
+- Upgrading vLLM (would break validated torch/triton/CUDA stack)
+- Downloading Qwen3.6 or Kimi Linear weights (cannot be loaded with current vLLM)
+- Marking any paper "camera-ready final" (candidate is the ceiling without human review)
+- Modifying any preregistration file (drift policy unchanged)
+- Authoring new pivot preregistrations from any of the 5 kills (the portfolio has absorbed enough pivot complexity; further pivots in this window are forbidden)
+- Acting on Decode Microkernel beyond the existing infra-block status
+- Making decisions about HybridFPGA collaboration or any Tambe lab outreach
+- Adjusting OutlierMigrate's preregistered thresholds, decision rules, position grids, or metrics in response to observed data
+- Re-running any killed Phase 0/1 with different seeds or configurations
+- Cherry-picking Phase 2 result subsets if Nemotron-3 produces partial pass-partial-fail across decode positions
+
+### Window-specific stop rules — additive to existing
+
+- gpu_hours_used would exceed 60 cumulative within this window (preserve reserve for after human returns and for cross-validation completion if/when Qwen3.6 becomes runnable)
+- Any push fails twice in a row
+- Disk free on /workspace drops below 50GB
+- An audit subagent fires for any reason
+- A committee review identifies p-hacking, scope creep, or methodology drift
+- Any subagent proposes to amend OutlierMigrate preregistration
+
+If any stop condition fires: write swarm/blocked_<reason>_<date>.md, transition state.json to BLOCKED, push, pause until human resumes.
+
+### Reporting cadence
+
+Write swarm/progress_<date>_<hour>.md every 2 hours. Each progress note must include:
+- Current entry / what completed since last note
+- Phase 2 status (most recent decode position reached, ETA to completion)
+- Cumulative gpu_hours_used (delta since last note)
+- Camera-ready-candidate status of each alive paper
+- Any concerns or near-stop-condition events
+- Next 2-hour expected work
+- Disk free, GPU temperature, GPU utilization
+
+Write swarm/final_report.md at the end of the window OR when goal.md achieved condition is met OR when any stop rule fires.
