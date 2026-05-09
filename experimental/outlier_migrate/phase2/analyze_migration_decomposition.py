@@ -64,11 +64,15 @@ def bootstrap_ci(values: list[float], *, samples: int = BOOTSTRAP_SAMPLES, seed:
 def decompose(run_dir: Path, *, phase: int) -> dict[str, Any]:
     if phase == 0:
         positions = phase0_checker.POSITIONS
-        expected_original = load_json(run_dir / "metrics.json")["migration_fraction"]
+        expected_original_payload = load_json(run_dir / "metrics.json")
+        expected_original = expected_original_payload["migration_fraction"]
+        expected_original_ci = expected_original_payload["bootstrap_ci95"]
         trace_count = phase0_checker.TRACE_COUNT
     elif phase == 1:
         positions = phase1_checker.POSITIONS
-        expected_original = load_json(run_dir / "metrics.json")["migration_fraction"]
+        expected_original_payload = load_json(run_dir / "metrics.json")
+        expected_original = expected_original_payload["migration_fraction"]
+        expected_original_ci = expected_original_payload["bootstrap_ci95"]
         trace_count = phase1_checker.TRACE_COUNT
     else:
         raise ValueError(f"unsupported phase: {phase}")
@@ -84,94 +88,66 @@ def decompose(run_dir: Path, *, phase: int) -> dict[str, Any]:
     final_position = positions[-1]
     top_fraction = float(phase1_checker.THRESHOLDS["top_channel_fraction"])
     rank_delta = int(phase1_checker.THRESHOLDS["rank_delta_strictly_greater_than"])
-    layer_indices = sorted({layer for trace in by_trace_layer.values() for layer in trace})
-
-    selected_by_layer: dict[int, list[int]] = {}
-    top_boundary_by_layer: dict[int, int] = {}
-    for layer_index in layer_indices:
-        base_vectors = [
-            by_trace_layer[prompt_index][layer_index][base_position]
-            for prompt_index in sorted(by_trace_layer)
-            if layer_index in by_trace_layer[prompt_index]
-        ]
-        channel_count = len(base_vectors[0])
-        top_k = max(1, math.ceil(channel_count * top_fraction))
-        top_boundary = top_k - 1
-        mean_magnitudes = [
-            mean(float(vector[channel]) for vector in base_vectors) for channel in range(channel_count)
-        ]
-        selected_by_layer[layer_index] = sorted(
-            range(channel_count), key=lambda channel: (-mean_magnitudes[channel], channel)
-        )[:top_k]
-        top_boundary_by_layer[layer_index] = top_boundary
-
     trace_metrics: list[dict[str, Any]] = []
     layer_metrics: dict[int, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
     total_selected = 0
     total_left = 0
     total_within = 0
-    total_original = 0
 
     for prompt_index in sorted(by_trace_layer):
         trace_left: list[float] = []
         trace_within: list[float] = []
-        trace_original: list[float] = []
         for layer_index in sorted(by_trace_layer[prompt_index]):
             base = by_trace_layer[prompt_index][layer_index][base_position]
             final = by_trace_layer[prompt_index][layer_index][final_position]
+            channel_count = len(base)
+            top_k = max(1, math.ceil(channel_count * top_fraction))
+            top_boundary = top_k - 1
             base_ranks = ranks_desc(base)
             final_ranks = ranks_desc(final)
-            selected = selected_by_layer[layer_index]
-            boundary = top_boundary_by_layer[layer_index]
+            selected = [channel for channel, rank in enumerate(base_ranks) if rank <= top_boundary]
             left = 0
             within = 0
-            original = 0
             for channel in selected:
                 delta = abs(final_ranks[channel] - base_ranks[channel])
-                left_set = final_ranks[channel] > boundary
+                left_set = final_ranks[channel] > top_boundary
                 if left_set:
                     left += 1
                 elif delta > rank_delta:
                     within += 1
-                if delta > rank_delta:
-                    original += 1
             denom = len(selected)
             total_selected += denom
             total_left += left
             total_within += within
-            total_original += original
             left_fraction = left / denom
             within_fraction = within / denom
-            original_fraction = original / denom
             trace_left.append(left_fraction)
             trace_within.append(within_fraction)
-            trace_original.append(original_fraction)
             layer_metrics[layer_index]["left_set_fraction"].append(left_fraction)
             layer_metrics[layer_index]["within_set_rank_shuffle_fraction"].append(within_fraction)
-            layer_metrics[layer_index]["original_migration_fraction"].append(original_fraction)
         trace_metrics.append(
             {
                 "prompt_index": prompt_index,
                 "left_set_fraction": float(mean(trace_left)),
                 "within_set_rank_shuffle_fraction": float(mean(trace_within)),
-                "original_migration_fraction": float(mean(trace_original)),
                 "layer_count": len(trace_left),
             }
         )
 
     trace_left_values = [float(row["left_set_fraction"]) for row in trace_metrics]
     trace_within_values = [float(row["within_set_rank_shuffle_fraction"]) for row in trace_metrics]
-    trace_original_values = [float(row["original_migration_fraction"]) for row in trace_metrics]
     aggregate = {
         "left_set_fraction": float(mean(trace_left_values)),
         "left_set_ci95": bootstrap_ci(trace_left_values),
         "within_set_rank_shuffle_fraction": float(mean(trace_within_values)),
         "within_set_rank_shuffle_ci95": bootstrap_ci(trace_within_values),
-        "original_migration_fraction": float(mean(trace_original_values)),
-        "original_migration_ci95": bootstrap_ci(trace_original_values),
+        "original_migration_fraction": float(expected_original),
+        "original_migration_ci95": {
+            "ci95_low": float(expected_original_ci["ci95_low"]),
+            "ci95_high": float(expected_original_ci["ci95_high"]),
+        },
         "raw_count_left_set_fraction": total_left / total_selected,
         "raw_count_within_set_rank_shuffle_fraction": total_within / total_selected,
-        "raw_count_original_migration_fraction": total_original / total_selected,
     }
     return {
         "phase": phase,
@@ -181,17 +157,18 @@ def decompose(run_dir: Path, *, phase: int) -> dict[str, Any]:
         "base_position": base_position,
         "final_position": final_position,
         "top_channel_fraction": top_fraction,
+        "strict_set_membership_selection": "per prompt and layer, channels with position-100 rank <= ceil(channel_count * 0.01) - 1",
         "top_boundary_semantics": "zero-based rank <= ceil(channel_count * 0.01) - 1",
         "rank_delta_strictly_greater_than": rank_delta,
         "aggregate": aggregate,
         "original_metrics_json_migration_fraction": expected_original,
+        "original_metrics_json_ci95": expected_original_ci,
         "trace_metrics": trace_metrics,
         "layer_metrics": [
             {
                 "layer_index": layer_index,
                 "left_set_fraction": float(mean(values["left_set_fraction"])),
                 "within_set_rank_shuffle_fraction": float(mean(values["within_set_rank_shuffle_fraction"])),
-                "original_migration_fraction": float(mean(values["original_migration_fraction"])),
                 "trace_count": len(values["left_set_fraction"]),
             }
             for layer_index, values in sorted(layer_metrics.items())
@@ -210,10 +187,11 @@ def write_report(run_dir: Path, payload: dict[str, Any]) -> None:
         f"- Base decode position: {payload['base_position']}",
         f"- Final decode position: {payload['final_position']}",
         f"- Trace count: {payload['observed_trace_count']}",
-        f"- Top-channel set: top 1% by mean magnitude at decode position {payload['base_position']} per layer",
-        f"- Strict set-leaving definition: a base top-1% channel has final rank > `ceil(channel_count * 0.01) - 1`.",
+        f"- Strict top-channel set: per prompt and layer, channels with rank <= `ceil(channel_count * 0.01) - 1` at decode position {payload['base_position']}.",
+        f"- Strict set-leaving definition: a strict base top-1% channel has final rank > `ceil(channel_count * 0.01) - 1`.",
         "- Within-set rank shuffling definition: a base top-1% channel remains in the final top-1% set but moves by more than 2 rank positions.",
-        "- Original migration definition: a base top-1% channel moves by more than 2 rank positions, regardless of whether it leaves the set.",
+        "- Original migration definition: the preregistered checker metric, which selects top-1% channels per layer by mean magnitude at position 100 across traces and counts movement by more than 2 rank positions.",
+        "- The first two rows are post-hoc interpretability readouts using the strict set-membership definition; the third row is the unchanged gate metric from `metrics.json`.",
         "",
         "## Aggregate Readout",
         "",
@@ -236,21 +214,18 @@ def write_report(run_dir: Path, payload: dict[str, Any]) -> None:
         "",
         "## Consistency Check",
         "",
-        (
-            f"- `metrics.json` original migration fraction: "
-            f"{payload['original_metrics_json_migration_fraction']:.12f}"
-        ),
-        f"- Recomputed original migration fraction: {aggregate['original_migration_fraction']:.12f}",
+        f"- `metrics.json` original migration fraction: {payload['original_metrics_json_migration_fraction']:.12f}",
+        f"- Reported original migration fraction: {aggregate['original_migration_fraction']:.12f}",
         "",
         "## Per-Trace Readout",
         "",
-        "| Prompt index | Strict set-leaving | Within-set rank shuffling | Original migration |",
-        "| ---: | ---: | ---: | ---: |",
+        "| Prompt index | Strict set-leaving | Within-set rank shuffling |",
+        "| ---: | ---: | ---: |",
     ]
     for row in payload["trace_metrics"]:
         lines.append(
             f"| {row['prompt_index']} | {row['left_set_fraction']:.12f} | "
-            f"{row['within_set_rank_shuffle_fraction']:.12f} | {row['original_migration_fraction']:.12f} |"
+            f"{row['within_set_rank_shuffle_fraction']:.12f} |"
         )
     lines.extend(["", "## Machine-Readable Payload", "", "```json", json.dumps(payload, indent=2, sort_keys=True), "```", ""])
     (run_dir / "migration_decomposition.md").write_text("\n".join(lines), encoding="utf-8")

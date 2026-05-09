@@ -106,3 +106,9 @@ No paper draft is opened for this killed branch. The diagnostic in
 `experimental/cross_layer_error/diagnostic.md` records positive-method pivot
 hypotheses that would require fresh preregistration before any new data is
 inspected.
+
+Why this is not a negative-result paper: the artifacted bound is too loose
+under its own preregistered test, and the packet mainly documents a failed
+calibration of one theoretical form. It does not provide a useful allocation
+method, a tight alternative bound, or enough validated generality to support a
+standalone negative-result submission.

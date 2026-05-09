@@ -32,8 +32,12 @@ long reasoning traces under preregistered Phase 0/1 gates.
 | Gate item | Phase 0 exact value | Phase 1 exact value | Decision relevance |
 |---|---:|---:|---|
 | Checker decision | `PASS_OM_PHASE0_DECODE_TIME_MIGRATION` | `PASS_OM_PHASE1_REPLICATED_AT_SCALE` | dynamic-outlier pass replicated at scale |
-| Migration fraction | 0.8178385416666667 | 0.843165650406504 | clears threshold >= 0.05 |
-| Bootstrap 95% CI | [0.797265625, 0.8368489583333334] | [0.8334349593495936, 0.8511432926829268] | CI lower > 0.05 |
+| Strict set-leaving fraction | 0.634244791667 | 0.566234756098 | base top-1% channels leaving the top-1% set entirely |
+| Strict set-leaving 95% CI | [0.605208333333, 0.664192708333] | [0.550076219512, 0.581707317073] | post-hoc interpretability readout |
+| Within-set rank-shuffling fraction | 0.175260416667 | 0.270934959350 | base top-1% channels staying in-set but moving >2 ranks |
+| Within-set rank-shuffling 95% CI | [0.160156250000, 0.191015625000] | [0.260797764228, 0.280614837398] | post-hoc interpretability readout |
+| Original preregistered migration fraction | 0.8178385416666667 | 0.843165650406504 | clears threshold >= 0.05 |
+| Original migration bootstrap 95% CI | [0.797265625, 0.8368489583333334] | [0.8334349593495936, 0.8511432926829268] | CI lower > 0.05 |
 | Preregistered dynamic threshold | point >= 0.05 and CI lower > 0.05 | point >= 0.05 and CI lower > 0.05 | preregistered rule |
 | Artifact complete | true | true | artifact gate passed |
 | Model | `ibm-granite/granite-4.0-h-tiny` | `ibm-granite/granite-4.0-h-small` | same-family scale validation |
@@ -52,6 +56,7 @@ long reasoning traces under preregistered Phase 0/1 gates.
 - Phase 0 checker output: `experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/checker_result.json`
 - Phase 0 metrics: `experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/metrics.json`
 - Phase 0 artifact completeness: `experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/artifact_check.json`
+- Phase 0 migration decomposition: `experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/migration_decomposition.md`
 - Phase 0 model provenance: `experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/model_provenance.json`
 - Phase 0 prompt manifest: `experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/prompt_manifest.json`
 - Phase 0 activation manifest: `experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/activation_magnitude_manifest.json`
@@ -61,6 +66,7 @@ long reasoning traces under preregistered Phase 0/1 gates.
 - Phase 1 checker output: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/checker_result.json`
 - Phase 1 metrics: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/metrics.json`
 - Phase 1 artifact completeness: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/artifact_check.json`
+- Phase 1 migration decomposition: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/migration_decomposition.md`
 - Phase 1 model provenance: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/model_provenance.json`
 - Phase 1 prompt manifest: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/prompt_manifest.json`
 - Phase 1 activation manifest: `experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitude_manifest.json`

@@ -60,6 +60,13 @@ Effect on portfolio:
 - The paper draft is preserved but must not receive GPU speedup claims from this packet.
 - Per `swarm/goal.md`, this kill is data for positive-method diagnostics and pivots, not a negative-result paper draft.
 
+Why this is not a negative-result paper: the packet cleanly falsifies the
+specific boundary-fusion systems opportunity under the preregistered profiler
+gate, but the null result is narrow to this model/control matrix and Nsight
+surface. It does not establish a general theorem about hybrid inference
+overheads, and it contains no positive method or reusable optimization that
+would meet the portfolio's COLM positive-method bar.
+
 Storage note:
 
 - The committed packet cites sanitized `.sqlite` source artifacts in `profiler_metrics.json` and `metadata/reduction_input_manifest.json`.

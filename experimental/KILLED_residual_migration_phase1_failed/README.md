@@ -110,6 +110,13 @@ No paper iteration is opened for this kill. The Phase 0 draft remains preserved
 as an audit artifact, but Residual Migration does not advance to Phase 2
 cross-model validation under this preregistration.
 
+Why this is not a negative-result paper: the result is a mechanical scale-gate
+failure with low headroom (`2 / 24` baseline successes) and no clean
+layer-stratified attribution, not a positive method or a broadly defensible
+claim about residual outlier causality in hybrid reasoners. It is useful as an
+audit trail and as input to diagnostics, but it would be weak as a standalone
+submission.
+
 The diagnostic in `experimental/residual_migration/diagnostic.md` records any
 fresh positive-method pivot hypotheses that would require new preregistration
 before data collection.

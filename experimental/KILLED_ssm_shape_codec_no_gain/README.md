@@ -133,6 +133,12 @@ rescue this preregistered branch.
 No paper draft is created for this killed branch. The result remains available
 as diagnostic evidence only.
 
+Why this is not a negative-result paper: the shape-conditioned codec improved
+offline reconstruction but missed the preregistered effect-size shelf, and the
+larger layer-level pockets are post-hoc diagnostics that cannot rescue the
+branch. Without a gate-clearing method or a predeclared cross-model validation
+claim, the result is not submission-grade negative evidence.
+
 ## Diagnostic Outcome
 
 The post-kill diagnostic classifies the failure as a weak effect-size miss. It

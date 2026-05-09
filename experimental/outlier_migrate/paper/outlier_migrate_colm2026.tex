@@ -187,8 +187,14 @@ uses the same dynamic path because Phase 0 returned
 Quantity & Phase 0 & Phase 1 \\
 \midrule
 Decision & dynamic-outlier pass & replicated-at-scale pass \\
-Migration fraction & 0.8178385416666667 & 0.843165650406504 \\
-Bootstrap 95\% CI & [0.797265625, 0.8368489583333334] &
+Strict set-leaving fraction & 0.634244791667 & 0.566234756098 \\
+Strict set-leaving 95\% CI & [0.605208333333, 0.664192708333] &
+[0.550076219512, 0.581707317073] \\
+Within-set rank-shuffling fraction & 0.175260416667 & 0.270934959350 \\
+Within-set rank-shuffling 95\% CI & [0.160156250000, 0.191015625000] &
+[0.260797764228, 0.280614837398] \\
+Original preregistered migration fraction & 0.8178385416666667 & 0.843165650406504 \\
+Original migration 95\% CI & [0.797265625, 0.8368489583333334] &
 [0.8334349593495936, 0.8511432926829268] \\
 Preregistered threshold & $\geq$0.05 and CI lower $>$0.05 &
 $\geq$0.05 and CI lower $>$0.05 \\
@@ -206,13 +212,30 @@ Bootstrap seed & 20260508 & 20260508 \\
 from
 \url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/checker_result.json}
 and
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/metrics.json}.
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/metrics.json};
+strict decomposition values are from
+\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/migration_decomposition.md}.
 Phase 1 values are from
 \url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/checker_result.json}
 and
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/metrics.json}.}
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/metrics.json};
+strict decomposition values are from
+\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/migration_decomposition.md}.}
 \label{tab:phase-results}
 \end{table}
+
+The original preregistered migration fraction intentionally conflates two
+effects: channels can leave the top-1\% set entirely, or they can remain in
+the set while shuffling rank by more than two positions. For static channel
+protection, the stricter set-membership readout is the more direct failure
+mode. A channel is counted as strict set-leaving only if it is in the
+per-trace, per-layer top-1\% set at decode position 100 and has final rank
+greater than the top-1\% boundary at decode position 10000 in Phase 0 or
+20000 in Phase 1. Under that definition, 0.634244791667 of Phase 0 base
+top-1\% channels and 0.566234756098 of Phase 1 base top-1\% channels leave
+the protected set entirely. The within-set shuffling rates are
+0.175260416667 and 0.270934959350, respectively. The gate decision remains
+based only on the original preregistered migration metric.
 
 The exact Phase 0 provenance values are: model snapshot commit
 \url{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}, prompt SHA

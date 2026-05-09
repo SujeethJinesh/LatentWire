@@ -135,3 +135,10 @@ The complete artifact hash list is in
 The original SSM-State Lifecycle Phase 0 and all downstream Phase 1 / Phase 2
 entries gated by it are not active unless a fresh preregistered pivot is
 authored under the swarm goal's pivot policy.
+
+Why this is not a negative-result paper: the packet rules out the preregistered
+age-conditioned magnitude-drift compression premise on Granite-4.0-H-Tiny, but
+it does not produce a positive compression method, a cross-model theory, or a
+surprising failure mode with enough breadth to stand alone. The result is
+therefore retained as a clean kill manifest and diagnostic input, not promoted
+into a negative-result draft.
