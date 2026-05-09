@@ -200,7 +200,7 @@ Aborted before decision metrics:
   observed.
 - GPU-hour delta charged to the sprint: `0.2856`.
 
-Corrective patch in progress:
+Corrective patch completed and pushed:
 
 - Tighten `check_phase3_intervention.py` to recompute protected sets from
   activation rows, recompute recoveries from perplexities, validate the
@@ -210,6 +210,7 @@ Corrective patch in progress:
   remove the blanket outside-layer exclusion. Tied input/output embedding heads
   remain excluded with explicit rationale to avoid confounding prompt
   embeddings with layer protection.
+- Commit: `7e895e4f`.
 
 Completed no-GPU analysis:
 
@@ -229,10 +230,9 @@ Completed no-GPU analysis:
 
 Pending:
 
-1. Commit and push the corrective runner/checker patch.
-2. Restart the core Phase 3 intervention with a new run id.
-3. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
+1. Restart the core Phase 3 intervention with a new run id.
+2. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
    the packet.
-4. Stop and block if either mandatory control outperforms union protection by
+3. Stop and block if either mandatory control outperforms union protection by
    more than `0.10` median recovery.
-5. Integrate Phase 3 outcome into the paper and run committee review.
+4. Integrate Phase 3 outcome into the paper and run committee review.
