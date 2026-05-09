@@ -9,6 +9,7 @@ import inspect
 import json
 import math
 import random
+import shutil
 import sys
 import types
 from collections import defaultdict
@@ -181,13 +182,25 @@ def write_environment_text(path: Path, environment: dict[str, Any]) -> None:
     path.write_text("\n".join(text), encoding="utf-8")
 
 
-def make_cache_helpers(model: Any):
+def make_cache_helpers(model: Any, *, cache_dtype: Any | None = None):
     import torch
 
     forward_parameters = set(inspect.signature(model.forward).parameters)
     cache_input_name = "cache_params" if "cache_params" in forward_parameters else "past_key_values"
 
+    def align_cache_state_dtypes(cache: Any) -> None:
+        if cache_dtype is None:
+            return
+        for attr in ["conv_states", "ssm_states"]:
+            states = getattr(cache, attr, None)
+            if not isinstance(states, list):
+                continue
+            for index, state_tensor in enumerate(list(states)):
+                if torch.is_tensor(state_tensor) and state_tensor.numel() > 0 and state_tensor.dtype != cache_dtype:
+                    states[index] = state_tensor.to(dtype=cache_dtype)
+
     def patch_hybrid_cache(cache: Any) -> Any:
+        align_cache_state_dtypes(cache)
         if getattr(cache, "_latentwire_cache_patch", False):
             return cache
         config = getattr(model, "config", None)
@@ -225,15 +238,21 @@ def make_cache_helpers(model: Any):
 
         def update_conv_state(self: Any, layer_idx: int, new_conv_state: Any, cache_init: bool = False) -> Any:
             target_device = self.conv_states[layer_idx].device
+            target_dtype = self.conv_states[layer_idx].dtype
             if cache_init:
-                self.conv_states[layer_idx] = new_conv_state.to(target_device)
+                self.conv_states[layer_idx] = new_conv_state.to(device=target_device, dtype=target_dtype)
             else:
                 self.conv_states[layer_idx] = self.conv_states[layer_idx].roll(shifts=-1, dims=-1)
-                self.conv_states[layer_idx][:, :, -1] = new_conv_state[:, 0, :].to(target_device)
+                self.conv_states[layer_idx][:, :, -1] = new_conv_state[:, 0, :].to(
+                    device=target_device, dtype=target_dtype
+                )
             return self.conv_states[layer_idx]
 
         def update_ssm_state(self: Any, layer_idx: int, new_ssm_state: Any) -> Any:
-            self.ssm_states[layer_idx] = new_ssm_state.to(self.ssm_states[layer_idx].device)
+            self.ssm_states[layer_idx] = new_ssm_state.to(
+                device=self.ssm_states[layer_idx].device,
+                dtype=self.ssm_states[layer_idx].dtype,
+            )
             return self.ssm_states[layer_idx]
 
         cache.update_conv_state = types.MethodType(update_conv_state, cache)
@@ -397,11 +416,12 @@ def score_targets(
 ) -> dict[int, dict[str, float]]:
     import torch
 
-    normalize_cache_inputs, output_cache = make_cache_helpers(model)
+    autocast_enabled = bool(use_float16_autocast and torch.cuda.is_available())
+    cache_dtype = torch.float16 if autocast_enabled else None
+    normalize_cache_inputs, output_cache = make_cache_helpers(model, cache_dtype=cache_dtype)
     score_start = checker.SCORING_POSITION - checker.SCORING_WINDOW_TOKENS + 1
     score_end = checker.SCORING_POSITION
     results: dict[int, dict[str, float]] = {}
-    autocast_enabled = bool(use_float16_autocast and torch.cuda.is_available())
     with torch.inference_mode():
         for start in range(0, len(prompts), batch_size):
             batch = prompts[start : start + batch_size]
@@ -812,6 +832,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--dtype", choices=["bfloat16", "float16", "float32"], default="bfloat16")
+    parser.add_argument(
+        "--reuse-prequant-run-dir",
+        type=Path,
+        help=(
+            "Optional prior Phase 3 run dir whose activation/protected-set/BF16-trace artifacts "
+            "are reused. The prior run must have failed before quantized metrics were produced."
+        ),
+    )
     args = parser.parse_args(argv)
 
     if args.model_id != DEFAULT_MODEL_ID:
@@ -861,6 +889,7 @@ def main(argv: list[str] | None = None) -> int:
         "branch": "outlier_migrate_phase3_intervention",
         "run_dir": str(run_dir),
         "batch_size": args.batch_size,
+        "reuse_prequant_run_dir": str(args.reuse_prequant_run_dir) if args.reuse_prequant_run_dir else None,
         "notes": [
             "No Phase 3 quantization was run before preregistration commit c0031574.",
             "BF16 traces are generated deterministically, then all regimes score the same token windows.",
@@ -918,37 +947,79 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     prompts = prompt_manifest["prompts"]
+    activation_path = run_dir / "activation_magnitudes.jsonl.gz"
+    trace_path = run_dir / "bf16_traces.jsonl.gz"
+    if args.reuse_prequant_run_dir:
+        reuse_dir = args.reuse_prequant_run_dir.resolve()
+        required_reuse = [
+            "activation_magnitudes.jsonl.gz",
+            "activation_magnitude_manifest.json",
+            "protected_sets.json",
+            "bf16_traces.jsonl.gz",
+            "bf16_trace_manifest.json",
+        ]
+        missing_reuse = [rel for rel in required_reuse if not (reuse_dir / rel).is_file()]
+        forbidden_reuse_outputs = ["per_trace_metrics.json", "metrics.json", "checker_result.json", "artifact_check.json"]
+        produced_metrics = [rel for rel in forbidden_reuse_outputs if (reuse_dir / rel).exists()]
+        if missing_reuse:
+            raise SystemExit(f"--reuse-prequant-run-dir missing required files: {missing_reuse}")
+        if produced_metrics:
+            raise SystemExit(f"--reuse-prequant-run-dir already has metric/checker outputs: {produced_metrics}")
+        for rel in required_reuse:
+            shutil.copy2(reuse_dir / rel, run_dir / rel)
+        shared.write_json(
+            run_dir / "prequant_reuse_manifest.json",
+            {
+                "schema_version": f"{SCHEMA_VERSION}_prequant_reuse",
+                "created_at_utc": shared.utc_now(),
+                "source_run_dir": str(reuse_dir),
+                "source_files": {
+                    rel: {
+                        "sha256": shared.file_sha256(run_dir / rel),
+                        "bytes": (run_dir / rel).stat().st_size,
+                    }
+                    for rel in required_reuse
+                },
+                "reuse_reason": (
+                    "source run failed before quantized metrics due FP16 autocast/cache dtype mismatch; "
+                    "activation/protected-set/BF16-trace artifacts were produced before the failing stage"
+                ),
+            },
+        )
+        protected_sets = json.loads((run_dir / "protected_sets.json").read_text(encoding="utf-8"))
+    else:
+        model, tokenizer, device = shared.load_model_and_tokenizer(
+            model_provenance, dtype_name=args.dtype, device_name=args.device
+        )
+        activation_manifest = shared.capture_activation_magnitudes(
+            model=model,
+            tokenizer=tokenizer,
+            device=device,
+            prompts=prompts,
+            positions=ALL_CALIBRATION_POSITIONS,
+            max_new_tokens=args.max_new_tokens,
+            batch_size=args.batch_size,
+            output_path=activation_path,
+            run_events_path=run_events_path,
+        )
+        shared.write_json(run_dir / "activation_magnitude_manifest.json", activation_manifest)
+        protected_sets = build_protected_sets(collect_activation_rows(activation_path))
+        shared.write_json(run_dir / "protected_sets.json", protected_sets)
+        trace_manifest = generate_bf16_traces(
+            model=model,
+            tokenizer=tokenizer,
+            device=device,
+            prompts=prompts,
+            max_new_tokens=args.max_new_tokens,
+            batch_size=args.batch_size,
+            output_path=trace_path,
+            run_events_path=run_events_path,
+        )
+        shared.write_json(run_dir / "bf16_trace_manifest.json", trace_manifest)
+    target_tokens = load_trace_tokens(trace_path)
     model, tokenizer, device = shared.load_model_and_tokenizer(
         model_provenance, dtype_name=args.dtype, device_name=args.device
     )
-    activation_path = run_dir / "activation_magnitudes.jsonl.gz"
-    activation_manifest = shared.capture_activation_magnitudes(
-        model=model,
-        tokenizer=tokenizer,
-        device=device,
-        prompts=prompts,
-        positions=ALL_CALIBRATION_POSITIONS,
-        max_new_tokens=args.max_new_tokens,
-        batch_size=args.batch_size,
-        output_path=activation_path,
-        run_events_path=run_events_path,
-    )
-    shared.write_json(run_dir / "activation_magnitude_manifest.json", activation_manifest)
-    protected_sets = build_protected_sets(collect_activation_rows(activation_path))
-    shared.write_json(run_dir / "protected_sets.json", protected_sets)
-    trace_path = run_dir / "bf16_traces.jsonl.gz"
-    trace_manifest = generate_bf16_traces(
-        model=model,
-        tokenizer=tokenizer,
-        device=device,
-        prompts=prompts,
-        max_new_tokens=args.max_new_tokens,
-        batch_size=args.batch_size,
-        output_path=trace_path,
-        run_events_path=run_events_path,
-    )
-    shared.write_json(run_dir / "bf16_trace_manifest.json", trace_manifest)
-    target_tokens = load_trace_tokens(trace_path)
     all_scores: dict[str, dict[int, dict[str, float]]] = {}
     all_scores["bf16"] = score_targets(
         model=model,

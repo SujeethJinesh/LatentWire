@@ -212,6 +212,31 @@ Corrective patch completed and pushed:
   embeddings with layer protection.
 - Commit: `7e895e4f`.
 
+Second run status:
+
+- Run `experimental/outlier_migrate/phase3/results/om_phase3_20260509T180200Z`
+  completed activation capture, protected-set construction, BF16 trace
+  generation, and BF16 scoring.
+- It failed before any quantized recovery metrics were produced, at the start
+  of `static_1pct` scoring.
+- Error:
+  `RuntimeError: Expected conv_state.scalar_type() == input_type to be true`.
+- Diagnosis: `causal_conv1d_update` requires the recurrent convolution cache
+  dtype to match the input dtype; FP16 autocast made the quantized-regime input
+  FP16 while the hybrid cache remained BF16.
+- The source run has no `per_trace_metrics.json`, `metrics.json`,
+  `checker_result.json`, or `artifact_check.json`; it is not a decision packet.
+- GPU-hour delta charged to the sprint: `2.3370`.
+
+Second corrective patch:
+
+- Align hybrid cache `conv_states` and `ssm_states` to FP16 during FP16
+  quantized-regime scoring.
+- Add `--reuse-prequant-run-dir` so a fresh run can reuse only the valid
+  activation/protected-set/BF16-trace artifacts from a failed pre-metric run.
+- The reuse path refuses source runs that already contain metric or checker
+  outputs.
+
 Completed no-GPU analysis:
 
 - Layer-stratified migration analysis generated from existing Phase 0/1/2
@@ -230,9 +255,11 @@ Completed no-GPU analysis:
 
 Pending:
 
-1. Restart the core Phase 3 intervention with a new run id.
-2. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
+1. Commit and push the cache-dtype/reuse patch.
+2. Restart scoring with a new run id using
+   `--reuse-prequant-run-dir experimental/outlier_migrate/phase3/results/om_phase3_20260509T180200Z`.
+3. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
    the packet.
-3. Stop and block if either mandatory control outperforms union protection by
+4. Stop and block if either mandatory control outperforms union protection by
    more than `0.10` median recovery.
-4. Integrate Phase 3 outcome into the paper and run committee review.
+5. Integrate Phase 3 outcome into the paper and run committee review.
