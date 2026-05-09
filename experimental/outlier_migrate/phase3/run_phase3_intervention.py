@@ -273,6 +273,19 @@ def make_cache_helpers(model: Any, *, cache_dtype: Any | None = None):
     return normalize_cache_inputs, output_cache
 
 
+def set_granite_fast_path_enabled(enabled: bool) -> Any:
+    """Toggle GraniteMoeHybrid's optional fast path; return the previous value."""
+
+    try:
+        from transformers.models.granitemoehybrid import modeling_granitemoehybrid
+    except Exception:
+        return None
+    previous = getattr(modeling_granitemoehybrid, "is_fast_path_available", None)
+    if previous is not None:
+        modeling_granitemoehybrid.is_fast_path_available = bool(enabled)
+    return previous
+
+
 def generate_bf16_traces(
     *,
     model: Any,
@@ -422,84 +435,89 @@ def score_targets(
     score_start = checker.SCORING_POSITION - checker.SCORING_WINDOW_TOKENS + 1
     score_end = checker.SCORING_POSITION
     results: dict[int, dict[str, float]] = {}
-    with torch.inference_mode():
-        for start in range(0, len(prompts), batch_size):
-            batch = prompts[start : start + batch_size]
-            batch_indices = [int(item["index"]) for item in batch]
-            texts = [shared.make_prompt_text(str(item["prompt"])) for item in batch]
-            encoded = tokenizer(texts, padding=True, return_tensors="pt")
-            input_ids = encoded["input_ids"].to(device)
-            attention_mask = encoded["attention_mask"].to(device)
-            target_tensor = torch.tensor(
-                [target_tokens[index][:max_new_tokens] for index in batch_indices],
-                dtype=torch.long,
-                device=device,
-            )
-            nll = torch.zeros((len(batch),), device=device, dtype=torch.float64)
-            scored = 0
-            with torch.autocast("cuda", dtype=torch.float16, enabled=autocast_enabled):
-                cache_position = torch.arange(input_ids.shape[1], device=device)
-                model_inputs = model.prepare_inputs_for_generation(
-                    input_ids=input_ids,
-                    attention_mask=attention_mask,
-                    cache_position=cache_position,
-                    use_cache=True,
+    previous_fast_path = set_granite_fast_path_enabled(False) if autocast_enabled else None
+    try:
+        with torch.inference_mode():
+            for start in range(0, len(prompts), batch_size):
+                batch = prompts[start : start + batch_size]
+                batch_indices = [int(item["index"]) for item in batch]
+                texts = [shared.make_prompt_text(str(item["prompt"])) for item in batch]
+                encoded = tokenizer(texts, padding=True, return_tensors="pt")
+                input_ids = encoded["input_ids"].to(device)
+                attention_mask = encoded["attention_mask"].to(device)
+                target_tensor = torch.tensor(
+                    [target_tokens[index][:max_new_tokens] for index in batch_indices],
+                    dtype=torch.long,
+                    device=device,
                 )
-                outputs = model(**normalize_cache_inputs(model_inputs))
-                past_key_values = output_cache(outputs)
-                if past_key_values is None:
-                    raise RuntimeError(f"model did not return cache for scoring regime {regime_name}")
-                logits = outputs.logits[:, -1, :]
-                for decode_position in range(1, max_new_tokens + 1):
-                    current_target = target_tensor[:, decode_position - 1]
-                    if score_start <= decode_position <= score_end:
-                        log_probs = torch.log_softmax(logits.float(), dim=-1)
-                        nll -= log_probs.gather(1, current_target[:, None]).squeeze(1).to(torch.float64)
-                        scored += 1
-                    if decode_position == max_new_tokens:
-                        break
-                    attention_mask = torch.cat(
-                        [
-                            attention_mask,
-                            torch.ones((attention_mask.shape[0], 1), device=device, dtype=attention_mask.dtype),
-                        ],
-                        dim=1,
-                    )
-                    cache_position = torch.tensor([attention_mask.shape[1] - 1], device=device, dtype=torch.long)
+                nll = torch.zeros((len(batch),), device=device, dtype=torch.float64)
+                scored = 0
+                with torch.autocast("cuda", dtype=torch.float16, enabled=autocast_enabled):
+                    cache_position = torch.arange(input_ids.shape[1], device=device)
                     model_inputs = model.prepare_inputs_for_generation(
-                        input_ids=current_target[:, None],
+                        input_ids=input_ids,
                         attention_mask=attention_mask,
-                        past_key_values=past_key_values,
                         cache_position=cache_position,
                         use_cache=True,
                     )
                     outputs = model(**normalize_cache_inputs(model_inputs))
                     past_key_values = output_cache(outputs)
                     if past_key_values is None:
-                        raise RuntimeError(f"model dropped cache while scoring {regime_name} at {decode_position}")
+                        raise RuntimeError(f"model did not return cache for scoring regime {regime_name}")
                     logits = outputs.logits[:, -1, :]
-            for offset, prompt_index in enumerate(batch_indices):
-                mean_nll = float((nll[offset] / max(1, scored)).item())
-                results[prompt_index] = {
-                    "mean_nll": mean_nll,
-                    "perplexity": float(math.exp(min(80.0, mean_nll))),
-                    "scored_tokens": scored,
-                    "score_start": score_start,
-                    "score_end": score_end,
-                }
-            with run_events_path.open("a", encoding="utf-8") as event_handle:
-                event_handle.write(
-                    json.dumps(
-                        {
-                            "created_at_utc": shared.utc_now(),
-                            "event": "completed_scoring_batch",
-                            "regime": regime_name,
-                            "prompt_indices": batch_indices,
-                        },
-                        sort_keys=True,
+                    for decode_position in range(1, max_new_tokens + 1):
+                        current_target = target_tensor[:, decode_position - 1]
+                        if score_start <= decode_position <= score_end:
+                            log_probs = torch.log_softmax(logits.float(), dim=-1)
+                            nll -= log_probs.gather(1, current_target[:, None]).squeeze(1).to(torch.float64)
+                            scored += 1
+                        if decode_position == max_new_tokens:
+                            break
+                        attention_mask = torch.cat(
+                            [
+                                attention_mask,
+                                torch.ones((attention_mask.shape[0], 1), device=device, dtype=attention_mask.dtype),
+                            ],
+                            dim=1,
+                        )
+                        cache_position = torch.tensor([attention_mask.shape[1] - 1], device=device, dtype=torch.long)
+                        model_inputs = model.prepare_inputs_for_generation(
+                            input_ids=current_target[:, None],
+                            attention_mask=attention_mask,
+                            past_key_values=past_key_values,
+                            cache_position=cache_position,
+                            use_cache=True,
+                        )
+                        outputs = model(**normalize_cache_inputs(model_inputs))
+                        past_key_values = output_cache(outputs)
+                        if past_key_values is None:
+                            raise RuntimeError(f"model dropped cache while scoring {regime_name} at {decode_position}")
+                        logits = outputs.logits[:, -1, :]
+                for offset, prompt_index in enumerate(batch_indices):
+                    mean_nll = float((nll[offset] / max(1, scored)).item())
+                    results[prompt_index] = {
+                        "mean_nll": mean_nll,
+                        "perplexity": float(math.exp(min(80.0, mean_nll))),
+                        "scored_tokens": scored,
+                        "score_start": score_start,
+                        "score_end": score_end,
+                    }
+                with run_events_path.open("a", encoding="utf-8") as event_handle:
+                    event_handle.write(
+                        json.dumps(
+                            {
+                                "created_at_utc": shared.utc_now(),
+                                "event": "completed_scoring_batch",
+                                "regime": regime_name,
+                                "prompt_indices": batch_indices,
+                            },
+                            sort_keys=True,
+                        )
+                        + "\n"
                     )
-                    + "\n"
-                )
+    finally:
+        if previous_fast_path is not None:
+            set_granite_fast_path_enabled(bool(previous_fast_path))
     return results
 
 

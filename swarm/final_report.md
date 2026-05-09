@@ -237,6 +237,24 @@ Second corrective patch:
 - The reuse path refuses source runs that already contain metric or checker
   outputs.
 
+Third run status:
+
+- Reuse run `experimental/outlier_migrate/phase3/results/om_phase3_20260509T202600Z`
+  completed BF16 scoring from reused activation/BF16-trace artifacts.
+- It again failed before quantized recovery metrics, at `static_1pct` initial
+  scoring, with the same causal-conv1d dtype assertion. The cache-casting patch
+  did not affect the Granite fast-path prompt forward early enough.
+- GPU-hour delta charged to the sprint: `0.8533`.
+
+Third corrective patch:
+
+- Disable GraniteMoeHybrid's optional Mamba CUDA fast path only during FP16
+  quantized-regime scoring.
+- Rationale: the upstream causal-conv1d update kernel requires
+  `conv_state.scalar_type() == input_type`; the torch fallback avoids this
+  fused-kernel dtype assertion while preserving the fixed model, trace set,
+  protected sets, and scoring target.
+
 Completed no-GPU analysis:
 
 - Layer-stratified migration analysis generated from existing Phase 0/1/2
@@ -255,7 +273,7 @@ Completed no-GPU analysis:
 
 Pending:
 
-1. Commit and push the cache-dtype/reuse patch.
+1. Commit and push the fast-path-disable patch.
 2. Restart scoring with a new run id using
    `--reuse-prequant-run-dir experimental/outlier_migrate/phase3/results/om_phase3_20260509T180200Z`.
 3. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
