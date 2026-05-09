@@ -8,7 +8,9 @@ final; it is the machine-readable handoff for the returning human.
 
 - Primary positive-method candidate: OutlierMigrate.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
-- Current active work: authorized-window wrap-up and human handoff.
+- Current active work: OutlierMigrate Phase 3 intervention sprint.
+- Phase 3 preregistration commit: `c0031574`.
+- Phase 3 runner/checker commit: `fc394bcb`.
 - Completed run: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z`.
 - Phase 2 scope: partial Nemotron-3 validation only; Qwen3.6 and Kimi
   Linear are deferred by the no-vLLM-upgrade authorized window.
@@ -33,6 +35,15 @@ final; it is the machine-readable handoff for the returning human.
 | Cross-Layer Error | KILL_CLE_BOUND_LOOSE | No paper | Preserve artifacts; diagnostic only |
 
 ## OutlierMigrate Evidence
+
+Phase 3 intervention status:
+
+- Preregistration:
+  `experimental/outlier_migrate/phase3/preregister_om_phase3_intervention.md`
+  committed and pushed at `c0031574` before any Phase 3 quantization run.
+- Runner/checker/grid-sensitivity tooling committed and pushed at `fc394bcb`.
+- No Phase 3 intervention result has been observed yet.
+- Current GPU-hour cap for this sprint: cumulative `40`.
 
 Granite-family gates:
 

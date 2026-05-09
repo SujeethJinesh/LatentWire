@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "authorized_window_wrapup",
+  "current_entry": "outlier_migrate_phase3_intervention",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -282,8 +282,8 @@
   "consecutive_infra_failures": 0,
   "gpu_hours_used": 17.2294,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-09T07:01:09Z",
-  "last_commit_sha": "e25a45d6c56151a31ef7f788d3d8d515eb46d649",
+  "last_audit_at": "2026-05-09T17:38:14Z",
+  "last_commit_sha": "fc394bcb",
   "papers_camera_ready_candidate": [
     "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf"
   ],
