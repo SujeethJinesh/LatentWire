@@ -13,7 +13,9 @@ reviews, audit, and any camera-ready-candidate decision are incorporated.
 - Phase 2 scope: partial Nemotron-3 validation only; Qwen3.6 and Kimi
   Linear are deferred by the no-vLLM-upgrade authorized window.
 - Camera-ready final: none; human review required.
-- Camera-ready candidate: none yet.
+- Camera-ready candidate: ThoughtFlow-FP8 fallback candidate only, under the
+  falsification-methodology workshop framing. It is not a positive-method
+  candidate.
 
 ## Portfolio
 
@@ -102,8 +104,19 @@ Kill manifests exist and now include explicit non-publication rationale:
 - OutlierMigrate is not a camera-ready candidate: fixable review concerns
   remain, and the core blocker is substantive rather than wording-only
   (missing intervention plus deferred Qwen3.6/Kimi validation).
-- ThoughtFlow-FP8 is buildable and reviewer-pack-current, but still needs
-  human final framing review.
+- ThoughtFlow-FP8 additional polish review:
+  `experimental/thoughtflow_fp8/paper/committee_reviews/20260509_polish_round2.md`.
+  Scores under falsification-methodology framing: COLM `7/10`, MLSys `7/10`
+  as a diagnostic note (`3/10` as systems), adversarial `7/10`.
+- ThoughtFlow-FP8 local checker returned `PASS_THOUGHTFLOW_PAPER_BUILDABLE`;
+  owned tests passed with `70 passed, 1 warning`.
+- ThoughtFlow-FP8 reproducibility audit:
+  `experimental/thoughtflow_fp8/paper/committee_reviews/20260509_reproducibility_audit.md`.
+  It passes the local fallback-candidate checks.
+- ThoughtFlow-FP8 remains not camera-ready final. It is now marked as a
+  fallback camera-ready candidate only as a falsification-methodology workshop
+  note, pending human title/framing/citation review. It does not count as a
+  positive-method candidate.
 
 ## Human Decisions On Landing
 

@@ -69,6 +69,30 @@ committee flags fixable human-copyedit issues around title/framing, artifact
 replay packaging, and omnibus citation cleanup. Per HANDOFF scope, the paper
 body itself was not modified in this gate.
 
+## 2026-05-09 Additional Committee Polish
+
+- Committee review:
+  `experimental/thoughtflow_fp8/paper/committee_reviews/20260509_polish_round2.md`
+- Scores under falsification-methodology framing:
+  - COLM area chair: `7/10`
+  - MLSys reviewer: `7/10` as an artifact-backed falsification diagnostic
+    (`3/10` as a systems paper)
+  - Adversarial reviewer: `7/10`
+- Local checker:
+  `PASS_THOUGHTFLOW_PAPER_BUILDABLE`
+- Local owned tests on the GPU node:
+  `70 passed, 1 warning in 11.46s` using `.venv_gpu`,
+  `TRITON_CPU_BACKEND=1`, and `TRITON_INTERPRET=1`.
+- Reproducibility audit:
+  `experimental/thoughtflow_fp8/paper/committee_reviews/20260509_reproducibility_audit.md`
+- Candidate status: plausible camera-ready candidate only as a
+  falsification-methodology workshop diagnostic, not camera-ready final and not
+  a positive-method paper. Human final review remains required for title,
+  venue framing, citation confidence, and copyedit.
+- Stop-condition check: no p-hacking, post-hoc cherry-picking, scope-creep
+  preregistration violation, citation hallucination, or paper-test regression
+  was identified in this read.
+
 ## Strongest Evidence
 
 | Gate | Result | Decision |
@@ -88,12 +112,36 @@ body itself was not modified in this gate.
 ## Stable Owned-Test Command
 
 ```bash
-cd /Users/sujeethjinesh/Desktop/LatentWire
+cd /workspace/LatentWire
 TRITON_CPU_BACKEND=1 TRITON_INTERPRET=1 TRITON_HOME="$PWD/.debug/triton_home" \
-  ./venv_arm64/bin/python -m pytest \
+  ./.venv_gpu/bin/python -m pytest \
   experimental/thoughtflow_fp8/phase2/tests \
   experimental/thoughtflow_fp8/phase4/tests -rs
 ```
+
+Historical Mac commands in the TeX remain reviewer-visible as provenance for
+the original development environment. On this GPU node, use `.venv_gpu` as
+shown above.
+
+## 2026 Citation Spot-Check
+
+Primary-source spot checks on 2026-05-09 resolved the recent bibliography
+entries most likely to affect reviewer confidence:
+
+- ThinKV OpenReview `M3CeHnZKNC` exists as ICLR 2026 and describes
+  thought-adaptive KV cache compression for efficient reasoning models.
+- LongFlow arXiv `2603.11504` exists and describes efficient KV cache
+  compression for reasoning models.
+- R-KV arXiv `2505.24133`, LazyEviction arXiv `2506.15969`,
+  ForesightKV arXiv `2602.03203`, PM-KVQ arXiv `2505.18610`,
+  KVzip arXiv `2505.23416`, KVzap arXiv `2601.07891`,
+  Q-Filters arXiv `2503.02812`, TriAttention arXiv `2604.04921`,
+  Cache-to-Cache arXiv `2510.03215`, and KV-Direct arXiv `2603.19664`
+  resolved to matching primary pages.
+
+This is a spot-check, not a substitute for final human bibliography cleanup.
+The omnibus "recent KV-cache methods" citation remains a known copyedit risk
+before final submission.
 
 ## Reviewer Risks
 
