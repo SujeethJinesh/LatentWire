@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import math
 import random
 from pathlib import Path
-from statistics import median
+from statistics import mean, median
 from typing import Any
 
 
@@ -72,6 +73,15 @@ REQUIRED_FILES = [
     "run_events.jsonl",
 ]
 HASHED_FILES = [rel for rel in REQUIRED_FILES if rel != "artifact_hashes.json"]
+RECOVERY_REGIMES = ["union_primary", "static_2pct", "magnitude_average", "grid_sparse", "grid_dense"]
+PROTECTED_SET_SPECS = {
+    "static_1pct": {"kind": "single_position", "positions": [100], "fraction": 0.01},
+    "union_primary": {"kind": "union", "positions": list(PRIMARY_GRID), "fraction": 0.01},
+    "static_2pct": {"kind": "single_position", "positions": [100], "fraction": 0.02},
+    "magnitude_average": {"kind": "mean_across_positions", "positions": list(PRIMARY_GRID), "fraction": 0.01},
+    "grid_sparse": {"kind": "union", "positions": list(SPARSE_GRID), "fraction": 0.01},
+    "grid_dense": {"kind": "union", "positions": list(DENSE_GRID), "fraction": 0.01},
+}
 
 
 def load_json(path: Path) -> Any:
@@ -121,6 +131,76 @@ def prompt_payload_sha256(prompts: list[dict[str, Any]]) -> str:
     return bytes_sha256(payload)
 
 
+def top_channels(values: list[float], count: int) -> list[int]:
+    return sorted(range(len(values)), key=lambda channel: (-float(values[channel]), channel))[:count]
+
+
+def activation_position_means(path: Path) -> tuple[dict[int, dict[int, list[float]]], dict[int, dict[int, int]]]:
+    sums: dict[int, dict[int, list[float]]] = {}
+    counts: dict[int, dict[int, int]] = {}
+    with gzip.open(path, "rt", encoding="utf-8") as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            layer_index = int(row["layer_index"])
+            position = int(row["decode_position"])
+            values = [float(value) for value in row["channel_magnitudes"]]
+            layer_sums = sums.setdefault(layer_index, {})
+            layer_counts = counts.setdefault(layer_index, {})
+            if position not in layer_sums:
+                layer_sums[position] = [0.0] * len(values)
+                layer_counts[position] = 0
+            if len(layer_sums[position]) != len(values):
+                raise ValueError(f"channel_count mismatch for layer {layer_index} position {position}")
+            for index, value in enumerate(values):
+                layer_sums[position][index] += value
+            layer_counts[position] += 1
+    means: dict[int, dict[int, list[float]]] = {}
+    for layer_index, by_position in sums.items():
+        means[layer_index] = {}
+        for position, totals in by_position.items():
+            count = counts[layer_index][position]
+            means[layer_index][position] = [value / count for value in totals]
+    return means, counts
+
+
+def expected_protected_sets_from_activations(path: Path) -> dict[str, Any]:
+    means_by_layer, counts_by_layer = activation_position_means(path)
+    expected: dict[str, Any] = {}
+    for regime, spec in PROTECTED_SET_SPECS.items():
+        layers: dict[str, Any] = {}
+        for layer_index in sorted(means_by_layer):
+            positions = [int(position) for position in spec["positions"]]
+            missing = [position for position in positions if position not in means_by_layer[layer_index]]
+            if missing:
+                raise ValueError(f"activation artifact missing layer {layer_index} positions {missing}")
+            channel_count = len(means_by_layer[layer_index][positions[0]])
+            top_k = max(1, math.ceil(channel_count * float(spec["fraction"])))
+            if spec["kind"] == "union":
+                selected: set[int] = set()
+                for position in positions:
+                    selected.update(top_channels(means_by_layer[layer_index][position], top_k))
+                channels = sorted(selected)
+            elif spec["kind"] == "mean_across_positions":
+                averaged = [
+                    mean(means_by_layer[layer_index][position][channel] for position in positions)
+                    for channel in range(channel_count)
+                ]
+                channels = sorted(top_channels(averaged, top_k))
+            else:
+                channels = sorted(top_channels(means_by_layer[layer_index][positions[0]], top_k))
+            layers[str(layer_index)] = {
+                "channel_count": channel_count,
+                "requested_top_k": top_k,
+                "protected_count": len(channels),
+                "protected_channels": channels,
+                "trace_count_by_position": {str(position): counts_by_layer[layer_index][position] for position in positions},
+            }
+        expected[regime] = {**spec, "layers": layers}
+    return expected
+
+
 def bootstrap_median(values: list[float], *, samples: int = BOOTSTRAP_SAMPLES, seed: int = BOOTSTRAP_SEED) -> dict[str, float]:
     rng = random.Random(seed)
     boot: list[float] = []
@@ -142,6 +222,39 @@ def summarize_recovery(rows: list[dict[str, Any]], regime: str) -> dict[str, Any
         "trace_count": len(values),
         "per_trace_recovery": values,
     }
+
+
+def validate_trace_rows(rows: list[dict[str, Any]], infra: list[str]) -> None:
+    expected_score_start = SCORING_POSITION - SCORING_WINDOW_TOKENS + 1
+    for row in rows:
+        prompt_index = int(row.get("prompt_index", -1))
+        if int(row.get("scored_tokens", -1)) != SCORING_WINDOW_TOKENS:
+            infra.append(f"trace {prompt_index}: scored_tokens must be {SCORING_WINDOW_TOKENS}")
+        if int(row.get("score_start", -1)) != expected_score_start:
+            infra.append(f"trace {prompt_index}: score_start mismatch")
+        if int(row.get("score_end", -1)) != SCORING_POSITION:
+            infra.append(f"trace {prompt_index}: score_end mismatch")
+        perplexities = row.get("perplexities", {})
+        recoveries = row.get("recoveries", {})
+        required_perplexities = {"bf16", "static_1pct", *RECOVERY_REGIMES}
+        if set(perplexities) != required_perplexities:
+            infra.append(f"trace {prompt_index}: perplexity regimes mismatch")
+            continue
+        if set(recoveries) != set(RECOVERY_REGIMES):
+            infra.append(f"trace {prompt_index}: recovery regimes mismatch")
+            continue
+        static_gap = float(perplexities["static_1pct"]) - float(perplexities["bf16"])
+        if not is_close(float(row.get("static_gap", float("nan"))), static_gap):
+            infra.append(f"trace {prompt_index}: static_gap mismatch")
+        expected_no_gap = static_gap <= 0.0
+        if bool(row.get("no_recoverable_static_gap")) != expected_no_gap:
+            infra.append(f"trace {prompt_index}: no_recoverable_static_gap mismatch")
+        for regime in RECOVERY_REGIMES:
+            expected = 0.0 if expected_no_gap else 1.0 - (
+                float(perplexities[regime]) - float(perplexities["bf16"])
+            ) / static_gap
+            if not is_close(float(recoveries[regime]), expected, tol=1e-7):
+                infra.append(f"trace {prompt_index}: recovery formula mismatch for {regime}")
 
 
 def decision_from_metrics(primary: dict[str, Any], rows: list[dict[str, Any]]) -> tuple[str, list[str]]:
@@ -239,6 +352,38 @@ def validate_artifact_hashes(run_dir: Path, artifact_hashes: dict[str, Any], inf
             infra.append(f"artifact_hashes sha256 mismatch for {rel}")
 
 
+def validate_protected_sets(run_dir: Path, protected: dict[str, Any], infra: list[str]) -> None:
+    if set(protected.get("regimes", {}).keys()) != set(PROTECTED_SET_SPECS):
+        infra.append("protected_sets.regimes must contain exactly the preregistered regimes")
+        return
+    try:
+        expected = expected_protected_sets_from_activations(run_dir / "activation_magnitudes.jsonl.gz")
+    except Exception as exc:
+        infra.append(f"could not recompute protected sets from activations: {exc!r}")
+        return
+    observed_regimes = protected.get("regimes", {})
+    for regime, spec in PROTECTED_SET_SPECS.items():
+        observed = observed_regimes.get(regime, {})
+        if observed.get("kind") != spec["kind"]:
+            infra.append(f"protected_sets.{regime}.kind mismatch")
+        if observed.get("positions") != spec["positions"]:
+            infra.append(f"protected_sets.{regime}.positions mismatch")
+        if not is_close(float(observed.get("fraction", -1.0)), float(spec["fraction"])):
+            infra.append(f"protected_sets.{regime}.fraction mismatch")
+        observed_layers = observed.get("layers", {})
+        expected_layers = expected[regime]["layers"]
+        if set(observed_layers) != set(expected_layers):
+            infra.append(f"protected_sets.{regime}.layers mismatch")
+            continue
+        for layer_key, expected_layer in expected_layers.items():
+            observed_layer = observed_layers.get(layer_key, {})
+            for key in ["channel_count", "requested_top_k", "protected_count"]:
+                if int(observed_layer.get(key, -1)) != int(expected_layer[key]):
+                    infra.append(f"protected_sets.{regime}.layers.{layer_key}.{key} mismatch")
+            if observed_layer.get("protected_channels") != expected_layer["protected_channels"]:
+                infra.append(f"protected_sets.{regime}.layers.{layer_key}.protected_channels mismatch")
+
+
 def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict[str, Any]]]:
     infra: list[str] = []
     for rel in REQUIRED_FILES:
@@ -274,6 +419,7 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
         rows = []
     if len(rows) != TRACE_COUNT:
         infra.append("per_trace_metrics must contain exactly 24 traces")
+    validate_trace_rows(rows, infra)
     metrics = loaded.get("metrics.json", {})
     if metrics.get("schema_version") != f"{SCHEMA_VERSION}_metrics":
         infra.append("metrics schema_version mismatch")
@@ -304,17 +450,10 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
     forbidden = qcfg.get("forbidden_methods", [])
     if "AWQ-style activation-aware scaling" not in forbidden:
         infra.append("quantization_config must forbid AWQ-style activation-aware scaling")
+    if "SmoothQuant-style activation folding" not in forbidden:
+        infra.append("quantization_config must forbid SmoothQuant-style activation folding")
     protected = loaded.get("protected_sets.json", {})
-    required_regimes = {
-        "static_1pct",
-        "union_primary",
-        "static_2pct",
-        "magnitude_average",
-        "grid_sparse",
-        "grid_dense",
-    }
-    if set(protected.get("regimes", {}).keys()) != required_regimes:
-        infra.append("protected_sets.regimes must contain exactly the preregistered regimes")
+    validate_protected_sets(run_dir, protected, infra)
     grid = loaded.get("grid_sensitivity_metrics.json", {})
     if grid.get("grids", {}).get("sparse", {}).get("positions") != list(SPARSE_GRID):
         infra.append("grid_sensitivity sparse grid mismatch")
@@ -423,6 +562,8 @@ def main(argv: list[str] | None = None) -> int:
     run_dir = args.run_dir.resolve() if args.run_dir else latest_run_dir().resolve()
     result = evaluate(run_dir)
     print(json.dumps(result, indent=2, sort_keys=True))
+    if result.get("control_results", {}).get("control_stop_condition"):
+        return 2
     return 0 if result["decision"] == PASS_DECISION else 1
 
 

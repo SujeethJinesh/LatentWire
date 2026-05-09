@@ -560,12 +560,77 @@ def quantize_weight_symmetric_int4(weight: Any) -> Any:
 
     original = weight.detach()
     w = original.float()
-    if w.ndim != 2:
+    if w.ndim == 2:
+        scale = w.abs().amax(dim=1, keepdim=True).clamp_min(1e-8) / 7.0
+    elif w.ndim == 3:
+        # Expert banks are represented as [expert, output_channel, input_channel].
+        scale = w.abs().amax(dim=2, keepdim=True).clamp_min(1e-8) / 7.0
+    else:
         return original.clone()
-    scale = w.abs().amax(dim=1, keepdim=True).clamp_min(1e-8) / 7.0
     q = torch.round(w / scale).clamp(-7, 7)
     dequant = q * scale
     return dequant.to(dtype=original.dtype)
+
+
+def is_tied_lm_head(model: Any, module_name: str, module: Any) -> bool:
+    if module_name != "lm_head" or not bool(getattr(model.config, "tie_word_embeddings", False)):
+        return False
+    try:
+        input_embeddings = model.get_input_embeddings()
+    except Exception:
+        input_embeddings = None
+    return input_embeddings is not None and getattr(module, "weight", None) is getattr(input_embeddings, "weight", None)
+
+
+def quantize_module_weight(
+    *,
+    module_name: str,
+    module: Any,
+    protected: set[int],
+    hidden_size: int,
+    protection_source: str,
+) -> dict[str, Any] | None:
+    import torch
+
+    weight = getattr(module, "weight", None)
+    if not torch.is_tensor(weight):
+        return None
+    if weight.ndim not in {2, 3}:
+        return {
+            "name": module_name,
+            "reason": "weight tensor is not 2D or expert-bank 3D",
+            "shape": list(weight.shape),
+        }
+    original = weight.detach().clone()
+    dequant = quantize_weight_symmetric_int4(weight)
+    if weight.ndim == 2:
+        row_protected = weight.shape[0] == hidden_size
+        col_protected = weight.shape[1] == hidden_size
+        if row_protected and protected:
+            rows = torch.tensor(sorted(protected), device=dequant.device, dtype=torch.long)
+            dequant.index_copy_(0, rows, original.index_select(0, rows))
+        if col_protected and protected:
+            cols = torch.tensor(sorted(protected), device=dequant.device, dtype=torch.long)
+            dequant.index_copy_(1, cols, original.index_select(1, cols))
+    else:
+        row_protected = weight.shape[1] == hidden_size
+        col_protected = weight.shape[2] == hidden_size
+        if row_protected and protected:
+            rows = torch.tensor(sorted(protected), device=dequant.device, dtype=torch.long)
+            dequant.index_copy_(1, rows, original.index_select(1, rows))
+        if col_protected and protected:
+            cols = torch.tensor(sorted(protected), device=dequant.device, dtype=torch.long)
+            dequant.index_copy_(2, cols, original.index_select(2, cols))
+    weight.copy_(dequant)
+    return {
+        "name": module_name,
+        "shape": list(weight.shape),
+        "row_protected": bool(row_protected),
+        "col_protected": bool(col_protected),
+        "protected_channel_count": len(protected) if (row_protected or col_protected) else 0,
+        "protection_source": protection_source,
+        "weight_kind": "linear_2d" if weight.ndim == 2 else "expert_bank_3d",
+    }
 
 
 def apply_quantization(model: Any, protected_sets: dict[str, Any], regime: str) -> dict[str, Any]:
@@ -576,40 +641,65 @@ def apply_quantization(model: Any, protected_sets: dict[str, Any], regime: str) 
     protected_by_layer = protected_sets["regimes"][regime]["layers"]
     quantized: list[dict[str, Any]] = []
     excluded: list[dict[str, Any]] = []
+    processed_module_ids: set[int] = set()
     with torch.no_grad():
         for layer_index, (layer_name, layer) in enumerate(layers):
             protected = set(int(ch) for ch in protected_by_layer[str(layer_index)]["protected_channels"])
             for module_name, module in layer.named_modules():
-                if not isinstance(module, torch.nn.Linear):
-                    continue
                 full_name = f"{layer_name}.{module_name}" if module_name else layer_name
-                weight = module.weight
-                if weight.ndim != 2:
-                    excluded.append({"name": full_name, "reason": "linear weight is not 2D", "shape": list(weight.shape)})
+                item = quantize_module_weight(
+                    module_name=full_name,
+                    module=module,
+                    protected=protected,
+                    hidden_size=hidden_size,
+                    protection_source=f"layer_{layer_index}",
+                )
+                if item is None:
                     continue
-                original = weight.detach().clone()
-                dequant = quantize_weight_symmetric_int4(weight)
-                row_protected = weight.shape[0] == hidden_size
-                col_protected = weight.shape[1] == hidden_size
-                if row_protected and protected:
-                    rows = torch.tensor(sorted(protected), device=dequant.device, dtype=torch.long)
-                    dequant.index_copy_(0, rows, original.index_select(0, rows))
-                if col_protected and protected:
-                    cols = torch.tensor(sorted(protected), device=dequant.device, dtype=torch.long)
-                    dequant.index_copy_(1, cols, original.index_select(1, cols))
-                weight.copy_(dequant)
-                quantized.append(
+                processed_module_ids.add(id(module))
+                if "reason" in item:
+                    excluded.append(item)
+                else:
+                    quantized.append(item)
+        first_layer_protected = set(int(ch) for ch in protected_by_layer["0"]["protected_channels"])
+        last_layer_index = str(max(int(key) for key in protected_by_layer))
+        last_layer_protected = set(int(ch) for ch in protected_by_layer[last_layer_index]["protected_channels"])
+        for name, module in model.named_modules():
+            if id(module) in processed_module_ids:
+                continue
+            weight = getattr(module, "weight", None)
+            if not torch.is_tensor(weight):
+                continue
+            if is_tied_lm_head(model, name, module):
+                excluded.append(
                     {
-                        "name": full_name,
+                        "name": name,
+                        "reason": "tied input/output embedding; quantizing it would confound prompt embeddings with layer protection",
                         "shape": list(weight.shape),
-                        "row_protected": bool(row_protected),
-                        "col_protected": bool(col_protected),
-                        "protected_channel_count": len(protected) if (row_protected or col_protected) else 0,
                     }
                 )
-    for name, module in model.named_modules():
-        if isinstance(module, torch.nn.Linear) and not any(name.startswith(layer_name) for layer_name, _ in layers):
-            excluded.append({"name": name, "reason": "outside transformer layer stack", "shape": list(module.weight.shape)})
+                continue
+            outside_protected: set[int] = set()
+            protection_source = "outside_transformer_stack_no_hidden_axis"
+            if weight.ndim == 2 and weight.shape[1] == hidden_size:
+                outside_protected.update(last_layer_protected)
+                protection_source = "outside_transformer_stack_hidden_input_uses_last_layer"
+            if weight.ndim == 2 and weight.shape[0] == hidden_size:
+                outside_protected.update(first_layer_protected)
+                protection_source = "outside_transformer_stack_hidden_output_uses_first_layer"
+            item = quantize_module_weight(
+                module_name=name,
+                module=module,
+                protected=outside_protected,
+                hidden_size=hidden_size,
+                protection_source=protection_source,
+            )
+            if item is None:
+                continue
+            if "reason" in item:
+                excluded.append(item)
+            else:
+                quantized.append(item)
     return {
         "regime": regime,
         "layer_origin": layer_origin,
@@ -801,7 +891,9 @@ def main(argv: list[str] | None = None) -> int:
         "protected_channel_dtype": "bfloat16",
         "implementation_note": (
             "INT4 weights are represented as dequantized tensors for framework compatibility; "
-            "quantization levels are exactly symmetric signed 4-bit per output channel."
+            "quantization levels are exactly symmetric signed 4-bit per output channel. "
+            "Protected entries are restored from the original BF16 checkpoint tensor before scoring; "
+            "quantized-regime scoring uses FP16 autocast for activations."
         ),
         "forbidden_methods": [
             "AWQ-style activation-aware scaling",

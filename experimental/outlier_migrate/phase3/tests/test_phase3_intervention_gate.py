@@ -78,6 +78,55 @@ def _summary(values: list[float]) -> dict[str, object]:
     }
 
 
+def _write_activation_rows(run_dir: Path, prompts: list[dict[str, object]]) -> None:
+    positions = list(checker.DENSE_GRID)
+    row_count = 0
+    with gzip.open(run_dir / "activation_magnitudes.jsonl.gz", "wt", encoding="utf-8") as handle:
+        for prompt in prompts:
+            for position in positions:
+                values = [0.01 * index for index in range(16)]
+                if position == 100:
+                    values[0] = 10.0
+                elif position == 500:
+                    values[4] = 10.0
+                elif position == 1000:
+                    values[1] = 10.0
+                elif position == 2000:
+                    values[5] = 10.0
+                elif position == 5000:
+                    values[2] = 10.0
+                elif position == 7500:
+                    values[6] = 10.0
+                elif position == 10000:
+                    values[3] = 10.0
+                handle.write(
+                    json.dumps(
+                        {
+                            "schema_version": f"{checker.SCHEMA_VERSION}_activation_row",
+                            "prompt_index": int(prompt["index"]),
+                            "prompt_id": prompt["prompt_id"],
+                            "layer_index": 0,
+                            "layer_name": "synthetic.layers.0",
+                            "decode_position": position,
+                            "channel_count": len(values),
+                            "channel_magnitudes": values,
+                        },
+                        sort_keys=True,
+                    )
+                    + "\n"
+                )
+                row_count += 1
+    _write_json(
+        run_dir / "activation_magnitude_manifest.json",
+        {
+            "positions": positions,
+            "layer_count": 1,
+            "row_count": row_count,
+            "trace_count": len(prompts),
+        },
+    )
+
+
 def _write_packet(
     tmp_path: Path,
     *,
@@ -117,28 +166,24 @@ def _write_packet(
         run_dir / "decoding_config.json",
         {"scoring_position": checker.SCORING_POSITION, "scoring_window_tokens": checker.SCORING_WINDOW_TOKENS},
     )
-    regimes = {}
-    for name, positions in {
-        "static_1pct": [100],
-        "union_primary": list(checker.PRIMARY_GRID),
-        "static_2pct": [100],
-        "magnitude_average": list(checker.PRIMARY_GRID),
-        "grid_sparse": list(checker.SPARSE_GRID),
-        "grid_dense": list(checker.DENSE_GRID),
-    }.items():
-        regimes[name] = {
-            "kind": "union" if name.startswith("grid") or name == "union_primary" else "single_position",
-            "positions": positions,
-            "layers": {"0": {"protected_channels": [0], "protected_count": 1}},
-        }
-    _write_json(run_dir / "protected_sets.json", {"schema_version": f"{checker.SCHEMA_VERSION}_protected_sets", "regimes": regimes})
+    _write_activation_rows(run_dir, prompts)
+    _write_json(
+        run_dir / "protected_sets.json",
+        {
+            "schema_version": f"{checker.SCHEMA_VERSION}_protected_sets",
+            "regimes": checker.expected_protected_sets_from_activations(run_dir / "activation_magnitudes.jsonl.gz"),
+        },
+    )
     _write_json(
         run_dir / "quantization_config.json",
         {
             "weight_bits": 4,
             "scheme": "symmetric_per_output_channel_int4",
             "activation_dtype": "float16",
-            "forbidden_methods": ["AWQ-style activation-aware scaling"],
+            "forbidden_methods": [
+                "AWQ-style activation-aware scaling",
+                "SmoothQuant-style activation folding",
+            ],
         },
     )
     _write_json(run_dir / "excluded_tensors.json", {"by_regime": {}})
@@ -175,9 +220,6 @@ def _write_packet(
             }
         },
     )
-    _write_json(run_dir / "activation_magnitude_manifest.json", {"positions": list(checker.DENSE_GRID)})
-    with gzip.open(run_dir / "activation_magnitudes.jsonl.gz", "wt", encoding="utf-8") as handle:
-        handle.write("{}\n")
     with gzip.open(run_dir / "bf16_traces.jsonl.gz", "wt", encoding="utf-8") as handle:
         handle.write("{}\n")
     (run_dir / "logs").mkdir()
@@ -208,8 +250,10 @@ def test_phase3_checker_kills_low_recovery_packet(tmp_path: Path) -> None:
 
 
 def test_phase3_checker_flags_control_stop_condition(tmp_path: Path) -> None:
-    result = checker.evaluate(_write_packet(tmp_path, union_recovery=0.60, static2_recovery=0.75))
+    run_dir = _write_packet(tmp_path, union_recovery=0.60, static2_recovery=0.75)
+    result = checker.evaluate(run_dir)
 
     assert result["decision"] == checker.PASS_DECISION
     assert result["control_results"]["control_stop_condition"] is True
     assert result["control_results"]["control_stop_details"][0]["control"] == "static_2pct"
+    assert checker.main(["--run-dir", str(run_dir)]) == 2

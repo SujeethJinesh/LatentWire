@@ -184,13 +184,32 @@ Completed before the first Phase 3 quantization run:
   `fc394bcb`.
 - Sprint state/progress note pushed at commit `cda8cc92`.
 
-Active:
+Aborted before decision metrics:
 
-- Core Granite-4.0-H-Tiny Phase 3 intervention run:
+- Initial Granite-4.0-H-Tiny Phase 3 intervention run:
   `experimental/outlier_migrate/phase3/results/om_phase3_20260509T174000Z`.
 - Started at `2026-05-09T17:38:58Z`.
-- First activation-capture batch completed at `2026-05-09T17:47:43Z`.
-- No Phase 3 decision metrics have been produced yet.
+- Aborted at `2026-05-09T17:56:06Z`.
+- Two activation-capture batches completed; no protected sets, quantized
+  scoring, per-trace metrics, checker output, or decision metrics were
+  produced.
+- Reason: independent protocol review found that the checker did not enforce
+  the control-stop exit, did not recompute protected sets/recoveries from raw
+  artifacts, and the runner only quantized `nn.Linear` modules inside the layer
+  stack. The abort occurred before any Phase 3 intervention result was
+  observed.
+- GPU-hour delta charged to the sprint: `0.2856`.
+
+Corrective patch in progress:
+
+- Tighten `check_phase3_intervention.py` to recompute protected sets from
+  activation rows, recompute recoveries from perplexities, validate the
+  scoring window, enforce SmoothQuant/AWQ bans, and exit nonzero on
+  control-stop packets.
+- Tighten `run_phase3_intervention.py` to quantize expert-bank 3D weights and
+  remove the blanket outside-layer exclusion. Tied input/output embedding heads
+  remain excluded with explicit rationale to avoid confounding prompt
+  embeddings with layer protection.
 
 Completed no-GPU analysis:
 
@@ -210,9 +229,10 @@ Completed no-GPU analysis:
 
 Pending:
 
-1. Let the core Phase 3 intervention run complete.
-2. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
+1. Commit and push the corrective runner/checker patch.
+2. Restart the core Phase 3 intervention with a new run id.
+3. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
    the packet.
-3. Stop and block if either mandatory control outperforms union protection by
+4. Stop and block if either mandatory control outperforms union protection by
    more than `0.10` median recovery.
-4. Integrate Phase 3 outcome into the paper and run committee review.
+5. Integrate Phase 3 outcome into the paper and run committee review.
