@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import gzip
 import inspect
 import json
@@ -220,6 +221,20 @@ def write_failure_packet(run_dir: Path, run_events_path: Path, exc: BaseExceptio
         return
     try:
         checker.evaluate(run_dir)
+    except Exception:
+        pass
+
+
+def release_model_memory(*objects: Any) -> None:
+    for obj in objects:
+        del obj
+    gc.collect()
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
     except Exception:
         pass
 
@@ -1061,7 +1076,13 @@ def main(argv: list[str] | None = None) -> int:
             "bf16_trace_manifest.json",
         ]
         missing_reuse = [rel for rel in required_reuse if not (reuse_dir / rel).is_file()]
-        forbidden_reuse_outputs = ["per_trace_metrics.json", "metrics.json", "checker_result.json", "artifact_check.json"]
+        forbidden_reuse_outputs = [
+            "per_trace_metrics.json",
+            "metrics.json",
+            "bootstrap_ci.json",
+            "control_metrics.json",
+            "grid_sensitivity_metrics.json",
+        ]
         produced_metrics = [rel for rel in forbidden_reuse_outputs if (reuse_dir / rel).exists()]
         if missing_reuse:
             raise SystemExit(f"--reuse-prequant-run-dir missing required files: {missing_reuse}")
@@ -1143,7 +1164,10 @@ def main(argv: list[str] | None = None) -> int:
             run_events_path=run_events_path,
         )
         shared.write_json(run_dir / "bf16_trace_manifest.json", trace_manifest)
+        release_model_memory(model, tokenizer)
+        model = tokenizer = device = None
     target_tokens = load_trace_tokens(trace_path)
+    release_model_memory()
     model, tokenizer, device = shared.load_model_and_tokenizer(
         model_provenance, dtype_name=args.dtype, device_name=args.device
     )
@@ -1160,14 +1184,8 @@ def main(argv: list[str] | None = None) -> int:
         run_events_path=run_events_path,
         regime_name="bf16",
     )
-    del model
-    try:
-        import torch
-
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-    except Exception:
-        pass
+    release_model_memory(model, tokenizer)
+    model = tokenizer = device = None
 
     excluded_by_regime: dict[str, Any] = {}
     for regime in [
@@ -1195,14 +1213,8 @@ def main(argv: list[str] | None = None) -> int:
             run_events_path=run_events_path,
             regime_name=regime,
         )
-        del model
-        try:
-            import torch
-
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-        except Exception:
-            pass
+        release_model_memory(model, tokenizer)
+        model = tokenizer = device = None
     shared.write_json(
         run_dir / "excluded_tensors.json",
         {
