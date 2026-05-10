@@ -723,3 +723,167 @@ FORBIDDEN
 
 If multiple Lineage 3 models can be measured within budget, prefer Qwen3.6-35B-A3B (MoE) over Qwen3.6-27B-dense. Kimi Linear is acceptable as a second Lineage 3 data point only if Qwen3.6-35B-A3B has landed and time remains.
 
+
+## Phase 7 — Falcon-H1 within-lineage replication (chained after Phase 5'/6)
+
+PURPOSE
+Strengthen the Lineage 2 claim by replicating the migration measurement on a
+third Mamba-2 hybrid model from a third organization. Falcon-H1 uses a
+parallel SSM-Attention hybridization (each block runs Mamba-2 and Attention
+in parallel and sums outputs) vs Granite-4 / Nemotron-3's interleaved
+topology (separate Mamba-2 and Attention layers). If migration matches,
+the Lineage 2 claim covers both hybridization topologies.
+
+PRIORITY
+OPTIONAL stretch experiment. Run only if Phase 5'/6 has completed AND
+cumulative gpu_hours_used is below 65 (cap is 80, save headroom for Phase 5'').
+
+EXECUTION GATE
+Before beginning Phase 7, Codex must verify:
+1. Phase 4, Phase 5', Experiment D, and Phase 6 (if applicable) have all landed
+2. swarm/state.json shows gpu_hours_used < 65
+3. Wall-clock date is on or before June 1, 2026
+
+If any condition is unmet, skip Phase 7 and proceed to Phase 5'' (if its
+gate is met) or paper integration.
+
+PREREGISTRATION
+Author at experimental/outlier_migrate/phase7/preregister_om_phase7_falcon_h1.md
+before any GPU runs. Pivot depth: 1 from OutlierMigrate Phase 0 (parallel
+pivot, within Lineage 2).
+
+Hypothesis: Same migration metric as Phase 0/1/2 measured on Falcon-H1
+(parallel-hybrid Mamba-2 architecture).
+
+Primary model: tiiuae/Falcon-H1-0.5B-Instruct at HuggingFace snapshot
+commit recorded before inference. Fallback: tiiuae/Falcon-H1-1.5B-Instruct
+if the 0.5B variant has vLLM 0.10.2 compatibility issues. The 0.5B size is
+preferred because it fits comfortably and is fastest.
+
+Trace set: 24 AIME-2025 traces, indices 0-23, prompt SHA matching Phase 1.
+
+Decode positions: {100, 500, 1000, 5000, 10000, 20000}.
+
+Migration metric: identical to Phase 0/1/2.
+
+Bootstrap seed: 20260512.
+
+Hook adaptation: Falcon-H1 has parallel SSM and Attention pathways within
+each block. The migration measurement reads residual-stream output AFTER
+the parallel-sum, which is architecture-comparable to Phase 0/1/2's
+post-block residual stream. For layer-stratified analysis, hook the SSM
+pathway output and Attention pathway output SEPARATELY before they sum
+into the residual stream. This is the only adaptation needed.
+
+Decision rule (non-directional):
+- WITHIN_LINEAGE_2_CONSISTENT: migration consistent with Phase 0/1/2
+  (median within 0.10 of pooled Phase 0/1/2 median). Strengthens Lineage 2
+  claim to cover both interleaved and parallel hybridization topologies.
+- WITHIN_LINEAGE_2_DIVERGENT: migration differs from Phase 0/1/2 by more
+  than 0.10 median. Narrows Lineage 2 claim to interleaved topology;
+  Falcon-H1 becomes a noted exception in the paper.
+- FAIL_INFRA_PHASE7: infrastructure issue.
+
+Estimated 3-4 GPU hours.
+
+Forbidden:
+- Modifying any prior preregistration
+- Selecting which scoring position to report post-hoc
+- Skipping the layer-stratified analysis
+
+INTEGRATION
+If Phase 7 lands WITHIN_LINEAGE_2_CONSISTENT: paper's Lineage 2 framing
+becomes "three Mamba-2 hybrid model families spanning interleaved (Granite-4,
+Nemotron-3) and parallel (Falcon-H1) hybridization topologies." This is a
+stronger generality claim than the original three-model framing.
+
+If Phase 7 lands WITHIN_LINEAGE_2_DIVERGENT: paper notes Falcon-H1 as an
+exception with mechanism speculation (parallel summation may dilute the
+migration signal). Still publishable as honest scoping.
+
+## Phase 8 — Kimi Linear as second Lineage 3 data point (conditional)
+
+PURPOSE
+If Phase 5'' on Qwen3.6 succeeds, strengthen the Lineage 3 cross-lineage
+claim with a second Gated DeltaNet hybrid from a different organization
+(Moonshot AI vs Alibaba).
+
+PRIORITY
+LOWEST priority. Run only if ALL of:
+1. Phase 5'' completed successfully (DYNAMIC_REGIME or STATIC_REGIME)
+2. Cumulative gpu_hours_used < 70
+3. Wall-clock date is on or before June 1, 2026
+4. SGLang at /workspace/.sglang supports Kimi Linear (verify with one-line
+   load test before committing prereg)
+
+If any condition is unmet, skip Phase 8.
+
+PREREGISTRATION
+Author at experimental/outlier_migrate/phase8/preregister_om_phase8_kimi_linear.md
+before any GPU runs. Pivot depth: 1 from OutlierMigrate Phase 0.
+
+Primary model: moonshotai/Kimi-Linear at HuggingFace snapshot commit
+recorded before inference. If too large for 96GB pod, fall back to smaller
+Kimi Linear variant if available, otherwise skip Phase 8.
+
+Same trace set, decode positions, metric, bootstrap procedure as Phase 5''.
+
+Bootstrap seed: 20260513.
+
+Hook adaptation: Kimi Linear uses channel-wise gated KDA (Kimi Delta
+Attention) which is a variant of Gated DeltaNet. Same hook target as
+Phase 5'' (residual-stream output of each block).
+
+Decision rule (non-directional):
+- LINEAGE_3_REPLICATED: migration consistent with Phase 5'' Qwen3.6 result
+- LINEAGE_3_DIVERGENT: migration differs from Phase 5'' by more than 0.10
+- FAIL_INFRA_PHASE8: infrastructure issue
+
+Estimated 3-4 GPU hours.
+
+INTEGRATION
+If LINEAGE_3_REPLICATED: paper's cross-lineage claim strengthens to "two
+Gated DeltaNet hybrid model families from two organizations." If
+LINEAGE_3_DIVERGENT: paper notes the variation and refines claim to a
+specific Gated DeltaNet variant (Qwen's vs Moonshot's).
+
+## Experiment E — Threshold sensitivity of decomposition (no GPU)
+
+PURPOSE
+Strengthen the decomposition contribution against the reviewer objection
+"is the set-leaving / rank-shuffling split robust to the top-1% threshold?"
+Compute the decomposition at multiple thresholds and report stability.
+
+PRIORITY
+HIGH priority. No GPU required. Authorize immediately after Experiment D
+lands. Should complete in 1-2 LLM hours.
+
+PROCEDURE
+Operate on existing Phase 0/1/2 packets (and Phase 5'/5''/7/8 packets if
+they have landed). For each phase's packet:
+
+1. Recompute the migration metric and decomposition at thresholds:
+   - top-0.5% (stricter)
+   - top-1% (original)
+   - top-2% (looser)
+   - top-5% (much looser)
+2. Compute set-leaving and rank-shuffling components at each threshold
+3. Bootstrap CIs at each threshold
+4. Generate a figure showing how the decomposition shifts with threshold
+5. Report the threshold range over which the decomposition is "stable"
+   (set-leaving and rank-shuffling components within 0.10 of their
+   original values)
+
+Output: experimental/outlier_migrate/decomposition_analysis/threshold_sensitivity.md
+with table and figure.
+
+Decision: this is descriptive only. No pass/kill. If decomposition is
+stable across thresholds, paper's decomposition contribution is unbreakable.
+If decomposition shifts substantially, paper notes the dependence on
+threshold and recommends top-1% as the "natural" operating point with
+mechanism speculation.
+
+Forbidden:
+- Post-hoc threshold selection to make the decomposition look cleaner
+- Reporting only the most favorable threshold
+
