@@ -437,3 +437,41 @@ Write swarm/progress_<date>_<hour>.md every 2 hours. Each progress note must inc
 - Disk free, GPU temperature, GPU utilization
 
 Write swarm/final_report.md at the end of the window OR when goal.md achieved condition is met OR when any stop rule fires.
+
+## Phase 4 window — always-available fallback work queue
+
+If Phase 4 main completes before the 10-hour window and either (a) passed with conditional follow-ups running, or (b) killed/ambiguous with no follow-ups, Codex MUST continue working through the following fallback queue in priority order rather than idling. Each item is bounded, safe, and paper-strengthening. None require GPU; all are LLM-time.
+
+PRIORITY ORDER
+
+1. **Citation verification pass**: For every BibTeX entry cited in outlier_migrate_colm2026.tex and thoughtflow_fp8_colm2026.tex, web-search the title, verify the paper exists, the authors match, the year matches, and the abstract roughly matches what the paper claims about the work. Build experimental/<paper>/paper/citation_audit.md with a row per citation showing (cited claim, verified abstract excerpt, match Y/N). Any mismatch is a desk-reject risk; surface to human in final_report.md.
+
+2. **Anonymization audit**: For each alive paper, scan all .tex files and figures for author names, GitHub URLs, acknowledgments referencing institutions, and any identifying information. Build experimental/<paper>/paper/anonymization_audit.md with findings. Replace any identifiable references with anonymous placeholders.
+
+3. **Reproducibility statement audit**: For each alive paper, verify that every claim referencing a result packet path actually resolves to that path, that every cited artifact_check.json file exists, and that the commit SHAs named in the reproducibility section actually exist in git history. Build experimental/<paper>/paper/repro_audit.md.
+
+4. **Limitations section completeness audit**: For each alive paper, list every reviewer-anticipated objection from the latest committee reviews. Check whether each is addressed in the limitations section. Where gaps exist, draft proposed limitations-section text additions (do NOT apply them; collect them in a draft document for human review on landing).
+
+5. **Presubmission checklist authoring**: For each alive paper, create paper/presubmission_checklist.md covering: page limit (verify against COLM workshop limit when known), table format (booktabs check), figure format (PDF not raster check), BibTeX completeness, ethics statement applicability, broader impact statement requirement check (workshop-dependent), conflict-of-interest declarations.
+
+6. **Ablation summary table consolidation**: For OutlierMigrate, consolidate all ablation results (Phase 3 grid sensitivity, Phase 3 controls, Phase 4 grid sensitivity if completed, Phase 4 controls if completed) into a single comparison table for the paper's main results section. This is post-hoc presentation, not new analysis.
+
+7. **ThoughtFlow committee fifth-round polish**: Run a fifth committee round on ThoughtFlow targeting scores >=8/10 across all reviewers. Address wording-only feedback. Framing changes still forbidden.
+
+8. **Cross-phase comparison narrative for OutlierMigrate paper**: If Phase 4 ran, draft the Phase 3 vs Phase 4 comparison narrative for the discussion section. Include: methodological lesson learned, what changed and why, what the comparison tells the field about quantization regime sensitivity.
+
+9. **Future work section drafting**: For OutlierMigrate, draft the future-work section explicitly covering: Qwen3.6 and Kimi Linear cross-validation (pending vLLM compatibility resolution), within-set rank shuffling adaptive interventions, full AWQ-style activation-aware integration, hardware co-design implications for migration-aware static protection.
+
+10. **Repository hygiene**: Run a final pass deleting any temporary files, intermediate cache files, or orphaned artifacts in experimental/outlier_migrate/phase4/results/ that are not referenced by metrics.json or other manifest files. Do NOT delete result packets or any artifact referenced by the paper.
+
+FALLBACK QUEUE RULES
+
+- Each item must complete before the next begins.
+- Each item commits and pushes its outputs.
+- Items must be done thoroughly, not rushed. A half-finished citation audit is worse than no citation audit.
+- The fallback queue continues until the 10-hour window expires OR cumulative gpu_hours hits the 60-hour cap.
+- If Codex completes all 10 items before the window expires, it begins a second round of citation verification (different sample of citations, deeper check on the abstract-matching part) and then re-runs the anonymization audit. Repetition is acceptable as long as each pass is genuinely thorough.
+- Codex must NOT use the fallback queue to invent new experiments, propose new pivots, or modify any preregistration.
+- Codex must NOT mark camera-ready-final during fallback work. Camera-ready-candidate marks are permitted only if committee scores meet the >=7/10 threshold per the goal.
+
+When the window approaches its end (Codex must track wall-clock from the time of Phase 4 prompt acceptance), write a final summary to swarm/window_end_report.md capturing: which fallback items completed, what their outputs say, what humans must review on landing.
