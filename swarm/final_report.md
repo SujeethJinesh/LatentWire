@@ -358,3 +358,27 @@ Remaining human-facing caveats:
    model choices.
 4. TeX builds successfully but still emits underfull layout warnings from long
    artifact paths and dense tables.
+
+## ThoughtFlow-FP8 Polish Status (2026-05-10)
+
+Additional read-only committee polish completed for ThoughtFlow-FP8 under the
+authorized scope. The paper body was not modified.
+
+- Committee review:
+  `experimental/thoughtflow_fp8/paper/committee_reviews/20260510_polish_round3.md`.
+- Reviewer pack updated:
+  `experimental/thoughtflow_fp8/paper/reviewer_pack.md`.
+- Final committee scores under falsification-methodology / negative-results
+  workshop framing:
+  - COLM area chair: `8/10`.
+  - MLSys reviewer: `8/10` as an artifact diagnostic, not as a systems paper.
+  - adversarial reviewer: `8/10`.
+- Checker verification:
+  `PASS_THOUGHTFLOW_PAPER_BUILDABLE`.
+- Owned tests:
+  `70 passed, 1 warning in 11.77s` with `.venv_gpu`,
+  `TRITON_CPU_BACKEND=1`, and `TRITON_INTERPRET=1`.
+
+ThoughtFlow remains only a falsification-methodology workshop diagnostic
+candidate. It is not camera-ready final, not a positive-method paper, and not
+an MLSys systems paper.

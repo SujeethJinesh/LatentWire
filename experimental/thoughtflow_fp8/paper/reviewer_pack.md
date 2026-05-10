@@ -93,6 +93,27 @@ body itself was not modified in this gate.
   preregistration violation, citation hallucination, or paper-test regression
   was identified in this read.
 
+## 2026-05-10 Additional Committee Polish
+
+- Committee review:
+  `experimental/thoughtflow_fp8/paper/committee_reviews/20260510_polish_round3.md`
+- Scores under falsification-methodology / negative-results workshop framing:
+  - COLM area chair: `8/10`
+  - MLSys reviewer: `8/10` as an artifact-backed falsification diagnostic
+    (not as a systems paper)
+  - Adversarial reviewer: `8/10`
+- Local checker:
+  `PASS_THOUGHTFLOW_PAPER_BUILDABLE`
+- Local owned tests on the GPU node:
+  `70 passed, 1 warning in 11.77s` using `.venv_gpu`,
+  `TRITON_CPU_BACKEND=1`, and `TRITON_INTERPRET=1`.
+- Candidate status remains unchanged: plausible camera-ready candidate only as
+  a falsification-methodology workshop diagnostic, not camera-ready final and
+  not a positive-method paper.
+- Feedback was copyedit-only: abstract density, `FP8` expectation management,
+  omnibus citation cleanup, and consistent "local proxy" wording. No paper-body
+  edits were made in this round.
+
 ## Strongest Evidence
 
 | Gate | Result | Decision |
