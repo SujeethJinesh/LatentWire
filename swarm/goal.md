@@ -887,3 +887,141 @@ Forbidden:
 - Post-hoc threshold selection to make the decomposition look cleaner
 - Reporting only the most favorable threshold
 
+
+## Scoop audit update (May 10, 2026, second pass)
+
+Three additional prior-art items identified after Phase 7/8/E queueing.
+Two are non-threats and one requires acknowledgment in the paper.
+
+NEW PRIOR ART ITEM 1: Borobia et al. - Functional Component Ablation
+(arXiv 2603.22473, March 23, 2026)
+
+Question they ask: "Are both components in hybrid LLMs genuinely utilized
+or is one effectively bypassed?"
+Their metric: Perplexity degradation when removing components
+Their models: Qwen3.5-0.8B (sequential Gated DeltaNet + softmax attention)
+and Falcon-H1-0.5B (parallel Mamba-2 + attention) with Qwen2.5-0.5B
+as pure-Transformer control.
+Their finding: SSM/linear-attention is the primary backbone (>35,000x
+perplexity degradation when removed); attention is secondary (~82x).
+
+Status: NON-THREAT. Orthogonal question to ours. They measure component
+essentiality via ablation perplexity; we measure decode-time channel
+migration via activation magnitude rank shifts. Same models, different
+questions, different metrics, different findings.
+
+Differentiation language to use in related work:
+"Concurrent work by Borobia et al. (2026) measures whether both
+components in hybrid LLMs are functionally utilized through perplexity-
+based ablation, finding the alternative-component pathway (SSM in
+Falcon-H1, linear attention in Qwen3.5) serves as the primary language
+modeling backbone. Our work asks a complementary question - whether
+decode-time outlier channel migration rates differ across these
+component types in hybrid LLMs - and finds broad uniformity across
+attention, SSM, and MoE layer types, independent of which component
+serves as the primary backbone."
+
+Add Borobia et al. to mandatory citations.
+
+NEW PRIOR ART ITEM 2: Liu et al. - CHON / Hot-Channel Patch (HCP)
+(arXiv 2602.02047, February 2, 2026)
+
+What they propose: HCP, "an online compensation mechanism that
+identifies hot channels and reinjects residuals using hardware-efficient
+kernels." Integrated into CHON, an NVFP4 training recipe.
+Setting: NVFP4 PRETRAINING (modifies training-time forward and backward)
+Models: GLA-1.3B (Gated Linear Attention, sub-1B scale)
+Finding: Outliers transition from drifting spikes early in training to
+persistent hot channels later; HCP closes BF16/NVFP4 loss gap from
+0.94% to 0.58%.
+
+Status: PARTIAL SCOOP on the CONCEPTUAL CORE of RSPR. Both methods:
+- Identify persistent "hot" channels
+- Apply periodic compensation
+- Use hardware-efficient kernels
+
+Key differences (these are real and substantial):
+
+DIMENSION         | HCP (Liu et al.)        | RSPR (our Phase 6)
+------------------|-------------------------|----------------------------
+Setting           | NVFP4 pretraining       | W4A16 post-training inference
+Goal              | Reduce training loss    | Recover inference quality
+                  | gap to BF16             | under quantization
+Mechanism         | Residual reinjection    | Scale recalibration on
+                  | in higher precision     | protected channel set
+Decision unit     | Hot channels detected   | Union-set from preregistered
+                  | online during training  | decode positions
+Trigger           | Continuous during       | Periodic every K decode
+                  | training step           | positions
+Models            | GLA-1.3B (Gated Linear  | Mamba-2 hybrid + MoE
+                  | Attention pretraining)  | (Granite-Small inference)
+Theoretical       | MSE upper bound for     | Decomposition-justified
+justification     | residual reinjection    | (set-leaving via union,
+                  | (Theorem A.7)           | rank-shuffling via refresh)
+
+The honest framing: HCP and RSPR independently arrived at "persistent
+hot channels can be identified and compensated periodically" via
+different motivations (training stability vs. inference quantization
+recovery). RSPR adds the decomposition-justified rationale linking
+set-leaving and rank-shuffling components to specific mechanism choices
+(union-set protection for set-leaving, periodic scale refresh for
+rank-shuffling).
+
+UPDATED PAPER FRAMING FOR RSPR (Phase 6):
+
+REPLACE the claim "First positive method using decomposition-justified
+periodic refresh" with:
+
+ALLOWED: "First INFERENCE-TIME, decomposition-justified periodic refresh
+for hybrid Mamba-2 reasoning LLMs. Our method differs from concurrent
+training-time work (Liu et al., 2026) in setting (post-training
+inference vs pretraining), mechanism (scale recalibration vs residual
+reinjection), and decision unit (preregistered union-set vs online hot
+channel detection)."
+
+FORBIDDEN CLAIMS (additions):
+- "First to identify persistent hot channels with periodic compensation"
+  (Liu et al. priority for the conceptual move)
+- "Novel periodic refresh mechanism" (Liu et al. priority for periodic
+  compensation; RSPR's novelty is the decomposition justification, not
+  the periodic-compensation idea itself)
+
+ADD HCP/CHON to mandatory citations: "Liu et al., Dissecting Outlier
+Dynamics in LLM NVFP4 Pretraining (arXiv 2602.02047, February 2026):
+proposes online hot-channel compensation for pretraining; conceptually
+adjacent to RSPR but for training-time rather than inference-time
+quantization."
+
+NEW PRIOR ART ITEM 3: Falcon-H1R 7B FP8 release
+(Falcon-LM, January 5, 2026, arXiv 2601.02346)
+
+What it is: A fully FP8-quantized version of Falcon-H1R 7B reasoning
+model. Confirms Falcon-H1 family is being deployed in quantized form
+in practice. Negligible AIME25 drop (0.8%) under FP8 PTQ.
+
+Status: NON-THREAT. Motivates Phase 7 (Falcon-H1 measurement is now
+practically relevant, not just academic). Cite as evidence the Falcon-H1
+lineage is real production-quantization territory.
+
+PHASE 6 EXECUTION RULE (NEW)
+
+When Codex authors the Phase 6 RSPR preregistration, the prereg's
+"differentiation from prior art" section MUST include a paragraph
+explicitly differentiating RSPR from HCP/CHON along the five dimensions
+in the table above (setting, goal, mechanism, decision unit, trigger,
+models, theoretical justification). The prereg fails human review if
+this differentiation is missing or shallow.
+
+When Codex authors the paper's Section 8 (RSPR), the framing must
+position RSPR as "decomposition-justified inference-time periodic
+refresh" - NOT as "first periodic compensation" or any similar
+broader claim.
+
+PHASE 7 PROCEEDS UNMODIFIED. Borobia et al. is orthogonal, not scooping.
+
+PHASE 8 PROCEEDS UNMODIFIED. No Kimi Linear quantization or migration
+work found.
+
+EXPERIMENT E PROCEEDS UNMODIFIED. Threshold sensitivity is an ablation
+strengthening the decomposition, not a contribution claim.
+
