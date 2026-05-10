@@ -475,3 +475,251 @@ FALLBACK QUEUE RULES
 - Codex must NOT mark camera-ready-final during fallback work. Camera-ready-candidate marks are permitted only if committee scores meet the >=7/10 threshold per the goal.
 
 When the window approaches its end (Codex must track wall-clock from the time of Phase 4 prompt acceptance), write a final summary to swarm/window_end_report.md capturing: which fallback items completed, what their outputs say, what humans must review on landing.
+
+## Phase 5'/6 sprint authorization — chained after Phase 4
+
+This section authorizes a three-experiment sprint that begins ONLY after Phase 4 has landed (PASS, KILL, AMBIGUOUS, or FAIL_INFRA). Do NOT begin any item in this section while Phase 4 is still executing. The goal is to produce a COLM 2026 workshop submission with FOUR contributions: decomposition, layer-uniformity, cross-architectural measurement, and Rank-Shuffling-Aware Periodic Refresh (RSPR) as a positive method.
+
+DROP Phase 5 (calibration aging on Granite-Small) in its current form. It is substantially scooped by PM-KVQ (arXiv 2505.18610, May 2025) for RoPE-driven KV cache drift and MaCa (arXiv 2602.07465, February 2026) for sequence-length-driven weight Hessian sensitivity. If a Phase 5 calibration-aging preregistration draft exists, mark it SUPERSEDED in its file header and do NOT delete it (preserve scoop-audit evidence).
+
+EXECUTION GATE
+
+Before beginning any work in this section, Codex must verify:
+1. swarm/state.json shows Phase 4 status is one of {PASS_OM_PHASE4_MIGRATION_AWARE_RECOVERS, KILL_OM_PHASE4_INTERVENTION_FAILS, KILL_OM_PHASE4_AMBIGUOUS, FAIL_INFRA_OM_PHASE4}
+2. Phase 4 final commit is pushed to origin/main
+3. swarm/final_report.md has been updated with the Phase 4 outcome
+
+If any of the above is unmet, wait. Do not proceed.
+
+EXPERIMENT 5' (FIVE-PRIME): Pure-Transformer reasoning control
+
+Purpose: Either broaden the migration finding to all reasoning LLMs (if pure Transformers also migrate ~80%) OR sharpen the Mamba-2-hybrid-specificity claim (if pure Transformers migrate substantially less).
+
+Author preregistration: experimental/outlier_migrate/phase5_prime/preregister_om_phase5_prime_transformer_control.md. Pivot depth: 1 from OutlierMigrate Phase 0 (parallel pivot, not child of Phase 3 or Phase 4).
+
+Hypothesis: Same migration metric as Phase 0/1/2 measured on a pure-Transformer reasoning model with RoPE and no Mamba components.
+
+Primary model: deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B at HuggingFace snapshot commit recorded in model_provenance.json before any inference. Fallback: Qwen/Qwen2.5-1.5B-Instruct if R1-Distill has vLLM 0.10.2 compatibility issues. Codex must test load both models before committing the prereg and record which is being used.
+
+Trace set: 24 AIME-2025 traces, indices 0-23, prompt SHA matching Phase 1 (sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e).
+
+Decode position grid: {100, 500, 1000, 5000, 10000, 20000}. Identical to Phase 1 for direct comparability.
+
+Migration metric and bootstrap procedure: identical to Phase 0/1/2. Bootstrap seed: 20260511.
+
+Decision rule (preregistered, non-directional):
+- DYNAMIC_REGIME_TRANSFORMER: migration > 0.05 AND CI lower > 0.05. Implication: finding broadens to all reasoning LLMs.
+- STATIC_REGIME_TRANSFORMER: migration < 0.05 AND CI upper < 0.05. Implication: finding is hybrid-specific.
+- AMBIGUOUS_TRANSFORMER: in-between or wide CI. Implication: report honestly, no strong claim.
+- FAIL_INFRA_TRANSFORMER: infrastructure issue.
+
+Forbidden: choosing the decision rule directionality post-hoc.
+
+Estimated 3-4 GPU hours.
+
+EXPERIMENT D (DECOMPOSITION): No-GPU analytical cleanup
+
+Purpose: Formalize the set-leaving vs rank-shuffling decomposition with publication-ready statistics.
+
+Inputs: existing Phase 0/1/2 packets plus Phase 5' packet if landed.
+
+Outputs (write to experimental/outlier_migrate/decomposition_analysis/):
+1. kendall_tau_by_position.json: Kendall's tau rank correlation between position 100 and each scoring position, per layer, per trace, with bootstrap CIs
+2. component_decomposition.md: formal decomposition table per phase per model with explicit definitions, CI for each component, layer-type breakdown
+3. cross_tabulation.json: layer-type x decomposition-component table (does set-leaving concentrate in any layer type? does rank-shuffling concentrate?)
+4. trace_difficulty_regression.json: regression of migration vs trace difficulty (AIME problem difficulty, trace length, BF16 perplexity at scoring position)
+
+This is pure post-hoc analysis. Estimated 1-2 hours LLM time.
+
+EXPERIMENT 6: Rank-Shuffling-Aware Periodic Refresh (RSPR) - POSITIVE METHOD
+
+Purpose: Produce the COLM submission's positive method contribution. RSPR addresses both decomposition components: set-leaving via union-set protection AND rank-shuffling via periodic scale refresh.
+
+Author preregistration: experimental/outlier_migrate/phase6/preregister_om_phase6_rspr.md. Pivot depth: 2 from OutlierMigrate Phase 0.
+
+EXECUTION CONDITION: Run RSPR ONLY IF Phase 4 established a measurable static-protection gap (fewer than 25% of Phase 4 traces had no_recoverable_static_gap, and Phase 4 was not killed for measurement-design reasons). If Phase 4 also had the Granite-tiny-style gap-detectability issue, escalate to human and DO NOT run RSPR. Document the escalation in swarm/blocked_phase6_testbed_selection.md.
+
+Method definition:
+- Protected channel set: union of top-1% channels across decode positions {100, 1000, 5000, 10000}, identical to Phase 4's union set
+- Refresh policy: every K decode positions, recompute quantization scales for the protected channel set using activation magnitudes from the most recent K tokens
+- Quantization: W4A16 symmetric INT4 weights, FP16 activations, BF16 protected channels
+
+Five regimes evaluated head-to-head:
+1. BF16 baseline (oracle ceiling)
+2. Static-1% at position 100 (standard baseline)
+3. Static union {100, 1000, 5000, 10000} (Phase 4's method)
+4. RSPR K=2000 (proposed method)
+5. RSPR K=1000 (sensitivity ablation)
+
+Mandatory controls:
+6. Static-2% at position 100 matched-budget control
+7. RSPR with random channel set as refresh target (negative control)
+
+Decision rule:
+- PASS_OM_PHASE6_RSPR_BEATS_BOTH_BASELINES: median RSPR (K=2000) recovery >= 0.50 with CI lower > 0.30 AND RSPR median recovery exceeds static-union median recovery by at least 0.15 AND RSPR median recovery exceeds static-1% baseline median recovery by at least 0.25.
+- KILL_OM_PHASE6_RSPR_NO_IMPROVEMENT: RSPR (K=2000) median recovery within 0.05 of static-union median recovery.
+- KILL_OM_PHASE6_RSPR_AMBIGUOUS: middle outcomes with overlapping CIs.
+- FAIL_INFRA_OM_PHASE6: infrastructure issue.
+- KILL_OM_PHASE6_RANDOM_CONTROL_BEATS: if random-channel refresh control (regime 7) outperforms RSPR (regime 4) by more than 0.10 median recovery, the refresh mechanism is artifactual; stop and surface to human.
+
+Estimated 8-12 GPU hours.
+
+Forbidden:
+- Adjusting K post-hoc
+- Selecting which scoring position to report post-hoc
+- Skipping the random-channel negative control
+- Running RSPR if Phase 4 had the gap-detectability issue
+- Modifying any prior preregistration
+
+PAPER INTEGRATION
+
+After all three experiments land, integrate into experimental/outlier_migrate/paper/outlier_migrate_colm2026.tex:
+- Restructure as 4-contribution positive-method paper
+- Section 5: decomposition contribution (Experiment D plus Phase 0/1/2 data)
+- Section 6: layer-uniformity contribution
+- Section 7: cross-architectural contribution (Phase 0/1/2 plus Phase 5' transformer result, and Phase 5'' Qwen3.6 result if landed)
+- Section 8: RSPR positive method (Experiment 6)
+- Section 9: reconciliation with DecDEC, PM-KVQ, MaCa, KL Lens, Quamba2, Nemotron-3, OuroMamba
+
+Run 3 committee review rounds targeting >= 7/10 across all reviewers.
+
+MANDATORY CITATIONS
+
+- DecDEC (Park et al., OSDI 2025, arXiv 2412.20185): motivating prior art for migration measurement
+- PM-KVQ (Liu et al., arXiv 2505.18610, May 2025): RoPE-driven KV cache calibration drift, differentiated by mechanism
+- MaCa (Son et al., arXiv 2602.07465, February 2026): multi-scale calibration in pure Transformers
+- KL Lens (Kong et al., arXiv 2604.13440, April 2026): hybrid layer-stratified sensitivity, differentiated from migration
+- Quamba2 (Chiang et al., ICML 2025, arXiv 2503.22879): SSM channel-order preservation at calibration time vs decode-time rank migration
+- Nemotron-3 white paper (NVIDIA, arXiv 2512.20848, December 2025): empirical sensitivity ordering
+- OuroMamba (Ramachandran et al., ICCV 2025, arXiv 2503.10959): vision-Mamba adaptive online list
+
+FORBIDDEN CLAIMS
+
+- "First to find dynamic outliers in language LLMs" (DecDEC has priority)
+- "First to observe calibration aging" (PM-KVQ/MaCa have priority)
+- "First layer-stratified analysis on hybrid Mamba-Transformer" without specifying "migration rate"
+
+ALLOWED CLAIMS
+
+- "First decomposition of migration into set-leaving and rank-shuffling components"
+- "First measurement of migration-rate uniformity across attention/SSM/MoE layer types in hybrid LLMs"
+- "First positive method using decomposition-justified periodic refresh"
+
+STOP CONDITIONS
+
+- gpu_hours_used cumulative exceeds 80
+- Push fails twice in a row
+- Audit fires
+- Three consecutive infra failures
+- Random-channel negative control beats RSPR by > 0.10
+- Any subagent proposes additional pivots beyond Phase 5'/6/5''
+
+REPORTING
+
+Continue 2-hour swarm/progress_*.md cadence. Update swarm/final_report.md after each experiment lands.
+
+EXECUTION ORDER
+
+1. Verify Phase 4 has landed per the EXECUTION GATE.
+2. Author Phase 5' preregistration. Commit and push.
+3. Run Phase 5' on pure-Transformer model. Apply checker. Commit and push.
+4. Run Experiment D (decomposition analysis, no GPU). Commit and push.
+5. Author Phase 6 preregistration. Commit and push.
+6. Run Phase 6 RSPR only if Phase 4 had measurable gap. Apply checker. Commit and push.
+7. Integrate all four contributions into paper.
+8. Run 3 committee review rounds.
+9. Update swarm/final_report.md.
+
+Begin item 1 (verification) only after Phase 4 lands.
+
+## Architectural scope clarification (May 2026 model landscape audit)
+
+Three architectural lineages dominate the open-weight reasoning LLM space:
+
+LINEAGE 1 - Pure-Transformer reasoning with novel attention compression
+- DeepSeek-V4-Pro/Flash (April 23, 2026, 1.6T/284B, MIT, CSA+HCA hybrid attention)
+- Kimi K2.6 (April 20, 2026, 1T/32B active, Modified MIT, MLA attention, same arch as K2.5)
+- GLM-5/5.1 (April 7, 2026, MIT)
+Status: OUT OF SCOPE for our paper. Wrong architectural lineage (no SSM, no Gated Linear Attention). Cite in related work as concurrent pure-Transformer reasoning releases. NEVER measure.
+
+LINEAGE 2 - Mamba-2 hybrid + MoE (OUR PRIMARY MEASUREMENT SET)
+- Granite-4.0-H-Tiny (Phase 0)
+- Granite-4.0-H-Small (Phase 1, Phase 4)
+- Nemotron-3-Nano-30B-A3B (Phase 2)
+- Falcon-H1 family (deferred to ICLR archival)
+Status: PRIMARY. All workshop submissions use these models.
+
+LINEAGE 3 - Gated DeltaNet hybrid + MoE (Phase 5'' CROSS-LINEAGE TARGET)
+- Qwen3.5-{9B, 35B-A3B, 122B-A10B} (released Feb-Mar 2026)
+- Qwen3.6-27B dense (April 22, 2026)
+- Qwen3.6-35B-A3B (April 16, 2026) - Phase 5'' primary target
+- Kimi Linear (October 2025, channel-wise gated KDA, distinct from K2.5/K2.6)
+Status: ICLR ARCHIVAL TARGETS. Qwen3.6-35B-A3B is the stretch experiment for COLM workshop (Phase 5'').
+
+IMPORTANT: Kimi K2.6 (April 2026, 1T/32B MLA) is LINEAGE 1, not LINEAGE 3. The October 2025 Kimi Linear release is the LINEAGE 3 model, distinct from K2.5/K2.6. Always verify architecture from config.json or technical report, not the model name.
+
+Paper framing: use "hybrid Mamba-2 reasoning LLMs (Granite-4 and Nemotron-3 families)" rather than "hybrid Mamba-Transformer reasoning LLMs". If Phase 5'' lands, broaden to "hybrid Mamba-2 and Gated DeltaNet reasoning LLMs."
+
+## Phase 5'' (FIVE-DOUBLE-PRIME): Qwen3.6 cross-lineage validation
+
+PURPOSE
+Validate the Phase 0/1/2 migration measurement on a Gated DeltaNet hybrid model (Lineage 3), establishing cross-architectural generality of the migration finding beyond the Mamba-2 hybrid family (Lineage 2).
+
+PRIORITY
+OPTIONAL stretch experiment for the COLM workshop submission. Time-boxed. If Phase 5'' lands by June 6, 2026, integrate into workshop paper. If not, the workshop paper falls back to Mamba-2-specific framing. Do NOT delay Phase 4/5'/6 sprint for Phase 5''.
+
+EXECUTION GATE
+Before beginning Phase 5'', Codex must verify:
+1. Phase 4, Phase 5', Decomposition Analysis, and Phase 6 (if applicable) have all landed
+2. Cumulative GPU hours used is below 70 (cap is 80)
+3. Wall-clock date is on or before June 1, 2026
+4. The SGLang venv at /workspace/.sglang exists and passed the smoke test (see infrastructure below)
+
+If any condition is unmet, skip Phase 5'' and proceed to paper integration with the Mamba-2-specific framing.
+
+INFRASTRUCTURE - venv approach on existing pod
+
+Phase 5'' uses a SEPARATE Python venv at /workspace/.sglang on the EXISTING pod. The validated vLLM environment (Phase 4/5'/6) stays untouched in its original location. PyTorch 2.9.1+cu128 in the new venv works with the host CUDA 12.8 driver via PyTorch's bundled CUDA runtime.
+
+CRITICAL HYGIENE: NEVER activate both venvs in the same shell session. Phase 4/5'/6 work uses the original environment (vLLM 0.10.2, torch 2.8, triton 3.4). Phase 5'' work uses /workspace/.sglang (SGLang 0.5.9, torch 2.9.1, triton 3.5.1). Use separate tmux panes.
+
+The /workspace/.sglang venv must be created by a human (not Codex) before Phase 5'' execution. Codex's role for Phase 5'' is limited to:
+1. Verifying the venv exists and the smoke test passed
+2. Authoring the preregistration
+3. Running the migration measurement script when activated in the .sglang venv via a script in /workspace/LatentWire that explicitly sources the venv
+
+PREREGISTRATION
+Author at experimental/outlier_migrate/phase5_double_prime/preregister_om_phase5dp_qwen36.md before any inference runs. Pivot depth: 1 from OutlierMigrate Phase 0 (parallel pivot to Phase 5'). Decision rules identical to Phase 5' (non-directional: DYNAMIC, STATIC, AMBIGUOUS, FAIL_INFRA).
+
+HOOK ADAPTATION FOR GATED DELTANET
+Qwen3.6 layer pattern: 10 x (3 x (Gated DeltaNet -> MoE) -> 1 x (Gated Attention -> MoE))
+The migration measurement reads residual-stream output at each layer block, which is architecture-independent. Hook target is the OUTPUT of each block (after MoE), not internal projection layers.
+
+For comparability with Phase 0/1/2:
+- Phase 5'' hooks Gated DeltaNet output (analog of SSM output in Lineage 2)
+- Phase 5'' hooks Gated Attention output (analog of Attention output)
+- Phase 5'' hooks MoE output (same as Lineage 2)
+
+Layer-stratified analysis groups: Gated DeltaNet layers, Gated Attention layers, MoE layers.
+
+INTEGRATION RULES
+If Phase 5'' produces measurable migration consistent with Phase 0/1/2 (~80%): workshop paper's layer-uniformity contribution generalizes from "uniform across attention/SSM/MoE in Mamba-2 hybrids" to "uniform across attention, efficient-sequence-mixer, and MoE in hybrid reasoning LLMs spanning Mamba-2 and Gated DeltaNet families."
+
+If Phase 5'' produces measurably DIFFERENT migration on Qwen3.6: paper keeps the Mamba-2-specific claim and adds Qwen3.6 as a counter-example with mechanism speculation in discussion.
+
+If Phase 5'' fails infrastructure: paper falls back to Mamba-2-specific framing without Qwen3.6 mention beyond related work.
+
+COST BUDGET
+- Incremental GPU: ~3-4 hours = ~$8-10
+- Incremental engineering: ~2-3 hours of LLM work
+- Total incremental cost: ~$15-25
+
+FORBIDDEN
+- Modifying the original pod's vLLM/torch/triton versions
+- Codex creating or modifying the /workspace/.sglang venv (humans only)
+- Including Kimi K2.6 in Phase 5'' (Lineage 1)
+- Including DeepSeek-V4 in Phase 5'' (Lineage 1)
+- Including Falcon-H1 in Phase 5'' (same lineage as existing measurements)
+
+If multiple Lineage 3 models can be measured within budget, prefer Qwen3.6-35B-A3B (MoE) over Qwen3.6-27B-dense. Kimi Linear is acceptable as a second Lineage 3 data point only if Qwen3.6-35B-A3B has landed and time remains.
+
