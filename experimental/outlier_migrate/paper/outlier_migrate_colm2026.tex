@@ -3,47 +3,51 @@
 \usepackage[submission]{../../../colm/2026/colm2026_conference}
 \usepackage{array}
 \usepackage{booktabs}
+\usepackage{graphicx}
 \usepackage{url}
 \usepackage{xurl}
 \usepackage{hyperref}
 
-\title{Outlier Migration in Long Decode Traces}
+\title{Outlier Migration in Long Decode Traces: Measurement and a Failed Static Protection Intervention}
 \author{Anonymous authors\\Paper under double-blind review}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-This draft reports an observational measurement candidate for OutlierMigrate,
-studying whether high-magnitude activation channels remain stationary during
-long decode. It is not a camera-ready positive systems method: Phase 0 passes on
-Granite-4.0-H-Tiny: the fraction of top-1\% position-100 channels whose rank
-changes by more than two channel positions by decode position 10000 is
-0.8178385416666667 with bootstrap 95\% CI
-[0.797265625, 0.8368489583333334]. Phase 1 replicates the dynamic-outlier
-direction at larger scale on Granite-4.0-H-Small: the migration fraction is
+This draft reports OutlierMigrate, a preregistered measurement study of whether
+high-magnitude activation channels remain stationary during long decode in
+the measured hybrid language models. Phase 0 passes on Granite-4.0-H-Tiny: the fraction of
+top-1\% position-100 channels whose rank changes by more than two channel
+positions by decode position 10000 is 0.8178385416666667 with bootstrap 95\%
+CI [0.797265625, 0.8368489583333334]. Phase 1 replicates the dynamic-outlier
+direction at larger scale on Granite-4.0-H-Small: migration fraction
 0.843165650406504 with bootstrap 95\% CI
 [0.8334349593495936, 0.8511432926829268]. A partial Phase 2 cross-family check
 on \texttt{nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16} also passes:
 migration fraction 0.820809591642925 with bootstrap 95\% CI
-[0.7865325261158594, 0.8544931149097815]. This is evidence that the
-rank-migration surface is not limited to the measured Granite runs, but it is
-not full cross-validation: Qwen3.6 and Kimi Linear are deferred pending runtime
-compatibility. The missing migration-aware intervention and the deferred
-Qwen3.6/Kimi runs are blockers for any positive-method or systems-efficiency
-claim.
+[0.7865325261158594, 0.8544931149097815]. A stricter decomposition shows that
+strict set-leaving, not only within-set shuffling, accounts for 0.566234756098
+of Phase 1 and 0.533713200380 of partial Phase 2 channels. We then test a
+concrete static intervention: protect the union of top-1\% channels across
+decode positions \{100, 1000, 5000, 10000\} under simple symmetric INT4
+weights with FP16 activations. This Phase 3 intervention kills:
+median recovery is 0.000000000000 with bootstrap 95\% CI
+[0.000000000000, 0.711143244199], below the preregistered 0.20 kill floor.
+Ten of 24 traces also have no recoverable static gap, exceeding the
+preregistered 25\% no-gap kill condition. The paper therefore supports robust
+characterization plus a negative intervention result, not a validated positive
+systems method.
 \end{abstract}
 
 \section{Introduction}
 
-OutlierMigrate is currently scoped as an observational measurement study: it
-asks whether the channels carrying high-magnitude decode-time activations are
-fixed or whether they move during long reasoning traces. Static
-outliers would support static channel-protection recipes. Dynamic outliers
-could motivate migration-aware protection or routing methods, but this draft
-does not implement or validate such a method. That step requires intervention
-evidence showing the effect is stable, useful, and not specific to one model
-family.
+OutlierMigrate asks whether the channels carrying high-magnitude decode-time
+activations are fixed or whether they move during long reasoning traces.
+Static outliers would support static channel-protection recipes. Dynamic
+outliers could motivate migration-aware protection or routing methods, but
+only if the migration signal translates into a useful intervention rather than
+only a descriptive statistic.
 
 The current paper status is deliberately limited. Phase 0 is a screen on
 \texttt{ibm-granite/granite-4.0-h-tiny} with 12 deterministic AIME-2025
@@ -51,10 +55,30 @@ reasoning traces. Phase 1 scales the same dynamic path to
 \texttt{ibm-granite/granite-4.0-h-small} with 24 deterministic traces and an
 extended decode-position grid. A partial Phase 2 run applies the same
 measurement to Nemotron-3-Nano-30B-A3B-BF16 under the authorized no-upgrade
-window. Together they support replicated same-family measurement evidence and
-one partial cross-family check under the preregistered metric. They do not
+window. Phase 3 then tests the simplest migration-aware static protection
+intervention: preserve the union of top-1\% channels across the fixed decode
+grid while quantizing other weights with simple symmetric INT4. That
+intervention fails its preregistered gate. Together, the results support a
+characterization paper with a negative intervention result. They do not
 support a camera-ready final claim, a positive systems method, an end-to-end
 efficiency claim, or a completed Qwen3.6/Kimi Linear validation claim.
+No systems-method claim remains after Phase 3: there is no demonstrated
+latency, throughput, memory, or quality improvement.
+
+The contribution is deliberately narrow:
+\begin{itemize}
+\item preregistered measurement of decode-time outlier rank migration on two
+  Granite hybrid model sizes;
+\item strict set-membership decomposition showing that many channels leave
+  the protected top-1\% set entirely;
+\item partial Nemotron-3 replication that reduces, but does not eliminate,
+  Granite-family-specific risk;
+\item a preregistered negative intervention result showing that simple static
+  union protection is insufficient under the tested quantization setup.
+\end{itemize}
+The paper does not claim a deployable quantization recipe, a kernel/runtime
+system, a performance improvement, or completed architecture-general
+validation.
 
 \section{Related Work}
 
@@ -198,9 +222,42 @@ This packet is explicitly scoped as partial Nemotron-3-only validation:
 Qwen3.6 and Kimi Linear are deferred, and
 \texttt{full\_cross\_validation\_complete=false}.
 
+The Phase 3 intervention packet is
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z}.
+It follows the frozen preregistration at
+\url{experimental/outlier_migrate/phase3/preregister_om_phase3_intervention.md}.
+The checker output is
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/checker_result.json},
+the metrics file is
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/metrics.json},
+the per-trace perplexities and recoveries are in
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/per_trace_metrics.json},
+and artifact completeness is recorded in
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/artifact_check.json}.
+The model is again \texttt{ibm-granite/granite-4.0-h-tiny} at snapshot
+commit \texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}. The prompt set uses
+the fixed 24-trace Phase 1 set with prompt SHA
+\texttt{sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e}.
+The quantization scheme is simple symmetric per-channel INT4 weights with
+FP16 activations and BF16 protected-channel rows; no AWQ-style or
+SmoothQuant-style activation-aware scaling is used. The scored window is the
+64-token window ending at decode position 10000. The preregistered recovery
+metric is
+\[
+1 - \frac{\mathrm{perplexity}_{\mathrm{regime}} -
+\mathrm{perplexity}_{\mathrm{BF16}}}{\mathrm{perplexity}_{\mathrm{static1\%}} -
+\mathrm{perplexity}_{\mathrm{BF16}}}.
+\]
+The pass rule is median recovery $\geq 0.50$ with bootstrap 95\% CI lower
+bound $>0.30$. The kill rule is recovery $<0.20$ or CI upper $<0.30$.
+The mandatory controls are static position-100 top-2\% protection and
+magnitude-average top-1\% protection over positions \{100, 1000, 5000,
+10000\}.
+
 The preregistered dynamic-outlier pass rule in both gates requires migration
-fraction at least 0.05 and bootstrap CI lower bound greater than 0.05. Phase 1
-uses the same dynamic path because Phase 0 returned
+fraction at least 0.05 and bootstrap CI lower bound greater than 0.05. This is
+a nonstationarity screen, not a claimed practically meaningful effect-size
+standard. Phase 1 uses the same dynamic path because Phase 0 returned
 \texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION}.
 
 \section{Results}
@@ -324,6 +381,128 @@ This is not full cross-validation because Qwen3.6 and Kimi Linear are deferred.}
 \label{tab:phase2-partial}
 \end{table}
 
+\subsection{Phase 3: why simple migration-aware static protection is insufficient}
+
+Phase 3 tests the most direct intervention suggested by the measurement:
+instead of protecting only the position-100 top-1\% channels, protect the union
+of top-1\% channels observed at decode positions \{100, 1000, 5000, 10000\}.
+This is intentionally a static-set intervention. It asks whether membership
+migration alone explains enough of the quantization gap to support a simple
+deployment recipe.
+
+\begin{table}[t]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Regime & Mean perplexity & Median perplexity & Median recovery & Recovery 95\% CI \\
+\midrule
+BF16 baseline & 1.005358821083984 & 1.000282908378305 & reference & reference \\
+static-1\% position 100 & 1.015228246226743 & 1.000282342709987 & reference & reference \\
+static-2\% position 100 & 1.021467448964073 & 1.000390886047853 & 0.000000000000 & [0.000000000000, 0.356017001423] \\
+magnitude average top-1\% & 1.009248547916613 & 1.000236584155715 & 0.061276118929 & [0.000000000000, 0.512245438462] \\
+migration-aware union & 1.008573512406127 & 1.000275313560728 & 0.000000000000 & [0.000000000000, 0.711143244199] \\
+\bottomrule
+\end{tabular}
+}
+\caption{Phase 3 intervention and controls on Granite-4.0-H-Tiny. Values are
+from
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/per_trace_metrics.json},
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/metrics.json},
+and
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/control_metrics.json}.
+Recovery is defined relative to the BF16-vs-static-1\% gap.}
+\label{tab:phase3-intervention}
+\end{table}
+
+The intervention kills. The checker returned the decision string
+{\small\texttt{KILL\_OM\_PHASE3\_INTERVENTION\_FAILS}} because the union
+regime had median recovery 0.000000000000, below the preregistered 0.20 kill
+floor. It
+also missed the pass rule: median recovery $\geq 0.50$ with CI lower bound
+$>0.30$. The artifact packet is complete, and the control-stop condition did
+not fire. The best control, magnitude-average protection, exceeded union by
+0.061276118929 median recovery, below the human stop threshold of 0.10. Ten
+of the 24 traces had no recoverable static gap under this scoring definition.
+That fraction, 0.416666666667, also exceeds the preregistered 25\% no-gap kill
+condition. The checker reports the first kill reason it reaches, but the
+packet satisfies both kill paths.
+
+The recovery statistic is intentionally centered on the per-trace
+BF16-vs-static-1\% gap, so it can be negative when a regime is worse than
+static-1\%, greater than one when a regime beats BF16 on the scored window, and
+zero when there is no recoverable static gap. In the union regime, 11 traces
+had positive recovery, 10 were zero because there was no recoverable static
+gap, 3 were negative, and 4 exceeded recovery 1.0. This unstable per-trace
+surface is part of the negative result rather than a hidden success case: the
+primary statistic was preregistered as the median across all 24 traces. The
+median was chosen for the gate because the recovery ratio can become very
+large when the static gap is small; a mean recovery would be dominated by
+unstable high-ratio traces rather than by the typical trace.
+
+\begin{table}[t]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llrr@{}}
+\toprule
+Grid & Positions & Median recovery & Recovery 95\% CI \\
+\midrule
+sparse & \{100, 5000, 10000\} & 0.000000000000 & [0.000000000000, 0.752281234025] \\
+primary & \{100, 1000, 5000, 10000\} & 0.000000000000 & [0.000000000000, 0.711143244199] \\
+dense & \{100, 500, 1000, 2000, 5000, 7500, 10000\} & 0.000000000000 & [0.000000000000, 0.920007799726] \\
+\bottomrule
+\end{tabular}
+}
+\caption{Position-grid sensitivity. Values are from
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/grid_sensitivity.md}
+and
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/grid_sensitivity_metrics.json}.
+Increasing grid density did not produce a nonzero median recovery.}
+\label{tab:phase3-grid}
+\end{table}
+
+\subsection{Layer-stratified migration}
+
+The negative intervention result does not erase the measurement finding: it
+narrows the mechanism. Figure~\ref{fig:layer-stratified} uses the existing
+Phase 0, Phase 1, and partial Phase 2 activation packets to stratify strict
+set-leaving and within-set shuffling by layer type. The result is not confined
+to a single Granite mixer family. Granite shows strict set-leaving in both
+attention and SSM/Mamba layers, while Nemotron-3 shows it in attention,
+SSM/Mamba, and MoE-classified layers. This is consistent with the paper's
+diagnostic claim: static membership is unstable in the measured packets, but
+successful handling likely needs more than a larger static protected set.
+
+\begin{figure}[t]
+\centering
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.32\linewidth}
+                >{\raggedleft\arraybackslash}p{0.16\linewidth}
+                >{\raggedleft\arraybackslash}p{0.17\linewidth}
+                >{\raggedleft\arraybackslash}p{0.17\linewidth}}
+\toprule
+Run / layer type & Layers & Strict set-leaving & Within-set shuffling \\
+\midrule
+Phase 0 Granite-Tiny attention & 4 & 0.618490 & 0.186198 \\
+Phase 0 Granite-Tiny SSM/Mamba & 36 & 0.635995 & 0.174045 \\
+Phase 1 Granite-Small attention & 4 & 0.557165 & 0.282266 \\
+Phase 1 Granite-Small SSM/Mamba & 36 & 0.567243 & 0.269676 \\
+Phase 2 Nemotron-3 attention & 6 & 0.563014 & 0.254630 \\
+Phase 2 Nemotron-3 MoE & 23 & 0.526503 & 0.277778 \\
+Phase 2 Nemotron-3 SSM/Mamba & 23 & 0.533280 & 0.264157 \\
+\bottomrule
+\end{tabular}
+\caption{Layer-stratified migration decomposition from
+\url{experimental/outlier_migrate/phase3/results/layer_stratified_migration.json}.
+Values report layer-type means, averaged equally over layers. Strict
+set-leaving is the portion most directly relevant to static protected-channel
+membership; within-set shuffling motivates scale-refresh mechanisms but is not
+itself a membership failure.}
+\label{fig:layer-stratified}
+\end{figure}
+
 \section{Discussion}
 
 On this Granite rank-migration surface, the Phase 0 result weakens a fixed
@@ -337,15 +516,14 @@ establish dynamic hidden-state or activation-outlier behavior in vision Mamba.
 The new evidence here is that the dynamic regime also appears under a frozen
 metric in hybrid LLM long-reasoning traces.
 
-This is the strongest OutlierMigrate measurement evidence so far, but it only
-supports an observational paper candidate. The Nemotron-3 packet reduces the
-risk that the signal is merely a Granite-family artifact, but it remains
-partial: Qwen3.6 and Kimi Linear validation are deferred, and a
-migration-aware intervention still has not been shown to improve model quality,
-latency, memory, or robustness. Those two gaps are blockers for reading this
-as a positive-method or systems paper. The highest-priority next gate is either
-completing the deferred cross-validation under a compatible runtime or turning
-the measured migration into a predeclared protection/update method.
+This is the strongest OutlierMigrate measurement evidence so far, but Phase 3
+prevents a positive-method reading. The Nemotron-3 packet reduces the risk that
+the signal is merely a Granite-family artifact, but it remains partial:
+Qwen3.6 and Kimi Linear validation are deferred. More importantly, the
+predeclared migration-aware static protection recipe did not recover the
+BF16-vs-static-1\% perplexity gap robustly. The measured migration is therefore
+actionable as a diagnostic of why static maps may go stale, but not yet as a
+validated protection method.
 
 The theoretical mechanism is plausible but not yet empirically validated
 outside Granite. In channel-wise gated recurrence or linear-attention layers,
@@ -364,24 +542,36 @@ operation \citep{kimilinear2025,qwen36hf,yang2024gdn,yang2023gla}. This
 paragraph is a mechanism argument only; this draft has not measured migration
 on Kimi Linear, Qwen3.6, or GLA variants.
 
+The Phase 3 negative result clarifies a bounded future-work direction. Simple
+set union handles only membership drift. It does not update quantization
+scales, does not react to within-set rank changes, and does not adapt
+layer-by-layer during decode. The layer-stratified analysis and the
+grid-sensitivity result suggest, but do not prove, that future methods may need
+online or decode-position-aware adaptation rather than a larger static
+protected set.
+
 \section{Limitations}
 
 This draft is not camera-ready final and should not be read as a positive
 systems method. It reports two passed observational measurement gates in one
-model family and one partial cross-family validation on Nemotron-3. It still
-lacks Qwen3.6 and Kimi Linear validation, contamination audit, independent seed
-repeat beyond the recorded bootstrap procedure, and any intervention showing
-that migration-aware handling improves an application metric. The missing
-intervention and deferred Qwen3.6/Kimi validation are explicit submission
-blockers for a positive-method claim. The result may also depend on the chosen
-decode positions, top-channel fraction, and rank-delta threshold, all of which
-were fixed before analysis and should not be retuned on these packets.
+model family, one partial cross-family validation on Nemotron-3, and one
+preregistered negative intervention result. It still lacks Qwen3.6 and Kimi
+Linear validation, contamination audit, independent seed repeat beyond the
+recorded bootstrap procedure, and any intervention showing that migration-aware
+handling improves an application metric. The failed Phase 3 static-union
+intervention is now an explicit limitation rather than an absent experiment.
+The result may also depend on the chosen decode positions, top-channel
+fraction, and rank-delta threshold, all of which were fixed before analysis and
+should not be retuned on these packets.
 
 The primary empirical measurement here is on Granite Mamba-2-style SSM
 hybrids. Nemotron-3 provides one additional hybrid family check, but it is not
 a complete substitute for validation on delta-rule linear-attention hybrids
 such as Qwen3.6 and Kimi Linear. Generalization to RWKV-7, GLA-style systems,
 and other efficient-recurrence variants is not established by these results.
+The paper also lacks a complete contamination or exploratory-history audit
+explaining the origin of the top-1\% fraction, rank-delta threshold, decode
+positions, prompt slice, and model choices.
 
 \section{Reproducibility Statement}
 
@@ -423,14 +613,44 @@ experimental/outlier_migrate/phase2/run_cross_model.py \
   --batch-size 4 --dtype bfloat16 --device auto
 \end{verbatim}
 
+The Phase 3 intervention packet is
+\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z}.
+It includes \texttt{environment.json}, \texttt{model\_provenance.json},
+\texttt{prompt\_manifest.json}, \texttt{command\_metadata.json},
+\texttt{random\_seed.json}, \texttt{per\_trace\_metrics.json},
+\texttt{metrics.json}, \texttt{control\_metrics.json},
+\texttt{grid\_sensitivity\_metrics.json}, \texttt{checker\_result.json}, and
+\texttt{artifact\_check.json}. The recorded Phase 3 command was:
+
+\begin{verbatim}
+experimental/outlier_migrate/phase3/run_phase3_intervention.py \
+  --run-id om_phase3_20260509T212000Z \
+  --batch-size 4 --dtype bfloat16 --device auto \
+  --reuse-prequant-run-dir \
+  experimental/outlier_migrate/phase3/results/om_phase3_20260509T180200Z
+\end{verbatim}
+
+The grid-sensitivity artifact was generated with:
+
+\begin{verbatim}
+experimental/outlier_migrate/phase3/run_grid_sensitivity.py \
+  --run-dir \
+  experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z
+\end{verbatim}
+
+Figure~\ref{fig:layer-stratified} is a LaTeX-native summary table generated
+from
+\url{experimental/outlier_migrate/phase3/results/layer_stratified_migration.json}.
+
 \section{Ethics Statement}
 
 This is an activation-analysis measurement study on benchmark prompts. The
-current artifact does not make deployment, user-data, safety, systems-efficiency,
-or capability-improvement claims. The main ethical risk is overclaiming
-same-family Phase 0 and Phase 1 evidence, plus the partial Nemotron-3 packet,
-as a validated cross-model positive method; this draft explicitly rejects that
-interpretation until deferred validation, audits, and an intervention pass.
+current artifact does not make deployment, user-data, safety,
+systems-efficiency, or capability-improvement claims. The main ethical risk is
+overclaiming same-family Phase 0 and Phase 1 evidence, the partial Nemotron-3
+packet, or the failed Phase 3 intervention as a validated cross-model positive
+method; this draft explicitly rejects that interpretation until deferred
+validation, audits, and a future intervention pass.
 
 \begin{thebibliography}{16}
 

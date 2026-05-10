@@ -322,8 +322,39 @@ Consequences:
 - Diagnostic note:
   `experimental/outlier_migrate/phase3/diagnostic.md`.
 
-Pending:
+Completed Phase 3 paper integration:
 
-1. Integrate the Phase 3 kill into the OutlierMigrate paper.
-2. Update the reviewer pack with Phase 3 result paths.
-3. Rebuild the PDF and run committee review.
+- Paper updated:
+  `experimental/outlier_migrate/paper/outlier_migrate_colm2026.tex`.
+- PDF rebuilt:
+  `experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf`.
+- Reviewer pack updated:
+  `experimental/outlier_migrate/paper/reviewer_pack.md`.
+- Committee review:
+  `experimental/outlier_migrate/paper/committee_reviews/20260510_phase3_negative_intervention.md`.
+- Final committee scores after three rounds:
+  - COLM area chair: `8/10`.
+  - MLSys reviewer: `7/10`.
+  - adversarial reviewer: `8/10`.
+
+Paper status after integration:
+
+- OutlierMigrate is a camera-ready candidate only under the characterization
+  plus negative-intervention framing.
+- It is not camera-ready final.
+- It is not a positive-method or systems-efficiency paper.
+- The paper now explicitly reports both Phase 3 kill paths: median recovery
+  `0.000000000000 < 0.20`, and `10/24` no-recoverable-static-gap traces
+  exceeding the preregistered `25%` no-gap kill condition.
+- The reviewer pack includes a primary-source citation spot-check for Kimi
+  Linear, Qwen3.6, and Quamba-SE, but not a complete citation audit.
+
+Remaining human-facing caveats:
+
+1. Qwen3.6 and Kimi Linear validation remain deferred.
+2. No independent seed/model repeat beyond recorded bootstrap exists.
+3. No complete contamination or exploratory-history audit exists for the
+   top-1% fraction, rank-delta threshold, decode positions, prompt slice, and
+   model choices.
+4. TeX builds successfully but still emits underfull layout warnings from long
+   artifact paths and dense tables.

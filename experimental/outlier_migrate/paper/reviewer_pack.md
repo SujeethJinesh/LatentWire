@@ -1,8 +1,8 @@
 # OutlierMigrate Reviewer Pack
 
-- status: observational measurement candidate only; Phase 0 dynamic-outlier gate passed; Phase 1 replicated at scale; partial Phase 2 Nemotron-3 validation passed; not camera-ready final
-- current decision: `PARTIAL_PASS_OM_PHASE2_NEMOTRON3_ONLY_QWEN36_KIMI_DEFERRED`
-- current paper readiness: not a positive-method or systems paper; missing intervention, audit, and deferred Qwen3.6/Kimi validation block any camera-ready claim
+- status: characterization plus negative intervention result; Phase 0 dynamic-outlier gate passed; Phase 1 replicated at scale; partial Phase 2 Nemotron-3 validation passed; Phase 3 static-union intervention killed; not camera-ready final
+- current decision: `KILL_OM_PHASE3_INTERVENTION_FAILS`
+- current paper readiness: not a positive-method or systems paper; the attempted migration-aware static protection intervention failed, and deferred Qwen3.6/Kimi validation plus audit gaps block any camera-ready final claim
 
 ## Paper Link
 
@@ -11,18 +11,20 @@
 
 ## Current Claim
 
-OutlierMigrate now supports this narrow observational measurement claim: on two same-family Granite
-hybrid model sizes, top-1% high-magnitude activation channels at decode
-position 100 are not rank-stationary by the final preregistered decode
-position under the preregistered migration metric. A partial cross-family
-Nemotron-3 check also passes under the same metric.
+OutlierMigrate now supports this narrow characterization claim: on two
+same-family Granite hybrid model sizes, top-1% high-magnitude activation
+channels at decode position 100 are not rank-stationary by the final
+preregistered decode position under the preregistered migration metric. A
+partial cross-family Nemotron-3 check also passes under the same metric.
 
-This is not full cross-validation and not evidence that a migration-aware
-intervention improves quality, latency, memory, or robustness. It should be
-read as a measurement-paper candidate only, not as a positive systems method
-or camera-ready positive-method submission. Qwen3.6 and Kimi Linear are
-deferred pending runtime compatibility, and the missing intervention plus
-deferred Qwen3.6/Kimi validation are blockers.
+The Phase 3 intervention result is negative. Simple symmetric INT4 weight
+quantization with FP16 activations and a static union protected set did not
+recover the BF16-vs-static-1% perplexity gap robustly. The result should be
+read as: migration is real and static set membership is unstable, but simple
+union-set protection is insufficient. This is not full cross-validation and
+not evidence that a migration-aware intervention improves quality, latency,
+memory, or robustness. Qwen3.6 and Kimi Linear are deferred pending runtime
+compatibility.
 
 Important novelty boundary: do not claim this is the first dynamic-outlier
 finding in Mamba. QMamba and OuroMamba already document dynamic hidden-state
@@ -33,6 +35,25 @@ long reasoning traces under preregistered Phase 0/1 gates.
 The strict set-leaving decomposition is post-hoc interpretability for static
 channel-protection relevance. It is not the preregistered gate metric; checker
 decisions remain based on the original preregistered migration fraction.
+
+## Claimed / Not Claimed
+
+Claimed:
+
+- decode-time outlier rank migration under preregistered Phase 0/1 metrics on
+  two Granite hybrid model sizes;
+- strict set-leaving is a large component of the measured migration signal;
+- partial Nemotron-3 replication reduces Granite-family-specific risk;
+- static union-set protection fails under the preregistered Phase 3
+  intervention protocol.
+
+Not claimed:
+
+- no positive systems method;
+- no deployable quantization recipe;
+- no latency, throughput, memory, or quality improvement;
+- no completed Qwen3.6/Kimi validation;
+- no architecture-general claim beyond the measured packets.
 
 ## Strongest Evidence
 
@@ -55,6 +76,40 @@ decisions remain based on the original preregistered migration fraction.
 | Layer count | 40 | 40 | 52 |
 | Decode positions | 100, 500, 1000, 5000, 10000 | 100, 500, 1000, 5000, 10000, 20000 | 100, 500, 1000, 5000, 10000, 20000 |
 | Bootstrap seed | 20260508 | 20260508 | 20260508 |
+
+## Phase 3 Intervention Result
+
+| Item | Exact value |
+|---|---:|
+| Checker decision | `KILL_OM_PHASE3_INTERVENTION_FAILS` |
+| Artifact complete | true |
+| Primary union median recovery | 0.000000000000 |
+| Primary union 95% CI | [0.000000000000, 0.711143244199] |
+| Pass rule | median recovery >= 0.50 and CI lower > 0.30 |
+| Kill rule | recovery < 0.20 OR CI upper < 0.30 |
+| Kill reason | median recovery 0.000000000000 < 0.20 |
+| Static-2% matched-budget median recovery | 0.000000000000 |
+| Static-2% 95% CI | [0.000000000000, 0.356017001423] |
+| Magnitude-average median recovery | 0.061276118929 |
+| Magnitude-average 95% CI | [0.000000000000, 0.512245438462] |
+| Best control minus union | 0.061276118929 |
+| Control stop condition | false; margin below 0.10 |
+| Sparse grid median recovery | 0.000000000000 |
+| Dense grid median recovery | 0.000000000000 |
+| No-recoverable-static-gap traces | 10 / 24 |
+| No-recoverable-static-gap fraction | 0.416666666667 |
+| No-gap kill rule | >25% no-recoverable-static-gap traces |
+| Union traces with positive recovery | 11 / 24 |
+| Union traces with zero recovery | 10 / 24 |
+| Union traces with negative recovery | 3 / 24 |
+| Union traces with recovery >1 | 4 / 24 |
+
+Recovery can be negative when a regime is worse than static-1%, greater than
+one when it beats BF16 on the scored window, and zero when the static-1% regime
+has no recoverable gap versus BF16. The paper now states this explicitly.
+Median recovery was preregistered because the ratio can become very large when
+the static gap is small; mean recovery is diagnostic only, not the gate
+statistic.
 
 ## Artifact Paths
 
@@ -88,6 +143,17 @@ decisions remain based on the original preregistered migration fraction.
 - Partial Phase 2 model provenance: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/model_provenance.json`
 - Partial Phase 2 activation manifest: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/activation_magnitude_manifest.json`
 - Partial Phase 2 activation artifact: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/activation_magnitudes.jsonl.gz`
+- Phase 3 preregistration: `experimental/outlier_migrate/phase3/preregister_om_phase3_intervention.md`
+- Phase 3 result packet: `experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z`
+- Phase 3 checker output: `experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/checker_result.json`
+- Phase 3 metrics: `experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/metrics.json`
+- Phase 3 per-trace metrics: `experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/per_trace_metrics.json`
+- Phase 3 controls: `experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/control_metrics.json`
+- Phase 3 grid sensitivity: `experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/grid_sensitivity.md`
+- Phase 3 artifact completeness: `experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/artifact_check.json`
+- Phase 3 diagnostic: `experimental/outlier_migrate/phase3/diagnostic.md`
+- Layer-stratified analysis: `experimental/outlier_migrate/phase3/results/layer_stratified_migration.md`
+- Layer-stratified figure source: `experimental/outlier_migrate/phase3/results/layer_stratified_migration.json`
 
 ## Related-Work Sources Added
 
@@ -112,16 +178,38 @@ Do not claim that Kimi Linear, Qwen3.6, GLA, RWKV-7, or any other unmeasured
 language model empirically exhibits OutlierMigrate migration until that model
 is measured.
 
+## Citation Spot-Check
+
+Spot-checked on 2026-05-10 against primary sources:
+
+- Kimi Linear resolves to arXiv `2510.26692`, title "Kimi Linear: An
+  Expressive, Efficient Attention Architecture".
+- Qwen3.6 resolves to the Hugging Face model card
+  `Qwen/Qwen3.6-35B-A3B`; the model card describes a Gated DeltaNet / gated
+  attention / MoE hybrid layout.
+- Quamba-SE resolves to arXiv `2601.09451`, title "Late Breaking Results:
+  Quamba-SE: Soft-edge Quantizer for Activations in State Space Models".
+
+This is a spot-check, not a complete citation audit. Human final review should
+still verify every bibliography entry before submission.
+
 ## Reviewer Risks
 
 - Phase 0 and Phase 1 are same-family Granite measurement evidence; Phase 2 is a partial
   Nemotron-3 check, not completed Qwen3.6/Kimi cross-validation.
 - Do not describe the packet as camera-ready, full cross-validation, a
   positive systems method, or a validated positive-method branch.
+- Do not describe union-set protection as successful. Phase 3 killed with
+  `KILL_OM_PHASE3_INTERVENTION_FAILS`.
+- No systems-method claim remains: no latency, throughput, memory, quality,
+  or deployable quantization recipe is validated.
 - The paper does not yet include a contamination audit or independent seed
   repeat beyond the recorded bootstrap procedure.
-- The result says outlier ranks migrate; it does not show that any
-  migration-aware intervention improves quality, latency, memory, or robustness.
+- The paper does not yet include a complete exploratory-history audit for the
+  top-1% fraction, rank-delta threshold, decode positions, prompt slice, or
+  model choices.
+- The result says outlier ranks migrate; the attempted static-union
+  intervention did not improve the preregistered recovery metric robustly.
 - Dynamic outliers are not novel to Mamba broadly; QMamba and OuroMamba are
   prior evidence in vision Mamba. The paper must keep the claim scoped to
   hybrid LLM long reasoning traces.
@@ -139,14 +227,16 @@ is measured.
 ## Saturated / Alive / Next Branch
 
 - saturated: Phase 0 and Phase 1 decision surfaces are closed and passed.
-- alive: observational measurement paper candidate for dynamic outlier migration
-  in Granite hybrid decode traces with a partial Nemotron-3 cross-family pass.
+- alive: characterization paper candidate for dynamic outlier migration in
+  Granite hybrid decode traces with a partial Nemotron-3 cross-family pass and
+  a negative Phase 3 intervention.
 - promoted: the dynamic-outlier hypothesis beyond Granite-family-only framing,
   while Qwen3.6/Kimi remain deferred.
 - weakened: a fixed position-100 outlier-map interpretation on the Granite
   Phase 0 and Phase 1 rank-migration surfaces.
 - not established: completed cross-model transfer, delta-rule linear-attention
   validation, RWKV-7/GLA generalization, or a positive intervention method.
-- next exact gate: decide whether to pursue a measurement-paper route or run
-  the blocked validation/intervention gates; positive-method submission remains
-  blocked until Qwen3.6/Kimi validation and a migration-aware intervention pass.
+- next exact gate: committee review of the revised paper under the
+  characterization plus negative-intervention framing; positive-method
+  submission remains blocked until Qwen3.6/Kimi validation and a future
+  migration-aware intervention pass.
