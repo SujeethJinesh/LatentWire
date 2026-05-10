@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="340" viewBox="0 0 560 340">
+<rect width="100%" height="100%" fill="white"/>
+<line x1="72" y1="28" x2="72" y2="276" stroke="black"/>
+<line x1="72" y1="276" x2="532" y2="276" stroke="black"/>
+<text x="280.0" y="20" text-anchor="middle" font-size="14">Phase 3 Recovery vs Protected-Grid Density</text>
+<text x="18" y="170.0" transform="rotate(-90 18 170.0)" text-anchor="middle" font-size="12">Median recovery</text>
+<text x="280.0" y="332" text-anchor="middle" font-size="12">Calibration grid</text>
+<polyline points="72.0,276.0 187.0,276.0 532.0,276.0" fill="none" stroke="#1f77b4" stroke-width="2"/>
+<circle cx="72.0" cy="276.0" r="5" fill="#1f77b4"><title>sparse: 0.000000</title></circle>
+<circle cx="187.0" cy="276.0" r="5" fill="#1f77b4"><title>primary: 0.000000</title></circle>
+<circle cx="532.0" cy="276.0" r="5" fill="#1f77b4"><title>dense: 0.000000</title></circle>
+<text x="72.0" y="306" text-anchor="middle" font-size="12">sparse</text>
+<text x="187.0" y="306" text-anchor="middle" font-size="12">primary</text>
+<text x="532.0" y="306" text-anchor="middle" font-size="12">dense</text>
+</svg>

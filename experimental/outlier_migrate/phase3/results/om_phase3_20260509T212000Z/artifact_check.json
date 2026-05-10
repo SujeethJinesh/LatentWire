@@ -1,0 +1,10 @@
+{
+  "artifact_complete": true,
+  "control_stop_condition": false,
+  "decision": "KILL_OM_PHASE3_INTERVENTION_FAILS",
+  "reasons": [
+    "median recovery 0.00000000 < 0.20"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z",
+  "schema_version": "om_phase3_v1_artifact_check"
+}

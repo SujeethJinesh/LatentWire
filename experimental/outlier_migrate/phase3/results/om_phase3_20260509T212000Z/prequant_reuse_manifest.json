@@ -1,0 +1,28 @@
+{
+  "created_at_utc": "2026-05-09T21:19:04Z",
+  "reuse_reason": "source run failed before quantized metrics due FP16 autocast/cache dtype mismatch; activation/protected-set/BF16-trace artifacts were produced before the failing stage",
+  "schema_version": "om_phase3_v1_prequant_reuse",
+  "source_files": {
+    "activation_magnitude_manifest.json": {
+      "bytes": 5596,
+      "sha256": "sha256:4076f4340a84cc3b35dffe2fc54e423e117fadf186f0635e404eba9501ccd880"
+    },
+    "activation_magnitudes.jsonl.gz": {
+      "bytes": 23278710,
+      "sha256": "sha256:2ebbc067eef51fbeb685d8572a9aab0b0275b8f74e9e865cf99509961f40c602"
+    },
+    "bf16_trace_manifest.json": {
+      "bytes": 5097,
+      "sha256": "sha256:b0f8fd22ec9e22a6d712e01203fe82e9286e22aec4ac9a1929402a1f7983af5b"
+    },
+    "bf16_traces.jsonl.gz": {
+      "bytes": 56891,
+      "sha256": "sha256:beb36c27ab669df573ba099c74c81d75332b8ac9d31bea3c0ec6b8e7f7c5ff24"
+    },
+    "protected_sets.json": {
+      "bytes": 145478,
+      "sha256": "sha256:b70615eb2303896ae1bc5a656179c3b21b6138ef40fe21cc723471718faa9b4d"
+    }
+  },
+  "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase3/results/om_phase3_20260509T180200Z"
+}

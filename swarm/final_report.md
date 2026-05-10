@@ -271,13 +271,59 @@ Completed no-GPU analysis:
     MoE `0.526503`, SSM/Mamba `0.533280`; original migration `0.832562` /
     `0.820384` / `0.818170`.
 
+Completed Phase 3 decision packet:
+
+- Final run:
+  `experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z`.
+- Started at `2026-05-09T21:18:55Z`; completed at
+  `2026-05-10T05:05:27Z`.
+- GPU-hour delta charged to the sprint: `7.7756`.
+- New cumulative GPU hours used: `28.4808`.
+- Estimated spend at `$1.89/hr`: `$53.79`.
+- Checker exit code: `1`.
+- Checker decision: `KILL_OM_PHASE3_INTERVENTION_FAILS`.
+- Artifact status: `artifact_complete=true`.
+- Kill reason: primary median recovery `0.000000000000` is below the
+  preregistered `0.20` kill floor.
+
+Primary intervention result:
+
+| Regime | Median recovery | Bootstrap 95% CI |
+|---|---:|---:|
+| static-1% baseline | reference | reference |
+| migration-aware union | `0.000000000000` | `[0.000000000000, 0.711143244199]` |
+| static-2% matched budget | `0.000000000000` | `[0.000000000000, 0.356017001423]` |
+| magnitude average | `0.061276118929` | `[0.000000000000, 0.512245438462]` |
+
+Mandatory control outcome:
+
+- `union_outperforms_both_controls=false`.
+- The best control was magnitude averaging, which beat union by
+  `0.061276118929` median recovery.
+- The sprint stop condition did not fire because the margin is below `0.10`.
+
+Position-grid sensitivity:
+
+| Grid | Positions | Median recovery | Bootstrap 95% CI |
+|---|---|---:|---:|
+| sparse | `{100, 5000, 10000}` | `0.000000000000` | `[0.000000000000, 0.752281234025]` |
+| primary | `{100, 1000, 5000, 10000}` | `0.000000000000` | `[0.000000000000, 0.711143244199]` |
+| dense | `{100, 500, 1000, 2000, 5000, 7500, 10000}` | `0.000000000000` | `[0.000000000000, 0.920007799726]` |
+
+Consequences:
+
+- The OutlierMigrate paper must not claim migration-aware static protection as
+  a successful positive method.
+- Conditional Phase 3 follow-ups are skipped: Nemotron-3 intervention,
+  within-set refresh pilot, and decode-length scaling.
+- The paper integration path is now a characterization plus negative
+  intervention result: migration is robust, strict set-leaving matters, and
+  simple static union protection is insufficient.
+- Diagnostic note:
+  `experimental/outlier_migrate/phase3/diagnostic.md`.
+
 Pending:
 
-1. Commit and push the fast-path-disable patch.
-2. Restart scoring with a new run id using
-   `--reuse-prequant-run-dir experimental/outlier_migrate/phase3/results/om_phase3_20260509T180200Z`.
-3. Run `experimental/outlier_migrate/phase3/check_phase3_intervention.py` on
-   the packet.
-4. Stop and block if either mandatory control outperforms union protection by
-   more than `0.10` median recovery.
-5. Integrate Phase 3 outcome into the paper and run committee review.
+1. Integrate the Phase 3 kill into the OutlierMigrate paper.
+2. Update the reviewer pack with Phase 3 result paths.
+3. Rebuild the PDF and run committee review.
