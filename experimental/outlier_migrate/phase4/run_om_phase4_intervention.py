@@ -572,6 +572,25 @@ def score_targets(
                         )
                         + "\n"
                     )
+                del (
+                    encoded,
+                    input_ids,
+                    attention_mask,
+                    target_tensor,
+                    nll,
+                    cache_position,
+                    model_inputs,
+                    outputs,
+                    past_key_values,
+                    logits,
+                    current_target,
+                    batch,
+                    batch_indices,
+                    texts,
+                )
+                if "log_probs" in locals():
+                    del log_probs
+                release_model_memory()
     finally:
         if previous_fast_path is not None:
             set_granite_fast_path_enabled(bool(previous_fast_path))
