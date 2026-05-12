@@ -1,6 +1,6 @@
 # Swarm Final Report Draft
 
-Status: Phase 4 landing report draft after `KILL_OM_PHASE4_INTERVENTION_FAILS`.
+Status: Phase 5' landing report draft after `DYNAMIC_REGIME_TRANSFORMER`.
 Do not treat this as human-approved final; it is the machine-readable handoff
 for the returning human.
 
@@ -8,13 +8,30 @@ for the returning human.
 
 - Primary positive-method candidate: none after Phase 4.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
-- Current active work: OutlierMigrate Phase 4 paper integration and
-  post-Phase-4 execution-gate handling.
+- Current active work: Experiment D decomposition analysis, followed by
+  Experiment E threshold sensitivity.
 - Phase 3 preregistration commit: `c0031574`.
 - Phase 3 runner/checker commit: `fc394bcb`.
+- Phase 4 final commit: `9ec75b19`.
+- Phase 5' preregistration commit: `c0a50c89`.
+- Phase 5' runner/checker commit: `d93ae055`.
 - Completed run: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z`.
 - Phase 2 scope: partial Nemotron-3 validation only; Qwen3.6 and Kimi
   Linear are deferred by the no-vLLM-upgrade authorized window.
+- Phase 5' run:
+  `experimental/outlier_migrate/phase5_prime/results/om_phase5p_20260512T053800Z`.
+- Phase 5' decision: `DYNAMIC_REGIME_TRANSFORMER`.
+- Phase 5' migration fraction: `0.8393787202380952`, CI95
+  `[0.8278459821428571, 0.8507254464285714]`.
+- Phase 5' strict set-leaving: `0.6705729166666666`, CI95
+  `[0.6526227678571428, 0.6902901785714286]`.
+- Phase 5' within-set rank shuffling: `0.16573660714285715`, CI95
+  `[0.15411086309523808, 0.1773623511904762]`.
+- Interpretation update: pure-Transformer R1-Distill-Qwen-1.5B shows
+  migration at essentially the Granite/Nemotron scale. OutlierMigrate must no
+  longer frame the main measurement as Mamba-2-specific; the defensible story
+  is broader decode-time rank dynamics, with Mamba-2 layer-uniformity and
+  cross-family measurements as supporting structure.
 - Camera-ready final: none; human review required.
 - Camera-ready candidate: ThoughtFlow-FP8 fallback candidate only, under the
   falsification-methodology workshop framing. It is not a positive-method
@@ -26,7 +43,7 @@ for the returning human.
 
 | Project | Status | Paper posture | Next human-visible decision |
 | --- | --- | --- | --- |
-| OutlierMigrate | Phase 0 PASS, Phase 1 PASS, partial Phase 2 Nemotron-3 PASS, Phase 3 KILL, Phase 4 KILL | Characterization plus negative-intervention candidate, not positive method | Human decision on whether to pursue a fresh adaptive-method preregistration later |
+| OutlierMigrate | Phase 0 PASS, Phase 1 PASS, partial Phase 2 Nemotron-3 PASS, Phase 3 KILL, Phase 4 KILL, Phase 5' DYNAMIC | Broader decode-time rank-dynamics characterization plus negative-intervention candidate, not positive method | Human decision on whether to accept broader framing or require a new positive method |
 | ThoughtFlow-FP8 | Paper-polish gate PASS/buildable | Falsification-methodology fallback, not final | Human copyedit and venue-framing review |
 | HybridKernel | KILL_HYBRIDKERNEL_BELOW_SHELF | No paper | Preserve artifacts; diagnostic only |
 | Decode Microkernel | Phase 0/1 PASS, Phase 2 FAIL_INFRA | Deferred engineering integration | Human decides whether to fund real serving integration |
@@ -87,6 +104,32 @@ Phase 2 status:
 - Interpretation: Nemotron-3 confirms the rank-migration signal under a
   partial cross-family check. It is not full cross-validation because
   Qwen3.6/Kimi are deferred.
+
+Phase 5' pure-Transformer control:
+
+- Preregistration:
+  `experimental/outlier_migrate/phase5_prime/preregister_om_phase5_prime_transformer_control.md`
+  committed and pushed at `c0a50c89` before inference.
+- Runner/checker:
+  `experimental/outlier_migrate/phase5_prime/run_om_phase5_prime_transformer_control.py`
+  and
+  `experimental/outlier_migrate/phase5_prime/check_om_phase5_prime_transformer_control.py`
+  committed and pushed at `d93ae055`.
+- Result packet:
+  `experimental/outlier_migrate/phase5_prime/results/om_phase5p_20260512T053800Z`.
+- Checker decision: `DYNAMIC_REGIME_TRANSFORMER`.
+- Artifact status: `artifact_complete=true`.
+- Model: `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`, HuggingFace snapshot
+  `ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562`.
+- Migration fraction: `0.8393787202380952`, CI95
+  `[0.8278459821428571, 0.8507254464285714]`.
+- Strict set-leaving: `0.6705729166666666`, CI95
+  `[0.6526227678571428, 0.6902901785714286]`.
+- Within-set rank shuffling: `0.16573660714285715`, CI95
+  `[0.15411086309523808, 0.1773623511904762]`.
+- Interpretation: Phase 5' broadens the rank-migration measurement beyond
+  measured Mamba-2 hybrids. This is useful but it undercuts any paper claim
+  that migration is explained primarily by Mamba-2 state dynamics.
 
 ## Killed Branches
 

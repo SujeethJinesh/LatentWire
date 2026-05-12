@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase5_prime/run_om_phase5_prime_transformer_control.py",
+    "--run-id",
+    "om_phase5p_20260512T053800Z",
+    "--batch-size",
+    "4"
+  ],
+  "assumptions": [
+    "manual greedy decoding is used to expose deterministic decode-step hooks",
+    "layer forward output absolute values are treated as per-channel activation magnitudes",
+    "EOS is recorded but decoding continues to 20000 generated tokens to satisfy the fixed grid"
+  ],
+  "batch_size": 4,
+  "branch": "outlier_migrate_phase5_prime_transformer_control",
+  "compatibility_precheck": {
+    "fallback_model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "primary_model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    "selected_model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    "vllm_supported_architecture": "Qwen2ForCausalLM"
+  },
+  "created_at_utc": "2026-05-12T05:36:54Z",
+  "cwd": "/workspace/LatentWire",
+  "deterministic_decode": {
+    "decode_policy": "greedy",
+    "do_sample": false,
+    "num_beams": 1
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase5_prime/results/om_phase5p_20260512T053800Z",
+  "schema_version": "om_phase5_prime_transformer_v1_command"
+}

@@ -1,0 +1,11 @@
+{
+  "bootstrap_ci95": {
+    "ci95_high": 0.8507254464285714,
+    "ci95_low": 0.8278459821428571
+  },
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260511,
+  "metric_name": "outlier_rank_migration_fraction",
+  "migration_fraction": 0.8393787202380952,
+  "schema_version": "om_phase5_prime_transformer_v1_bootstrap_ci"
+}

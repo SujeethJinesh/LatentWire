@@ -1,0 +1,26 @@
+{
+  "artifact_complete": true,
+  "decision": "DYNAMIC_REGIME_TRANSFORMER",
+  "reasons": [
+    "dynamic transformer regime: point=0.83937872 > 0.05 and ci_low=0.82784598 > 0.05"
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "activation_magnitude_manifest.json",
+    "activation_magnitudes.jsonl.gz",
+    "metrics.json",
+    "bootstrap_ci.json",
+    "migration_decomposition.json",
+    "migration_decomposition.md",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase5_prime/results/om_phase5p_20260512T053800Z",
+  "schema_version": "om_phase5_prime_transformer_v1_artifact_check"
+}

@@ -1,0 +1,394 @@
+{
+  "aggregate": {
+    "left_set_ci95": {
+      "ci95_high": 0.6902901785714286,
+      "ci95_low": 0.6526227678571428
+    },
+    "left_set_fraction": 0.6705729166666666,
+    "strict_original_ci95": {
+      "ci95_high": 0.8468191964285714,
+      "ci95_low": 0.8227306547619048
+    },
+    "strict_original_fraction": 0.8349144345238095,
+    "within_set_rank_shuffle_ci95": {
+      "ci95_high": 0.1773623511904762,
+      "ci95_low": 0.15411086309523808
+    },
+    "within_set_rank_shuffle_fraction": 0.16573660714285715
+  },
+  "base_position": 100,
+  "final_position": 20000,
+  "layer_metrics": [
+    {
+      "layer_index": 0,
+      "left_set_fraction": 0.5859375,
+      "strict_original_fraction": 0.765625,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.18489583333333334
+    },
+    {
+      "layer_index": 1,
+      "left_set_fraction": 0.46875,
+      "strict_original_fraction": 0.7552083333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.2916666666666667
+    },
+    {
+      "layer_index": 2,
+      "left_set_fraction": 0.5364583333333334,
+      "strict_original_fraction": 0.7734375,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.23697916666666666
+    },
+    {
+      "layer_index": 3,
+      "left_set_fraction": 0.6640625,
+      "strict_original_fraction": 0.8723958333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.20833333333333334
+    },
+    {
+      "layer_index": 4,
+      "left_set_fraction": 0.6927083333333334,
+      "strict_original_fraction": 0.9010416666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.20833333333333334
+    },
+    {
+      "layer_index": 5,
+      "left_set_fraction": 0.7057291666666666,
+      "strict_original_fraction": 0.8567708333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.15364583333333334
+    },
+    {
+      "layer_index": 6,
+      "left_set_fraction": 0.7369791666666666,
+      "strict_original_fraction": 0.8645833333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.13020833333333334
+    },
+    {
+      "layer_index": 7,
+      "left_set_fraction": 0.734375,
+      "strict_original_fraction": 0.8619791666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.13020833333333334
+    },
+    {
+      "layer_index": 8,
+      "left_set_fraction": 0.7604166666666666,
+      "strict_original_fraction": 0.9140625,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.15364583333333334
+    },
+    {
+      "layer_index": 9,
+      "left_set_fraction": 0.7708333333333334,
+      "strict_original_fraction": 0.9166666666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.1484375
+    },
+    {
+      "layer_index": 10,
+      "left_set_fraction": 0.7682291666666666,
+      "strict_original_fraction": 0.90625,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.140625
+    },
+    {
+      "layer_index": 11,
+      "left_set_fraction": 0.75,
+      "strict_original_fraction": 0.8697916666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.11979166666666667
+    },
+    {
+      "layer_index": 12,
+      "left_set_fraction": 0.7291666666666666,
+      "strict_original_fraction": 0.8489583333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.12239583333333333
+    },
+    {
+      "layer_index": 13,
+      "left_set_fraction": 0.7135416666666666,
+      "strict_original_fraction": 0.8671875,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.15625
+    },
+    {
+      "layer_index": 14,
+      "left_set_fraction": 0.7265625,
+      "strict_original_fraction": 0.8671875,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.140625
+    },
+    {
+      "layer_index": 15,
+      "left_set_fraction": 0.7083333333333334,
+      "strict_original_fraction": 0.8880208333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.1796875
+    },
+    {
+      "layer_index": 16,
+      "left_set_fraction": 0.6901041666666666,
+      "strict_original_fraction": 0.875,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.18489583333333334
+    },
+    {
+      "layer_index": 17,
+      "left_set_fraction": 0.65625,
+      "strict_original_fraction": 0.8489583333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.19270833333333334
+    },
+    {
+      "layer_index": 18,
+      "left_set_fraction": 0.65625,
+      "strict_original_fraction": 0.8229166666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.16666666666666666
+    },
+    {
+      "layer_index": 19,
+      "left_set_fraction": 0.6640625,
+      "strict_original_fraction": 0.8567708333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.19270833333333334
+    },
+    {
+      "layer_index": 20,
+      "left_set_fraction": 0.6484375,
+      "strict_original_fraction": 0.8151041666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.16666666666666666
+    },
+    {
+      "layer_index": 21,
+      "left_set_fraction": 0.6666666666666666,
+      "strict_original_fraction": 0.796875,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.13020833333333334
+    },
+    {
+      "layer_index": 22,
+      "left_set_fraction": 0.6380208333333334,
+      "strict_original_fraction": 0.7838541666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.14583333333333334
+    },
+    {
+      "layer_index": 23,
+      "left_set_fraction": 0.6588541666666666,
+      "strict_original_fraction": 0.7838541666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.12760416666666666
+    },
+    {
+      "layer_index": 24,
+      "left_set_fraction": 0.6588541666666666,
+      "strict_original_fraction": 0.796875,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.13802083333333334
+    },
+    {
+      "layer_index": 25,
+      "left_set_fraction": 0.6666666666666666,
+      "strict_original_fraction": 0.7760416666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.11458333333333333
+    },
+    {
+      "layer_index": 26,
+      "left_set_fraction": 0.6614583333333334,
+      "strict_original_fraction": 0.7994791666666666,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.140625
+    },
+    {
+      "layer_index": 27,
+      "left_set_fraction": 0.4583333333333333,
+      "strict_original_fraction": 0.6927083333333334,
+      "trace_count": 24,
+      "within_set_rank_shuffle_fraction": 0.234375
+    }
+  ],
+  "rank_delta_strictly_greater_than": 2,
+  "schema_version": "om_phase5_prime_transformer_v1_decomposition",
+  "strict_set_leaving_definition": "channel rank <= top_1_percent_boundary at position 100 and rank > top_1_percent_boundary at final position",
+  "top_channel_fraction": 0.01,
+  "trace_metrics": [
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6651785714285714,
+      "prompt_index": 0,
+      "strict_original_fraction": 0.8191964285714286,
+      "within_set_rank_shuffle_fraction": 0.15401785714285715
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.671875,
+      "prompt_index": 1,
+      "strict_original_fraction": 0.84375,
+      "within_set_rank_shuffle_fraction": 0.17410714285714285
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.7120535714285714,
+      "prompt_index": 2,
+      "strict_original_fraction": 0.8727678571428571,
+      "within_set_rank_shuffle_fraction": 0.16071428571428573
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.8102678571428571,
+      "prompt_index": 3,
+      "strict_original_fraction": 0.8950892857142857,
+      "within_set_rank_shuffle_fraction": 0.08482142857142858
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6205357142857143,
+      "prompt_index": 4,
+      "strict_original_fraction": 0.7946428571428571,
+      "within_set_rank_shuffle_fraction": 0.17857142857142858
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6540178571428571,
+      "prompt_index": 5,
+      "strict_original_fraction": 0.8102678571428571,
+      "within_set_rank_shuffle_fraction": 0.15848214285714285
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6272321428571429,
+      "prompt_index": 6,
+      "strict_original_fraction": 0.8125,
+      "within_set_rank_shuffle_fraction": 0.18973214285714285
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6540178571428571,
+      "prompt_index": 7,
+      "strict_original_fraction": 0.8348214285714286,
+      "within_set_rank_shuffle_fraction": 0.18080357142857142
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.703125,
+      "prompt_index": 8,
+      "strict_original_fraction": 0.875,
+      "within_set_rank_shuffle_fraction": 0.17410714285714285
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6808035714285714,
+      "prompt_index": 9,
+      "strict_original_fraction": 0.8772321428571429,
+      "within_set_rank_shuffle_fraction": 0.19866071428571427
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.609375,
+      "prompt_index": 10,
+      "strict_original_fraction": 0.8035714285714286,
+      "within_set_rank_shuffle_fraction": 0.20089285714285715
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6383928571428571,
+      "prompt_index": 11,
+      "strict_original_fraction": 0.8303571428571429,
+      "within_set_rank_shuffle_fraction": 0.19196428571428573
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6629464285714286,
+      "prompt_index": 12,
+      "strict_original_fraction": 0.8348214285714286,
+      "within_set_rank_shuffle_fraction": 0.171875
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.71875,
+      "prompt_index": 13,
+      "strict_original_fraction": 0.8482142857142857,
+      "within_set_rank_shuffle_fraction": 0.12946428571428573
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6116071428571429,
+      "prompt_index": 14,
+      "strict_original_fraction": 0.7700892857142857,
+      "within_set_rank_shuffle_fraction": 0.16071428571428573
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.7053571428571429,
+      "prompt_index": 15,
+      "strict_original_fraction": 0.8504464285714286,
+      "within_set_rank_shuffle_fraction": 0.14508928571428573
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6116071428571429,
+      "prompt_index": 16,
+      "strict_original_fraction": 0.8035714285714286,
+      "within_set_rank_shuffle_fraction": 0.19196428571428573
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6495535714285714,
+      "prompt_index": 17,
+      "strict_original_fraction": 0.8571428571428571,
+      "within_set_rank_shuffle_fraction": 0.20758928571428573
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6294642857142857,
+      "prompt_index": 18,
+      "strict_original_fraction": 0.796875,
+      "within_set_rank_shuffle_fraction": 0.16741071428571427
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.65625,
+      "prompt_index": 19,
+      "strict_original_fraction": 0.8303571428571429,
+      "within_set_rank_shuffle_fraction": 0.17857142857142858
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6383928571428571,
+      "prompt_index": 20,
+      "strict_original_fraction": 0.8258928571428571,
+      "within_set_rank_shuffle_fraction": 0.1875
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.7120535714285714,
+      "prompt_index": 21,
+      "strict_original_fraction": 0.8660714285714286,
+      "within_set_rank_shuffle_fraction": 0.15401785714285715
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.6941964285714286,
+      "prompt_index": 22,
+      "strict_original_fraction": 0.8169642857142857,
+      "within_set_rank_shuffle_fraction": 0.125
+    },
+    {
+      "layer_count": 28,
+      "left_set_fraction": 0.7566964285714286,
+      "prompt_index": 23,
+      "strict_original_fraction": 0.8683035714285714,
+      "within_set_rank_shuffle_fraction": 0.11160714285714286
+    }
+  ],
+  "within_set_rank_shuffling_definition": "channel remains inside final top-1% set but moves by more than 2 rank positions"
+}
