@@ -1,0 +1,11 @@
+{
+  "activation_capture_accessible": false,
+  "artifact_complete": true,
+  "decision": "FAIL_INFRA_QWEN36",
+  "model_id": "Qwen/Qwen3.6-35B-A3B",
+  "model_snapshot_commit": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "reasons": [
+    "SGLang Engine exposes request-level return_hidden_states but no public per-layer residual or block-output hook API; the model is owned by scheduler subprocesses, and source modification is forbidden by the preregistration."
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase5_double_prime/results/om_phase5dp_qwen36_20260512T070500Z"
+}

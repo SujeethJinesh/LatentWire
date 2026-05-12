@@ -42,6 +42,9 @@ for the returning human.
   reported as a sensitivity result, not used as the main operating point.
 - Phase 6 RSPR status: skipped/blocked by the measurable-gap execution
   condition; see `swarm/blocked_phase6_testbed_selection.md`.
+- Phase 5'' Qwen3.6 status: `FAIL_INFRA_QWEN36`, artifact-complete; SGLang
+  lacks a public per-layer activation hook path under the no-source-modification
+  constraint.
 - Interpretation update: pure-Transformer R1-Distill-Qwen-1.5B shows
   migration at essentially the Granite/Nemotron scale. OutlierMigrate must no
   longer frame the main measurement as Mamba-2-specific; the defensible story
@@ -202,6 +205,27 @@ Phase 6 RSPR gate outcome:
 - Interpretation: this preserves the positive-method bar. RSPR may still be
   a plausible future method, but it needs a fresh measurable quantization
   testbed authorization before any data.
+
+Phase 5'' Qwen3.6 cross-lineage outcome:
+
+- Preregistration:
+  `experimental/outlier_migrate/phase5_double_prime/preregister_om_phase5dp_qwen36.md`.
+- Runner/checker:
+  `experimental/outlier_migrate/phase5_double_prime/run_om_phase5dp_qwen36.py`
+  and `experimental/outlier_migrate/phase5_double_prime/check_om_phase5dp_qwen36.py`.
+- Result packet:
+  `experimental/outlier_migrate/phase5_double_prime/results/om_phase5dp_qwen36_20260512T070500Z`.
+- Decision: `FAIL_INFRA_QWEN36`.
+- Artifact status: `artifact_complete=true`.
+- Model metadata: `Qwen/Qwen3.6-35B-A3B`, snapshot
+  `995ad96eacd98c81ed38be0c5b274b04031597b0`.
+- Reason: SGLang 0.5.9 supports the Qwen3.6 config path, but the public
+  `Engine` API exposes request-level `return_hidden_states` only. It does not
+  expose a public per-layer residual/block-output hook path; the model is owned
+  by scheduler subprocesses, and modifying SGLang/model source is forbidden.
+- Inference attempted: `false`.
+- Integration rule: the paper must not broaden to Gated DeltaNet/Qwen3.6
+  based on this phase.
 
 ## Killed Branches
 

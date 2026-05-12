@@ -1,0 +1,51 @@
+{
+  "artifacts": [
+    {
+      "bytes": 1649,
+      "path": "capability_probe.json",
+      "sha256": "sha256:4e1171b48ae321b970953ef0159634f99f0315668eb9704d1d56362f5d53853c"
+    },
+    {
+      "bytes": 598,
+      "path": "command_metadata.json",
+      "sha256": "sha256:ff90c22805f92e78c1907268662d15f952daf5df54fdcec1983ef410514c619e"
+    },
+    {
+      "bytes": 6682,
+      "path": "environment.json",
+      "sha256": "sha256:ce854733869e226907065f062afe4172bfdb8e43c1da01c9077c8bae02770325"
+    },
+    {
+      "bytes": 388,
+      "path": "infra_error.json",
+      "sha256": "sha256:fb66ac7471ad1131546f1baa6e6b6c70aff4a0423e769bb5115d43c28ca9f0c4"
+    },
+    {
+      "bytes": 617,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:a5c60b01f05ce50730c8d2cc2fba6741034ecbaa556908f54ed529cda3a55a38"
+    },
+    {
+      "bytes": 169,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:4f4c6a47d8f4c32bd6ccccc7566f8a36dcdd4b4be457df4b1d4bb7c50c368736"
+    },
+    {
+      "bytes": 599,
+      "path": "model_provenance.json",
+      "sha256": "sha256:a3c41e2d220ee04500250c9a4580958d552617b0554ff7aa7c56892421a718fd"
+    },
+    {
+      "bytes": 16411,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:621583ff99b595210bb2696f7278cdce197818a615e4de144677b879f65c9a12"
+    },
+    {
+      "bytes": 169,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:e038fe4c9ca50ac8dd1dbf15972289cf6e887b6a01ffcc26213a1cfe6df6e9a8"
+    }
+  ],
+  "created_at_utc": "2026-05-12T07:07:23Z",
+  "schema_version": "om_phase5dp_qwen36_v1_artifact_hashes"
+}

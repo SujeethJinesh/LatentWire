@@ -1,0 +1,15 @@
+{
+  "actual_python": "/workspace/.sglang/bin/python",
+  "argv": [
+    "experimental/outlier_migrate/phase5_double_prime/run_om_phase5dp_qwen36.py",
+    "--run-id",
+    "om_phase5dp_qwen36_20260512T070500Z"
+  ],
+  "branch": "outlier_migrate_phase5_double_prime_qwen36",
+  "created_at_utc": "2026-05-12T07:06:57Z",
+  "cwd": "/workspace/LatentWire",
+  "inference_attempted": false,
+  "reason_inference_not_attempted": "per-layer activation capture is not accessible without forbidden source modification",
+  "required_venv": "/workspace/.sglang",
+  "schema_version": "om_phase5dp_qwen36_v1_command"
+}

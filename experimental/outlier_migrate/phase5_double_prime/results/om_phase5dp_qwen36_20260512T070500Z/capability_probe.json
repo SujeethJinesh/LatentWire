@@ -1,0 +1,53 @@
+{
+  "activation_capture_accessible": false,
+  "created_at_utc": "2026-05-12T07:07:23Z",
+  "details": {
+    "autoconfig": {
+      "architectures": [
+        "Qwen3_5MoeForConditionalGeneration"
+      ],
+      "class": "Qwen3_5MoeConfig",
+      "hidden_size": null,
+      "model_type": "qwen3_5_moe",
+      "ok": true
+    },
+    "engine_architecture_note": {
+      "engine_source": "/workspace/.sglang/lib/python3.12/site-packages/sglang/srt/entrypoints/engine.py",
+      "scheduler_subprocess_doc_present": true,
+      "tokenizer_manager_main_process_doc_present": true
+    },
+    "engine_generate_parameters": [
+      "self",
+      "prompt",
+      "sampling_params",
+      "input_ids",
+      "image_data",
+      "audio_data",
+      "video_data",
+      "return_logprob",
+      "logprob_start_len",
+      "top_logprobs_num",
+      "token_ids_logprob",
+      "lora_path",
+      "custom_logit_processor",
+      "return_hidden_states",
+      "return_routed_experts",
+      "stream",
+      "bootstrap_host",
+      "bootstrap_port",
+      "bootstrap_room",
+      "data_parallel_rank",
+      "external_trace_header",
+      "rid",
+      "session_params",
+      "priority"
+    ],
+    "engine_has_layer_hook_parameter": false,
+    "engine_has_return_hidden_states": true
+  },
+  "failure_classification": "per_layer_activation_capture_unavailable",
+  "reasons": [
+    "SGLang Engine exposes request-level return_hidden_states but no public per-layer residual or block-output hook API; the model is owned by scheduler subprocesses, and source modification is forbidden by the preregistration."
+  ],
+  "schema_version": "om_phase5dp_qwen36_v1_capability_probe"
+}

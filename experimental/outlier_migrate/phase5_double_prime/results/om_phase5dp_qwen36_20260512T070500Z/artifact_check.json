@@ -1,0 +1,21 @@
+{
+  "artifact_complete": true,
+  "decision": "FAIL_INFRA_QWEN36",
+  "reasons": [
+    "SGLang Engine exposes request-level return_hidden_states but no public per-layer residual or block-output hook API; the model is owned by scheduler subprocesses, and source modification is forbidden by the preregistration."
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "capability_probe.json",
+    "infra_error.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase5_double_prime/results/om_phase5dp_qwen36_20260512T070500Z",
+  "schema_version": "om_phase5dp_qwen36_v1_artifact_check"
+}

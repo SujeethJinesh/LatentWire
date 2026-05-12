@@ -1,0 +1,11 @@
+{
+  "cache_repo_path": "/workspace/hf_cache/hub/models--Qwen--Qwen3.6-35B-A3B",
+  "config_exists": true,
+  "created_at_utc": "2026-05-12T07:06:57Z",
+  "hf_snapshot_commit": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "model_id": "Qwen/Qwen3.6-35B-A3B",
+  "note": "Config snapshot was resolved before inference; full weights are not required for this infra capability probe.",
+  "schema_version": "om_phase5dp_qwen36_v1_model_provenance",
+  "snapshot_path": "/workspace/hf_cache/hub/models--Qwen--Qwen3.6-35B-A3B/snapshots/995ad96eacd98c81ed38be0c5b274b04031597b0",
+  "weights_downloaded": false
+}

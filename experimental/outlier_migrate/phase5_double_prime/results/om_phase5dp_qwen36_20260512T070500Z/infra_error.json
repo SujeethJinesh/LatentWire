@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-05-12T07:07:23Z",
+  "decision": "FAIL_INFRA_QWEN36",
+  "reasons": [
+    "SGLang Engine exposes request-level return_hidden_states but no public per-layer residual or block-output hook API; the model is owned by scheduler subprocesses, and source modification is forbidden by the preregistration."
+  ],
+  "schema_version": "om_phase5dp_qwen36_v1_infra_error"
+}
