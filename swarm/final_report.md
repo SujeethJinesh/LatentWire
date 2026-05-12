@@ -661,3 +661,51 @@ Next active work:
 - Step 9.0 must verify set-leaving above `50%` on Granite-4-H-Small,
   Nemotron-3-Nano, and DeepSeek-R1-Distill-Qwen-1.5B, and compute bin-to-bin
   Jaccard overlap for top-1% and top-2% channels.
+
+## Phase 9 Step 9.0 Premise Check (2026-05-12)
+
+Phase 9 Step 9.0 was run before any new Phase 9 GPU work. It recomputed the
+strict set-leaving / within-set shuffling decomposition on the three required
+existing packets and measured adjacent-bin Jaccard overlap for top-channel
+sets.
+
+Outputs:
+
+- `experimental/outlier_migrate/phase9/step9_0_decomposition_replication.md`
+- `experimental/outlier_migrate/phase9/step9_0_bin_overlap_analysis.md`
+- Reproduction script:
+  `experimental/outlier_migrate/phase9/run_step9_0_analysis.py`
+
+Decomposition gate:
+
+| Model | Strict set-leaving | Within-set shuffling | Original drift | Gate |
+|---|---:|---:|---:|---|
+| Granite-4-H-Small | `0.566234756098` | `0.270934959350` | `0.836763211382` | pass |
+| Nemotron-3-Nano | `0.533713200380` | `0.269082383666` | `0.801667853751` | pass |
+| DeepSeek-R1-Distill-Qwen-1.5B | `0.670572916667` | `0.165736607143` | `0.834914434524` | pass |
+
+Decision:
+
+- Step 9.0 premise gate passed: strict set-leaving is above `0.50` on all
+  three required models.
+- Phase 9 proceeds to M2 preregistration and then M2 GPU work.
+
+Bin-overlap readout:
+
+- Overall mean adjacent-bin top-1% Jaccard overlap:
+  `0.745999647119`.
+- This is above the `0.40` readout threshold in `swarm/goal.md`, so M10
+  remains likely enough to run after M2.
+- The analysis uses the following bin convention: recorded decode positions
+  are assigned to `(low, high]`, except the first bin is `(0, 500]`; top
+  sets are selected per layer by mean absolute activation magnitude over all
+  traces and positions in the bin.
+
+Interpretation:
+
+- The core Phase 9 premise is intact. Set-leaving is not a one-model artifact;
+  it appears on Granite-4-H-Small, Nemotron-3-Nano, and the pure-Transformer
+  DeepSeek control.
+- High bin-to-bin overlap means position-conditioned protection has enough
+  continuity to be worth testing, instead of immediately demoting to a learned
+  probe-only story.
