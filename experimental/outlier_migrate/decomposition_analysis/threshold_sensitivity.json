@@ -1,0 +1,477 @@
+{
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260512,
+  "packets": [
+    {
+      "key": "phase0_granite_tiny",
+      "label": "Phase 0 Granite-Tiny",
+      "run_dir": "experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z",
+      "stable_thresholds": [
+        0.005,
+        0.01,
+        0.02
+      ],
+      "threshold_rows": [
+        {
+          "base_position": 100,
+          "final_position": 10000,
+          "gate_style_migration_fraction": 0.690625,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.7203125,
+            "ci95_low": 0.6583333333333333
+          },
+          "left_set_fraction": 0.5833333333333334,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6296875,
+            "ci95_low": 0.5427083333333333
+          },
+          "strict_original_fraction": 0.6770833333333334,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.70859375,
+            "ci95_low": 0.64453125
+          },
+          "top_channel_fraction": 0.005,
+          "top_channel_percent": 0.5,
+          "within_set_rank_shuffle_fraction": 0.1,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.1234375,
+            "ci95_low": 0.07473958333333333
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 10000,
+          "gate_style_migration_fraction": 0.8178385416666667,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.8375,
+            "ci95_low": 0.796875
+          },
+          "left_set_fraction": 0.6342447916666667,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6662760416666667,
+            "ci95_low": 0.60703125
+          },
+          "strict_original_fraction": 0.8080729166666667,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.8303385416666667,
+            "ci95_low": 0.7869791666666667
+          },
+          "top_channel_fraction": 0.01,
+          "top_channel_percent": 1.0,
+          "within_set_rank_shuffle_fraction": 0.17526041666666667,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.19140625,
+            "ci95_low": 0.15924479166666666
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 10000,
+          "gate_style_migration_fraction": 0.8932795698924731,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.9050403225806452,
+            "ci95_low": 0.8815860215053763
+          },
+          "left_set_fraction": 0.6691532258064516,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6897177419354839,
+            "ci95_low": 0.6501344086021505
+          },
+          "strict_original_fraction": 0.8855510752688172,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.8977150537634409,
+            "ci95_low": 0.8736559139784946
+          },
+          "top_channel_fraction": 0.02,
+          "top_channel_percent": 2.0,
+          "within_set_rank_shuffle_fraction": 0.21666666666666665,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.22748655913978494,
+            "ci95_low": 0.2053763440860215
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 10000,
+          "gate_style_migration_fraction": 0.9492424242424242,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.9540584415584416,
+            "ci95_low": 0.9446158008658009
+          },
+          "left_set_fraction": 0.658008658008658,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6695075757575758,
+            "ci95_low": 0.6457521645021645
+          },
+          "strict_original_fraction": 0.9449404761904762,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.9500541125541125,
+            "ci95_low": 0.9400974025974026
+          },
+          "top_channel_fraction": 0.05,
+          "top_channel_percent": 5.0,
+          "within_set_rank_shuffle_fraction": 0.28695887445887447,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.2970508658008658,
+            "ci95_low": 0.27621753246753245
+          }
+        }
+      ]
+    },
+    {
+      "key": "phase1_granite_small",
+      "label": "Phase 1 Granite-Small",
+      "run_dir": "experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z",
+      "stable_thresholds": [
+        0.005,
+        0.01,
+        0.02
+      ],
+      "threshold_rows": [
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.7234126984126984,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.7372519841269841,
+            "ci95_low": 0.7091269841269842
+          },
+          "left_set_fraction": 0.5382936507936508,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.5584325396825397,
+            "ci95_low": 0.5168154761904762
+          },
+          "strict_original_fraction": 0.7146825396825397,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.7285218253968254,
+            "ci95_low": 0.6995039682539682
+          },
+          "top_channel_fraction": 0.005,
+          "top_channel_percent": 0.5,
+          "within_set_rank_shuffle_fraction": 0.17787698412698413,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.188640873015873,
+            "ci95_low": 0.166765873015873
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.843165650406504,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.8510924796747967,
+            "ci95_low": 0.8342987804878048
+          },
+          "left_set_fraction": 0.566234756097561,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.5806402439024391,
+            "ci95_low": 0.5491869918699187
+          },
+          "strict_original_fraction": 0.8367632113821138,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.844969512195122,
+            "ci95_low": 0.8271595528455284
+          },
+          "top_channel_fraction": 0.01,
+          "top_channel_percent": 1.0,
+          "within_set_rank_shuffle_fraction": 0.2709349593495935,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.2809959349593496,
+            "ci95_low": 0.2613821138211382
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.9133003048780488,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.9176956300813008,
+            "ci95_low": 0.9082571138211382
+          },
+          "left_set_fraction": 0.5741234756097561,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.5900025406504065,
+            "ci95_low": 0.5590701219512195
+          },
+          "strict_original_fraction": 0.9097433943089431,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.9144563008130081,
+            "ci95_low": 0.9042682926829269
+          },
+          "top_channel_fraction": 0.02,
+          "top_channel_percent": 2.0,
+          "within_set_rank_shuffle_fraction": 0.33572154471544713,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.3483104674796748,
+            "ci95_low": 0.3222433943089431
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.9619664634146341,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.9638871951219512,
+            "ci95_low": 0.9596747967479674
+          },
+          "left_set_fraction": 0.6891615853658537,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.7015802845528455,
+            "ci95_low": 0.6776168699186992
+          },
+          "strict_original_fraction": 0.9616463414634147,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.9636077235772358,
+            "ci95_low": 0.9592886178861788
+          },
+          "top_channel_fraction": 0.05,
+          "top_channel_percent": 5.0,
+          "within_set_rank_shuffle_fraction": 0.2725,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.28269308943089433,
+            "ci95_low": 0.26104166666666667
+          }
+        }
+      ]
+    },
+    {
+      "key": "phase2_nemotron3",
+      "label": "Phase 2 Nemotron-3",
+      "run_dir": "experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z",
+      "stable_thresholds": [
+        0.01,
+        0.02
+      ],
+      "threshold_rows": [
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.7083905677655677,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.7727220695970696,
+            "ci95_low": 0.6527586996336996
+          },
+          "left_set_fraction": 0.5208905677655677,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6004464285714286,
+            "ci95_low": 0.4497481684981685
+          },
+          "strict_original_fraction": 0.6849244505494505,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.7527472527472527,
+            "ci95_low": 0.6268887362637362
+          },
+          "top_channel_fraction": 0.005,
+          "top_channel_percent": 0.5,
+          "within_set_rank_shuffle_fraction": 0.16849816849816848,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.1887591575091575,
+            "ci95_low": 0.1502403846153846
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.820809591642925,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.8599240265906932,
+            "ci95_low": 0.7867105887939221
+          },
+          "left_set_fraction": 0.533713200379867,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6011099240265907,
+            "ci95_low": 0.4705899810066477
+          },
+          "strict_original_fraction": 0.8016678537511871,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.8421177587844254,
+            "ci95_low": 0.7651056505223172
+          },
+          "top_channel_fraction": 0.01,
+          "top_channel_percent": 1.0,
+          "within_set_rank_shuffle_fraction": 0.26908238366571696,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.2978988603988604,
+            "ci95_low": 0.23833689458689458
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.8943643162393162,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.9165924738841406,
+            "ci95_low": 0.8748516144349477
+          },
+          "left_set_fraction": 0.5209223646723646,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.582710113960114,
+            "ci95_low": 0.4652332621082621
+          },
+          "strict_original_fraction": 0.8840811965811965,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.9067693494776828,
+            "ci95_low": 0.8639452754036088
+          },
+          "top_channel_fraction": 0.02,
+          "top_channel_percent": 2.0,
+          "within_set_rank_shuffle_fraction": 0.3633517331433998,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.39860814339981004,
+            "ci95_low": 0.3241037511870845
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.9491631054131054,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.9592355175688508,
+            "ci95_low": 0.9404142924976259
+          },
+          "left_set_fraction": 0.5660018993352327,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6078941120607787,
+            "ci95_low": 0.5288995726495727
+          },
+          "strict_original_fraction": 0.9463259734093067,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.9567307692307692,
+            "ci95_low": 0.9372744539411206
+          },
+          "top_channel_fraction": 0.05,
+          "top_channel_percent": 5.0,
+          "within_set_rank_shuffle_fraction": 0.3803596866096866,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.40848765432098766,
+            "ci95_low": 0.34853988603988606
+          }
+        }
+      ]
+    },
+    {
+      "key": "phase5p_transformer",
+      "label": "Phase 5' Transformer",
+      "run_dir": "experimental/outlier_migrate/phase5_prime/results/om_phase5p_20260512T053800Z",
+      "stable_thresholds": [
+        0.005,
+        0.01,
+        0.02
+      ],
+      "threshold_rows": [
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.7247023809523809,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.7453497023809524,
+            "ci95_low": 0.7036830357142857
+          },
+          "left_set_fraction": 0.6393229166666666,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6620163690476191,
+            "ci95_low": 0.6170014880952381
+          },
+          "strict_original_fraction": 0.7260044642857143,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.7485119047619048,
+            "ci95_low": 0.703125
+          },
+          "top_channel_fraction": 0.005,
+          "top_channel_percent": 0.5,
+          "within_set_rank_shuffle_fraction": 0.09300595238095238,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.10119047619047619,
+            "ci95_low": 0.08370535714285714
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.8393787202380952,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.8512834821428571,
+            "ci95_low": 0.8268229166666666
+          },
+          "left_set_fraction": 0.6705729166666666,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.6911272321428571,
+            "ci95_low": 0.6515066964285714
+          },
+          "strict_original_fraction": 0.8349144345238095,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.84765625,
+            "ci95_low": 0.8217075892857143
+          },
+          "top_channel_fraction": 0.01,
+          "top_channel_percent": 1.0,
+          "within_set_rank_shuffle_fraction": 0.16573660714285715,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.17680431547619047,
+            "ci95_low": 0.15243675595238096
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.9058179723502304,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.9119143625192012,
+            "ci95_low": 0.8991935483870968
+          },
+          "left_set_fraction": 0.6880280337941628,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.7067972350230415,
+            "ci95_low": 0.6682987711213517
+          },
+          "strict_original_fraction": 0.899913594470046,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.907258064516129,
+            "ci95_low": 0.8924251152073732
+          },
+          "top_channel_fraction": 0.02,
+          "top_channel_percent": 2.0,
+          "within_set_rank_shuffle_fraction": 0.21260560675883255,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.2259984639016897,
+            "ci95_low": 0.19906874039938555
+          }
+        },
+        {
+          "base_position": 100,
+          "final_position": 20000,
+          "gate_style_migration_fraction": 0.9557050092764379,
+          "gate_style_migration_fraction_ci95": {
+            "ci95_high": 0.9585845701917131,
+            "ci95_low": 0.9528447742733457
+          },
+          "left_set_fraction": 0.6809678416821274,
+          "left_set_fraction_ci95": {
+            "ci95_high": 0.693819573283859,
+            "ci95_low": 0.6681354359925789
+          },
+          "strict_original_fraction": 0.9517238713667285,
+          "strict_original_fraction_ci95": {
+            "ci95_high": 0.9548160173160173,
+            "ci95_low": 0.9485544217687074
+          },
+          "top_channel_fraction": 0.05,
+          "top_channel_percent": 5.0,
+          "within_set_rank_shuffle_fraction": 0.2708526592455164,
+          "within_set_rank_shuffle_fraction_ci95": {
+            "ci95_high": 0.28157854050711195,
+            "ci95_low": 0.25956632653061223
+          }
+        }
+      ]
+    }
+  ],
+  "rank_delta_strictly_greater_than": 2,
+  "schema_version": "om_experiment_e_threshold_sensitivity_v1",
+  "thresholds": [
+    0.005,
+    0.01,
+    0.02,
+    0.05
+  ]
+}

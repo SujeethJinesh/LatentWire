@@ -34,6 +34,12 @@ for the returning human.
 - Experiment D outputs: `kendall_tau_by_position.json`,
   `component_decomposition.md`, `component_decomposition.json`,
   `cross_tabulation.json`, and `trace_difficulty_regression.json`.
+- Experiment E threshold sensitivity:
+  `experimental/outlier_migrate/decomposition_analysis/threshold_sensitivity.md`
+  and `threshold_sensitivity.pdf`.
+- Experiment E headline: top-1% decomposition is stable through top-2% for
+  all landed packets; top-5% changes the component split and should be
+  reported as a sensitivity result, not used as the main operating point.
 - Interpretation update: pure-Transformer R1-Distill-Qwen-1.5B shows
   migration at essentially the Granite/Nemotron scale. OutlierMigrate must no
   longer frame the main measurement as Mamba-2-specific; the defensible story
@@ -163,6 +169,25 @@ Experiment D decomposition formalization:
   all landed packets, including the pure-Transformer control. Rank-shuffling
   is still nontrivial, but the pure-Transformer control shifts a larger share
   into strict set-leaving than Granite-Small or Nemotron-3.
+
+Experiment E threshold sensitivity:
+
+- Output report:
+  `experimental/outlier_migrate/decomposition_analysis/threshold_sensitivity.md`.
+- Output figure:
+  `experimental/outlier_migrate/decomposition_analysis/threshold_sensitivity.pdf`.
+- Thresholds evaluated: top-0.5%, top-1%, top-2%, top-5%.
+- Stability rule: both strict set-leaving and within-set rank-shuffling must
+  remain within `0.10` absolute fraction of their top-1% values.
+- Stable thresholds by packet:
+  - Phase 0 Granite-Tiny: top-0.5%, top-1%, top-2%.
+  - Phase 1 Granite-Small: top-0.5%, top-1%, top-2%.
+  - Phase 2 Nemotron-3: top-1%, top-2%.
+  - Phase 5' Transformer: top-0.5%, top-1%, top-2%.
+- Interpretation: the top-1% operating point is not a cherry-picked
+  threshold. The component split is stable through top-2% across all landed
+  packets, while top-5% admits enough lower-magnitude channels to change the
+  set-leaving/rank-shuffling balance.
 
 ## Killed Branches
 
