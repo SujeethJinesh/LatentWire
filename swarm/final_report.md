@@ -40,6 +40,8 @@ for the returning human.
 - Experiment E headline: top-1% decomposition is stable through top-2% for
   all landed packets; top-5% changes the component split and should be
   reported as a sensitivity result, not used as the main operating point.
+- Phase 6 RSPR status: skipped/blocked by the measurable-gap execution
+  condition; see `swarm/blocked_phase6_testbed_selection.md`.
 - Interpretation update: pure-Transformer R1-Distill-Qwen-1.5B shows
   migration at essentially the Granite/Nemotron scale. OutlierMigrate must no
   longer frame the main measurement as Mamba-2-specific; the defensible story
@@ -188,6 +190,18 @@ Experiment E threshold sensitivity:
   threshold. The component split is stable through top-2% across all landed
   packets, while top-5% admits enough lower-magnitude channels to change the
   set-leaving/rank-shuffling balance.
+
+Phase 6 RSPR gate outcome:
+
+- Block/skip note: `swarm/blocked_phase6_testbed_selection.md`.
+- Gate condition: Phase 4 needed fewer than 25% no-gap traces and no
+  measurement-design kill.
+- Observed Phase 4 no-gap fraction: `0.375`.
+- Decision: `SKIP_OM_PHASE6_TESTBED_NOT_MEASURABLE`.
+- No Phase 6 preregistration was authored and no RSPR inference was run.
+- Interpretation: this preserves the positive-method bar. RSPR may still be
+  a plausible future method, but it needs a fresh measurable quantization
+  testbed authorization before any data.
 
 ## Killed Branches
 
