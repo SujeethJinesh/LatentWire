@@ -1025,3 +1025,340 @@ work found.
 EXPERIMENT E PROCEEDS UNMODIFIED. Threshold sensitivity is an ablation
 strengthening the decomposition, not a contribution claim.
 
+
+## Phase 9 — Positive method sprint (May 11, 2026, post deep-research audit)
+
+PURPOSE
+Phase 4 KILL plus Experiment D decomposition (67% set-leaving, 17% rank
+shuffling) demonstrate that static channel-set protection fundamentally
+cannot work in long-decode reasoning. Phase 9 attempts positive methods
+that directly address the set-leaving failure mode, selected after a
+comprehensive scoop audit against 2026 prior art. GPU budget is treated
+as unconstrained for Phase 9 scope decisions (RunPod cap still applies
+to actual spend; cumulative cap raised to 120 GPU-hours for this sprint).
+
+CRITICAL TERMINOLOGY DECISION
+The term "outlier migration" collides with MoBiQuant (arXiv 2602.20191),
+which uses the same phrase to mean "precision-dependent token-sensitivity
+migration." Throughout Phase 9 documentation, preregistrations, and the
+paper, RENAME our phenomenon to "decode-position channel drift" or
+"long-decode channel drift." Update existing files when natural; do not
+spend cycles on a renaming sweep.
+
+CRITICAL NEW PRIOR ART (MUST CITE OR DIFFERENTIATE)
+
+PMPD (Progressive Mixed-Precision Decoding, arXiv 2410.13461, Chen et al.,
+Samsung AI Center Cambridge). Verbatim claim from PMPD: "PMPD builds upon
+the observation that the prefill phase and the initial tokens of the
+decoding phase are more sensitive to approximations than later tokens."
+Their method: "gradual lowering of precision deeper in the generated
+sequence."
+
+Our Phase 4 set-leaving finding (67% strict set-leaving as decoding
+extends) directly contradicts PMPD's premise for hybrid long-CoT reasoning.
+This is the paper's strongest story hook. Frame the paper as: PMPD's
+premise holds for Transformer non-reasoning workloads but fails for hybrid
+long-CoT reasoning where channel migration makes LATER tokens MORE
+sensitive, not less.
+
+ADDITIONAL CITATIONS REQUIRED
+- KL Lens (arXiv 2604.13440, Kong/Pandey/Ponzina/Rosing, UC San Diego):
+  scoops layer-stratified mixed precision on hybrid SSM-Transformer.
+  Differentiate by being channel-level and migration-aware, not layer-level
+  and sensitivity-static.
+- TTQ (arXiv 2603.19296, Koike-Akino/Liu/Wang, MERL): scoops online
+  prompt-level activation-aware quantization. Differentiate by
+  position-binning over decode (not prompt-level once-per-prompt).
+- "Quantization Meets Reasoning" (arXiv 2501.03035): scoops brief QAT
+  recovery (545 examples, 3 min, 4 GPUs). Disqualifies brief QAT as a
+  Phase 9 method. Cite as complementary, not competing.
+- MoBiQuant (arXiv 2602.20191): owns "outlier migration" terminology.
+  Disambiguate explicitly in our introduction.
+
+PHASES 9 METHODS - FINAL SCOPE
+
+Five methods, in execution order. The first three are MUST-RUN; the
+fourth and fifth are conditional.
+
+DROPPED FROM ORIGINAL 10:
+- M1 (expand union) demoted from primary method to negative-control ablation
+- M3 (per-token mixed precision) DROPPED - scooped by MoBiQuant + Don't Waste Bits
+- M4 (layer-stratified) DROPPED - scooped by KL Lens for hybrid SSM-Transformer
+- M5 (block residual recompensation) DROPPED - scooped by DecDEC
+- M7 (online Hadamard refresh) DROPPED - marginal over QuaRot/MambaQuant/ParoQuant
+- M8 (online SmoothQuant refresh) DROPPED - subsumed by TTQ
+
+STEP 9.0 - FREE ANALYTICAL CHECK (NO GPU, ~30 min LLM time)
+
+Run BEFORE any GPU work. From existing Phase 0/1/2/5' packets:
+
+1. For each model, compute Experiment D's set-leaving / rank-shuffling
+   decomposition. The 67% statistic is currently from Granite-4-H-Small only.
+   Verify it replicates above 50% on Nemotron-3-Nano and
+   DeepSeek-R1-Distill-Qwen-1.5B. Output:
+   experimental/outlier_migrate/phase9/step9_0_decomposition_replication.md
+
+2. For each model, for each pair of adjacent position bins
+   {0-500, 500-2000, 2000-5000, 5000-10000, 10000-20000}, compute:
+   - Jaccard overlap of top-1% channels
+   - Jaccard overlap of top-2% channels
+   Output:
+   experimental/outlier_migrate/phase9/step9_0_bin_overlap_analysis.md
+
+DECISION GATES from Step 9.0:
+- If set-leaving >50% replicates on all three models: proceed normally
+- If set-leaving fails to replicate on any model: pause and surface to
+  human, the paper's premise is at risk
+- If bin-to-bin top-1% overlap averages >0.40: M10 is likely to work
+- If bin-to-bin overlap <0.40: M10 is unlikely to work; demote M10 and
+  prioritize M9
+
+STEP 9.1 - METHOD M2: Position-conditional union (PRIMARY, ~4 GPU hr)
+
+PRIORITY: First positive method to run. Highest expected information value.
+
+Preregister at
+experimental/outlier_migrate/phase9/preregister_om_phase9_m2_position_conditional.md
+
+Method:
+Three protected channel sets, switched at decode-position thresholds:
+- Set A: union of top-1% at positions {100, 200, 500}
+- Set B: union of top-1% at positions {1000, 2000, 5000}
+- Set C: union of top-1% at positions {7000, 10000, 15000}
+Switch A->B at position 800, B->C at position 6000.
+Each set has the same ~1% budget; total protected channels never
+exceeds 3% across the decode trajectory.
+
+Five regimes evaluated:
+1. BF16 baseline (oracle ceiling)
+2. Static-1% from Phase 4 (proven failure baseline)
+3. M2 position-conditional union (proposed method)
+4. Static-3% matched-cost control (proves win is from position-binning,
+   not from "more bits")
+5. Random-bin assignment negative control (proves position-binning matters)
+
+Decision rule (preregistered, non-directional):
+- PASS_M2_POSITION_CONDITIONAL: median recovery >= 0.40 AND CI lower
+  > 0.20 AND beats static-1% by 0.20+ AND beats matched-3% by 0.10+ AND
+  beats random-bin control by 0.15+
+- KILL_M2_NO_IMPROVEMENT: median recovery within 0.05 of static-1%
+- KILL_M2_AMBIGUOUS: middle outcomes with overlapping CIs
+- FAIL_INFRA_M2: infrastructure failure
+
+Bootstrap seed: 20260513.
+
+Same 24 AIME-2025 traces (indices 0-23, prompt SHA matching Phase 1).
+
+Models to run M2 on (in priority order):
+1. Granite-4-H-Small (has Phase 4 baseline data for direct comparison)
+2. Nemotron-3-Nano (cross-architectural validation within Lineage 2)
+3. DeepSeek-R1-Distill-Qwen-1.5B (cross-lineage validation, pure
+   Transformer)
+4. (If Falcon-H1 Phase 7 landed) Falcon-H1 (within-Lineage-2 with parallel
+   topology)
+
+Estimated total: ~4 GPU hr for first model, ~3 GPU hr each additional.
+
+STEP 9.2 - METHOD M10: Position-binned scales (~3 GPU hr per model)
+
+PRECONDITION: M2 has landed on at least Granite-4-H-Small with any
+outcome (PASS or KILL). M10 runs regardless of M2 outcome because it
+provides a different decision surface.
+
+Preregister at
+experimental/outlier_migrate/phase9/preregister_om_phase9_m10_position_binned_scales.md
+
+Method:
+At calibration, compute SmoothQuant-style channel scales separately for
+each of 5 position bins from Step 9.0 (0-500, 500-2000, 2000-5000,
+5000-10000, 10000-20000). At decode, lookup the bin-appropriate scale
+table. No online computation.
+
+Five regimes:
+1. BF16 baseline
+2. Static SmoothQuant scales (single calibration position)
+3. M10 position-binned scales
+4. Static SmoothQuant scales at midpoint position (matched-cost control)
+5. Random-bin scale assignment (negative control)
+
+Decision rule:
+- PASS_M10_POSITION_BINNED: median recovery >= 0.40 AND CI lower > 0.20
+  AND beats static SmoothQuant by 0.20+ AND beats midpoint control by
+  0.10+ AND beats random-bin control by 0.15+
+- KILL_M10_NO_IMPROVEMENT
+- KILL_M10_AMBIGUOUS
+- FAIL_INFRA_M10
+
+Bootstrap seed: 20260514.
+
+Same 24 traces. Same models in same priority order as M2.
+
+STEP 9.3 - METHOD M9: Migration prediction probe (~5 GPU hr)
+
+PRECONDITION: Step 9.0 bin-to-bin overlap was measured. M9 informs
+whether channel migration is predictable from current state.
+
+Preregister at
+experimental/outlier_migrate/phase9/preregister_om_phase9_m9_migration_probe.md
+
+Method:
+1. From existing Phase 0/1/2/5' packets, construct training set of
+   (current_position, current_top_1pct_one_hot, current_hidden_state_norms)
+   -> target_top_1pct_one_hot at position + K, for K in {500, 1000, 2000, 5000}.
+2. Train a small MLP (input dim ~3*num_channels + 1, hidden 1024,
+   output num_channels) per model, per layer-type group, per K.
+3. At decode, use the probe's predicted top-1% set as the protected set.
+4. Compare against M2 (position-conditional) and M10 (position-binned).
+
+Decision rule (this is the most interesting either-way result):
+- PASS_M9_PROBE_BEATS_M2_M10: probe-predicted protection median recovery
+  exceeds M2 and M10 by 0.10+ on at least 2 of 3 models. Implication:
+  migration is predictable from current state; learned methods beat
+  heuristic position-binning.
+- KILL_M9_NO_ADDITIONAL_VALUE: probe within 0.05 of M2 or M10.
+  Implication: heuristic binning is already capturing what's predictable.
+- KILL_M9_UNPREDICTABLE: probe within 0.05 of random baseline.
+  Implication: migration is genuinely stochastic given current state.
+  THIS IS ALSO PUBLISHABLE - constitutes evidence the phenomenon is not
+  learnable from local information, sharpens our story.
+- FAIL_INFRA_M9
+
+Bootstrap seed: 20260515.
+
+STEP 9.4 - METHOD M6: SSM-state-aware scale adaptation (CONDITIONAL, ~6 GPU hr)
+
+PRECONDITION: M2 OR M10 has landed with PASS outcome on at least one
+hybrid model AND cumulative gpu_hours_used < 100.
+
+This is the architecture-specific stretch. Only meaningful on
+Mamba-2 hybrid models (Granite-4-H, Nemotron-3-Nano, Falcon-H1).
+
+Preregister at
+experimental/outlier_migrate/phase9/preregister_om_phase9_m6_ssm_state.md
+
+Method:
+Feed Mamba-2 SSM hidden state h(t) as an additional feature to the M9
+probe (or as standalone signal). Test whether SSM state predicts future
+outlier channels better than position alone.
+
+If M9 was PASS_M9_PROBE_BEATS_M2_M10: M6 tests whether SSM state adds to
+the probe's accuracy.
+If M9 was KILL_M9_NO_ADDITIONAL_VALUE: M6 tests whether SSM state
+unlocks predictability that hidden-state-norms alone couldn't.
+If M9 was KILL_M9_UNPREDICTABLE: M6 likely also unpredictable; skip
+unless explicit human override.
+
+Decision rule:
+- PASS_M6_SSM_STATE_PREDICTIVE: SSM-state-augmented probe beats
+  position-only probe by 0.10+ IoU on future channel set prediction
+- KILL_M6_NO_ADDITIONAL_VALUE
+- FAIL_INFRA_M6
+
+Bootstrap seed: 20260516.
+
+STEP 9.5 - METHOD M1 (NEGATIVE CONTROL ONLY): Expanded static union
+
+PRECONDITION: M2 has landed.
+
+This is no longer a primary method. Run as negative control to prove
+M2's win is not "just more bits."
+
+Preregister at
+experimental/outlier_migrate/phase9/preregister_om_phase9_m1_expanded_union_control.md
+
+Method: Two configurations:
+- M1a: top-2% at original 4 positions {100, 1000, 5000, 10000}
+- M1b: top-1% at 8 positions {100, 250, 500, 1000, 2500, 5000, 10000, 15000}
+
+Decision rule: descriptive only. No pass/kill.
+
+Expected outcome (preregistered): M1 recovers some but not all of the
+gap, with diminishing returns. Bounded above by 33% recovery
+(corresponding to rank-shuffling component). If M1 fully recovers the
+gap, this is a major surprise that would invalidate Experiment D's
+decomposition - escalate to human immediately.
+
+Estimated 4 GPU hr total.
+
+FORBIDDEN
+- Running Phase 9 before Phase 7 (Falcon-H1) lands
+- Modifying any prior preregistration
+- Adding methods beyond M2, M10, M9, M6, M1 in the Phase 9 scope
+- Skipping Step 9.0 free analytical check before GPU work
+- Running M9 before bin overlap analysis is committed
+- Running M6 before M9 has landed
+- Reporting positive results without all matched-cost controls
+- Reporting positive results without random-baseline negative control
+- Using SGLang venv for Phase 9 (all Phase 9 runs on original vLLM
+  environment; M6 SSM hooks require this)
+- Modifying any model source code
+
+EXTENDED MODEL SCOPE (HIGH PRIORITY FOR ICLR-QUALITY PAPER)
+
+The deep research audit identified that reviewers will demand at least
+one larger (>=7B) reasoning model. If Phase 9 methods M2 or M10 PASS on
+the existing model set, also run them on:
+
+PRIMARY: DeepSeek-R1-Distill-Qwen-7B (Transformer-only, larger scale,
+common benchmark target). Use vLLM 0.10.2 on existing pod.
+
+SECONDARY (only if PRIMARY succeeds): Qwen3-7B-Thinking via vLLM if
+supported, or HF transformers with manual decode loop if not.
+
+Author preregistration before running. Do NOT use these as headline
+results without methods first validated on existing model set.
+
+PAPER INTEGRATION RULES
+
+The paper structure shifts based on Phase 9 outcomes.
+
+OUTCOME PATH A: M2 PASS + M10 PASS (both work, headline positive method)
+Paper becomes 4-contribution positive-method paper:
+1. Decomposition (Experiment D + threshold sensitivity from Experiment E)
+2. Cross-architectural measurement (existing)
+3. Set-leaving is the dominant failure mode of static protection (Phase 4)
+4. Position-conditional protection recovers most of the gap (M2 + M10)
+
+Headline claim: "Outlier channels in long-decode reasoning LLMs migrate
+as a function of absolute decode position, not stochastically; position-
+conditional protection recovers most of the BF16-vs-INT4 gap that
+existing reactive methods leave on the table."
+
+Target venue: ICLR 2026 (October deadline) for archival; COLM 2026
+workshop for early signal.
+
+OUTCOME PATH B: M2 PASS only (M10 KILL or AMBIGUOUS)
+Paper becomes 3-contribution positive-method paper. M10 becomes a
+diagnostic ablation showing scale-only methods are insufficient and
+channel-set conditioning is the active ingredient.
+
+Target venue: ICLR 2026 workshop or COLM 2026 workshop main track.
+
+OUTCOME PATH C: Both M2 and M10 KILL
+Paper remains 3-contribution characterization paper. M2 KILL plus M10
+KILL plus M9 result (whatever it is) become a mechanism section showing
+multiple distinct protection strategies all fail by similar amounts,
+strengthening the "set-leaving is fundamental" claim.
+
+Target venue: COLM 2026 workshop (current target).
+
+OUTCOME PATH D: M9 PASS (probe is predictive)
+Even if M2 and M10 kill, a passing M9 probe is itself a contribution:
+"channel migration in long-decode reasoning is predictable from local
+internal state." This unlocks a different positive-method story focused
+on learned protection.
+
+Target venue: COLM workshop plus ICLR workshop submission with M9 as
+headline.
+
+PMPD CONFRONTATION RULE
+
+Every Phase 9 paper draft MUST include direct comparison to PMPD
+(arXiv 2410.13461). The comparison should:
+1. State PMPD's central claim verbatim
+2. Show our finding contradicts it for hybrid long-CoT reasoning
+3. Reconcile: PMPD likely correct for non-reasoning short-decode
+   Transformer workloads; our setting is genuinely different
+
+This is the paper's strongest hook. Do not bury it.
+
