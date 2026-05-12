@@ -1,0 +1,143 @@
+{
+  "artifacts": {
+    "activation_magnitudes": "activation_magnitudes.jsonl.gz",
+    "activation_magnitudes_sha256": "sha256:984abd57021775faa7d8b5e2705b72137fa4edd643683b8070c2271bc8e9cdcc",
+    "bf16_traces": "bf16_traces.jsonl.gz",
+    "bf16_traces_sha256": "sha256:cfd6097c7f7a9e765515dac678e1c3731ecc592a02f5a7ff264ca4981fe90131",
+    "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase4/results/om_phase4_20260511T054000Z"
+  },
+  "calibration_positions": [
+    100,
+    500,
+    1000,
+    2000,
+    5000,
+    7500,
+    10000
+  ],
+  "created_at_utc": "2026-05-12T05:20:32Z",
+  "metric_formula": "1 - (perplexity_regime - perplexity_BF16) / (perplexity_static_1pct - perplexity_BF16)",
+  "metric_name": "per_trace_recovery",
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "model_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+  "no_recoverable_static_gap_count": 9,
+  "no_recoverable_static_gap_fraction": 0.375,
+  "preregistration": "experimental/outlier_migrate/phase4/preregister_om_phase4_intervention.md",
+  "preregistration_sha256": "sha256:f8fd362960cd734594ff06d0fd97eea110674426d61f27ceb3c78f449c126b6f",
+  "primary_grid": [
+    100,
+    1000,
+    5000,
+    10000
+  ],
+  "primary_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.06954064195470389,
+      "ci95_low": 0.0
+    },
+    "mean_recovery": -0.7721917703472639,
+    "median_recovery": 0.0,
+    "no_recoverable_static_gap_count": 9,
+    "no_recoverable_static_gap_fraction": 0.375,
+    "per_trace_recovery": [
+      0.0,
+      -1.3502598739408542,
+      -4.739255919676664,
+      -6.203756061884162,
+      -7.761407520986191,
+      0.0,
+      0.6861390569112341,
+      0.0,
+      0.07538565697346278,
+      0.41615114030580824,
+      0.0,
+      -2.024101523532238,
+      0.0,
+      0.5676325114594223,
+      0.0,
+      0.0,
+      0.41630214175221814,
+      0.0,
+      -1.583865861956434,
+      0.063695626935945,
+      1.0042080480970992,
+      -0.6511475367851605,
+      0.0,
+      2.5516776279921793
+    ],
+    "recovery_gt_0_50_count": 4,
+    "recovery_gt_0_50_fraction": 0.16666666666666666,
+    "trace_count": 24
+  },
+  "prompt_sha256": "sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e",
+  "protected_set_summary": {
+    "grid_dense": {
+      "kind": "union",
+      "median_protected_count": 62.0,
+      "positions": [
+        100,
+        500,
+        1000,
+        2000,
+        5000,
+        7500,
+        10000
+      ]
+    },
+    "grid_sparse": {
+      "kind": "union",
+      "median_protected_count": 55.0,
+      "positions": [
+        100,
+        5000,
+        10000
+      ]
+    },
+    "magnitude_average": {
+      "kind": "mean_across_positions",
+      "median_protected_count": 41.0,
+      "positions": [
+        100,
+        1000,
+        5000,
+        10000
+      ]
+    },
+    "static_1pct": {
+      "kind": "single_position",
+      "median_protected_count": 41.0,
+      "positions": [
+        100
+      ]
+    },
+    "static_2pct": {
+      "kind": "single_position",
+      "median_protected_count": 82.0,
+      "positions": [
+        100
+      ]
+    },
+    "union_primary": {
+      "kind": "union",
+      "median_protected_count": 57.0,
+      "positions": [
+        100,
+        1000,
+        5000,
+        10000
+      ]
+    }
+  },
+  "schema_version": "om_phase4_v1_metrics",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "thresholds": {
+    "control_stop_outperforms_union_by_gt": 0.1,
+    "kill_ci95_high_lt": 0.3,
+    "kill_median_recovery_lt": 0.2,
+    "max_no_recoverable_static_gap_fraction": 0.25,
+    "pass_ci95_low_gt": 0.3,
+    "pass_median_recovery_min": 0.5
+  },
+  "trace_count": 24
+}

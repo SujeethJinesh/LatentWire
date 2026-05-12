@@ -1,0 +1,10 @@
+{
+  "do_sample": false,
+  "eos_policy": "record first EOS but continue to fixed decode position",
+  "max_new_tokens": 10000,
+  "num_beams": 1,
+  "schema_version": "om_phase4_v1_decoding_config",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "target_trace": "BF16 deterministic greedy trace"
+}

@@ -1362,6 +1362,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     sys.stdout.flush()
     sys.stderr.flush()
+    # The summary above is tee'd into logs/stdout.log, so the final artifact
+    # hash manifest must be written after it. Re-run the checker silently so
+    # checker_result.json/artifact_check.json reflect the finalized packet.
+    shared.write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
+    checker.evaluate(run_dir)
     sys.excepthook = previous_excepthook
     return 0
 

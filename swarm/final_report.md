@@ -1,14 +1,15 @@
 # Swarm Final Report Draft
 
-Status: authorized-window landing report draft after partial Nemotron-3 PASS
-and ThoughtFlow fallback-candidate audit. Do not treat this as human-approved
-final; it is the machine-readable handoff for the returning human.
+Status: Phase 4 landing report draft after `KILL_OM_PHASE4_INTERVENTION_FAILS`.
+Do not treat this as human-approved final; it is the machine-readable handoff
+for the returning human.
 
 ## Executive Status
 
-- Primary positive-method candidate: OutlierMigrate.
+- Primary positive-method candidate: none after Phase 4.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
-- Current active work: OutlierMigrate Phase 3 intervention sprint.
+- Current active work: OutlierMigrate Phase 4 paper integration and
+  post-Phase-4 execution-gate handling.
 - Phase 3 preregistration commit: `c0031574`.
 - Phase 3 runner/checker commit: `fc394bcb`.
 - Completed run: `experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z`.
@@ -25,7 +26,7 @@ final; it is the machine-readable handoff for the returning human.
 
 | Project | Status | Paper posture | Next human-visible decision |
 | --- | --- | --- | --- |
-| OutlierMigrate | Phase 0 PASS, Phase 1 PASS, partial Phase 2 Nemotron-3 PASS | Positive-method candidate, not candidate-ready yet | Committee review and human decision on deferred cross-validation |
+| OutlierMigrate | Phase 0 PASS, Phase 1 PASS, partial Phase 2 Nemotron-3 PASS, Phase 3 KILL, Phase 4 KILL | Characterization plus negative-intervention candidate, not positive method | Human decision on whether to pursue a fresh adaptive-method preregistration later |
 | ThoughtFlow-FP8 | Paper-polish gate PASS/buildable | Falsification-methodology fallback, not final | Human copyedit and venue-framing review |
 | HybridKernel | KILL_HYBRIDKERNEL_BELOW_SHELF | No paper | Preserve artifacts; diagnostic only |
 | Decode Microkernel | Phase 0/1 PASS, Phase 2 FAIL_INFRA | Deferred engineering integration | Human decides whether to fund real serving integration |
@@ -358,6 +359,79 @@ Remaining human-facing caveats:
    model choices.
 4. TeX builds successfully but still emits underfull layout warnings from long
    artifact paths and dense tables.
+
+## Phase 4 Intervention Sprint Status (2026-05-12)
+
+Human approved Phase 4 as a parallel depth-1 pivot from OutlierMigrate Phase 0
+after Phase 3 killed on Granite-Tiny. Phase 4 moved the intervention test to
+Granite-4.0-H-Small with a 512-token scoring window while preserving the Phase
+3 decision thresholds and mandatory controls.
+
+Completed Phase 4 decision packet:
+
+- Final run:
+  `experimental/outlier_migrate/phase4/results/om_phase4_20260511T054000Z`.
+- Preregistration:
+  `experimental/outlier_migrate/phase4/preregister_om_phase4_intervention.md`
+  approved at commit `80bfbc26` before quantized Phase 4 scoring.
+- Runner/checker:
+  `experimental/outlier_migrate/phase4/run_om_phase4_intervention.py` and
+  `experimental/outlier_migrate/phase4/check_om_phase4_intervention.py`.
+- Started at `2026-05-11T05:36:03Z`; completed at
+  `2026-05-12T05:20:33Z`.
+- GPU-hour delta charged to Phase 4: `23.7417`.
+- New cumulative GPU hours used in `swarm/state.json`: `52.2225`.
+- Estimated spend at `$1.89/hr`: `$98.70`.
+- Checker exit code: `1`.
+- Checker decision: `KILL_OM_PHASE4_INTERVENTION_FAILS`.
+- Artifact status: `artifact_complete=true`.
+- Control stop: `false`.
+- Diagnostic:
+  `experimental/outlier_migrate/phase4/diagnostic.md`.
+
+Phase 4 primary result:
+
+| Metric | Value |
+|---|---:|
+| median recovery | `0.000000000000` |
+| mean recovery | `-0.772191770347` |
+| bootstrap CI95 | `[0.000000000000, 0.069540641955]` |
+| no-recoverable-static-gap traces | `9/24` (`0.375000000000`) |
+| traces with recovery > `0.50` | `4/24` |
+
+Mandatory control outcome:
+
+| Regime | Median recovery | CI95 high | >0.50 traces |
+|---|---:|---:|---:|
+| migration-aware union | `0.000000000000` | `0.069540641955` | `4/24` |
+| static-2% matched budget | `0.000000000000` | `0.509447743503` | `8/24` |
+| magnitude average | `0.000000000000` | `0.047903829981` | `6/24` |
+
+- `union_outperforms_both_controls=false`.
+- No control-stop fired because neither control beat union by more than `0.10`
+  median recovery; all medians were zero.
+
+Position-grid sensitivity:
+
+| Grid | Median recovery | Bootstrap 95% CI |
+|---|---:|---:|
+| sparse | `0.000000000000` | `[-0.337218160457, 0.057480709850]` |
+| primary | `0.000000000000` | `[0.000000000000, 0.069540641955]` |
+| dense | `0.000000000000` | `[-0.474740597754, 0.055115818031]` |
+
+Interpretation:
+
+- Phase 4 does not support migration-aware static union protection as a
+  positive method.
+- The Phase 3 measurement-artifact hypothesis is weakened. Granite-Small with a
+  512-token scoring window still had a no-gap fraction above the preregistered
+  `25%` ceiling, and traces with measurable gaps did not produce stable union
+  recovery.
+- The paper must retain the characterization plus negative-intervention
+  framing unless a new, separately preregistered adaptive method is authorized
+  later.
+- Conditional Phase 4 follow-ups are skipped because the primary Phase 4 gate
+  did not pass.
 
 ## ThoughtFlow-FP8 Polish Status (2026-05-10)
 

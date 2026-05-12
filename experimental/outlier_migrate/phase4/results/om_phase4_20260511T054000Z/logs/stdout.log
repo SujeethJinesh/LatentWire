@@ -1,0 +1,53 @@
+{"event": "loading_quantized_regime", "regime": "static_1pct", "time": "2026-05-11T06:52:22Z"}
+{"event": "loading_quantized_regime", "regime": "union_primary", "time": "2026-05-11T10:36:51Z"}
+{"event": "loading_quantized_regime", "regime": "static_2pct", "time": "2026-05-11T14:22:08Z"}
+{"event": "loading_quantized_regime", "regime": "magnitude_average", "time": "2026-05-11T18:06:54Z"}
+{"event": "loading_quantized_regime", "regime": "grid_sparse", "time": "2026-05-11T21:51:25Z"}
+{"event": "loading_quantized_regime", "regime": "grid_dense", "time": "2026-05-12T01:36:12Z"}
+{
+  "primary_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.06954064195470389,
+      "ci95_low": 0.0
+    },
+    "mean_recovery": -0.7721917703472639,
+    "median_recovery": 0.0,
+    "no_recoverable_static_gap_count": 9,
+    "no_recoverable_static_gap_fraction": 0.375,
+    "per_trace_recovery": [
+      0.0,
+      -1.3502598739408542,
+      -4.739255919676664,
+      -6.203756061884162,
+      -7.761407520986191,
+      0.0,
+      0.6861390569112341,
+      0.0,
+      0.07538565697346278,
+      0.41615114030580824,
+      0.0,
+      -2.024101523532238,
+      0.0,
+      0.5676325114594223,
+      0.0,
+      0.0,
+      0.41630214175221814,
+      0.0,
+      -1.583865861956434,
+      0.063695626935945,
+      1.0042080480970992,
+      -0.6511475367851605,
+      0.0,
+      2.5516776279921793
+    ],
+    "recovery_gt_0_50_count": 4,
+    "recovery_gt_0_50_fraction": 0.16666666666666666,
+    "trace_count": 24
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase4/results/om_phase4_20260511T054000Z"
+}
+{
+  "artifact_complete": true,
+  "checker_decision": "KILL_OM_PHASE4_INTERVENTION_FAILS",
+  "control_stop_condition": false
+}

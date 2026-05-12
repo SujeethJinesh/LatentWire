@@ -1,0 +1,40 @@
+{
+  "created_at_utc": "2026-05-11T05:36:16Z",
+  "reuse_reason": "source run failed before quantized metrics due FP16 autocast/cache dtype mismatch; activation/protected-set/BF16-trace artifacts were produced before the failing stage",
+  "schema_version": "om_phase4_v1_prequant_reuse",
+  "source_files": {
+    "activation_magnitude_manifest.json": {
+      "bytes": 5591,
+      "sha256": "sha256:0dcd51150a2fae49002209cf4b4d3a8f0813c531a13a2d7792ac29cdb87aa186"
+    },
+    "activation_magnitudes.jsonl.gz": {
+      "bytes": 62208276,
+      "sha256": "sha256:984abd57021775faa7d8b5e2705b72137fa4edd643683b8070c2271bc8e9cdcc"
+    },
+    "bf16_trace_manifest.json": {
+      "bytes": 5091,
+      "sha256": "sha256:ce2174153498557acbaa6e7dbcce458008bc13f7e8a3b59bc808710a7af0a52d"
+    },
+    "bf16_traces.jsonl.gz": {
+      "bytes": 71217,
+      "sha256": "sha256:cfd6097c7f7a9e765515dac678e1c3731ecc592a02f5a7ff264ca4981fe90131"
+    },
+    "decoding_config.json": {
+      "bytes": 310,
+      "sha256": "sha256:e3aaba5dfa0178845bf591843ddcd5eee14eef62475f96017c4f3581e8938624"
+    },
+    "model_provenance.json": {
+      "bytes": 9283,
+      "sha256": "sha256:65ec0c0ff35b456fbe6c67aefff2cad2bafe0e8877f4aeeafef47a81692d81e2"
+    },
+    "prompt_manifest.json": {
+      "bytes": 16595,
+      "sha256": "sha256:416b5fa0fe660f815c064dcad9e5e3a398bc8a42a7c79a75289a812ba4c81599"
+    },
+    "protected_sets.json": {
+      "bytes": 291237,
+      "sha256": "sha256:07081341a3eec37e6b29a76a6d418f10972f50db7f0c8b6a482a3b7b714c6e40"
+    }
+  },
+  "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase4/results/om_phase4_20260510T201145Z"
+}
