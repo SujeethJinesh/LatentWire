@@ -595,3 +595,69 @@ authorized scope. The paper body was not modified.
 ThoughtFlow remains only a falsification-methodology workshop diagnostic
 candidate. It is not camera-ready final, not a positive-method paper, and not
 an MLSys systems paper.
+
+## Phase 7 Falcon-H1 Within-Lineage Replication (2026-05-12)
+
+Phase 7 tested whether decode-position channel drift replicates on Falcon-H1,
+a parallel Mamba-2/Attention hybrid topology, after Granite-4 and Nemotron-3
+had established the interleaved-hybrid result.
+
+Completed Phase 7 packet:
+
+- Run:
+  `experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z`.
+- Preregistration:
+  `experimental/outlier_migrate/phase7/preregister_om_phase7_falcon_h1.md`.
+- Runner/checker:
+  `experimental/outlier_migrate/phase7/run_om_phase7_falcon_h1.py` and
+  `experimental/outlier_migrate/phase7/check_om_phase7_falcon_h1.py`.
+- Model: `tiiuae/Falcon-H1-0.5B-Instruct`.
+- Snapshot commit: `8f2587ca06bff78d8fa1adfccbe8c24d5f86b368`.
+- Trace set: AIME-2025 indices `0-23`.
+- Prompt SHA:
+  `sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e`.
+- Checker decision: `WITHIN_LINEAGE_2_CONSISTENT`.
+- Artifact status: `artifact_complete=true`.
+- GPU-hour delta charged to Phase 7: `1.2569`.
+
+Phase 7 decision metrics:
+
+| Metric | Value |
+|---|---:|
+| mean migration fraction | `0.783354377104` |
+| bootstrap CI95 | `[0.754419191919, 0.811237373737]` |
+| trace-level median migration | `0.795454545455` |
+| pooled Phase 0/1/2 reference median | `0.842740091463` |
+| absolute difference from reference | `0.047285546009` |
+| preregistered tolerance | `0.100000000000` |
+
+Decomposition:
+
+| Component | Fraction | CI95 |
+|---|---:|---:|
+| strict set-leaving | `0.673611111111` | `[0.632575757576, 0.713699494949]` |
+| within-set rank shuffling | `0.097537878788` | `[0.082596801347, 0.112058080808]` |
+| original drift metric | `0.767887205387` | `[0.735900673401, 0.797558922559]` |
+
+Interpretation:
+
+- Falcon-H1 is consistent with the existing Lineage-2 drift result: the
+  trace-level median is within `0.10` of the pooled Granite/Nemotron
+  reference.
+- The result strengthens the measurement claim across hybridization topology:
+  Lineage-2 now includes both interleaved hybrids and a parallel Falcon-H1
+  hybrid.
+- Separate SSM/Attention pre-sum pathway hooks were not used because the
+  runner could not establish a portable public hook contract without modifying
+  Falcon-H1 source. The paper should report Phase 7 as post-block residual
+  evidence, not pathway-specific causal attribution.
+- This result supports the broader paper framing as decode-time top-channel
+  rank dynamics / decode-position channel drift, not Mamba-specific outlier
+  migration.
+
+Next active work:
+
+- Phase 9 Step 9.0 free analytical check, before any new GPU work.
+- Step 9.0 must verify set-leaving above `50%` on Granite-4-H-Small,
+  Nemotron-3-Nano, and DeepSeek-R1-Distill-Qwen-1.5B, and compute bin-to-bin
+  Jaccard overlap for top-1% and top-2% channels.

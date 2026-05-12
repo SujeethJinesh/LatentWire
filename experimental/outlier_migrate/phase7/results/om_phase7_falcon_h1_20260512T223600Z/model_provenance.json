@@ -1,0 +1,68 @@
+{
+  "cache_repo_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct",
+  "checked_cache_paths": [
+    "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct"
+  ],
+  "created_at_utc": "2026-05-12T22:29:06Z",
+  "files": [
+    {
+      "bytes": 1519,
+      "path": ".gitattributes",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/a6344aac8c09253b3b630fb776ae94478aa0275b",
+      "sha256": "sha256:11ad7efa24975ee4b0c3c3a38ed18737f0658a5f75a0a96787b576a78a023361"
+    },
+    {
+      "bytes": 5371,
+      "path": "README.md",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/965cbc0d4cf5d66dfe093cf5ea476e0ef7cb7cf3",
+      "sha256": "sha256:d13499e2855f9fdd7afa57ca2da5da13edeaf9aec2b116953e68593f84d8f85c"
+    },
+    {
+      "bytes": 1151,
+      "path": "chat_template.jinja",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/4cc21452afbe62b111bf4ab6ab669fd0b9678f1e",
+      "sha256": "sha256:b4bb2b3167994b1bfae42fb74d7166f94340bbea2d9dba3f2591e3261adcfb4e"
+    },
+    {
+      "bytes": 1584,
+      "path": "config.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/12d90a0816165a2d3af5bd1c4deaa2afddd0a095",
+      "sha256": "sha256:73d036cc5e36429ba554c9e6d553571c0042af137e070380818980a7ef02b1ff"
+    },
+    {
+      "bytes": 145,
+      "path": "generation_config.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/ec6c4d25132471a007e564c440fa77872438bbad",
+      "sha256": "sha256:b8e5d79b888141de7ee81a8c86f39164ccb840951b1691b83a6e0c8b96ce0fed"
+    },
+    {
+      "bytes": 1042886408,
+      "path": "model.safetensors",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/42bf67c1f3940565888c9f75cfa914adbebdc3e7a2d569d842966a5da4b508e6",
+      "sha256": "sha256:42bf67c1f3940565888c9f75cfa914adbebdc3e7a2d569d842966a5da4b508e6"
+    },
+    {
+      "bytes": 7693,
+      "path": "special_tokens_map.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/88e0f6da2bd3cf28e460d72751395855f858b523",
+      "sha256": "sha256:d1ab5d294abec0a58924f96e33d88030da87018c02012d6c797426dbd5e4ea0d"
+    },
+    {
+      "bytes": 2351147,
+      "path": "tokenizer.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/6077159da68dec202d87f67ac29c40b45a3e4ffe",
+      "sha256": "sha256:b9786a959d1ea75ae49f9faf6e8f5fd0b1d73b1ef64d35837eead54316e5f886"
+    },
+    {
+      "bytes": 99905,
+      "path": "tokenizer_config.json",
+      "resolved_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/blobs/05d9c0c642be6a81e9fe259ae0371644f34d81f6",
+      "sha256": "sha256:4cf241b9ce784d95980536ecec7ca8a912595e0e014d6cfe2969e13f08a2570f"
+    }
+  ],
+  "hf_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+  "local_files_only": true,
+  "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+  "schema_version": "om_phase7_falcon_h1_v1_model_provenance",
+  "snapshot_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/snapshots/8f2587ca06bff78d8fa1adfccbe8c24d5f86b368"
+}

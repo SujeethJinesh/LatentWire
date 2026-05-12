@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase7/run_om_phase7_falcon_h1.py",
+    "--run-id",
+    "om_phase7_falcon_h1_20260512T223600Z",
+    "--batch-size",
+    "4"
+  ],
+  "assumptions": [
+    "manual greedy decoding is used to expose deterministic decode-step hooks",
+    "layer forward output absolute values are treated as per-channel activation magnitudes",
+    "EOS is recorded but decoding continues to 20000 generated tokens to satisfy the fixed grid"
+  ],
+  "batch_size": 4,
+  "branch": "outlier_migrate_phase7_falcon_h1",
+  "compatibility_precheck": {
+    "fallback_model": "tiiuae/Falcon-H1-1.5B-Instruct",
+    "primary_model": "tiiuae/Falcon-H1-0.5B-Instruct",
+    "selected_model": "tiiuae/Falcon-H1-0.5B-Instruct",
+    "vllm_supported_architecture": "FalconH1ForCausalLM"
+  },
+  "created_at_utc": "2026-05-12T22:29:06Z",
+  "cwd": "/workspace/LatentWire",
+  "deterministic_decode": {
+    "decode_policy": "greedy",
+    "do_sample": false,
+    "num_beams": 1
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z",
+  "schema_version": "om_phase7_falcon_h1_v1_command"
+}

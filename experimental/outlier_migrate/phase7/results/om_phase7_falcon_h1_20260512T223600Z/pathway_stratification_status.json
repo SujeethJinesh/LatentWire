@@ -1,0 +1,25 @@
+{
+  "attention_candidate_modules": [
+    "self_attn",
+    "self_attn.q_proj",
+    "self_attn.k_proj",
+    "self_attn.v_proj",
+    "self_attn.o_proj"
+  ],
+  "created_at_utc": "2026-05-12T22:29:12Z",
+  "inspected_first_layer": "model.layers.0",
+  "inspected_layer_count": 36,
+  "layer_origin": "model.layers",
+  "post_sum_residual_capture_available": true,
+  "reason": "Phase 7 records post-block residual outputs. The runner inspected candidate submodules, but did not identify a portable public hook contract proving that candidate attention and SSM module outputs are the separate pre-sum pathway tensors. Falcon-H1 source modification is forbidden, so pathway stratification is reported as unavailable.",
+  "schema_version": "om_phase7_falcon_h1_v1_pathway_status",
+  "separate_pre_sum_pathway_hooks_available": false,
+  "source_modified": false,
+  "ssm_candidate_modules": [
+    "mamba",
+    "mamba.act",
+    "mamba.conv1d",
+    "mamba.in_proj",
+    "mamba.out_proj"
+  ]
+}

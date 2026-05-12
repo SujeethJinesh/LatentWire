@@ -1,0 +1,13 @@
+{
+  "bootstrap_ci95": {
+    "ci95_high": 0.8112373737373737,
+    "ci95_low": 0.7544191919191919
+  },
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260512,
+  "metric_name": "outlier_rank_migration_fraction",
+  "migration_fraction": 0.7833543771043772,
+  "reference_pooled_phase0_1_2_median": 0.8427400914634147,
+  "schema_version": "om_phase7_falcon_h1_v1_bootstrap_ci",
+  "trace_migration_median": 0.7954545454545454
+}

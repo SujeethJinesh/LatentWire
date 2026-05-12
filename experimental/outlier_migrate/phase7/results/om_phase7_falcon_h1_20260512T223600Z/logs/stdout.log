@@ -1,0 +1,829 @@
+{
+  "metrics": {
+    "activation_artifact": "activation_magnitudes.jsonl.gz",
+    "activation_artifact_sha256": "sha256:821df7062292014952af1f43ff9bc8adfb5317cec41d35f973b08734da1b1289",
+    "aggregation": {
+      "bootstrap_unit": "trace",
+      "gate_level": "median over 24 trace-level migration fractions compared to pooled reference",
+      "layer_weighting": "equal",
+      "trace_level": "mean over layers per trace"
+    },
+    "bootstrap_ci95": {
+      "ci95_high": 0.8112373737373737,
+      "ci95_low": 0.7544191919191919
+    },
+    "bootstrap_samples": 1000,
+    "bootstrap_seed": 20260512,
+    "branch": "outlier_migrate_phase7_falcon_h1",
+    "created_at_utc": "2026-05-12T23:44:25Z",
+    "hidden_size": 1024,
+    "layer_count": 36,
+    "layer_metrics": [
+      {
+        "layer_index": 0,
+        "migration_fraction_mean": 0.8181818181818182,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 1,
+        "migration_fraction_mean": 0.8143939393939394,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 2,
+        "migration_fraction_mean": 0.8106060606060607,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 3,
+        "migration_fraction_mean": 0.8106060606060607,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 4,
+        "migration_fraction_mean": 0.8181818181818182,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 5,
+        "migration_fraction_mean": 0.8295454545454546,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 6,
+        "migration_fraction_mean": 0.8333333333333334,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 7,
+        "migration_fraction_mean": 0.8560606060606061,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 8,
+        "migration_fraction_mean": 0.8484848484848485,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 9,
+        "migration_fraction_mean": 0.8295454545454546,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 10,
+        "migration_fraction_mean": 0.8371212121212122,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 11,
+        "migration_fraction_mean": 0.8143939393939394,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 12,
+        "migration_fraction_mean": 0.8257575757575758,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 13,
+        "migration_fraction_mean": 0.8106060606060607,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 14,
+        "migration_fraction_mean": 0.8068181818181819,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 15,
+        "migration_fraction_mean": 0.8106060606060607,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 16,
+        "migration_fraction_mean": 0.7992424242424243,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 17,
+        "migration_fraction_mean": 0.8068181818181819,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 18,
+        "migration_fraction_mean": 0.821969696969697,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 19,
+        "migration_fraction_mean": 0.7878787878787878,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 20,
+        "migration_fraction_mean": 0.7916666666666666,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 21,
+        "migration_fraction_mean": 0.7840909090909091,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 22,
+        "migration_fraction_mean": 0.7803030303030303,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 23,
+        "migration_fraction_mean": 0.75,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 24,
+        "migration_fraction_mean": 0.75,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 25,
+        "migration_fraction_mean": 0.7613636363636364,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 26,
+        "migration_fraction_mean": 0.7689393939393939,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 27,
+        "migration_fraction_mean": 0.7575757575757576,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 28,
+        "migration_fraction_mean": 0.7613636363636364,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 29,
+        "migration_fraction_mean": 0.7537878787878788,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 30,
+        "migration_fraction_mean": 0.7272727272727273,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 31,
+        "migration_fraction_mean": 0.7045454545454546,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 32,
+        "migration_fraction_mean": 0.7007575757575758,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 33,
+        "migration_fraction_mean": 0.6742424242424242,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 34,
+        "migration_fraction_mean": 0.6628787878787878,
+        "trace_count": 24
+      },
+      {
+        "layer_index": 35,
+        "migration_fraction_mean": 0.6818181818181818,
+        "trace_count": 24
+      }
+    ],
+    "metric_name": "outlier_rank_migration_fraction",
+    "migration_fraction": 0.7833543771043772,
+    "model_family": "falcon_h1_parallel_hybrid",
+    "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+    "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+    "positions": [
+      100,
+      500,
+      1000,
+      5000,
+      10000,
+      20000
+    ],
+    "prompt_selection": "deterministic_indices_0_23",
+    "prompt_sha256": "sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e",
+    "prompt_source": "AIME-2025",
+    "reference_abs_difference": 0.04728554600886925,
+    "reference_pooled_phase0_1_2_median": 0.8427400914634147,
+    "schema_version": "om_phase7_falcon_h1_v1_metrics",
+    "thresholds": {
+      "bootstrap_ci": 0.95,
+      "bootstrap_samples": 1000,
+      "bootstrap_seed": 20260512,
+      "migration_fraction_threshold": 0.05,
+      "rank_delta_strictly_greater_than": 2,
+      "reference_pooled_phase0_1_2_median": 0.8427400914634147,
+      "top_channel_fraction": 0.01,
+      "within_lineage_abs_tolerance": 0.1
+    },
+    "top_channel_selection": "top 1% channels per layer by mean magnitude at decode position 100 across all 24 traces",
+    "top_channels_by_layer": {
+      "0": [
+        862,
+        475,
+        578,
+        275,
+        990,
+        287,
+        559,
+        585,
+        800,
+        476,
+        1
+      ],
+      "1": [
+        862,
+        475,
+        578,
+        275,
+        800,
+        990,
+        287,
+        559,
+        585,
+        476,
+        1
+      ],
+      "10": [
+        862,
+        800,
+        306,
+        475,
+        275,
+        762,
+        360,
+        578,
+        465,
+        375,
+        287
+      ],
+      "11": [
+        862,
+        800,
+        306,
+        475,
+        465,
+        275,
+        762,
+        578,
+        360,
+        535,
+        375
+      ],
+      "12": [
+        862,
+        800,
+        306,
+        475,
+        465,
+        535,
+        762,
+        275,
+        578,
+        642,
+        375
+      ],
+      "13": [
+        862,
+        800,
+        306,
+        475,
+        465,
+        535,
+        578,
+        762,
+        642,
+        275,
+        375
+      ],
+      "14": [
+        862,
+        800,
+        306,
+        465,
+        535,
+        475,
+        578,
+        642,
+        762,
+        375,
+        275
+      ],
+      "15": [
+        862,
+        800,
+        306,
+        465,
+        535,
+        475,
+        578,
+        642,
+        762,
+        363,
+        375
+      ],
+      "16": [
+        862,
+        800,
+        306,
+        465,
+        535,
+        475,
+        578,
+        642,
+        363,
+        762,
+        3
+      ],
+      "17": [
+        862,
+        800,
+        465,
+        306,
+        535,
+        578,
+        642,
+        363,
+        3,
+        475,
+        762
+      ],
+      "18": [
+        862,
+        800,
+        465,
+        306,
+        535,
+        578,
+        642,
+        363,
+        448,
+        3,
+        762
+      ],
+      "19": [
+        862,
+        800,
+        465,
+        535,
+        306,
+        642,
+        578,
+        363,
+        3,
+        968,
+        448
+      ],
+      "2": [
+        862,
+        475,
+        800,
+        578,
+        275,
+        990,
+        287,
+        559,
+        585,
+        476,
+        360
+      ],
+      "20": [
+        862,
+        800,
+        465,
+        535,
+        968,
+        363,
+        642,
+        306,
+        578,
+        3,
+        901
+      ],
+      "21": [
+        862,
+        800,
+        465,
+        968,
+        363,
+        535,
+        306,
+        642,
+        578,
+        3,
+        472
+      ],
+      "22": [
+        862,
+        800,
+        968,
+        465,
+        363,
+        535,
+        306,
+        578,
+        642,
+        375,
+        901
+      ],
+      "23": [
+        862,
+        800,
+        968,
+        465,
+        600,
+        363,
+        535,
+        306,
+        375,
+        762,
+        3
+      ],
+      "24": [
+        862,
+        800,
+        968,
+        465,
+        600,
+        363,
+        535,
+        375,
+        3,
+        762,
+        642
+      ],
+      "25": [
+        862,
+        800,
+        968,
+        600,
+        465,
+        363,
+        535,
+        762,
+        375,
+        642,
+        3
+      ],
+      "26": [
+        862,
+        800,
+        968,
+        600,
+        465,
+        363,
+        535,
+        762,
+        578,
+        375,
+        3
+      ],
+      "27": [
+        862,
+        800,
+        600,
+        968,
+        465,
+        363,
+        535,
+        762,
+        578,
+        817,
+        3
+      ],
+      "28": [
+        862,
+        600,
+        800,
+        968,
+        465,
+        363,
+        762,
+        535,
+        817,
+        132,
+        578
+      ],
+      "29": [
+        862,
+        600,
+        800,
+        968,
+        465,
+        363,
+        762,
+        817,
+        535,
+        472,
+        3
+      ],
+      "3": [
+        862,
+        475,
+        800,
+        578,
+        275,
+        990,
+        287,
+        559,
+        360,
+        476,
+        585
+      ],
+      "30": [
+        862,
+        600,
+        968,
+        800,
+        465,
+        363,
+        808,
+        762,
+        925,
+        817,
+        472
+      ],
+      "31": [
+        862,
+        600,
+        968,
+        800,
+        465,
+        925,
+        808,
+        762,
+        363,
+        817,
+        132
+      ],
+      "32": [
+        862,
+        600,
+        968,
+        800,
+        465,
+        925,
+        808,
+        677,
+        762,
+        827,
+        52
+      ],
+      "33": [
+        862,
+        600,
+        968,
+        800,
+        808,
+        925,
+        465,
+        677,
+        827,
+        762,
+        52
+      ],
+      "34": [
+        862,
+        600,
+        968,
+        808,
+        925,
+        677,
+        800,
+        827,
+        465,
+        508,
+        762
+      ],
+      "35": [
+        862,
+        600,
+        808,
+        925,
+        968,
+        677,
+        827,
+        800,
+        810,
+        465,
+        132
+      ],
+      "4": [
+        862,
+        800,
+        475,
+        578,
+        275,
+        990,
+        306,
+        287,
+        360,
+        476,
+        585
+      ],
+      "5": [
+        862,
+        800,
+        475,
+        578,
+        306,
+        275,
+        990,
+        287,
+        360,
+        559,
+        585
+      ],
+      "6": [
+        862,
+        800,
+        475,
+        306,
+        578,
+        275,
+        990,
+        360,
+        287,
+        585,
+        559
+      ],
+      "7": [
+        862,
+        800,
+        475,
+        306,
+        578,
+        275,
+        990,
+        360,
+        287,
+        762,
+        375
+      ],
+      "8": [
+        862,
+        800,
+        475,
+        306,
+        275,
+        578,
+        990,
+        762,
+        360,
+        375,
+        287
+      ],
+      "9": [
+        862,
+        800,
+        306,
+        475,
+        275,
+        762,
+        360,
+        578,
+        990,
+        476,
+        375
+      ]
+    },
+    "trace_count": 24,
+    "trace_metrics": [
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8787878787878788,
+        "prompt_index": 0
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.7727272727272727,
+        "prompt_index": 1
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8585858585858586,
+        "prompt_index": 2
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8383838383838383,
+        "prompt_index": 3
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.6742424242424242,
+        "prompt_index": 4
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8762626262626263,
+        "prompt_index": 5
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8156565656565657,
+        "prompt_index": 6
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8308080808080808,
+        "prompt_index": 7
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.787878787878788,
+        "prompt_index": 8
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.6868686868686869,
+        "prompt_index": 9
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.7575757575757576,
+        "prompt_index": 10
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8308080808080808,
+        "prompt_index": 11
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8762626262626263,
+        "prompt_index": 12
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.7904040404040404,
+        "prompt_index": 13
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.7474747474747475,
+        "prompt_index": 14
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8030303030303031,
+        "prompt_index": 15
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8181818181818182,
+        "prompt_index": 16
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8611111111111112,
+        "prompt_index": 17
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.7222222222222222,
+        "prompt_index": 18
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.6388888888888888,
+        "prompt_index": 19
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.8005050505050505,
+        "prompt_index": 20
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.7297979797979798,
+        "prompt_index": 21
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.6919191919191919,
+        "prompt_index": 22
+      },
+      {
+        "layer_count": 36,
+        "migration_fraction": 0.7121212121212122,
+        "prompt_index": 23
+      }
+    ],
+    "trace_migration_median": 0.7954545454545454
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z"
+}

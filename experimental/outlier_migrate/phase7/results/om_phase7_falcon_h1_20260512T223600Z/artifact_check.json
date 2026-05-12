@@ -1,0 +1,27 @@
+{
+  "artifact_complete": true,
+  "decision": "WITHIN_LINEAGE_2_CONSISTENT",
+  "reasons": [
+    "Falcon-H1 median=0.795454545455 is within 0.10 of pooled Lineage-2 median=0.842740091463; abs_diff=0.047285546009"
+  ],
+  "required_files": [
+    "environment.json",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "pathway_stratification_status.json",
+    "activation_magnitude_manifest.json",
+    "activation_magnitudes.jsonl.gz",
+    "metrics.json",
+    "bootstrap_ci.json",
+    "migration_decomposition.json",
+    "migration_decomposition.md",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z",
+  "schema_version": "om_phase7_falcon_h1_v1_artifact_check"
+}
