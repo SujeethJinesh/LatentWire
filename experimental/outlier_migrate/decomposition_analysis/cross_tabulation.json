@@ -1,0 +1,167 @@
+{
+  "description": "Layer-type x decomposition-component table.",
+  "layer_type_note": "Granite layer types come from config.layer_types. Nemotron-3 uses config.hybrid_override_pattern with M=mamba, *=attention, E=moe_expert. Pure Transformer layers are attention.",
+  "rows": [
+    {
+      "layer_type": "attention",
+      "left_set_fraction": 0.6184895833333334,
+      "left_set_fraction_ci95": {
+        "ci95_high": 0.6484375,
+        "ci95_low": 0.5872395833333334
+      },
+      "packet": "phase0_granite_tiny",
+      "row_count": 48,
+      "strict_original_fraction": 0.8033854166666666,
+      "strict_original_fraction_ci95": {
+        "ci95_high": 0.828125,
+        "ci95_low": 0.7747395833333334
+      },
+      "within_set_rank_shuffle_fraction": 0.18619791666666666,
+      "within_set_rank_shuffle_fraction_ci95": {
+        "ci95_high": 0.20703125,
+        "ci95_low": 0.1640625
+      }
+    },
+    {
+      "layer_type": "mamba",
+      "left_set_fraction": 0.6359953703703703,
+      "left_set_fraction_ci95": {
+        "ci95_high": 0.6451099537037037,
+        "ci95_low": 0.6267361111111112
+      },
+      "packet": "phase0_granite_tiny",
+      "row_count": 432,
+      "strict_original_fraction": 0.80859375,
+      "strict_original_fraction_ci95": {
+        "ci95_high": 0.8168402777777778,
+        "ci95_low": 0.8002025462962963
+      },
+      "within_set_rank_shuffle_fraction": 0.1740451388888889,
+      "within_set_rank_shuffle_fraction_ci95": {
+        "ci95_high": 0.18156828703703703,
+        "ci95_low": 0.1657986111111111
+      }
+    },
+    {
+      "layer_type": "attention",
+      "left_set_fraction": 0.5571646341463414,
+      "left_set_fraction_ci95": {
+        "ci95_high": 0.570630081300813,
+        "ci95_low": 0.5434451219512195
+      },
+      "packet": "phase1_granite_small",
+      "row_count": 96,
+      "strict_original_fraction": 0.8391768292682927,
+      "strict_original_fraction_ci95": {
+        "ci95_high": 0.8475609756097561,
+        "ci95_low": 0.8313008130081301
+      },
+      "within_set_rank_shuffle_fraction": 0.28226626016260165,
+      "within_set_rank_shuffle_fraction_ci95": {
+        "ci95_high": 0.29471544715447157,
+        "ci95_low": 0.2703252032520325
+      }
+    },
+    {
+      "layer_type": "mamba",
+      "left_set_fraction": 0.5672425474254743,
+      "left_set_fraction_ci95": {
+        "ci95_high": 0.572069783197832,
+        "ci95_low": 0.5621612466124661
+      },
+      "packet": "phase1_granite_small",
+      "row_count": 864,
+      "strict_original_fraction": 0.8364950316169828,
+      "strict_original_fraction_ci95": {
+        "ci95_high": 0.8395438121047877,
+        "ci95_low": 0.8334462511291779
+      },
+      "within_set_rank_shuffle_fraction": 0.26967592592592593,
+      "within_set_rank_shuffle_fraction_ci95": {
+        "ci95_high": 0.2745313911472448,
+        "ci95_low": 0.2652156729900632
+      }
+    },
+    {
+      "layer_type": "attention",
+      "left_set_fraction": 0.563014403292181,
+      "left_set_fraction_ci95": {
+        "ci95_high": 0.5910493827160493,
+        "ci95_low": 0.5347222222222222
+      },
+      "packet": "phase2_nemotron3",
+      "row_count": 144,
+      "strict_original_fraction": 0.8168724279835391,
+      "strict_original_fraction_ci95": {
+        "ci95_high": 0.8353909465020576,
+        "ci95_low": 0.7973251028806584
+      },
+      "within_set_rank_shuffle_fraction": 0.2546296296296296,
+      "within_set_rank_shuffle_fraction_ci95": {
+        "ci95_high": 0.27109053497942387,
+        "ci95_low": 0.23868312757201646
+      }
+    },
+    {
+      "layer_type": "mamba",
+      "left_set_fraction": 0.5332796564680623,
+      "left_set_fraction_ci95": {
+        "ci95_high": 0.5493156199677939,
+        "ci95_low": 0.5185856146001073
+      },
+      "packet": "phase2_nemotron3",
+      "row_count": 552,
+      "strict_original_fraction": 0.7967659688674181,
+      "strict_original_fraction_ci95": {
+        "ci95_high": 0.8072329575952765,
+        "ci95_low": 0.7858964036500268
+      },
+      "within_set_rank_shuffle_fraction": 0.26415727321524424,
+      "within_set_rank_shuffle_fraction_ci95": {
+        "ci95_high": 0.27241009125067095,
+        "ci95_low": 0.2556360708534621
+      }
+    },
+    {
+      "layer_type": "moe_expert",
+      "left_set_fraction": 0.5265029522275899,
+      "left_set_fraction_ci95": {
+        "ci95_high": 0.5424718196457327,
+        "ci95_low": 0.5112721417069243
+      },
+      "packet": "phase2_nemotron3",
+      "row_count": 552,
+      "strict_original_fraction": 0.8026033279656468,
+      "strict_original_fraction_ci95": {
+        "ci95_high": 0.8121980676328502,
+        "ci95_low": 0.792337627482555
+      },
+      "within_set_rank_shuffle_fraction": 0.2777777777777778,
+      "within_set_rank_shuffle_fraction_ci95": {
+        "ci95_high": 0.2865673644659152,
+        "ci95_low": 0.26878690284487383
+      }
+    },
+    {
+      "layer_type": "attention",
+      "left_set_fraction": 0.6705729166666666,
+      "left_set_fraction_ci95": {
+        "ci95_high": 0.6788504464285714,
+        "ci95_low": 0.6609933035714286
+      },
+      "packet": "phase5p_transformer",
+      "row_count": 672,
+      "strict_original_fraction": 0.8349144345238095,
+      "strict_original_fraction_ci95": {
+        "ci95_high": 0.8422619047619048,
+        "ci95_low": 0.8278459821428571
+      },
+      "within_set_rank_shuffle_fraction": 0.16573660714285715,
+      "within_set_rank_shuffle_fraction_ci95": {
+        "ci95_high": 0.17299107142857142,
+        "ci95_low": 0.15885416666666666
+      }
+    }
+  ],
+  "schema_version": "om_experiment_d_cross_tabulation_v1"
+}

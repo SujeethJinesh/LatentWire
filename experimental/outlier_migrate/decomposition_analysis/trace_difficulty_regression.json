@@ -1,0 +1,1321 @@
+{
+  "packets": [
+    {
+      "feature_rows": [
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 56,
+          "prompt_char_count": 84,
+          "prompt_index": 0,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 163,
+          "prompt_char_count": 381,
+          "prompt_index": 1,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 135,
+          "prompt_char_count": 516,
+          "prompt_index": 2,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 78,
+          "prompt_char_count": 147,
+          "prompt_index": 3,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 94,
+          "prompt_char_count": 218,
+          "prompt_index": 4,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 110,
+          "prompt_char_count": 252,
+          "prompt_index": 5,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 147,
+          "prompt_char_count": 455,
+          "prompt_index": 6,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 121,
+          "prompt_char_count": 281,
+          "prompt_index": 7,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 127,
+          "prompt_char_count": 332,
+          "prompt_index": 8,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 267,
+          "prompt_char_count": 640,
+          "prompt_index": 9,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 225,
+          "prompt_char_count": 583,
+          "prompt_index": 10,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 132,
+          "prompt_char_count": 405,
+          "prompt_index": 11,
+          "source_file_is_part_ii": 0
+        }
+      ],
+      "omitted_predictors": {
+        "bf16_perplexity_at_scoring_position": "Unavailable in Phase 0/1/2/5' activation-migration packets; should be added to future scoring packets rather than inferred post hoc."
+      },
+      "packet": "phase0_granite_tiny",
+      "phase_label": "Phase 0 Granite-4.0-H-Tiny",
+      "targets": {
+        "left_set_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.09778455879001925,
+              "r": 0.5000899913209208
+            },
+            "input_token_count": {
+              "pvalue": 0.9680122333219694,
+              "r": -0.013001133256272715
+            },
+            "prompt_char_count": {
+              "pvalue": 0.9281129649219401,
+              "r": 0.02924456232421526
+            },
+            "prompt_index": {
+              "pvalue": 0.49547216645683156,
+              "r": -0.21830450002019475
+            },
+            "source_file_is_part_ii": {
+              "pvalue": null,
+              "r": null
+            }
+          },
+          "regression": {
+            "intercept": 0.6342447916666664,
+            "n": 12,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.3794920832600961,
+            "standardized_coefficients": {
+              "answer_digit_count": 0.029569742290958625,
+              "input_token_count": -0.006707332510062144,
+              "prompt_char_count": 0.02194066747082439,
+              "prompt_index": -0.022184279705769288,
+              "source_file_is_part_ii": 0.0
+            }
+          }
+        },
+        "strict_original_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.17756014624173808,
+              "r": 0.4169137247025763
+            },
+            "input_token_count": {
+              "pvalue": 0.8300407658052141,
+              "r": -0.0695086272366095
+            },
+            "prompt_char_count": {
+              "pvalue": 0.7483693165244782,
+              "r": -0.10372348260213125
+            },
+            "prompt_index": {
+              "pvalue": 0.20496484459945552,
+              "r": -0.39407016922094085
+            },
+            "source_file_is_part_ii": {
+              "pvalue": null,
+              "r": null
+            }
+          },
+          "regression": {
+            "intercept": 0.8080729166666668,
+            "n": 12,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.41452939157415003,
+            "standardized_coefficients": {
+              "answer_digit_count": 0.017935712663650735,
+              "input_token_count": 0.014134965414757547,
+              "prompt_char_count": -0.0032726587914867055,
+              "prompt_index": -0.022528105099208835,
+              "source_file_is_part_ii": 0.0
+            }
+          }
+        },
+        "within_set_rank_shuffle_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.24745091547954737,
+              "r": -0.3620740032653629
+            },
+            "input_token_count": {
+              "pvalue": 0.8809964053566883,
+              "r": -0.04850889010551401
+            },
+            "prompt_char_count": {
+              "pvalue": 0.5996344163895989,
+              "r": -0.168955972459925
+            },
+            "prompt_index": {
+              "pvalue": 0.8474192249363863,
+              "r": -0.062322709181828154
+            },
+            "source_file_is_part_ii": {
+              "pvalue": null,
+              "r": null
+            }
+          },
+          "regression": {
+            "intercept": 0.17526041666666667,
+            "n": 12,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.2480495388461763,
+            "standardized_coefficients": {
+              "answer_digit_count": -0.010781003097253498,
+              "input_token_count": 0.019233907624184803,
+              "prompt_char_count": -0.02372733774627576,
+              "prompt_index": 0.0011813267942422188,
+              "source_file_is_part_ii": 0.0
+            }
+          }
+        }
+      }
+    },
+    {
+      "feature_rows": [
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 56,
+          "prompt_char_count": 84,
+          "prompt_index": 0,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 163,
+          "prompt_char_count": 381,
+          "prompt_index": 1,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 135,
+          "prompt_char_count": 516,
+          "prompt_index": 2,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 78,
+          "prompt_char_count": 147,
+          "prompt_index": 3,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 94,
+          "prompt_char_count": 218,
+          "prompt_index": 4,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 110,
+          "prompt_char_count": 252,
+          "prompt_index": 5,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 147,
+          "prompt_char_count": 455,
+          "prompt_index": 6,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 121,
+          "prompt_char_count": 281,
+          "prompt_index": 7,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 127,
+          "prompt_char_count": 332,
+          "prompt_index": 8,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 267,
+          "prompt_char_count": 640,
+          "prompt_index": 9,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 225,
+          "prompt_char_count": 583,
+          "prompt_index": 10,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 132,
+          "prompt_char_count": 405,
+          "prompt_index": 11,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 102,
+          "prompt_char_count": 388,
+          "prompt_index": 12,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 149,
+          "prompt_char_count": 347,
+          "prompt_index": 13,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 94,
+          "prompt_char_count": 192,
+          "prompt_index": 14,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 128,
+          "prompt_char_count": 263,
+          "prompt_index": 15,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 65,
+          "prompt_char_count": 106,
+          "prompt_index": 16,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 88,
+          "prompt_char_count": 245,
+          "prompt_index": 17,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 204,
+          "prompt_char_count": 370,
+          "prompt_index": 18,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 9,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 246,
+          "prompt_char_count": 625,
+          "prompt_index": 19,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 248,
+          "prompt_char_count": 665,
+          "prompt_index": 20,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 115,
+          "prompt_char_count": 324,
+          "prompt_index": 21,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 269,
+          "prompt_char_count": 991,
+          "prompt_index": 22,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 117,
+          "prompt_char_count": 226,
+          "prompt_index": 23,
+          "source_file_is_part_ii": 1
+        }
+      ],
+      "omitted_predictors": {
+        "bf16_perplexity_at_scoring_position": "Unavailable in Phase 0/1/2/5' activation-migration packets; should be added to future scoring packets rather than inferred post hoc."
+      },
+      "packet": "phase1_granite_small",
+      "phase_label": "Phase 1 Granite-4.0-H-Small",
+      "targets": {
+        "left_set_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.9329098849959444,
+              "r": 0.01815170475072152
+            },
+            "input_token_count": {
+              "pvalue": 0.6395107611650283,
+              "r": -0.10074240402499442
+            },
+            "prompt_char_count": {
+              "pvalue": 0.5929908491962433,
+              "r": 0.11487596230870656
+            },
+            "prompt_index": {
+              "pvalue": 0.044584885346947635,
+              "r": -0.41350822707194335
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.258111846558353,
+              "r": -0.24026156536512588
+            }
+          },
+          "regression": {
+            "intercept": 0.5662347560975611,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.5018428243378787,
+            "standardized_coefficients": {
+              "answer_digit_count": 0.006503264179329288,
+              "input_token_count": -0.04242288479629457,
+              "prompt_char_count": 0.04815935444310573,
+              "prompt_index": -0.03358024597560802,
+              "source_file_is_part_ii": 0.018517399271201856
+            }
+          }
+        },
+        "strict_original_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.41783963313621986,
+              "r": -0.17337358788415194
+            },
+            "input_token_count": {
+              "pvalue": 0.44900954729196624,
+              "r": -0.162165473555889
+            },
+            "prompt_char_count": {
+              "pvalue": 0.7115703663553867,
+              "r": 0.07960407398446478
+            },
+            "prompt_index": {
+              "pvalue": 0.2805236386440177,
+              "r": -0.2295760110665441
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.7955016319956741,
+              "r": -0.05584339703812843
+            }
+          },
+          "regression": {
+            "intercept": 0.8367632113821143,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.4512129954543769,
+            "standardized_coefficients": {
+              "answer_digit_count": -0.002042727095003795,
+              "input_token_count": -0.028503928422452196,
+              "prompt_char_count": 0.030849195556903602,
+              "prompt_index": -0.016670835154895328,
+              "source_file_is_part_ii": 0.014641940692164833
+            }
+          }
+        },
+        "within_set_rank_shuffle_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.38055974000547005,
+              "r": -0.1874002082722285
+            },
+            "input_token_count": {
+              "pvalue": 0.9843878475640414,
+              "r": 0.004219593603732159
+            },
+            "prompt_char_count": {
+              "pvalue": 0.631323771838964,
+              "r": -0.10319882311622657
+            },
+            "prompt_index": {
+              "pvalue": 0.03651308107157925,
+              "r": 0.42887485625545874
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.12716109389786745,
+              "r": 0.32019874455701225
+            }
+          },
+          "regression": {
+            "intercept": 0.2709349593495936,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.3791084653556993,
+            "standardized_coefficients": {
+              "answer_digit_count": -0.008468084448522326,
+              "input_token_count": 0.013618863778378695,
+              "prompt_char_count": -0.017070283928395404,
+              "prompt_index": 0.017068965924521957,
+              "source_file_is_part_ii": -0.004003824195814195
+            }
+          }
+        }
+      }
+    },
+    {
+      "feature_rows": [
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 57,
+          "prompt_char_count": 84,
+          "prompt_index": 0,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 166,
+          "prompt_char_count": 381,
+          "prompt_index": 1,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 140,
+          "prompt_char_count": 516,
+          "prompt_index": 2,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 80,
+          "prompt_char_count": 147,
+          "prompt_index": 3,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 100,
+          "prompt_char_count": 218,
+          "prompt_index": 4,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 104,
+          "prompt_char_count": 252,
+          "prompt_index": 5,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 146,
+          "prompt_char_count": 455,
+          "prompt_index": 6,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 119,
+          "prompt_char_count": 281,
+          "prompt_index": 7,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 119,
+          "prompt_char_count": 332,
+          "prompt_index": 8,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 263,
+          "prompt_char_count": 640,
+          "prompt_index": 9,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 206,
+          "prompt_char_count": 583,
+          "prompt_index": 10,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 131,
+          "prompt_char_count": 405,
+          "prompt_index": 11,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 102,
+          "prompt_char_count": 388,
+          "prompt_index": 12,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 151,
+          "prompt_char_count": 347,
+          "prompt_index": 13,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 94,
+          "prompt_char_count": 192,
+          "prompt_index": 14,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 135,
+          "prompt_char_count": 263,
+          "prompt_index": 15,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 65,
+          "prompt_char_count": 106,
+          "prompt_index": 16,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 89,
+          "prompt_char_count": 245,
+          "prompt_index": 17,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 209,
+          "prompt_char_count": 370,
+          "prompt_index": 18,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 9,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 239,
+          "prompt_char_count": 625,
+          "prompt_index": 19,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 228,
+          "prompt_char_count": 665,
+          "prompt_index": 20,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 118,
+          "prompt_char_count": 324,
+          "prompt_index": 21,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 277,
+          "prompt_char_count": 991,
+          "prompt_index": 22,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 114,
+          "prompt_char_count": 226,
+          "prompt_index": 23,
+          "source_file_is_part_ii": 1
+        }
+      ],
+      "omitted_predictors": {
+        "bf16_perplexity_at_scoring_position": "Unavailable in Phase 0/1/2/5' activation-migration packets; should be added to future scoring packets rather than inferred post hoc."
+      },
+      "packet": "phase2_nemotron3",
+      "phase_label": "Phase 2 Nemotron-3-Nano partial",
+      "targets": {
+        "left_set_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.2064497236160398,
+              "r": -0.2674363570212012
+            },
+            "input_token_count": {
+              "pvalue": 0.02726644646062617,
+              "r": -0.4502278906698126
+            },
+            "prompt_char_count": {
+              "pvalue": 0.10157011654347332,
+              "r": -0.3422985631290073
+            },
+            "prompt_index": {
+              "pvalue": 0.8626510544963684,
+              "r": -0.03729217874196777
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.772029563377513,
+              "r": 0.06241329097467252
+            }
+          },
+          "regression": {
+            "intercept": 0.5337132003798671,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.2966642214596692,
+            "standardized_coefficients": {
+              "answer_digit_count": -0.027208448228336513,
+              "input_token_count": -0.1441519476515926,
+              "prompt_char_count": 0.0771612628967178,
+              "prompt_index": -0.02270293925602783,
+              "source_file_is_part_ii": 0.060818406848620624
+            }
+          }
+        },
+        "strict_original_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.23280730293474736,
+              "r": -0.253072950970006
+            },
+            "input_token_count": {
+              "pvalue": 0.024274986340664946,
+              "r": -0.45838440502451516
+            },
+            "prompt_char_count": {
+              "pvalue": 0.08776423156482802,
+              "r": -0.35598501303039237
+            },
+            "prompt_index": {
+              "pvalue": 0.8483914970367147,
+              "r": -0.04120589124886849
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.714643391380699,
+              "r": 0.07871967230909774
+            }
+          },
+          "regression": {
+            "intercept": 0.8016678537511873,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.307769963359497,
+            "standardized_coefficients": {
+              "answer_digit_count": -0.014136837342613682,
+              "input_token_count": -0.08206874682353617,
+              "prompt_char_count": 0.04259761484594455,
+              "prompt_index": -0.018355657328185594,
+              "source_file_is_part_ii": 0.040643585914722266
+            }
+          }
+        },
+        "within_set_rank_shuffle_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.19048189358520345,
+              "r": 0.2767488175630123
+            },
+            "input_token_count": {
+              "pvalue": 0.03998370097689065,
+              "r": 0.4219692453539061
+            },
+            "prompt_char_count": {
+              "pvalue": 0.14098833240424782,
+              "r": 0.30958234014582225
+            },
+            "prompt_index": {
+              "pvalue": 0.8900382000428678,
+              "r": 0.02980635327314062
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.8533607509160297,
+              "r": -0.039840643487441575
+            }
+          },
+          "regression": {
+            "intercept": 0.2690823836657171,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.2668692173038617,
+            "standardized_coefficients": {
+              "answer_digit_count": 0.013210623683327339,
+              "input_token_count": 0.06282739440277159,
+              "prompt_char_count": -0.035333472071217994,
+              "prompt_index": 0.004391968724783958,
+              "source_file_is_part_ii": -0.020383066695784772
+            }
+          }
+        }
+      }
+    },
+    {
+      "feature_rows": [
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 59,
+          "prompt_char_count": 84,
+          "prompt_index": 0,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 170,
+          "prompt_char_count": 381,
+          "prompt_index": 1,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 138,
+          "prompt_char_count": 516,
+          "prompt_index": 2,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 84,
+          "prompt_char_count": 147,
+          "prompt_index": 3,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 101,
+          "prompt_char_count": 218,
+          "prompt_index": 4,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 112,
+          "prompt_char_count": 252,
+          "prompt_index": 5,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 148,
+          "prompt_char_count": 455,
+          "prompt_index": 6,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 124,
+          "prompt_char_count": 281,
+          "prompt_index": 7,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 129,
+          "prompt_char_count": 332,
+          "prompt_index": 8,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 269,
+          "prompt_char_count": 640,
+          "prompt_index": 9,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 227,
+          "prompt_char_count": 583,
+          "prompt_index": 10,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 134,
+          "prompt_char_count": 405,
+          "prompt_index": 11,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 105,
+          "prompt_char_count": 388,
+          "prompt_index": 12,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 155,
+          "prompt_char_count": 347,
+          "prompt_index": 13,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 97,
+          "prompt_char_count": 192,
+          "prompt_index": 14,
+          "source_file_is_part_ii": 0
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 136,
+          "prompt_char_count": 263,
+          "prompt_index": 15,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 66,
+          "prompt_char_count": 106,
+          "prompt_index": 16,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 2,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 90,
+          "prompt_char_count": 245,
+          "prompt_index": 17,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 218,
+          "prompt_char_count": 370,
+          "prompt_index": 18,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 9,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 250,
+          "prompt_char_count": 625,
+          "prompt_index": 19,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 250,
+          "prompt_char_count": 665,
+          "prompt_index": 20,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 120,
+          "prompt_char_count": 324,
+          "prompt_index": 21,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 281,
+          "prompt_char_count": 991,
+          "prompt_index": 22,
+          "source_file_is_part_ii": 1
+        },
+        {
+          "answer_digit_count": 3,
+          "bf16_perplexity_at_scoring_position": null,
+          "bf16_perplexity_unavailable_reason": "migration characterization packets capture activation magnitudes but do not score BF16 perplexity",
+          "input_token_count": 118,
+          "prompt_char_count": 226,
+          "prompt_index": 23,
+          "source_file_is_part_ii": 1
+        }
+      ],
+      "omitted_predictors": {
+        "bf16_perplexity_at_scoring_position": "Unavailable in Phase 0/1/2/5' activation-migration packets; should be added to future scoring packets rather than inferred post hoc."
+      },
+      "packet": "phase5p_transformer",
+      "phase_label": "Phase 5' pure-Transformer control",
+      "targets": {
+        "left_set_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.729410403991253,
+              "r": -0.07448675060545423
+            },
+            "input_token_count": {
+              "pvalue": 0.6064707568607933,
+              "r": -0.1107350809212562
+            },
+            "prompt_char_count": {
+              "pvalue": 0.726911858197423,
+              "r": -0.07520102554416391
+            },
+            "prompt_index": {
+              "pvalue": 0.9433134962807683,
+              "r": -0.015332111196431233
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.8787630059181207,
+              "r": 0.03288371504563919
+            }
+          },
+          "regression": {
+            "intercept": 0.670572916666667,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.025802847898303893,
+            "standardized_coefficients": {
+              "answer_digit_count": -0.0025479656961231796,
+              "input_token_count": -0.011554714656003063,
+              "prompt_char_count": 0.007725911164970401,
+              "prompt_index": -0.0053091803948940456,
+              "source_file_is_part_ii": 0.008330469927086866
+            }
+          }
+        },
+        "strict_original_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.5240994321232905,
+              "r": -0.13672084040539145
+            },
+            "input_token_count": {
+              "pvalue": 0.8652570836742167,
+              "r": -0.03657819183774056
+            },
+            "prompt_char_count": {
+              "pvalue": 0.9815819813738851,
+              "r": 0.004978068275180486
+            },
+            "prompt_index": {
+              "pvalue": 0.737847042120392,
+              "r": -0.07208050480951861
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.9855117701626107,
+              "r": 0.003915791788883214
+            }
+          },
+          "regression": {
+            "intercept": 0.8349144345238099,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.04937763542620943,
+            "standardized_coefficients": {
+              "answer_digit_count": -0.00457820752371618,
+              "input_token_count": -0.0049677219636986986,
+              "prompt_char_count": 0.007168599713051672,
+              "prompt_index": -0.008823182852156232,
+              "source_file_is_part_ii": 0.008876263431382817
+            }
+          }
+        },
+        "within_set_rank_shuffle_fraction": {
+          "pearson_correlations": {
+            "answer_digit_count": {
+              "pvalue": 0.9782152516876118,
+              "r": 0.005888230522173963
+            },
+            "input_token_count": {
+              "pvalue": 0.42947810816894205,
+              "r": 0.16913756506619573
+            },
+            "prompt_char_count": {
+              "pvalue": 0.4775346313097812,
+              "r": 0.15226354964709768
+            },
+            "prompt_index": {
+              "pvalue": 0.7732259109573156,
+              "r": -0.06207716756095301
+            },
+            "source_file_is_part_ii": {
+              "pvalue": 0.7543687275019656,
+              "r": -0.06739220193861015
+            }
+          },
+          "regression": {
+            "intercept": 0.16573660714285718,
+            "n": 24,
+            "predictors": [
+              "prompt_index",
+              "prompt_char_count",
+              "input_token_count",
+              "answer_digit_count",
+              "source_file_is_part_ii"
+            ],
+            "r_squared": 0.04727436419386799,
+            "standardized_coefficients": {
+              "answer_digit_count": -0.0012227733239101543,
+              "input_token_count": 0.007207440751658517,
+              "prompt_char_count": -0.000489698531699378,
+              "prompt_index": -0.003682848220036247,
+              "source_file_is_part_ii": -0.00022874640768281808
+            }
+          }
+        }
+      }
+    }
+  ],
+  "schema_version": "om_experiment_d_trace_difficulty_regression_v1"
+}

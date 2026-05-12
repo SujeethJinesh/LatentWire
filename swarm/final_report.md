@@ -27,6 +27,13 @@ for the returning human.
   `[0.6526227678571428, 0.6902901785714286]`.
 - Phase 5' within-set rank shuffling: `0.16573660714285715`, CI95
   `[0.15411086309523808, 0.1773623511904762]`.
+- Experiment D decomposition analysis:
+  `experimental/outlier_migrate/decomposition_analysis/`.
+- Experiment D packets: Phase 0 Granite-Tiny, Phase 1 Granite-Small,
+  partial Phase 2 Nemotron-3, and Phase 5' pure Transformer.
+- Experiment D outputs: `kendall_tau_by_position.json`,
+  `component_decomposition.md`, `component_decomposition.json`,
+  `cross_tabulation.json`, and `trace_difficulty_regression.json`.
 - Interpretation update: pure-Transformer R1-Distill-Qwen-1.5B shows
   migration at essentially the Granite/Nemotron scale. OutlierMigrate must no
   longer frame the main measurement as Mamba-2-specific; the defensible story
@@ -130,6 +137,32 @@ Phase 5' pure-Transformer control:
 - Interpretation: Phase 5' broadens the rank-migration measurement beyond
   measured Mamba-2 hybrids. This is useful but it undercuts any paper claim
   that migration is explained primarily by Mamba-2 state dynamics.
+
+Experiment D decomposition formalization:
+
+- Output directory:
+  `experimental/outlier_migrate/decomposition_analysis/`.
+- Machine-readable Kendall output:
+  `experimental/outlier_migrate/decomposition_analysis/kendall_tau_by_position.json`.
+- Component report:
+  `experimental/outlier_migrate/decomposition_analysis/component_decomposition.md`.
+- Cross-tab:
+  `experimental/outlier_migrate/decomposition_analysis/cross_tabulation.json`.
+- Trace-difficulty regression:
+  `experimental/outlier_migrate/decomposition_analysis/trace_difficulty_regression.json`.
+- Component table headline:
+  - Phase 0 strict set-leaving `0.634244791667`; within-set shuffling
+    `0.175260416667`.
+  - Phase 1 strict set-leaving `0.566234756098`; within-set shuffling
+    `0.270934959350`.
+  - Phase 2 strict set-leaving `0.533713200380`; within-set shuffling
+    `0.269082383666`.
+  - Phase 5' strict set-leaving `0.670572916667`; within-set shuffling
+    `0.165736607143`.
+- Interpretation: strict set-leaving remains the dominant component across
+  all landed packets, including the pure-Transformer control. Rank-shuffling
+  is still nontrivial, but the pure-Transformer control shifts a larger share
+  into strict set-leaving than Granite-Small or Nemotron-3.
 
 ## Killed Branches
 
