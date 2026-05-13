@@ -619,7 +619,8 @@ def main(argv: list[str] | None = None) -> int:
             run_events_path=run_events_path,
         )
         shared.write_json(run_dir / "activation_magnitude_manifest.json", activation_manifest)
-        release_model_memory(model, tokenizer)
+        del model, tokenizer, device
+        release_model_memory()
     protected_sets = build_protected_sets(list(shared.iter_activation_rows(activation_path)))
     shared.write_json(run_dir / "protected_sets.json", protected_sets)
 
@@ -652,7 +653,8 @@ def main(argv: list[str] | None = None) -> int:
         run_events_path=run_events_path,
         regime_name="bf16",
     )
-    release_model_memory(model, tokenizer)
+    del model, tokenizer, device
+    release_model_memory()
     excluded_by_regime: dict[str, Any] = {}
     for regime in ["static_1pct", "static_3pct"]:
         print(json.dumps({"event": "loading_quantized_regime", "regime": regime, "time": shared.utc_now()}))
@@ -672,7 +674,8 @@ def main(argv: list[str] | None = None) -> int:
             run_events_path=run_events_path,
             regime_name=regime,
         )
-        release_model_memory(model, tokenizer)
+        del model, tokenizer, device
+        release_model_memory()
     all_scores["m2_position_conditional"], excluded_by_regime["m2_position_conditional"] = score_dynamic_segments(
         model_provenance=model_provenance,
         prompts=prompts,
