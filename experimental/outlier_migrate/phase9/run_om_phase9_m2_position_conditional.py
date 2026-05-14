@@ -433,7 +433,7 @@ def score_dynamic_segments(
                     logits = logits.cpu()
                 if nll is not None:
                     nll = nll.cpu()
-                del target_tensor, model, tokenizer
+                del target_tensor, model, tokenizer, normalize_cache_inputs, output_cache
                 release_model_memory()
             assert nll is not None
             for offset, prompt_index in enumerate(batch_indices):
@@ -486,6 +486,26 @@ def write_score_cache(run_dir: Path, regime: str, scores: dict[int, dict[str, fl
             "scores": {str(index): row for index, row in sorted(scores.items())},
         },
     )
+
+
+def read_score_cache(
+    score_dir: Path,
+    regime: str,
+    *,
+    expected_prompt_indices: set[int],
+) -> dict[int, dict[str, float]] | None:
+    path = score_dir / "score_cache" / f"{regime}.json"
+    if not path.is_file():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != f"{SCHEMA_VERSION}_score_cache":
+        return None
+    if payload.get("regime") != regime:
+        return None
+    scores = {int(index): row for index, row in payload.get("scores", {}).items()}
+    if set(scores) != expected_prompt_indices:
+        return None
+    return scores
 
 
 def build_metrics(
@@ -579,6 +599,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dtype", choices=["bfloat16", "float16", "float32"], default="bfloat16")
     parser.add_argument("--reuse-activation-run-dir", type=Path)
     parser.add_argument("--reuse-trace-run-dir", type=Path)
+    parser.add_argument("--reuse-score-run-dir", type=Path)
     parser.add_argument("--trace-count", type=int, default=checker.TRACE_COUNT)
     args = parser.parse_args(argv)
 
@@ -636,6 +657,7 @@ def main(argv: list[str] | None = None) -> int:
         "batch_size": args.batch_size,
         "reuse_activation_run_dir": str(args.reuse_activation_run_dir) if args.reuse_activation_run_dir else None,
         "reuse_trace_run_dir": str(args.reuse_trace_run_dir) if args.reuse_trace_run_dir else None,
+        "reuse_score_run_dir": str(args.reuse_score_run_dir) if args.reuse_score_run_dir else None,
         "trace_count": args.trace_count,
     }
     random_seed = {
@@ -763,23 +785,69 @@ def main(argv: list[str] | None = None) -> int:
     target_tokens = phase4_runner.load_trace_tokens(trace_path)
 
     all_scores: dict[str, dict[int, dict[str, float]]] = {}
-    all_scores["bf16"] = phase4_runner.score_targets(
-        model=model,
-        tokenizer=tokenizer,
-        device=device,
-        prompts=prompts,
-        target_tokens=target_tokens,
-        max_new_tokens=checker.SCORING_POSITION,
-        batch_size=args.batch_size,
-        use_float16_autocast=False,
-        run_events_path=run_events_path,
-        regime_name="bf16",
-    )
-    write_score_cache(run_dir, "bf16", all_scores["bf16"])
-    del model, tokenizer, device
-    release_model_memory()
+    expected_prompt_indices = {int(item["index"]) for item in prompts}
+    score_reuse_dir = args.reuse_score_run_dir.resolve() if args.reuse_score_run_dir else None
+    cached_bf16 = read_score_cache(score_reuse_dir, "bf16", expected_prompt_indices=expected_prompt_indices) if score_reuse_dir else None
+    if cached_bf16 is not None:
+        all_scores["bf16"] = cached_bf16
+        write_score_cache(run_dir, "bf16", all_scores["bf16"])
+        with run_events_path.open("a", encoding="utf-8") as event_handle:
+            event_handle.write(
+                json.dumps(
+                    {
+                        "created_at_utc": shared.utc_now(),
+                        "event": "reused_score_cache",
+                        "regime": "bf16",
+                        "source_run_dir": str(score_reuse_dir),
+                    },
+                    sort_keys=True,
+                )
+                + "\n"
+            )
+        del model, tokenizer, device
+        release_model_memory()
+    else:
+        all_scores["bf16"] = phase4_runner.score_targets(
+            model=model,
+            tokenizer=tokenizer,
+            device=device,
+            prompts=prompts,
+            target_tokens=target_tokens,
+            max_new_tokens=checker.SCORING_POSITION,
+            batch_size=args.batch_size,
+            use_float16_autocast=False,
+            run_events_path=run_events_path,
+            regime_name="bf16",
+        )
+        write_score_cache(run_dir, "bf16", all_scores["bf16"])
+        del model, tokenizer, device
+        release_model_memory()
     excluded_by_regime: dict[str, Any] = {}
     for regime in ["static_1pct", "static_3pct"]:
+        cached_scores = read_score_cache(score_reuse_dir, regime, expected_prompt_indices=expected_prompt_indices) if score_reuse_dir else None
+        if cached_scores is not None:
+            all_scores[regime] = cached_scores
+            write_score_cache(run_dir, regime, all_scores[regime])
+            with run_events_path.open("a", encoding="utf-8") as event_handle:
+                event_handle.write(
+                    json.dumps(
+                        {
+                            "created_at_utc": shared.utc_now(),
+                            "event": "reused_score_cache",
+                            "regime": regime,
+                            "source_run_dir": str(score_reuse_dir),
+                        },
+                        sort_keys=True,
+                    )
+                    + "\n"
+                )
+            model, tokenizer, device = shared.load_model_and_tokenizer(
+                model_provenance, dtype_name=args.dtype, device_name=args.device
+            )
+            excluded_by_regime[regime] = phase4_runner.apply_quantization(model, protected_sets, regime)
+            del model, tokenizer, device
+            release_model_memory()
+            continue
         print(json.dumps({"event": "loading_quantized_regime", "regime": regime, "time": shared.utc_now()}))
         model, tokenizer, device = shared.load_model_and_tokenizer(
             model_provenance, dtype_name=args.dtype, device_name=args.device
