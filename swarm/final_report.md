@@ -709,3 +709,58 @@ Interpretation:
 - High bin-to-bin overlap means position-conditioned protection has enough
   continuity to be worth testing, instead of immediately demoting to a learned
   probe-only story.
+
+## Phase 9 M2 Position-Conditional Protection (2026-05-14)
+
+M2 tested whether a small number of decode-position-conditioned protected
+channel sets could recover the BF16-vs-static-1% gap on Granite-4-H-Small. The
+run used the vacation-mode 12-trace deterministic slice after the full 24-trace
+run OOMed under dynamic segment switching. The final packet reused completed
+score caches from the memfix run and applied the normal checker.
+
+Final packet:
+
+- `experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z`
+- Checker:
+  `experimental/outlier_migrate/phase9/check_om_phase9_m2_position_conditional.py`
+- Vacation decisions:
+  - `swarm/vacation_decisions/20260514T024408_m2_granite_small_oom_adaptation.md`
+  - `swarm/vacation_decisions/20260514T125000_m2_dynamic_cache_memory_cleanup.md`
+  - `swarm/vacation_decisions/20260514T233500_m2_metrics_finalization_cache_reuse.md`
+
+Decision:
+
+- `KILL_M2_RANDOM_CONTROL_BEATS`
+- `artifact_complete=true`
+
+Summary table:
+
+| Quantity | Value |
+|---|---:|
+| Vacation trace count | `12` |
+| Positive static-gap traces included | `8` |
+| No-recoverable-static-gap traces | `4 / 12` |
+| No-recoverable-static-gap fraction | `0.3333333333333333` |
+| M2 median recovery | `-0.8668373133910525` |
+| M2 recovery CI95 | `[-3.4352892513350524, 0.5952386657662287]` |
+| Static-3% matched-cost median recovery | `-0.6259276389593869` |
+| Random-bin median recovery | `-0.19928902322343722` |
+| M2 minus static-3% median | `-0.24090967443166567` |
+| M2 minus random-bin median | `-0.6675482901676153` |
+
+Checker reason:
+
+- `random-bin control median -0.19928902 beats M2 median -0.86683731 by >0.10`
+
+Interpretation:
+
+- M2 is not a positive method on Granite-4-H-Small.
+- The random-bin control is not good in absolute terms, but it is much less
+  bad than M2, so the specific position-conditioned assignment does not survive
+  the preregistered negative-control test.
+- This kills M2 as a method branch. It does not kill the measurement paper:
+  Phase 9 Step 9.0 still supports decode-position channel drift and strict
+  set-leaving across model families.
+- Under vacation-mode D3, the next action is paper Draft 0 before any further
+  GPU method work, then M10 on Granite-Small rather than M2 on additional
+  models.

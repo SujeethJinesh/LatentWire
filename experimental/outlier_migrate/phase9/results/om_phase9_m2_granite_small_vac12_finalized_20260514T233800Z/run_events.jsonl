@@ -1,0 +1,7 @@
+{"created_at_utc": "2026-05-14T23:35:25Z", "event": "run_started"}
+{"created_at_utc": "2026-05-14T23:38:06Z", "event": "reused_score_cache", "regime": "bf16", "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_memfix_20260514T125800Z"}
+{"created_at_utc": "2026-05-14T23:38:07Z", "event": "reused_score_cache", "regime": "static_1pct", "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_memfix_20260514T125800Z"}
+{"created_at_utc": "2026-05-14T23:38:16Z", "event": "reused_score_cache", "regime": "static_3pct", "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_memfix_20260514T125800Z"}
+{"created_at_utc": "2026-05-14T23:38:25Z", "event": "reused_score_cache", "regime": "m2_position_conditional", "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_memfix_20260514T125800Z"}
+{"created_at_utc": "2026-05-14T23:38:25Z", "event": "reused_score_cache", "regime": "random_bin_assignment", "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_memfix_20260514T125800Z"}
+{"created_at_utc": "2026-05-14T23:38:25Z", "event": "run_completed"}

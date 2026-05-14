@@ -1,0 +1,51 @@
+{
+  "do_sample": false,
+  "eos_policy": "record first EOS but continue to fixed decode positions",
+  "m2_segments": [
+    {
+      "end": 799,
+      "name": "early",
+      "set": "m2_set_A",
+      "start": 1
+    },
+    {
+      "end": 5999,
+      "name": "middle",
+      "set": "m2_set_B",
+      "start": 800
+    },
+    {
+      "end": 10000,
+      "name": "late",
+      "set": "m2_set_C",
+      "start": 6000
+    }
+  ],
+  "max_new_tokens_for_calibration": 15000,
+  "max_new_tokens_for_scoring": 10000,
+  "num_beams": 1,
+  "random_bin_segments": [
+    {
+      "end": 799,
+      "name": "early",
+      "set": "m2_set_C",
+      "start": 1
+    },
+    {
+      "end": 5999,
+      "name": "middle",
+      "set": "m2_set_B",
+      "start": 800
+    },
+    {
+      "end": 10000,
+      "name": "late",
+      "set": "m2_set_A",
+      "start": 6000
+    }
+  ],
+  "schema_version": "om_phase9_m2_v1_decoding_config",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "target_trace": "BF16 deterministic greedy trace"
+}

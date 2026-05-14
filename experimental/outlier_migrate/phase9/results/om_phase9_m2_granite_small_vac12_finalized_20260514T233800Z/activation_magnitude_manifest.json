@@ -1,0 +1,232 @@
+{
+  "artifact": "activation_magnitudes.jsonl.gz",
+  "artifact_sha256": "sha256:bc29207f54929f2891293ef93b77b4f53fd1a0eb1992e96d9bdda844fe636c88",
+  "capture_semantics": {
+    "decode_position_basis": "generated-token count after prompt; position 100 is the 100th generated token",
+    "eos_policy": "continue decoding until max_new_tokens so every preregistered position is observable",
+    "module": "transformer_layer_forward_output",
+    "token": "last generated token in manual greedy decode step",
+    "value": "absolute activation magnitude per output channel"
+  },
+  "created_at_utc": "2026-05-14T23:35:51Z",
+  "filtered_row_count": 4320,
+  "layer_count": 40,
+  "layer_names": [
+    "model.layers.0",
+    "model.layers.1",
+    "model.layers.2",
+    "model.layers.3",
+    "model.layers.4",
+    "model.layers.5",
+    "model.layers.6",
+    "model.layers.7",
+    "model.layers.8",
+    "model.layers.9",
+    "model.layers.10",
+    "model.layers.11",
+    "model.layers.12",
+    "model.layers.13",
+    "model.layers.14",
+    "model.layers.15",
+    "model.layers.16",
+    "model.layers.17",
+    "model.layers.18",
+    "model.layers.19",
+    "model.layers.20",
+    "model.layers.21",
+    "model.layers.22",
+    "model.layers.23",
+    "model.layers.24",
+    "model.layers.25",
+    "model.layers.26",
+    "model.layers.27",
+    "model.layers.28",
+    "model.layers.29",
+    "model.layers.30",
+    "model.layers.31",
+    "model.layers.32",
+    "model.layers.33",
+    "model.layers.34",
+    "model.layers.35",
+    "model.layers.36",
+    "model.layers.37",
+    "model.layers.38",
+    "model.layers.39"
+  ],
+  "layer_origin": "model.layers",
+  "positions": [
+    100,
+    200,
+    500,
+    1000,
+    2000,
+    5000,
+    7000,
+    10000,
+    15000
+  ],
+  "prompt_events": [
+    {
+      "first_eos_decode_position": 696,
+      "input_token_count": 56,
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0
+    },
+    {
+      "first_eos_decode_position": 832,
+      "input_token_count": 163,
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1
+    },
+    {
+      "first_eos_decode_position": 327,
+      "input_token_count": 135,
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2
+    },
+    {
+      "first_eos_decode_position": 414,
+      "input_token_count": 78,
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3
+    },
+    {
+      "first_eos_decode_position": 1089,
+      "input_token_count": 94,
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4
+    },
+    {
+      "first_eos_decode_position": 701,
+      "input_token_count": 110,
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5
+    },
+    {
+      "first_eos_decode_position": 870,
+      "input_token_count": 147,
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6
+    },
+    {
+      "first_eos_decode_position": 403,
+      "input_token_count": 121,
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7
+    },
+    {
+      "first_eos_decode_position": 677,
+      "input_token_count": 127,
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8
+    },
+    {
+      "first_eos_decode_position": 1014,
+      "input_token_count": 267,
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9
+    },
+    {
+      "first_eos_decode_position": 1559,
+      "input_token_count": 225,
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10
+    },
+    {
+      "first_eos_decode_position": 836,
+      "input_token_count": 132,
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11
+    },
+    {
+      "first_eos_decode_position": 343,
+      "input_token_count": 102,
+      "prompt_id": "opencompass_AIME2025_I_12",
+      "prompt_index": 12
+    },
+    {
+      "first_eos_decode_position": 803,
+      "input_token_count": 149,
+      "prompt_id": "opencompass_AIME2025_I_13",
+      "prompt_index": 13
+    },
+    {
+      "first_eos_decode_position": 750,
+      "input_token_count": 94,
+      "prompt_id": "opencompass_AIME2025_I_14",
+      "prompt_index": 14
+    },
+    {
+      "first_eos_decode_position": 1407,
+      "input_token_count": 128,
+      "prompt_id": "opencompass_AIME2025_II_0",
+      "prompt_index": 15
+    },
+    {
+      "first_eos_decode_position": 818,
+      "input_token_count": 65,
+      "prompt_id": "opencompass_AIME2025_II_1",
+      "prompt_index": 16
+    },
+    {
+      "first_eos_decode_position": 541,
+      "input_token_count": 88,
+      "prompt_id": "opencompass_AIME2025_II_2",
+      "prompt_index": 17
+    },
+    {
+      "first_eos_decode_position": 630,
+      "input_token_count": 204,
+      "prompt_id": "opencompass_AIME2025_II_3",
+      "prompt_index": 18
+    },
+    {
+      "first_eos_decode_position": 497,
+      "input_token_count": 246,
+      "prompt_id": "opencompass_AIME2025_II_4",
+      "prompt_index": 19
+    },
+    {
+      "first_eos_decode_position": 845,
+      "input_token_count": 248,
+      "prompt_id": "opencompass_AIME2025_II_5",
+      "prompt_index": 20
+    },
+    {
+      "first_eos_decode_position": 647,
+      "input_token_count": 115,
+      "prompt_id": "opencompass_AIME2025_II_6",
+      "prompt_index": 21
+    },
+    {
+      "first_eos_decode_position": 892,
+      "input_token_count": 269,
+      "prompt_id": "opencompass_AIME2025_II_7",
+      "prompt_index": 22
+    },
+    {
+      "first_eos_decode_position": 985,
+      "input_token_count": 117,
+      "prompt_id": "opencompass_AIME2025_II_8",
+      "prompt_index": 23
+    }
+  ],
+  "row_count": 8640,
+  "schema_version": "om_phase9_m2_v1_activation_manifest",
+  "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_20260513T042800Z",
+  "trace_count": 24,
+  "vacation_filtered_prompt_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ]
+}

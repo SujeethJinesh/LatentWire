@@ -1,0 +1,19 @@
+{
+  "primary_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.5952386657662287,
+      "ci95_low": -3.4352892513350524
+    },
+    "included_trace_count": 8,
+    "mean_recovery": -19.38849063047721,
+    "median_recovery": -0.8668373133910525,
+    "no_recoverable_static_gap_count": 4,
+    "no_recoverable_static_gap_fraction": 0.3333333333333333,
+    "total_trace_count": 12
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z"
+}
+{
+  "artifact_complete": true,
+  "checker_decision": "KILL_M2_RANDOM_CONTROL_BEATS"
+}

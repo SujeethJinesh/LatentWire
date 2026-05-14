@@ -1,0 +1,9 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_M2_RANDOM_CONTROL_BEATS",
+  "reasons": [
+    "random-bin control median -0.19928902 beats M2 median -0.86683731 by >0.10"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z",
+  "schema_version": "om_phase9_m2_v1_artifact_check"
+}

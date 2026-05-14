@@ -1,0 +1,24 @@
+{
+  "adaptation": "deterministic_trace_count_reduction",
+  "authority": "Vacation mode V2/V4",
+  "created_at_utc": "2026-05-14T23:35:34Z",
+  "effective_trace_count": 12,
+  "invalidates_if": "Human requires the original 24-trace preregistered M2 packet before interpreting M2.",
+  "original_trace_count": 24,
+  "prompt_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "reason": "The 24-trace Granite-Small M2 packet completed BF16/static-1/static-3 scoring but OOMed entering dynamic M2; rerunning the full 24 traces would block paper progress during vacation mode. The fixed first-12 trace slice preserves the M2 scientific question with wider uncertainty.",
+  "schema_version": "om_phase9_m2_v1_vacation_adaptation"
+}
