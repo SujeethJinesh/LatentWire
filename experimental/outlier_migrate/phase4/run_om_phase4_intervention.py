@@ -511,7 +511,7 @@ def score_targets(
         )
         nll = torch.zeros((len(batch),), device=device, dtype=torch.float64)
         scored = 0
-        with torch.autocast("cuda", dtype=torch.float16, enabled=autocast_enabled):
+        with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16, enabled=autocast_enabled):
             cache_position = torch.arange(input_ids.shape[1], device=device)
             model_inputs = model.prepare_inputs_for_generation(
                 input_ids=input_ids,

@@ -1,0 +1,29 @@
+{
+  "artifact_complete": false,
+  "decision": "FAIL_INFRA_M2",
+  "reasons": [
+    "missing required file: excluded_tensors.json",
+    "missing required file: per_trace_metrics.json",
+    "missing required file: metrics.json",
+    "missing required file: bootstrap_ci.json",
+    "missing required file: control_metrics.json",
+    "per_trace_metrics must contain exactly 24 traces",
+    "metrics schema_version mismatch",
+    "metrics.model_id not in M2 preregistered model set",
+    "metrics.thresholds mismatch",
+    "metrics.scoring_position mismatch",
+    "metrics.scoring_window_tokens mismatch",
+    "metrics.calibration_positions mismatch",
+    "metrics.prompt_sha256 must match prompt_manifest",
+    "model_provenance.model_id must match metrics.model_id",
+    "excluded_tensors.by_regime mismatch",
+    "metrics.preregistration_sha256 mismatch",
+    "artifact_hashes missing excluded_tensors.json",
+    "artifact_hashes missing per_trace_metrics.json",
+    "artifact_hashes missing metrics.json",
+    "artifact_hashes missing bootstrap_ci.json",
+    "artifact_hashes missing control_metrics.json"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_20260513T042800Z",
+  "schema_version": "om_phase9_m2_v1_artifact_check"
+}

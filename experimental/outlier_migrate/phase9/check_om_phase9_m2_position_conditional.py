@@ -20,6 +20,7 @@ DEFAULT_PROMPT_FILE = ROOT / "experimental/shared/prompts/aime_2025_indices_0_23
 
 SCHEMA_VERSION = "om_phase9_m2_v1"
 TRACE_COUNT = 24
+MIN_VACATION_TRACE_COUNT = 12
 SCORING_POSITION = 10000
 SCORING_WINDOW_TOKENS = 512
 CALIBRATION_POSITIONS = (100, 200, 500, 1000, 2000, 5000, 7000, 10000, 15000)
@@ -87,6 +88,7 @@ REQUIRED_FILES = [
     "run_events.jsonl",
 ]
 HASHED_FILES = [rel for rel in REQUIRED_FILES if rel != "artifact_hashes.json"]
+OPTIONAL_HASHED_FILES = ["vacation_adaptation.json"]
 
 
 def load_json(path: Path) -> Any:
@@ -199,21 +201,44 @@ def decision_from_summaries(m2: dict[str, Any], static_3: dict[str, Any], random
     ]
 
 
-def validate_prompt_manifest(prompt_manifest: dict[str, Any], metrics: dict[str, Any], infra: list[str]) -> None:
+def effective_trace_count(adaptation: dict[str, Any], infra: list[str]) -> int:
+    if not adaptation:
+        return TRACE_COUNT
+    if adaptation.get("schema_version") != f"{SCHEMA_VERSION}_vacation_adaptation":
+        infra.append("vacation_adaptation schema mismatch")
+    if adaptation.get("authority") != "Vacation mode V2/V4":
+        infra.append("vacation_adaptation authority mismatch")
+    if adaptation.get("adaptation") != "deterministic_trace_count_reduction":
+        infra.append("vacation_adaptation.adaptation mismatch")
+    count = int(adaptation.get("effective_trace_count", -1))
+    if not (MIN_VACATION_TRACE_COUNT <= count < TRACE_COUNT):
+        infra.append("vacation_adaptation effective_trace_count must be in [12, 23]")
+        return TRACE_COUNT
+    if adaptation.get("prompt_indices") != list(range(count)):
+        infra.append("vacation_adaptation prompt_indices mismatch")
+    return count
+
+
+def validate_prompt_manifest(
+    prompt_manifest: dict[str, Any], metrics: dict[str, Any], infra: list[str], *, trace_count: int
+) -> None:
     if file_sha256(DEFAULT_PROMPT_FILE) != EXPECTED_PROMPT_FILE_SHA256:
         infra.append("canonical prompt file hash drifted")
     if prompt_manifest.get("source") != "AIME-2025":
         infra.append("prompt_manifest.source must be AIME-2025")
-    if prompt_manifest.get("selection") != "deterministic_indices_0_23":
-        infra.append("prompt_manifest.selection must be deterministic_indices_0_23")
+    expected_selection = "deterministic_indices_0_23"
+    if trace_count != TRACE_COUNT:
+        expected_selection = f"deterministic_indices_0_{trace_count - 1}_vacation_revision"
+    if prompt_manifest.get("selection") != expected_selection:
+        infra.append(f"prompt_manifest.selection must be {expected_selection}")
     if prompt_manifest.get("prompt_file_sha256") != EXPECTED_PROMPT_FILE_SHA256:
         infra.append("prompt file SHA mismatch")
     prompts = prompt_manifest.get("prompts", [])
     if not isinstance(prompts, list):
         infra.append("prompt_manifest.prompts must be a list")
         prompts = []
-    if len(prompts) != TRACE_COUNT or prompt_manifest.get("prompt_count") != TRACE_COUNT:
-        infra.append("prompt manifest must contain exactly 24 prompts")
+    if len(prompts) != trace_count or prompt_manifest.get("prompt_count") != trace_count:
+        infra.append(f"prompt manifest must contain exactly {trace_count} prompts")
     indices = []
     for row in prompts:
         if not isinstance(row, dict):
@@ -229,13 +254,13 @@ def validate_prompt_manifest(prompt_manifest: dict[str, Any], metrics: dict[str,
             infra.append(f"prompt {index}: source_commit mismatch")
         if row.get("source_file") != expected_source_file(index):
             infra.append(f"prompt {index}: source_file mismatch")
-    if indices != list(range(TRACE_COUNT)):
-        infra.append("prompt indices must be exactly 0-23 in order")
+    if indices != list(range(trace_count)):
+        infra.append(f"prompt indices must be exactly 0-{trace_count - 1} in order")
     if prompts:
         expected = prompt_payload_sha256(prompts)
         if prompt_manifest.get("prompt_sha256") != expected:
             infra.append("prompt payload SHA does not match prompt rows")
-        if prompt_manifest.get("prompt_sha256") != EXPECTED_PROMPT_PAYLOAD_SHA256:
+        if trace_count == TRACE_COUNT and prompt_manifest.get("prompt_sha256") != EXPECTED_PROMPT_PAYLOAD_SHA256:
             infra.append("prompt payload SHA does not match frozen Phase 1 set")
     if metrics.get("prompt_sha256") != prompt_manifest.get("prompt_sha256"):
         infra.append("metrics.prompt_sha256 must match prompt_manifest")
@@ -247,7 +272,11 @@ def validate_artifact_hashes(run_dir: Path, artifact_hashes: dict[str, Any], inf
         infra.append("artifact_hashes.artifacts must be a list")
         return
     by_path = {str(row.get("path")): row for row in entries if isinstance(row, dict)}
-    for rel in HASHED_FILES:
+    rels = list(HASHED_FILES)
+    for optional_rel in OPTIONAL_HASHED_FILES:
+        if (run_dir / optional_rel).is_file():
+            rels.append(optional_rel)
+    for rel in rels:
         item = by_path.get(rel)
         path = run_dir / rel
         if item is None:
@@ -354,6 +383,7 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
         "excluded_tensors.json",
         "activation_magnitude_manifest.json",
         "artifact_hashes.json",
+        "vacation_adaptation.json",
     ]:
         path = run_dir / rel
         if path.is_file():
@@ -365,8 +395,9 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
     if not isinstance(rows, list):
         infra.append("per_trace_metrics.traces must be a list")
         rows = []
-    if len(rows) != TRACE_COUNT:
-        infra.append("per_trace_metrics must contain exactly 24 traces")
+    trace_count = effective_trace_count(loaded.get("vacation_adaptation.json", {}), infra)
+    if len(rows) != trace_count:
+        infra.append(f"per_trace_metrics must contain exactly {trace_count} traces")
     validate_trace_rows(rows, infra)
     metrics = loaded.get("metrics.json", {})
     if metrics.get("schema_version") != f"{SCHEMA_VERSION}_metrics":
@@ -382,7 +413,7 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
         infra.append("metrics.scoring_window_tokens mismatch")
     if metrics.get("calibration_positions") != list(CALIBRATION_POSITIONS):
         infra.append("metrics.calibration_positions mismatch")
-    validate_prompt_manifest(loaded.get("prompt_manifest.json", {}), metrics, infra)
+    validate_prompt_manifest(loaded.get("prompt_manifest.json", {}), metrics, infra, trace_count=trace_count)
     model = loaded.get("model_provenance.json", {})
     if model.get("model_id") != model_id:
         infra.append("model_provenance.model_id must match metrics.model_id")

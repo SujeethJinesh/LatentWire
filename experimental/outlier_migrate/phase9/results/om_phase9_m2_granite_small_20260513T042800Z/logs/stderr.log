@@ -1,0 +1,67 @@
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+The fast path for GraniteMoeHybrid will be used when running the model on a GPU
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:03,  3.33it/s]Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:03,  3.11it/s]Loading checkpoint shards:  21%|##1       | 3/14 [00:00<00:03,  3.12it/s]Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:02,  3.50it/s]Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:02,  3.44it/s]Loading checkpoint shards:  43%|####2     | 6/14 [00:01<00:02,  3.63it/s]Loading checkpoint shards:  57%|#####7    | 8/14 [00:01<00:01,  5.40it/s]Loading checkpoint shards:  71%|#######1  | 10/14 [00:02<00:00,  7.68it/s]Loading checkpoint shards:  86%|########5 | 12/14 [00:02<00:00,  9.84it/s]Loading checkpoint shards: 100%|##########| 14/14 [00:02<00:00,  6.29it/s]
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.90it/s]Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:03,  3.16it/s]Loading checkpoint shards:  21%|##1       | 3/14 [00:00<00:03,  3.26it/s]Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  3.29it/s]Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:02,  3.32it/s]Loading checkpoint shards:  43%|####2     | 6/14 [00:01<00:02,  3.19it/s]Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  3.18it/s]Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:01,  3.21it/s]Loading checkpoint shards:  64%|######4   | 9/14 [00:02<00:01,  3.21it/s]Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  3.30it/s]Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:00,  3.27it/s]Loading checkpoint shards:  86%|########5 | 12/14 [00:03<00:00,  3.33it/s]Loading checkpoint shards:  93%|#########2| 13/14 [00:03<00:00,  3.32it/s]Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.83it/s]Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.36it/s]
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  3.10it/s]Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.94it/s]Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:03,  2.80it/s]Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.84it/s]Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.92it/s]Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:02,  2.84it/s]Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.99it/s]Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:02,  2.90it/s]Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.88it/s]Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.97it/s]Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:00,  3.02it/s]Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  3.03it/s]Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  3.06it/s]Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.58it/s]Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.07it/s]
+The fast path is not available because one of `(selective_state_update, causal_conv1d_fn, causal_conv1d_update)` is None. Falling back to the naive implementation. To install follow https://github.com/state-spaces/mamba/#installation and https://github.com/Dao-AILab/causal-conv1d
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  3.03it/s]Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:03,  3.03it/s]Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:03,  2.89it/s]Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.60it/s]Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.54it/s]Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:03,  2.52it/s]Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.57it/s]Loading checkpoint shards:  57%|#####7    | 8/14 [00:03<00:02,  2.64it/s]Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.66it/s]Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.79it/s]Loading checkpoint shards:  79%|#######8  | 11/14 [00:04<00:01,  2.85it/s]Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.85it/s]Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  2.74it/s]Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.18it/s]Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  2.81it/s]
+Traceback (most recent call last):
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_m2_position_conditional.py", line 758, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_m2_position_conditional.py", line 679, in main
+    all_scores["m2_position_conditional"], excluded_by_regime["m2_position_conditional"] = score_dynamic_segments(
+                                                                                           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_m2_position_conditional.py", line 315, in score_dynamic_segments
+    outputs = model(**normalize_cache_inputs(model_inputs))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py", line 1717, in forward
+    outputs = self.model(
+              ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/generic.py", line 918, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py", line 1389, in forward
+    layer_outputs = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/modeling_layers.py", line 94, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/deprecation.py", line 172, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py", line 1176, in forward
+    hidden_states = self.mamba(
+                    ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py", line 865, in forward
+    return self.torch_forward(hidden_states, cache_params, cache_position, attention_mask)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py", line 794, in torch_forward
+    Y_diag = (M[..., None] * hidden_states[:, :, None]).sum(dim=3)
+              ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB. GPU 0 has a total capacity of 94.97 GiB of which 1.28 GiB is free. Including non-PyTorch memory, this process has 93.68 GiB memory in use. Of the allocated memory 92.97 GiB is allocated by PyTorch, and 66.54 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

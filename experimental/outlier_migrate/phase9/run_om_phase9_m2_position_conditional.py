@@ -112,7 +112,7 @@ def resolve_model_snapshot_light(model_id: str) -> dict[str, Any]:
     }
 
 
-def parse_prompt_file(prompt_file: Path) -> tuple[list[dict[str, Any]], list[str]]:
+def parse_prompt_file(prompt_file: Path, *, trace_count: int) -> tuple[list[dict[str, Any]], list[str]]:
     reasons: list[str] = []
     prompts: list[dict[str, Any]] = []
     if not prompt_file.is_file():
@@ -141,21 +141,25 @@ def parse_prompt_file(prompt_file: Path) -> tuple[list[dict[str, Any]], list[str
             reasons.append(f"prompt {index}: source_file mismatch")
         if item.get("prompt_id") != checker.expected_prompt_id(index):
             reasons.append(f"prompt {index}: prompt_id mismatch")
-    if [row["index"] for row in prompts] != list(range(checker.TRACE_COUNT)):
-        reasons.append("prompt indices are not exactly 0-23")
-    if len(prompts) != checker.TRACE_COUNT:
-        reasons.append("prompt count is not 24")
+    prompts = [row for row in prompts if int(row["index"]) < trace_count]
+    if [row["index"] for row in prompts] != list(range(trace_count)):
+        reasons.append(f"prompt indices are not exactly 0-{trace_count - 1}")
+    if len(prompts) != trace_count:
+        reasons.append(f"prompt count is not {trace_count}")
     return prompts, reasons
 
 
-def build_prompt_manifest(prompt_file: Path) -> tuple[dict[str, Any], list[str]]:
-    prompts, reasons = parse_prompt_file(prompt_file)
+def build_prompt_manifest(prompt_file: Path, *, trace_count: int) -> tuple[dict[str, Any], list[str]]:
+    prompts, reasons = parse_prompt_file(prompt_file, trace_count=trace_count)
+    selection = "deterministic_indices_0_23"
+    if trace_count != checker.TRACE_COUNT:
+        selection = f"deterministic_indices_0_{trace_count - 1}_vacation_revision"
     return (
         {
             "schema_version": f"{SCHEMA_VERSION}_prompt_manifest",
             "created_at_utc": shared.utc_now(),
             "source": "AIME-2025",
-            "selection": "deterministic_indices_0_23",
+            "selection": selection,
             "source_dataset": checker.EXPECTED_PROMPT_SOURCE_DATASET,
             "source_dataset_commit": checker.EXPECTED_PROMPT_SOURCE_COMMIT,
             "source_file_order": ["aime2025-I.jsonl", "aime2025-II.jsonl"],
@@ -168,6 +172,44 @@ def build_prompt_manifest(prompt_file: Path) -> tuple[dict[str, Any], list[str]]
         },
         reasons,
     )
+
+
+def write_vacation_adaptation(run_dir: Path, *, trace_count: int) -> None:
+    if trace_count == checker.TRACE_COUNT:
+        return
+    shared.write_json(
+        run_dir / "vacation_adaptation.json",
+        {
+            "schema_version": f"{SCHEMA_VERSION}_vacation_adaptation",
+            "created_at_utc": shared.utc_now(),
+            "authority": "Vacation mode V2/V4",
+            "adaptation": "deterministic_trace_count_reduction",
+            "original_trace_count": checker.TRACE_COUNT,
+            "effective_trace_count": trace_count,
+            "prompt_indices": list(range(trace_count)),
+            "reason": (
+                "The 24-trace Granite-Small M2 packet completed BF16/static-1/static-3 scoring "
+                "but OOMed entering dynamic M2; rerunning the full 24 traces would block paper "
+                "progress during vacation mode. The fixed first-12 trace slice preserves the M2 "
+                "scientific question with wider uncertainty."
+            ),
+            "invalidates_if": "Human requires the original 24-trace preregistered M2 packet before interpreting M2.",
+        },
+    )
+
+
+def copy_filtered_jsonl_gz(source: Path, dest: Path, *, prompt_indices: set[int]) -> int:
+    count = 0
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with gzip.open(source, "rt", encoding="utf-8") as src, gzip.open(dest, "wt", encoding="utf-8") as out:
+        for line in src:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if int(row.get("prompt_index", -1)) in prompt_indices:
+                out.write(json.dumps(row, sort_keys=True) + "\n")
+                count += 1
+    return count
 
 
 def write_failure_packet(run_dir: Path, run_events_path: Path, exc: BaseException | str) -> None:
@@ -205,6 +247,31 @@ def release_model_memory(*objects: Any) -> None:
         pass
 
 
+def move_tensor_state(obj: Any, device: Any) -> Any:
+    try:
+        import torch
+    except Exception:
+        return obj
+    if torch.is_tensor(obj):
+        return obj.to(device)
+    if isinstance(obj, list):
+        for index, item in enumerate(list(obj)):
+            obj[index] = move_tensor_state(item, device)
+        return obj
+    if isinstance(obj, tuple):
+        return tuple(move_tensor_state(item, device) for item in obj)
+    if isinstance(obj, dict):
+        for key, item in list(obj.items()):
+            obj[key] = move_tensor_state(item, device)
+        return obj
+    for attr in ["conv_states", "ssm_states", "key_cache", "value_cache"]:
+        states = getattr(obj, attr, None)
+        if isinstance(states, list):
+            for index, item in enumerate(list(states)):
+                states[index] = move_tensor_state(item, device)
+    return obj
+
+
 def top_channels(values: list[float], count: int) -> list[int]:
     return sorted(range(len(values)), key=lambda channel: (-float(values[channel]), channel))[:count]
 
@@ -212,6 +279,7 @@ def top_channels(values: list[float], count: int) -> list[int]:
 def build_protected_sets(rows: list[dict[str, Any]]) -> dict[str, Any]:
     by_layer_position: dict[int, dict[int, list[list[float]]]] = defaultdict(lambda: defaultdict(list))
     layer_names: dict[int, str] = {}
+    prompt_indices = sorted({int(row["prompt_index"]) for row in rows})
     for row in rows:
         layer_index = int(row["layer_index"])
         position = int(row["decode_position"])
@@ -220,7 +288,8 @@ def build_protected_sets(rows: list[dict[str, Any]]) -> dict[str, Any]:
     protected: dict[str, Any] = {
         "schema_version": f"{SCHEMA_VERSION}_protected_sets",
         "created_at_utc": shared.utc_now(),
-        "selection_basis": "mean absolute layer output activation over fixed 24-trace AIME-2025 set",
+        "selection_basis": "mean absolute layer output activation over fixed AIME-2025 trace set",
+        "prompt_indices": prompt_indices,
         "tie_break": "lower channel index",
         "random_bin_assignment": {
             "seed": checker.BOOTSTRAP_SEED,
@@ -304,7 +373,7 @@ def score_dynamic_segments(
                     input_ids = encoded["input_ids"].to(device)
                     attention_mask = encoded["attention_mask"].to(device)
                     nll = torch.zeros((len(batch),), device=device, dtype=torch.float64)
-                    with torch.autocast("cuda", dtype=torch.float16, enabled=torch.cuda.is_available()):
+                    with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16, enabled=torch.cuda.is_available()):
                         cache_position = torch.arange(input_ids.shape[1], device=device)
                         model_inputs = model.prepare_inputs_for_generation(
                             input_ids=input_ids,
@@ -326,8 +395,7 @@ def score_dynamic_segments(
                     if logits is not None:
                         logits = logits.to(device)
                     if past_key_values is not None:
-                        # Cache tensors are already CUDA tensors; helpers align dtype as needed.
-                        pass
+                        past_key_values = move_tensor_state(past_key_values, device)
                 with torch.inference_mode(), torch.autocast("cuda", dtype=torch.float16, enabled=torch.cuda.is_available()):
                     for decode_position in range(int(segment["start"]), int(segment["end"]) + 1):
                         current_target = target_tensor[:, decode_position - 1]
@@ -357,6 +425,14 @@ def score_dynamic_segments(
                         if past_key_values is None:
                             raise RuntimeError(f"model dropped cache for {regime_name} at {decode_position}")
                         logits = outputs.logits[:, -1, :].detach()
+                if past_key_values is not None:
+                    past_key_values = move_tensor_state(past_key_values, "cpu")
+                if attention_mask is not None:
+                    attention_mask = attention_mask.cpu()
+                if logits is not None:
+                    logits = logits.cpu()
+                if nll is not None:
+                    nll = nll.cpu()
                 del target_tensor, model, tokenizer
                 release_model_memory()
             assert nll is not None
@@ -398,6 +474,18 @@ def summarize(values: list[float]) -> dict[str, Any]:
         "bootstrap_ci95": checker.bootstrap_median(values),
         "included_trace_count": len(values),
     }
+
+
+def write_score_cache(run_dir: Path, regime: str, scores: dict[int, dict[str, float]]) -> None:
+    shared.write_json(
+        run_dir / "score_cache" / f"{regime}.json",
+        {
+            "schema_version": f"{SCHEMA_VERSION}_score_cache",
+            "created_at_utc": shared.utc_now(),
+            "regime": regime,
+            "scores": {str(index): row for index, row in sorted(scores.items())},
+        },
+    )
 
 
 def build_metrics(
@@ -490,6 +578,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--device", default="auto")
     parser.add_argument("--dtype", choices=["bfloat16", "float16", "float32"], default="bfloat16")
     parser.add_argument("--reuse-activation-run-dir", type=Path)
+    parser.add_argument("--reuse-trace-run-dir", type=Path)
+    parser.add_argument("--trace-count", type=int, default=checker.TRACE_COUNT)
     args = parser.parse_args(argv)
 
     if args.model_id not in checker.MODEL_SNAPSHOTS:
@@ -500,6 +590,8 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("canonical AIME-2025 indices 0-23 prompt file hash drifted")
     if args.seed != checker.BOOTSTRAP_SEED:
         raise SystemExit("M2 preregisters bootstrap/random seed 20260513")
+    if args.trace_count != checker.TRACE_COUNT and not (12 <= args.trace_count < checker.TRACE_COUNT):
+        raise SystemExit("vacation trace-count adaptation requires 12 <= trace-count < 24")
 
     run_dir = args.results_dir / args.run_id
     if run_dir.exists():
@@ -531,7 +623,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception:
         pass
 
-    prompt_manifest, prompt_reasons = build_prompt_manifest(args.prompt_file)
+    prompt_manifest, prompt_reasons = build_prompt_manifest(args.prompt_file, trace_count=args.trace_count)
     environment = shared.build_environment(schema_version=SCHEMA_VERSION)
     model_provenance = resolve_model_snapshot_light(args.model_id)
     command_metadata = {
@@ -543,6 +635,8 @@ def main(argv: list[str] | None = None) -> int:
         "run_dir": str(run_dir),
         "batch_size": args.batch_size,
         "reuse_activation_run_dir": str(args.reuse_activation_run_dir) if args.reuse_activation_run_dir else None,
+        "reuse_trace_run_dir": str(args.reuse_trace_run_dir) if args.reuse_trace_run_dir else None,
+        "trace_count": args.trace_count,
     }
     random_seed = {
         "schema_version": f"{SCHEMA_VERSION}_random_seed",
@@ -573,6 +667,7 @@ def main(argv: list[str] | None = None) -> int:
         "forbidden_methods": ["AWQ-style activation-aware scaling", "SmoothQuant-style activation folding"],
     }
     shared.write_json(run_dir / "prompt_manifest.json", prompt_manifest)
+    write_vacation_adaptation(run_dir, trace_count=args.trace_count)
     shared.write_json(run_dir / "environment.json", environment)
     phase4_runner.write_environment_text(run_dir / "environment.txt", environment)
     shared.write_json(run_dir / "model_provenance.json", model_provenance)
@@ -597,12 +692,22 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     prompts = prompt_manifest["prompts"]
+    prompt_indices = {int(row["index"]) for row in prompts}
     activation_path = run_dir / "activation_magnitudes.jsonl.gz"
     trace_path = run_dir / "bf16_traces.jsonl.gz"
     if args.reuse_activation_run_dir:
         reuse_dir = args.reuse_activation_run_dir.resolve()
-        for rel in ["activation_magnitudes.jsonl.gz", "activation_magnitude_manifest.json"]:
-            shutil.copy2(reuse_dir / rel, run_dir / rel)
+        copied_rows = copy_filtered_jsonl_gz(
+            reuse_dir / "activation_magnitudes.jsonl.gz",
+            activation_path,
+            prompt_indices=prompt_indices,
+        )
+        activation_manifest = json.loads((reuse_dir / "activation_magnitude_manifest.json").read_text(encoding="utf-8"))
+        activation_manifest["created_at_utc"] = shared.utc_now()
+        activation_manifest["source_run_dir"] = str(reuse_dir)
+        activation_manifest["vacation_filtered_prompt_indices"] = sorted(prompt_indices)
+        activation_manifest["filtered_row_count"] = copied_rows
+        shared.write_json(run_dir / "activation_magnitude_manifest.json", activation_manifest)
     else:
         model, tokenizer, device = shared.load_model_and_tokenizer(
             model_provenance, dtype_name=args.dtype, device_name=args.device
@@ -624,20 +729,37 @@ def main(argv: list[str] | None = None) -> int:
     protected_sets = build_protected_sets(list(shared.iter_activation_rows(activation_path)))
     shared.write_json(run_dir / "protected_sets.json", protected_sets)
 
-    model, tokenizer, device = shared.load_model_and_tokenizer(
-        model_provenance, dtype_name=args.dtype, device_name=args.device
-    )
-    trace_manifest = phase4_runner.generate_bf16_traces(
-        model=model,
-        tokenizer=tokenizer,
-        device=device,
-        prompts=prompts,
-        max_new_tokens=checker.SCORING_POSITION,
-        batch_size=args.batch_size,
-        output_path=trace_path,
-        run_events_path=run_events_path,
-    )
-    shared.write_json(run_dir / "bf16_trace_manifest.json", trace_manifest)
+    if args.reuse_trace_run_dir:
+        reuse_trace_dir = args.reuse_trace_run_dir.resolve()
+        copied_traces = copy_filtered_jsonl_gz(
+            reuse_trace_dir / "bf16_traces.jsonl.gz",
+            trace_path,
+            prompt_indices=prompt_indices,
+        )
+        trace_manifest = json.loads((reuse_trace_dir / "bf16_trace_manifest.json").read_text(encoding="utf-8"))
+        trace_manifest["created_at_utc"] = shared.utc_now()
+        trace_manifest["source_run_dir"] = str(reuse_trace_dir)
+        trace_manifest["vacation_filtered_prompt_indices"] = sorted(prompt_indices)
+        trace_manifest["filtered_trace_count"] = copied_traces
+        shared.write_json(run_dir / "bf16_trace_manifest.json", trace_manifest)
+        model, tokenizer, device = shared.load_model_and_tokenizer(
+            model_provenance, dtype_name=args.dtype, device_name=args.device
+        )
+    else:
+        model, tokenizer, device = shared.load_model_and_tokenizer(
+            model_provenance, dtype_name=args.dtype, device_name=args.device
+        )
+        trace_manifest = phase4_runner.generate_bf16_traces(
+            model=model,
+            tokenizer=tokenizer,
+            device=device,
+            prompts=prompts,
+            max_new_tokens=checker.SCORING_POSITION,
+            batch_size=args.batch_size,
+            output_path=trace_path,
+            run_events_path=run_events_path,
+        )
+        shared.write_json(run_dir / "bf16_trace_manifest.json", trace_manifest)
     target_tokens = phase4_runner.load_trace_tokens(trace_path)
 
     all_scores: dict[str, dict[int, dict[str, float]]] = {}
@@ -653,6 +775,7 @@ def main(argv: list[str] | None = None) -> int:
         run_events_path=run_events_path,
         regime_name="bf16",
     )
+    write_score_cache(run_dir, "bf16", all_scores["bf16"])
     del model, tokenizer, device
     release_model_memory()
     excluded_by_regime: dict[str, Any] = {}
@@ -674,6 +797,7 @@ def main(argv: list[str] | None = None) -> int:
             run_events_path=run_events_path,
             regime_name=regime,
         )
+        write_score_cache(run_dir, regime, all_scores[regime])
         del model, tokenizer, device
         release_model_memory()
     all_scores["m2_position_conditional"], excluded_by_regime["m2_position_conditional"] = score_dynamic_segments(
@@ -688,6 +812,7 @@ def main(argv: list[str] | None = None) -> int:
         run_events_path=run_events_path,
         regime_name="m2_position_conditional",
     )
+    write_score_cache(run_dir, "m2_position_conditional", all_scores["m2_position_conditional"])
     all_scores["random_bin_assignment"], excluded_by_regime["random_bin_assignment"] = score_dynamic_segments(
         model_provenance=model_provenance,
         prompts=prompts,
@@ -700,6 +825,7 @@ def main(argv: list[str] | None = None) -> int:
         run_events_path=run_events_path,
         regime_name="random_bin_assignment",
     )
+    write_score_cache(run_dir, "random_bin_assignment", all_scores["random_bin_assignment"])
     shared.write_json(
         run_dir / "excluded_tensors.json",
         {"schema_version": f"{SCHEMA_VERSION}_excluded_tensors", "created_at_utc": shared.utc_now(), "by_regime": excluded_by_regime},
