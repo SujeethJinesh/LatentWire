@@ -15,7 +15,7 @@ import traceback
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from statistics import mean
+from statistics import mean, median
 from typing import Any
 
 
@@ -868,32 +868,86 @@ def main(argv: list[str] | None = None) -> int:
         write_score_cache(run_dir, regime, all_scores[regime])
         del model, tokenizer, device
         release_model_memory()
-    all_scores["m2_position_conditional"], excluded_by_regime["m2_position_conditional"] = score_dynamic_segments(
-        model_provenance=model_provenance,
-        prompts=prompts,
-        target_tokens=target_tokens,
-        protected_sets=protected_sets,
-        segments=M2_SEGMENTS,
-        batch_size=args.batch_size,
-        dtype_name=args.dtype,
-        device_name=args.device,
-        run_events_path=run_events_path,
-        regime_name="m2_position_conditional",
+    cached_m2 = (
+        read_score_cache(score_reuse_dir, "m2_position_conditional", expected_prompt_indices=expected_prompt_indices)
+        if score_reuse_dir
+        else None
     )
-    write_score_cache(run_dir, "m2_position_conditional", all_scores["m2_position_conditional"])
-    all_scores["random_bin_assignment"], excluded_by_regime["random_bin_assignment"] = score_dynamic_segments(
-        model_provenance=model_provenance,
-        prompts=prompts,
-        target_tokens=target_tokens,
-        protected_sets=protected_sets,
-        segments=RANDOM_SEGMENTS,
-        batch_size=args.batch_size,
-        dtype_name=args.dtype,
-        device_name=args.device,
-        run_events_path=run_events_path,
-        regime_name="random_bin_assignment",
+    if cached_m2 is not None:
+        all_scores["m2_position_conditional"] = cached_m2
+        write_score_cache(run_dir, "m2_position_conditional", all_scores["m2_position_conditional"])
+        excluded_by_regime["m2_position_conditional"] = {
+            "regime": "m2_position_conditional",
+            "segments": M2_SEGMENTS,
+            "reused_score_cache": str(score_reuse_dir),
+        }
+        with run_events_path.open("a", encoding="utf-8") as event_handle:
+            event_handle.write(
+                json.dumps(
+                    {
+                        "created_at_utc": shared.utc_now(),
+                        "event": "reused_score_cache",
+                        "regime": "m2_position_conditional",
+                        "source_run_dir": str(score_reuse_dir),
+                    },
+                    sort_keys=True,
+                )
+                + "\n"
+            )
+    else:
+        all_scores["m2_position_conditional"], excluded_by_regime["m2_position_conditional"] = score_dynamic_segments(
+            model_provenance=model_provenance,
+            prompts=prompts,
+            target_tokens=target_tokens,
+            protected_sets=protected_sets,
+            segments=M2_SEGMENTS,
+            batch_size=args.batch_size,
+            dtype_name=args.dtype,
+            device_name=args.device,
+            run_events_path=run_events_path,
+            regime_name="m2_position_conditional",
+        )
+        write_score_cache(run_dir, "m2_position_conditional", all_scores["m2_position_conditional"])
+    cached_random = (
+        read_score_cache(score_reuse_dir, "random_bin_assignment", expected_prompt_indices=expected_prompt_indices)
+        if score_reuse_dir
+        else None
     )
-    write_score_cache(run_dir, "random_bin_assignment", all_scores["random_bin_assignment"])
+    if cached_random is not None:
+        all_scores["random_bin_assignment"] = cached_random
+        write_score_cache(run_dir, "random_bin_assignment", all_scores["random_bin_assignment"])
+        excluded_by_regime["random_bin_assignment"] = {
+            "regime": "random_bin_assignment",
+            "segments": RANDOM_SEGMENTS,
+            "reused_score_cache": str(score_reuse_dir),
+        }
+        with run_events_path.open("a", encoding="utf-8") as event_handle:
+            event_handle.write(
+                json.dumps(
+                    {
+                        "created_at_utc": shared.utc_now(),
+                        "event": "reused_score_cache",
+                        "regime": "random_bin_assignment",
+                        "source_run_dir": str(score_reuse_dir),
+                    },
+                    sort_keys=True,
+                )
+                + "\n"
+            )
+    else:
+        all_scores["random_bin_assignment"], excluded_by_regime["random_bin_assignment"] = score_dynamic_segments(
+            model_provenance=model_provenance,
+            prompts=prompts,
+            target_tokens=target_tokens,
+            protected_sets=protected_sets,
+            segments=RANDOM_SEGMENTS,
+            batch_size=args.batch_size,
+            dtype_name=args.dtype,
+            device_name=args.device,
+            run_events_path=run_events_path,
+            regime_name="random_bin_assignment",
+        )
+        write_score_cache(run_dir, "random_bin_assignment", all_scores["random_bin_assignment"])
     shared.write_json(
         run_dir / "excluded_tensors.json",
         {"schema_version": f"{SCHEMA_VERSION}_excluded_tensors", "created_at_utc": shared.utc_now(), "by_regime": excluded_by_regime},
