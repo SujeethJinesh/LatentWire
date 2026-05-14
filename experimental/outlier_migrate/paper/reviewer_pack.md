@@ -1,8 +1,13 @@
-# OutlierMigrate Reviewer Pack
+# Decode-Position Channel Drift Reviewer Pack
 
-- status: characterization plus negative intervention result; Phase 0 dynamic-outlier gate passed; Phase 1 replicated at scale; partial Phase 2 Nemotron-3 validation passed; Phase 3 static-union intervention killed; not camera-ready final
-- current decision: `KILL_OM_PHASE3_INTERVENTION_FAILS`
-- current paper readiness: not a positive-method or systems paper; the attempted migration-aware static protection intervention failed, and deferred Qwen3.6/Kimi validation plus audit gaps block any camera-ready final claim
+- status: measurement/mechanism paper draft; Granite Phase 0/1 passed, partial
+  Nemotron-3 passed, DeepSeek Transformer control passed, Falcon-H1
+  within-lineage replication passed; Phase 3, Phase 4, and Phase 9 M2
+  intervention attempts killed; not camera-ready final
+- current decision: `KILL_M2_RANDOM_CONTROL_BEATS`
+- current paper readiness: viable COLM workshop characterization/mechanism
+  draft after Draft 0 integration; not a positive-method or systems paper
+  because no tested protection method has survived matched controls
 
 ## Paper Link
 
@@ -11,41 +16,46 @@
 
 ## Current Claim
 
-OutlierMigrate now supports this narrow characterization claim: on two
-same-family Granite hybrid model sizes, top-1% high-magnitude activation
-channels at decode position 100 are not rank-stationary by the final
-preregistered decode position under the preregistered migration metric. A
-partial cross-family Nemotron-3 check also passes under the same metric.
+The draft now supports this characterization claim: in long reasoning traces,
+the identity of top-magnitude channels changes substantially with decode
+position across multiple measured architectures. The systems-relevant
+component is strict set-leaving: channels that are in the early top-1% set
+often leave that set later, rather than merely shuffling rank inside it.
 
-The Phase 3 intervention result is negative. Simple symmetric INT4 weight
-quantization with FP16 activations and a static union protected set did not
-recover the BF16-vs-static-1% perplexity gap robustly. The result should be
-read as: migration is real and static set membership is unstable, but simple
-union-set protection is insufficient. This is not full cross-validation and
-not evidence that a migration-aware intervention improves quality, latency,
-memory, or robustness. Qwen3.6 and Kimi Linear are deferred pending runtime
-compatibility.
+The method claim is negative. Three W4A16 protection attempts have failed:
+static union protection on Granite-Tiny, static union protection on
+Granite-Small with a longer scoring window, and Phase 9 M2
+position-conditioned set switching. M2 is especially important because the
+random-bin negative control beats the intended position-conditioned assignment
+by the preregistered kill margin.
+
+This is not full cross-validation and not evidence that a channel-drift-aware
+intervention improves quality, latency, memory, or robustness. Qwen3.6 and
+Kimi Linear remain deferred. The paper should be framed as a measurement and
+mechanism paper with honest failed-method evidence, not as a positive method.
 
 Important novelty boundary: do not claim this is the first dynamic-outlier
 finding in Mamba. QMamba and OuroMamba already document dynamic hidden-state
-or activation-outlier behavior in vision Mamba settings. The paper's narrow
-new contribution is measuring the dynamic regime in hybrid language-model
-long reasoning traces under preregistered Phase 0/1 gates.
+or activation-outlier behavior in vision Mamba settings. The new contribution
+is the long-decode language-model measurement, cross-architecture
+decomposition, and negative evidence about simple static/position-binned
+protected-channel methods.
 
 The strict set-leaving decomposition is post-hoc interpretability for static
-channel-protection relevance. It is not the preregistered gate metric; checker
-decisions remain based on the original preregistered migration fraction.
+channel-protection relevance. It is not the original preregistered gate metric;
+checker decisions remain based on their frozen packet-specific decision rules.
 
 ## Claimed / Not Claimed
 
 Claimed:
 
-- decode-time outlier rank migration under preregistered Phase 0/1 metrics on
-  two Granite hybrid model sizes;
-- strict set-leaving is a large component of the measured migration signal;
-- partial Nemotron-3 replication reduces Granite-family-specific risk;
-- static union-set protection fails under the preregistered Phase 3
-  intervention protocol.
+- decode-position channel drift under preregistered Phase 0/1 metrics on two
+  Granite hybrid model sizes;
+- strict set-leaving is a large component of the measured drift signal;
+- partial Nemotron-3, DeepSeek-R1-Distill, and Falcon-H1 results reduce
+  Granite-family-specific risk;
+- static union protection and simple position-conditioned protected-set
+  switching fail under their frozen gates.
 
 Not claimed:
 
@@ -111,6 +121,61 @@ Median recovery was preregistered because the ratio can become very large when
 the static gap is small; mean recovery is diagnostic only, not the gate
 statistic.
 
+## Phase 4 Intervention Result
+
+| Item | Exact value |
+|---|---:|
+| Checker decision | `KILL_OM_PHASE4_INTERVENTION_FAILS` |
+| Artifact complete | true |
+| Primary union median recovery | 0.000000000000 |
+| Primary union 95% CI | [0.000000000000, 0.069540641955] |
+| No-recoverable-static-gap traces | 9 / 24 |
+| No-recoverable-static-gap fraction | 0.375000000000 |
+| Static-2% matched-budget median recovery | 0.000000000000 |
+| Magnitude-average median recovery | 0.000000000000 |
+| Control stop condition | false |
+
+Interpretation: Phase 4 rules out the simplest explanation that Phase 3 failed
+only because Granite-Tiny was too robust or because the 64-token scoring
+window was too short. The larger Granite-Small model and 512-token window
+still did not produce a positive static-union method.
+
+## Phase 5'/7 and Phase 9 Premise Evidence
+
+| Packet | Decision | Original drift | Strict set-leaving | Within-set shuffling |
+|---|---|---:|---:|---:|
+| DeepSeek-R1-Distill Phase 5' | `DYNAMIC_REGIME_TRANSFORMER` | 0.839378720238 | 0.670572916667 | 0.165736607143 |
+| Falcon-H1 Phase 7 | `WITHIN_LINEAGE_2_CONSISTENT` | 0.783354377104 | 0.673611111111 | 0.097537878788 |
+| Phase 9 Step 9.0 Granite-Small | `PASS_PHASE9_PREMISE_CHECK` | 0.836763211382 | 0.566234756098 | 0.270934959350 |
+| Phase 9 Step 9.0 Nemotron-3 | `PASS_PHASE9_PREMISE_CHECK` | 0.801667853751 | 0.533713200380 | 0.269082383666 |
+| Phase 9 Step 9.0 DeepSeek | `PASS_PHASE9_PREMISE_CHECK` | 0.834914434524 | 0.670572916667 | 0.165736607143 |
+
+Phase 9 Step 9.0 also reports overall adjacent-bin top-1% Jaccard overlap
+0.745999647119. That justified testing position-binned M2, but it did not
+make M2 pass.
+
+## Phase 9 M2 Result
+
+| Item | Exact value |
+|---|---:|
+| Checker decision | `KILL_M2_RANDOM_CONTROL_BEATS` |
+| Artifact complete | true |
+| Vacation trace count | 12 |
+| Included positive-static-gap traces | 8 |
+| No-recoverable-static-gap traces | 4 / 12 |
+| M2 median recovery | -0.866837313391 |
+| M2 95% CI | [-3.435289251335, 0.595238665766] |
+| Static-3% matched-cost median recovery | -0.625927638959 |
+| Random-bin median recovery | -0.199289023223 |
+| M2 minus static-3% median | -0.240909674432 |
+| M2 minus random-bin median | -0.667548290168 |
+| Kill reason | random-bin control beat M2 by >0.10 |
+
+Interpretation: M2 is not a positive method on Granite-Small. The random-bin
+control is also bad in absolute terms, but it is less bad than the intended
+position-conditioned assignment, so the position-bin switching rule fails its
+negative-control test.
+
 ## Artifact Paths
 
 - Phase 0 preregistration: `experimental/outlier_migrate/phase0/preregister_om_phase0.md`
@@ -154,6 +219,18 @@ statistic.
 - Phase 3 diagnostic: `experimental/outlier_migrate/phase3/diagnostic.md`
 - Layer-stratified analysis: `experimental/outlier_migrate/phase3/results/layer_stratified_migration.md`
 - Layer-stratified figure source: `experimental/outlier_migrate/phase3/results/layer_stratified_migration.json`
+- Phase 4 result packet: `experimental/outlier_migrate/phase4/results/om_phase4_20260511T054000Z`
+- Phase 4 checker output: `experimental/outlier_migrate/phase4/results/om_phase4_20260511T054000Z/checker_result.json`
+- Phase 5' result packet: `experimental/outlier_migrate/phase5_prime/results/om_phase5p_20260512T053800Z`
+- Phase 5' checker output: `experimental/outlier_migrate/phase5_prime/results/om_phase5p_20260512T053800Z/checker_result.json`
+- Experiment D/E analysis directory: `experimental/outlier_migrate/decomposition_analysis`
+- Phase 7 result packet: `experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z`
+- Phase 7 checker output: `experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/checker_result.json`
+- Phase 9 Step 9.0 decomposition: `experimental/outlier_migrate/phase9/step9_0_decomposition_replication.md`
+- Phase 9 Step 9.0 bin overlap: `experimental/outlier_migrate/phase9/step9_0_bin_overlap_analysis.md`
+- Phase 9 M2 result packet: `experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z`
+- Phase 9 M2 checker output: `experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z/checker_result.json`
+- Phase 9 M2 diagnostic: `experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z/diagnostic.md`
 
 ## Related-Work Sources Added
 
@@ -195,12 +272,15 @@ still verify every bibliography entry before submission.
 
 ## Reviewer Risks
 
-- Phase 0 and Phase 1 are same-family Granite measurement evidence; Phase 2 is a partial
-  Nemotron-3 check, not completed Qwen3.6/Kimi cross-validation.
+- Phase 0 and Phase 1 are same-family Granite measurement evidence; Phase 2 is
+  a partial Nemotron-3 check, not completed Qwen3.6/Kimi cross-validation.
 - Do not describe the packet as camera-ready, full cross-validation, a
   positive systems method, or a validated positive-method branch.
-- Do not describe union-set protection as successful. Phase 3 killed with
-  `KILL_OM_PHASE3_INTERVENTION_FAILS`.
+- Do not describe union-set protection, Granite-Small union protection, or M2
+  position-bin switching as successful. They killed with
+  `KILL_OM_PHASE3_INTERVENTION_FAILS`,
+  `KILL_OM_PHASE4_INTERVENTION_FAILS`, and
+  `KILL_M2_RANDOM_CONTROL_BEATS`.
 - No systems-method claim remains: no latency, throughput, memory, quality,
   or deployable quantization recipe is validated.
 - The paper does not yet include a contamination audit or independent seed
@@ -208,11 +288,12 @@ still verify every bibliography entry before submission.
 - The paper does not yet include a complete exploratory-history audit for the
   top-1% fraction, rank-delta threshold, decode positions, prompt slice, or
   model choices.
-- The result says outlier ranks migrate; the attempted static-union
-  intervention did not improve the preregistered recovery metric robustly.
+- The result says decode-position top-channel rank dynamics are real on the
+  measured packets; the attempted interventions did not improve the
+  preregistered recovery metrics robustly.
 - Dynamic outliers are not novel to Mamba broadly; QMamba and OuroMamba are
-  prior evidence in vision Mamba. The paper must keep the claim scoped to
-  hybrid LLM long reasoning traces.
+  prior evidence in vision Mamba. The paper should use the broader
+  decode-position channel drift frame rather than a Mamba-specific title.
 - Static-protection systems (BlockDialect, AWQ, SmoothQuant, QuaRot, KVQuant)
   are deployment motivation, not defeated baselines. The paper can say they
   motivate validation of static maps on hybrid decode, not that they fail.
@@ -226,17 +307,18 @@ still verify every bibliography entry before submission.
 
 ## Saturated / Alive / Next Branch
 
-- saturated: Phase 0 and Phase 1 decision surfaces are closed and passed.
-- alive: characterization paper candidate for dynamic outlier migration in
-  Granite hybrid decode traces with a partial Nemotron-3 cross-family pass and
-  a negative Phase 3 intervention.
-- promoted: the dynamic-outlier hypothesis beyond Granite-family-only framing,
-  while Qwen3.6/Kimi remain deferred.
-- weakened: a fixed position-100 outlier-map interpretation on the Granite
-  Phase 0 and Phase 1 rank-migration surfaces.
+- saturated: Phase 0, Phase 1, Phase 2 partial Nemotron-3, Phase 5',
+  Experiment D/E, Phase 7, and Phase 9 Step 9.0 measurement surfaces are
+  closed for the current draft.
+- killed as methods: Phase 3 static union, Phase 4 Granite-Small union, and
+  Phase 9 M2 position-bin switching.
+- alive: COLM workshop characterization/mechanism paper on decode-position
+  channel drift and strict set-leaving across measured architectures.
+- promoted: the broad decode-position channel drift hypothesis beyond
+  Granite-family-only or Mamba-specific framing.
+- weakened: a fixed position-100 protected-map interpretation and the idea
+  that simple static or position-binned protected sets are enough.
 - not established: completed cross-model transfer, delta-rule linear-attention
   validation, RWKV-7/GLA generalization, or a positive intervention method.
-- next exact gate: committee review of the revised paper under the
-  characterization plus negative-intervention framing; positive-method
-  submission remains blocked until Qwen3.6/Kimi validation and a future
-  migration-aware intervention pass.
+- next exact gate: committee review of Draft 0, then M10 on Granite-Small if
+  vacation-mode execution continues after the paper pass.

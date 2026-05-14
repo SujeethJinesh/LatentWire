@@ -764,3 +764,44 @@ Interpretation:
 - Under vacation-mode D3, the next action is paper Draft 0 before any further
   GPU method work, then M10 on Granite-Small rather than M2 on additional
   models.
+
+## OutlierMigrate Draft 0 Integration After M2 (2026-05-15)
+
+Draft 0 has been integrated after the M2 kill.
+
+Updated files:
+
+- `experimental/outlier_migrate/paper/outlier_migrate_colm2026.tex`
+- `experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf`
+- `experimental/outlier_migrate/paper/reviewer_pack.md`
+
+Build:
+
+- `experimental/outlier_migrate/paper/build.sh` exited 0.
+- TeX emitted underfull-box and annotation warnings, but wrote
+  `outlier_migrate_colm2026.pdf`.
+
+Framing changes:
+
+- Title changed to `Decode-Position Channel Drift in Long Reasoning Traces`.
+- The paper now frames the result as a measurement/mechanism contribution, not
+  a Mamba-specific outlier-migration or positive-method paper.
+- Phase 5' DeepSeek, Phase 7 Falcon-H1, Phase 9 Step 9.0, and Phase 9 M2 are
+  integrated into the abstract, introduction, results, discussion,
+  limitations, and reproducibility statement.
+- The method story is explicitly negative: Phase 3, Phase 4, and M2 all fail.
+  The paper says simple static union sets and simple position-bin switching do
+  not solve decode-position channel drift under the tested W4A16 setup.
+
+Current paper status:
+
+- COLM workshop characterization/mechanism draft: yes, increasingly coherent.
+- Positive-method paper: no.
+- MLSys/ICLR-ready method paper: no; a future positive method still needs to
+  pass.
+
+Next action:
+
+- Run committee review of Draft 0.
+- If continuing experiments after the paper pass, attempt M10 on Granite-Small
+  per vacation-mode D3/D4 instead of running M2 on additional models.
