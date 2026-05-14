@@ -805,3 +805,24 @@ Next action:
 - Run committee review of Draft 0.
 - If continuing experiments after the paper pass, attempt M10 on Granite-Small
   per vacation-mode D3/D4 instead of running M2 on additional models.
+
+## Draft 0 Committee Review (2026-05-15)
+
+Committee review file:
+
+- `experimental/outlier_migrate/paper/committee_reviews/20260515_draft0_after_m2.md`
+
+Scores:
+
+| Reviewer | Score | Summary |
+|---|---:|---|
+| COLM area chair | 7/10 | Coherent workshop-level measurement/mechanism draft; needs M10/M9 or tighter negative-method thesis for main-conference strength. |
+| MLSys reviewer | 6/10 | Systems motivation is real, but contribution remains diagnostic because no working method, runtime policy, or cost model has landed. |
+| Adversarial reviewer | 7/10 | Overclaiming is mostly controlled; biggest remaining risks are reduced-slice M2, post-hoc decomposition framing, and citation/contamination audit. |
+
+Decision:
+
+- No committee member flagged p-hacking or selective reporting.
+- The paper is not ready as a positive-method paper.
+- Vacation-mode execution should proceed to M10 on Granite-Small after this
+  paper pass.
