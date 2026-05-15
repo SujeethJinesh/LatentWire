@@ -145,6 +145,25 @@ per-vector dense-and-sparse handling or BlockDialect's online activation
 format selection; our current evidence motivates stress-testing those designs
 on hybrid long decode, not declaring them failed.
 
+\paragraph{Dynamic channel and KV-cache policies.}
+Dynamic inference-time policies are closer to the methods we test and fail.
+DecDEC dynamically selects salient activation channels at each decode step and
+fetches residual compensation from CPU memory \citep{park2025decdec}. M2 and
+hard-binned M10 differ in that they switch a precomputed protected-channel or
+scale policy by decode-position bin; M11, now preregistered but not yet run,
+is explicitly designed to test whether smoothing that decision surface avoids
+the boundary discontinuities exposed by M2. KV-cache systems address a
+different tensor. KIVI quantizes key cache per channel and value cache per
+token \citep{liu2024kivi}; PM-KVQ targets long-CoT KV-cache quantization and
+RoPE-induced key-cache distribution shift \citep{liu2025pmkvq}; and
+AttentionPredictor learns to predict future attention scores for KV-cache
+compression and prefetch \citep{yang2025attentionpredictor}. These works
+motivate long-decode inference adaptation, but our measurements are about
+linear-layer activation channel sets. PMPD changes precision across inference
+phases and deeper decode positions \citep{chen2025pmpd}; our current evidence
+points in an orthogonal direction, where later decode positions can require
+different protected channels rather than simply lower precision.
+
 \paragraph{Channel-wise gated recurrence.}
 Recent efficient-recurrence and linear-attention architectures make
 data-dependent channel-wise memory control a central design axis. Gated Linear
@@ -790,7 +809,7 @@ overclaiming the replicated measurement or the failed Phase 3/4/9
 interventions as a validated cross-model positive method; this draft
 explicitly rejects that interpretation until a future intervention pass.
 
-\begin{thebibliography}{20}
+\begin{thebibliography}{25}
 
 \bibitem[Bort(2025)]{bort2025reasoningcosts}
 Julie Bort.
@@ -826,6 +845,43 @@ Huanrui Yang.
 LLMs.
 \newblock arXiv:2602.20191, February 2026.
 \newblock \url{https://arxiv.org/abs/2602.20191}.
+
+\bibitem[Park et~al.(2025)]{park2025decdec}
+Yeonhong Park, Jake Hyun, Hojoon Kim, and Jae W. Lee.
+\newblock DecDEC: A Systems Approach to Advancing Low-Bit LLM Quantization.
+\newblock 19th USENIX Symposium on Operating Systems Design and
+Implementation (OSDI 25), 2025.
+\newblock \url{https://www.usenix.org/system/files/osdi25-park-yeonhong.pdf}.
+
+\bibitem[Liu et~al.(2024)]{liu2024kivi}
+Zirui Liu, Jiayi Yuan, Hongye Jin, Shaochen Zhong, Zhaozhuo Xu, Vladimir
+Braverman, Beidi Chen, and Xia Hu.
+\newblock KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache.
+\newblock ICML 2024.
+\newblock \url{https://arxiv.org/abs/2402.02750}.
+
+\bibitem[Liu et~al.(2025)]{liu2025pmkvq}
+Tengxuan Liu, Shiyao Li, Jiayi Yang, Tianchen Zhao, Feng Zhou, Xiaohui Song,
+Guohao Dai, Shengen Yan, Huazhong Yang, and Yu Wang.
+\newblock PM-KVQ: Progressive Mixed-precision KV Cache Quantization for
+Long-CoT LLMs.
+\newblock arXiv:2505.18610, 2025.
+\newblock \url{https://arxiv.org/abs/2505.18610}.
+
+\bibitem[Yang et~al.(2025)]{yang2025attentionpredictor}
+Qingyue Yang, Jie Wang, Xing Li, Zhihai Wang, Chen Chen, Lei Chen, Xianzhi
+Yu, Wulong Liu, Jianye Hao, Mingxuan Yuan, and Bin Li.
+\newblock AttentionPredictor: Temporal Patterns Matter for KV Cache
+Compression.
+\newblock NeurIPS 2025.
+\newblock \url{https://arxiv.org/abs/2502.04077}.
+
+\bibitem[Chen et~al.(2025)]{chen2025pmpd}
+Hao Mark Chen, Fuwen Tan, Alexandros Kouris, Royson Lee, Hongxiang Fan, and
+Stylianos I. Venieris.
+\newblock Progressive Mixed-Precision Decoding for Efficient LLM Inference.
+\newblock arXiv:2410.13461, revised February 2025.
+\newblock \url{https://arxiv.org/abs/2410.13461}.
 
 \bibitem[Li et~al.(2025)]{li2025qmamba}
 Yinglong Li, Xiaoyu Liu, Jiacheng Li, Ruikang Xu, Yinda Chen, and Zhiwei
