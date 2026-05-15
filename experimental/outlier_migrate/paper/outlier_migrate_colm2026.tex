@@ -48,6 +48,23 @@ outlier policies are easiest to engineer when the protected set remains stable.
 If channels leave the protected set as decode position increases, then a
 policy calibrated early in a trace can be stale later in the same trace.
 
+The deployment pressure is not abstract. Artificial Analysis benchmark-cost
+data reported by \citet{bort2025reasoningcosts} put OpenAI o1 at
+\$2{,}767.05 to evaluate across seven reasoning-heavy benchmarks, compared
+with \$108.85 for GPT-4o on the same suite; the report attributes the
+roughly 25$\times$ cost gap to both token expansion and higher per-token
+prices. Gartner's March 2026 inference-cost forecast predicts that
+trillion-parameter LLM inference will become over 90\% cheaper by 2030 than
+in 2025, while warning that advanced reasoning demand can still make total
+compute scarce \citep{gartner2026inferencecost}. Commercial market forecasts
+are not evidence about model internals, but they indicate scale: one
+MarketsandMarkets report projects the AI inference market from \$106.15B in
+2025 to \$254.98B in 2030, and another projects edge AI hardware from
+\$26.14B in 2025 to \$58.90B in 2030
+\citep{marketsandmarkets2025aiinference,marketsandmarkets2025edgeaihardware}.
+Long-decode quantization failures therefore matter both for datacenter
+reasoning workloads and for eventual edge reasoning deployments.
+
 The current status is a measurement and mechanism paper. The empirical result
 has become stronger than the original Granite/Mamba-specific framing:
 decode-position channel drift now appears in Granite hybrid models, a
@@ -85,7 +102,14 @@ activation-outlier variation across time steps as a failure mode for static
 post-training quantization and uses lightweight dynamic outlier detection
 during inference \citep{ramachandran2025ouromamba}. These results are important
 prior art. They establish that dynamic outliers are already known in the
-vision-Mamba setting.
+vision-Mamba setting.\footnote{The phrase ``outlier migration'' is overloaded.
+In this paper, the operational measurement is decode-position channel drift:
+which activation channels are in the top-magnitude set at different decode
+positions. SmoothQuant uses migration for activation-to-weight difficulty
+transfer \citep{xiao2023smoothquant}. MoBiQuant uses it for token-set shifts
+under different bit widths \citep{wang2026mobiquant}; we reserve our
+quantitative claims for the channel-across-decode-position phenomenon measured
+in this paper.}
 
 Language-Mamba quantization work has emphasized a different operating regime.
 Mamba-PTQ shows that recurrent LLMs exhibit activation outlier channels and
@@ -766,7 +790,42 @@ overclaiming the replicated measurement or the failed Phase 3/4/9
 interventions as a validated cross-model positive method; this draft
 explicitly rejects that interpretation until a future intervention pass.
 
-\begin{thebibliography}{16}
+\begin{thebibliography}{20}
+
+\bibitem[Bort(2025)]{bort2025reasoningcosts}
+Julie Bort.
+\newblock The rise of AI reasoning models is making benchmarking more
+expensive.
+\newblock TechCrunch, April 10 2025.
+\newblock \url{https://techcrunch.com/2025/04/10/the-rise-of-ai-reasoning-models-is-making-benchmarking-more-expensive/}.
+
+\bibitem[Gartner(2026)]{gartner2026inferencecost}
+Gartner.
+\newblock Gartner predicts that by 2030, performing inference on an LLM with
+1 trillion parameters will cost GenAI providers over 90\% less than in 2025.
+\newblock Press release, March 25 2026.
+\newblock \url{https://www.gartner.com/en/newsroom/press-releases/2026-03-25-gartner-predicts-that-by-2030-performing-inference-on-an-llm-with-1-trillion-parameters-will-cost-genai-providers-over-90-percent-less-than-in-2025}.
+
+\bibitem[MarketsandMarkets(2025a)]{marketsandmarkets2025aiinference}
+MarketsandMarkets.
+\newblock AI inference market size, share and growth, 2025 to 2030.
+\newblock Commercial market report, February 2025.
+\newblock \url{https://www.marketsandmarkets.com/Market-Reports/ai-inference-market-189921964.html}.
+
+\bibitem[MarketsandMarkets(2025b)]{marketsandmarkets2025edgeaihardware}
+MarketsandMarkets.
+\newblock Edge AI hardware industry worth \$58.90 billion by 2030.
+\newblock Commercial market report press release, July 4 2025.
+\newblock \url{https://www.marketsandmarkets.com/PressReleases/edge-ai-hardware.asp}.
+
+\bibitem[Wang et~al.(2026)]{wang2026mobiquant}
+Dongwei Wang, Jinhee Kim, Seokho Han, Denis Gudovskiy, Yohei Nakata,
+Tomoyuki Okuno, KhayTze Peong, Kang Eun Jeon, Jong Hwan Ko, Yiran Chen, and
+Huanrui Yang.
+\newblock MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic
+LLMs.
+\newblock arXiv:2602.20191, February 2026.
+\newblock \url{https://arxiv.org/abs/2602.20191}.
 
 \bibitem[Li et~al.(2025)]{li2025qmamba}
 Yinglong Li, Xiaoyu Liu, Jiacheng Li, Ruikang Xu, Yinda Chen, and Zhiwei
