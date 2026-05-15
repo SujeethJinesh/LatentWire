@@ -1,15 +1,42 @@
 # Swarm Final Report Draft
 
-Status: Phase 5' landing report draft after `DYNAMIC_REGIME_TRANSFORMER`.
+Status: Phase 9 method sprint in progress after `KILL_M2_RANDOM_CONTROL_BEATS`.
 Do not treat this as human-approved final; it is the machine-readable handoff
 for the returning human.
+
+## Phase 9 Active Sprint Status (2026-05-15)
+
+- Current active run:
+  `experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z`.
+- Current method: hard-binned M10 position-binned scale tables on
+  Granite-4-H-Small, deterministic first-12 trace vacation slice.
+- M10 implementation commit: `2821a7e6`.
+- M10 current status at the time of this report update: running
+  `static_smoothquant` scoring; BF16 score cache was reused from the completed
+  M2 packet.
+- Phase A paper motivation update commit: `4fbf9a36`.
+- Phase A status: industrial inference-cost motivation and three-way
+  "outlier migration" terminology footnote added; paper PDF rebuilt
+  successfully with TeX warnings only.
+- M11 preregistration commit: `1adfeba9`.
+- M11 checker commit: `2af50cff`.
+- M11 status: preregistration and mechanical checker are ready; no M11 data
+  has been collected.
+- Current story: decode-position channel drift is robust across landed model
+  families, and M2 suggests abrupt boundary-discontinuous method surfaces are
+  harmful because random-bin assignment beat the intended position-conditioned
+  assignment by `0.6675482901676153` median recovery.
+- Live positive-method gap: M10 may confirm/disconfirm the boundary
+  discontinuity diagnosis for hard-binned scale tables. The next high-value
+  positive candidate is M11 EMA-smoothed drift protection, followed by M17
+  afterglow and M18 joint KV+activation coupling if needed.
 
 ## Executive Status
 
 - Primary positive-method candidate: none after Phase 4.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
-- Current active work: Experiment D decomposition analysis, followed by
-  Experiment E threshold sensitivity.
+- Current active work: Phase 9 method sprint for OutlierMigrate:
+  M10-hard running, M11 preregistered next.
 - Phase 3 preregistration commit: `c0031574`.
 - Phase 3 runner/checker commit: `fc394bcb`.
 - Phase 4 final commit: `9ec75b19`.
