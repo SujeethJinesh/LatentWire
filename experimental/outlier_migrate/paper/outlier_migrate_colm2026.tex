@@ -28,14 +28,16 @@ Nemotron-3-Nano gives 0.820809591642925, DeepSeek-R1-Distill-Qwen-1.5B gives
 set-membership decomposition shows that the systems-relevant component is not
 only within-set rank shuffling: strict set-leaving is 0.566234756098 on
 Granite-Small, 0.533713200380 on Nemotron-3, 0.670572916667 on DeepSeek, and
-0.673611111111 on Falcon-H1. We then try three static or lightly
-position-conditioned W4A16 protection interventions. All fail their
-preregistered gates, including Phase 9 M2, where a random-bin negative control
-beats the intended position-conditioned assignment by 0.667548290168 median
-recovery. The resulting paper is a measurement and mechanism paper, not a
-positive quantization method: it identifies decode-position set-leaving as a
-robust failure mode for simple static protected-channel maps and documents
-which straightforward interventions do not solve it.
+0.673611111111 on Falcon-H1. We then test static, position-conditioned,
+scale-table, and smoothed W4A16 protection interventions. All fail their
+preregistered gates, but with different failure modes: M2 and M10 are beaten
+by random-bin controls, while M11 is not beaten by its random-walk control yet
+recovers only 0.048299284138 median of the BF16-vs-static gap. The resulting
+paper is a measurement and mechanism paper, not a positive quantization
+method: boundary discontinuities are actively harmful, smoothing removes that
+harm but does not recover quality, and the remaining mechanism question is
+whether future methods need better future-channel signal, larger protected
+budgets, or a way to address long-horizon compound error.
 \end{abstract}
 
 \section{Introduction}
@@ -70,9 +72,12 @@ has become stronger than the original Granite/Mamba-specific framing:
 decode-position channel drift now appears in Granite hybrid models, a
 Nemotron-3 hybrid, a pure-Transformer DeepSeek control, and Falcon-H1's
 parallel hybrid topology. The method result is weaker: three static or lightly
-position-conditioned W4A16 interventions fail to produce a reliable protection
-method. This is not a positive systems paper yet. Its value is that it
-identifies the failure mode sharply enough to constrain future methods.
+position-conditioned W4A16 interventions and two later Phase 9 policies fail
+to produce a reliable protection method. This is not a positive systems paper
+yet. Its value is that it identifies three candidate mechanisms sharply enough
+to constrain future methods: harmful boundary discontinuities, smooth-but-
+insufficient set updates, and the unresolved split between stale signal,
+insufficient budget, and compound error.
 
 The contribution is:
 \begin{itemize}
@@ -83,8 +88,9 @@ The contribution is:
 \item strict set-membership decomposition showing that many channels leave
   the protected top-1\% set entirely, rather than merely shuffling within it;
 \item negative intervention evidence showing that static union protection,
-  larger scoring windows, and simple position-bin switching do not yet yield a
-  positive W4A16 protection method.
+  larger scoring windows, simple position-bin switching, position-binned scale
+  tables, and EMA-smoothed set updates do not yet yield a positive W4A16
+  protection method.
 \end{itemize}
 The paper does not claim a deployable quantization recipe, a kernel/runtime
 system, a performance improvement, or completed architecture-general
@@ -150,9 +156,10 @@ Dynamic inference-time policies are closer to the methods we test and fail.
 DecDEC dynamically selects salient activation channels at each decode step and
 fetches residual compensation from CPU memory \citep{park2025decdec}. M2 and
 hard-binned M10 differ in that they switch a precomputed protected-channel or
-scale policy by decode-position bin; M11, now preregistered but not yet run,
-is explicitly designed to test whether smoothing that decision surface avoids
-the boundary discontinuities exposed by M2. KV-cache systems address a
+scale policy by decode-position bin; M11 tests whether smoothing that decision
+surface avoids the boundary discontinuities exposed by M2 and M10. It does
+avoid the random-control-beats pattern but still does not recover enough
+quality. KV-cache systems address a
 different tensor. KIVI quantizes key cache per channel and value cache per
 token \citep{liu2024kivi}; PM-KVQ targets long-CoT KV-cache quantization and
 RoPE-induced key-cache distribution shift \citep{liu2025pmkvq}; and
@@ -562,13 +569,24 @@ Phase 4 union & Granite-Small & \texttt{KILL\_OM\_PHASE4\_INTERVENTION\_FAILS} &
 Phase 9 M2 bins & Granite-Small & \texttt{KILL\_M2\_RANDOM\_CONTROL\_BEATS} &
 -0.866837313391 & [-3.435289251335, 0.595238665766] &
 random-bin median beats M2 by 0.667548290168 \\
+Phase 9 M10 scales & Granite-Small & \texttt{KILL\_M10\_RANDOM\_CONTROL\_BEATS} &
+0.234447927834 & [-2.072905653259, 0.503521494450] &
+random-bin median beats M10 by 0.761487459046 \\
+Phase 9 M11 EMA & Granite-Small & \texttt{KILL\_M11\_AMBIGUOUS} &
+0.048299284138 & [-8.941156151014, 0.704599255873] &
+random-walk median is lower by 1.254404832487 \\
 \bottomrule
 \end{tabular}
 }
 \caption{Intervention attempts. Phase 3 and Phase 4 test static union
 protection under W4A16. Phase 9 M2 tests position-conditioned protected sets
 A/B/C with a static-3\% matched-cost control and a random-bin negative
-control. None provides a positive method.}
+control. Phase 9 M10 tests hard-binned scale tables. Phase 9 M11 tests
+EMA-smoothed protected-set updates. None provides a positive method. M10
+values are from
+\url{experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/checker_result.json};
+M11 values are from
+\url{experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/checker_result.json}.}
 \label{tab:intervention-summary}
 \end{table}
 
@@ -592,13 +610,26 @@ recovery, exceeding the preregistered 0.10 kill threshold. The random-bin
 control is not good in absolute terms; its importance is that it is less bad
 than the intended position-conditioned assignment.
 
-Together, the intervention results make a useful negative statement. The
-measurement says top-channel membership changes with decode position. The
-interventions say that neither a larger static protected set nor a simple
-position-bin switching schedule is sufficient to turn that measurement into a
-robust W4A16 protection method. Future methods likely need online scale
-updates, learned prediction, or a reactive oracle-style policy rather than
-predeclared static membership alone.
+M10 tests whether the problem is not membership but scale choice: it stores
+separate SmoothQuant-style scale tables for decode-position bins. This also
+kills by the random-control rule. M10 median recovery is 0.234447927834, CI95
+[-2.072905653258708, 0.5035214944499808], while the random-bin scale control
+has median recovery 0.995935386880 and beats M10 by 0.761487459046. M11 then
+removes the hard boundary by replacing bin switches with an EMA-smoothed
+protected-set score. M11 does not pass: the best arm, alpha 0.5, has median
+recovery 0.048299284138 with CI95 [-8.94115615101423, 0.7045992558730417].
+However, its random-walk control has median recovery -1.206105548349, so M11
+is structurally different from M2 and M10: smoothing removes the
+random-control-beats failure, but smoothing alone does not recover quality.
+
+Together, the intervention results make a useful negative statement with
+three mechanisms. First, boundary discontinuities are actively harmful: M2 and
+M10 are both beaten by random-bin controls. Second, smoothing removes that
+harm but does not solve the gap: M11 is not beaten by random-walk, yet misses
+the positive-method bar. Third, the next unresolved mechanism is whether the
+remaining failure comes from stale future-channel signal, insufficient
+protected-channel budget, or long-horizon compound error. M18, DecDEC, and
+M11b are the active Phase 1 experiments designed to distinguish those cases.
 
 \subsection{Layer-stratified migration}
 
@@ -655,19 +686,23 @@ The negative method results are also informative. Static union protection
 addresses only set membership; it does not refresh scales, respond to
 within-set rank changes, or decide which layers need different treatment.
 Phase 4 shows that the Phase 3 failure is not just a Granite-Tiny or 64-token
-window artifact. Phase 9 M2 goes one step further and tests whether
-position-conditioned membership alone is enough. It is not: the random-bin
-negative control beats M2 by a wide margin. The mechanism lesson is therefore
-sharper than ``use a bigger protected set.'' Long-decode channel drift appears
-real, but simple static and predeclared position-bin policies are inadequate.
+window artifact. Phase 9 M2 shows that hard protected-set binning can be
+actively harmful, and M10 shows the same pattern for hard scale-table binning.
+M11 then separates smoothness from recovery: it removes the random-control
+failure but does not restore quality. The mechanism lesson is therefore
+sharper than ``use a bigger protected set'' or ``smooth the set.'' Long-decode
+channel drift appears real, but simple static, hard-binned, and activation-only
+smoothed policies are inadequate.
 
-This leaves two plausible future directions. First, a reactive oracle or
-learned predictor may be required to identify the current protected set from
-local state rather than from absolute decode-position bins. Second, if
-within-set shuffling changes the right quantization scales even when
-membership is correct, then scale refresh rather than membership refresh may
-be the missing ingredient. Phase 9's planned M10 and M9 branches are designed
-to distinguish these possibilities.
+This leaves three plausible future directions. First, a reactive oracle or
+learned predictor may be required because current channel identity is stale
+for future importance. Second, the budget may be too small: a smooth policy
+could need top-5\% or top-10\% protection before recovery appears. Third,
+per-step protection may be attacking the wrong surface if the dominant loss is
+compound error accumulated over thousands of decode steps. The active Phase 1
+queue is ordered to distinguish these cases: M18 tests activation/KV
+cross-tensor coupling, DecDEC supplies a reactive per-step baseline, and M11b
+tests whether larger smoothed budgets recover the gap.
 
 The theoretical mechanism remains plausible but is not itself an empirical
 claim about unmeasured models. In channel-wise gated recurrence or
@@ -708,10 +743,11 @@ variants is not established.
 
 Finally, the method failures do not prove that decode-position channel drift
 is unusable. They prove that static union sets, a larger Granite-Small scoring
-window, and a simple three-bin position-conditioned assignment are not enough
-under this quantization setup. The next credible method evidence should come
-from M10/M9-style tests of scale refresh or predictability, not from retuning
-the failed M2 thresholds.
+window, simple hard-binned policies, and one EMA-smoothed activation-only
+policy are not enough under this quantization setup. The next credible method
+evidence should come from the mechanism-distinguishing Phase 1 queue: M18
+cross-tensor coupling, DecDEC algorithmic baseline, and M11b budget scaling,
+not from retuning failed thresholds.
 
 \section{Reproducibility Statement}
 
