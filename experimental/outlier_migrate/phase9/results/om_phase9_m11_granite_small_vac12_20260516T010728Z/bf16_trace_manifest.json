@@ -1,0 +1,195 @@
+{
+  "artifact": "bf16_traces.jsonl.gz",
+  "artifact_sha256": "sha256:eaf27286627f83d2f73f356160940072141cb15b9965c5c727c21d0e950da903",
+  "created_at_utc": "2026-05-16T02:42:37Z",
+  "decode_policy": "manual greedy decode; EOS recorded but ignored for fixed-length traces",
+  "filtered_trace_count": 12,
+  "max_new_tokens": 10000,
+  "prompt_events": [
+    {
+      "first_eos_decode_position": 5991,
+      "generated_token_count": 10000,
+      "input_token_count": 56,
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0
+    },
+    {
+      "first_eos_decode_position": 943,
+      "generated_token_count": 10000,
+      "input_token_count": 163,
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1
+    },
+    {
+      "first_eos_decode_position": 1037,
+      "generated_token_count": 10000,
+      "input_token_count": 135,
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2
+    },
+    {
+      "first_eos_decode_position": 484,
+      "generated_token_count": 10000,
+      "input_token_count": 78,
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3
+    },
+    {
+      "first_eos_decode_position": 1626,
+      "generated_token_count": 10000,
+      "input_token_count": 94,
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4
+    },
+    {
+      "first_eos_decode_position": 1010,
+      "generated_token_count": 10000,
+      "input_token_count": 110,
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5
+    },
+    {
+      "first_eos_decode_position": 736,
+      "generated_token_count": 10000,
+      "input_token_count": 147,
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6
+    },
+    {
+      "first_eos_decode_position": 400,
+      "generated_token_count": 10000,
+      "input_token_count": 121,
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7
+    },
+    {
+      "first_eos_decode_position": 819,
+      "generated_token_count": 10000,
+      "input_token_count": 127,
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8
+    },
+    {
+      "first_eos_decode_position": 1168,
+      "generated_token_count": 10000,
+      "input_token_count": 267,
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9
+    },
+    {
+      "first_eos_decode_position": 960,
+      "generated_token_count": 10000,
+      "input_token_count": 225,
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10
+    },
+    {
+      "first_eos_decode_position": 1202,
+      "generated_token_count": 10000,
+      "input_token_count": 132,
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11
+    },
+    {
+      "first_eos_decode_position": 365,
+      "generated_token_count": 10000,
+      "input_token_count": 102,
+      "prompt_id": "opencompass_AIME2025_I_12",
+      "prompt_index": 12
+    },
+    {
+      "first_eos_decode_position": 737,
+      "generated_token_count": 10000,
+      "input_token_count": 149,
+      "prompt_id": "opencompass_AIME2025_I_13",
+      "prompt_index": 13
+    },
+    {
+      "first_eos_decode_position": 860,
+      "generated_token_count": 10000,
+      "input_token_count": 94,
+      "prompt_id": "opencompass_AIME2025_I_14",
+      "prompt_index": 14
+    },
+    {
+      "first_eos_decode_position": 516,
+      "generated_token_count": 10000,
+      "input_token_count": 128,
+      "prompt_id": "opencompass_AIME2025_II_0",
+      "prompt_index": 15
+    },
+    {
+      "first_eos_decode_position": 836,
+      "generated_token_count": 10000,
+      "input_token_count": 65,
+      "prompt_id": "opencompass_AIME2025_II_1",
+      "prompt_index": 16
+    },
+    {
+      "first_eos_decode_position": 318,
+      "generated_token_count": 10000,
+      "input_token_count": 88,
+      "prompt_id": "opencompass_AIME2025_II_2",
+      "prompt_index": 17
+    },
+    {
+      "first_eos_decode_position": 570,
+      "generated_token_count": 10000,
+      "input_token_count": 204,
+      "prompt_id": "opencompass_AIME2025_II_3",
+      "prompt_index": 18
+    },
+    {
+      "first_eos_decode_position": 487,
+      "generated_token_count": 10000,
+      "input_token_count": 246,
+      "prompt_id": "opencompass_AIME2025_II_4",
+      "prompt_index": 19
+    },
+    {
+      "first_eos_decode_position": 888,
+      "generated_token_count": 10000,
+      "input_token_count": 248,
+      "prompt_id": "opencompass_AIME2025_II_5",
+      "prompt_index": 20
+    },
+    {
+      "first_eos_decode_position": 1321,
+      "generated_token_count": 10000,
+      "input_token_count": 115,
+      "prompt_id": "opencompass_AIME2025_II_6",
+      "prompt_index": 21
+    },
+    {
+      "first_eos_decode_position": 843,
+      "generated_token_count": 10000,
+      "input_token_count": 269,
+      "prompt_id": "opencompass_AIME2025_II_7",
+      "prompt_index": 22
+    },
+    {
+      "first_eos_decode_position": 1059,
+      "generated_token_count": 10000,
+      "input_token_count": 117,
+      "prompt_id": "opencompass_AIME2025_II_8",
+      "prompt_index": 23
+    }
+  ],
+  "schema_version": "om_phase4_v1_bf16_trace_manifest",
+  "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z",
+  "trace_count": 24,
+  "vacation_filtered_prompt_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ]
+}

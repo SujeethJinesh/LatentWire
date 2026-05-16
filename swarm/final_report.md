@@ -1,42 +1,43 @@
 # Swarm Final Report Draft
 
-Status: Phase 9 method sprint in progress after `KILL_M2_RANDOM_CONTROL_BEATS`.
+Status: Phase 9 method sprint in progress after `KILL_M11_AMBIGUOUS`.
 Do not treat this as human-approved final; it is the machine-readable handoff
 for the returning human.
 
-## Phase 9 Active Sprint Status (2026-05-15)
+## Phase 9 Active Sprint Status (2026-05-16)
 
 - Current active run:
-  `experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z`.
-- Current method: hard-binned M10 position-binned scale tables on
-  Granite-4-H-Small, deterministic first-12 trace vacation slice.
-- M10 implementation commit: `2821a7e6`.
-- M10 current status at the time of this report update: running
-  `static_smoothquant` scoring; BF16 score cache was reused from the completed
-  M2 packet.
+  `experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z`.
+- Current method status: M11 EMA-smoothed drift protection on
+  Granite-4-H-Small completed with `KILL_M11_AMBIGUOUS`.
+- Best alpha: `m11_alpha_0_5`.
+- Best-alpha median recovery: `0.048299284137681975`, CI95
+  `[-8.94115615101423, 0.7045992558730417]`.
+- Random-walk median recovery: `-1.2061055483492975`.
+- Interpretation: M11 did not pass, but the random-walk negative control also
+  did not beat M11. This is weaker than M2/M10's random-control kills and
+  supports an honest "smoothing alone is insufficient/ambiguous" mechanism
+  result rather than a positive method.
 - Phase A paper motivation update commit: `4fbf9a36`.
 - Phase A status: industrial inference-cost motivation and three-way
   "outlier migration" terminology footnote added; paper PDF rebuilt
   successfully with TeX warnings only.
 - M11 preregistration commit: `1adfeba9`.
 - M11 checker commit: `2af50cff`.
-- M11 status: preregistration and mechanical checker are ready; no M11 data
-  has been collected.
 - Current story: decode-position channel drift is robust across landed model
-  families, and M2 suggests abrupt boundary-discontinuous method surfaces are
-  harmful because random-bin assignment beat the intended position-conditioned
-  assignment by `0.6675482901676153` median recovery.
-- Live positive-method gap: M10 may confirm/disconfirm the boundary
-  discontinuity diagnosis for hard-binned scale tables. The next high-value
-  positive candidate is M11 EMA-smoothed drift protection, followed by M17
-  afterglow and M18 joint KV+activation coupling if needed.
+  families. M2 and M10 show selected discontinuous policies can be worse than
+  random controls; M11 shows EMA smoothing does not clear a positive-method
+  bar on Granite-Small.
+- Live positive-method gap: proceed to M18 joint KV+activation coupling as the
+  next structurally distinct mechanism test. M12 hysteresis and unconditional
+  M11 replications remain authorized by the 72-hour plan.
 
 ## Executive Status
 
 - Primary positive-method candidate: none after Phase 4.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
 - Current active work: Phase 9 method sprint for OutlierMigrate:
-  M10-hard running, M11 preregistered next.
+  M11 completed ambiguously; M18 preregistration is next.
 - Phase 3 preregistration commit: `c0031574`.
 - Phase 3 runner/checker commit: `fc394bcb`.
 - Phase 4 final commit: `9ec75b19`.
@@ -903,3 +904,72 @@ Interpretation:
 - Per the 72-hour vacation-window plan, the next method is M11 EMA-smoothed
   drift protection on Granite-Small. If M11 also kills, M17 is skipped and M18
   becomes the next structurally distinct mechanism test.
+
+## Phase 9 M11 EMA-Smoothed Drift Protection (2026-05-16)
+
+Result packet:
+
+- `experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z`
+- Raw activation dump note: `activation_magnitudes.jsonl.gz` is 444204543
+  bytes, above GitHub's normal 100MB file limit. It remains on `/workspace`
+  and its SHA is recorded in the committed packet metadata; see
+  `swarm/vacation_decisions/20260516T192700_m11_large_artifact_git_limit.md`.
+
+Checker decision:
+
+- `KILL_M11_AMBIGUOUS`
+
+Primary result:
+
+| Metric | Value |
+|---|---:|
+| Artifact complete | `true` |
+| Total trace count | `12` |
+| Included positive-static-gap traces | `8` |
+| No-gap traces | `4 / 12` |
+| No-gap fraction | `0.3333333333333333` |
+| Best alpha | `m11_alpha_0_5` |
+| Best-alpha median recovery | `0.048299284137681975` |
+| Best-alpha CI95 | `[-8.94115615101423, 0.7045992558730417]` |
+| Best-alpha mean recovery | `-62.972270575686004` |
+
+Alpha sweep:
+
+| Regime | Median Recovery | CI95 |
+|---|---:|---|
+| `m11_alpha_0_1` | `-1.0771913201462333` | `[-8.115530358174327, 0.314294972206246]` |
+| `m11_alpha_0_3` | `-0.04816253302908857` | `[-11.228499920632984, 0.62180911268009]` |
+| `m11_alpha_0_5` | `0.048299284137681975` | `[-8.94115615101423, 0.7045992558730417]` |
+
+Controls:
+
+| Control | Median Recovery | CI95 |
+|---|---:|---|
+| Static-1% | `0.0` | n/a |
+| Random-walk protection | `-1.2061055483492975` | `[-3.761249514922784, 0.643482239144803]` |
+
+Key comparisons:
+
+- Best alpha minus static-1% median: `0.048299284137681975`.
+- Best alpha minus random-walk median: `1.2544048324869795`.
+
+Checker reason:
+
+- `M11 is neither pass nor a specific no-improvement/random-control kill`
+
+Interpretation:
+
+- M11 is not a positive method on Granite-4-H-Small. Its best alpha misses the
+  preregistered `median recovery >= 0.30` and `CI lower > 0.10` pass criteria.
+- Unlike M2 and M10, M11 was not beaten by its random negative control. That
+  makes the result different from the boundary-discontinuity failures: EMA
+  smoothing may avoid the worst selected-policy failure mode, but the measured
+  recovery is far too weak and uncertain to claim a method.
+- The paper should frame M11 as an ambiguous/insufficient smoothing result:
+  smoothing alone does not solve decode-position channel drift under this
+  W4A16 testbed.
+- Per the 72-hour vacation-window plan plus M17 skip authorization, the next
+  structurally distinct method is M18 joint KV+activation coupling. M12
+  hysteresis remains mandatory later, and M11 replications on Nemotron-3-Nano
+  and DeepSeek-R1-Distill-Qwen-1.5B remain authorized regardless of this
+  Granite outcome.
