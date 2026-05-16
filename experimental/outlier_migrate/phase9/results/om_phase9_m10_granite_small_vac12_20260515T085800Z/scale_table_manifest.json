@@ -1,0 +1,58 @@
+{
+  "created_at_utc": "2026-05-15T08:56:54Z",
+  "implementation_route": "fold_scale_into_dequantized_int4_weights_with_activation_pre_hooks",
+  "position_bins": [
+    {
+      "end": 500,
+      "midpoint_position": 200,
+      "name": "bin_0_500",
+      "positions": [
+        100,
+        200,
+        500
+      ],
+      "start": 1
+    },
+    {
+      "end": 2000,
+      "midpoint_position": 1000,
+      "name": "bin_500_2000",
+      "positions": [
+        1000,
+        2000
+      ],
+      "start": 501
+    },
+    {
+      "end": 5000,
+      "midpoint_position": 5000,
+      "name": "bin_2000_5000",
+      "positions": [
+        5000
+      ],
+      "start": 2001
+    },
+    {
+      "end": 10000,
+      "midpoint_position": 7000,
+      "name": "bin_5000_10000",
+      "positions": [
+        7000,
+        10000
+      ],
+      "start": 5001
+    },
+    {
+      "end": 20000,
+      "midpoint_position": 15000,
+      "name": "bin_10000_20000",
+      "positions": [
+        15000
+      ],
+      "start": 10001
+    }
+  ],
+  "scale_tables_path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/scale_tables.json",
+  "scale_tables_sha256": "sha256:6358f67a56abb8d81335709c691af441f3c5c2e78056e27921e37370f6447d06",
+  "schema_version": "om_phase9_m10_v1_scale_table_manifest"
+}

@@ -1,0 +1,24 @@
+{
+  "adaptation": "deterministic_trace_count_reduction",
+  "authority": "Vacation mode V2/V4",
+  "created_at_utc": "2026-05-15T08:53:41Z",
+  "effective_trace_count": 12,
+  "invalidates_if": "Human requires the original 24-trace M10 packet before interpreting M10.",
+  "original_trace_count": 24,
+  "prompt_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "reason": "The immediately preceding M2 Granite-Small run required a deterministic 12-trace slice after full-slice OOM and slow dynamic scoring. M10 has more dynamic score arms than M2, so the same fixed 12-trace vacation-mode slice preserves the decision surface while keeping paper progress moving.",
+  "schema_version": "om_phase9_m10_v1_vacation_adaptation"
+}

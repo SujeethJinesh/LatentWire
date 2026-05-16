@@ -853,3 +853,53 @@ Decision:
 - The paper is not ready as a positive-method paper.
 - Vacation-mode execution should proceed to M10 on Granite-Small after this
   paper pass.
+
+## Phase 9 M10 Position-Binned Scales (2026-05-16)
+
+Result packet:
+
+- `experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z`
+
+Checker decision:
+
+- `KILL_M10_RANDOM_CONTROL_BEATS`
+
+Primary M10 result:
+
+| Metric | Value |
+|---|---:|
+| Artifact complete | `true` |
+| Trace count | `12` |
+| M10 median recovery | `0.2344479278340464` |
+| M10 CI95 | `[-2.072905653258708, 0.5035214944499808]` |
+| M10 mean recovery | `-4.956614651050979` |
+| No-gap fraction | `0.0` |
+
+Controls:
+
+| Control | Median Recovery |
+|---|---:|
+| Static SmoothQuant | `0.0` |
+| Midpoint matched-cost | `0.04446700672499143` |
+| Random-bin assignment | `0.9959353868798071` |
+
+Key comparison:
+
+- M10 minus midpoint matched-cost median: `0.18998092110905496`
+- M10 minus random-bin median: `-0.7614874590457608`
+
+Checker reason:
+
+- `random-bin scale control median 0.99593539 beats M10 median 0.23444793 by >0.10`
+
+Interpretation:
+
+- Hard-binned position-scale tables do not provide a positive method on
+  Granite-4-H-Small.
+- The random-bin control winning by `0.7614874590457608` median recovery is
+  stronger than a simple no-improvement result: it suggests the selected
+  binning/scale assignment is harmful and reinforces the boundary/selection
+  artifact concern raised by M2.
+- Per the 72-hour vacation-window plan, the next method is M11 EMA-smoothed
+  drift protection on Granite-Small. If M11 also kills, M17 is skipped and M18
+  becomes the next structurally distinct mechanism test.

@@ -1,0 +1,103 @@
+{
+  "artifact_complete": true,
+  "control_results": {
+    "m10_minus_midpoint_median": 0.18998092110905496,
+    "m10_minus_random_bin_median": -0.7614874590457608,
+    "midpoint_matched_cost": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.5630291390326352,
+        "ci95_low": -0.6451673450857207
+      },
+      "included_trace_count": 12,
+      "mean_recovery": -0.03633053816630407,
+      "median_recovery": 0.04446700672499143,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        -1.133752525413879,
+        0.9960138118409415,
+        0.6860035928938277,
+        0.5591980708783987,
+        0.5668602071868718,
+        -1.0696754537363327,
+        -0.5333987575433259,
+        -0.07934447096011854,
+        0.1682784844101014,
+        -0.7569359326281155,
+        0.3534353409530707,
+        -0.1926488258770891
+      ],
+      "total_trace_count": 12
+    },
+    "random_bin_assignment": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.9996664539591157,
+        "ci95_low": 0.9640901040581407
+      },
+      "included_trace_count": 12,
+      "mean_recovery": 1.0021314785389717,
+      "median_recovery": 0.9959353868798071,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        1.4371075135816855,
+        0.9993302213885384,
+        0.9939960468713889,
+        0.9989911488391124,
+        0.995066917812091,
+        0.9968038559475231,
+        1.000002686529693,
+        0.9380981989038577,
+        0.836220743938372,
+        0.9900820092124237,
+        0.8388812917826843,
+        1.0009971076602895
+      ],
+      "total_trace_count": 12
+    },
+    "static_smoothquant": {
+      "median_recovery": 0.0
+    }
+  },
+  "decision": "KILL_M10_RANDOM_CONTROL_BEATS",
+  "primary_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.5035214944499808,
+      "ci95_low": -2.072905653258708
+    },
+    "included_trace_count": 12,
+    "mean_recovery": -4.956614651050979,
+    "median_recovery": 0.2344479278340464,
+    "no_recoverable_static_gap_count": 0,
+    "no_recoverable_static_gap_fraction": 0.0,
+    "per_trace_recovery_included": [
+      -22.481527179163283,
+      0.44902398734328597,
+      -3.4655313676763093,
+      0.5772593684593421,
+      -36.09796660491199,
+      0.21713490401516478,
+      0.5265721735950848,
+      0.5166996786194837,
+      0.23916011330535802,
+      -0.6802799388411072,
+      0.49034331028047784,
+      0.22973574236273475
+    ],
+    "total_trace_count": 12
+  },
+  "reasons": [
+    "random-bin scale control median 0.99593539 beats M10 median 0.23444793 by >0.10"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z",
+  "thresholds": {
+    "bootstrap_seed": 20260514,
+    "kill_within_static_smoothquant_abs_le": 0.05,
+    "pass_beats_midpoint_by_ge": 0.1,
+    "pass_beats_random_bin_by_ge": 0.15,
+    "pass_beats_static_smoothquant_by_ge": 0.2,
+    "pass_ci95_low_gt": 0.2,
+    "pass_median_recovery_min": 0.4,
+    "random_control_beats_by_gt": 0.1
+  }
+}
