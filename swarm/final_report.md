@@ -6,10 +6,10 @@ for the returning human.
 
 ## Phase 9 Active Sprint Status (2026-05-16)
 
-- Current active run:
-  `experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z`.
-- Current method status: M11 EMA-smoothed drift protection on
-  Granite-4-H-Small completed with `KILL_M11_AMBIGUOUS`.
+- Current active work: M18 joint KV-cache + activation protection on
+  Granite-4-H-Small.
+- Current method status: preregistration committed at `b50a4eda`; runner and
+  checker authored locally and unit-tested (`15 passed`) before launch.
 - Best alpha: `m11_alpha_0_5`.
 - Best-alpha median recovery: `0.048299284137681975`, CI95
   `[-8.94115615101423, 0.7045992558730417]`.
@@ -28,16 +28,16 @@ for the returning human.
   families. M2 and M10 show selected discontinuous policies can be worse than
   random controls; M11 shows EMA smoothing does not clear a positive-method
   bar on Granite-Small.
-- Live positive-method gap: proceed to M18 joint KV+activation coupling as the
-  next structurally distinct mechanism test. M12 hysteresis and unconditional
-  M11 replications remain authorized by the 72-hour plan.
+- Live positive-method gap: run the M18 Granite-Small packet. M12 hysteresis,
+  DecDEC baseline, and unconditional M11 replications remain authorized by the
+  72-hour plan after M18 lands.
 
 ## Executive Status
 
 - Primary positive-method candidate: none after Phase 4.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
 - Current active work: Phase 9 method sprint for OutlierMigrate:
-  M11 completed ambiguously; M18 preregistration is next.
+  M11 completed ambiguously; M18 execution is next.
 - Phase 3 preregistration commit: `c0031574`.
 - Phase 3 runner/checker commit: `fc394bcb`.
 - Phase 4 final commit: `9ec75b19`.

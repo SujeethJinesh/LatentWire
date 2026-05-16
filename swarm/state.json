@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "outlier_migrate_phase9_m18_joint_kv_activation_preregistration",
+  "current_entry": "outlier_migrate_phase9_m18_joint_kv_activation_execution",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -608,8 +608,8 @@
   "consecutive_infra_failures": 0,
   "gpu_hours_used": 99.6322,
   "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-16T19:24:00Z",
-  "last_commit_sha": "0806acbb",
+  "last_audit_at": "2026-05-16T19:34:00Z",
+  "last_commit_sha": "b50a4eda",
   "papers_camera_ready_candidate": [
     "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
     "experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf"
