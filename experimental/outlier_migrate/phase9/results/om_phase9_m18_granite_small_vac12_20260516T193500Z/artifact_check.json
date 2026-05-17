@@ -1,0 +1,9 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_M18_AMBIGUOUS",
+  "reasons": [
+    "M18 activation+K is neither pass nor a specific kill mode"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z",
+  "schema_version": "om_phase9_m18_v1_artifact_check"
+}

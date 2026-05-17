@@ -1,0 +1,151 @@
+{
+  "artifacts": [
+    {
+      "bytes": 751,
+      "path": "activation_magnitude_manifest.json",
+      "sha256": "sha256:69df29d350d13f7ec8b8b94e918292c76b22eb6ad82fef58463beea7f233049e"
+    },
+    {
+      "bytes": 17741468,
+      "path": "activation_magnitudes.jsonl.gz",
+      "sha256": "sha256:67d1792c546a6898d782b337363947be23b51d540506aea0eda5c579b157fef4"
+    },
+    {
+      "bytes": 5389,
+      "path": "bf16_trace_manifest.json",
+      "sha256": "sha256:0dbffff0ac24d3211f74fb1922552a0d52b95ea223f5e9b5ff83916a8556f2aa"
+    },
+    {
+      "bytes": 46750,
+      "path": "bf16_traces.jsonl.gz",
+      "sha256": "sha256:207d2d6686a134d38c9c5d005dae90603eda40ca232feefa158677615e1c09d2"
+    },
+    {
+      "bytes": 1865,
+      "path": "bootstrap_ci.json",
+      "sha256": "sha256:92562cda4b5ab0590bda3639875bbcb866b8493cd9988a60dcaa731ecff7249a"
+    },
+    {
+      "bytes": 1318,
+      "path": "command_metadata.json",
+      "sha256": "sha256:82c076d6a4cdb5a5ed271b587762ad711557fc148c29ff6cd7aac5b9abfeeb75"
+    },
+    {
+      "bytes": 1128,
+      "path": "control_metrics.json",
+      "sha256": "sha256:6109d45de76c55ac49460ecab2ed9d875e50e89081575e9383048bb07591b078"
+    },
+    {
+      "bytes": 370,
+      "path": "decoding_config.json",
+      "sha256": "sha256:4cd8544ec143d0d4cbb9a9c5ede319658586b58c4c2ca0b49d36eb42ac1c6c4c"
+    },
+    {
+      "bytes": 8426,
+      "path": "environment.json",
+      "sha256": "sha256:e98c5a9a427722d6e970ffd0045efd407e7118f9ad9b4c239e5f2eebb853e7f2"
+    },
+    {
+      "bytes": 6572,
+      "path": "environment.txt",
+      "sha256": "sha256:3bb8acf13a5129a03d302f896dddf6a86109e72652a633b4011db45916bae2a8"
+    },
+    {
+      "bytes": 539852,
+      "path": "excluded_tensors.json",
+      "sha256": "sha256:f14fac96841702117cc815fdcbfb18e24253d1e7d7107b9a9b6da4cf754d808e"
+    },
+    {
+      "bytes": 440,
+      "path": "hook_coverage.json",
+      "sha256": "sha256:f676adf3e20e42dd28b5d6e02da1c46009d5484e0f3d728d1c7a56cd5cf090bb"
+    },
+    {
+      "bytes": 3730,
+      "path": "kv_cache_channel_evidence.json",
+      "sha256": "sha256:bfce5d3d94235407607cf96e5418a48b666a2a456a3fb2045d4f604a190159a0"
+    },
+    {
+      "bytes": 6226,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:9e7e0fae6c9dbfcc9cb6c40c1f2ee04cceea5fcac587abb14b0731b34d8ccf82"
+    },
+    {
+      "bytes": 596,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:c5b4390819a87ed081f83f61530a63155d771d3a10e221c6ba8a62d1c1065d63"
+    },
+    {
+      "bytes": 4459,
+      "path": "metrics.json",
+      "sha256": "sha256:399527abb9adda03725731acd831b3f26196c6ea13569ef2c8b537bc24441c61"
+    },
+    {
+      "bytes": 9287,
+      "path": "model_provenance.json",
+      "sha256": "sha256:0ed4dd856e0f47422da271a00d94f7f7d0b70d8810f0bb52d74dc427378658ad"
+    },
+    {
+      "bytes": 13488,
+      "path": "per_trace_metrics.json",
+      "sha256": "sha256:9a9edb249caf710fc0ecac8210daad2737f7cbed848af87396885a935b5a24ca"
+    },
+    {
+      "bytes": 8452,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:5c44ba6310efa2d0f93374c1740fc5e031472ef98114176d4c506ec07784486d"
+    },
+    {
+      "bytes": 259166,
+      "path": "protected_sets.json",
+      "sha256": "sha256:9c7867ecb706b63ea604365aac583129cb2ba6496ebe10a0d5f47e0ec3a359f5"
+    },
+    {
+      "bytes": 568,
+      "path": "quantization_config.json",
+      "sha256": "sha256:3e267560962b345fdc6c71e55316f7a463fd11180de2f894653112dcdbd830d4"
+    },
+    {
+      "bytes": 177,
+      "path": "random_seed.json",
+      "sha256": "sha256:c9c29dc5ea62efc7ae3c6c7e3bd345ba0db3f37408f5e5547ac0f40da069d971"
+    },
+    {
+      "bytes": 7982,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:3cf96822853d05ca4a42ae6cca6012f92377009f7311c875a9f18316ce2b2e60"
+    },
+    {
+      "bytes": 2276,
+      "path": "score_cache/bf16.json",
+      "sha256": "sha256:cce0fd5d417c5a9bb9585dd2801e0c306692c6d7b9765347fb2e147bdf9ee274"
+    },
+    {
+      "bytes": 2269,
+      "path": "score_cache/kivi_key_only.json",
+      "sha256": "sha256:d54d7b6255e480509aeb448baa351834249ac5fff81d9ba9475b1b81127361de"
+    },
+    {
+      "bytes": 2284,
+      "path": "score_cache/m18_activation_k.json",
+      "sha256": "sha256:b70201760dd840c19471f060c2628f42097fd8bed8dbcdbe266a89e628bc1c0c"
+    },
+    {
+      "bytes": 2285,
+      "path": "score_cache/m18_activation_kv.json",
+      "sha256": "sha256:c14792052f26be6256e8ce11ee0d61b220ab115d67c28b5fffdcf43baa69435e"
+    },
+    {
+      "bytes": 2281,
+      "path": "score_cache/random_coupled_activation_k.json",
+      "sha256": "sha256:2c0bfb686313f42157148a233c65643be7359ffb2fc10f15f7d7175a8a29d240"
+    },
+    {
+      "bytes": 2290,
+      "path": "score_cache/static_activation_1pct.json",
+      "sha256": "sha256:a373611882dbd89404428a832e1c283c4ca3a28f4a58c98237a56535c69eeb0c"
+    }
+  ],
+  "created_at_utc": "2026-05-17T14:06:21Z",
+  "schema_version": "om_phase9_m18_v1_artifact_hashes"
+}

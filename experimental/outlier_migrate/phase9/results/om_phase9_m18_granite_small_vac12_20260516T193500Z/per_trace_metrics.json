@@ -1,0 +1,378 @@
+{
+  "created_at_utc": "2026-05-17T14:06:21Z",
+  "schema_version": "om_phase9_m18_v1_per_trace_metrics",
+  "traces": [
+    {
+      "mean_nll": {
+        "bf16": 0.0018152593644025217,
+        "kivi_key_only": 0.0033310817341956067,
+        "m18_activation_k": 0.00034042681668378094,
+        "m18_activation_kv": 0.0003538709958921249,
+        "random_coupled_activation_k": 0.0027277538804320045,
+        "static_activation_1pct": 0.0006273773848011199
+      },
+      "no_recoverable_static_gap": true,
+      "perplexities": {
+        "bf16": 1.0018169079450654,
+        "kivi_key_only": 1.0033366359524283,
+        "m18_activation_k": 1.0003404847684685,
+        "m18_activation_kv": 1.0003539336156193,
+        "random_coupled_activation_k": 1.0027314775860625,
+        "static_activation_1pct": 1.0006275742271553
+      },
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0,
+      "recoveries": {
+        "kivi_key_only": null,
+        "m18_activation_k": null,
+        "m18_activation_kv": null,
+        "random_coupled_activation_k": null
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": -0.0011893337179100794
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.02558990120633098,
+        "kivi_key_only": 0.1584376003302168,
+        "m18_activation_k": 0.10571104313567048,
+        "m18_activation_kv": 0.06645625698001822,
+        "random_coupled_activation_k": 2.4623873587697744,
+        "static_activation_1pct": 0.053008247101388406
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0259201335823174,
+        "kivi_key_only": 1.1716788095732493,
+        "m18_activation_k": 1.1115006543553103,
+        "m18_activation_kv": 1.0687142142654626,
+        "random_coupled_activation_k": 11.73278850669996,
+        "static_activation_1pct": 1.0544383411434046
+      },
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "recoveries": {
+        "kivi_key_only": -4.111074238404026,
+        "m18_activation_k": -2.0009081247366516,
+        "m18_activation_kv": -0.500588022282904,
+        "random_coupled_activation_k": -374.4397379352493
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.02851820756108725
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.012802009405277204,
+        "kivi_key_only": 0.07977241631306242,
+        "m18_activation_k": 0.013675240751581441,
+        "m18_activation_kv": 0.012756997150063398,
+        "random_coupled_activation_k": 1.4341596658341587,
+        "static_activation_1pct": 0.054472745359817054
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0128843059397086,
+        "kivi_key_only": 1.0830405572620236,
+        "m18_activation_k": 1.0137691745571134,
+        "m18_activation_kv": 1.0128387147589162,
+        "random_coupled_activation_k": 4.196117386001199,
+        "static_activation_1pct": 1.055983695565859
+      },
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "recoveries": {
+        "kivi_key_only": -0.6277783033787543,
+        "m18_activation_k": 0.979469114874242,
+        "m18_activation_kv": 1.001057814998956,
+        "random_coupled_activation_k": -72.85796197285521
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.04309938962615045
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.00040124266054952784,
+        "kivi_key_only": 0.08607755647507886,
+        "m18_activation_k": 0.00017470626705895498,
+        "m18_activation_kv": 0.00019748971025235207,
+        "random_coupled_activation_k": 0.13082499378176582,
+        "static_activation_1pct": 0.0003411410087684752
+      },
+      "no_recoverable_static_gap": true,
+      "perplexities": {
+        "bf16": 1.0004013231691533,
+        "kivi_key_only": 1.0898908531201517,
+        "m18_activation_k": 1.0001747215290877,
+        "m18_activation_kv": 1.000197509212629,
+        "random_coupled_activation_k": 1.1397682973176528,
+        "static_activation_1pct": 1.00034119920398
+      },
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3,
+      "recoveries": {
+        "kivi_key_only": null,
+        "m18_activation_k": null,
+        "m18_activation_kv": null,
+        "random_coupled_activation_k": null
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": -6.012396517340868e-05
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.03609823703300208,
+        "kivi_key_only": 0.8374119510990568,
+        "m18_activation_k": 0.05903614408452995,
+        "m18_activation_kv": 0.0537700630738982,
+        "random_coupled_activation_k": 0.035841692031681305,
+        "static_activation_1pct": 0.03684285231429385
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0367576894878223,
+        "kivi_key_only": 2.3103798565943707,
+        "m18_activation_k": 1.0608135821830316,
+        "m18_activation_kv": 1.0552419351702322,
+        "random_coupled_activation_k": 1.0364917485993648,
+        "static_activation_1pct": 1.0375299625939074
+      },
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "recoveries": {
+        "kivi_key_only": -1648.1862232041053,
+        "m18_activation_k": -30.149463195937322,
+        "m18_activation_kv": -22.934856123778644,
+        "random_coupled_activation_k": 1.3443611934199005
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.0007722731060850752
+    },
+    {
+      "mean_nll": {
+        "bf16": 4.493739586708401e-05,
+        "kivi_key_only": 0.08857177633103426,
+        "m18_activation_k": 8.802614049534252e-05,
+        "m18_activation_kv": 0.0002744033307423843,
+        "random_coupled_activation_k": 0.1220233708230537,
+        "static_activation_1pct": 0.04951611763096586
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.000044938405567,
+        "kivi_key_only": 1.0926126735250101,
+        "m18_activation_k": 1.0000880300149098,
+        "m18_activation_kv": 1.0002744409827802,
+        "random_coupled_activation_k": 1.1297805053720613,
+        "static_activation_1pct": 1.0507625278809998
+      },
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "recoveries": {
+        "kivi_key_only": -0.8251603847277131,
+        "m18_activation_k": 0.9991503616439881,
+        "m18_activation_kv": 0.9954748918553319,
+        "random_coupled_activation_k": -1.5579994693820614
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.05071758947543281
+    },
+    {
+      "mean_nll": {
+        "bf16": 3.24848918841214e-05,
+        "kivi_key_only": 0.12762477519401283,
+        "m18_activation_k": 0.0015949825146741592,
+        "m18_activation_kv": 0.0018896143797515613,
+        "random_coupled_activation_k": 0.11742903171978278,
+        "static_activation_1pct": 1.4442438338146957e-05
+      },
+      "no_recoverable_static_gap": true,
+      "perplexities": {
+        "bf16": 1.000032485419524,
+        "kivi_key_only": 1.1361266198168485,
+        "m18_activation_k": 1.0015962551758193,
+        "m18_activation_kv": 1.001891400826058,
+        "random_coupled_activation_k": 1.1246018160548246,
+        "static_activation_1pct": 1.0000144425426307
+      },
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6,
+      "recoveries": {
+        "kivi_key_only": null,
+        "m18_activation_k": null,
+        "m18_activation_kv": null,
+        "random_coupled_activation_k": null
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": -1.8042876893220594e-05
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.0009341512697222942,
+        "kivi_key_only": 0.030087501603137667,
+        "m18_activation_k": 0.15062736994773906,
+        "m18_activation_kv": 0.10137978636955314,
+        "random_coupled_activation_k": 0.07616858023713391,
+        "static_activation_1pct": 0.011591499201476396
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.000934587724914,
+        "kivi_key_only": 1.0305447043221667,
+        "m18_activation_k": 1.1625633713091899,
+        "m18_activation_kv": 1.1066968703464133,
+        "random_coupled_activation_k": 1.0791444812564341,
+        "static_activation_1pct": 1.0116589409601353
+      },
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "recoveries": {
+        "kivi_key_only": -1.7610165338461812,
+        "m18_activation_k": -14.071191710978855,
+        "m18_activation_kv": -8.861879807739966,
+        "random_coupled_activation_k": -6.292737549399319
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.010724353235221251
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.0751182941668036,
+        "kivi_key_only": 0.4944234377464314,
+        "m18_activation_k": 0.2773431857823937,
+        "m18_activation_kv": 0.2817238493170111,
+        "random_coupled_activation_k": 0.5363789034606576,
+        "static_activation_1pct": 0.21070662349732472
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0780116658341599,
+        "kivi_key_only": 1.6395526623134813,
+        "m18_activation_k": 1.319619167870384,
+        "m18_activation_kv": 1.3254126558345347,
+        "random_coupled_activation_k": 1.709804272540199,
+        "static_activation_1pct": 1.234550113932672
+      },
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8,
+      "recoveries": {
+        "kivi_key_only": -2.5872400889392666,
+        "m18_activation_k": -0.543438720461676,
+        "m18_activation_kv": -0.5804487204618349,
+        "random_coupled_activation_k": -3.036021912702507
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.15653844809851214
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.00010308439202888486,
+        "kivi_key_only": 0.2726195458029963,
+        "m18_activation_k": 0.0004940674956825652,
+        "m18_activation_kv": 0.0005297129251150279,
+        "random_coupled_activation_k": 0.36842386452375475,
+        "static_activation_1pct": 0.0008578192632036075
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0001030897054073,
+        "kivi_key_only": 1.313400461040599,
+        "m18_activation_k": 1.0004941895671307,
+        "m18_activation_kv": 1.0005298532477824,
+        "random_coupled_activation_k": 1.4454545860659493,
+        "static_activation_1pct": 1.0008581872953752
+      },
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "recoveries": {
+        "kivi_key_only": -413.9097752364582,
+        "m18_activation_k": 0.48205388691550777,
+        "m18_activation_kv": 0.4348233287391928,
+        "random_coupled_activation_k": -588.7932959625092
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.0007550975899679457
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.020703398236064152,
+        "kivi_key_only": 0.22154245977825326,
+        "m18_activation_k": 0.15965748505586025,
+        "m18_activation_kv": 0.15339499241706478,
+        "random_coupled_activation_k": 0.25720925554575697,
+        "static_activation_1pct": 0.14321868602370302
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0209192002909848,
+        "kivi_key_only": 1.248000236909132,
+        "m18_activation_k": 1.173108994809613,
+        "m18_activation_kv": 1.1657853643912313,
+        "random_coupled_activation_k": 1.2933157319348714,
+        "static_activation_1pct": 1.1539821338385186
+      },
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "recoveries": {
+        "kivi_key_only": -0.7065686932043151,
+        "m18_activation_k": -0.14374296779096452,
+        "m18_activation_kv": -0.08870412096014912,
+        "random_coupled_activation_k": -1.047125554665297
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.13306293354753373
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.0013811333269134751,
+        "kivi_key_only": 0.17203561909955206,
+        "m18_activation_k": 0.006244348812735445,
+        "m18_activation_kv": 0.015375397249756922,
+        "random_coupled_activation_k": 0.1766145853449777,
+        "static_activation_1pct": 0.000189867078984704
+      },
+      "no_recoverable_static_gap": true,
+      "perplexities": {
+        "bf16": 1.0013820875307906,
+        "kivi_key_only": 1.1877201379823072,
+        "m18_activation_k": 1.00626388540204,
+        "m18_activation_kv": 1.0154942068037567,
+        "random_coupled_activation_k": 1.1931711388534099,
+        "static_activation_1pct": 1.0001898851048794
+      },
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11,
+      "recoveries": {
+        "kivi_key_only": null,
+        "m18_activation_k": null,
+        "m18_activation_kv": null,
+        "random_coupled_activation_k": null
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": -0.0011922024259112263
+    }
+  ]
+}

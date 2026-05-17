@@ -1,0 +1,62 @@
+{"created_at_utc": "2026-05-16T19:38:29Z", "event": "run_started"}
+{"batch_indices": [0], "created_at_utc": "2026-05-16T19:49:22Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [1], "created_at_utc": "2026-05-16T19:57:01Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [2], "created_at_utc": "2026-05-16T20:04:47Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [3], "created_at_utc": "2026-05-16T20:12:33Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [4], "created_at_utc": "2026-05-16T20:20:17Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [5], "created_at_utc": "2026-05-16T20:28:05Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [6], "created_at_utc": "2026-05-16T20:35:57Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [7], "created_at_utc": "2026-05-16T20:43:53Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [8], "created_at_utc": "2026-05-16T20:51:41Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [9], "created_at_utc": "2026-05-16T20:59:33Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [10], "created_at_utc": "2026-05-16T21:07:22Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [11], "created_at_utc": "2026-05-16T21:15:10Z", "event": "captured_kv_evidence_batch"}
+{"batch_indices": [0], "created_at_utc": "2026-05-16T21:38:16Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [1], "created_at_utc": "2026-05-16T21:59:12Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [2], "created_at_utc": "2026-05-16T22:20:06Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [3], "created_at_utc": "2026-05-16T22:41:00Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [4], "created_at_utc": "2026-05-16T23:01:53Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [5], "created_at_utc": "2026-05-16T23:22:48Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [6], "created_at_utc": "2026-05-16T23:43:42Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [7], "created_at_utc": "2026-05-17T00:04:33Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [8], "created_at_utc": "2026-05-17T00:25:29Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [9], "created_at_utc": "2026-05-17T00:46:23Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [10], "created_at_utc": "2026-05-17T01:07:21Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [11], "created_at_utc": "2026-05-17T01:28:15Z", "event": "completed_m18_scoring_batch", "regime": "kivi_key_only"}
+{"batch_indices": [0], "created_at_utc": "2026-05-17T01:51:18Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [1], "created_at_utc": "2026-05-17T02:12:14Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [2], "created_at_utc": "2026-05-17T02:33:09Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [3], "created_at_utc": "2026-05-17T02:54:00Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [4], "created_at_utc": "2026-05-17T03:15:00Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [5], "created_at_utc": "2026-05-17T03:35:59Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [6], "created_at_utc": "2026-05-17T03:56:54Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [7], "created_at_utc": "2026-05-17T04:17:50Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [8], "created_at_utc": "2026-05-17T04:38:38Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [9], "created_at_utc": "2026-05-17T04:59:12Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [10], "created_at_utc": "2026-05-17T05:20:03Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [11], "created_at_utc": "2026-05-17T05:40:56Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_k"}
+{"batch_indices": [0], "created_at_utc": "2026-05-17T06:04:06Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [1], "created_at_utc": "2026-05-17T06:25:07Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [2], "created_at_utc": "2026-05-17T06:46:07Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [3], "created_at_utc": "2026-05-17T07:07:08Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [4], "created_at_utc": "2026-05-17T07:28:09Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [5], "created_at_utc": "2026-05-17T07:49:10Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [6], "created_at_utc": "2026-05-17T08:10:09Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [7], "created_at_utc": "2026-05-17T08:31:09Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [8], "created_at_utc": "2026-05-17T08:52:10Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [9], "created_at_utc": "2026-05-17T09:13:11Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [10], "created_at_utc": "2026-05-17T09:34:12Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [11], "created_at_utc": "2026-05-17T09:55:11Z", "event": "completed_m18_scoring_batch", "regime": "m18_activation_kv"}
+{"batch_indices": [0], "created_at_utc": "2026-05-17T10:18:10Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [1], "created_at_utc": "2026-05-17T10:38:51Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [2], "created_at_utc": "2026-05-17T10:59:26Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [3], "created_at_utc": "2026-05-17T11:20:02Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [4], "created_at_utc": "2026-05-17T11:40:47Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [5], "created_at_utc": "2026-05-17T12:01:37Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [6], "created_at_utc": "2026-05-17T12:22:24Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [7], "created_at_utc": "2026-05-17T12:43:12Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [8], "created_at_utc": "2026-05-17T13:04:00Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [9], "created_at_utc": "2026-05-17T13:24:49Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [10], "created_at_utc": "2026-05-17T13:45:40Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"batch_indices": [11], "created_at_utc": "2026-05-17T14:06:20Z", "event": "completed_m18_scoring_batch", "regime": "random_coupled_activation_k"}
+{"created_at_utc": "2026-05-17T14:06:21Z", "event": "run_completed"}

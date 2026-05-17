@@ -1,0 +1,201 @@
+{
+  "attention_layer_count": 4,
+  "attention_layer_indices": [
+    5,
+    15,
+    25,
+    35
+  ],
+  "created_at_utc": "2026-05-16T21:15:10Z",
+  "key_cache_accessible_attention_layer_count": 4,
+  "key_cache_attention_layer_coverage": 1.0,
+  "layers": {
+    "15": {
+      "key_cache_accessible": true,
+      "key_flat_channel_count": 1024,
+      "key_shape": [
+        1,
+        8,
+        10131,
+        128
+      ],
+      "key_top_channels": [
+        423,
+        377,
+        20,
+        616,
+        900,
+        826,
+        750,
+        967,
+        685,
+        237,
+        893
+      ],
+      "layer_index": 15,
+      "mapping_note": "KV flattened channel index follows [head, head_dim] flattening for 4D HF caches.",
+      "value_cache_accessible": true,
+      "value_flat_channel_count": 1024,
+      "value_shape": [
+        1,
+        8,
+        10131,
+        128
+      ],
+      "value_top_channels": [
+        515,
+        747,
+        717,
+        698,
+        671,
+        668,
+        600,
+        530,
+        744,
+        559,
+        534
+      ]
+    },
+    "25": {
+      "key_cache_accessible": true,
+      "key_flat_channel_count": 1024,
+      "key_shape": [
+        1,
+        8,
+        10131,
+        128
+      ],
+      "key_top_channels": [
+        637,
+        338,
+        886,
+        163,
+        728,
+        671,
+        189,
+        809,
+        65,
+        927,
+        483
+      ],
+      "layer_index": 25,
+      "mapping_note": "KV flattened channel index follows [head, head_dim] flattening for 4D HF caches.",
+      "value_cache_accessible": true,
+      "value_flat_channel_count": 1024,
+      "value_shape": [
+        1,
+        8,
+        10131,
+        128
+      ],
+      "value_top_channels": [
+        101,
+        349,
+        809,
+        308,
+        70,
+        910,
+        523,
+        107,
+        842,
+        972,
+        588
+      ]
+    },
+    "35": {
+      "key_cache_accessible": true,
+      "key_flat_channel_count": 1024,
+      "key_shape": [
+        1,
+        8,
+        10131,
+        128
+      ],
+      "key_top_channels": [
+        588,
+        540,
+        898,
+        411,
+        678,
+        320,
+        792,
+        711,
+        628,
+        13,
+        914
+      ],
+      "layer_index": 35,
+      "mapping_note": "KV flattened channel index follows [head, head_dim] flattening for 4D HF caches.",
+      "value_cache_accessible": true,
+      "value_flat_channel_count": 1024,
+      "value_shape": [
+        1,
+        8,
+        10131,
+        128
+      ],
+      "value_top_channels": [
+        496,
+        170,
+        311,
+        230,
+        129,
+        375,
+        235,
+        410,
+        293,
+        295,
+        11
+      ]
+    },
+    "5": {
+      "key_cache_accessible": true,
+      "key_flat_channel_count": 1024,
+      "key_shape": [
+        1,
+        8,
+        10131,
+        128
+      ],
+      "key_top_channels": [
+        432,
+        625,
+        571,
+        497,
+        384,
+        618,
+        392,
+        565,
+        503,
+        654,
+        402
+      ],
+      "layer_index": 5,
+      "mapping_note": "KV flattened channel index follows [head, head_dim] flattening for 4D HF caches.",
+      "value_cache_accessible": true,
+      "value_flat_channel_count": 1024,
+      "value_shape": [
+        1,
+        8,
+        10131,
+        128
+      ],
+      "value_top_channels": [
+        391,
+        401,
+        842,
+        414,
+        36,
+        864,
+        354,
+        488,
+        452,
+        226,
+        398
+      ]
+    }
+  },
+  "schema_version": "om_phase9_m18_v1_kv_cache_channel_evidence",
+  "selection_basis": "mean absolute BF16 key/value cache magnitude over deterministic traces 0-11",
+  "selection_position": 10000
+}

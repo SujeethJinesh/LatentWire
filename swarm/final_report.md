@@ -1,43 +1,47 @@
 # Swarm Final Report Draft
 
-Status: Phase 9 method sprint in progress after `KILL_M11_AMBIGUOUS`.
+Status: Phase 9 method sprint in progress after `KILL_M18_AMBIGUOUS`.
 Do not treat this as human-approved final; it is the machine-readable handoff
 for the returning human.
 
-## Phase 9 Active Sprint Status (2026-05-16)
+## Phase 9 Active Sprint Status (2026-05-17)
 
-- Current active work: M18 joint KV-cache + activation protection on
-  Granite-4-H-Small.
-- Current method status: preregistration committed at `b50a4eda`; runner and
-  checker authored locally and unit-tested (`15 passed`) before launch.
-- Best alpha: `m11_alpha_0_5`.
-- Best-alpha median recovery: `0.048299284137681975`, CI95
-  `[-8.94115615101423, 0.7045992558730417]`.
-- Random-walk median recovery: `-1.2061055483492975`.
-- Interpretation: M11 did not pass, but the random-walk negative control also
-  did not beat M11. This is weaker than M2/M10's random-control kills and
-  supports an honest "smoothing alone is insufficient/ambiguous" mechanism
-  result rather than a positive method.
+- Current active work: post-M18 analytical phase plus DecDEC baseline launch.
+- Latest method status: M18 joint KV-cache + activation protection completed
+  on Granite-4-H-Small with `KILL_M18_AMBIGUOUS`.
+- M18 packet:
+  `experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z`.
+- M18 primary median recovery: `-0.34359084412632024`, CI95
+  `[-14.071191710978855, 0.7406021242797479]`.
+- M18 no-gap fraction: `0.3333333333333333`.
+- M18 controls: KIVI key-only median recovery `-2.1741283113927237`;
+  random coupled activation+K median recovery `-4.6643797310509125`.
+- Interpretation: M18 is less damaging than K-only and random coupled controls,
+  so cross-tensor coupling may contain signal, but the primary median remains
+  negative and misses the preregistered positive-method bar.
 - Phase A paper motivation update commit: `4fbf9a36`.
 - Phase A status: industrial inference-cost motivation and three-way
   "outlier migration" terminology footnote added; paper PDF rebuilt
   successfully with TeX warnings only.
 - M11 preregistration commit: `1adfeba9`.
 - M11 checker commit: `2af50cff`.
+- M18 preregistration commit: `b50a4eda`.
+- M18 runner/checker commit: `0e44082a`.
 - Current story: decode-position channel drift is robust across landed model
   families. M2 and M10 show selected discontinuous policies can be worse than
   random controls; M11 shows EMA smoothing does not clear a positive-method
-  bar on Granite-Small.
-- Live positive-method gap: run the M18 Granite-Small packet. M12 hysteresis,
-  DecDEC baseline, and unconditional M11 replications remain authorized by the
-  72-hour plan after M18 lands.
+  bar; M18 suggests activation/KV coupling has relative signal but no reliable
+  recovery.
+- Live positive-method gap: complete the Phase 1 mechanism trio by running the
+  DecDEC algorithmic baseline and M11b budget scaling, while finishing the
+  required post-M18 no-GPU analyses before any new method preregistration.
 
 ## Executive Status
 
 - Primary positive-method candidate: none after Phase 4.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
 - Current active work: Phase 9 method sprint for OutlierMigrate:
-  M11 completed ambiguously; M18 execution is next.
+  M18 completed ambiguously; DecDEC and M11b are next.
 - Phase 3 preregistration commit: `c0031574`.
 - Phase 3 runner/checker commit: `fc394bcb`.
 - Phase 4 final commit: `9ec75b19`.
@@ -973,3 +977,59 @@ Interpretation:
   hysteresis remains mandatory later, and M11 replications on Nemotron-3-Nano
   and DeepSeek-R1-Distill-Qwen-1.5B remain authorized regardless of this
   Granite outcome.
+
+## Phase 9 M18 Joint KV+Activation Coupling (2026-05-17)
+
+Result packet:
+
+- `experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z`
+
+Checker decision:
+
+- `KILL_M18_AMBIGUOUS`
+
+Primary result:
+
+| Metric | Value |
+|---|---:|
+| Artifact complete | `true` |
+| Total trace count | `12` |
+| Included positive-static-gap traces | `8` |
+| No-gap traces | `4 / 12` |
+| No-gap fraction | `0.3333333333333333` |
+| Primary regime | `m18_activation_k` |
+| Primary median recovery | `-0.34359084412632024` |
+| Primary CI95 | `[-14.071191710978855, 0.7406021242797479]` |
+| Primary mean recovery | `-5.556008919558966` |
+
+Controls:
+
+| Regime | Median Recovery | CI95 |
+|---|---:|---|
+| `m18_activation_k` | `-0.34359084412632024` | `[-14.071191710978855, 0.7406021242797479]` |
+| `m18_activation_kv` | `-0.29464607162152656` | `[-8.861879807739966, 0.7151491102972624]` |
+| `kivi_key_only` | `-2.1741283113927237` | `[-413.9097752364582, -0.7065686932043151]` |
+| `random_coupled_activation_k` | `-4.6643797310509125` | `[-330.8256289676822, -1.047125554665297]` |
+
+Hook coverage:
+
+- Attention layer indices: `[5, 15, 25, 35]`.
+- Key-cache accessible attention-layer coverage: `1.0`.
+- Source: `past_key_values.key_cache/value_cache inspection; no model source
+  modification`.
+
+Interpretation:
+
+- M18 does not establish a positive method on Granite-4-H-Small. The primary
+  activation+K regime has negative median recovery and misses the preregistered
+  `median recovery >= 0.30` and `CI lower > 0.10` pass criteria.
+- The result is not the same as M2/M10's random-control-beats failure. M18 is
+  less damaging than both KIVI key-only and random coupled activation+K
+  controls by median recovery. That is a diagnostic signal that cross-tensor
+  coupling is not arbitrary noise, but it is too weak and uncertain to use as a
+  paper's positive-method result.
+- Because M18 killed, the post-M18 analytical protocol is now active. Before
+  any new method preregistration, the sprint must complete the no-GPU analyses
+  for K/V migration, recovery curves, adjacent-bin overlap, per-layer
+  dissection, and always-protected channels. DecDEC and M11b still continue as
+  the remaining Phase 1 mechanism experiments.

@@ -1,0 +1,56 @@
+{
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260527,
+  "metric_name": "positive-static-activation-1pct-gap per-trace recovery",
+  "results_by_regime": {
+    "kivi_key_only": {
+      "bootstrap_ci95": {
+        "ci95_high": -0.7065686932043151,
+        "ci95_low": -413.9097752364582
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -259.089354585383,
+      "median_recovery": -2.1741283113927237,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "m18_activation_k": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.7406021242797479,
+        "ci95_low": -14.071191710978855
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -5.556008919558966,
+      "median_recovery": -0.34359084412632024,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "m18_activation_kv": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.7151491102972624,
+        "ci95_low": -8.861879807739966
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -3.8168900949537523,
+      "median_recovery": -0.29464607162152656,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "random_coupled_activation_k": {
+      "bootstrap_ci95": {
+        "ci95_high": -1.047125554665297,
+        "ci95_low": -330.8256289676822
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -130.83506489541787,
+      "median_recovery": -4.6643797310509125,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_phase9_m18_v1_bootstrap_ci"
+}
