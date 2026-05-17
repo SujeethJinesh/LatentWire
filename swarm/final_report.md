@@ -1033,3 +1033,45 @@ Interpretation:
   for K/V migration, recovery curves, adjacent-bin overlap, per-layer
   dissection, and always-protected channels. DecDEC and M11b still continue as
   the remaining Phase 1 mechanism experiments.
+
+## Post-M18 Analytical Phase (2026-05-17)
+
+Output directory:
+
+- `experimental/outlier_migrate/phase9/post_m18_analysis/`
+
+Reports:
+
+- `cross_tensor_migration.md`
+- `recovery_curves.md`
+- `overlap_matrix.md`
+- `per_layer_dissection.md`
+- `always_protected_channels.md`
+
+Key findings:
+
+- K/V cache migration is not identifiable from existing packets. The only K/V
+  evidence is M18 Granite-Small endpoint evidence at decode position 10000, so
+  it cannot measure early-to-late K/V set-leaving across Granite-Small,
+  Nemotron-3, DeepSeek, and Falcon-H1.
+- Per-position recovery curves are not identifiable from existing method
+  packets. M2, M10, M11, and M18 all score a single 512-token window ending at
+  decode position 10000; they support endpoint recovery comparisons only.
+- The Granite-Small fine-grid activation packet shows adjacent top-1% Jaccard
+  changes smoothly across 500-position bins, not as a single obvious cliff.
+  Non-Granite packets have coarser preregistered grids.
+- Prompt-averaged per-layer drift is distributed across available layer types
+  rather than isolated to one simple layer class. Falcon-H1 remains post-sum
+  residual only because separate pathway hooks were unavailable without source
+  modification.
+- Every measured model retains some always-protected high-magnitude core, but
+  it is smaller than the full top-1% protected set. This keeps M11b budget
+  scaling high-value: a larger budget may matter even if a small static core is
+  stable.
+
+Interpretation:
+
+- The post-M18 analyses do not justify a new method preregistration yet. They
+  instead narrow what must be measured next: DecDEC supplies the reactive
+  per-step baseline, and M11b tests whether the remaining failure is budget
+  insufficiency rather than signal staleness.
