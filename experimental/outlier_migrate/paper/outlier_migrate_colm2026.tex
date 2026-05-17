@@ -645,6 +645,19 @@ protected-channel budget, or long-horizon compound error better explains the
 gap. DecDEC and M11b are the active Phase 1 experiments designed to distinguish
 those cases.
 
+A post-M18 diagnostic pass further narrows what the current packets can say.
+The K/V-cache migration question is not identifiable from existing artifacts:
+only M18 contains K/V-channel evidence, and that evidence is endpoint-only at
+decode position 10000 rather than early-to-late K/V snapshots. The recovery
+curve question is also not identifiable, because M2, M10, M11, and M18 each
+score one 512-token endpoint window. The activation-side evidence is still
+useful: Granite-Small fine-grid top-1\% Jaccard changes smoothly across
+500-position bins, and all measured models retain a small always-protected
+core that is smaller than the full top-1\% set. These diagnostics make DecDEC
+and M11b the right next tests rather than another unmotivated method: DecDEC
+tests reactive endpoint selection, while M11b tests whether the remaining
+failure is simply protection-budget insufficiency.
+
 \subsection{Layer-stratified migration}
 
 The negative intervention result does not erase the measurement finding: it
@@ -860,6 +873,10 @@ and the Phase 9 M18 packet is
 Their checker decisions are
 \texttt{KILL\_M10\_RANDOM\_CONTROL\_BEATS},
 \texttt{KILL\_M11\_AMBIGUOUS}, and \texttt{KILL\_M18\_AMBIGUOUS}.
+Post-M18 analysis reports are in
+\url{experimental/outlier_migrate/phase9/post_m18_analysis/}; they document
+which mechanism questions are identifiable from the landed packets and which
+would require new telemetry.
 
 \section{Ethics Statement}
 
