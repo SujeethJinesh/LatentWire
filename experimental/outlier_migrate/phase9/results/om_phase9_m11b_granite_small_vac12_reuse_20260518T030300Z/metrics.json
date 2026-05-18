@@ -1,0 +1,120 @@
+{
+  "alpha": 0.3,
+  "artifacts": {
+    "activation_magnitudes": "activation_magnitudes.jsonl.gz",
+    "activation_magnitudes_sha256": "sha256:b761e88aacd87502962f1851e0f82b8267eefc1e213b6ca16d5d42759edcb269",
+    "bf16_traces": "bf16_traces.jsonl.gz",
+    "bf16_traces_sha256": "sha256:326e1fc54a18c9c6603c25215d2e242f5e99153cd8eeb8f8018c503dbad26c2b",
+    "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z"
+  },
+  "budget_fractions": [
+    0.01,
+    0.05,
+    0.1
+  ],
+  "created_at_utc": "2026-05-18T19:46:29Z",
+  "effective_trace_count": 12,
+  "included_trace_count": 8,
+  "metric_formula": "1 - (perplexity_regime - perplexity_BF16) / (perplexity_static_1pct - perplexity_BF16)",
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "model_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+  "no_recoverable_static_gap_count": 4,
+  "no_recoverable_static_gap_fraction": 0.3333333333333333,
+  "preregistration": "experimental/outlier_migrate/phase9/preregister_om_phase9_m11b_budget_scaling.md",
+  "preregistration_sha256": "sha256:a9ef9393fb1cfbc71aa15ebd2bd7394f09ff0bc86b071cadf300ee5573816dd2",
+  "prompt_sha256": "sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd",
+  "protected_set_count_stats": {
+    "m11b_top1": {
+      "max": 41,
+      "mean": 41.0,
+      "median": 41.0,
+      "min": 41
+    },
+    "m11b_top10": {
+      "max": 410,
+      "mean": 410.0,
+      "median": 410.0,
+      "min": 410
+    },
+    "m11b_top5": {
+      "max": 205,
+      "mean": 205.0,
+      "median": 205.0,
+      "min": 205
+    },
+    "static_1pct": {
+      "max": 41,
+      "mean": 41.0,
+      "median": 41.0,
+      "min": 41
+    },
+    "static_top10": {
+      "max": 410,
+      "mean": 410.0,
+      "median": 410.0,
+      "min": 410
+    }
+  },
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.421958400269822,
+        "ci95_low": -7.810432446168553
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -74.48536422481587,
+      "median_recovery": -0.29418059401495783,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.43564760535877556,
+        "ci95_low": -0.7273570722179588
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -1.1150691841111495,
+      "median_recovery": 0.24075640427266048,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 1.00079062654749,
+        "ci95_low": -1.3009000187907436
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -0.07645790605108035,
+      "median_recovery": 0.4492840911245966,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.4316908004018193,
+        "ci95_low": -53.37845888236424
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -87.92201119019458,
+      "median_recovery": -0.05176717655558488,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_phase9_m11b_v1_metrics",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "thresholds": {
+    "alpha": 0.3,
+    "bootstrap_seed": 20260527,
+    "kill_high_budget_within_top1_abs_le": 0.05,
+    "pass_beats_static_top10_by_ge": 0.15,
+    "pass_high_budget_median_recovery_min": 0.3
+  },
+  "trace_count": 12
+}

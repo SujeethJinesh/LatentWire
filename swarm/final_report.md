@@ -1092,3 +1092,51 @@ Interpretation:
   instead narrow what must be measured next: DecDEC supplies the reactive
   per-step baseline, and M11b tests whether the remaining failure is budget
   insufficiency rather than signal staleness.
+
+## Phase 9 M11b Budget Scaling (2026-05-18)
+
+Result packet:
+
+- `experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z`
+
+Checker decision:
+
+- `PASS_M11B_BUDGET_MATTERS`
+
+Primary result:
+
+| Metric | Value |
+|---|---:|
+| Artifact complete | `true` |
+| Pass regime | `m11b_top5` |
+| Total trace count | `12` |
+| Included positive-static-gap traces | `8` |
+| No-gap traces | `4 / 12` |
+| No-gap fraction | `0.3333333333333333` |
+| Top-5 EMA median recovery | `0.4492840911245966` |
+| Top-5 EMA CI95 | `[-1.3009000187907436, 1.00079062654749]` |
+| Static-top10 median recovery | `-0.05176717655558488` |
+| Static-top10 CI95 | `[-53.37845888236424, 0.4316908004018193]` |
+| Top-5 minus static-top10 median | `0.5010512676801815` |
+
+Regime comparison:
+
+| Regime | Median Recovery | CI95 |
+|---|---:|---|
+| `m11b_top1` | `-0.29418059401495783` | `[-7.810432446168553, 0.421958400269822]` |
+| `m11b_top5` | `0.4492840911245966` | `[-1.3009000187907436, 1.00079062654749]` |
+| `m11b_top10` | `0.24075640427266048` | `[-0.7273570722179588, 0.43564760535877556]` |
+| `static_top10` | `-0.05176717655558488` | `[-53.37845888236424, 0.4316908004018193]` |
+
+Interpretation:
+
+- M11b is the first Phase 9 intervention to receive a mechanical PASS on
+  Granite-4-H-Small. The top-5 budget setting is non-monotonic but clearly
+  better by median than top-1, top-10, and static-top10.
+- This is a positive signal, not a settled method claim. The top-5 bootstrap
+  interval is wide and crosses zero, and only 8/12 traces have a recoverable
+  static gap. The result should be framed as evidence that budget insufficiency
+  is live, requiring replication before any ICLR-level positive-method claim.
+- The next human-facing deliverable is the external collaboration state export.
+  The next experimental branch after that is M26/M27 plus ParoQuant and KL
+  accumulation, unless the human prioritizes M11b replication immediately.

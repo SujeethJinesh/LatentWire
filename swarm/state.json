@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "outlier_migrate_phase9_m11b_budget_scaling_granite",
+  "current_entry": "external_collaboration_state_export",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -651,6 +651,43 @@
         "included_trace_count": 8,
         "total_trace_count": 12
       }
+    },
+    {
+      "id": "outlier_migrate_phase9_m11b_budget_scaling_granite",
+      "project": "outlier_migrate",
+      "phase": "9_m11b",
+      "decision": "PASS_M11B_BUDGET_MATTERS",
+      "result_dir": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z",
+      "checker": "experimental/outlier_migrate/phase9/check_om_phase9_m11b_budget_scaling.py",
+      "checker_output": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/checker_result.json",
+      "artifact_check": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/artifact_check.json",
+      "completed_at": "2026-05-18T19:50:48Z",
+      "summary": {
+        "artifact_complete": true,
+        "pass_regime": "m11b_top5",
+        "total_trace_count": 12,
+        "included_positive_static_gap_trace_count": 8,
+        "no_recoverable_static_gap_count": 4,
+        "no_recoverable_static_gap_fraction": 0.3333333333333333,
+        "m11b_top1_median_recovery": -0.29418059401495783,
+        "m11b_top1_ci95_low": -7.810432446168553,
+        "m11b_top1_ci95_high": 0.421958400269822,
+        "m11b_top5_median_recovery": 0.4492840911245966,
+        "m11b_top5_ci95_low": -1.3009000187907436,
+        "m11b_top5_ci95_high": 1.00079062654749,
+        "m11b_top10_median_recovery": 0.24075640427266048,
+        "m11b_top10_ci95_low": -0.7273570722179588,
+        "m11b_top10_ci95_high": 0.43564760535877556,
+        "static_top10_median_recovery": -0.05176717655558488,
+        "static_top10_ci95_low": -53.37845888236424,
+        "static_top10_ci95_high": 0.4316908004018193,
+        "top5_minus_static_top10_median": 0.5010512676801815,
+        "m11b_top5_minus_top1_median": 0.7434646851395544,
+        "m11b_top10_minus_top1_median": 0.5349369982876183,
+        "m11b_top10_minus_static_top10_median": 0.29252358082824537,
+        "gpu_hours_delta_estimate": 16.75,
+        "interpretation_note": "Mechanical checker PASS for budget scaling: top-5 EMA-smoothed protection has median recovery 0.4493 and beats static-top10 by 0.5011 median. The bootstrap interval remains very wide and crosses zero, so this is a replication-required positive signal rather than an ICLR-ready method claim."
+      }
     }
   ],
   "infra_failed_entries": [
@@ -689,10 +726,10 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 130.5355,
-  "gpu_hours_budget": 160.0,
-  "last_audit_at": "2026-05-18T02:44:32Z",
-  "last_commit_sha": "84cefb76",
+  "gpu_hours_used": 147.2855,
+  "gpu_hours_budget": 200.0,
+  "last_audit_at": "2026-05-18T19:50:48Z",
+  "last_commit_sha": "52439527",
   "papers_camera_ready_candidate": [
     "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
     "experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf"

@@ -1,0 +1,24 @@
+{
+  "controls": {
+    "static_1pct": {
+      "median_recovery": 0.0
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.4316908004018193,
+        "ci95_low": -53.37845888236424
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -87.92201119019458,
+      "median_recovery": -0.05176717655558488,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    }
+  },
+  "created_at_utc": "2026-05-18T19:46:30Z",
+  "m11b_top10_minus_static_top10_median": 0.29252358082824537,
+  "m11b_top10_minus_top1_median": 0.5349369982876183,
+  "m11b_top5_minus_top1_median": 0.7434646851395544,
+  "schema_version": "om_phase9_m11b_v1_control_metrics"
+}

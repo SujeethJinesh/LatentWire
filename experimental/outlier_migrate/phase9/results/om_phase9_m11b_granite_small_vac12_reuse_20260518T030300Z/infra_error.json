@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-05-18T19:46:31Z",
+  "decision": "FAIL_INFRA_M11B",
+  "exception_type": "FileExistsError",
+  "reason": "[Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z'",
+  "schema_version": "om_phase9_m11b_v1_infra_error",
+  "traceback": "Traceback (most recent call last):\n  File \"/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_m11b_budget_scaling.py\", line 677, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_m11b_budget_scaling.py\", line 665, in main\n    result = checker.evaluate(run_dir)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/LatentWire/experimental/outlier_migrate/phase9/check_om_phase9_m11b_budget_scaling.py\", line 395, in evaluate\n    write_json(run_dir / \"checker_result.json\", result)\n  File \"/workspace/LatentWire/experimental/outlier_migrate/phase9/check_om_phase9_m11b_budget_scaling.py\", line 95, in write_json\n    path.parent.mkdir(parents=True)\n  File \"/usr/lib/python3.12/pathlib.py\", line 1313, in mkdir\n    os.mkdir(self, mode)\nFileExistsError: [Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z'\n"
+}

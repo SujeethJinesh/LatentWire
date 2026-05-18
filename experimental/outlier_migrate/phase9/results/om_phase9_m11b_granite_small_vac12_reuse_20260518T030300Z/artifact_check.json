@@ -1,0 +1,9 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_M11B_BUDGET_MATTERS",
+  "reasons": [
+    "m11b_top5 satisfies budget-scaling pass criteria"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z",
+  "schema_version": "om_phase9_m11b_v1_artifact_check"
+}
