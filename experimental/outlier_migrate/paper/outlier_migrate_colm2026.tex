@@ -81,6 +81,13 @@ MarketsandMarkets report projects the AI inference market from \$106.15B in
 Long-decode quantization failures therefore matter both for datacenter
 reasoning workloads and for eventual edge reasoning deployments.
 
+The scope here is deliberately narrow. For large-scale standard-architecture
+reasoning models, recent work such as ParoQuant reports substantial W4A16
+quality recovery \citep{liang2025paroquant}. The frontier tested in this
+draft is different: small reasoning models, hybrid Mamba-2 or parallel-hybrid
+architectures, pure PTQ rather than distillation or quantization-aware
+training, and long-decode W4A16 channel-level protection.
+
 The current status is a measurement and mechanism paper. The empirical result
 has become stronger than the original Granite/Mamba-specific framing:
 decode-position channel drift now appears in Granite hybrid models, a
@@ -252,6 +259,28 @@ top 1\% channels by mean magnitude at position 100 and computes the fraction
 whose rank at the final preregistered position differs by more than two
 channel positions. The reported gate metric is the trace-bootstrap aggregate
 over layers with equal layer weighting.
+
+\subsection{Comparison with DecDEC measurement}
+
+DecDEC is the closest prior empirical measurement of decode-time channel-set
+change. Its Figure 5 evaluates the recall of static analysis-based outlier
+identification against a per-step oracle top-$K$ channel set in short
+Transformer decode. Our measurement differs in four ways. First, the horizon
+is reasoning-scale: up to 20,000 decode positions rather than roughly 100
+decode steps. Second, the model class is reasoning LLMs rather than chat-tuned
+Transformers. Third, the architecture set includes hybrid Mamba-2 and
+parallel-hybrid models, with DeepSeek-R1-Distill-Qwen-1.5B as a
+pure-Transformer reference. Fourth, the prompts are AIME-style long reasoning
+traces rather than WikiText/BBH-style evaluation.
+
+The numerical values should not be compared as if they were the same metric.
+DecDEC reports low recall for static outlier identification; our main
+decomposition reports strict set-leaving from the position-100 top-1\% set to
+the final measured top-1\% set, plus within-set rank shuffling. Both
+measurements are consistent with a shared warning: static channel identities
+can become stale during decode. Our contribution is the long-horizon
+reasoning-scale extension and the associated W4A16 method-failure analysis,
+not the first observation that outlier-channel sets can change.
 
 \section{Experiments}
 \label{sec:experiments}
