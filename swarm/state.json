@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "external_collaboration_state_export",
+  "current_entry": "outlier_migrate_phase9_m26_stable_core_size_check",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -729,7 +729,7 @@
   "gpu_hours_used": 147.2855,
   "gpu_hours_budget": 200.0,
   "last_audit_at": "2026-05-18T19:50:48Z",
-  "last_commit_sha": "52439527",
+  "last_commit_sha": "0c99c96f",
   "papers_camera_ready_candidate": [
     "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
     "experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf"
