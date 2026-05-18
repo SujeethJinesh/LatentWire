@@ -214,6 +214,19 @@ different protected channels rather than simply lower precision.\footnote{We
 refer to arXiv:2603.19296 as test-time TTQ when discussing it, to avoid
 confusion with classical Trained Ternary Quantization.}
 
+\paragraph{Quantization error accumulation.}
+Statistically-Lossless Quantization (SLQ) argues that, in a near-lossless
+compression regime, quantization error need not compound across token
+positions \citep{helcig2026slq}. That counter-result is important for this
+draft because one possible explanation for the failed W4A16 interventions is
+long-horizon compound error rather than channel selection alone. The regimes
+are not the same: SLQ studies statistically lossless compression, whereas this
+draft studies aggressive W4A16 PTQ, small reasoning models, and endpoints up
+to 20,000 decode positions. We therefore treat compound error as an open
+hypothesis, not a conclusion. The queued KL-accumulation experiment is
+designed to test whether the W4A16 setting follows SLQ's non-compounding
+pattern or departs from it.
+
 \paragraph{Channel-wise gated recurrence.}
 Recent efficient-recurrence and linear-attention architectures make
 data-dependent channel-wise memory control a central design axis. Gated Linear
@@ -1130,6 +1143,12 @@ Wonsuk Jang and Thierry Tambe.
 Energy-Efficient LLM Inference.
 \newblock arXiv:2501.01144, ICML 2025.
 \newblock \url{https://arxiv.org/abs/2501.01144}.
+
+\bibitem[Helcig et~al.(2026)]{helcig2026slq}
+Michael Helcig, Eldar Kurtic, and Dan Alistarh.
+\newblock Statistically-Lossless Quantization of Large Language Models.
+\newblock arXiv:2605.02404, 2026.
+\newblock \url{https://arxiv.org/abs/2605.02404}.
 
 \bibitem[Liang et~al.(2025)]{liang2025paroquant}
 Yesheng Liang, Haisheng Chen, Song Han, and Zhijian Liu.
