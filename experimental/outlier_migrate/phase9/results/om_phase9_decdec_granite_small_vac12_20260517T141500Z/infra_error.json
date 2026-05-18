@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-05-18T02:39:38Z",
+  "decision": "FAIL_INFRA_DECDEC_BASELINE",
+  "exception_type": "FileExistsError",
+  "reason": "[Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z'",
+  "schema_version": "om_phase9_decdec_v1_infra_error",
+  "traceback": "Traceback (most recent call last):\n  File \"/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_decdec_baseline.py\", line 705, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_decdec_baseline.py\", line 693, in main\n    result = checker.evaluate(run_dir)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/LatentWire/experimental/outlier_migrate/phase9/check_om_phase9_decdec_baseline.py\", line 349, in evaluate\n    write_json(run_dir / \"checker_result.json\", result)\n  File \"/workspace/LatentWire/experimental/outlier_migrate/phase9/check_om_phase9_decdec_baseline.py\", line 80, in write_json\n    path.parent.mkdir(parents=True)\n  File \"/usr/lib/python3.12/pathlib.py\", line 1313, in mkdir\n    os.mkdir(self, mode)\nFileExistsError: [Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z'\n"
+}

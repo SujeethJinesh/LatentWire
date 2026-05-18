@@ -1,0 +1,9 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_DECDEC_BASELINE_REPORTED",
+  "reasons": [
+    "DecDEC algorithmic baseline packet is artifact-complete"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z",
+  "schema_version": "om_phase9_decdec_v1_artifact_check"
+}

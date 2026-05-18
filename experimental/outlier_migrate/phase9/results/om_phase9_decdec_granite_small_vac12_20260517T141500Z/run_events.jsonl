@@ -1,0 +1,40 @@
+{"created_at_utc": "2026-05-17T14:14:29Z", "event": "run_started"}
+{"created_at_utc": "2026-05-17T14:37:25Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T14:57:49Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T15:18:14Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T15:38:42Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T15:59:14Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T16:19:46Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T16:40:19Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T17:00:49Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T17:21:22Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T17:41:55Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T18:02:26Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T18:22:59Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T18:46:19Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T19:06:53Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T19:27:27Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T19:48:00Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T20:08:32Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T20:29:05Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T20:49:33Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T21:10:03Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T21:30:30Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T21:50:59Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T22:11:25Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T22:31:52Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T22:54:30Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-17T23:14:57Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-17T23:35:25Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-17T23:55:52Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T00:16:20Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T00:36:47Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T00:57:16Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T01:17:45Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T01:38:13Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T01:58:42Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T02:19:09Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T02:39:37Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T02:39:37Z", "event": "run_completed"}
+{"created_at_utc": "2026-05-18T02:39:37Z", "event": "run_failed", "reason": "[Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z'"}
+{"created_at_utc": "2026-05-18T02:39:38Z", "event": "run_failed", "reason": "[Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z'"}

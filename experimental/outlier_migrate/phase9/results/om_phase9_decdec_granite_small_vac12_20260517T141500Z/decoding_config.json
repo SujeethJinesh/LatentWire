@@ -1,0 +1,12 @@
+{
+  "algorithmic_mode": "decdec_proxy_endpoint_oracle",
+  "do_sample": false,
+  "eos_policy": "record first EOS but continue to fixed decode positions",
+  "max_new_tokens_for_calibration": 10000,
+  "max_new_tokens_for_scoring": 10000,
+  "num_beams": 1,
+  "schema_version": "om_phase9_decdec_v1_decoding_config",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "target_trace": "BF16 deterministic greedy trace"
+}

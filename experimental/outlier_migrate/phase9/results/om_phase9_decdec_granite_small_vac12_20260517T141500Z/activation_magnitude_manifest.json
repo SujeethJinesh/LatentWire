@@ -1,0 +1,28 @@
+{
+  "artifact": "activation_magnitudes.jsonl.gz",
+  "artifact_sha256": "sha256:d6d67a31fc99b7c860740a197ba727fb4cfaef73f03819fa9ff72a28903c4953",
+  "created_at_utc": "2026-05-17T14:14:44Z",
+  "layer_count": 40,
+  "positions": [
+    100,
+    10000
+  ],
+  "prompt_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "row_count": 960,
+  "schema_version": "om_phase9_decdec_v1_activation_magnitude_manifest",
+  "source_artifact": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z/activation_magnitudes.jsonl.gz",
+  "source_artifact_sha256": "sha256:67d1792c546a6898d782b337363947be23b51d540506aea0eda5c579b157fef4"
+}

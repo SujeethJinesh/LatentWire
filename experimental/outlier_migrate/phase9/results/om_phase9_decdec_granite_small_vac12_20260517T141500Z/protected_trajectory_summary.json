@@ -1,0 +1,434 @@
+{
+  "algorithmic_mode": "decdec_proxy_endpoint_oracle",
+  "created_at_utc": "2026-05-17T14:14:48Z",
+  "layers": {
+    "0": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.0",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "1": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.1",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "10": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.10",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "11": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.11",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "12": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.12",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "13": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.13",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "14": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.14",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "15": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.15",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "16": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.16",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "17": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.17",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "18": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.18",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "19": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.19",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "2": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.2",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "20": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.20",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "21": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.21",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "22": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.22",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "23": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.23",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "24": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.24",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "25": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.25",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "26": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.26",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "27": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.27",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "28": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.28",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "29": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.29",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "3": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.3",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "30": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.30",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "31": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.31",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "32": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.32",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "33": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.33",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "34": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.34",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "35": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.35",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "36": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.36",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "37": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.37",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "38": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.38",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "39": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.39",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "4": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.4",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "5": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.5",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "6": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.6",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "7": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.7",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "8": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.8",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    },
+    "9": {
+      "channel_count": 4096,
+      "decdec_proxy_count": 41,
+      "layer_name": "model.layers.9",
+      "proxy_mode": "endpoint_oracle_position_10000",
+      "static_top10_count": 410,
+      "static_top1_count": 41,
+      "top1_count": 41,
+      "unique_decdec_proxy_channels": 41
+    }
+  },
+  "protected_set_count_stats": {
+    "decdec_reactive_top1_proxy": {
+      "max": 41,
+      "mean": 41.0,
+      "median": 41.0,
+      "min": 41
+    },
+    "random_reactive_top1": {
+      "max": 41,
+      "mean": 41.0,
+      "median": 41.0,
+      "min": 41
+    },
+    "static_1pct": {
+      "max": 41,
+      "mean": 41.0,
+      "median": 41.0,
+      "min": 41
+    },
+    "static_top10": {
+      "max": 410,
+      "mean": 410.0,
+      "median": 410.0,
+      "min": 410
+    }
+  },
+  "proxy_note": "Framework-compatible endpoint oracle proxy: protect top-1% channels measured at decode position 10000 for the 512-token endpoint scoring window. No DecDEC CUDA kernel, CPU staging, or latency claim is made.",
+  "schema_version": "om_phase9_decdec_v1_protected_trajectory_summary"
+}

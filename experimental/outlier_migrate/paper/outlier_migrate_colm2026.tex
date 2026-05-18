@@ -15,14 +15,15 @@
 \maketitle
 
 \begin{abstract}
-Long-context deployment recipes often assume that the small set of
-high-magnitude channels worth protecting or transforming is reasonably stable
-after calibration. We test that assumption in long reasoning traces by
-measuring decode-position channel drift: whether channels in the top 1\% by
-magnitude early in decode remain in the same protected set later. Granite-4.0
-hybrids show large drift under frozen gates: the original rank-drift metric is
-0.8178385416666667 on Granite-4.0-H-Tiny and 0.843165650406504 on
-Granite-4.0-H-Small. The phenomenon also appears outside the Granite family:
+Quamba2 argues that SSM activations exhibit channel-order preservation and
+activation persistence, properties that support offline per-channel
+quantization for Mamba-family models. We test the corresponding assumption at
+reasoning-scale decode horizons by measuring decode-position channel-set
+drift: whether channels in the top 1\% by magnitude early in decode remain in
+the same protected set later. Granite-4.0 hybrids show large drift under
+frozen gates: the original rank-drift metric is 0.8178385416666667 on
+Granite-4.0-H-Tiny and 0.843165650406504 on Granite-4.0-H-Small. The
+phenomenon also appears outside the Granite family:
 Nemotron-3-Nano gives 0.820809591642925, DeepSeek-R1-Distill-Qwen-1.5B gives
 0.8393787202380952, and Falcon-H1 gives 0.7833543771043772. A stricter
 set-membership decomposition shows that the systems-relevant component is not
@@ -34,20 +35,30 @@ fail their preregistered gates, but with different failure modes: M2 and M10
 are beaten by random-bin controls, M11 is not beaten by its random-walk control
 yet recovers only 0.048299284138 median of the BF16-vs-static gap, and M18
 activation+K coupling beats K-only and random-coupled controls but still has
-negative median recovery (-0.343590844126). The resulting paper is a
+negative median recovery (-0.343590844126). The DecDEC algorithmic reactive
+baseline is less damaging than a random reactive control but also has negative
+median recovery (-0.070034781258). The resulting paper is a
 measurement and mechanism paper, not a positive quantization method: boundary
 discontinuities are actively harmful, smoothing removes that harm but does not
 recover quality, and cross-tensor coupling has diagnostic signal without
 reliable recovery. The remaining mechanism question is whether future methods
-need a reactive baseline, larger protected budgets, or a way to address
+need larger protected budgets, stable-core targeting, or a way to address
 long-horizon compound error.
 \end{abstract}
 
 \section{Introduction}
 
-This draft asks whether the channels carrying high-magnitude decode-time
-activations are fixed or whether the identity of those channels changes during
-long reasoning traces. The distinction matters for deployment. Static
+Quamba2 argues that SSM activations have channel-order preservation and
+activation persistence, properties that motivate offline per-channel
+quantization and channel clustering for Mamba1/Mamba2 backbones
+\citep{chiang2025quamba2}. We show that the corresponding protected-set
+assumption breaks down at reasoning-scale decode horizons in our W4A16
+setting: across three hybrid reasoning LLMs (Granite-4.0-H-Small,
+Nemotron-3-Nano, Falcon-H1) and one pure-Transformer reference
+(DeepSeek-R1-Distill-Qwen-1.5B), 53--67\% of top-1\% magnitude channels at
+calibration positions strictly leave the top-1\% set by the final measured
+decode position. This is not merely within-set rank shuffling; it is strict
+set membership change. The distinction matters for deployment. Static
 protected-channel maps, rotations, per-channel formats, and calibration-time
 outlier policies are easiest to engineer when the protected set remains stable.
 If channels leave the protected set as decode position increases, then a
@@ -85,16 +96,21 @@ budget, and compound error.
 
 The contribution is:
 \begin{itemize}
-\item preregistered measurement of decode-position channel drift on two
-  Granite hybrid model sizes;
+\item quantitative characterization of decode-position channel-set drift at
+  reasoning-scale horizons (up to 20,000 decode tokens) across hybrid Mamba-2
+  and pure-Transformer reasoning LLMs, extending DecDEC's short-horizon
+  Transformer evidence to the long-decode reasoning regime while contradicting
+  the channel-persistence assumption that motivates Quamba2-style static
+  ordering;
 \item cross-architecture replication on Nemotron-3, DeepSeek-R1-Distill, and
   Falcon-H1 under fixed deterministic traces;
 \item strict set-membership decomposition showing that many channels leave
   the protected top-1\% set entirely, rather than merely shuffling within it;
 \item negative intervention evidence showing that static union protection,
   larger scoring windows, simple position-bin switching, position-binned scale
-  tables, EMA-smoothed set updates, and activation/KV coupling do not yet yield
-  a positive W4A16 protection method.
+  tables, EMA-smoothed set updates, activation/KV coupling, and a DecDEC-style
+  reactive baseline do not yet yield a positive W4A16 protection method on the
+  Granite-Small testbed.
 \end{itemize}
 The paper does not claim a deployable quantization recipe, a kernel/runtime
 system, a performance improvement, or completed architecture-general
@@ -126,7 +142,12 @@ Mamba-PTQ shows that recurrent LLMs exhibit activation outlier channels and
 frames outlier-aware quantization as a first step \citep{pierro2024mambaptq}.
 Quamba proposes a static 8-bit per-tensor recipe that suppresses maximum input
 values to selective SSMs and uses a Hadamard transform for output activations
-\citep{chiang2024quamba}. MambaQuant uses variance-aligned rotations and
+\citep{chiang2024quamba}. Quamba2 is closer to the assumption tested here:
+it explicitly builds on channel-order preservation and activation persistence
+for Mamba1/Mamba2 quantization \citep{chiang2025quamba2}. Our contribution is
+not that dynamic channel sets exist in every setting; it is that the
+Quamba2-style persistence assumption does not hold for the measured
+reasoning-scale W4A16 decode horizons. MambaQuant uses variance-aligned rotations and
 reports heavy-tailed, channel-uneven distributions in Mamba-family models
 \citep{xu2025mambaquant}. Quamba-SE softens the treatment of activation
 outliers with multiple adaptive scales but still evaluates a per-value
@@ -158,22 +179,33 @@ on hybrid long decode, not declaring them failed.
 \paragraph{Dynamic channel and KV-cache policies.}
 Dynamic inference-time policies are closer to the methods we test and fail.
 DecDEC dynamically selects salient activation channels at each decode step and
-fetches residual compensation from CPU memory \citep{park2025decdec}. M2 and
-hard-binned M10 differ in that they switch a precomputed protected-channel or
-scale policy by decode-position bin; M11 tests whether smoothing that decision
-surface avoids the boundary discontinuities exposed by M2 and M10. It does
-avoid the random-control-beats pattern but still does not recover enough
-quality. KV-cache systems address a
+fetches residual compensation from CPU memory \citep{park2025decdec}. DecDEC
+also reports low recall for static outlier-channel identification at short
+decode horizons. Our measurement is therefore not a first demonstration that
+channel sets change during decode; the defensible distinction is horizon,
+model class, architecture, and benchmark surface: up to 20,000 decode tokens
+on reasoning LLMs, including hybrid Mamba-2 and parallel-hybrid models, rather
+than DecDEC's short-horizon Transformer setting. M2 and hard-binned M10 differ
+from DecDEC in that they switch a precomputed protected-channel or scale policy
+by decode-position bin; M11 tests whether smoothing that decision surface
+avoids the boundary discontinuities exposed by M2 and M10. It does avoid the
+random-control-beats pattern but still does not recover enough quality.
+KV-cache systems address a
 different tensor. KIVI quantizes key cache per channel and value cache per
 token \citep{liu2024kivi}; PM-KVQ targets long-CoT KV-cache quantization and
 RoPE-induced key-cache distribution shift \citep{liu2025pmkvq}; and
 AttentionPredictor learns to predict future attention scores for KV-cache
 compression and prefetch \citep{yang2025attentionpredictor}. These works
 motivate long-decode inference adaptation, but our measurements are about
-linear-layer activation channel sets. PMPD changes precision across inference
+linear-layer activation channel sets.\footnote{``Hot channels'' in HCP/CHON
+(arXiv:2602.02047) refers to persistently extreme channels during NVFP4
+pretraining, which is close in vocabulary but opposite in setting from the
+drifting W4A16 inference-time channels measured here.} PMPD changes precision across inference
 phases and deeper decode positions \citep{chen2025pmpd}; our current evidence
 points in an orthogonal direction, where later decode positions can require
-different protected channels rather than simply lower precision.
+different protected channels rather than simply lower precision.\footnote{We
+refer to arXiv:2603.19296 as test-time TTQ when discussing it, to avoid
+confusion with classical Trained Ternary Quantization.}
 
 \paragraph{Channel-wise gated recurrence.}
 Recent efficient-recurrence and linear-attention architectures make
@@ -582,6 +614,9 @@ random-walk median is lower by 1.254404832487 \\
 Phase 9 M18 act+K & Granite-Small & \texttt{KILL\_M18\_AMBIGUOUS} &
 -0.343590844126 & [-14.071191710979, 0.740602124280] &
 KIVI key-only median -2.174128311393; random-coupled median -4.664379731051 \\
+Phase 9 DecDEC proxy & Granite-Small & \texttt{PASS\_DECDEC\_BASELINE\_REPORTED} &
+-0.070034781258 & [-8.495693501233, 0.674176370350] &
+random reactive median -1.262604926125; static top-10\% median -0.228273368210 \\
 \bottomrule
 \end{tabular}
 }
@@ -590,12 +625,15 @@ protection under W4A16. Phase 9 M2 tests position-conditioned protected sets
 A/B/C with a static-3\% matched-cost control and a random-bin negative
 control. Phase 9 M10 tests hard-binned scale tables. Phase 9 M11 tests
 EMA-smoothed protected-set updates. Phase 9 M18 tests joint activation and
-key-cache channel protection. None provides a positive method. M10
+key-cache channel protection. The DecDEC row is a descriptive algorithmic
+baseline, not a positive-method gate. None provides a positive method. M10
 values are from
 \url{experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/checker_result.json};
 M11 values are from
 \url{experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/checker_result.json}; M18 values are from
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z/checker_result.json}.}
+\url{experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z/checker_result.json};
+DecDEC values are from
+\url{experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z/checker_result.json}.}
 \label{tab:intervention-summary}
 \end{table}
 
@@ -640,10 +678,13 @@ signal but is still insufficient: M18 activation+K has median recovery
 -0.343590844126, while KIVI key-only and random coupled controls have medians
 -2.174128311393 and -4.664379731051. That comparison suggests the coupled
 selection is not arbitrary noise, but it does not recover quality. The
-remaining open question is whether a reactive per-step baseline, a larger
-protected-channel budget, or long-horizon compound error better explains the
-gap. DecDEC and M11b are the active Phase 1 experiments designed to distinguish
-those cases.
+DecDEC algorithmic proxy then tests a reactive endpoint-selection baseline:
+median recovery is -0.070034781258 with CI95 [-8.495693501233,
+0.674176370350]. It is less damaging than a random reactive top-1\% control
+whose median is -1.262604926125, but it does not recover the W4A16 static gap.
+The remaining open question is whether a larger protected-channel budget,
+stable-core targeting, or long-horizon compound error better explains the gap.
+M11b, M26, and the KL accumulation analysis are the next mechanism tests.
 
 A post-M18 diagnostic pass further narrows what the current packets can say.
 The K/V-cache migration question is not identifiable from existing artifacts:
@@ -753,6 +794,19 @@ systems method. It reports replicated measurement and failed method attempts,
 not an end-to-end efficiency or quality improvement. The strongest positive
 evidence is the cross-model measurement; the strongest negative evidence is
 that three simple W4A16 protection policies fail under their frozen gates.
+
+The scope is W4A16 post-training quantization for small reasoning models and
+hybrid Mamba-2 or parallel-hybrid architectures, with a small pure-Transformer
+reference. It should not be read as an all-formats claim. The underlying
+decode-position channel-set drift may be a broader autoregressive phenomenon,
+but quality consequences depend on format dynamic range: INT4 exposes severe
+failure surfaces here, FP8 may absorb comparable drift in settings like
+ThoughtFlow, block formats such as MXFP4/NVFP4 move the analysis from channels
+to blocks, and INT2/INT3 would likely be still more fragile. Large standard
+reasoning models are also outside the current evidence. Recent reasoning PTQ
+work such as ParoQuant reports strong W4A16 recovery on larger reasoning
+models \citep{liang2025paroquant}; the required ParoQuant baseline for this
+draft is queued but not yet run.
 
 The empirical surface is still limited. All reported traces are deterministic
 AIME-2025 slices. The bootstrap uncertainty is over traces, not over
@@ -887,7 +941,7 @@ overclaiming the replicated measurement or the failed Phase 3/4/9
 interventions as a validated cross-model positive method; this draft
 explicitly rejects that interpretation until a future intervention pass.
 
-\begin{thebibliography}{25}
+\begin{thebibliography}{30}
 
 \bibitem[Bort(2025)]{bort2025reasoningcosts}
 Julie Bort.
@@ -988,6 +1042,14 @@ Space Models.
 \newblock arXiv:2410.13229, 2024.
 \newblock \url{https://arxiv.org/abs/2410.13229}.
 
+\bibitem[Chiang et~al.(2025)]{chiang2025quamba2}
+Hung-Yueh Chiang, Chi-Chih Chang, Natalia Frumkin, Kai-Chiang Wu, Mohamed S.
+Abdelfattah, and Diana Marculescu.
+\newblock Quamba2: A Robust and Scalable Post-training Quantization Framework
+for Selective State Space Models.
+\newblock arXiv:2503.22879, 2025.
+\newblock \url{https://arxiv.org/abs/2503.22879}.
+
 \bibitem[Xu et~al.(2025)]{xu2025mambaquant}
 Zukang Xu, Yuxuan Yue, Xing Hu, Zhihang Yuan, Zixu Jiang, Zhixuan Chen,
 Jiangyong Yu, Chen Xu, Sifan Zhou, and Dawei Yang.
@@ -1039,6 +1101,13 @@ Wonsuk Jang and Thierry Tambe.
 Energy-Efficient LLM Inference.
 \newblock arXiv:2501.01144, ICML 2025.
 \newblock \url{https://arxiv.org/abs/2501.01144}.
+
+\bibitem[Liang et~al.(2025)]{liang2025paroquant}
+Yesheng Liang, Haisheng Chen, Song Han, and Zhijian Liu.
+\newblock ParoQuant: Pairwise Rotation Quantization for Efficient Reasoning
+LLM Inference.
+\newblock arXiv:2511.10645, 2025.
+\newblock \url{https://arxiv.org/abs/2511.10645}.
 
 \bibitem[Qwen Team(2026)]{qwen36hf}
 Qwen Team.

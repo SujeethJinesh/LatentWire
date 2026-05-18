@@ -1,12 +1,13 @@
 # Swarm Final Report Draft
 
-Status: Phase 9 method sprint in progress after `KILL_M18_AMBIGUOUS`.
+Status: Phase 9 method sprint in progress after `PASS_DECDEC_BASELINE_REPORTED`.
 Do not treat this as human-approved final; it is the machine-readable handoff
 for the returning human.
 
 ## Phase 9 Active Sprint Status (2026-05-17)
 
-- Current active work: post-M18 analytical phase plus DecDEC baseline launch.
+- Current active work: M11b budget scaling launch after DecDEC baseline
+  completion.
 - Latest method status: M18 joint KV-cache + activation protection completed
   on Granite-4-H-Small with `KILL_M18_AMBIGUOUS`.
 - M18 packet:
@@ -19,6 +20,21 @@ for the returning human.
 - Interpretation: M18 is less damaging than K-only and random coupled controls,
   so cross-tensor coupling may contain signal, but the primary median remains
   negative and misses the preregistered positive-method bar.
+- DecDEC baseline packet:
+  `experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z`.
+- DecDEC checker decision: `PASS_DECDEC_BASELINE_REPORTED` (descriptive
+  baseline; artifact complete).
+- DecDEC algorithmic proxy median recovery: `-0.07003478125820645`, CI95
+  `[-8.495693501232758, 0.6741763703501289]`.
+- DecDEC no-gap fraction: `0.3333333333333333`; included traces with
+  positive static gap: `8/12`.
+- DecDEC controls: static top-10% median recovery `-0.22827336820997218`;
+  random reactive top-1% median recovery `-1.2626049261250778`.
+- Interpretation: the DecDEC proxy is less damaging than random reactive
+  channel selection, but its own median recovery is negative and the CI crosses
+  zero. It does not recover the W4A16 static gap on Granite-Small. This
+  satisfies the required algorithmic baseline comparison but does not provide
+  a positive method.
 - Phase A paper motivation update commit: `4fbf9a36`.
 - Phase A status: industrial inference-cost motivation and three-way
   "outlier migration" terminology footnote added; paper PDF rebuilt
@@ -31,10 +47,11 @@ for the returning human.
   families. M2 and M10 show selected discontinuous policies can be worse than
   random controls; M11 shows EMA smoothing does not clear a positive-method
   bar; M18 suggests activation/KV coupling has relative signal but no reliable
-  recovery.
-- Live positive-method gap: complete the Phase 1 mechanism trio by running the
-  DecDEC algorithmic baseline and M11b budget scaling, while finishing the
-  required post-M18 no-GPU analyses before any new method preregistration.
+  recovery; DecDEC shows reactive endpoint selection is better than random
+  reactive selection but still does not recover quality.
+- Live positive-method gap: complete M11b budget scaling and M26 stable-core
+  testing, then run the mandatory ParoQuant and KL baselines plus no-GPU FFT
+  and per-component Quamba2 analyses before paper committee review.
 
 ## Executive Status
 

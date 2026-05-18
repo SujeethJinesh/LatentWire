@@ -1,0 +1,15 @@
+{
+  "baseline_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.6741763703501289,
+      "ci95_low": -8.495693501232758
+    },
+    "included_trace_count": 8,
+    "mean_recovery": -42.83794574433356,
+    "median_recovery": -0.07003478125820645,
+    "no_recoverable_static_gap_count": 4,
+    "no_recoverable_static_gap_fraction": 0.3333333333333333,
+    "total_trace_count": 12
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z"
+}
