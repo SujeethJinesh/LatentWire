@@ -202,9 +202,17 @@ different tensor. KIVI quantizes key cache per channel and value cache per
 token \citep{liu2024kivi}; PM-KVQ targets long-CoT KV-cache quantization and
 RoPE-induced key-cache distribution shift \citep{liu2025pmkvq}; and
 AttentionPredictor learns to predict future attention scores for KV-cache
-compression and prefetch \citep{yang2025attentionpredictor}. These works
-motivate long-decode inference adaptation, but our measurements are about
-linear-layer activation channel sets.\footnote{``Hot channels'' in HCP/CHON
+compression and prefetch \citep{yang2025attentionpredictor}. Newer
+long-context KV-cache systems sharpen the distinction. ChanMix reallocates
+bits across sensitive KV-cache channels \citep{liao2026chanmix}, while MixKVQ
+uses query-aware mixed precision for critical key channels in long-context
+reasoning \citep{zhang2025mixkvq}. These are close neighbors on the
+channel-wise long-context quantization axis, but they act on cached key/value
+tensors. Our measurements and interventions target linear-layer activation
+channels, so a ChanMix- or MixKVQ-style success would not by itself resolve
+the W4A16 activation-channel failure measured here. These works motivate
+long-decode inference adaptation, but our measurements are about linear-layer
+activation channel sets.\footnote{``Hot channels'' in HCP/CHON
 (arXiv:2602.02047) refers to persistently extreme channels during NVFP4
 pretraining, which is close in vocabulary but opposite in setting from the
 drifting W4A16 inference-time channels measured here.} PMPD changes precision across inference
@@ -222,8 +230,16 @@ draft because one possible explanation for the failed W4A16 interventions is
 long-horizon compound error rather than channel selection alone. The regimes
 are not the same: SLQ studies statistically lossless compression, whereas this
 draft studies aggressive W4A16 PTQ, small reasoning models, and endpoints up
-to 20,000 decode positions. We therefore treat compound error as an open
-hypothesis, not a conclusion. The queued KL-accumulation experiment is
+to 20,000 decode positions. QEP identifies layer-wise error propagation as a
+limitation of low-bit PTQ \citep{arai2025qep}, and LAQuant argues that
+long-decoding reasoning failures can persist despite short-decode accuracy
+unless calibration and lookahead losses account for downstream residual
+effects \citep{choi2026laquant}. Activation Sensitivity gives the theoretical
+version of the same warning: activation magnitude alone is only a proxy for
+loss sensitivity, and cross-layer error accumulation, calibration mismatch,
+and task-conditional sensitivity are open challenges for PTQ
+\citep{xu2026activationsensitivity}. We therefore treat compound error as an
+open hypothesis, not a conclusion. The queued KL-accumulation experiment is
 designed to test whether the W4A16 setting follows SLQ's non-compounding
 pattern or departs from it.
 
@@ -983,7 +999,14 @@ overclaiming the replicated measurement or the failed Phase 3/4/9
 interventions as a validated cross-model positive method; this draft
 explicitly rejects that interpretation until a future intervention pass.
 
-\begin{thebibliography}{30}
+\begin{thebibliography}{40}
+
+\bibitem[Arai and Ichikawa(2025)]{arai2025qep}
+Yamato Arai and Yuma Ichikawa.
+\newblock Quantization Error Propagation: Revisiting Layer-Wise
+Post-Training Quantization.
+\newblock arXiv:2504.09629, NeurIPS 2025.
+\newblock \url{https://arxiv.org/abs/2504.09629}.
 
 \bibitem[Bort(2025)]{bort2025reasoningcosts}
 Julie Bort.
@@ -1092,6 +1115,13 @@ for Selective State Space Models.
 \newblock arXiv:2503.22879, 2025.
 \newblock \url{https://arxiv.org/abs/2503.22879}.
 
+\bibitem[Choi et~al.(2026)]{choi2026laquant}
+Euntae Choi, Sumin Song, and Sungjoo Yoo.
+\newblock LAQuant: A Simple Overhead-free Large Reasoning Model Quantization
+by Layer-wise Lookahead Loss.
+\newblock arXiv:2605.08755, 2026.
+\newblock \url{https://arxiv.org/abs/2605.08755}.
+
 \bibitem[Xu et~al.(2025)]{xu2025mambaquant}
 Zukang Xu, Yuxuan Yue, Xing Hu, Zhihang Yuan, Zixu Jiang, Zhixuan Chen,
 Jiangyong Yu, Chen Xu, Sifan Zhou, and Dawei Yang.
@@ -1157,11 +1187,25 @@ LLM Inference.
 \newblock arXiv:2511.10645, 2025.
 \newblock \url{https://arxiv.org/abs/2511.10645}.
 
+\bibitem[Liao and Wen(2026)]{liao2026chanmix}
+Chengxi Liao and Zeyi Wen.
+\newblock Channel-Aware Mixed-Precision Quantization for Efficient
+Long-Context Inference.
+\newblock ICLR 2026.
+\newblock \url{https://openreview.net/forum?id=yjr2jX41qO}.
+
 \bibitem[Qwen Team(2026)]{qwen36hf}
 Qwen Team.
 \newblock Qwen3.6-35B-A3B model card.
 \newblock Hugging Face, 2026.
 \newblock \url{https://huggingface.co/Qwen/Qwen3.6-35B-A3B}.
+
+\bibitem[Xu(2026)]{xu2026activationsensitivity}
+Bruce Changlong Xu.
+\newblock Activation Sensitivity as a Unifying Principle for Post-Training
+Quantization.
+\newblock arXiv:2601.11663, 2026.
+\newblock \url{https://arxiv.org/abs/2601.11663}.
 
 \bibitem[Yang et~al.(2023)]{yang2023gla}
 Songlin Yang, Bailin Wang, Yikang Shen, Rameswar Panda, and Yoon Kim.
@@ -1181,6 +1225,13 @@ Moonshot AI Kimi Team: Yu Zhang et~al.
 \newblock Kimi Linear: An Expressive, Efficient Attention Architecture.
 \newblock arXiv:2510.26692, October 2025.
 \newblock \url{https://arxiv.org/abs/2510.26692}.
+
+\bibitem[Zhang et~al.(2025)]{zhang2025mixkvq}
+Tao Zhang, Ziqian Zeng, Hao Peng, Huiping Zhuang, and Cen Chen.
+\newblock MixKVQ: Query-Aware Mixed-Precision KV Cache Quantization for
+Long-Context Reasoning.
+\newblock arXiv:2512.19206, 2025.
+\newblock \url{https://arxiv.org/abs/2512.19206}.
 
 \end{thebibliography}
 
