@@ -1,0 +1,7 @@
+{
+  "artifact_not_copied_reason": "source activation artifact is large; M26 packet records stable_core.json and source hash",
+  "created_at_utc": "2026-05-18T20:11:16Z",
+  "schema_version": "om_phase9_m26_v1_activation_magnitude_manifest",
+  "source_artifact": "experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitudes.jsonl.gz",
+  "source_artifact_sha256": "sha256:326a04351e0dda28cf919fe4745d7d9341011db13d940a06cf9c8470633003e1"
+}

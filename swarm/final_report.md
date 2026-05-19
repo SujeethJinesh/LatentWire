@@ -1,15 +1,46 @@
 # Swarm Final Report Draft
 
-Status: Phase 9 method sprint in progress after `PASS_DECDEC_BASELINE_REPORTED`.
+Status: Phase 9 method sprint in progress after `AMBIGUOUS_M26`.
 Do not treat this as human-approved final; it is the machine-readable handoff
 for the returning human.
 
-## Phase 9 Active Sprint Status (2026-05-17)
+## Phase 9 Active Sprint Status (2026-05-19)
 
-- Current active work: M11b budget scaling launch after DecDEC baseline
-  completion.
-- Latest method status: M18 joint KV-cache + activation protection completed
-  on Granite-4-H-Small with `KILL_M18_AMBIGUOUS`.
+- Current active work: M26 stable-core protection just landed; next active
+  queue item is KL accumulation because existing packets cannot identify
+  within-trace recovery dynamics.
+- Latest method status: M26 stable-core protection completed on
+  Granite-4-H-Small with `AMBIGUOUS_M26`.
+- Latest positive-method lead: M11b budget scaling completed on
+  Granite-4-H-Small with `PASS_M11B_BUDGET_MATTERS`.
+- M26 packet:
+  `experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z`.
+- M26 core-only median recovery: `0.17761580764776214`, CI95
+  `[-0.11644855808986154, 0.9999159313236907]`.
+- M26 random matched-size control median recovery:
+  `-1.549468781806685`.
+- M26 interpretation: stable-core protection has signal relative to random
+  matched-size channels, but it misses the preregistered positive-method
+  threshold. It is ambiguous, not a clean kill and not a settled method.
+- M11b packet:
+  `experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z`.
+- M11b checker decision: `PASS_M11B_BUDGET_MATTERS`.
+- M11b top-5 median recovery: `0.4492840911245966`, CI95
+  `[-1.3009000187907436, 1.00079062654749]`.
+- M11b top-5 minus static-top10 median: `0.5010512676801815`.
+- M11b interpretation: first mechanical PASS of any Phase 9 inference-time
+  protection method, but the CI is wide and crosses zero. Replication on
+  Nemotron-3-Nano is required before claiming a settled positive method.
+- Per-component framing update: SSM, attention, and MoE block outputs drift at
+  comparable rates within each measured hybrid model. This strengthens the
+  Quamba2 contradiction at the block-output level while still leaving internal
+  SSM state tensors as a limitation.
+- M11 framing update: EMA smoothing is not "no signal"; M11 beat its random
+  walk control by median `1.26`. Mechanism 2 should be stated as smoothing has
+  real signal but insufficient absolute recovery.
+- Revised priority after M26: KL accumulation, ParoQuant baseline, M11b
+  replication on Nemotron-3-Nano, then M27 only if budget and evidence still
+  justify it. If forced to choose, M11b replication wins over M27.
 - M18 packet:
   `experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z`.
 - M18 primary median recovery: `-0.34359084412632024`, CI95
@@ -44,21 +75,24 @@ for the returning human.
 - M18 preregistration commit: `b50a4eda`.
 - M18 runner/checker commit: `0e44082a`.
 - Current story: decode-position channel drift is robust across landed model
-  families. M2 and M10 show selected discontinuous policies can be worse than
-  random controls; M11 shows EMA smoothing does not clear a positive-method
-  bar; M18 suggests activation/KV coupling has relative signal but no reliable
-  recovery; DecDEC shows reactive endpoint selection is better than random
-  reactive selection but still does not recover quality.
-- Live positive-method gap: complete M11b budget scaling and M26 stable-core
-  testing, then run the mandatory ParoQuant and KL baselines plus no-GPU FFT
-  and per-component Quamba2 analyses before paper committee review.
+  families and comparable across measured block types. M2 and M10 show
+  boundary discontinuities can be actively harmful; M11 shows smoothing has
+  signal but insufficient recovery; M18 shows activation/KV coupling has
+  relative signal but misses the positive bar; DecDEC is a useful but negative
+  reactive baseline; M11b is the first mechanical PASS; M26 provides another
+  signal-bearing but non-passing structural method.
+- Live positive-method gap: replicate M11b cross-model and complete
+  reviewer-critical mechanism/baseline work, especially KL accumulation and
+  ParoQuant, before claiming a positive method beyond a Granite-Small lead.
 
 ## Executive Status
 
-- Primary positive-method candidate: none after Phase 4.
+- Primary positive-method candidate: M11b top-5 EMA budget scaling on
+  Granite-Small, with wide uncertainty and no cross-model replication yet.
 - Safe fallback paper: ThoughtFlow-FP8 falsification methodology.
 - Current active work: Phase 9 method sprint for OutlierMigrate:
-  M18 completed ambiguously; DecDEC and M11b are next.
+  M26 completed ambiguously; KL accumulation and ParoQuant are next, followed
+  by M11b replication on Nemotron-3-Nano before M27.
 - Phase 3 preregistration commit: `c0031574`.
 - Phase 3 runner/checker commit: `fc394bcb`.
 - Phase 4 final commit: `9ec75b19`.
@@ -1140,3 +1174,47 @@ Interpretation:
 - The next human-facing deliverable is the external collaboration state export.
   The next experimental branch after that is M26/M27 plus ParoQuant and KL
   accumulation, unless the human prioritizes M11b replication immediately.
+
+## Phase 9 M26 Stable-Core Protection (2026-05-19)
+
+Result packet:
+
+- `experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z`
+
+Checker decision:
+
+- `AMBIGUOUS_M26`
+
+Primary result:
+
+| Metric | Value |
+|---|---:|
+| Artifact complete | `true` |
+| Total trace count | `12` |
+| Included positive-static-gap traces | `8` |
+| No-gap traces | `4 / 12` |
+| No-gap fraction | `0.3333333333333333` |
+| Stable-core size | `847 / 163840` channels |
+| Stable-core percentage | `0.5169677734375` |
+| M26 core-only median recovery | `0.17761580764776214` |
+| M26 core-only CI95 | `[-0.11644855808986154, 0.9999159313236907]` |
+| Core-current-top1 union median recovery | `0.24793971011108568` |
+| Core-current-top1 union CI95 | `[-1.0919569202844368, 0.5961378881449835]` |
+| Random matched-core median recovery | `-1.549468781806685` |
+| Random matched-core CI95 | `[-49.68612989366393, -0.6579863084220186]` |
+
+Interpretation:
+
+- M26 does not clear the preregistered positive-method threshold. Core-only
+  protection misses the required `median recovery >= 0.30` and `CI lower >
+  0.10` criteria.
+- M26 is also not a clean negative/no-signal result. The stable core is far
+  better than random matched-size channels by median recovery, so the
+  always-protected core appears to contain signal.
+- The result should be integrated as another signal-bearing but insufficient
+  inference-time protection strategy. Together with M11b, it suggests budget
+  and set choice matter, but Granite-Small alone is not enough for an ICLR
+  positive-method claim.
+- Revised queue after this result: KL accumulation first, ParoQuant second,
+  M11b replication on Nemotron-3-Nano third, then M27 only if budget and
+  evidence still justify it.

@@ -1,0 +1,24 @@
+{
+  "controls": {
+    "random_matched_core": {
+      "bootstrap_ci95": {
+        "ci95_high": -0.6579863084220186,
+        "ci95_low": -49.68612989366393
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -67.97758549511374,
+      "median_recovery": -1.549468781806685,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "static_1pct": {
+      "median_recovery": 0.0
+    }
+  },
+  "core_union_minus_core_median": 0.07032390246332354,
+  "created_at_utc": "2026-05-19T08:39:50Z",
+  "m26_core_minus_random_matched_median": 1.727084589454447,
+  "m26_core_minus_static_1pct_median": 0.17761580764776214,
+  "schema_version": "om_phase9_m26_v1_control_metrics"
+}

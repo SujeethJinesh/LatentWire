@@ -1,0 +1,45 @@
+{
+  "results_by_regime": {
+    "core_current_top1_union": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.5961378881449835,
+        "ci95_low": -1.0919569202844368
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -8.71060446573841,
+      "median_recovery": 0.24793971011108568,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "m26_core": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.9999159313236907,
+        "ci95_low": -0.11644855808986154
+      },
+      "included_trace_count": 8,
+      "mean_recovery": 0.4923080305761627,
+      "median_recovery": 0.17761580764776214,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "random_matched_core": {
+      "bootstrap_ci95": {
+        "ci95_high": -0.6579863084220186,
+        "ci95_low": -49.68612989366393
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -67.97758549511374,
+      "median_recovery": -1.549468781806685,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z"
+}
+{
+  "artifact_complete": true,
+  "checker_decision": "AMBIGUOUS_M26"
+}

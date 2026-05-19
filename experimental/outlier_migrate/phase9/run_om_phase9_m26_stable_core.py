@@ -487,6 +487,10 @@ def main(argv: list[str] | None = None) -> int:
         shared.write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
         result = checker.evaluate(run_dir)
         print(json.dumps({"checker_decision": result["decision"], "artifact_complete": result.get("artifact_complete", False)}, indent=2, sort_keys=True))
+        sys.stdout.flush()
+        sys.stderr.flush()
+        shared.write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
+        checker.evaluate(run_dir)
         sys.excepthook = previous_excepthook
         return 0
     except BaseException as exc:
