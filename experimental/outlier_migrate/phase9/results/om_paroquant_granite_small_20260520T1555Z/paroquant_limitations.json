@@ -1,0 +1,11 @@
+{
+  "created_at_utc": "2026-05-20T15:53:25Z",
+  "omitted_components": [
+    "fused CUDA transform kernel",
+    "upstream layer-wise learned angle optimization",
+    "QAT-like second-stage quantizer and weight fine-tuning",
+    "throughput measurement"
+  ],
+  "paper_reporting_requirement": "Report as algorithmic reproduction, not full upstream ParoQuant reproduction.",
+  "schema_version": "om_paroquant_baseline_v1_paroquant_limitations"
+}

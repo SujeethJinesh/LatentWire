@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    {
+      "name": "protected_sets",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/protected_sets.json",
+      "sha256": "sha256:327b3d9231ee31012ed73ef05b47096f99febbeeaaf28106d9471ca44ed42d6c"
+    },
+    {
+      "name": "bf16_traces",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/bf16_traces.jsonl.gz",
+      "sha256": "sha256:326e1fc54a18c9c6603c25215d2e242f5e99153cd8eeb8f8018c503dbad26c2b"
+    },
+    {
+      "name": "score_cache_bf16",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/score_cache/bf16.json",
+      "sha256": "sha256:37d1deca02ed909a7912eb05f2b4901f3039cec0c9f8e3274b2b427d3b55935b"
+    },
+    {
+      "name": "score_cache_static_1pct",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/score_cache/static_1pct.json",
+      "sha256": "sha256:4f24c97fbd19a313904693aad44b7936d65e99503e86f328031b871770c3394e"
+    }
+  ],
+  "created_at_utc": "2026-05-20T15:53:25Z",
+  "schema_version": "om_paroquant_baseline_v1_source_artifacts"
+}

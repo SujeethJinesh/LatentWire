@@ -1,0 +1,16 @@
+{
+  "artifact_complete": true,
+  "ci95": {
+    "ci95_high": 1.003769554323054,
+    "ci95_low": 0.4770444524050311
+  },
+  "decision": "PASS_PAROQUANT_BASELINE_REPORTED",
+  "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+  "included_trace_count": 8,
+  "infra_reasons": [],
+  "interpretation_band": "substantial_recovery_gt_0_50",
+  "median_recovery": 0.7537768488911776,
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+  "schema_version": "om_paroquant_baseline_v1_checker_result",
+  "total_trace_count": 12
+}

@@ -1272,3 +1272,67 @@ Interpretation:
 - Revised queue after this result: ParoQuant Granite-Small baseline next, then
   M11b replication on Nemotron-3-Nano. Paper integration waits until those two
   load-bearing items land.
+
+## Phase 9 ParoQuant Baseline on Granite-Small (2026-05-20)
+
+Result packet:
+
+- `experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z`
+
+Checker decision:
+
+- `PASS_PAROQUANT_BASELINE_REPORTED`
+
+Primary result:
+
+| Metric | Value |
+|---|---:|
+| Artifact complete | `true` |
+| Implementation mode | `algorithmic_reproduction_not_full_upstream` |
+| Interpretation band | `substantial_recovery_gt_0_50` |
+| Total trace count | `12` |
+| Included positive-static-gap traces | `8` |
+| No-gap traces | `4 / 12` |
+| No-gap fraction | `0.3333333333333333` |
+| ParoQuant median recovery | `0.7537768488911776` |
+| ParoQuant CI95 | `[0.4770444524050311, 1.003769554323054]` |
+| ParoQuant mean recovery | `-2.5318414789456445` |
+| M11b top-5 reference median recovery | `0.4492840911245966` |
+| ParoQuant minus M11b top-5 median | `0.30449275776658097` |
+
+Included per-trace recovery values:
+
+| Prompt index | Recovery |
+|---:|---:|
+| `1` | `1.5665998401790793` |
+| `2` | `0.4770444524050311` |
+| `4` | `-26.3711874060621` |
+| `5` | `0.9974962856466989` |
+| `7` | `0.5639917441607243` |
+| `8` | `0.7918488316283542` |
+| `9` | `1.003769554323054` |
+| `10` | `0.7157048661540011` |
+
+Interpretation:
+
+- ParoQuant is now the strongest Granite-Small W4A16 result in the ledger by
+  median recovery. It exceeds the M11b top-5 median by `0.30449275776658097`
+  and clears the preregistered descriptive `> 0.50` substantial-recovery band.
+- This result materially tightens the paper's negative-result scope. The paper
+  must not claim that current W4A16 PTQ baselines broadly fail on the
+  Granite-Small long-decode slice; instead it should say ParoQuant substantially
+  recovers the measured static-protection gap under this algorithmic
+  reproduction, while other inference-time channel-protection methods diagnose
+  why naive channel-set tracking fails.
+- The packet is not a full upstream ParoQuant reproduction. It omits fused
+  kernels, upstream learned layer-wise angle optimization, QAT-like second-stage
+  quantizer/weight fine-tuning, and throughput measurement. Claims must use
+  `algorithmic reproduction` wording and cite the omitted components.
+- The arithmetic mean is not a useful headline because prompt index `4` has a
+  very small static gap (`0.0007722731060850752`) and a large negative recovery
+  outlier. Tables should report median recovery, bootstrap CI, no-gap count,
+  and the per-trace table.
+- Revised queue after this result: M11b replication on Nemotron-3-Nano remains
+  the next load-bearing item. Paper integration should wait until that
+  replication lands so the ParoQuant baseline and M11b generalization evidence
+  can be integrated coherently.
