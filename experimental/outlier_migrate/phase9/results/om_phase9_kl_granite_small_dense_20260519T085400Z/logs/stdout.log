@@ -1,0 +1,8 @@
+{"event": "collecting_bf16_reference_log_probs", "positions": 921}
+{"event": "loading_quantized_kl_regime", "regime": "static_1pct", "time": "2026-05-19T14:35:00Z"}
+{"event": "loading_quantized_kl_regime", "regime": "decdec_reactive_top1_proxy", "time": "2026-05-19T22:54:29Z"}
+{"event": "loading_quantized_kl_regime", "regime": "m11_alpha_0_5", "time": "2026-05-20T07:16:55Z"}
+{
+  "artifact_complete": true,
+  "checker_decision": "PASS_KL_ACCUMULATION_REPORTED"
+}

@@ -1,0 +1,20 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_KL_ACCUMULATION_REPORTED",
+  "dense_grid_fallback": true,
+  "reasons": [
+    "KL accumulation packet is complete"
+  ],
+  "row_summary": {
+    "mean_kl_by_regime": {
+      "bf16_reference": 0.0,
+      "decdec_reactive_top1_proxy": 0.13270188444570444,
+      "m11_alpha_0_5": 0.13140658538252448,
+      "static_1pct": 0.1503027502758468
+    },
+    "row_count": 44208
+  },
+  "run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_kl_granite_small_dense_20260519T085400Z",
+  "schema_version": "om_phase9_kl_accumulation_v1_checker_result",
+  "trajectory_classification": "flat_linear_or_sublinear"
+}

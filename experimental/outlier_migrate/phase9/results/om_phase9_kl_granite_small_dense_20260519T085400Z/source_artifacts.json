@@ -1,0 +1,102 @@
+{
+  "created_at_utc": "2026-05-19T08:53:48Z",
+  "schema_version": "om_phase9_kl_accumulation_v1_source_artifacts",
+  "sources": {
+    "decdec": [
+      {
+        "bytes": 9290,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z/model_provenance.json",
+        "sha256": "sha256:e72ae96f730f6c995ba1183e933c38855cc1399a98ebdb324c226a12b406788e"
+      },
+      {
+        "bytes": 8455,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z/prompt_manifest.json",
+        "sha256": "sha256:262f1886ee059f2222750421ccf771a09b208640036b0cbc8577d6117261d403"
+      },
+      {
+        "bytes": 416334,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z/protected_sets.json",
+        "sha256": "sha256:b6c97801a5c364ef1ede6cc7cf5817107c332d93282e3131ad58ad09bee328c7"
+      },
+      {
+        "bytes": 46750,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z/bf16_traces.jsonl.gz",
+        "sha256": "sha256:5fef2d429a7e69d49c9e7183029fd4387f0983cedf2a47c1981566195010fa11"
+      },
+      {
+        "bytes": 5389,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z/bf16_trace_manifest.json",
+        "sha256": "sha256:4f4d8f1fd697147d64a738eef7a37459a5436558ea7eb9a9351dd3eb4e62d2c9"
+      },
+      {
+        "bytes": 355,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z/artifact_check.json",
+        "sha256": "sha256:ed5d766b3cce32f45c92fe7f25f973a89d298a4e9f2281550a2e16607af0b3e9"
+      }
+    ],
+    "m11": [
+      {
+        "bytes": 9287,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/model_provenance.json",
+        "sha256": "sha256:602f607e898f2058997d3ca509aeb229a0ddf6eea02f6fdb31c4df568776899f"
+      },
+      {
+        "bytes": 8452,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/prompt_manifest.json",
+        "sha256": "sha256:b2ee79ce5e95b19343c2304f4b97904cdaa7066d66244c36d5d793f42818d639"
+      },
+      {
+        "bytes": 218211,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/protected_sets.json",
+        "sha256": "sha256:631e7fd6ca979ab59783f3b4b787f4905daaf95de72be0b6091a258cb0e1a377"
+      },
+      {
+        "bytes": 46750,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/bf16_traces.jsonl.gz",
+        "sha256": "sha256:44ce60a6eb6231ac25cc8129978e8ae13d810b89c1935357b88024c219444877"
+      },
+      {
+        "bytes": 5398,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/bf16_trace_manifest.json",
+        "sha256": "sha256:ba1d69597ba8b5e0dec4079e84ab9ef32b7619b60eaafe2a08740765f1942836"
+      },
+      {
+        "bytes": 352,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/artifact_check.json",
+        "sha256": "sha256:16b9e9c242f374cadf540f6bcd64d4399f1fa136a8c3f6663a44c3a2816f4152"
+      }
+    ],
+    "m26": [
+      {
+        "bytes": 9287,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z/model_provenance.json",
+        "sha256": "sha256:a2f57449216a06772ec49b26d4ad8503fd205375c06fa2281efa15480a4bddc6"
+      },
+      {
+        "bytes": 8452,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z/prompt_manifest.json",
+        "sha256": "sha256:aee64fe56df0035832b173f81e3762af70f4df31c02badc98c064f62428fafc8"
+      },
+      {
+        "bytes": 132182,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z/protected_sets.json",
+        "sha256": "sha256:59d9dec944b17133a05df1312c1db6d74920e6906b0c5d8c2d31266bac916d27"
+      },
+      {
+        "bytes": 46750,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z/bf16_traces.jsonl.gz",
+        "sha256": "sha256:88eeefdfd5138a27b71ca73b0133d0a4a70454aa64113b93cc7942c7593ae2fb"
+      },
+      {
+        "bytes": 5396,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z/bf16_trace_manifest.json",
+        "sha256": "sha256:ae3ab3213bb94a328aa1b666ba045fb40126eea62f83930ef29b36dd86c5bfaf"
+      },
+      {
+        "bytes": 325,
+        "path": "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z/artifact_check.json",
+        "sha256": "sha256:877885155fa717386ef563898cbf36384917c77096fb44368ce0843944dba843"
+      }
+    ]
+  }
+}

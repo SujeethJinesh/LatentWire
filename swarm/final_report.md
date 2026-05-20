@@ -1218,3 +1218,57 @@ Interpretation:
 - Revised queue after this result: KL accumulation first, ParoQuant second,
   M11b replication on Nemotron-3-Nano third, then M27 only if budget and
   evidence still justify it.
+
+## Phase 9 KL Accumulation (2026-05-20)
+
+Result packet:
+
+- `experimental/outlier_migrate/phase9/results/om_phase9_kl_granite_small_dense_20260519T085400Z`
+
+Checker decision:
+
+- `PASS_KL_ACCUMULATION_REPORTED`
+
+Primary result:
+
+| Metric | Value |
+|---|---:|
+| Artifact complete | `true` |
+| Dense-grid fallback | `true` |
+| Row count | `44208` |
+| Trace count | `12` |
+| Positions per trace | `921` |
+| Trajectory classification | `flat_linear_or_sublinear` |
+| Static-1% mean KL | `0.1503027502758468` |
+| DecDEC proxy mean KL | `0.13270188444570444` |
+| M11 alpha=0.5 mean KL | `0.13140658538252448` |
+| Static-1% best fit | `sublinear_sqrt` |
+| DecDEC proxy best fit | `sublinear_sqrt` |
+| M11 alpha=0.5 best fit | `sublinear_sqrt` |
+| Static-1% AR(1) decay estimate | `0.5147336005145298` |
+| DecDEC proxy AR(1) decay estimate | `0.44614687864327573` |
+| M11 alpha=0.5 AR(1) decay estimate | `0.4387092735787158` |
+
+Fit detail:
+
+| Regime | First-position mean KL | Last-position mean KL | Median mean KL | Best-fit class |
+|---|---:|---:|---:|---|
+| `static_1pct` | `0.43497364843885106` | `0.36658257240257086` | `0.12321358419823507` | `sublinear` |
+| `decdec_reactive_top1_proxy` | `0.38591501985987026` | `0.2714341743026149` | `0.11972347351305028` | `sublinear` |
+| `m11_alpha_0_5` | `0.39380088448524475` | `0.25452364341935646` | `0.11888066632172922` | `sublinear` |
+
+Interpretation:
+
+- This packet does not support a superlinear compound-error explanation for
+  the Granite-Small W4A16 failure mode. All quantized regimes are best fit by
+  sublinear square-root curves over the dense measurement grid.
+- Static-1% has the highest mean KL, while DecDEC and M11 reduce mean KL
+  modestly and are close to one another. This is consistent with selection
+  signal helping local divergence but not solving the quality-recovery problem.
+- The paper's mechanism section should narrow sub-hypothesis 3c: runaway
+  compounding is not supported by this measurement. The remaining live
+  explanations are budget insufficiency, signal staleness/distribution shift,
+  and trace-level heterogeneity.
+- Revised queue after this result: ParoQuant Granite-Small baseline next, then
+  M11b replication on Nemotron-3-Nano. Paper integration waits until those two
+  load-bearing items land.

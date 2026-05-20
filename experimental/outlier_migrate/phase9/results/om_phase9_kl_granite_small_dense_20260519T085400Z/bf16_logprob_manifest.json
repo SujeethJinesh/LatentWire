@@ -1,0 +1,7 @@
+{
+  "created_at_utc": "2026-05-20T15:36:03Z",
+  "position_count": 921,
+  "schema_version": "om_phase9_kl_accumulation_v1_bf16_logprob_manifest",
+  "storage": "temporary .debug tensors, not result artifacts",
+  "trace_count": 12
+}
