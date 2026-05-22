@@ -13,6 +13,7 @@ are frozen.
 ## Dry-Run Check
 
 ```bash
+python -m scripts.verify_environment --dry-run
 python -m scripts.run_measurement --config configs/granite_small.yaml --dry-run
 python -m scripts.run_intervention --config configs/granite_small.yaml --dry-run
 python -m scripts.analyze_results --dry-run

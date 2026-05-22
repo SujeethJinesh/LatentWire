@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from outlier_migrate.registry import MethodSpec, ScoreTable
+from outlier_migrate.registry import MethodSpec, ScoreTable, validate_budget, validate_score_table
 
 
 def make_paroquant() -> MethodSpec:
@@ -18,6 +18,8 @@ def make_paroquant() -> MethodSpec:
 def select_round_robin(scores_by_position: ScoreTable, budget: int) -> set[int]:
     """Select channels by round-robin top ranks across positions."""
 
+    validate_budget(budget)
+    validate_score_table(scores_by_position)
     rankings = {
         position: sorted(range(len(values)), key=lambda index: (-float(values[index]), index))
         for position, values in scores_by_position.items()

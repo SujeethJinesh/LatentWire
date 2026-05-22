@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from outlier_migrate.registry import MethodSpec, ScoreTable
+from outlier_migrate.registry import MethodSpec, ScoreTable, validate_budget, validate_score_table
 
 
 def make_decdec() -> MethodSpec:
@@ -18,9 +18,9 @@ def make_decdec() -> MethodSpec:
 def select_decayed_average(scores_by_position: ScoreTable, budget: int) -> set[int]:
     """Select channels by recency-weighted mean score."""
 
+    validate_budget(budget)
+    validate_score_table(scores_by_position)
     positions = sorted(scores_by_position)
-    if not positions:
-        return set()
     channel_count = len(scores_by_position[positions[0]])
     totals = [0.0] * channel_count
     weight_total = 0.0

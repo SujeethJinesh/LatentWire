@@ -31,6 +31,20 @@ class ExperimentConfig:
     prompt_count: int = 24
     output_dir: Path = Path("results")
 
+    def validate(self) -> None:
+        """Raise ``ValueError`` if required release settings are invalid."""
+
+        if not self.model.name:
+            raise ValueError("model.name must not be empty")
+        if not self.model.model_id:
+            raise ValueError("model.model_id must not be empty")
+        if self.prompt_count <= 0:
+            raise ValueError("prompt_count must be positive")
+        if self.scoring_position <= 0:
+            raise ValueError("scoring_position must be positive")
+        if self.scoring_window_tokens <= 0:
+            raise ValueError("scoring_window_tokens must be positive")
+
 
 def load_experiment_config(path: Path) -> ExperimentConfig:
     """Load an experiment config from YAML."""
@@ -49,13 +63,15 @@ def load_experiment_config(path: Path) -> ExperimentConfig:
         dtype=str(model_payload.get("dtype", "bfloat16")),
         trust_remote_code=bool(model_payload.get("trust_remote_code", True)),
     )
-    return ExperimentConfig(
+    config = ExperimentConfig(
         model=model,
         scoring_position=int(payload.get("scoring_position", 10000)),
         scoring_window_tokens=int(payload.get("scoring_window_tokens", 512)),
         prompt_count=int(payload.get("prompt_count", 24)),
         output_dir=Path(str(payload.get("output_dir", "results"))),
     )
+    config.validate()
+    return config
 
 
 def _optional_str(value: Any) -> str | None:

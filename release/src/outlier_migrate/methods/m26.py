@@ -16,4 +16,6 @@ def make_m26() -> MethodSpec:
         name="m26",
         description="Union of top channels over a denser decode-position grid.",
         selector=lambda scores, budget: select_union(scores, budget, positions=DENSE_GRID),
+        required_positions=DENSE_GRID,
+        parameters={"positions": DENSE_GRID},
     )

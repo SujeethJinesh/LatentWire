@@ -8,6 +8,7 @@ Each method should:
 - use only explicit score tables provided by the caller;
 - break ties deterministically by lower channel index;
 - return a set of protected hidden-channel indices;
+- declare required decode positions and parameters in `MethodSpec` where useful;
 - include CPU tests for selection behavior and registry integration.
 
 ## Rotation And Budget Composition

@@ -11,6 +11,7 @@ The current scaffold provides:
 - simple symmetric W4A16-style quantization helpers;
 - method registry and placeholder method families;
 - metric and analysis helpers;
+- environment verification for config and package sanity checks;
 - dry-run command-line entry points that write manifests under `./results/`;
 - CPU tests for quantization, methods, metrics, and registry extension.
 
@@ -24,6 +25,7 @@ are finalized.
 cd release
 python -m pip install -e ".[dev]"
 pytest
+python -m scripts.verify_environment --dry-run
 python -m scripts.run_measurement --config configs/granite_small.yaml --dry-run
 python -m scripts.run_intervention --config configs/granite_small.yaml --dry-run
 python -m scripts.analyze_results --dry-run
@@ -31,3 +33,7 @@ python -m scripts.analyze_results --dry-run
 
 All CLIs default to writing under `./results/` relative to the current working
 directory.
+
+The release package intentionally pins only lightweight CPU dependencies. Model
+frameworks, CUDA libraries, and heavyweight inference engines should be added
+later only when the final reproducibility contract requires them.

@@ -1,7 +1,7 @@
 model:
   name: granite_small
   model_id: ibm-granite/granite-4.0-h-small
-  revision: b8c0982bab7fde4eb48110f5a069527c008fab39
+  revision: null
   seed: 20260510
   dtype: bfloat16
   trust_remote_code: true
