@@ -1,0 +1,476 @@
+% OutlierMigrate bibliography hardening pass.
+% Scope note: this file is curated from primary sources where practical
+% (arXiv, OpenReview, USENIX, PMLR, ACL Anthology, Hugging Face model cards,
+% and publisher/organization pages).  The current TeX still contains an
+% inline thebibliography block; this .bib records the cleaned citation source
+% of truth without editing the paper body.
+%
+% Scoop-audit coverage notes:
+% - Present in current TeX and represented below: Quamba2, LAQuant, QEP, SLQ,
+%   ParoQuant, DecDEC, PMPD, MoBiQuant, KIVI, KVQuant, AWQ, SmoothQuant,
+%   AttentionPredictor.
+% - Added but not currently cited by TeX: ChanMix, MixKVQ, OSP, HCP/CHON, TTQ,
+%   Massive Activations, Don't Waste Bits, Outlier Suppression+.
+% - Unresolved naming note: "HCP/CHON" is the mechanism/recipe pair in
+%   "Dissecting Outlier Dynamics in LLM NVFP4 Pretraining"; no separate HCP or
+%   CHON paper was found.
+
+@article{arai2025qep,
+  author       = {Yamato Arai and Yuma Ichikawa},
+  title        = {Quantization Error Propagation: Revisiting Layer-Wise Post-Training Quantization},
+  journal      = {arXiv preprint arXiv:2504.09629},
+  year         = {2025},
+  eprint       = {2504.09629},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2504.09629},
+  url          = {https://arxiv.org/abs/2504.09629}
+}
+
+@article{ashkboos2024quarot,
+  author       = {Saleh Ashkboos and Amirkeivan Mohtashami and Maximilian L. Croci and Bo Li and Pashmina Cameron and Martin Jaggi and Dan Alistarh and Torsten Hoefler and James Hensman},
+  title        = {QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs},
+  journal      = {arXiv preprint arXiv:2404.00456},
+  year         = {2024},
+  eprint       = {2404.00456},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2404.00456},
+  url          = {https://arxiv.org/abs/2404.00456}
+}
+
+@misc{bort2025reasoningcosts,
+  author       = {Kyle Wiggers},
+  title        = {The Rise of AI `Reasoning' Models Is Making Benchmarking More Expensive},
+  howpublished = {TechCrunch},
+  year         = {2025},
+  month        = apr,
+  url          = {https://techcrunch.com/2025/04/10/the-rise-of-ai-reasoning-models-is-making-benchmarking-more-expensive/},
+  note         = {Accessed 2026-05-23.  Key retained as bort2025reasoningcosts for TeX compatibility; primary page byline is Kyle Wiggers, not Julie Bort.}
+}
+
+@article{chen2025pmpd,
+  author       = {Hao Mark Chen and Fuwen Tan and Alexandros Kouris and Royson Lee and Hongxiang Fan and Stylianos I. Venieris},
+  title        = {Progressive Mixed-Precision Decoding for Efficient LLM Inference},
+  journal      = {arXiv preprint arXiv:2410.13461},
+  year         = {2025},
+  eprint       = {2410.13461},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2410.13461},
+  url          = {https://arxiv.org/abs/2410.13461},
+  note         = {Originally posted 2024; revised 2025.}
+}
+
+@article{chen2026quambase,
+  author       = {Yizhi Chen and Ahmed Hemani},
+  title        = {Late Breaking Results: Quamba-SE: Soft-edge Quantizer for Activations in State Space Models},
+  journal      = {arXiv preprint arXiv:2601.09451},
+  year         = {2026},
+  eprint       = {2601.09451},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2601.09451},
+  url          = {https://arxiv.org/abs/2601.09451}
+}
+
+@inproceedings{chiang2024quamba,
+  author       = {Hung-Yueh Chiang and Chi-Chih Chang and Natalia Frumkin and Kai-Chiang Wu and Diana Marculescu},
+  title        = {Quamba: A Post-Training Quantization Recipe for Selective State Space Models},
+  booktitle    = {International Conference on Learning Representations},
+  year         = {2025},
+  eprint       = {2410.13229},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2410.13229},
+  url          = {https://arxiv.org/abs/2410.13229}
+}
+
+@article{chiang2025quamba2,
+  author       = {Hung-Yueh Chiang and Chi-Chih Chang and Natalia Frumkin and Kai-Chiang Wu and Mohamed S. Abdelfattah and Diana Marculescu},
+  title        = {Quamba2: A Robust and Scalable Post-training Quantization Framework for Selective State Space Models},
+  journal      = {arXiv preprint arXiv:2503.22879},
+  year         = {2025},
+  eprint       = {2503.22879},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2503.22879},
+  url          = {https://arxiv.org/abs/2503.22879}
+}
+
+@article{choi2026laquant,
+  author       = {Euntae Choi and Sumin Song and Sungjoo Yoo},
+  title        = {LAQuant: A Simple Overhead-free Large Reasoning Model Quantization by Layer-wise Lookahead Loss},
+  journal      = {arXiv preprint arXiv:2605.08755},
+  year         = {2026},
+  eprint       = {2605.08755},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2605.08755},
+  url          = {https://arxiv.org/abs/2605.08755}
+}
+
+@misc{gartner2026inferencecost,
+  author       = {{Gartner}},
+  title        = {Gartner Predicts That by 2030, Performing Inference on an LLM With 1 Trillion Parameters Will Cost GenAI Providers Over 90\% Less Than in 2025},
+  howpublished = {Press release},
+  year         = {2026},
+  month        = mar,
+  url          = {https://www.gartner.com/en/newsroom/press-releases/2026-03-25-gartner-predicts-that-by-2030-performing-inference-on-an-llm-with-1-trillion-parameters-will-cost-genai-providers-over-90-percent-less-than-in-2025},
+  note         = {Accessed 2026-05-23.}
+}
+
+@article{helcig2026slq,
+  author       = {Michael Helcig and Eldar Kurtic and Dan Alistarh},
+  title        = {Statistically-Lossless Quantization of Large Language Models},
+  journal      = {arXiv preprint arXiv:2605.02404},
+  year         = {2026},
+  eprint       = {2605.02404},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2605.02404},
+  url          = {https://arxiv.org/abs/2605.02404}
+}
+
+@inproceedings{hooper2024kvquant,
+  author       = {Coleman Hooper and Sehoon Kim and Hiva Mohammadzadeh and Michael W. Mahoney and Yakun Sophia Shao and Kurt Keutzer and Amir Gholami},
+  title        = {KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization},
+  booktitle    = {Advances in Neural Information Processing Systems},
+  year         = {2024},
+  eprint       = {2401.18079},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2401.18079},
+  url          = {https://arxiv.org/abs/2401.18079}
+}
+
+@inproceedings{jang2025blockdialect,
+  author       = {Wonsuk Jang and Thierry Tambe},
+  title        = {BlockDialect: Block-wise Fine-grained Mixed Format Quantization for Energy-Efficient LLM Inference},
+  booktitle    = {International Conference on Machine Learning},
+  year         = {2025},
+  eprint       = {2501.01144},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2501.01144},
+  url          = {https://arxiv.org/abs/2501.01144}
+}
+
+@article{kimilinear2025,
+  author       = {{Moonshot AI Kimi Team}},
+  title        = {Kimi Linear: An Expressive, Efficient Attention Architecture},
+  journal      = {arXiv preprint arXiv:2510.26692},
+  year         = {2025},
+  eprint       = {2510.26692},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2510.26692},
+  url          = {https://arxiv.org/abs/2510.26692}
+}
+
+@article{li2025qmamba,
+  author       = {Yinglong Li and Xiaoyu Liu and Jiacheng Li and Ruikang Xu and Yinda Chen and Zhiwei Xiong},
+  title        = {QMamba: Post-Training Quantization for Vision State Space Models},
+  journal      = {arXiv preprint arXiv:2501.13624},
+  year         = {2025},
+  eprint       = {2501.13624},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CV},
+  doi          = {10.48550/arXiv.2501.13624},
+  url          = {https://arxiv.org/abs/2501.13624}
+}
+
+@article{liang2025paroquant,
+  author       = {Yesheng Liang and Haisheng Chen and Song Han and Zhijian Liu},
+  title        = {ParoQuant: Pairwise Rotation Quantization for Efficient Reasoning LLM Inference},
+  journal      = {arXiv preprint arXiv:2511.10645},
+  year         = {2025},
+  eprint       = {2511.10645},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2511.10645},
+  url          = {https://arxiv.org/abs/2511.10645}
+}
+
+@inproceedings{liao2026chanmix,
+  author       = {Chengxi Liao and Zeyi Wen},
+  title        = {Channel-Aware Mixed-Precision Quantization for Efficient Long-Context Inference},
+  booktitle    = {International Conference on Learning Representations},
+  year         = {2026},
+  url          = {https://openreview.net/forum?id=yjr2jX41qO},
+  note         = {ChanMix.}
+}
+
+@inproceedings{lin2023awq,
+  author       = {Ji Lin and Jiaming Tang and Haotian Tang and Shang Yang and Wei-Ming Chen and Wei-Chen Wang and Guangxuan Xiao and Xingyu Dang and Chuang Gan and Song Han},
+  title        = {AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration},
+  booktitle    = {Proceedings of Machine Learning and Systems},
+  volume       = {6},
+  pages        = {87--100},
+  year         = {2024},
+  eprint       = {2306.00978},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CL},
+  doi          = {10.48550/arXiv.2306.00978},
+  url          = {https://arxiv.org/abs/2306.00978}
+}
+
+@inproceedings{liu2024kivi,
+  author       = {Zirui Liu and Jiayi Yuan and Hongye Jin and Shaochen Zhong and Zhaozhuo Xu and Vladimir Braverman and Beidi Chen and Xia Hu},
+  title        = {KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache},
+  booktitle    = {International Conference on Machine Learning},
+  year         = {2024},
+  eprint       = {2402.02750},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CL},
+  doi          = {10.48550/arXiv.2402.02750},
+  url          = {https://arxiv.org/abs/2402.02750}
+}
+
+@article{liu2025pmkvq,
+  author       = {Tengxuan Liu and Shiyao Li and Jiayi Yang and Tianchen Zhao and Feng Zhou and Xiaohui Song and Guohao Dai and Shengen Yan and Huazhong Yang and Yu Wang},
+  title        = {PM-KVQ: Progressive Mixed-precision KV Cache Quantization for Long-CoT LLMs},
+  journal      = {arXiv preprint arXiv:2505.18610},
+  year         = {2025},
+  eprint       = {2505.18610},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2505.18610},
+  url          = {https://arxiv.org/abs/2505.18610}
+}
+
+@misc{marketsandmarkets2025aiinference,
+  author       = {{MarketsandMarkets}},
+  title        = {AI Inference Market by Compute, Memory, Network, Deployment, Application: Global Forecast to 2030},
+  howpublished = {Commercial market report},
+  year         = {2025},
+  url          = {https://www.marketsandmarkets.com/Market-Reports/ai-inference-market-189921964.html},
+  note         = {Accessed 2026-05-23.}
+}
+
+@misc{marketsandmarkets2025edgeaihardware,
+  author       = {{MarketsandMarkets}},
+  title        = {Edge AI Hardware Industry Worth \$58.90 Billion by 2030},
+  howpublished = {Commercial market report press release},
+  year         = {2025},
+  month        = jul,
+  url          = {https://www.marketsandmarkets.com/PressReleases/edge-ai-hardware.asp},
+  note         = {Accessed 2026-05-23.}
+}
+
+@inproceedings{park2025decdec,
+  author       = {Yeonhong Park and Jake Hyun and Hojoon Kim and Jae W. Lee},
+  title        = {DecDEC: A Systems Approach to Advancing Low-Bit LLM Quantization},
+  booktitle    = {19th USENIX Symposium on Operating Systems Design and Implementation (OSDI 25)},
+  year         = {2025},
+  url          = {https://www.usenix.org/conference/osdi25/presentation/park-yeonhong}
+}
+
+@article{pierro2024mambaptq,
+  author       = {Alessandro Pierro and Steven Abreu},
+  title        = {Mamba-PTQ: Outlier Channels in Recurrent Large Language Models},
+  journal      = {arXiv preprint arXiv:2407.12397},
+  year         = {2024},
+  eprint       = {2407.12397},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2407.12397},
+  url          = {https://arxiv.org/abs/2407.12397}
+}
+
+@misc{qwen36hf,
+  author       = {{Qwen Team}},
+  title        = {Qwen3.6-35B-A3B Model Card},
+  howpublished = {Hugging Face model card},
+  year         = {2026},
+  url          = {https://huggingface.co/Qwen/Qwen3.6-35B-A3B},
+  note         = {Accessed 2026-05-23.}
+}
+
+@inproceedings{ramachandran2025ouromamba,
+  author       = {Akshat Ramachandran and Mingyu Lee and Huan Xu and Souvik Kundu and Tushar Krishna},
+  title        = {OuroMamba: A Data-Free Quantization Framework for Vision Mamba Models},
+  booktitle    = {IEEE/CVF International Conference on Computer Vision},
+  year         = {2025},
+  eprint       = {2503.10959},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CV},
+  doi          = {10.48550/arXiv.2503.10959},
+  url          = {https://arxiv.org/abs/2503.10959}
+}
+
+@article{wang2026mobiquant,
+  author       = {Dongwei Wang and Jinhee Kim and Seokho Han and Denis Gudovskiy and Yohei Nakata and Tomoyuki Okuno and KhayTze Peong and Kang Eun Jeon and Jong Hwan Ko and Yiran Chen and Huanrui Yang},
+  title        = {MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs},
+  journal      = {arXiv preprint arXiv:2602.20191},
+  year         = {2026},
+  eprint       = {2602.20191},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2602.20191},
+  url          = {https://arxiv.org/abs/2602.20191}
+}
+
+@inproceedings{xiao2023smoothquant,
+  author       = {Guangxuan Xiao and Ji Lin and Mickael Seznec and Hao Wu and Julien Demouth and Song Han},
+  title        = {SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models},
+  booktitle    = {International Conference on Machine Learning},
+  year         = {2023},
+  eprint       = {2211.10438},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CL},
+  doi          = {10.48550/arXiv.2211.10438},
+  url          = {https://arxiv.org/abs/2211.10438}
+}
+
+@article{xu2025mambaquant,
+  author       = {Zukang Xu and Yuxuan Yue and Xing Hu and Zhihang Yuan and Zixu Jiang and Zhixuan Chen and Jiangyong Yu and Chen Xu and Sifan Zhou and Dawei Yang},
+  title        = {MambaQuant: Quantizing the Mamba Family with Variance Aligned Rotation Methods},
+  journal      = {arXiv preprint arXiv:2501.13484},
+  year         = {2025},
+  eprint       = {2501.13484},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2501.13484},
+  url          = {https://arxiv.org/abs/2501.13484}
+}
+
+@article{xu2026activationsensitivity,
+  author       = {Bruce Changlong Xu},
+  title        = {Activation Sensitivity as a Unifying Principle for Post-Training Quantization},
+  journal      = {arXiv preprint arXiv:2601.11663},
+  year         = {2026},
+  eprint       = {2601.11663},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2601.11663},
+  url          = {https://arxiv.org/abs/2601.11663}
+}
+
+@article{yang2023gla,
+  author       = {Songlin Yang and Bailin Wang and Yikang Shen and Rameswar Panda and Yoon Kim},
+  title        = {Gated Linear Attention Transformers with Hardware-Efficient Training},
+  journal      = {arXiv preprint arXiv:2312.06635},
+  year         = {2023},
+  eprint       = {2312.06635},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CL},
+  doi          = {10.48550/arXiv.2312.06635},
+  url          = {https://arxiv.org/abs/2312.06635}
+}
+
+@inproceedings{yang2024gdn,
+  author       = {Songlin Yang and Jan Kautz and Ali Hatamizadeh},
+  title        = {Gated Delta Networks: Improving Mamba2 with Delta Rule},
+  booktitle    = {International Conference on Learning Representations},
+  year         = {2025},
+  eprint       = {2412.06464},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2412.06464},
+  url          = {https://arxiv.org/abs/2412.06464}
+}
+
+@inproceedings{yang2025attentionpredictor,
+  author       = {Qingyue Yang and Jie Wang and Xing Li and Zhihai Wang and Chen Chen and Lei Chen and Xianzhi Yu and Wulong Liu and Jianye Hao and Mingxuan Yuan and Bin Li},
+  title        = {AttentionPredictor: Temporal Patterns Matter for KV Cache Compression},
+  booktitle    = {Advances in Neural Information Processing Systems},
+  year         = {2025},
+  eprint       = {2502.04077},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2502.04077},
+  url          = {https://arxiv.org/abs/2502.04077}
+}
+
+@article{zhang2025mixkvq,
+  author       = {Tao Zhang and Ziqian Zeng and Hao Peng and Huiping Zhuang and Cen Chen},
+  title        = {MixKVQ: Query-Aware Mixed-Precision KV Cache Quantization for Long-Context Reasoning},
+  journal      = {arXiv preprint arXiv:2512.19206},
+  year         = {2025},
+  eprint       = {2512.19206},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2512.19206},
+  url          = {https://arxiv.org/abs/2512.19206}
+}
+
+% ---- Scoop-audit entries not currently cited by outlier_migrate_colm2026.tex ----
+
+@article{park2025osp,
+  author       = {Jungwoo Park and Taewhoo Lee and Chanwoong Yoon and Hyeon Hwang and Jaewoo Kang},
+  title        = {Outlier-Safe Pre-Training for Robust 4-Bit Quantization of Large Language Models},
+  journal      = {arXiv preprint arXiv:2506.19697},
+  year         = {2025},
+  eprint       = {2506.19697},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2506.19697},
+  url          = {https://arxiv.org/abs/2506.19697},
+  note         = {Scoop-audit item OSP; not currently cited by TeX.}
+}
+
+@article{dong2026hcpchon,
+  author       = {Peijie Dong and Ruibo Fan and Yuechen Tao and Di Mou and Wenhu Hu and Zhenheng Tang and Yinghao Yu and Jiamang Wang and Wenbo Su and Guodong Yang and Liping Zhang and Xiaowen Chu and Baochun Li and Bo Li},
+  title        = {Dissecting Outlier Dynamics in LLM NVFP4 Pretraining},
+  journal      = {arXiv preprint arXiv:2602.02047},
+  year         = {2026},
+  eprint       = {2602.02047},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2602.02047},
+  url          = {https://arxiv.org/abs/2602.02047},
+  note         = {Contains Hot-Channel Patch (HCP) and CHON; not currently cited by TeX.}
+}
+
+@article{koikeakino2026ttq,
+  author       = {Toshiaki Koike-Akino and Jing Liu and Ye Wang},
+  title        = {TTQ: Activation-Aware Test-Time Quantization to Accelerate LLM Inference On The Fly},
+  journal      = {arXiv preprint arXiv:2603.19296},
+  year         = {2026},
+  eprint       = {2603.19296},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2603.19296},
+  url          = {https://arxiv.org/abs/2603.19296},
+  note         = {Scoop-audit item TTQ; not currently cited by TeX.}
+}
+
+@article{sun2024massiveactivations,
+  author       = {Mingjie Sun and Xinlei Chen and J. Zico Kolter and Zhuang Liu},
+  title        = {Massive Activations in Large Language Models},
+  journal      = {arXiv preprint arXiv:2402.17762},
+  year         = {2024},
+  eprint       = {2402.17762},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CL},
+  doi          = {10.48550/arXiv.2402.17762},
+  url          = {https://arxiv.org/abs/2402.17762},
+  note         = {Scoop-audit item; not currently cited by TeX.}
+}
+
+@article{boroujeni2026dontwastebits,
+  author       = {Sayed Pedram Haeri Boroujeni and Niloufar Mehrabi and Patrick Woods and Gabriel Hillesheim and Abolfazl Razi},
+  title        = {Don't Waste Bits! Adaptive KV-Cache Quantization for Lightweight On-Device LLMs},
+  journal      = {arXiv preprint arXiv:2604.04722},
+  year         = {2026},
+  eprint       = {2604.04722},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  doi          = {10.48550/arXiv.2604.04722},
+  url          = {https://arxiv.org/abs/2604.04722},
+  note         = {Scoop-audit item; not currently cited by TeX.}
+}
+
+@inproceedings{wei2023outliersuppressionplus,
+  author       = {Xiuying Wei and Yunchen Zhang and Yuhang Li and Xiangguo Zhang and Ruihao Gong and Jinyang Guo and Xianglong Liu},
+  title        = {Outlier Suppression+: Accurate Quantization of Large Language Models by Equivalent and Optimal Shifting and Scaling},
+  booktitle    = {Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing},
+  year         = {2023},
+  eprint       = {2304.09145},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CL},
+  doi          = {10.48550/arXiv.2304.09145},
+  url          = {https://arxiv.org/abs/2304.09145},
+  note         = {Scoop-audit related outlier-suppression item; not currently cited by TeX.}
+}
