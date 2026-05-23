@@ -1,0 +1,134 @@
+\section{Related Work}
+\label{sec:related-work}
+
+OutlierMigrate sits at the intersection of post-training quantization,
+rotation-based outlier suppression, long-decode reasoning quantization, and
+state-space-model deployment.  The section is written to be independent of
+the current Nemotron gate outcome: if later cross-model validation is a pass,
+ambiguous, or a kill, the literature boundary remains the same.  The claim is
+not that existing quantizers fail broadly; it is that decode-position
+channel-set drift is a specific stressor for static protected-channel
+assumptions, and any method claim must be conditioned on the audited gate that
+supports it.
+
+\paragraph{Post-training quantization and static outlier protection.}
+Classical LLM PTQ methods establish the default deployment baseline.  GPTQ
+casts weight-only quantization as a layer-wise reconstruction problem with
+second-order error compensation \citep{frantar2022gptq}.  SmoothQuant moves
+activation quantization difficulty into weights using calibration-time
+activation statistics, making W8A8 inference practical for large models
+\citep{xiao2023smoothquant}.\footnote{We use ``outlier migration'' only for
+decode-position channel-set drift: the identity of high-magnitude activation
+channels changing across generated positions in the same trace.  This differs
+from SmoothQuant's activation-to-weight difficulty transfer and from
+token- or bitwidth-conditioned uses of the term in other quantization papers.}
+AWQ protects activation-salient weight channels and is a strong weight-only
+baseline for W4A16-style deployment \citep{lin2023awq}.  KV-cache quantizers
+attack a different memory object: KIVI uses asymmetric low-bit KV-cache
+quantization with per-channel keys and per-token values \citep{liu2024kivi},
+while KVQuant combines per-channel key quantization, pre-RoPE key handling,
+non-uniform datatypes, and dense/sparse outlier handling for long-context KV
+inference \citep{hooper2024kvquant}.  These systems motivate our controls, but
+they do not by themselves answer whether a fixed activation-channel protection
+map remains valid thousands of generated tokens after calibration.
+
+\paragraph{Rotation and incoherence methods.}
+Rotation-based quantizers reduce outliers by changing basis before low-bit
+rounding.  QuaRot applies Hadamard rotations to make LLM inference more
+outlier-free under low-bit quantization \citep{ashkboos2024quarot}; SpinQuant
+learns rotations for improved weight/activation/KV quantization; DuQuant uses
+outlier-aware rotations and transformations; and SmoothRot, IsoQuant,
+PolarQuant, and ButterflyQuant explore related smoothing, isotropic, polar, or
+structured-orthogonal transforms for low-bit LLMs
+\citep{liu2024spinquant,lin2024duquant,huang2025smoothrot,kim2025isoquant,zhang2025polarquant,li2025butterflyquant}.
+% TODO(final-paper): verify final bibliographic keys and venues for
+% SpinQuant, DuQuant, SmoothRot, IsoQuant, PolarQuant, and ButterflyQuant.
+ParoQuant is the closest current rotation baseline for our setting because it
+targets reasoning LLM inference with pairwise rotations and W4A16-style
+weight-only PTQ \citep{liang2025paroquant}.  Our related-work boundary is
+therefore narrow: if a ParoQuant-style baseline recovers the audited gap, the
+paper should become a diagnosis-and-baseline-contextualization result; if it
+does not, the negative result is still scoped to the tested small/hybrid
+long-decode regime rather than to rotation quantization in general.
+
+\paragraph{Long-decode reasoning quantization.}
+Reasoning models expose quantization failures that can be invisible in
+short-horizon perplexity or chat benchmarks.  PMPD varies precision across
+prefill, early decode, and later decode phases \citep{chen2025pmpd}, while
+PM-KVQ targets long chain-of-thought KV-cache quantization with progressive
+mixed precision and long-context calibration \citep{liu2025pmkvq}.  DecDEC is
+the closest activation-channel systems prior: it dynamically selects salient
+channels at each decode step and fetches residual compensation for those
+channels \citep{park2025decdec}.  Our differentiation from DecDEC has four
+axes.  First, \emph{horizon}: DecDEC studies short decode windows, while this
+paper measures channel-set behavior at reasoning-scale decode positions.
+Second, \emph{model class}: DecDEC targets Transformer LLMs, while our
+intended surface includes small reasoning LLMs and hybrid reasoning models.
+Third, \emph{architecture}: DecDEC's mechanism is a reactive Transformer
+activation-channel residual path; OutlierMigrate measures whether static or
+lightly position-conditioned protected sets remain stable in Transformer,
+Mamba-hybrid, and parallel-hybrid layouts.  Fourth, \emph{benchmarks}: DecDEC
+uses standard language/task evaluation for a low-bit systems method, whereas
+our surface is long reasoning traces with preregistered drift and W4A16
+recovery gates.  DecDEC therefore preempts any claim that changing salient
+channels are new; our contribution must be framed as long-horizon measurement,
+mechanism isolation, and audited failure or recovery of specific protection
+policies.
+
+\paragraph{Mamba and SSM quantization.}
+State-space models add recurrence-specific quantization issues.  Quamba2
+argues that Mamba activations exhibit channel-order preservation and
+activation persistence, supporting offline per-channel quantization for
+Mamba1/Mamba2 \citep{chiang2025quamba2}.  MambaQuant uses
+variance-aligned rotations for Mamba-family PTQ \citep{xu2025mambaquant}.
+QMamba reports highly dynamic hidden-state variation in vision SSMs and
+introduces Temporal Group Quantization \citep{li2025qmamba}; OuroMamba
+likewise identifies dynamic activation-outlier variation over time steps in
+vision Mamba and uses lightweight dynamic outlier detection
+\citep{ramachandran2025ouromamba}.  These works make the novelty boundary
+strict: dynamic outliers are not new to Mamba broadly.  The open question for
+this paper is whether the language-reasoning, long-decode, W4A16 protected-set
+regime follows Quamba2-style persistence, vision-Mamba-style dynamic outlier
+behavior, or a mixed failure mode that depends on architecture and horizon.
+
+\paragraph{Recent adjacent adaptive quantizers.}
+Several 2025--2026 methods reinforce the need to separate channel identity,
+precision assignment, tensor type, and online adaptation.  ChanMix and MixKVQ
+adapt precision across sensitive KV-cache channels for long-context or
+reasoning workloads \citep{wen2026chanmix,zhang2025mixkvq}.  LAQuant uses
+layer-wise lookahead loss for large reasoning model quantization
+\citep{choi2026laquant}.  QEP explicitly propagates quantization error through
+layer-wise PTQ to compensate accumulated error \citep{arai2025qep}.  FBQuant
+uses feedback signals for LLM quantization, CMPQ allocates mixed precision in
+a channel-wise pattern, and FlexQuant switches precision dynamically during
+generation \citep{liu2025fbquant,chen2024cmpq,liu2025flexquant}.
+% TODO(final-paper): verify final bibliographic keys, author order, and venue
+% status for ChanMix, MixKVQ, FBQuant, CMPQ, and FlexQuant.
+These papers are adjacent rather than substitutable baselines.  KV-cache
+methods act on keys and values; layer-wise error-propagation methods address
+cross-layer reconstruction; and dynamic precision methods can change bitwidth
+without necessarily changing which activation channels are protected.  Their
+shared lesson is that static calibration is often too weak for modern
+long-context inference.
+
+\paragraph{Counter-results and terminology.}
+SLQ is an important counterpoint: in a statistically near-lossless regime,
+quantization error need not compound across token positions
+\citep{helcig2026slq}.  We therefore do not assume that long decode alone
+causes accumulating degradation.  The paper's mechanism split must keep three
+possibilities separate: stale channel identity, insufficient protected budget,
+and true long-horizon error accumulation.  Similarly, ``hot channels'' and
+``TTQ'' require disambiguation.  Hot channels in recent NVFP4/pretraining
+work refer to persistently extreme channels during training, not necessarily
+the drifting W4A16 inference-time channels measured here.\footnote{We use
+``hot channels'' only descriptively for high-magnitude channels on a measured
+trace.  This is distinct from hot-channel pretraining terminology, where a
+channel may be persistently extreme across training data or training steps.}
+TTQ can mean classical Trained Ternary Quantization or recent test-time
+quantization; this paper refers to the latter only when discussing
+inference-time online calibration \citep{koikeakino2026ttq}.\footnote{TTQ is
+ambiguous.  In this paper, ``test-time TTQ'' means activation-aware
+test-time quantization for prompt-specific online calibration, not Trained
+Ternary Quantization.}
+% TODO(final-paper): confirm whether test-time TTQ belongs in the final
+% bibliography or should remain a terminology note only.
