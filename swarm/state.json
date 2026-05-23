@@ -2,8 +2,8 @@
   "schema_version": 0,
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
-  "status": "RUNNING",
-  "current_entry": "outlier_migrate_phase9_m11b_nemotron_replication",
+  "status": "BLOCKED",
+  "current_entry": "outlier_migrate_phase9_m11b_nemotron_fail_infra_human_review",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -516,6 +516,37 @@
         "gpu_hours_delta_estimate": 4.2142,
         "interpretation_note": "ParoQuant algorithmic reproduction substantially recovers the Granite-Small static-top1 gap by median and beats the M11b top-5 Granite median by 0.3045. Because this is not a full upstream fused-kernel/learned-optimization reproduction and the trace-level mean is dominated by one tiny-gap negative outlier, paper claims must use median/CI and scope the baseline honestly."
       }
+    },
+    {
+      "id": "outlier_migrate_phase9_m11b_nemotron_replication",
+      "project": "outlier_migrate",
+      "phase": "phase9_m11b_replication",
+      "decision": "FAIL_INFRA_M11B_NEMOTRON",
+      "result_dir": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_20260520T2013Z",
+      "checker": "experimental/outlier_migrate/phase9/check_om_phase9_m11b_nemotron_replication.py",
+      "checker_output": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_20260520T2013Z/checker_result.json",
+      "artifact_check": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_20260520T2013Z/artifact_check.json",
+      "completed_at": "2026-05-23T21:43:50Z",
+      "summary": {
+        "artifact_complete": false,
+        "failure_reason": "excluded_tensors.by_regime mismatch",
+        "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+        "model_snapshot_commit": "cbd3fa9f933d55ef16a84236559f4ee2a0526848",
+        "trace_count": 12,
+        "included_trace_count": 6,
+        "no_recoverable_static_gap_fraction": 0.5,
+        "bootstrap_seed": 20260604,
+        "m11b_top1_median_recovery": -2.600041328227093,
+        "m11b_top5_median_recovery": -0.9202140086605652,
+        "m11b_top5_ci95_low": -16.239006269077635,
+        "m11b_top5_ci95_high": 4.628823538409526,
+        "m11b_top10_median_recovery": -2.7949459243213406,
+        "static_top10_median_recovery": -0.2916786834232309,
+        "m11b_top5_minus_top1_median": 1.6798273195665279,
+        "m11b_top10_minus_static_top10_median": -2.5032672408981096,
+        "gpu_hours_delta_estimate": 73.5139,
+        "interpretation_note": "Runner completed all scoring and wrote metrics, but checker marked artifact incomplete because excluded_tensors.by_regime lacks the static_1pct regime expected by the shared M11b checker. Treat as FAIL_INFRA until human reviews whether this is a metadata/checker issue or invalid packet."
+      }
     }
   ],
   "killed_entries": [
@@ -857,7 +888,7 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 194.6881,
+  "gpu_hours_used": 268.202,
   "gpu_hours_budget": 200.0,
   "last_audit_at": "2026-05-20T20:06:07Z",
   "last_commit_sha": "6a7bb1fd",
