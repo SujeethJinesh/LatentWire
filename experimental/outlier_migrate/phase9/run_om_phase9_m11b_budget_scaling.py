@@ -583,6 +583,20 @@ def main(argv: list[str] | None = None) -> int:
                 if regime != "bf16":
                     excluded_by_regime[regime] = {"regime": regime, "reused_score_cache": str(score_reuse_dir)}
                 continue
+            if regime == "static_1pct":
+                all_scores[regime], excluded_by_regime[regime] = score_regime(
+                    model_provenance=model_provenance,
+                    protected_sets=protected_sets,
+                    regime=regime,
+                    prompts=prompts,
+                    target_tokens=target_tokens,
+                    batch_size=args.batch_size,
+                    dtype_name=args.dtype,
+                    device_name=args.device,
+                    run_events_path=run_events_path,
+                )
+                write_score_cache(run_dir, regime, all_scores[regime])
+                continue
             model, tokenizer, device = shared.load_model_and_tokenizer(model_provenance, dtype_name=args.dtype, device_name=args.device)
             all_scores[regime] = phase4_runner.score_targets(
                 model=model,
