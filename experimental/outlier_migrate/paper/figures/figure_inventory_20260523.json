@@ -1,0 +1,54 @@
+{
+  "audit_date_utc": "2026-05-23",
+  "branch": "sa4-figure-audit-20260523",
+  "write_scope": "experimental/outlier_migrate/paper/figures/",
+  "paper": "experimental/outlier_migrate/paper/outlier_migrate_colm2026.tex",
+  "referenced_figures": [
+    {
+      "label": "fig:layer-stratified",
+      "kind": "latex-native table in figure environment",
+      "external_graphic": null,
+      "source_data": "experimental/outlier_migrate/phase3/results/layer_stratified_migration.json",
+      "paper_reference_locations": [
+        "outlier_migrate_colm2026.tex:763",
+        "outlier_migrate_colm2026.tex:958"
+      ],
+      "paper_definition_location": "outlier_migrate_colm2026.tex:772",
+      "style_audit": {
+        "font_sizes": "Uses LaTeX \\small in the figure body; no external matplotlib font state.",
+        "color_scheme": "Monochrome LaTeX table; no plotted color palette.",
+        "axis_labels": "Not applicable; table has column headers.",
+        "legend_placement": "Not applicable; no legend."
+      },
+      "refresh_status": "needs_data_refresh_during_nemotron_integration",
+      "refresh_reason": "The table includes partial Phase 2 Nemotron-3 layer-stratified values. Any Nemotron integration that replaces or extends the packet should regenerate these values before final paper build.",
+      "quality_status": "framework_stable_layout"
+    }
+  ],
+  "paper_tree_assets": [
+    {
+      "path": "experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf",
+      "kind": "compiled paper PDF",
+      "referenced_by_paper_tex": false,
+      "editable_under_write_scope": false,
+      "notes": "Not a standalone figure asset; included in inventory because it is the only PDF under the paper tree before this audit."
+    }
+  ],
+  "nearby_nonpaper_figure_artifacts": [
+    {
+      "path": "experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/grid_sensitivity.svg",
+      "referenced_by_paper_tex": false,
+      "editable_under_write_scope": false,
+      "notes": "Generated Phase 3 result artifact; not currently a paper figure."
+    },
+    {
+      "path": "experimental/outlier_migrate/decomposition_analysis/threshold_sensitivity.pdf",
+      "referenced_by_paper_tex": false,
+      "editable_under_write_scope": false,
+      "notes": "Generated decomposition-analysis artifact; not currently under the paper tree."
+    }
+  ],
+  "matplotlib_sources_under_figures": [],
+  "style_template": "experimental/outlier_migrate/paper/figures/outlier_migrate_matplotlib.mplstyle",
+  "audit_note": "No editable matplotlib source or exported figure asset existed under the allowed figures folder at audit time. The style template is ready for future paper figures without changing reported data."
+}
