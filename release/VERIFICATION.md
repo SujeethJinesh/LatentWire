@@ -4,9 +4,9 @@ Verification date: `2026-05-25`
 
 Verified commit: `a150edee3abd3f85f13c5defb2d5e7a79b466eb5`
 
-Mode: FAST_VERIFY. Full-fidelity GPU reproduction remains documented but was
-not run in this gate because it requires 30-50 GPU hours and checkpoint
-downloads.
+Mode: FAST_VERIFY. The release scripts now fail explicitly outside
+`--fast-verify` or `--dry-run`; full-fidelity GPU reproduction remains in the
+archived experimental packet runners and is not implemented in `release/`.
 
 ## 1. Starting State
 
@@ -65,10 +65,10 @@ GPU check was not required in FAST_VERIFY mode. The script reported
 
 ## 4. Model Checkpoint Download
 
-FAST_VERIFY intentionally does not download model checkpoints. Full-fidelity
-mode requires downloading the configured HuggingFace models and enough disk for
-checkpoints and score outputs. README documents the full-mode requirement as a
-single A100/H100-class GPU with at least 80 GB VRAM and roughly 600 GB disk.
+FAST_VERIFY intentionally does not download model checkpoints. The original
+experimental packets used the configured HuggingFace models and enough disk for
+checkpoints and score outputs. README now states that `release/` does not
+include the full model-inference runners.
 
 No authentication-gated checkpoint download was exercised in this fast gate.
 
@@ -130,12 +130,12 @@ README was sufficient for FAST_VERIFY:
 - project purpose identifiable in the opening paragraph,
 - setup commands worked literally,
 - quick-start command worked after install,
-- hardware requirements state CPU fast mode and full GPU mode,
+- hardware requirements state CPU fast mode and clarify that full GPU mode is
+  not implemented in `release/`,
 - citation and license are present.
 
-Known limitation: README documents full-fidelity runtime and hardware, but the
-full-mode checkpoint download path still needs a final GPU verification before
-claiming complete full reproduction.
+Known limitation: README documents fast verification only. Full-fidelity
+model-inference reproduction remains outside this minimal release package.
 
 ## 8. Double-Check Pass
 
@@ -163,6 +163,7 @@ FAST_VERIFY reproduction succeeds from two clean GitHub clones using the README
 installation flow. Every paper-claim reproduction script runs in fast mode,
 and standalone script execution works for sampled scripts.
 
-Full-fidelity GPU reproduction is not yet verified in this log. The release
-package must not claim that full GPU reproduction has been completed until the
-same clean-clone process is repeated without `--fast-verify`.
+Full-fidelity GPU reproduction is not implemented or verified in this release
+package. The release package must not claim complete full GPU reproduction
+until dedicated full-mode runners are added and the same clean-clone process is
+repeated without `--fast-verify`.

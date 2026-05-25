@@ -71,6 +71,33 @@ def verify_claims(claims: dict[str, dict[str, Any]]) -> dict[str, bool]:
     return results
 
 
+def build_reproduction_payload(args: Any, claims: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    """Build a dry-run or fast-verification payload.
+
+    Full GPU reproduction is intentionally not simulated by the release
+    scripts. Running without ``--dry-run`` or ``--fast-verify`` fails loudly so
+    reviewers cannot mistake frozen-claim validation for a full model run.
+    """
+
+    if getattr(args, "dry_run", False):
+        return {
+            "mode": "dry_run",
+            "config_valid": True,
+            "full_reproduction_available": False,
+        }
+    if not getattr(args, "fast_verify", False):
+        raise RuntimeError(
+            "Full-fidelity GPU reproduction is not implemented in release/. "
+            "Use --fast-verify for the verified claim replay, or use the "
+            "archived experimental packet runners for full model execution."
+        )
+    return {
+        "mode": "fast_verify",
+        "claims": claims,
+        "verified": verify_claims(claims),
+    }
+
+
 def write_result(path: str | Path, payload: dict[str, Any]) -> None:
     """Write a JSON result file with deterministic formatting."""
 

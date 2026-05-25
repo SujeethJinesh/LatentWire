@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from outlier_migrate.data import claim_subset, load_config, verify_claims, write_result
+from outlier_migrate.data import build_reproduction_payload, claim_subset, load_config, write_result
 
 
 def main() -> None:
@@ -19,7 +19,7 @@ def main() -> None:
     args = parser.parse_args()
     load_config(args.config)
     claims = claim_subset(["phase4_static_union_median", "phase4_no_gap_fraction"])
-    write_result(Path(args.output_dir) / "static_union.json", {"claims": claims, "verified": verify_claims(claims)})
+    write_result(Path(args.output_dir) / "static_union.json", build_reproduction_payload(args, claims))
 
 
 if __name__ == "__main__":

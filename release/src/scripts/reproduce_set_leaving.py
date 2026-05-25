@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from outlier_migrate.data import claim_subset, load_config, verify_claims, write_result
+from outlier_migrate.data import build_reproduction_payload, claim_subset, load_config, write_result
 
 
 def main() -> None:
@@ -25,7 +25,7 @@ def main() -> None:
         "set_leaving_falcon",
     ]
     claims = claim_subset(keys)
-    payload = {"claims": claims, "dry_run": args.dry_run, "verified": verify_claims(claims)}
+    payload = build_reproduction_payload(args, claims)
     write_result(Path(args.output_dir) / "set_leaving.json", payload)
 
 

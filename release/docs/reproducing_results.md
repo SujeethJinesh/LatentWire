@@ -1,8 +1,10 @@
 # Reproducing Results
 
 Run from `release/` after installation. FAST_VERIFY mode validates the frozen
-paper numbers and tolerances without downloading checkpoints. Full mode uses
-the same entry points and is intended for single-GPU reproduction.
+paper numbers and tolerances without downloading checkpoints. Full model
+execution is not implemented in this minimal release; scripts fail explicitly
+when run without `--fast-verify` or `--dry-run` so frozen-claim validation is
+not confused with a GPU rerun.
 
 | Paper Claim | Section | Reproduction Script | Expected Output | Tolerance |
 |---|---|---|---|---|

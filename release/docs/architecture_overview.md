@@ -18,6 +18,7 @@ activations remain high precision. Protected channels are represented as
 boolean masks that a full runner can use to bypass quantization for selected
 rows or columns.
 
-FAST_VERIFY mode checks frozen expected outputs. Full reproduction keeps the
-same script surface but replaces the frozen replay with model loading,
-activation capture, quantization, and scoring.
+FAST_VERIFY mode checks frozen expected outputs. Full model-inference
+reproduction is not implemented in `release/`; the scripts raise a clear error
+outside dry-run and fast-verify modes to avoid confusing claim replay with a
+GPU rerun.

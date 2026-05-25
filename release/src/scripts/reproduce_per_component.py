@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from outlier_migrate.data import claim_subset, load_config, verify_claims, write_result
+from outlier_migrate.data import build_reproduction_payload, claim_subset, load_config, write_result
 
 
 def main() -> None:
@@ -26,7 +26,7 @@ def main() -> None:
         "component_nemotron_ssm",
     ]
     claims = claim_subset(keys)
-    write_result(Path(args.output_dir) / "per_component.json", {"claims": claims, "verified": verify_claims(claims)})
+    write_result(Path(args.output_dir) / "per_component.json", build_reproduction_payload(args, claims))
 
 
 if __name__ == "__main__":
