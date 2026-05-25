@@ -2,8 +2,8 @@
   "schema_version": 0,
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
-  "status": "BLOCKED",
-  "current_entry": "outlier_migrate_phase9_m11b_nemotron_fail_infra_human_review",
+  "status": "RUNNING",
+  "current_entry": "outlier_migrate_paper_integration_after_m11b_nemotron_path_c",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -888,7 +888,7 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 268.202,
+  "gpu_hours_used": 278.643,
   "gpu_hours_budget": 200.0,
   "last_audit_at": "2026-05-20T20:06:07Z",
   "last_commit_sha": "6a7bb1fd",
