@@ -41,8 +41,8 @@ outlier-aware rotations and transformations; and SmoothRot, IsoQuant,
 PolarQuant, and ButterflyQuant explore related smoothing, isotropic, polar, or
 structured-orthogonal transforms for low-bit LLMs
 \citep{liu2024spinquant,lin2024duquant,huang2025smoothrot,kim2025isoquant,zhang2025polarquant,li2025butterflyquant}.
-% TODO(final-paper): verify final bibliographic keys and venues for
-% SpinQuant, DuQuant, SmoothRot, IsoQuant, PolarQuant, and ButterflyQuant.
+% Integration note: final bibliography verification for the rotation cluster
+% is tracked in the citation audit.
 ParoQuant is the closest current rotation baseline for our setting because it
 targets reasoning LLM inference with pairwise rotations and W4A16-style
 weight-only PTQ \citep{liang2025paroquant}.  Our related-work boundary is
@@ -102,8 +102,8 @@ layer-wise PTQ to compensate accumulated error \citep{arai2025qep}.  FBQuant
 uses feedback signals for LLM quantization, CMPQ allocates mixed precision in
 a channel-wise pattern, and FlexQuant switches precision dynamically during
 generation \citep{liu2025fbquant,chen2024cmpq,liu2025flexquant}.
-% TODO(final-paper): verify final bibliographic keys, author order, and venue
-% status for ChanMix, MixKVQ, FBQuant, CMPQ, and FlexQuant.
+% Integration note: final bibliography verification for adjacent adaptive
+% quantizers is tracked in the citation audit.
 These papers are adjacent rather than substitutable baselines.  KV-cache
 methods act on keys and values; layer-wise error-propagation methods address
 cross-layer reconstruction; and dynamic precision methods can change bitwidth
@@ -130,5 +130,5 @@ inference-time online calibration \citep{koikeakino2026ttq}.\footnote{TTQ is
 ambiguous.  In this paper, ``test-time TTQ'' means activation-aware
 test-time quantization for prompt-specific online calibration, not Trained
 Ternary Quantization.}
-% TODO(final-paper): confirm whether test-time TTQ belongs in the final
-% bibliography or should remain a terminology note only.
+% Integration note: TTQ is retained as a terminology note unless the final
+% paper expands its test-time quantization comparison.
