@@ -19,15 +19,15 @@ ytick.labelsize: 7
 legend.fontsize: 7
 
 axes.linewidth: 0.8
-axes.edgecolor: #333333
-axes.labelcolor: #111111
-xtick.color: #333333
-ytick.color: #333333
-text.color: #111111
+axes.edgecolor: 0.2
+axes.labelcolor: 0.07
+xtick.color: 0.2
+ytick.color: 0.2
+text.color: 0.07
 
 axes.grid: true
 axes.axisbelow: true
-grid.color: #d9d9d9
+grid.color: 0.85
 grid.linewidth: 0.5
 grid.alpha: 0.8
 
@@ -38,7 +38,7 @@ patch.linewidth: 0.8
 legend.frameon: false
 legend.borderaxespad: 0.4
 
-axes.prop_cycle: cycler('color', ['#1f77b4', '#d62728', '#2ca02c', '#9467bd', '#ff7f0e', '#17becf', '#7f7f7f'])
+axes.prop_cycle: cycler('color', ['tab:blue', 'tab:red', 'tab:green', 'tab:purple', 'tab:orange', 'tab:cyan', 'tab:gray'])
 
 pdf.fonttype: 42
 ps.fonttype: 42

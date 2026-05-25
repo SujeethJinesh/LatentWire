@@ -1,1134 +1,163 @@
 \documentclass{article}
 
-\usepackage[submission]{../../../colm/2026/colm2026_conference}
+\usepackage[submission]{../../colm/2026/colm2026_conference}
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{url}
 \usepackage{xurl}
 \usepackage{hyperref}
+\usepackage{amsmath}
 
-\title{Decode-Position Channel Drift at Long-Decode Reasoning: Budget Tuning as a Partial Cross-Model Remedy}
+\title{Channel-Set Drift in Long-Reasoning W4A16 LLMs: Mechanisms and a Budget-Tuned Remedy}
 \author{Anonymous authors\\Paper under double-blind review}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Quamba2 argues that SSM activations exhibit channel-order preservation and
-activation persistence, properties that support offline per-channel
-quantization for Mamba-family models. We test the corresponding assumption at
-reasoning-scale decode horizons by measuring decode-position channel-set
-drift: whether channels in the top 1\% by magnitude early in decode remain in
-the same protected set later. Across Granite-4.0-H-Small, Nemotron-3-Nano,
-DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1, strict top-1\% set-leaving is
-0.566234756098, 0.533713200380, 0.670572916667, and 0.673611111111,
-respectively, at decode horizons up to 20,000 tokens. Layer-type stratification
-shows comparable drift at block outputs for SSM/Mamba, attention, and MoE
-blocks, so the Quamba2-style persistence assumption fails at the measured
-hybrid-model block-output surface rather than only in a single component type.
-We then test W4A16 channel-protection policies with frozen controls. Hard
-position or scale switches are actively harmful: M2 and M10 are beaten by
-random-bin controls. EMA smoothing removes that random-control-beats failure
-but is insufficient at top-1\% budget: M11 recovers only 0.048299284138 median
-of the BF16-vs-static gap. Cross-tensor activation+K coupling has signal
-relative to random controls but not enough recovery at top-1\%. Budget tuning
-is the first partially positive result. M11b top-5 recovers 0.449284091125 on
-Granite-Small, but with wide CI95 [-1.300900018791, 1.000790626547]; on
-Nemotron, top-5 recovers 0.456736183270 with CI95 [0.345887792388,
-0.794986745913] but does not beat static top-10, while top-10 recovers
-0.814739798903 and beats static top-10 by 0.220356055286 median. ParoQuant
-recovers 0.753776848891 on Granite-Small via rotation, showing that the
-problem is not W4A16 impossibility but channel-set protection fragility. A
-per-position KL analysis finds sublinear rather than superlinear growth, with
-AR decays 0.4387--0.5147, weakening compound-error explanations in this
-packet. The resulting contribution is a scoped mechanism paper with a partial
-budget-tuning remedy, not a settled deployable quantization recipe or a
-runtime/memory efficiency implementation.
+Static per-channel protection is attractive for W4A16 reasoning inference, but it assumes that high-magnitude activation channels remain useful protection targets throughout decode. We measure decode-time channel-set drift across four reasoning LLMs and find strict top-1\% set-leaving of 53--67\% by horizons up to 20K tokens. The effect appears at the measured block-output surface in hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, extending DecDEC's short-horizon Transformer observation and contradicting the channel-persistence assumption behind Quamba2-style static ordering in our long-decode setting. We then test seven channel-set protection families with matched-cost and random controls. Hard position or scale switches are actively harmful, top-1\% smoothing and cross-tensor coupling have signal but insufficient recovery, and reactive DecDEC-style selection does not recover the W4A16 gap. Budget-tuned EMA protection is the strongest channel-set remedy: on Nemotron-3, top-10 protection recovers 0.82 of the BF16-vs-static gap and beats static top-10 by 0.22; on Granite-Small, top-5 recovers 0.45 with a wide CI. A ParoQuant rotation baseline recovers 0.75 on Granite-Small, scoping our negative results to channel-set protection rather than W4A16 PTQ generally. KL trajectories grow sublinearly with AR decays 0.44--0.51, weakening compound-error explanations in the measured regime.
 \end{abstract}
 
 \section{Introduction}
 
-Quamba2 argues that SSM activations have channel-order preservation and
-activation persistence, properties that motivate offline per-channel
-quantization and channel clustering for Mamba1/Mamba2 backbones
-\citep{chiang2025quamba2}. We show that the corresponding protected-set
-assumption breaks down at reasoning-scale decode horizons in our W4A16
-setting: across three hybrid reasoning LLMs (Granite-4.0-H-Small,
-Nemotron-3-Nano, Falcon-H1) and one pure-Transformer reference
-(DeepSeek-R1-Distill-Qwen-1.5B), 53--67\% of top-1\% magnitude channels at
-calibration positions strictly leave the top-1\% set by the final measured
-decode position. This is not merely within-set rank shuffling; it is strict
-set membership change. The distinction matters for deployment. Static
-protected-channel maps, rotations, per-channel formats, and calibration-time
-outlier policies are easiest to engineer when the protected set remains stable.
-If channels leave the protected set as decode position increases, then a
-policy calibrated early in a trace can be stale later in the same trace.
+Long-reasoning models can spend thousands of decode steps in a single answer, so calibration-time quantization decisions must survive within-trace distribution shift. Static protected-channel maps are especially brittle if the channels that dominate early activation magnitude do not remain dominant later. This paper studies that assumption for W4A16 post-training quantization (PTQ): 4-bit weights, 16-bit activations, and a small protected activation-channel set kept at higher precision.
 
-The deployment pressure is not abstract. Artificial Analysis benchmark-cost
-data reported by \citet{bort2025reasoningcosts} put OpenAI o1 at
-\$2{,}767.05 to evaluate across seven reasoning-heavy benchmarks, compared
-with \$108.85 for GPT-4o on the same suite; the report attributes the
-roughly 25$\times$ cost gap to both token expansion and higher per-token
-prices. Gartner's March 2026 inference-cost forecast predicts that
-trillion-parameter LLM inference will become over 90\% cheaper by 2030 than
-in 2025, while warning that advanced reasoning demand can still make total
-compute scarce \citep{gartner2026inferencecost}. Commercial market forecasts
-are not evidence about model internals, but they indicate scale: one
-MarketsandMarkets report projects the AI inference market from \$106.15B in
-2025 to \$254.98B in 2030, and another projects edge AI hardware from
-\$26.14B in 2025 to \$58.90B in 2030
-\citep{marketsandmarkets2025aiinference,marketsandmarkets2025edgeaihardware}.
-Long-decode quantization failures therefore matter both for datacenter
-reasoning workloads and for eventual edge reasoning deployments.
+The assumption matters for recent state-space quantization. Quamba2 argues that Mamba-family activations exhibit channel-order preservation and activation persistence, properties that support static channel ordering and clustering \citep{chiang2025quamba2}. We test the corresponding protected-set assumption at long reasoning horizons. Across Granite-4.0-H-Small, Nemotron-3-Nano, DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1, 53--67\% of the top-1\% channels at the calibration position strictly leave the later top-1\% set. This is not merely within-set rank shuffling; it is membership change in the set a static policy would protect.
 
-The scope here is deliberately narrow. For large-scale standard-architecture
-reasoning models, recent work such as ParoQuant reports substantial W4A16
-quality recovery \citep{liang2025paroquant}. The frontier tested in this
-draft is different: small reasoning models, hybrid Mamba-2 or parallel-hybrid
-architectures, pure PTQ rather than distillation or quantization-aware
-training, and long-decode W4A16 channel-level protection.
+The systems motivation is narrow but practical. Reasoning workloads are expensive, and inference-cost forecasts expect large pressure to reduce per-token cost even as reasoning demand grows \citep{bort2025reasoningcosts,gartner2026inferencecost}. Recent W4A16 systems for larger standard Transformers can recover substantial quality, including ParoQuant's rotation-based reasoning results \citep{liang2025paroquant}. Our focus is different: small reasoning models, hybrid Mamba-2 or parallel-hybrid architectures, pure PTQ rather than distillation, and channel-set protection under long decode.
 
-The current status is a scoped measurement and mechanism paper with one
-partial remedy. The empirical result is stronger than the original
-Granite/Mamba-specific framing: decode-position channel drift appears in
-Granite hybrid models, a Nemotron-3 hybrid, a pure-Transformer DeepSeek
-control, and Falcon-H1's parallel hybrid topology. The negative method result
-is also sharper: static unions, hard position bins, hard scale bins, top-1\%
-EMA smoothing, top-1\% cross-tensor coupling, DecDEC-style reactive selection,
-and stable-core-only protection do not produce a reliable W4A16 channel-set
-method. The partial positive result is budget tuning. M11b shows that larger
-EMA-smoothed protected budgets can recover a meaningful fraction of the
-BF16-vs-static gap, but the best budget differs by model and matched static
-top-10 protection is already strong on Nemotron. The paper therefore claims
-that budget is load-bearing, not that a fixed top-5 EMA recipe is a settled
-cross-model method.
-
-The contribution is:
+Our contributions are fourfold.
 \begin{itemize}
-\item quantitative characterization of decode-position channel-set drift at
-  reasoning-scale horizons (up to 20,000 decode tokens) across hybrid Mamba-2
-  and pure-Transformer reasoning LLMs, extending DecDEC's short-horizon
-  Transformer evidence to the long-decode reasoning regime while contradicting
-  the channel-persistence assumption that motivates Quamba2-style static
-  ordering;
-\item cross-architecture replication on Nemotron-3, DeepSeek-R1-Distill, and
-  Falcon-H1 under fixed deterministic traces;
-\item strict set-membership decomposition showing that many channels leave
-  the protected top-1\% set entirely, rather than merely shuffling within it;
-\item mechanism evidence that boundary-discontinuous switching is harmful,
-  top-1\% smoothing has signal but insufficient magnitude, cross-tensor
-  coupling has signal without enough budget, and per-position KL does not show
-  superlinear compound-error growth in the measured Granite packet;
-\item a partial remedy: M11b budget-tuned EMA protection recovers 0.4493
-  median on Granite-Small at top-5 and 0.8147 median on Nemotron at top-10,
-  but the Nemotron top-5 arm does not beat matched static top-10, so the method
-  is a budget-sensitivity finding rather than a model-invariant recipe;
-\item a defensive SOTA context: ParoQuant's algorithmic Granite baseline
-  recovers 0.7538 median through rotation, showing that the paper's negative
-  results are scoped to channel-set protection rather than to all W4A16 PTQ.
+\item \textbf{Empirical drift.} We provide a four-model cross-architecture measurement of decode-time channel-set drift up to 20K tokens, with strict set-leaving of 53--67\% across hybrid Mamba-2, parallel-hybrid, and pure-Transformer models.
+\item \textbf{Prior-art differentiation.} We extend DecDEC's short-horizon Transformer evidence to the long-reasoning regime and show that Quamba2's channel-persistence assumption fails at the measured block-output surface for the hybrid models tested here.
+\item \textbf{Mechanism tests.} We evaluate seven channel-set protection families with random and matched-cost controls, yielding a three-mechanism account: boundary discontinuities are harmful, smooth top-1\% tracking is insufficient, and protected budget is load-bearing; KL accumulation does not support runaway compound error in the measured Granite packet.
+\item \textbf{Partial remedy and scope.} Budget-tuned EMA protection succeeds on Nemotron at top-10 and shows partial Granite signal, while ParoQuant recovers 0.75 on Granite via rotation. Thus the negative result is scoped to channel-set protection, not all W4A16 PTQ.
 \end{itemize}
-The paper does not claim a deployable kernel/runtime system, a universal
-quantization recipe, or completed architecture-general validation. In
-particular, M11b is reported as evidence about the protected-budget mechanism;
-we do not implement or benchmark a production M11b runtime.
 
 \section{Related Work}
 
-\paragraph{Mamba quantization and dynamic outliers.}
-OutlierMigrate is not the first work to observe dynamic outlier behavior in
-Mamba-style models. In vision state-space models, QMamba reports that hidden
-state sequences exhibit highly dynamic variations and introduces Temporal
-Group Quantization for hidden states \citep{li2025qmamba}. OuroMamba makes the
-point even more directly for vision Mamba models: it identifies dynamic
-activation-outlier variation across time steps as a failure mode for static
-post-training quantization and uses lightweight dynamic outlier detection
-during inference \citep{ramachandran2025ouromamba}. These results are important
-prior art. They establish that dynamic outliers are already known in the
-vision-Mamba setting.\footnote{The phrase ``outlier migration'' is overloaded.
-In this paper, the operational measurement is decode-position channel drift:
-which activation channels are in the top-magnitude set at different decode
-positions. SmoothQuant uses migration for activation-to-weight difficulty
-transfer \citep{xiao2023smoothquant}. MoBiQuant uses it for token-set shifts
-under different bit widths \citep{wang2026mobiquant}; we reserve our
-quantitative claims for the channel-across-decode-position phenomenon measured
-in this paper.}
+\paragraph{Mamba and state-space quantization.} Vision-Mamba quantization already reports dynamic activation outliers: QMamba introduces temporal grouping for hidden states \citep{li2025qmamba}, and OuroMamba uses dynamic outlier detection during inference \citep{ramachandran2025ouromamba}. Language-Mamba work often assumes more stable structure. Mamba-PTQ identifies recurrent outlier channels \citep{pierro2024mambaptq}; Quamba and Quamba2 use static or calibration-time structure for Mamba-family PTQ \citep{chiang2024quamba,chiang2025quamba2}; MambaQuant uses variance-aligned rotations \citep{xu2025mambaquant}. Our measurement asks whether the static protected-set assumption holds in long reasoning traces.\footnote{We use \emph{decode-time channel-set drift} for the measured phenomenon. SmoothQuant's ``migration'' is activation-to-weight scale transfer \citep{xiao2023smoothquant}; MoBiQuant uses related language for token-set shifts across bit-widths \citep{wang2026mobiquant}.}
 
-Language-Mamba quantization work has emphasized a different operating regime.
-Mamba-PTQ shows that recurrent LLMs exhibit activation outlier channels and
-frames outlier-aware quantization as a first step \citep{pierro2024mambaptq}.
-Quamba proposes a static 8-bit per-tensor recipe that suppresses maximum input
-values to selective SSMs and uses a Hadamard transform for output activations
-\citep{chiang2024quamba}. Quamba2 is closer to the assumption tested here:
-it explicitly builds on channel-order preservation and activation persistence
-for Mamba1/Mamba2 quantization \citep{chiang2025quamba2}. Our contribution is
-not that dynamic channel sets exist in every setting; it is that the
-Quamba2-style persistence assumption does not hold for the measured
-reasoning-scale W4A16 decode horizons. MambaQuant uses variance-aligned rotations and
-reports heavy-tailed, channel-uneven distributions in Mamba-family models
-\citep{xu2025mambaquant}. Quamba-SE softens the treatment of activation
-outliers with multiple adaptive scales but still evaluates a per-value
-quantizer rather than a decode-time channel migration policy
-\citep{chen2026quambase}. OutlierMigrate asks which regime applies to hybrid
-LLMs in long reasoning traces: the static or calibration-time protection
-regime common in language deployment recipes, or the dynamic regime already
-documented in vision Mamba.
+\paragraph{LLM quantization and rotations.} SmoothQuant, AWQ, QuaRot, KVQuant, and BlockDialect protect or transform activation structure using calibration-time statistics, rotations, or adaptive formats \citep{xiao2023smoothquant,lin2023awq,ashkboos2024quarot,hooper2024kvquant,jang2025blockdialect}. These systems are not contradicted by our results. The implication is narrower: if the protected channel set changes during long decode, static channel maps need validation on the specific architecture and horizon. ParoQuant is particularly important because it reports strong W4A16 recovery for reasoning models through pairwise rotations \citep{liang2025paroquant}; our ParoQuant baseline contextualizes, rather than replaces, the channel-set experiments.
 
-\paragraph{Static protection in LLM deployment.}
-Several influential LLM quantization systems protect or transform salient
-activation structure using calibration-time statistics or fixed transformations.
-SmoothQuant migrates activation difficulty into weights using offline
-activation statistics \citep{xiao2023smoothquant}; AWQ protects a small set of
-activation-salient weight channels \citep{lin2023awq}; QuaRot removes hidden
-state outliers with rotations \citep{ashkboos2024quarot}; KVQuant isolates KV
-cache outliers per vector and uses per-channel key quantization
-\citep{hooper2024kvquant}; and BlockDialect assigns block-wise number formats
-from a learned formatbook \citep{jang2025blockdialect}. These systems are not
-claimed to be wrong by our current evidence. The implication is narrower: if
-the protected high-magnitude set changes substantially during long decode in
-hybrid LLMs, static protection maps may need migration-aware updates or
-validation on the specific recurrent/linear-attention architecture. Several
-of these systems already include adaptive components, such as KVQuant's
-per-vector dense-and-sparse handling or BlockDialect's online activation
-format selection; our current evidence motivates stress-testing those designs
-on hybrid long decode, not declaring them failed.
+\paragraph{Dynamic and long-context policies.} DecDEC dynamically identifies salient activation channels at each decode step and reports low recall for static outlier-channel identification in short Transformer decode \citep{park2025decdec}. Our novelty is horizon, model class, architecture, and reasoning benchmark surface. KV-cache methods such as KIVI, PM-KVQ, AttentionPredictor, ChanMix, and MixKVQ adapt or compress cached key/value tensors \citep{liu2024kivi,liu2025pmkvq,yang2025attentionpredictor,liao2026chanmix,zhang2025mixkvq}; our interventions target linear-layer activation channels.\footnote{``Hot channels'' in HCP/CHON refers to persistently extreme channels during NVFP4 pretraining, which differs from our W4A16 inference-time setting. We refer to arXiv:2603.19296 as \emph{test-time TTQ} to avoid conflict with classical Trained Ternary Quantization.}
 
-\paragraph{Dynamic channel and KV-cache policies.}
-Dynamic inference-time policies are closer to the methods we test and fail.
-DecDEC dynamically selects salient activation channels at each decode step and
-fetches residual compensation from CPU memory \citep{park2025decdec}. DecDEC
-also reports low recall for static outlier-channel identification at short
-decode horizons. Our measurement is therefore not a first demonstration that
-channel sets change during decode; the defensible distinction is horizon,
-model class, architecture, and benchmark surface: up to 20,000 decode tokens
-on reasoning LLMs, including hybrid Mamba-2 and parallel-hybrid models, rather
-than DecDEC's short-horizon Transformer setting. M2 and hard-binned M10 differ
-from DecDEC in that they switch a precomputed protected-channel or scale policy
-by decode-position bin; M11 tests whether smoothing that decision surface
-avoids the boundary discontinuities exposed by M2 and M10. It does avoid the
-random-control-beats pattern but still does not recover enough quality.
-KV-cache systems address a
-different tensor. KIVI quantizes key cache per channel and value cache per
-token \citep{liu2024kivi}; PM-KVQ targets long-CoT KV-cache quantization and
-RoPE-induced key-cache distribution shift \citep{liu2025pmkvq}; and
-AttentionPredictor learns to predict future attention scores for KV-cache
-compression and prefetch \citep{yang2025attentionpredictor}. Newer
-long-context KV-cache systems sharpen the distinction. ChanMix reallocates
-bits across sensitive KV-cache channels \citep{liao2026chanmix}, while MixKVQ
-uses query-aware mixed precision for critical key channels in long-context
-reasoning \citep{zhang2025mixkvq}. These are close neighbors on the
-channel-wise long-context quantization axis, but they act on cached key/value
-tensors. Our measurements and interventions target linear-layer activation
-channels, so a ChanMix- or MixKVQ-style success would not by itself resolve
-the W4A16 activation-channel failure measured here. These works motivate
-long-decode inference adaptation, but our measurements are about linear-layer
-activation channel sets.\footnote{``Hot channels'' in HCP/CHON
-(arXiv:2602.02047) refers to persistently extreme channels during NVFP4
-pretraining, which is close in vocabulary but opposite in setting from the
-drifting W4A16 inference-time channels measured here.} PMPD changes precision across inference
-phases and deeper decode positions \citep{chen2025pmpd}; our current evidence
-points in an orthogonal direction, where later decode positions can require
-different protected channels rather than simply lower precision.\footnote{We
-refer to arXiv:2603.19296 as test-time TTQ when discussing it, to avoid
-confusion with classical Trained Ternary Quantization.}
-
-\paragraph{Quantization error accumulation.}
-Statistically-Lossless Quantization (SLQ) argues that, in a near-lossless
-compression regime, quantization error need not compound across token
-positions \citep{helcig2026slq}. That counter-result is important for this
-draft because one possible explanation for the failed W4A16 interventions is
-long-horizon compound error rather than channel selection alone. The regimes
-are not the same: SLQ studies statistically lossless compression, whereas this
-draft studies aggressive W4A16 PTQ, small reasoning models, and endpoints up
-to 20,000 decode positions. QEP identifies layer-wise error propagation as a
-limitation of low-bit PTQ \citep{arai2025qep}, and LAQuant argues that
-long-decoding reasoning failures can persist despite short-decode accuracy
-unless calibration and lookahead losses account for downstream residual
-effects \citep{choi2026laquant}. Activation Sensitivity gives the theoretical
-version of the same warning: activation magnitude alone is only a proxy for
-loss sensitivity, and cross-layer error accumulation, calibration mismatch,
-and task-conditional sensitivity are open challenges for PTQ
-\citep{xu2026activationsensitivity}. We therefore treat compound error as an
-open hypothesis, not a conclusion. Our KL-accumulation packet directly tests
-this mechanism in the aggressive W4A16 endpoint setting and finds flat or
-sublinear trajectories rather than superlinear growth, so the paper does not
-use compound error as the primary explanation for the observed channel-set
-failures.
-
-\paragraph{Channel-wise gated recurrence.}
-Recent efficient-recurrence and linear-attention architectures make
-data-dependent channel-wise memory control a central design axis. Gated Linear
-Attention (GLA) formulates linear attention as recurrent matrix-valued state
-with data-dependent gating \citep{yang2023gla}. Gated DeltaNet combines
-adaptive memory erasure with delta-rule updates and reports hybrids that mix
-Gated DeltaNet with attention or Mamba2 layers \citep{yang2024gdn}. Moonshot
-AI's October 2025 Kimi Linear report is a recent example in this line: its
-Kimi Delta Attention (KDA) is described as channel-wise gated linear attention
-that extends Gated DeltaNet with finer-grained gating, and the released Kimi
-Linear model is a layerwise hybrid of KDA and Multi-Head Latent Attention
-\citep{kimilinear2025}. The official Qwen3.6 model card likewise describes a
-hybrid layout that interleaves Gated DeltaNet blocks with gated attention
-\citep{qwen36hf}. These sources motivate OutlierMigrate as an empirical test
-of whether high-magnitude channels stay fixed during long decode in hybrid
-language models. They do not imply that Kimi Linear, Qwen3.6, GLA, or other
-unmeasured models exhibit the migration measured in this draft.
+\paragraph{Error accumulation.} SLQ finds that near-lossless quantization errors need not compound across token positions \citep{helcig2026slq}. QEP, LAQuant, and Activation Sensitivity emphasize layer-wise propagation, lookahead losses, calibration mismatch, and task-conditional sensitivity as PTQ risks \citep{arai2025qep,choi2026laquant,xu2026activationsensitivity}. We therefore test, rather than assume, compound error in our aggressive W4A16 endpoint setting.
 
 \section{Method}
 
-Phase 0 follows the frozen preregistration at
-\url{experimental/outlier_migrate/phase0/preregister_om_phase0.md}. The model
-is \texttt{ibm-granite/granite-4.0-h-tiny} at HuggingFace snapshot commit
-\texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}. The prompt set contains 12
-deterministically selected AIME-2025 traces, indices 0--11, with prompt SHA
-\texttt{sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd}
-from
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/prompt_manifest.json}.
+For each trace, layer, and measured decode position, we record the vector of per-channel activation magnitudes. Let $S_{\ell,p}(t)$ be the top-1\% channel set for layer $\ell$ and prompt $p$ at position $t$. The strict set-leaving rate at position $t$ is
+\begin{equation}
+  1 - \frac{|S_{\ell,p}(100) \cap S_{\ell,p}(t)|}{|S_{\ell,p}(100)|},
+\end{equation}
+averaged over prompts and layers. Within-set shuffling is reported separately for channels that remain in the top-1\% set but move substantially in rank.
 
-Phase 1 follows the frozen preregistration at
-\url{experimental/outlier_migrate/phase1/preregister_om_phase1.md}. The model
-is \texttt{ibm-granite/granite-4.0-h-small} at HuggingFace snapshot commit
-\texttt{b8c0982bab7fde4eb48110f5a069527c008fab39}. The prompt set contains 24
-deterministically selected AIME-2025 traces, indices 0--23, with prompt SHA
-\texttt{sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e}
-from
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/prompt_manifest.json}.
+We score interventions using recovery of the BF16-vs-static W4A16 gap:
+\begin{equation}
+  R = \frac{L_{\text{static}} - L_{\text{method}}}{L_{\text{static}} - L_{\text{BF16}}}.
+\end{equation}
+Recovery may be negative when a method is worse than static protection and may exceed one when a method beats BF16 on the scored slice. We therefore report unclipped medians and bootstrap CIs. Traces with no recoverable static gap are tracked explicitly and excluded from ratio computation for method CIs; their frequency is part of the trace-heterogeneity result.
 
-For every transformer layer, the runner records per-channel activation
-magnitudes. Phase 0 records decode positions \{100, 500, 1000, 5000, 10000\};
-Phase 1 records \{100, 500, 1000, 5000, 10000, 20000\}. Each gate selects the
-top 1\% channels by mean magnitude at position 100 and computes the fraction
-whose rank at the final preregistered position differs by more than two
-channel positions. The reported gate metric is the trace-bootstrap aggregate
-over layers with equal layer weighting.
-
-\subsection{Comparison with DecDEC measurement}
-
-DecDEC is the closest prior empirical measurement of decode-time channel-set
-change. Its Figure 5 evaluates the recall of static analysis-based outlier
-identification against a per-step oracle top-$K$ channel set in short
-Transformer decode. Our measurement differs in four ways. First, the horizon
-is reasoning-scale: up to 20,000 decode positions rather than roughly 100
-decode steps. Second, the model class is reasoning LLMs rather than chat-tuned
-Transformers. Third, the architecture set includes hybrid Mamba-2 and
-parallel-hybrid models, with DeepSeek-R1-Distill-Qwen-1.5B as a
-pure-Transformer reference. Fourth, the prompts are AIME-style long reasoning
-traces rather than WikiText/BBH-style evaluation.
-
-The numerical values should not be compared as if they were the same metric.
-DecDEC reports low recall for static outlier identification; our main
-decomposition reports strict set-leaving from the position-100 top-1\% set to
-the final measured top-1\% set, plus within-set rank shuffling. Both
-measurements are consistent with a shared warning: static channel identities
-can become stale during decode. Our contribution is the long-horizon
-reasoning-scale extension and the associated W4A16 method-failure analysis,
-not the first observation that outlier-channel sets can change.
+We test seven channel-set method classes: static migration-aware unions, hard position-conditioned protected sets, hard position-binned scale tables, EMA-smoothed top-magnitude protection (M11), cross-tensor activation+key coupling (M18), DecDEC-style reactive top-1\% selection, budget-tuned EMA protection (M11b), and stable-core protection (M26). Each method is compared to static baselines plus random or matched-budget controls when applicable. ParoQuant is evaluated as an algorithmic rotation baseline, not as a channel-set method.
 
 \section{Experiments}
-\label{sec:experiments}
 
-The Phase 0 result packet is
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z}.
-The checker output is
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/checker_result.json},
-the metrics file is
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/metrics.json},
-and artifact completeness is recorded in
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/artifact_check.json}.
-The activation artifact SHA is
-\texttt{sha256:2783aa329d82e8f43ea4f342e52f0a25fc283b0b8971880f2da093739474d687}
-from
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/activation_magnitude_manifest.json}.
+\paragraph{Models and traces.} The measurement suite covers Granite-4.0-H-Small, Nemotron-3-Nano, DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1. Intervention experiments use 12 deterministic long-reasoning traces unless otherwise noted; the original drift measurement uses 24 Granite-Small traces. Decode positions are measured on the grid $\{100,500,1000,5000,10000,20000\}$ when the model packet supports 20K tokens. Dense KL analysis uses a Granite-Small packet sampled every 100 positions to 10K.
 
-The Phase 1 result packet is
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z}.
-The checker output is
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/checker_result.json},
-the metrics file is
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/metrics.json},
-and artifact completeness is recorded in
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/artifact_check.json}.
-The activation artifact SHA is
-\texttt{sha256:326a04351e0dda28cf919fe4745d7d9341011db13d940a06cf9c8470633003e1}
-from
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitude_manifest.json}.
-
-The partial Phase 2 result packet is
-\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z}.
-The checker output is
-\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/checker_result.json},
-the metrics file is
-\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/metrics.json},
-and artifact completeness is recorded in
-\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/artifact_check.json}.
-The model is
-\url{nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16} at snapshot commit
-\texttt{cbd3fa9f933d55ef16a84236559f4ee2a0526848}. The activation artifact
-SHA is
-\texttt{sha256:bc841b938a125f05649f84577c0ddb7ab287213a683892cb81ea6ca06296206d}
-from
-\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/activation_magnitude_manifest.json}.
-This packet is explicitly scoped as partial Nemotron-3-only validation:
-Qwen3.6 and Kimi Linear are deferred, and
-\texttt{full\_cross\_validation\_complete=false}.
-
-The Phase 3 intervention packet is
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z}.
-It follows the frozen preregistration at
-\url{experimental/outlier_migrate/phase3/preregister_om_phase3_intervention.md}.
-The checker output is
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/checker_result.json},
-the metrics file is
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/metrics.json},
-the per-trace perplexities and recoveries are in
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/per_trace_metrics.json},
-and artifact completeness is recorded in
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/artifact_check.json}.
-The model is again \texttt{ibm-granite/granite-4.0-h-tiny} at snapshot
-commit \texttt{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}. The prompt set uses
-the fixed 24-trace Phase 1 set with prompt SHA
-\texttt{sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e}.
-The quantization scheme is simple symmetric per-channel INT4 weights with
-FP16 activations and BF16 protected-channel rows; no AWQ-style or
-SmoothQuant-style activation-aware scaling is used. The scored window is the
-64-token window ending at decode position 10000. The preregistered recovery
-metric is
-\[
-1 - \frac{\mathrm{perplexity}_{\mathrm{regime}} -
-\mathrm{perplexity}_{\mathrm{BF16}}}{\mathrm{perplexity}_{\mathrm{static1\%}} -
-\mathrm{perplexity}_{\mathrm{BF16}}}.
-\]
-The pass rule is median recovery $\geq 0.50$ with bootstrap 95\% CI lower
-bound $>0.30$. The kill rule is recovery $<0.20$ or CI upper $<0.30$.
-The mandatory controls are static position-100 top-2\% protection and
-magnitude-average top-1\% protection over positions \{100, 1000, 5000,
-10000\}.
-
-The preregistered dynamic-outlier pass rule in both gates requires migration
-fraction at least 0.05 and bootstrap CI lower bound greater than 0.05. This is
-a nonstationarity screen, not a claimed practically meaningful effect-size
-standard. Phase 1 uses the same dynamic path because Phase 0 returned
-\texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION}.
+\paragraph{Controls.} Static top-1\% protection is the baseline. Position- and scale-switching methods use random-bin controls. EMA and reactive methods use random-walk or random-reactive controls. Budget experiments include matched static top-10 controls. This control design is load-bearing: two methods that look plausible in isolation are worse than their random controls.
 
 \section{Results}
 
-\begin{table}[t]
-\centering
-\small
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\linewidth}
-                >{\raggedright\arraybackslash}p{0.32\linewidth}
-                >{\raggedright\arraybackslash}p{0.32\linewidth}}
-\toprule
-Quantity & Phase 0 & Phase 1 \\
-\midrule
-Decision & dynamic-outlier pass & replicated-at-scale pass \\
-Strict set-leaving fraction & 0.634244791667 & 0.566234756098 \\
-Strict set-leaving 95\% CI & [0.605208333333, 0.664192708333] &
-[0.550076219512, 0.581707317073] \\
-Within-set rank-shuffling fraction & 0.175260416667 & 0.270934959350 \\
-Within-set rank-shuffling 95\% CI & [0.160156250000, 0.191015625000] &
-[0.260797764228, 0.280614837398] \\
-Original preregistered migration fraction & 0.8178385416666667 & 0.843165650406504 \\
-Original migration 95\% CI & [0.797265625, 0.8368489583333334] &
-[0.8334349593495936, 0.8511432926829268] \\
-Preregistered threshold & $\geq$0.05 and CI lower $>$0.05 &
-$\geq$0.05 and CI lower $>$0.05 \\
-Artifact complete & true & true \\
-Model & \url{ibm-granite/granite-4.0-h-tiny} &
-\url{ibm-granite/granite-4.0-h-small} \\
-Trace count & 12 & 24 \\
-Layer count / hidden size & 40 / 1536 & 40 / 4096 \\
-Decode positions & 100, 500, 1000, 5000, 10000 &
-100, 500, 1000, 5000, 10000, 20000 \\
-Bootstrap seed & 20260508 & 20260508 \\
-\bottomrule
-\end{tabular}
-\caption{OutlierMigrate Phase 0 and Phase 1 gate results. Phase 0 values are
-from
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/checker_result.json}
-and
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/metrics.json};
-strict decomposition values are from
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/migration_decomposition.md}.
-Phase 1 values are from
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/checker_result.json}
-and
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/metrics.json};
-strict decomposition values are from
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/migration_decomposition.md}.}
-\label{tab:phase-results}
-\end{table}
+\subsection{Channel sets drift at long reasoning horizons}
 
-The original preregistered migration fraction intentionally conflates two
-effects: channels can leave the top-1\% set entirely, or they can remain in
-the set while shuffling rank by more than two positions. For static channel
-protection, the stricter set-membership readout is the more direct
-post-hoc interpretability measure, not the preregistered gate criterion.
-A channel is counted as strict set-leaving only if it is in the
-per-trace, per-layer top-1\% set at decode position 100 and has final rank
-greater than the top-1\% boundary at decode position 10000 in Phase 0 or
-20000 in Phase 1. Under that definition, 0.634244791667 of Phase 0 base
-top-1\% channels and 0.566234756098 of Phase 1 base top-1\% channels leave
-the protected set entirely. The within-set shuffling rates are
-0.175260416667 and 0.270934959350, respectively. The gate decision remains
-based only on the original preregistered migration metric.
-
-The exact Phase 0 provenance values are: model snapshot commit
-\url{791e0d3d28c86e106c9b6e0b4cecdee0375b6124}, prompt SHA
-\url{sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd},
-and activation artifact SHA
-\url{sha256:2783aa329d82e8f43ea4f342e52f0a25fc283b0b8971880f2da093739474d687};
-these are recorded in
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/model_provenance.json},
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/prompt_manifest.json},
-and
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z/activation_magnitude_manifest.json}.
-The exact Phase 1 provenance values are: model snapshot commit
-\url{b8c0982bab7fde4eb48110f5a069527c008fab39}, prompt SHA
-\url{sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e},
-and activation artifact SHA
-\url{sha256:326a04351e0dda28cf919fe4745d7d9341011db13d940a06cf9c8470633003e1};
-these are recorded in
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/model_provenance.json},
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/prompt_manifest.json},
-and
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/activation_magnitude_manifest.json}.
-
-The Phase 0 checker returned
-\texttt{PASS\_OM\_PHASE0\_DECODE\_TIME\_MIGRATION}. Its exact artifact reason
-was that the point estimate 0.81783854 is at least 0.05 and the CI lower bound
-0.79726562 is greater than 0.05. The Phase 1 checker returned
-\texttt{PASS\_OM\_PHASE1\_REPLICATED\_AT\_SCALE}. Its exact artifact reason
-was that the point estimate 0.84316565 is at least 0.05 and the CI lower bound
-0.83343496 is greater than 0.05.
-
-\begin{table}[t]
-\centering
-\small
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.42\linewidth}
-                >{\raggedright\arraybackslash}p{0.43\linewidth}}
-\toprule
-Quantity & Partial Phase 2 Nemotron-3 \\
-\midrule
-Decision & partial PASS; Qwen3.6/Kimi deferred \\
-Strict set-leaving fraction & 0.533713200380 \\
-Strict set-leaving 95\% CI & [0.467414529915, 0.599982193732] \\
-Within-set rank-shuffling fraction & 0.269082383666 \\
-Within-set rank-shuffling 95\% CI & [0.238841405508, 0.299056267806] \\
-Original preregistered migration fraction & 0.820809591642925 \\
-Original migration 95\% CI & [0.7865325261158594, 0.8544931149097815] \\
-Preregistered threshold & $\geq$0.05 and CI lower $>$0.05 \\
-Artifact complete & true \\
-Model & \url{nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16} \\
-Trace count & 24 \\
-Layer count / hidden size & 52 / 2688 \\
-Decode positions & 100, 500, 1000, 5000, 10000, 20000 \\
-\bottomrule
-\end{tabular}
-\caption{Partial Phase 2 cross-family validation. The checker-backed packet is
-\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z}.
-This is not full cross-validation because Qwen3.6 and Kimi Linear are deferred.}
-\label{tab:phase2-partial}
-\end{table}
-
-\begin{table}[t]
-\centering
-\small
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lrrrr@{}}
-\toprule
-Run & Original drift & Strict set-leaving & Within-set shuffling & Packet \\
-\midrule
-Granite-Small Phase 1 & 0.836763211382 & 0.566234756098 & 0.270934959350 &
-\url{experimental/outlier_migrate/phase9/step9_0_decomposition_replication.md} \\
-Nemotron-3 Phase 2 & 0.801667853751 & 0.533713200380 & 0.269082383666 &
-\url{experimental/outlier_migrate/phase9/step9_0_decomposition_replication.md} \\
-DeepSeek-R1-Distill Phase 5' & 0.834914434524 & 0.670572916667 & 0.165736607143 &
-\url{experimental/outlier_migrate/phase9/step9_0_decomposition_replication.md} \\
-Falcon-H1 Phase 7 & 0.767887205387 & 0.673611111111 & 0.097537878788 &
-\url{experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/checker_result.json} \\
-\bottomrule
-\end{tabular}
-}
-\caption{Cross-architecture decomposition after Phase 5' and Phase 7. Strict
-set-leaving remains above 0.50 on Granite-Small, Nemotron-3, DeepSeek, and
-Falcon-H1. The Falcon-H1 packet uses post-block residual hooks; it is not
-pathway-specific pre-sum attribution.}
-\label{tab:cross-arch-decomposition}
-\end{table}
-
-Phase 5' broadens the phenomenon beyond measured Mamba-2-style hybrids:
-\texttt{deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B} returns
-\texttt{DYNAMIC\_REGIME\_TRANSFORMER} with original drift
-0.8393787202380952, 95\% CI [0.8278459821428571, 0.8507254464285714],
-strict set-leaving 0.670572916667, and within-set shuffling
-0.165736607143. Phase 7 checks Falcon-H1 as a parallel hybrid topology and
-returns \texttt{WITHIN\_LINEAGE\_2\_CONSISTENT}: original drift
-0.7833543771043772, 95\% CI [0.7544191919191919, 0.8112373737373737], strict
-set-leaving 0.673611111111, and within-set shuffling 0.097537878788. These
-two additions make the Mamba-specific title untenable and motivate the broader
-``decode-position channel drift'' framing.
-
-Experiment D formalizes the decomposition and Experiment E checks threshold
-sensitivity. The top-1\% decomposition is stable through top-2\% on all
-landed packets. Top-5\% changes the component split and is treated as
-sensitivity, not the primary operating point. Phase 9 Step 9.0 additionally
-computes adjacent-bin Jaccard overlap for top-channel sets; the overall top-1\%
-adjacent-bin Jaccard is 0.745999647119, which made position-binned methods
-plausible enough to test.
-
-\subsection{Static and position-conditioned protection attempts}
-
-Phase 3 tests the most direct intervention suggested by the measurement:
-instead of protecting only the position-100 top-1\% channels, protect the union
-of top-1\% channels observed at decode positions \{100, 1000, 5000, 10000\}.
-This is intentionally a static-set intervention. It asks whether membership
-migration alone explains enough of the quantization gap to support a simple
-deployment recipe.
-
-\begin{table}[t]
-\centering
-\small
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lrrrr@{}}
-\toprule
-Regime & Mean perplexity & Median perplexity & Median recovery & Recovery 95\% CI \\
-\midrule
-BF16 baseline & 1.005358821083984 & 1.000282908378305 & reference & reference \\
-static-1\% position 100 & 1.015228246226743 & 1.000282342709987 & reference & reference \\
-static-2\% position 100 & 1.021467448964073 & 1.000390886047853 & 0.000000000000 & [0.000000000000, 0.356017001423] \\
-magnitude average top-1\% & 1.009248547916613 & 1.000236584155715 & 0.061276118929 & [0.000000000000, 0.512245438462] \\
-migration-aware union & 1.008573512406127 & 1.000275313560728 & 0.000000000000 & [0.000000000000, 0.711143244199] \\
-\bottomrule
-\end{tabular}
-}
-\caption{Phase 3 intervention and controls on Granite-4.0-H-Tiny. Values are
-from
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/per_trace_metrics.json},
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/metrics.json},
-and
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/control_metrics.json}.
-Recovery is defined relative to the BF16-vs-static-1\% gap.}
-\label{tab:phase3-intervention}
-\end{table}
-
-The intervention kills. The checker returned the decision string
-{\small\texttt{KILL\_OM\_PHASE3\_INTERVENTION\_FAILS}} because the union
-regime had median recovery 0.000000000000, below the preregistered 0.20 kill
-floor. It
-also missed the pass rule: median recovery $\geq 0.50$ with CI lower bound
-$>0.30$. The artifact packet is complete, and the control-stop condition did
-not fire. The best control, magnitude-average protection, exceeded union by
-0.061276118929 median recovery, below the human stop threshold of 0.10. Ten
-of the 24 traces had no recoverable static gap under this scoring definition.
-That fraction, 0.416666666667, also exceeds the preregistered 25\% no-gap kill
-condition. The checker reports the first kill reason it reaches, but the
-packet satisfies both kill paths.
-
-The recovery statistic is intentionally centered on the per-trace
-BF16-vs-static-1\% gap, so it can be negative when a regime is worse than
-static-1\%, greater than one when a regime beats BF16 on the scored window, and
-zero when there is no recoverable static gap. In the union regime, 11 traces
-had positive recovery, 10 were zero because there was no recoverable static
-gap, 3 were negative, and 4 exceeded recovery 1.0. This unstable per-trace
-surface is part of the negative result rather than a hidden success case: the
-primary statistic was preregistered as the median across all 24 traces. The
-median was chosen for the gate because the recovery ratio can become very
-large when the static gap is small; a mean recovery would be dominated by
-unstable high-ratio traces rather than by the typical trace.
-
-\begin{table}[t]
-\centering
-\small
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}llrr@{}}
-\toprule
-Grid & Positions & Median recovery & Recovery 95\% CI \\
-\midrule
-sparse & \{100, 5000, 10000\} & 0.000000000000 & [0.000000000000, 0.752281234025] \\
-primary & \{100, 1000, 5000, 10000\} & 0.000000000000 & [0.000000000000, 0.711143244199] \\
-dense & \{100, 500, 1000, 2000, 5000, 7500, 10000\} & 0.000000000000 & [0.000000000000, 0.920007799726] \\
-\bottomrule
-\end{tabular}
-}
-\caption{Position-grid sensitivity. Values are from
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/grid_sensitivity.md}
-and
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z/grid_sensitivity_metrics.json}.
-Increasing grid density did not produce a nonzero median recovery.}
-\label{tab:phase3-grid}
-\end{table}
-
-\begin{table}[t]
-\centering
-\small
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lrrrrr@{}}
-\toprule
-Attempt & Model & Decision & Median recovery & CI95 & Key control readout \\
-\midrule
-Phase 3 union & Granite-Tiny & \texttt{KILL\_OM\_PHASE3\_INTERVENTION\_FAILS} &
-0.000000000000 & [0.000000000000, 0.711143244199] &
-10/24 no recoverable static gap \\
-Phase 4 union & Granite-Small & \texttt{KILL\_OM\_PHASE4\_INTERVENTION\_FAILS} &
-0.000000000000 & [0.000000000000, 0.069540641955] &
-9/24 no recoverable static gap \\
-Phase 9 M2 bins & Granite-Small & \texttt{KILL\_M2\_RANDOM\_CONTROL\_BEATS} &
--0.866837313391 & [-3.435289251335, 0.595238665766] &
-random-bin median beats M2 by 0.667548290168 \\
-Phase 9 M10 scales & Granite-Small & \texttt{KILL\_M10\_RANDOM\_CONTROL\_BEATS} &
-0.234447927834 & [-2.072905653259, 0.503521494450] &
-random-bin median beats M10 by 0.761487459046 \\
-Phase 9 M11 EMA & Granite-Small & \texttt{KILL\_M11\_AMBIGUOUS} &
-0.048299284138 & [-8.941156151014, 0.704599255873] &
-random-walk median is lower by 1.254404832487 \\
-Phase 9 M18 act+K & Granite-Small & \texttt{KILL\_M18\_AMBIGUOUS} &
--0.343590844126 & [-14.071191710979, 0.740602124280] &
-KIVI key-only median -2.174128311393; random-coupled median -4.664379731051 \\
-Phase 9 DecDEC proxy & Granite-Small & \texttt{PASS\_DECDEC\_BASELINE\_REPORTED} &
--0.070034781258 & [-8.495693501233, 0.674176370350] &
-random reactive median -1.262604926125; static top-10\% median -0.228273368210 \\
-Phase 9 M11b top-5 & Granite-Small & \texttt{PASS\_M11B\_BUDGET\_MATTERS} &
-0.449284091125 & [-1.300900018791, 1.000790626547] &
-beats static top-10\% by 0.501051267680 median \\
-Phase 9 M11b top-5 & Nemotron-3 & \texttt{AMBIGUOUS\_M11B\_NEMOTRON\_BUDGET\_SIGNAL} &
-0.456736183270 & [0.345887792388, 0.794986745913] &
-does not beat static top-10\%; margin -0.137647560348 \\
-Phase 9 M11b top-10 & Nemotron-3 & \texttt{PASS\_M11B\_NEMOTRON\_REPLICATES} &
-0.814739798903 & [0.254439288178, 0.922552264880] &
-beats static top-10\% by 0.220356055286 median \\
-Phase 9 M26 stable core & Granite-Small & \texttt{AMBIGUOUS\_M26} &
-0.177615807648 & [-0.116448558090, 0.999915931324] &
-beats random matched-core by 1.727084589454 median \\
-Phase 9 ParoQuant & Granite-Small & \texttt{PASS\_PAROQUANT\_BASELINE\_REPORTED} &
-0.753776848891 & [0.477044452405, 1.003769554323] &
-rotation baseline beats M11b top-5 by 0.304492757767 median \\
-\bottomrule
-\end{tabular}
-}
-\caption{Intervention attempts. Phase 3 and Phase 4 test static union
-protection under W4A16. Phase 9 M2 tests position-conditioned protected sets
-A/B/C with a static-3\% matched-cost control and a random-bin negative
-control. Phase 9 M10 tests hard-binned scale tables. Phase 9 M11 tests
-EMA-smoothed protected-set updates. Phase 9 M18 tests joint activation and
-key-cache channel protection. The DecDEC row is a descriptive algorithmic
-baseline, not a positive-method gate. M11b is the only channel-set method with
-a partial positive signal, but the best budget differs by model and Nemotron
-top-5 does not beat matched static top-10. ParoQuant is a rotation baseline,
-not a channel-set method. Checker decision strings are audit labels; the paper
-framing is determined by the control comparisons in the final column. M10
-values are from
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/checker_result.json};
-M11 values are from
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/checker_result.json}; M18 values are from
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z/checker_result.json};
-DecDEC values are from
-\url{experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z/checker_result.json};
-M11b Granite values are from
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/checker_result.json};
-M11b Nemotron values are from
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/checker_result.json};
-M26 values are from
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z/checker_result.json};
-ParoQuant values are from
-\url{experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z/checker_result.json}.}
-\label{tab:intervention-summary}
-\end{table}
-
-Phase 4 repeats the union intervention on Granite-4.0-H-Small with a larger
-512-token scoring window. It also kills: median recovery is 0.000000000000,
-CI95 [0.000000000000, 0.06954064195470389], and the no-recoverable-static-gap
-fraction is 0.375. This rules out the simplest explanation that Phase 3 failed
-only because Granite-Tiny was too robust or because the 64-token scoring
-window was too short.
-
-Phase 9 M2 then tests a lightly position-conditioned intervention. Instead of
-one static union, M2 uses three protected sets: early positions
-\{100, 200, 500\}, middle positions \{1000, 2000, 5000\}, and late positions
-\{7000, 10000, 15000\}. The active protected set switches at decode positions
-800 and 6000. The result kills by the random-control rule. On the
-vacation-mode 12-trace deterministic slice, 8 traces have a positive
-static-1\% gap. M2 median recovery is -0.866837313391, static-3\% matched-cost
-median recovery is -0.625927638959, and random-bin median recovery is
--0.199289023223. The random-bin assignment beats M2 by 0.667548290168 median
-recovery, exceeding the preregistered 0.10 kill threshold. The random-bin
-control is not good in absolute terms; its importance is that it is less bad
-than the intended position-conditioned assignment.
-
-M10 tests whether the problem is not membership but scale choice: it stores
-separate SmoothQuant-style scale tables for decode-position bins. This also
-kills by the random-control rule. M10 median recovery is 0.234447927834, CI95
-[-2.072905653258708, 0.5035214944499808], while the random-bin scale control
-has median recovery 0.995935386880 and beats M10 by 0.761487459046. M11 then
-removes the hard boundary by replacing bin switches with an EMA-smoothed
-protected-set score. M11 does not pass: the best arm, alpha 0.5, has median
-recovery 0.048299284138 with CI95 [-8.94115615101423, 0.7045992558730417].
-However, its random-walk control has median recovery -1.206105548349, so M11
-is structurally different from M2 and M10: smoothing removes the
-random-control-beats failure, but smoothing alone does not recover quality.
-
-Together, the intervention results support a three-mechanism account. First,
-boundary discontinuities are actively harmful: M2 and M10 are both beaten by
-random-bin controls. Second, smoothing removes that harm but does not solve
-the gap at top-1\% budget: M11 is not beaten by random-walk, yet misses the
-positive-method bar. Third, signal quality and budget separate. M18
-activation+K has median recovery -0.343590844126, while KIVI key-only and
-random coupled controls have medians -2.174128311393 and -4.664379731051.
-That comparison suggests the coupled selection is not arbitrary noise, but it
-does not recover quality at top-1\%. DecDEC then tests a reactive
-endpoint-selection baseline: median recovery is -0.070034781258 with CI95
-[-8.495693501233, 0.674176370350]. It is less damaging than a random reactive
-top-1\% control whose median is -1.262604926125, but it does not recover the
-W4A16 static gap. M11b changes the picture by increasing budget under a
-smoothed update. Granite-Small top-5 recovers 0.449284091125 median and beats
-static top-10 by 0.501051267680 median, though the CI is wide. Nemotron
-top-5 is also positive with a strictly positive CI, but static top-10 is
-stronger; Nemotron top-10 is the arm that beats static top-10. The conclusion
-is therefore not "EMA top-5 works" but "budget is load-bearing, and the
-budget-selection rule is not yet model-invariant."
-
-A post-M18 diagnostic pass further narrows what the current packets can say.
-The K/V-cache migration question is not identifiable from existing artifacts:
-only M18 contains K/V-channel evidence, and that evidence is endpoint-only at
-decode position 10000 rather than early-to-late K/V snapshots. The recovery
-curve question is also not identifiable, because M2, M10, M11, and M18 each
-score one 512-token endpoint window. The activation-side evidence is still
-useful: Granite-Small fine-grid top-1\% Jaccard changes smoothly across
-500-position bins, and all measured models retain a small always-protected
-core that is smaller than the full top-1\% set. These diagnostics make DecDEC
-and M11b the right next tests rather than another unmotivated method. Those
-packets have now landed: DecDEC tests reactive endpoint selection, while M11b
-tests whether the remaining failure is simply protection-budget insufficiency.
-
-\subsection{Budget tuning, rotation context, and KL accumulation}
-
-M11b directly tests the budget-insufficiency hypothesis by running the M11 EMA
-policy with larger protected-channel budgets. On Granite-Small, the top-5 arm
-is the first mechanical channel-set PASS: median recovery is 0.449284091125,
-and it beats the static top-10 control by 0.501051267680 median. The
-uncertainty is still large, with CI95 [-1.300900018791, 1.000790626547], so
-the paper treats it as a signal requiring cross-model validation rather than
-as a settled method.
-
-The Nemotron Path C salvage supplies that validation surface after rerunning
-the corrected \texttt{static\_1pct} baseline. It resolves the previous
-infrastructure failure: \texttt{static\_1pct} now records 6052 quantized tensors and
-76 excluded tensors. The result is positive but not a clean top-5 transfer.
-Top-5 median recovery is 0.456736183270 with CI95 [0.345887792388,
-0.794986745913], but static top-10 recovers 0.594383743618. Top-10 M11b
-recovers 0.814739798903 with CI95 [0.254439288178, 0.922552264880] and beats
-static top-10 by 0.220356055286 median. This supports the budget mechanism
-while showing that the best budget and matched-static comparison are
-model-dependent.
-
-ParoQuant provides a different context. Our algorithmic ParoQuant baseline on
-Granite-Small recovers 0.753776848891 with CI95 [0.477044452405,
-1.003769554323], beating M11b top-5 by 0.304492757767 median. This is not a
-contradiction of the channel-drift measurement. It shows that a rotation
-baseline can reduce the same W4A16 gap through a different mechanism, so the
-paper's negative claims must be scoped to channel-set protection rather than
-to W4A16 PTQ generally.
-
-Finally, the KL-accumulation packet weakens the compound-error explanation in
-this specific Granite-Small setting. It computes per-position
-KL(BF16$\parallel$Q) over 44,208 rows with dense-grid fallback. Mean KL is
-0.150302750276 for static-1\%, 0.132701884446 for the DecDEC proxy, and
-0.131406585383 for M11. The best fits are flat or sublinear rather than
-superlinear, and the fitted AR decay parameters are 0.5147 for static-1\%,
-0.4461 for the DecDEC proxy, and 0.4387 for M11. Thus the present evidence
-does not support runaway long-horizon compounding as the main failure mode;
-signal staleness and budget selection remain the stronger explanations.
-
-\subsection{Layer-stratified migration}
-
-The negative intervention result does not erase the measurement finding: it
-narrows the mechanism. Figure~\ref{fig:layer-stratified} uses the existing
-Phase 0, Phase 1, and partial Phase 2 activation packets to stratify strict
-set-leaving and within-set shuffling by layer type. The result is not confined
-to a single Granite mixer family. Granite shows strict set-leaving in both
-attention and SSM/Mamba layers, while Nemotron-3 shows it in attention,
-SSM/Mamba, and MoE-classified layers. This is consistent with the paper's
-diagnostic claim: static membership is unstable in the measured packets, but
-successful handling likely needs more than a larger static protected set.
+Figure~\ref{fig:set-leaving} shows the headline measurement. All four models exhibit increasing strict set-leaving across decode position. By the final measured position, strict set-leaving is 0.566 for Granite-Small, 0.534 for Nemotron-3, 0.671 for DeepSeek-R1-Distill, and 0.674 for Falcon-H1. The pure-Transformer reference drifts at least as much as the hybrid models, so the phenomenon is not confined to Mamba layers.
 
 \begin{figure}[t]
 \centering
+\includegraphics[width=0.92\linewidth]{figures/set_leaving_decode_positions.pdf}
+\caption{Strict top-1\% channel-set leaving relative to decode position 100. Static channel protection loses 53--67\% of its original protected set by the final measured position across four reasoning models.}
+\label{fig:set-leaving}
+\end{figure}
+
+\subsection{Layer type does not explain the drift away}
+
+The Quamba2 contradiction is strongest if drift appears in SSM/Mamba block outputs, not only in attention or MLP outputs. Figure~\ref{fig:components} shows that Granite and Nemotron block-output drift is comparable across layer types. Granite attention and SSM/Mamba outputs have strict set-leaving of 0.557 and 0.567. Nemotron attention, MoE, and SSM/Mamba outputs have 0.563, 0.527, and 0.533. This does not isolate internal SSM state tensors, but it does show that the measured block-output surface is not channel-persistent.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/per_component_drift.pdf}
+\caption{Layer-stratified drift at measured block outputs. Strict set-leaving is comparable across attention, SSM/Mamba, and MoE-classified layers, so the drift is not localized to one component type.}
+\label{fig:components}
+\end{figure}
+
+\subsection{Channel-set interventions mostly fail at top-1\% budget}
+
+Figure~\ref{fig:method-recovery} and Table~\ref{tab:methods} summarize the intervention outcomes. Hard position-conditioned protection is outperformed by its random-bin control by 0.668 median recovery, and hard scale bins are outperformed by random scale-bin assignment by 0.761. EMA smoothing is different: M11 beats its random-walk control by 1.25 median, but its absolute recovery is only 0.048. M18 activation+key coupling has the strongest signal-vs-random margin among failed top-1\% methods, beating random coupling by 4.32 median, but its absolute recovery is negative. DecDEC-style reactive selection is less bad than a random reactive control but still does not recover quality. M26 stable-core protection shows signal over random matched-core channels but remains below the positive-method threshold.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/method_recovery_comparison.pdf}
+\caption{Median recovery with 95\% bootstrap CIs. Long negative CI whiskers are clipped at the plot boundary for readability; exact rounded values are in Table~\ref{tab:methods}. The dashed line marks the 0.30 positive-method threshold used in preregistered gates.}
+\label{fig:method-recovery}
+\end{figure}
+
+\begin{table}[t]
+\centering
 \small
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.32\linewidth}
-                >{\raggedleft\arraybackslash}p{0.16\linewidth}
-                >{\raggedleft\arraybackslash}p{0.17\linewidth}
-                >{\raggedleft\arraybackslash}p{0.17\linewidth}}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llrrl@{}}
 \toprule
-Run / layer type & Layers & Strict set-leaving & Within-set shuffling \\
+Method family & Model & Median recovery & 95\% CI & Key comparison \\
 \midrule
-Phase 0 Granite-Tiny attention & 4 & 0.618490 & 0.186198 \\
-Phase 0 Granite-Tiny SSM/Mamba & 36 & 0.635995 & 0.174045 \\
-Phase 1 Granite-Small attention & 4 & 0.557165 & 0.282266 \\
-Phase 1 Granite-Small SSM/Mamba & 36 & 0.567243 & 0.269676 \\
-Phase 2 Nemotron-3 attention & 6 & 0.563014 & 0.254630 \\
-Phase 2 Nemotron-3 MoE & 23 & 0.526503 & 0.277778 \\
-Phase 2 Nemotron-3 SSM/Mamba & 23 & 0.533280 & 0.264157 \\
+Position-conditioned channels & Granite & -0.867 & [-3.44, 0.595] & random bin better by 0.668 \\
+Position-binned scales & Granite & 0.234 & [-2.07, 0.504] & random scale bin better by 0.761 \\
+EMA-smoothed top-1\% & Granite & 0.048 & [-8.94, 0.705] & random-walk lower by 1.25 \\
+Activation+key coupling & Granite & -0.344 & [-14.1, 0.741] & random coupled lower by 4.32 \\
+DecDEC proxy & Granite & -0.070 & [-8.50, 0.674] & random reactive lower by 1.19 \\
+Stable core & Granite & 0.178 & [-0.116, 1.00] & random matched-core lower by 1.73 \\
+Budget EMA top-5 & Granite & 0.449 & [-1.30, 1.00] & static top-10 lower by 0.501 \\
+Budget EMA top-5 & Nemotron & 0.457 & [0.346, 0.795] & static top-10 higher by 0.138 \\
+Budget EMA top-10 & Nemotron & 0.815 & [0.254, 0.923] & static top-10 lower by 0.220 \\
+ParoQuant rotation & Granite & 0.754 & [0.477, 1.00] & M11b top-5 lower by 0.304 \\
 \bottomrule
-\end{tabular}
-\caption{Layer-stratified migration decomposition from
-\url{experimental/outlier_migrate/phase3/results/layer_stratified_migration.json}.
-Values report layer-type means, averaged equally over layers. Strict
-set-leaving is the portion most directly relevant to static protected-channel
-membership; within-set shuffling motivates scale-refresh mechanisms but is not
-itself a membership failure.}
-\label{fig:layer-stratified}
+\end{tabular}}
+\caption{Intervention outcomes. Recovery is unclipped; values can be negative or exceed one. ParoQuant is included as a rotation baseline and is not a channel-set method.}
+\label{tab:methods}
+\end{table}
+
+\subsection{Budget is load-bearing, but not model-invariant}
+
+M11b changes the conclusion from uniformly negative to partially positive. On Granite-Small, top-5 EMA protection recovers 0.449 of the static gap and beats static top-10 by 0.501 median, but the CI is wide. On Nemotron, top-5 is positive with a strictly positive CI, yet it does not beat static top-10. The top-10 arm is the strongest channel-set result: median recovery 0.815, CI [0.254, 0.923], and a 0.220 median margin over static top-10. Thus budget is a real mechanism, but the best budget and the value over static protection are model-dependent.
+
+ParoQuant constrains the claim. Its Granite-Small rotation baseline recovers 0.754, exceeding M11b top-5 on the same model. The paper therefore does not argue that W4A16 PTQ is intrinsically broken; it argues that channel-set protection is fragile under long reasoning drift, while rotation-based conditioning can address part of the same endpoint by a different mechanism.
+
+\subsection{KL does not support runaway compounding}
+
+Figure~\ref{fig:kl} tests whether failed channel-set methods primarily fail because errors compound over decode. In the dense Granite-Small packet, static top-1\%, DecDEC proxy, and M11 all select a sublinear square-root fit over linear or superlinear alternatives. Mean KL is 0.150, 0.133, and 0.131 respectively, and fitted AR decays are 0.51, 0.45, and 0.44. This weakens compound error as the primary explanation in this measured regime and shifts attention back to stale or misbudgeted protection.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/kl_accumulation_trajectories.pdf}
+\caption{Per-position KL trajectories on Granite-Small. All three regimes prefer sublinear square-root fits and have moderate AR decay, rather than superlinear growth.}
+\label{fig:kl}
 \end{figure}
 
 \section{Discussion}
 
-The strongest claim in this draft is now broader and more precise than the
-initial Granite-specific hypothesis. Across four measured model families,
-channels that are top-1\% by magnitude early in a long decode often do not
-remain in the later top-1\% set. The strict set-leaving decomposition is the
-most important systems readout because it directly targets the membership
-assumption behind static protected-channel maps. The original rank-drift
-metric remains the preregistered gate; the stricter decomposition explains why
-the gate matters for deployment.
+The results support a three-mechanism account. First, boundary discontinuities are actively harmful: both hard protected-set and hard scale-bin switching lose to random controls. Second, smoothing removes the worst boundary harm but does not recover quality at top-1\% budget; M11 and M18 contain signal, but not enough protected capacity. Third, budget is binding, but budget alone is not a universal recipe: Nemotron top-10 succeeds, Granite top-5 is promising but high-variance, and static top-10 is already strong on Nemotron.
 
-The method results are informative because they separate mechanisms rather
-than collapsing every failure into one explanation. Static union protection
-addresses only membership; it does not refresh scales, respond to within-set
-rank changes, or decide which layers need different treatment. Phase 4 shows
-that the Phase 3 failure is not just a Granite-Tiny or 64-token window
-artifact. M2 and M10 show that hard protected-set or scale-table binning can
-be actively harmful. M11 then separates smoothness from recovery: it removes
-the random-control failure but does not restore quality at top-1\%. M18 and
-DecDEC show that reactive or cross-tensor signals are better than matched
-random controls but still insufficient at top-1\%. M26 shows that the
-always-protected stable core has signal but insufficient magnitude. M11b shows
-that budget can unlock recovery, while Nemotron shows that the budget optimum
-does not simply transfer.
+Trace heterogeneity remains important. In the Granite channel-set experiments, roughly one third of the 12-trace slice has no recoverable static gap under the ratio metric; in the larger static-union experiment the no-gap fraction is 0.375. This limits median-based claims and explains the wide CIs on several methods. The paper therefore emphasizes controlled mechanism comparisons and cross-model directionality rather than a single universal method headline.
 
-The KL result rules out one tempting explanation in the measured packet. If
-compound error were the dominant mechanism, we would expect per-position KL to
-grow superlinearly or maintain very high error autocorrelation. Instead, the
-trajectories are flat or sublinear and the AR decays are about 0.44--0.51.
-This is consistent with the SLQ counter-result in spirit, though in a much
-more aggressive W4A16 regime. The paper therefore emphasizes stale or
-misbudgeted channel protection rather than runaway accumulation.
-
-ParoQuant constrains the negative claim. A rotation baseline recovers
-0.753776848891 median on Granite-Small, which is better than M11b on the same
-packet. The paper should therefore be read as evidence that channel-set
-protection is fragile in long-decode W4A16 reasoning, not as evidence that
-W4A16 PTQ is impossible. The natural ICLR follow-up is not another
-threshold-tuned channel set, but composition of rotation-based conditioning
-with budget-aware protection, plus broader replication at larger reasoning
-model scales.
-
-The same result has a long-window state-management interpretation. A static
-protected-channel map is a small internal state summary: it says which
-channels deserve high precision later in the generated sequence. Strict
-set-leaving means that this summary becomes stale as the decode window grows.
-From that perspective, M2/M10 are failed abrupt state refresh policies, M11 is
-a smoother but underbudgeted state refresh policy, DecDEC is a reactive
-per-step refresh baseline, and M11b shows that the state summary needs enough
-capacity to be useful. This is why the result is relevant beyond a single
-quantizer: long-context systems that compress, cache, or internalize hidden
-state need to know whether their summary variables remain valid across
-thousands of generated tokens.
-
-The theoretical mechanism remains plausible but is not itself an empirical
-claim about unmeasured models. In channel-wise gated recurrence or
-linear-attention layers, independent per-channel decay rates imply that
-channels retain state at different rates. Low-decay channels can accumulate
-magnitude over long decode, while high-decay channels shed magnitude. Under
-heterogeneous inputs and heterogeneous decay rates, the composition of the top
-1\% channels by magnitude should change across decode positions rather than
-remain fixed to the position-100 set. Kimi Linear's KDA, Qwen3.6-style Gated
-DeltaNet blocks, and GLA-style gated recurrence provide architectural examples
-where channel-wise or fine-grained data-dependent gating is central
-\citep{kimilinear2025,qwen36hf,yang2024gdn,yang2023gla}. This draft has not
-measured Kimi Linear, Qwen3.6, or GLA variants.
+The natural next step is composition rather than another threshold-only channel set. ParoQuant shows that rotations can recover much of the Granite W4A16 gap; M11b shows that protected budget matters. A stronger ICLR follow-up would test rotation plus budget-aware protection, larger reasoning scales, and training-time or calibration-time interventions that make long-decode channel statistics less brittle.
 
 \section{Limitations}
 
-This draft is not camera-ready final and should not be read as a deployable
-systems method. It reports replicated measurement, failed method classes, and
-a partial budget-tuning remedy, not an end-to-end efficiency implementation.
-The strongest positive evidence is the cross-model measurement plus the M11b
-budget-sensitivity result; the strongest negative evidence is that many
-channel-set policies fail or depend strongly on model and budget.
+The scope is W4A16 PTQ on small reasoning models and measured block-output activation channels. We do not claim results for FP8, MXFP4/NVFP4, W4A4, or quantization-aware training. The hybrid-model Quamba2 contradiction is at the accessible block-output surface, not at every internal SSM state tensor. Only Granite-Small has dense FFT and KL diagnostics; four-model dense spectral and per-position KL replication remain future work. The M11b positive result is cross-model but not model-invariant: Nemotron top-10 succeeds, while Granite's strongest signal is top-5 with wide uncertainty.
 
-The scope is W4A16 post-training quantization for small reasoning models and
-hybrid Mamba-2 or parallel-hybrid architectures, with a small pure-Transformer
-reference. It should not be read as an all-formats claim. The underlying
-decode-position channel-set drift may be a broader autoregressive phenomenon,
-but quality consequences depend on format dynamic range: INT4 exposes severe
-failure surfaces here, FP8 may absorb comparable drift in settings like
-ThoughtFlow, block formats such as MXFP4/NVFP4 move the analysis from channels
-to blocks, and INT2/INT3 would likely be still more fragile. Large standard
-reasoning models are also outside the current evidence. Recent reasoning PTQ
-work such as ParoQuant reports strong W4A16 recovery on larger reasoning
-models \citep{liang2025paroquant}. Our algorithmic ParoQuant Granite-Small
-baseline also recovers a large fraction of the BF16-vs-static gap, so the
-negative result must stay scoped to channel-set protection methods rather than
-to W4A16 PTQ in general.
+\section{Conclusion}
 
-The empirical surface is still limited. All reported traces are deterministic
-AIME-2025 slices. The bootstrap uncertainty is over traces, not over
-independent benchmark families, seeds, or prompt distributions. The top-1\%
-fraction, rank-delta threshold, and decode-position grid were fixed in the
-packets; they should not be retuned on these results. Experiment E shows
-reasonable top-1\% to top-2\% stability, but top-5\% changes the component
-split. Several recovery packets have fewer effective traces than the nominal
-12 because recovery is undefined when the corrected static baseline has no
-recoverable BF16-vs-static gap. Granite M11b uses 8 positive-gap traces, while
-Nemotron M11b uses 10; the CIs should be read with that small effective sample
-size in mind. The Phase 9 methods were preregistered or audit-authorized as
-mechanism tests, not selected post hoc as a winner search.
-
-Cross-lineage validation remains incomplete. Nemotron-3, DeepSeek, and
-Falcon-H1 reduce Granite-specific risk, but Qwen3.6 was blocked by hook
-accessibility in current SGLang infrastructure without source modification,
-and Kimi Linear has not been measured. Falcon-H1 is post-block residual
-evidence rather than separate pre-sum SSM/Attention pathway attribution.
-Generalization to RWKV-7, GLA-style systems, and other efficient-recurrence
-variants is not established.
-
-Finally, the method failures do not prove that decode-position channel drift
-is unusable. They prove that static union sets, a larger Granite-Small scoring
-window, hard-binned policies, top-1\% EMA smoothing, top-1\% activation/KV
-coupling, DecDEC-style reactive selection, and stable-core-only protection are
-not enough under this quantization setup. M11b shows that budget tuning can
-matter, but Nemotron shifts the strongest arm from top-5 to top-10 and makes
-the matched static top-10 control competitive. The next credible evidence
-should come from rotation-plus-budget composition, larger-model replication,
-and training-time interventions rather than threshold retuning on the same
-failed surfaces.
-
-The KL result is also scoped. It is a Granite-Small analysis over static-1\%,
-DecDEC proxy, and M11 regimes, not a proof that compound error cannot appear
-under other quantizers, budgets, models, or decoding distributions.
-
-\section{Reproducibility Statement}
-
-The Phase 0 result packet is
-\url{experimental/outlier_migrate/phase0/results/om_phase0_20260508T011824Z}.
-It includes \texttt{environment.json}, \texttt{model\_provenance.json},
-\texttt{prompt\_manifest.json}, \texttt{command\_metadata.json},
-\texttt{random\_seed.json}, \texttt{metrics.json},
-\texttt{bootstrap\_ci.json}, \texttt{checker\_result.json}, and
-\texttt{artifact\_check.json}. The recorded Phase 0 command was:
-
-\begin{verbatim}
-experimental/shared/run_phase0_branch.py --branch outlier_migrate
-\end{verbatim}
-
-The Phase 1 result packet is
-\url{experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z}.
-It includes the same artifact classes and records the Granite-4.0-H-Small
-snapshot commit
-\texttt{b8c0982bab7fde4eb48110f5a069527c008fab39}. The recorded Phase 1
-command was:
-
-\begin{verbatim}
-experimental/outlier_migrate/phase1/run_om_phase1.py
-\end{verbatim}
-
-The checker decisions and exact numbers in this draft are taken from the two
-Granite result directories above and the partial Phase 2 directory
-\url{experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z}.
-The OutlierMigrate runners emit the artifact-checked metric file
-\texttt{metrics.json}; they do not emit a separate
-\texttt{profiler\_metrics.json}.
-The recorded Phase 2 command was:
-
-\begin{verbatim}
-experimental/outlier_migrate/phase2/run_cross_model.py \
-  --partial-nemotron3-only \
-  --run-id om_phase2_nemotron3_20260508T231723Z \
-  --batch-size 4 --dtype bfloat16 --device auto
-\end{verbatim}
-
-The Phase 3 intervention packet is
-\url{experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z}.
-It includes \texttt{environment.json}, \texttt{model\_provenance.json},
-\texttt{prompt\_manifest.json}, \texttt{command\_metadata.json},
-\texttt{random\_seed.json}, \texttt{per\_trace\_metrics.json},
-\texttt{metrics.json}, \texttt{control\_metrics.json},
-\texttt{grid\_sensitivity\_metrics.json}, \texttt{checker\_result.json}, and
-\texttt{artifact\_check.json}. The recorded Phase 3 command was:
-
-\begin{verbatim}
-experimental/outlier_migrate/phase3/run_phase3_intervention.py \
-  --run-id om_phase3_20260509T212000Z \
-  --batch-size 4 --dtype bfloat16 --device auto \
-  --reuse-prequant-run-dir \
-  experimental/outlier_migrate/phase3/results/om_phase3_20260509T180200Z
-\end{verbatim}
-
-The grid-sensitivity artifact was generated with:
-
-\begin{verbatim}
-experimental/outlier_migrate/phase3/run_grid_sensitivity.py \
-  --run-dir \
-  experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z
-\end{verbatim}
-
-Figure~\ref{fig:layer-stratified} is a LaTeX-native summary table generated
-from
-\url{experimental/outlier_migrate/phase3/results/layer_stratified_migration.json}.
-
-The Phase 4 intervention packet is
-\url{experimental/outlier_migrate/phase4/results/om_phase4_20260511T054000Z}.
-The Phase 5' Transformer-control packet is
-\url{experimental/outlier_migrate/phase5_prime/results/om_phase5p_20260512T053800Z}.
-Experiment D and E artifacts are in
-\url{experimental/outlier_migrate/decomposition_analysis/}. The Phase 7
-Falcon-H1 packet is
-\url{experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z}.
-Phase 9 Step 9.0 outputs are
-\url{experimental/outlier_migrate/phase9/step9_0_decomposition_replication.md}
-and
-\url{experimental/outlier_migrate/phase9/step9_0_bin_overlap_analysis.md}.
-The Phase 9 M2 packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z}.
-Its checker decision is
-\texttt{KILL\_M2\_RANDOM\_CONTROL\_BEATS}; the vacation-mode adaptation notes
-are in \url{swarm/vacation_decisions/}.
-The Phase 9 M10 packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z};
-the Phase 9 M11 packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z};
-and the Phase 9 M18 packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z}.
-Their checker decisions are
-\texttt{KILL\_M10\_RANDOM\_CONTROL\_BEATS},
-\texttt{KILL\_M11\_AMBIGUOUS}, and \texttt{KILL\_M18\_AMBIGUOUS}.
-Post-M18 analysis reports are in
-\url{experimental/outlier_migrate/phase9/post_m18_analysis/}; they document
-which mechanism questions are identifiable from the landed packets and which
-would require new telemetry.
-
-The DecDEC algorithmic baseline packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z}.
-The M11b Granite packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z}.
-The M26 stable-core packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z}.
-The KL accumulation packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_kl_granite_small_dense_20260519T085400Z}.
-The ParoQuant algorithmic baseline packet is
-\url{experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z}.
-The valid Nemotron M11b Path C salvage packet is
-\url{experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z}.
-The original Nemotron packet is not used for recovery claims because its
-\texttt{static\_1pct} baseline was invalid; the Path C packet reruns that baseline
-with corrected W4A16 quantization and reuses only validated score caches.
-
-\section{Ethics Statement}
-
-This is an activation-analysis measurement study on benchmark prompts. The
-current artifact does not make deployment, user-data, safety, or
-systems-efficiency claims. The main ethical risk is overclaiming the replicated
-measurement or the partial M11b budget signal as a validated deployable
-method. This draft therefore separates measurement, mechanism, baseline
-context, and partial-remedy claims explicitly.
+Long-reasoning W4A16 channel protection fails when static protected sets drift, and our experiments show that this drift is substantial across four measured models. Budget-tuned smoothing partially remedies the failure, especially on Nemotron, but rotations and broader calibration changes remain the stronger path toward a deployable method.
 
 \begin{thebibliography}{40}
 
@@ -1365,5 +394,111 @@ Long-Context Reasoning.
 \newblock \url{https://arxiv.org/abs/2512.19206}.
 
 \end{thebibliography}
+
+
+\section*{Ethics Statement}
+This work analyzes benchmark prompts and model activations. It does not use private user data or make deployment-safety claims. The main ethical risk is overclaiming a scoped mechanism study as a universal quantization recipe; the paper therefore separates measurement, mechanism, and partial-remedy claims.
+
+\section*{Reproducibility Statement}
+The release package contains the public reproduction interface, including \texttt{release/README.md}, \texttt{release/docs/reproducing\_results.md}, and \texttt{release/scripts/reproduce\_all.sh}. Full-fidelity reproduction reruns every paper-referenced method and analysis on a single high-memory GPU; fast verification mode checks the same code paths with reduced trace counts.
+
+\begin{table}[h]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lll@{}}
+\toprule
+Model & HuggingFace identifier & Checkpoint note \\
+\midrule
+Granite-Small & \texttt{ibm-granite/granite-4.0-h-small} & pinned release snapshot \\
+Nemotron-3 & \texttt{nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16} & pinned release snapshot \\
+DeepSeek-R1-Distill & \texttt{deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B} & pinned release snapshot \\
+Falcon-H1 & \texttt{tiiuae/Falcon-H1-0.5B-Instruct} & pinned release snapshot \\
+\bottomrule
+\end{tabular}}
+\caption{Model checkpoints used by the release package. Exact snapshot commits and file hashes are recorded in the release documentation to keep the main paper readable.}
+\end{table}
+
+Bootstrap seeds, deterministic trace indices, method budgets, and tolerance windows are specified in the release configs. GPU kernels can still exhibit minor nondeterminism across driver versions; the verification compares outputs to bootstrap CI tolerances rather than bit-exact scores. The original Qwen3.6 exploratory hook surface was not used for paper claims because activation access was incomplete.
+
+\appendix
+
+\section{Detailed Experimental Provenance}
+\label{app:provenance}
+
+\begin{table}[h]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lll@{}}
+\toprule
+Paper description & Internal study label & Provenance location \\
+\midrule
+Granite-Tiny pilot drift measurement & Phase 0 & \texttt{experimental/outlier\_migrate/phase0/} \\
+Granite-Small drift replication & Phase 1 & \texttt{experimental/outlier\_migrate/phase1/} \\
+Nemotron-3 drift replication & Phase 2 & \texttt{experimental/outlier\_migrate/phase2/} \\
+Static migration-aware union, Granite-Tiny & Phase 3 & \texttt{experimental/outlier\_migrate/phase3/} \\
+Static migration-aware union, Granite-Small & Phase 4 & \texttt{experimental/outlier\_migrate/phase4/} \\
+DeepSeek Transformer control & Phase 5 prime & \texttt{experimental/outlier\_migrate/phase5\_prime/} \\
+Falcon-H1 parallel-hybrid control & Phase 7 & \texttt{experimental/outlier\_migrate/phase7/} \\
+Channel-set methods and baselines & Method study & \texttt{experimental/outlier\_migrate/phase9/} \\
+Paper release interface & Release package & \texttt{release/docs/reproducing\_results.md} \\
+\bottomrule
+\end{tabular}}
+\caption{Translation from paper-facing experiment names to internal study labels. Exact packet directories, command lines, prompt hashes, and model file hashes are maintained in the release documentation and result manifests.}
+\end{table}
+
+The valid Nemotron budget-tuning result uses the corrected static top-1\% baseline rerun and reuses validated score caches for the budget arms. The earlier invalid baseline is excluded from all recovery claims. The release mapping table records both the valid rerun and the excluded failed attempt so that reviewers can audit the correction.
+
+\section{Per-Method Detailed Results}
+\label{app:method-details}
+
+\begin{table}[h]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Experiment & Included traces & No-gap fraction & Median recovery & 95\% CI \\
+\midrule
+Static union, Granite-Tiny & 24 & 0.417 & 0.000 & [0.000, 0.711] \\
+Static union, Granite-Small & 24 & 0.375 & 0.000 & [0.000, 0.0695] \\
+Position-conditioned channels & 8 & 0.333 & -0.867 & [-3.44, 0.595] \\
+Position-binned scales & 12 & 0.000 & 0.234 & [-2.07, 0.504] \\
+EMA-smoothed top-1\% & 8 & 0.333 & 0.048 & [-8.94, 0.705] \\
+Activation+key coupling & 8 & 0.333 & -0.344 & [-14.1, 0.741] \\
+DecDEC proxy & 8 & 0.333 & -0.070 & [-8.50, 0.674] \\
+Budget EMA top-5, Granite & 8 & 0.333 & 0.449 & [-1.30, 1.00] \\
+Budget EMA top-10, Nemotron & 10 & 0.167 & 0.815 & [0.254, 0.923] \\
+Stable-core protection & 8 & 0.333 & 0.178 & [-0.116, 1.00] \\
+ParoQuant rotation & 8 & 0.333 & 0.754 & [0.477, 1.00] \\
+\bottomrule
+\end{tabular}}
+\caption{Detailed rounded outcomes for all method families discussed in the main text. Values are recovery ratios relative to each experiment's BF16-vs-static baseline.}
+\end{table}
+
+\section{Extended Layer-Stratified Results}
+\label{app:layer-details}
+
+\begin{table}[h]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Model & Layer type & Layers & Strict set-leaving & Within-set shuffling \\
+\midrule
+Granite-Tiny & Attention & 4 & 0.618 & 0.186 \\
+Granite-Tiny & SSM/Mamba & 36 & 0.636 & 0.174 \\
+Granite-Small & Attention & 4 & 0.557 & 0.282 \\
+Granite-Small & SSM/Mamba & 36 & 0.567 & 0.270 \\
+Nemotron-3 & Attention & 6 & 0.563 & 0.255 \\
+Nemotron-3 & MoE & 23 & 0.527 & 0.278 \\
+Nemotron-3 & SSM/Mamba & 23 & 0.533 & 0.264 \\
+\bottomrule
+\end{tabular}}
+\caption{Layer-type decomposition. Strict set-leaving is the component most directly relevant to protected-set membership; within-set shuffling motivates scale-refresh mechanisms but is not itself membership loss.}
+\end{table}
+
 
 \end{document}

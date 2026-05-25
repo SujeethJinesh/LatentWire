@@ -6,10 +6,12 @@ Share URL: `https://github.com/SujeethJinesh/LatentWire/blob/main/swarm/external
 
 ## 1. Project Snapshot
 
-Current paper title: **Decode-Position Channel Drift at Long-Decode Reasoning:
-Budget Tuning as a Partial Cross-Model Remedy**. Near-term target is a COLM /
+Current paper title: **Channel-Set Drift in Long-Reasoning W4A16 LLMs:
+Mechanisms and a Budget-Tuned Remedy**. Near-term target is a COLM /
 efficient-reasoning workshop submission; ICLR remains a follow-up only if a
-stronger positive method or rotation+budget composition result lands.
+stronger positive method or rotation+budget composition result lands. The
+May 25 polish pass compressed the paper into a workshop-compliant main body
+and moved detailed provenance into appendices/release documentation.
 
 Problem statement: W4A16 channel protection assumes that high-magnitude
 activation channels remain worth protecting through long autoregressive

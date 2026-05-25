@@ -1,7 +1,7 @@
 # OutlierMigrate Reproduction Package
 
 This folder reproduces the empirical claims in the workshop draft
-`Decode-Position Channel Drift at Long-Decode Reasoning`. The paper studies
+`Channel-Set Drift in Long-Reasoning W4A16 LLMs`. The paper studies
 whether high-magnitude activation channels remain stable during long reasoning
 decodes, and evaluates W4A16 channel-protection methods, a ParoQuant rotation
 baseline, and mechanism analyses.
@@ -54,7 +54,7 @@ experiment packets were produced on a single high-memory NVIDIA GPU with CUDA
 
 ```bibtex
 @inproceedings{outliermigrate2026,
-  title = {Decode-Position Channel Drift at Long-Decode Reasoning},
+  title = {Channel-Set Drift in Long-Reasoning W4A16 LLMs: Mechanisms and a Budget-Tuned Remedy},
   author = {Anonymous},
   booktitle = {Workshop submission},
   year = {2026}

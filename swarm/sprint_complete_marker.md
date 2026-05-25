@@ -5,17 +5,18 @@ Generated: 2026-05-25 UTC
 ## Final State
 
 First-complete workshop draft, release FAST_VERIFY package, committee review,
-audit reports, external collaboration export, and final report are present.
+audit reports, external collaboration export, final report, and the
+submission-polish pass are present.
 
 ## Paper
 
-Title: **Decode-Position Channel Drift at Long-Decode Reasoning: Budget Tuning
-as a Partial Cross-Model Remedy**
+Title: **Channel-Set Drift in Long-Reasoning W4A16 LLMs: Mechanisms and a
+Budget-Tuned Remedy**
 
 Primary contributions:
 
 1. Four-model long-decode set-leaving characterization for W4A16 reasoning
-   models.
+   models, with the main body now compressed to the workshop page target.
 2. Quamba2/DecDEC-aware scoped novelty: reasoning-scale horizons, hybrid and
    pure-Transformer model set, and reasoning workloads.
 3. Mechanism findings: boundary discontinuities are harmful; smoothing alone is
@@ -55,8 +56,10 @@ Approximate cumulative GPU hours tracked in `swarm/state.json`: `278.643`.
 ## Autonomous Decisions For Human Review
 
 - Accepted Path C static-1% Nemotron salvage and used the valid packet.
-- Chose hedged M11b partial-remedy framing rather than a clean positive-method
-  title.
+- Chose a concise mechanism-plus-remedy title and foregrounded the Nemotron
+  top-10 M11b result while preserving Granite CI caution.
+- Moved internal provenance details out of the main paper body and into
+  appendix/release documentation.
 - Stopped new GPU experiments after Nemotron and focused on integration,
   release, verification, and audits.
 - Reclassified release reproducibility honestly as FAST_VERIFY-only.

@@ -5,7 +5,8 @@ Generated: 2026-05-25 UTC
 ## Executive Status
 
 Paper readiness: first-complete workshop draft is locked in source and PDF,
-with six committee rounds complete and no open load-bearing critique.
+with six committee rounds complete, no open load-bearing critique, and the
+human-requested presentation polish pass integrated.
 
 Current story: decode-position channel-set drift is robust across the tested
 long-reasoning W4A16 setting. Hard switching policies are actively harmful,
@@ -19,29 +20,34 @@ budget-sensitive across models.
 
 ## Final Paper State
 
-- Title: **Decode-Position Channel Drift at Long-Decode Reasoning: Budget
-  Tuning as a Partial Cross-Model Remedy**
+- Title: **Channel-Set Drift in Long-Reasoning W4A16 LLMs: Mechanisms and a
+  Budget-Tuned Remedy**
 - Source: `experimental/outlier_migrate/paper/outlier_migrate_colm2026.tex`
 - PDF: `experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf`
 - Release copy: `release/paper/paper.{tex,pdf}`
-- Build: `./build.sh` passes with underfull box warnings only.
+- Build: `./build.sh` passes with underfull box warnings only. The polished PDF
+  is 10 total pages; references start on page 7, so the main body fits the
+  8-page target.
 
 ## Headline Results
 
-- Strict top-1% set-leaving: Granite `0.566234756098`, Nemotron
-  `0.533713200380`, DeepSeek `0.670572916667`, Falcon-H1
-  `0.673611111111`.
-- M11b Granite top-5: `0.449284091125`, CI
-  `[-1.300900018791, 1.000790626547]`.
-- M11b Nemotron top-5: `0.456736183270`, CI
-  `[0.345887792388, 0.794986745913]`, but below static top-10.
-- M11b Nemotron top-10: `0.814739798903`, CI
-  `[0.254439288178, 0.922552264880]`, margin over static top-10
-  `0.220356055286`.
-- ParoQuant Granite: `0.753776848891`, CI
-  `[0.477044452405, 1.003769554323]`.
-- KL dense-grid means: static `0.150302750276`, DecDEC proxy
-  `0.132701884446`, M11 `0.131406585383`; AR decays `0.4387-0.5147`.
+- Strict top-1% set-leaving: Granite `0.566`, Nemotron `0.534`, DeepSeek
+  `0.671`, Falcon-H1 `0.674`.
+- M11b Granite top-5: `0.449`, CI `[-1.30, 1.00]`.
+- M11b Nemotron top-5: `0.457`, CI `[0.346, 0.795]`, but below static top-10.
+- M11b Nemotron top-10: `0.815`, CI `[0.254, 0.923]`, margin over static
+  top-10 `0.220`.
+- ParoQuant Granite: `0.754`, CI `[0.477, 1.00]`.
+- KL dense-grid means: static `0.150`, DecDEC proxy `0.133`, M11 `0.131`;
+  AR decays `0.44-0.51`.
+
+## Polish Pass
+
+The May 25 presentation pass removed false precision from the main body,
+moved internal paths and packet labels to appendix/release provenance, removed
+sprint-internal vocabulary, added four real figures, foregrounded the
+Nemotron top-10 M11b result in the abstract, and condensed the contribution
+list to four paper-facing claims.
 
 ## Committee Review
 
