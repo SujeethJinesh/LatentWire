@@ -43,7 +43,8 @@ problem is not W4A16 impossibility but channel-set protection fragility. A
 per-position KL analysis finds sublinear rather than superlinear growth, with
 AR decays 0.4387--0.5147, weakening compound-error explanations in this
 packet. The resulting contribution is a scoped mechanism paper with a partial
-budget-tuning remedy, not a settled deployable quantization recipe.
+budget-tuning remedy, not a settled deployable quantization recipe or a
+runtime/memory efficiency implementation.
 \end{abstract}
 
 \section{Introduction}
@@ -128,7 +129,9 @@ The contribution is:
   results are scoped to channel-set protection rather than to all W4A16 PTQ.
 \end{itemize}
 The paper does not claim a deployable kernel/runtime system, a universal
-quantization recipe, or completed architecture-general validation.
+quantization recipe, or completed architecture-general validation. In
+particular, M11b is reported as evidence about the protected-budget mechanism;
+we do not implement or benchmark a production M11b runtime.
 
 \section{Related Work}
 
@@ -711,7 +714,9 @@ key-cache channel protection. The DecDEC row is a descriptive algorithmic
 baseline, not a positive-method gate. M11b is the only channel-set method with
 a partial positive signal, but the best budget differs by model and Nemotron
 top-5 does not beat matched static top-10. ParoQuant is a rotation baseline,
-not a channel-set method. M10 values are from
+not a channel-set method. Checker decision strings are audit labels; the paper
+framing is determined by the control comparisons in the final column. M10
+values are from
 \url{experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/checker_result.json};
 M11 values are from
 \url{experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z/checker_result.json}; M18 values are from
@@ -915,6 +920,18 @@ threshold-tuned channel set, but composition of rotation-based conditioning
 with budget-aware protection, plus broader replication at larger reasoning
 model scales.
 
+The same result has a long-window state-management interpretation. A static
+protected-channel map is a small internal state summary: it says which
+channels deserve high precision later in the generated sequence. Strict
+set-leaving means that this summary becomes stale as the decode window grows.
+From that perspective, M2/M10 are failed abrupt state refresh policies, M11 is
+a smoother but underbudgeted state refresh policy, DecDEC is a reactive
+per-step refresh baseline, and M11b shows that the state summary needs enough
+capacity to be useful. This is why the result is relevant beyond a single
+quantizer: long-context systems that compress, cache, or internalize hidden
+state need to know whether their summary variables remain valid across
+thousands of generated tokens.
+
 The theoretical mechanism remains plausible but is not itself an empirical
 claim about unmeasured models. In channel-wise gated recurrence or
 linear-attention layers, independent per-channel decay rates imply that
@@ -958,7 +975,12 @@ independent benchmark families, seeds, or prompt distributions. The top-1\%
 fraction, rank-delta threshold, and decode-position grid were fixed in the
 packets; they should not be retuned on these results. Experiment E shows
 reasonable top-1\% to top-2\% stability, but top-5\% changes the component
-split.
+split. Several recovery packets have fewer effective traces than the nominal
+12 because recovery is undefined when the corrected static baseline has no
+recoverable BF16-vs-static gap. Granite M11b uses 8 positive-gap traces, while
+Nemotron M11b uses 10; the CIs should be read with that small effective sample
+size in mind. The Phase 9 methods were preregistered or audit-authorized as
+mechanism tests, not selected post hoc as a winner search.
 
 Cross-lineage validation remains incomplete. Nemotron-3, DeepSeek, and
 Falcon-H1 reduce Granite-specific risk, but Qwen3.6 was blocked by hook
@@ -978,6 +1000,10 @@ the matched static top-10 control competitive. The next credible evidence
 should come from rotation-plus-budget composition, larger-model replication,
 and training-time interventions rather than threshold retuning on the same
 failed surfaces.
+
+The KL result is also scoped. It is a Granite-Small analysis over static-1\%,
+DecDEC proxy, and M11 regimes, not a proof that compound error cannot appear
+under other quantizers, budgets, models, or decoding distributions.
 
 \section{Reproducibility Statement}
 
