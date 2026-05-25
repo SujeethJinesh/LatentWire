@@ -1,30 +1,21 @@
-"""Static position-based channel selectors."""
+"""Static top-k channel protection."""
 
 from __future__ import annotations
 
-from outlier_migrate.registry import MethodSpec, ScoreTable, validate_budget, validate_score_table
+import numpy as np
+
+from outlier_migrate.methods import register_method
 
 
-def make_static_topk(name: str, *, position: int) -> MethodSpec:
-    """Create a top-k selector for one decode position."""
+def static_topk(scores: np.ndarray, budget: int) -> np.ndarray:
+    """Protect the top-k channels by calibration score."""
 
-    return MethodSpec(
-        name=name,
-        description=f"Top channels at decode position {position}.",
-        selector=lambda scores, budget: select_static_topk(scores, budget, position=position),
-        required_positions=(position,),
-        parameters={"position": position},
-    )
-
-
-def select_static_topk(scores_by_position: ScoreTable, budget: int, *, position: int) -> set[int]:
-    """Select top channels at a fixed decode position."""
-
-    validate_budget(budget)
-    validate_score_table(scores_by_position, required_positions=(position,))
-    values = scores_by_position[position]
-    return set(_top_indices(values, budget))
+    if budget <= 0 or budget > scores.size:
+        raise ValueError("budget must be in [1, channel_count]")
+    winners = np.argpartition(np.asarray(scores), -budget)[-budget:]
+    mask = np.zeros(scores.size, dtype=bool)
+    mask[winners] = True
+    return mask
 
 
-def _top_indices(values: list[float], budget: int) -> list[int]:
-    return sorted(range(len(values)), key=lambda index: (-float(values[index]), index))[:budget]
+register_method("static", static_topk)

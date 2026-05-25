@@ -1,23 +1,47 @@
 # Extension Guide
 
-New methods should be added as small selector modules under
-`src/outlier_migrate/methods/` and registered through `default_registry`.
+## Add a Method
 
-Each method should:
+Create `src/outlier_migrate/methods/new_method.py` with a function accepting
+`scores: np.ndarray` and `budget: int`, returning a boolean mask. Register it:
 
-- use only explicit score tables provided by the caller;
-- break ties deterministically by lower channel index;
-- return a set of protected hidden-channel indices;
-- declare required decode positions and parameters in `MethodSpec` where useful;
-- include CPU tests for selection behavior and registry integration.
+```python
+from outlier_migrate.methods import register_method
 
-## Rotation And Budget Composition
+register_method("new_method", new_method)
+```
 
-Future rotation-plus-budget methods can compose two operations:
+Use `methods/m11b.py` as the template for budget-tuned methods.
 
-1. rotate or transform channel scores into a method-specific comparison space;
-2. allocate a protected-channel budget across decode positions or layer groups.
+## Add a Model
 
-The current `paroquant` placeholder demonstrates deterministic round-robin
-budget composition across positions. Final rotation logic should be introduced
-only after its release contract and expected artifacts are fixed.
+Add a config in `configs/` with `model.name`, `model.architecture`,
+`model.hidden_size`, and `model.layers`. If the architecture needs custom
+hooking, extend `models.py` with a new adapter function while keeping the
+script interface unchanged.
+
+## Add a Metric
+
+Add a pure function to `metrics.py` and a focused CPU test. Reproduction
+scripts should write the metric into a JSON output with an explicit tolerance
+in `docs/reproducing_results.md`.
+
+## Add a Quantization Format
+
+Add format-specific helpers beside `symmetric_int4_quantize` in
+`quantization.py`. Keep protected-channel masks format-independent so FP8,
+MXFP4, or NVFP4 experiments can reuse method code.
+
+## Rotation Plus Budget Composition
+
+`methods/composition.py` reserves the ICLR follow-up interface for combining
+ParoQuant-style rotations with M11b-style budget selection. The intended flow
+is:
+
+```python
+rotated_weights, protected_mask = compose_rotation_with_budget(
+    weights, channel_scores, budget
+)
+```
+
+The stub is intentionally unimplemented in this workshop release.

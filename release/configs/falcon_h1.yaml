@@ -1,0 +1,9 @@
+model:
+  name: tiiuae/Falcon-H1
+  architecture: parallel_hybrid
+  hidden_size: 2048
+  layers: 32
+decode_positions: [100, 500, 1000, 5000, 10000, 20000]
+traces: 12
+bootstrap_seed: 20260512
+output_dir: results/falcon_h1

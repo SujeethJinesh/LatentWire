@@ -1,0 +1,9 @@
+model:
+  name: nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16
+  architecture: hybrid_mamba2_moe
+  hidden_size: 2688
+  layers: 52
+decode_positions: [100, 500, 1000, 5000, 10000, 20000]
+traces: 12
+bootstrap_seed: 20260604
+output_dir: results/nemotron_3_nano

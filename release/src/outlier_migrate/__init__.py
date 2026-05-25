@@ -1,13 +1,13 @@
-"""Release-facing OutlierMigrate reproducibility helpers."""
+"""Release utilities for reproducing OutlierMigrate paper claims."""
 
-from outlier_migrate.config import ExperimentConfig, ModelConfig
-from outlier_migrate.environment import EnvironmentReport
-from outlier_migrate.registry import MethodRegistry, default_registry
+from outlier_migrate.data import PAPER_CLAIMS, load_config, write_result
+from outlier_migrate.metrics import kl_divergence, recovery_fraction, set_leaving_rate
 
 __all__ = [
-    "EnvironmentReport",
-    "ExperimentConfig",
-    "MethodRegistry",
-    "ModelConfig",
-    "default_registry",
+    "PAPER_CLAIMS",
+    "kl_divergence",
+    "load_config",
+    "recovery_fraction",
+    "set_leaving_rate",
+    "write_result",
 ]

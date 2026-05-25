@@ -1,11 +1,9 @@
 model:
-  name: granite_small
-  model_id: ibm-granite/granite-4.0-h-small
-  revision: null
-  seed: 20260510
-  dtype: bfloat16
-  trust_remote_code: true
-prompt_count: 24
-scoring_position: 10000
-scoring_window_tokens: 512
+  name: ibm-granite/granite-4.0-h-small
+  architecture: hybrid_mamba2
+  hidden_size: 4096
+  layers: 40
+decode_positions: [100, 500, 1000, 5000, 10000, 20000]
+traces: 12
+bootstrap_seed: 20260518
 output_dir: results/granite_small

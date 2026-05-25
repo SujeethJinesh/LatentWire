@@ -1,25 +1,34 @@
-"""Small analysis helpers for release artifacts."""
+"""Small analysis helpers for spectral and component summaries."""
 
 from __future__ import annotations
 
-from dataclasses import asdict
-from pathlib import Path
-
-from outlier_migrate.data import write_json
-from outlier_migrate.metrics import RecoverySummary
+import numpy as np
 
 
-def rank_recovery_summaries(summaries: dict[str, RecoverySummary]) -> list[dict[str, object]]:
-    """Return summaries sorted by median recovery descending."""
+def spectral_entropy(signal: np.ndarray) -> float:
+    """Return normalized spectral entropy for a one-dimensional signal."""
 
-    rows = []
-    for name, summary in summaries.items():
-        row = {"method": name, **asdict(summary)}
-        rows.append(row)
-    return sorted(rows, key=lambda row: (-float(row["median_recovery"]), str(row["method"])))
+    arr = np.asarray(signal, dtype=np.float64)
+    if arr.ndim != 1 or arr.size < 2:
+        raise ValueError("signal must be one-dimensional with at least two values")
+    power = np.abs(np.fft.rfft(arr - arr.mean())) ** 2
+    if np.allclose(power.sum(), 0.0):
+        return 0.0
+    probs = power / power.sum()
+    entropy = -float(np.sum(probs * np.log(probs + 1e-12)))
+    return entropy / float(np.log(probs.size))
 
 
-def write_analysis_manifest(path: Path, *, status: str, rows: list[dict[str, object]]) -> None:
-    """Write a release analysis manifest."""
+def autocorrelation_length(signal: np.ndarray, threshold: float = 0.5) -> int:
+    """Return first lag where normalized autocorrelation drops below threshold."""
 
-    write_json(path, {"status": status, "rows": rows})
+    arr = np.asarray(signal, dtype=np.float64)
+    centered = arr - arr.mean()
+    denom = float(np.dot(centered, centered))
+    if denom == 0.0:
+        return 0
+    for lag in range(1, arr.size):
+        corr = float(np.dot(centered[:-lag], centered[lag:]) / denom)
+        if corr < threshold:
+            return lag
+    return arr.size - 1

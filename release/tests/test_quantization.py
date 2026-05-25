@@ -1,16 +1,20 @@
-from outlier_migrate.quantization import quantize_matrix_per_output_channel, symmetric_int4_quantize_row
+"""Tests for W4A16 helpers."""
+
+import numpy as np
+
+from outlier_migrate.quantization import dequantize_int4, protected_mask, symmetric_int4_quantize
 
 
-def test_symmetric_int4_quantize_row_preserves_zero_row() -> None:
-    assert symmetric_int4_quantize_row([0.0, 0.0]) == [0.0, 0.0]
+def test_symmetric_int4_quantize_bounds_and_error() -> None:
+    weights = np.array([[0.0, 1.0, -1.0], [2.0, -2.0, 0.5]], dtype=np.float32)
+    qweights, scale = symmetric_int4_quantize(weights, axis=1)
+    restored = dequantize_int4(qweights, scale)
+    assert qweights.min() >= -8
+    assert qweights.max() <= 7
+    assert np.mean(np.abs(restored - weights)) < 0.1
 
 
-def test_quantize_matrix_restores_protected_row_and_column() -> None:
-    matrix = [
-        [1.0, 2.0, 3.0],
-        [4.0, 5.0, 6.0],
-    ]
-    quantized = quantize_matrix_per_output_channel(matrix, protected_rows={1}, protected_cols={0})
-    assert quantized[1] == matrix[1]
-    assert quantized[0][0] == matrix[0][0]
-    assert len(quantized) == 2
+def test_protected_mask_shape_and_values() -> None:
+    mask = protected_mask(5, [0, 3])
+    assert mask.shape == (5,)
+    assert mask.tolist() == [True, False, False, True, False]

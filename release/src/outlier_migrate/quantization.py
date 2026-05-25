@@ -1,47 +1,34 @@
-"""CPU helpers for simple symmetric INT4 dequantization."""
+"""Minimal W4A16-style quantization helpers."""
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import numpy as np
 
 
-Matrix = list[list[float]]
+def symmetric_int4_quantize(weights: np.ndarray, axis: int = -1) -> tuple[np.ndarray, np.ndarray]:
+    """Quantize weights to signed int4 values with per-axis scales."""
+
+    arr = np.asarray(weights, dtype=np.float32)
+    max_abs = np.max(np.abs(arr), axis=axis, keepdims=True)
+    scale = np.where(max_abs == 0.0, 1.0, max_abs / 7.0)
+    quantized = np.clip(np.rint(arr / scale), -8, 7).astype(np.int8)
+    return quantized, scale.astype(np.float32)
 
 
-def symmetric_int4_quantize_row(row: Sequence[float]) -> list[float]:
-    """Quantize one row to signed INT4 levels and dequantize to floats."""
+def dequantize_int4(qweights: np.ndarray, scale: np.ndarray) -> np.ndarray:
+    """Dequantize signed int4 values represented in int8 storage."""
 
-    if not row:
-        return []
-    scale = max(abs(float(value)) for value in row) / 7.0
-    if scale == 0.0:
-        return [0.0 for _ in row]
-    return [_dequantize_value(float(value), scale) for value in row]
+    return np.asarray(qweights, dtype=np.float32) * np.asarray(scale, dtype=np.float32)
 
 
-def quantize_matrix_per_output_channel(
-    matrix: Sequence[Sequence[float]],
-    *,
-    protected_rows: set[int] | None = None,
-    protected_cols: set[int] | None = None,
-) -> Matrix:
-    """Apply per-output-channel INT4 with protected rows and columns restored."""
+def protected_mask(channel_count: int, protected: list[int]) -> np.ndarray:
+    """Build a boolean protected-channel mask."""
 
-    protected_rows = protected_rows or set()
-    protected_cols = protected_cols or set()
-    original = [[float(value) for value in row] for row in matrix]
-    quantized = [symmetric_int4_quantize_row(row) for row in original]
-    for row_index in protected_rows:
-        if 0 <= row_index < len(original):
-            quantized[row_index] = list(original[row_index])
-    for row_index, row in enumerate(original):
-        for col_index in protected_cols:
-            if 0 <= col_index < len(row):
-                quantized[row_index][col_index] = row[col_index]
-    return quantized
-
-
-def _dequantize_value(value: float, scale: float) -> float:
-    level = round(value / scale)
-    clipped = min(7, max(-7, level))
-    return float(clipped * scale)
+    if channel_count <= 0:
+        raise ValueError("channel_count must be positive")
+    mask = np.zeros(channel_count, dtype=bool)
+    for index in protected:
+        if index < 0 or index >= channel_count:
+            raise ValueError(f"protected channel {index} out of range")
+        mask[index] = True
+    return mask

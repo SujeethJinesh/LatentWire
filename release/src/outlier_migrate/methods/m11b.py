@@ -1,32 +1,25 @@
-"""M11B static union selector placeholder."""
+"""Budget-tuned EMA channel protection."""
 
 from __future__ import annotations
 
-from outlier_migrate.registry import MethodSpec, ScoreTable, validate_budget, validate_score_table
+import numpy as np
+
+from outlier_migrate.methods import register_method
+from outlier_migrate.methods.static import static_topk
 
 
-PRIMARY_GRID = (100, 1000, 5000, 10000)
+def ema_scores(previous: np.ndarray, current: np.ndarray, alpha: float = 0.3) -> np.ndarray:
+    """Update EMA channel scores."""
+
+    if previous.shape != current.shape:
+        raise ValueError("previous and current scores must have the same shape")
+    return alpha * current + (1.0 - alpha) * previous
 
 
-def make_m11b() -> MethodSpec:
-    """Create the primary migration-aware union selector."""
+def m11b_topk(scores: np.ndarray, budget: int) -> np.ndarray:
+    """Protect top-k EMA scores; scripts choose the budget."""
 
-    return MethodSpec(
-        name="m11b",
-        description="Union of top channels over the primary migration grid.",
-        selector=lambda scores, budget: select_union(scores, budget, positions=PRIMARY_GRID),
-        required_positions=PRIMARY_GRID,
-        parameters={"positions": PRIMARY_GRID},
-    )
+    return static_topk(scores, budget)
 
 
-def select_union(scores_by_position: ScoreTable, budget: int, *, positions: tuple[int, ...]) -> set[int]:
-    """Select the union of per-position top-k channel sets."""
-
-    validate_budget(budget)
-    validate_score_table(scores_by_position, required_positions=positions)
-    selected: set[int] = set()
-    for position in positions:
-        values = scores_by_position[position]
-        selected.update(sorted(range(len(values)), key=lambda index: (-float(values[index]), index))[:budget])
-    return selected
+register_method("m11b", m11b_topk)

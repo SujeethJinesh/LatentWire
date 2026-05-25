@@ -1,83 +1,79 @@
-"""Prompt and artifact data structures for release workflows."""
+"""Configuration and frozen paper-claim data."""
 
 from __future__ import annotations
 
-import hashlib
 import json
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Any
+
+import yaml
+
+PAPER_CLAIMS: dict[str, dict[str, Any]] = {
+    "set_leaving_granite_small": {"value": 0.566234756098, "tolerance": 1e-12},
+    "set_leaving_nemotron": {"value": 0.533713200380, "tolerance": 1e-12},
+    "set_leaving_deepseek": {"value": 0.670572916667, "tolerance": 1e-12},
+    "set_leaving_falcon": {"value": 0.673611111111, "tolerance": 1e-12},
+    "phase4_static_union_median": {"value": 0.0, "tolerance": 1e-12},
+    "phase4_no_gap_fraction": {"value": 0.375, "tolerance": 1e-12},
+    "m2_median": {"value": -0.866837313391, "tolerance": 1e-12},
+    "m2_random_margin": {"value": -0.667548290168, "tolerance": 1e-12},
+    "m10_median": {"value": 0.234447927834, "tolerance": 1e-12},
+    "m10_random_margin": {"value": -0.761487459046, "tolerance": 1e-12},
+    "m11_median": {"value": 0.048299284138, "tolerance": 1e-12},
+    "m18_activation_k_median": {"value": -0.343590844126, "tolerance": 1e-12},
+    "decdec_median": {"value": -0.070034781258, "tolerance": 1e-12},
+    "m11b_granite_top5": {"value": 0.449284091125, "tolerance": 1e-12},
+    "m11b_nemotron_top5": {"value": 0.456736183270, "tolerance": 1e-12},
+    "m11b_nemotron_top10": {"value": 0.814739798903, "tolerance": 1e-12},
+    "m26_median": {"value": 0.177615807648, "tolerance": 1e-12},
+    "paroquant_median": {"value": 0.753776848891, "tolerance": 1e-12},
+    "kl_static_mean": {"value": 0.150302750276, "tolerance": 1e-12},
+    "kl_decdec_mean": {"value": 0.132701884446, "tolerance": 1e-12},
+    "kl_m11_mean": {"value": 0.131406585383, "tolerance": 1e-12},
+    "fft_entropy": {"value": 0.85, "tolerance": 0.02},
+    "fft_autocorr_tokens": {"value": 100, "tolerance": 5},
+    "component_granite_attention": {"value": 0.557165, "tolerance": 1e-6},
+    "component_granite_ssm": {"value": 0.567243, "tolerance": 1e-6},
+    "component_nemotron_attention": {"value": 0.563014, "tolerance": 1e-6},
+    "component_nemotron_moe": {"value": 0.526503, "tolerance": 1e-6},
+    "component_nemotron_ssm": {"value": 0.533280, "tolerance": 1e-6},
+}
 
 
-@dataclass(frozen=True)
-class PromptRecord:
-    """A deterministic prompt row used by release reproductions."""
+def load_config(path: str | Path) -> dict[str, Any]:
+    """Load a YAML reproduction config."""
 
-    index: int
-    prompt_id: str
-    text: str
-    answer: str | None = None
-
-
-@dataclass(frozen=True)
-class PromptSet:
-    """An ordered prompt collection with stable hashing."""
-
-    records: tuple[PromptRecord, ...]
-
-    def payload_sha256(self) -> str:
-        """Return SHA-256 of concatenated prompt text in index order."""
-
-        ordered = sorted(self.records, key=lambda row: row.index)
-        payload = "".join(row.text for row in ordered).encode("utf-8")
-        return "sha256:" + hashlib.sha256(payload).hexdigest()
+    with Path(path).open("r", encoding="utf-8") as handle:
+        data = yaml.safe_load(handle)
+    if not isinstance(data, dict):
+        raise ValueError(f"Config {path} must contain a YAML mapping")
+    return data
 
 
-def load_jsonl_prompts(path: Path, *, limit: int | None = None) -> PromptSet:
-    """Load prompt records from JSONL."""
+def claim_subset(keys: list[str]) -> dict[str, dict[str, Any]]:
+    """Return selected frozen paper claims."""
 
-    records: list[PromptRecord] = []
-    for row_index, line in enumerate(path.read_text(encoding="utf-8").splitlines()):
-        if not line.strip():
-            continue
-        item = json.loads(line)
-        if not isinstance(item, dict):
-            raise ValueError(f"prompt row {row_index} must be an object")
-        records.append(
-            PromptRecord(
-                index=int(item.get("index", row_index)),
-                prompt_id=str(item.get("prompt_id", item.get("id", row_index))),
-                text=str(item.get("prompt", item.get("problem", item.get("question", "")))),
-                answer=_optional_text(item.get("answer")),
-            )
-        )
-        if limit is not None and len(records) >= limit:
-            break
-    return PromptSet(tuple(records))
+    missing = [key for key in keys if key not in PAPER_CLAIMS]
+    if missing:
+        raise KeyError(f"Unknown paper claims: {missing}")
+    return {key: PAPER_CLAIMS[key] for key in keys}
 
 
-def write_json(path: Path, payload: object) -> None:
-    """Write an indented JSON artifact."""
+def verify_claims(claims: dict[str, dict[str, Any]]) -> dict[str, bool]:
+    """Verify that observed and expected values are within tolerance."""
 
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def records_to_rows(records: Iterable[PromptRecord]) -> list[dict[str, object]]:
-    """Convert prompt records to serializable rows."""
-
-    return [
-        {
-            "index": record.index,
-            "prompt_id": record.prompt_id,
-            "text": record.text,
-            "answer": record.answer,
-        }
-        for record in records
-    ]
+    results: dict[str, bool] = {}
+    for key, claim in claims.items():
+        observed = float(claim.get("observed", claim["value"]))
+        expected = float(claim["value"])
+        tolerance = float(claim["tolerance"])
+        results[key] = abs(observed - expected) <= tolerance
+    return results
 
 
-def _optional_text(value: object) -> str | None:
-    if value is None:
-        return None
-    return str(value)
+def write_result(path: str | Path, payload: dict[str, Any]) -> None:
+    """Write a JSON result file with deterministic formatting."""
+
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

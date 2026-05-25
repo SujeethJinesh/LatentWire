@@ -1,23 +1,29 @@
-from outlier_migrate.methods.decdec import select_decayed_average
-from outlier_migrate.methods.m11b import select_union
-from outlier_migrate.methods.static import select_static_topk
+"""Tests for method mask invariants."""
+
+import numpy as np
+
+import outlier_migrate.methods.decdec
+import outlier_migrate.methods.m11b
+import outlier_migrate.methods.m26
+import outlier_migrate.methods.static
+from outlier_migrate.methods import build_mask, register_method
 
 
-SCORES = {
-    100: [10.0, 1.0, 0.0, 0.0],
-    1000: [0.0, 9.0, 1.0, 0.0],
-    5000: [0.0, 0.0, 8.0, 1.0],
-    10000: [0.0, 0.0, 0.0, 7.0],
-}
+def test_registered_methods_enforce_budget() -> None:
+    scores = np.array([0.1, 0.9, 0.3, 0.8])
+    for name in ["static", "m11b", "m26", "decdec"]:
+        mask = build_mask(name, scores, 2)
+        assert mask.dtype == bool
+        assert mask.shape == scores.shape
+        assert int(mask.sum()) == 2
 
 
-def test_static_topk_uses_requested_position() -> None:
-    assert select_static_topk(SCORES, 1, position=1000) == {1}
+def test_extension_registration_pattern() -> None:
+    def channel_zero(scores: np.ndarray, budget: int) -> np.ndarray:
+        mask = np.zeros(scores.size, dtype=bool)
+        mask[0] = True
+        return mask
 
-
-def test_union_collects_per_position_top_channels() -> None:
-    assert select_union(SCORES, 1, positions=(100, 1000, 5000, 10000)) == {0, 1, 2, 3}
-
-
-def test_decayed_average_prefers_later_positions() -> None:
-    assert select_decayed_average(SCORES, 1) == {3}
+    register_method("always_channel_zero_test", channel_zero)
+    mask = build_mask("always_channel_zero_test", np.ones(4), 1)
+    assert mask.tolist() == [True, False, False, False]

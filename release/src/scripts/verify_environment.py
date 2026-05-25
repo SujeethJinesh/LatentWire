@@ -1,48 +1,34 @@
-"""Verify the CPU release environment and config placeholders."""
+"""Verify the release environment."""
 
 from __future__ import annotations
 
 import argparse
-import logging
-from pathlib import Path
-
-from outlier_migrate.data import write_json
-from outlier_migrate.environment import collect_environment
+import importlib.metadata as metadata
+import json
+import sys
 
 
-DEFAULT_CONFIGS = (
-    Path("configs/granite_tiny.yaml"),
-    Path("configs/granite_small.yaml"),
-    Path("configs/nemotron3_nano.yaml"),
-    Path("configs/qwen36.yaml"),
-)
+def main() -> None:
+    """Check required package imports and pinned versions."""
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--require-gpu", action="store_true")
+    args = parser.parse_args()
+    required = {"numpy": "2.1.2", "PyYAML": "6.0.3"}
+    observed = {name: metadata.version(name) for name in required}
+    mismatches = {name: observed[name] for name, version in required.items() if observed[name] != version}
+    gpu = False
+    if args.require_gpu:
+        import torch
 
-def build_parser() -> argparse.ArgumentParser:
-    """Build the command-line parser."""
-
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", type=Path, action="append", dest="configs")
-    parser.add_argument("--output-dir", type=Path, default=Path("results"))
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--log-level", default="INFO")
-    return parser
-
-
-def main(argv: list[str] | None = None) -> int:
-    """Run release environment verification."""
-
-    args = build_parser().parse_args(argv)
-    logging.basicConfig(level=getattr(logging, str(args.log_level).upper()))
-    if not args.dry_run:
-        raise SystemExit("environment verification currently supports dry-run only")
-    config_paths = tuple(args.configs) if args.configs else DEFAULT_CONFIGS
-    report = collect_environment(config_paths)
-    output_path = args.output_dir / "environment_manifest.json"
-    write_json(output_path, report.to_dict())
-    logging.info("wrote %s", output_path)
-    return 0
+        gpu = bool(torch.cuda.is_available())
+        if not gpu:
+            raise RuntimeError("GPU was required but torch.cuda.is_available() is false")
+    payload = {"python": sys.version, "packages": observed, "mismatches": mismatches, "gpu": gpu}
+    if mismatches:
+        raise RuntimeError(json.dumps(payload, indent=2))
+    sys.stdout.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()

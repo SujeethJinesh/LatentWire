@@ -1,28 +1,28 @@
 [build-system]
-requires = ["setuptools>=69,<81", "wheel>=0.43,<1"]
+requires = ["setuptools==80.9.0", "wheel==0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "outlier-migrate-release"
+name = "outlier-migrate"
 version = "0.1.0"
-description = "Minimal reproducibility scaffold for OutlierMigrate"
+description = "Minimal reproduction package for decode-position channel drift experiments"
 readme = "README.md"
-requires-python = ">=3.10"
-license = {text = "MIT"}
+requires-python = ">=3.12,<3.13"
+license = {text = "Apache-2.0"}
 dependencies = [
-  "PyYAML>=6.0.2,<7.0",
+  "numpy==2.1.2",
+  "PyYAML==6.0.3",
 ]
 
 [project.optional-dependencies]
-dev = [
-  "pytest>=8.2,<9.0",
+full = [
+  "torch==2.8.0",
+  "transformers==4.57.6",
+  "vllm==0.10.2",
 ]
-
-[project.scripts]
-om-measure = "scripts.run_measurement:main"
-om-intervene = "scripts.run_intervention:main"
-om-analyze = "scripts.analyze_results:main"
-om-verify-env = "scripts.verify_environment:main"
+dev = [
+  "pytest==9.0.3",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -30,3 +30,4 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "-q"

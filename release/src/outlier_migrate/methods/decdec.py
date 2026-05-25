@@ -1,33 +1,17 @@
-"""Decode-decayed magnitude selector placeholder."""
+"""Algorithmic DecDEC-style reactive top-k channel selection."""
 
 from __future__ import annotations
 
-from outlier_migrate.registry import MethodSpec, ScoreTable, validate_budget, validate_score_table
+import numpy as np
+
+from outlier_migrate.methods import register_method
+from outlier_migrate.methods.static import static_topk
 
 
-def make_decdec() -> MethodSpec:
-    """Create a recency-weighted average selector."""
+def reactive_topk(current_magnitudes: np.ndarray, budget: int) -> np.ndarray:
+    """Protect the current-step top-k channels without temporal smoothing."""
 
-    return MethodSpec(
-        name="decdec",
-        description="Recency-weighted average over available decode positions.",
-        selector=select_decayed_average,
-    )
+    return static_topk(current_magnitudes, budget)
 
 
-def select_decayed_average(scores_by_position: ScoreTable, budget: int) -> set[int]:
-    """Select channels by recency-weighted mean score."""
-
-    validate_budget(budget)
-    validate_score_table(scores_by_position)
-    positions = sorted(scores_by_position)
-    channel_count = len(scores_by_position[positions[0]])
-    totals = [0.0] * channel_count
-    weight_total = 0.0
-    for rank, position in enumerate(positions, start=1):
-        weight = float(rank)
-        weight_total += weight
-        for index, value in enumerate(scores_by_position[position]):
-            totals[index] += weight * float(value)
-    averaged = [value / weight_total for value in totals]
-    return set(sorted(range(channel_count), key=lambda index: (-averaged[index], index))[:budget])
+register_method("decdec", reactive_topk)

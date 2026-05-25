@@ -1,65 +1,50 @@
-"""Metrics used by release analyses."""
+"""Metrics used by the release reproduction scripts."""
 
 from __future__ import annotations
 
 import math
-import random
-from dataclasses import dataclass
-from statistics import mean, median
+from collections.abc import Sequence
+
+import numpy as np
 
 
-@dataclass(frozen=True)
-class RecoverySummary:
-    """Summary statistics for per-trace recovery values."""
+def recovery_fraction(bf16: float, static: float, candidate: float) -> float:
+    """Compute recovery of the BF16-vs-static gap."""
 
-    median_recovery: float
-    mean_recovery: float
-    ci95_low: float
-    ci95_high: float
-    trace_count: int
+    gap = static - bf16
+    if math.isclose(gap, 0.0, abs_tol=1e-12):
+        raise ValueError("Recovery is undefined when static and BF16 match")
+    return 1.0 - ((candidate - bf16) / gap)
 
 
-def perplexity(mean_nll: float) -> float:
-    """Convert mean negative log likelihood to perplexity."""
+def set_leaving_rate(base_topk: set[int], later_topk: set[int]) -> float:
+    """Return fraction of base channels absent from the later top-k set."""
 
-    return float(math.exp(min(80.0, mean_nll)))
-
-
-def recovery(bf16_perplexity: float, static_perplexity: float, candidate_perplexity: float) -> float:
-    """Compute recovery relative to the BF16 versus static gap."""
-
-    static_gap = static_perplexity - bf16_perplexity
-    if static_gap <= 0.0:
-        return 0.0
-    return 1.0 - (candidate_perplexity - bf16_perplexity) / static_gap
+    if not base_topk:
+        raise ValueError("base_topk must be non-empty")
+    return len(base_topk - later_topk) / len(base_topk)
 
 
-def bootstrap_median_ci(values: list[float], *, samples: int = 1000, seed: int = 0) -> tuple[float, float]:
-    """Bootstrap a 95 percent interval for the median."""
+def kl_divergence(p: Sequence[float], q: Sequence[float], eps: float = 1e-12) -> float:
+    """Compute KL(P||Q) for probability vectors."""
 
-    if not values:
-        raise ValueError("values must not be empty")
-    rng = random.Random(seed)
-    medians: list[float] = []
-    for _ in range(samples):
-        sample = [values[rng.randrange(len(values))] for _ in values]
-        medians.append(float(median(sample)))
-    medians.sort()
-    low_index = int(0.025 * (len(medians) - 1))
-    high_index = int(0.975 * (len(medians) - 1))
-    return medians[low_index], medians[high_index]
+    p_arr = np.asarray(p, dtype=np.float64)
+    q_arr = np.asarray(q, dtype=np.float64)
+    if p_arr.shape != q_arr.shape:
+        raise ValueError("p and q must have the same shape")
+    p_arr = np.clip(p_arr, eps, None)
+    q_arr = np.clip(q_arr, eps, None)
+    p_arr = p_arr / p_arr.sum()
+    q_arr = q_arr / q_arr.sum()
+    return float(np.sum(p_arr * np.log(p_arr / q_arr)))
 
 
-def summarize_recovery(values: list[float], *, seed: int = 20260510) -> RecoverySummary:
-    """Summarize per-trace recovery values."""
+def bootstrap_ci(values: Sequence[float], seed: int, samples: int = 1000) -> tuple[float, float]:
+    """Compute a percentile bootstrap CI for the sample median."""
 
     if not values:
-        raise ValueError("values must not be empty")
-    ci_low, ci_high = bootstrap_median_ci(values, seed=seed)
-    return RecoverySummary(
-        median_recovery=float(median(values)),
-        mean_recovery=float(mean(values)),
-        ci95_low=ci_low,
-        ci95_high=ci_high,
-        trace_count=len(values),
-    )
+        raise ValueError("values must be non-empty")
+    rng = np.random.default_rng(seed)
+    arr = np.asarray(values, dtype=np.float64)
+    medians = [float(np.median(rng.choice(arr, size=arr.size, replace=True))) for _ in range(samples)]
+    return float(np.percentile(medians, 2.5)), float(np.percentile(medians, 97.5))
