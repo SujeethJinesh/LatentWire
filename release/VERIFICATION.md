@@ -2,7 +2,7 @@
 
 Verification date: `2026-05-26`
 
-Verified commit: `57871e8cfe87ce4335d1c651235f7baf4db9890d`
+Verified commit: `97a81e04` (`origin/main` after audit-fix commits)
 
 Mode: FAST_VERIFY. The release scripts now fail explicitly outside
 `--fast-verify` or `--dry-run`; full-fidelity GPU reproduction remains in the
@@ -108,7 +108,7 @@ Test suite command:
 python -m pytest
 ```
 
-Result: `7 passed in 0.11s` on the first clean clone.
+Result: `7 passed in 0.14s` on the first clean clone.
 
 ## 6. Standalone Script Verification
 
@@ -155,7 +155,7 @@ bash src/scripts/reproduce_all.sh --fast-verify
 python -m pytest
 ```
 
-Result: passed without intervention. `pytest` reported `7 passed in 0.13s`.
+Result: passed without intervention. `pytest` reported `7 passed in 0.11s`.
 
 An earlier second-pass attempt kept two full repository clones under `/tmp` at
 the same time and failed during Git checkout with `No space left on device`.
