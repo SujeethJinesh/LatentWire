@@ -54,8 +54,8 @@ REQUIRED_MODEL_FILES = [
     "prompt_manifest.json",
     "bf16_traces.jsonl.gz",
     "bf16_trace_manifest.json",
-    "activation_magnitudes.jsonl.gz",
-    "activation_magnitude_manifest.json",
+    "activation_means.npz",
+    "activation_summary_manifest.json",
     "protected_sets.json",
     "kl_positions.json",
     "kl_rows.jsonl.gz",
@@ -220,7 +220,7 @@ def evaluate(run_dir: Path) -> dict[str, Any]:
         kl_positions_payload = load_json(model_dir / "kl_positions.json")
         if [int(value) for value in kl_positions_payload.get("positions", [])] != sorted(expected_kl_positions):
             infra.append(f"{model_key}: KL positions mismatch")
-        activation_manifest = load_json(model_dir / "activation_magnitude_manifest.json")
+        activation_manifest = load_json(model_dir / "activation_summary_manifest.json")
         if [int(value) for value in activation_manifest.get("positions", [])] != expected_spectral_positions:
             infra.append(f"{model_key}: spectral positions mismatch")
         validate_kl_rows(model_dir, expected_kl_positions, infra)

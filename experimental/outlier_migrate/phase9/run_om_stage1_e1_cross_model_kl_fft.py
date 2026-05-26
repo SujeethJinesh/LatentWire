@@ -95,29 +95,22 @@ def select_m11_channels(
     return sorted(selected)
 
 
-def read_activation_means(path: Path) -> tuple[dict[int, dict[int, np.ndarray]], dict[int, str]]:
-    sums: dict[int, dict[int, np.ndarray]] = defaultdict(dict)
-    counts: dict[int, dict[int, int]] = defaultdict(lambda: defaultdict(int))
-    layer_names: dict[int, str] = {}
-    with gzip.open(path, "rt", encoding="utf-8") as handle:
-        for line in handle:
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            layer = int(row["layer_index"])
-            position = int(row["decode_position"])
-            layer_names[layer] = str(row["layer_name"])
-            vector = np.asarray(row["channel_magnitudes"], dtype=np.float64)
-            if position not in sums[layer]:
-                sums[layer][position] = np.zeros_like(vector)
-            sums[layer][position] += vector
-            counts[layer][position] += 1
-    means: dict[int, dict[int, np.ndarray]] = {}
-    for layer, by_position in sums.items():
-        means[layer] = {}
-        for position, vector in by_position.items():
-            means[layer][position] = vector / float(counts[layer][position])
-    return means, layer_names
+def write_activation_means_npz(
+    path: Path,
+    *,
+    means: dict[int, dict[int, np.ndarray]],
+    layer_names: dict[int, str],
+    positions: list[int],
+) -> None:
+    arrays: dict[str, np.ndarray] = {"positions": np.asarray(positions, dtype=np.int32)}
+    for layer in sorted(means):
+        arrays[f"layer_{layer}"] = np.stack([means[layer][position] for position in positions]).astype(np.float32)
+    arrays["layer_indices"] = np.asarray(sorted(means), dtype=np.int32)
+    arrays["layer_names_json"] = np.frombuffer(
+        json.dumps({str(key): value for key, value in sorted(layer_names.items())}).encode("utf-8"),
+        dtype=np.uint8,
+    )
+    np.savez_compressed(path, **arrays)
 
 
 def build_protected_sets(means: dict[int, dict[int, np.ndarray]], layer_names: dict[int, str]) -> dict[str, Any]:
@@ -399,7 +392,7 @@ def collect_bf16_reference_trace_logprobs_and_activations(
     spectral_positions: list[int],
     max_new_tokens: int,
     trace_path: Path,
-    activation_path: Path,
+    activation_npz_path: Path,
     tmp_dir: Path,
     run_events_path: Path,
 ) -> dict[str, Any]:
@@ -427,13 +420,14 @@ def collect_bf16_reference_trace_logprobs_and_activations(
         handles.append(layer.register_forward_hook(make_hook(layer_index, layer_name)))
 
     trace_path.parent.mkdir(parents=True, exist_ok=True)
-    activation_path.parent.mkdir(parents=True, exist_ok=True)
+    activation_npz_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_dir.mkdir(parents=True, exist_ok=True)
-    total_activation_rows = 0
+    activation_sums: dict[int, dict[int, np.ndarray]] = defaultdict(dict)
+    activation_counts: dict[int, dict[int, int]] = defaultdict(lambda: defaultdict(int))
     prompt_events: list[dict[str, Any]] = []
     eos_token_id = getattr(tokenizer, "eos_token_id", None)
     try:
-        with gzip.open(trace_path, "wt", encoding="utf-8") as trace_handle, gzip.open(activation_path, "wt", encoding="utf-8") as activation_handle, torch.inference_mode():
+        with gzip.open(trace_path, "wt", encoding="utf-8") as trace_handle, torch.inference_mode():
             for prompt in prompts:
                 prompt_index = int(prompt["index"])
                 text = shared.make_prompt_text(str(prompt["prompt"]))
@@ -486,20 +480,26 @@ def collect_bf16_reference_trace_logprobs_and_activations(
                         if missing:
                             raise RuntimeError(f"missing activation hooks at decode position {decode_position}: {missing[:8]}")
                         for layer_index in range(len(layers)):
-                            layer_name, magnitudes = state["records_by_layer"][layer_index]
-                            row = {
-                                "schema_version": f"{SCHEMA_VERSION}_activation_row",
-                                "prompt_index": prompt_index,
-                                "prompt_id": prompt["prompt_id"],
-                                "layer_index": layer_index,
-                                "layer_name": layer_name,
-                                "decode_position": decode_position,
-                                "channel_count": int(magnitudes.shape[-1]),
-                                "channel_magnitudes": [float(value) for value in magnitudes[0].tolist()],
-                            }
-                            activation_handle.write(json.dumps(row, sort_keys=True) + "\n")
-                            total_activation_rows += 1
+                            _layer_name, magnitudes = state["records_by_layer"][layer_index]
+                            vector = magnitudes[0].numpy().astype(np.float64, copy=False)
+                            if decode_position not in activation_sums[layer_index]:
+                                activation_sums[layer_index][decode_position] = np.zeros_like(vector)
+                            activation_sums[layer_index][decode_position] += vector
+                            activation_counts[layer_index][decode_position] += 1
                     logits = outputs.logits[:, -1, :]
+                    if decode_position % 1000 == 0:
+                        run_events_path.open("a", encoding="utf-8").write(
+                            json.dumps(
+                                {
+                                    "created_at_utc": shared.utc_now(),
+                                    "event": "bf16_reference_trace_progress",
+                                    "prompt_index": prompt_index,
+                                    "decode_position": decode_position,
+                                },
+                                sort_keys=True,
+                            )
+                            + "\n"
+                        )
                 trace_handle.write(
                     json.dumps(
                         {
@@ -538,7 +538,16 @@ def collect_bf16_reference_trace_logprobs_and_activations(
     finally:
         for handle in handles:
             handle.remove()
+    means: dict[int, dict[int, np.ndarray]] = {}
+    for layer, by_position in activation_sums.items():
+        means[layer] = {}
+        for position, vector in by_position.items():
+            means[layer][position] = vector / float(activation_counts[layer][position])
+    layer_names = {index: name for index, (name, _layer) in enumerate(layers)}
+    write_activation_means_npz(activation_npz_path, means=means, layer_names=layer_names, positions=spectral_positions)
     return {
+        "activation_means": means,
+        "layer_names": layer_names,
         "trace_manifest": {
             "schema_version": f"{SCHEMA_VERSION}_bf16_trace_manifest",
             "created_at_utc": shared.utc_now(),
@@ -552,14 +561,14 @@ def collect_bf16_reference_trace_logprobs_and_activations(
         "activation_manifest": {
             "schema_version": f"{SCHEMA_VERSION}_activation_manifest",
             "created_at_utc": shared.utc_now(),
-            "artifact": "activation_magnitudes.jsonl.gz",
-            "artifact_sha256": shared.file_sha256(activation_path),
+            "artifact": "activation_means.npz",
+            "artifact_sha256": shared.file_sha256(activation_npz_path),
             "trace_count": len(prompts),
             "positions": spectral_positions,
             "layer_count": len(layers),
             "layer_origin": layer_origin,
             "layer_names": [name for name, _layer in layers],
-            "row_count": total_activation_rows,
+            "aggregation": "mean absolute layer-output activation over deterministic traces 0-11",
             "capture_semantics": {
                 "module": "transformer_layer_forward_output",
                 "token": "generated token at the current decode position",
@@ -750,7 +759,7 @@ def run_model(
     )
 
     trace_path = model_dir / "bf16_traces.jsonl.gz"
-    activation_path = model_dir / "activation_magnitudes.jsonl.gz"
+    activation_npz_path = model_dir / "activation_means.npz"
     tmp_dir = ROOT / ".debug" / "stage1_e1" / run_dir.name / model_key
     if tmp_dir.exists() and not resume:
         shutil.rmtree(tmp_dir)
@@ -764,14 +773,14 @@ def run_model(
         spectral_positions=spectral_positions,
         max_new_tokens=checker.MAX_NEW_TOKENS,
         trace_path=trace_path,
-        activation_path=activation_path,
+        activation_npz_path=activation_npz_path,
         tmp_dir=tmp_dir,
         run_events_path=run_events_path,
     )
     del model, tokenizer, device
     release_model_memory()
     shared.write_json(model_dir / "bf16_trace_manifest.json", reference_manifest["trace_manifest"])
-    shared.write_json(model_dir / "activation_magnitude_manifest.json", reference_manifest["activation_manifest"])
+    shared.write_json(model_dir / "activation_summary_manifest.json", reference_manifest["activation_manifest"])
 
     target_tokens = phase4_runner.load_trace_tokens(trace_path)
     for prompt in prompts:
@@ -779,7 +788,8 @@ def run_model(
         if len(target_tokens[index]) < checker.MAX_NEW_TOKENS:
             raise RuntimeError(f"{model_key}: trace {index} has only {len(target_tokens[index])} target tokens")
 
-    means, layer_names = read_activation_means(activation_path)
+    means = reference_manifest["activation_means"]
+    layer_names = reference_manifest["layer_names"]
     protected_sets = build_protected_sets(means, layer_names)
     shared.write_json(model_dir / "protected_sets.json", protected_sets)
     spectral = write_spectral_summary(model_dir, means, layer_names, spectral_positions)
