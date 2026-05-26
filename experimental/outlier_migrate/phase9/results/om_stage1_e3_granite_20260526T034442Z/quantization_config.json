@@ -1,0 +1,10 @@
+{
+  "group_size": 128,
+  "num_rotations": 8,
+  "scale_clip": [
+    0.25,
+    4.0
+  ],
+  "schema_version": "om_stage1_e3_paroquant_m11b_composition_v1_quantization_config",
+  "scheme": "ParoQuant-style folded rotation plus groupwise affine INT4 with protected-channel BF16 restoration"
+}

@@ -1,0 +1,16 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_E3_SUB_ADDITIVE",
+  "headline": {
+    "composition_minus_best_individual": -0.18922863144257018,
+    "composition_minus_m11b_top10": 0.3237918131759469,
+    "composition_minus_paroquant": -0.18922863144257018,
+    "composition_minus_random_control": -0.23341346941276697,
+    "nemotron_deferred_for_throughput": true
+  },
+  "reasons": [
+    "composition trails best individual by 0.189229"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e3_granite_20260526T034442Z",
+  "schema_version": "om_stage1_e3_paroquant_m11b_composition_v1_checker_result"
+}

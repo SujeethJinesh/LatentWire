@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-05-26T03:44:58Z",
+  "m11b_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z",
+  "nemotron_deferred_reason": "Prior E1 throughput probe projected Nemotron manual decode to exceed the 15 GPU-hour E3 cap.",
+  "nemotron_m11b_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z",
+  "paroquant_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+  "schema_version": "om_stage1_e3_paroquant_m11b_composition_v1_source_artifacts"
+}

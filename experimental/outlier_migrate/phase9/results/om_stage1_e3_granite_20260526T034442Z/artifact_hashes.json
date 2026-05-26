@@ -1,0 +1,136 @@
+{
+  "artifacts": [
+    {
+      "bytes": 5396,
+      "path": "bf16_trace_manifest.json",
+      "sha256": "sha256:88fa90cb246331b21d6f92624f75287c5393c4be3737f39fe2b660c12d2fbac3"
+    },
+    {
+      "bytes": 46750,
+      "path": "bf16_traces.jsonl.gz",
+      "sha256": "sha256:ff95a6402cd6d3238fde2be5f6fb04ac0c3b3d2d0c494a5288a05a88981bc8f2"
+    },
+    {
+      "bytes": 5837,
+      "path": "bootstrap_ci.json",
+      "sha256": "sha256:cd2ed4077ad2d42d225931fdb1e06144ade4379c48cbdb551b0b64c50553b72c"
+    },
+    {
+      "bytes": 615,
+      "path": "command_metadata.json",
+      "sha256": "sha256:b468ead568d67b0eecc7a741ad5bbb866e7014e88762e3f13a16052578c73dc0"
+    },
+    {
+      "bytes": 1913,
+      "path": "control_metrics.json",
+      "sha256": "sha256:e54c484c0e88ed9e20c0f10f56d7593e7c00d8f698fda4c94b048ed19d9349cf"
+    },
+    {
+      "bytes": 270,
+      "path": "decoding_config.json",
+      "sha256": "sha256:d2f5323b3d1de9bfdced6bd13b8edd02eeddfe29c24a697c85da59c9b73c1a0c"
+    },
+    {
+      "bytes": 8604,
+      "path": "environment.json",
+      "sha256": "sha256:44074a656b51ed57c758faa8370a077e3c721f80d985ecf81951b1b6697d9bb3"
+    },
+    {
+      "bytes": 6722,
+      "path": "environment.txt",
+      "sha256": "sha256:3a71636b5db4c331523492ebb16ed0eb39f60892181d2cfe74cbced3a689a3d4"
+    },
+    {
+      "bytes": 552759,
+      "path": "excluded_tensors.json",
+      "sha256": "sha256:b041f0d0b1a00e526be2b86e05888ddde1e41caa5c067dc736ae57a12b373572"
+    },
+    {
+      "bytes": 2677,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:7403c76a92edba8ffb7cf6ebe89c33cf7037fe7f4b746f4b7250f4037dd3aac5"
+    },
+    {
+      "bytes": 563,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:b3be9c1a9c3df3d0a123bb0b2df91a3ac367bee5fa802a2d50d7dc3c8f1ef2d1"
+    },
+    {
+      "bytes": 6917,
+      "path": "metrics.json",
+      "sha256": "sha256:6231879d6fcf519b19171fd7fc068ace1db63029a19a4f5d948afa10187e59fb"
+    },
+    {
+      "bytes": 9288,
+      "path": "model_provenance.json",
+      "sha256": "sha256:85b8e7461efa3ec07fd2b0cbf59fed2ec928c337c4ede31d3f75b7a067dbb389"
+    },
+    {
+      "bytes": 13052,
+      "path": "per_trace_metrics.json",
+      "sha256": "sha256:080a61856877caa40d076d76dd82186b4087e70ca132350312c1fbeb826baaf8"
+    },
+    {
+      "bytes": 8453,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:5c1287b75b20156b7d32a849a643cde9cf70f890770888e7cb5b0ead0e4ae56f"
+    },
+    {
+      "bytes": 602492,
+      "path": "protected_sets.json",
+      "sha256": "sha256:6ca3308cbde95b666de651e2d8aeed1e41563b6623bb6f74f37ddf7df75ce808"
+    },
+    {
+      "bytes": 287,
+      "path": "quantization_config.json",
+      "sha256": "sha256:94d9856b49ecbc4112b6fe422d8f906b2930fa5299014a04cb0270244e666896"
+    },
+    {
+      "bytes": 101,
+      "path": "random_seed.json",
+      "sha256": "sha256:b91d1a6d26c85213b36f835c10b40d1e294f93538d1409c4b0db5bf9fe35594a"
+    },
+    {
+      "bytes": 3428,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:ba529eb766575a8b17cf560c5ade9f19c10da676e915830263f53a83ed13385e"
+    },
+    {
+      "bytes": 2302,
+      "path": "score_cache/bf16.json",
+      "sha256": "sha256:4beaadf3a13a58322c6a724d7ea9e798e6f3cbedc56591d0f0b518453ec0b088"
+    },
+    {
+      "bytes": 2303,
+      "path": "score_cache/m11b_top10.json",
+      "sha256": "sha256:c2fcdfd42262f0741851fadfefd24f2dba4f75a67c62b5ed09c29e6e5c5e5b47"
+    },
+    {
+      "bytes": 2315,
+      "path": "score_cache/paroquant_m11b_top10.json",
+      "sha256": "sha256:8e45ba0652b265cad032588d3534f3fa4e74dd400127ae0499f0062b0c76f12b"
+    },
+    {
+      "bytes": 2316,
+      "path": "score_cache/paroquant_random_top10.json",
+      "sha256": "sha256:52fc08041479df0bd4f1975eac590be8b675b67108c9ff9b375cb0dc1bcc4aed"
+    },
+    {
+      "bytes": 2312,
+      "path": "score_cache/paroquant_w4a16.json",
+      "sha256": "sha256:0e2666ad686d084a26baf8ab38bde301505f0a3198cf141d0705e694d6d4887b"
+    },
+    {
+      "bytes": 2305,
+      "path": "score_cache/static_1pct.json",
+      "sha256": "sha256:3f6933895f7d83e9201d04f405e7820ab0418ef89b6fad9c5bdb20710b5cc8e0"
+    },
+    {
+      "bytes": 689,
+      "path": "source_artifacts.json",
+      "sha256": "sha256:13a1d8a6b6c9837a1888e1053ed34c91eb4284c4a0b3cf24787a58884e52a75a"
+    }
+  ],
+  "created_at_utc": "2026-05-26T11:59:59Z",
+  "schema_version": "om_stage1_e3_paroquant_m11b_composition_v1_artifact_hashes"
+}

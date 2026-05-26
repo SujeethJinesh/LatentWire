@@ -1,0 +1,12 @@
+{"elapsed_hours": 0.004389274887766482, "event": "starting_e3_regime", "regime": "paroquant_m11b_top10"}
+{"elapsed_hours": 4.1213919811966155, "event": "starting_e3_regime", "regime": "paroquant_random_top10"}
+{
+  "checker_decision": "KILL_E3_SUB_ADDITIVE",
+  "headline": {
+    "composition_minus_best_individual": -0.18922863144257018,
+    "composition_minus_m11b_top10": 0.3237918131759469,
+    "composition_minus_paroquant": -0.18922863144257018,
+    "composition_minus_random_control": -0.23341346941276697,
+    "nemotron_deferred_for_throughput": true
+  }
+}
