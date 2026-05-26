@@ -16,22 +16,22 @@
 \maketitle
 
 \begin{abstract}
-Static per-channel protection is attractive for W4A16 reasoning inference, but it assumes that high-magnitude activation channels remain useful protection targets throughout decode. We measure decode-time channel-set drift across four reasoning LLMs and find strict top-1\% set-leaving of 53--67\% by horizons up to 20K tokens. The effect appears at the measured block-output surface in hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, extending DecDEC's short-horizon Transformer observation and challenging the protected-set persistence that Quamba2-style static ordering would require at this measured surface. We then test eight channel-set protection families with matched-cost and random controls. Hard position or scale switches are actively harmful, top-1\% smoothing and cross-tensor coupling have signal but insufficient recovery, and reactive DecDEC-style selection does not recover the W4A16 gap. Budget-tuned EMA protection is the strongest channel-set remedy: on Nemotron-3, top-10 protection recovers 0.82 of the BF16-vs-static gap and beats static top-10 by 0.22; on Granite-Small, top-5 recovers 0.45 with a wide CI. A ParoQuant-style rotation baseline recovers 0.75 on Granite-Small, scoping our negative results to channel-set protection rather than W4A16 PTQ generally. KL trajectories grow sublinearly with AR decays 0.44--0.51, weakening compound-error explanations in the measured regime.
+Static per-channel protection is attractive for W4A16 reasoning inference, but it assumes that high-magnitude activation channels remain useful protection targets throughout decode. We measure decode-time channel-set drift across four reasoning LLMs and find strict top-1\% set-leaving of 53--67\% by horizons up to 20K tokens. The effect appears at the measured block-output surface in hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, extending DecDEC's short-horizon Transformer observation and challenging whether Quamba2's channel-order and activation-persistence observations transfer to stable top-$K$ block-output protection at this measured surface. We then test eight channel-set protection families with matched-cost and random controls. Hard position or scale switches are actively harmful, top-1\% smoothing and cross-tensor coupling have signal but insufficient recovery, and reactive DecDEC-style selection does not recover the W4A16 gap. Budget-tuned EMA protection is the strongest channel-set remedy: on Nemotron-3, top-10 protection recovers 0.815 of the BF16-vs-static gap and beats static top-10 by 0.220; on Granite-Small, top-5 recovers 0.449 with a wide CI. A ParoQuant-style rotation baseline recovers 0.754 on Granite-Small, scoping our negative results to channel-set protection rather than W4A16 PTQ generally. KL trajectories grow sublinearly with AR decays 0.44--0.51, weakening compound-error explanations in the measured regime.
 \end{abstract}
 
 \section{Introduction}
 
 Long-reasoning models can spend thousands of decode steps in a single answer, so calibration-time quantization decisions must survive within-trace distribution shift. Static protected-channel maps are especially brittle if the channels that dominate early activation magnitude do not remain dominant later. This paper studies that assumption for W4A16 post-training quantization (PTQ): 4-bit weights, 16-bit activations, and a small protected activation-channel set kept at higher precision.
 
-The assumption matters for recent state-space quantization. Quamba2 argues that Mamba-family activations exhibit channel-order preservation and activation persistence, properties that support static channel ordering and clustering \citep{chiang2025quamba2}. We test the corresponding protected-set assumption at long reasoning horizons. Across Granite-4.0-H-Small, Nemotron-3-Nano, DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1, 53--67\% of the top-1\% channels at the calibration position strictly leave the later top-1\% set. This is not merely within-set rank shuffling; it is membership change in the set a static policy would protect.
+The assumption matters for recent state-space quantization. Quamba2 reports channel-order preservation in selective-SSM computation and channel/state persistence for SSM activations, then uses those observations for offline sort-and-cluster weight reordering and per-state-group quantization \citep{chiang2025quamba2}. We test the corresponding protected-set assumption at long reasoning horizons. Across Granite-4.0-H-Small, NVIDIA-Nemotron-3-Nano-30B-A3B-BF16 (Nemotron-3), DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1, 53--67\% of the top-1\% channels at the calibration position strictly leave the later top-1\% set. This is not merely within-set rank shuffling; it is membership change in the set a static policy would protect.
 
-The systems motivation is narrow but practical. Reasoning workloads are expensive, and inference-cost forecasts expect large pressure to reduce per-token cost even as reasoning demand grows \citep{bort2025reasoningcosts,gartner2026inferencecost}. Recent W4A16 systems for larger standard Transformers can recover substantial quality, including ParoQuant's rotation-based reasoning results \citep{liang2025paroquant}. Our focus is different: small reasoning models, hybrid Mamba-2 or parallel-hybrid architectures, pure PTQ rather than distillation, and channel-set protection under long decode.
+The systems motivation is narrow but practical. Reasoning workloads are expensive, and inference-cost forecasts expect large pressure to reduce per-token cost even as reasoning demand grows \citep{wiggers2025reasoningcosts,gartner2026inferencecost}. Recent low-bit PTQ systems for larger standard Transformers can recover substantial quality, including ParoQuant's weight-only scaled-pairwise-rotation reasoning results \citep{liang2026paroquant}. Our focus is different: small reasoning models, hybrid Mamba-2 or parallel-hybrid architectures, pure PTQ rather than distillation, and channel-set protection under long decode.
 
 Our contributions are fourfold.
 \begin{itemize}
 \item \textbf{Empirical drift.} We provide a four-model cross-architecture measurement of decode-time channel-set drift up to 20K tokens, with strict set-leaving of 53--67\% across hybrid Mamba-2, parallel-hybrid, and pure-Transformer models.
 \item \textbf{Prior-art differentiation.} We extend DecDEC's short-horizon Transformer evidence to the long-reasoning regime and show that Quamba2-style protected-set persistence does not hold at the measured block-output surface for the hybrid models tested here.
-\item \textbf{Mechanism tests.} We evaluate eight channel-set protection families with random and matched-cost controls, yielding a three-mechanism account: boundary discontinuities are harmful, smooth top-1\% tracking is insufficient, and protected budget is load-bearing; KL accumulation does not support runaway compound error in the measured Granite packet.
+\item \textbf{Mechanism tests.} We evaluate eight channel-set protection families with random and matched-cost controls, yielding a three-mechanism account: boundary discontinuities are harmful, smooth top-1\% tracking is insufficient, and protected budget determines whether the method recovers quality; KL accumulation does not support runaway compound error in the measured Granite packet.
 \item \textbf{Partial remedy and scope.} Budget-tuned EMA protection succeeds on Nemotron at top-10 and shows partial Granite signal, while ParoQuant recovers 0.75 on Granite via rotation. Thus the negative result is scoped to channel-set protection, not all W4A16 PTQ.
 \end{itemize}
 
@@ -39,11 +39,11 @@ Our contributions are fourfold.
 
 \paragraph{Mamba and state-space quantization.} Vision-Mamba quantization already reports dynamic activation outliers: QMamba introduces temporal grouping for hidden states \citep{li2025qmamba}, and OuroMamba uses dynamic outlier detection during inference \citep{ramachandran2025ouromamba}. Language-Mamba work often assumes more stable structure. Mamba-PTQ identifies recurrent outlier channels \citep{pierro2024mambaptq}; Quamba and Quamba2 use static or calibration-time structure for Mamba-family PTQ \citep{chiang2024quamba,chiang2025quamba2}; MambaQuant uses variance-aligned rotations \citep{xu2025mambaquant}. Our measurement asks whether the static protected-set assumption holds in long reasoning traces.\footnote{We use \emph{decode-time channel-set drift} for the measured phenomenon. SmoothQuant's ``migration'' is activation-to-weight scale transfer \citep{xiao2023smoothquant}; MoBiQuant uses related language for token-set shifts across bit-widths \citep{wang2026mobiquant}.}
 
-\paragraph{LLM quantization and rotations.} SmoothQuant, AWQ, QuaRot, KVQuant, and BlockDialect protect or transform activation structure using calibration-time statistics, rotations, or adaptive formats \citep{xiao2023smoothquant,lin2023awq,ashkboos2024quarot,hooper2024kvquant,jang2025blockdialect}. These systems are not contradicted by our results. The implication is narrower: if the protected channel set changes during long decode, static channel maps need validation on the specific architecture and horizon. ParoQuant is particularly important because it reports strong reasoning-task accuracy under low-bit PTQ using pairwise rotations and channel-wise scaling \citep{liang2025paroquant}; our Granite ParoQuant-style baseline tests whether a rotation mechanism, rather than channel-set protection, can recover the endpoint measured here.
+\paragraph{LLM quantization and rotations.} SmoothQuant, AWQ, QuaRot, KVQuant, and BlockDialect protect or transform activation structure using calibration-time statistics, rotations, or adaptive formats \citep{xiao2023smoothquant,lin2023awq,ashkboos2024quarot,hooper2024kvquant,jang2025blockdialect}. Rotated Runtime Smooth is the closest rotation-plus-runtime-smoothing adjacency, but it uses runtime channel/group-wise activation maxima as smoothing scales in fused GEMM rather than maintaining per-layer top-$K$ EMA protection sets \citep{yi2024rrs}. These systems are not contradicted by our results. The implication is narrower: if the protected channel set changes during long decode, static channel maps need validation on the specific architecture and horizon. ParoQuant is particularly important because it reports strong reasoning-task accuracy under 4-bit weight-only PTQ using scaled independent Givens/pairwise rotations plus channel-wise scaling \citep{liang2026paroquant}; its project page reports Qwen3-4B AIME-24 scores of AWQ 62.2, ParoQuant 73.3, and FP16 75.6 \citep{zlab2026paroquantproject}. Our Granite ParoQuant-style baseline tests whether a rotation mechanism, rather than channel-set protection, can recover the endpoint measured here.
 
-\paragraph{Dynamic and long-context policies.} DecDEC dynamically identifies salient activation channels at each decode step and reports low recall for static outlier-channel identification in short Transformer decode \citep{park2025decdec}. Relative to that setting, our extension is longer reasoning horizons, strict set-membership drift accounting, hybrid Mamba/parallel-hybrid coverage, and reasoning-trace intervention controls; the pure-Transformer result is a falsification/control surface. KV-cache methods such as KIVI, PM-KVQ, AttentionPredictor, ChanMix, and MixKVQ adapt or compress cached key/value tensors \citep{liu2024kivi,liu2025pmkvq,yang2025attentionpredictor,liao2026chanmix,zhang2025mixkvq}; our interventions target linear-layer activation channels.\footnote{``Hot channels'' in HCP/CHON refers to persistently extreme channels during NVFP4 pretraining, which differs from our W4A16 inference-time setting. We refer to arXiv:2603.19296 as \emph{test-time TTQ} to avoid conflict with classical Trained Ternary Quantization.}
+\paragraph{Dynamic and long-context policies.} DecDEC dynamically identifies salient activation channels at each decode step and reports roughly 20\% recall for static outlier-channel identification against per-step ground truth in short Transformer decode \citep{park2025decdec}. Relative to that setting, our extension is longer reasoning horizons, strict set-membership drift accounting, hybrid Mamba/parallel-hybrid coverage, and reasoning-trace intervention controls; the pure-Transformer result is a falsification/control surface. KV-cache methods such as KIVI, PM-KVQ, AttentionPredictor, ChanMix, and MixKVQ adapt or compress cached key/value tensors \citep{liu2024kivi,liu2025pmkvq,yang2025attentionpredictor,liao2026chanmix,zhang2025mixkvq}; our interventions target linear-layer activation channels.\footnote{``Hot channels'' in HCP/CHON refers to persistently extreme channels during NVFP4 pretraining \citep{dong2026outlierdynamics}. This training-step time axis complements our decode-step time axis: channels can become persistent across pretraining iterations while drifting during a single inference trajectory. We refer to \citet{koikeakino2026ttq} as \emph{test-time TTQ} to avoid conflict with classical Trained Ternary Quantization.}
 
-\paragraph{Error accumulation.} SLQ shows that quantized LLMs can preserve task-level and next-token distribution fidelity under sufficiently careful bit allocation \citep{helcig2026slq}. QEP emphasizes cross-layer quantization-error growth, LAQuant emphasizes layer-wise lookahead losses and calibration/deployment alignment for reasoning models, and Activation Sensitivity formalizes channel-wise perturbation impact on loss and downstream propagation \citep{arai2025qep,choi2026laquant,xu2026activationsensitivity}. These results motivate testing whether our more aggressive W4A16 endpoint exhibits decode-position error growth rather than assuming it.
+\paragraph{Error accumulation.} SLQ shows that layer-wise non-uniform/asymmetric quantization with wide bitwidth search can be task-lossless below 4 bits per parameter and distribution-lossless at roughly 5--6 bits per parameter \citep{helcig2026slq}. QEP emphasizes cross-layer quantization-error growth, LAQuant emphasizes layer-wise lookahead losses and calibration/deployment alignment for reasoning models, and Activation Sensitivity formalizes channel-wise perturbation impact on loss and downstream propagation \citep{arai2025qep,choi2026laquant,xu2026activationsensitivity}. These results motivate testing whether our more aggressive W4A16 endpoint exhibits decode-position error growth rather than assuming it.
 
 \section{Method}
 
@@ -57,21 +57,21 @@ We score interventions using recovery of the BF16-vs-static W4A16 gap:
 \begin{equation}
   R = \frac{L_{\text{static}} - L_{\text{method}}}{L_{\text{static}} - L_{\text{BF16}}}.
 \end{equation}
-Recovery may be negative when a method is worse than static protection and may exceed one when a method beats BF16 on the scored slice. We therefore report unclipped medians and bootstrap CIs. Traces with no recoverable static gap are tracked explicitly and excluded from ratio computation for method CIs; their frequency is part of the trace-heterogeneity result.
+Recovery may be negative when a method is worse than static protection and may exceed one when a method beats BF16 on the scored slice. We report unclipped medians and bootstrap CIs. Traces with no recoverable static gap are tracked explicitly and excluded from ratio computation for method CIs; their frequency is part of the trace-heterogeneity result.
 
 We test eight channel-set method classes: static migration-aware unions, hard position-conditioned protected sets, hard position-binned scale tables, EMA-smoothed top-magnitude protection (M11), cross-tensor activation+key coupling (M18), DecDEC-style reactive top-1\% selection, budget-tuned EMA protection (M11b), and stable-core protection (M26). Each method is compared to static baselines plus random or matched-budget controls when applicable. ParoQuant is evaluated as an algorithmic rotation baseline, not as a channel-set method.
 
 \section{Experiments}
 
-\paragraph{Models and traces.} The measurement suite covers Granite-4.0-H-Small, Nemotron-3-Nano, DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1. Intervention experiments use 12 deterministic long-reasoning traces unless otherwise noted; the original drift measurement uses 24 Granite-Small traces. Decode positions are measured on the grid $\{100,500,1000,5000,10000,20000\}$ when the model packet supports 20K tokens. Dense KL analysis uses a Granite-Small packet sampled every 100 positions to 10K.
+\paragraph{Models and traces.} The measurement suite covers Granite-4.0-H-Small, Nemotron-3, DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1. Intervention experiments use 12 deterministic long-reasoning traces unless otherwise noted; the original drift measurement uses 24 Granite-Small traces. Decode positions are measured on the grid $\{100,500,1000,5000,10000,20000\}$ when the model packet supports 20K tokens. Dense KL analysis uses a Granite-Small packet with all positions 1--512, every 10th position to 2K, every 50th position to 10K, and every 100th position to 20K.
 
-\paragraph{Controls.} Static top-1\% protection is the baseline. Position- and scale-switching methods use random-bin controls. EMA and reactive methods use random-walk or random-reactive controls. Budget experiments include matched static top-10 controls. This control design is load-bearing: two methods that look plausible in isolation are worse than their random controls.
+\paragraph{Controls.} Static top-1\% protection is the baseline. Position- and scale-switching methods use random-bin controls. EMA and reactive methods use random-walk or random-reactive controls. Budget experiments include matched static top-10 controls. These controls are essential: two methods that look plausible in isolation are worse than their random controls.
 
 \section{Results}
 
 \subsection{Channel sets drift at long reasoning horizons}
 
-Figure~\ref{fig:set-leaving} shows the headline measurement. All four models exhibit increasing strict set-leaving across decode position. By the final measured position, strict set-leaving is 0.566 for Granite-Small, 0.534 for Nemotron-3, 0.671 for DeepSeek-R1-Distill, and 0.674 for Falcon-H1. The pure-Transformer reference drifts at least as much as the hybrid models, so the phenomenon is not confined to Mamba layers.
+Figure~\ref{fig:set-leaving} shows the headline measurement. The traces are not monotone at every intermediate point, but all four models have large strict set-leaving by the final measured position: 0.566 for Granite-Small, 0.534 for Nemotron-3, 0.671 for DeepSeek-R1-Distill, and 0.674 for Falcon-H1. The pure-Transformer reference drifts at least as much as the hybrid models, so the phenomenon is not confined to Mamba layers.
 
 \begin{figure}[t]
 \centering
@@ -127,11 +127,11 @@ ParoQuant rotation & Granite & 0.754 & [0.477, 1.00] & M11b top-5 lower by 0.304
 \label{tab:methods}
 \end{table}
 
-\subsection{Budget is load-bearing, but not model-invariant}
+\subsection{Budget matters, but is not model-invariant}
 
-M11b changes the conclusion from uniformly negative to partially positive. On Granite-Small, top-5 EMA protection recovers 0.449 of the static gap and beats static top-10 by 0.501 median, but the CI is wide. On Nemotron, top-5 is positive with a strictly positive CI, yet it does not beat static top-10. The top-10 arm is the strongest channel-set result: median recovery 0.815, CI [0.254, 0.923], and a 0.220 median margin over static top-10. Thus budget is a real mechanism, but the best budget and the value over static protection are model-dependent.
+M11b changes the conclusion from uniformly negative to partially positive. On Granite-Small, top-5 EMA protection recovers 0.449 of the static gap and beats static top-10 by 0.501 median, but the CI is wide. On Nemotron, top-5 is positive with a strictly positive CI, yet it does not beat static top-10. The top-10 arm is the strongest channel-set result: median recovery 0.815, CI [0.254, 0.923], and a 0.220 median margin over static top-10. Budget is a real mechanism, but the best budget and the value over static protection are model-dependent.
 
-ParoQuant constrains the claim. Its Granite-Small rotation baseline recovers 0.754, exceeding M11b top-5 on the same model. The paper therefore does not argue that W4A16 PTQ is intrinsically broken; it argues that channel-set protection is fragile under long reasoning drift, while rotation-based conditioning can address part of the same endpoint by a different mechanism.
+ParoQuant constrains the claim. Its Granite-Small rotation baseline recovers 0.754, exceeding M11b top-5 on the same model. The paper does not argue that W4A16 PTQ is intrinsically broken; it argues that channel-set protection is fragile under long reasoning drift, while rotation-based conditioning can address part of the same endpoint by a different mechanism.
 
 \subsection{KL does not support runaway compounding}
 
@@ -148,7 +148,7 @@ Figure~\ref{fig:kl} tests whether failed channel-set methods primarily fail beca
 
 The results support a three-mechanism account. First, boundary discontinuities are actively harmful: both hard protected-set and hard scale-bin switching lose to random controls. Second, smoothing removes the worst boundary harm but does not recover quality at top-1\% budget; M11 and M18 contain signal, but not enough protected capacity. Third, budget is binding, but budget alone is not a universal recipe: Nemotron top-10 succeeds, Granite top-5 is promising but high-variance, and static top-10 is already strong on Nemotron.
 
-Trace heterogeneity remains important. In the Granite channel-set experiments, roughly one third of the 12-trace slice has no recoverable static gap under the ratio metric; in the larger static-union experiment the no-gap fraction is 0.375. Early static-union gates retain no-gap traces as zero-recovery rows, while later method packets report recovery ratios on positive-gap traces and track the no-gap fraction separately. This limits median-based claims and explains the wide CIs on several methods. The paper therefore emphasizes controlled mechanism comparisons and cross-model directionality rather than a single universal method headline.
+Trace heterogeneity remains important. In most Granite static-top-1\% channel-set experiments, roughly one third of the 12-trace slice has no recoverable static gap under the ratio metric; in the larger static-union experiment the no-gap fraction is 0.375. Early static-union gates retain no-gap traces as zero-recovery rows, while later method packets report recovery ratios on positive-gap traces and track the no-gap fraction separately. This limits median-based claims and explains the wide CIs on several methods. The paper emphasizes controlled mechanism comparisons and cross-model directionality rather than a single universal method headline.
 
 The natural next step is composition rather than another threshold-only channel set. ParoQuant shows that rotations can recover much of the Granite W4A16 gap; M11b shows that protected budget matters. A stronger ICLR follow-up would test rotation plus budget-aware protection, larger reasoning scales, and training-time or calibration-time interventions that make long-decode channel statistics less brittle.
 
@@ -169,8 +169,8 @@ Post-Training Quantization.
 \newblock arXiv:2504.09629, NeurIPS 2025.
 \newblock \url{https://arxiv.org/abs/2504.09629}.
 
-\bibitem[Bort(2025)]{bort2025reasoningcosts}
-Julie Bort.
+\bibitem[Wiggers(2025)]{wiggers2025reasoningcosts}
+Kyle Wiggers.
 \newblock The rise of AI reasoning models is making benchmarking more
 expensive.
 \newblock TechCrunch, April 10 2025.
@@ -185,7 +185,7 @@ Gartner.
 
 \bibitem[MarketsandMarkets(2025a)]{marketsandmarkets2025aiinference}
 MarketsandMarkets.
-\newblock AI inference market size, share and growth, 2025 to 2030.
+\newblock AI Inference Market Size, Share \& Trends, 2025 To 2030.
 \newblock Commercial market report, February 2025.
 \newblock \url{https://www.marketsandmarkets.com/Market-Reports/ai-inference-market-189921964.html}.
 
@@ -341,12 +341,41 @@ Michael Helcig, Eldar Kurtic, and Dan Alistarh.
 \newblock arXiv:2605.02404, 2026.
 \newblock \url{https://arxiv.org/abs/2605.02404}.
 
-\bibitem[Liang et~al.(2025)]{liang2025paroquant}
-Yesheng Liang, Haisheng Chen, Song Han, and Zhijian Liu.
+\bibitem[Liang et~al.(2026)]{liang2026paroquant}
+Yesheng Liang, Haisheng Chen, Zihan Zhang, Song Han, and Zhijian Liu.
 \newblock ParoQuant: Pairwise Rotation Quantization for Efficient Reasoning
 LLM Inference.
-\newblock arXiv:2511.10645, 2025.
+\newblock ICLR 2026; arXiv:2511.10645.
 \newblock \url{https://arxiv.org/abs/2511.10645}.
+
+\bibitem[Z Lab(2026)]{zlab2026paroquantproject}
+Z Lab.
+\newblock ParoQuant project page.
+\newblock Project page, 2026.
+\newblock \url{https://z-lab.ai/projects/paroquant/}.
+
+\bibitem[Yi et~al.(2024)]{yi2024rrs}
+Ke Yi, Zengke Liu, Jianwei Zhang, Chengyuan Li, Tong Zhang, Junyang Lin, and
+Jingren Zhou.
+\newblock Rotated Runtime Smooth: Training-Free Activation Smoother for
+Accurate INT4 Inference.
+\newblock arXiv:2409.20361, 2024.
+\newblock \url{https://arxiv.org/abs/2409.20361}.
+
+\bibitem[Dong et~al.(2026)]{dong2026outlierdynamics}
+Peijie Dong, Ruibo Fan, Yuechen Tao, Di Mou, Wenhu Hu, Zhenheng Tang,
+Yinghao Yu, Jiamang Wang, Wenbo Su, Guodong Yang, Liping Zhang, Xiaowen Chu,
+Baochun Li, and Bo Li.
+\newblock Dissecting Outlier Dynamics in LLM NVFP4 Pretraining.
+\newblock arXiv:2602.02047, 2026.
+\newblock \url{https://arxiv.org/abs/2602.02047}.
+
+\bibitem[Koike-Akino et~al.(2026)]{koikeakino2026ttq}
+Toshiaki Koike-Akino, Jing Liu, and Ye Wang.
+\newblock TTQ: Activation-Aware Test-Time Quantization to Accelerate LLM
+Inference On The Fly.
+\newblock arXiv:2603.19296, 2026.
+\newblock \url{https://arxiv.org/abs/2603.19296}.
 
 \bibitem[Liao and Wen(2026)]{liao2026chanmix}
 Chengxi Liao and Zeyi Wen.
@@ -398,7 +427,7 @@ Long-Context Reasoning.
 
 
 \section*{Ethics Statement}
-This work analyzes benchmark prompts and model activations. It does not use private user data or make deployment-safety claims. The main ethical risk is overclaiming a scoped mechanism study as a universal quantization recipe; the paper therefore separates measurement, mechanism, and partial-remedy claims.
+This work analyzes benchmark prompts and model activations. It does not use private user data or make deployment-safety claims. The main ethical risk is overclaiming a scoped mechanism study as a universal quantization recipe; the paper separates measurement, mechanism, and partial-remedy claims.
 
 \section*{Reproducibility Statement}
 The release package contains the public FAST\_VERIFY interface, including \texttt{release/README.md}, \texttt{release/docs/reproducing\_results.md}, and \texttt{release/src/scripts/reproduce\_all.sh}. FAST\_VERIFY replays frozen paper-claim values and validates the documented tolerance mapping. Full-fidelity GPU reruns are not implemented inside \texttt{release/}; they remain in the archived experimental packet runners and are disclosed as a release limitation.
@@ -422,8 +451,8 @@ Falcon-H1 & \texttt{tiiuae/Falcon-H1-0.5B-Instruct} & \texttt{8f2587ca} \\
 
 Bootstrap seeds, deterministic trace indices, method budgets, and tolerance windows are specified in the release configs. GPU kernels can still exhibit minor nondeterminism across driver versions; the verification compares outputs to bootstrap CI tolerances rather than bit-exact scores. The original Qwen3.6 exploratory hook surface was not used for paper claims because activation access was incomplete.
 
-\section*{LLM Usage Statement}
-The authors used LLM-assisted tools during project development for code drafting, paper-edit suggestions, figure-generation scripts, audit checklists, and summarization of local experimental artifacts. The authors remained responsible for experiment design, execution decisions, numerical verification, citation checking, and all final claims in this submission.
+\section*{LLM Use Disclosure}
+Following the COLM 2026 LLM-use policy adopted from ICLR 2026, we disclose substantive use of large language models in preparing this work. Anthropic Claude and the Codex autonomous coding agent were used to draft and revise paper prose, including the abstract, related work, methods, and results sections; to generate the matplotlib code used for Figures~1--4; to conduct iterative simulated peer review and audit passes; to summarize local experimental artifacts; and to propose, prioritize, and critique candidate experimental methods and follow-up branches, including method families reported in this paper. Codex was also used as a programming assistant for experiment runners, checkers, release-package code, and verification scripts. The human author retained responsibility for final experiment authorization, numerical interpretation, scope decisions, and submission framing. All paper references and attributed prior-work claims were checked against primary sources in the hallucination audit summarized in Appendix~\ref{app:hallucination-audit}; all reported experimental numbers were traced to committed score caches or result artifacts rather than accepted from LLM output.
 
 \appendix
 
@@ -506,5 +535,19 @@ Nemotron-3 & SSM/Mamba & 23 & 0.533 & 0.264 \\
 \caption{Layer-type decomposition. Strict set-leaving is the component most directly relevant to protected-set membership; within-set shuffling motivates scale-refresh mechanisms but is not itself membership loss.}
 \end{table}
 
+\section{Hallucination and Source Audit}
+\label{app:hallucination-audit}
+
+Before finalizing this draft, we audited every bibliography entry against its
+primary source URL and checked the attributed prior-work claims in the main
+text. The audit corrected three bibliographic fields: the TechCrunch inference
+cost article author, the MarketsandMarkets AI-inference report title, and the
+ParoQuant venue/year label. It also added an explicit citation for test-time
+TTQ and tightened the wording for Quamba2, ParoQuant, Rotated Runtime Smooth,
+and SLQ so that the prose matches the source claims. No unverified bibliography
+entries remain after these corrections. We separately re-derived the headline
+experimental numbers from local score caches and result manifests; the audit
+identified only wording/rounding fixes, not a change to any reported result.
+The full audit table is maintained in \texttt{docs/hallucination\_audit\_report.md}.
 
 \end{document}

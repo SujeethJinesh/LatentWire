@@ -2777,5 +2777,12 @@
     "path": "references/754_ssq_lr_nemotron_state_cache_refs_20260507.md",
     "status": "local_memo",
     "reason": "Primary-source memo for SSQ-LR novelty boundaries against Nemotron 3 Super recurrent SSM cache precision recipes, including FP16 stochastic rounding and INT16/block-scaled cache baselines."
+  },
+  {
+    "num": 755,
+    "slug": "outlier_migrate_stage1_scoop_hedges_20260526",
+    "path": "references/755_outlier_migrate_stage1_scoop_hedges_20260526.md",
+    "status": "local_memo",
+    "reason": "Source-boundary memo for OutlierMigrate Stage-1 roadmap scoop hedges: DecDEC, NVFP4 hot-channel dynamics, Rotated Runtime Smooth, ParoQuant project numbers, Quamba2, and MambaQuant."
   }
 ]
