@@ -1,0 +1,23 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_E2",
+  "headline": {
+    "deepseek_r1_distill": {
+      "delta_vs_aime": -0.019754464286047657,
+      "left_set_fraction": 0.6508184523809524
+    },
+    "falcon_h1": {
+      "delta_vs_aime": 0.0017255892257003191,
+      "left_set_fraction": 0.6753367003367003
+    },
+    "granite_small": {
+      "delta_vs_aime": -0.005279471545154402,
+      "left_set_fraction": 0.5609552845528456
+    }
+  },
+  "reasons": [
+    "all models within +/-0.15 of AIME references"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e2_mathonly_20260526T1202Z",
+  "schema_version": "om_stage1_e2_cross_prompt_replication_v1_checker_result"
+}

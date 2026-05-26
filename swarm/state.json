@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "outlier_migrate_stage1_e2_cross_prompt_replication",
+  "current_entry": "outlier_migrate_stage1_e1_cross_model_kl_fft",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -583,6 +583,42 @@
         "gpu_hours_delta_estimate": 8.255,
         "interpretation_note": "Composition improves over M11b alone but trails ParoQuant alone and ParoQuant+random matched-budget control; E3 does not become the headline positive method."
       }
+    },
+    {
+      "id": "outlier_migrate_stage1_e2_cross_prompt_replication",
+      "project": "outlier_migrate",
+      "phase": "stage1_e2",
+      "decision": "PASS_E2",
+      "result_dir": "experimental/outlier_migrate/phase9/results/om_stage1_e2_mathonly_20260526T1202Z",
+      "checker": "experimental/outlier_migrate/phase9/check_om_stage1_e2_cross_prompt_replication.py",
+      "checker_output": "experimental/outlier_migrate/phase9/results/om_stage1_e2_mathonly_20260526T1202Z/checker_result.json",
+      "completed_at": "2026-05-26T23:32:18Z",
+      "summary": {
+        "artifact_complete": true,
+        "dataset": "MATH-500",
+        "gpqa_diamond_deferred_reason": "dataset gated in current environment",
+        "prompt_count_per_model": 30,
+        "models": [
+          "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+          "tiiuae/Falcon-H1-0.5B-Instruct",
+          "ibm-granite/granite-4.0-h-small"
+        ],
+        "deepseek_left_set_fraction": 0.6508184523809524,
+        "deepseek_ci95_low": 0.6225446428571428,
+        "deepseek_ci95_high": 0.6775297619047619,
+        "deepseek_delta_vs_aime": -0.019754464286047657,
+        "falcon_left_set_fraction": 0.6753367003367003,
+        "falcon_ci95_low": 0.6491582491582492,
+        "falcon_ci95_high": 0.7018518518518518,
+        "falcon_delta_vs_aime": 0.0017255892257003191,
+        "granite_left_set_fraction": 0.5609552845528456,
+        "granite_ci95_low": 0.5464227642276422,
+        "granite_ci95_high": 0.5749186991869919,
+        "granite_delta_vs_aime": -0.005279471545154402,
+        "decision_reason": "all measured models within +/-0.15 of AIME set-leaving references",
+        "gpu_hours_delta": 11.4669,
+        "interpretation_note": "MATH-500 replication supports benchmark-general set-leaving drift for DeepSeek, Falcon-H1, and Granite-Small; GPQA-Diamond remains deferred due gated dataset access."
+      }
     }
   ],
   "killed_entries": [
@@ -924,7 +960,7 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 287.393,
+  "gpu_hours_used": 298.86,
   "gpu_hours_budget": 360.0,
   "last_audit_at": "2026-05-26T11:59:59Z",
   "last_commit_sha": "a84699f7",

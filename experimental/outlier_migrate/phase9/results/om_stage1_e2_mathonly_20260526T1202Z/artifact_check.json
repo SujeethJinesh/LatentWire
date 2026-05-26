@@ -1,0 +1,9 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_E2",
+  "reasons": [
+    "all models within +/-0.15 of AIME references"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e2_mathonly_20260526T1202Z",
+  "schema_version": "om_stage1_e2_cross_prompt_replication_v1_checker_result"
+}

@@ -1,0 +1,239 @@
+{
+  "aggregate": {
+    "ci95": {
+      "ci95_high": 0.7018518518518518,
+      "ci95_low": 0.6491582491582492
+    },
+    "left_set_fraction": 0.6753367003367003,
+    "trace_count": 30
+  },
+  "aime_reference": 0.673611111111,
+  "by_dataset": {
+    "math_500": {
+      "ci95": {
+        "ci95_high": 0.7018518518518518,
+        "ci95_low": 0.6491582491582492
+      },
+      "left_set_fraction": 0.6753367003367003,
+      "trace_count": 30
+    }
+  },
+  "completed_prompt_count": 30,
+  "delta_vs_aime": 0.0017255892257003191,
+  "expected_prompt_count": 30,
+  "incomplete_due_cap": false,
+  "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+  "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+  "trace_metrics": [
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.601010101010101,
+      "prompt_id": "math_500_0",
+      "prompt_index": 0,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.7045454545454546,
+      "prompt_id": "math_500_1",
+      "prompt_index": 1,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6792929292929293,
+      "prompt_id": "math_500_2",
+      "prompt_index": 2,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6237373737373737,
+      "prompt_id": "math_500_3",
+      "prompt_index": 3,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.8257575757575758,
+      "prompt_id": "math_500_4",
+      "prompt_index": 4,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6186868686868687,
+      "prompt_id": "math_500_5",
+      "prompt_index": 5,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6237373737373737,
+      "prompt_id": "math_500_6",
+      "prompt_index": 6,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.553030303030303,
+      "prompt_id": "math_500_7",
+      "prompt_index": 7,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.7702020202020202,
+      "prompt_id": "math_500_8",
+      "prompt_index": 8,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.5782828282828283,
+      "prompt_id": "math_500_9",
+      "prompt_index": 9,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.7424242424242424,
+      "prompt_id": "math_500_10",
+      "prompt_index": 10,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.7550505050505051,
+      "prompt_id": "math_500_11",
+      "prompt_index": 11,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6590909090909091,
+      "prompt_id": "math_500_12",
+      "prompt_index": 12,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.7373737373737373,
+      "prompt_id": "math_500_13",
+      "prompt_index": 13,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.5429292929292929,
+      "prompt_id": "math_500_14",
+      "prompt_index": 14,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.7601010101010102,
+      "prompt_id": "math_500_15",
+      "prompt_index": 15,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6994949494949495,
+      "prompt_id": "math_500_16",
+      "prompt_index": 16,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6767676767676768,
+      "prompt_id": "math_500_17",
+      "prompt_index": 17,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6313131313131313,
+      "prompt_id": "math_500_18",
+      "prompt_index": 18,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.8207070707070707,
+      "prompt_id": "math_500_19",
+      "prompt_index": 19,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.702020202020202,
+      "prompt_id": "math_500_20",
+      "prompt_index": 20,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.7373737373737373,
+      "prompt_id": "math_500_21",
+      "prompt_index": 21,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6919191919191919,
+      "prompt_id": "math_500_22",
+      "prompt_index": 22,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.5883838383838383,
+      "prompt_id": "math_500_23",
+      "prompt_index": 23,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.5454545454545454,
+      "prompt_id": "math_500_24",
+      "prompt_index": 24,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6994949494949495,
+      "prompt_id": "math_500_25",
+      "prompt_index": 25,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6641414141414141,
+      "prompt_id": "math_500_26",
+      "prompt_index": 26,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6590909090909091,
+      "prompt_id": "math_500_27",
+      "prompt_index": 27,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.702020202020202,
+      "prompt_id": "math_500_28",
+      "prompt_index": 28,
+      "source_dataset": "math_500"
+    },
+    {
+      "layer_count": 36,
+      "left_set_fraction": 0.6666666666666666,
+      "prompt_id": "math_500_29",
+      "prompt_index": 29,
+      "source_dataset": "math_500"
+    }
+  ]
+}
