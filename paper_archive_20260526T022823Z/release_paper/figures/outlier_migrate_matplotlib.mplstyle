@@ -1,0 +1,45 @@
+# OutlierMigrate paper figure style.
+# Use with:
+#   import matplotlib.pyplot as plt
+#   plt.style.use("experimental/outlier_migrate/paper/figures/outlier_migrate_matplotlib.mplstyle")
+
+figure.figsize: 6.6, 3.6
+figure.dpi: 160
+savefig.dpi: 300
+savefig.bbox: tight
+savefig.pad_inches: 0.02
+savefig.facecolor: white
+
+font.family: DejaVu Sans
+font.size: 8
+axes.titlesize: 9
+axes.labelsize: 8
+xtick.labelsize: 7
+ytick.labelsize: 7
+legend.fontsize: 7
+
+axes.linewidth: 0.8
+axes.edgecolor: 0.2
+axes.labelcolor: 0.07
+xtick.color: 0.2
+ytick.color: 0.2
+text.color: 0.07
+
+axes.grid: true
+axes.axisbelow: true
+grid.color: 0.85
+grid.linewidth: 0.5
+grid.alpha: 0.8
+
+lines.linewidth: 1.6
+lines.markersize: 4.0
+patch.linewidth: 0.8
+
+legend.frameon: false
+legend.borderaxespad: 0.4
+
+axes.prop_cycle: cycler('color', ['tab:blue', 'tab:red', 'tab:green', 'tab:purple', 'tab:orange', 'tab:cyan', 'tab:gray'])
+
+pdf.fonttype: 42
+ps.fonttype: 42
+svg.fonttype: none
