@@ -888,8 +888,8 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 278.643,
-  "gpu_hours_budget": 200.0,
+  "gpu_hours_used": 279.138,
+  "gpu_hours_budget": 360.0,
   "last_audit_at": "2026-05-20T20:06:07Z",
   "last_commit_sha": "6a7bb1fd",
   "papers_camera_ready_candidate": [
