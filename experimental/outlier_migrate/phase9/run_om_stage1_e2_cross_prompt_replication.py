@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import random
 import sys
@@ -134,7 +135,39 @@ def cap_exhausted(start: float, cap_hours: float) -> bool:
     return (time.monotonic() - start) / 3600.0 >= cap_hours
 
 
-def run_one_model(args: argparse.Namespace, run_dir: Path, key: str, prompts: list[dict[str, Any]], events: Path) -> dict[str, Any]:
+def append_gzip_rows(source: Path, destination: Path) -> None:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with gzip.open(source, "rt", encoding="utf-8") as src, gzip.open(destination, "at", encoding="utf-8") as dst:
+        for line in src:
+            if line.strip():
+                dst.write(line)
+
+
+def combine_activation_manifests(manifests: list[dict[str, Any]], activation_path: Path) -> dict[str, Any]:
+    if not manifests:
+        raise RuntimeError("no activation manifests to combine")
+    first = dict(manifests[0])
+    first["created_at_utc"] = shared.utc_now()
+    first["trace_count"] = sum(int(item["trace_count"]) for item in manifests)
+    first["row_count"] = sum(int(item["row_count"]) for item in manifests)
+    first["prompt_events"] = [
+        event
+        for item in manifests
+        for event in item.get("prompt_events", [])
+    ]
+    first["artifact_sha256"] = shared.file_sha256(activation_path)
+    first["chunking_semantics"] = "one capture call per prompt so the experiment can stop cleanly at cap boundaries"
+    return first
+
+
+def run_one_model(
+    args: argparse.Namespace,
+    run_dir: Path,
+    key: str,
+    prompts: list[dict[str, Any]],
+    events: Path,
+    start_time: float,
+) -> dict[str, Any]:
     model_dir = run_dir / "model_runs" / key
     model_dir.mkdir(parents=True, exist_ok=True)
     model_id = checker.MODEL_REFERENCES[key]["model_id"]
@@ -144,20 +177,47 @@ def run_one_model(args: argparse.Namespace, run_dir: Path, key: str, prompts: li
         raise RuntimeError(f"{key}: no local model snapshot for {model_id}")
     model, tokenizer, device = shared.load_model_and_tokenizer(provenance, dtype_name=args.dtype, device_name=args.device)
     activation_path = model_dir / "activation_magnitudes.jsonl.gz"
-    activation_manifest = shared.capture_activation_magnitudes(
-        model=model,
-        tokenizer=tokenizer,
-        device=device,
-        prompts=prompts,
-        positions=checker.POSITIONS,
-        max_new_tokens=args.max_new_tokens,
-        batch_size=args.batch_size,
-        output_path=activation_path,
-        run_events_path=events,
-    )
+    if activation_path.exists():
+        activation_path.unlink()
+    prompt_dir = model_dir / "prompt_activation_chunks"
+    prompt_dir.mkdir(parents=True, exist_ok=True)
+    activation_manifests: list[dict[str, Any]] = []
+    completed_prompts: list[dict[str, Any]] = []
+    for prompt in prompts:
+        if cap_exhausted(start_time, args.cap_hours):
+            events.open("a", encoding="utf-8").write(
+                json.dumps(
+                    {
+                        "created_at_utc": shared.utc_now(),
+                        "event": "cap_exhausted_within_model",
+                        "model_key": key,
+                        "completed_prompt_count": len(completed_prompts),
+                        "expected_prompt_count": len(prompts),
+                    },
+                    sort_keys=True,
+                )
+                + "\n"
+            )
+            break
+        chunk_path = prompt_dir / f"prompt_{int(prompt['index']):04d}.jsonl.gz"
+        manifest = shared.capture_activation_magnitudes(
+            model=model,
+            tokenizer=tokenizer,
+            device=device,
+            prompts=[prompt],
+            positions=checker.POSITIONS,
+            max_new_tokens=args.max_new_tokens,
+            batch_size=1,
+            output_path=chunk_path,
+            run_events_path=events,
+        )
+        append_gzip_rows(chunk_path, activation_path)
+        activation_manifests.append(manifest)
+        completed_prompts.append(prompt)
+    activation_manifest = combine_activation_manifests(activation_manifests, activation_path)
     shared.write_json(model_dir / "activation_magnitude_manifest.json", activation_manifest)
     rows = list(checker.iter_rows(activation_path))
-    prompt_by_index = {int(row["index"]): row for row in prompts}
+    prompt_by_index = {int(row["index"]): row for row in completed_prompts}
     for row in rows:
         source = prompt_by_index[int(row["prompt_index"])]["source_dataset"]
         row["source_dataset"] = source
@@ -169,6 +229,9 @@ def run_one_model(args: argparse.Namespace, run_dir: Path, key: str, prompts: li
         "model_snapshot_commit": provenance.get("hf_snapshot_commit"),
         "aime_reference": reference,
         "delta_vs_aime": observed - reference,
+        "completed_prompt_count": len(completed_prompts),
+        "expected_prompt_count": len(prompts),
+        "incomplete_due_cap": len(completed_prompts) < len(prompts),
         **metrics,
     }
     shared.write_json(model_dir / "metrics.json", result)
@@ -257,7 +320,7 @@ def main(argv: list[str] | None = None) -> int:
         if cap_exhausted(start, args.cap_hours):
             events.open("a", encoding="utf-8").write(json.dumps({"created_at_utc": shared.utc_now(), "event": "cap_exhausted_before_model", "model_key": key}, sort_keys=True) + "\n")
             break
-        results[key] = run_one_model(args, run_dir, key, prompts, events)
+        results[key] = run_one_model(args, run_dir, key, prompts, events, start)
         completed.append(key)
         write_packet(run_dir, results, completed)
     write_packet(run_dir, results, completed)

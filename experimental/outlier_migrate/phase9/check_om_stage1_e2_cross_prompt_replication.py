@@ -154,6 +154,13 @@ def classify(metrics: dict[str, Any]) -> tuple[str, list[str]]:
     completed = metrics.get("completed_model_keys", [])
     if set(completed) != set(EXPECTED_MODEL_KEYS):
         return INCOMPLETE, [f"completed models {completed}; expected {list(EXPECTED_MODEL_KEYS)}"]
+    partial = [
+        key
+        for key in EXPECTED_MODEL_KEYS
+        if metrics["model_results"][key].get("incomplete_due_cap")
+    ]
+    if partial:
+        return INCOMPLETE, [f"cap exhausted before all prompts for models: {partial}"]
     replicated: list[str] = []
     failed: list[str] = []
     for key in EXPECTED_MODEL_KEYS:
