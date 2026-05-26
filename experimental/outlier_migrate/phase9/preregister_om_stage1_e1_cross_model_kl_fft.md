@@ -5,15 +5,15 @@ Date: 2026-05-26
 ## Purpose
 
 Replicate the Granite-Small dense KL accumulation and spectral diagnostics on
-the three four-model packets that currently lack dense trajectories:
-Nemotron-3-Nano, DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1. This tests
-whether the mechanism story is model-specific or general across the measured
-reasoning-model families.
+the two smaller cross-model packets that currently lack dense trajectories:
+DeepSeek-R1-Distill-Qwen-1.5B and Falcon-H1. Nemotron-3-Nano is explicitly
+deferred in Stage 1 after the throughput probe projected manual dense decode
+beyond the 15 GPU-hour cap. This tests whether the mechanism story is
+model-specific or general across the measured non-Nemotron reasoning-model
+families.
 
 ## Models
 
-- `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16`, snapshot
-  `cbd3fa9f933d55ef16a84236559f4ee2a0526848`
 - `deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B`, snapshot
   `ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562`
 - `tiiuae/Falcon-H1-0.5B-Instruct`, snapshot
@@ -47,12 +47,12 @@ For each model:
 
 ## Decision Rule
 
-- `PASS_E1_CROSS_MODEL_KL_FFT`: all three models have square-root sublinear as
+- `PASS_E1_CROSS_MODEL_KL_FFT`: both measured models have square-root sublinear as
   the best KL fit for every quantized regime, median spectral entropy at least
   0.75, and median activation autocorrelation length between 50 and 200 tokens.
-- `AMBIGUOUS_E1_PARTIAL_REPLICATION`: one or two models satisfy the above
+- `AMBIGUOUS_E1_PARTIAL_REPLICATION`: one model satisfies the above
   model-level criterion.
-- `KILL_E1_MECHANISM_NOT_CROSS_MODEL`: no model satisfies the model-level
+- `KILL_E1_MECHANISM_NOT_CROSS_MODEL`: no measured model satisfies the model-level
   criterion, or the KL trajectories are fundamentally superlinear on at least
   two models.
 - `FAIL_INFRA_E1`: required artifacts are missing, malformed, or internally
@@ -63,7 +63,7 @@ human framing review.
 
 ## Budget
 
-Estimated GPU cost: 8 GPU hours. The hard cumulative cap is 360 GPU hours.
+Estimated GPU cost: 15 GPU hours under the revised narrowed scope. The hard cumulative cap is 360 GPU hours.
 Pause before additional GPU work if the ledger reaches 340 hours; stop all GPU
 work at 355 hours unless the currently running command must finish to write a
 valid artifact packet.

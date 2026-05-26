@@ -10,6 +10,7 @@ import math
 import random
 import shutil
 import sys
+import time
 import traceback
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -861,6 +862,10 @@ def parse_model_keys(text: str) -> list[str]:
     return keys
 
 
+def cap_exhausted(start_time: float, cap_hours: float) -> bool:
+    return (time.monotonic() - start_time) / 3600.0 >= cap_hours
+
+
 def main(argv: list[str] | None = None) -> int:
     shared.SCHEMA_VERSION = SCHEMA_VERSION
     parser = argparse.ArgumentParser(description=__doc__)
@@ -870,8 +875,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--device", default="auto")
     parser.add_argument("--dtype", choices=["bfloat16", "float16", "float32"], default="bfloat16")
     parser.add_argument("--seed", type=int, default=20260526)
+    parser.add_argument("--cap-hours", type=float, default=15.0)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args(argv)
+    started = time.monotonic()
 
     run_dir = args.results_dir / args.run_id
     if run_dir.exists() and not args.resume:
@@ -906,6 +913,8 @@ def main(argv: list[str] | None = None) -> int:
                 "cwd": str(ROOT),
                 "run_dir": str(run_dir),
                 "model_keys": args.models,
+                "cap_hours": args.cap_hours,
+                "nemotron_deferred_reason": checker.MODEL_CONFIGS["nemotron3_nano"].get("deferred_reason"),
                 "preregistration": str(checker.PREREG_PATH.relative_to(ROOT)),
                 "preregistration_sha256": shared.file_sha256(checker.PREREG_PATH),
             },
@@ -948,6 +957,20 @@ def main(argv: list[str] | None = None) -> int:
 
         model_summaries = []
         for model_key in args.models:
+            if cap_exhausted(started, args.cap_hours):
+                run_events_path.open("a", encoding="utf-8").write(
+                    json.dumps(
+                        {
+                            "created_at_utc": shared.utc_now(),
+                            "event": "cap_exhausted_before_model",
+                            "model_key": model_key,
+                            "cap_hours": args.cap_hours,
+                        },
+                        sort_keys=True,
+                    )
+                    + "\n"
+                )
+                break
             print(json.dumps({"event": "starting_e1_model", "model_key": model_key, "time": shared.utc_now()}, sort_keys=True))
             model_summaries.append(
                 run_model(

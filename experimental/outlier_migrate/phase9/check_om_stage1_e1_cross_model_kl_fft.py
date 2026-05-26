@@ -21,7 +21,7 @@ TRACE_COUNT = 12
 MAX_NEW_TOKENS = 20000
 KL_REGIMES = ["bf16_reference", "static_1pct", "decdec_reactive_top1_proxy", "m11_alpha_0_5"]
 QUANTIZED_REGIMES = [regime for regime in KL_REGIMES if regime != "bf16_reference"]
-MODEL_KEYS = ["nemotron3_nano", "deepseek_r1_distill_qwen_1_5b", "falcon_h1_0_5b"]
+MODEL_KEYS = ["deepseek_r1_distill_qwen_1_5b", "falcon_h1_0_5b"]
 
 MODEL_CONFIGS: dict[str, dict[str, str]] = {
     "nemotron3_nano": {
@@ -29,6 +29,7 @@ MODEL_CONFIGS: dict[str, dict[str, str]] = {
         "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
         "snapshot": "cbd3fa9f933d55ef16a84236559f4ee2a0526848",
         "source_run_dir": "experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z",
+        "deferred_reason": "manual decode throughput projected beyond revised Stage 1 cap",
     },
     "deepseek_r1_distill_qwen_1_5b": {
         "label": "DeepSeek-R1-Distill-Qwen-1.5B",
