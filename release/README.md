@@ -46,11 +46,13 @@ runner outputs used for the paper.
 
 ## Hardware
 
-Fast verification is CPU-only and runs in under 5 minutes. The optional
-`full` extra pins the tested inference dependencies but does not enable full
-model-inference reproduction by itself. The original experiment packets were
-produced on a single high-memory NVIDIA GPU with CUDA 12.8, PyTorch 2.8.0,
-Transformers 4.57.6, and vLLM 0.10.2.
+Fast verification is CPU-only and runs in under 5 minutes. A full repository
+checkout plus release virtual environment currently needs about 13 GB of disk;
+keep at least 20 GB free for a clean clone. The optional `full` extra pins the
+tested inference dependencies but does not enable full model-inference
+reproduction by itself. The original experiment packets were produced on a
+single high-memory NVIDIA GPU with CUDA 12.8, PyTorch 2.8.0, Transformers
+4.57.6, and vLLM 0.10.2.
 
 ## Citation
 

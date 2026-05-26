@@ -1,8 +1,8 @@
 # Verification Log
 
-Verification date: `2026-05-25`
+Verification date: `2026-05-26`
 
-Verified commit: `a150edee3abd3f85f13c5defb2d5e7a79b466eb5`
+Verified commit: `57871e8cfe87ce4335d1c651235f7baf4db9890d`
 
 Mode: FAST_VERIFY. The release scripts now fail explicitly outside
 `--fast-verify` or `--dry-run`; full-fidelity GPU reproduction remains in the
@@ -10,7 +10,7 @@ archived experimental packet runners and is not implemented in `release/`.
 
 ## 1. Starting State
 
-Clean directory: `/tmp/repro_verification_1`
+Clean directory: `/tmp/repro_verification_20260526_1`
 
 Command:
 
@@ -23,7 +23,7 @@ Starting environment:
 - OS: Linux `6.8.0-110-generic`
 - Python: `3.12.3`
 - GPU visible: NVIDIA RTX PRO 6000 Blackwell Server Edition, `97887 MiB`
-- Disk at clone path: `33G` available on `/`
+- Disk at clone path: `20G` available on `/`
 - Clone source: GitHub origin, not local copy
 
 The clone contained no pre-existing virtual environment and no downloaded
@@ -108,7 +108,7 @@ Test suite command:
 python -m pytest
 ```
 
-Result: `7 passed in 0.09s` on the first clean clone.
+Result: `7 passed in 0.11s` on the first clean clone.
 
 ## 6. Standalone Script Verification
 
@@ -139,7 +139,7 @@ model-inference reproduction remains outside this minimal release package.
 
 ## 8. Double-Check Pass
 
-Second clean directory: `/tmp/repro_verification_2`
+Second clean directory: `/tmp/repro_verification_20260526_2`
 
 Commands:
 
@@ -155,7 +155,14 @@ bash src/scripts/reproduce_all.sh --fast-verify
 python -m pytest
 ```
 
-Result: passed without intervention. `pytest` reported `7 passed in 0.12s`.
+Result: passed without intervention. `pytest` reported `7 passed in 0.13s`.
+
+An earlier second-pass attempt kept two full repository clones under `/tmp` at
+the same time and failed during Git checkout with `No space left on device`.
+After removing the first clone and rerunning from a fresh directory, the
+double-check pass succeeded. A checked-out repository plus release virtual
+environment occupied about 13 GB, so README now recommends at least 20 GB free
+for clean verification.
 
 ## 9. Summary
 
