@@ -15,7 +15,7 @@ Clean directory: `/tmp/repro_verification_1`
 Command:
 
 ```bash
-git clone https://github.com/SujeethJinesh/LatentWire.git repo
+git clone <anonymous-artifact-url> repo
 ```
 
 Starting environment:
@@ -144,7 +144,7 @@ Second clean directory: `/tmp/repro_verification_2`
 Commands:
 
 ```bash
-git clone https://github.com/SujeethJinesh/LatentWire.git repo
+git clone <anonymous-artifact-url> repo
 cd repo/release
 python3.12 -m venv .venv
 source .venv/bin/activate

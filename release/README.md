@@ -1,10 +1,10 @@
 # OutlierMigrate Reproduction Package
 
-This folder reproduces the empirical claims in the workshop draft
-`Channel-Set Drift in Long-Reasoning W4A16 LLMs`. The paper studies
-whether high-magnitude activation channels remain stable during long reasoning
-decodes, and evaluates W4A16 channel-protection methods, a ParoQuant rotation
-baseline, and mechanism analyses.
+This folder provides FAST_VERIFY claim replay and minimal public interfaces for
+the workshop draft `Channel-Set Drift in Long-Reasoning W4A16 LLMs`. The paper
+studies whether high-magnitude activation channels remain stable during long
+reasoning decodes, and evaluates W4A16 channel-protection methods, a ParoQuant
+rotation baseline, and mechanism analyses.
 
 ## Install
 
@@ -16,7 +16,7 @@ python -m pip install --upgrade pip==25.3
 python -m pip install -e ".[dev]"
 ```
 
-For full GPU reproduction, install the tested inference stack:
+For future full GPU reproduction work, install the tested inference stack:
 
 ```bash
 python -m pip install -e ".[full,dev]"
@@ -46,9 +46,11 @@ runner outputs used for the paper.
 
 ## Hardware
 
-Fast verification is CPU-only and runs in under 5 minutes. The original
-experiment packets were produced on a single high-memory NVIDIA GPU with CUDA
-12.8, PyTorch 2.8.0, Transformers 4.57.6, and vLLM 0.10.2.
+Fast verification is CPU-only and runs in under 5 minutes. The optional
+`full` extra pins the tested inference dependencies but does not enable full
+model-inference reproduction by itself. The original experiment packets were
+produced on a single high-memory NVIDIA GPU with CUDA 12.8, PyTorch 2.8.0,
+Transformers 4.57.6, and vLLM 0.10.2.
 
 ## Citation
 
