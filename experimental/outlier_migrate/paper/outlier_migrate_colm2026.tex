@@ -39,7 +39,7 @@ Our contributions are fourfold.
 
 \paragraph{Mamba and state-space quantization.} Vision-Mamba quantization already reports dynamic activation outliers. QMamba introduces temporal grouping for hidden states \citep{li2025qmamba}, and OuroMamba uses dynamic outlier detection during inference \citep{ramachandran2025ouromamba}. Language-Mamba work often assumes more stable structure. Mamba-PTQ identifies recurrent outlier channels \citep{pierro2024mambaptq}; Quamba and Quamba2 use static or calibration-time structure for Mamba-family PTQ \citep{chiang2024quamba,chiang2025quamba2}; MambaQuant uses variance-aligned rotations \citep{xu2025mambaquant}. We ask whether the static protected-set assumption holds in long reasoning traces.\footnote{We use \emph{decode-time channel-set drift} for the measured phenomenon. SmoothQuant's ``migration'' is activation-to-weight scale transfer \citep{xiao2023smoothquant}; MoBiQuant uses related language for token-set shifts across bit-widths \citep{wang2026mobiquant}.}
 
-\paragraph{LLM quantization and rotations.} SmoothQuant, AWQ, QuaRot, KVQuant, and BlockDialect protect or transform activation structure using calibration-time statistics, rotations, or adaptive formats \citep{xiao2023smoothquant,lin2023awq,ashkboos2024quarot,hooper2024kvquant,jang2025blockdialect}. Rotated Runtime Smooth is the closest rotation-plus-runtime-smoothing adjacency. It uses runtime channel/group-wise activation maxima as smoothing scales in fused GEMM rather than maintaining per-layer top-$K$ EMA protection sets \citep{yi2024rrs}. Our results do not contradict these systems. The narrower implication is that, when protected channel sets change during long decode, static channel maps need architecture- and horizon-specific validation. ParoQuant is particularly important because it reports strong reasoning-task accuracy under 4-bit weight-only PTQ using scaled independent Givens/pairwise rotations plus channel-wise scaling \citep{liang2026paroquant}; its project page reports Qwen3-4B AIME-24 scores of AWQ 62.2, ParoQuant 73.3, and FP16 75.6 \citep{zlab2026paroquantproject}. Our Granite ParoQuant-style baseline tests whether a rotation mechanism, rather than channel-set protection, can recover the endpoint measured here.
+\paragraph{LLM quantization and rotations.} SmoothQuant, AWQ, QuaRot, KVQuant, and BlockDialect protect or transform activation structure using calibration-time statistics, rotations, or adaptive formats \citep{xiao2023smoothquant,lin2023awq,ashkboos2024quarot,hooper2024kvquant,jang2025blockdialect}. CMPQ allocates per-channel precision from calibration-time activation distributions; our work tests whether calibration-time channel selection remains stable under long-decode drift \citep{chen2025cmpq}. ResQ keeps a low-rank PCA subspace at higher precision throughout decode, while we measure whether channel-basis top-$K$ protection is stable across decode positions and find it often is not \citep{saxena2025resq}. Rotated Runtime Smooth is the closest rotation-plus-runtime-smoothing adjacency. It uses runtime channel/group-wise activation maxima as smoothing scales in fused GEMM rather than maintaining per-layer top-$K$ EMA protection sets \citep{yi2024rrs}. Our results do not contradict these systems. The narrower implication is that, when protected channel sets change during long decode, static channel maps need architecture- and horizon-specific validation. ParoQuant is particularly important because it reports strong reasoning-task accuracy under 4-bit weight-only PTQ using scaled independent Givens/pairwise rotations plus channel-wise scaling \citep{liang2026paroquant}; its project page reports Qwen3-4B AIME-24 scores of AWQ 62.2, ParoQuant 73.3, and FP16 75.6 \citep{zlab2026paroquantproject}. Our Granite ParoQuant-style baseline tests whether a rotation mechanism, rather than channel-set protection, can recover the endpoint measured here.
 
 \paragraph{Dynamic and long-context policies.} DecDEC dynamically identifies salient activation channels at each decode step and reports roughly 20\% recall for static outlier-channel identification against per-step ground truth in short Transformer decode \citep{park2025decdec}. We extend that setting in four ways: longer reasoning horizons, strict set-membership drift accounting, hybrid Mamba/parallel-hybrid coverage, and reasoning-trace intervention controls. The pure-Transformer result serves as a falsification/control surface. KV-cache methods such as KIVI, PM-KVQ, AttentionPredictor, ChanMix, and MixKVQ adapt or compress cached key/value tensors \citep{liu2024kivi,liu2025pmkvq,yang2025attentionpredictor,liao2026chanmix,zhang2025mixkvq}; our interventions target linear-layer activation channels.\footnote{``Hot channels'' in HCP/CHON refers to persistently extreme channels during NVFP4 pretraining \citep{dong2026outlierdynamics}. This training-step time axis complements our decode-step time axis: channels can become persistent across pretraining iterations while drifting during a single inference trajectory. We refer to \citet{koikeakino2026ttq} as \emph{test-time TTQ} to avoid conflict with classical Trained Ternary Quantization.}
 
@@ -153,7 +153,7 @@ The narrowed cross-model diagnostic gives the same qualitative answer on the two
 
 \section{Discussion}
 
-The results point to three mechanisms. First, boundary discontinuities are actively harmful: both hard protected-set and hard scale-bin switching lose to random controls. Second, smoothing removes the worst boundary harm but does not recover quality at top-1\% budget; M11 and M18 contain signal, but not enough protected capacity. Third, budget is binding, but budget alone is not a universal recipe: Nemotron top-10 succeeds, Granite top-5 recovers 0.449 with wide uncertainty, and static top-10 is already strong on Nemotron.
+The results point to three mechanisms. First, boundary discontinuities are actively harmful: both hard protected-set and hard scale-bin switching lose to random controls. Salfati's KV-cache analysis provides a compatible formal analogy: under the softmax Fisher metric, dropping a direction is quadratically worse than quantizing it at the same bit cost \citep{salfati2026kvquantization}. Second, smoothing removes the worst boundary harm but does not recover quality at top-1\% budget; M11 and M18 contain signal, but not enough protected capacity. Third, budget is binding, but budget alone is not a universal recipe: Nemotron top-10 succeeds, Granite top-5 recovers 0.449 with wide uncertainty, and static top-10 is already strong on Nemotron.
 
 Trace heterogeneity remains important. In most Granite static-top-1\% channel-set experiments, roughly one third of the 12-trace slice has no recoverable static gap under the ratio metric; in the larger static-union experiment the no-gap fraction is 0.375. Early static-union gates retain no-gap traces as zero-recovery rows, while later method packets report recovery ratios on positive-gap traces and track the no-gap fraction separately. This limits median-based claims and explains the wide CIs on several methods. After BCa/Holm correction over 33 method-family tests, corrected-positive channel-set evidence is limited to Nemotron budgeted EMA top-5/top-10; paired method-vs-control margins remain descriptive unless separately tested. The paper emphasizes controlled mechanism comparisons and cross-model directionality rather than a single universal method headline.
 
@@ -167,7 +167,7 @@ We scope the study to W4A16 PTQ on small reasoning models and measured block-out
 
 Long-reasoning W4A16 channel protection fails when static protected sets drift, and our experiments show that this drift is substantial across models and prompts. Budget-tuned smoothing remedies part of the failure: Nemotron top-10 succeeds, Granite top-5 remains uncertain, and ParoQuant is stronger on Granite. The failed composition result points away from naive stacking and toward architecture-aware method selection as the next positive-method target.
 
-\begin{thebibliography}{40}
+\begin{thebibliography}{43}
 
 \bibitem[Arai and Ichikawa(2025)]{arai2025qep}
 Yamato Arai and Yuma Ichikawa.
@@ -327,6 +327,12 @@ Cameron, Martin Jaggi, Dan Alistarh, Torsten Hoefler, and James Hensman.
 \newblock arXiv:2404.00456, 2024.
 \newblock \url{https://arxiv.org/abs/2404.00456}.
 
+\bibitem[Chen et~al.(2025)]{chen2025cmpq}
+Zihan Chen, Bike Xie, Jundong Li, and Cong Shen.
+\newblock Channel-Wise Mixed-Precision Quantization for Large Language Models.
+\newblock arXiv:2410.13056, revised February 2025.
+\newblock \url{https://arxiv.org/abs/2410.13056}.
+
 \bibitem[Hooper et~al.(2024)]{hooper2024kvquant}
 Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, Michael W. Mahoney, Yakun
 Sophia Shao, Kurt Keutzer, and Amir Gholami.
@@ -368,6 +374,19 @@ Jingren Zhou.
 Accurate INT4 Inference.
 \newblock arXiv:2409.20361, 2024.
 \newblock \url{https://arxiv.org/abs/2409.20361}.
+
+\bibitem[Saxena et~al.(2025)]{saxena2025resq}
+Utkarsh Saxena, Sayeh Sharify, Kaushik Roy, and Xin Wang.
+\newblock ResQ: Mixed-Precision Quantization of Large Language Models with
+Low-Rank Residuals.
+\newblock arXiv:2412.14363, revised February 2025.
+\newblock \url{https://arxiv.org/abs/2412.14363}.
+
+\bibitem[Salfati(2026)]{salfati2026kvquantization}
+Samuel Salfati.
+\newblock Quantization Dominates Rank Reduction for KV-Cache Compression.
+\newblock arXiv:2604.11501, 2026.
+\newblock \url{https://arxiv.org/abs/2604.11501}.
 
 \bibitem[Dong et~al.(2026)]{dong2026outlierdynamics}
 Peijie Dong, Ruibo Fan, Yuechen Tao, Di Mou, Wenhu Hu, Zhenheng Tang,
@@ -459,7 +478,7 @@ Falcon-H1 & \texttt{tiiuae/Falcon-H1-0.5B-Instruct} & \texttt{8f2587ca} \\
 Bootstrap seeds, deterministic trace indices, method budgets, and tolerance windows are specified in the release configs. GPU kernels can still exhibit minor nondeterminism across driver versions; the verification compares outputs to bootstrap CI tolerances rather than bit-exact scores. The original Qwen3.6 exploratory hook surface was not used for paper claims because activation access was incomplete.
 
 \section*{LLM Use Disclosure}
-Following the COLM 2026 LLM-use policy adopted from ICLR 2026, we disclose substantive use of large language models in preparing this work. Anthropic Claude and the Codex autonomous coding agent were used to draft and revise paper prose, including the abstract, related work, methods, and results sections; to generate the matplotlib code used for Figures~1--4; to conduct iterative simulated peer review and audit passes; to summarize local experimental artifacts; and to propose, prioritize, and critique candidate experimental methods and follow-up branches, including method families reported in this paper. Codex was also used as a programming assistant for experiment runners, checkers, release-package code, and verification scripts. The human author retained responsibility for final experiment authorization, numerical interpretation, scope decisions, and submission framing. All paper references and attributed prior-work claims were checked against primary sources in the hallucination audit summarized in Appendix~\ref{app:hallucination-audit}; all reported experimental numbers were traced to committed score caches or result artifacts rather than accepted from LLM output.
+Following the COLM 2026 LLM-use policy adopted from ICLR 2026, we disclose substantive use of large language models in preparing this work. Anthropic Claude and the Codex autonomous coding agent were used to draft and revise paper prose, including the abstract, related work, methods, and results sections; to generate the matplotlib code used for Figures~1--4; to conduct iterative simulated peer review and audit passes; to summarize local experimental artifacts; and to propose, prioritize, and critique candidate experimental methods and follow-up branches, including method families reported in this paper. Codex was also used as a programming assistant for experiment runners, checkers, release-package code, and verification scripts. The human author retained responsibility for final experiment authorization, numerical interpretation, scope decisions, and submission framing. All paper references and attributed prior-work claims were checked against primary sources in the hallucination audit summarized in Appendix~\ref{app:hallucination-audit}; a later user-flagged scoop check added ResQ, Salfati's KV-cache analysis, and CMPQ after arXiv verification. All reported experimental numbers were traced to committed score caches or result artifacts rather than accepted from LLM output.
 
 \appendix
 
@@ -578,8 +597,12 @@ text. The audit corrected three bibliographic fields: the TechCrunch inference
 cost article author, the MarketsandMarkets AI-inference report title, and the
 ParoQuant venue/year label. It also added an explicit citation for test-time
 TTQ and tightened the wording for Quamba2, ParoQuant, Rotated Runtime Smooth,
-and SLQ so that the prose matches the source claims. No unverified bibliography
-entries remain after these corrections. We separately re-derived the headline
+and SLQ so that the prose matches the source claims. A post-audit scoop
+addendum added ResQ, Salfati's KV-cache compression analysis, and CMPQ after
+fetching their arXiv abstract pages; it also corrected the user-supplied ResQ
+attribution from ``Saha et al.'' to the verified Saxena et al. author list. No
+unverified bibliography entries remain after these corrections. We separately
+re-derived the headline
 experimental numbers from local score caches and result manifests; the audit
 identified only wording/rounding fixes, not a change to any reported result.
 The full audit table is maintained in \texttt{docs/hallucination\_audit\_report.md}.
