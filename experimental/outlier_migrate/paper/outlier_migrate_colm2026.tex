@@ -47,7 +47,11 @@ Our contributions are fourfold.
 
 \section{Method}
 
-For each trace, layer, and measured decode position, we record the vector of per-channel activation magnitudes. Let $S_{\ell,p}(t)$ be the top-1\% channel set for layer $\ell$ and prompt $p$ at position $t$. The strict set-leaving rate at position $t$ is
+For each trace, layer, and measured decode position, we record the vector of per-channel activation magnitudes. Let $a_{\ell,p,c}(t)$ be the activation magnitude for layer $\ell$, prompt $p$, channel $c$, and decode position $t$. The population channel score is $\sigma_{\ell,c}(t)=\mathbb{E}_{p}[|a_{\ell,p,c}(t)|]$, and the ideal top-$K$ protected set at position $t$ is
+\[
+  S_{\ell}(t)=\operatorname*{arg\,topK}_{c \in \{1,\ldots,d_\ell\}}\sigma_{\ell,c}(t).
+\]
+Static channel protection assumes $S_{\ell}(t)\approx S_{\ell}(t_0)$ for later decode positions. Our empirical estimator keeps prompt identity explicit: let $S_{\ell,p}(t)$ be the top-1\% channel set for layer $\ell$ and prompt $p$ at position $t$. The strict set-leaving rate at position $t$ is
 \begin{equation}
   1 - \frac{|S_{\ell,p}(100) \cap S_{\ell,p}(t)|}{|S_{\ell,p}(100)|},
 \end{equation}
@@ -140,7 +144,15 @@ The direct composition test was negative. On Granite-Small, ParoQuant+M11b top-1
 
 \subsection{KL does not support runaway compounding}
 
-Figure~\ref{fig:kl} tests whether failed channel-set methods primarily fail because errors compound over decode. In the dense Granite-Small packet, static top-1\%, DecDEC proxy, and M11 have lowest residuals under a sublinear square-root fit among the tested linear, sublinear, and superlinear alternatives. Their mean KL values are 0.150, 0.133, and 0.131 respectively. Their fitted AR decays are 0.51, 0.45, and 0.44.
+Figure~\ref{fig:kl} tests whether failed channel-set methods primarily fail because errors compound over decode. For per-position divergence $D_t=\mathrm{KL}(P_{\mathrm{BF16},t}\Vert P_{\mathrm{Q},t})$, we fit three functional forms:
+\[
+  D_t \approx a+b\sqrt{t}, \qquad D_t \approx a+bt, \qquad D_t \approx a+bt^2.
+\]
+The compound-error hypothesis predicts that linear or superlinear fits should dominate. It does not in this packet. In the dense Granite-Small packet, static top-1\%, DecDEC proxy, and M11 have lowest residuals under the sublinear square-root fit among the tested alternatives. Their mean KL values are 0.150, 0.133, and 0.131 respectively. Their fitted AR(1) residual decays in
+\[
+  D_t-\widehat{D}_t=\rho(D_{t-1}-\widehat{D}_{t-1})+\eta_t
+\]
+are 0.51, 0.45, and 0.44. Appendix~\ref{app:kl-fit-table} reports the $R^2$ table.
 
 The narrowed cross-model diagnostic gives the same qualitative answer on the two smaller non-Granite models. DeepSeek-R1-Distill and Falcon-H1 both select sublinear square-root fits for static top-1\%, DecDEC proxy, and M11. Their activation spectra are broadband rather than periodic: median normalized spectral entropy is 0.850 for DeepSeek and 0.891 for Falcon, with 100-token autocorrelation in both packets. This weakens compound error as the primary explanation in the measured regime and shifts attention back to stale or misbudgeted protection.
 
@@ -153,7 +165,15 @@ The narrowed cross-model diagnostic gives the same qualitative answer on the two
 
 \section{Discussion}
 
-The results point to three mechanisms. First, boundary discontinuities are actively harmful: both hard protected-set and hard scale-bin switching lose to random controls. Salfati's KV-cache analysis provides a compatible formal analogy: under the softmax Fisher metric, dropping a direction is quadratically worse than quantizing it at the same bit cost \citep{salfati2026kvquantization}. Second, smoothing removes the worst boundary harm but does not recover quality at top-1\% budget; M11 and M18 contain signal, but not enough protected capacity. Third, budget is binding, but budget alone is not a universal recipe: Nemotron top-10 succeeds, Granite top-5 recovers 0.449 with wide uncertainty, and static top-10 is already strong on Nemotron.
+The results point to three mechanisms. A simple error-allocation model makes the link from set-leaving to recovery explicit. Let $\epsilon_p \ll \epsilon_q$ be the average error from protected and unprotected important channels. If a static policy protects $S(t_0)$ while the current important set is $S(t)$ and $|S(t)|=K$, then
+\[
+  \mathbb{E}[\mathrm{err}(t)]
+  \approx \epsilon_p |S(t_0)\cap S(t)|+\epsilon_q |S(t)\setminus S(t_0)|
+  =K\{\epsilon_p(1-L(t_0,t))+\epsilon_q L(t_0,t)\}.
+\]
+The term multiplied by $L(t_0,t)$ is the cost of allocating protected capacity to channels that have left the current top-$K$ set.
+
+First, boundary discontinuities are actively harmful: both hard protected-set and hard scale-bin switching lose to random controls. Salfati's KV-cache analysis provides a compatible formal analogy: under the softmax Fisher metric, dropping a direction is quadratically worse than quantizing it at the same bit cost \citep{salfati2026kvquantization}. Second, smoothing removes the worst boundary harm but does not recover quality at top-1\% budget. M11 and M18 contain signal, but the union of important channels across a long trace exceeds the fixed top-1\% capacity. Third, budget is binding. Expanding $K$ from 1\% to 10\% gives EMA enough capacity to track a larger portion of the moving set on Nemotron, but budget alone is not a universal recipe: Nemotron top-10 succeeds, Granite top-5 recovers 0.449 with wide uncertainty, and static top-10 is already strong on Nemotron.
 
 Trace heterogeneity remains important. In most Granite static-top-1\% channel-set experiments, roughly one third of the 12-trace slice has no recoverable static gap under the ratio metric; in the larger static-union experiment the no-gap fraction is 0.375. Early static-union gates retain no-gap traces as zero-recovery rows, while later method packets report recovery ratios on positive-gap traces and track the no-gap fraction separately. This limits median-based claims and explains the wide CIs on several methods. After BCa/Holm correction over 33 method-family tests, corrected-positive channel-set evidence is limited to Nemotron budgeted EMA top-5/top-10; paired method-vs-control margins remain descriptive unless separately tested. The paper emphasizes controlled mechanism comparisons and cross-model directionality rather than a single universal method headline.
 
@@ -563,6 +583,24 @@ Falcon-H1 & 0.674 & 0.675 & 0.002 \\
 \bottomrule
 \end{tabular}
 \caption{Stage 1 E2 cross-prompt drift replication. MATH-500 rates are computed on 30 prompts per model and all fall within the preregistered $\pm 0.15$ tolerance from the AIME-2025 reference.}
+\end{table}
+
+\section{KL Fit Details}
+\label{app:kl-fit-table}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Regime & $R^2_{\sqrt{t}}$ & $R^2_t$ & $R^2_{t^2}$ & AR(1) $\rho$ \\
+\midrule
+Static top-1\% & 0.469 & 0.454 & 0.380 & 0.515 \\
+DecDEC proxy & 0.409 & 0.379 & 0.298 & 0.446 \\
+M11 EMA & 0.399 & 0.368 & 0.284 & 0.439 \\
+\bottomrule
+\end{tabular}
+\caption{Granite-Small per-position KL functional-form fits. The square-root fit has the highest $R^2$ for each tested regime, while the residual AR(1) coefficient remains moderate rather than near one.}
 \end{table}
 
 \section{Extended Layer-Stratified Results}
