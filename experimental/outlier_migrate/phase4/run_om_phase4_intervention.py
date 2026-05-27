@@ -250,9 +250,13 @@ def make_cache_helpers(model: Any, *, cache_dtype: Any | None = None):
             return
         for attr in ["conv_states", "ssm_states", "key_cache", "value_cache"]:
             states = getattr(cache, attr, None)
-            if not isinstance(states, list):
+            if isinstance(states, list):
+                items = enumerate(list(states))
+            elif isinstance(states, dict):
+                items = list(states.items())
+            else:
                 continue
-            for index, state_tensor in enumerate(list(states)):
+            for index, state_tensor in items:
                 if torch.is_tensor(state_tensor) and state_tensor.numel() > 0 and state_tensor.dtype != cache_dtype:
                     states[index] = state_tensor.to(dtype=cache_dtype)
 
