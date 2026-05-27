@@ -1,0 +1,8 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_E15_BCA_HOLM_COMPLETE",
+  "output": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e15_bca_holm_20260527T093931Z/e15_bca_holm.json",
+  "reasons": [],
+  "schema_version": "om_stage1_e15_bca_holm_v1_checker_result",
+  "test_count": 33
+}
