@@ -1,0 +1,37 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_E1_CROSS_MODEL_KL_FFT",
+  "model_results": {
+    "deepseek_r1_distill_qwen_1_5b": {
+      "autocorr_ok": true,
+      "entropy_ok": true,
+      "fit_classes": {
+        "decdec_reactive_top1_proxy": "sublinear_sqrt",
+        "m11_alpha_0_5": "sublinear_sqrt",
+        "static_1pct": "sublinear_sqrt"
+      },
+      "median_autocorrelation_length_tokens": 100.0,
+      "median_normalized_spectral_entropy": 0.8500640224427186,
+      "model_pass": true,
+      "sqrt_sublinear_all_regimes": true
+    },
+    "falcon_h1_0_5b": {
+      "autocorr_ok": true,
+      "entropy_ok": true,
+      "fit_classes": {
+        "decdec_reactive_top1_proxy": "sublinear_sqrt",
+        "m11_alpha_0_5": "sublinear_sqrt",
+        "static_1pct": "sublinear_sqrt"
+      },
+      "median_autocorrelation_length_tokens": 100.0,
+      "median_normalized_spectral_entropy": 0.8912066858788343,
+      "model_pass": true,
+      "sqrt_sublinear_all_regimes": true
+    }
+  },
+  "reasons": [
+    "2/2 models satisfy the E1 model-level criterion"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z",
+  "schema_version": "om_stage1_e1_cross_model_kl_fft_v1_checker_result"
+}

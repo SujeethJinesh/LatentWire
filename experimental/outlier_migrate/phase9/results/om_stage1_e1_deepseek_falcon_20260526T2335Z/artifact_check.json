@@ -1,0 +1,9 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_E1_CROSS_MODEL_KL_FFT",
+  "reasons": [
+    "2/2 models satisfy the E1 model-level criterion"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z",
+  "schema_version": "om_stage1_e1_cross_model_kl_fft_v1_artifact_check"
+}

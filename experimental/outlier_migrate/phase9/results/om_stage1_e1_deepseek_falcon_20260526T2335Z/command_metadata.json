@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py",
+    "--run-id",
+    "om_stage1_e1_deepseek_falcon_20260526T2335Z",
+    "--models",
+    "all",
+    "--cap-hours",
+    "15",
+    "--device",
+    "auto",
+    "--dtype",
+    "bfloat16",
+    "--resume"
+  ],
+  "cap_hours": 15.0,
+  "created_at_utc": "2026-05-27T03:56:41Z",
+  "cwd": "/workspace/LatentWire",
+  "model_keys": [
+    "deepseek_r1_distill_qwen_1_5b",
+    "falcon_h1_0_5b"
+  ],
+  "nemotron_deferred_reason": "manual decode throughput projected beyond revised Stage 1 cap",
+  "preregistration": "experimental/outlier_migrate/phase9/preregister_om_stage1_e1_cross_model_kl_fft.md",
+  "preregistration_sha256": "sha256:ac056b87386883621a36bc828a6bdde5a61921a0d6ec3d444e7719e3c63a4f5e",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z",
+  "schema_version": "om_stage1_e1_cross_model_kl_fft_v1_command"
+}

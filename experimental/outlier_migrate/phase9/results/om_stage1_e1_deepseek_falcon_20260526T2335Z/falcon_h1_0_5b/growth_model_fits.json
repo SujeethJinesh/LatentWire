@@ -1,0 +1,127 @@
+{
+  "created_at_utc": "2026-05-27T09:29:49Z",
+  "fit_note": "Least-squares fits over trace-mean KL curve; candidate set fixed before data inspection.",
+  "regime_fits": {
+    "decdec_reactive_top1_proxy": {
+      "ar1_decay_estimate": 0.318577943211913,
+      "best_fit": "sublinear_sqrt",
+      "best_fit_class": "sublinear",
+      "fits": {
+        "linear": {
+          "intercept": 0.3113056908257125,
+          "rss": 64.79860826353301,
+          "slope": -2.0589825492459327e-05
+        },
+        "sublinear_sqrt": {
+          "intercept": 0.37843762563641403,
+          "rss": 61.10712974735041,
+          "slope": -0.0031949807295431816
+        },
+        "superlinear_power_1.1": {
+          "intercept": 0.3057144751345203,
+          "rss": 65.38424038940454,
+          "slope": -7.5879918401591804e-06
+        },
+        "superlinear_power_1.25": {
+          "intercept": 0.2991216088938871,
+          "rss": 66.16265354462986,
+          "slope": -1.7007505250635341e-06
+        },
+        "superlinear_power_1.5": {
+          "intercept": 0.29117764208394953,
+          "rss": 67.22900000249376,
+          "slope": -1.4105502002182476e-07
+        },
+        "superlinear_power_2.0": {
+          "intercept": 0.28123215768494425,
+          "rss": 68.73186612321348,
+          "slope": -9.755112304072572e-10
+        }
+      },
+      "mean_kl_first_position": 0.8060376892487208,
+      "mean_kl_last_position": 0.039757125285480775,
+      "mean_kl_median": 0.1520606324067444
+    },
+    "m11_alpha_0_5": {
+      "ar1_decay_estimate": 0.318577943211913,
+      "best_fit": "sublinear_sqrt",
+      "best_fit_class": "sublinear",
+      "fits": {
+        "linear": {
+          "intercept": 0.3113056908257125,
+          "rss": 64.79860826353301,
+          "slope": -2.0589825492459327e-05
+        },
+        "sublinear_sqrt": {
+          "intercept": 0.37843762563641403,
+          "rss": 61.10712974735041,
+          "slope": -0.0031949807295431816
+        },
+        "superlinear_power_1.1": {
+          "intercept": 0.3057144751345203,
+          "rss": 65.38424038940454,
+          "slope": -7.5879918401591804e-06
+        },
+        "superlinear_power_1.25": {
+          "intercept": 0.2991216088938871,
+          "rss": 66.16265354462986,
+          "slope": -1.7007505250635341e-06
+        },
+        "superlinear_power_1.5": {
+          "intercept": 0.29117764208394953,
+          "rss": 67.22900000249376,
+          "slope": -1.4105502002182476e-07
+        },
+        "superlinear_power_2.0": {
+          "intercept": 0.28123215768494425,
+          "rss": 68.73186612321348,
+          "slope": -9.755112304072572e-10
+        }
+      },
+      "mean_kl_first_position": 0.8060376892487208,
+      "mean_kl_last_position": 0.039757125285480775,
+      "mean_kl_median": 0.1520606324067444
+    },
+    "static_1pct": {
+      "ar1_decay_estimate": 0.329978601137495,
+      "best_fit": "sublinear_sqrt",
+      "best_fit_class": "sublinear",
+      "fits": {
+        "linear": {
+          "intercept": 0.3334071964431008,
+          "rss": 73.0526599832382,
+          "slope": -2.2989282473061048e-05
+        },
+        "sublinear_sqrt": {
+          "intercept": 0.407604077529511,
+          "rss": 68.62058326142348,
+          "slope": -0.003548596035289896
+        },
+        "superlinear_power_1.1": {
+          "intercept": 0.32723002655546357,
+          "rss": 73.76013688244221,
+          "slope": -8.481042732334256e-06
+        },
+        "superlinear_power_1.25": {
+          "intercept": 0.3199434492544519,
+          "rss": 74.70333157208465,
+          "slope": -1.9037049778706237e-06
+        },
+        "superlinear_power_1.5": {
+          "intercept": 0.3111541333036428,
+          "rss": 76.00174749460749,
+          "slope": -1.582304431353781e-07
+        },
+        "superlinear_power_2.0": {
+          "intercept": 0.3001175764261009,
+          "rss": 77.84777318668483,
+          "slope": -1.0979203374632984e-09
+        }
+      },
+      "mean_kl_first_position": 0.9886121228337288,
+      "mean_kl_last_position": 0.053690601862494226,
+      "mean_kl_median": 0.15567002061721288
+    }
+  },
+  "schema_version": "om_stage1_e1_cross_model_kl_fft_v1_growth_model_fits"
+}

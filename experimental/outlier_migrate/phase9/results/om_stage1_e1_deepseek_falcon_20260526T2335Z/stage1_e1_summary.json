@@ -1,0 +1,30 @@
+{
+  "completed_model_count": 2,
+  "created_at_utc": "2026-05-27T09:29:49Z",
+  "model_summaries": [
+    {
+      "model_key": "deepseek_r1_distill_qwen_1_5b",
+      "status": "reused_existing_complete_artifacts"
+    },
+    {
+      "kl_best_fits": {
+        "decdec_reactive_top1_proxy": "sublinear_sqrt",
+        "m11_alpha_0_5": "sublinear_sqrt",
+        "static_1pct": "sublinear_sqrt"
+      },
+      "mean_kl_by_regime": {
+        "decdec_reactive_top1_proxy": 0.24897579551506094,
+        "m11_alpha_0_5": 0.24897579551506094,
+        "static_1pct": 0.26381362119217533
+      },
+      "model_key": "falcon_h1_0_5b",
+      "spectral": {
+        "median_autocorrelation_length_tokens": 100.0,
+        "median_normalized_spectral_entropy": 0.8912066858788343
+      },
+      "status": "completed"
+    }
+  ],
+  "requested_model_count": 2,
+  "schema_version": "om_stage1_e1_cross_model_kl_fft_v1_summary"
+}

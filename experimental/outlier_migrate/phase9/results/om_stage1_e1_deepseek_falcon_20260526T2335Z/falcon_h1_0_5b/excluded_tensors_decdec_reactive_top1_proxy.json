@@ -1,0 +1,4900 @@
+{
+  "excluded_tensors": [
+    {
+      "name": "model.layers.0.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.0.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.1.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.1.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.2.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.2.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.3.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.3.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.4.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.4.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.5.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.5.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.6.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.6.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.7.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.7.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.8.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.8.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.9.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.9.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.10.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.10.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.11.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.11.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.12.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.12.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.13.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.13.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.14.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.14.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.15.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.15.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.16.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.16.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.17.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.17.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.18.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.18.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.19.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.19.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.20.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.20.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.21.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.21.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.22.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.22.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.23.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.23.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.24.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.24.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.25.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.25.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.26.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.26.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.27.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.27.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.28.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.28.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.29.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.29.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.30.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.30.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.31.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.31.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.32.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.32.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.33.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.33.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.34.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.34.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.35.input_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.layers.35.pre_ff_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    },
+    {
+      "name": "model.final_layernorm",
+      "reason": "weight tensor is not 2D or expert-bank 3D",
+      "shape": [
+        1024
+      ]
+    }
+  ],
+  "layer_origin": "model.layers",
+  "quantized_tensor_count": 362,
+  "quantized_tensors": [
+    {
+      "col_protected": true,
+      "name": "model.layers.0.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.0.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.0.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.0.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_0",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.0.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.0.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.0.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.0.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.0.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.0.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_0",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.1.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.1.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.1.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.1.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_1",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.1.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.1.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.1.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.1.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.1.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.1.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_1",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.2.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.2.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.2.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.2.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_2",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.2.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.2.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.2.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.2.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.2.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.2.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_2",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.3.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.3.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.3.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.3.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_3",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.3.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.3.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.3.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.3.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.3.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.3.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_3",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.4.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.4.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.4.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.4.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_4",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.4.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.4.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.4.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.4.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.4.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.4.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_4",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.5.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.5.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.5.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.5.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_5",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.5.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.5.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.5.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.5.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.5.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.5.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_5",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.6.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.6.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.6.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.6.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_6",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.6.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.6.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.6.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.6.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.6.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.6.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_6",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.7.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.7.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.7.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.7.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_7",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.7.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.7.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.7.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.7.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.7.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.7.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_7",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.8.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.8.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.8.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.8.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_8",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.8.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.8.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.8.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.8.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.8.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.8.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_8",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.9.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.9.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.9.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.9.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_9",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.9.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.9.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.9.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.9.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.9.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.9.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_9",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.10.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.10.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.10.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.10.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_10",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.10.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.10.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.10.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.10.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.10.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.10.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_10",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.11.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.11.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.11.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.11.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_11",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.11.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.11.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.11.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.11.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.11.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.11.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_11",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.12.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.12.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.12.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.12.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_12",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.12.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.12.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.12.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.12.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.12.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.12.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_12",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.13.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.13.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.13.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.13.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_13",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.13.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.13.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.13.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.13.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.13.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.13.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_13",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.14.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.14.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.14.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.14.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_14",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.14.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.14.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.14.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.14.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.14.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.14.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_14",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.15.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.15.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.15.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.15.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_15",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.15.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.15.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.15.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.15.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.15.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.15.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_15",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.16.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.16.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.16.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.16.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_16",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.16.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.16.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.16.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.16.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.16.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.16.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_16",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.17.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.17.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.17.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.17.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_17",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.17.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.17.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.17.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.17.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.17.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.17.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_17",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.18.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.18.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.18.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.18.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_18",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.18.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.18.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.18.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.18.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.18.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.18.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_18",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.19.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.19.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.19.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.19.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_19",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.19.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.19.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.19.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.19.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.19.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.19.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_19",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.20.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.20.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.20.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.20.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_20",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.20.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.20.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.20.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.20.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.20.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.20.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_20",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.21.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.21.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.21.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.21.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_21",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.21.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.21.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.21.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.21.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.21.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.21.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_21",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.22.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.22.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.22.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.22.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_22",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.22.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.22.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.22.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.22.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.22.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.22.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_22",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.23.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.23.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.23.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.23.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_23",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.23.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.23.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.23.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.23.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.23.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.23.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_23",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.24.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.24.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.24.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.24.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_24",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.24.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.24.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.24.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.24.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.24.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.24.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_24",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.25.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.25.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.25.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.25.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_25",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.25.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.25.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.25.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.25.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.25.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.25.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_25",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.26.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.26.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.26.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.26.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_26",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.26.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.26.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.26.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.26.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.26.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.26.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_26",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.27.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.27.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.27.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.27.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_27",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.27.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.27.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.27.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.27.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.27.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.27.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_27",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.28.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.28.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.28.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.28.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_28",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.28.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.28.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.28.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.28.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.28.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.28.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_28",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.29.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.29.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.29.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.29.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_29",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.29.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.29.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.29.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.29.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.29.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.29.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_29",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.30.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.30.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.30.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.30.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_30",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.30.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.30.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.30.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.30.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.30.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.30.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_30",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.31.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.31.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.31.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.31.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_31",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.31.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.31.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.31.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.31.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.31.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.31.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_31",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.32.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.32.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.32.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.32.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_32",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.32.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.32.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.32.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.32.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.32.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.32.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_32",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.33.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.33.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.33.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.33.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_33",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.33.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.33.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.33.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.33.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.33.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.33.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_33",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.34.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.34.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.34.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.34.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_34",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.34.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.34.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.34.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.34.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.34.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.34.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_34",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.35.feed_forward.gate_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.35.feed_forward.up_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": false,
+      "shape": [
+        2048,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.35.feed_forward.down_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": true,
+      "shape": [
+        1024,
+        2048
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.35.mamba.conv1d",
+      "protected_channel_count": 0,
+      "protection_source": "layer_35",
+      "row_protected": false,
+      "shape": [
+        1792,
+        1,
+        4
+      ],
+      "weight_kind": "expert_bank_3d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.35.mamba.in_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": false,
+      "shape": [
+        3352,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.35.mamba.out_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": true,
+      "shape": [
+        1024,
+        1536
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.35.self_attn.q_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": false,
+      "shape": [
+        512,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.35.self_attn.k_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.layers.35.self_attn.v_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": false,
+      "shape": [
+        128,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": false,
+      "name": "model.layers.35.self_attn.o_proj",
+      "protected_channel_count": 11,
+      "protection_source": "layer_35",
+      "row_protected": true,
+      "shape": [
+        1024,
+        512
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "model.embed_tokens",
+      "protected_channel_count": 11,
+      "protection_source": "outside_transformer_stack_hidden_input_uses_last_layer",
+      "row_protected": false,
+      "shape": [
+        32784,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    },
+    {
+      "col_protected": true,
+      "name": "lm_head",
+      "protected_channel_count": 11,
+      "protection_source": "outside_transformer_stack_hidden_input_uses_last_layer",
+      "row_protected": false,
+      "shape": [
+        32784,
+        1024
+      ],
+      "weight_kind": "linear_2d"
+    }
+  ],
+  "regime": "decdec_reactive_top1_proxy"
+}

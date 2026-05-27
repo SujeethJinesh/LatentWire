@@ -1,0 +1,197 @@
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+The fast path for FalconH1 will be used when running the model on a GPU
+Traceback (most recent call last):
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 1010, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 976, in main
+    run_model(
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 818, in run_model
+    collect_quantized_kl(
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 608, in collect_quantized_kl
+    q_log_probs = phase4_runner_kl_collect(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 711, in phase4_runner_kl_collect
+    outputs = model(**normalize_cache_inputs(model_inputs))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/generic.py", line 918, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 1519, in forward
+    outputs = self.model(
+              ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/generic.py", line 918, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 1299, in forward
+    layer_outputs = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/modeling_layers.py", line 94, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/deprecation.py", line 172, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 1104, in forward
+    mamba_hidden_states = self.mamba(
+                          ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 998, in forward
+    return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 622, in cuda_kernels_forward
+    hidden_states_B_C = causal_conv1d_update(
+                        ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/causal_conv1d/causal_conv1d_interface.py", line 197, in causal_conv1d_update
+    out = causal_conv1d_update_function(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/causal_conv1d/cpp_functions.py", line 173, in causal_conv1d_update_function
+    _causal_conv1d_update_cpp(
+  File "/usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py", line 681, in __call__
+    return self._opoverload(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_ops.py", line 829, in __call__
+    return self._op(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py", line 649, in adinplaceorview_impl
+    return self._opoverload.redispatch(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_ops.py", line 836, in redispatch
+    return self._handle.redispatch_boxed(keyset, *args, **kwargs)  # type: ignore[return-value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py", line 344, in backend_impl
+    result = self._backend_fns[device_type](*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_compile.py", line 53, in inner
+    return disable_fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/eval_frame.py", line 929, in _fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/_library/custom_ops.py", line 377, in wrapped_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/causal_conv1d/cpp_functions.py", line 82, in _causal_conv1d_update_cpp
+    causal_conv1d_cuda.causal_conv1d_update(
+RuntimeError: Expected conv_state.scalar_type() == input_type to be true, but got false.  (Could this error message be improved?  If so, please report an enhancement request to PyTorch.)
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+The fast path for FalconH1 will be used when running the model on a GPU
+Traceback (most recent call last):
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 1010, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 976, in main
+    run_model(
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 768, in run_model
+    reference_manifest = collect_bf16_reference_trace_logprobs_and_activations(
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 475, in collect_bf16_reference_trace_logprobs_and_activations
+    outputs = model(**normalize_cache_inputs(model_inputs))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/generic.py", line 918, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 1519, in forward
+    outputs = self.model(
+              ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/generic.py", line 918, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 1299, in forward
+    layer_outputs = decoder_layer(
+                    ^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/modeling_layers.py", line 94, in __call__
+    return super().__call__(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1879, in _call_impl
+    return inner()
+           ^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1827, in inner
+    result = forward_call(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/deprecation.py", line 172, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 1104, in forward
+    mamba_hidden_states = self.mamba(
+                          ^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 998, in forward
+    return self.cuda_kernels_forward(hidden_states, cache_params, cache_position, attention_mask)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py", line 594, in cuda_kernels_forward
+    projected_states = self.in_proj(hidden_states)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+                                        ^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1949, in __getattr__
+    def __getattr__(self, name: str) -> Union[Tensor, "Module"]:
+
+KeyboardInterrupt
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 1046, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 1012, in main
+    run_model(
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_stage1_e1_cross_model_kl_fft.py", line 825, in run_model
+    if len(target_tokens[index]) < checker.MAX_NEW_TOKENS:
+           ~~~~~~~~~~~~~^^^^^^^
+KeyError: 0
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+The fast path for FalconH1 will be used when running the model on a GPU
