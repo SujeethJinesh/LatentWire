@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase9/run_om_stage1_e5_qwen3_scaleup.py",
+    "--run-id",
+    "om_stage1_e5_qwen3_skipinfra_20260527T093749Z",
+    "--cap-hours",
+    "12"
+  ],
+  "cap_hours": 12.0,
+  "created_at_utc": "2026-05-27T09:37:58Z",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e5_qwen3_skipinfra_20260527T093749Z",
+  "schema_version": "om_stage1_e5_qwen3_scaleup_v1_command"
+}

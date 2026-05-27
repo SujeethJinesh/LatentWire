@@ -1,0 +1,2 @@
+{"created_at_utc": "2026-05-27T09:37:49Z", "event": "run_started"}
+{"created_at_utc": "2026-05-27T09:37:58Z", "decision": "SKIPPED_INFRA_E5", "event": "terminal_packet", "reason": "local Qwen3 snapshot unavailable: no local snapshot with config.json found"}

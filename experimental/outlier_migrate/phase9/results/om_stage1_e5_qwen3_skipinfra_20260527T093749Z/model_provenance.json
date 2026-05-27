@@ -1,0 +1,16 @@
+{
+  "checked_cache_paths": [
+    "/workspace/hf_cache/hub/models--RedHatAI--Qwen3-8B-quantized.w4a16",
+    "/workspace/hf_cache/models--RedHatAI--Qwen3-8B-quantized.w4a16",
+    "/workspace/hf_cache/hub/models--RedHatAI--Qwen3-8B-quantized.w4a16",
+    "/workspace/hf_cache/models--RedHatAI--Qwen3-8B-quantized.w4a16",
+    "/root/.cache/huggingface/hub/models--RedHatAI--Qwen3-8B-quantized.w4a16"
+  ],
+  "created_at_utc": "2026-05-27T09:37:49Z",
+  "error": "no local snapshot with config.json found",
+  "hf_snapshot_commit": null,
+  "local_files_only": true,
+  "model_id": "RedHatAI/Qwen3-8B-quantized.w4a16",
+  "schema_version": "om_stage1_e5_qwen3_scaleup_v1_model_provenance",
+  "snapshot_path": null
+}

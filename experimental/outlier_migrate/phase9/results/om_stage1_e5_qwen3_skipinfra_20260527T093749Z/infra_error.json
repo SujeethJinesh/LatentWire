@@ -1,0 +1,6 @@
+{
+  "created_at_utc": "2026-05-27T09:37:58Z",
+  "decision": "SKIPPED_INFRA_E5",
+  "reason": "local Qwen3 snapshot unavailable: no local snapshot with config.json found",
+  "schema_version": "om_stage1_e5_qwen3_scaleup_v1_infra_error"
+}

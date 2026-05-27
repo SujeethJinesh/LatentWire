@@ -1,0 +1,71 @@
+{
+  "artifacts": [
+    {
+      "bytes": 448,
+      "path": "command_metadata.json",
+      "sha256": "sha256:2637a5535d02081ed5fd9e7dbd436cdfc2b56c1d809b139d599e01cb8b81e872"
+    },
+    {
+      "bytes": 1242,
+      "path": "decoding_config.json",
+      "sha256": "sha256:bb4b1d8fdb9c50fcf0bb56eaf176a108e87aef3f9c91ebc6971329a3f623c7f4"
+    },
+    {
+      "bytes": 8678,
+      "path": "environment.json",
+      "sha256": "sha256:dbdcf07020cb811706e9dfb9c1b490cd86dcf4b48872df07bd87eda90ad6353f"
+    },
+    {
+      "bytes": 6804,
+      "path": "environment.txt",
+      "sha256": "sha256:a081eb7b57a76e0efa21fe8395f7d15e7eb00504535b270bd2e8b05dce3e2f0f"
+    },
+    {
+      "bytes": 236,
+      "path": "infra_error.json",
+      "sha256": "sha256:8d6b0c6e60ec5629252bab839491927cf553c271f6f16ef98f830ef269409c16"
+    },
+    {
+      "bytes": 231,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:eeeae630db716647c90c67369a91e12bc07fbe61562666b8dd72bc41247cd28b"
+    },
+    {
+      "bytes": 0,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 237,
+      "path": "metrics.json",
+      "sha256": "sha256:b4acb5189237215077ca2707a4d8b671cef31d7784aa76c1c3d628cea5350ded"
+    },
+    {
+      "bytes": 704,
+      "path": "model_provenance.json",
+      "sha256": "sha256:676b771834400e6a4bfd0f8375f5e12e93ed39efa10014da809f05ba92f881ea"
+    },
+    {
+      "bytes": 8158,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:616ea1ee844c694ceb4be59ddbe584dcf8641cc5a8eda47dcc7747785e727501"
+    },
+    {
+      "bytes": 219,
+      "path": "quantization_config.json",
+      "sha256": "sha256:a014febcf2bfa9fbb6d44c15adbe1064bcb64d1d316c85eb320aaf19f58da52d"
+    },
+    {
+      "bytes": 155,
+      "path": "random_seed.json",
+      "sha256": "sha256:e659e44a21defe1323414db0fb73fe160bb088a0667911779f9f8ba881b3aa71"
+    },
+    {
+      "bytes": 258,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:79339a223293d319b54cfa0c1801474b28330fd38d6ba428f6db692461c885b8"
+    }
+  ],
+  "created_at_utc": "2026-05-27T09:37:58Z",
+  "schema_version": "om_stage1_e5_qwen3_scaleup_v1_artifact_hashes"
+}

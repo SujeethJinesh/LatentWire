@@ -1,0 +1,15 @@
+{
+  "artifact_complete": false,
+  "decision": "SKIPPED_INFRA_E5",
+  "reasons": [
+    "local Qwen3 snapshot unavailable: no local snapshot with config.json found"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e5_qwen3_skipinfra_20260527T093749Z",
+  "schema_version": "om_stage1_e5_qwen3_scaleup_v1_checker_result",
+  "thresholds": {
+    "kill_recovery_absent_median_le": 0.0,
+    "pass_ci_low_gt": 0.1,
+    "pass_leaving_rate_min": 0.4,
+    "pass_median_recovery_gt": 0.3
+  }
+}

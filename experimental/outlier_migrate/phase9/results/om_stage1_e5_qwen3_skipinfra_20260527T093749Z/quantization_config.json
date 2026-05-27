@@ -1,0 +1,7 @@
+{
+  "activation_dtype": "float16",
+  "protected_channel_dtype": "bfloat16",
+  "schema_version": "om_stage1_e5_qwen3_scaleup_v1_quantization_config",
+  "scheme": "symmetric_per_output_channel_int4",
+  "weight_bits": 4
+}

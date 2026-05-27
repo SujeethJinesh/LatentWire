@@ -1,0 +1,6 @@
+{
+  "model_id": "RedHatAI/Qwen3-8B-quantized.w4a16",
+  "reason": "local Qwen3 snapshot unavailable: no local snapshot with config.json found",
+  "schema_version": "om_stage1_e5_qwen3_scaleup_v1_metrics",
+  "status": "SKIPPED_INFRA_E5"
+}
