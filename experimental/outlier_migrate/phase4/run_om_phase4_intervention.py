@@ -347,6 +347,37 @@ def set_granite_fast_path_enabled(enabled: bool) -> Any:
     return previous
 
 
+def set_falcon_h1_fast_path_enabled(enabled: bool) -> Any:
+    """Toggle Falcon-H1's optional fast path; return the previous value."""
+
+    try:
+        from transformers.models.falcon_h1 import modeling_falcon_h1
+    except Exception:
+        return None
+    previous = getattr(modeling_falcon_h1, "is_fast_path_available", None)
+    if previous is not None:
+        modeling_falcon_h1.is_fast_path_available = bool(enabled)
+    return previous
+
+
+def set_autocast_sensitive_fast_paths(enabled: bool) -> dict[str, Any]:
+    """Toggle fast paths known to reject mixed autocast cache dtypes."""
+
+    return {
+        "granite": set_granite_fast_path_enabled(enabled),
+        "falcon_h1": set_falcon_h1_fast_path_enabled(enabled),
+    }
+
+
+def restore_autocast_sensitive_fast_paths(previous: dict[str, Any]) -> None:
+    """Restore fast path flags returned by set_autocast_sensitive_fast_paths."""
+
+    if previous.get("granite") is not None:
+        set_granite_fast_path_enabled(bool(previous["granite"]))
+    if previous.get("falcon_h1") is not None:
+        set_falcon_h1_fast_path_enabled(bool(previous["falcon_h1"]))
+
+
 def generate_bf16_traces(
     *,
     model: Any,
@@ -497,7 +528,7 @@ def score_targets(
     score_start = checker.SCORING_POSITION - checker.SCORING_WINDOW_TOKENS + 1
     score_end = checker.SCORING_POSITION
     results: dict[int, dict[str, float]] = {}
-    previous_fast_path = set_granite_fast_path_enabled(False) if autocast_enabled else None
+    previous_fast_paths = set_autocast_sensitive_fast_paths(False) if autocast_enabled else {}
 
     def is_cuda_oom(exc: BaseException) -> bool:
         return exc.__class__.__name__ == "OutOfMemoryError" or "out of memory" in str(exc).lower()
@@ -639,8 +670,7 @@ def score_targets(
                 batch = prompts[start : start + batch_size]
                 results.update(score_batch_adaptive(batch))
     finally:
-        if previous_fast_path is not None:
-            set_granite_fast_path_enabled(bool(previous_fast_path))
+        restore_autocast_sensitive_fast_paths(previous_fast_paths)
     return results
 
 

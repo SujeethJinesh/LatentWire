@@ -114,6 +114,21 @@ def write_activation_means_npz(
     np.savez_compressed(path, **arrays)
 
 
+def load_activation_means_npz(path: Path) -> tuple[dict[int, dict[int, np.ndarray]], dict[int, str]]:
+    payload = np.load(path, allow_pickle=False)
+    positions = [int(value) for value in payload["positions"].tolist()]
+    layer_indices = [int(value) for value in payload["layer_indices"].tolist()]
+    layer_names = {
+        int(key): value
+        for key, value in json.loads(bytes(payload["layer_names_json"]).decode("utf-8")).items()
+    }
+    means: dict[int, dict[int, np.ndarray]] = {}
+    for layer in layer_indices:
+        values = payload[f"layer_{layer}"]
+        means[layer] = {position: values[index].astype(np.float64, copy=False) for index, position in enumerate(positions)}
+    return means, layer_names
+
+
 def build_protected_sets(means: dict[int, dict[int, np.ndarray]], layer_names: dict[int, str]) -> dict[str, Any]:
     update_positions = list(range(100, 10001, 100))
     missing: list[str] = []
@@ -668,7 +683,7 @@ def phase4_runner_kl_collect(
     autocast_enabled = bool(use_float16_autocast and torch.cuda.is_available())
     cache_dtype = torch.float16 if autocast_enabled else None
     normalize_cache_inputs, output_cache = phase4_runner.make_cache_helpers(model, cache_dtype=cache_dtype)
-    previous_fast_path = phase4_runner.set_granite_fast_path_enabled(False) if autocast_enabled else None
+    previous_fast_paths = phase4_runner.set_autocast_sensitive_fast_paths(False) if autocast_enabled else {}
     wanted = set(positions)
     out: dict[int, Any] = {}
     try:
@@ -715,8 +730,7 @@ def phase4_runner_kl_collect(
                 logits = outputs.logits[:, -1, :]
         return out
     finally:
-        if previous_fast_path is not None:
-            phase4_runner.set_granite_fast_path_enabled(bool(previous_fast_path))
+        phase4_runner.restore_autocast_sensitive_fast_paths(previous_fast_paths)
 
 
 def run_model(
@@ -764,24 +778,46 @@ def run_model(
     tmp_dir = ROOT / ".debug" / "stage1_e1" / run_dir.name / model_key
     if tmp_dir.exists() and not resume:
         shutil.rmtree(tmp_dir)
-    model, tokenizer, device = shared.load_model_and_tokenizer(model_provenance, dtype_name=dtype_name, device_name=device_name)
-    reference_manifest = collect_bf16_reference_trace_logprobs_and_activations(
-        model=model,
-        tokenizer=tokenizer,
-        device=device,
-        prompts=prompts,
-        kl_positions=kl_positions,
-        spectral_positions=spectral_positions,
-        max_new_tokens=checker.MAX_NEW_TOKENS,
-        trace_path=trace_path,
-        activation_npz_path=activation_npz_path,
-        tmp_dir=tmp_dir,
-        run_events_path=run_events_path,
+    tmp_traces = [tmp_dir / f"bf16_trace_{int(prompt['index'])}.pt" for prompt in prompts]
+    can_reuse_reference = (
+        resume
+        and trace_path.is_file()
+        and activation_npz_path.is_file()
+        and (model_dir / "bf16_trace_manifest.json").is_file()
+        and (model_dir / "activation_summary_manifest.json").is_file()
+        and all(path.is_file() for path in tmp_traces)
     )
-    del model, tokenizer, device
-    release_model_memory()
-    shared.write_json(model_dir / "bf16_trace_manifest.json", reference_manifest["trace_manifest"])
-    shared.write_json(model_dir / "activation_summary_manifest.json", reference_manifest["activation_manifest"])
+    if can_reuse_reference:
+        means, layer_names = load_activation_means_npz(activation_npz_path)
+        reference_manifest = {
+            "activation_means": means,
+            "layer_names": layer_names,
+            "trace_manifest": json.loads((model_dir / "bf16_trace_manifest.json").read_text(encoding="utf-8")),
+            "activation_manifest": json.loads((model_dir / "activation_summary_manifest.json").read_text(encoding="utf-8")),
+        }
+        run_events_path.open("a", encoding="utf-8").write(
+            json.dumps({"created_at_utc": shared.utc_now(), "event": "reused_bf16_reference_artifacts", "model_key": model_key}, sort_keys=True)
+            + "\n"
+        )
+    else:
+        model, tokenizer, device = shared.load_model_and_tokenizer(model_provenance, dtype_name=dtype_name, device_name=device_name)
+        reference_manifest = collect_bf16_reference_trace_logprobs_and_activations(
+            model=model,
+            tokenizer=tokenizer,
+            device=device,
+            prompts=prompts,
+            kl_positions=kl_positions,
+            spectral_positions=spectral_positions,
+            max_new_tokens=checker.MAX_NEW_TOKENS,
+            trace_path=trace_path,
+            activation_npz_path=activation_npz_path,
+            tmp_dir=tmp_dir,
+            run_events_path=run_events_path,
+        )
+        del model, tokenizer, device
+        release_model_memory()
+        shared.write_json(model_dir / "bf16_trace_manifest.json", reference_manifest["trace_manifest"])
+        shared.write_json(model_dir / "activation_summary_manifest.json", reference_manifest["activation_manifest"])
 
     target_tokens = phase4_runner.load_trace_tokens(trace_path)
     for prompt in prompts:
