@@ -779,6 +779,12 @@ def run_model(
     if tmp_dir.exists() and not resume:
         shutil.rmtree(tmp_dir)
     tmp_traces = [tmp_dir / f"bf16_trace_{int(prompt['index'])}.pt" for prompt in prompts]
+    existing_target_tokens: dict[int, list[int]] = {}
+    if trace_path.is_file():
+        try:
+            existing_target_tokens = phase4_runner.load_trace_tokens(trace_path)
+        except Exception:
+            existing_target_tokens = {}
     can_reuse_reference = (
         resume
         and trace_path.is_file()
@@ -786,6 +792,10 @@ def run_model(
         and (model_dir / "bf16_trace_manifest.json").is_file()
         and (model_dir / "activation_summary_manifest.json").is_file()
         and all(path.is_file() for path in tmp_traces)
+        and all(
+            len(existing_target_tokens.get(int(prompt["index"]), [])) >= checker.MAX_NEW_TOKENS
+            for prompt in prompts
+        )
     )
     if can_reuse_reference:
         means, layer_names = load_activation_means_npz(activation_npz_path)
