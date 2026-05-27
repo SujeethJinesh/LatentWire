@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "outlier_migrate_v2_m11b_deepseek",
+  "current_entry": "outlier_migrate_v2_m11b_falcon",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -709,6 +709,36 @@
         },
         "interpretation_note": "BCa/Holm keeps Nemotron M11b top-5/top-10 positive after correction, leaves Granite M11b as a wide-CI partial signal, and does not rescue the E3 composition arm."
       }
+    },
+    {
+      "id": "outlier_migrate_v2_m11b_deepseek",
+      "project": "outlier_migrate",
+      "phase": "v2",
+      "decision": "AMBIGUOUS_V2_M11B_DEEPSEEK",
+      "result_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z",
+      "checker_output": "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/checker_result.json",
+      "completed_at": "2026-05-27T14:32:10Z",
+      "summary": {
+        "artifact_complete": true,
+        "total_trace_count": 12,
+        "included_trace_count": 11,
+        "no_recoverable_static_gap_fraction": 0.08333333333333333,
+        "m11b_top1_median_recovery": 0.0011139373862903978,
+        "m11b_top1_ci95_low": -0.37800414213708944,
+        "m11b_top1_ci95_high": 0.33305682647347656,
+        "m11b_top5_median_recovery": -0.17689931525896085,
+        "m11b_top5_ci95_low": -1.078576149834236,
+        "m11b_top5_ci95_high": 0.3686486043725524,
+        "m11b_top10_median_recovery": 0.3353894408225412,
+        "m11b_top10_ci95_low": -0.40909502923795116,
+        "m11b_top10_ci95_high": 0.4937768399763942,
+        "static_top10_median_recovery": 0.376752614594403,
+        "static_top10_ci95_low": -1.1424448873886348,
+        "static_top10_ci95_high": 0.5384789756798898,
+        "top10_minus_static_top10_median": -0.0413631737718618,
+        "gpu_hours_delta_estimate": 2.39,
+        "interpretation_note": "M11b top-10 has a positive median on DeepSeek but does not beat static top-10 and has a CI crossing zero. This is ambiguous partial generalization, not a broad M11b PASS."
+      }
     }
   ],
   "killed_entries": [
@@ -1085,10 +1115,10 @@
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 310.68,
+  "gpu_hours_used": 313.07,
   "gpu_hours_budget": 360.0,
   "last_audit_at": "2026-05-27T10:03:49Z",
-  "last_commit_sha": "827995ad",
+  "last_commit_sha": "1ac743f1",
   "papers_camera_ready_candidate": [
     "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
     "experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf"
