@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "outlier_migrate_v1_paroquant_nemotron",
+  "current_entry": "outlier_migrate_v2_m11b_deepseek",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -1063,13 +1063,32 @@
         "gpu_hours_delta_estimate": 0.0,
         "interpretation_note": "No Qwen3 scale-up claim authorized; preregistered checkpoint absent locally and fallback checkpoints forbidden."
       }
+    },
+    {
+      "id": "outlier_migrate_v1_paroquant_nemotron",
+      "project": "outlier_migrate",
+      "phase": "v1",
+      "decision": "DEFERRED_V1_THROUGHPUT_CAP_PROJECTED",
+      "result_dir": "experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260527T1125Z",
+      "checker_output": "experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260527T1125Z/checker_result.json",
+      "completed_at": "2026-05-27T12:04:14Z",
+      "summary": {
+        "artifact_complete": false,
+        "completed_paroquant_score_traces": 2,
+        "trace0_completed_at": "2026-05-27T11:08:32Z",
+        "trace1_completed_at": "2026-05-27T12:00:52Z",
+        "observed_trace1_minutes": 52.33,
+        "projection": "Full 12-trace ParoQuant-on-Nemotron scoring would exceed the V1 5 GPU-hour cap after the 59-minute transform setup.",
+        "gpu_hours_delta_estimate": 1.90,
+        "paper_claim_authorized": false
+      }
     }
   ],
   "consecutive_infra_failures": 0,
-  "gpu_hours_used": 308.78,
+  "gpu_hours_used": 310.68,
   "gpu_hours_budget": 360.0,
   "last_audit_at": "2026-05-27T10:03:49Z",
-  "last_commit_sha": "a6eef508",
+  "last_commit_sha": "827995ad",
   "papers_camera_ready_candidate": [
     "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
     "experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf"
