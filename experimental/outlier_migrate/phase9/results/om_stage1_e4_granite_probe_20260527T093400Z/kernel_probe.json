@@ -1,0 +1,31 @@
+{
+  "created_at_utc": "2026-05-27T09:34:16Z",
+  "format_probes": {
+    "fp8": {
+      "available": true,
+      "backend": "runtime_probe",
+      "detected_fp4_modules": [],
+      "reason": null
+    },
+    "nvfp4_w4a16": {
+      "available": false,
+      "backend": "runtime_probe",
+      "detected_fp4_modules": [],
+      "reason": "requires CUDA, vLLM, and an importable NVFP4/FP4 runtime kernel module"
+    },
+    "nvfp4_w4a4": {
+      "available": false,
+      "backend": "runtime_probe",
+      "detected_fp4_modules": [],
+      "reason": "requires CUDA, vLLM, and an importable NVFP4/FP4 runtime kernel module"
+    },
+    "w4a16": {
+      "available": true,
+      "backend": "runtime_probe",
+      "detected_fp4_modules": [],
+      "reason": null
+    }
+  },
+  "probe_policy": "unavailable formats must be SKIPPED_INFRA; no simulated substitution",
+  "schema_version": "om_stage1_e4_format_axis_v1_kernel_probe"
+}

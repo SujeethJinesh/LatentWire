@@ -1,0 +1,15 @@
+{
+  "artifact_complete": false,
+  "completed_formats": [],
+  "decision": "INCOMPLETE_E4_FORMAT_AXIS",
+  "headline": {},
+  "reasons": [
+    "no format has completed benchmark metrics"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e4_granite_probe_20260527T093400Z",
+  "schema_version": "om_stage1_e4_format_axis_v1_checker_result",
+  "skipped_formats": [
+    "nvfp4_w4a16",
+    "nvfp4_w4a4"
+  ]
+}

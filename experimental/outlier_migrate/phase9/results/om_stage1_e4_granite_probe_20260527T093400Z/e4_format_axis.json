@@ -1,0 +1,28 @@
+{
+  "benchmarks": [
+    "aime_2025",
+    "math_500"
+  ],
+  "created_at_utc": "2026-05-27T09:36:07Z",
+  "format_results": {
+    "fp8": {
+      "pending_reason": "kernel probe passed; GPU benchmark metrics not supplied",
+      "status": "PENDING_GPU_RUN"
+    },
+    "nvfp4_w4a16": {
+      "skip_reason": "requires CUDA, vLLM, and an importable NVFP4/FP4 runtime kernel module",
+      "status": "SKIPPED_INFRA"
+    },
+    "nvfp4_w4a4": {
+      "skip_reason": "requires CUDA, vLLM, and an importable NVFP4/FP4 runtime kernel module",
+      "status": "SKIPPED_INFRA"
+    },
+    "w4a16": {
+      "pending_reason": "kernel probe passed; GPU benchmark metrics not supplied",
+      "status": "PENDING_GPU_RUN"
+    }
+  },
+  "headline": {},
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "schema_version": "om_stage1_e4_format_axis_v1_metrics"
+}

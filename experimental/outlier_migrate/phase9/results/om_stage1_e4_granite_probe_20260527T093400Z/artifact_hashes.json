@@ -1,0 +1,31 @@
+{
+  "artifacts": [
+    {
+      "bytes": 408,
+      "path": "command_metadata.json",
+      "sha256": "sha256:850ff124beb6ecf1528a52966f03c27e2a946b36910b75e2617a3661e6780176"
+    },
+    {
+      "bytes": 839,
+      "path": "e4_format_axis.json",
+      "sha256": "sha256:0ef920f928d9be10fb8c74771853172f9dcfccabb4f3b21d76343434c8b02ca4"
+    },
+    {
+      "bytes": 8676,
+      "path": "environment.json",
+      "sha256": "sha256:82a8092a56fce09ae0c38c99ee6efc72682e5ebe7d83796171851ace9a66c31b"
+    },
+    {
+      "bytes": 917,
+      "path": "kernel_probe.json",
+      "sha256": "sha256:4e2eef64bf24c7aa95873614bf9cf08a73a4becc7a8c0360d1030df76d9bf7ba"
+    },
+    {
+      "bytes": 23017,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:e3a11c5a4a21d8607c326179aff2acff342e92d59d6f2ae57825cf879d432cf9"
+    }
+  ],
+  "created_at_utc": "2026-05-27T09:36:07Z",
+  "schema_version": "om_stage1_e4_format_axis_v1_artifact_hashes"
+}
