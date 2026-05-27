@@ -984,7 +984,7 @@
   "gpu_hours_used": 308.78,
   "gpu_hours_budget": 360.0,
   "last_audit_at": "2026-05-27T09:29:49Z",
-  "last_commit_sha": "a84699f7",
+  "last_commit_sha": "e55790f5",
   "papers_camera_ready_candidate": [
     "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
     "experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf"
