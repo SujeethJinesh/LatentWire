@@ -16,7 +16,7 @@
 \maketitle
 
 \begin{abstract}
-Static per-channel protection is attractive for W4A16 reasoning inference, but it assumes that high-magnitude activation channels remain useful protection targets throughout decode. We measure decode-time channel-set drift across four reasoning LLMs and find strict top-1\% set-leaving of 53--67\% by horizons up to 20K tokens, with a MATH-500 replication within 0.02 of the AIME-2025 rates on three measured models. We observe the effect at the measured block-output surface in hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, extending DecDEC's short-horizon Transformer observation and showing that Quamba2's channel-order and activation-persistence observations do not imply stable top-$K$ block-output protection at this measured surface. We then test eight channel-set protection families, a rotation baseline, and a rotation-plus-budget composition with matched-cost and random controls. Hard position or scale switches are actively harmful, top-1\% smoothing and cross-tensor coupling have signal but insufficient recovery, and reactive DecDEC-style selection does not recover the W4A16 gap. The strongest channel-set signal is budget-dependent: on Nemotron-3, top-10 EMA protection recovers 0.815 of the BF16-vs-static gap with a 0.220 descriptive margin over static top-10; on Granite-Small, top-5 recovers 0.449 with a wide CI. A ParoQuant-style rotation baseline recovers 0.754 on Granite-Small, while naive ParoQuant+M11b composition is sub-additive. KL trajectories grow sublinearly, with 100-token autocorrelation and high spectral entropy on DeepSeek-R1-Distill and Falcon-H1, weakening compound-error explanations in the measured regime.
+Static per-channel protection is attractive for W4A16 reasoning inference, but it assumes that high-magnitude activation channels remain useful protection targets throughout decode. We measure decode-time channel-set drift across four reasoning LLMs and find strict top-1\% set-leaving of 53--67\% by horizons up to 20K tokens, with a MATH-500 replication within 0.02 of the AIME-2025 rates on three measured models. We observe the effect at the measured block-output surface in hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, extending DecDEC's short-horizon Transformer observation and showing that Quamba2's channel-order and activation-persistence observations do not imply stable top-$K$ block-output protection at this measured surface. We then test eight channel-set protection families, a rotation baseline, and a rotation-plus-budget composition with matched-cost and random controls. Hard position or scale switches are actively harmful, top-1\% smoothing and cross-tensor coupling have signal but insufficient recovery, and reactive DecDEC-style selection does not recover the W4A16 gap. The strongest channel-set signal is budget-dependent: on Nemotron-3, top-10 EMA protection recovers 0.815 of the BF16-vs-static gap with a 0.220 descriptive margin over static top-10; on Granite-Small, top-5 recovers 0.449 with a wide CI; on DeepSeek and Falcon, top-10 remains ambiguous. A ParoQuant-style rotation baseline recovers 0.754 on Granite-Small, while naive ParoQuant+M11b composition is sub-additive. KL trajectories grow sublinearly, with 100-token autocorrelation and high spectral entropy on DeepSeek-R1-Distill and Falcon-H1, weakening compound-error explanations in the measured regime.
 \end{abstract}
 
 \section{Introduction}
@@ -32,7 +32,7 @@ Our contributions are fourfold.
 \item \textbf{Empirical drift.} We measure decode-time channel-set drift across four models and architectures up to 20K tokens, finding strict set-leaving of 53--67\% across hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, with MATH-500 replication on three models.
 \item \textbf{Prior-art differentiation.} We extend DecDEC's short-horizon Transformer evidence to the long-reasoning regime and show that Quamba2-style protected-set persistence does not hold at the measured block-output surface for the hybrid models tested here.
 \item \textbf{Mechanism tests.} We evaluate eight channel-set protection families with random and matched-cost controls and identify three mechanisms: boundary discontinuities are harmful, smooth top-1\% tracking is insufficient, and protected budget determines whether the method recovers quality; KL/FFT diagnostics on Granite, DeepSeek, and Falcon do not support runaway compound error in the measured packets.
-\item \textbf{Budget-dependent signal and scope.} Budget-tuned EMA protection succeeds on Nemotron at top-10 and recovers 0.449 on Granite top-5 with wide uncertainty, while ParoQuant recovers 0.75 on Granite via rotation. Naive composition is sub-additive, scoping the positive path toward method selection rather than simple stacking.
+\item \textbf{Budget-dependent signal and scope.} Budget-tuned EMA protection succeeds on Nemotron at top-10, recovers 0.449 on Granite top-5 with wide uncertainty, and remains ambiguous on DeepSeek and Falcon. ParoQuant recovers 0.75 on Granite via rotation. Naive composition is sub-additive, scoping the positive path toward method selection rather than simple stacking.
 \end{itemize}
 
 \section{Related Work}
@@ -126,6 +126,8 @@ Budget EMA top-5 & Granite & 0.449 & [-2.28, 1.00] & static top-10 lower by 0.50
 Static top-10 & Nemotron & 0.594 & [0.246, 0.814] & Holm-significant matched-budget control \\
 Budget EMA top-5 & Nemotron & 0.457 & [0.313, 0.760] & Holm-significant, below static top-10 \\
 Budget EMA top-10 & Nemotron & 0.815 & [0.158, 0.906] & Holm-significant; static top-10 lower by 0.220 \\
+Budget EMA top-10 & DeepSeek & 0.335 & [-0.409, 0.494] & ambiguous; static top-10 is 0.377 \\
+Budget EMA top-10 & Falcon & 0.044 & [-0.144, 0.203] & ambiguous; static top-10 is -0.025 \\
 ParoQuant rotation & Granite & 0.754 & [0.477, 1.00] & M11b top-5 lower by 0.304 \\
 ParoQuant+M11b top-10 & Granite & 0.565 & [-63.6, 0.932] & trails ParoQuant by 0.189 \\
 \bottomrule
@@ -141,6 +143,8 @@ M11b turns a uniformly negative channel-set picture into a model-dependent posit
 ParoQuant constrains the claim. Its Granite-Small rotation baseline recovers 0.754, exceeding M11b top-5 on the same model, though this descriptive high-median signal is not a Holm rejection within the 33-test E15 family. The paper does not argue that W4A16 PTQ is intrinsically broken; it argues that channel-set protection is fragile under long reasoning drift, while rotation-based conditioning can address part of the same endpoint by a different mechanism. That distinction matters.
 
 The direct composition test was negative. On Granite-Small, ParoQuant+M11b top-10 recovers 0.565, trailing ParoQuant alone by 0.189 median recovery and also trailing the ParoQuant+random top-10 control. This rules out the simplest ``stack the two remedies'' story. Rotation appears to absorb much of the recoverable channel-set signal in this setting, so future positive methods need a decision rule or a more coupled design rather than naive composition.
+
+\input{sections/decision_rule}
 
 \subsection{KL does not support runaway compounding}
 
@@ -177,15 +181,15 @@ First, boundary discontinuities are actively harmful: both hard protected-set an
 
 Trace heterogeneity remains important. In most Granite static-top-1\% channel-set experiments, roughly one third of the 12-trace slice has no recoverable static gap under the ratio metric; in the larger static-union experiment the no-gap fraction is 0.375. Early static-union gates retain no-gap traces as zero-recovery rows, while later method packets report recovery ratios on positive-gap traces and track the no-gap fraction separately. This limits median-based claims and explains the wide CIs on several methods. After BCa/Holm correction over 33 method-family tests, corrected-positive channel-set evidence is limited to Nemotron budgeted EMA top-5/top-10; paired method-vs-control margins remain descriptive unless separately tested. The paper emphasizes controlled mechanism comparisons and cross-model directionality rather than a single universal method headline.
 
-The saturated branches are hard switching, top-1\% smoothing alone, DecDEC-style top-1\% reactive selection, stable-core protection alone, top-1\% activation+key coupling, and naive rotation-plus-budget composition. ParoQuant shows that rotations can recover much of the Granite W4A16 gap; M11b shows that protected budget matters on Nemotron. The failed composition is useful because it separates ``both mechanisms have signal'' from ``their effects add.'' The next positive-method branch should choose between mechanisms from measurable model properties or couple rotation and channel selection more tightly.
+The saturated branches are hard switching, top-1\% smoothing alone, DecDEC-style top-1\% reactive selection, stable-core protection alone, top-1\% activation+key coupling, and naive rotation-plus-budget composition. ParoQuant shows that rotations can recover much of the Granite W4A16 gap; M11b shows that protected budget matters on Nemotron but does not transfer unchanged to DeepSeek or Falcon. The failed composition is useful because it separates ``both mechanisms have signal'' from ``their effects add.'' The next positive-method branch should choose between mechanisms from measurable model properties or couple rotation and channel selection more tightly.
 
 \section{Limitations}
 
-We scope the study to W4A16 PTQ on small reasoning models and measured block-output activation channels. We do not claim results for FP8, MXFP4/NVFP4, W4A4, or quantization-aware training; the format-axis probe found available FP8/W4A16 paths but no benchmark-metrics adapter, and no importable NVFP4 runtime kernel. The hybrid-model Quamba2 comparison is at the accessible block-output surface, not at every internal SSM state tensor. Granite-Small has the densest FFT and KL trace, while DeepSeek and Falcon have narrowed KL/FFT replications; Nemotron dense diagnostics are deferred because throughput would have dominated the Stage 1 budget. Qwen3 scale-up is also deferred because the preregistered W4A16 checkpoint snapshot was not present locally. The M11b positive result is cross-model but not model-invariant: Nemotron top-10 succeeds, while Granite's strongest signal is top-5 with wide uncertainty.
+We scope the study to W4A16 PTQ on small reasoning models and measured block-output activation channels. We do not claim results for FP8, MXFP4/NVFP4, W4A4, or quantization-aware training; the format-axis probe found available FP8/W4A16 paths but no benchmark-metrics adapter, and no importable NVFP4 runtime kernel. The hybrid-model Quamba2 comparison is at the accessible block-output surface, not at every internal SSM state tensor. Granite-Small has the densest FFT and KL trace, while DeepSeek and Falcon have narrowed KL/FFT replications; Nemotron dense diagnostics are deferred because throughput would have dominated the Stage 1 budget. Qwen3 scale-up is also deferred because the preregistered W4A16 checkpoint snapshot was not present locally. ParoQuant-on-Nemotron is deferred because the local packet exceeded the V1 throughput cap after two traces. The M11b positive result is model-dependent: Nemotron top-10 succeeds, Granite's strongest signal is top-5 with wide uncertainty, and DeepSeek/Falcon top-10 vetting is ambiguous.
 
 \section{Conclusion}
 
-Long-reasoning W4A16 channel protection fails when static protected sets drift, and our experiments show that this drift is substantial across models and prompts. Budget-tuned smoothing remedies part of the failure: Nemotron top-10 succeeds, Granite top-5 remains uncertain, and ParoQuant is stronger on Granite. The failed composition result points away from naive stacking and toward architecture-aware method selection as the next positive-method target.
+Long-reasoning W4A16 channel protection fails when static protected sets drift, and our experiments show that this drift is substantial across models and prompts. Budget-tuned smoothing remedies part of the failure: Nemotron top-10 succeeds, Granite top-5 remains uncertain, and DeepSeek/Falcon do not establish broad transfer. ParoQuant is stronger on Granite. The failed composition result points away from naive stacking and toward architecture-aware method selection as the next positive-method target.
 
 \begin{thebibliography}{43}
 
@@ -527,6 +531,8 @@ ParoQuant+M11b composition & Stage 1 E3 & \texttt{experimental/outlier\_migrate/
 Format-axis probe & Stage 1 E4 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e4\_granite\_probe\_20260527T093400Z/} \\
 Qwen3 scale-up probe & Stage 1 E5 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e5\_qwen3\_skipinfra\_20260527T093749Z/} \\
 BCa/Holm correction & Stage 1 E15 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e15\_bca\_holm\_20260527T093931Z/} \\
+ParoQuant-on-Nemotron vetting & V1 & \texttt{experimental/outlier\_migrate/phase9/results/om\_v1\_paroquant\_nemotron\_20260527T1125Z/} \\
+M11b DeepSeek/Falcon vetting & V2 & \texttt{experimental/outlier\_migrate/phase9/results/om\_v2\_m11b\_deepseek\_20260527T1210Z/}, \texttt{experimental/outlier\_migrate/phase9/results/om\_v2\_m11b\_falcon\_20260527T1438Z/} \\
 Paper release interface & Release package & \texttt{release/docs/reproducing\_results.md} \\
 \bottomrule
 \end{tabular}}
@@ -562,6 +568,8 @@ Budget EMA top-5, Granite & 8 & 0.333 & 0.449 & [-2.28, 1.00] \\
 Static top-10, Nemotron & 10 & 0.167 & 0.594 & [0.246, 0.814] \\
 Budget EMA top-5, Nemotron & 10 & 0.167 & 0.457 & [0.313, 0.760] \\
 Budget EMA top-10, Nemotron & 10 & 0.167 & 0.815 & [0.158, 0.906] \\
+Budget EMA top-10, DeepSeek & 11 & 0.083 & 0.335 & [-0.409, 0.494] \\
+Budget EMA top-10, Falcon & 12 & 0.000 & 0.044 & [-0.144, 0.203] \\
 Stable-core protection & 8 & 0.333 & 0.178 & [-1.78, 0.986] \\
 ParoQuant rotation & 8 & 0.333 & 0.754 & [0.477, 1.00] \\
 ParoQuant+M11b top-10 & 8 & 0.333 & 0.565 & [-63.6, 0.932] \\

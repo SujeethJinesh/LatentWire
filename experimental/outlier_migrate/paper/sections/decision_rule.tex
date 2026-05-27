@@ -1,0 +1,22 @@
+\subsection{A conservative method-selection rule}
+\label{sec:decision-rule}
+
+The method results do not support a single architecture-invariant remedy. They
+do support a conservative gate before deployment. First, measure strict
+set-leaving at the target horizon. All four models here exceed 0.53, so static
+top-1\% protection needs validation rather than assumption. Second, test
+budgeted EMA against a matched static top-10 control. Nemotron passes this
+gate: M11b top-10 recovers 0.815 with CI [0.254, 0.923] and beats static
+top-10 by 0.220 median. The same gate is ambiguous on DeepSeek and Falcon:
+top-10 recovery is 0.335 with CI [-0.409, 0.494] on DeepSeek and 0.044 with
+CI [-0.144, 0.203] on Falcon. Third, when a rotation baseline is available,
+compare it directly rather than stacking it with M11b. Granite favors
+ParoQuant over M11b, and ParoQuant+M11b is sub-additive.
+
+This is a practical selection rule rather than a universal predictor. Use
+rotation where it is validated, as on Granite; use budgeted EMA where it
+clears a model-local matched-budget gate, as on Nemotron; and avoid claiming a
+channel-set positive method when high drift is present but the matched-budget
+gate is ambiguous, as on DeepSeek and Falcon. The rule turns the negative
+composition result into deployment guidance: remedies must be selected by
+measured model behavior, not stacked by default.
