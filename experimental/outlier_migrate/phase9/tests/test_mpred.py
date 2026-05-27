@@ -46,3 +46,17 @@ def test_mpred_kills_when_random_alpha_matches_best_arm() -> None:
     decision, _reasons, _details = checker.decision_from_summaries(summaries, "nemotron")
 
     assert decision == checker.KILL
+
+
+def test_mpred_decision_accepts_partial_high_value_subset() -> None:
+    summaries = {
+        "m11b_top5": summary(0.40, 0.20, 0.60),
+        "m11b_top10": summary(0.35, 0.10, 0.55),
+        "static_top10": summary(0.10, -0.10, 0.30),
+        "mpred_top10_alpha_0_95": summary(0.70, 0.62, 0.80),
+    }
+
+    decision, _reasons, details = checker.decision_from_summaries(summaries, "nemotron")
+
+    assert decision == checker.PASS
+    assert details["best_mpred_regime"] == "mpred_top10_alpha_0_95"

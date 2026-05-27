@@ -151,7 +151,11 @@ def summarize_recovery(rows: list[dict[str, Any]], regime: str) -> dict[str, Any
 
 
 def best_regime(summaries: dict[str, dict[str, Any]], regimes: list[str]) -> tuple[str | None, dict[str, Any] | None]:
-    candidates = [(regime, summaries[regime]) for regime in regimes if summaries[regime].get("median_recovery") is not None]
+    candidates = [
+        (regime, summaries[regime])
+        for regime in regimes
+        if regime in summaries and summaries[regime].get("median_recovery") is not None
+    ]
     if not candidates:
         return None, None
     return max(candidates, key=lambda item: float(item[1]["median_recovery"]))
@@ -216,8 +220,9 @@ def decision_from_summaries(
     return AMBIGUOUS, ["M-PRED direction is positive but does not satisfy PASS criteria"], details
 
 
-def validate_rows(rows: list[dict[str, Any]], infra: list[str]) -> None:
+def validate_rows(rows: list[dict[str, Any]], infra: list[str], completed_regimes: list[str]) -> None:
     expected_start = SCORING_POSITION - SCORING_WINDOW_TOKENS + 1
+    expected_recovery = [regime for regime in completed_regimes if regime not in {"bf16", "static_1pct"}]
     if len(rows) != TRACE_COUNT:
         infra.append(f"per_trace_metrics must contain exactly {TRACE_COUNT} traces")
     for row in rows:
@@ -230,10 +235,10 @@ def validate_rows(rows: list[dict[str, Any]], infra: list[str]) -> None:
             infra.append(f"trace {prompt_index}: score_end mismatch")
         perplexities = row.get("perplexities", {})
         recoveries = row.get("recoveries", {})
-        if set(perplexities) != set(REGIMES):
+        if set(perplexities) != set(completed_regimes):
             infra.append(f"trace {prompt_index}: perplexity regimes mismatch")
             continue
-        if set(recoveries) != set(RECOVERY_REGIMES):
+        if set(recoveries) != set(expected_recovery):
             infra.append(f"trace {prompt_index}: recovery regimes mismatch")
             continue
         static_gap = float(perplexities["static_1pct"]) - float(perplexities["bf16"])
@@ -242,7 +247,7 @@ def validate_rows(rows: list[dict[str, Any]], infra: list[str]) -> None:
         no_gap = static_gap <= 0.0
         if bool(row.get("no_recoverable_static_gap")) != no_gap:
             infra.append(f"trace {prompt_index}: no-gap flag mismatch")
-        for regime in RECOVERY_REGIMES:
+        for regime in expected_recovery:
             if no_gap:
                 if recoveries.get(regime) is not None:
                     infra.append(f"trace {prompt_index}: no-gap recovery for {regime} must be null")
@@ -281,11 +286,16 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
                 loaded[rel] = load_json(path)
             except Exception as exc:
                 infra.append(f"bad JSON {rel}: {exc!r}")
+    metrics = loaded.get("metrics.json", {})
+    completed_regimes = metrics.get("completed_regimes", REGIMES)
+    if not isinstance(completed_regimes, list) or "bf16" not in completed_regimes or "static_1pct" not in completed_regimes:
+        infra.append("metrics.completed_regimes must include bf16 and static_1pct")
+        completed_regimes = REGIMES
     rows = loaded.get("per_trace_metrics.json", {}).get("traces", [])
     if not isinstance(rows, list):
         infra.append("per_trace_metrics.traces must be a list")
         rows = []
-    validate_rows(rows, infra)
+    validate_rows(rows, infra, completed_regimes)
 
     model = loaded.get("model_provenance.json", {})
     model_key = infer_model_key(str(model.get("model_id")))
@@ -295,7 +305,6 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
         infra.append("model snapshot commit mismatch")
     if loaded.get("random_seed.json", {}).get("seed") != BOOTSTRAP_SEED:
         infra.append("random_seed.seed mismatch")
-    metrics = loaded.get("metrics.json", {})
     if metrics.get("schema_version") != f"{SCHEMA_VERSION}_metrics":
         infra.append("metrics schema_version mismatch")
     if PREREG_PATH.is_file() and metrics.get("preregistration_sha256") != file_sha256(PREREG_PATH):
@@ -304,7 +313,7 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
     excluded = loaded.get("excluded_tensors.json", {}).get("by_regime", {})
     if set(protected) != set(REGIMES) - {"bf16"}:
         infra.append("protected_sets.regimes mismatch")
-    if set(excluded) != set(REGIMES) - {"bf16"}:
+    if set(excluded) != set(completed_regimes) - {"bf16"}:
         infra.append("excluded_tensors.by_regime mismatch")
     return infra, loaded, rows, model_key
 
@@ -319,7 +328,9 @@ def evaluate(run_dir: Path) -> dict[str, Any]:
             "reasons": infra,
         }
     else:
-        summaries = {regime: summarize_recovery(rows, regime) for regime in RECOVERY_REGIMES}
+        completed_regimes = _loaded.get("metrics.json", {}).get("completed_regimes", REGIMES)
+        recovery_regimes = [regime for regime in completed_regimes if regime not in {"bf16", "static_1pct"}]
+        summaries = {regime: summarize_recovery(rows, regime) for regime in recovery_regimes}
         decision, reasons, details = decision_from_summaries(summaries, model_key)
         result = {
             "decision": decision,

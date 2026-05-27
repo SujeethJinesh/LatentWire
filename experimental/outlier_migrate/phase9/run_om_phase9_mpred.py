@@ -380,15 +380,17 @@ def write_score_cache(run_dir: Path, regime: str, scores: dict[int, dict[str, fl
 
 def build_per_trace_rows(prompts: list[dict[str, Any]], all_scores: dict[str, dict[int, dict[str, float]]]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
+    completed_regimes = list(all_scores)
+    recovery_regimes = [regime for regime in completed_regimes if regime not in {"bf16", "static_1pct"}]
     for prompt in prompts:
         index = int(prompt["index"])
-        perplexities = {regime: float(all_scores[regime][index]["perplexity"]) for regime in checker.REGIMES}
-        mean_nll = {regime: float(all_scores[regime][index]["mean_nll"]) for regime in checker.REGIMES}
+        perplexities = {regime: float(all_scores[regime][index]["perplexity"]) for regime in completed_regimes}
+        mean_nll = {regime: float(all_scores[regime][index]["mean_nll"]) for regime in completed_regimes}
         static_gap = perplexities["static_1pct"] - perplexities["bf16"]
         no_gap = static_gap <= 0.0
         recoveries = {
             regime: None if no_gap else 1.0 - (perplexities[regime] - perplexities["bf16"]) / static_gap
-            for regime in checker.RECOVERY_REGIMES
+            for regime in recovery_regimes
         }
         rows.append(
             {
@@ -424,9 +426,11 @@ def build_metrics(
     protected_trajectories: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     included = [row for row in rows if not bool(row["no_recoverable_static_gap"])]
+    completed_regimes = list(rows[0]["perplexities"]) if rows else []
+    recovery_regimes = [regime for regime in completed_regimes if regime not in {"bf16", "static_1pct"}]
     summaries = {
         regime: summarize([float(row["recoveries"][regime]) for row in included])
-        for regime in checker.RECOVERY_REGIMES
+        for regime in recovery_regimes
     }
     no_gap_count = len(rows) - len(included)
     for summary in summaries.values():
@@ -451,6 +455,8 @@ def build_metrics(
         "scoring_window_tokens": checker.SCORING_WINDOW_TOKENS,
         "metric_name": "positive-static-1pct-gap per-trace recovery",
         "metric_formula": "1 - (perplexity_regime - perplexity_BF16) / (perplexity_static_1pct - perplexity_BF16)",
+        "completed_regimes": completed_regimes,
+        "partial_packet": set(completed_regimes) != set(checker.REGIMES),
         "results_by_regime": summaries,
         "thresholds": checker.THRESHOLDS,
         "protected_set_count_stats": protected_trajectories.get("protected_set_count_stats", {}),
@@ -470,9 +476,9 @@ def build_metrics(
         "created_at_utc": shared.utc_now(),
         "controls": {
             "static_1pct": {"median_recovery": 0.0},
-            "static_top10": summaries["static_top10"],
-            "random_walk_top5": summaries["random_walk_top5"],
-            "mpred_random_alpha_top5": summaries["mpred_random_alpha_top5"],
+            "static_top10": summaries.get("static_top10"),
+            "random_walk_top5": summaries.get("random_walk_top5"),
+            "mpred_random_alpha_top5": summaries.get("mpred_random_alpha_top5"),
         },
         "best_mpred_regime": best_mpred_name,
         "best_m11b_regime": best_m11b_name,
@@ -493,6 +499,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--run-id")
     parser.add_argument("--results-dir", type=Path, default=checker.RESULTS_DIR)
     parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--new-regimes", nargs="+", choices=NEW_REGIMES, default=NEW_REGIMES)
     parser.add_argument("--seed", type=int, default=checker.BOOTSTRAP_SEED)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--dtype", choices=["bfloat16", "float16", "float32"], default="bfloat16")
@@ -550,7 +557,8 @@ def main(argv: list[str] | None = None) -> int:
                 "source_run_dir": str(source_dir),
                 "model_key": args.model_key,
                 "batch_size": args.batch_size,
-                "new_regimes": NEW_REGIMES,
+                "new_regimes": args.new_regimes,
+                "scope_reduction": None if list(args.new_regimes) == NEW_REGIMES else "bounded_subset_due_endpoint_scoring_throughput",
             },
         )
         shared.write_json(
@@ -578,7 +586,7 @@ def main(argv: list[str] | None = None) -> int:
             if regime != "bf16":
                 excluded_by_regime[regime] = {"regime": regime, "reused_score_cache": str(source_dir)}
 
-        for regime in NEW_REGIMES:
+        for regime in args.new_regimes:
             run_events_path.open("a", encoding="utf-8").write(
                 json.dumps({"created_at_utc": shared.utc_now(), "event": "score_regime_started", "regime": regime}, sort_keys=True) + "\n"
             )
