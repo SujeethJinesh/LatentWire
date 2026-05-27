@@ -33,3 +33,11 @@ BF16/activation artifacts. This avoids repeating the completed 12-trace,
 20K-token Falcon reference pass.
 
 Follow-up patch commit: `2e78bfbe`.
+
+Second follow-up: the interrupted retry had truncated Falcon-H1's
+`bf16_traces.jsonl.gz`, leaving activation summaries and BF16 log-prob tensors
+but no target token trace file. Added a guard so E1 resumes only reuse BF16
+reference artifacts when the trace file contains complete 20K-token targets for
+all prompts. Otherwise the runner regenerates the BF16 reference packet.
+
+Trace-reuse guard commit: `88bc7687`.
