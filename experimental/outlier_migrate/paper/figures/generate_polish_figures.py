@@ -124,17 +124,18 @@ def plot_kl_trajectories() -> None:
 
 def plot_method_recovery() -> None:
     rows = [
-        ("M2 bins", "Granite", -0.867, -3.44, 0.595),
-        ("M10 scales", "Granite", 0.234, -2.07, 0.504),
-        ("M11 EMA", "Granite", 0.048, -8.94, 0.705),
-        ("M18 act+K", "Granite", -0.344, -14.1, 0.741),
-        ("DecDEC proxy", "Granite", -0.070, -8.50, 0.674),
-        ("M11b top-5", "Granite", 0.449, -1.30, 1.00),
-        ("M26 core", "Granite", 0.178, -0.116, 1.00),
+        ("M2 bins", "Granite", -0.867, -4.25, 0.357),
+        ("M10 scales", "Granite", 0.234, -3.47, 0.490),
+        ("M11 EMA", "Granite", 0.048, -8.94, 0.448),
+        ("M18 act+K", "Granite", -0.344, -14.1, 0.731),
+        ("DecDEC proxy", "Granite", -0.070, -8.50, 0.391),
+        ("M11b top-5", "Granite", 0.449, -2.28, 1.00),
+        ("M26 core", "Granite", 0.178, -1.78, 0.986),
         ("ParoQuant", "Granite", 0.754, 0.477, 1.00),
-        ("Static top-10", "Nemotron", 0.594, 0.317, 0.814),
-        ("M11b top-5", "Nemotron", 0.457, 0.346, 0.795),
-        ("M11b top-10", "Nemotron", 0.815, 0.254, 0.923),
+        ("ParoQuant+M11b", "Granite", 0.565, -63.6, 0.932),
+        ("Static top-10", "Nemotron", 0.594, 0.246, 0.814),
+        ("M11b top-5", "Nemotron", 0.457, 0.313, 0.760),
+        ("M11b top-10", "Nemotron", 0.815, 0.158, 0.906),
     ]
     colors = {"Granite": "#4C78A8", "Nemotron": "#F58518"}
     fig, ax = plt.subplots(figsize=(6.8, 4.0))
