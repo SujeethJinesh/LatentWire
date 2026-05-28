@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "mfish_gradient_runner_feasibility",
+  "current_entry": "v1_paroquant_nemotron_baseline_vetting",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
