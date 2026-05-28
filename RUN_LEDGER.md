@@ -1,6 +1,6 @@
 # Positive-Method Sprint Run Ledger
 
-Last updated: 2026-05-28T15:18Z
+Last updated: 2026-05-28T16:28Z
 
 ## Active Objective
 
@@ -15,8 +15,8 @@ does not edit this ledger.
 | Order | Gate | Status | Run / Artifact | Decision |
 |---:|---|---|---|---|
 | 0 | V1 ParoQuant-on-Nemotron | COMPLETE_HEADLINE_CHANGING | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z` | `PASS_V1_PAROQUANT_NEMOTRON_ROTATION_DOMINATES`; median 1.047, CI95 [1.007, 1.292], +0.232 over Nemotron M11b top-10 |
-| 1 | ParoQuant Falcon smoke | NEXT_GATED | `artifacts/rotation_config_grid/` / TBD smoke packet | Run first to test whether rotation resolves Falcon before channel rescue |
-| 2 | ParoQuant DeepSeek smoke | NEXT_GATED | `artifacts/rotation_config_grid/` / TBD smoke packet | Run after or alongside Falcon only if the runner/checker is ready; tests four-model rotation-dominance |
+| 1 | ParoQuant Falcon smoke | COMPLETE_PASS | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z` | `PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE`; median 0.381, CI95 [0.0645, 0.547], +0.337 over Falcon M11b top-10 |
+| 2 | ParoQuant DeepSeek smoke | NEXT_GATED | `artifacts/rotation_first_orchestrator/command_paroquant_deepseek_smoke.sh` | Run next to test whether rotation-dominance extends to the dense Transformer regime |
 | 3 | DriftRot Scale/CVaR/Clip smoke | CPU_GATED | `artifacts/scale_cvar_clip/`, `artifacts/rotation_config_grid/` | Granite + Nemotron; must include exact ParoQuant baseline config |
 | 4 | DriftRot ResidualCorrection smoke | CPU_GATED | `artifacts/rot_resid_correction/` | Granite tail/weak trace plus two representative traces; no kernel until pass |
 | 5 | Drift-aware Pairing smoke | CPU_GATED | `artifacts/drift_pairing/` | Run only if pairings materially differ from static high-low baseline |
@@ -47,7 +47,7 @@ does not edit this ledger.
 | C5 Rotated residual correction | `artifacts/rot_resid_correction/` | RUNNING | Candidate protected columns and PyTorch reference only |
 | C6 Falcon branch rotation | `artifacts/falcon_branch_rotation/` | RUNNING | Branch-local rotation diagnostic/protection config |
 | C7 M-SURFACE DriftRot | `artifacts/msurface_driftrot/` | RUNNING | Surface map and 2-trace diagnostic config |
-| C8 Falcon channel fallbacks | `artifacts/falcon_channel_fallbacks/` | RUNNING | LAMBDA/HYST configs, lower priority until ParoQuant Falcon known |
+| C8 Falcon channel fallbacks | `artifacts/falcon_channel_fallbacks/` | COMPLETE_DEFERRED | LAMBDA/HYST configs remain available, but Falcon ParoQuant rescue lowers channel-fallback priority |
 | C9 Paper delta | `artifacts/paper_delta/` | RUNNING | Abstract/contribution options and figure plan |
 | C10 Novelty audit | `artifacts/novelty_audit/` | RUNNING | Safe claims vs ParoQuant, QuaRot, SpinQuant, Quamba2, SmoothQuant/AWQ, MambaQuant, RRS |
 | C11 Repro audit | `artifacts/repro_audit/` | RUNNING | V1/ParoQuant/M11b/cache provenance and final paper tables |
@@ -64,7 +64,7 @@ does not edit this ledger.
 | C5 residual correction | `NEEDS_WEIGHT_RESIDUAL_CACHE` | Needs ParoQuant residual column norms / candidate pool before GPU smoke |
 | C6 Falcon BranchRot | `NEEDS_GPU_DIAGNOSTIC` | Branch hooks feasible; only after ParoQuant Falcon is weak |
 | C7 M-SURFACE DriftRot | `GUARDED_DIAGNOSTIC_ONLY` | Diagnostic only; no stable internal surface proven yet |
-| C8 Falcon channel fallback | `HOLD_UNTIL_PAROQUANT_FALCON_SMOKE` | HYST margin-5 remains ready if Falcon rotation is weak |
+| C8 Falcon channel fallback | `DEFER_AFTER_FALCON_ROTATION_PASS` | Falcon ParoQuant rescue lowers priority for HYST/LAMBDA channel fallbacks |
 | C9 paper delta | `ROTATION_FIRST_REGIME_AWARE` | Use rotation-first framing options; do not claim ParoQuant as ours |
 | C10 novelty audit | `SAFE_CLAIMS_ONLY` | BranchRot is most defensible; scale/clip/residual correction require held-out drift-specific gain |
 | C11 repro audit | `TABLES_READY` | Current method matrix, rotation summary, failed branch table prepared |

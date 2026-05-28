@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "run_om_paroquant_baseline.py",
+    "--run-id",
+    "om_v1_paroquant_falcon_20260528T154653Z",
+    "--reuse-trace-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+    "--reuse-score-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+    "--reuse-protected-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+    "--m11b-reference-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+    "--batch-size",
+    "1",
+    "--dtype",
+    "bfloat16"
+  ],
+  "batch_size": 1,
+  "branch": "outlier_migrate_phase9_paroquant_baseline",
+  "created_at_utc": "2026-05-28T15:47:02Z",
+  "cwd": "/workspace/LatentWire",
+  "reuse_protected_run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+  "reuse_score_run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+  "reuse_trace_run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z",
+  "schema_version": "om_v1_paroquant_falcon_v1_command"
+}

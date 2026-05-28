@@ -1,0 +1,5 @@
+{
+  "checker_artifact_complete_after_repair": true,
+  "original_infra_error_file": "removed_after_repair",
+  "status": "superseded_by_completed_score_cache_repair"
+}

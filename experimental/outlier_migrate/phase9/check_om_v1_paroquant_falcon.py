@@ -69,6 +69,14 @@ def prompt_payload_sha256(prompts: list[dict]) -> str:
     return base.prompt_payload_sha256(prompts)
 
 
+def bootstrap_median(values: list[float]) -> dict[str, float | None]:
+    return base.bootstrap_median(values)
+
+
+def interpretation_band(median_recovery: float | None) -> str:
+    return base.interpretation_band(median_recovery)
+
+
 def decision_from_median(median_recovery: float | None) -> tuple[str, list[str]]:
     if median_recovery is None:
         return FAIL_INFRA, ["no traces had a positive recoverable static top-1% gap"]

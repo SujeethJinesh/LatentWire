@@ -1,8 +1,14 @@
 # Next GPU Gate
 
-Run rotation smoke before any Falcon channel rescue.
+Run rotation smoke before any channel rescue.
 
 ## G0 ParoQuant Falcon Smoke
+
+Status: COMPLETE. Full 12-trace packet at
+`experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z`
+returned `PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE` with median recovery
+0.381, CI95 [0.0645, 0.547], and +0.337 median margin over Falcon M11b
+top-10.
 
 Command:
 
@@ -14,8 +20,8 @@ Pass gates:
 - median recovery beats Falcon M11b top-10 by at least 0.10, or
 - checker returns `PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE`.
 
-If pass, lower priority of Falcon HYST/LAMBDA/BranchRot. If weak, resume Falcon
-fallback queue with HYST margin-5 first.
+Falcon HYST/LAMBDA/BranchRot are now lower priority unless later DriftRot
+analysis specifically needs a Falcon channel fallback.
 
 ## G1 ParoQuant DeepSeek Smoke
 

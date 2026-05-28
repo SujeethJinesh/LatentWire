@@ -1,0 +1,270 @@
+{
+  "created_at_utc": "2026-05-28T16:25:16Z",
+  "schema_version": "om_v1_paroquant_falcon_v1_per_trace_metrics",
+  "traces": [
+    {
+      "mean_nll": {
+        "bf16": 0.03818315050786415,
+        "paroquant_w4a16": 0.09524113597101314,
+        "static_1pct": 0.06314026518063025
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0389214944540541,
+        "paroquant_w4a16": 1.0999240544051747,
+        "static_1pct": 1.065176235890616
+      },
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0,
+      "recoveries": {
+        "paroquant_w4a16": -1.3234873631689785
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.026254741436561924
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.09836370611113987,
+        "paroquant_w4a16": 0.18011932012181342,
+        "static_1pct": 0.27183867651790417
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.103364012373793,
+        "paroquant_w4a16": 1.1973602237663203,
+        "static_1pct": 1.3123752672847975
+      },
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "recoveries": {
+        "paroquant_w4a16": 0.5502815796567972
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.20901125491100458
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.047049876825699555,
+        "paroquant_w4a16": 0.1335171212232783,
+        "static_1pct": 0.2279521900537793
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0481742873821414,
+        "paroquant_w4a16": 1.142840832800676,
+        "static_1pct": 1.256025273496038
+      },
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "recoveries": {
+        "paroquant_w4a16": 0.5445460847288931
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.20785098611389663
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.07872057156530421,
+        "paroquant_w4a16": 0.17699943490198838,
+        "static_1pct": 0.17192583777554982
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0819019656560347,
+        "paroquant_w4a16": 1.193630418608772,
+        "static_1pct": 1.1875897556499189
+      },
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3,
+      "recoveries": {
+        "paroquant_w4a16": -0.05715573160535148
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.10568778999388417
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.04472739644747756,
+        "paroquant_w4a16": 0.10225101156068371,
+        "static_1pct": 0.08881364289036196
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0457427478611125,
+        "paroquant_w4a16": 1.1076614726707128,
+        "static_1pct": 1.0928769719542208
+      },
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "recoveries": {
+        "paroquant_w4a16": -0.31366806181612006
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.0471342240931083
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.03244779194063678,
+        "paroquant_w4a16": 0.0862011408496292,
+        "static_1pct": 0.1110638714812576
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0329799618569913,
+        "paroquant_w4a16": 1.09002555492291,
+        "static_1pct": 1.1174662788016005
+      },
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "recoveries": {
+        "paroquant_w4a16": 0.32479488834483194
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.08448631694460929
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.0587266857629668,
+        "paroquant_w4a16": 0.1371846304352818,
+        "static_1pct": 0.17558362911519934
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0604853553812748,
+        "paroquant_w4a16": 1.147039907448623,
+        "static_1pct": 1.191941665510116
+      },
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6,
+      "recoveries": {
+        "paroquant_w4a16": 0.34157172080582854
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.1314563101288413
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.001688641036480476,
+        "paroquant_w4a16": 0.015639774533497075,
+        "static_1pct": 0.0316904579160564
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0016900675936236,
+        "paroquant_w4a16": 1.0157627158960936,
+        "static_1pct": 1.032197947145719
+      },
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "recoveries": {
+        "paroquant_w4a16": 0.5387208646068149
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.03050787955209544
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.009965909776862056,
+        "paroquant_w4a16": 0.057227374007052786,
+        "static_1pct": 0.06773775964821473
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0100157348354966,
+        "paroquant_w4a16": 1.0588965485769648,
+        "static_1pct": 1.0700846523050354
+      },
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8,
+      "recoveries": {
+        "paroquant_w4a16": 0.18625445903439308
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.060068917469538796
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.015570229108946537,
+        "paroquant_w4a16": 0.0610824237677772,
+        "static_1pct": 0.19268535406491255
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0156920767031188,
+        "paroquant_w4a16": 1.0629865259310642,
+        "static_1pct": 1.212501224911055
+      },
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "recoveries": {
+        "paroquant_w4a16": 0.759693847269858
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.19680914820793616
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.14025385558763143,
+        "paroquant_w4a16": 0.2370614650267433,
+        "static_1pct": 0.30165219464193443
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.150565839354861,
+        "paroquant_w4a16": 1.2675190234716966,
+        "static_1pct": 1.352090880466934
+      },
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "recoveries": {
+        "paroquant_w4a16": 0.4196592965744882
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.20152504111207303
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.05606146538548326,
+        "paroquant_w4a16": 0.09820552192521154,
+        "static_1pct": 0.1659254416619162
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.057662691383768,
+        "paroquant_w4a16": 1.1031894914393028,
+        "static_1pct": 1.1804850834361145
+      },
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11,
+      "recoveries": {
+        "paroquant_w4a16": 0.6293281762813129
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.12282239205234657
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260625,
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.5474138321928452,
+        "ci95_low": 0.0645493637145208
+      },
+      "included_trace_count": 12,
+      "mean_recovery": 0.216711646726064,
+      "median_recovery": 0.38061550869015837,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        -1.3234873631689785,
+        0.5502815796567972,
+        0.5445460847288931,
+        -0.05715573160535148,
+        -0.31366806181612006,
+        0.32479488834483194,
+        0.34157172080582854,
+        0.5387208646068149,
+        0.18625445903439308,
+        0.759693847269858,
+        0.4196592965744882,
+        0.6293281762813129
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_v1_paroquant_falcon_v1_bootstrap_ci"
+}

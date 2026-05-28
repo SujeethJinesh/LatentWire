@@ -1,0 +1,16 @@
+{
+  "artifact_complete": true,
+  "ci95": {
+    "ci95_high": 0.5474138321928452,
+    "ci95_low": 0.0645493637145208
+  },
+  "decision": "PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE",
+  "experiment_id": "v1_paroquant_falcon",
+  "included_trace_count": 12,
+  "margin_vs_m11b_top10": 0.3366757784989901,
+  "median_recovery": 0.38061550869015837,
+  "reason": [
+    "ParoQuant rescues Falcon by the preregistered median threshold"
+  ],
+  "total_trace_count": 12
+}

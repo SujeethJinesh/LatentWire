@@ -1,0 +1,14 @@
+{
+  "controls": {
+    "m11b_top5_reference_median_recovery": 0.0704782481712527,
+    "random_channel_matched": {
+      "reason": "ParoQuant is a transform-based W4A16 baseline, not a channel-selection protection method.",
+      "status": "not_applicable_no_channel_selection"
+    },
+    "static_1pct": {
+      "median_recovery": 0.0
+    }
+  },
+  "created_at_utc": "2026-05-28T16:26:18Z",
+  "schema_version": "om_v1_paroquant_falcon_v1_control_metrics"
+}

@@ -1,6 +1,6 @@
 # Positive-Method Sprint Decisions
 
-Last updated: 2026-05-28T15:18Z
+Last updated: 2026-05-28T16:28Z
 
 ## Current Framing
 
@@ -22,14 +22,14 @@ unless a genuinely held-out frozen-threshold run is executed.
 |---|---|---|
 | V1 ParoQuant-on-Nemotron | PASS_ROTATION_DOMINATES | ParoQuant median recovery is 1.047 with CI95 [1.007, 1.292], beating Nemotron M11b top-10 by +0.232. This is headline-changing baseline-vetting evidence. |
 | DriftRot | LIVE | Primary question: can long-decode drift-aware rotation choices beat or robustify static ParoQuant on held-out traces/seeds? |
-| ParoQuant Falcon smoke | NEXT | First rotation-first GPU gate; decides whether Falcon needs channel rescue. |
+| ParoQuant Falcon smoke | PASS_ROTATION_RESCUE | Full 12-trace packet gives median recovery 0.381 with CI95 [0.0645, 0.547], beating Falcon M11b top-10 by +0.337. Falcon channel rescue drops in priority. |
 | ParoQuant DeepSeek smoke | NEXT | Tests whether rotation-dominance extends to the dense Transformer regime. |
 | Granite clip/CVaR retune | PROMOTE_AFTER_G0_G1 | Only DriftRot config gate promoted by CPU filters; target ParoQuant's Granite tail, not a broad grid. |
 | Drift-aware pairing | NEEDS_ACTIVATION_CACHE | Pairings differ from current ParoQuant on block-output proxies, but exact rotation-surface caches are required before GPU. |
 | Residual correction | NEEDS_WEIGHT_RESIDUAL_CACHE | Method is specified, but no candidate pool exists until a ParoQuant run emits residual column norms or equivalent summaries. |
 | WJAC | KILL | Artifactized prefilter found at least two kill diagnostics on each covered model/slice; DeepSeek/Falcon full cached coverage, Granite/Nemotron representative slice coverage. |
 | LAMBDA | DEFER | Falcon prior reallocates 18.9% of total budget, but the standalone smoke gate is false because causal per-layer headroom is absent. |
-| HYST | DEFER_AFTER_ROTATION | Falcon churn/local-pool gate selected margin `m=5`, but channel fallback waits until ParoQuant Falcon and BranchRot are known. |
+| HYST | DEFER_AFTER_FALCON_ROTATION_PASS | Falcon churn/local-pool gate selected margin `m=5`, but ParoQuant now rescues Falcon enough that channel fallback is lower priority. |
 | RISKGUARD | DEFER | Best cached trigger is in-sample only; leave-one-trace-out CI lower bound collapses to 0 and CVaR remains negative. |
 | TRACE-ROUTER | WEAK_OFFLINE_ONLY | Granite/DeepSeek show positive tiny-n CV gain, but this needs a preregistered larger frozen slice before evidence claims. Falcon remains not routable. |
 | M-SURFACE | CONDITIONAL_DIAGNOSTIC | Granite `mamba_out_projection_input` hook sanity is cheap; promote only if internal drift is <0.30 or at least 0.15 below same-run post-block. |
@@ -42,14 +42,14 @@ unless a genuinely held-out frozen-threshold run is executed.
 ## Next Decision Gate
 
 After V1 completed, it triggered `PASS_V1_PAROQUANT_NEMOTRON_ROTATION_DOMINATES`.
+The Falcon follow-up also passed: `PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE`.
 
 The next decision gate is rotation-first:
 
 1. Run CPU filters C1-C12 in parallel into disjoint `artifacts/<task_name>/`
    directories.
 2. Prepare ParoQuant Falcon and DeepSeek smoke packets.
-3. Run ParoQuant Falcon smoke first; if it passes, Falcon channel rescue drops
-   in priority.
+3. ParoQuant Falcon passed, so Falcon channel rescue drops in priority.
 4. Run ParoQuant DeepSeek smoke; if it passes, the rotation-dominant
    four-model story strengthens.
 5. Only then run DriftRot Scale/CVaR/Clip, residual correction, pairing,

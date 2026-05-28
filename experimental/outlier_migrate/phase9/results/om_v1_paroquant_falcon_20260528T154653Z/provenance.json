@@ -1,0 +1,5 @@
+{
+  "git_commit": "1432f298df59c08f2057c255d49c777174d37f5a",
+  "repair_note": "Metrics/checker artifacts were repaired from completed bf16/static/paroquant score caches after a checker-wrapper passthrough AttributeError; no GPU scoring was rerun.",
+  "run_dir": "experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z"
+}

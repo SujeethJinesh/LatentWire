@@ -1,0 +1,20 @@
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+The fast path for FalconH1 will be used when running the model on a GPU
+Traceback (most recent call last):
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_v1_paroquant_falcon.py", line 33, in <module>
+    raise SystemExit(main(sys.argv[1:]))
+                     ^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_v1_paroquant_falcon.py", line 29, in main
+    return base.main(argv)
+           ^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py", line 799, in main
+    metrics, bootstrap, controls = build_metrics(
+                                   ^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py", line 424, in build_metrics
+    summary = summarize(values)
+              ^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py", line 408, in summarize
+    "bootstrap_ci95": checker.bootstrap_median(values),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'experimental.outlier_migrate.phase9.check_om_v1_paroquant_falcon' has no attribute 'bootstrap_median'

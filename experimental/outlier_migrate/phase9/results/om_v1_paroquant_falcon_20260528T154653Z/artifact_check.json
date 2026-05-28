@@ -1,0 +1,28 @@
+{
+  "artifact_complete": true,
+  "checked_files": [
+    "environment.json",
+    "environment.txt",
+    "model_provenance.json",
+    "prompt_manifest.json",
+    "command_metadata.json",
+    "random_seed.json",
+    "decoding_config.json",
+    "quantization_config.json",
+    "paroquant_config.json",
+    "paroquant_limitations.json",
+    "source_artifacts.json",
+    "excluded_tensors.json",
+    "per_trace_metrics.json",
+    "metrics.json",
+    "bootstrap_ci.json",
+    "control_metrics.json",
+    "artifact_hashes.json",
+    "logs/stdout.log",
+    "logs/stderr.log",
+    "run_events.jsonl"
+  ],
+  "decision": "PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE",
+  "infra_reasons": [],
+  "schema_version": "om_v1_paroquant_falcon_v1_artifact_check"
+}
