@@ -61,6 +61,12 @@ REQUIRED_FILES = [
     "protected_sets.json",
     "quantization_config.json",
     "excluded_tensors.json",
+    "score_cache/bf16.json",
+    "score_cache/static_1pct.json",
+    "score_cache/m11b_top10.json",
+    "score_cache/mkllook_top10.json",
+    "score_cache/random_top10.json",
+    "source_artifacts.json",
     "per_trace_metrics.json",
     "metrics.json",
     "bootstrap_ci.json",
@@ -75,7 +81,6 @@ OPTIONAL_FILES = [
     "activation_magnitude_manifest.json",
     "bf16_traces.jsonl.gz",
     "bf16_trace_manifest.json",
-    "source_artifacts.json",
 ]
 
 
@@ -178,6 +183,9 @@ def validate_score_artifacts(loaded: dict[str, Any], infra: list[str]) -> None:
     for idx, row in enumerate(rows[:10]):
         if not required_candidate_keys.issubset(row):
             infra.append(f"candidate_deltas.candidates[{idx}] missing required keys")
+    sources = loaded.get("source_artifacts.json", {})
+    if not isinstance(sources.get("artifacts"), list) or not sources.get("artifacts"):
+        infra.append("source_artifacts.artifacts must be a non-empty list")
 
 
 def validate_protected_sets(loaded: dict[str, Any], infra: list[str]) -> None:
