@@ -45,8 +45,11 @@ New smoke regimes:
    but allocated across layers by global EMA marginal score over cached
    activations.
 2. `hyst_top10_smoke`: flat per-layer M11b top-10 budget with hysteretic
-   protected-set updates. A channel enters at top-k and exits only below
-   top-2k.
+   protected-set updates. A channel enters at top-k and exits only below the
+   frozen margin recorded by the CPU gate. The preregistered default is
+   top-2k; the Falcon gate in `artifacts/hyst_falcon/` selects a narrower
+   5 percentage-point margin and the runner must record that value in its
+   config.
 3. `random_lambda_top10`: random matched layer allocation/control.
 4. `random_hyst_top10`: random matched flat-budget/control.
 

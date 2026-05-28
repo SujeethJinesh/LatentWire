@@ -205,18 +205,20 @@ def hysteresis_layers(
     means_by_layer: dict[int, dict[int, np.ndarray]],
     source_layers: dict[str, Any],
     layer_names: dict[int, str],
+    exit_margin_pct_points: float,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     layers: dict[str, Any] = {}
     trajectories: dict[str, Any] = {}
     for layer_index in sorted(means_by_layer):
         budget = int(source_layers[str(layer_index)]["protected_count"])
         channel_count = int(means_by_layer[layer_index][100].shape[0])
+        exit_count = min(channel_count, budget + int(round(channel_count * exit_margin_pct_points / 100.0)))
         selected = set(top_channels(means_by_layer[layer_index][100], budget))
         steps: list[dict[str, Any]] = []
         for position in UPDATE_POSITIONS:
             values = means_by_layer[layer_index][position]
             enter = set(top_channels(values, budget))
-            local_pool = set(top_channels(values, min(channel_count, budget * 2)))
+            local_pool = set(top_channels(values, exit_count))
             selected = {channel for channel in selected if channel in local_pool}
             selected.update(enter)
             if len(selected) > budget:
@@ -234,12 +236,16 @@ def hysteresis_layers(
             "channel_count": channel_count,
             "protected_count": len(selected),
             "protected_channels": sorted(selected),
-            "source": "hysteresis_enter_top_k_exit_below_top_2k_smoke",
+            "source": f"hysteresis_enter_top_k_exit_top_k_plus_{exit_margin_pct_points:g}pct_points_smoke",
+            "exit_margin_pct_points": exit_margin_pct_points,
+            "exit_rank_count": exit_count,
         }
         trajectories[str(layer_index)] = {
             "layer_name": layer_names[layer_index],
             "channel_count": channel_count,
             "budget": budget,
+            "exit_margin_pct_points": exit_margin_pct_points,
+            "exit_rank_count": exit_count,
             "steps_recorded": steps,
             "final_protected_channels": sorted(selected),
         }
@@ -263,7 +269,7 @@ def random_layers(reference_layers: dict[str, Any], seed: int, source: str) -> d
     return layers
 
 
-def build_protected_sets(source_dir: Path, seed: int) -> tuple[dict[str, Any], dict[str, Any]]:
+def build_protected_sets(source_dir: Path, seed: int, hyst_exit_margin_pct_points: float) -> tuple[dict[str, Any], dict[str, Any]]:
     source_sets = load_json(source_dir / "protected_sets.json")
     rows = list(shared.iter_activation_rows(source_dir / "activation_magnitudes.jsonl.gz"))
     means_by_layer, layer_names = activation_means(rows)
@@ -271,7 +277,12 @@ def build_protected_sets(source_dir: Path, seed: int) -> tuple[dict[str, Any], d
     static_layers = source_sets["regimes"]["static_1pct"]["layers"]
     m11b_layers = source_sets["regimes"]["m11b_top10"]["layers"]
     mlambda, lambda_allocation = lambda_layers(means_by_layer, m11b_layers, layer_names, alpha)
-    hyst, hyst_trajectories = hysteresis_layers(means_by_layer, m11b_layers, layer_names)
+    hyst, hyst_trajectories = hysteresis_layers(
+        means_by_layer,
+        m11b_layers,
+        layer_names,
+        exit_margin_pct_points=hyst_exit_margin_pct_points,
+    )
     random_lambda = random_layers(mlambda, seed + 17, "random_matched_lambda_layer_allocation")
     random_hyst = random_layers(m11b_layers, seed + 29, "random_matched_flat_hyst_budget")
     protected_sets = {
@@ -279,6 +290,7 @@ def build_protected_sets(source_dir: Path, seed: int) -> tuple[dict[str, Any], d
         "created_at_utc": shared.utc_now(),
         "selection_basis": "CPU-gated LAMBDA/HYST smoke from cached deterministic AIME-2025 activation magnitudes",
         "alpha": alpha,
+        "hysteresis_exit_margin_pct_points": hyst_exit_margin_pct_points,
         "regimes": {
             "static_1pct": {"layers": static_layers},
             "m11b_top10": {"layers": m11b_layers},
@@ -293,6 +305,7 @@ def build_protected_sets(source_dir: Path, seed: int) -> tuple[dict[str, Any], d
         "created_at_utc": shared.utc_now(),
         "update_positions": list(UPDATE_POSITIONS),
         "alpha": alpha,
+        "hysteresis_exit_margin_pct_points": hyst_exit_margin_pct_points,
         "by_regime": {
             "mlambda_top10_smoke": {"layer_allocation": lambda_allocation},
             "hyst_top10_smoke": {"layers": hyst_trajectories},
@@ -457,6 +470,7 @@ def write_run_contract(run_dir: Path, args: argparse.Namespace, model_key: str, 
             "batch_size": args.batch_size,
             "dtype": args.dtype,
             "device": args.device,
+            "hyst_exit_margin_pct_points": args.hyst_exit_margin_pct_points,
         },
     )
     (run_dir / "command.sh").write_text(f"#!/usr/bin/env bash\nset -euo pipefail\n{command}\n", encoding="utf-8")
@@ -484,6 +498,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=20260528)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--dtype", choices=["bfloat16", "float16", "float32"], default="bfloat16")
+    parser.add_argument(
+        "--hyst-exit-margin-pct-points",
+        type=float,
+        default=10.0,
+        help="HYST exit margin in percentage points above the enter top-k percent; 10 preserves the original top-2k policy.",
+    )
     args = parser.parse_args(argv)
 
     model_key = args.model_key
@@ -555,7 +575,11 @@ def main(argv: list[str] | None = None) -> int:
                 "note": "docs path retained for checker compatibility with the frozen preregistration; artifactized CPU source is also recorded.",
             },
         )
-        protected_sets, protected_trajectories = build_protected_sets(source_dir, args.seed)
+        protected_sets, protected_trajectories = build_protected_sets(
+            source_dir,
+            args.seed,
+            hyst_exit_margin_pct_points=args.hyst_exit_margin_pct_points,
+        )
         shared.write_json(run_dir / "protected_sets.json", protected_sets)
         shared.write_json(run_dir / "protected_trajectories.json", protected_trajectories)
         shared.write_json(run_dir / "source_artifacts.json", source_artifacts(source_dir))
