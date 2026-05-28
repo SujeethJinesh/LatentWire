@@ -1,0 +1,14 @@
+{
+  "prompt_ids": [
+    "opencompass_AIME2025_I_1",
+    "opencompass_AIME2025_I_2",
+    "opencompass_AIME2025_I_5"
+  ],
+  "prompt_indices": [
+    1,
+    2,
+    5
+  ],
+  "schema_version": "om_driftrot_clip_subset_v1_traces_used",
+  "split_name": "confirmation"
+}

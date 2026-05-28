@@ -1,0 +1,52 @@
+{
+  "created_at_utc": "2026-05-28T21:44:22Z",
+  "full_prompt_file_sha256": "sha256:ead004dae0848ad43ad102551f48fa22a0b8ed4a57efecdcf9d7ae387bb6d17a",
+  "prompt_count": 3,
+  "prompt_file": "/workspace/LatentWire/experimental/shared/prompts/aime_2025_indices_0_23.jsonl",
+  "prompt_file_sha256": "sha256:ead004dae0848ad43ad102551f48fa22a0b8ed4a57efecdcf9d7ae387bb6d17a",
+  "prompt_sha256": "sha256:8c61207a32ac2ec265b9b623be22a7815d5583b492b250a8a64a73e211c8dc54",
+  "prompt_sha256_semantics": "sha256 of concatenated prompt text in deterministic index order",
+  "prompts": [
+    {
+      "answer": "588",
+      "index": 1,
+      "prompt": "On $\\triangle ABC$ points $A,D,E$, and $B$ lie that order on side $\\overline{AB}$ with $AD=4, DE=16$, and $EB=8$. Points $A,F,G$, and $C$ lie in that order on side $\\overline{AC}$ with $AF=13, FG=52$, and $GC=26$. Let $M$ be the reflection of $D$ through $F$, and let $N$ be the reflection of $G$ through $E$. Quadrilateral $DEGF$ has area 288. Find the area of heptagon $AFNBCEM$.",
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "source_commit": "a6ad95f611d72cf628a80b58bd0432ef6638f958",
+      "source_dataset": "opencompass/AIME2025",
+      "source_file": "aime2025-I.jsonl"
+    },
+    {
+      "answer": "16",
+      "index": 2,
+      "prompt": "The 9 members of a baseball team went to an ice cream parlor after their game. Each player had a singlescoop cone of chocolate, vanilla, or strawberry ice cream. At least one player chose each flavor, and the number of players who chose chocolate was greater than the number of players who chose vanilla, which was greater than the number of players who chose strawberry. Let $N$ be the number of different assignments of flavors to players that meet these conditions. Find the remainder when $N$ is divided by 1000.",
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "source_commit": "a6ad95f611d72cf628a80b58bd0432ef6638f958",
+      "source_dataset": "opencompass/AIME2025",
+      "source_file": "aime2025-I.jsonl"
+    },
+    {
+      "answer": "504",
+      "index": 5,
+      "prompt": "An isosceles trapezoid has an inscribed circle tangent to each of its four sides. The radius of the circle is 3, and the area of the trapezoid is 72. Let the parallel sides of the trapezoid have lengths $r$ and $s$, with $r \\neq s$. Find $r^{2}+s^{2}$.",
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "source_commit": "a6ad95f611d72cf628a80b58bd0432ef6638f958",
+      "source_dataset": "opencompass/AIME2025",
+      "source_file": "aime2025-I.jsonl"
+    }
+  ],
+  "schema_version": "om_paroquant_baseline_v1_prompt_manifest",
+  "selected_prompt_indices": [
+    1,
+    2,
+    5
+  ],
+  "selection": "driftrot_clip_confirmation_subset",
+  "source": "AIME-2025",
+  "source_dataset": "opencompass/AIME2025",
+  "source_dataset_commit": "a6ad95f611d72cf628a80b58bd0432ef6638f958",
+  "source_file_order": [
+    "aime2025-I.jsonl",
+    "aime2025-II.jsonl"
+  ]
+}

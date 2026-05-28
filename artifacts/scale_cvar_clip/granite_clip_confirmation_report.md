@@ -1,6 +1,6 @@
 # Granite DriftRot Clip/CVaR Confirmation Screen
 
-Status: `PROMOTE_TIGHT_CLIP_REPEAT_CONFIRMATION`.
+Status: `PROMOTE_TIGHT_CLIP_FINAL_POSITIVE_TRACE`.
 
 This is a **screen**, not a final method claim. The run directly scored the
 held-out confirmation traces `[4, 7, 9, 10]` after the full 12-trace Granite
@@ -28,20 +28,36 @@ all four confirmation traces positive. This is the first evidence that a
 DriftRot-style tail objective can robustify static ParoQuant rather than merely
 replicate it.
 
+## Repeat Hold-Out
+
+After this screen, a separate positive-gap hold-out subset was run on prompts
+`[1, 2, 5]`, which were not in the inspected `[4, 7, 9, 10]` screen.
+
+| Prompt | Baseline ParoQuant | Tight clip | Margin |
+|---:|---:|---:|---:|
+| 1 | 1.567 | 1.647 | +0.081 |
+| 2 | 0.477 | 0.847 | +0.370 |
+| 5 | 0.997 | 0.996 | -0.001 |
+
+Hold-out median recovery is `0.996` with CI95 `[0.847, 1.647]`. This passes
+the repeat split gate: the weak prompt improves, the strong prompts do not
+meaningfully regress, and all three held-out recoveries remain positive.
+
 ## Caveat
 
-This result must not be presented as a final positive method yet. Config/clip
-retuning is Tier 2 in the novelty table, and this run directly inspected the
-confirmation subset. The next valid gate is one of:
+This result must still be framed carefully. Config/clip retuning is Tier 2 in
+the novelty table, not the headline method. The next valid gate is:
 
-1. repeat the tight clip on a different frozen split;
-2. run the full 12-trace tight-clip packet despite cost;
-3. test tight clip on another model/tail surface;
-4. use this as motivation for a Tier-1 residual-correction or rotation-refresh
-   gate.
+1. run the last remaining recoverable Granite trace, prompt `8`, so that all
+   positive-gap Granite traces have tight-clip scores;
+2. integrate tight clip as a tail-control DriftRot candidate, not as a generic
+   claim that hyperparameter tuning beats ParoQuant;
+3. test the idea on another model/tail surface only after the Granite positive
+   trace table is complete.
 
 ## Source Runs
 
 - loose: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_loose_confirmation_20260528T1735Z`
 - tight: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z`
+- tight hold-out: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z`
 - baseline: `experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z`

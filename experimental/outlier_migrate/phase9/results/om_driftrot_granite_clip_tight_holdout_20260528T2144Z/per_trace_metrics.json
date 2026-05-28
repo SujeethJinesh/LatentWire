@@ -1,0 +1,75 @@
+{
+  "created_at_utc": "2026-05-28T22:48:41Z",
+  "schema_version": "om_driftrot_clip_subset_v1_per_trace_metrics",
+  "traces": [
+    {
+      "mean_nll": {
+        "bf16": 0.02558990120633098,
+        "paroquant_w4a16": 0.007430262739035243,
+        "static_1pct": 0.053008247101388406
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0259201335823174,
+        "paroquant_w4a16": 1.0074579356377307,
+        "static_1pct": 1.0544383411434046
+      },
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "recoveries": {
+        "paroquant_w4a16": 1.6473828309524665
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "split_name": "confirmation",
+      "static_gap": 0.02851820756108725
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.012802009405277204,
+        "paroquant_w4a16": 0.019285396138002397,
+        "static_1pct": 0.054472745359817054
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0128843059397086,
+        "paroquant_w4a16": 1.0194725606344548,
+        "static_1pct": 1.055983695565859
+      },
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "recoveries": {
+        "paroquant_w4a16": 0.8471380975022251
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "split_name": "confirmation",
+      "static_gap": 0.04309938962615045
+    },
+    {
+      "mean_nll": {
+        "bf16": 4.493739586708401e-05,
+        "paroquant_w4a16": 0.00023270627191696036,
+        "static_1pct": 0.04951611763096586
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.000044938405567,
+        "paroquant_w4a16": 1.0002327333501217,
+        "static_1pct": 1.0507625278809998
+      },
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "recoveries": {
+        "paroquant_w4a16": 0.9962972423079028
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "split_name": "confirmation",
+      "static_gap": 0.05071758947543281
+    }
+  ]
+}

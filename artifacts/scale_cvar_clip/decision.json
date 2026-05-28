@@ -1,6 +1,6 @@
 {
-  "schema_version": "granite_clip_cvar_confirmation_decision_v1",
-  "decision": "PROMOTE_TIGHT_CLIP_REPEAT_CONFIRMATION",
+  "schema_version": "granite_clip_cvar_confirmation_decision_v2",
+  "decision": "PROMOTE_TIGHT_CLIP_FINAL_POSITIVE_TRACE",
   "not_final_method_claim": true,
   "baseline": {
     "candidate": "baseline_clip_0p25_4",
@@ -22,5 +22,20 @@
     "worst": 0.6006560711988609,
     "mean": 2.0853502078482533
   },
-  "reason": "Tight clip fixes the known Granite ParoQuant tail on the four-trace confirmation screen; loose clip worsens the tail. Because confirmation was inspected directly, require repeat split/full finalist before paper-level method claim."
+  "tight_clip_holdout": {
+    "candidate": "tight_clip_0p5_2p0_holdout",
+    "run_dir": "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z",
+    "prompt_indices": [1, 2, 5],
+    "decision": "PASS_REPEAT_HOLDOUT",
+    "median": 0.9962972423079028,
+    "ci95_low": 0.8471380975022251,
+    "ci95_high": 1.6473828309524665,
+    "margins_vs_baseline": {
+      "1": 0.08078299077338724,
+      "2": 0.370093645097194,
+      "5": -0.0011990433387960575
+    }
+  },
+  "next_gate": "score remaining positive-gap Granite prompt 8 with tight clip to complete the positive-trace table",
+  "reason": "Tight clip fixes the known Granite ParoQuant tail on the inspected screen and passes a separate positive-gap hold-out split. Frame as Tier-2 tail-control DriftRot evidence, not a headline method claim."
 }

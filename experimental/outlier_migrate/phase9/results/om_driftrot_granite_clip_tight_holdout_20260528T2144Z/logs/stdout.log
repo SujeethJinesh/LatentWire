@@ -1,0 +1,22 @@
+{
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 1.6473828309524665,
+        "ci95_low": 0.8471380975022251
+      },
+      "included_trace_count": 3,
+      "mean_recovery": 1.1636060569208648,
+      "median_recovery": 0.9962972423079028,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        1.6473828309524665,
+        0.8471380975022251,
+        0.9962972423079028
+      ],
+      "total_trace_count": 3
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z"
+}

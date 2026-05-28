@@ -1,0 +1,106 @@
+{
+  "artifacts": [
+    {
+      "bytes": 301,
+      "path": "command.sh",
+      "sha256": "sha256:891f5ff1e84b11dc81da307bc36371e53fae43b3dddcf605b0b49e4c8e1d02fb"
+    },
+    {
+      "bytes": 774,
+      "path": "command_metadata.json",
+      "sha256": "sha256:e7ea5b39845d7f526106af6158b6bd10f6bc31ac4e884de8251ca3f9cd579d2d"
+    },
+    {
+      "bytes": 553,
+      "path": "config.json",
+      "sha256": "sha256:543955d4df14366688eb225a926a802c56e9b844f8df6e3e01b943ce1fc0df06"
+    },
+    {
+      "bytes": 164,
+      "path": "decision.json",
+      "sha256": "sha256:205080a221ea0a7da134fcc6a3c6f3dfcf244d0f103571ddce03685c280e461b"
+    },
+    {
+      "bytes": 186,
+      "path": "decoding_config.json",
+      "sha256": "sha256:8335e072f824bbfbbe825ebdabbc132e1491d7cace259b847df33ab2e04ad79c"
+    },
+    {
+      "bytes": 8675,
+      "path": "environment.json",
+      "sha256": "sha256:b4a84495fe5b5ff705419fa698fdfcc297a4f3331e030dbb2679d5bb155e3ef7"
+    },
+    {
+      "bytes": 6804,
+      "path": "environment.txt",
+      "sha256": "sha256:4aba210d3fb645ebb85b9b598d7ec4fb1a906e39136cd1db64b6f61e9ff0cb41"
+    },
+    {
+      "bytes": 224841,
+      "path": "excluded_tensors.json",
+      "sha256": "sha256:5376cc6d2f0496b7fb1562106e52f43f10cee16d0d96136b1d55f9911168b4f2"
+    },
+    {
+      "bytes": 1494,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:0536417a1f2dd71957a97e1f1a686d5aa599154d5d92b42fed6aae6c11b2eb6c"
+    },
+    {
+      "bytes": 0,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 966,
+      "path": "metrics.json",
+      "sha256": "sha256:668388fab83a3c72b916203acc189c5bef337a8c268e6446591dfd444b89bd67"
+    },
+    {
+      "bytes": 9297,
+      "path": "model_provenance.json",
+      "sha256": "sha256:7649d61c13900bf1a0042695f51fc4db6673d3b4f9c58c20c3dfd301d245b417"
+    },
+    {
+      "bytes": 2169,
+      "path": "per_trace_metrics.json",
+      "sha256": "sha256:597e8331e1b41a6ef228b3cd22c09a4ffc342d9d90dea4f30a4a57e0e78c61c4"
+    },
+    {
+      "bytes": 2949,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:36308a7ff04aca13ceeede2b2c8f07a39cc4cd0b43e0a0d17ac4721f94b68d4f"
+    },
+    {
+      "bytes": 85,
+      "path": "random_seed.json",
+      "sha256": "sha256:d55abe66e4688bd023a7426300b860fbc21eb1582071fd4647b00aab4140f18f"
+    },
+    {
+      "bytes": 529,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:0cea4b17ec1ad0711d9c43e5d00e78b3cafa51f6bc5243b1e8be510feb66d84c"
+    },
+    {
+      "bytes": 678,
+      "path": "score_cache/bf16.json",
+      "sha256": "sha256:b68175fea9dc997b7df99203b13f454d5cad8a0889e7ba05e33ad32346f52de1"
+    },
+    {
+      "bytes": 692,
+      "path": "score_cache/paroquant_w4a16.json",
+      "sha256": "sha256:6e885a84fc56f2184b7e78ff5cb19e95107403bb9290c9d10da561bd24938b1b"
+    },
+    {
+      "bytes": 684,
+      "path": "score_cache/static_1pct.json",
+      "sha256": "sha256:c8e2919a4d8142e822cad18dc3e7b968e98ac84e8b240d04253159d3f6861afb"
+    },
+    {
+      "bytes": 262,
+      "path": "traces_used.json",
+      "sha256": "sha256:694841cbd0045ab3d93bbff8642f958292979d479ecd5948eb435889ed9bffc2"
+    }
+  ],
+  "created_at_utc": "2026-05-28T22:48:41Z",
+  "schema_version": "om_driftrot_clip_subset_v1_artifact_hashes"
+}
