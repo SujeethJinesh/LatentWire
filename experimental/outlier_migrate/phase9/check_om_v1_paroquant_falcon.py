@@ -57,6 +57,18 @@ def _patch_base() -> None:
     base.FAIL_INFRA = FAIL_INFRA
 
 
+def expected_source_file(index: int) -> str:
+    return base.expected_source_file(index)
+
+
+def expected_prompt_id(index: int) -> str:
+    return base.expected_prompt_id(index)
+
+
+def prompt_payload_sha256(prompts: list[dict]) -> str:
+    return base.prompt_payload_sha256(prompts)
+
+
 def decision_from_median(median_recovery: float | None) -> tuple[str, list[str]]:
     if median_recovery is None:
         return FAIL_INFRA, ["no traces had a positive recoverable static top-1% gap"]
