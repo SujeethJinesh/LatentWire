@@ -1,0 +1,25 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "Early Phase 3/4 packets used Granite-Tiny/Small variants; use as design evidence, not final positive method.",
+    "experiment_id": "01_static_top1_static_union",
+    "hypothesis": "Static or union channel protection should recover long-decode W4A16 quality.",
+    "implementation": "Protect channels selected from fixed calibration positions or unions across calibration positions.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "static protection",
+    "model": "Granite",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z",
+      "experimental/outlier_migrate/phase4/results/om_phase4_20260511T054000Z"
+    ],
+    "status": "KILL",
+    "title": "Static top-1 and static union controls",
+    "why": "Static protection is not enough under drift; union/static controls either saturate budget or recover inconsistently."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z",
+    "experimental/outlier_migrate/phase4/results/om_phase4_20260511T054000Z"
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "artifact_complete": true,
+  "best_alpha": "m11_alpha_0_5",
+  "control_results": {
+    "random_walk_protection": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.643482239144803,
+        "ci95_low": -3.761249514922784
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -43.58789284254471,
+      "median_recovery": -1.2061055483492975,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -3.761249514922784,
+        0.643482239144803,
+        9.233232661200654,
+        -0.9476900013031087,
+        -2.3829710668506543,
+        -1.4645210953954866,
+        -349.26063929335777,
+        -0.7627866688733733
+      ],
+      "total_trace_count": 12
+    },
+    "static_1pct": {
+      "median_recovery": 0.0
+    }
+  },
+  "decision": "KILL_M11_AMBIGUOUS",
+  "primary_results_by_alpha": {
+    "m11_alpha_0_1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.314294972206246,
+        "ci95_low": -8.115530358174327
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -54.65189052848554,
+      "median_recovery": -1.0771913201462333,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -3.7354573505297353,
+        -2.1965056118913786,
+        -424.55081341787167,
+        0.8499415238891577,
+        -8.115530358174327,
+        0.042122971598912096,
+        0.314294972206246,
+        0.1768230428884976
+      ],
+      "total_trace_count": 12
+    },
+    "m11_alpha_0_3": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.62180911268009,
+        "ci95_low": -11.228499920632984
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -72.02364704715225,
+      "median_recovery": -0.04816253302908857,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -2.8051209573365323,
+        -0.14451920217606307,
+        -563.8749079458157,
+        0.9925365020223235,
+        -11.228499920632984,
+        0.04819413611788592,
+        0.62180911268009,
+        0.2013318979230111
+      ],
+      "total_trace_count": 12
+    },
+    "m11_alpha_0_5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.7045992558730417,
+        "ci95_low": -8.94115615101423
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -62.972270575686004,
+      "median_recovery": 0.048299284137681975,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -0.8777219630603719,
+        0.19115573677624775,
+        -495.94594435568933,
+        0.9943043033512684,
+        -8.94115615101423,
+        0.0005191251745666481,
+        0.7045992558730417,
+        0.0960794431007973
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "reasons": [
+    "M11 is neither pass nor a specific no-improvement/random-control kill"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z",
+  "thresholds": {
+    "absolute_cap_fraction": 0.03,
+    "bootstrap_seed": 20260525,
+    "ema_threshold": 0.5,
+    "kill_within_static_1pct_abs_le": 0.05,
+    "pass_beats_random_walk_by_ge": 0.2,
+    "pass_beats_static_1pct_by_ge": 0.15,
+    "pass_ci95_low_gt": 0.1,
+    "pass_median_recovery_min": 0.3,
+    "random_control_beats_by_gt": 0.1
+  }
+}

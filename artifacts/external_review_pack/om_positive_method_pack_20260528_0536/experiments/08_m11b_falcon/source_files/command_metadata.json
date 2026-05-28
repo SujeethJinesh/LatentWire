@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "run_om_phase9_m11b_budget_scaling.py",
+    "--run-id",
+    "om_v2_m11b_falcon_20260527T1438Z",
+    "--reuse-trace-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z/falcon_h1_0_5b"
+  ],
+  "batch_size": 1,
+  "branch": "outlier_migrate_phase9_m11b_budget_scaling",
+  "created_at_utc": "2026-05-27T14:34:48Z",
+  "cwd": "/workspace/LatentWire",
+  "reuse_activation_run_dir": null,
+  "reuse_score_run_dir": null,
+  "reuse_trace_run_dir": "experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z/falcon_h1_0_5b",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+  "schema_version": "om_v2_m11b_falcon_v1_command"
+}

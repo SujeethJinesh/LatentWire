@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "07_m11b_deepseek",
+    "hypothesis": "M11b top-10 should generalize to dense Transformer reasoning models.",
+    "implementation": "Same M11b budget-scaling protocol on DeepSeek-R1-Distill-Qwen-1.5B.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M11b",
+    "model": "DeepSeek",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z"
+    ],
+    "status": "AMBIG",
+    "title": "M11b DeepSeek",
+    "why": "Top-10 median is positive but CI crosses negative and static top-10 is competitive."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "artifact_files": [
+    "artifacts/wjac_prefilter/decision.json",
+    "artifacts/wjac_prefilter/report.md",
+    "artifacts/wjac_prefilter/wjac_scores.parquet"
+  ],
+  "experiment": {
+    "artifact_files": [
+      "artifacts/wjac_prefilter/decision.json",
+      "artifacts/wjac_prefilter/report.md",
+      "artifacts/wjac_prefilter/wjac_scores.parquet"
+    ],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "18_wjac_prefilter",
+    "hypothesis": "Weight-column norm sensitivity changes top-k enough to justify GPU scoring.",
+    "implementation": "Score q_i * EMA(x_i^2) with q_i=||W[:,i]||^2; compare overlap/rank/churn offline.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "WJAC",
+    "model": "all cached slices",
+    "run_dirs": [],
+    "status": "KILL",
+    "title": "WJAC offline prefilter",
+    "why": "Corrected two-of-four kill diagnostics triggered on every covered model/slice."
+  },
+  "source_run_dirs": []
+}

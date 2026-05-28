@@ -1,0 +1,378 @@
+{
+  "created_at_utc": "2026-05-16T19:20:32Z",
+  "schema_version": "om_phase9_m11_v1_per_trace_metrics",
+  "traces": [
+    {
+      "mean_nll": {
+        "bf16": 0.0018152593644025217,
+        "m11_alpha_0_1": 0.0005319706949562519,
+        "m11_alpha_0_3": 0.0006708205388716859,
+        "m11_alpha_0_5": 0.0006641731544252405,
+        "random_walk_protection": 0.0025142913865714434,
+        "static_1pct": 0.0006273773848011199
+      },
+      "no_recoverable_static_gap": true,
+      "perplexities": {
+        "bf16": 1.0018169079450654,
+        "m11_alpha_0_1": 1.0005321122164603,
+        "m11_alpha_0_3": 1.0006710455892893,
+        "m11_alpha_0_5": 1.0006643937662536,
+        "random_walk_protection": 1.0025174548679088,
+        "static_1pct": 1.0006275742271553
+      },
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0,
+      "recoveries": {
+        "m11_alpha_0_1": null,
+        "m11_alpha_0_3": null,
+        "m11_alpha_0_5": null,
+        "random_walk_protection": null
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": -0.0011893337179100794
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.02558990120633098,
+        "m11_alpha_0_1": 0.14925318310270086,
+        "m11_alpha_0_3": 0.1261350494751241,
+        "m11_alpha_0_5": 0.07646962250873912,
+        "random_walk_protection": 0.14988654603075702,
+        "static_1pct": 0.053008247101388406
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0259201335823174,
+        "m11_alpha_0_1": 1.1609668892014007,
+        "m11_alpha_0_3": 1.1344353628386836,
+        "m11_alpha_0_5": 1.0794693982668853,
+        "random_walk_protection": 1.1617024354990113,
+        "static_1pct": 1.0544383411434046
+      },
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1,
+      "recoveries": {
+        "m11_alpha_0_1": -3.7354573505297353,
+        "m11_alpha_0_3": -2.8051209573365323,
+        "m11_alpha_0_5": -0.8777219630603719,
+        "random_walk_protection": -3.761249514922784
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.02851820756108725
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.012802009405277204,
+        "m11_alpha_0_1": 0.14032851814408787,
+        "m11_alpha_0_3": 0.060353888671670575,
+        "m11_alpha_0_5": 0.046640235668746755,
+        "random_walk_protection": 0.027858331846800866,
+        "static_1pct": 0.054472745359817054
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0128843059397086,
+        "m11_alpha_0_1": 1.1506517467487916,
+        "m11_alpha_0_3": 1.0622123849689056,
+        "m11_alpha_0_5": 1.0477449999872657,
+        "random_walk_protection": 1.0282500038234494,
+        "static_1pct": 1.055983695565859
+      },
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "prompt_index": 2,
+      "recoveries": {
+        "m11_alpha_0_1": -2.1965056118913786,
+        "m11_alpha_0_3": -0.14451920217606307,
+        "m11_alpha_0_5": 0.19115573677624775,
+        "random_walk_protection": 0.643482239144803
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.04309938962615045
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.00040124266054952784,
+        "m11_alpha_0_1": 0.00044065574486262804,
+        "m11_alpha_0_3": 0.0011186343874420857,
+        "m11_alpha_0_5": 0.0023543403533512475,
+        "random_walk_protection": 0.006026535975982128,
+        "static_1pct": 0.0003411410087684752
+      },
+      "no_recoverable_static_gap": true,
+      "perplexities": {
+        "bf16": 1.0004013231691533,
+        "m11_alpha_0_1": 1.0004407528478678,
+        "m11_alpha_0_3": 1.001119260292253,
+        "m11_alpha_0_5": 1.0023571139888678,
+        "random_walk_protection": 1.0060447320787083,
+        "static_1pct": 1.00034119920398
+      },
+      "prompt_id": "opencompass_AIME2025_I_3",
+      "prompt_index": 3,
+      "recoveries": {
+        "m11_alpha_0_1": null,
+        "m11_alpha_0_3": null,
+        "m11_alpha_0_5": null,
+        "random_walk_protection": null
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": -6.012396517340868e-05
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.03609823703300208,
+        "m11_alpha_0_1": 0.311446794657968,
+        "m11_alpha_0_3": 0.38729800726287067,
+        "m11_alpha_0_5": 0.3510340381471906,
+        "random_walk_protection": 0.02994647982995957,
+        "static_1pct": 0.03684285231429385
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0367576894878223,
+        "m11_alpha_0_1": 1.3653991379630723,
+        "m11_alpha_0_3": 1.4729953891966583,
+        "m11_alpha_0_5": 1.4205356774917715,
+        "random_walk_protection": 1.0303993853274358,
+        "static_1pct": 1.0375299625939074
+      },
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "recoveries": {
+        "m11_alpha_0_1": -424.55081341787167,
+        "m11_alpha_0_3": -563.8749079458157,
+        "m11_alpha_0_5": -495.94594435568933,
+        "random_walk_protection": 9.233232661200654
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.0007722731060850752
+    },
+    {
+      "mean_nll": {
+        "bf16": 4.493739586708401e-05,
+        "m11_alpha_0_1": 0.007626387631556791,
+        "m11_alpha_0_3": 0.0004233793943438785,
+        "m11_alpha_0_5": 0.0003337547076746883,
+        "random_walk_protection": 0.09424332029119019,
+        "static_1pct": 0.04951611763096586
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.000044938405567,
+        "m11_alpha_0_1": 1.0076555425942657,
+        "m11_alpha_0_3": 1.0004234690320495,
+        "m11_alpha_0_5": 1.000333810409974,
+        "random_walk_protection": 1.0988270803170632,
+        "static_1pct": 1.0507625278809998
+      },
+      "prompt_id": "opencompass_AIME2025_I_5",
+      "prompt_index": 5,
+      "recoveries": {
+        "m11_alpha_0_1": 0.8499415238891577,
+        "m11_alpha_0_3": 0.9925365020223235,
+        "m11_alpha_0_5": 0.9943043033512684,
+        "random_walk_protection": -0.9476900013031087
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.05071758947543281
+    },
+    {
+      "mean_nll": {
+        "bf16": 3.24848918841214e-05,
+        "m11_alpha_0_1": 2.7559853640488075e-05,
+        "m11_alpha_0_3": 3.178114572041646e-05,
+        "m11_alpha_0_5": 1.655551245421938e-05,
+        "random_walk_protection": 0.12500890333267417,
+        "static_1pct": 1.4442438338146957e-05
+      },
+      "no_recoverable_static_gap": true,
+      "perplexities": {
+        "bf16": 1.000032485419524,
+        "m11_alpha_0_1": 1.0000275602334168,
+        "m11_alpha_0_3": 1.0000317816507465,
+        "m11_alpha_0_5": 1.0000165556494975,
+        "random_walk_protection": 1.1331585419093853,
+        "static_1pct": 1.0000144425426307
+      },
+      "prompt_id": "opencompass_AIME2025_I_6",
+      "prompt_index": 6,
+      "recoveries": {
+        "m11_alpha_0_1": null,
+        "m11_alpha_0_3": null,
+        "m11_alpha_0_5": null,
+        "random_walk_protection": null
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": -1.8042876893220594e-05
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.0009341512697222942,
+        "m11_alpha_0_1": 0.09412106873950887,
+        "m11_alpha_0_3": 0.12405429936469692,
+        "m11_alpha_0_5": 0.102147712196895,
+        "random_walk_protection": 0.03653900947341526,
+        "static_1pct": 0.011591499201476396
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.000934587724914,
+        "m11_alpha_0_1": 1.0986927552123584,
+        "m11_alpha_0_3": 1.1320773404106572,
+        "m11_alpha_0_5": 1.1075470578548832,
+        "random_walk_protection": 1.0372147644303538,
+        "static_1pct": 1.0116589409601353
+      },
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "recoveries": {
+        "m11_alpha_0_1": -8.115530358174327,
+        "m11_alpha_0_3": -11.228499920632984,
+        "m11_alpha_0_5": -8.94115615101423,
+        "random_walk_protection": -2.3829710668506543
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.010724353235221251
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.0751182941668036,
+        "m11_alpha_0_1": 0.20535120150825423,
+        "m11_alpha_0_3": 0.2045769567990655,
+        "m11_alpha_0_5": 0.21064079731260693,
+        "random_walk_protection": 0.38103850863233335,
+        "static_1pct": 0.21070662349732472
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0780116658341599,
+        "m11_alpha_0_1": 1.2279562493292806,
+        "m11_alpha_0_3": 1.2270058786573297,
+        "m11_alpha_0_5": 1.2344688508834765,
+        "random_walk_protection": 1.4638039734134145,
+        "static_1pct": 1.234550113932672
+      },
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "prompt_index": 8,
+      "recoveries": {
+        "m11_alpha_0_1": 0.042122971598912096,
+        "m11_alpha_0_3": 0.04819413611788592,
+        "m11_alpha_0_5": 0.0005191251745666481,
+        "random_walk_protection": -1.4645210953954866
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.15653844809851214
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.00010308439202888486,
+        "m11_alpha_0_1": 0.0006206712630582312,
+        "m11_alpha_0_3": 0.0003885852239519927,
+        "m11_alpha_0_5": 0.0003260929212959285,
+        "random_walk_protection": 0.2347432572765058,
+        "static_1pct": 0.0008578192632036075
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0001030897054073,
+        "m11_alpha_0_1": 1.0006208639193233,
+        "m11_alpha_0_3": 1.0003886607329704,
+        "m11_alpha_0_5": 1.0003261460953723,
+        "random_walk_protection": 1.2645840542964537,
+        "static_1pct": 1.0008581872953752
+      },
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "recoveries": {
+        "m11_alpha_0_1": 0.314294972206246,
+        "m11_alpha_0_3": 0.62180911268009,
+        "m11_alpha_0_5": 0.7045992558730417,
+        "random_walk_protection": -349.26063929335777
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.0007550975899679457
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.020703398236064152,
+        "m11_alpha_0_1": 0.1226189159453611,
+        "m11_alpha_0_3": 0.11972986902074421,
+        "m11_alpha_0_5": 0.1320781683305879,
+        "random_walk_protection": 0.22751857944220427,
+        "static_1pct": 0.14321868602370302
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0209192002909848,
+        "m11_alpha_0_1": 1.1304535410329737,
+        "m11_alpha_0_3": 1.12719232088419,
+        "m11_alpha_0_5": 1.1411975212859131,
+        "random_walk_protection": 1.2554807656697609,
+        "static_1pct": 1.1539821338385186
+      },
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "recoveries": {
+        "m11_alpha_0_1": 0.1768230428884976,
+        "m11_alpha_0_3": 0.2013318979230111,
+        "m11_alpha_0_5": 0.0960794431007973,
+        "random_walk_protection": -0.7627866688733733
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": 0.13306293354753373
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.0013811333269134751,
+        "m11_alpha_0_1": 0.0005470831925298292,
+        "m11_alpha_0_3": 0.0006113025992310755,
+        "m11_alpha_0_5": 0.000636162407144869,
+        "random_walk_protection": 0.23199689462338352,
+        "static_1pct": 0.000189867078984704
+      },
+      "no_recoverable_static_gap": true,
+      "perplexities": {
+        "bf16": 1.0013820875307906,
+        "m11_alpha_0_1": 1.0005472328698337,
+        "m11_alpha_0_3": 1.0006114894827438,
+        "m11_alpha_0_5": 1.0006363648013652,
+        "random_walk_protection": 1.2611158125826936,
+        "static_1pct": 1.0001898851048794
+      },
+      "prompt_id": "opencompass_AIME2025_I_11",
+      "prompt_index": 11,
+      "recoveries": {
+        "m11_alpha_0_1": null,
+        "m11_alpha_0_3": null,
+        "m11_alpha_0_5": null,
+        "random_walk_protection": null
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "static_gap": -0.0011922024259112263
+    }
+  ]
+}

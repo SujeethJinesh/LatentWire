@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "16_e2_cross_prompt",
+    "hypothesis": "Drift is AIME-specific.",
+    "implementation": "Narrowed MATH-only cross-prompt replication.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "cross-prompt drift",
+    "model": "Granite/DeepSeek/Falcon",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_stage1_e2_mathonly_20260526T1202Z"
+    ],
+    "status": "PASS",
+    "title": "E2 cross-prompt drift replication",
+    "why": "Enough replication to keep the drift story from being AIME-only, with honest narrowed scope."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_stage1_e2_mathonly_20260526T1202Z"
+  ]
+}

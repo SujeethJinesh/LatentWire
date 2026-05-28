@@ -1,0 +1,10 @@
+{
+  "method": "KL+FFT",
+  "model": "Granite/DeepSeek/Falcon",
+  "schema_version": "external_review_pack_synthetic_metrics",
+  "source_files": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_kl_granite_small_dense_20260519T085400Z",
+    "experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z"
+  ],
+  "status": "PASS"
+}

@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "10_v1_paroquant_nemotron",
+    "hypothesis": "Test whether rotation also dominates or matches M11b on Nemotron.",
+    "implementation": "ParoQuant W4A16 on Nemotron using reused BF16/static traces and score caches.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "ParoQuant",
+    "model": "Nemotron",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z"
+    ],
+    "status": "RUNNING",
+    "title": "V1 ParoQuant on Nemotron",
+    "why": "Still running; final comparison to M11b top-10 not available in this pack."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z"
+  ]
+}

@@ -1,0 +1,167 @@
+## stdout tail
+{
+  "primary_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.7045992558730417,
+      "ci95_low": -8.94115615101423
+    },
+    "included_trace_count": 8,
+    "mean_recovery": -62.972270575686004,
+    "median_recovery": 0.048299284137681975,
+    "no_recoverable_static_gap_count": 4,
+    "no_recoverable_static_gap_fraction": 0.3333333333333333,
+    "total_trace_count": 12
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z"
+}
+{
+  "artifact_complete": true,
+  "checker_decision": "KILL_M11_AMBIGUOUS"
+}
+
+## stderr tail
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  3.29it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:02,  3.22it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:01<00:02,  3.20it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  3.28it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:01,  3.39it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:02<00:01,  3.47it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  3.42it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:00,  3.50it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:03<00:00,  3.61it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:03<00:00,  3.67it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:03<00:00,  4.30it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:03<00:00,  3.56it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.92it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.84it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:03,  3.00it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  3.13it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:02,  3.32it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:01<00:02,  3.42it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  3.36it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:01,  3.21it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:02<00:01,  3.24it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  3.33it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:00,  3.37it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:03<00:00,  3.44it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:03<00:00,  3.49it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  4.10it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.43it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.89it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.84it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:03,  2.83it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.78it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.77it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:02,  2.83it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.78it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:02,  2.75it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.80it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.80it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:01,  2.79it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.87it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  2.92it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.41it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  2.94it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  3.08it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.57it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.68it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.75it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.75it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:02,  2.74it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.84it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:02,  2.97it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.82it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.82it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:01,  2.84it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.81it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  2.72it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.13it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  2.86it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.69it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.41it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.26it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:04,  2.34it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:02<00:03,  2.41it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:03,  2.39it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:03<00:03,  2.18it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:03<00:02,  2.23it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:02,  2.21it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:04<00:01,  2.26it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:04<00:01,  2.25it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:05<00:00,  2.18it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:05<00:00,  2.21it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  2.59it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  2.34it/s]
+
+## run_events tail
+{"created_at_utc": "2026-05-16T01:07:34Z", "event": "run_started"}
+{"created_at_utc": "2026-05-16T01:18:02Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [0]}
+{"created_at_utc": "2026-05-16T01:25:43Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [1]}
+{"created_at_utc": "2026-05-16T01:33:20Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [2]}
+{"created_at_utc": "2026-05-16T01:40:49Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [3]}
+{"created_at_utc": "2026-05-16T01:48:04Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [4]}
+{"created_at_utc": "2026-05-16T01:55:18Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [5]}
+{"created_at_utc": "2026-05-16T02:02:38Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [6]}
+{"created_at_utc": "2026-05-16T02:10:01Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [7]}
+{"created_at_utc": "2026-05-16T02:17:18Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [8]}
+{"created_at_utc": "2026-05-16T02:24:38Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [9]}
+{"created_at_utc": "2026-05-16T02:31:58Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [10]}
+{"created_at_utc": "2026-05-16T02:39:29Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [11]}
+{"created_at_utc": "2026-05-16T02:42:37Z", "event": "reused_score_cache", "regime": "bf16", "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z"}
+{"created_at_utc": "2026-05-16T03:05:39Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T03:26:12Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T03:46:39Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T04:07:08Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T04:27:37Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T04:48:03Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T05:08:29Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T05:28:55Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T05:49:21Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T06:09:52Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T06:30:26Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T06:50:58Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "m11_alpha_0_1"}
+{"created_at_utc": "2026-05-16T07:14:02Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T07:34:37Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T07:55:08Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T08:15:41Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T08:36:11Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T08:56:41Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T09:17:10Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T09:37:38Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T09:58:09Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T10:18:42Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T10:39:14Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T10:59:44Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "m11_alpha_0_3"}
+{"created_at_utc": "2026-05-16T11:22:54Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T11:43:25Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T12:03:56Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T12:24:27Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T12:44:56Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T13:05:19Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T13:25:43Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T13:46:18Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T14:06:58Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T14:27:35Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T14:48:11Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T15:08:51Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-16T15:32:30Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T15:53:13Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T16:13:53Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T16:34:37Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T16:55:19Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T17:16:02Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T17:36:44Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T17:57:25Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T18:18:10Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T18:38:55Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T18:59:44Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T19:20:32Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "random_walk_protection"}
+{"created_at_utc": "2026-05-16T19:20:34Z", "event": "run_completed"}

@@ -1,0 +1,11 @@
+{
+  "decision": "DEFERRED",
+  "reasons": [
+    "Surfaces are hookable but cached internal activations are absent; no GPU before LAMBDA/HYST smoke."
+  ],
+  "source_files": [
+    "artifacts/msurface/decision.json",
+    "artifacts/msurface/hook_map.md",
+    "artifacts/msurface/surface_drift_table.csv"
+  ]
+}

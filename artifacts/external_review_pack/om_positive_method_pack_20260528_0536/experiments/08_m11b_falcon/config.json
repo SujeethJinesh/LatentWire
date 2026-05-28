@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "08_m11b_falcon",
+    "hypothesis": "M11b top-10 should help Falcon-H1 parallel hybrid.",
+    "implementation": "Same M11b budget-scaling protocol on Falcon-H1.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M11b",
+    "model": "Falcon-H1",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z"
+    ],
+    "status": "KILL",
+    "title": "M11b Falcon-H1",
+    "why": "Median recovery is near zero; Falcon appears to resist simple EMA channel protection."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z"
+  ]
+}

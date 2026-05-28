@@ -1,0 +1,56 @@
+{
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260622,
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.33305682647347656,
+        "ci95_low": -0.37800414213708944
+      },
+      "included_trace_count": 11,
+      "mean_recovery": 0.0029956687744632834,
+      "median_recovery": 0.0011139373862903978,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.4937768399763942,
+        "ci95_low": -0.40909502923795116
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.006316656145762398,
+      "median_recovery": 0.3353894408225412,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.3686486043725524,
+        "ci95_low": -1.078576149834236
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.31813013345868113,
+      "median_recovery": -0.17689931525896085,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.5384789756798898,
+        "ci95_low": -1.1424448873886348
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.15304248647380628,
+      "median_recovery": 0.376752614594403,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_v2_m11b_deepseek_v1_bootstrap_ci"
+}

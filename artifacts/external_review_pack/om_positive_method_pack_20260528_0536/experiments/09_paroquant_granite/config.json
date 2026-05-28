@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "09_paroquant_granite",
+    "hypothesis": "A rotation baseline can recover W4A16 Granite quality even when channel-set methods struggle.",
+    "implementation": "ParoQuant-style rotation plus W4A16 scoring.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "ParoQuant",
+    "model": "Granite",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z"
+    ],
+    "status": "PASS",
+    "title": "ParoQuant Granite baseline",
+    "why": "High median recovery with positive CI; supports the regime-aware claim that Granite prefers rotation."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z"
+  ]
+}

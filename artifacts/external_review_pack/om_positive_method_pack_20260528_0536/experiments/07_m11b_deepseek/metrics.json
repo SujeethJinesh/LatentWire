@@ -1,0 +1,120 @@
+{
+  "alpha": 0.3,
+  "artifacts": {
+    "activation_magnitudes": "activation_magnitudes.jsonl.gz",
+    "activation_magnitudes_sha256": "sha256:73ac7387df71271c17c89ae29937d1a57ad281ac3ebbef6bd73443e331b668ab",
+    "bf16_traces": "bf16_traces.jsonl.gz",
+    "bf16_traces_sha256": "sha256:7d1b414d56b898a35300d3f3bf1be389ab51865cf4355f1acb11b02d5072dfbf",
+    "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z"
+  },
+  "budget_fractions": [
+    0.01,
+    0.05,
+    0.1
+  ],
+  "created_at_utc": "2026-05-27T14:32:10Z",
+  "effective_trace_count": 12,
+  "included_trace_count": 11,
+  "metric_formula": "1 - (perplexity_regime - perplexity_BF16) / (perplexity_static_1pct - perplexity_BF16)",
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "model_id": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+  "model_snapshot_commit": "ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562",
+  "no_recoverable_static_gap_count": 1,
+  "no_recoverable_static_gap_fraction": 0.08333333333333333,
+  "preregistration": "experimental/outlier_migrate/phase9/preregister_om_v2_m11b_deepseek_falcon.md",
+  "preregistration_sha256": "sha256:86a90d330a2e12ab6560436125d7fc37516fe001cd44328010b905343574ba95",
+  "prompt_sha256": "sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd",
+  "protected_set_count_stats": {
+    "m11b_top1": {
+      "max": 16,
+      "mean": 16.0,
+      "median": 16.0,
+      "min": 16
+    },
+    "m11b_top10": {
+      "max": 154,
+      "mean": 154.0,
+      "median": 154.0,
+      "min": 154
+    },
+    "m11b_top5": {
+      "max": 77,
+      "mean": 77.0,
+      "median": 77.0,
+      "min": 77
+    },
+    "static_1pct": {
+      "max": 16,
+      "mean": 16.0,
+      "median": 16.0,
+      "min": 16
+    },
+    "static_top10": {
+      "max": 154,
+      "mean": 154.0,
+      "median": 154.0,
+      "min": 154
+    }
+  },
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.33305682647347656,
+        "ci95_low": -0.37800414213708944
+      },
+      "included_trace_count": 11,
+      "mean_recovery": 0.0029956687744632834,
+      "median_recovery": 0.0011139373862903978,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.4937768399763942,
+        "ci95_low": -0.40909502923795116
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.006316656145762398,
+      "median_recovery": 0.3353894408225412,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.3686486043725524,
+        "ci95_low": -1.078576149834236
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.31813013345868113,
+      "median_recovery": -0.17689931525896085,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.5384789756798898,
+        "ci95_low": -1.1424448873886348
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.15304248647380628,
+      "median_recovery": 0.376752614594403,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_v2_m11b_deepseek_v1_metrics",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "thresholds": {
+    "alpha": 0.3,
+    "bootstrap_seed": 20260622,
+    "kill_high_budget_within_top1_abs_le": 0.05,
+    "pass_beats_static_top10_by_ge": 0.15,
+    "pass_high_budget_median_recovery_min": 0.3
+  },
+  "trace_count": 12
+}

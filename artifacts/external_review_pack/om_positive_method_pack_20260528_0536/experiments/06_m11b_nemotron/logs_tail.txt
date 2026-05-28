@@ -1,0 +1,94 @@
+## stdout tail
+{
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.1631772118823916,
+        "ci95_low": -0.5325671049426282
+      },
+      "included_trace_count": 10,
+      "mean_recovery": -0.0794227032558112,
+      "median_recovery": -0.10320524640512702,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.9225522648803115,
+        "ci95_low": 0.2544392881776635
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.6175863911132161,
+      "median_recovery": 0.8147397989034302,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.794986745913201,
+        "ci95_low": 0.34588779238757594
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.5304503234413243,
+      "median_recovery": 0.4567361832703779,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.8144650015682393,
+        "ci95_low": 0.3165935076461148
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.5291395857623982,
+      "median_recovery": 0.5943837436179227,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z"
+}
+{
+  "artifact_complete": true,
+  "checker_decision": "PASS_M11B_NEMOTRON_REPLICATES"
+}
+
+## stderr tail
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+
+Loading checkpoint shards:   0%|          | 0/13 [00:00<?, ?it/s]
+Loading checkpoint shards:   8%|7         | 1/13 [00:01<00:21,  1.75s/it]
+Loading checkpoint shards:  15%|#5        | 2/13 [00:03<00:20,  1.90s/it]
+Loading checkpoint shards:  23%|##3       | 3/13 [00:05<00:19,  1.96s/it]
+Loading checkpoint shards:  31%|###       | 4/13 [00:07<00:17,  1.96s/it]
+Loading checkpoint shards:  38%|###8      | 5/13 [00:09<00:15,  1.92s/it]
+Loading checkpoint shards:  46%|####6     | 6/13 [00:11<00:13,  1.98s/it]
+Loading checkpoint shards:  54%|#####3    | 7/13 [00:13<00:12,  2.03s/it]
+Loading checkpoint shards:  62%|######1   | 8/13 [00:15<00:10,  2.04s/it]
+Loading checkpoint shards:  69%|######9   | 9/13 [00:17<00:08,  2.04s/it]
+Loading checkpoint shards:  77%|#######6  | 10/13 [00:19<00:06,  2.02s/it]
+Loading checkpoint shards:  85%|########4 | 11/13 [00:21<00:03,  1.99s/it]
+Loading checkpoint shards:  92%|#########2| 12/13 [00:23<00:01,  1.97s/it]
+Loading checkpoint shards: 100%|##########| 13/13 [00:24<00:00,  1.68s/it]
+Loading checkpoint shards: 100%|##########| 13/13 [00:24<00:00,  1.91s/it]
+
+## run_events tail
+{"created_at_utc": "2026-05-24T21:14:52Z", "event": "static1pct_salvage_started"}
+{"created_at_utc": "2026-05-24T22:09:02Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-24T22:59:36Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-24T23:53:12Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T00:44:54Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T01:38:10Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T02:30:33Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T03:22:32Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T04:16:08Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T05:07:10Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T05:59:49Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T06:50:10Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T07:41:12Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-25T07:41:13Z", "event": "static1pct_salvage_completed"}

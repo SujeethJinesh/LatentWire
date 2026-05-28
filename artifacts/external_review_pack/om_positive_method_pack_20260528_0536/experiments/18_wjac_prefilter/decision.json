@@ -1,0 +1,11 @@
+{
+  "decision": "KILL",
+  "reasons": [
+    "Corrected two-of-four kill diagnostics triggered on every covered model/slice."
+  ],
+  "source_files": [
+    "artifacts/wjac_prefilter/decision.json",
+    "artifacts/wjac_prefilter/report.md",
+    "artifacts/wjac_prefilter/wjac_scores.parquet"
+  ]
+}

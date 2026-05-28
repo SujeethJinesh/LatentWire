@@ -1,0 +1,4 @@
+model,migration_fraction,ci_low,ci_high,trace_count,source
+ibm-granite/granite-4.0-h-small,0.843165650406504,0.8334349593495936,0.8511432926829268,24,experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z/metrics.json
+nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16,0.820809591642925,0.7865325261158594,0.8544931149097815,24,experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z/metrics.json
+tiiuae/Falcon-H1-0.5B-Instruct,0.7833543771043772,0.7544191919191919,0.8112373737373737,24,experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/metrics.json

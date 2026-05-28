@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "02_m2_position_switching",
+    "hypothesis": "Hard position-conditioned protected sets can follow drift.",
+    "implementation": "Switch protected sets by decode-position bin.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M2",
+    "model": "Granite",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z"
+    ],
+    "status": "KILL",
+    "title": "M2 position-conditional switching",
+    "why": "Hard discontinuities lost to random controls; switching boundaries appear more harmful than stale static sets."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z"
+  ]
+}

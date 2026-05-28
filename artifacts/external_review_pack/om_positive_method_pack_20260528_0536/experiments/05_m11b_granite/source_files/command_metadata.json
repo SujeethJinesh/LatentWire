@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase9/run_om_phase9_m11b_budget_scaling.py",
+    "--run-id",
+    "om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z",
+    "--reuse-activation-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z",
+    "--reuse-trace-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z",
+    "--reuse-score-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z",
+    "--batch-size",
+    "1"
+  ],
+  "batch_size": 1,
+  "branch": "outlier_migrate_phase9_m11b_budget_scaling",
+  "created_at_utc": "2026-05-18T03:03:31Z",
+  "cwd": "/workspace/LatentWire",
+  "reuse_activation_run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z",
+  "reuse_score_run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z",
+  "reuse_trace_run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z",
+  "schema_version": "om_phase9_m11b_v1_command"
+}

@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "12_m18_activation_k",
+    "hypothesis": "Coupling activation channels with K-side protection captures cross-tensor sensitivity.",
+    "implementation": "Cross-tensor activation+K protected sets.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M18",
+    "model": "Granite",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z"
+    ],
+    "status": "KILL",
+    "title": "M18 activation+K coupling",
+    "why": "Negative recovery; extra coupling appears to inject instability rather than useful selectivity."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_m18_granite_small_vac12_20260516T193500Z"
+  ]
+}

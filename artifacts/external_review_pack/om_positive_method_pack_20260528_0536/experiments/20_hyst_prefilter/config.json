@@ -1,0 +1,27 @@
+{
+  "artifact_files": [
+    "artifacts/funnel_prefilters/decision.json",
+    "artifacts/funnel_prefilters/report.md",
+    "artifacts/funnel_prefilters/smoke_traces.json"
+  ],
+  "experiment": {
+    "artifact_files": [
+      "artifacts/funnel_prefilters/decision.json",
+      "artifacts/funnel_prefilters/report.md",
+      "artifacts/funnel_prefilters/smoke_traces.json"
+    ],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "20_hyst_prefilter",
+    "hypothesis": "Hysteresis can reduce harmful protected-set churn while preserving local pool stability.",
+    "implementation": "CPU churn and local-pool stability analysis.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "HYST",
+    "model": "DeepSeek/Falcon",
+    "run_dirs": [],
+    "status": "SMOKE_ONLY",
+    "title": "HYST churn prefilter",
+    "why": "Churn/local-stability pattern authorizes smoke; no endpoint scoring yet."
+  },
+  "source_run_dirs": []
+}

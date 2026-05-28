@@ -1,0 +1,25 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "15_kl_fft_diagnostics",
+    "hypothesis": "Long-decode W4A16 failure is simple compound-error accumulation.",
+    "implementation": "Per-position KL fits and spectral/autocorrelation diagnostics.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "KL+FFT",
+    "model": "Granite/DeepSeek/Falcon",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_phase9_kl_granite_small_dense_20260519T085400Z",
+      "experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z"
+    ],
+    "status": "PASS",
+    "title": "KL/FFT diagnostics",
+    "why": "Sublinear/sqrt-like KL and broadband FFT weaken the compounding-error and simple-predictor stories."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_kl_granite_small_dense_20260519T085400Z",
+    "experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z"
+  ]
+}

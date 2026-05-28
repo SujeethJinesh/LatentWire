@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "03_m10_position_bins",
+    "hypothesis": "Position-binned protection/scaling can track long-decode drift with lower discontinuity than M2.",
+    "implementation": "Use position bins and precomputed scale/protection tables.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M10",
+    "model": "Granite",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z"
+    ],
+    "status": "KILL",
+    "title": "M10 position-binned scales",
+    "why": "Coarse bins still induced boundary artifacts and did not beat matched controls."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z"
+  ]
+}

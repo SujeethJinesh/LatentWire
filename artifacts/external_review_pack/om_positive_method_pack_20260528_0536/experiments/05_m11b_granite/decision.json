@@ -1,0 +1,106 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_M11B_BUDGET_MATTERS",
+  "pass_regime": "m11b_top5",
+  "reasons": [
+    "m11b_top5 satisfies budget-scaling pass criteria"
+  ],
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.421958400269822,
+        "ci95_low": -7.810432446168553
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -74.48536422481587,
+      "median_recovery": -0.29418059401495783,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -2.2242246299316113,
+        -0.6209373930015021,
+        -587.1004270116848,
+        0.9966146767483571,
+        -7.810432446168553,
+        0.03257620497158642,
+        0.7254046488249863,
+        0.11851215171465768
+      ],
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.43564760535877556,
+        "ci95_low": -0.7273570722179588
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -1.1150691841111495,
+      "median_recovery": 0.24075640427266048,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -0.0612581819027076,
+        0.2407868558365348,
+        -10.484922484541741,
+        1.0001762465103397,
+        -0.7273570722179588,
+        0.24072595270878616,
+        0.49489073844630693,
+        0.3764044722712442
+      ],
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 1.00079062654749,
+        "ci95_low": -1.3009000187907436
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -0.07645790605108035,
+      "median_recovery": 0.4492840911245966,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        1.3686628418925668,
+        1.00079062654749,
+        -2.722226022567281,
+        1.000364534427094,
+        -2.2782493959434995,
+        0.12042598498579371,
+        0.7040455891702454,
+        0.19452259307894781
+      ],
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.4316908004018193,
+        "ci95_low": -53.37845888236424
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -87.92201119019458,
+      "median_recovery": -0.05176717655558488,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -53.37845888236424,
+        -0.5667629228783271,
+        -651.1910437055519,
+        1.000328741545419,
+        -0.32749742861470765,
+        0.2239630755035379,
+        0.5762654850086053,
+        0.28711611579503327
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z",
+  "thresholds": {
+    "alpha": 0.3,
+    "bootstrap_seed": 20260527,
+    "kill_high_budget_within_top1_abs_le": 0.05,
+    "pass_beats_static_top10_by_ge": 0.15,
+    "pass_high_budget_median_recovery_min": 0.3
+  }
+}

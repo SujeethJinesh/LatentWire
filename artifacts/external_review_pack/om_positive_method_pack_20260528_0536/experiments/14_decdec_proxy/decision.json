@@ -1,0 +1,100 @@
+{
+  "algorithmic_mode": "decdec_proxy_endpoint_oracle",
+  "artifact_complete": true,
+  "baseline_regime": "decdec_reactive_top1_proxy",
+  "baseline_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.6741763703501289,
+      "ci95_low": -8.495693501232758
+    },
+    "included_trace_count": 8,
+    "mean_recovery": -42.83794574433356,
+    "median_recovery": -0.07003478125820645,
+    "no_recoverable_static_gap_count": 4,
+    "no_recoverable_static_gap_fraction": 0.3333333333333333,
+    "per_trace_recovery_included": [
+      -0.36062928229559765,
+      -0.16722157274394145,
+      -335.405372628315,
+      0.9152334355493414,
+      -8.495693501232758,
+      0.027152010227528556,
+      0.6741763703501289,
+      0.10878921379182616
+    ],
+    "total_trace_count": 12
+  },
+  "decision": "PASS_DECDEC_BASELINE_REPORTED",
+  "reasons": [
+    "DecDEC algorithmic baseline packet is artifact-complete"
+  ],
+  "results_by_regime": {
+    "decdec_reactive_top1_proxy": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.6741763703501289,
+        "ci95_low": -8.495693501232758
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -42.83794574433356,
+      "median_recovery": -0.07003478125820645,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -0.36062928229559765,
+        -0.16722157274394145,
+        -335.405372628315,
+        0.9152334355493414,
+        -8.495693501232758,
+        0.027152010227528556,
+        0.6741763703501289,
+        0.10878921379182616
+      ],
+      "total_trace_count": 12
+    },
+    "random_reactive_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": -0.8667338887624265,
+        "ci95_low": -219.01468794770764
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -82.85174276581658,
+      "median_recovery": -1.2626049261250778,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -8.39512433446092,
+        -1.0799044734625998,
+        -429.63425156095434,
+        -0.9158768809733373,
+        -0.8667338887624265,
+        -1.4453053787875558,
+        -219.917012526276,
+        -0.5597330828554168
+      ],
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.6174752804074675,
+        "ci95_low": -68.56236265688855
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -150.35348898846578,
+      "median_recovery": -0.22827336820997218,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -68.56236265688855,
+        -1.8013447831840943,
+        -1133.9186357450153,
+        1.0004191700240874,
+        -0.7033521281281359,
+        0.2468053917081915,
+        0.6174752804074675,
+        0.29308356334997165
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z"
+}

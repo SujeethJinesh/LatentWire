@@ -1,0 +1,117 @@
+{
+  "created_at_utc": "2026-05-28T04:14:34Z",
+  "models": {
+    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B": {
+      "model_key": "deepseek",
+      "prompt_ids": [
+        "opencompass_AIME2025_I_5",
+        "opencompass_AIME2025_I_11",
+        "opencompass_AIME2025_I_8"
+      ],
+      "prompt_indices": [
+        5,
+        11,
+        8
+      ],
+      "run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z",
+      "traces": [
+        {
+          "activation_top10pct_drift_mean": 0.808826,
+          "first_eos_decode_position": 3708,
+          "generated_token_count": 20000,
+          "m11b_top10_minus_static_top10": 0.233362,
+          "m11b_top10_recovery": 0.720644,
+          "prompt_id": "opencompass_AIME2025_I_5",
+          "prompt_index": 5,
+          "reason": "highest M11b top-10 recovery among positive M11b-vs-static traces with static_gap >= 1e-3",
+          "role": "positive_gap_anchor",
+          "static_gap": 0.002091,
+          "static_top10_recovery": 0.487282
+        },
+        {
+          "activation_top10pct_drift_mean": 0.824578,
+          "first_eos_decode_position": null,
+          "generated_token_count": 20000,
+          "m11b_top10_minus_static_top10": 0.009274,
+          "m11b_top10_recovery": -0.092386,
+          "prompt_id": "opencompass_AIME2025_I_11",
+          "prompt_index": 11,
+          "reason": "no EOS before max_new_tokens and highest activation drift among remaining no-EOS traces",
+          "role": "long_high_drift_stress",
+          "static_gap": 0.005312,
+          "static_top10_recovery": -0.10166
+        },
+        {
+          "activation_top10pct_drift_mean": 0.813449,
+          "first_eos_decode_position": null,
+          "generated_token_count": 20000,
+          "m11b_top10_minus_static_top10": -0.041363,
+          "m11b_top10_recovery": 0.335389,
+          "prompt_id": "opencompass_AIME2025_I_8",
+          "prompt_index": 8,
+          "reason": "closest remaining trace to model median M11b top-10 recovery 0.335389",
+          "role": "representative_median",
+          "static_gap": 0.096555,
+          "static_top10_recovery": 0.376753
+        }
+      ]
+    },
+    "tiiuae/Falcon-H1-0.5B-Instruct": {
+      "model_key": "falcon",
+      "prompt_ids": [
+        "opencompass_AIME2025_I_7",
+        "opencompass_AIME2025_I_1",
+        "opencompass_AIME2025_I_11"
+      ],
+      "prompt_indices": [
+        7,
+        1,
+        11
+      ],
+      "run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+      "traces": [
+        {
+          "activation_top10pct_drift_mean": 0.841704,
+          "first_eos_decode_position": 1570,
+          "generated_token_count": 20000,
+          "m11b_top10_minus_static_top10": 0.056877,
+          "m11b_top10_recovery": 0.382612,
+          "prompt_id": "opencompass_AIME2025_I_7",
+          "prompt_index": 7,
+          "reason": "positive M11b-vs-static trace with highest activation drift",
+          "role": "positive_gap_high_drift_anchor",
+          "static_gap": 0.030508,
+          "static_top10_recovery": 0.325735
+        },
+        {
+          "activation_top10pct_drift_mean": 0.796672,
+          "first_eos_decode_position": 9900,
+          "generated_token_count": 20000,
+          "m11b_top10_minus_static_top10": -0.109588,
+          "m11b_top10_recovery": -0.142951,
+          "prompt_id": "opencompass_AIME2025_I_1",
+          "prompt_index": 1,
+          "reason": "latest BF16 EOS among remaining traces",
+          "role": "long_stress",
+          "static_gap": 0.209011,
+          "static_top10_recovery": -0.033362
+        },
+        {
+          "activation_top10pct_drift_mean": 0.79217,
+          "first_eos_decode_position": 2865,
+          "generated_token_count": 20000,
+          "m11b_top10_minus_static_top10": 0.001608,
+          "m11b_top10_recovery": 0.032412,
+          "prompt_id": "opencompass_AIME2025_I_11",
+          "prompt_index": 11,
+          "reason": "closest remaining Falcon trace to the joint median M11b top-10 recovery and activation drift",
+          "role": "representative_median",
+          "static_gap": 0.122822,
+          "static_top10_recovery": 0.030805
+        }
+      ]
+    }
+  },
+  "schema_version": "funnel_prefilters_smoke_traces_v1",
+  "selection_policy": "deterministic stratified; no random draw; at least one positive M11b-vs-static trace and one long/high-drift trace per DeepSeek/Falcon"
+}

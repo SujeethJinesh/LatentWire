@@ -1,0 +1,105 @@
+## stdout tail
+
+
+## stderr tail
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.57it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.52it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.51it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.51it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:03,  2.52it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.53it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:03<00:02,  2.64it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.70it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.75it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:04<00:01,  2.80it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.82it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  2.92it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.50it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  2.82it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:03,  3.29it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:03,  3.15it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:00<00:03,  3.13it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  3.08it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:02,  3.07it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:01<00:02,  3.11it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  3.22it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:01,  3.33it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:02<00:01,  3.43it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  3.54it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:00,  3.63it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:03<00:00,  3.77it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:03<00:00,  3.77it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:03<00:00,  4.39it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:03<00:00,  3.56it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:05,  2.18it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:05,  2.28it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.33it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:04,  2.24it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:02<00:03,  2.28it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:03,  2.33it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:03<00:03,  2.32it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:03<00:02,  2.41it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.51it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:04<00:01,  2.65it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:04<00:01,  2.78it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.96it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:05<00:00,  3.10it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  3.73it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  2.72it/s]
+Traceback (most recent call last):
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_mpred.py", line 633, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_mpred.py", line 593, in main
+    all_scores[regime], excluded_by_regime[regime] = m11b_runner.score_regime(
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_m11b_budget_scaling.py", line 284, in score_regime
+    model, tokenizer, device = shared.load_model_and_tokenizer(model_provenance, dtype_name=dtype_name, device_name=device_name)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/shared/run_phase0_branch.py", line 451, in load_model_and_tokenizer
+    model.to(device)
+  File "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4343, in to
+    return super().to(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1369, in to
+    return self._apply(convert)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 928, in _apply
+    module._apply(fn)
+  [Previous line repeated 2 more times]
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 955, in _apply
+    param_applied = fn(param)
+                    ^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1355, in convert
+    return t.to(
+           ^^^^^
+KeyboardInterrupt
+
+## run_events tail
+{"created_at_utc": "2026-05-27T20:12:52Z", "event": "mpred_run_started", "model_key": "granite"}
+{"created_at_utc": "2026-05-27T20:13:41Z", "event": "score_regime_started", "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T20:37:33Z", "event": "completed_scoring_batch", "prompt_indices": [0, 1], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T20:59:29Z", "event": "completed_scoring_batch", "prompt_indices": [2, 3], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T21:21:28Z", "event": "completed_scoring_batch", "prompt_indices": [4, 5], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T21:43:27Z", "event": "completed_scoring_batch", "prompt_indices": [6, 7], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T22:05:37Z", "event": "completed_scoring_batch", "prompt_indices": [8, 9], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T22:27:41Z", "event": "completed_scoring_batch", "prompt_indices": [10, 11], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T22:27:42Z", "event": "score_regime_started", "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-27T22:51:25Z", "event": "completed_scoring_batch", "prompt_indices": [0, 1], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-27T23:13:22Z", "event": "completed_scoring_batch", "prompt_indices": [2, 3], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-27T23:35:24Z", "event": "completed_scoring_batch", "prompt_indices": [4, 5], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-27T23:57:27Z", "event": "completed_scoring_batch", "prompt_indices": [6, 7], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-28T00:19:44Z", "event": "completed_scoring_batch", "prompt_indices": [8, 9], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-28T00:42:04Z", "event": "completed_scoring_batch", "prompt_indices": [10, 11], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-28T00:42:04Z", "event": "score_regime_started", "regime": "mpred_random_alpha_top5"}
+{"created_at_utc": "2026-05-28T00:43:16Z", "event": "run_failed", "reason": ""}
+{"created_at_utc": "2026-05-28T00:43:17Z", "event": "run_failed", "reason": ""}
+{"completed_regimes": ["bf16", "static_1pct", "m11b_top5", "m11b_top10", "static_top10", "mpred_top10_alpha_0_95", "mpred_top5_alpha_0_95"], "created_at_utc": "2026-05-28T00:44:42Z", "event": "mpred_run_early_stopped_after_treatment_kill"}

@@ -1,0 +1,19 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "23_restricted_kllook_if_present",
+    "hypothesis": "Oracle KL lookahead exposes channel-set ceiling if cheap methods fail.",
+    "implementation": "Sampled forward-KL lookahead runner exists; no decisive restricted packet in current queue.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "KLLOOK",
+    "model": "Granite/Nemotron optional",
+    "run_dirs": [],
+    "status": "DEFERRED",
+    "title": "Restricted KLLOOK oracle",
+    "why": "Reserved for after LAMBDA/HYST smoke if ceiling evidence is needed."
+  },
+  "source_run_dirs": []
+}

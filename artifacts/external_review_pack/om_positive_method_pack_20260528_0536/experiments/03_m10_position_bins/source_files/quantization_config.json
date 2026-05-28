@@ -1,0 +1,12 @@
+{
+  "activation_dtype": "float16",
+  "implementation_note": "Scale vectors are folded into dequantized INT4 weights on hidden-input axes, with matching activation pre-hooks that divide the incoming hidden state.",
+  "scale_alpha": 0.5,
+  "schema_version": "om_phase9_m10_v1_quantization_config",
+  "scheme": "symmetric_per_output_channel_int4_after_scale_folding",
+  "signed_integer_range": [
+    -7,
+    7
+  ],
+  "weight_bits": 4
+}

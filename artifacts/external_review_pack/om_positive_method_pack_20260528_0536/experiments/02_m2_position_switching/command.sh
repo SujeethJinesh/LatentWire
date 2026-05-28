@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+experimental/outlier_migrate/phase9/run_om_phase9_m2_position_conditional.py --run-id om_phase9_m2_granite_small_vac12_finalized_20260514T233800Z --model-id ibm-granite/granite-4.0-h-small --batch-size 1 --trace-count 12 --reuse-activation-run-dir experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_20260513T042800Z --reuse-trace-run-dir experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_20260513T042800Z --reuse-score-run-dir experimental/outlier_migrate/phase9/results/om_phase9_m2_granite_small_vac12_memfix_20260514T125800Z

@@ -1,0 +1,65 @@
+{
+  "schema_version": "mbranch_falcon_h1_diagnostic_v1",
+  "created_at_utc": "2026-05-28T04:12:18Z",
+  "scope": {
+    "model": "tiiuae/Falcon-H1-0.5B-Instruct",
+    "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+    "writes_limited_to": "artifacts/mbranch/",
+    "gpu_jobs_run": false
+  },
+  "inputs_read": [
+    "RUN_LEDGER.md",
+    "DECISIONS.md",
+    "paper/reviewer_feedback.md",
+    "release/configs/falcon_h1.yaml",
+    "experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/pathway_stratification_status.json",
+    "experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/migration_decomposition.json",
+    "experimental/outlier_migrate/phase9/results/om_phase9_mpred_falcon_extension_20260528T011658Z/activation_magnitudes.jsonl.gz",
+    "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py",
+    "/workspace/.sglang/lib/python3.12/site-packages/sglang/srt/models/falcon_h1.py",
+    "/workspace/.sglang/lib/python3.12/site-packages/sglang/srt/layers/attention/mamba/mamba.py"
+  ],
+  "cached_branch_activations_found": false,
+  "cached_post_layer_evidence": {
+    "phase9_current_packet": {
+      "surface": "transformer_layer_forward_output",
+      "base_position": 100,
+      "final_position": 10000,
+      "trace_count": 12,
+      "layer_count": 36,
+      "strict_set_leaving_mean": 0.6390993265993266,
+      "ci95_low": 0.5883838383838383,
+      "ci95_high": 0.6893939393939394
+    },
+    "phase7_long_horizon_packet": {
+      "surface": "transformer_layer_forward_output",
+      "base_position": 100,
+      "final_position": 20000,
+      "trace_count": 24,
+      "layer_count": 36,
+      "strict_set_leaving_mean": 0.6736111111111112,
+      "ci95_low": 0.6325757575757576,
+      "ci95_high": 0.7136994949494949
+    }
+  },
+  "decision": "FALCON_LIKELY_BROADBAND_OR_INCONCLUSIVE",
+  "recommend_mbranch": false,
+  "rationale": [
+    "No cached Falcon branch-local activations were found, so the requested branch-local strict set-leaving comparison cannot be computed from existing artifacts.",
+    "The strongest cached Falcon activation evidence is post-layer output only and shows high strict set-leaving on both the current phase9 packet and the longer phase7 packet.",
+    "Static inspection shows separable attention and Mamba branch surfaces, but Falcon-H1 branch outputs are individually projected to residual width and summed. There is no implementation evidence of an outer concatenation/projection surface that would obviously explain post-layer drift as a merge-only artifact.",
+    "Without measured branch-local drift at least materially below the post-layer baseline, promoting M-BRANCH would violate the gate's decision policy."
+  ],
+  "material_promotion_rule_if_reopened": {
+    "minimum_signal": "projected attention or projected Mamba strict set-leaving at least 0.15 absolute below the matched post-layer mean",
+    "phase9_reference_post_layer_mean": 0.6390993265993266,
+    "rough_branch_mean_ceiling_for_promotion": 0.4890993265993266,
+    "required_controls": [
+      "same traces and positions as cached post-layer packet",
+      "same top-1-percent strict set-leaving definition",
+      "paired trace-level uncertainty",
+      "post_mixer_pre_residual captured in the same run"
+    ]
+  },
+  "next_exact_gate": "Do not request a Falcon M-BRANCH GPU scoring run. If the branch is reopened, first run the minimal hook-only sanity packet described in hook_map.md and promote only if branch-local drift is clearly below the cached post-layer baseline."
+}

@@ -1,0 +1,136 @@
+{
+  "artifacts": {
+    "activation_magnitudes": "activation_magnitudes.jsonl.gz",
+    "activation_magnitudes_sha256": "sha256:2ebbc067eef51fbeb685d8572a9aab0b0275b8f74e9e865cf99509961f40c602",
+    "bf16_traces": "bf16_traces.jsonl.gz",
+    "bf16_traces_sha256": "sha256:beb36c27ab669df573ba099c74c81d75332b8ac9d31bea3c0ec6b8e7f7c5ff24",
+    "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase3/results/om_phase3_20260509T212000Z"
+  },
+  "calibration_positions": [
+    100,
+    500,
+    1000,
+    2000,
+    5000,
+    7500,
+    10000
+  ],
+  "created_at_utc": "2026-05-10T05:05:27Z",
+  "metric_formula": "1 - (perplexity_regime - perplexity_BF16) / (perplexity_static_1pct - perplexity_BF16)",
+  "metric_name": "per_trace_recovery",
+  "model_id": "ibm-granite/granite-4.0-h-tiny",
+  "model_snapshot_commit": "791e0d3d28c86e106c9b6e0b4cecdee0375b6124",
+  "preregistration": "experimental/outlier_migrate/phase3/preregister_om_phase3_intervention.md",
+  "preregistration_sha256": "sha256:cb1f821a95dc3b6149fd04892b5c3278325e4c4ec6fa0b4616c751340cb08cb9",
+  "primary_grid": [
+    100,
+    1000,
+    5000,
+    10000
+  ],
+  "primary_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.7111432441994825,
+      "ci95_low": 0.0
+    },
+    "median_recovery": 0.0,
+    "per_trace_recovery": [
+      0.5928394180792577,
+      3.3448395815720575,
+      1.6970116065475618,
+      0.0,
+      0.9261986223729297,
+      0.3759061029691191,
+      0.0,
+      0.0,
+      1.9640908051588843,
+      0.0,
+      0.0,
+      -1.0124758319665625,
+      0.6480564672789735,
+      0.0,
+      -0.13012739071675528,
+      0.7857268163451103,
+      0.7714370628364574,
+      0.0,
+      0.0,
+      1.0304213251436019,
+      0.0,
+      -1.5580294569190136,
+      0.7742300211199914,
+      0.0
+    ],
+    "trace_count": 24
+  },
+  "prompt_sha256": "sha256:aa038b29332b6d137d558205ee441163e7ea4cb3cc323eb705a2f5928fd2fe4e",
+  "protected_set_summary": {
+    "grid_dense": {
+      "kind": "union",
+      "median_protected_count": 26.0,
+      "positions": [
+        100,
+        500,
+        1000,
+        2000,
+        5000,
+        7500,
+        10000
+      ]
+    },
+    "grid_sparse": {
+      "kind": "union",
+      "median_protected_count": 22.0,
+      "positions": [
+        100,
+        5000,
+        10000
+      ]
+    },
+    "magnitude_average": {
+      "kind": "mean_across_positions",
+      "median_protected_count": 16.0,
+      "positions": [
+        100,
+        1000,
+        5000,
+        10000
+      ]
+    },
+    "static_1pct": {
+      "kind": "single_position",
+      "median_protected_count": 16.0,
+      "positions": [
+        100
+      ]
+    },
+    "static_2pct": {
+      "kind": "single_position",
+      "median_protected_count": 31.0,
+      "positions": [
+        100
+      ]
+    },
+    "union_primary": {
+      "kind": "union",
+      "median_protected_count": 23.5,
+      "positions": [
+        100,
+        1000,
+        5000,
+        10000
+      ]
+    }
+  },
+  "schema_version": "om_phase3_v1_metrics",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 64,
+  "thresholds": {
+    "control_stop_outperforms_union_by_gt": 0.1,
+    "kill_ci95_high_lt": 0.3,
+    "kill_median_recovery_lt": 0.2,
+    "max_no_recoverable_static_gap_fraction": 0.25,
+    "pass_ci95_low_gt": 0.3,
+    "pass_median_recovery_min": 0.5
+  },
+  "trace_count": 24
+}

@@ -1,0 +1,7 @@
+{
+  "max_new_tokens_for_scoring": 10000,
+  "schema_version": "om_stage1_e3_paroquant_m11b_composition_v1_decoding_config",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "target_trace": "BF16 deterministic greedy trace reused from M11b Granite packet"
+}

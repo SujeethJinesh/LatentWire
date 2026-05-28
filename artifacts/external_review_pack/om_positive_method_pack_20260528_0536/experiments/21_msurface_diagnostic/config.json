@@ -1,0 +1,27 @@
+{
+  "artifact_files": [
+    "artifacts/msurface/decision.json",
+    "artifacts/msurface/hook_map.md",
+    "artifacts/msurface/surface_drift_table.csv"
+  ],
+  "experiment": {
+    "artifact_files": [
+      "artifacts/msurface/decision.json",
+      "artifacts/msurface/hook_map.md",
+      "artifacts/msurface/surface_drift_table.csv"
+    ],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "21_msurface_diagnostic",
+    "hypothesis": "An internal surface has materially lower drift than block output.",
+    "implementation": "Static hook map and cache search for internal activations.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M-SURFACE",
+    "model": "Granite/Falcon",
+    "run_dirs": [],
+    "status": "DEFERRED",
+    "title": "M-SURFACE hook diagnostic",
+    "why": "Surfaces are hookable but cached internal activations are absent; no GPU before LAMBDA/HYST smoke."
+  },
+  "source_run_dirs": []
+}

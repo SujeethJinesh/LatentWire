@@ -1,0 +1,11 @@
+{
+  "method": "M-SURFACE",
+  "model": "Granite/Falcon",
+  "schema_version": "external_review_pack_synthetic_metrics",
+  "source_files": [
+    "artifacts/msurface/decision.json",
+    "artifacts/msurface/hook_map.md",
+    "artifacts/msurface/surface_drift_table.csv"
+  ],
+  "status": "DEFERRED"
+}

@@ -1,0 +1,5 @@
+model_key,decision,diagnostic_count,topk_overlap,spearman_wjac_ema,weight_norm_cv,churn,source
+deepseek,KILL,3,0.9155844155844156,0.9984926260413598,0.050240150363158445,0.08441558441558439,artifacts/wjac_prefilter/decision.json
+falcon,KILL,2,0.8446601941747572,0.9988178823045561,0.0669205577013161,0.15533980582524276,artifacts/wjac_prefilter/decision.json
+granite,KILL,3,0.8585365853658536,0.9997083623137653,0.04622062775289073,0.14146341463414636,artifacts/wjac_prefilter/decision.json
+nemotron,KILL,3,0.895910780669145,0.997745588365642,0.07156706744055666,0.10408921933085502,artifacts/wjac_prefilter/decision.json

@@ -1,0 +1,11 @@
+{
+  "decision": "DEFERRED",
+  "reasons": [
+    "No branch-local cache and no clear implementation reason to spend GPU before smoke."
+  ],
+  "source_files": [
+    "artifacts/mbranch/decision.json",
+    "artifacts/mbranch/hook_map.md",
+    "artifacts/mbranch/branch_drift_table.csv"
+  ]
+}

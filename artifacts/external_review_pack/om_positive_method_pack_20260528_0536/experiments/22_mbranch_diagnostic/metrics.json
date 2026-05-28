@@ -1,0 +1,11 @@
+{
+  "method": "M-BRANCH",
+  "model": "Falcon-H1",
+  "schema_version": "external_review_pack_synthetic_metrics",
+  "source_files": [
+    "artifacts/mbranch/decision.json",
+    "artifacts/mbranch/hook_map.md",
+    "artifacts/mbranch/branch_drift_table.csv"
+  ],
+  "status": "DEFERRED"
+}

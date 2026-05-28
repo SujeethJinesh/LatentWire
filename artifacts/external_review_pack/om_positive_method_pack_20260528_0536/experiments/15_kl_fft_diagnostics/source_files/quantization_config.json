@@ -1,0 +1,12 @@
+{
+  "activation_dtype": "float16 autocast for quantized regimes",
+  "protected_channel_dtype": "bfloat16",
+  "regimes": [
+    "bf16_reference",
+    "static_1pct",
+    "decdec_reactive_top1_proxy",
+    "m11_alpha_0_5"
+  ],
+  "schema_version": "om_phase9_kl_accumulation_v1_quantization_config",
+  "weight_quantization": "simple symmetric per-channel INT4 represented as dequantized tensors"
+}

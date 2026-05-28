@@ -1,0 +1,44 @@
+{
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260528,
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "results_by_regime": {
+    "decdec_reactive_top1_proxy": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.6741763703501289,
+        "ci95_low": -8.495693501232758
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -42.83794574433356,
+      "median_recovery": -0.07003478125820645,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "random_reactive_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": -0.8667338887624265,
+        "ci95_low": -219.01468794770764
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -82.85174276581658,
+      "median_recovery": -1.2626049261250778,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.6174752804074675,
+        "ci95_low": -68.56236265688855
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -150.35348898846578,
+      "median_recovery": -0.22827336820997218,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_phase9_decdec_v1_bootstrap_ci"
+}

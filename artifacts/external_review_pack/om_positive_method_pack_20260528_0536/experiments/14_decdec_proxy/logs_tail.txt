@@ -1,0 +1,128 @@
+## stdout tail
+{
+  "baseline_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.6741763703501289,
+      "ci95_low": -8.495693501232758
+    },
+    "included_trace_count": 8,
+    "mean_recovery": -42.83794574433356,
+    "median_recovery": -0.07003478125820645,
+    "no_recoverable_static_gap_count": 4,
+    "no_recoverable_static_gap_fraction": 0.3333333333333333,
+    "total_trace_count": 12
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z"
+}
+
+## stderr tail
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+The fast path for GraniteMoeHybrid will be used when running the model on a GPU
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  3.01it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.86it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:03,  2.98it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  3.09it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:02,  3.13it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:01<00:02,  3.06it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  3.01it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:02,  2.94it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.85it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.80it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:01,  2.79it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.67it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  2.59it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.02it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  2.91it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.94it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.77it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:03,  2.78it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.77it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.70it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:02,  2.75it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.78it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:02,  2.82it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.80it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.86it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:01,  2.91it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.95it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  3.01it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.53it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  2.97it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.99it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.81it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.75it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.82it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.87it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:02,  2.87it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.88it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:02,  2.89it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.67it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.43it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:04<00:01,  2.29it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.27it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:05<00:00,  2.33it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  2.82it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  2.66it/s]
+Traceback (most recent call last):
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_decdec_baseline.py", line 705, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/run_om_phase9_decdec_baseline.py", line 693, in main
+    result = checker.evaluate(run_dir)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/check_om_phase9_decdec_baseline.py", line 349, in evaluate
+    write_json(run_dir / "checker_result.json", result)
+  File "/workspace/LatentWire/experimental/outlier_migrate/phase9/check_om_phase9_decdec_baseline.py", line 80, in write_json
+    path.parent.mkdir(parents=True)
+  File "/usr/lib/python3.12/pathlib.py", line 1313, in mkdir
+    os.mkdir(self, mode)
+FileExistsError: [Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z'
+
+## run_events tail
+{"created_at_utc": "2026-05-17T14:14:29Z", "event": "run_started"}
+{"created_at_utc": "2026-05-17T14:37:25Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T14:57:49Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T15:18:14Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T15:38:42Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T15:59:14Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T16:19:46Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T16:40:19Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T17:00:49Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T17:21:22Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T17:41:55Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T18:02:26Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T18:22:59Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-17T18:46:19Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T19:06:53Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T19:27:27Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T19:48:00Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T20:08:32Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T20:29:05Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T20:49:33Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T21:10:03Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T21:30:30Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T21:50:59Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T22:11:25Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T22:31:52Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "static_top10"}
+{"created_at_utc": "2026-05-17T22:54:30Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-17T23:14:57Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-17T23:35:25Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-17T23:55:52Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T00:16:20Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T00:36:47Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T00:57:16Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T01:17:45Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T01:38:13Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T01:58:42Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T02:19:09Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T02:39:37Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "random_reactive_top1"}
+{"created_at_utc": "2026-05-18T02:39:37Z", "event": "run_completed"}
+{"created_at_utc": "2026-05-18T02:39:37Z", "event": "run_failed", "reason": "[Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z'"}
+{"created_at_utc": "2026-05-18T02:39:38Z", "event": "run_failed", "reason": "[Errno 17] File exists: '/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z'"}

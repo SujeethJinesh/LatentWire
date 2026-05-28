@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "04_m11_ema_top1",
+    "hypothesis": "EMA smoothing removes boundary harm while staying in a 1% budget.",
+    "implementation": "EMA-smoothed top-1% protected set at scoring endpoint.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M11",
+    "model": "Granite",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z"
+    ],
+    "status": "KILL",
+    "title": "M11 EMA top-1%",
+    "why": "Directionally less discontinuous, but the 1% budget cannot cover the union of drifting important channels."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11_granite_small_vac12_20260516T010728Z"
+  ]
+}

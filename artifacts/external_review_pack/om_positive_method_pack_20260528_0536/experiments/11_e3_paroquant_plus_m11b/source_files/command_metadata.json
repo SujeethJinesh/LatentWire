@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase9/run_om_stage1_e3_paroquant_m11b_composition.py",
+    "--run-id",
+    "om_stage1_e3_granite_20260526T034442Z",
+    "--device",
+    "auto",
+    "--dtype",
+    "bfloat16",
+    "--cap-hours",
+    "15"
+  ],
+  "cap_hours": 15.0,
+  "created_at_utc": "2026-05-26T03:44:58Z",
+  "cwd": "/workspace/LatentWire",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_stage1_e3_granite_20260526T034442Z",
+  "schema_version": "om_stage1_e3_paroquant_m11b_composition_v1_command",
+  "scope": "granite_first_nemotron_deferred_if_cap_infeasible"
+}

@@ -1,0 +1,323 @@
+{
+  "coverage_note": "total_cached_layer_count is derived from cached protected_sets m11b_top10 layer entries.",
+  "cpu_only": true,
+  "created_at_utc": "2026-05-28T04:14:37Z",
+  "cuda_visible_devices": "",
+  "decision": "KILL_WJAC_PREFILTER",
+  "errors": [],
+  "inputs_read": [
+    "RUN_LEDGER.md",
+    "DECISIONS.md",
+    "paper/reviewer_feedback.md",
+    "docs/wjac_prefilter.md",
+    "experimental/outlier_migrate/phase9/preregister_om_phase9_mwjac.md"
+  ],
+  "interpretation": "WJAC is killed as an offline prefilter if every covered model/slice satisfies the corrected two-of-four kill rule.",
+  "layer_diagnostic_row_count": 82,
+  "parquet_available": true,
+  "schema_version": "wjac_prefilter_v1",
+  "score_artifact": "wjac_scores.parquet",
+  "score_row_count": 140928,
+  "summaries": [
+    {
+      "activation_coverage": {
+        "activation_path": "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/activation_magnitudes.jsonl.gz",
+        "activation_rows_used": 33600,
+        "positions_min_max": [
+          100,
+          10000
+        ],
+        "positions_seen_count": 100,
+        "prompt_count_seen": 12
+      },
+      "corrected_kill": true,
+      "corrected_kill_diagnostic_count": 3,
+      "coverage_fraction": 1.0,
+      "coverage_note": "full cached layer set",
+      "covered_layer_count": 28,
+      "covered_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "diagnostics": {
+        "high_overlap_85": true,
+        "high_overlap_90": true,
+        "high_spearman_0_9": true,
+        "weight_norms_nearly_flat": true,
+        "wjac_adds_churn_without_layer_allocation_change": false
+      },
+      "hf_snapshot_commit": "ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562",
+      "layer_allocation_l1_delta_per_layer_budget": 0.0,
+      "median_q_cv": 0.050240150363158445,
+      "median_q_p95_p05": 1.1520044044312447,
+      "median_spearman_q_vs_ema": -0.2563597288861715,
+      "median_spearman_wjac_vs_ema": 0.9984926260413598,
+      "median_wjac_churn_vs_m11b": 0.08441558441558439,
+      "median_wjac_vs_ema_topk_overlap": 0.974025974025974,
+      "median_wjac_vs_m11b_jaccard": 0.844311377245509,
+      "median_wjac_vs_m11b_topk_overlap": 0.9155844155844156,
+      "model": "DeepSeek-R1-Distill-Qwen-1.5B",
+      "model_id": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+      "model_key": "deepseek",
+      "q_coverage": {
+        "candidate_tensor_count": 196,
+        "eligible_tensor_count": 168,
+        "safetensor_file_count_read": 1,
+        "safetensor_files_read": [
+          "/workspace/hf_cache/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562/model.safetensors"
+        ],
+        "snapshot_path": "/workspace/hf_cache/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-1.5B/snapshots/ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562"
+      },
+      "run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z",
+      "total_cached_layer_count": 28
+    },
+    {
+      "activation_coverage": {
+        "activation_path": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/activation_magnitudes.jsonl.gz",
+        "activation_rows_used": 43200,
+        "positions_min_max": [
+          100,
+          10000
+        ],
+        "positions_seen_count": 100,
+        "prompt_count_seen": 12
+      },
+      "corrected_kill": true,
+      "corrected_kill_diagnostic_count": 2,
+      "coverage_fraction": 1.0,
+      "coverage_note": "full cached layer set",
+      "covered_layer_count": 36,
+      "covered_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "diagnostics": {
+        "high_overlap_85": false,
+        "high_overlap_90": false,
+        "high_spearman_0_9": true,
+        "weight_norms_nearly_flat": true,
+        "wjac_adds_churn_without_layer_allocation_change": false
+      },
+      "hf_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+      "layer_allocation_l1_delta_per_layer_budget": 0.0,
+      "median_q_cv": 0.0669205577013161,
+      "median_q_p95_p05": 1.211528133548299,
+      "median_spearman_q_vs_ema": -0.6691401444370931,
+      "median_spearman_wjac_vs_ema": 0.9988178823045561,
+      "median_wjac_churn_vs_m11b": 0.15533980582524276,
+      "median_wjac_vs_ema_topk_overlap": 0.9611650485436893,
+      "median_wjac_vs_m11b_jaccard": 0.7310924369747899,
+      "median_wjac_vs_m11b_topk_overlap": 0.8446601941747572,
+      "model": "Falcon-H1-0.5B-Instruct",
+      "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+      "model_key": "falcon",
+      "q_coverage": {
+        "candidate_tensor_count": 324,
+        "eligible_tensor_count": 216,
+        "safetensor_file_count_read": 1,
+        "safetensor_files_read": [
+          "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/snapshots/8f2587ca06bff78d8fa1adfccbe8c24d5f86b368/model.safetensors"
+        ],
+        "snapshot_path": "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/snapshots/8f2587ca06bff78d8fa1adfccbe8c24d5f86b368"
+      },
+      "run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+      "total_cached_layer_count": 36
+    },
+    {
+      "activation_coverage": {
+        "activation_path": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/activation_magnitudes.jsonl.gz",
+        "activation_rows_used": 10800,
+        "positions_min_max": [
+          100,
+          10000
+        ],
+        "positions_seen_count": 100,
+        "prompt_count_seen": 12
+      },
+      "corrected_kill": true,
+      "corrected_kill_diagnostic_count": 3,
+      "coverage_fraction": 0.225,
+      "coverage_note": "representative early/mid/late CPU-feasible slice",
+      "covered_layer_count": 9,
+      "covered_layers": [
+        0,
+        1,
+        2,
+        19,
+        20,
+        21,
+        37,
+        38,
+        39
+      ],
+      "diagnostics": {
+        "high_overlap_85": true,
+        "high_overlap_90": false,
+        "high_spearman_0_9": true,
+        "weight_norms_nearly_flat": true,
+        "wjac_adds_churn_without_layer_allocation_change": false
+      },
+      "hf_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+      "layer_allocation_l1_delta_per_layer_budget": 0.0,
+      "median_q_cv": 0.04622062775289073,
+      "median_q_p95_p05": 1.0699730970013184,
+      "median_spearman_q_vs_ema": 0.11704656754478843,
+      "median_spearman_wjac_vs_ema": 0.9997083623137653,
+      "median_wjac_churn_vs_m11b": 0.14146341463414636,
+      "median_wjac_vs_ema_topk_overlap": 0.9853658536585366,
+      "median_wjac_vs_m11b_jaccard": 0.7521367521367521,
+      "median_wjac_vs_m11b_topk_overlap": 0.8585365853658536,
+      "model": "Granite-4.0-H-Small",
+      "model_id": "ibm-granite/granite-4.0-h-small",
+      "model_key": "granite",
+      "q_coverage": {
+        "candidate_tensor_count": 63,
+        "eligible_tensor_count": 36,
+        "safetensor_file_count_read": 6,
+        "safetensor_files_read": [
+          "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39/model-00001-of-00014.safetensors",
+          "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39/model-00002-of-00014.safetensors",
+          "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39/model-00007-of-00014.safetensors",
+          "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39/model-00008-of-00014.safetensors",
+          "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39/model-00013-of-00014.safetensors",
+          "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39/model-00014-of-00014.safetensors"
+        ],
+        "snapshot_path": "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39"
+      },
+      "run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z",
+      "total_cached_layer_count": 40
+    },
+    {
+      "activation_coverage": {
+        "activation_path": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/activation_magnitudes.jsonl.gz",
+        "activation_rows_used": 10800,
+        "positions_min_max": [
+          100,
+          10000
+        ],
+        "positions_seen_count": 100,
+        "prompt_count_seen": 12
+      },
+      "corrected_kill": true,
+      "corrected_kill_diagnostic_count": 3,
+      "coverage_fraction": 0.17307692307692307,
+      "coverage_note": "representative early/mid/late CPU-feasible slice",
+      "covered_layer_count": 9,
+      "covered_layers": [
+        0,
+        1,
+        2,
+        25,
+        26,
+        27,
+        49,
+        50,
+        51
+      ],
+      "diagnostics": {
+        "high_overlap_85": true,
+        "high_overlap_90": false,
+        "high_spearman_0_9": true,
+        "weight_norms_nearly_flat": true,
+        "wjac_adds_churn_without_layer_allocation_change": false
+      },
+      "hf_snapshot_commit": "cbd3fa9f933d55ef16a84236559f4ee2a0526848",
+      "layer_allocation_l1_delta_per_layer_budget": 0.0,
+      "median_q_cv": 0.07156706744055666,
+      "median_q_p95_p05": 1.2275330280983041,
+      "median_spearman_q_vs_ema": -0.05199281036109389,
+      "median_spearman_wjac_vs_ema": 0.997745588365642,
+      "median_wjac_churn_vs_m11b": 0.10408921933085502,
+      "median_wjac_vs_ema_topk_overlap": 0.9516728624535316,
+      "median_wjac_vs_m11b_jaccard": 0.8114478114478114,
+      "median_wjac_vs_m11b_topk_overlap": 0.895910780669145,
+      "model": "Nemotron-3-Nano-30B-A3B-BF16",
+      "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+      "model_key": "nemotron",
+      "q_coverage": {
+        "candidate_tensor_count": 1048,
+        "eligible_tensor_count": 527,
+        "safetensor_file_count_read": 4,
+        "safetensor_files_read": [
+          "/workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-3-Nano-30B-A3B-BF16/snapshots/cbd3fa9f933d55ef16a84236559f4ee2a0526848/model-00001-of-00013.safetensors",
+          "/workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-3-Nano-30B-A3B-BF16/snapshots/cbd3fa9f933d55ef16a84236559f4ee2a0526848/model-00007-of-00013.safetensors",
+          "/workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-3-Nano-30B-A3B-BF16/snapshots/cbd3fa9f933d55ef16a84236559f4ee2a0526848/model-00012-of-00013.safetensors",
+          "/workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-3-Nano-30B-A3B-BF16/snapshots/cbd3fa9f933d55ef16a84236559f4ee2a0526848/model-00013-of-00013.safetensors"
+        ],
+        "snapshot_path": "/workspace/hf_cache/hub/models--nvidia--NVIDIA-Nemotron-3-Nano-30B-A3B-BF16/snapshots/cbd3fa9f933d55ef16a84236559f4ee2a0526848"
+      },
+      "run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z",
+      "total_cached_layer_count": 52
+    }
+  ],
+  "thresholds": {
+    "diagnostics_counted": [
+      "median WJAC-vs-M11b top-k overlap >= 0.85 (lower end of requested 85-90% band)",
+      "median Spearman(WJAC, EMA) >= 0.90",
+      "median q CV <= 0.15 and median q p95/p05 <= 1.5",
+      "median WJAC churn >= 0.25 with layer allocation L1 delta == 0 under matched per-layer budget"
+    ],
+    "kill_rule": "KILL only if at least two diagnostics are true",
+    "reported_overlap_90": "also reported, but not double-counted separately from overlap >=0.85"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "05_m11b_granite",
+    "hypothesis": "Increasing EMA budget to 5-10% rescues Granite.",
+    "implementation": "EMA-smoothed protection at top-1/top-5/top-10 budgets.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M11b",
+    "model": "Granite",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z"
+    ],
+    "status": "AMBIG",
+    "title": "M11b Granite budget-tuned EMA",
+    "why": "Top-5 median is positive but CI is wide; no-gap traces and trace heterogeneity limit confidence."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z"
+  ]
+}

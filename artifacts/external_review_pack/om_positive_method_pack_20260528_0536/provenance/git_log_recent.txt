@@ -1,0 +1,30 @@
+dde41fbf Research: add positive-method funnel smoke runner
+0ed36739 Add WJAC prefilter artifact packet
+37b0efec Add funnel prefilter artifacts
+1bd483b6 Add Falcon M-BRANCH diagnostic artifacts
+93b8dfde Add M-SURFACE hook diagnostic
+8b309d0d Add kernel design artifact
+b7196794 Docs: add positive-method sprint ledger
+efbc4d2c Research: add positive-method funnel smoke gate
+72d31dd0 Docs: add WJAC offline prefilter
+a7903f7e Docs: add HYST and LAMBDA offline filters
+98983019 Docs: add positive method scoop addendum
+06fc2789 Add smoke trace selection
+78307b5d Research: add M-LAMBDA checker scaffold
+3569fdc6 Research: add M-KLLOOK sampled oracle runner
+1a93e76e Research: fix M-KLLOOK hash validation
+5749c825 Research: add M-KLLOOK checker
+84014d7f Research: preregister unified sensitivity family
+5f464b95 Research: update state after M-FISH runner
+94dd3068 Research: add M-FISH DeepSeek runner
+da26ba27 Paper: adopt regime-aware remedy framing
+1df99d53 Research: adopt regime-aware V1 framing
+bc2b3e01 Research: record M-FISH gradient feasibility
+519bee00 Research: raise GPU cap and queue M-FISH feasibility
+82a9ac59 Research: defer M-FISH gradient runner
+911cd738 Research: record Falcon M-PRED kill
+c209db10 Research: record DeepSeek M-PRED kill
+42dacb83 Data: refresh M-PRED Granite artifact check
+0b6c6351 Experiment: add M-PRED extension preregistration
+f482e0fb Experiment: extend M-PRED to DeepSeek and Falcon
+60e37934 Research: record Granite M-PRED kill

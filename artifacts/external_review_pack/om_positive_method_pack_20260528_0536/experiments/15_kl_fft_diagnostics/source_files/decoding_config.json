@@ -1,0 +1,6 @@
+{
+  "decode_policy": "shared-prefix teacher-forced KL along deterministic BF16 target trace",
+  "max_new_tokens": 20000,
+  "position_mode": "dense_grid",
+  "schema_version": "om_phase9_kl_accumulation_v1_decoding_config"
+}

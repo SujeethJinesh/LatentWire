@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase9/run_om_phase9_m11b_nemotron_static1pct_salvage.py",
+    "--run-id",
+    "om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z",
+    "--batch-size",
+    "1"
+  ],
+  "batch_size": 1,
+  "branch": "outlier_migrate_phase9_m11b_nemotron_static1pct_salvage",
+  "created_at_utc": "2026-05-24T21:15:05Z",
+  "cwd": "/workspace/LatentWire",
+  "rerun_regime": "static_1pct",
+  "reused_score_regimes": [
+    "bf16",
+    "m11b_top1",
+    "m11b_top5",
+    "m11b_top10",
+    "static_top10"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z",
+  "schema_version": "om_phase9_m11b_nemotron_v1_command",
+  "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_20260520T2013Z"
+}

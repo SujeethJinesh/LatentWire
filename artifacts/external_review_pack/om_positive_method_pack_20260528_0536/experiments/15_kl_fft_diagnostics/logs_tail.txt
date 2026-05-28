@@ -1,0 +1,155 @@
+## stdout tail
+{"event": "collecting_bf16_reference_log_probs", "positions": 921}
+{"event": "loading_quantized_kl_regime", "regime": "static_1pct", "time": "2026-05-19T14:35:00Z"}
+{"event": "loading_quantized_kl_regime", "regime": "decdec_reactive_top1_proxy", "time": "2026-05-19T22:54:29Z"}
+{"event": "loading_quantized_kl_regime", "regime": "m11_alpha_0_5", "time": "2026-05-20T07:16:55Z"}
+{
+  "artifact_complete": true,
+  "checker_decision": "PASS_KL_ACCUMULATION_REPORTED"
+}
+
+## stderr tail
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.70it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.77it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:02,  2.86it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  3.03it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:01,  3.07it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  3.15it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  3.02it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:01,  2.85it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.86it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  2.94it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.52it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.03it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.60it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.65it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.69it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.68it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.69it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:02,  2.80it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.87it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:02,  2.87it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.93it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  2.98it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:00,  3.08it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  3.10it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  3.18it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.74it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.05it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.77it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.64it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.60it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.75it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.77it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:02,  2.93it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  3.05it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:02<00:01,  3.12it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  3.26it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:03<00:01,  3.27it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:03<00:00,  3.41it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:03<00:00,  3.49it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:04<00:00,  3.36it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.86it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:04<00:00,  3.22it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:05,  2.43it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:05,  2.39it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.35it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:04,  2.37it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:02<00:03,  2.31it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:03,  2.35it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.42it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:03<00:02,  2.41it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:02,  2.46it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:04<00:01,  2.47it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:04<00:01,  2.56it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:05<00:00,  2.35it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:05<00:00,  2.48it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  3.00it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  2.53it/s]
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|7         | 1/14 [00:00<00:04,  2.78it/s]
+Loading checkpoint shards:  14%|#4        | 2/14 [00:00<00:04,  2.72it/s]
+Loading checkpoint shards:  21%|##1       | 3/14 [00:01<00:04,  2.74it/s]
+Loading checkpoint shards:  29%|##8       | 4/14 [00:01<00:03,  2.52it/s]
+Loading checkpoint shards:  36%|###5      | 5/14 [00:01<00:03,  2.40it/s]
+Loading checkpoint shards:  43%|####2     | 6/14 [00:02<00:03,  2.42it/s]
+Loading checkpoint shards:  50%|#####     | 7/14 [00:02<00:02,  2.46it/s]
+Loading checkpoint shards:  57%|#####7    | 8/14 [00:03<00:02,  2.51it/s]
+Loading checkpoint shards:  64%|######4   | 9/14 [00:03<00:01,  2.53it/s]
+Loading checkpoint shards:  71%|#######1  | 10/14 [00:04<00:01,  2.44it/s]
+Loading checkpoint shards:  79%|#######8  | 11/14 [00:04<00:01,  2.54it/s]
+Loading checkpoint shards:  86%|########5 | 12/14 [00:04<00:00,  2.62it/s]
+Loading checkpoint shards:  93%|#########2| 13/14 [00:05<00:00,  2.73it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  3.21it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:05<00:00,  2.68it/s]
+
+## run_events tail
+{"created_at_utc": "2026-05-19T08:53:48Z", "event": "run_started"}
+{"created_at_utc": "2026-05-19T09:14:18Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [0]}
+{"created_at_utc": "2026-05-19T09:27:57Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [1]}
+{"created_at_utc": "2026-05-19T09:41:37Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [2]}
+{"created_at_utc": "2026-05-19T09:55:14Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [3]}
+{"created_at_utc": "2026-05-19T10:08:49Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [4]}
+{"created_at_utc": "2026-05-19T10:22:30Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [5]}
+{"created_at_utc": "2026-05-19T10:36:14Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [6]}
+{"created_at_utc": "2026-05-19T10:50:00Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [7]}
+{"created_at_utc": "2026-05-19T11:03:41Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [8]}
+{"created_at_utc": "2026-05-19T11:17:23Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [9]}
+{"created_at_utc": "2026-05-19T11:31:05Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [10]}
+{"created_at_utc": "2026-05-19T11:44:47Z", "event": "completed_bf16_trace_batch", "max_new_tokens": 20000, "prompt_indices": [11]}
+{"created_at_utc": "2026-05-19T12:03:28Z", "event": "completed_bf16_log_probs", "prompt_index": 0}
+{"created_at_utc": "2026-05-19T12:17:21Z", "event": "completed_bf16_log_probs", "prompt_index": 1}
+{"created_at_utc": "2026-05-19T12:31:06Z", "event": "completed_bf16_log_probs", "prompt_index": 2}
+{"created_at_utc": "2026-05-19T12:44:50Z", "event": "completed_bf16_log_probs", "prompt_index": 3}
+{"created_at_utc": "2026-05-19T12:58:36Z", "event": "completed_bf16_log_probs", "prompt_index": 4}
+{"created_at_utc": "2026-05-19T13:12:19Z", "event": "completed_bf16_log_probs", "prompt_index": 5}
+{"created_at_utc": "2026-05-19T13:26:07Z", "event": "completed_bf16_log_probs", "prompt_index": 6}
+{"created_at_utc": "2026-05-19T13:39:52Z", "event": "completed_bf16_log_probs", "prompt_index": 7}
+{"created_at_utc": "2026-05-19T13:53:39Z", "event": "completed_bf16_log_probs", "prompt_index": 8}
+{"created_at_utc": "2026-05-19T14:07:27Z", "event": "completed_bf16_log_probs", "prompt_index": 9}
+{"created_at_utc": "2026-05-19T14:21:13Z", "event": "completed_bf16_log_probs", "prompt_index": 10}
+{"created_at_utc": "2026-05-19T14:34:59Z", "event": "completed_bf16_log_probs", "prompt_index": 11}
+{"created_at_utc": "2026-05-19T15:21:21Z", "event": "completed_kl_trace", "prompt_index": 0, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T16:02:42Z", "event": "completed_kl_trace", "prompt_index": 1, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T16:44:03Z", "event": "completed_kl_trace", "prompt_index": 2, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T17:25:22Z", "event": "completed_kl_trace", "prompt_index": 3, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T18:06:34Z", "event": "completed_kl_trace", "prompt_index": 4, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T18:47:36Z", "event": "completed_kl_trace", "prompt_index": 5, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T19:28:41Z", "event": "completed_kl_trace", "prompt_index": 6, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T20:09:30Z", "event": "completed_kl_trace", "prompt_index": 7, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T20:50:20Z", "event": "completed_kl_trace", "prompt_index": 8, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T21:31:41Z", "event": "completed_kl_trace", "prompt_index": 9, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T22:13:04Z", "event": "completed_kl_trace", "prompt_index": 10, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T22:54:29Z", "event": "completed_kl_trace", "prompt_index": 11, "regime": "static_1pct"}
+{"created_at_utc": "2026-05-19T23:42:18Z", "event": "completed_kl_trace", "prompt_index": 0, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T00:23:44Z", "event": "completed_kl_trace", "prompt_index": 1, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T01:05:09Z", "event": "completed_kl_trace", "prompt_index": 2, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T01:46:28Z", "event": "completed_kl_trace", "prompt_index": 3, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T02:27:49Z", "event": "completed_kl_trace", "prompt_index": 4, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T03:09:10Z", "event": "completed_kl_trace", "prompt_index": 5, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T03:50:31Z", "event": "completed_kl_trace", "prompt_index": 6, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T04:31:47Z", "event": "completed_kl_trace", "prompt_index": 7, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T05:13:05Z", "event": "completed_kl_trace", "prompt_index": 8, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T05:54:24Z", "event": "completed_kl_trace", "prompt_index": 9, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T06:35:38Z", "event": "completed_kl_trace", "prompt_index": 10, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T07:16:54Z", "event": "completed_kl_trace", "prompt_index": 11, "regime": "decdec_reactive_top1_proxy"}
+{"created_at_utc": "2026-05-20T08:03:41Z", "event": "completed_kl_trace", "prompt_index": 0, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T08:45:01Z", "event": "completed_kl_trace", "prompt_index": 1, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T09:26:11Z", "event": "completed_kl_trace", "prompt_index": 2, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T10:07:28Z", "event": "completed_kl_trace", "prompt_index": 3, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T10:48:45Z", "event": "completed_kl_trace", "prompt_index": 4, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T11:29:59Z", "event": "completed_kl_trace", "prompt_index": 5, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T12:11:14Z", "event": "completed_kl_trace", "prompt_index": 6, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T12:52:14Z", "event": "completed_kl_trace", "prompt_index": 7, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T13:33:08Z", "event": "completed_kl_trace", "prompt_index": 8, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T14:14:02Z", "event": "completed_kl_trace", "prompt_index": 9, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T14:55:03Z", "event": "completed_kl_trace", "prompt_index": 10, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T15:36:02Z", "event": "completed_kl_trace", "prompt_index": 11, "regime": "m11_alpha_0_5"}
+{"created_at_utc": "2026-05-20T15:36:03Z", "event": "run_completed"}

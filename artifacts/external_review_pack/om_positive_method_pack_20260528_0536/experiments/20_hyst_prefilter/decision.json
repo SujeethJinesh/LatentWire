@@ -1,0 +1,11 @@
+{
+  "decision": "SMOKE_ONLY",
+  "reasons": [
+    "Churn/local-stability pattern authorizes smoke; no endpoint scoring yet."
+  ],
+  "source_files": [
+    "artifacts/funnel_prefilters/decision.json",
+    "artifacts/funnel_prefilters/report.md",
+    "artifacts/funnel_prefilters/smoke_traces.json"
+  ]
+}

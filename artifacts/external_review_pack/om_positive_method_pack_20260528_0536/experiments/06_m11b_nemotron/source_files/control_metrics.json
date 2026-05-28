@@ -1,0 +1,24 @@
+{
+  "controls": {
+    "static_1pct": {
+      "median_recovery": 0.0
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.8144650015682393,
+        "ci95_low": 0.3165935076461148
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.5291395857623982,
+      "median_recovery": 0.5943837436179227,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    }
+  },
+  "created_at_utc": "2026-05-25T07:41:13Z",
+  "m11b_top10_minus_static_top10_median": 0.2203560552855075,
+  "m11b_top10_minus_top1_median": 0.9179450453085571,
+  "m11b_top5_minus_top1_median": 0.559941429675505,
+  "schema_version": "om_phase9_m11b_nemotron_v1_control_metrics"
+}

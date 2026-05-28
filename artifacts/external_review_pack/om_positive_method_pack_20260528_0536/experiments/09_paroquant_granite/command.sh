@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+set -euo pipefail
+experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py --run-id om_paroquant_granite_small_20260520T1555Z --reuse-trace-run-dir experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z --reuse-score-run-dir experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z --reuse-protected-run-dir experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z --m11b-reference-run-dir experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z --batch-size 1

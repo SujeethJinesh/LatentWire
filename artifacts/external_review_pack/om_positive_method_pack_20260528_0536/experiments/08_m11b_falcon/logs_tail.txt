@@ -1,0 +1,145 @@
+## stdout tail
+{
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.01728296557377873,
+        "ci95_low": -0.25124120389295845
+      },
+      "included_trace_count": 12,
+      "mean_recovery": -0.1540580874866017,
+      "median_recovery": -0.09853475004640044,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.203397616132395,
+        "ci95_low": -0.14405060541685555
+      },
+      "included_trace_count": 12,
+      "mean_recovery": 0.021028410080347015,
+      "median_recovery": 0.04393973019116826,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.10170877685618596,
+        "ci95_low": -0.07653366949901541
+      },
+      "included_trace_count": 12,
+      "mean_recovery": -0.14366623342311377,
+      "median_recovery": 0.0704782481712527,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.17196408116339812,
+        "ci95_low": -0.12558323294184004
+      },
+      "included_trace_count": 12,
+      "mean_recovery": -0.04047779442247278,
+      "median_recovery": -0.025249016732983187,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z"
+}
+{
+  "artifact_complete": true,
+  "checker_decision": "AMBIGUOUS_V2_M11B_FALCON"
+}
+
+## stderr tail
+/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/utils/hub.py:110: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+The fast path for FalconH1 will be used when running the model on a GPU
+
+## run_events tail
+{"created_at_utc": "2026-05-27T14:53:14Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [5]}
+{"created_at_utc": "2026-05-27T14:56:16Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [6]}
+{"created_at_utc": "2026-05-27T14:59:19Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [7]}
+{"created_at_utc": "2026-05-27T15:02:20Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [8]}
+{"created_at_utc": "2026-05-27T15:05:22Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [9]}
+{"created_at_utc": "2026-05-27T15:08:26Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [10]}
+{"created_at_utc": "2026-05-27T15:11:28Z", "event": "completed_prompt_batch", "max_new_tokens": 10000, "prompt_indices": [11]}
+{"created_at_utc": "2026-05-27T15:15:12Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:18:09Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:21:06Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:24:04Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:27:04Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:30:04Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:33:02Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:35:59Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:38:58Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:41:56Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:44:55Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:47:55Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "bf16"}
+{"created_at_utc": "2026-05-27T15:51:35Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T15:55:09Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T15:58:42Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:02:11Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:05:42Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:09:15Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:12:45Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:16:18Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:19:50Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:23:25Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:26:59Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:30:31Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "static_1pct"}
+{"created_at_utc": "2026-05-27T16:34:09Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T16:37:41Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T16:41:12Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T16:44:41Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T16:48:15Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T16:51:46Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T16:55:19Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T16:58:50Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T17:02:21Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T17:05:52Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T17:09:22Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T17:12:53Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "m11b_top1"}
+{"created_at_utc": "2026-05-27T17:16:30Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:19:57Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:23:25Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:26:53Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:30:23Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:33:54Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:37:23Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:40:55Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:44:27Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:48:01Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:51:35Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:55:07Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "m11b_top5"}
+{"created_at_utc": "2026-05-27T17:58:44Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:02:17Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:05:50Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:09:22Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:12:52Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:16:25Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:19:58Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:23:31Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:27:02Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:30:34Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:34:04Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:37:38Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "m11b_top10"}
+{"created_at_utc": "2026-05-27T18:41:16Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T18:44:48Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T18:48:19Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T18:51:50Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T18:55:21Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T18:58:54Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T19:02:26Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T19:05:59Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T19:09:31Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T19:13:02Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T19:16:33Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T19:20:06Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "static_top10"}
+{"created_at_utc": "2026-05-27T19:20:07Z", "event": "run_completed"}

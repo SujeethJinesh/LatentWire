@@ -1,0 +1,29 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "The earliest packets report migration fraction; later paper framing reports strict set-leaving with revised normalizations.",
+    "experiment_id": "00_four_model_drift",
+    "hypothesis": "Static top activation-channel sets persist through long decode.",
+    "implementation": "Measure strict set-leaving / migration between early and late decode channel sets.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "strict set-leaving",
+    "model": "Granite/Nemotron/DeepSeek/Falcon",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z",
+      "experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z",
+      "experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z",
+      "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z"
+    ],
+    "status": "PASS",
+    "title": "Four-model strict channel-set drift",
+    "why": "The diagnostic worked: all measured model families show large channel-set movement, which motivates dynamic or regime-aware protection."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z",
+    "experimental/outlier_migrate/phase2/results/om_phase2_nemotron3_20260508T231723Z",
+    "experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z"
+  ]
+}

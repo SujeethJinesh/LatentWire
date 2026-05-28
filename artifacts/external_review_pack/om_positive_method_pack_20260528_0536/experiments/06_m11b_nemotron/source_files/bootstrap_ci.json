@@ -1,0 +1,56 @@
+{
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260604,
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.1631772118823916,
+        "ci95_low": -0.5325671049426282
+      },
+      "included_trace_count": 10,
+      "mean_recovery": -0.0794227032558112,
+      "median_recovery": -0.10320524640512702,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.9225522648803115,
+        "ci95_low": 0.2544392881776635
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.6175863911132161,
+      "median_recovery": 0.8147397989034302,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.794986745913201,
+        "ci95_low": 0.34588779238757594
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.5304503234413243,
+      "median_recovery": 0.4567361832703779,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.8144650015682393,
+        "ci95_low": 0.3165935076461148
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.5291395857623982,
+      "median_recovery": 0.5943837436179227,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_phase9_m11b_nemotron_v1_bootstrap_ci"
+}

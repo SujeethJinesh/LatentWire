@@ -1,0 +1,118 @@
+{
+  "artifact_complete": true,
+  "decision": "AMBIGUOUS_V2_M11B_DEEPSEEK",
+  "pass_regime": null,
+  "reasons": [
+    "budget scaling is neither pass nor a specific insufficient-budget kill"
+  ],
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.33305682647347656,
+        "ci95_low": -0.37800414213708944
+      },
+      "included_trace_count": 11,
+      "mean_recovery": 0.0029956687744632834,
+      "median_recovery": 0.0011139373862903978,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "per_trace_recovery_included": [
+        -0.40187331663281833,
+        0.6041963024062332,
+        0.0011139373862903978,
+        0.33305682647347656,
+        -0.37800414213708944,
+        -0.6023990762971612,
+        -0.08549931220660567,
+        0.018905723757300597,
+        0.1970297738877651,
+        0.3851279542952891,
+        -0.03870231441358429
+      ],
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.4937768399763942,
+        "ci95_low": -0.40909502923795116
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.006316656145762398,
+      "median_recovery": 0.3353894408225412,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "per_trace_recovery_included": [
+        -0.7007733153813511,
+        0.5096210507390277,
+        0.43661962406318944,
+        -1.5929311937606054,
+        0.7206441641648985,
+        -0.40909502923795116,
+        0.4937768399763942,
+        0.3353894408225412,
+        -0.19495158010585767,
+        0.4246029124254318,
+        -0.09238613130910389
+      ],
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.3686486043725524,
+        "ci95_low": -1.078576149834236
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.31813013345868113,
+      "median_recovery": -0.17689931525896085,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "per_trace_recovery_included": [
+        -0.6942411943231641,
+        0.3686486043725524,
+        0.45253671570143794,
+        -1.250234366846517,
+        0.5660693898745284,
+        -1.078576149834236,
+        -0.012143859773632304,
+        0.32121499704977186,
+        -0.4351372748629745,
+        -1.560669014144298,
+        -0.17689931525896085
+      ],
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.5384789756798898,
+        "ci95_low": -1.1424448873886348
+      },
+      "included_trace_count": 11,
+      "mean_recovery": -0.15304248647380628,
+      "median_recovery": 0.376752614594403,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "per_trace_recovery_included": [
+        -1.1424448873886348,
+        0.7286214190903342,
+        0.5085821604900205,
+        -1.793432822921977,
+        0.4872821575069517,
+        0.8363589049721233,
+        0.5384789756798898,
+        0.376752614594403,
+        -0.6527546281028918,
+        -1.4692513542641361,
+        -0.1016598908679518
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z",
+  "thresholds": {
+    "alpha": 0.3,
+    "bootstrap_seed": 20260622,
+    "kill_high_budget_within_top1_abs_le": 0.05,
+    "pass_beats_static_top10_by_ge": 0.15,
+    "pass_high_budget_median_recovery_min": 0.3
+  }
+}

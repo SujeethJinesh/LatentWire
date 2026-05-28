@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "13_m26_stable_core",
+    "hypothesis": "Channels stable across calibration positions form a reliable protected core.",
+    "implementation": "Protect stable-core channels selected by persistence across positions.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M26",
+    "model": "Granite",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z"
+    ],
+    "status": "AMBIG",
+    "title": "M26 stable core",
+    "why": "Positive but small/wide signal; stable channels alone do not solve drift."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z"
+  ]
+}

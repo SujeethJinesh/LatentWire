@@ -1,0 +1,11 @@
+{
+  "method": "WJAC",
+  "model": "all cached slices",
+  "schema_version": "external_review_pack_synthetic_metrics",
+  "source_files": [
+    "artifacts/wjac_prefilter/decision.json",
+    "artifacts/wjac_prefilter/report.md",
+    "artifacts/wjac_prefilter/wjac_scores.parquet"
+  ],
+  "status": "KILL"
+}

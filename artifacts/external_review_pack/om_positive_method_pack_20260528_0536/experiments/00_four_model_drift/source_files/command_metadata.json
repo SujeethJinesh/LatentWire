@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase1/run_om_phase1.py"
+  ],
+  "assumptions": [
+    "manual greedy decoding is used to expose deterministic decode-step hooks",
+    "model.prepare_inputs_for_generation is used for the Granite hybrid cache path",
+    "layer forward output absolute values are treated as per-channel activation magnitudes",
+    "EOS is recorded but decoding continues to 20000 generated tokens to satisfy the fixed position grid"
+  ],
+  "batch_size": 1,
+  "branch": "outlier_migrate_phase1",
+  "created_at_utc": "2026-05-08T01:52:15Z",
+  "cwd": "/workspace/LatentWire",
+  "default_batch_size_rationale": "conservative default for 96GB VRAM Granite Small Phase1; override with --batch-size after a local feasibility probe",
+  "phase0_decision": "PASS_OM_PHASE0_DECODE_TIME_MIGRATION",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z",
+  "schema_version": "om_phase1_v1_command"
+}

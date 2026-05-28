@@ -1,0 +1,91 @@
+{
+  "created_at_utc": "2026-05-14T23:38:16Z",
+  "regime": "static_3pct",
+  "schema_version": "om_phase9_m2_v1_score_cache",
+  "scores": {
+    "0": {
+      "mean_nll": 0.00146511683746553,
+      "perplexity": 1.0014661906454934,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "1": {
+      "mean_nll": 0.5454230349278077,
+      "perplexity": 1.7253381062974413,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "10": {
+      "mean_nll": 0.12839081466710586,
+      "perplexity": 1.1369972710881044,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "11": {
+      "mean_nll": 7.572502858220476e-05,
+      "perplexity": 1.0000757278957946,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "2": {
+      "mean_nll": 0.2972458767471835,
+      "perplexity": 1.3461462448204542,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "3": {
+      "mean_nll": 0.0014572464633948456,
+      "perplexity": 1.0014583087629705,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "4": {
+      "mean_nll": 0.33957720338366926,
+      "perplexity": 1.4043537090305795,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "5": {
+      "mean_nll": 0.003040292380109458,
+      "perplexity": 1.0030449187563117,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "6": {
+      "mean_nll": 2.0414414200198294e-05,
+      "perplexity": 1.0000204146225757,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "7": {
+      "mean_nll": 0.018478799721195482,
+      "perplexity": 1.0186505892641595,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "8": {
+      "mean_nll": 0.18407003413696887,
+      "perplexity": 1.2021000081849755,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "9": {
+      "mean_nll": 0.0013103220814354444,
+      "perplexity": 1.0013111809284951,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    }
+  }
+}

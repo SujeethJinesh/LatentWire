@@ -1,0 +1,115 @@
+## stdout tail
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8432926829268292,
+        "prompt_index": 9
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8512195121951219,
+        "prompt_index": 10
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8439024390243902,
+        "prompt_index": 11
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8634146341463415,
+        "prompt_index": 12
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8280487804878048,
+        "prompt_index": 13
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.7993902439024391,
+        "prompt_index": 14
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8567073170731707,
+        "prompt_index": 15
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8560975609756097,
+        "prompt_index": 16
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8670731707317073,
+        "prompt_index": 17
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.7786585365853659,
+        "prompt_index": 18
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8298780487804878,
+        "prompt_index": 19
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8554878048780488,
+        "prompt_index": 20
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8445121951219512,
+        "prompt_index": 21
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8603658536585366,
+        "prompt_index": 22
+      },
+      {
+        "layer_count": 40,
+        "migration_fraction": 0.8268292682926829,
+        "prompt_index": 23
+      }
+    ]
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase1/results/om_phase1_20260508T014959Z"
+}
+
+## stderr tail
+The fast path is not available because one of `(selective_state_update, causal_conv1d_fn, causal_conv1d_update)` is None. Falling back to the naive implementation. To install follow https://github.com/state-spaces/mamba/#installation and https://github.com/Dao-AILab/causal-conv1d
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards: 100%|##########| 14/14 [00:00<00:00, 272.45it/s]
+
+## run_events tail
+{"created_at_utc": "2026-05-08T01:49:59Z", "event": "run_started"}
+{"created_at_utc": "2026-05-08T02:05:52Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [0]}
+{"created_at_utc": "2026-05-08T02:19:17Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [1]}
+{"created_at_utc": "2026-05-08T02:32:40Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [2]}
+{"created_at_utc": "2026-05-08T02:46:01Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [3]}
+{"created_at_utc": "2026-05-08T02:59:25Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [4]}
+{"created_at_utc": "2026-05-08T03:12:48Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [5]}
+{"created_at_utc": "2026-05-08T03:26:10Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [6]}
+{"created_at_utc": "2026-05-08T03:39:32Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [7]}
+{"created_at_utc": "2026-05-08T03:52:57Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [8]}
+{"created_at_utc": "2026-05-08T04:06:23Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [9]}
+{"created_at_utc": "2026-05-08T04:19:50Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [10]}
+{"created_at_utc": "2026-05-08T04:33:16Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [11]}
+{"created_at_utc": "2026-05-08T04:46:40Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [12]}
+{"created_at_utc": "2026-05-08T05:00:06Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [13]}
+{"created_at_utc": "2026-05-08T05:13:31Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [14]}
+{"created_at_utc": "2026-05-08T05:27:01Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [15]}
+{"created_at_utc": "2026-05-08T05:40:29Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [16]}
+{"created_at_utc": "2026-05-08T05:53:56Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [17]}
+{"created_at_utc": "2026-05-08T06:07:21Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [18]}
+{"created_at_utc": "2026-05-08T06:20:50Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [19]}
+{"created_at_utc": "2026-05-08T06:34:19Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [20]}
+{"created_at_utc": "2026-05-08T06:47:47Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [21]}
+{"created_at_utc": "2026-05-08T07:01:17Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [22]}
+{"created_at_utc": "2026-05-08T07:14:54Z", "event": "completed_prompt_batch", "max_new_tokens": 20000, "prompt_indices": [23]}
+{"created_at_utc": "2026-05-08T07:15:02Z", "event": "run_completed"}

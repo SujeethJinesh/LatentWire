@@ -1,0 +1,16 @@
+{
+  "activation_dtype": "float16",
+  "forbidden_methods": [
+    "AWQ-style activation-aware scaling",
+    "SmoothQuant-style activation folding"
+  ],
+  "implementation_note": "INT4 weights are represented as dequantized tensors for framework compatibility.",
+  "protected_channel_dtype": "bfloat16",
+  "schema_version": "om_phase9_m2_v1_quantization_config",
+  "scheme": "symmetric_per_output_channel_int4",
+  "signed_integer_range": [
+    -7,
+    7
+  ],
+  "weight_bits": 4
+}

@@ -1,0 +1,27 @@
+{
+  "artifact_files": [
+    "artifacts/funnel_prefilters/decision.json",
+    "artifacts/funnel_prefilters/report.md",
+    "artifacts/funnel_prefilters/smoke_traces.json"
+  ],
+  "experiment": {
+    "artifact_files": [
+      "artifacts/funnel_prefilters/decision.json",
+      "artifacts/funnel_prefilters/report.md",
+      "artifacts/funnel_prefilters/smoke_traces.json"
+    ],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "19_lambda_prefilter",
+    "hypothesis": "Layerwise budget allocation can rescue regimes where flat M11b underperforms.",
+    "implementation": "CPU layer heterogeneity and dominant-layer allocation analysis.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "LAMBDA",
+    "model": "DeepSeek/Falcon",
+    "run_dirs": [],
+    "status": "SMOKE_ONLY",
+    "title": "LAMBDA layerwise budget prefilter",
+    "why": "Heterogeneity is sufficient to authorize smoke, but not evidence yet."
+  },
+  "source_run_dirs": []
+}

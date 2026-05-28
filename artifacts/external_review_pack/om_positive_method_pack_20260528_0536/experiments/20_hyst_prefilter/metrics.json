@@ -1,0 +1,11 @@
+{
+  "method": "HYST",
+  "model": "DeepSeek/Falcon",
+  "schema_version": "external_review_pack_synthetic_metrics",
+  "source_files": [
+    "artifacts/funnel_prefilters/decision.json",
+    "artifacts/funnel_prefilters/report.md",
+    "artifacts/funnel_prefilters/smoke_traces.json"
+  ],
+  "status": "SMOKE_ONLY"
+}

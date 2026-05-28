@@ -1,0 +1,18 @@
+{
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260513,
+  "metric_name": "positive-static-gap per-trace recovery",
+  "primary_result": {
+    "bootstrap_ci95": {
+      "ci95_high": 0.5952386657662287,
+      "ci95_low": -3.4352892513350524
+    },
+    "included_trace_count": 8,
+    "mean_recovery": -19.38849063047721,
+    "median_recovery": -0.8668373133910525,
+    "no_recoverable_static_gap_count": 4,
+    "no_recoverable_static_gap_fraction": 0.3333333333333333,
+    "total_trace_count": 12
+  },
+  "schema_version": "om_phase9_m2_v1_bootstrap_ci"
+}

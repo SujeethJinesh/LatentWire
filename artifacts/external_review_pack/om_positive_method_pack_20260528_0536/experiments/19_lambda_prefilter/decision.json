@@ -1,0 +1,11 @@
+{
+  "decision": "SMOKE_ONLY",
+  "reasons": [
+    "Heterogeneity is sufficient to authorize smoke, but not evidence yet."
+  ],
+  "source_files": [
+    "artifacts/funnel_prefilters/decision.json",
+    "artifacts/funnel_prefilters/report.md",
+    "artifacts/funnel_prefilters/smoke_traces.json"
+  ]
+}

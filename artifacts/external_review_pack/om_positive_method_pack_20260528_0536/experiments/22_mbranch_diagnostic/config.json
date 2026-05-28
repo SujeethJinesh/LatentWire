@@ -1,0 +1,27 @@
+{
+  "artifact_files": [
+    "artifacts/mbranch/decision.json",
+    "artifacts/mbranch/hook_map.md",
+    "artifacts/mbranch/branch_drift_table.csv"
+  ],
+  "experiment": {
+    "artifact_files": [
+      "artifacts/mbranch/decision.json",
+      "artifacts/mbranch/hook_map.md",
+      "artifacts/mbranch/branch_drift_table.csv"
+    ],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "22_mbranch_diagnostic",
+    "hypothesis": "Falcon branch-local drift is lower than post-mixer drift.",
+    "implementation": "Static Falcon branch hook map and cached evidence audit.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M-BRANCH",
+    "model": "Falcon-H1",
+    "run_dirs": [],
+    "status": "DEFERRED",
+    "title": "M-BRANCH Falcon diagnostic",
+    "why": "No branch-local cache and no clear implementation reason to spend GPU before smoke."
+  },
+  "source_run_dirs": []
+}

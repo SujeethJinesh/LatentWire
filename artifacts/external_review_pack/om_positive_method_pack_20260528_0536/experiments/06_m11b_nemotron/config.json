@@ -1,0 +1,23 @@
+{
+  "artifact_files": [],
+  "experiment": {
+    "artifact_files": [],
+    "baseline": "BF16 and static top-1% W4A16",
+    "caveats": "",
+    "experiment_id": "06_m11b_nemotron",
+    "hypothesis": "Budget-tuned EMA transfers to Nemotron.",
+    "implementation": "Corrected W4A16 static-1% baseline plus M11b top-1/top-5/top-10.",
+    "inspect": "Read summary.md, metrics.json, per_trace.csv, decision.json.",
+    "method": "M11b",
+    "model": "Nemotron",
+    "run_dirs": [
+      "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z"
+    ],
+    "status": "PASS",
+    "title": "M11b Nemotron budget-tuned EMA",
+    "why": "Top-10 has strong positive recovery and beats static top-10, supporting a Nemotron-specific positive regime."
+  },
+  "source_run_dirs": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z"
+  ]
+}

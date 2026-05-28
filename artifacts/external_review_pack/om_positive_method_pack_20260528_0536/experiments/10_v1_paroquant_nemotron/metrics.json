@@ -1,0 +1,9 @@
+{
+  "method": "ParoQuant",
+  "model": "Nemotron",
+  "schema_version": "external_review_pack_synthetic_metrics",
+  "source_files": [
+    "experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z"
+  ],
+  "status": "RUNNING"
+}
