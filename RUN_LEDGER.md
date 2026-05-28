@@ -53,6 +53,23 @@ does not edit this ledger.
 | C11 Repro audit | `artifacts/repro_audit/` | RUNNING | V1/ParoQuant/M11b/cache provenance and final paper tables |
 | C12 Kernel spec | `artifacts/kernel_spec/` | RUNNING | Protected-column correction spec only |
 
+## Rotation-First CPU Gate Summary
+
+| Gate | Decision | Consequence |
+|---|---|---|
+| C1 covariance headroom | `NEEDS_GPU_OR_CACHE_FOR_TRUE_COVARIANCE` | Existing compact caches support only block-output diagonal/magnitude proxy; do not claim off-diagonal rotation headroom yet |
+| C2 Scale/CVaR/Clip | `PROMOTE_GRANITE_CLIP_RETUNE_SMOKE` | Run only after Falcon/DeepSeek ParoQuant smoke; target Granite ParoQuant tail/CVaR |
+| C3 rotation grid | `READY_FOR_GATED_GPU_SMOKE_TEMPLATE` | Do not run full 36-config grid before clip-only smoke shows held-out value |
+| C4 drift-aware pairing | `NEEDS_ACTIVATION_CACHE` | Needs exact rotation-surface activation cache before GPU smoke |
+| C5 residual correction | `NEEDS_WEIGHT_RESIDUAL_CACHE` | Needs ParoQuant residual column norms / candidate pool before GPU smoke |
+| C6 Falcon BranchRot | `NEEDS_GPU_DIAGNOSTIC` | Branch hooks feasible; only after ParoQuant Falcon is weak |
+| C7 M-SURFACE DriftRot | `GUARDED_DIAGNOSTIC_ONLY` | Diagnostic only; no stable internal surface proven yet |
+| C8 Falcon channel fallback | `HOLD_UNTIL_PAROQUANT_FALCON_SMOKE` | HYST margin-5 remains ready if Falcon rotation is weak |
+| C9 paper delta | `ROTATION_FIRST_REGIME_AWARE` | Use rotation-first framing options; do not claim ParoQuant as ours |
+| C10 novelty audit | `SAFE_CLAIMS_ONLY` | BranchRot is most defensible; scale/clip/residual correction require held-out drift-specific gain |
+| C11 repro audit | `TABLES_READY` | Current method matrix, rotation summary, failed branch table prepared |
+| C12 kernel spec | `SPEC_READY_KERNEL_BLOCKED_ON_METHOD` | No kernel implementation until residual correction passes held-out eval |
+
 ## Current Smoke Trace Gate
 
 The next GPU smoke packet should be rotation-first. Falcon and DeepSeek smoke

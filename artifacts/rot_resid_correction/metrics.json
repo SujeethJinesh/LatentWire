@@ -1,0 +1,21 @@
+{
+  "schema_version": "rotated_residual_correction_metrics_v1",
+  "status": "NO_ENDPOINT_METRICS_YET",
+  "reason": "No W_fp/W_pq residual cache is available.",
+  "selected_granite_smoke_trace_context": {
+    "tail_trace": {
+      "prompt_index": 4,
+      "paroquant_recovery": -26.3711874060621,
+      "reason": "largest known ParoQuant negative tail in Granite reference"
+    },
+    "weak_positive_trace": {
+      "prompt_index": 2,
+      "paroquant_recovery": 0.4770444524050311
+    },
+    "representative_positive_trace": {
+      "prompt_index": 8,
+      "paroquant_recovery": 0.7918488316283542
+    }
+  },
+  "gate": "NEEDS_WEIGHT_RESIDUAL_CACHE"
+}

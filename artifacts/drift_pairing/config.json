@@ -1,0 +1,24 @@
+{
+  "schema_version": "drift_pairing_config_v1",
+  "mode": "offline_gate_only",
+  "group_size": 128,
+  "num_rotations": [4, 8, 12, 16],
+  "candidate_pairings": [
+    "paroquant_current",
+    "static_activation_high_low",
+    "drift_complementary",
+    "quantile_high_low",
+    "anti_correlated_temporal_proxy"
+  ],
+  "calibration_windows": {
+    "early": [100, 1000],
+    "late": [9000, 10000]
+  },
+  "data_sources": {
+    "granite_block_output": "experimental/outlier_migrate/phase9/results/om_phase9_mpred_granite_reduced_20260527T201251Z/activation_magnitudes.jsonl.gz",
+    "nemotron_block_output": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/activation_magnitudes.jsonl.gz",
+    "deepseek_block_output": "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/activation_magnitudes.jsonl.gz",
+    "falcon_block_output": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/activation_magnitudes.jsonl.gz"
+  },
+  "exact_surface_cache_needed": true
+}

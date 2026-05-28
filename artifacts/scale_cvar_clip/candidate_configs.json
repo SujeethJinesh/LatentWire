@@ -1,0 +1,30 @@
+{
+  "schema_version": "scale_cvar_clip_candidates_v1",
+  "baseline": {
+    "method": "ParoQuant",
+    "group_size": 128,
+    "num_rotations": 8,
+    "scale_clip": [0.25, 4.0],
+    "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations"
+  },
+  "candidates": [
+    {
+      "candidate_id": "clip_0p125_8",
+      "scale_clip": [0.125, 8.0],
+      "intent": "looser scale range; tests whether the Granite negative tail is caused by over-clipping"
+    },
+    {
+      "candidate_id": "clip_0p25_4_baseline",
+      "scale_clip": [0.25, 4.0],
+      "intent": "exact current ParoQuant baseline"
+    },
+    {
+      "candidate_id": "clip_0p5_2",
+      "scale_clip": [0.5, 2.0],
+      "intent": "tighter scale range; tests whether tail improves through stronger range regularization"
+    }
+  ],
+  "models": ["Granite", "Nemotron"],
+  "confirmation_requirement": "Candidate selection must use a calibration/confirmation split before any positive DriftRot claim."
+}
+

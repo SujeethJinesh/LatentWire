@@ -1,0 +1,14 @@
+{
+  "schema_version": "scale_cvar_clip_config_v1",
+  "worker": "C2_SCALE_CVAR_CLIP",
+  "no_gpu": true,
+  "clip_grid": [[0.125, 8.0], [0.25, 4.0], [0.5, 2.0]],
+  "baseline_clip": [0.25, 4.0],
+  "objective": {
+    "name": "median_plus_cvar_tail_plus_overhead",
+    "lambda": "set_by_orchestrator",
+    "mu": "set_by_orchestrator",
+    "tail_fraction": 0.25
+  }
+}
+

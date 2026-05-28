@@ -1,0 +1,17 @@
+{
+  "schema_version": "scale_cvar_clip_gate_v1",
+  "decision": "PROMOTE_GRANITE_CLIP_RETUNE_SMOKE",
+  "status": "READY_FOR_GATED_GPU_SMOKE",
+  "primary_model": "Granite",
+  "secondary_model": "Nemotron",
+  "reasons": [
+    "Granite ParoQuant median is strong but has a severe negative included trace; CVaR/tail objective is relevant.",
+    "Nemotron ParoQuant already has positive lower CI and no negative included trace, so retune is optional robustness work.",
+    "All candidates are pure config variants of the existing ParoQuant runner and include the exact current baseline."
+  ],
+  "must_not_claim": [
+    "Do not call this a new method unless confirmation traces beat static ParoQuant.",
+    "Do not claim off-diagonal covariance motivation from this artifact."
+  ]
+}
+

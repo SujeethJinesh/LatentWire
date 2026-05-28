@@ -1,0 +1,27 @@
+{
+  "schema_version": "covariance_headroom_traces_v1",
+  "trace_basis": "cached deterministic AIME-2025 traces",
+  "models": {
+    "Granite": {
+      "prompt_indices": "0-11",
+      "positions": [100, 10000],
+      "source": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/activation_magnitudes.jsonl.gz"
+    },
+    "Nemotron": {
+      "prompt_indices": "0-11",
+      "positions": [100, 10000],
+      "source": "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/activation_magnitudes.jsonl.gz"
+    },
+    "DeepSeek": {
+      "prompt_indices": "0-11",
+      "positions": [100, 20000],
+      "source": "experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z/deepseek_r1_distill_qwen_1_5b/activation_means.npz"
+    },
+    "Falcon-H1": {
+      "prompt_indices": "0-11",
+      "positions": [100, 20000],
+      "source": "experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z/falcon_h1_0_5b/activation_means.npz"
+    }
+  }
+}
+

@@ -1,0 +1,25 @@
+{
+  "schema_version": "rotated_residual_correction_traces_used_v1",
+  "source_table": "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/experiments/paroquant_granite_reference/per_trace.csv",
+  "selected_smoke_traces": [
+    {
+      "prompt_index": 4,
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "role": "tail",
+      "paroquant_recovery": -26.3711874060621
+    },
+    {
+      "prompt_index": 2,
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "role": "weak_positive",
+      "paroquant_recovery": 0.4770444524050311
+    },
+    {
+      "prompt_index": 8,
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "role": "representative_positive",
+      "paroquant_recovery": 0.7918488316283542
+    }
+  ],
+  "endpoint_scores_run": false
+}

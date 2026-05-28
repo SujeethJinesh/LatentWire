@@ -1,0 +1,23 @@
+{
+  "schema_version": "rotation_config_grid_metrics_v1",
+  "candidate_results": "not_run",
+  "config_count": 36,
+  "baseline_config": {
+    "group_size": 128,
+    "num_rotations": 8,
+    "scale_clip": [0.25, 4.0]
+  },
+  "baseline_results": {
+    "Granite": {
+      "median_recovery": 0.7537768488911776,
+      "ci95_low": 0.4770444524050311,
+      "ci95_high": 1.003769554323054
+    },
+    "Nemotron": {
+      "median_recovery": 1.0470852994064899,
+      "ci95_low": 1.0071831033257677,
+      "ci95_high": 1.2920493786337606
+    }
+  }
+}
+

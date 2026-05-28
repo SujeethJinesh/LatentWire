@@ -1,0 +1,19 @@
+{
+  "schema_version": "scale_cvar_clip_traces_v1",
+  "analysis_basis": "existing ParoQuant per-trace recoveries",
+  "Granite": {
+    "total_trace_count": 12,
+    "included_trace_count": 8,
+    "source": "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/experiments/paroquant_granite_reference/per_trace.csv"
+  },
+  "Nemotron": {
+    "total_trace_count": 12,
+    "included_trace_count": 10,
+    "source": "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/tables/v1_per_trace_recovery.csv"
+  },
+  "split_policy_required_for_future_smoke": {
+    "calibration": "select clip using calibration traces only",
+    "confirmation": "report pass/fail only on held-out confirmation traces"
+  }
+}
+

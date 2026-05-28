@@ -1,0 +1,53 @@
+{
+  "schema_version": "rotated_residual_correction_candidate_template_v1",
+  "status": "NEEDS_WEIGHT_RESIDUAL_CACHE",
+  "baseline": "paroquant_w4a16",
+  "score": "ema_input_activation_squared * delta_weight_column_norm_squared",
+  "formula": {
+    "delta_weight": "DeltaW = W_fp - W_pq",
+    "candidate_score": "s_i = EMA(x_i^2) * ||DeltaW[:, i]||_2^2",
+    "forward": "y = x @ W_pq.T + x[:, P] @ DeltaW[:, P].T"
+  },
+  "candidate_pool_variants": [
+    {
+      "name": "residual_topk_1pct",
+      "protected_fraction": 0.01,
+      "selection": "top-k by candidate_score per eligible tensor"
+    },
+    {
+      "name": "residual_topk_5pct",
+      "protected_fraction": 0.05,
+      "selection": "top-k by candidate_score per eligible tensor"
+    },
+    {
+      "name": "residual_topk_10pct",
+      "protected_fraction": 0.10,
+      "selection": "top-k by candidate_score per eligible tensor"
+    },
+    {
+      "name": "residual_kllook_augmented",
+      "protected_fraction": 0.05,
+      "selection": "union of residual_topk_5pct and restricted KLLOOK candidate pool, pruned by candidate_score"
+    }
+  ],
+  "granite_smoke_traces": [
+    {
+      "prompt_index": 4,
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "role": "ParoQuant tail trace",
+      "paroquant_recovery": -26.3711874060621
+    },
+    {
+      "prompt_index": 2,
+      "prompt_id": "opencompass_AIME2025_I_2",
+      "role": "weak positive trace",
+      "paroquant_recovery": 0.4770444524050311
+    },
+    {
+      "prompt_index": 8,
+      "prompt_id": "opencompass_AIME2025_I_8",
+      "role": "representative positive trace",
+      "paroquant_recovery": 0.7918488316283542
+    }
+  ]
+}

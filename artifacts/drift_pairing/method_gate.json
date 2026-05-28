@@ -1,0 +1,18 @@
+{
+  "schema_version": "method_gate_v1",
+  "task": "C4_DRIFT_AWARE_PAIRING",
+  "decision": "NEEDS_ACTIVATION_CACHE",
+  "promote_to_gpu": false,
+  "reason": "Candidate edge schedules differ materially from current ParoQuant on cached block-output trajectories, but the cache is not the exact linear-input rotation surface that ParoQuant quantizes.",
+  "material_difference_screen": {
+    "threshold_edge_overlap_with_current_paroquant": 0.75,
+    "observed_mean_edge_overlap_range": [0.0042, 0.0120],
+    "screen_result": "PASS_DIFFERENT_BUT_NOT_SUFFICIENT"
+  },
+  "required_before_gpu": [
+    "Capture linear-input activation trajectories for eligible ParoQuant weight tensors.",
+    "Compute per-group predicted range/CVaR under current ParoQuant and each pairing template.",
+    "Promote only if predicted range or tail improves on held-out confirmation windows."
+  ],
+  "next_recommended_action": "Do not launch GPU smoke yet; add exact-surface activation capture to the next ParoQuant Falcon/DeepSeek smoke if cheap."
+}

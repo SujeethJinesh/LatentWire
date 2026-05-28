@@ -1,0 +1,13 @@
+{
+  "schema_version": "rotation_config_grid_gate_v1",
+  "decision": "DO_NOT_RUN_FULL_GRID_YET",
+  "status": "TEMPLATE_READY",
+  "recommended_order": [
+    "ParoQuant Falcon smoke",
+    "ParoQuant DeepSeek smoke",
+    "Granite clip-only smoke from C2",
+    "expanded group-size/rotation grid only if clip-only smoke improves held-out tail"
+  ],
+  "reason": "The full 36-config grid is larger than necessary before Falcon/DeepSeek rotation baselines are known."
+}
+

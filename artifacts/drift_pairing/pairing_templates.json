@@ -1,0 +1,47 @@
+{
+  "schema_version": "drift_pairing_templates_v1",
+  "created_at_utc": "2026-05-28T00:00:00Z",
+  "status": "NEEDS_ACTIVATION_CACHE",
+  "baseline": {
+    "name": "paroquant_current",
+    "source": "experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py::build_pair_indices",
+    "description": "Within each group, pair shifted first-half channel IDs with reversed second-half channel IDs; alternate +/- pi/4 rotation angle by rotation index."
+  },
+  "group_size": 128,
+  "candidate_templates": [
+    {
+      "name": "static_activation_high_low",
+      "ranking_signal": "early_window_mean_abs_activation",
+      "pairing_rule": "sort descending by ranking_signal within each group; pair top half with reversed bottom half",
+      "required_cache": "linear_input_activation_magnitudes_by_tensor_channel_decode_window"
+    },
+    {
+      "name": "drift_complementary",
+      "ranking_signal": "(late_window_mean - early_window_mean) / (abs(early_window_mean) + eps)",
+      "pairing_rule": "pair high positive drift with high negative drift within each group",
+      "required_cache": "linear_input_activation_magnitudes_by_tensor_channel_decode_window"
+    },
+    {
+      "name": "quantile_high_low",
+      "ranking_signal": "global_or_tensor_local_calibration_quantile_rank",
+      "pairing_rule": "pair high quantile with low quantile within each group",
+      "required_cache": "linear_input_activation_magnitudes_by_tensor_channel_decode_window"
+    },
+    {
+      "name": "anti_correlated_temporal_proxy",
+      "ranking_signal": "temporal_contrast_score_across_decode_positions",
+      "pairing_rule": "pair channels with opposite temporal contrast within each group",
+      "required_cache": "linear_input_activation_trajectory_by_tensor_channel_position"
+    }
+  ],
+  "example_layer0_edges_from_block_output_cache": {
+    "granite": {
+      "static_activation_high_low": [[0, 109], [1, 65], [2, 56], [3, 23], [4, 76], [5, 20], [6, 92], [7, 113]],
+      "drift_complementary": [[0, 37], [1, 110], [2, 116], [3, 99], [4, 114], [5, 6], [7, 80], [8, 94]],
+      "anti_correlated_temporal_proxy": [[0, 67], [1, 120], [2, 76], [3, 29], [4, 53], [5, 85], [6, 90], [7, 101]]
+    },
+    "falcon": {
+      "note": "Full example edges were computed during the gate analysis; compact report keeps summary metrics only to avoid implying exact rotation-surface readiness."
+    }
+  }
+}

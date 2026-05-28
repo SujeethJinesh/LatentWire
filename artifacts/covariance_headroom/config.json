@@ -1,0 +1,20 @@
+{
+  "schema_version": "covariance_headroom_config_v1",
+  "worker": "C1_COVARIANCE_HEADROOM",
+  "no_gpu": true,
+  "analysis_type": "proxy_from_cached_activation_magnitudes",
+  "early_position": 100,
+  "late_positions": {
+    "Granite": 10000,
+    "Nemotron": 10000,
+    "DeepSeek": 20000,
+    "Falcon-H1": 20000
+  },
+  "surface": "transformer_layer_forward_output",
+  "unsupported": [
+    "off_diagonal_covariance_decomposition",
+    "surface_local_covariance",
+    "branch_local_covariance"
+  ]
+}
+

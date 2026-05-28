@@ -1,0 +1,13 @@
+{
+  "schema_version": "rotation_config_grid_traces_v1",
+  "candidate_results": "not_run",
+  "future_smoke_trace_policy": {
+    "require_calibration_confirmation_split": true,
+    "note": "Current ParoQuant runners score the canonical 12-trace packet; runner or checker support is needed before making held-out DriftRot claims."
+  },
+  "baseline_sources": {
+    "Granite": "experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+    "Nemotron": "experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z"
+  }
+}
+

@@ -1,0 +1,59 @@
+{
+  "schema_version": "covariance_headroom_metrics_v1",
+  "metric_semantics": {
+    "vector_drift_proxy": "||mean_abs_late - mean_abs_early||_2 / ||mean_abs_early||_2 averaged over layers",
+    "diag_second_moment_proxy": "||late_abs^2 - early_abs^2||_2 / ||early_abs^2||_2 averaged over layers",
+    "top1pct_leaving_proxy": "strict set-leaving of top-1% mean-absolute activation channels from early to late"
+  },
+  "rows": [
+    {
+      "model": "Granite",
+      "layer_count": 40,
+      "mean_vector_drift_proxy": 0.3757681912343503,
+      "median_vector_drift_proxy": 0.37174582313684845,
+      "mean_diag_second_moment_proxy": 0.5641167902858338,
+      "median_diag_second_moment_proxy": 0.49043846725951634,
+      "mean_p99_late_over_early": 0.9954029868010416,
+      "mean_early_max_over_p99": 15.063171058168402,
+      "mean_late_max_over_p99": 13.765110931388971,
+      "mean_top1pct_leaving_proxy": 0.3365853658536585
+    },
+    {
+      "model": "Nemotron",
+      "layer_count": 52,
+      "mean_vector_drift_proxy": 0.4062154369094969,
+      "median_vector_drift_proxy": 0.41044230500260676,
+      "mean_diag_second_moment_proxy": 0.46050331782140247,
+      "median_diag_second_moment_proxy": 0.30921270094374254,
+      "mean_p99_late_over_early": 1.0815764832317332,
+      "mean_early_max_over_p99": 11.579659912675362,
+      "mean_late_max_over_p99": 12.10932702484617,
+      "mean_top1pct_leaving_proxy": 0.3767806267806268
+    },
+    {
+      "model": "DeepSeek",
+      "layer_count": 28,
+      "mean_vector_drift_proxy": 0.4560774259745015,
+      "median_vector_drift_proxy": 0.46893110564291274,
+      "mean_diag_second_moment_proxy": 0.6577659273884648,
+      "median_diag_second_moment_proxy": 0.7119902204966189,
+      "mean_p99_late_over_early": 1.268852254994985,
+      "mean_early_max_over_p99": 6.566629710551523,
+      "mean_late_max_over_p99": 3.530441214437348,
+      "mean_top1pct_leaving_proxy": 0.453125
+    },
+    {
+      "model": "Falcon-H1",
+      "layer_count": 36,
+      "mean_vector_drift_proxy": 0.34303021786097043,
+      "median_vector_drift_proxy": 0.35883958063261356,
+      "mean_diag_second_moment_proxy": 0.5387813044921121,
+      "median_diag_second_moment_proxy": 0.4427519331727858,
+      "mean_p99_late_over_early": 1.1051004603132735,
+      "mean_early_max_over_p99": 6.891346913984042,
+      "mean_late_max_over_p99": 7.386214699112496,
+      "mean_top1pct_leaving_proxy": 0.3207070707070707
+    }
+  ]
+}
+

@@ -1,0 +1,18 @@
+{
+  "schema_version": "covariance_headroom_v1",
+  "status": "NEEDS_GPU_OR_CACHE_FOR_TRUE_COVARIANCE",
+  "decision": "PROMOTE_SCALE_CLIP_SMOKE_ONLY",
+  "offdiag_covariance_supported": false,
+  "surface": "block_output_only",
+  "gates": {
+    "scale_refresh_clip_retune": "PROMOTE_GRANITE_SMOKE_OPTIONAL_NEMOTRON_CONFIRM",
+    "rotation_refresh_pairing_klt": "NEEDS_COVARIANCE_CACHE_OR_GPU_CAPTURE",
+    "branch_or_surface_rotation": "DEFER_TO_C6_C7_HOOK_DIAGNOSTICS"
+  },
+  "reasons": [
+    "Only absolute activation magnitudes / means are cached, so centered off-diagonal covariance cannot be decomposed.",
+    "Granite has strong ParoQuant median recovery but a severe negative tail, making clip/CVaR retune the cheapest useful DriftRot gate.",
+    "DeepSeek and Falcon require ParoQuant smoke before tuning; their rotation baseline is still unknown."
+  ]
+}
+

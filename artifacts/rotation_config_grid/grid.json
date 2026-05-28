@@ -1,0 +1,56 @@
+{
+  "schema_version": "rotation_config_grid_v1",
+  "baseline_config_id": "g128_r8_clip_0p25_4",
+  "grid_axes": {
+    "group_size": [64, 128, 256],
+    "num_rotations": [4, 8, 12, 16],
+    "scale_clip": [[0.125, 8.0], [0.25, 4.0], [0.5, 2.0]]
+  },
+  "config_count": 36,
+  "baseline": {
+    "config_id": "g128_r8_clip_0p25_4",
+    "group_size": 128,
+    "num_rotations": 8,
+    "scale_clip": [0.25, 4.0],
+    "matches_current_paroquant_config": true
+  },
+  "configs": [
+    {"config_id": "g64_r4_clip_0p125_8", "group_size": 64, "num_rotations": 4, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g64_r4_clip_0p25_4", "group_size": 64, "num_rotations": 4, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g64_r4_clip_0p5_2", "group_size": 64, "num_rotations": 4, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g64_r8_clip_0p125_8", "group_size": 64, "num_rotations": 8, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g64_r8_clip_0p25_4", "group_size": 64, "num_rotations": 8, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g64_r8_clip_0p5_2", "group_size": 64, "num_rotations": 8, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g64_r12_clip_0p125_8", "group_size": 64, "num_rotations": 12, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g64_r12_clip_0p25_4", "group_size": 64, "num_rotations": 12, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g64_r12_clip_0p5_2", "group_size": 64, "num_rotations": 12, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g64_r16_clip_0p125_8", "group_size": 64, "num_rotations": 16, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g64_r16_clip_0p25_4", "group_size": 64, "num_rotations": 16, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g64_r16_clip_0p5_2", "group_size": 64, "num_rotations": 16, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g128_r4_clip_0p125_8", "group_size": 128, "num_rotations": 4, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g128_r4_clip_0p25_4", "group_size": 128, "num_rotations": 4, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g128_r4_clip_0p5_2", "group_size": 128, "num_rotations": 4, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g128_r8_clip_0p125_8", "group_size": 128, "num_rotations": 8, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g128_r8_clip_0p25_4", "group_size": 128, "num_rotations": 8, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g128_r8_clip_0p5_2", "group_size": 128, "num_rotations": 8, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g128_r12_clip_0p125_8", "group_size": 128, "num_rotations": 12, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g128_r12_clip_0p25_4", "group_size": 128, "num_rotations": 12, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g128_r12_clip_0p5_2", "group_size": 128, "num_rotations": 12, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g128_r16_clip_0p125_8", "group_size": 128, "num_rotations": 16, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g128_r16_clip_0p25_4", "group_size": 128, "num_rotations": 16, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g128_r16_clip_0p5_2", "group_size": 128, "num_rotations": 16, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g256_r4_clip_0p125_8", "group_size": 256, "num_rotations": 4, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g256_r4_clip_0p25_4", "group_size": 256, "num_rotations": 4, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g256_r4_clip_0p5_2", "group_size": 256, "num_rotations": 4, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g256_r8_clip_0p125_8", "group_size": 256, "num_rotations": 8, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g256_r8_clip_0p25_4", "group_size": 256, "num_rotations": 8, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g256_r8_clip_0p5_2", "group_size": 256, "num_rotations": 8, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g256_r12_clip_0p125_8", "group_size": 256, "num_rotations": 12, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g256_r12_clip_0p25_4", "group_size": 256, "num_rotations": 12, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g256_r12_clip_0p5_2", "group_size": 256, "num_rotations": 12, "scale_clip": [0.5, 2.0]},
+    {"config_id": "g256_r16_clip_0p125_8", "group_size": 256, "num_rotations": 16, "scale_clip": [0.125, 8.0]},
+    {"config_id": "g256_r16_clip_0p25_4", "group_size": 256, "num_rotations": 16, "scale_clip": [0.25, 4.0]},
+    {"config_id": "g256_r16_clip_0p5_2", "group_size": 256, "num_rotations": 16, "scale_clip": [0.5, 2.0]}
+  ]
+}
+

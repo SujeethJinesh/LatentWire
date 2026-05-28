@@ -24,6 +24,9 @@ unless a genuinely held-out frozen-threshold run is executed.
 | DriftRot | LIVE | Primary question: can long-decode drift-aware rotation choices beat or robustify static ParoQuant on held-out traces/seeds? |
 | ParoQuant Falcon smoke | NEXT | First rotation-first GPU gate; decides whether Falcon needs channel rescue. |
 | ParoQuant DeepSeek smoke | NEXT | Tests whether rotation-dominance extends to the dense Transformer regime. |
+| Granite clip/CVaR retune | PROMOTE_AFTER_G0_G1 | Only DriftRot config gate promoted by CPU filters; target ParoQuant's Granite tail, not a broad grid. |
+| Drift-aware pairing | NEEDS_ACTIVATION_CACHE | Pairings differ from current ParoQuant on block-output proxies, but exact rotation-surface caches are required before GPU. |
+| Residual correction | NEEDS_WEIGHT_RESIDUAL_CACHE | Method is specified, but no candidate pool exists until a ParoQuant run emits residual column norms or equivalent summaries. |
 | WJAC | KILL | Artifactized prefilter found at least two kill diagnostics on each covered model/slice; DeepSeek/Falcon full cached coverage, Granite/Nemotron representative slice coverage. |
 | LAMBDA | DEFER | Falcon prior reallocates 18.9% of total budget, but the standalone smoke gate is false because causal per-layer headroom is absent. |
 | HYST | DEFER_AFTER_ROTATION | Falcon churn/local-pool gate selected margin `m=5`, but channel fallback waits until ParoQuant Falcon and BranchRot are known. |
@@ -56,3 +59,12 @@ The next decision gate is rotation-first:
 Do not claim ParoQuant as our method. A new method passes only if it beats
 ParoQuant on held-out traces/seeds, improves ParoQuant CI/tail, or rescues a
 model where ParoQuant fails.
+
+CPU gates now favor this concrete order:
+
+1. G0 ParoQuant Falcon smoke.
+2. G1 ParoQuant DeepSeek smoke.
+3. Granite clip/CVaR retune smoke if G0/G1 do not already settle the story.
+4. BranchRot/HYST only if Falcon ParoQuant is weak.
+5. Pairing/residual correction only after collecting exact rotation-surface or
+   residual-column caches.

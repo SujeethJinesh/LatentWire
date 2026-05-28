@@ -1,0 +1,17 @@
+{
+  "schema_version": "rotated_residual_correction_config_v1",
+  "mode": "reference_and_candidate_template_only",
+  "baseline": "paroquant_w4a16",
+  "target_model": "Granite-4.0-H-Small",
+  "smoke_traces": [4, 2, 8],
+  "protected_fractions": [0.01, 0.05, 0.10],
+  "candidate_score": "EMA(x_i^2) * ||W_fp[:,i] - W_pq[:,i]||_2^2",
+  "optional_candidate_pool": "restricted_kllook",
+  "matched_budget_required": true,
+  "requires": [
+    "full_precision_weight_or_residual_column_norms",
+    "paroquant_dequantized_weight_or_residual_column_norms",
+    "linear_input_activation_ema_sq",
+    "eligible_tensor_manifest"
+  ]
+}

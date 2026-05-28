@@ -1,0 +1,32 @@
+{
+  "schema_version": "drift_pairing_metrics_v1",
+  "metric": "candidate_pair_edge_overlap_with_current_paroquant_on_cached_block_output_layers_0_to_3",
+  "interpretation": "Low overlap means materially different edge schedule; it is not an accuracy/recovery result.",
+  "models": {
+    "granite": {
+      "static_activation_high_low_mean_overlap": 0.008545,
+      "drift_complementary_mean_overlap": 0.007080,
+      "quantile_high_low_mean_overlap": 0.008667,
+      "anti_correlated_temporal_proxy_mean_overlap": 0.007446
+    },
+    "nemotron": {
+      "static_activation_high_low_mean_overlap": 0.007999,
+      "drift_complementary_mean_overlap": 0.007812,
+      "quantile_high_low_mean_overlap": 0.008371,
+      "anti_correlated_temporal_proxy_mean_overlap": 0.006138
+    },
+    "deepseek": {
+      "static_activation_high_low_mean_overlap": 0.012044,
+      "drift_complementary_mean_overlap": 0.007812,
+      "quantile_high_low_mean_overlap": 0.012044,
+      "anti_correlated_temporal_proxy_mean_overlap": 0.004232
+    },
+    "falcon": {
+      "static_activation_high_low_mean_overlap": 0.010254,
+      "drift_complementary_mean_overlap": 0.008789,
+      "quantile_high_low_mean_overlap": 0.010254,
+      "anti_correlated_temporal_proxy_mean_overlap": 0.005859
+    }
+  },
+  "gate": "NEEDS_ACTIVATION_CACHE"
+}

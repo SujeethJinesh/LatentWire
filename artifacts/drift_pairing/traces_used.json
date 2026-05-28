@@ -1,0 +1,14 @@
+{
+  "schema_version": "drift_pairing_traces_used_v1",
+  "cache_type": "block_output_activation_magnitudes",
+  "prompt_indices": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "decode_positions": "100..10000 in 100-token increments where present",
+  "analysis_layers": [0, 1, 2, 3],
+  "sources": [
+    "experimental/outlier_migrate/phase9/results/om_phase9_mpred_granite_reduced_20260527T201251Z/activation_magnitudes.jsonl.gz",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/activation_magnitudes.jsonl.gz",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/activation_magnitudes.jsonl.gz",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/activation_magnitudes.jsonl.gz"
+  ],
+  "limitation": "These are block-output channels, not exact ParoQuant linear-input rotation channels."
+}

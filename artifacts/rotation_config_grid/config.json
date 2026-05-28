@@ -1,0 +1,12 @@
+{
+  "schema_version": "rotation_config_grid_config_v1",
+  "worker": "C3_ROTATION_CONFIG_GRID",
+  "no_gpu": true,
+  "grid_axes": {
+    "group_size": [64, 128, 256],
+    "num_rotations": [4, 8, 12, 16],
+    "scale_clip": [[0.125, 8.0], [0.25, 4.0], [0.5, 2.0]]
+  },
+  "baseline_config_id": "g128_r8_clip_0p25_4"
+}
+

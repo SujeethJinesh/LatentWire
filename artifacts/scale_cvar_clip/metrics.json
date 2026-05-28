@@ -1,0 +1,29 @@
+{
+  "schema_version": "scale_cvar_clip_metrics_v1",
+  "baseline_results": [
+    {
+      "model": "Granite",
+      "method": "ParoQuant",
+      "median_recovery": 0.7537768488911776,
+      "ci95_low": 0.4770444524050311,
+      "ci95_high": 1.003769554323054,
+      "included_trace_count": 8,
+      "min_recovery": -26.3711874060621,
+      "cvar_25pct_recovery": -12.947071476828533,
+      "source": "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/experiments/paroquant_granite_reference/metrics.json"
+    },
+    {
+      "model": "Nemotron",
+      "method": "ParoQuant",
+      "median_recovery": 1.0470852994064899,
+      "ci95_low": 1.0071831033257677,
+      "ci95_high": 1.2920493786337606,
+      "included_trace_count": 10,
+      "min_recovery": 0.9600541649392053,
+      "cvar_25pct_recovery": 0.9615785151257756,
+      "source": "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/experiments/v1_paroquant_nemotron/metrics.json"
+    }
+  ],
+  "candidate_results": "not_run"
+}
+
