@@ -3,7 +3,7 @@
   "started_at": "2026-05-07T21:23:49Z",
   "started_at_sha": "6e2410fc063f1313aab0376ac76e23488b9cfb97",
   "status": "RUNNING",
-  "current_entry": "positive_method_integration_after_mpred_kill_mfish_defer",
+  "current_entry": "mfish_gradient_runner_feasibility",
   "completed_entries": [
     {
       "id": "decode_microkernel_phase0",
@@ -1270,9 +1270,9 @@
   ],
   "consecutive_infra_failures": 0,
   "gpu_hours_used": 323.2605,
-  "gpu_hours_budget": 360.0,
+  "gpu_hours_budget": 500.0,
   "last_audit_at": "2026-05-27T21:35:00Z",
-  "last_commit_sha": "911cd738",
+  "last_commit_sha": "82a9ac59",
   "papers_camera_ready_candidate": [
     "experimental/thoughtflow_fp8/paper/thoughtflow_fp8_colm2026.pdf",
     "experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf"
