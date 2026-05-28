@@ -1,50 +1,24 @@
 {
-  "schema_version": "novelty_audit_c10_v1",
-  "created_at_utc": "2026-05-28T15:38:16Z",
-  "overall_decision": "PROCEED_WITH_NARROW_DRIFT_CONDITIONED_CLAIMS_ONLY",
-  "gpu_gate_recommendation": "Do not launch DriftRot smoke until C1-C4 show drift-conditioned headroom relative to fixed ParoQuant. Run ParoQuant Falcon/DeepSeek first.",
-  "candidate_gates": {
-    "driftrot_scale_clip_retune": {
-      "novelty_risk": "HIGH",
-      "status": "CONDITIONAL",
-      "gate": "Proceed only with calibration/confirmation split and held-out ParoQuant improvement in median, CI lower, or CVaR tail.",
-      "kill_if": "Only retunes ParoQuant knobs on calibration traces or lacks held-out gain."
-    },
-    "drift_aware_pairing": {
-      "novelty_risk": "MEDIUM_HIGH",
-      "status": "CONDITIONAL",
-      "gate": "Proceed only if pairings materially differ from ParoQuant baseline and predicted range reduction is confirmed.",
-      "kill_if": "Pairings are equivalent to static high-low/ParoQuant or gains are calibration-only."
-    },
-    "rotated_residual_correction": {
-      "novelty_risk": "HIGH",
-      "status": "TAIL_FIXER_ONLY",
-      "gate": "Proceed on weak/tail traces only; no kernel until partial evaluation survives.",
-      "kill_if": "Does not fix ParoQuant tail or loses matched overhead."
-    },
-    "branchrot": {
-      "novelty_risk": "MEDIUM",
-      "status": "MOST_DEFENSIBLE_IF_BRANCH_HEADROOM_EXISTS",
-      "gate": "Proceed if branch-local drift/covariance is at least 0.15 better than post-mixer and recovery improves.",
-      "kill_if": "Branch surfaces drift like post-mixer."
-    },
-    "msurface_rotation_protection": {
-      "novelty_risk": "MEDIUM_HIGH",
-      "status": "DIAGNOSTIC_FIRST",
-      "gate": "Proceed if internal surface leaving is <0.30-0.40 or at least 0.15 below block output.",
-      "kill_if": "No more stable internal surface is found."
-    }
-  },
-  "likely_scooped_if_framed_broadly": [
-    "rotation-based quantization",
-    "pairwise rotation quantization",
-    "learned rotation quantization",
-    "activation-aware scaling",
-    "runtime smoothing plus rotation",
-    "Mamba/SSM variance-aligned rotation",
-    "KV-cache covariance-aware rotation",
-    "rotation plus linear correction"
+  "schema_version": "rotation_novelty_gate_v2",
+  "decision": "PAROQUANT_IS_BASELINE_DRIFTROT_NEEDS_HELD_OUT_DRIFT_GAIN",
+  "tier1_candidates": [
+    "rotated_basis_residual_correction",
+    "decode_adaptive_rotation_refresh",
+    "surface_selected_rotation_or_protection",
+    "branch_local_falcon_rotation"
   ],
-  "safe_global_claim": "Long-decode drift diagnostics can be used to decide whether and where an existing rotation family should be retuned, corrected, or applied; held-out improvement over a fixed ParoQuant baseline is required for a positive method claim."
+  "tier2_candidates": [
+    "cvar_tail_aware_calibration",
+    "config_clip_retuning"
+  ],
+  "must_not_headline": [
+    "config_clip_retuning_without_confirmation_gain",
+    "ParoQuant_as_our_method"
+  ],
+  "required_for_config_cvar": [
+    "calibration_confirmation_split",
+    "original_paroquant_config_baseline",
+    "drift_or_tail_based_selection_explanation",
+    "report_if_gain_disappears_on_confirmation"
+  ]
 }
-

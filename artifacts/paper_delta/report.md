@@ -49,3 +49,76 @@ The strongest current framing is rotation-first but still conditional:
 `method_gate.json` sets the immediate writing gate to
 `ROTATION_FIRST_PENDING_FALCON_DEEPSEEK`.
 
+
+## Novelty Lock-In: Rotation Positioning Paragraph
+
+Prior rotation methods construct static calibration-time transforms, learned
+rotations, or runtime smoothing rules that improve low-bit inference by changing
+the basis in which quantization error appears. Our question is different: under
+long reasoning decode, channel identity itself drifts, so we first measure when
+channel-set protection becomes ill-posed, then test whether rotation removes the
+basis dependence or whether drift-aware selection, surface choice, branch-local
+rotation, or rotated-basis residual correction can improve on a fixed ParoQuant
+baseline. ParoQuant is therefore reported as a strong baseline, not as our
+method.
+
+## DriftRot Candidate Novelty Ranking
+
+Tier 1 candidates:
+
+1. Rotated-basis residual correction: `y = x W_pq + x_P (W_fp - W_pq)_P`, with
+   `P` selected by post-rotation residual error under long-decode traces.
+2. Decode-adaptive rotation refresh, only if early/late covariance or range
+   drift is measurable and confirmation traces improve over static ParoQuant.
+3. Surface-selected rotation/protection, using measured internal-surface drift
+   to distinguish block-output instability from internal persistence.
+4. Branch-local Falcon rotation, only if branch-local drift/range is materially
+   lower than post-mixer drift/range.
+
+Tier 2 candidates:
+
+1. CVaR/tail-aware calibration.
+2. Static config/clip retuning.
+
+Config/clip retuning must not be the headline method. It is useful as a tail
+screen or as evidence that static ParoQuant is already close to saturated.
+
+## Guardrails for DriftRot-Config / CVaR
+
+Any DriftRot-Config or CVaR result must include the original ParoQuant config as
+baseline, use a calibration/confirmation split, give a drift/tail-based reason
+for selecting the config, and explicitly report if gains disappear on
+confirmation traces. Without those conditions, it is ParoQuant hyperparameter
+screening rather than a new method.
+
+## Residual Correction Definition
+
+Rotated-basis residual correction is defined as:
+
+`y = x W_pq + x_P (W_fp - W_pq)_P`
+
+The selected set `P` must be chosen using post-rotation residual error under
+long-decode traces, not original-basis channel magnitude. Any result must report
+HBM bytes/token, working-set size, and estimated pJ/token.
+
+## Surface-Distinction Wording
+
+Use the following Quamba2-safe wording for M-SURFACE:
+
+"Quamba2-style internal persistence does not imply stable block-output top-k
+protection. We therefore measure the surface at which protection is applied
+before concluding whether the channel identity assumption fails internally or
+only after block-level mixing."
+
+Do not imply Quamba2 is wrong unless internal-surface measurements show that.
+
+## Title / Abstract Candidate Update
+
+Preferred title:
+
+"Channel-Set Drift in Long-Reasoning W4A16: Why Static Protection Fails and When
+Rotation/Residual Correction Helps"
+
+Avoid:
+
+"A Better Rotation Quantizer for Reasoning LLMs"
