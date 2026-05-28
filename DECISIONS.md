@@ -1,6 +1,6 @@
 # Positive-Method Sprint Decisions
 
-Last updated: 2026-05-28T06:40Z
+Last updated: 2026-05-28T11:42Z
 
 ## Current Framing
 
@@ -17,7 +17,7 @@ unless a genuinely held-out frozen-threshold run is executed.
 
 | Branch | Decision | Reason |
 |---|---|---|
-| V1 ParoQuant-on-Nemotron | RUNNING | Baseline-vetting GPU job active. |
+| V1 ParoQuant-on-Nemotron | RUNNING | Baseline-vetting GPU job active; 10/12 prompts scored as of 2026-05-28T11:34Z. |
 | WJAC | KILL | Artifactized prefilter found at least two kill diagnostics on each covered model/slice; DeepSeek/Falcon full cached coverage, Granite/Nemotron representative slice coverage. |
 | LAMBDA | DEFER | Falcon prior reallocates 18.9% of total budget, but the standalone smoke gate is false because causal per-layer headroom is absent. |
 | HYST | READY_FOR_SMOKE | Falcon churn/local-pool gate selected margin `m=5`; runner now supports `--methods hyst --hyst-exit-margin-pct-points 5`. |

@@ -1,6 +1,6 @@
 # Positive-Method Sprint Run Ledger
 
-Last updated: 2026-05-28T06:40Z
+Last updated: 2026-05-28T11:42Z
 
 ## Active Objective
 
@@ -12,7 +12,7 @@ filter work writes to `artifacts/<task_name>/` and does not edit this ledger.
 
 | Order | Gate | Status | Run / Artifact | Decision |
 |---:|---|---|---|---|
-| 0 | V1 ParoQuant-on-Nemotron | RUNNING | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z` | Pending score cache/checker; 4/12 prompts complete as of 2026-05-28T06:31Z |
+| 0 | V1 ParoQuant-on-Nemotron | RUNNING | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z` | Pending score cache/checker; 10/12 prompts complete as of 2026-05-28T11:34Z |
 | 1 | Falcon HYST smoke | READY_AFTER_V1 | `artifacts/hyst_falcon/` -> `--methods hyst --hyst-exit-margin-pct-points 5` | Run only if V1 is not headline-changing |
 | 2 | Minimal M-SURFACE sanity on Granite | CONDITIONAL | `artifacts/msurface/diagnostic_config_2trace.json` | Cheap 2-trace diagnostic; promote only if internal surface leaving <0.30 or at least 0.15 below same-run post-block |
 | 3 | LayerKeep-Falcon smoke | CONDITIONAL | `artifacts/layerkeep_nogap/` | Falcon-only fallback; candidate layers `30-35`, only after HYST or if HYST is blocked/ambiguous |
