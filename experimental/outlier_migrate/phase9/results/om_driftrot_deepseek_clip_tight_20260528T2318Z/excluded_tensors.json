@@ -1,0 +1,4373 @@
+{
+  "by_regime": {
+    "paroquant_w4a16": {
+      "excluded_tensors": [
+        {
+          "name": "model.layers.0.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.0.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.1.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.1.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.2.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.2.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.3.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.3.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.4.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.4.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.5.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.5.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.6.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.6.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.7.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.7.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.8.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.8.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.9.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.9.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.10.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.10.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.11.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.11.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.12.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.12.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.13.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.13.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.14.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.14.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.15.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.15.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.16.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.16.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.17.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.17.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.18.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.18.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.19.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.19.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.20.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.20.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.21.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.21.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.22.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.22.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.23.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.23.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.24.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.24.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.25.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.25.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.26.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.26.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.27.input_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.layers.27.post_attention_layernorm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        },
+        {
+          "name": "model.norm",
+          "reason": "weight tensor is not 2D or expert-bank 3D",
+          "shape": [
+            1536
+          ]
+        }
+      ],
+      "quantized_tensor_count": 198,
+      "quantized_tensors": [
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.embed_tokens",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 151936,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.74115788936615,
+          "scale_median": 0.9999798536300659,
+          "scale_min": 0.5,
+          "shape": [
+            151936,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.0.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.4676425457000732,
+          "scale_median": 0.9995583295822144,
+          "scale_min": 0.5,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.0.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999351501464844,
+          "scale_min": 0.640810489654541,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.0.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999599456787109,
+          "scale_min": 0.857478141784668,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.0.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9997755885124207,
+          "scale_min": 0.7215452790260315,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.0.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999939799308777,
+          "scale_min": 0.7713632583618164,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.0.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999896883964539,
+          "scale_min": 0.9456110596656799,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.0.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.71212899684906,
+          "scale_median": 0.9999949336051941,
+          "scale_min": 0.7611516118049622,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.1.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999327063560486,
+          "scale_min": 0.6385335922241211,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.1.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999285936355591,
+          "scale_min": 0.6717851758003235,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.1.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998998641967773,
+          "scale_min": 0.7251569628715515,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.1.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998423457145691,
+          "scale_min": 0.7661184072494507,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.1.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999957799911499,
+          "scale_min": 0.828723132610321,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.1.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999278783798218,
+          "scale_min": 0.9247612357139587,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.1.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999767541885376,
+          "scale_min": 0.7004900574684143,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.2.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999908208847046,
+          "scale_min": 0.6939147114753723,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.2.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999392032623291,
+          "scale_min": 0.6929989457130432,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.2.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999918520450592,
+          "scale_min": 0.749495804309845,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.2.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.5130401849746704,
+          "scale_median": 0.9996170997619629,
+          "scale_min": 0.6494926810264587,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.2.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999999403953552,
+          "scale_min": 0.7974072098731995,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.2.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999983549118042,
+          "scale_min": 0.9387717843055725,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.2.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.771644115447998,
+          "scale_median": 0.9999998211860657,
+          "scale_min": 0.6036063432693481,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.3.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999780058860779,
+          "scale_min": 0.7198264002799988,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.3.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9995572566986084,
+          "scale_min": 0.7283769249916077,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.3.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999702572822571,
+          "scale_min": 0.8176273107528687,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.3.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.721737265586853,
+          "scale_median": 0.9996012449264526,
+          "scale_min": 0.6193702816963196,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.3.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999881386756897,
+          "scale_min": 0.6696470379829407,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.3.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999971985816956,
+          "scale_min": 0.9346070885658264,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.3.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.5933477878570557,
+          "scale_median": 0.9999880194664001,
+          "scale_min": 0.7060295939445496,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.4.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999569654464722,
+          "scale_min": 0.7238366007804871,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.4.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999786019325256,
+          "scale_min": 0.6606274247169495,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.4.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999954700469971,
+          "scale_min": 0.8176398873329163,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.4.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.7854145765304565,
+          "scale_median": 0.9999704957008362,
+          "scale_min": 0.6753097772598267,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.4.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999973177909851,
+          "scale_min": 0.5264254808425903,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.4.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999924302101135,
+          "scale_min": 0.9051637649536133,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.4.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.55697500705719,
+          "scale_median": 0.9999736547470093,
+          "scale_min": 0.6737696528434753,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.5.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999904215335846,
+          "scale_min": 0.6994511485099792,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.5.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9995508193969727,
+          "scale_min": 0.5498579740524292,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.5.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998716711997986,
+          "scale_min": 0.787655770778656,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.5.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9997608661651611,
+          "scale_min": 0.6966046690940857,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.5.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999947547912598,
+          "scale_min": 0.6632317304611206,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.5.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998792409896851,
+          "scale_min": 0.9629896879196167,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.5.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.9320021867752075,
+          "scale_median": 0.9999692440032959,
+          "scale_min": 0.6358783841133118,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.6.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999876618385315,
+          "scale_min": 0.6873151659965515,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.6.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999460577964783,
+          "scale_min": 0.6062836647033691,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.6.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999209046363831,
+          "scale_min": 0.8480813503265381,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.6.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9997606873512268,
+          "scale_min": 0.6137641072273254,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.6.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999922513961792,
+          "scale_min": 0.6108773946762085,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.6.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999975562095642,
+          "scale_min": 0.9619391560554504,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.6.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.4373430013656616,
+          "scale_median": 0.9999995827674866,
+          "scale_min": 0.6440027356147766,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.7.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999942779541016,
+          "scale_min": 0.7311059832572937,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.7.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9997898936271667,
+          "scale_min": 0.6708531379699707,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.7.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999103546142578,
+          "scale_min": 0.7314310669898987,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.7.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.7966803312301636,
+          "scale_median": 0.999936580657959,
+          "scale_min": 0.7091036438941956,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.7.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998791217803955,
+          "scale_min": 0.7229476571083069,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.7.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999621510505676,
+          "scale_min": 0.9532137513160706,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.7.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.3938069343566895,
+          "scale_median": 0.9999994039535522,
+          "scale_min": 0.5976999998092651,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.8.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999023079872131,
+          "scale_min": 0.6674190163612366,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.8.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999639987945557,
+          "scale_min": 0.6611046195030212,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.8.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9997860193252563,
+          "scale_min": 0.8623707890510559,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.8.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9995548129081726,
+          "scale_min": 0.5029857754707336,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.8.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999866485595703,
+          "scale_min": 0.705369770526886,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.8.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999908804893494,
+          "scale_min": 0.959038496017456,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.8.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.397853970527649,
+          "scale_median": 0.999994158744812,
+          "scale_min": 0.6284044981002808,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.9.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998446106910706,
+          "scale_min": 0.7428865432739258,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.9.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9996362328529358,
+          "scale_min": 0.6159268617630005,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.9.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998590350151062,
+          "scale_min": 0.8751223683357239,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.9.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998703598976135,
+          "scale_min": 0.5173417925834656,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.9.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999614953994751,
+          "scale_min": 0.7199255228042603,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.9.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998738169670105,
+          "scale_min": 0.9519978761672974,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.9.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.4790794849395752,
+          "scale_median": 0.9999864101409912,
+          "scale_min": 0.7828301787376404,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.10.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999982118606567,
+          "scale_min": 0.6555008292198181,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.10.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999814629554749,
+          "scale_min": 0.5622181296348572,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.10.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999982118606567,
+          "scale_min": 0.8397853374481201,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.10.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.6994552612304688,
+          "scale_median": 0.9993318319320679,
+          "scale_min": 0.7568991780281067,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.10.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999942779541016,
+          "scale_min": 0.7258513569831848,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.10.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999891996383667,
+          "scale_min": 0.968187689781189,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.10.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.3486230373382568,
+          "scale_median": 0.9999986290931702,
+          "scale_min": 0.6389089822769165,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.11.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999869465827942,
+          "scale_min": 0.6489880084991455,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.11.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998111724853516,
+          "scale_min": 0.675274133682251,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.11.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999932050704956,
+          "scale_min": 0.8530163168907166,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.11.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.987534761428833,
+          "scale_median": 0.9996625781059265,
+          "scale_min": 0.7081719040870667,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.11.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999673366546631,
+          "scale_min": 0.6768248677253723,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.11.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999251365661621,
+          "scale_min": 0.9664714336395264,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.11.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.3448646068572998,
+          "scale_median": 0.9999935626983643,
+          "scale_min": 0.6151803731918335,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.12.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999210238456726,
+          "scale_min": 0.6833741664886475,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.12.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9996938109397888,
+          "scale_min": 0.6256424188613892,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.12.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998170733451843,
+          "scale_min": 0.8426570892333984,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.12.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.9976977109909058,
+          "scale_median": 0.999860405921936,
+          "scale_min": 0.7394630312919617,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.12.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999070763587952,
+          "scale_min": 0.6883450150489807,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.12.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999819993972778,
+          "scale_min": 0.9623789191246033,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.12.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.4071565866470337,
+          "scale_median": 0.9999614953994751,
+          "scale_min": 0.5635796785354614,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.13.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999939799308777,
+          "scale_min": 0.6770123839378357,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.13.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999524712562561,
+          "scale_min": 0.6491259336471558,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.13.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998675584793091,
+          "scale_min": 0.6296162009239197,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.13.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999967217445374,
+          "scale_min": 0.7257509231567383,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.13.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999756813049316,
+          "scale_min": 0.7326265573501587,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.13.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999403953552246,
+          "scale_min": 0.9550023078918457,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.13.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.5127252340316772,
+          "scale_median": 0.9999895691871643,
+          "scale_min": 0.6542524695396423,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.14.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998559951782227,
+          "scale_min": 0.6961871981620789,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.14.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999880194664001,
+          "scale_min": 0.5555691719055176,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.14.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999850332736969,
+          "scale_min": 0.7821111083030701,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.14.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.5555554628372192,
+          "scale_median": 0.9991552233695984,
+          "scale_min": 0.5751692056655884,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.14.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999287724494934,
+          "scale_min": 0.6761797070503235,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.14.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998831748962402,
+          "scale_min": 0.8918455243110657,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.14.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.3831204175949097,
+          "scale_median": 0.9999516010284424,
+          "scale_min": 0.6499882936477661,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.15.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999108910560608,
+          "scale_min": 0.6607038974761963,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.15.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998541474342346,
+          "scale_min": 0.5062806606292725,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.15.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999995827674866,
+          "scale_min": 0.8748576045036316,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.15.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.8857148885726929,
+          "scale_median": 0.999923586845398,
+          "scale_min": 0.6225194931030273,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.15.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999630451202393,
+          "scale_min": 0.7292062640190125,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.15.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999690055847168,
+          "scale_min": 0.9663756489753723,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.15.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.5248662233352661,
+          "scale_median": 0.9999508261680603,
+          "scale_min": 0.610815703868866,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.16.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999492168426514,
+          "scale_min": 0.6954522728919983,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.16.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9993628263473511,
+          "scale_min": 0.6176201701164246,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.16.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998140931129456,
+          "scale_min": 0.8067354559898376,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.16.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.816045880317688,
+          "scale_median": 0.9999065399169922,
+          "scale_min": 0.7284165024757385,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.16.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999959468841553,
+          "scale_min": 0.7232733368873596,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.16.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998628497123718,
+          "scale_min": 0.9553123116493225,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.16.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.5047757625579834,
+          "scale_median": 0.9999905228614807,
+          "scale_min": 0.660722017288208,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.17.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999948740005493,
+          "scale_min": 0.6186636090278625,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.17.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.9384129047393799,
+          "scale_median": 0.9999028444290161,
+          "scale_min": 0.5464133024215698,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.17.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9997904300689697,
+          "scale_min": 0.7945306897163391,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.17.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.8053138256072998,
+          "scale_median": 0.9999784827232361,
+          "scale_min": 0.6775484681129456,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.17.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999997019767761,
+          "scale_min": 0.7080788016319275,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.17.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999136328697205,
+          "scale_min": 0.9623234272003174,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.17.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.470000982284546,
+          "scale_median": 0.9999904036521912,
+          "scale_min": 0.6052393317222595,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.18.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999765157699585,
+          "scale_min": 0.6975945830345154,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.18.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.561646580696106,
+          "scale_median": 0.9995632767677307,
+          "scale_min": 0.6468948125839233,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.18.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999867677688599,
+          "scale_min": 0.7507084608078003,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.18.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.8219308853149414,
+          "scale_median": 0.9995973110198975,
+          "scale_min": 0.7024015784263611,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.18.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999359250068665,
+          "scale_min": 0.7119508981704712,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.18.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999349117279053,
+          "scale_min": 0.9601848125457764,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.18.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.6002399921417236,
+          "scale_median": 0.999965488910675,
+          "scale_min": 0.7180017828941345,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.19.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999799728393555,
+          "scale_min": 0.7517175674438477,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.19.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9996005296707153,
+          "scale_min": 0.5223435163497925,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.19.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998156428337097,
+          "scale_min": 0.5420676469802856,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.19.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.980893611907959,
+          "scale_median": 0.9997369050979614,
+          "scale_min": 0.7840765118598938,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.19.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999377131462097,
+          "scale_min": 0.6695154905319214,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.19.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999812245368958,
+          "scale_min": 0.9673449397087097,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.19.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.405385971069336,
+          "scale_median": 0.9999665021896362,
+          "scale_min": 0.6694759726524353,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.20.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9996638894081116,
+          "scale_min": 0.698297917842865,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.20.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999181628227234,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.20.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999531626701355,
+          "scale_min": 0.5446696877479553,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.20.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.8167402744293213,
+          "scale_median": 0.9999597668647766,
+          "scale_min": 0.7352927923202515,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.20.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999269843101501,
+          "scale_min": 0.7062090039253235,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.20.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999324679374695,
+          "scale_min": 0.9652467966079712,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.20.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.4071636199951172,
+          "scale_median": 0.9999899864196777,
+          "scale_min": 0.8114310503005981,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.21.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9994182586669922,
+          "scale_min": 0.6762990355491638,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.21.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.625296950340271,
+          "scale_median": 0.9997769594192505,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.21.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999900460243225,
+          "scale_min": 0.6390750408172607,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.21.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9994821548461914,
+          "scale_min": 0.7441040277481079,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.21.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999994695186615,
+          "scale_min": 0.7347776293754578,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.21.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999873638153076,
+          "scale_min": 0.9661734700202942,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.21.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.4550303220748901,
+          "scale_median": 0.9999527335166931,
+          "scale_min": 0.8180233240127563,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.22.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999735951423645,
+          "scale_min": 0.7500128149986267,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.22.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9996287226676941,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.22.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999912679195404,
+          "scale_min": 0.5259118676185608,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.22.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9995386004447937,
+          "scale_min": 0.6001216173171997,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.22.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999942183494568,
+          "scale_min": 0.7266181707382202,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.22.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999436736106873,
+          "scale_min": 0.9615529775619507,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.22.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.6492507457733154,
+          "scale_median": 0.9999904632568359,
+          "scale_min": 0.7665066123008728,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.23.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999805688858032,
+          "scale_min": 0.7107077836990356,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.23.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998990893363953,
+          "scale_min": 0.5440118312835693,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.23.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9997585415840149,
+          "scale_min": 0.5177691578865051,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.23.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9995458722114563,
+          "scale_min": 0.7503969073295593,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.23.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999840259552002,
+          "scale_min": 0.7303211092948914,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.23.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999809861183167,
+          "scale_min": 0.9671515822410583,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.23.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.5685334205627441,
+          "scale_median": 0.9999837279319763,
+          "scale_min": 0.8038370013237,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.24.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9996611475944519,
+          "scale_min": 0.6821028590202332,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.24.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998577833175659,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.24.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998224973678589,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.24.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999976396560669,
+          "scale_min": 0.7246294617652893,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.24.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999918937683105,
+          "scale_min": 0.7520719170570374,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.24.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999784827232361,
+          "scale_min": 0.963513195514679,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.24.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.5468974113464355,
+          "scale_median": 0.9999982714653015,
+          "scale_min": 0.7179643511772156,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.25.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999904036521912,
+          "scale_min": 0.7290095686912537,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.25.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.7641754150390625,
+          "scale_median": 0.9997414350509644,
+          "scale_min": 0.5116789937019348,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.25.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998593330383301,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.25.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998472332954407,
+          "scale_min": 0.7089894413948059,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.25.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999996542930603,
+          "scale_min": 0.7725273370742798,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.25.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999939799308777,
+          "scale_min": 0.9730424880981445,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.25.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.639460802078247,
+          "scale_median": 0.999991238117218,
+          "scale_min": 0.7526897192001343,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.26.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999989867210388,
+          "scale_min": 0.688596785068512,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.26.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998219013214111,
+          "scale_min": 0.5283200740814209,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.26.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999521374702454,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.26.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999414682388306,
+          "scale_min": 0.7436828017234802,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.26.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999863505363464,
+          "scale_min": 0.8465125560760498,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.26.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999985694885254,
+          "scale_min": 0.9802483916282654,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.26.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 1.7186124324798584,
+          "scale_median": 0.9999930262565613,
+          "scale_min": 0.6805914640426636,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.27.self_attn.q_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998914003372192,
+          "scale_min": 0.7031341791152954,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.27.self_attn.k_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9997725486755371,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.27.self_attn.v_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 256,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998669624328613,
+          "scale_min": 0.5,
+          "shape": [
+            256,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.27.self_attn.o_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9996286034584045,
+          "scale_min": 0.7742091417312622,
+          "shape": [
+            1536,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.27.mlp.gate_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.999950110912323,
+          "scale_min": 0.8392629027366638,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.27.mlp.up_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 8960,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999823570251465,
+          "scale_min": 0.9315353631973267,
+          "shape": [
+            8960,
+            1536
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 8960,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "model.layers.27.mlp.down_proj",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 1536,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9999484419822693,
+          "scale_min": 0.7060055136680603,
+          "shape": [
+            1536,
+            8960
+          ]
+        },
+        {
+          "group_size": 128,
+          "in_features": 1536,
+          "mode": "scaled_pairwise_rotation_groupwise_affine_int4_folded_back",
+          "name": "lm_head",
+          "num_rotations": 8,
+          "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+          "row_count": 151936,
+          "scale_clip": [
+            0.5,
+            2.0
+          ],
+          "scale_max": 2.0,
+          "scale_median": 0.9998909831047058,
+          "scale_min": 0.5,
+          "shape": [
+            151936,
+            1536
+          ]
+        }
+      ],
+      "regime": "paroquant_w4a16"
+    }
+  },
+  "created_at_utc": "2026-05-28T23:41:22Z",
+  "schema_version": "om_v1_paroquant_deepseek_v1_excluded_tensors"
+}

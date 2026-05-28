@@ -17,7 +17,7 @@ does not edit this ledger.
 | 0 | V1 ParoQuant-on-Nemotron | COMPLETE_HEADLINE_CHANGING | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z` | `PASS_V1_PAROQUANT_NEMOTRON_ROTATION_DOMINATES`; median 1.047, CI95 [1.007, 1.292], +0.232 over Nemotron M11b top-10 |
 | 1 | ParoQuant Falcon smoke | COMPLETE_PASS | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z` | `PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE`; median 0.381, CI95 [0.0645, 0.547], +0.337 over Falcon M11b top-10 |
 | 2 | ParoQuant DeepSeek smoke | COMPLETE_PASS | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_deepseek_20260528T162858Z` | `PASS_V1_PAROQUANT_DEEPSEEK_ROTATION_DOMINATES`; median 0.756, CI95 [-0.246, 0.855], +0.379 over DeepSeek static-top10 |
-| 3 | DriftRot Scale/CVaR/Clip smoke | PASS_GRANITE_POSITIVE_TRACES | `artifacts/scale_cvar_clip/`, `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z` | Tight clip improves all recoverable Granite positive-trace table: median 0.754 -> 0.922, worst -26.37 -> 0.601, median margin +0.0509 with CI95 [0.0166, 0.370] |
+| 3 | DriftRot Scale/CVaR/Clip smoke | PASS_GRANITE_AMBIG_DEEPSEEK | `artifacts/scale_cvar_clip/`, `experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z` | Tight clip improves all recoverable Granite positive traces (median 0.754 -> 0.922, worst -26.37 -> 0.601), but DeepSeek median regresses 0.756 -> 0.518 despite CI lower improving; safe claim is regime-specific tail control |
 | 4 | DriftRot ResidualCorrection smoke | KILL_CURRENT_DESIGN | `artifacts/rot_resid_correction/` | Top-8x32 MoE residual correction worsened Granite tail trace; only reopen with a bounded or KLLOOK-gated design |
 | 5 | Drift-aware Pairing smoke | CPU_GATED | `artifacts/drift_pairing/` | Run only if pairings materially differ from static high-low baseline |
 | 6 | Falcon BranchRot diagnostic/protection | CONDITIONAL | `artifacts/falcon_branch_rotation/` | Promote if branch-local drift/covariance range is materially lower than post-mixer |
@@ -58,7 +58,7 @@ does not edit this ledger.
 | Gate | Decision | Consequence |
 |---|---|---|
 | C1 covariance headroom | `NEEDS_GPU_OR_CACHE_FOR_TRUE_COVARIANCE` | Existing compact caches support only block-output diagonal/magnitude proxy; do not claim off-diagonal rotation headroom yet |
-| C2 Scale/CVaR/Clip | `PASS_TIGHT_CLIP_GRANITE_POSITIVE_TRACES` | Tight clip fixes inspected tail, passes held-out positive-gap split, and completes all recoverable Granite traces; frame as Tier-2 tail-control robustification of rotation |
+| C2 Scale/CVaR/Clip | `PASS_GRANITE_AMBIG_DEEPSEEK` | Tight clip fixes Granite tails but is not universal; DeepSeek lower CI improves while median/worst regress, requiring regime-specific framing or selector before cross-model claim |
 | C3 rotation grid | `READY_FOR_GATED_GPU_SMOKE_TEMPLATE` | Do not run full 36-config grid before clip-only smoke shows held-out value |
 | C4 drift-aware pairing | `NEEDS_ACTIVATION_CACHE` | Needs exact rotation-surface activation cache before GPU smoke |
 | C5 residual correction | `KILL_TOP8X32_MOE_RESIDUAL_DIAGNOSTIC` | Delta columns were materialized, but valid Granite prompt-4 diagnostic scored -12.29 recovery versus tight ParoQuant 5.94; do not run 3-trace smoke for this candidate |

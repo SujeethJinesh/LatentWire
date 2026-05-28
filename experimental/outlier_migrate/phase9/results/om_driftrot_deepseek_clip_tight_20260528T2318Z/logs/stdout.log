@@ -1,0 +1,34 @@
+{
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.7969468593465829,
+        "ci95_low": 0.26458688424649635
+      },
+      "included_trace_count": 11,
+      "mean_recovery": 0.07309026924935955,
+      "median_recovery": 0.5180029115380453,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "per_trace_recovery_included": [
+        -1.1158775567360468,
+        0.35247307750219636,
+        0.4249518004134878,
+        1.0741818599572233,
+        0.7969468593465829,
+        -3.523978005971099,
+        0.6098164547056396,
+        0.8536206261832859,
+        0.26458688424649635,
+        0.5180029115380453,
+        0.549268050557143
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z"
+}
+{
+  "artifact_complete": true,
+  "checker_decision": "PASS_V1_PAROQUANT_DEEPSEEK_ROTATION_DOMINATES"
+}

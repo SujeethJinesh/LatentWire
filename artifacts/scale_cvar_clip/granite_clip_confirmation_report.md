@@ -73,10 +73,30 @@ on the recoverable positive-gap traces. The next valid gate is:
 2. test the idea on another model/tail surface only if we need cross-model
    evidence for the tail-control mechanism.
 
+## Cross-Model Check: DeepSeek
+
+DeepSeek-R1-Distill-Qwen-1.5B was then run with the same tight clip `[0.5, 2.0]`
+to test whether the Granite tail-control behavior transfers. It does not pass
+as a clean cross-model improvement.
+
+| Metric | Baseline DeepSeek ParoQuant | Tight clip `[0.5, 2.0]` | Margin |
+|---|---:|---:|---:|
+| Median recovery | 0.756 | 0.518 | -0.232 median per-trace |
+| Bootstrap CI95 | [-0.246, 0.855] | [0.265, 0.797] | [-0.591, 0.228] |
+| Worst trace | -3.056 | -3.524 | -0.468 |
+| Mean recovery | 0.176 | 0.073 | -0.103 |
+
+The tighter clip improves the lower bootstrap bound, but it materially reduces
+the median and worsens the worst trace. Treat tight clip as Granite-specific
+tail-control evidence unless a new model-specific selection rule is added.
+
+Source table: `artifacts/scale_cvar_clip/deepseek_tight_clip_comparison.csv`.
+
 ## Source Runs
 
 - loose: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_loose_confirmation_20260528T1735Z`
 - tight: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z`
 - tight hold-out: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z`
 - tight final positive trace: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z`
+- DeepSeek tight clip: `experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z`
 - baseline: `experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z`

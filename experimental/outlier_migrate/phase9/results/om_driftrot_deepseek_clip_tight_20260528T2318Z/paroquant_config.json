@@ -1,0 +1,19 @@
+{
+  "arxiv": "2511.10645",
+  "channel_scale_rule": "median column RMS divided by column RMS, clipped",
+  "created_at_utc": "2026-05-28T23:18:42Z",
+  "group_size": 128,
+  "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+  "local_reference_clone": "/workspace/LatentWire/.debug/paroquant",
+  "num_rotations": 8,
+  "openreview_pdf": "https://openreview.net/pdf?id=1USeVjsKau",
+  "pairing_rule": "deterministic independent high-low within each group, alternating +/- pi/4 across rotations",
+  "runtime_kernel": "not_used",
+  "scale_clip": [
+    0.5,
+    2.0
+  ],
+  "schema_version": "om_v1_paroquant_deepseek_v1_paroquant_config",
+  "upstream_reference_commit": "c049a8af80b5fd460c507d71055156d8c555a2cf",
+  "upstream_reference_repo": "https://github.com/z-lab/paroquant"
+}

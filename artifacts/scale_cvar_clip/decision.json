@@ -55,6 +55,26 @@
     "margin_worst": -0.0011990433387960575,
     "margin_mean": 4.112411444473026
   },
-  "next_gate": "integrate as Tier-2 tail-control DriftRot evidence or test another model/tail surface if cross-model tail-control evidence is required",
-  "reason": "Tight clip fixes the known Granite ParoQuant tail, passes a separate hold-out split, and improves the all-positive-gap Granite table. Frame as tail-control robustification of rotation, not a headline claim that tuned hyperparameters beat ParoQuant."
+  "deepseek_tight_clip_check": {
+    "source_csv": "artifacts/scale_cvar_clip/deepseek_tight_clip_comparison.csv",
+    "run_dir": "experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z",
+    "decision": "AMBIGUOUS_TAIL_BOUND_IMPROVES_MEDIAN_REGRESSES",
+    "baseline_median": 0.7562393091709771,
+    "baseline_ci95_low": -0.24565629003349176,
+    "baseline_ci95_high": 0.8553979703329783,
+    "baseline_worst": -3.056385366574048,
+    "baseline_mean": 0.17632929783118173,
+    "tight_median": 0.5180029115380453,
+    "tight_ci95_low": 0.26458688424649635,
+    "tight_ci95_high": 0.7969468593465829,
+    "tight_worst": -3.523978005971099,
+    "tight_mean": 0.07309026924935955,
+    "margin_median": -0.2324925413366179,
+    "margin_ci95_low": -0.5908110860864819,
+    "margin_ci95_high": 0.2282635051780214,
+    "margin_worst": -0.8702212667025551,
+    "margin_mean": -0.1032390285818222
+  },
+  "next_gate": "integrate as Granite-specific Tier-2 tail-control DriftRot evidence; do not claim cross-model clip retune without a model-specific selector",
+  "reason": "Tight clip fixes the known Granite ParoQuant tail, passes a separate hold-out split, and improves the all-positive-gap Granite table. The same clip on DeepSeek improves CI lower but regresses median and worst trace, so the safe claim is regime-specific tail control, not universal retuning."
 }
