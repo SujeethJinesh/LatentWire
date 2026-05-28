@@ -1,0 +1,21 @@
+{
+  "artifact_complete": true,
+  "ci95": {
+    "ci95_high": 1.2920493786337606,
+    "ci95_low": 1.0071831033257677
+  },
+  "decision": "PASS_V1_PAROQUANT_NEMOTRON_ROTATION_DOMINATES",
+  "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+  "included_trace_count": 10,
+  "infra_reasons": [],
+  "interpretation_band": "substantial_recovery_gt_0_50",
+  "m11b_nemotron_top10_reference_median": 0.8147397989034302,
+  "median_recovery": 1.0470852994064899,
+  "paroquant_minus_m11b_top10_median": 0.2323455005030597,
+  "reasons": [
+    "ParoQuant median recovery is greater than 0.85"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z",
+  "schema_version": "om_v1_paroquant_nemotron_v1_checker_result",
+  "total_trace_count": 12
+}

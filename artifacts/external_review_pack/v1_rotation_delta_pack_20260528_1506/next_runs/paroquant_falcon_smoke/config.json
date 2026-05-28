@@ -1,0 +1,12 @@
+{
+  "baseline": "Falcon M11b top-10 median 0.0439; existing policies <=0.07",
+  "method": "ParoQuant W4A16 smoke",
+  "model": "Falcon-H1",
+  "source_reference": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+  "trace_notes": "stratified Falcon smoke traces from artifacts/funnel_prefilters",
+  "traces": [
+    7,
+    1,
+    11
+  ]
+}

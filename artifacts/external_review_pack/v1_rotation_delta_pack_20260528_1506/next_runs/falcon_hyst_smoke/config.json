@@ -1,0 +1,54 @@
+{
+  "controls": [
+    "bf16",
+    "static_1pct",
+    "m11b_top10",
+    "random_hyst_top10"
+  ],
+  "created_at_utc": "2026-05-28T06:29:45Z",
+  "gate_inputs": {
+    "m11b_top10_ci95_high": 0.203397616132395,
+    "m11b_top10_ci95_low": -0.14405060541685555,
+    "m11b_top10_median_recovery": 0.04393973019116826,
+    "recorded_late_jaccard_churn_median": 0.2975206611570248,
+    "recorded_late_slot_churn_median": 0.17475728155339806,
+    "selected_margin_predicted_late_churn_reduction": 0.796
+  },
+  "hysteresis_policy": {
+    "alpha": 0.3,
+    "budget_count_per_layer": 103,
+    "enter_rank_count_per_layer": 103,
+    "enter_top_pct": 10,
+    "evaluated_margins_pct_points": [
+      2,
+      5,
+      10
+    ],
+    "exit_rank_count_per_layer": 154,
+    "exit_top_pct": 15,
+    "score_basis": "M11b indicator-EMA rank proxy over cached mean absolute activation magnitudes",
+    "selected_margin_pct_points": 5,
+    "selection_rule": "retain prior protected channels while rank <= exit_rank_count; fill vacancies from the current enter_top_pct pool; cap to budget_count_per_layer by score rank",
+    "update_cadence_tokens": 100
+  },
+  "implementation_note": "The frozen funnel smoke preregistration describes exit below top-2k. This config records the Falcon-specific threshold recommendation from the margin screen; do not silently substitute m=10 if the runner is not parameterized.",
+  "method": "hyst",
+  "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+  "model_key": "falcon",
+  "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+  "prompt_ids": [
+    "opencompass_AIME2025_I_7",
+    "opencompass_AIME2025_I_1",
+    "opencompass_AIME2025_I_11"
+  ],
+  "prompt_indices": [
+    7,
+    1,
+    11
+  ],
+  "regime": "hyst_top10_smoke",
+  "runner": "experimental/outlier_migrate/phase9/run_om_phase9_funnel_smoke.py",
+  "schema_version": "hyst_falcon_smoke_config_v1",
+  "source_run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+  "status": "ready_for_gated_smoke"
+}

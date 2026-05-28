@@ -1,0 +1,114 @@
+{
+  "artifact_complete": true,
+  "decision": "PASS_M11B_NEMOTRON_REPLICATES",
+  "pass_regime": "m11b_top10",
+  "reasons": [
+    "m11b_top10 satisfies budget-scaling pass criteria"
+  ],
+  "results_by_regime": {
+    "m11b_top1": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.1631772118823916,
+        "ci95_low": -0.5325671049426282
+      },
+      "included_trace_count": 10,
+      "mean_recovery": -0.0794227032558112,
+      "median_recovery": -0.10320524640512702,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "per_trace_recovery_included": [
+        0.29436930699994734,
+        1.1671988298794922,
+        0.09981975554045164,
+        -0.5325671049426282,
+        -0.40846738692671747,
+        -0.7070780800819352,
+        -0.607135299698778,
+        0.03198511676483584,
+        -0.23839560957508987,
+        0.10604343948230965
+      ],
+      "total_trace_count": 12
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.9225522648803115,
+        "ci95_low": 0.2544392881776635
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.6175863911132161,
+      "median_recovery": 0.8147397989034302,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "per_trace_recovery_included": [
+        0.2544392881776635,
+        1.2657413584115296,
+        0.7573360464790251,
+        0.9063355275658721,
+        -0.17291242211953595,
+        0.8721435513278354,
+        0.8903898449104262,
+        0.38580840707786923,
+        0.9547146848501968,
+        0.06186762445127969
+      ],
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.794986745913201,
+        "ci95_low": 0.34588779238757594
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.5304503234413243,
+      "median_recovery": 0.4567361832703779,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "per_trace_recovery_included": [
+        0.6919755985924562,
+        1.0185835611383882,
+        0.45253936263550354,
+        0.8979978932339456,
+        0.46093300390525227,
+        0.7600807460306077,
+        0.2688963438017088,
+        -0.025488332376674805,
+        0.4228792409734431,
+        0.3561058164786124
+      ],
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.8144650015682393,
+        "ci95_low": 0.3165935076461148
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 0.5291395857623982,
+      "median_recovery": 0.5943837436179227,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "per_trace_recovery_included": [
+        0.8144650015682393,
+        1.0248801384890702,
+        0.6748554883752114,
+        0.8557633919378177,
+        0.17637425772035997,
+        0.4834952375404383,
+        0.3165935076461148,
+        -0.2645222384841701,
+        0.6955790739702656,
+        0.5139119988606341
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z",
+  "thresholds": {
+    "alpha": 0.3,
+    "bootstrap_seed": 20260604,
+    "kill_high_budget_within_top1_abs_le": 0.05,
+    "pass_beats_static_top10_by_ge": 0.15,
+    "pass_high_budget_median_recovery_min": 0.3
+  }
+}

@@ -1,0 +1,6 @@
+order,gate,status,reason
+1,ParoQuant Falcon smoke,PREPARED_NOT_LAUNCHED,V1 makes rotation the next natural cross-model check.
+2,ParoQuant DeepSeek smoke,PREPARED_NOT_LAUNCHED,Tests whether rotation dominates beyond Granite/Nemotron.
+3,Falcon HYST smoke,PAUSED,Run only after ParoQuant Falcon is known or if rotation smoke is blocked.
+4,Falcon LAMBDA smoke,DEFERRED,CPU prior did not clear standalone causal gate.
+5,M-SURFACE diagnostic,CONDITIONAL,Cheap diagnostic if channel-set rescue remains necessary.

@@ -1,0 +1,3 @@
+model,model_id,snapshot,source
+Nemotron,nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16,cbd3fa9f933d55ef16a84236559f4ee2a0526848,experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z/model_provenance.json
+Granite,ibm-granite/granite-4.0-h-small,b8c0982bab7fde4eb48110f5a069527c008fab39,experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z/metrics.json

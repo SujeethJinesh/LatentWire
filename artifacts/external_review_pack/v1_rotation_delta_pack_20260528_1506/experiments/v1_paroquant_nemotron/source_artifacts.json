@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    {
+      "name": "protected_sets",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/protected_sets.json",
+      "sha256": "sha256:06a5a211b96e59a0be8bf2e2f9002a7ae084b56b9bf4b405818605094793992e"
+    },
+    {
+      "name": "bf16_traces",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/bf16_traces.jsonl.gz",
+      "sha256": "sha256:022acdefeb74cec724efb02b96cbd528259f0844f42938c28def22c38fbd2e8b"
+    },
+    {
+      "name": "score_cache_bf16",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/score_cache/bf16.json",
+      "sha256": "sha256:965022475930424400d84d406f05a2aebfb1072985a6e752393208f00e09e46b"
+    },
+    {
+      "name": "score_cache_static_1pct",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/score_cache/static_1pct.json",
+      "sha256": "sha256:390d4636821c567a119940fba9223b0df3cadbafe58d00c8d7afa73b249ec034"
+    }
+  ],
+  "created_at_utc": "2026-05-28T03:01:38Z",
+  "schema_version": "om_v1_paroquant_nemotron_v1_source_artifacts"
+}

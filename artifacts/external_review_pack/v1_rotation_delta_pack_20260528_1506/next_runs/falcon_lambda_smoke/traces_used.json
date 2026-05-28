@@ -1,0 +1,56 @@
+{
+  "notes": "",
+  "traces": {
+    "prompt_ids": [
+      "opencompass_AIME2025_I_7",
+      "opencompass_AIME2025_I_1",
+      "opencompass_AIME2025_I_11"
+    ],
+    "prompt_indices": [
+      7,
+      1,
+      11
+    ],
+    "trace_rows": [
+      {
+        "activation_top10pct_drift_mean": 0.841704,
+        "first_eos_decode_position": 1570,
+        "generated_token_count": 20000,
+        "m11b_top10_minus_static_top10": 0.056877,
+        "m11b_top10_recovery": 0.382612,
+        "prompt_id": "opencompass_AIME2025_I_7",
+        "prompt_index": 7,
+        "reason": "positive M11b-vs-static trace with highest activation drift",
+        "role": "positive_gap_high_drift_anchor",
+        "static_gap": 0.030508,
+        "static_top10_recovery": 0.325735
+      },
+      {
+        "activation_top10pct_drift_mean": 0.796672,
+        "first_eos_decode_position": 9900,
+        "generated_token_count": 20000,
+        "m11b_top10_minus_static_top10": -0.109588,
+        "m11b_top10_recovery": -0.142951,
+        "prompt_id": "opencompass_AIME2025_I_1",
+        "prompt_index": 1,
+        "reason": "latest BF16 EOS among remaining traces",
+        "role": "long_stress",
+        "static_gap": 0.209011,
+        "static_top10_recovery": -0.033362
+      },
+      {
+        "activation_top10pct_drift_mean": 0.79217,
+        "first_eos_decode_position": 2865,
+        "generated_token_count": 20000,
+        "m11b_top10_minus_static_top10": 0.001608,
+        "m11b_top10_recovery": 0.032412,
+        "prompt_id": "opencompass_AIME2025_I_11",
+        "prompt_index": 11,
+        "reason": "closest remaining Falcon trace to the joint median M11b top-10 recovery and activation drift",
+        "role": "representative_median",
+        "static_gap": 0.122822,
+        "static_top10_recovery": 0.030805
+      }
+    ]
+  }
+}

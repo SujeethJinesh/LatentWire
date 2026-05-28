@@ -1,0 +1,131 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2892,
+      "path": "bf16_trace_manifest.json",
+      "sha256": "sha256:d17739b23e826d8f640190ebac32cd865b14e16131d767a498d6f2c5324768c0"
+    },
+    {
+      "bytes": 9491,
+      "path": "bf16_traces.jsonl.gz",
+      "sha256": "sha256:98c794aa13728d4b0b7de8bb3c76369a6c29af18e7292bf08ddc66724e7c76ac"
+    },
+    {
+      "bytes": 952,
+      "path": "bootstrap_ci.json",
+      "sha256": "sha256:052dc09e5f0f35e2213d466ef7a6dbd29039e31de111a96b5063e8dfa2503bc4"
+    },
+    {
+      "bytes": 1466,
+      "path": "command_metadata.json",
+      "sha256": "sha256:0969ace7a22dddfb2e3755a52cd29f0e0aec9ce53dd4f1854f3617b85d8b17e9"
+    },
+    {
+      "bytes": 456,
+      "path": "control_metrics.json",
+      "sha256": "sha256:3deb15ffea947c9378a48b2380f5ddc1b64e0a000e66098f81839249c9411b49"
+    },
+    {
+      "bytes": 210,
+      "path": "decoding_config.json",
+      "sha256": "sha256:df77a7dae1ae8e087969c1cfc08bc333fedc2654a3d0f8a947e8b7a67d1844bb"
+    },
+    {
+      "bytes": 8676,
+      "path": "environment.json",
+      "sha256": "sha256:fa8e48f41dae9dfe250fa580ac9635668b1b4f184f6d624fbb80176df0e14d4a"
+    },
+    {
+      "bytes": 6804,
+      "path": "environment.txt",
+      "sha256": "sha256:e17e83104ba5af59bc0c1babf45cff504655cbfc530b682520e9e7f57aecf352"
+    },
+    {
+      "bytes": 2954506,
+      "path": "excluded_tensors.json",
+      "sha256": "sha256:7e190b429fd2f248041a887572ae12acfe16453cd5d18eb284ea64fe17324f8f"
+    },
+    {
+      "bytes": 1339,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:c889bcbee0b809b042adfbcb07883b6386dda3d8b59bb8ecd966b0581d6a8381"
+    },
+    {
+      "bytes": 990,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:5c5b090584f62815655b4091bce0bef9b5f49b693517dbcb9a97d656e494b40b"
+    },
+    {
+      "bytes": 2290,
+      "path": "metrics.json",
+      "sha256": "sha256:5e65695fd3d8e4cf6727da941797c194e1d169819fcd8d22a3e19cc2cfefb1d6"
+    },
+    {
+      "bytes": 11173,
+      "path": "model_provenance.json",
+      "sha256": "sha256:6b88faf8b40be1da5d13a4ad25d1d0d08d659d6b22a3e14090caed43ece0d471"
+    },
+    {
+      "bytes": 791,
+      "path": "paroquant_config.json",
+      "sha256": "sha256:77257611812b80aa7eaa18b73d0bff99950da9840e3161252055cf230e54672c"
+    },
+    {
+      "bytes": 445,
+      "path": "paroquant_limitations.json",
+      "sha256": "sha256:15741a00089f77e4a466737546f586725801fa84f564be3a36aa4bf562e317f9"
+    },
+    {
+      "bytes": 7815,
+      "path": "per_trace_metrics.json",
+      "sha256": "sha256:fd4a65493d2d402306e3f58c9fd29942c028caf70a796e76b78d09b0322ebd7e"
+    },
+    {
+      "bytes": 8463,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:81f5f7c2d1c104b8c03bc41121dcffa2569053ffc1d1f8d6ae6a48be1d130cec"
+    },
+    {
+      "bytes": 36816,
+      "path": "protected_sets.json",
+      "sha256": "sha256:549a7bf75b482d4fa4445ef39540943dab9d16ab3d641e362b955cd2bafbba57"
+    },
+    {
+      "bytes": 400,
+      "path": "quantization_config.json",
+      "sha256": "sha256:34e8c9980969828097164c7ea05aa458dccbd28c706e116b9e8028f250cc965c"
+    },
+    {
+      "bytes": 153,
+      "path": "random_seed.json",
+      "sha256": "sha256:3125fe6d4803b7934f43ca78591ba456c64b1af3fedd0de0f8f188c4a3619a47"
+    },
+    {
+      "bytes": 1710,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:6d0bebf1fce32b434baba9a1ec62bc8aeaba1fba7cae77e06d20b128db7ea44f"
+    },
+    {
+      "bytes": 2282,
+      "path": "score_cache/bf16.json",
+      "sha256": "sha256:4dfd4e5225f473b0da527324f54cc71f34f21ce76666000d03f9d76ea9ea6de8"
+    },
+    {
+      "bytes": 2294,
+      "path": "score_cache/paroquant_w4a16.json",
+      "sha256": "sha256:eb1829e787aa0cb8532e930f30f967e6a9b4d434571efdbb8a3319512249523d"
+    },
+    {
+      "bytes": 2284,
+      "path": "score_cache/static_1pct.json",
+      "sha256": "sha256:481c26dc94ea0b64d77b878522d3757f5face47bc7f1ae874bc29bb3703475da"
+    },
+    {
+      "bytes": 1340,
+      "path": "source_artifacts.json",
+      "sha256": "sha256:9f92edf788f044e000fa86dc3dd783220f3e1cffdd7348f28fff2b4059f79c3a"
+    }
+  ],
+  "created_at_utc": "2026-05-28T13:17:38Z",
+  "schema_version": "om_v1_paroquant_nemotron_v1_artifact_hashes"
+}

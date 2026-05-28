@@ -1,0 +1,8 @@
+{
+  "notes": "stratified DeepSeek smoke traces from artifacts/funnel_prefilters",
+  "traces": [
+    5,
+    11,
+    8
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "bootstrap_samples": 1000,
+  "bootstrap_seed": 20260621,
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 1.2920493786337606,
+        "ci95_low": 1.0071831033257677
+      },
+      "included_trace_count": 10,
+      "mean_recovery": 1.1713986147049185,
+      "median_recovery": 1.0470852994064899,
+      "no_recoverable_static_gap_count": 2,
+      "no_recoverable_static_gap_fraction": 0.16666666666666666,
+      "per_trace_recovery_included": [
+        0.9600541649392053,
+        1.480566930255336,
+        0.963102865312346,
+        1.0136616190426335,
+        1.0429072574737905,
+        1.0137827727757225,
+        1.0512633413391892,
+        1.9515775273131757,
+        1.1035318270121852,
+        1.1335378415856008
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_v1_paroquant_nemotron_v1_bootstrap_ci"
+}

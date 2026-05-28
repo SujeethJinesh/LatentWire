@@ -1,0 +1,8 @@
+{
+  "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+  "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+  "model_snapshot_commit": "cbd3fa9f933d55ef16a84236559f4ee2a0526848",
+  "run_dir": "experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512
+}

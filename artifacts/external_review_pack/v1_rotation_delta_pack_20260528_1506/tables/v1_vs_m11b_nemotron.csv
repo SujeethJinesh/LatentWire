@@ -1,0 +1,4 @@
+model,method,median_recovery,ci_low,ci_high,included_trace_count,source
+Nemotron,M11b top-10,0.8147397989034302,0.2544392881776635,0.9225522648803115,10,experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/metrics.json
+Nemotron,ParoQuant,1.0470852994064899,1.0071831033257677,1.2920493786337606,10,experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z/checker_result.json
+Nemotron,ParoQuant minus M11b top-10,0.2323455005030597,,,10,experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z/checker_result.json

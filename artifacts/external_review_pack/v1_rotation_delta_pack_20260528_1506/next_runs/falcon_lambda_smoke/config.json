@@ -1,0 +1,147 @@
+{
+  "baselines": {
+    "bf16": {
+      "score_cache": "score_cache/bf16.json"
+    },
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.203397616132395,
+        "ci95_low": -0.14405060541685555
+      },
+      "mean_recovery": 0.021028410080347015,
+      "median_recovery": 0.04393973019116826,
+      "score_cache": "score_cache/m11b_top10.json"
+    },
+    "static_1pct": {
+      "score_cache": "score_cache/static_1pct.json"
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.17196408116339812,
+        "ci95_low": -0.12558323294184004
+      },
+      "mean_recovery": -0.04047779442247278,
+      "median_recovery": -0.025249016732983187,
+      "score_cache": "score_cache/static_top10.json"
+    }
+  },
+  "created_at_utc": "2026-05-28T06:27:24Z",
+  "method": {
+    "alpha": 0.3,
+    "budget_formula": "budget_l = round_largest_remainder(total_budget * (1 - drift_l) / sum_j(1 - drift_j)); drift_l is Phase 7 Falcon migration_fraction_mean.",
+    "flat_m11b_top10_per_layer_budget": 103,
+    "name": "lambda",
+    "per_layer_budgets": {
+      "0": 86,
+      "1": 88,
+      "10": 77,
+      "11": 88,
+      "12": 83,
+      "13": 90,
+      "14": 92,
+      "15": 90,
+      "16": 95,
+      "17": 92,
+      "18": 85,
+      "19": 101,
+      "2": 90,
+      "20": 99,
+      "21": 103,
+      "22": 105,
+      "23": 119,
+      "24": 119,
+      "25": 114,
+      "26": 110,
+      "27": 115,
+      "28": 114,
+      "29": 117,
+      "3": 90,
+      "30": 130,
+      "31": 141,
+      "32": 142,
+      "33": 155,
+      "34": 160,
+      "35": 151,
+      "4": 86,
+      "5": 81,
+      "6": 79,
+      "7": 68,
+      "8": 72,
+      "9": 81
+    },
+    "regime_name": "lambda_stability_prior_top10_total_budget",
+    "selection_axis": "within-layer EMA squared activation scores, budgeted by cached layer stability prior",
+    "total_budget": 3708
+  },
+  "model": {
+    "key": "falcon",
+    "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+    "snapshot": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+    "source_run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z"
+  },
+  "recommendation": {
+    "reason": "Layer budgets differ, but Falcon is not routable and cached data lacks causal per-layer recovery curves; use only if the coordinator batches Falcon into an already-authorized fixed-trace smoke packet.",
+    "run_smoke": false,
+    "status": "DEFER_STANDALONE_FALCON_LAMBDA_SMOKE"
+  },
+  "schema_version": "lambda_falcon_smoke_config_v1",
+  "scoring": {
+    "metric_formula": "1 - (perplexity_regime - perplexity_BF16) / (perplexity_static_1pct - perplexity_BF16)",
+    "no_recoverable_static_gap_fraction": 0.0,
+    "scoring_position": 10000,
+    "scoring_window_tokens": 512
+  },
+  "traces": {
+    "prompt_ids": [
+      "opencompass_AIME2025_I_7",
+      "opencompass_AIME2025_I_1",
+      "opencompass_AIME2025_I_11"
+    ],
+    "prompt_indices": [
+      7,
+      1,
+      11
+    ],
+    "trace_rows": [
+      {
+        "activation_top10pct_drift_mean": 0.841704,
+        "first_eos_decode_position": 1570,
+        "generated_token_count": 20000,
+        "m11b_top10_minus_static_top10": 0.056877,
+        "m11b_top10_recovery": 0.382612,
+        "prompt_id": "opencompass_AIME2025_I_7",
+        "prompt_index": 7,
+        "reason": "positive M11b-vs-static trace with highest activation drift",
+        "role": "positive_gap_high_drift_anchor",
+        "static_gap": 0.030508,
+        "static_top10_recovery": 0.325735
+      },
+      {
+        "activation_top10pct_drift_mean": 0.796672,
+        "first_eos_decode_position": 9900,
+        "generated_token_count": 20000,
+        "m11b_top10_minus_static_top10": -0.109588,
+        "m11b_top10_recovery": -0.142951,
+        "prompt_id": "opencompass_AIME2025_I_1",
+        "prompt_index": 1,
+        "reason": "latest BF16 EOS among remaining traces",
+        "role": "long_stress",
+        "static_gap": 0.209011,
+        "static_top10_recovery": -0.033362
+      },
+      {
+        "activation_top10pct_drift_mean": 0.79217,
+        "first_eos_decode_position": 2865,
+        "generated_token_count": 20000,
+        "m11b_top10_minus_static_top10": 0.001608,
+        "m11b_top10_recovery": 0.032412,
+        "prompt_id": "opencompass_AIME2025_I_11",
+        "prompt_index": 11,
+        "reason": "closest remaining Falcon trace to the joint median M11b top-10 recovery and activation drift",
+        "role": "representative_median",
+        "static_gap": 0.122822,
+        "static_top10_recovery": 0.030805
+      }
+    ]
+  }
+}
