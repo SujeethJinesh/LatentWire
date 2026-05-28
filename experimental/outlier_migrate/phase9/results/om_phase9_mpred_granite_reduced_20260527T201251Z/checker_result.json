@@ -127,6 +127,8 @@
   },
   "run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_mpred_granite_reduced_20260527T201251Z",
   "thresholds": {
+    "architecture_fill_ci_low_gt": 0.0,
+    "architecture_fill_median_gt": 0.3,
     "bootstrap_seed": 20260527,
     "pass_mpred_minus_m11b_ge": 0.05,
     "tighten_granite_ci_width_reduction_ge": 0.25
