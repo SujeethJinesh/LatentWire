@@ -43,3 +43,41 @@ The most relevant prior-art distinction is:
 
 Proceed to M-PRED preregistration unless a later, more targeted source search
 finds a direct protected-channel Kalman/AR predictor.
+
+## M-FISH: Fisher-Curvature-Weighted Protection
+
+Date: 2026-05-28
+
+### Search Queries
+
+- `Fisher channel W4A16 quantization LLM`
+- `Hessian channel decode-time quantization LLM`
+- `gradient guided channel protection LLM quantization`
+- `loss guidance activation channel quantization W4A16`
+
+### Sources Checked
+
+| Work | Source | Relevance | Scoop status |
+|---|---|---|---|
+| GuidedQuant | `https://arxiv.org/abs/2505.07004` | Uses end-loss gradient information in PTQ objectives while preserving cross-weight dependencies. | Adjacent and important prior art, not a direct scoop. It is a quantization-objective method, not decode-time top-K channel protection under long-decode drift. |
+| QQQ | `https://arxiv.org/abs/2406.09904` | Uses adaptive smoothing and Hessian-based compensation for W4A8 LLM quantization. | Adjacent, not a direct scoop. It targets W4A8 smoothing/compensation and kernels, not W4A16 endpoint protected-set selection. |
+| CW-HAWQ | `https://arxiv.org/abs/2008.08284` | Channel-wise Hessian-aware trace weighting for mixed-precision quantization. | Foundational prior art for channel-wise curvature sensitivity, but not LLM long-decode W4A16 protected-channel selection. |
+| HAS-VQ | `https://arxiv.org/abs/2601.06959` | Hessian-adaptive vector quantization for LLM compression. | Adjacent 2026 Hessian-aware compression prior, not a direct decode-time channel-set method. |
+
+### Feasibility Finding
+
+No direct scoop was found for M-FISH as proposed, but the faithful experiment is
+not a small patch on the current runner. Existing M11b/M-PRED packets cache
+activation magnitudes at decode positions; they do not preserve autograd graphs
+or per-channel loss gradients. Computing diagonal Fisher at the same activation
+surface would require a new gradient runner that either retains the full
+10K-token decode computation graph or reconstructs it layer-by-layer under
+teacher forcing. That is a materially different infrastructure path from the
+current endpoint scorer.
+
+### Decision
+
+Defer M-FISH as `DEFERRED_INFRA_MFISH_BACKWARD_GRAPH` unless the human
+explicitly authorizes a new gradient-capture runner. Do not substitute a
+Hessian/Fisher proxy from cached magnitudes; that would not test the stated
+method.
