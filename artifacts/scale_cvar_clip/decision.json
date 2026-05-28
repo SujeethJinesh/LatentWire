@@ -1,0 +1,26 @@
+{
+  "schema_version": "granite_clip_cvar_confirmation_decision_v1",
+  "decision": "PROMOTE_TIGHT_CLIP_REPEAT_CONFIRMATION",
+  "not_final_method_claim": true,
+  "baseline": {
+    "candidate": "baseline_clip_0p25_4",
+    "median": 0.6398483051573627,
+    "worst": -26.3711874060621,
+    "mean": -6.02193031035608
+  },
+  "loose_clip": {
+    "candidate": "clip_0p125_8",
+    "decision": "KILL_TAIL_WORSE",
+    "median": 0.6859750000334821,
+    "worst": -79.78322111629217,
+    "mean": -19.35911292641571
+  },
+  "tight_clip": {
+    "candidate": "clip_0p5_2",
+    "decision": "PROMOTE_REPEAT_CONFIRMATION",
+    "median": 0.900560592464886,
+    "worst": 0.6006560711988609,
+    "mean": 2.0853502078482533
+  },
+  "reason": "Tight clip fixes the known Granite ParoQuant tail on the four-trace confirmation screen; loose clip worsens the tail. Because confirmation was inspected directly, require repeat split/full finalist before paper-level method claim."
+}

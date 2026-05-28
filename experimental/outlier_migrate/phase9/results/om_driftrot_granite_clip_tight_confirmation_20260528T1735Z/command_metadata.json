@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py",
+    "--run-id",
+    "om_driftrot_granite_clip_tight_confirmation_20260528T1735Z",
+    "--candidate-id",
+    "clip_tight",
+    "--split-name",
+    "confirmation",
+    "--prompt-indices",
+    "4,7,9,10",
+    "--base-run-dir",
+    "experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+    "--scale-clip-min",
+    "0.5",
+    "--scale-clip-max",
+    "2.0",
+    "--batch-size",
+    "1",
+    "--dtype",
+    "bfloat16"
+  ],
+  "base_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+  "created_at_utc": "2026-05-28T18:47:19Z",
+  "cwd": "/workspace/LatentWire",
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z",
+  "schema_version": "om_driftrot_clip_subset_v1_command"
+}

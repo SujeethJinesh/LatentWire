@@ -1,0 +1,35 @@
+{
+  "candidate_id": "clip_tight",
+  "created_at_utc": "2026-05-28T20:11:47Z",
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "model_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+  "prompt_indices": [
+    4,
+    7,
+    9,
+    10
+  ],
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 5.939623575264381,
+        "ci95_low": 0.6006560711988609
+      },
+      "included_trace_count": 4,
+      "mean_recovery": 2.0853502078482533,
+      "median_recovery": 0.900560592464886,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        5.939623575264381,
+        0.6006560711988609,
+        1.0203295946773652,
+        0.7807915902524067
+      ],
+      "total_trace_count": 4
+    }
+  },
+  "schema_version": "om_driftrot_clip_subset_v1_metrics",
+  "split_name": "confirmation"
+}

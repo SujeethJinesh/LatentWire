@@ -1,0 +1,98 @@
+{
+  "created_at_utc": "2026-05-28T20:11:47Z",
+  "schema_version": "om_driftrot_clip_subset_v1_per_trace_metrics",
+  "traces": [
+    {
+      "mean_nll": {
+        "bf16": 0.03609823703300208,
+        "paroquant_w4a16": 0.032411962132755434,
+        "static_1pct": 0.03684285231429385
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0367576894878223,
+        "paroquant_w4a16": 1.0329429510464618,
+        "static_1pct": 1.0375299625939074
+      },
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "recoveries": {
+        "paroquant_w4a16": 5.939623575264381
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "split_name": "confirmation",
+      "static_gap": 0.0007722731060850752
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.0009341512697222942,
+        "paroquant_w4a16": 0.005203730160209474,
+        "static_1pct": 0.011591499201476396
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.000934587724914,
+        "paroquant_w4a16": 1.0052172930797185,
+        "static_1pct": 1.0116589409601353
+      },
+      "prompt_id": "opencompass_AIME2025_I_7",
+      "prompt_index": 7,
+      "recoveries": {
+        "paroquant_w4a16": 0.6006560711988609
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "split_name": "confirmation",
+      "static_gap": 0.010724353235221251
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.00010308439202888486,
+        "paroquant_w4a16": 8.773502863124172e-05,
+        "static_1pct": 0.0008578192632036075
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0001030897054073,
+        "paroquant_w4a16": 1.0000877388774614,
+        "static_1pct": 1.0008581872953752
+      },
+      "prompt_id": "opencompass_AIME2025_I_9",
+      "prompt_index": 9,
+      "recoveries": {
+        "paroquant_w4a16": 1.0203295946773652
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "split_name": "confirmation",
+      "static_gap": 0.0007550975899679457
+    },
+    {
+      "mean_nll": {
+        "bf16": 0.020703398236064152,
+        "paroquant_w4a16": 0.04887369815683737,
+        "static_1pct": 0.14321868602370302
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0209192002909848,
+        "paroquant_w4a16": 1.0500877143502894,
+        "static_1pct": 1.1539821338385186
+      },
+      "prompt_id": "opencompass_AIME2025_I_10",
+      "prompt_index": 10,
+      "recoveries": {
+        "paroquant_w4a16": 0.7807915902524067
+      },
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "split_name": "confirmation",
+      "static_gap": 0.13306293354753373
+    }
+  ]
+}

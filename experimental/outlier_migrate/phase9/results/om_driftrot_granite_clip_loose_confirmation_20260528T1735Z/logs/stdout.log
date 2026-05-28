@@ -1,0 +1,23 @@
+{
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.9748194105623701,
+        "ci95_low": -79.78322111629217
+      },
+      "included_trace_count": 4,
+      "mean_recovery": -19.35911292641571,
+      "median_recovery": 0.6859750000334821,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        -79.78322111629217,
+        0.6823403470583415,
+        0.9748194105623701,
+        0.6896096530086229
+      ],
+      "total_trace_count": 4
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_loose_confirmation_20260528T1735Z"
+}

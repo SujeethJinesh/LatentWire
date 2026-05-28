@@ -1,0 +1,5 @@
+{
+  "candidate_id": "clip_tight",
+  "decision": "SUBSET_SCORED_PENDING_SPLIT_ANALYSIS",
+  "schema_version": "om_driftrot_clip_subset_v1_decision"
+}

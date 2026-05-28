@@ -1,0 +1,35 @@
+{
+  "created_at_utc": "2026-05-28T18:47:11Z",
+  "regime": "paroquant_w4a16",
+  "schema_version": "om_paroquant_baseline_v1_score_cache",
+  "scores": {
+    "10": {
+      "mean_nll": 0.06036166998315577,
+      "perplexity": 1.0622206504064944,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "4": {
+      "mean_nll": 0.09453205767204054,
+      "perplexity": 1.0991443985788587,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "7": {
+      "mean_nll": 0.004331885871209806,
+      "perplexity": 1.0043412820516382,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    },
+    "9": {
+      "mean_nll": 0.00012209605377906663,
+      "perplexity": 1.0001221035078056,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    }
+  }
+}

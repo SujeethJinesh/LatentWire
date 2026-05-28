@@ -1,0 +1,6 @@
+{"created_at_utc": "2026-05-28T18:47:12Z", "event": "run_started"}
+{"created_at_utc": "2026-05-28T19:10:29Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T19:30:54Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T19:51:21Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T20:11:47Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T20:11:47Z", "event": "run_completed"}
