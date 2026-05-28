@@ -1,0 +1,22 @@
+{
+  "base_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+  "dtype": "bfloat16",
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "model_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+  "module_names": [
+    "model.layers.2.block_sparse_moe.input_linear",
+    "model.layers.39.block_sparse_moe.input_linear",
+    "model.layers.38.block_sparse_moe.input_linear",
+    "model.layers.24.block_sparse_moe.input_linear",
+    "model.layers.37.block_sparse_moe.input_linear",
+    "model.layers.14.block_sparse_moe.input_linear",
+    "model.layers.15.block_sparse_moe.input_linear",
+    "model.layers.28.block_sparse_moe.input_linear"
+  ],
+  "prompt_indices": [
+    4
+  ],
+  "residual_cache": "/workspace/LatentWire/artifacts/rot_resid_correction/residual_cache_granite_tight_20260528T2025Z/residual_column_cache.json",
+  "schema_version": "om_driftrot_activation_ema_v1_config",
+  "top_tensors": 8
+}

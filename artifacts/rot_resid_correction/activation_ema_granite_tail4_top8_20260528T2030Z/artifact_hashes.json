@@ -1,0 +1,31 @@
+{
+  "artifacts": [
+    {
+      "bytes": 939782,
+      "path": "activation_ema.json",
+      "sha256": "sha256:15ad55afe05ed728c7afdca5ac7c373596b505fdb7fafb321b7780a125b3069c"
+    },
+    {
+      "bytes": 222,
+      "path": "command.sh",
+      "sha256": "sha256:649b1594af146d2299b8e635d7c8174ea3d8090ea775088cafbe94bb99016f87"
+    },
+    {
+      "bytes": 982,
+      "path": "config.json",
+      "sha256": "sha256:b4fd028fc4946bd72d8155448577ffb3208eef29c8ed9fc97ad1b0bdb4a7ca51"
+    },
+    {
+      "bytes": 9286,
+      "path": "model_provenance.json",
+      "sha256": "sha256:97a526b19bdb95d432cfff081dd1789a6d51f01e3b4a4a47faeea6959527b29c"
+    },
+    {
+      "bytes": 172,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:b8bc2e1becebf6d8c60f260284cb4fa727424234ab279c0e66f2987433b57e30"
+    }
+  ],
+  "created_at_utc": "2026-05-28T20:43:09Z",
+  "schema_version": "om_driftrot_activation_ema_v1_artifact_hashes"
+}
