@@ -236,19 +236,22 @@ def decision_from_metrics(metrics: dict[str, Any]) -> tuple[str, list[str], dict
 
 def validate_artifact_hashes(run_dir: Path, loaded: dict[str, Any], infra: list[str]) -> None:
     hashes = loaded.get("artifact_hashes.json", {})
-    files = hashes.get("files", {})
-    if not isinstance(files, dict):
-        infra.append("artifact_hashes.files missing")
+    entries = hashes.get("artifacts", [])
+    if not isinstance(entries, list):
+        infra.append("artifact_hashes.artifacts must be a list")
         return
+    by_path = {str(row.get("path")): row for row in entries if isinstance(row, dict)}
     for rel in [*REQUIRED_FILES, *[rel for rel in OPTIONAL_FILES if (run_dir / rel).is_file()]]:
         if rel == "artifact_hashes.json":
             continue
-        expected = files.get(rel, {}).get("sha256") if isinstance(files.get(rel), dict) else files.get(rel)
-        if expected is None:
+        item = by_path.get(rel)
+        if item is None:
             infra.append(f"artifact hash missing for {rel}")
             continue
+        if item.get("bytes") != (run_dir / rel).stat().st_size:
+            infra.append(f"artifact hash byte mismatch for {rel}")
         actual = file_sha256(run_dir / rel)
-        if actual != expected:
+        if actual != item.get("sha256"):
             infra.append(f"artifact hash mismatch for {rel}")
 
 
