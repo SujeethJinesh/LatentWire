@@ -1,0 +1,9 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_MPRED",
+  "reasons": [
+    "mpred_top10_alpha_0_95 loses to m11b_top10"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_mpred_deepseek_extension_20260528T005045Z",
+  "schema_version": "om_phase9_mpred_v1_artifact_check"
+}

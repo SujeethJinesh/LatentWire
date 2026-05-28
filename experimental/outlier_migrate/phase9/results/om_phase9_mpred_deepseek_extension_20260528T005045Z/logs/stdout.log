@@ -1,0 +1,12 @@
+{
+  "checker_decision": "KILL_MPRED",
+  "details": {
+    "best_m11b_median": 0.3353894408225412,
+    "best_m11b_regime": "m11b_top10",
+    "best_mpred_median": -0.04338603076510794,
+    "best_mpred_minus_best_m11b": -0.3787754715876491,
+    "best_mpred_regime": "mpred_top10_alpha_0_95",
+    "random_alpha_median": null
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_mpred_deepseek_extension_20260528T005045Z"
+}

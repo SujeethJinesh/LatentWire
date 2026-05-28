@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase9/run_om_phase9_mpred.py",
+    "--model-key",
+    "deepseek",
+    "--run-id",
+    "om_phase9_mpred_deepseek_extension_20260528T005045Z",
+    "--batch-size",
+    "2",
+    "--device",
+    "auto",
+    "--dtype",
+    "bfloat16",
+    "--new-regimes",
+    "mpred_top10_alpha_0_95"
+  ],
+  "batch_size": 2,
+  "branch": "outlier_migrate_phase9_mpred",
+  "created_at_utc": "2026-05-28T00:50:54Z",
+  "cwd": "/workspace/LatentWire",
+  "model_key": "deepseek",
+  "new_regimes": [
+    "mpred_top10_alpha_0_95"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_mpred_deepseek_extension_20260528T005045Z",
+  "schema_version": "om_phase9_mpred_v1_command",
+  "scope_reduction": "bounded_subset_due_endpoint_scoring_throughput",
+  "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z"
+}
