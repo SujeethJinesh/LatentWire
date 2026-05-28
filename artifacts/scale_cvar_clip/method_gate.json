@@ -1,17 +1,31 @@
 {
-  "schema_version": "scale_cvar_clip_gate_v1",
-  "decision": "PROMOTE_GRANITE_CLIP_RETUNE_SMOKE",
-  "status": "READY_FOR_GATED_GPU_SMOKE",
+  "schema_version": "scale_cvar_clip_gate_v2",
+  "decision": "PASS_TIGHT_CLIP_GRANITE_POSITIVE_TRACES",
+  "status": "COMPLETED_GRANITE_POSITIVE_TRACE_TABLE",
   "primary_model": "Granite",
   "secondary_model": "Nemotron",
   "reasons": [
-    "Granite ParoQuant median is strong but has a severe negative included trace; CVaR/tail objective is relevant.",
+    "Granite ParoQuant median is strong but has a severe negative included trace; tight clip fixes this tail and improves all recoverable positive traces.",
     "Nemotron ParoQuant already has positive lower CI and no negative included trace, so retune is optional robustness work.",
     "All candidates are pure config variants of the existing ParoQuant runner and include the exact current baseline."
   ],
   "must_not_claim": [
-    "Do not call this a new method unless confirmation traces beat static ParoQuant.",
+    "Frame this as Tier-2 tail-control DriftRot evidence, not the headline method.",
     "Do not claim off-diagonal covariance motivation from this artifact."
-  ]
+  ],
+  "completed_runs": [
+    "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z",
+    "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z",
+    "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z"
+  ],
+  "positive_trace_summary": {
+    "source_csv": "artifacts/scale_cvar_clip/granite_tight_positive_trace_table.csv",
+    "baseline_median": 0.7537768488911776,
+    "tight_median": 0.921717669905064,
+    "baseline_worst": -26.3711874060621,
+    "tight_worst": 0.6006560711988609,
+    "median_margin": 0.05087552556827113,
+    "margin_ci95_low": 0.016560040354311134,
+    "margin_ci95_high": 0.370093645097194
+  }
 }
-
