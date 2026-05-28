@@ -5,6 +5,10 @@ source .venv_gpu/bin/activate
 
 BASE_RUN="experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z"
 
+echo "This full-packet launcher is intentionally not used by default because"
+echo "Granite 20K scoring is slow. Prefer run_granite_clip_cvar_subset.sh."
+exit 2
+
 python experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py \
   --run-id om_driftrot_granite_clip_loose_20260528T1700Z \
   --reuse-trace-run-dir "$BASE_RUN" \
