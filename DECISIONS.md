@@ -1,6 +1,6 @@
 # Positive-Method Sprint Decisions
 
-Last updated: 2026-05-28T11:42Z
+Last updated: 2026-05-28T13:22Z
 
 ## Current Framing
 
@@ -17,10 +17,10 @@ unless a genuinely held-out frozen-threshold run is executed.
 
 | Branch | Decision | Reason |
 |---|---|---|
-| V1 ParoQuant-on-Nemotron | RUNNING | Baseline-vetting GPU job active; 10/12 prompts scored as of 2026-05-28T11:34Z. |
+| V1 ParoQuant-on-Nemotron | PASS_ROTATION_DOMINATES | ParoQuant median recovery is 1.047 with CI95 [1.007, 1.292], beating Nemotron M11b top-10 by +0.232. This is headline-changing baseline-vetting evidence. |
 | WJAC | KILL | Artifactized prefilter found at least two kill diagnostics on each covered model/slice; DeepSeek/Falcon full cached coverage, Granite/Nemotron representative slice coverage. |
 | LAMBDA | DEFER | Falcon prior reallocates 18.9% of total budget, but the standalone smoke gate is false because causal per-layer headroom is absent. |
-| HYST | READY_FOR_SMOKE | Falcon churn/local-pool gate selected margin `m=5`; runner now supports `--methods hyst --hyst-exit-margin-pct-points 5`. |
+| HYST | PAUSED_BY_V1_GATE | Falcon churn/local-pool gate selected margin `m=5`, but the V1 rotation-dominance result triggers reframing before additional GPU smoke. |
 | RISKGUARD | DEFER | Best cached trigger is in-sample only; leave-one-trace-out CI lower bound collapses to 0 and CVaR remains negative. |
 | TRACE-ROUTER | WEAK_OFFLINE_ONLY | Granite/DeepSeek show positive tiny-n CV gain, but this needs a preregistered larger frozen slice before evidence claims. Falcon remains not routable. |
 | M-SURFACE | CONDITIONAL_DIAGNOSTIC | Granite `mamba_out_projection_input` hook sanity is cheap; promote only if internal drift is <0.30 or at least 0.15 below same-run post-block. |
@@ -32,7 +32,15 @@ unless a genuinely held-out frozen-threshold run is executed.
 
 ## Next Decision Gate
 
-After V1 completes:
+After V1 completed, it triggered `PASS_V1_PAROQUANT_NEMOTRON_ROTATION_DOMINATES`.
+
+The next decision gate is no longer automatic Falcon HYST. First:
+
+1. Reframe the positive-method story around rotation dominance on Granite and Nemotron.
+2. Decide whether Falcon/DeepSeek are still highest-value positive-method surfaces or whether the next gate should verify ParoQuant/rotation on those models.
+3. Only then resume Falcon HYST smoke if the regime-aware protocol still needs a Falcon-specific channel-set method.
+
+Previous automatic plan, now paused:
 
 1. If V1 is headline-changing, pause paper reframing and write a progress note
    before integrating.
