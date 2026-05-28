@@ -1,0 +1,36 @@
+{
+  "schema_version": "falcon_branch_rotation_diagnostic_v1",
+  "created_at_utc": "2026-05-28T15:37:22Z",
+  "model_key": "falcon",
+  "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+  "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+  "status": "needs_gpu_diagnostic",
+  "gpu_jobs_run": false,
+  "prompt_indices": [7, 1, 11],
+  "positions": [100, 10000],
+  "diagnostic_layers": [0, 18, 35],
+  "surfaces": [
+    "attention_projected_presum",
+    "mamba_projected_presum",
+    "post_mixer_pre_residual",
+    "post_block_output"
+  ],
+  "optional_surfaces": [
+    "attention_pre_o_proj_native",
+    "mamba_pre_out_proj_native",
+    "mlp_gate_optional"
+  ],
+  "metrics_to_compute": [
+    "top1pct_strict_set_leaving",
+    "covariance_range_cvar",
+    "early_late_covariance_frobenius_ratio",
+    "diagonal_vs_offdiagonal_drift"
+  ],
+  "promotion_gate": {
+    "branch_strict_leaving_absolute_drop_vs_post_block_ge": 0.15,
+    "require_same_trace_post_block_control": true,
+    "require_stability_across_stratified_traces": true
+  },
+  "do_not_launch_without_orchestrator_gate": true
+}
+

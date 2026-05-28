@@ -1,0 +1,24 @@
+{
+  "schema_version": "rotation_first_orchestrator_v1",
+  "created_at_utc": "2026-05-28T15:18:00Z",
+  "primary_question": "Can drift-aware rotation beat or robustify static ParoQuant under long-reasoning W4A16 drift?",
+  "baseline_required_in_all_sets": "ParoQuant config theta_PQ",
+  "killed_branches_do_not_rerun": [
+    "WJAC endpoint scoring",
+    "M-PRED/AR/Kalman prediction",
+    "hard bins/switches",
+    "naive ParoQuant+M11b composition"
+  ],
+  "next_gpu_order": [
+    "G0 ParoQuant Falcon smoke",
+    "G1 ParoQuant DeepSeek smoke",
+    "G2 DriftRot Scale/CVaR/Clip smoke on Granite+Nemotron",
+    "G3 DriftRot ResidualCorrection smoke on Granite",
+    "G4 Drift-aware Pairing smoke",
+    "G5 Falcon BranchRot diagnostic/protection",
+    "G6 M-SURFACE diagnostic",
+    "G7 Falcon LAMBDA/HYST fallback",
+    "G8 Restricted KLLOOK",
+    "G9 Partial/full eval"
+  ]
+}

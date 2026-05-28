@@ -1,0 +1,21 @@
+{
+  "schema_version": "paper_delta_metrics_v1",
+  "v1_nemotron_paroquant": {
+    "decision": "PASS_V1_PAROQUANT_NEMOTRON_ROTATION_DOMINATES",
+    "median_recovery": 1.0470852994064899,
+    "ci95_low": 1.0071831033257677,
+    "ci95_high": 1.2920493786337606,
+    "included_trace_count": 10,
+    "margin_vs_m11b_top10": 0.2323455005030597
+  },
+  "granite_paroquant": {
+    "decision": "PASS_PAROQUANT_BASELINE_REPORTED",
+    "median_recovery": 0.7537768488911776,
+    "ci95_low": 0.4770444524050311,
+    "ci95_high": 1.003769554323054,
+    "included_trace_count": 8
+  },
+  "paper_options_written": 3,
+  "figures_planned": 4
+}
+

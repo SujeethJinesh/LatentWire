@@ -1,0 +1,11 @@
+{
+  "schema_version": "cpu_worker_artifact_v1",
+  "task": "C8_FALCON_CHANNEL_FALLBACKS",
+  "created_at_utc": "2026-05-28T15:37:22Z",
+  "write_scope": "artifacts/falcon_channel_fallbacks/",
+  "gpu_jobs_run": false,
+  "shared_state_edited": false,
+  "result_type": "gated_lambda_hyst_configs",
+  "primary_decision": "HOLD_UNTIL_PAROQUANT_FALCON_SMOKE"
+}
+

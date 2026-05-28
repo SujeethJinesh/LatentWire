@@ -1,0 +1,11 @@
+{
+  "schema_version": "cpu_worker_artifact_v1",
+  "task": "C6_FALCON_BRANCH_ROTATION",
+  "created_at_utc": "2026-05-28T15:37:22Z",
+  "write_scope": "artifacts/falcon_branch_rotation/",
+  "gpu_jobs_run": false,
+  "shared_state_edited": false,
+  "result_type": "hook_map_and_gated_diagnostic_config",
+  "primary_decision": "NEEDS_GPU_DIAGNOSTIC"
+}
+

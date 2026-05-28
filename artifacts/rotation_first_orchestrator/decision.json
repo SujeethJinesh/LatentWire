@@ -1,0 +1,6 @@
+{
+  "status": "ROTATION_FIRST_QUEUE_ACTIVE",
+  "gpu_launch_allowed_now": false,
+  "reason": "CPU gates and smoke wrappers/configs must be merged before launching G0/G1.",
+  "next_local_gate": "prepare ParoQuant Falcon/DeepSeek smoke runner/checker or guarded commands"
+}

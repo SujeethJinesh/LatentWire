@@ -1,0 +1,5 @@
+{
+  "falcon_smoke_prompt_indices": [7, 1, 11],
+  "deepseek_smoke_prompt_indices": [5, 11, 8],
+  "source": "artifacts/funnel_prefilters/smoke_traces.json and V1 delta pack"
+}

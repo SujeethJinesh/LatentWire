@@ -1,0 +1,27 @@
+{
+  "task": "C12_KERNEL_SPEC",
+  "git_commit": "321b690b049267fd016c5ed6615fc6e331ac9450",
+  "branch": "main",
+  "decision": "SPEC_READY_KERNEL_BLOCKED_ON_METHOD",
+  "run_gpu": false,
+  "implement_triton_cuda": false,
+  "reason": "Protected-column residual correction semantics are specified and testable in PyTorch, but no residual-correction method has survived ParoQuant-held-out smoke or partial evaluation.",
+  "promote_to_gpu_smoke_if": [
+    "C5 residual-correction candidate pool identifies calibration-only protected columns",
+    "ParoQuant tail or weak traces are identified with held-out confirmation traces",
+    "The smoke command includes ParoQuant baseline in the same protocol",
+    "The candidate preserves matched budget/overhead accounting"
+  ],
+  "promote_to_kernel_implementation_if": [
+    "A residual-correction finalist beats ParoQuant median by >= 0.05 on confirmation traces",
+    "or improves ParoQuant CI lower bound/CVaR tail substantially without median loss > 0.05",
+    "and a separate PyTorch reference comparison passes on model-realistic shapes"
+  ],
+  "kill_or_defer_if": [
+    "Residual columns only improve calibration traces",
+    "DeltaW column norms are nearly flat and selector collapses to activation magnitude",
+    "Required protected fraction is too large to preserve W4A16 memory/latency advantage",
+    "KLLOOK ceiling is low for the target model"
+  ],
+  "novelty_note": "Do not claim mixed-precision columns as novel. Safe claim, if validated, is drift-aware residual correction after rotation for long-reasoning W4A16."
+}

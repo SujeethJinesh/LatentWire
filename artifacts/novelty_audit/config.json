@@ -1,0 +1,31 @@
+{
+  "schema_version": "novelty_audit_c10_v1",
+  "created_at_utc": "2026-05-28T15:38:16Z",
+  "task": "C10_NOVELTY_AUDIT",
+  "write_scope": "artifacts/novelty_audit/",
+  "gpu_used": false,
+  "shared_state_edited": false,
+  "candidates": [
+    "DriftRot scale/clip retune",
+    "drift-aware pairing",
+    "rotated residual correction",
+    "BranchRot",
+    "M-SURFACE rotation/protection"
+  ],
+  "requested_priors": [
+    "ParoQuant",
+    "QuaRot",
+    "SpinQuant",
+    "Quamba2",
+    "SmoothQuant",
+    "AWQ",
+    "MambaQuant",
+    "Rotated Runtime Smooth"
+  ],
+  "additional_guardrail_priors": [
+    "OSCAR",
+    "KVLinC"
+  ],
+  "sources_policy": "Repo references first, then primary arXiv/OpenReview/project sources where needed."
+}
+

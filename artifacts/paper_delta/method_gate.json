@@ -1,0 +1,18 @@
+{
+  "schema_version": "paper_delta_method_gate_v1",
+  "gate": "ROTATION_FIRST_PENDING_FALCON_DEEPSEEK",
+  "decision": "prepare_rotation_first_paper_options",
+  "do_not_claim": [
+    "ParoQuant as our method",
+    "DeepSeek rotation result before it is measured",
+    "Falcon rotation result before it is measured",
+    "DriftRot positive method before held-out confirmation"
+  ],
+  "promote_if": [
+    "DriftRot beats ParoQuant median by at least 0.05 on confirmation traces",
+    "DriftRot improves ParoQuant CI lower bound or CVaR tail without median loss greater than 0.05",
+    "branch or surface remedy rescues Falcon or DeepSeek where ParoQuant fails"
+  ],
+  "current_best_framing": "rotation-first regime-aware"
+}
+

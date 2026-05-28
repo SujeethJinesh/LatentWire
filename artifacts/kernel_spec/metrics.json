@@ -1,0 +1,22 @@
+{
+  "task": "C12_KERNEL_SPEC",
+  "git_commit": "321b690b049267fd016c5ed6615fc6e331ac9450",
+  "branch": "main",
+  "status": "REFERENCE_SELF_TEST_PASSED",
+  "gpu_jobs_run": 0,
+  "triton_cuda_files_written": 0,
+  "numeric_experiment_claims": [],
+  "reference_tests": {
+    "correction_equals_explicit_mixed_weight": "passed",
+    "base_out_path_matches_recomputed_base": "passed",
+    "selector_deterministic": "passed",
+    "overhead_monotonic_in_protected_count": "passed"
+  },
+  "quality_metrics": {
+    "median_recovery": null,
+    "ci_low": null,
+    "ci_high": null,
+    "cvar_tail": null
+  },
+  "notes": "This artifact contains no experimental result. CPU self-test passed via artifacts/kernel_spec/command.sh."
+}

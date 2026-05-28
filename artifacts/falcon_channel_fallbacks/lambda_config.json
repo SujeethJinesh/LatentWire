@@ -1,0 +1,25 @@
+{
+  "schema_version": "falcon_lambda_config_v1",
+  "created_at_utc": "2026-05-28T15:37:22Z",
+  "status": "prepared_deferred",
+  "model_key": "falcon",
+  "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+  "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+  "method": "lambda_layer_budget",
+  "prompt_indices": [7, 1, 11],
+  "budget_policy": {
+    "preserve_total_budget": true,
+    "layers": 36,
+    "flat_m11b_budget_per_layer": 103,
+    "total_budget": 3708,
+    "allocation_source": "artifacts/lambda_falcon/lambda_layer_budget.csv",
+    "budget_min": 68,
+    "budget_max": 160,
+    "largest_budget_layers": [34, 33, 35, 32, 31, 30],
+    "smallest_budget_layers": [7, 8, 10, 6, 5, 9]
+  },
+  "run_gate": "after_paroquant_falcon_weak_or_orchestrator_explicit",
+  "runner": "experimental/outlier_migrate/phase9/run_om_phase9_funnel_smoke.py",
+  "runner_methods_arg": "lambda"
+}
+

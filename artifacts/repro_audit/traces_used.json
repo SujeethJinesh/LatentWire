@@ -1,0 +1,25 @@
+{
+  "schema_version": "repro_audit_traces_used_v1",
+  "note": "No new traces were run. This audit records existing trace usage.",
+  "v1_nemotron": {
+    "total_traces": 12,
+    "included_recovery_traces": 10,
+    "excluded_no_gap_traces": [
+      {
+        "trace_id": "nemotron_trace_3",
+        "prompt_id": "opencompass_AIME2025_I_3",
+        "reason": "no positive static-1pct recoverable gap"
+      },
+      {
+        "trace_id": "nemotron_trace_4",
+        "prompt_id": "opencompass_AIME2025_I_4",
+        "reason": "no positive static-1pct recoverable gap"
+      }
+    ]
+  },
+  "granite_paroquant": {
+    "total_traces": 12,
+    "included_recovery_traces": 8
+  }
+}
+

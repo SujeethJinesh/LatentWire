@@ -1,0 +1,24 @@
+{
+  "schema_version": "msurface_driftrot_diagnostic_v1",
+  "created_at_utc": "2026-05-28T15:37:22Z",
+  "status": "guarded_diagnostic_only",
+  "gpu_jobs_run": false,
+  "recommended_first_model": "granite",
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "model_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+  "prompt_indices": [0, 1],
+  "positions": [100, 20000],
+  "surfaces": [
+    "mamba_out_projection_input",
+    "attention_out_projection_input",
+    "post_block_residual_block_output"
+  ],
+  "promotion_gate": {
+    "internal_strict_leaving_lt": 0.4,
+    "strong_internal_strict_leaving_lt": 0.3,
+    "absolute_drop_vs_same_run_post_block_ge": 0.15
+  },
+  "defer_falcon_until_granite_positive": true,
+  "runner": "experimental/outlier_migrate/phase9/run_om_phase9_msurface_sanity.py"
+}
+

@@ -1,0 +1,12 @@
+{
+  "schema_version": "paper_delta_config_v1",
+  "task": "C9_PAPER_DELTA",
+  "source_packs": [
+    "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536"
+  ],
+  "write_scope": "artifacts/paper_delta",
+  "no_gpu": true,
+  "shared_state_edited": false
+}
+

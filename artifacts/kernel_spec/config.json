@@ -1,0 +1,27 @@
+{
+  "task": "C12_KERNEL_SPEC",
+  "git_commit": "321b690b049267fd016c5ed6615fc6e331ac9450",
+  "branch": "main",
+  "method": "rotated_residual_protected_column_correction",
+  "status": "SPEC_ONLY",
+  "baseline_required": "ParoQuant",
+  "formula": "y = x @ W_pq.T + x_P @ (W_fp[:, P] - W_pq[:, P]).T",
+  "selector_default": "top_k(E_cal[x_i^2] * ||DeltaW[:, i]||_2^2)",
+  "calibration_confirmation_split_required": true,
+  "gpu_jobs_allowed": false,
+  "triton_cuda_implementation_allowed": false,
+  "promotion_gate": {
+    "requires_surviving_method": true,
+    "requires_held_out_gain_vs_paroquant": true,
+    "allowed_success_modes": [
+      "median recovery beats ParoQuant by >= 0.05",
+      "CI lower bound or CVaR tail improves without median loss > 0.05",
+      "rescues Falcon or DeepSeek where ParoQuant fails"
+    ]
+  },
+  "benchmark_shapes_future": {
+    "rows": [1, 8, 32, 128],
+    "protected_fraction": [0.01, 0.03, 0.05, 0.1],
+    "metrics": ["p50_latency", "p95_latency", "launch_count", "sidecar_bytes", "max_abs_error"]
+  }
+}

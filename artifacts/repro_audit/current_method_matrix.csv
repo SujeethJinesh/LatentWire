@@ -1,0 +1,11 @@
+model,method,status,median_recovery,ci95_low,ci95_high,no_gap_fraction,n_traces,n_positive_gap_traces,key_comparison,decision_reason,source
+Granite,M11b top-5,AMBIG,0.4492840911245966,-1.3009000187907436,1.00079062654749,0.3333333333333333,12,8,m11b_top5,Positive median but wide CI and tail/no-gap instability,experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z
+Nemotron,M11b top-10,PASS,0.8147397989034302,0.2544392881776635,0.9225522648803115,0.16666666666666666,12,10,m11b_top10,Strong positive before V1 but now weaker than ParoQuant on same baseline,experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z
+DeepSeek,M11b top-10,AMBIG,0.3353894408225412,-0.40909502923795116,0.4937768399763942,0.08333333333333333,12,11,m11b_top10,Positive median but CI crosses negative and static top-10 is competitive,experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z
+Falcon-H1,M11b top-10,KILL,0.04393973019116826,-0.14405060541685555,0.203397616132395,0.0,12,12,m11b_top10,Near-zero median recovery; Falcon resists simple EMA channel protection,experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z
+Granite,ParoQuant,PASS,0.7537768488911776,0.4770444524050311,1.003769554323054,0.3333333333333333,12,8,paroquant_w4a16,Rotation is strong on Granite,experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z/checker_result.json
+Nemotron,ParoQuant,PASS_ROTATION_DOMINATES,1.0470852994064899,1.0071831033257677,1.2920493786337606,0.16666666666666666,12,10,paroquant_w4a16,Rotation beats Nemotron M11b top-10 by 0.232 on the same BF16/static baseline,experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z/checker_result.json
+DeepSeek,ParoQuant,PENDING,,,,,,,,ParoQuant smoke not yet measured,
+Falcon-H1,ParoQuant,PENDING,,,,,,,,ParoQuant smoke not yet measured,
+Granite,ParoQuant+M11b,KILL,0.5645482174486074,0.002901803049757512,0.9993241656016156,0.3333333333333333,12,8,paroquant_m11b_top10,Sub-additive relative to individual ParoQuant; do not rerun naive composition,experimental/outlier_migrate/phase9/results/om_stage1_e3_granite_20260526T034442Z
+

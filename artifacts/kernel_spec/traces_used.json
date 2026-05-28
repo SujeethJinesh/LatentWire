@@ -1,0 +1,8 @@
+{
+  "task": "C12_KERNEL_SPEC",
+  "git_commit": "321b690b049267fd016c5ed6615fc6e331ac9450",
+  "branch": "main",
+  "traces_used": [],
+  "reason": "No experiment or GPU job was run. This CPU artifact defines implementation semantics only.",
+  "calibration_confirmation_split_required_for_future_runs": true
+}

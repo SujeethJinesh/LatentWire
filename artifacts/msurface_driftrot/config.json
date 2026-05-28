@@ -1,0 +1,11 @@
+{
+  "schema_version": "cpu_worker_artifact_v1",
+  "task": "C7_MSURFACE_DRIFTROT",
+  "created_at_utc": "2026-05-28T15:37:22Z",
+  "write_scope": "artifacts/msurface_driftrot/",
+  "gpu_jobs_run": false,
+  "shared_state_edited": false,
+  "result_type": "surface_hook_map_and_guarded_diagnostic_config",
+  "primary_decision": "GUARDED_DIAGNOSTIC_ONLY"
+}
+

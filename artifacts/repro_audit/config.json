@@ -1,0 +1,17 @@
+{
+  "schema_version": "repro_audit_config_v1",
+  "task": "C11_REPRO_AUDIT",
+  "source_packs": [
+    "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536"
+  ],
+  "source_runs": [
+    "experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z",
+    "experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z"
+  ],
+  "write_scope": "artifacts/repro_audit",
+  "no_gpu": true,
+  "shared_state_edited": false
+}
+

@@ -1,0 +1,22 @@
+{
+  "schema_version": "method_gate_v1",
+  "created_at_utc": "2026-05-28T15:37:22Z",
+  "task": "C8_FALCON_CHANNEL_FALLBACKS",
+  "decision": "HOLD_UNTIL_PAROQUANT_FALCON_SMOKE",
+  "promote_to_gpu_scoring": false,
+  "recommend_if_falcon_rotation_weak": "HYST_FIRST",
+  "reason": "V1 makes rotation the priority. Falcon LAMBDA and HYST should stay behind ParoQuant Falcon smoke. HYST has a positive CPU churn gate and a runnable m=5 config; LAMBDA preserves budget but lacks causal per-layer headroom and remains deferred.",
+  "lambda": {
+    "status": "prepared_deferred",
+    "preserves_total_budget": true,
+    "total_budget": 3708
+  },
+  "hyst": {
+    "status": "prepared_if_needed",
+    "active_k_eff_per_layer": 103,
+    "exit_rank_count_per_layer": 154,
+    "predicted_churn_reduction": 0.796
+  },
+  "next_gate": "Run ParoQuant Falcon smoke first. If weak, run HYST margin-5 smoke before LAMBDA."
+}
+

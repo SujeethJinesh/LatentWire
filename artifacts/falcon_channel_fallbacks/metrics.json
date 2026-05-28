@@ -1,0 +1,24 @@
+{
+  "schema_version": "falcon_channel_fallbacks_metrics_v1",
+  "created_at_utc": "2026-05-28T15:37:22Z",
+  "gpu_jobs_run": false,
+  "endpoint_recovery_measured": false,
+  "m11b_top10_reference": {
+    "median_recovery": 0.04393973019116826,
+    "ci95_low": -0.14405060541685555,
+    "ci95_high": 0.203397616132395
+  },
+  "lambda": {
+    "total_budget_preserved": true,
+    "total_budget": 3708,
+    "budget_min": 68,
+    "budget_max": 160
+  },
+  "hyst": {
+    "active_k_eff_per_layer": 103,
+    "exit_rank_count_per_layer": 154,
+    "predicted_late_churn_reduction": 0.796
+  },
+  "decision": "HOLD_UNTIL_PAROQUANT_FALCON_SMOKE"
+}
+

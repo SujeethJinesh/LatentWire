@@ -1,0 +1,14 @@
+{
+  "schema_version": "repro_audit_metrics_v1",
+  "tables_written": 3,
+  "decision_tree_written": true,
+  "v1_artifact_complete": true,
+  "v1_decision": "PASS_V1_PAROQUANT_NEMOTRON_ROTATION_DOMINATES",
+  "pending_rotation_models": [
+    "DeepSeek",
+    "Falcon-H1"
+  ],
+  "shared_state_edited": false,
+  "gpu_jobs_launched": 0
+}
+

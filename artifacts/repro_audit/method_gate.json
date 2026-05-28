@@ -1,0 +1,17 @@
+{
+  "schema_version": "repro_audit_method_gate_v1",
+  "gate": "V1_RECORDED_ROTATION_FIRST_QUEUE_PENDING",
+  "decision": "records_ready_for_final_paper_tables",
+  "next_unresolved_measurements": [
+    "ParoQuant Falcon smoke",
+    "ParoQuant DeepSeek smoke",
+    "DriftRot scale/clip/pairing/residual correction if ParoQuant baseline is established"
+  ],
+  "do_not_rerun": [
+    "WJAC endpoint scoring",
+    "M-PRED/AR/Kalman prediction",
+    "hard bins/switches",
+    "naive ParoQuant+M11b composition"
+  ]
+}
+

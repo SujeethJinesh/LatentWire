@@ -1,0 +1,19 @@
+{
+  "schema_version": "paper_delta_traces_used_v1",
+  "note": "No new traces were run. This artifact summarizes existing trace packets.",
+  "v1_nemotron": {
+    "total_traces": 12,
+    "included_traces": 10,
+    "excluded_no_gap_traces": [
+      "nemotron_trace_3",
+      "nemotron_trace_4"
+    ],
+    "source": "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/tables/v1_per_trace_recovery.csv"
+  },
+  "granite_paroquant": {
+    "total_traces": 12,
+    "included_traces": 8,
+    "source": "artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/tables/rotation_summary_granite_nemotron.csv"
+  }
+}
+

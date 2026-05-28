@@ -1,0 +1,6 @@
+model,rotation_method,status,median_recovery,ci95_low,ci95_high,included_trace_count,total_trace_count,comparison,margin,source
+Granite,ParoQuant-style W4A16,PASS,0.7537768488911776,0.4770444524050311,1.003769554323054,8,12,not compared against model-local M11b in this table,,experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z/checker_result.json
+Nemotron,ParoQuant-style W4A16,PASS_ROTATION_DOMINATES,1.0470852994064899,1.0071831033257677,1.2920493786337606,10,12,ParoQuant minus M11b top-10,0.2323455005030597,experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z/checker_result.json
+DeepSeek,ParoQuant-style W4A16,PENDING,,,,,,ParoQuant smoke pending,,artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/tables/updated_gpu_queue.csv
+Falcon-H1,ParoQuant-style W4A16,PENDING,,,,,,ParoQuant smoke pending,,artifacts/external_review_pack/v1_rotation_delta_pack_20260528_1506/tables/updated_gpu_queue.csv
+
