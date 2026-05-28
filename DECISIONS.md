@@ -1,6 +1,6 @@
 # Positive-Method Sprint Decisions
 
-Last updated: 2026-05-28T16:28Z
+Last updated: 2026-05-28T16:55Z
 
 ## Current Framing
 
@@ -23,7 +23,7 @@ unless a genuinely held-out frozen-threshold run is executed.
 | V1 ParoQuant-on-Nemotron | PASS_ROTATION_DOMINATES | ParoQuant median recovery is 1.047 with CI95 [1.007, 1.292], beating Nemotron M11b top-10 by +0.232. This is headline-changing baseline-vetting evidence. |
 | DriftRot | LIVE | Primary question: can long-decode drift-aware rotation choices beat or robustify static ParoQuant on held-out traces/seeds? |
 | ParoQuant Falcon smoke | PASS_ROTATION_RESCUE | Full 12-trace packet gives median recovery 0.381 with CI95 [0.0645, 0.547], beating Falcon M11b top-10 by +0.337. Falcon channel rescue drops in priority. |
-| ParoQuant DeepSeek smoke | NEXT | Tests whether rotation-dominance extends to the dense Transformer regime. |
+| ParoQuant DeepSeek smoke | PASS_ROTATION_DOMINATES | Full 12-trace packet gives median recovery 0.756 with CI95 [-0.246, 0.855], beating DeepSeek static-top10 by +0.379. Median supports rotation-dominant framing, but the negative lower CI keeps DriftRot tail-control live. |
 | Granite clip/CVaR retune | PROMOTE_AFTER_G0_G1 | Only DriftRot config gate promoted by CPU filters; target ParoQuant's Granite tail, not a broad grid. |
 | Drift-aware pairing | NEEDS_ACTIVATION_CACHE | Pairings differ from current ParoQuant on block-output proxies, but exact rotation-surface caches are required before GPU. |
 | Residual correction | NEEDS_WEIGHT_RESIDUAL_CACHE | Method is specified, but no candidate pool exists until a ParoQuant run emits residual column norms or equivalent summaries. |
@@ -50,9 +50,9 @@ The next decision gate is rotation-first:
    directories.
 2. Prepare ParoQuant Falcon and DeepSeek smoke packets.
 3. ParoQuant Falcon passed, so Falcon channel rescue drops in priority.
-4. Run ParoQuant DeepSeek smoke; if it passes, the rotation-dominant
-   four-model story strengthens.
-5. Only then run DriftRot Scale/CVaR/Clip, residual correction, pairing,
+4. ParoQuant DeepSeek passed, so the rotation-dominant four-model story is now
+   supported by Granite, Nemotron, Falcon, and DeepSeek.
+5. Next run DriftRot Scale/CVaR/Clip, residual correction, pairing,
    BranchRot, M-SURFACE, or Falcon channel fallbacks according to their CPU
    gates.
 
@@ -62,9 +62,9 @@ model where ParoQuant fails.
 
 CPU gates now favor this concrete order:
 
-1. G0 ParoQuant Falcon smoke.
-2. G1 ParoQuant DeepSeek smoke.
-3. Granite clip/CVaR retune smoke if G0/G1 do not already settle the story.
-4. BranchRot/HYST only if Falcon ParoQuant is weak.
-5. Pairing/residual correction only after collecting exact rotation-surface or
-   residual-column caches.
+1. Granite clip/CVaR retune smoke to test whether DriftRot can improve
+   ParoQuant tails/CI rather than merely reproduce the rotation baseline.
+2. Residual correction and pairing only after collecting exact residual or
+   rotation-surface caches.
+3. Falcon/DeepSeek channel fallbacks only if a later rotation-specific gate
+   exposes a weakness requiring architecture-local rescue.

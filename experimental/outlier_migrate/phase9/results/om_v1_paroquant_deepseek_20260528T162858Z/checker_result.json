@@ -1,0 +1,21 @@
+{
+  "artifact_complete": true,
+  "ci95": {
+    "ci95_high": 0.8553979703329783,
+    "ci95_low": -0.24565629003349176
+  },
+  "decision": "PASS_V1_PAROQUANT_DEEPSEEK_ROTATION_DOMINATES",
+  "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+  "included_trace_count": 11,
+  "infra_reasons": [],
+  "interpretation_band": "substantial_recovery_gt_0_50",
+  "median_recovery": 0.7562393091709771,
+  "paroquant_minus_static_top10_median": 0.37948669457657414,
+  "reasons": [
+    "ParoQuant beats the DeepSeek static-top10 reference median"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v1_paroquant_deepseek_20260528T162858Z",
+  "schema_version": "om_v1_paroquant_deepseek_v1_checker_result",
+  "static_top10_reference_median": 0.376752614594403,
+  "total_trace_count": 12
+}

@@ -1,0 +1,14 @@
+{"created_at_utc": "2026-05-28T16:28:58Z", "event": "run_started"}
+{"created_at_utc": "2026-05-28T16:31:16Z", "event": "completed_scoring_batch", "prompt_indices": [0], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:33:08Z", "event": "completed_scoring_batch", "prompt_indices": [1], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:35:00Z", "event": "completed_scoring_batch", "prompt_indices": [2], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:36:51Z", "event": "completed_scoring_batch", "prompt_indices": [3], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:38:42Z", "event": "completed_scoring_batch", "prompt_indices": [4], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:40:34Z", "event": "completed_scoring_batch", "prompt_indices": [5], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:42:26Z", "event": "completed_scoring_batch", "prompt_indices": [6], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:44:17Z", "event": "completed_scoring_batch", "prompt_indices": [7], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:46:09Z", "event": "completed_scoring_batch", "prompt_indices": [8], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:48:01Z", "event": "completed_scoring_batch", "prompt_indices": [9], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:49:53Z", "event": "completed_scoring_batch", "prompt_indices": [10], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:51:45Z", "event": "completed_scoring_batch", "prompt_indices": [11], "regime": "paroquant_w4a16"}
+{"created_at_utc": "2026-05-28T16:51:45Z", "event": "run_completed"}

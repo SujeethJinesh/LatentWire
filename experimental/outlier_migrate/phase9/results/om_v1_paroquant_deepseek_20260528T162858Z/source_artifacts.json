@@ -1,0 +1,26 @@
+{
+  "artifacts": [
+    {
+      "name": "protected_sets",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/protected_sets.json",
+      "sha256": "sha256:bf3ff44a87168ac76a716994da64647427bb0dd53fa5b41b1ccf869d087be53c"
+    },
+    {
+      "name": "bf16_traces",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/bf16_traces.jsonl.gz",
+      "sha256": "sha256:7d1b414d56b898a35300d3f3bf1be389ab51865cf4355f1acb11b02d5072dfbf"
+    },
+    {
+      "name": "score_cache_bf16",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/score_cache/bf16.json",
+      "sha256": "sha256:db23a37fe0327414478d31226d7e93c49c6233cb43220a286a0b822e87a86980"
+    },
+    {
+      "name": "score_cache_static_1pct",
+      "path": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/score_cache/static_1pct.json",
+      "sha256": "sha256:ef0cf9d0ea285c1b2ff3ec7538e742196a0fa581d7e9b6a44d932d51e7ae7e58"
+    }
+  ],
+  "created_at_utc": "2026-05-28T16:29:06Z",
+  "schema_version": "om_v1_paroquant_deepseek_v1_source_artifacts"
+}

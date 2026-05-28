@@ -1,0 +1,17 @@
+{
+  "artifact_complete": true,
+  "ci95": {
+    "ci95_high": 0.8553979703329783,
+    "ci95_low": -0.24565629003349176
+  },
+  "decision": "PASS_V1_PAROQUANT_DEEPSEEK_ROTATION_DOMINATES",
+  "experiment_id": "v1_paroquant_deepseek",
+  "included_trace_count": 11,
+  "margin_vs_static_top10": 0.37948669457657414,
+  "median_recovery": 0.7562393091709771,
+  "reason": [
+    "ParoQuant beats the DeepSeek static-top10 reference median"
+  ],
+  "tail_note": "CI lower remains negative because included traces contain large negative outliers; this motivates DriftRot tail/CVaR gates rather than more channel fallback first.",
+  "total_trace_count": 12
+}

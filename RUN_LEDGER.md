@@ -1,6 +1,6 @@
 # Positive-Method Sprint Run Ledger
 
-Last updated: 2026-05-28T16:28Z
+Last updated: 2026-05-28T16:55Z
 
 ## Active Objective
 
@@ -16,8 +16,8 @@ does not edit this ledger.
 |---:|---|---|---|---|
 | 0 | V1 ParoQuant-on-Nemotron | COMPLETE_HEADLINE_CHANGING | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z` | `PASS_V1_PAROQUANT_NEMOTRON_ROTATION_DOMINATES`; median 1.047, CI95 [1.007, 1.292], +0.232 over Nemotron M11b top-10 |
 | 1 | ParoQuant Falcon smoke | COMPLETE_PASS | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z` | `PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE`; median 0.381, CI95 [0.0645, 0.547], +0.337 over Falcon M11b top-10 |
-| 2 | ParoQuant DeepSeek smoke | NEXT_GATED | `artifacts/rotation_first_orchestrator/command_paroquant_deepseek_smoke.sh` | Run next to test whether rotation-dominance extends to the dense Transformer regime |
-| 3 | DriftRot Scale/CVaR/Clip smoke | CPU_GATED | `artifacts/scale_cvar_clip/`, `artifacts/rotation_config_grid/` | Granite + Nemotron; must include exact ParoQuant baseline config |
+| 2 | ParoQuant DeepSeek smoke | COMPLETE_PASS | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_deepseek_20260528T162858Z` | `PASS_V1_PAROQUANT_DEEPSEEK_ROTATION_DOMINATES`; median 0.756, CI95 [-0.246, 0.855], +0.379 over DeepSeek static-top10 |
+| 3 | DriftRot Scale/CVaR/Clip smoke | NEXT_GATED | `artifacts/scale_cvar_clip/`, `artifacts/rotation_config_grid/` | Rotation now passes all four models; next positive-method gate is tail/CI improvement over ParoQuant, starting with Granite clip/CVaR retune |
 | 4 | DriftRot ResidualCorrection smoke | CPU_GATED | `artifacts/rot_resid_correction/` | Granite tail/weak trace plus two representative traces; no kernel until pass |
 | 5 | Drift-aware Pairing smoke | CPU_GATED | `artifacts/drift_pairing/` | Run only if pairings materially differ from static high-low baseline |
 | 6 | Falcon BranchRot diagnostic/protection | CONDITIONAL | `artifacts/falcon_branch_rotation/` | Promote if branch-local drift/covariance range is materially lower than post-mixer |

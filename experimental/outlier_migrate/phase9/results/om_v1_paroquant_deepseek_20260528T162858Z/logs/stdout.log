@@ -1,0 +1,34 @@
+{
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.8553979703329783,
+        "ci95_low": -0.24565629003349176
+      },
+      "included_trace_count": 11,
+      "mean_recovery": 0.17632929783118173,
+      "median_recovery": 0.7562393091709771,
+      "no_recoverable_static_gap_count": 1,
+      "no_recoverable_static_gap_fraction": 0.08333333333333333,
+      "per_trace_recovery_included": [
+        -0.24565629003349176,
+        1.100102586446972,
+        0.19668829523546638,
+        0.2932270712666981,
+        0.7805076918731706,
+        -3.056385366574048,
+        0.8755861127327814,
+        0.7562393091709771,
+        0.8553979703329783,
+        -0.39784569620226584,
+        0.7817605918937609
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v1_paroquant_deepseek_20260528T162858Z"
+}
+{
+  "artifact_complete": true,
+  "checker_decision": "PASS_V1_PAROQUANT_DEEPSEEK_ROTATION_DOMINATES"
+}
