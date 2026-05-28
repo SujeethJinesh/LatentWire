@@ -1,6 +1,6 @@
 # Positive-Method Sprint Run Ledger
 
-Last updated: 2026-05-28T04:18Z
+Last updated: 2026-05-28T06:23Z
 
 ## Active Objective
 
@@ -12,12 +12,17 @@ filter work writes to `artifacts/<task_name>/` and does not edit this ledger.
 
 | Order | Gate | Status | Run / Artifact | Decision |
 |---:|---|---|---|---|
-| 1 | V1 ParoQuant-on-Nemotron | RUNNING | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z` | Pending score cache/checker |
-| 2 | LAMBDA/HYST smoke on DeepSeek/Falcon | GATED | `experimental/outlier_migrate/phase9/preregister_om_phase9_funnel_smoke.md` | CPU gates landed; prepare runner, wait for V1 GPU completion |
-| 3 | Minimal M-SURFACE sanity on Granite | DEFERRED | `artifacts/msurface/decision.json` | Hookable but inconclusive; only after smoke unless a finalist needs surface evidence |
-| 4 | Minimal M-BRANCH sanity on Falcon | DEFERRED | `artifacts/mbranch/decision.json` | Falcon branch-local GPU run not recommended by CPU diagnostic |
-| 5 | Partial eval for survivors | GATED | TBD | Only smoke survivors |
-| 6 | Full 12-trace + BCa | GATED | TBD | At most two finalists |
+| 0 | V1 ParoQuant-on-Nemotron | RUNNING | `experimental/outlier_migrate/phase9/results/om_v1_paroquant_nemotron_20260528T0318Z` | Pending score cache/checker; 3/12 prompts complete as of 2026-05-28T05:40Z |
+| 1 | Falcon LAMBDA smoke | GATED | `artifacts/lambda_falcon/` -> smoke config | Wait for C2 config and V1 GPU completion |
+| 2 | Falcon HYST smoke | GATED | `artifacts/hyst_falcon/` -> smoke config | Wait for C3 config and V1 GPU completion |
+| 3 | Falcon LAMBDA+HYST smoke | CONDITIONAL | TBD | Only if both single-factor smokes pass and combo beats the better single |
+| 4 | RISKGUARD confirm on Granite tail traces | CONDITIONAL | `artifacts/riskguard/` | Only if C1 predicts deployable post-guard CI lower bound > 0 |
+| 5 | Minimal M-BRANCH diagnostic on Falcon | CONDITIONAL | `artifacts/mbranch/` | Only if refreshed C5 gate shows branch/surface drift at least 0.15 below post-block or a tiny hook run is clearly decisive |
+| 6 | Minimal M-SURFACE sanity on Granite/Falcon | CONDITIONAL | `artifacts/msurface/` | Only if refreshed C6 gate says hooks are cheap and can test lower-drift internal surface |
+| 7 | Restricted Falcon KLLOOK | CONDITIONAL | TBD | Only if steps 1-6 are ambiguous |
+| 8 | LayerKeep-Falcon | CONDITIONAL | `artifacts/layerkeep_nogap/` | Coarse fallback if channel selection is unstable and C7 finds layer-level separation |
+| 9 | Partial eval for survivors | GATED | TBD | 6 traces, only smoke survivors |
+| 10 | Full 12-trace + BCa | GATED | TBD | At most two finalists |
 
 ## CPU Artifact Tasks
 
@@ -25,8 +30,13 @@ filter work writes to `artifacts/<task_name>/` and does not edit this ledger.
 |---|---|---|---|
 | WJAC prefilter | `artifacts/wjac_prefilter/` | COMPLETE | `KILL_WJAC_PREFILTER`; no WJAC GPU endpoint scoring |
 | Funnel prefilters | `artifacts/funnel_prefilters/` | COMPLETE | Run LAMBDA/HYST smoke only on fixed DeepSeek/Falcon traces |
-| M-SURFACE diagnostic | `artifacts/msurface/` | COMPLETE | Inconclusive; optional tiny Granite hook sanity only after higher-priority smoke |
-| M-BRANCH diagnostic | `artifacts/mbranch/` | COMPLETE | Do not request Falcon M-BRANCH GPU scoring now |
+| RISKGUARD trigger calibration | `artifacts/riskguard/` | RUNNING | Promote only if predicted deployable post-guard CI lower bound crosses 0 |
+| Falcon LAMBDA budget prior | `artifacts/lambda_falcon/` | RUNNING | Produce Falcon-only smoke config from layer stability prior |
+| Falcon HYST thresholds | `artifacts/hyst_falcon/` | RUNNING | Produce Falcon-only smoke config from churn/local-pool stability |
+| TRACE-ROUTER classifier | `artifacts/trace_router/` | RUNNING | Granite/DeepSeek only if cross-validated routing gain is positive; Falcon not routable |
+| M-SURFACE diagnostic refresh | `artifacts/msurface/` | RUNNING | Refresh hook complexity and 2-trace diagnostic gate |
+| M-BRANCH diagnostic refresh | `artifacts/mbranch/` | RUNNING | Refresh Falcon hook map and 2-trace diagnostic gate |
+| LayerKeep / no-gap detector | `artifacts/layerkeep_nogap/` | QUEUED | Start when a subagent slot frees; coarse Falcon fallback and Granite no-gap interpretation |
 | Kernel design | `artifacts/kernel_design/` | COMPLETE | Design only; no GPU kernel until finalist |
 
 ## Current Smoke Trace Gate
