@@ -466,6 +466,9 @@ def build_metrics(
         "protected_set_count_stats": protected_trajectories.get("protected_set_count_stats", {}),
         "artifacts": {"run_dir": str(run_dir)},
     }
+    if model_key in {"deepseek", "falcon"}:
+        metrics["extension_preregistration"] = str(checker.EXTENSION_PREREG_PATH.relative_to(ROOT))
+        metrics["extension_preregistration_sha256"] = shared.file_sha256(checker.EXTENSION_PREREG_PATH)
     bootstrap = {
         "schema_version": f"{checker.SCHEMA_VERSION}_bootstrap_ci",
         "metric_name": metrics["metric_name"],

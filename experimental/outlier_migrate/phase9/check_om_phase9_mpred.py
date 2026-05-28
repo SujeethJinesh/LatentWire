@@ -15,6 +15,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[3]
 RESULTS_DIR = ROOT / "experimental/outlier_migrate/phase9/results"
 PREREG_PATH = ROOT / "experimental/outlier_migrate/phase9/preregister_om_phase9_mpred.md"
+EXTENSION_PREREG_PATH = ROOT / "experimental/outlier_migrate/phase9/preregister_om_phase9_mpred_extension_deepseek_falcon.md"
 
 SCHEMA_VERSION = "om_phase9_mpred_v1"
 TRACE_COUNT = 12
@@ -334,6 +335,11 @@ def validate_packet(run_dir: Path) -> tuple[list[str], dict[str, Any], list[dict
         infra.append("metrics schema_version mismatch")
     if PREREG_PATH.is_file() and metrics.get("preregistration_sha256") != file_sha256(PREREG_PATH):
         infra.append("metrics.preregistration_sha256 mismatch")
+    if model_key in {"deepseek", "falcon"}:
+        if metrics.get("extension_preregistration") != str(EXTENSION_PREREG_PATH.relative_to(ROOT)):
+            infra.append("metrics.extension_preregistration mismatch")
+        if EXTENSION_PREREG_PATH.is_file() and metrics.get("extension_preregistration_sha256") != file_sha256(EXTENSION_PREREG_PATH):
+            infra.append("metrics.extension_preregistration_sha256 mismatch")
     protected = loaded.get("protected_sets.json", {}).get("regimes", {})
     excluded = loaded.get("excluded_tensors.json", {}).get("by_regime", {})
     if set(protected) != set(REGIMES) - {"bf16"}:
