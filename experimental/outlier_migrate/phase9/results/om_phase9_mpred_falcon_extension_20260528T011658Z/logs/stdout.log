@@ -1,0 +1,12 @@
+{
+  "checker_decision": "KILL_MPRED",
+  "details": {
+    "best_m11b_median": 0.0704782481712527,
+    "best_m11b_regime": "m11b_top5",
+    "best_mpred_median": -0.004917666847843505,
+    "best_mpred_minus_best_m11b": -0.0753959150190962,
+    "best_mpred_regime": "mpred_top10_alpha_0_95",
+    "random_alpha_median": null
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_mpred_falcon_extension_20260528T011658Z"
+}

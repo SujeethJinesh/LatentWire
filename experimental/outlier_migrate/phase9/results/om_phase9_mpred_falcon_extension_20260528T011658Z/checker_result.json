@@ -1,0 +1,130 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_MPRED",
+  "decision_details": {
+    "best_m11b_median": 0.0704782481712527,
+    "best_m11b_regime": "m11b_top5",
+    "best_mpred_median": -0.004917666847843505,
+    "best_mpred_minus_best_m11b": -0.0753959150190962,
+    "best_mpred_regime": "mpred_top10_alpha_0_95",
+    "random_alpha_median": null
+  },
+  "model_key": "falcon",
+  "reasons": [
+    "mpred_top10_alpha_0_95 loses to m11b_top5"
+  ],
+  "results_by_regime": {
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.203397616132395,
+        "ci95_low": -0.14405060541685555
+      },
+      "included_trace_count": 12,
+      "mean_recovery": 0.021028410080347015,
+      "median_recovery": 0.04393973019116826,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        0.4532330700758944,
+        -0.1429506562841225,
+        0.055467145779557914,
+        -0.0648162135896575,
+        0.11143125670194454,
+        -0.14515055454958858,
+        0.24191053929326034,
+        0.38261206170461437,
+        -0.5986114862202374,
+        -0.23808124952180965,
+        0.16488469297152963,
+        0.0324123146027786
+      ],
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.10051339309744134,
+        "ci95_low": -0.07653366949901541
+      },
+      "included_trace_count": 12,
+      "mean_recovery": -0.14366623342311377,
+      "median_recovery": 0.0704782481712527,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        0.10290416061493057,
+        0.026773592956062853,
+        0.0690722916082479,
+        0.05351215195006476,
+        0.10051339309744134,
+        0.07431930976534984,
+        0.0718842047342575,
+        -1.5930482416702176,
+        -0.7090396683179219,
+        -0.17984093195409367,
+        0.11532926743718863,
+        0.14362566870132465
+      ],
+      "total_trace_count": 12
+    },
+    "mpred_top10_alpha_0_95": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.20155608297216943,
+        "ci95_low": -0.2333350783852901
+      },
+      "included_trace_count": 12,
+      "mean_recovery": -0.12178199848497455,
+      "median_recovery": -0.004917666847843505,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        0.553772935843952,
+        0.2382186747319437,
+        0.014353610658921823,
+        -0.024318500421393274,
+        -0.024188944354608832,
+        -0.19625835403970737,
+        0.27454432575233,
+        -1.3924907244270632,
+        -0.8796177331752186,
+        -0.27041180273087284,
+        0.16489349121239516,
+        0.08011903912962681
+      ],
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.1702267417369967,
+        "ci95_low": -0.12558323294184004
+      },
+      "included_trace_count": 12,
+      "mean_recovery": -0.04047779442247278,
+      "median_recovery": -0.025249016732983187,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        0.40494605200334066,
+        -0.03336245442198593,
+        -0.1596680432856563,
+        -0.017135579043980442,
+        -0.09149842259802377,
+        -0.08400355802846748,
+        0.16848940231059528,
+        0.3257353319455666,
+        -0.7911465995619871,
+        -0.4108585440866037,
+        0.17196408116339812,
+        0.030804800534130705
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_mpred_falcon_extension_20260528T011658Z",
+  "thresholds": {
+    "architecture_fill_ci_low_gt": 0.0,
+    "architecture_fill_median_gt": 0.3,
+    "bootstrap_seed": 20260527,
+    "pass_mpred_minus_m11b_ge": 0.05,
+    "tighten_granite_ci_width_reduction_ge": 0.25
+  }
+}
