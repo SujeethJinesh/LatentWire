@@ -1,0 +1,9 @@
+{
+  "decision": "RESIDUAL_CACHE_READY_ACTIVATION_EMA_NEEDED",
+  "measured_tensor_count": 289,
+  "next_gate": "collect activation EMA on matching tensor input columns before GPU residual-correction scoring",
+  "not_final_method_claim": true,
+  "run_dir": "artifacts/rot_resid_correction/residual_cache_granite_tight_20260528T2025Z",
+  "schema_version": "rot_resid_correction_decision_v2",
+  "top25_working_set_mib_fp16": 336.25
+}

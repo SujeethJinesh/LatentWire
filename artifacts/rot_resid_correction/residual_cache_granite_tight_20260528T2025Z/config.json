@@ -1,0 +1,13 @@
+{
+  "group_size": 128,
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "model_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+  "num_rotations": 8,
+  "protected_columns_per_tensor": 64,
+  "scale_clip": [
+    0.5,
+    2.0
+  ],
+  "schema_version": "om_driftrot_residual_cache_v1_config",
+  "topn": 128
+}

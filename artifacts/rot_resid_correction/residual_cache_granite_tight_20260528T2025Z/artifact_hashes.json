@@ -1,0 +1,31 @@
+{
+  "artifacts": [
+    {
+      "bytes": 268,
+      "path": "command.sh",
+      "sha256": "sha256:404bc952b26cf8725ae412459524b4f42f23beec81950b749e8a23affa143b6d"
+    },
+    {
+      "bytes": 319,
+      "path": "config.json",
+      "sha256": "sha256:d1e3f06fee404fdfa0eefffc8af4201e2d34f242e5a7d16f65a3fef2c3b4a301"
+    },
+    {
+      "bytes": 9286,
+      "path": "model_provenance.json",
+      "sha256": "sha256:a2bb49aba56a9415cbb566758407d032ffd703082b4840c3d59eb7fe0755f219"
+    },
+    {
+      "bytes": 3712093,
+      "path": "residual_column_cache.json",
+      "sha256": "sha256:45e8626d0811f915f32c057b867d65928f69df57810b555b18fa37bfb085d01e"
+    },
+    {
+      "bytes": 32994,
+      "path": "summary.json",
+      "sha256": "sha256:d8d4977b52eeb8b3de62d61124f6e4cddfed42894f46e9a1ee4f116f0734301e"
+    }
+  ],
+  "created_at_utc": "2026-05-28T20:18:34Z",
+  "schema_version": "om_driftrot_residual_cache_v1_artifact_hashes"
+}

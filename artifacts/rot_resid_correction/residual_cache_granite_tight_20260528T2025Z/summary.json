@@ -1,0 +1,1363 @@
+{
+  "created_at_utc": "2026-05-28T20:18:33Z",
+  "dtype_bytes": 2,
+  "energy_estimate_requirement": "Report pJ/token after a kernel or profiler-backed reference path exists.",
+  "energy_estimate_status": "not_measured",
+  "protected_columns_per_tensor": 64,
+  "ranked_by": "residual_norm_sq_total",
+  "schema_version": "om_driftrot_residual_cache_v1_summary",
+  "top_tensor_count": 25,
+  "top_tensor_working_set_bytes_fp16": 352583680,
+  "top_tensor_working_set_mib_fp16": 336.25,
+  "top_tensors": [
+    {
+      "name": "model.embed_tokens",
+      "relative_residual_energy": 0.00997414028154999,
+      "shape": [
+        100352,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 2596,
+          "delta_norm_sq": 7.803071975708008
+        },
+        {
+          "column": 3992,
+          "delta_norm_sq": 7.365748882293701
+        },
+        {
+          "column": 2815,
+          "delta_norm_sq": 7.281989097595215
+        },
+        {
+          "column": 3167,
+          "delta_norm_sq": 7.147125720977783
+        },
+        {
+          "column": 2093,
+          "delta_norm_sq": 6.880178451538086
+        },
+        {
+          "column": 465,
+          "delta_norm_sq": 6.772879600524902
+        },
+        {
+          "column": 1676,
+          "delta_norm_sq": 6.386126518249512
+        },
+        {
+          "column": 2334,
+          "delta_norm_sq": 6.3353376388549805
+        },
+        {
+          "column": 3082,
+          "delta_norm_sq": 6.154226303100586
+        },
+        {
+          "column": 4081,
+          "delta_norm_sq": 5.949920177459717
+        }
+      ],
+      "topn_residual_energy_fraction": 0.04015105577983916,
+      "working_set_bytes_fp16": 12845056
+    },
+    {
+      "name": "model.layers.2.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010102966148817378,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 2886,
+          "delta_norm_sq": 1.1253727674484253
+        },
+        {
+          "column": 2961,
+          "delta_norm_sq": 1.0994962453842163
+        },
+        {
+          "column": 1337,
+          "delta_norm_sq": 1.0928419828414917
+        },
+        {
+          "column": 735,
+          "delta_norm_sq": 1.0886787176132202
+        },
+        {
+          "column": 1,
+          "delta_norm_sq": 1.080984115600586
+        },
+        {
+          "column": 1093,
+          "delta_norm_sq": 1.0804694890975952
+        },
+        {
+          "column": 2973,
+          "delta_norm_sq": 1.0736398696899414
+        },
+        {
+          "column": 1140,
+          "delta_norm_sq": 1.0690062046051025
+        },
+        {
+          "column": 711,
+          "delta_norm_sq": 1.0683611631393433
+        },
+        {
+          "column": 816,
+          "delta_norm_sq": 1.0556720495224
+        }
+      ],
+      "topn_residual_energy_fraction": 0.037939762023574845,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.39.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010141982187955915,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 1927,
+          "delta_norm_sq": 0.8384405374526978
+        },
+        {
+          "column": 1,
+          "delta_norm_sq": 0.8370485901832581
+        },
+        {
+          "column": 37,
+          "delta_norm_sq": 0.8350692391395569
+        },
+        {
+          "column": 2886,
+          "delta_norm_sq": 0.834475576877594
+        },
+        {
+          "column": 3927,
+          "delta_norm_sq": 0.8333063721656799
+        },
+        {
+          "column": 711,
+          "delta_norm_sq": 0.8328009247779846
+        },
+        {
+          "column": 2973,
+          "delta_norm_sq": 0.826852023601532
+        },
+        {
+          "column": 1007,
+          "delta_norm_sq": 0.8253629207611084
+        },
+        {
+          "column": 959,
+          "delta_norm_sq": 0.8247983455657959
+        },
+        {
+          "column": 3398,
+          "delta_norm_sq": 0.8244528770446777
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03253578004636388,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.38.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010137824475434338,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 2781,
+          "delta_norm_sq": 0.7710433006286621
+        },
+        {
+          "column": 531,
+          "delta_norm_sq": 0.7686663866043091
+        },
+        {
+          "column": 2969,
+          "delta_norm_sq": 0.7682415246963501
+        },
+        {
+          "column": 959,
+          "delta_norm_sq": 0.7679572701454163
+        },
+        {
+          "column": 1106,
+          "delta_norm_sq": 0.7675411105155945
+        },
+        {
+          "column": 575,
+          "delta_norm_sq": 0.7671639323234558
+        },
+        {
+          "column": 881,
+          "delta_norm_sq": 0.7667647004127502
+        },
+        {
+          "column": 3493,
+          "delta_norm_sq": 0.7667555809020996
+        },
+        {
+          "column": 256,
+          "delta_norm_sq": 0.7666746973991394
+        },
+        {
+          "column": 121,
+          "delta_norm_sq": 0.7661596536636353
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03184911497685533,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.24.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010153315811237695,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 2103,
+          "delta_norm_sq": 0.7775048017501831
+        },
+        {
+          "column": 114,
+          "delta_norm_sq": 0.7766989469528198
+        },
+        {
+          "column": 3351,
+          "delta_norm_sq": 0.7762865424156189
+        },
+        {
+          "column": 3008,
+          "delta_norm_sq": 0.7761146426200867
+        },
+        {
+          "column": 2267,
+          "delta_norm_sq": 0.7754718065261841
+        },
+        {
+          "column": 77,
+          "delta_norm_sq": 0.7746883034706116
+        },
+        {
+          "column": 934,
+          "delta_norm_sq": 0.774617075920105
+        },
+        {
+          "column": 666,
+          "delta_norm_sq": 0.774243950843811
+        },
+        {
+          "column": 1921,
+          "delta_norm_sq": 0.7737371921539307
+        },
+        {
+          "column": 2293,
+          "delta_norm_sq": 0.773503839969635
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03225213911365257,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.37.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010140148485748582,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 3622,
+          "delta_norm_sq": 0.8050627112388611
+        },
+        {
+          "column": 1384,
+          "delta_norm_sq": 0.7947360277175903
+        },
+        {
+          "column": 512,
+          "delta_norm_sq": 0.7801246643066406
+        },
+        {
+          "column": 1394,
+          "delta_norm_sq": 0.759493350982666
+        },
+        {
+          "column": 887,
+          "delta_norm_sq": 0.7560905814170837
+        },
+        {
+          "column": 2811,
+          "delta_norm_sq": 0.7547227740287781
+        },
+        {
+          "column": 1170,
+          "delta_norm_sq": 0.7545806765556335
+        },
+        {
+          "column": 2997,
+          "delta_norm_sq": 0.754456102848053
+        },
+        {
+          "column": 3131,
+          "delta_norm_sq": 0.7538415193557739
+        },
+        {
+          "column": 16,
+          "delta_norm_sq": 0.7537370920181274
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03184104778207857,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.14.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010124143686836782,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 3720,
+          "delta_norm_sq": 0.833372950553894
+        },
+        {
+          "column": 1272,
+          "delta_norm_sq": 0.808879554271698
+        },
+        {
+          "column": 2808,
+          "delta_norm_sq": 0.8045657277107239
+        },
+        {
+          "column": 735,
+          "delta_norm_sq": 0.7745186686515808
+        },
+        {
+          "column": 3022,
+          "delta_norm_sq": 0.76687091588974
+        },
+        {
+          "column": 2292,
+          "delta_norm_sq": 0.7656148076057434
+        },
+        {
+          "column": 3789,
+          "delta_norm_sq": 0.7653805613517761
+        },
+        {
+          "column": 1656,
+          "delta_norm_sq": 0.7652118802070618
+        },
+        {
+          "column": 1708,
+          "delta_norm_sq": 0.7646262645721436
+        },
+        {
+          "column": 1115,
+          "delta_norm_sq": 0.7646090388298035
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03227952984167509,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.15.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010128930327311403,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 53,
+          "delta_norm_sq": 0.763824999332428
+        },
+        {
+          "column": 2459,
+          "delta_norm_sq": 0.7631405591964722
+        },
+        {
+          "column": 55,
+          "delta_norm_sq": 0.7629327178001404
+        },
+        {
+          "column": 408,
+          "delta_norm_sq": 0.7605800032615662
+        },
+        {
+          "column": 735,
+          "delta_norm_sq": 0.7601202130317688
+        },
+        {
+          "column": 58,
+          "delta_norm_sq": 0.7601020336151123
+        },
+        {
+          "column": 2234,
+          "delta_norm_sq": 0.7599111199378967
+        },
+        {
+          "column": 3003,
+          "delta_norm_sq": 0.7597652077674866
+        },
+        {
+          "column": 3939,
+          "delta_norm_sq": 0.759706974029541
+        },
+        {
+          "column": 264,
+          "delta_norm_sq": 0.7596842050552368
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03218665170019599,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.28.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.01014563660198831,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 2950,
+          "delta_norm_sq": 0.7584089636802673
+        },
+        {
+          "column": 3030,
+          "delta_norm_sq": 0.7580799460411072
+        },
+        {
+          "column": 1824,
+          "delta_norm_sq": 0.7578054666519165
+        },
+        {
+          "column": 1168,
+          "delta_norm_sq": 0.757687509059906
+        },
+        {
+          "column": 2977,
+          "delta_norm_sq": 0.7576108574867249
+        },
+        {
+          "column": 1982,
+          "delta_norm_sq": 0.7575896382331848
+        },
+        {
+          "column": 2243,
+          "delta_norm_sq": 0.7573158740997314
+        },
+        {
+          "column": 2717,
+          "delta_norm_sq": 0.7572445869445801
+        },
+        {
+          "column": 1945,
+          "delta_norm_sq": 0.7570326924324036
+        },
+        {
+          "column": 2811,
+          "delta_norm_sq": 0.7569122314453125
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03213876441277318,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.35.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010131721100186973,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 1255,
+          "delta_norm_sq": 0.7524477243423462
+        },
+        {
+          "column": 2596,
+          "delta_norm_sq": 0.7505477070808411
+        },
+        {
+          "column": 1346,
+          "delta_norm_sq": 0.7499073147773743
+        },
+        {
+          "column": 3023,
+          "delta_norm_sq": 0.7498806715011597
+        },
+        {
+          "column": 3059,
+          "delta_norm_sq": 0.7496301531791687
+        },
+        {
+          "column": 1091,
+          "delta_norm_sq": 0.7494189143180847
+        },
+        {
+          "column": 3025,
+          "delta_norm_sq": 0.749342143535614
+        },
+        {
+          "column": 1066,
+          "delta_norm_sq": 0.7492486238479614
+        },
+        {
+          "column": 44,
+          "delta_norm_sq": 0.7489220499992371
+        },
+        {
+          "column": 679,
+          "delta_norm_sq": 0.7488767504692078
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03183077275012627,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.36.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010130958014571017,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 1170,
+          "delta_norm_sq": 0.7580448985099792
+        },
+        {
+          "column": 31,
+          "delta_norm_sq": 0.7487275004386902
+        },
+        {
+          "column": 894,
+          "delta_norm_sq": 0.748491644859314
+        },
+        {
+          "column": 3588,
+          "delta_norm_sq": 0.7483301162719727
+        },
+        {
+          "column": 3910,
+          "delta_norm_sq": 0.7481949329376221
+        },
+        {
+          "column": 625,
+          "delta_norm_sq": 0.748137354850769
+        },
+        {
+          "column": 1319,
+          "delta_norm_sq": 0.7478084564208984
+        },
+        {
+          "column": 3359,
+          "delta_norm_sq": 0.7477583289146423
+        },
+        {
+          "column": 322,
+          "delta_norm_sq": 0.7475264668464661
+        },
+        {
+          "column": 83,
+          "delta_norm_sq": 0.7474443912506104
+        }
+      ],
+      "topn_residual_energy_fraction": 0.031818304569649146,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.25.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010135107711410999,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 3230,
+          "delta_norm_sq": 0.7721418738365173
+        },
+        {
+          "column": 1337,
+          "delta_norm_sq": 0.761860728263855
+        },
+        {
+          "column": 735,
+          "delta_norm_sq": 0.7605148553848267
+        },
+        {
+          "column": 2961,
+          "delta_norm_sq": 0.7595470547676086
+        },
+        {
+          "column": 1140,
+          "delta_norm_sq": 0.7574700117111206
+        },
+        {
+          "column": 447,
+          "delta_norm_sq": 0.7570805549621582
+        },
+        {
+          "column": 3821,
+          "delta_norm_sq": 0.7560429573059082
+        },
+        {
+          "column": 2393,
+          "delta_norm_sq": 0.7556899785995483
+        },
+        {
+          "column": 1857,
+          "delta_norm_sq": 0.7555752396583557
+        },
+        {
+          "column": 2298,
+          "delta_norm_sq": 0.7552208304405212
+        }
+      ],
+      "topn_residual_energy_fraction": 0.032125580458461436,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.29.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010148282923046866,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 3465,
+          "delta_norm_sq": 0.7503644824028015
+        },
+        {
+          "column": 3022,
+          "delta_norm_sq": 0.7498787641525269
+        },
+        {
+          "column": 2182,
+          "delta_norm_sq": 0.7494770288467407
+        },
+        {
+          "column": 2930,
+          "delta_norm_sq": 0.7487485408782959
+        },
+        {
+          "column": 2214,
+          "delta_norm_sq": 0.7486979961395264
+        },
+        {
+          "column": 654,
+          "delta_norm_sq": 0.7484940886497498
+        },
+        {
+          "column": 3003,
+          "delta_norm_sq": 0.748428225517273
+        },
+        {
+          "column": 988,
+          "delta_norm_sq": 0.7477914690971375
+        },
+        {
+          "column": 66,
+          "delta_norm_sq": 0.7477690577507019
+        },
+        {
+          "column": 2348,
+          "delta_norm_sq": 0.74774569272995
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03194737822805356,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.27.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.01014965008283079,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 90,
+          "delta_norm_sq": 0.7887575626373291
+        },
+        {
+          "column": 666,
+          "delta_norm_sq": 0.7567669749259949
+        },
+        {
+          "column": 2143,
+          "delta_norm_sq": 0.7557996511459351
+        },
+        {
+          "column": 1195,
+          "delta_norm_sq": 0.7557032108306885
+        },
+        {
+          "column": 1230,
+          "delta_norm_sq": 0.7556257843971252
+        },
+        {
+          "column": 1218,
+          "delta_norm_sq": 0.7556129693984985
+        },
+        {
+          "column": 12,
+          "delta_norm_sq": 0.7552626729011536
+        },
+        {
+          "column": 834,
+          "delta_norm_sq": 0.7552412748336792
+        },
+        {
+          "column": 884,
+          "delta_norm_sq": 0.7550979256629944
+        },
+        {
+          "column": 2035,
+          "delta_norm_sq": 0.7548631429672241
+        }
+      ],
+      "topn_residual_energy_fraction": 0.032202545945544975,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.17.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010128305579709776,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 77,
+          "delta_norm_sq": 0.7559643983840942
+        },
+        {
+          "column": 3786,
+          "delta_norm_sq": 0.7553945183753967
+        },
+        {
+          "column": 101,
+          "delta_norm_sq": 0.7544143199920654
+        },
+        {
+          "column": 2349,
+          "delta_norm_sq": 0.754134476184845
+        },
+        {
+          "column": 1162,
+          "delta_norm_sq": 0.7536763548851013
+        },
+        {
+          "column": 3533,
+          "delta_norm_sq": 0.7535495162010193
+        },
+        {
+          "column": 1106,
+          "delta_norm_sq": 0.753261923789978
+        },
+        {
+          "column": 2887,
+          "delta_norm_sq": 0.7531706094741821
+        },
+        {
+          "column": 3283,
+          "delta_norm_sq": 0.7531444430351257
+        },
+        {
+          "column": 3011,
+          "delta_norm_sq": 0.75304114818573
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03220320299081179,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.16.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010125825216115478,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 1910,
+          "delta_norm_sq": 0.7567520141601562
+        },
+        {
+          "column": 735,
+          "delta_norm_sq": 0.755948007106781
+        },
+        {
+          "column": 2975,
+          "delta_norm_sq": 0.7556250095367432
+        },
+        {
+          "column": 447,
+          "delta_norm_sq": 0.7555100321769714
+        },
+        {
+          "column": 2336,
+          "delta_norm_sq": 0.7553843855857849
+        },
+        {
+          "column": 3821,
+          "delta_norm_sq": 0.7553485631942749
+        },
+        {
+          "column": 2267,
+          "delta_norm_sq": 0.755337655544281
+        },
+        {
+          "column": 3647,
+          "delta_norm_sq": 0.7553179860115051
+        },
+        {
+          "column": 2864,
+          "delta_norm_sq": 0.7546959519386292
+        },
+        {
+          "column": 937,
+          "delta_norm_sq": 0.7545111179351807
+        }
+      ],
+      "topn_residual_energy_fraction": 0.032239323433478684,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.20.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010134838406549551,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 3572,
+          "delta_norm_sq": 0.7628433704376221
+        },
+        {
+          "column": 27,
+          "delta_norm_sq": 0.7560091614723206
+        },
+        {
+          "column": 1037,
+          "delta_norm_sq": 0.755776584148407
+        },
+        {
+          "column": 101,
+          "delta_norm_sq": 0.7540748715400696
+        },
+        {
+          "column": 557,
+          "delta_norm_sq": 0.754042387008667
+        },
+        {
+          "column": 1162,
+          "delta_norm_sq": 0.7536996603012085
+        },
+        {
+          "column": 4029,
+          "delta_norm_sq": 0.7534431219100952
+        },
+        {
+          "column": 2009,
+          "delta_norm_sq": 0.7532299160957336
+        },
+        {
+          "column": 3614,
+          "delta_norm_sq": 0.7528954744338989
+        },
+        {
+          "column": 1862,
+          "delta_norm_sq": 0.7528010010719299
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03221862387856686,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.23.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010148639676724004,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 1196,
+          "delta_norm_sq": 0.7572571039199829
+        },
+        {
+          "column": 1162,
+          "delta_norm_sq": 0.7564605474472046
+        },
+        {
+          "column": 1982,
+          "delta_norm_sq": 0.7564317584037781
+        },
+        {
+          "column": 2518,
+          "delta_norm_sq": 0.7564151287078857
+        },
+        {
+          "column": 2977,
+          "delta_norm_sq": 0.7555589079856873
+        },
+        {
+          "column": 447,
+          "delta_norm_sq": 0.7552808523178101
+        },
+        {
+          "column": 3066,
+          "delta_norm_sq": 0.7545499205589294
+        },
+        {
+          "column": 2717,
+          "delta_norm_sq": 0.7545027136802673
+        },
+        {
+          "column": 677,
+          "delta_norm_sq": 0.7542489767074585
+        },
+        {
+          "column": 360,
+          "delta_norm_sq": 0.7541847229003906
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03225753023541887,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.26.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.01014845570794082,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 90,
+          "delta_norm_sq": 0.7732724547386169
+        },
+        {
+          "column": 2143,
+          "delta_norm_sq": 0.7642584443092346
+        },
+        {
+          "column": 3954,
+          "delta_norm_sq": 0.754408597946167
+        },
+        {
+          "column": 53,
+          "delta_norm_sq": 0.7539640665054321
+        },
+        {
+          "column": 14,
+          "delta_norm_sq": 0.7537752389907837
+        },
+        {
+          "column": 11,
+          "delta_norm_sq": 0.7536015510559082
+        },
+        {
+          "column": 2961,
+          "delta_norm_sq": 0.7533175945281982
+        },
+        {
+          "column": 1106,
+          "delta_norm_sq": 0.7528055310249329
+        },
+        {
+          "column": 3230,
+          "delta_norm_sq": 0.7525933980941772
+        },
+        {
+          "column": 1230,
+          "delta_norm_sq": 0.7520021796226501
+        }
+      ],
+      "topn_residual_energy_fraction": 0.032189511022540404,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.31.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010132306653431197,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 755,
+          "delta_norm_sq": 0.747588574886322
+        },
+        {
+          "column": 253,
+          "delta_norm_sq": 0.7466337084770203
+        },
+        {
+          "column": 2267,
+          "delta_norm_sq": 0.7466139197349548
+        },
+        {
+          "column": 2755,
+          "delta_norm_sq": 0.746464192867279
+        },
+        {
+          "column": 122,
+          "delta_norm_sq": 0.7454039454460144
+        },
+        {
+          "column": 1894,
+          "delta_norm_sq": 0.7452626824378967
+        },
+        {
+          "column": 3761,
+          "delta_norm_sq": 0.7449616193771362
+        },
+        {
+          "column": 3388,
+          "delta_norm_sq": 0.7447043657302856
+        },
+        {
+          "column": 3576,
+          "delta_norm_sq": 0.7444431185722351
+        },
+        {
+          "column": 2217,
+          "delta_norm_sq": 0.7443423867225647
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03187395729729757,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.18.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010132351180348583,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 2977,
+          "delta_norm_sq": 0.7542189955711365
+        },
+        {
+          "column": 911,
+          "delta_norm_sq": 0.753096342086792
+        },
+        {
+          "column": 2346,
+          "delta_norm_sq": 0.7528367638587952
+        },
+        {
+          "column": 1855,
+          "delta_norm_sq": 0.7518046498298645
+        },
+        {
+          "column": 3952,
+          "delta_norm_sq": 0.7515711188316345
+        },
+        {
+          "column": 1879,
+          "delta_norm_sq": 0.751196563243866
+        },
+        {
+          "column": 1312,
+          "delta_norm_sq": 0.7507612109184265
+        },
+        {
+          "column": 138,
+          "delta_norm_sq": 0.7507403492927551
+        },
+        {
+          "column": 2357,
+          "delta_norm_sq": 0.7507203221321106
+        },
+        {
+          "column": 2243,
+          "delta_norm_sq": 0.7506245970726013
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03215355020990694,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.30.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.01014409948315908,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 988,
+          "delta_norm_sq": 0.7489756345748901
+        },
+        {
+          "column": 834,
+          "delta_norm_sq": 0.7465829253196716
+        },
+        {
+          "column": 2267,
+          "delta_norm_sq": 0.7453009486198425
+        },
+        {
+          "column": 3011,
+          "delta_norm_sq": 0.7452579736709595
+        },
+        {
+          "column": 2970,
+          "delta_norm_sq": 0.7449637055397034
+        },
+        {
+          "column": 2981,
+          "delta_norm_sq": 0.7449355721473694
+        },
+        {
+          "column": 861,
+          "delta_norm_sq": 0.7449331283569336
+        },
+        {
+          "column": 666,
+          "delta_norm_sq": 0.744756281375885
+        },
+        {
+          "column": 3008,
+          "delta_norm_sq": 0.7446221709251404
+        },
+        {
+          "column": 3017,
+          "delta_norm_sq": 0.7444863319396973
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03192283982012376,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.21.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010151036419400709,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 1268,
+          "delta_norm_sq": 0.7558234930038452
+        },
+        {
+          "column": 3903,
+          "delta_norm_sq": 0.755204439163208
+        },
+        {
+          "column": 1196,
+          "delta_norm_sq": 0.7547000050544739
+        },
+        {
+          "column": 11,
+          "delta_norm_sq": 0.7543880939483643
+        },
+        {
+          "column": 2376,
+          "delta_norm_sq": 0.7541835308074951
+        },
+        {
+          "column": 27,
+          "delta_norm_sq": 0.753959596157074
+        },
+        {
+          "column": 1262,
+          "delta_norm_sq": 0.7533032894134521
+        },
+        {
+          "column": 1021,
+          "delta_norm_sq": 0.7530874609947205
+        },
+        {
+          "column": 1195,
+          "delta_norm_sq": 0.7530222535133362
+        },
+        {
+          "column": 1945,
+          "delta_norm_sq": 0.7527673840522766
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03223452212512444,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.22.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010146804619735932,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 3076,
+          "delta_norm_sq": 0.7538263201713562
+        },
+        {
+          "column": 3900,
+          "delta_norm_sq": 0.7537235021591187
+        },
+        {
+          "column": 2188,
+          "delta_norm_sq": 0.7532023191452026
+        },
+        {
+          "column": 3020,
+          "delta_norm_sq": 0.7531895041465759
+        },
+        {
+          "column": 1106,
+          "delta_norm_sq": 0.7530128955841064
+        },
+        {
+          "column": 2881,
+          "delta_norm_sq": 0.752849817276001
+        },
+        {
+          "column": 3466,
+          "delta_norm_sq": 0.7526834607124329
+        },
+        {
+          "column": 3059,
+          "delta_norm_sq": 0.7518045902252197
+        },
+        {
+          "column": 3782,
+          "delta_norm_sq": 0.7517839074134827
+        },
+        {
+          "column": 3282,
+          "delta_norm_sq": 0.7514604926109314
+        }
+      ],
+      "topn_residual_energy_fraction": 0.032214541997248276,
+      "working_set_bytes_fp16": 14155776
+    },
+    {
+      "name": "model.layers.19.block_sparse_moe.input_linear",
+      "relative_residual_energy": 0.010142221801090702,
+      "shape": [
+        72,
+        1536,
+        4096
+      ],
+      "suggested_protected_columns": 64,
+      "top_columns_sample": [
+        {
+          "column": 1213,
+          "delta_norm_sq": 0.7558032274246216
+        },
+        {
+          "column": 423,
+          "delta_norm_sq": 0.7540484070777893
+        },
+        {
+          "column": 2902,
+          "delta_norm_sq": 0.7537076473236084
+        },
+        {
+          "column": 2182,
+          "delta_norm_sq": 0.7535736560821533
+        },
+        {
+          "column": 101,
+          "delta_norm_sq": 0.7534557580947876
+        },
+        {
+          "column": 1191,
+          "delta_norm_sq": 0.7533845901489258
+        },
+        {
+          "column": 1709,
+          "delta_norm_sq": 0.7529755234718323
+        },
+        {
+          "column": 1879,
+          "delta_norm_sq": 0.7527538537979126
+        },
+        {
+          "column": 1302,
+          "delta_norm_sq": 0.7525920867919922
+        },
+        {
+          "column": 4089,
+          "delta_norm_sq": 0.7521917819976807
+        }
+      ],
+      "topn_residual_energy_fraction": 0.03223979851511291,
+      "working_set_bytes_fp16": 14155776
+    }
+  ]
+}
