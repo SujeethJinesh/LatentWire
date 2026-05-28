@@ -1,0 +1,54 @@
+{
+  "schema_version": "hyst_falcon_smoke_config_v1",
+  "created_at_utc": "2026-05-28T06:29:45Z",
+  "status": "ready_for_gated_smoke",
+  "model_key": "falcon",
+  "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+  "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+  "source_run_dir": "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
+  "runner": "experimental/outlier_migrate/phase9/run_om_phase9_funnel_smoke.py",
+  "method": "hyst",
+  "regime": "hyst_top10_smoke",
+  "prompt_indices": [
+    7,
+    1,
+    11
+  ],
+  "prompt_ids": [
+    "opencompass_AIME2025_I_7",
+    "opencompass_AIME2025_I_1",
+    "opencompass_AIME2025_I_11"
+  ],
+  "hysteresis_policy": {
+    "score_basis": "M11b indicator-EMA rank proxy over cached mean absolute activation magnitudes",
+    "alpha": 0.3,
+    "update_cadence_tokens": 100,
+    "budget_count_per_layer": 103,
+    "enter_top_pct": 10,
+    "enter_rank_count_per_layer": 103,
+    "selected_margin_pct_points": 5,
+    "exit_top_pct": 15,
+    "exit_rank_count_per_layer": 154,
+    "evaluated_margins_pct_points": [
+      2,
+      5,
+      10
+    ],
+    "selection_rule": "retain prior protected channels while rank <= exit_rank_count; fill vacancies from the current enter_top_pct pool; cap to budget_count_per_layer by score rank"
+  },
+  "controls": [
+    "bf16",
+    "static_1pct",
+    "m11b_top10",
+    "random_hyst_top10"
+  ],
+  "gate_inputs": {
+    "m11b_top10_median_recovery": 0.04393973019116826,
+    "m11b_top10_ci95_low": -0.14405060541685555,
+    "m11b_top10_ci95_high": 0.203397616132395,
+    "recorded_late_slot_churn_median": 0.17475728155339806,
+    "recorded_late_jaccard_churn_median": 0.2975206611570248,
+    "selected_margin_predicted_late_churn_reduction": 0.796
+  },
+  "implementation_note": "The frozen funnel smoke preregistration describes exit below top-2k. This config records the Falcon-specific threshold recommendation from the margin screen; do not silently substitute m=10 if the runner is not parameterized."
+}

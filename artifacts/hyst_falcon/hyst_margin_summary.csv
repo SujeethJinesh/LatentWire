@@ -1,0 +1,4 @@
+margin,predicted_churn_reduction,staleness_risk,notes
+2,0.510,low_to_medium,"EMA-HYST late churn mean 0.0609 vs M11b 0.1242; stale median 0.058 and p90 0.087; narrow exit pool misses some would-be exits."
+5,0.796,medium_selected,"EMA-HYST late churn mean 0.0254 vs M11b 0.1242; stale median 0.117 and p90 0.146; late pool stability and exit retainability medians are 1.000."
+10,0.916,high_defer,"EMA-HYST late churn mean 0.0105 vs M11b 0.1242; stale median 0.165 and p90 0.204; strongest churn cut but too sticky for the first Falcon smoke."

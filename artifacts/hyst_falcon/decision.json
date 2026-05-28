@@ -1,0 +1,21 @@
+{
+  "status": "RUN_HYST_SMOKE_FALCON_MARGIN_5",
+  "run_smoke": true,
+  "selected_margin": 5,
+  "reason": "Falcon-H1 has persistent protected-set churn and enough local rank-pool stability for hysteresis. The selected m=5 exit margin predicts about 0.796 late churn reduction versus reconstructed M11b top-10 while keeping stale protected slots below the m=10 sticky regime. m=2 is safer but leaves more boundary churn; m=10 cuts churn more but risks freezing stale channels.",
+  "source_files": [
+    "RUN_LEDGER.md",
+    "DECISIONS.md",
+    "paper/reviewer_feedback.md",
+    "docs/hyst_churn.md",
+    "artifacts/funnel_prefilters/decision.json",
+    "artifacts/funnel_prefilters/report.md",
+    "artifacts/funnel_prefilters/smoke_traces.json",
+    "experimental/outlier_migrate/phase9/preregister_om_phase9_funnel_smoke.md",
+    "experimental/outlier_migrate/phase9/run_om_phase9_funnel_smoke.py",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/activation_magnitudes.jsonl.gz",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/08_m11b_falcon/source_files/protected_trajectories.json",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/08_m11b_falcon/source_files/metrics.json",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/08_m11b_falcon/per_trace.csv"
+  ]
+}
