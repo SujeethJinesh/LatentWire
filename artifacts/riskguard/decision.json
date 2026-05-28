@@ -1,0 +1,207 @@
+{
+  "diagnostics": {
+    "baseline": {
+      "ci": {
+        "ci95_high": 1.00079062654749,
+        "ci95_low": -1.3009000187907436
+      },
+      "cvar_worst_quartile": -2.5002377092553902,
+      "median": 0.4492840911245966,
+      "values": [
+        1.3686628418925668,
+        1.00079062654749,
+        -2.722226022567281,
+        1.000364534427094,
+        -2.2782493959434995,
+        0.12042598498579371,
+        0.7040455891702454,
+        0.19452259307894781
+      ]
+    },
+    "best_full_source_activation_trigger": {
+      "after_ci_high": 1.00079062654749,
+      "after_ci_low": 0.060212992492896855,
+      "after_cvar_worst_quartile": 0.0,
+      "after_median": 0.4492840911245966,
+      "before_cvar_worst_quartile": -2.5002377092553902,
+      "before_median": 0.4492840911245966,
+      "direction": ">=",
+      "feature": "early_churn_mean",
+      "flagged": [
+        4,
+        7
+      ],
+      "flagged_count": 2,
+      "negatives_flagged": 2,
+      "positives_flagged": 0,
+      "threshold": 0.811005947909254
+    },
+    "leave_one_out_validation": {
+      "ci": {
+        "ci95_high": 1.00079062654749,
+        "ci95_low": 0.0
+      },
+      "cvar_worst_quartile": -1.1391246979717498,
+      "median": 0.4492840911245966,
+      "negative_trace_ids_after": [
+        7
+      ],
+      "rows": [
+        {
+          "after": 1.3686628418925668,
+          "before": 1.3686628418925668,
+          "heldout_feature_value": 0.6843139896093856,
+          "trace_id": 1,
+          "trained_direction": ">=",
+          "trained_feature": "early_churn_mean",
+          "trained_threshold": 0.811005947909254,
+          "triggered": false
+        },
+        {
+          "after": 1.00079062654749,
+          "before": 1.00079062654749,
+          "heldout_feature_value": 0.778362707072403,
+          "trace_id": 2,
+          "trained_direction": ">=",
+          "trained_feature": "early_churn_mean",
+          "trained_threshold": 0.811005947909254,
+          "triggered": false
+        },
+        {
+          "after": 0.0,
+          "before": -2.722226022567281,
+          "heldout_feature_value": 0.812007496061297,
+          "trace_id": 4,
+          "trained_direction": ">=",
+          "trained_feature": "early_churn_mean",
+          "trained_threshold": 0.811005947909254,
+          "triggered": true
+        },
+        {
+          "after": 1.000364534427094,
+          "before": 1.000364534427094,
+          "heldout_feature_value": 0.8008772439027888,
+          "trace_id": 5,
+          "trained_direction": ">=",
+          "trained_feature": "early_churn_mean",
+          "trained_threshold": 0.811005947909254,
+          "triggered": false
+        },
+        {
+          "after": -2.2782493959434995,
+          "before": -2.2782493959434995,
+          "heldout_feature_value": 0.8112828509241637,
+          "trace_id": 7,
+          "trained_direction": ">=",
+          "trained_feature": "early_churn_mean",
+          "trained_threshold": 0.8113682704778206,
+          "triggered": false
+        },
+        {
+          "after": 0.0,
+          "before": 0.12042598498579371,
+          "heldout_feature_value": 0.8107290448943442,
+          "trace_id": 8,
+          "trained_direction": ">=",
+          "trained_feature": "early_churn_mean",
+          "trained_threshold": 0.8090936683029297,
+          "triggered": true
+        },
+        {
+          "after": 0.7040455891702454,
+          "before": 0.7040455891702454,
+          "heldout_feature_value": 0.8069044856816958,
+          "trace_id": 9,
+          "trained_direction": ">=",
+          "trained_feature": "early_churn_mean",
+          "trained_threshold": 0.811005947909254,
+          "triggered": false
+        },
+        {
+          "after": 0.19452259307894781,
+          "before": 0.19452259307894781,
+          "heldout_feature_value": 0.8041957489822639,
+          "trace_id": 10,
+          "trained_direction": ">=",
+          "trained_feature": "early_churn_mean",
+          "trained_threshold": 0.811005947909254,
+          "triggered": false
+        }
+      ],
+      "triggered_trace_ids": [
+        4,
+        8
+      ]
+    },
+    "oracle_negative_to_bf16": {
+      "ci": {
+        "ci95_high": 1.00079062654749,
+        "ci95_low": 0.19452259307894781
+      },
+      "cvar_worst_quartile": 0.15747428903237076,
+      "median": 1.0,
+      "values": [
+        1.3686628418925668,
+        1.00079062654749,
+        1.0,
+        1.000364534427094,
+        1.0,
+        0.12042598498579371,
+        0.7040455891702454,
+        0.19452259307894781
+      ]
+    },
+    "oracle_negative_to_static": {
+      "ci": {
+        "ci95_high": 1.00079062654749,
+        "ci95_low": 0.060212992492896855
+      },
+      "cvar_worst_quartile": 0.0,
+      "median": 0.4492840911245966,
+      "values": [
+        1.3686628418925668,
+        1.00079062654749,
+        0.0,
+        1.000364534427094,
+        0.0,
+        0.12042598498579371,
+        0.7040455891702454,
+        0.19452259307894781
+      ]
+    }
+  },
+  "predicted_ci_low": 0.0,
+  "promote_to_gpu_confirm": false,
+  "reason": "Best cached-signal trigger clears ci_low only in-sample; leave-one-trace-out ci_low is not > 0 and one catastrophic trace remains negative, so the trigger is not defensible for GPU confirmation.",
+  "source_files": [
+    "/workspace/LatentWire/artifacts/external_review_pack/om_positive_method_pack_20260528_0536/EXECUTIVE_SUMMARY.md",
+    "/workspace/LatentWire/artifacts/external_review_pack/om_positive_method_pack_20260528_0536/DECISIONS_SNAPSHOT.md",
+    "/workspace/LatentWire/artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/05_m11b_granite/decision.json",
+    "/workspace/LatentWire/artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/05_m11b_granite/per_trace.csv",
+    "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/per_trace_metrics.json",
+    "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/score_cache",
+    "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/activation_magnitudes.jsonl.gz",
+    "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/protected_sets.json",
+    "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/protected_trajectories.json"
+  ],
+  "status": "DEFER_IN_SAMPLE_RAZOR_TRIGGER",
+  "trigger": {
+    "deployability": "requires cached/online source activation magnitudes through decode position <=1000; no target outcomes",
+    "direction": ">=",
+    "feature": "early_churn_mean",
+    "flagged_recoverable_traces": [
+      4,
+      7
+    ],
+    "leave_one_out_ci_low": 0.0,
+    "leave_one_out_median": 0.4492840911245966,
+    "leave_one_out_worst_quartile_cvar": -1.1391246979717498,
+    "name": "best_in_sample_early_source_activation_static_fallback",
+    "predicted_ci_high": 1.00079062654749,
+    "predicted_ci_low_in_sample": 0.060212992492896855,
+    "predicted_median": 0.4492840911245966,
+    "predicted_worst_quartile_cvar": 0.0,
+    "promoted": false,
+    "threshold": 0.811005947909254
+  }
+}
