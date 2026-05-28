@@ -21,7 +21,6 @@ if str(ROOT) not in sys.path:
 from experimental.outlier_migrate.phase4 import run_om_phase4_intervention as phase4_runner
 from experimental.outlier_migrate.phase9 import check_om_paroquant_baseline as checker
 from experimental.outlier_migrate.phase9 import run_om_paroquant_baseline as paro_runner
-from experimental.outlier_migrate.phase9 import run_om_phase9_m11_ema_drift as m11_runner
 from experimental.outlier_migrate.phase9 import run_om_phase9_m2_position_conditional as m2_runner
 from experimental.shared import run_phase0_branch as shared
 
@@ -66,6 +65,18 @@ def summarize(values: list[float]) -> dict[str, Any]:
         "included_trace_count": len(values),
         "per_trace_recovery_included": values,
     }
+
+
+def read_and_filter_score_cache(base_run_dir: Path, regime: str, prompt_indices: list[int]) -> dict[int, dict[str, float]]:
+    path = base_run_dir / "score_cache" / f"{regime}.json"
+    if not path.is_file():
+        raise RuntimeError(f"missing reusable {regime} score cache in {base_run_dir}")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    scores = {int(index): row for index, row in payload.get("scores", {}).items()}
+    missing = [index for index in prompt_indices if index not in scores]
+    if missing:
+        raise RuntimeError(f"score cache {path} missing prompt indices {missing}")
+    return {index: scores[index] for index in prompt_indices}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -183,10 +194,7 @@ def main(argv: list[str] | None = None) -> int:
         target_tokens = {index: target_tokens_all[index] for index in args.prompt_indices}
         all_scores: dict[str, dict[int, dict[str, float]]] = {}
         for regime in ["bf16", "static_1pct"]:
-            cached = m11_runner.read_score_cache_any(base_run_dir, regime, expected_prompt_indices=selected_indices)
-            if cached is None:
-                raise RuntimeError(f"missing reusable {regime} score cache in {base_run_dir}")
-            all_scores[regime] = {index: cached[index] for index in args.prompt_indices}
+            all_scores[regime] = read_and_filter_score_cache(base_run_dir, regime, args.prompt_indices)
             paro_runner.write_score_cache(run_dir, regime, all_scores[regime])
 
         all_scores["paroquant_w4a16"], excluded = paro_runner.score_paroquant_regime(
