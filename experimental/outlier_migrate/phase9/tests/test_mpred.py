@@ -60,3 +60,17 @@ def test_mpred_decision_accepts_partial_high_value_subset() -> None:
 
     assert decision == checker.PASS
     assert details["best_mpred_regime"] == "mpred_top10_alpha_0_95"
+
+
+def test_mpred_architecture_fill_passes_on_deepseek_or_falcon() -> None:
+    summaries = {
+        "m11b_top5": summary(0.05, -0.10, 0.20),
+        "m11b_top10": summary(0.20, -0.30, 0.50),
+        "static_top10": summary(0.00, -0.10, 0.10),
+        "mpred_top10_alpha_0_95": summary(0.35, 0.04, 0.60),
+    }
+
+    decision, _reasons, details = checker.decision_from_summaries(summaries, "falcon")
+
+    assert decision == checker.PASS_ARCHITECTURE_FILL
+    assert details["best_mpred_ci95_low"] == 0.04

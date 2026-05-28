@@ -33,6 +33,14 @@ MODEL_SPECS = {
         "model_id": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
         "snapshot": "cbd3fa9f933d55ef16a84236559f4ee2a0526848",
     },
+    "deepseek": {
+        "model_id": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        "snapshot": "ad9f0ae0864d7fbcd1cd905e3c6c5b069cc8b562",
+    },
+    "falcon": {
+        "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+        "snapshot": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+    },
 }
 
 REGIMES = [
@@ -60,6 +68,7 @@ MPRED_REGIMES = [
 
 PASS = "PASS_MPRED_BEATS_M11B"
 PASS_TIGHTENS_GRANITE = "PASS_TIGHTENS_GRANITE_MPRED"
+PASS_ARCHITECTURE_FILL = "PASS_ARCHITECTURE_FILL_MPRED"
 AMBIGUOUS = "AMBIGUOUS_MPRED"
 KILL = "KILL_MPRED"
 FAIL_INFRA = "FAIL_INFRA_MPRED"
@@ -67,6 +76,8 @@ FAIL_INFRA = "FAIL_INFRA_MPRED"
 THRESHOLDS = {
     "pass_mpred_minus_m11b_ge": 0.05,
     "tighten_granite_ci_width_reduction_ge": 0.25,
+    "architecture_fill_median_gt": 0.30,
+    "architecture_fill_ci_low_gt": 0.0,
     "bootstrap_seed": BOOTSTRAP_SEED,
 }
 
@@ -212,6 +223,20 @@ def decision_from_summaries(
             details["best_mpred_ci_width"] = mpred_width
             details["m11b_top5_ci_width"] = m11b_top5_width
             return PASS_TIGHTENS_GRANITE, ["M-PRED tightens Granite CI by at least 25% with non-negative median"], details
+
+    if model_key in {"deepseek", "falcon"}:
+        mpred_low = best_mpred.get("bootstrap_ci95", {}).get("ci95_low")
+        if (
+            mpred_med > THRESHOLDS["architecture_fill_median_gt"]
+            and mpred_low is not None
+            and float(mpred_low) > THRESHOLDS["architecture_fill_ci_low_gt"]
+        ):
+            details["best_mpred_ci95_low"] = float(mpred_low)
+            return (
+                PASS_ARCHITECTURE_FILL,
+                ["M-PRED clears the architecture-fill threshold on an M11b-ambiguous architecture"],
+                details,
+            )
 
     if random_alpha_med is not None and mpred_med <= float(random_alpha_med):
         return KILL, [f"{best_mpred_name} does not beat random-alpha control"], details

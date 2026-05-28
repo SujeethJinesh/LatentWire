@@ -45,6 +45,11 @@ implementation is future work.
 If the 12-hour M-PRED cap prevents a full Granite+Nemotron run, Granite runs
 first and Nemotron is deferred with an explicit scope note.
 
+Extension surfaces after Granite: DeepSeek-R1-Distill-Qwen-1.5B and
+Falcon-H1-0.5B-Instruct. These run only the high-information `alpha=0.95`
+top-10 arm unless Granite suggests a different surviving arm. They test whether
+M-PRED fills architectures where M11b top-10 was ambiguous or weak.
+
 ## Regimes
 
 Baselines reused from validated M11b packets:
@@ -86,6 +91,8 @@ be the better of M11b top-5 and M11b top-10.
   do not overlap.
 - PASS_TIGHTENS_GRANITE: on Granite, best M-PRED has non-negative median and
   CI width at least 25% narrower than M11b top-5.
+- PASS_ARCHITECTURE_FILL: on DeepSeek or Falcon, best M-PRED has median
+  recovery above 0.30 with CI lower bound above 0.0.
 - AMBIGUOUS: M-PRED moves in a positive direction but CIs overlap M11b.
 - KILL: M-PRED loses to M11b on the measured model, or loses to the random-alpha
   control.

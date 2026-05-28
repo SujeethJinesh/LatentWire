@@ -35,6 +35,10 @@ DEFAULT_SOURCES = {
     / "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z",
     "nemotron": ROOT
     / "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z",
+    "deepseek": ROOT
+    / "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z",
+    "falcon": ROOT
+    / "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
 }
 BASELINE_REGIMES = ["bf16", "static_1pct", "m11b_top5", "m11b_top10", "static_top10"]
 NEW_REGIMES = [
