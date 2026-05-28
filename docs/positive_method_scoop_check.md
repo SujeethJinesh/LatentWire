@@ -81,3 +81,56 @@ Defer M-FISH as `DEFERRED_INFRA_MFISH_BACKWARD_GRAPH` unless the human
 explicitly authorizes a new gradient-capture runner. Do not substitute a
 Hessian/Fisher proxy from cached magnitudes; that would not test the stated
 method.
+
+## Unified Sensitivity+Budget+Hysteresis Family
+
+Date: 2026-05-28
+
+### Status
+
+The M-FISH-first plan is superseded by the oracle-derived unified family:
+
+```text
+P*_t = TopK_{l,i} h_{l,i}(t) * x_{l,i}(t)^2
+s_{l,i}(t) = q_{l,i} * EMA(x_{l,i}(t)^2) - lambda * 1[i notin P_{l,t-1}]
+```
+
+The next sensitivity branch is M-WJAC, where
+`q_{l,i} = ||W_{l,:,i}||_2^2`. This tests a downstream-sensitivity proxy without
+gradient capture.
+
+### Search Queries
+
+- `AWQ activation aware weight quantization weight saliency activation statistics`
+- `dynamic decode-time weight norm channel protection LLM quantization`
+- `weight Jacobian channel quantization LLM activation sensitivity`
+- `ChanMix KV cache mixed precision channel mixing`
+- `Activation Sensitivity Xu 2026 LLM quantization`
+
+### Sources Checked
+
+| Work | Source | Relevance | Scoop status |
+|---|---|---|---|
+| AWQ | `https://arxiv.org/abs/2306.00978` | Activation-aware weight quantization protects salient weights based on activation statistics. | Important prior art for static saliency. Not a scoop for M-WJAC because M-WJAC dynamically ranks protected activation channels during decode with EMA state and matched drift controls. |
+| DecDEC | `https://arxiv.org/abs/2412.20185` | Shows dynamic salient channels during decoding and motivates non-static selection. | Adjacent. It does not test layerwise budget waterfilling, hysteresis, or weight-Jacobian dynamic EMA scoring. |
+| ChanMix | OpenReview ID `yjr2jX41qO` | Mixed precision/channel allocation in KV-cache setting. | Adjacent. M-LAMBDA allocates layerwise protected activation-channel budgets for W4A16 long-decode GEMM inputs, not KV-cache storage. |
+| Activation Sensitivity taxonomy | user-flagged as Xu 2026 | Motivates sensitivity-aware criteria. | Adjacent. The planned experiment tests a concrete decode-time WJAC proxy with controls rather than a static taxonomy. |
+| GuidedQuant | `https://arxiv.org/abs/2505.07004` | Gradient/end-loss-guided PTQ objective. | Adjacent to full Fisher. M-WJAC avoids backward graphs and tests a cheaper weight-norm sensitivity proxy. |
+
+### Differentiation to Preserve in Paper
+
+- **M-WJAC vs AWQ:** static activation-aware weight saliency is already known;
+  the new test is dynamic decode-time protected activation-channel selection
+  under long-reasoning drift.
+- **M-LAMBDA vs ChanMix:** mixed-precision KV-cache allocation is adjacent, but
+  this experiment allocates layerwise protection budget for W4A16 activation
+  channel sets.
+- **M-WJAC vs full Fisher/GuidedQuant:** this branch is not claiming gradient
+  optimality; it tests whether a free local Jacobian proxy captures enough
+  sensitivity to rescue weak regimes.
+
+### Decision
+
+Proceed with M-KLLOOK, M-LAMBDA, M-HYST, and M-WJAC after V1 completes. Do not
+build M-FISH gradient infrastructure unless WJAC demonstrates that the
+sensitivity axis is useful but the weight-norm proxy is too coarse.
