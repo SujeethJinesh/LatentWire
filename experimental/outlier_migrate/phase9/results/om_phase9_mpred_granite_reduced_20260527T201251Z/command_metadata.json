@@ -1,0 +1,35 @@
+{
+  "argv": [
+    "experimental/outlier_migrate/phase9/run_om_phase9_mpred.py",
+    "--model-key",
+    "granite",
+    "--run-id",
+    "om_phase9_mpred_granite_reduced_20260527T201251Z",
+    "--batch-size",
+    "2",
+    "--device",
+    "auto",
+    "--dtype",
+    "bfloat16",
+    "--new-regimes",
+    "mpred_top10_alpha_0_95",
+    "mpred_top5_alpha_0_95",
+    "mpred_random_alpha_top5",
+    "random_walk_top5"
+  ],
+  "batch_size": 2,
+  "branch": "outlier_migrate_phase9_mpred",
+  "created_at_utc": "2026-05-27T20:13:01Z",
+  "cwd": "/workspace/LatentWire",
+  "model_key": "granite",
+  "new_regimes": [
+    "mpred_top10_alpha_0_95",
+    "mpred_top5_alpha_0_95",
+    "mpred_random_alpha_top5",
+    "random_walk_top5"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_mpred_granite_reduced_20260527T201251Z",
+  "schema_version": "om_phase9_mpred_v1_command",
+  "scope_reduction": "bounded_subset_due_endpoint_scoring_throughput",
+  "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z"
+}

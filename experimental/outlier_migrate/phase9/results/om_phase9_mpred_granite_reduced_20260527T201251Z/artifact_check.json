@@ -1,0 +1,9 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_MPRED",
+  "reasons": [
+    "mpred_top5_alpha_0_95 loses to m11b_top5"
+  ],
+  "run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_mpred_granite_reduced_20260527T201251Z",
+  "schema_version": "om_phase9_mpred_v1_artifact_check"
+}

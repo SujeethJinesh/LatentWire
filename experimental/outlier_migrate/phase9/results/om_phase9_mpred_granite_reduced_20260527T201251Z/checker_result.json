@@ -1,0 +1,134 @@
+{
+  "artifact_complete": true,
+  "decision": "KILL_MPRED",
+  "decision_details": {
+    "best_m11b_median": 0.4492840911245966,
+    "best_m11b_regime": "m11b_top5",
+    "best_mpred_median": -1.9603832612989405,
+    "best_mpred_minus_best_m11b": -2.4096673524235372,
+    "best_mpred_regime": "mpred_top5_alpha_0_95",
+    "random_alpha_median": null
+  },
+  "model_key": "granite",
+  "reasons": [
+    "mpred_top5_alpha_0_95 loses to m11b_top5"
+  ],
+  "results_by_regime": {
+    "m11b_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.43564760535877556,
+        "ci95_low": -0.7273570722179588
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -1.1150691841111495,
+      "median_recovery": 0.24075640427266048,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -0.0612581819027076,
+        0.2407868558365348,
+        -10.484922484541741,
+        1.0001762465103397,
+        -0.7273570722179588,
+        0.24072595270878616,
+        0.49489073844630693,
+        0.3764044722712442
+      ],
+      "total_trace_count": 12
+    },
+    "m11b_top5": {
+      "bootstrap_ci95": {
+        "ci95_high": 1.00079062654749,
+        "ci95_low": -1.3009000187907436
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -0.07645790605108035,
+      "median_recovery": 0.4492840911245966,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        1.3686628418925668,
+        1.00079062654749,
+        -2.722226022567281,
+        1.000364534427094,
+        -2.2782493959434995,
+        0.12042598498579371,
+        0.7040455891702454,
+        0.19452259307894781
+      ],
+      "total_trace_count": 12
+    },
+    "mpred_top10_alpha_0_95": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.31916885076647755,
+        "ci95_low": -389.68558469514204
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -1887.8182746774894,
+      "median_recovery": -7.745988954781958,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -389.68558469514204,
+        -161.28979615347146,
+        -14537.383400528344,
+        0.6662241650728762,
+        -15.600844574070052,
+        0.10886666450613691,
+        0.33197657482333864,
+        0.30636112670961646
+      ],
+      "total_trace_count": 12
+    },
+    "mpred_top5_alpha_0_95": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.049674321220227524,
+        "ci95_low": -12.61626646686622
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -189.09793916269362,
+      "median_recovery": -1.9603832612989405,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -12.61626646686622,
+        -3.7322045682046863,
+        -1483.9942676845346,
+        -0.18856195439319445,
+        -12.448466265357741,
+        -0.053803373452596004,
+        0.049674321220227524,
+        0.2003826900399691
+      ],
+      "total_trace_count": 12
+    },
+    "static_top10": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.4316908004018193,
+        "ci95_low": -53.37845888236424
+      },
+      "included_trace_count": 8,
+      "mean_recovery": -87.92201119019458,
+      "median_recovery": -0.05176717655558488,
+      "no_recoverable_static_gap_count": 4,
+      "no_recoverable_static_gap_fraction": 0.3333333333333333,
+      "per_trace_recovery_included": [
+        -53.37845888236424,
+        -0.5667629228783271,
+        -651.1910437055519,
+        1.000328741545419,
+        -0.32749742861470765,
+        0.2239630755035379,
+        0.5762654850086053,
+        0.28711611579503327
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_mpred_granite_reduced_20260527T201251Z",
+  "thresholds": {
+    "bootstrap_seed": 20260527,
+    "pass_mpred_minus_m11b_ge": 0.05,
+    "tighten_granite_ci_width_reduction_ge": 0.25
+  }
+}

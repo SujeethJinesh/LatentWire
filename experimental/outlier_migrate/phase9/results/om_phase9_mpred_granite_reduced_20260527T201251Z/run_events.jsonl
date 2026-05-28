@@ -1,0 +1,19 @@
+{"created_at_utc": "2026-05-27T20:12:52Z", "event": "mpred_run_started", "model_key": "granite"}
+{"created_at_utc": "2026-05-27T20:13:41Z", "event": "score_regime_started", "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T20:37:33Z", "event": "completed_scoring_batch", "prompt_indices": [0, 1], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T20:59:29Z", "event": "completed_scoring_batch", "prompt_indices": [2, 3], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T21:21:28Z", "event": "completed_scoring_batch", "prompt_indices": [4, 5], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T21:43:27Z", "event": "completed_scoring_batch", "prompt_indices": [6, 7], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T22:05:37Z", "event": "completed_scoring_batch", "prompt_indices": [8, 9], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T22:27:41Z", "event": "completed_scoring_batch", "prompt_indices": [10, 11], "regime": "mpred_top10_alpha_0_95"}
+{"created_at_utc": "2026-05-27T22:27:42Z", "event": "score_regime_started", "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-27T22:51:25Z", "event": "completed_scoring_batch", "prompt_indices": [0, 1], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-27T23:13:22Z", "event": "completed_scoring_batch", "prompt_indices": [2, 3], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-27T23:35:24Z", "event": "completed_scoring_batch", "prompt_indices": [4, 5], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-27T23:57:27Z", "event": "completed_scoring_batch", "prompt_indices": [6, 7], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-28T00:19:44Z", "event": "completed_scoring_batch", "prompt_indices": [8, 9], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-28T00:42:04Z", "event": "completed_scoring_batch", "prompt_indices": [10, 11], "regime": "mpred_top5_alpha_0_95"}
+{"created_at_utc": "2026-05-28T00:42:04Z", "event": "score_regime_started", "regime": "mpred_random_alpha_top5"}
+{"created_at_utc": "2026-05-28T00:43:16Z", "event": "run_failed", "reason": ""}
+{"created_at_utc": "2026-05-28T00:43:17Z", "event": "run_failed", "reason": ""}
+{"completed_regimes": ["bf16", "static_1pct", "m11b_top5", "m11b_top10", "static_top10", "mpred_top10_alpha_0_95", "mpred_top5_alpha_0_95"], "created_at_utc": "2026-05-28T00:44:42Z", "event": "mpred_run_early_stopped_after_treatment_kill"}

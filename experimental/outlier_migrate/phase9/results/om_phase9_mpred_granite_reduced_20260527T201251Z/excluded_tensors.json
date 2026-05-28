@@ -1,0 +1,32 @@
+{
+  "by_regime": {
+    "m11b_top10": {
+      "regime": "m11b_top10",
+      "reused_score_cache": "source M11b/Phase4 packet"
+    },
+    "m11b_top5": {
+      "regime": "m11b_top5",
+      "reused_score_cache": "source M11b/Phase4 packet"
+    },
+    "mpred_top10_alpha_0_95": {
+      "early_stop_completed": true,
+      "regime": "mpred_top10_alpha_0_95",
+      "source": "completed score cache before control early-stop"
+    },
+    "mpred_top5_alpha_0_95": {
+      "early_stop_completed": true,
+      "regime": "mpred_top5_alpha_0_95",
+      "source": "completed score cache before control early-stop"
+    },
+    "static_1pct": {
+      "regime": "static_1pct",
+      "reused_score_cache": "source M11b/Phase4 packet"
+    },
+    "static_top10": {
+      "regime": "static_top10",
+      "reused_score_cache": "source M11b/Phase4 packet"
+    }
+  },
+  "created_at_utc": "2026-05-28T00:44:42Z",
+  "schema_version": "om_phase9_mpred_v1_excluded_tensors"
+}
