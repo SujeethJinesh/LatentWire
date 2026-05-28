@@ -1,0 +1,87 @@
+{
+  "model_decisions": {
+    "DeepSeek": {
+      "cv_mean_gain": 0.08790551318105348,
+      "cv_median_gain": 0.0,
+      "excluded_no_gap_trace_ids": [
+        1
+      ],
+      "included_recoverable_trace_count": 11,
+      "positive_zero_negative_folds": [
+        3,
+        8,
+        0
+      ],
+      "reason": "first-1k LOO stump gain is positive and features are activation-only before final scoring window",
+      "status": "PROMOTE_ROUTER_WEAK_CV"
+    },
+    "Falcon-H1": {
+      "cv_mean_gain": 0.00905051415668881,
+      "cv_median_gain": 0.0,
+      "excluded_no_gap_trace_ids": [],
+      "included_recoverable_trace_count": 12,
+      "positive_zero_negative_folds": [
+        2,
+        6,
+        4
+      ],
+      "reason": "Falcon hard-coded NOT_ROUTABLE from verified prior; CV median is zero and folds include negative gains",
+      "status": "NOT_ROUTABLE"
+    },
+    "Granite": {
+      "cv_mean_gain": 0.533548273139543,
+      "cv_median_gain": 0.4492840911245966,
+      "excluded_no_gap_trace_ids": [
+        0,
+        3,
+        6,
+        11
+      ],
+      "included_recoverable_trace_count": 8,
+      "positive_zero_negative_folds": [
+        5,
+        3,
+        0
+      ],
+      "reason": "first-1k LOO stump gain is positive and features are activation-only before final scoring window",
+      "status": "PROMOTE_ROUTER_WEAK_CV"
+    },
+    "Nemotron": {
+      "cv_mean_gain": -0.06462536145786239,
+      "cv_median_gain": 0.0,
+      "excluded_no_gap_trace_ids": [
+        3,
+        4
+      ],
+      "included_recoverable_trace_count": 10,
+      "positive_zero_negative_folds": [
+        1,
+        6,
+        3
+      ],
+      "reason": "train-fold fixed policy beats or matches the learned router under LOO",
+      "status": "DO_NOT_PROMOTE_FIXED_POLICY_STRONGER"
+    }
+  },
+  "promote_router": true,
+  "reason": "Promote TRACE-ROUTER only as a weak next-gate branch for Granite and DeepSeek. Nemotron is better served by fixed m11b_top10 on this slice. Falcon remains NOT_ROUTABLE despite tiny positive mean CV because the task prior says Falcon is not routable and the held-out median is zero with negative folds.",
+  "source_files": [
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/DECISIONS_SNAPSHOT.md",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/EXECUTIVE_SUMMARY.md",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/RUN_LEDGER_SNAPSHOT.md",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/05_m11b_granite/per_trace.csv",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/05_m11b_granite/source_files/per_trace_metrics.json",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/06_m11b_nemotron/per_trace.csv",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/06_m11b_nemotron/source_files/per_trace_metrics.json",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/07_m11b_deepseek/per_trace.csv",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/07_m11b_deepseek/source_files/per_trace_metrics.json",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/08_m11b_falcon/per_trace.csv",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/08_m11b_falcon/source_files/per_trace_metrics.json",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/activation_magnitudes.jsonl.gz",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m11b_nemotron_static1pct_salvage_20260524T2130Z/activation_magnitudes.jsonl.gz",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z/activation_magnitudes.jsonl.gz",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/activation_magnitudes.jsonl.gz",
+    "paper/reviewer_feedback.md"
+  ],
+  "status": "PARTIAL_PROMOTE_GRANITE_DEEPSEEK_ONLY"
+}
