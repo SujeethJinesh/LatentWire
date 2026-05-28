@@ -1,65 +1,104 @@
 {
-  "schema_version": "mbranch_falcon_h1_diagnostic_v1",
-  "created_at_utc": "2026-05-28T04:12:18Z",
-  "scope": {
-    "model": "tiiuae/Falcon-H1-0.5B-Instruct",
-    "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
-    "writes_limited_to": "artifacts/mbranch/",
-    "gpu_jobs_run": false
-  },
-  "inputs_read": [
+  "status": "FALCON_LIKELY_BROADBAND_OR_INCONCLUSIVE",
+  "recommend_gpu_diagnostic": false,
+  "reason": "Falcon-H1 branch hooks are statically feasible, but no cached attention/Mamba branch-local activations exist. The latest orchestrated funnel adds only post-block transformer_layer_forward_output evidence: it supports HYST/LAMBDA smoke on fixed Falcon traces, not M-BRANCH promotion. No observed branch-local drift is at least 0.15 absolute below matched post-block drift, and a tiny hook-only Falcon diagnostic is not decisive enough to preempt the current V1 then HYST/LAMBDA GPU lane.",
+  "source_files": [
     "RUN_LEDGER.md",
     "DECISIONS.md",
     "paper/reviewer_feedback.md",
+    "artifacts/funnel_prefilters/report.md",
+    "artifacts/funnel_prefilters/decision.json",
+    "artifacts/funnel_prefilters/smoke_traces.json",
     "release/configs/falcon_h1.yaml",
     "experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/pathway_stratification_status.json",
     "experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/migration_decomposition.json",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/activation_magnitude_manifest.json",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/activation_magnitudes.jsonl.gz",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/metrics.json",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/per_trace_metrics.json",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/protected_trajectories.json",
     "experimental/outlier_migrate/phase9/results/om_phase9_mpred_falcon_extension_20260528T011658Z/activation_magnitudes.jsonl.gz",
+    "experimental/outlier_migrate/phase9/results/om_stage1_e2_mathonly_20260526T1202Z/model_runs/falcon_h1/metrics.json",
     "/workspace/LatentWire/.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py",
     "/workspace/.sglang/lib/python3.12/site-packages/sglang/srt/models/falcon_h1.py",
     "/workspace/.sglang/lib/python3.12/site-packages/sglang/srt/layers/attention/mamba/mamba.py"
   ],
+  "schema_version": "mbranch_falcon_h1_diagnostic_v2",
+  "created_at_utc": "2026-05-28T06:25:48Z",
+  "scope": {
+    "model": "tiiuae/Falcon-H1-0.5B-Instruct",
+    "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+    "writes_limited_to": "artifacts/mbranch/",
+    "gpu_jobs_run": false,
+    "diagnostic_config_falcon_2trace_written": false
+  },
   "cached_branch_activations_found": false,
-  "cached_post_layer_evidence": {
-    "phase9_current_packet": {
+  "hook_feasibility": {
+    "attention_projected_presum": "feasible_with_layer_forward_instrumentation",
+    "mamba_projected_presum": "feasible_with_layer_forward_instrumentation",
+    "post_mixer_pre_residual": "feasible_with_layer_forward_instrumentation",
+    "native_attention_and_mamba_surfaces": "feasible_but_less_comparable_due_native_width_and_tensor_parallel_risk"
+  },
+  "cached_post_block_evidence": {
+    "phase9_dense_trace_strict": {
       "surface": "transformer_layer_forward_output",
+      "metric": "top1pct_trace_strict_set_leaving",
       "base_position": 100,
       "final_position": 10000,
       "trace_count": 12,
       "layer_count": 36,
-      "strict_set_leaving_mean": 0.6390993265993266,
+      "value": 0.6390993265993266,
       "ci95_low": 0.5883838383838383,
       "ci95_high": 0.6893939393939394
     },
-    "phase7_long_horizon_packet": {
+    "phase9_latest_funnel_layer_endpoint": {
       "surface": "transformer_layer_forward_output",
+      "top10pct_jaccard_drift_mean": 0.478773,
+      "top1pct_strict_set_leaving_mean": 0.340909,
+      "top10_late_adjacent_churn_median": 0.297521,
+      "top10_late_pool_stability_median": 0.702479,
+      "dominant_layers": [
+        35,
+        34,
+        33,
+        32,
+        31
+      ],
+      "note": "Layer-aggregated post-block funnel metrics are not branch-local and are not interchangeable with trace-paired strict set-leaving."
+    },
+    "phase9_math_cross_prompt": {
+      "surface": "transformer_layer_forward_output",
+      "metric": "top1pct_trace_strict_set_leaving",
+      "base_position": 100,
+      "final_position": 20000,
+      "trace_count": 30,
+      "layer_count": 36,
+      "value": 0.6753367003367003,
+      "ci95_low": 0.6491582491582492,
+      "ci95_high": 0.7018518518518518
+    },
+    "phase7_aime_long_horizon": {
+      "surface": "transformer_layer_forward_output",
+      "metric": "top1pct_trace_strict_set_leaving",
       "base_position": 100,
       "final_position": 20000,
       "trace_count": 24,
       "layer_count": 36,
-      "strict_set_leaving_mean": 0.6736111111111112,
+      "value": 0.6736111111111112,
       "ci95_low": 0.6325757575757576,
       "ci95_high": 0.7136994949494949
     }
   },
-  "decision": "FALCON_LIKELY_BROADBAND_OR_INCONCLUSIVE",
-  "recommend_mbranch": false,
-  "rationale": [
-    "No cached Falcon branch-local activations were found, so the requested branch-local strict set-leaving comparison cannot be computed from existing artifacts.",
-    "The strongest cached Falcon activation evidence is post-layer output only and shows high strict set-leaving on both the current phase9 packet and the longer phase7 packet.",
-    "Static inspection shows separable attention and Mamba branch surfaces, but Falcon-H1 branch outputs are individually projected to residual width and summed. There is no implementation evidence of an outer concatenation/projection surface that would obviously explain post-layer drift as a merge-only artifact.",
-    "Without measured branch-local drift at least materially below the post-layer baseline, promoting M-BRANCH would violate the gate's decision policy."
-  ],
-  "material_promotion_rule_if_reopened": {
-    "minimum_signal": "projected attention or projected Mamba strict set-leaving at least 0.15 absolute below the matched post-layer mean",
-    "phase9_reference_post_layer_mean": 0.6390993265993266,
+  "promotion_rule_if_reopened": {
+    "minimum_signal": "projected attention or projected Mamba strict set-leaving at least 0.15 absolute below the matched post-block mean",
+    "phase9_reference_post_block_trace_mean": 0.6390993265993266,
     "rough_branch_mean_ceiling_for_promotion": 0.4890993265993266,
     "required_controls": [
-      "same traces and positions as cached post-layer packet",
+      "same traces and positions as the matched post-block packet",
       "same top-1-percent strict set-leaving definition",
       "paired trace-level uncertainty",
       "post_mixer_pre_residual captured in the same run"
     ]
   },
-  "next_exact_gate": "Do not request a Falcon M-BRANCH GPU scoring run. If the branch is reopened, first run the minimal hook-only sanity packet described in hook_map.md and promote only if branch-local drift is clearly below the cached post-layer baseline."
+  "next_exact_gate": "Do not request Falcon M-BRANCH GPU scoring or protection. Continue the orchestrated lane: wait for V1, then run only the preregistered HYST/LAMBDA smoke packet on fixed DeepSeek/Falcon traces if V1 is not headline-changing."
 }
