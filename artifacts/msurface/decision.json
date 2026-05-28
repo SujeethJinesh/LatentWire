@@ -1,97 +1,22 @@
 {
-  "schema_version": "msurface_diagnostic_v1",
-  "created_at_utc": "2026-05-28T04:25:00Z",
-  "scope": {
-    "workdir": "/workspace/LatentWire",
-    "writes_limited_to": "artifacts/msurface/",
-    "gpu_jobs_run": false,
-    "ssh_used": false
-  },
-  "project_state_read": {
-    "run_ledger": "M-SURFACE queued; decision artifact gates whether to request tiny Granite hook run.",
-    "decisions": "M-SURFACE is diagnostic only and must not be promoted without lower-drift hook evidence.",
-    "reviewer_feedback": "Current positive-method evidence needs stronger surfaces, controls, and larger evaluation before paper claims."
-  },
-  "inspected_inputs": {
-    "granite_configs": [
-      "experimental/hybridkernel/phase0/configs/ibm-granite-4.0-h-small.config.json",
-      "experimental/hybridkernel/phase0/configs/ibm-granite-4.0-h-tiny.config.json"
-    ],
-    "falcon_config": "release/configs/falcon_h1.yaml",
-    "model_code": [
-      ".venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py",
-      ".venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py"
-    ],
-    "cached_block_output_reference": "release/results/set_leaving/set_leaving.json",
-    "cached_tensor_checks": [
-      ".debug/kl_accumulation/om_phase9_kl_granite_small_dense_20260519T085400Z/bf16_trace_0.pt contained logits by decode position, not internal activations.",
-      ".debug/stage1_e1/om_stage1_e1_deepseek_falcon_20260526T2335Z/falcon_h1_0_5b/bf16_trace_0.pt contained logits by decode position, not internal activations.",
-      ".debug/dmc_phase1_noncanonical/dmc_phase1_20260508T000402Z/outputs/granite_primary_r1_baseline.pt contained an 8192-element microkernel replay output, not trace-position internal activations."
-    ]
-  },
-  "known_block_output_strict_set_leaving": {
-    "granite_small": 0.566234756098,
-    "falcon_h1": 0.673611111111,
-    "nemotron": 0.53371320038,
-    "deepseek": 0.670572916667
-  },
-  "cached_internal_activations_found": false,
-  "offline_strict_set_leaving_computed": false,
-  "hook_availability": {
-    "granite": {
-      "ssm_input_x": "available only with temporary Mamba forward instrumentation after hidden_states_B_C split",
-      "ssm_BC_parameter_generation": "available only with temporary Mamba forward instrumentation after hidden_states_B_C split",
-      "mamba_out_projection_input": "available through forward pre-hook on mamba.out_proj in unfused PyTorch path",
-      "attention_out_projection_input": "available through forward pre-hook on self_attn.o_proj",
-      "post_block_residual_block_output": "available through decoder layer forward hook or output_hidden_states"
-    },
-    "falcon_h1": {
-      "ssm_input_x": "available only with temporary FalconH1Mixer forward instrumentation after hidden_states_B_C split",
-      "ssm_BC_parameter_generation": "available only with temporary FalconH1Mixer forward instrumentation after hidden_states_B_C split",
-      "mamba_out_projection_input": "available through forward pre-hook on mamba.out_proj in unfused PyTorch path",
-      "attention_out_projection_input": "available through forward pre-hook on self_attn.o_proj",
-      "post_block_residual_block_output": "available through decoder layer forward hook or output_hidden_states"
-    }
-  },
-  "decision": {
-    "recommend_msurface_now": false,
-    "status": "inconclusive_pending_tiny_granite_hook_run",
-    "reason": "The requested internal surfaces are hookable, especially on Granite, but no cached internal activations exist to test whether any surface has strict set-leaving below 0.30. Existing block-output references remain high drift at 0.566 for Granite-Small and 0.674 for Falcon-H1."
-  },
-  "tiny_gpu_sanity_request": {
-    "requested": true,
-    "priority": "Granite first; Falcon only if Granite identifies a low-drift internal surface.",
-    "model": "ibm-granite/granite-4.0-h-small",
-    "positions": [
-      100,
-      20000
-    ],
-    "preferred_positions_if_cheap": [
-      100,
-      500,
-      1000,
-      5000,
-      10000,
-      20000
-    ],
-    "traces": "2 deterministic release drift traces are enough for hook sanity; use 12 only if already cheap.",
-    "surfaces": [
-      "ssm_input_x",
-      "ssm_BC_parameter_generation",
-      "mamba_out_projection_input",
-      "attention_out_projection_input",
-      "post_block_residual_block_output"
-    ],
-    "implementation_notes": [
-      "Use PyTorch/HF eager diagnostic path, not vLLM serving kernels.",
-      "Force the unfused Mamba Python path for hookability by disabling the module-level fast-path flag before execution.",
-      "Persist per-channel absolute magnitude summaries at requested positions, not full token-by-layer activations.",
-      "Compute strict top-1% set-leaving relative to position 100 for each trace, layer, and surface."
-    ]
-  },
-  "promotion_rule": {
-    "promote_msurface_if": "At least one internal Granite surface has strict set-leaving < 0.30 while the same run's post-block output stays near the cached high-drift regime.",
-    "kill_or_defer_if": "All hookable internal surfaces are >= 0.30, within roughly 0.10 absolute of block-output drift, or only B/C appears lower with unstable top-k due to the 256-dimensional surface.",
-    "falcon_followup_if": "Only repeat on Falcon-H1 after Granite shows a materially lower internal surface."
-  }
+  "status": "diagnostic_recommended_not_promoted",
+  "recommend_gpu_diagnostic": true,
+  "recommended_model": "ibm-granite/granite-4.0-h-small",
+  "recommended_surface": "mamba_out_projection_input via model.layers.{i}.mamba.out_proj forward_pre_hook, with same-run post_block_residual_block_output control",
+  "reason": "Cached strict block-output leaving remains high for Granite (0.566234756098) and Falcon (0.673611111111), but cached internal M-SURFACE activations are absent. Granite's Mamba out_proj input is a cheap module hook (0.5-1 h) that can directly test the gate: internal strict leaving <0.30, or >=0.15 absolute below same-run post-block leaving. Falcon should stay deferred unless Granite identifies a low-drift internal surface.",
+  "source_files": [
+    "RUN_LEDGER.md",
+    "DECISIONS.md",
+    "paper/reviewer_feedback.md",
+    "release/results/set_leaving/set_leaving.json",
+    "artifacts/msurface/hook_map.md",
+    "artifacts/msurface/surface_drift_table.csv",
+    "artifacts/msurface/diagnostic_config_2trace.json",
+    "experimental/outlier_migrate/phase9/results/om_phase9_mpred_granite_reduced_20260527T201251Z/activation_magnitude_manifest.json",
+    "experimental/outlier_migrate/phase9/results/om_phase9_mpred_falcon_extension_20260528T011658Z/activation_magnitude_manifest.json",
+    "/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39/config.json",
+    "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/snapshots/8f2587ca06bff78d8fa1adfccbe8c24d5f86b368/config.json",
+    ".venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py",
+    ".venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py"
+  ]
 }

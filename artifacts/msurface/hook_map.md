@@ -1,97 +1,95 @@
 # M-SURFACE Hook Map
 
-Status: CPU/static inspection only. No GPU jobs were run. No cached internal
-activation packets were found for the requested SSM or attention hook surfaces.
+Refresh timestamp: `2026-05-28T06:26:48Z`.
 
-## Context Read
+Status: CPU/static inspection only. No GPU jobs were run. Cached block-output
+activation summaries exist for Granite and Falcon, but no cached internal
+activation packet was found for SSM input, SSM B/C, Mamba `out_proj` input, or
+attention `o_proj` input.
 
-- `RUN_LEDGER.md`: M-SURFACE is queued and gates only a tiny Granite hook run.
-- `DECISIONS.md`: M-SURFACE is diagnostic only until a hook map exists.
-- `paper/reviewer_feedback.md`: current evidence is too small for claims, and
-  structural claims need larger slices, controls, and telemetry.
+## Evidence Read
+
+- `RUN_LEDGER.md`: M-SURFACE remains deferred; tiny Granite sanity is allowed
+  only if a finalist needs placement evidence.
+- `DECISIONS.md`: M-SURFACE is hookable but must not be promoted without
+  lower-drift hook evidence.
+- `paper/reviewer_feedback.md`: structural claims need larger slices, controls,
+  and telemetry; this artifact is diagnostic only.
 - `release/results/set_leaving/set_leaving.json`: cached block-output strict
-  set-leaving claims are available for comparison.
+  set-leaving is `0.566234756098` for Granite-Small and `0.673611111111` for
+  Falcon.
 
-## Granite 4.0-H
+## Cached Activations
 
-Inspected local config:
+| Model | Cached activation exists | What it contains | M-SURFACE usability |
+|---|---|---|---|
+| Granite-4.0-H-Small | yes | `activation_magnitudes.jsonl.gz` manifests record `transformer_layer_forward_output`; release strict leaving is cached | Usable only as post-block/block-output reference; internal surfaces missing |
+| Falcon-H1-0.5B-Instruct | yes | `activation_magnitudes.jsonl.gz` and `activation_means.npz` manifests record `transformer_layer_forward_output`; release strict leaving is cached | Usable only as post-block/block-output reference; internal surfaces missing |
 
+## Granite-4.0-H-Small
+
+Source config and code:
+
+- `/workspace/hf_cache/hub/models--ibm-granite--granite-4.0-h-small/snapshots/b8c0982bab7fde4eb48110f5a069527c008fab39/config.json`
 - `experimental/hybridkernel/phase0/configs/ibm-granite-4.0-h-small.config.json`
-- `experimental/hybridkernel/phase0/configs/ibm-granite-4.0-h-tiny.config.json`
-
-Inspected implementation:
-
 - `.venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py`
-- Config uses 40 decoder layers with attention at layers `5, 15, 25, 35`
-  and Mamba at `0-4, 6-14, 16-24, 26-34, 36-39`.
-- Small: hidden size `4096`, Mamba intermediate size `8192`, B/C concat
-  dimension `256`.
-- Tiny: hidden size `1536`, Mamba intermediate size `3072`, B/C concat
-  dimension `256`.
 
-### Requested Surfaces
+Architecture facts:
 
-| Surface | Granite hook | Layer scope | Shape basis | Hook status |
-|---|---|---:|---|---|
-| SSM input x | Local variable after `hidden_states_B_C` convolution and split inside `GraniteMoeHybridMambaLayer.torch_forward` or `cuda_kernels_forward`; specifically the `hidden_states` tensor passed to scan | 36 Mamba layers | `mamba_expand * hidden_size` | Requires temporary instrumentation, not a plain module hook |
-| SSM B/C generation | Same local split as SSM input x; capture `B`, `C`, and preferably `cat([B, C], dim=-1)` before head repetition | 36 Mamba layers | `2 * mamba_n_groups * mamba_d_state = 256` | Requires temporary instrumentation; low dimension makes top-1% noisy |
-| Mamba output-projection input | `model.model.layers[i].mamba.out_proj` forward pre-hook | 36 Mamba layers | `mamba_expand * hidden_size` | Clean module hook in unfused PyTorch path |
-| Attention output-projection input | `model.model.layers[i].self_attn.o_proj` forward pre-hook | layers `5, 15, 25, 35` | `hidden_size` | Clean module hook |
-| Post-block residual/block output | decoder layer forward hook on `model.model.layers[i]`, output tuple item `0`; `output_hidden_states=True` also recovers adjacent block outputs | all 40 layers | `hidden_size` | Clean module hook; cached release drift exists |
+- Top-level class: `GraniteMoeHybridForCausalLM`; named module prefix under the
+  causal LM is `model.layers.{i}`.
+- Layers: 40 total. Attention layers: `5, 15, 25, 35`. Mamba layers:
+  `0-4, 6-14, 16-24, 26-34, 36-39`.
+- Hidden size `4096`; Mamba intermediate size `8192`; B/C concat dimension
+  `2 * mamba_n_groups * mamba_d_state = 256`.
 
-### Granite Hook Cautions
+| Surface | Exact hook point | Layer scope | Cached? | Hook complexity | Risks |
+|---|---|---:|---|---:|---|
+| SSM input x | Local `hidden_states` after `hidden_states_B_C = apply_mask_to_padding_states(...)` and `hidden_states, B, C = torch.split(...)` inside `GraniteMoeHybridMambaLayer.torch_forward`; not a named submodule | 36 Mamba layers | no | 2-3 h | Requires temporary wrapper/patch of Mamba forward and fast-path disablement; local tensor is invisible to normal hooks |
+| SSM B/C generation | Local `B` and `C` from the same split inside `GraniteMoeHybridMambaLayer.torch_forward`, before `repeat_interleave` / head repetition | 36 Mamba layers | no | 2-4 h | Same wrapper risk; 256-dim surface makes top-1% only about 2-3 channels, so estimates are noisy |
+| Mamba out_proj input | Named module `model.layers.{i}.mamba.out_proj`; register `forward_pre_hook` and capture input tensor 0 | 36 Mamba layers | no | 0.5-1 h | Must force unfused PyTorch path so the module call is exercised; best first internal surface |
+| Attention o_proj input | Named module `model.layers.{i}.self_attn.o_proj`; register `forward_pre_hook` and capture input tensor 0 | layers `5,15,25,35` | no | 0.5-1 h | Sparse attention-layer coverage; useful as branch contrast, not enough alone |
+| Post-block residual/block output | Named module `model.layers.{i}`; forward hook output tuple item 0, or `output_hidden_states=True` | all 40 layers | yes | 0-0.5 h | Cached reference exists; same-run control still needed if internal hook run changes decode path |
 
-- The installed code selects `cuda_kernels_forward` on CUDA when Mamba fast path
-  is available. For a diagnostic hook run, force the Python path before model
-  execution, for example by setting the module-level
-  `is_fast_path_available = False` in the inspected Transformers module.
-- Capturing SSM input x and B/C requires a small temporary wrapper around the
-  Mamba forward body because those tensors are local variables after the
-  convolution and split.
-- Do not use fused vLLM kernels for this diagnostic. The hook test is about
-  surface drift, not serving throughput.
+## Falcon-H1-0.5B-Instruct
 
-## Falcon-H1
+Source config and code:
 
-Inspected local config:
-
-- `release/configs/falcon_h1.yaml`
-
-Inspected implementation:
-
+- `/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/snapshots/8f2587ca06bff78d8fa1adfccbe8c24d5f86b368/config.json`
+- `experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z/falcon_h1_0_5b/model_provenance.json`
 - `.venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py`
-- Release config identifies a 32-layer parallel hybrid model with hidden size
-  `2048`.
-- The exact Hugging Face checkpoint config was not cached locally, but the
-  installed model code is straightforward.
+
+Architecture facts:
+
+- Top-level class: `FalconH1ForCausalLM`; named module prefix under the causal
+  LM is `model.layers.{i}`.
+- The current local HF snapshot is the authority for hook mapping:
+  `num_hidden_layers=36`, `hidden_size=1024`, `mamba_d_ssm=1536`,
+  `mamba_n_heads=24`, `mamba_d_state=128`, `mamba_n_groups=1`.
+- `release/configs/falcon_h1.yaml` says 32 layers / hidden 2048, but this is
+  stale for the cached `tiiuae/Falcon-H1-0.5B-Instruct` artifacts. Use the
+  snapshot config and manifests for diagnostics.
 - Falcon-H1 runs Mamba and attention in parallel in every decoder block.
 
-| Surface | Falcon hook | Layer scope | Hook status |
-|---|---|---:|---|
-| SSM input x | Local variable after `hidden_states_B_C` convolution and split inside `FalconH1Mixer.torch_forward` or `cuda_kernels_forward` | all 32 layers | Requires temporary instrumentation |
-| SSM B/C generation | Same local split as SSM input x; capture B/C before head repetition | all 32 layers | Requires temporary instrumentation |
-| Mamba output-projection input | `model.model.layers[i].mamba.out_proj` forward pre-hook | all 32 layers | Clean module hook in unfused PyTorch path |
-| Attention output-projection input | `model.model.layers[i].self_attn.o_proj` forward pre-hook | all 32 layers | Clean module hook |
-| Post-block residual/block output | decoder layer forward hook on `model.model.layers[i]`, output tuple item `0` | all 32 layers | Clean module hook; cached release drift exists |
+| Surface | Exact hook point | Layer scope | Cached? | Hook complexity | Risks |
+|---|---|---:|---|---:|---|
+| SSM input x | Local `hidden_states` after `hidden_states_B_C = apply_mask_to_padding_states(...)` and `hidden_states, B, C = torch.split(...)` inside `FalconH1Mixer.torch_forward`; not a named submodule | all 36 layers | no | 2-3 h | Requires temporary wrapper/patch and fast-path disablement; local tensor is invisible to normal hooks |
+| SSM B/C generation | Local `B` and `C` from the same split inside `FalconH1Mixer.torch_forward`, before `repeat_interleave` / head repetition | all 36 layers | no | 2-4 h | Same wrapper risk; 256-dim surface makes top-1% unstable |
+| Mamba out_proj input | Named module `model.layers.{i}.mamba.out_proj`; register `forward_pre_hook` and capture input tensor 0 | all 36 layers | no | 0.5-1 h | Must force unfused PyTorch path; cleanest Falcon internal Mamba surface |
+| Attention o_proj input | Named module `model.layers.{i}.self_attn.o_proj`; register `forward_pre_hook` and capture input tensor 0 | all 36 layers | no | 0.5-1 h | Clean module hook; parallel branch means attention/Mamba separation is interpretable |
+| Post-block residual/block output | Named module `model.layers.{i}`; forward hook output tuple item 0, or `output_hidden_states=True` | all 36 layers | yes | 0-0.5 h | Cached reference exists; same-run control required if Falcon follow-up is run |
 
-## Minimal Hook Plan
+## Diagnostic Recommendation
 
-1. Start with Granite-4.0-H-Small, not Falcon, because the queued gate is
-   explicitly Granite-first and the cached block-output comparison is
-   `0.566234756098`.
-2. Use the fixed long-reasoning traces from the release drift packet if
-   available to the GPU operator. Capture only per-channel absolute magnitudes
-   at decode positions `100` and `20000`; use the full release grid
-   `[100, 500, 1000, 5000, 10000, 20000]` only if it is already cheap.
-3. For each trace, layer, and surface, form the top-1% channel set at position
-   100. At the final position, compute strict set-leaving as the fraction of
-   position-100 top channels no longer in the final top-1% set.
-4. Save only summarized per-channel magnitude vectors and a table of strict
-   set-leaving by surface. Do not save full token-by-layer activations.
-5. Promote M-SURFACE only if at least one internal Granite surface has strict
-   set-leaving below `0.30` while the same run's block-output surface remains
-   near the cached high-drift regime.
+Recommend a tiny GPU diagnostic, but only for Granite first and only as a
+surface-placement sanity check. The clean module hooks can answer the gated
+question cheaply: whether `mamba_out_projection_input` has strict leaving
+`<0.30` while same-run post-block output remains in the high-drift regime.
 
-If Granite does not show a materially lower internal surface, skip Falcon. If
-Granite does show one, Falcon is straightforward to repeat because its clean
-module hooks match Granite and only the local SSM split wrapper differs.
+Run `mamba_out_projection_input`, `attention_o_proj_input`, and post-block
+control first. Add SSM input and B/C only if the GPU operator can afford the
+temporary wrapper; do not let the wrapper block the cheap module-hook result.
+
+Promotion rule: promote M-SURFACE only if an internal Granite surface has strict
+set-leaving `<0.30` or at least `0.15` absolute below same-run post-block
+leaving. If Granite does not show that, skip Falcon.
