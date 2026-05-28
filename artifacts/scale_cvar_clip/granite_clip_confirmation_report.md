@@ -1,6 +1,6 @@
 # Granite DriftRot Clip/CVaR Confirmation Screen
 
-Status: `PROMOTE_TIGHT_CLIP_FINAL_POSITIVE_TRACE`.
+Status: `PASS_TIGHT_CLIP_GRANITE_POSITIVE_TRACES`.
 
 This is a **screen**, not a final method claim. The run directly scored the
 held-out confirmation traces `[4, 7, 9, 10]` after the full 12-trace Granite
@@ -45,19 +45,38 @@ meaningfully regress, and all three held-out recoveries remain positive.
 
 ## Caveat
 
-This result must still be framed carefully. Config/clip retuning is Tier 2 in
-the novelty table, not the headline method. The next valid gate is:
+## Positive-Trace Completion
 
-1. run the last remaining recoverable Granite trace, prompt `8`, so that all
-   positive-gap Granite traces have tight-clip scores;
-2. integrate tight clip as a tail-control DriftRot candidate, not as a generic
+The remaining recoverable Granite trace, prompt `8`, was then scored with tight
+clip and reached `0.812` recovery versus the original ParoQuant `0.792`.
+
+Across all eight recoverable Granite traces:
+
+| Metric | Original ParoQuant | Tight clip `[0.5, 2.0]` | Margin |
+|---|---:|---:|---:|
+| Median recovery | 0.754 | 0.922 | +0.0509 median per-trace |
+| Bootstrap CI95 | [0.477, 1.004] | [0.781, 1.647] | [0.0166, 0.370] |
+| Worst trace | -26.371 | 0.601 | +32.311 |
+| Mean recovery | -2.532 | 1.581 | +4.112 |
+
+Source table: `artifacts/scale_cvar_clip/granite_tight_positive_trace_table.csv`.
+
+## Caveat
+
+This result must still be framed carefully. Config/clip retuning is Tier 2 in
+the novelty table, not the headline method. The current defensible claim is
+that a drift/tail-aware clip objective robustifies Granite's rotation baseline
+on the recoverable positive-gap traces. The next valid gate is:
+
+1. integrate tight clip as a tail-control DriftRot candidate, not as a generic
    claim that hyperparameter tuning beats ParoQuant;
-3. test the idea on another model/tail surface only after the Granite positive
-   trace table is complete.
+2. test the idea on another model/tail surface only if we need cross-model
+   evidence for the tail-control mechanism.
 
 ## Source Runs
 
 - loose: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_loose_confirmation_20260528T1735Z`
 - tight: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z`
 - tight hold-out: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z`
+- tight final positive trace: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z`
 - baseline: `experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z`

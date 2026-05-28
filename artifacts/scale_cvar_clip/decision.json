@@ -1,6 +1,6 @@
 {
-  "schema_version": "granite_clip_cvar_confirmation_decision_v2",
-  "decision": "PROMOTE_TIGHT_CLIP_FINAL_POSITIVE_TRACE",
+  "schema_version": "granite_clip_cvar_confirmation_decision_v3",
+  "decision": "PASS_TIGHT_CLIP_GRANITE_POSITIVE_TRACES",
   "not_final_method_claim": true,
   "baseline": {
     "candidate": "baseline_clip_0p25_4",
@@ -36,6 +36,25 @@
       "5": -0.0011990433387960575
     }
   },
-  "next_gate": "score remaining positive-gap Granite prompt 8 with tight clip to complete the positive-trace table",
-  "reason": "Tight clip fixes the known Granite ParoQuant tail on the inspected screen and passes a separate positive-gap hold-out split. Frame as Tier-2 tail-control DriftRot evidence, not a headline method claim."
+  "tight_clip_positive_trace_table": {
+    "source_csv": "artifacts/scale_cvar_clip/granite_tight_positive_trace_table.csv",
+    "prompt_indices": [1, 2, 4, 5, 7, 8, 9, 10],
+    "baseline_median": 0.7537768488911776,
+    "baseline_ci95_low": 0.4770444524050311,
+    "baseline_ci95_high": 1.003769554323054,
+    "baseline_worst": -26.3711874060621,
+    "baseline_mean": -2.5318414789456445,
+    "tight_median": 0.921717669905064,
+    "tight_ci95_low": 0.7807915902524067,
+    "tight_ci95_high": 1.6473828309524665,
+    "tight_worst": 0.6006560711988609,
+    "tight_mean": 1.5805699655273817,
+    "margin_median": 0.05087552556827113,
+    "margin_ci95_low": 0.016560040354311134,
+    "margin_ci95_high": 0.370093645097194,
+    "margin_worst": -0.0011990433387960575,
+    "margin_mean": 4.112411444473026
+  },
+  "next_gate": "integrate as Tier-2 tail-control DriftRot evidence or test another model/tail surface if cross-model tail-control evidence is required",
+  "reason": "Tight clip fixes the known Granite ParoQuant tail, passes a separate hold-out split, and improves the all-positive-gap Granite table. Frame as tail-control robustification of rotation, not a headline claim that tuned hyperparameters beat ParoQuant."
 }

@@ -1,0 +1,20 @@
+{
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.8123407220634444,
+        "ci95_low": 0.8123407220634444
+      },
+      "included_trace_count": 1,
+      "mean_recovery": 0.8123407220634444,
+      "median_recovery": 0.8123407220634444,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        0.8123407220634444
+      ],
+      "total_trace_count": 1
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z"
+}

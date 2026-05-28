@@ -1,0 +1,5 @@
+{
+  "candidate_id": "tight_clip_0p5_2p0_final_positive_trace",
+  "decision": "SUBSET_SCORED_PENDING_SPLIT_ANALYSIS",
+  "schema_version": "om_driftrot_clip_subset_v1_decision"
+}

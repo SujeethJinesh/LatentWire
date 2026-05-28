@@ -1,0 +1,8 @@
+{
+  "schema_version": "om_driftrot_clip_subset_v1_decoding_config",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "selected_prompt_indices": [
+    8
+  ]
+}

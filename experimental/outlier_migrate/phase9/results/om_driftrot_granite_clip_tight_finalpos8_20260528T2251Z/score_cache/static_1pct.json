@@ -1,0 +1,14 @@
+{
+  "created_at_utc": "2026-05-28T22:51:31Z",
+  "regime": "static_1pct",
+  "schema_version": "om_paroquant_baseline_v1_score_cache",
+  "scores": {
+    "8": {
+      "mean_nll": 0.21070662349732472,
+      "perplexity": 1.234550113932672,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    }
+  }
+}

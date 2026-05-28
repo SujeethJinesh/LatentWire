@@ -1,0 +1,17 @@
+{
+  "base_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+  "candidate_id": "tight_clip_0p5_2p0_final_positive_trace",
+  "experiment_id": "driftrot_granite_clip_cvar",
+  "group_size": 128,
+  "num_rotations": 8,
+  "preregistration": "experimental/outlier_migrate/phase9/preregister_om_driftrot_granite_clip_cvar.md",
+  "prompt_indices": [
+    8
+  ],
+  "scale_clip": [
+    0.5,
+    2.0
+  ],
+  "schema_version": "om_driftrot_clip_subset_v1_config",
+  "split_name": "confirmation"
+}
