@@ -1,0 +1,7 @@
+{
+  "candidate_id": "residual_tight_top8x32_tail4",
+  "decision": "FAIL_INFRA_CLOSURE_CAPTURE_INVALID",
+  "not_final_method_claim": true,
+  "reason": "Invalidated after inspection: the first residual runner captured loop variables in patched forward closures, so modules could reference the last installed residual state. Do not use these metrics for method decisions.",
+  "schema_version": "om_driftrot_residual_subset_v1_decision"
+}

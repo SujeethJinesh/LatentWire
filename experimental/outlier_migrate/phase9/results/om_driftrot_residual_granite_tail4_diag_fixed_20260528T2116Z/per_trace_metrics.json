@@ -1,0 +1,31 @@
+{
+  "created_at_utc": "2026-05-28T21:40:37Z",
+  "schema_version": "om_driftrot_residual_subset_v1_per_trace_metrics",
+  "traces": [
+    {
+      "mean_nll": {
+        "bf16": 0.03609823703300208,
+        "driftrot_residual_w4a16": 0.04595187638187781,
+        "static_1pct": 0.03684285231429385
+      },
+      "no_recoverable_static_gap": false,
+      "perplexities": {
+        "bf16": 1.0367576894878223,
+        "driftrot_residual_w4a16": 1.04702402316027,
+        "static_1pct": 1.0375299625939074
+      },
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4,
+      "recoveries": {
+        "driftrot_residual_w4a16": -12.293656857340855,
+        "reference_paroquant_w4a16": 5.939623575264381
+      },
+      "residual_minus_reference_recovery": -18.233280432605234,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512,
+      "split_name": "diagnostic",
+      "static_gap": 0.0007722731060850752
+    }
+  ]
+}

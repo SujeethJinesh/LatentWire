@@ -1,0 +1,31 @@
+{
+  "candidate_id": "residual_tight_top8x32_tail4",
+  "created_at_utc": "2026-05-28T21:40:37Z",
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "model_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+  "prompt_indices": [
+    4
+  ],
+  "results_by_regime": {
+    "driftrot_residual_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": -12.293656857340855,
+        "ci95_low": -12.293656857340855
+      },
+      "included_trace_count": 1,
+      "mean_recovery": -12.293656857340855,
+      "median_recovery": -12.293656857340855,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        -12.293656857340855
+      ],
+      "reference_margin_mean": -18.233280432605234,
+      "reference_margin_median": -18.233280432605234,
+      "total_trace_count": 1
+    }
+  },
+  "schema_version": "om_driftrot_residual_subset_v1_metrics",
+  "split_name": "diagnostic"
+}

@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-05-28T20:50:04Z",
+  "decision_surface": "artifact_materialization_only",
+  "module_count": 8,
+  "schema_version": "om_driftrot_delta_columns_v1_metrics",
+  "total_artifact_bytes": 56656785,
+  "total_working_set_mib_fp16": 54.0
+}

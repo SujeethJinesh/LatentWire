@@ -1,0 +1,7 @@
+{
+  "candidate_id": "residual_tight_top8x32_tail4",
+  "decision": "SUBSET_SCORED_PENDING_SPLIT_ANALYSIS",
+  "not_final_method_claim": true,
+  "reason": "Subset smoke results require comparison against reference ParoQuant and a held-out split before promotion.",
+  "schema_version": "om_driftrot_residual_subset_v1_decision"
+}

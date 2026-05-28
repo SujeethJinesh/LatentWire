@@ -1,10 +1,11 @@
 {
   "schema_version": "method_gate_v1",
   "task": "C5_ROTATED_RESIDUAL_CORRECTION",
-  "decision": "NEEDS_WEIGHT_RESIDUAL_CACHE",
+  "decision": "KILL_TOP8X32_MOE_RESIDUAL_DIAGNOSTIC",
   "promote_to_gpu": false,
-  "reason": "The method requires DeltaW = W_fp - W_pq or residual column norms from the actual ParoQuant-dequantized tensors; those are not present in the current compact caches.",
+  "reason": "DeltaW columns were materialized and a fixed one-trace Granite diagnostic worsened the known tail trace: residual recovery -12.294 versus tight ParoQuant reference 5.940.",
   "first_smoke_target": "Granite tail/weak traces",
+  "valid_smoke_run_dir": "experimental/outlier_migrate/phase9/results/om_driftrot_residual_granite_tail4_diag_fixed_20260528T2116Z",
   "smoke_promotion_rule_after_cache_exists": {
     "pass_if_any": [
       "improves Granite prompt 4 tail relative to ParoQuant",

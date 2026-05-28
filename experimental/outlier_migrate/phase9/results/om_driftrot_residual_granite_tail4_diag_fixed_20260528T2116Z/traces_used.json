@@ -1,0 +1,10 @@
+{
+  "prompt_ids": [
+    "opencompass_AIME2025_I_4"
+  ],
+  "prompt_indices": [
+    4
+  ],
+  "schema_version": "om_driftrot_residual_subset_v1_traces_used",
+  "split_name": "diagnostic"
+}

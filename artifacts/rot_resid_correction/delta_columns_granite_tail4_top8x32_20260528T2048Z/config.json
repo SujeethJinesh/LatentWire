@@ -1,0 +1,18 @@
+{
+  "candidate_pool": "/workspace/LatentWire/artifacts/rot_resid_correction/residual_candidate_pool_tail4_top8.json",
+  "candidate_pool_sha256": "sha256:74a96e3707014af3a54f714bc5dd04a39ef9d698c61d91eb072a404dbf31bb35",
+  "columns_per_module": 32,
+  "dtype": "bfloat16",
+  "group_size": 128,
+  "model_id": "ibm-granite/granite-4.0-h-small",
+  "model_snapshot_commit": "b8c0982bab7fde4eb48110f5a069527c008fab39",
+  "num_rotations": 8,
+  "row_chunk": 256,
+  "scale_clip": [
+    0.5,
+    2.0
+  ],
+  "schema_version": "om_driftrot_delta_columns_v1_config",
+  "score_key": "top_score_columns",
+  "top_modules": 8
+}

@@ -2,13 +2,13 @@
 
 ## Decision
 
-Status: `NEEDS_WEIGHT_RESIDUAL_CACHE`.
+Status: `KILL_TOP8X32_MOE_RESIDUAL_DIAGNOSTIC`.
 
-Rotated residual correction is well-defined, but the current committed artifacts
-do not include full-precision weights, ParoQuant-dequantized weights, or
-per-layer residual norms. Without those tensors we cannot produce a real
-candidate column pool. This artifact therefore provides the exact method,
-candidate-pool template, and PyTorch reference only.
+The missing residual artifacts were added and a one-trace Granite diagnostic was
+run. The top-8-module, 32-column-per-module MoE residual correction worsened the
+known Granite tail trace relative to tight ParoQuant, so it is not promoted to
+3-trace smoke under the current design. See
+`artifacts/rot_resid_correction/residual_smoke_report.md`.
 
 ## Method
 
@@ -40,29 +40,24 @@ alone is weak. Granite has an obvious tail trace:
 
 That trace is the right first smoke target if residual tensors are available.
 
-## Required Cache
+## Cache Produced
 
-To run this branch, the next ParoQuant smoke must optionally write:
+The branch now has:
 
-- eligible tensor names and shapes;
-- `W_fp` or column norms of `W_fp`;
-- `W_pq` or column norms of `DeltaW = W_fp - W_pq`;
-- post-rotation/dequant tensor identity matching the forward pass;
-- calibration activation EMA per tensor input column;
-- selected candidate top-k columns per tensor.
+- residual column norms:
+  `artifacts/rot_resid_correction/residual_cache_granite_tight_20260528T2025Z/`;
+- activation EMA on the tail trace:
+  `artifacts/rot_resid_correction/activation_ema_granite_tail4_top8_20260528T2030Z/`;
+- candidate pool:
+  `artifacts/rot_resid_correction/residual_candidate_pool_tail4_top8.json`;
+- selected `DeltaW[:, P]` tensors:
+  `artifacts/rot_resid_correction/delta_columns_granite_tail4_top8x32_20260528T2048Z/`.
 
-The full tensors do not need to be preserved if the candidate pool stores
-`||DeltaW_i||_2^2`, activation scores, and top-k indices.
+The selected delta-column cache is about 54 MiB working set across eight Granite
+MoE input projections.
 
 ## Gate
 
-Do not launch a residual-correction GPU run until candidate pools exist. Once
-they exist, run Granite only on:
-
-1. tail trace `opencompass_AIME2025_I_4`,
-2. weak positive trace `opencompass_AIME2025_I_2`,
-3. representative positive trace `opencompass_AIME2025_I_8`.
-
-Promote if it improves the tail without losing more than 0.05 recovery on the
-representative trace, or wins at least two of the three traces against
-ParoQuant.
+Do not launch the 3-trace residual-correction smoke for this top-8x32 MoE
+candidate. A future residual-correction branch needs a new design gate, such as
+coefficient-shrunk correction or KLLOOK-gated columns, before using GPU time.

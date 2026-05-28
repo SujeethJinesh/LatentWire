@@ -1,9 +1,12 @@
 {
-  "decision": "RESIDUAL_CACHE_READY_ACTIVATION_EMA_NEEDED",
+  "decision": "KILL_TOP8X32_MOE_RESIDUAL_DIAGNOSTIC",
   "measured_tensor_count": 289,
-  "next_gate": "collect activation EMA on matching tensor input columns before GPU residual-correction scoring",
+  "next_gate": "do not run 3-trace smoke for this candidate; only reopen residual correction with a new bounded or KLLOOK-gated design",
   "not_final_method_claim": true,
   "run_dir": "artifacts/rot_resid_correction/residual_cache_granite_tight_20260528T2025Z",
-  "schema_version": "rot_resid_correction_decision_v2",
+  "schema_version": "rot_resid_correction_decision_v3",
+  "smoke_run_dir": "experimental/outlier_migrate/phase9/results/om_driftrot_residual_granite_tail4_diag_fixed_20260528T2116Z",
+  "smoke_trace_recovery": -12.293656857340855,
+  "tight_paroquant_reference_recovery": 5.939623575264381,
   "top25_working_set_mib_fp16": 336.25
 }

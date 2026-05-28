@@ -1,0 +1,32 @@
+{
+  "created_at_utc": "2026-05-28T21:16:51Z",
+  "full_prompt_file_sha256": "sha256:ead004dae0848ad43ad102551f48fa22a0b8ed4a57efecdcf9d7ae387bb6d17a",
+  "prompt_count": 1,
+  "prompt_file": "/workspace/LatentWire/experimental/shared/prompts/aime_2025_indices_0_23.jsonl",
+  "prompt_file_sha256": "sha256:ead004dae0848ad43ad102551f48fa22a0b8ed4a57efecdcf9d7ae387bb6d17a",
+  "prompt_sha256": "sha256:7528e62e74eabdd96e6c6e3f542e9076010c55bf9be70e28509b4c8672b20141",
+  "prompt_sha256_semantics": "sha256 of concatenated prompt text in deterministic index order",
+  "prompts": [
+    {
+      "answer": "279",
+      "index": 4,
+      "prompt": "There are $8!=40320$ eight-digit positive integers that use each of the digits $1,2,3,4,5,6,7,8$ exactly once. Let $N$ be the number of these integers that are divisible by 22. Find the difference between $N$ and 2025.",
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "source_commit": "a6ad95f611d72cf628a80b58bd0432ef6638f958",
+      "source_dataset": "opencompass/AIME2025",
+      "source_file": "aime2025-I.jsonl"
+    }
+  ],
+  "schema_version": "om_paroquant_baseline_v1_prompt_manifest",
+  "selected_prompt_indices": [
+    4
+  ],
+  "selection": "driftrot_residual_diagnostic_subset",
+  "source": "AIME-2025",
+  "source_dataset": "opencompass/AIME2025",
+  "source_dataset_commit": "a6ad95f611d72cf628a80b58bd0432ef6638f958",
+  "source_file_order": [
+    "aime2025-I.jsonl",
+    "aime2025-II.jsonl"
+  ]
+}

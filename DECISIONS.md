@@ -26,7 +26,7 @@ unless a genuinely held-out frozen-threshold run is executed.
 | ParoQuant DeepSeek smoke | PASS_ROTATION_DOMINATES | Full 12-trace packet gives median recovery 0.756 with CI95 [-0.246, 0.855], beating DeepSeek static-top10 by +0.379. Median supports rotation-dominant framing, but the negative lower CI keeps DriftRot tail-control live. |
 | Granite clip/CVaR retune | PROMOTE_AFTER_G0_G1 | Only DriftRot config gate promoted by CPU filters; target ParoQuant's Granite tail, not a broad grid. |
 | Drift-aware pairing | NEEDS_ACTIVATION_CACHE | Pairings differ from current ParoQuant on block-output proxies, but exact rotation-surface caches are required before GPU. |
-| Residual correction | NEEDS_WEIGHT_RESIDUAL_CACHE | Method is specified, but no candidate pool exists until a ParoQuant run emits residual column norms or equivalent summaries. |
+| Residual correction | KILL_TOP8X32_MOE_RESIDUAL_DIAGNOSTIC | Residual norms, activation EMA, candidate pool, and DeltaW columns were produced. A fixed Granite prompt-4 diagnostic scored -12.29 recovery versus tight ParoQuant reference 5.94, so this MoE top-8x32 candidate is not promoted. Only reopen with a bounded or KLLOOK-gated design. |
 | WJAC | KILL | Artifactized prefilter found at least two kill diagnostics on each covered model/slice; DeepSeek/Falcon full cached coverage, Granite/Nemotron representative slice coverage. |
 | LAMBDA | DEFER | Falcon prior reallocates 18.9% of total budget, but the standalone smoke gate is false because causal per-layer headroom is absent. |
 | HYST | DEFER_AFTER_FALCON_ROTATION_PASS | Falcon churn/local-pool gate selected margin `m=5`, but ParoQuant now rescues Falcon enough that channel fallback is lower priority. |
@@ -64,7 +64,7 @@ CPU gates now favor this concrete order:
 
 1. Granite clip/CVaR retune smoke to test whether DriftRot can improve
    ParoQuant tails/CI rather than merely reproduce the rotation baseline.
-2. Residual correction and pairing only after collecting exact residual or
-   rotation-surface caches.
+2. Pairing only after collecting exact rotation-surface caches; residual
+   correction is demoted unless a bounded or KLLOOK-gated design is written.
 3. Falcon/DeepSeek channel fallbacks only if a later rotation-specific gate
    exposes a weakness requiring architecture-local rescue.

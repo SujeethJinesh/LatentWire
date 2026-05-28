@@ -1,0 +1,76 @@
+{
+  "artifacts": [
+    {
+      "bytes": 257,
+      "path": "command.sh",
+      "sha256": "sha256:faa7e1d2cb31eb258805f76743de4bf758afe2efb019de9e019946cb0196d293"
+    },
+    {
+      "bytes": 610,
+      "path": "config.json",
+      "sha256": "sha256:13111edb0f686d0a98e304d25698bd579a4db59ba502244428a1e5b6bdb88c64"
+    },
+    {
+      "bytes": 319,
+      "path": "decision.json",
+      "sha256": "sha256:85482f6eb514c506d207a8eec81ec8569cb91090a1131eb181bb703a0234005e"
+    },
+    {
+      "bytes": 7082099,
+      "path": "delta_columns/model.layers.14.block_sparse_moe.input_linear.pt",
+      "sha256": "sha256:8b7613961e5f37a1c5c8efe0a949dd105e624479095483d3dcfe8762359b5d81"
+    },
+    {
+      "bytes": 7082099,
+      "path": "delta_columns/model.layers.15.block_sparse_moe.input_linear.pt",
+      "sha256": "sha256:d4a4ac3786740defaa6bbd2af178ecd6f31f0db98ed8c29cb1d43e6d606276e4"
+    },
+    {
+      "bytes": 7082092,
+      "path": "delta_columns/model.layers.2.block_sparse_moe.input_linear.pt",
+      "sha256": "sha256:8312fe1b62b8214a451629bc66025d945ce6ae751bd8087eee02d9c39ce01c3b"
+    },
+    {
+      "bytes": 7082099,
+      "path": "delta_columns/model.layers.24.block_sparse_moe.input_linear.pt",
+      "sha256": "sha256:be9e055b791ac73c47da43975841cd372cb5693394045037a0a6a9abd5c5df0e"
+    },
+    {
+      "bytes": 7082099,
+      "path": "delta_columns/model.layers.28.block_sparse_moe.input_linear.pt",
+      "sha256": "sha256:c92b02c96b5c65cf8395a71eca47d5ad3961a568a5d89fc449e3f56c0296115c"
+    },
+    {
+      "bytes": 7082099,
+      "path": "delta_columns/model.layers.37.block_sparse_moe.input_linear.pt",
+      "sha256": "sha256:b4eaff9f3c8dea661edf6317c3130c0721451625dcc3ed35306013dfef86a0a5"
+    },
+    {
+      "bytes": 7082099,
+      "path": "delta_columns/model.layers.38.block_sparse_moe.input_linear.pt",
+      "sha256": "sha256:d6d38b10531af53f0d9b8a78e0de2046ca9695ba910bf1b238069a9cc9bc3cdb"
+    },
+    {
+      "bytes": 7082099,
+      "path": "delta_columns/model.layers.39.block_sparse_moe.input_linear.pt",
+      "sha256": "sha256:01bbe50c672f552529449eb78105590ed09e870fec4eb243b43ebe2fe84df226"
+    },
+    {
+      "bytes": 12482,
+      "path": "delta_columns_manifest.json",
+      "sha256": "sha256:ba670dddf180ef7cba99926688bdfe55a09386f1086eb13a208ed5a36fa104eb"
+    },
+    {
+      "bytes": 257,
+      "path": "metrics.json",
+      "sha256": "sha256:fc8819ba16537ec6a53a36ad3b073d3096cadcc8d14dca432bb05729b4a6c888"
+    },
+    {
+      "bytes": 9286,
+      "path": "model_provenance.json",
+      "sha256": "sha256:293699269a5b4a81166f1f062e43585a8897d555046971e40bde7ec7bd0c9a47"
+    }
+  ],
+  "created_at_utc": "2026-05-28T20:50:04Z",
+  "schema_version": "om_driftrot_delta_columns_v1_artifact_hashes"
+}

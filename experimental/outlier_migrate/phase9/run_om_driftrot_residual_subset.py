@@ -1,0 +1,453 @@
+#!/usr/bin/env python3
+"""Run a Granite DriftRot residual-correction subset smoke test."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import random
+import sys
+import traceback
+import types
+from datetime import datetime, timezone
+from pathlib import Path
+from statistics import mean, median
+from typing import Any
+
+
+ROOT = Path(__file__).resolve().parents[3]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from experimental.outlier_migrate.phase4 import run_om_phase4_intervention as phase4_runner
+from experimental.outlier_migrate.phase9 import check_om_paroquant_baseline as checker
+from experimental.outlier_migrate.phase9 import run_om_paroquant_baseline as paro_runner
+from experimental.outlier_migrate.phase9 import run_om_phase9_m2_position_conditional as m2_runner
+from experimental.shared import run_phase0_branch as shared
+
+
+SCHEMA_VERSION = "om_driftrot_residual_subset_v1"
+PREREG_PATH = ROOT / "experimental/outlier_migrate/phase9/preregister_om_driftrot_granite_clip_cvar.md"
+DEFAULT_BASE_RUN_DIR = ROOT / "experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z"
+DEFAULT_TIGHT_REFERENCE_RUN_DIR = ROOT / "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z"
+DEFAULT_DELTA_COLUMNS_DIR = ROOT / "artifacts/rot_resid_correction/delta_columns_granite_tail4_top8x32_20260528T2048Z"
+DEFAULT_RESULTS_DIR = ROOT / "experimental/outlier_migrate/phase9/results"
+
+
+def parse_indices(raw: str) -> list[int]:
+    indices = [int(item.strip()) for item in raw.split(",") if item.strip()]
+    if not indices:
+        raise argparse.ArgumentTypeError("at least one prompt index is required")
+    if len(set(indices)) != len(indices):
+        raise argparse.ArgumentTypeError("prompt indices must be unique")
+    return indices
+
+
+def write_failure_packet(run_dir: Path, run_events_path: Path, exc: BaseException | str) -> None:
+    payload: dict[str, Any] = {
+        "schema_version": f"{SCHEMA_VERSION}_infra_error",
+        "created_at_utc": shared.utc_now(),
+        "decision": "FAIL_INFRA_DRIFTROT_RESIDUAL_SUBSET",
+        "reason": str(exc),
+    }
+    if isinstance(exc, BaseException):
+        payload["exception_type"] = type(exc).__name__
+        payload["traceback"] = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    run_events_path.open("a", encoding="utf-8").write(
+        json.dumps({"created_at_utc": shared.utc_now(), "event": "run_failed", "reason": str(exc)}, sort_keys=True) + "\n"
+    )
+    shared.write_json(run_dir / "infra_error.json", payload)
+    shared.write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
+
+
+def summarize(values: list[float]) -> dict[str, Any]:
+    return {
+        "median_recovery": float(median(values)) if values else None,
+        "mean_recovery": float(mean(values)) if values else None,
+        "bootstrap_ci95": checker.bootstrap_median(values),
+        "included_trace_count": len(values),
+        "per_trace_recovery_included": values,
+    }
+
+
+def read_and_filter_score_cache(base_run_dir: Path, regime: str, prompt_indices: list[int]) -> dict[int, dict[str, float]]:
+    path = base_run_dir / "score_cache" / f"{regime}.json"
+    if not path.is_file():
+        raise RuntimeError(f"missing reusable {regime} score cache in {base_run_dir}")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    scores = {int(index): row for index, row in payload.get("scores", {}).items()}
+    missing = [index for index in prompt_indices if index not in scores]
+    if missing:
+        raise RuntimeError(f"score cache {path} missing prompt indices {missing}")
+    return {index: scores[index] for index in prompt_indices}
+
+
+def load_reference_recovery(
+    *,
+    reference_run_dir: Path | None,
+    prompt_indices: list[int],
+    bf16_scores: dict[int, dict[str, float]],
+    static_scores: dict[int, dict[str, float]],
+) -> dict[int, float | None]:
+    if reference_run_dir is None or not (reference_run_dir / "score_cache/paroquant_w4a16.json").is_file():
+        return {}
+    reference_scores = read_and_filter_score_cache(reference_run_dir, "paroquant_w4a16", prompt_indices)
+    output: dict[int, float | None] = {}
+    for index in prompt_indices:
+        bf16 = float(bf16_scores[index]["perplexity"])
+        static = float(static_scores[index]["perplexity"])
+        gap = static - bf16
+        if gap <= 0.0:
+            output[index] = None
+        else:
+            output[index] = 1.0 - (float(reference_scores[index]["perplexity"]) - bf16) / gap
+    return output
+
+
+def install_residual_corrections(model: Any, delta_columns_dir: Path) -> dict[str, Any]:
+    import torch
+    import torch.nn.functional as F
+
+    def make_expert_forward(original_forward: Any, delta_device: Any, columns_device: Any):
+        def forward_with_expert_residual(self: Any, inputs: Any, expert_size: Any) -> Any:
+            base = original_forward(inputs, expert_size)
+            input_list = inputs.split(expert_size, dim=0)
+            output_list = []
+            for expert_index, expert_inputs in enumerate(input_list):
+                expert_delta = delta_device[expert_index]
+                x_p = expert_inputs.index_select(dim=-1, index=columns_device)
+                output_list.append(F.linear(x_p, expert_delta, None))
+            return base + torch.cat(output_list, dim=0)
+
+        return forward_with_expert_residual
+
+    def make_linear_forward(original_forward: Any, delta_device: Any, columns_device: Any):
+        def forward_with_linear_residual(self: Any, inputs: Any) -> Any:
+            base = original_forward(inputs)
+            x_p = inputs.index_select(dim=-1, index=columns_device)
+            return base + F.linear(x_p, delta_device, None)
+
+        return forward_with_linear_residual
+
+    manifest_path = delta_columns_dir / "delta_columns_manifest.json"
+    if not manifest_path.is_file():
+        raise RuntimeError(f"missing delta column manifest: {manifest_path}")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    modules = dict(model.named_modules())
+    installed: list[dict[str, Any]] = []
+    for item in manifest["modules"]:
+        name = str(item["module_name"])
+        module = modules.get(name)
+        if module is None:
+            raise RuntimeError(f"delta module missing from model: {name}")
+        payload = torch.load(ROOT / item["artifact_path"], map_location="cpu")
+        columns = torch.tensor(payload["columns"], dtype=torch.long)
+        delta_columns = payload["delta_columns"]
+        if list(delta_columns.shape) != list(item["delta_shape"]):
+            raise RuntimeError(f"delta shape mismatch for {name}")
+        device = module.weight.device
+        dtype = module.weight.dtype
+        columns_device = columns.to(device=device)
+        delta_device = delta_columns.to(device=device, dtype=dtype)
+        original_forward = module.forward
+
+        if module.weight.ndim == 3:
+            mode = "expert_bank_input_column_residual"
+            patched_forward = make_expert_forward(original_forward, delta_device, columns_device)
+        elif module.weight.ndim == 2:
+            mode = "linear_input_column_residual"
+            patched_forward = make_linear_forward(original_forward, delta_device, columns_device)
+        else:
+            raise RuntimeError(f"unsupported corrected module ndim for {name}: {module.weight.ndim}")
+
+        module.forward = types.MethodType(patched_forward, module)
+        installed.append(
+            {
+                "module_name": name,
+                "mode": mode,
+                "columns": payload["columns"],
+                "delta_shape": list(delta_columns.shape),
+                "working_set_bytes": int(item["working_set_bytes"]),
+            }
+        )
+    return {
+        "schema_version": f"{SCHEMA_VERSION}_installed_residual_corrections",
+        "created_at_utc": shared.utc_now(),
+        "delta_columns_dir": str(delta_columns_dir),
+        "module_count": len(installed),
+        "total_working_set_mib_fp16": manifest.get("total_working_set_mib_fp16"),
+        "installed_modules": installed,
+    }
+
+
+def score_residual_regime(
+    *,
+    model_provenance: dict[str, Any],
+    prompts: list[dict[str, Any]],
+    target_tokens: dict[int, list[int]],
+    batch_size: int,
+    dtype_name: str,
+    device_name: str,
+    run_events_path: Path,
+    group_size: int,
+    num_rotations: int,
+    row_chunk: int,
+    scale_clip: tuple[float, float],
+    delta_columns_dir: Path,
+) -> tuple[dict[int, dict[str, float]], dict[str, Any], dict[str, Any]]:
+    model, tokenizer, device = shared.load_model_and_tokenizer(model_provenance, dtype_name=dtype_name, device_name=device_name)
+    excluded = paro_runner.apply_paroquant_quantization(
+        model,
+        group_size=group_size,
+        num_rotations=num_rotations,
+        row_chunk=row_chunk,
+        scale_clip=scale_clip,
+    )
+    installed = install_residual_corrections(model, delta_columns_dir)
+    scores = phase4_runner.score_targets(
+        model=model,
+        tokenizer=tokenizer,
+        device=device,
+        prompts=prompts,
+        target_tokens=target_tokens,
+        max_new_tokens=checker.SCORING_POSITION,
+        batch_size=batch_size,
+        use_float16_autocast=True,
+        run_events_path=run_events_path,
+        regime_name="driftrot_residual_w4a16",
+    )
+    del model, tokenizer, device
+    paro_runner.release_model_memory()
+    return scores, excluded, installed
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--run-id", default=f"om_driftrot_residual_subset_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}")
+    parser.add_argument("--candidate-id", required=True)
+    parser.add_argument("--prompt-indices", type=parse_indices, required=True)
+    parser.add_argument("--split-name", choices=["calibration", "confirmation", "diagnostic"], required=True)
+    parser.add_argument("--base-run-dir", type=Path, default=DEFAULT_BASE_RUN_DIR)
+    parser.add_argument("--reference-run-dir", type=Path, default=DEFAULT_TIGHT_REFERENCE_RUN_DIR)
+    parser.add_argument("--delta-columns-dir", type=Path, default=DEFAULT_DELTA_COLUMNS_DIR)
+    parser.add_argument("--results-dir", type=Path, default=DEFAULT_RESULTS_DIR)
+    parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--seed", type=int, default=checker.BOOTSTRAP_SEED)
+    parser.add_argument("--device", default="auto")
+    parser.add_argument("--dtype", choices=["bfloat16", "float16", "float32"], default="bfloat16")
+    parser.add_argument("--group-size", type=int, default=128)
+    parser.add_argument("--num-rotations", type=int, default=8)
+    parser.add_argument("--row-chunk", type=int, default=256)
+    parser.add_argument("--scale-clip-min", type=float, required=True)
+    parser.add_argument("--scale-clip-max", type=float, required=True)
+    args = parser.parse_args(argv)
+
+    shared.SCHEMA_VERSION = SCHEMA_VERSION
+    random.seed(args.seed)
+    run_dir = args.results_dir / args.run_id
+    if run_dir.exists():
+        raise SystemExit(f"run directory already exists: {run_dir}")
+    (run_dir / "logs").mkdir(parents=True)
+    stdout_log = (run_dir / "logs/stdout.log").open("w", encoding="utf-8", buffering=1)
+    stderr_log = (run_dir / "logs/stderr.log").open("w", encoding="utf-8", buffering=1)
+    sys.stdout = shared.Tee(sys.__stdout__, stdout_log)
+    sys.stderr = shared.Tee(sys.__stderr__, stderr_log)
+    run_events_path = run_dir / "run_events.jsonl"
+    run_events_path.write_text(
+        json.dumps({"created_at_utc": shared.utc_now(), "event": "run_started"}, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    try:
+        base_run_dir = args.base_run_dir.resolve()
+        prompt_manifest, prompt_reasons = paro_runner.build_prompt_manifest(checker.DEFAULT_PROMPT_FILE)
+        if prompt_reasons:
+            raise RuntimeError(f"canonical prompt manifest failed validation: {prompt_reasons}")
+        selected_indices = set(args.prompt_indices)
+        selected_prompts = [row for row in prompt_manifest["prompts"] if int(row["index"]) in selected_indices]
+        if [int(row["index"]) for row in selected_prompts] != args.prompt_indices:
+            raise RuntimeError("selected prompt indices are not present in canonical order")
+        prompt_manifest["prompts"] = selected_prompts
+        prompt_manifest["prompt_count"] = len(selected_prompts)
+        prompt_manifest["selection"] = f"driftrot_residual_{args.split_name}_subset"
+        prompt_manifest["selected_prompt_indices"] = args.prompt_indices
+        prompt_manifest["full_prompt_file_sha256"] = prompt_manifest["prompt_file_sha256"]
+        prompt_manifest["prompt_sha256"] = checker.prompt_payload_sha256(selected_prompts)
+
+        environment = shared.build_environment(schema_version=SCHEMA_VERSION)
+        model_provenance = m2_runner.resolve_model_snapshot_light(checker.MODEL_ID)
+        model_provenance["schema_version"] = f"{SCHEMA_VERSION}_model_provenance"
+        if model_provenance.get("hf_snapshot_commit") != checker.MODEL_SNAPSHOT:
+            raise RuntimeError("model snapshot missing or mismatch")
+
+        scale_clip = (float(args.scale_clip_min), float(args.scale_clip_max))
+        shared.write_json(run_dir / "prompt_manifest.json", prompt_manifest)
+        shared.write_json(run_dir / "environment.json", environment)
+        phase4_runner.write_environment_text(run_dir / "environment.txt", environment)
+        shared.write_json(run_dir / "model_provenance.json", model_provenance)
+        shared.write_json(
+            run_dir / "command_metadata.json",
+            {
+                "schema_version": f"{SCHEMA_VERSION}_command",
+                "created_at_utc": shared.utc_now(),
+                "argv": sys.argv if argv is None else ["run_om_driftrot_residual_subset.py", *argv],
+                "cwd": str(Path.cwd()),
+                "run_dir": str(run_dir),
+                "base_run_dir": str(base_run_dir),
+            },
+        )
+        shared.write_json(run_dir / "random_seed.json", {"schema_version": f"{SCHEMA_VERSION}_random_seed", "seed": args.seed})
+        shared.write_json(
+            run_dir / "decoding_config.json",
+            {
+                "schema_version": f"{SCHEMA_VERSION}_decoding_config",
+                "scoring_position": checker.SCORING_POSITION,
+                "scoring_window_tokens": checker.SCORING_WINDOW_TOKENS,
+                "selected_prompt_indices": args.prompt_indices,
+            },
+        )
+        shared.write_json(
+            run_dir / "config.json",
+            {
+                "schema_version": f"{SCHEMA_VERSION}_config",
+                "experiment_id": "driftrot_granite_residual_correction",
+                "candidate_id": args.candidate_id,
+                "split_name": args.split_name,
+                "prompt_indices": args.prompt_indices,
+                "preregistration": str(PREREG_PATH.relative_to(ROOT)),
+                "base_run_dir": str(base_run_dir),
+                "reference_run_dir": str(args.reference_run_dir.resolve()) if args.reference_run_dir else None,
+                "delta_columns_dir": str(args.delta_columns_dir.resolve()),
+                "group_size": args.group_size,
+                "num_rotations": args.num_rotations,
+                "scale_clip": list(scale_clip),
+            },
+        )
+        command = " ".join(sys.argv)
+        (run_dir / "command.sh").write_text("#!/usr/bin/env bash\nset -euo pipefail\n" + command + "\n", encoding="utf-8")
+        (run_dir / "command.sh").chmod(0o755)
+        shared.write_json(
+            run_dir / "traces_used.json",
+            {
+                "schema_version": f"{SCHEMA_VERSION}_traces_used",
+                "split_name": args.split_name,
+                "prompt_indices": args.prompt_indices,
+                "prompt_ids": [row["prompt_id"] for row in selected_prompts],
+            },
+        )
+
+        target_tokens_all = phase4_runner.load_trace_tokens(base_run_dir / "bf16_traces.jsonl.gz")
+        target_tokens = {index: target_tokens_all[index] for index in args.prompt_indices}
+        all_scores: dict[str, dict[int, dict[str, float]]] = {}
+        for regime in ["bf16", "static_1pct"]:
+            all_scores[regime] = read_and_filter_score_cache(base_run_dir, regime, args.prompt_indices)
+            paro_runner.write_score_cache(run_dir, regime, all_scores[regime])
+        reference_recovery = load_reference_recovery(
+            reference_run_dir=args.reference_run_dir,
+            prompt_indices=args.prompt_indices,
+            bf16_scores=all_scores["bf16"],
+            static_scores=all_scores["static_1pct"],
+        )
+
+        all_scores["driftrot_residual_w4a16"], excluded, installed = score_residual_regime(
+            model_provenance=model_provenance,
+            prompts=selected_prompts,
+            target_tokens=target_tokens,
+            batch_size=args.batch_size,
+            dtype_name=args.dtype,
+            device_name=args.device,
+            run_events_path=run_events_path,
+            group_size=args.group_size,
+            num_rotations=args.num_rotations,
+            row_chunk=args.row_chunk,
+            scale_clip=scale_clip,
+            delta_columns_dir=args.delta_columns_dir,
+        )
+        paro_runner.write_score_cache(run_dir, "driftrot_residual_w4a16", all_scores["driftrot_residual_w4a16"])
+        shared.write_json(run_dir / "excluded_tensors.json", {"schema_version": f"{SCHEMA_VERSION}_excluded_tensors", "by_regime": {"paroquant_w4a16": excluded}})
+        shared.write_json(run_dir / "installed_residual_corrections.json", installed)
+
+        rows: list[dict[str, Any]] = []
+        for prompt in selected_prompts:
+            index = int(prompt["index"])
+            perplexities = {
+                "bf16": float(all_scores["bf16"][index]["perplexity"]),
+                "static_1pct": float(all_scores["static_1pct"][index]["perplexity"]),
+                "driftrot_residual_w4a16": float(all_scores["driftrot_residual_w4a16"][index]["perplexity"]),
+            }
+            mean_nll = {
+                "bf16": float(all_scores["bf16"][index]["mean_nll"]),
+                "static_1pct": float(all_scores["static_1pct"][index]["mean_nll"]),
+                "driftrot_residual_w4a16": float(all_scores["driftrot_residual_w4a16"][index]["mean_nll"]),
+            }
+            static_gap = perplexities["static_1pct"] - perplexities["bf16"]
+            no_gap = static_gap <= 0.0
+            recovery = None if no_gap else 1.0 - (perplexities["driftrot_residual_w4a16"] - perplexities["bf16"]) / static_gap
+            ref = reference_recovery.get(index)
+            rows.append(
+                {
+                    "prompt_index": index,
+                    "prompt_id": prompt["prompt_id"],
+                    "split_name": args.split_name,
+                    "perplexities": perplexities,
+                    "mean_nll": mean_nll,
+                    "static_gap": float(static_gap),
+                    "no_recoverable_static_gap": bool(no_gap),
+                    "recoveries": {"driftrot_residual_w4a16": recovery, "reference_paroquant_w4a16": ref},
+                    "residual_minus_reference_recovery": None if recovery is None or ref is None else float(recovery) - float(ref),
+                    "scored_tokens": int(all_scores["bf16"][index]["scored_tokens"]),
+                    "score_start": int(all_scores["bf16"][index]["score_start"]),
+                    "score_end": int(all_scores["bf16"][index]["score_end"]),
+                }
+            )
+        included = [row for row in rows if not row["no_recoverable_static_gap"]]
+        values = [float(row["recoveries"]["driftrot_residual_w4a16"]) for row in included]
+        margins = [
+            float(row["residual_minus_reference_recovery"])
+            for row in included
+            if row["residual_minus_reference_recovery"] is not None
+        ]
+        summary = summarize(values)
+        summary.update(
+            {
+                "total_trace_count": len(rows),
+                "no_recoverable_static_gap_count": len(rows) - len(included),
+                "no_recoverable_static_gap_fraction": (len(rows) - len(included)) / len(rows) if rows else 0.0,
+                "reference_margin_median": float(median(margins)) if margins else None,
+                "reference_margin_mean": float(mean(margins)) if margins else None,
+            }
+        )
+        metrics = {
+            "schema_version": f"{SCHEMA_VERSION}_metrics",
+            "created_at_utc": shared.utc_now(),
+            "candidate_id": args.candidate_id,
+            "split_name": args.split_name,
+            "prompt_indices": args.prompt_indices,
+            "model_id": model_provenance.get("model_id"),
+            "model_snapshot_commit": model_provenance.get("hf_snapshot_commit"),
+            "metric_name": "positive-static-1pct-gap per-trace recovery",
+            "results_by_regime": {"driftrot_residual_w4a16": summary},
+        }
+        shared.write_json(run_dir / "per_trace_metrics.json", {"schema_version": f"{SCHEMA_VERSION}_per_trace_metrics", "created_at_utc": shared.utc_now(), "traces": rows})
+        shared.write_json(run_dir / "metrics.json", metrics)
+        shared.write_json(
+            run_dir / "decision.json",
+            {
+                "schema_version": f"{SCHEMA_VERSION}_decision",
+                "decision": "SUBSET_SCORED_PENDING_SPLIT_ANALYSIS",
+                "candidate_id": args.candidate_id,
+                "not_final_method_claim": True,
+                "reason": "Subset smoke results require comparison against reference ParoQuant and a held-out split before promotion.",
+            },
+        )
+        run_events_path.open("a", encoding="utf-8").write(json.dumps({"created_at_utc": shared.utc_now(), "event": "run_completed"}, sort_keys=True) + "\n")
+        shared.write_json(run_dir / "artifact_hashes.json", shared.build_artifact_hashes(run_dir, schema_version=SCHEMA_VERSION))
+        print(json.dumps({"run_dir": str(run_dir), "results_by_regime": metrics["results_by_regime"]}, indent=2, sort_keys=True))
+        return 0
+    except BaseException as exc:
+        write_failure_packet(run_dir, run_events_path, exc)
+        raise
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

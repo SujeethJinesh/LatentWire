@@ -1,0 +1,19 @@
+{
+  "base_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+  "candidate_id": "residual_tight_top8x32_tail4",
+  "delta_columns_dir": "/workspace/LatentWire/artifacts/rot_resid_correction/delta_columns_granite_tail4_top8x32_20260528T2048Z",
+  "experiment_id": "driftrot_granite_residual_correction",
+  "group_size": 128,
+  "num_rotations": 8,
+  "preregistration": "experimental/outlier_migrate/phase9/preregister_om_driftrot_granite_clip_cvar.md",
+  "prompt_indices": [
+    4
+  ],
+  "reference_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z",
+  "scale_clip": [
+    0.5,
+    2.0
+  ],
+  "schema_version": "om_driftrot_residual_subset_v1_config",
+  "split_name": "diagnostic"
+}

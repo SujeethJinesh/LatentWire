@@ -1,0 +1,14 @@
+{
+  "created_at_utc": "2026-05-28T21:40:37Z",
+  "regime": "driftrot_residual_w4a16",
+  "schema_version": "om_paroquant_baseline_v1_score_cache",
+  "scores": {
+    "4": {
+      "mean_nll": 0.04595187638187781,
+      "perplexity": 1.04702402316027,
+      "score_end": 10000,
+      "score_start": 9489,
+      "scored_tokens": 512
+    }
+  }
+}

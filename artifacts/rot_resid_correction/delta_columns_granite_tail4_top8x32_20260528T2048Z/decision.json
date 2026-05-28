@@ -1,0 +1,7 @@
+{
+  "decision": "DELTA_COLUMNS_MATERIALIZED_SMOKE_RUNNER_NEXT",
+  "not_final_method_claim": true,
+  "promote_to_gpu": false,
+  "reason": "Selected rotated-basis residual columns are now available; a correction wrapper and smoke scorer are still required.",
+  "schema_version": "om_driftrot_delta_columns_v1_decision"
+}

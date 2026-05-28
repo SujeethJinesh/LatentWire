@@ -1,0 +1,22 @@
+{
+  "results_by_regime": {
+    "driftrot_residual_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": -1088.8645513767176,
+        "ci95_low": -1088.8645513767176
+      },
+      "included_trace_count": 1,
+      "mean_recovery": -1088.8645513767176,
+      "median_recovery": -1088.8645513767176,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        -1088.8645513767176
+      ],
+      "reference_margin_mean": -1094.804174951982,
+      "reference_margin_median": -1094.804174951982,
+      "total_trace_count": 1
+    }
+  },
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_residual_granite_tail4_diag_20260528T2052Z"
+}
