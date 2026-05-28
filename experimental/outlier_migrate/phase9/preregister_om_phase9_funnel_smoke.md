@@ -15,6 +15,11 @@ This packet runs only the surviving non-WJAC smoke branches on DeepSeek and
 Falcon. It is not a full evaluation and cannot by itself support a paper
 positive-method claim.
 
+The runner supports a comma-separated `--methods` selector so later CPU gates
+can remove a branch without burning GPU on it. The frozen all-method packet is
+`--methods lambda,hyst`; the current Falcon-only gate uses `--methods hyst`
+because `artifacts/lambda_falcon/decision.json` defers standalone LAMBDA.
+
 ## Models and Smoke Traces
 
 DeepSeek-R1-Distill-Qwen-1.5B:

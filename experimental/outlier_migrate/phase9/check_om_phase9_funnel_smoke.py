@@ -45,7 +45,12 @@ REGIMES = [
     "random_hyst_top10",
 ]
 METHOD_REGIMES = ["mlambda_top10_smoke", "hyst_top10_smoke"]
-RECOVERY_REGIMES = ["m11b_top10", *METHOD_REGIMES, "random_lambda_top10", "random_hyst_top10"]
+METHOD_CONTROL_REGIMES = {
+    "mlambda_top10_smoke": "random_lambda_top10",
+    "hyst_top10_smoke": "random_hyst_top10",
+}
+BASE_SCORE_REGIMES = ["bf16", "static_1pct", "m11b_top10"]
+RECOVERY_REGIMES = ["m11b_top10", *METHOD_REGIMES, *METHOD_CONTROL_REGIMES.values()]
 
 PASS = "PASS_SMOKE_SURVIVOR"
 KILL = "KILL_SMOKE_NO_SURVIVOR"
@@ -72,13 +77,6 @@ REQUIRED_FILES = [
     "protected_trajectories.json",
     "quantization_config.json",
     "excluded_tensors.json",
-    "score_cache/bf16.json",
-    "score_cache/static_1pct.json",
-    "score_cache/m11b_top10.json",
-    "score_cache/mlambda_top10_smoke.json",
-    "score_cache/hyst_top10_smoke.json",
-    "score_cache/random_lambda_top10.json",
-    "score_cache/random_hyst_top10.json",
     "source_artifacts.json",
     "per_trace_metrics.json",
     "metrics.json",
@@ -88,12 +86,34 @@ REQUIRED_FILES = [
     "logs/stderr.log",
     "run_events.jsonl",
 ]
+BASE_SCORE_FILES = [f"score_cache/{regime}.json" for regime in BASE_SCORE_REGIMES]
 OPTIONAL_FILES = [
     "activation_magnitudes.jsonl.gz",
     "activation_magnitude_manifest.json",
     "bf16_traces.jsonl.gz",
     "bf16_trace_manifest.json",
 ]
+
+
+def active_method_regimes(metrics: dict[str, Any]) -> list[str]:
+    active = metrics.get("active_method_regimes")
+    if active is None:
+        return list(METHOD_REGIMES)
+    methods = [str(regime) for regime in active]
+    return [regime for regime in methods if regime in METHOD_REGIMES]
+
+
+def active_recovery_regimes(metrics: dict[str, Any]) -> list[str]:
+    methods = active_method_regimes(metrics)
+    controls = [METHOD_CONTROL_REGIMES[regime] for regime in methods]
+    return ["m11b_top10", *methods, *controls]
+
+
+def required_score_files(metrics: dict[str, Any] | None = None) -> list[str]:
+    if metrics is None:
+        return BASE_SCORE_FILES
+    regimes = ["bf16", "static_1pct", *active_recovery_regimes(metrics)]
+    return [f"score_cache/{regime}.json" for regime in regimes]
 
 
 def load_json(path: Path) -> Any:
@@ -114,7 +134,7 @@ def file_sha256(path: Path) -> str:
 
 def validate_files(run_dir: Path, infra: list[str]) -> dict[str, Any]:
     loaded: dict[str, Any] = {}
-    for rel in REQUIRED_FILES:
+    for rel in [*REQUIRED_FILES, *BASE_SCORE_FILES]:
         path = run_dir / rel
         if not path.is_file():
             infra.append(f"missing required file: {rel}")
@@ -162,13 +182,18 @@ def validate_metadata(loaded: dict[str, Any], infra: list[str]) -> None:
 
 
 def validate_scores(loaded: dict[str, Any], infra: list[str]) -> None:
-    results = loaded.get("metrics.json", {}).get("results_by_regime", {})
-    if set(results) != set(RECOVERY_REGIMES):
-        infra.append("metrics.results_by_regime mismatch")
-    for regime in RECOVERY_REGIMES:
+    metrics = loaded.get("metrics.json", {})
+    results = metrics.get("results_by_regime", {})
+    expected = set(active_recovery_regimes(metrics))
+    if set(results) != expected:
+        infra.append(f"metrics.results_by_regime mismatch: expected {sorted(expected)} got {sorted(results)}")
+    for regime in expected:
         summary = results.get(regime, {})
         if summary.get("median_recovery") is None and int(summary.get("included_trace_count", 0)) > 0:
             infra.append(f"{regime}.median_recovery missing")
+    for rel in required_score_files(metrics):
+        if not (Path(loaded.get("__run_dir__", "")) / rel).is_file():
+            infra.append(f"missing required score file: {rel}")
     per_trace = loaded.get("per_trace_metrics.json", {}).get("traces", [])
     if len(per_trace) != TRACE_COUNT:
         infra.append("per_trace_metrics trace count mismatch")
@@ -178,18 +203,19 @@ def validate_scores(loaded: dict[str, Any], infra: list[str]) -> None:
 
 
 def validate_protected_sets(loaded: dict[str, Any], infra: list[str]) -> None:
+    metrics = loaded.get("metrics.json", {})
     protected = loaded.get("protected_sets.json", {})
     regimes = protected.get("regimes", {})
-    expected = {"static_1pct", "m11b_top10", "mlambda_top10_smoke", "hyst_top10_smoke", "random_lambda_top10", "random_hyst_top10"}
-    if set(regimes) != expected:
-        infra.append("protected_sets.regimes mismatch")
+    expected = {"static_1pct", *active_recovery_regimes(metrics)}
+    if not expected.issubset(set(regimes)):
+        infra.append(f"protected_sets.regimes missing expected entries: {sorted(expected - set(regimes))}")
         return
     base_layers = set(regimes["m11b_top10"]["layers"])
     for regime in expected:
         if set(regimes[regime]["layers"]) != base_layers:
             infra.append(f"{regime} layer keys mismatch")
     m11b_total = sum(int(layer["protected_count"]) for layer in regimes["m11b_top10"]["layers"].values())
-    for regime in ["mlambda_top10_smoke", "hyst_top10_smoke", "random_lambda_top10", "random_hyst_top10"]:
+    for regime in expected - {"static_1pct", "m11b_top10"}:
         total = sum(int(layer["protected_count"]) for layer in regimes[regime]["layers"].values())
         if total != m11b_total:
             infra.append(f"{regime} total budget mismatch")
@@ -201,7 +227,8 @@ def validate_hashes(run_dir: Path, loaded: dict[str, Any], infra: list[str]) -> 
         infra.append("artifact_hashes.artifacts must be a list")
         return
     by_path = {str(row.get("path")): row for row in entries if isinstance(row, dict)}
-    for rel in [*REQUIRED_FILES, *[rel for rel in OPTIONAL_FILES if (run_dir / rel).is_file()]]:
+    metrics = loaded.get("metrics.json", {})
+    for rel in [*REQUIRED_FILES, *required_score_files(metrics), *[rel for rel in OPTIONAL_FILES if (run_dir / rel).is_file()]]:
         if rel == "artifact_hashes.json":
             continue
         path = run_dir / rel
@@ -221,7 +248,7 @@ def decision_from_metrics(metrics: dict[str, Any]) -> tuple[str, list[str], dict
     m11b_values = results["m11b_top10"].get("per_trace_recovery_included", [])
     survivors: dict[str, Any] = {}
     reasons: list[str] = []
-    for regime in METHOD_REGIMES:
+    for regime in active_method_regimes(metrics):
         summary = results[regime]
         values = summary.get("per_trace_recovery_included", [])
         if not values or not m11b_values:
@@ -250,6 +277,7 @@ def decision_from_metrics(metrics: dict[str, Any]) -> tuple[str, list[str], dict
 def evaluate(run_dir: Path) -> dict[str, Any]:
     infra: list[str] = []
     loaded = validate_files(run_dir, infra)
+    loaded["__run_dir__"] = str(run_dir)
     if (run_dir / "infra_error.json").is_file():
         infra.append("infra_error.json present")
     if not infra:

@@ -36,7 +36,11 @@ SOURCE_RUNS = {
     "falcon": ROOT / "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z",
 }
 BASELINE_REGIMES = ["bf16", "static_1pct", "m11b_top10"]
-NEW_REGIMES = ["mlambda_top10_smoke", "hyst_top10_smoke", "random_lambda_top10", "random_hyst_top10"]
+METHOD_REGIMES_BY_NAME = {
+    "lambda": ("mlambda_top10_smoke", "random_lambda_top10"),
+    "hyst": ("hyst_top10_smoke", "random_hyst_top10"),
+}
+DEFAULT_METHODS = ("lambda", "hyst")
 UPDATE_POSITIONS = tuple(range(100, checker.SCORING_POSITION + 1, 100))
 SMOKE_SELECTION_SOURCE = "docs/smoke_trace_selection.md"
 
@@ -336,12 +340,17 @@ def write_score_cache(run_dir: Path, regime: str, scores: dict[int, dict[str, fl
     )
 
 
-def build_per_trace_rows(prompts: list[dict[str, Any]], all_scores: dict[str, dict[int, dict[str, float]]]) -> list[dict[str, Any]]:
+def build_per_trace_rows(
+    prompts: list[dict[str, Any]],
+    all_scores: dict[str, dict[int, dict[str, float]]],
+    score_regimes: list[str],
+    recovery_regimes: list[str],
+) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for prompt in prompts:
         index = int(prompt["index"])
-        perplexities = {regime: float(all_scores[regime][index]["perplexity"]) for regime in checker.REGIMES}
-        mean_nll = {regime: float(all_scores[regime][index]["mean_nll"]) for regime in checker.REGIMES}
+        perplexities = {regime: float(all_scores[regime][index]["perplexity"]) for regime in score_regimes}
+        mean_nll = {regime: float(all_scores[regime][index]["mean_nll"]) for regime in score_regimes}
         static_gap = perplexities["static_1pct"] - perplexities["bf16"]
         no_gap = static_gap <= 0.0
         recoveries = {
@@ -382,11 +391,15 @@ def build_metrics(
     model_provenance: dict[str, Any],
     per_trace_rows: list[dict[str, Any]],
     protected_trajectories: dict[str, Any],
+    active_methods: list[str],
+    method_regimes: list[str],
+    control_regimes: list[str],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     included = [row for row in per_trace_rows if not bool(row["no_recoverable_static_gap"])]
+    recovery_regimes = ["m11b_top10", *method_regimes, *control_regimes]
     summaries = {
         regime: summarize([float(row["recoveries"][regime]) for row in included])
-        for regime in checker.RECOVERY_REGIMES
+        for regime in recovery_regimes
     }
     no_gap_count = len(per_trace_rows) - len(included)
     for summary in summaries.values():
@@ -410,6 +423,9 @@ def build_metrics(
         "scoring_window_tokens": checker.SCORING_WINDOW_TOKENS,
         "metric_name": "positive-static-1pct-gap per-trace recovery",
         "metric_formula": "1 - (perplexity_regime - perplexity_BF16) / (perplexity_static_1pct - perplexity_BF16)",
+        "active_methods": active_methods,
+        "active_method_regimes": method_regimes,
+        "active_control_regimes": control_regimes,
         "results_by_regime": summaries,
         "thresholds": checker.THRESHOLDS,
         "protected_set_count_stats": protected_trajectories.get("protected_set_count_stats", {}),
@@ -418,17 +434,14 @@ def build_metrics(
     controls = {
         "schema_version": f"{checker.SCHEMA_VERSION}_control_metrics",
         "created_at_utc": shared.utc_now(),
-        "controls": {
-            "random_lambda_top10": summaries["random_lambda_top10"],
-            "random_hyst_top10": summaries["random_hyst_top10"],
-        },
+        "controls": {regime: summaries[regime] for regime in control_regimes},
         "method_minus_m11b": {
             regime: (
                 None
                 if summaries[regime]["median_recovery"] is None or summaries["m11b_top10"]["median_recovery"] is None
                 else float(summaries[regime]["median_recovery"]) - float(summaries["m11b_top10"]["median_recovery"])
             )
-            for regime in checker.METHOD_REGIMES
+            for regime in method_regimes
         },
     }
     return metrics, controls
@@ -455,7 +468,15 @@ def source_artifacts(source_dir: Path) -> dict[str, Any]:
     return {"schema_version": f"{checker.SCHEMA_VERSION}_source_artifacts", "created_at_utc": shared.utc_now(), "artifacts": artifacts}
 
 
-def write_run_contract(run_dir: Path, args: argparse.Namespace, model_key: str, prompt_indices: list[int]) -> None:
+def write_run_contract(
+    run_dir: Path,
+    args: argparse.Namespace,
+    model_key: str,
+    prompt_indices: list[int],
+    active_methods: list[str],
+    score_regimes: list[str],
+    new_regimes: list[str],
+) -> None:
     command = " ".join(sys.argv)
     shared.write_json(
         run_dir / "config.json",
@@ -465,8 +486,9 @@ def write_run_contract(run_dir: Path, args: argparse.Namespace, model_key: str, 
             "model_key": model_key,
             "source_run_dir": str(args.source_run_dir or SOURCE_RUNS[model_key]),
             "prompt_indices": prompt_indices,
-            "regimes": checker.REGIMES,
-            "new_regimes": NEW_REGIMES,
+            "active_methods": active_methods,
+            "regimes": score_regimes,
+            "new_regimes": new_regimes,
             "batch_size": args.batch_size,
             "dtype": args.dtype,
             "device": args.device,
@@ -499,12 +521,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--device", default="auto")
     parser.add_argument("--dtype", choices=["bfloat16", "float16", "float32"], default="bfloat16")
     parser.add_argument(
+        "--methods",
+        default=",".join(DEFAULT_METHODS),
+        help="Comma-separated smoke methods to score. Choices: lambda,hyst. Default preserves the original all-method packet.",
+    )
+    parser.add_argument(
         "--hyst-exit-margin-pct-points",
         type=float,
         default=10.0,
         help="HYST exit margin in percentage points above the enter top-k percent; 10 preserves the original top-2k policy.",
     )
     args = parser.parse_args(argv)
+    active_methods = [method.strip() for method in args.methods.split(",") if method.strip()]
+    invalid_methods = sorted(set(active_methods) - set(METHOD_REGIMES_BY_NAME))
+    if invalid_methods:
+        raise SystemExit(f"unknown smoke methods: {invalid_methods}")
+    if not active_methods:
+        raise SystemExit("--methods must include at least one smoke method")
+    method_regimes = [METHOD_REGIMES_BY_NAME[method][0] for method in active_methods]
+    control_regimes = [METHOD_REGIMES_BY_NAME[method][1] for method in active_methods]
+    new_regimes = [regime for pair in (METHOD_REGIMES_BY_NAME[method] for method in active_methods) for regime in pair]
+    score_regimes = [*BASELINE_REGIMES, *new_regimes]
 
     model_key = args.model_key
     spec = checker.MODEL_SPECS[model_key]
@@ -536,7 +573,7 @@ def main(argv: list[str] | None = None) -> int:
     random.seed(args.seed)
 
     try:
-        write_run_contract(run_dir, args, model_key, prompt_indices)
+        write_run_contract(run_dir, args, model_key, prompt_indices, active_methods, score_regimes, new_regimes)
         copy_packet_inputs(source_dir, run_dir, prompt_index_set)
         prompt_manifest = filtered_prompt_manifest(source_dir, prompt_indices)
         model_provenance = load_json(run_dir / "model_provenance.json")
@@ -556,6 +593,7 @@ def main(argv: list[str] | None = None) -> int:
                 "run_dir": str(run_dir),
                 "source_run_dir": str(source_dir),
                 "model_key": model_key,
+                "active_methods": active_methods,
                 "batch_size": args.batch_size,
             },
         )
@@ -593,7 +631,7 @@ def main(argv: list[str] | None = None) -> int:
             write_score_cache(run_dir, regime, all_scores[regime])
             if regime != "bf16":
                 excluded_by_regime[regime] = {"regime": regime, "reused_score_cache": str(source_dir)}
-        for regime in NEW_REGIMES:
+        for regime in new_regimes:
             run_events_path.open("a", encoding="utf-8").write(
                 json.dumps({"created_at_utc": shared.utc_now(), "event": "score_regime_started", "regime": regime}, sort_keys=True) + "\n"
             )
@@ -613,12 +651,22 @@ def main(argv: list[str] | None = None) -> int:
             run_dir / "excluded_tensors.json",
             {"schema_version": f"{checker.SCHEMA_VERSION}_excluded_tensors", "created_at_utc": shared.utc_now(), "by_regime": excluded_by_regime},
         )
-        per_trace_rows = build_per_trace_rows(prompts, all_scores)
+        per_trace_rows = build_per_trace_rows(prompts, all_scores, score_regimes, ["m11b_top10", *method_regimes, *control_regimes])
         shared.write_json(
             run_dir / "per_trace_metrics.json",
             {"schema_version": f"{checker.SCHEMA_VERSION}_per_trace_metrics", "created_at_utc": shared.utc_now(), "traces": per_trace_rows},
         )
-        metrics, controls = build_metrics(run_dir, model_key, prompt_manifest, model_provenance, per_trace_rows, protected_trajectories)
+        metrics, controls = build_metrics(
+            run_dir,
+            model_key,
+            prompt_manifest,
+            model_provenance,
+            per_trace_rows,
+            protected_trajectories,
+            active_methods,
+            method_regimes,
+            control_regimes,
+        )
         shared.write_json(run_dir / "metrics.json", metrics)
         shared.write_json(run_dir / "control_metrics.json", controls)
         run_events_path.open("a", encoding="utf-8").write(
