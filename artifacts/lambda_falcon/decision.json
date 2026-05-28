@@ -1,0 +1,17 @@
+{
+  "created_at_utc": "2026-05-28T06:27:24Z",
+  "reason": "The stability-weighted prior reallocates 18.9% of total budget away from flat M11b and has a 68-160 channel layer range, but Falcon-H1 is not routable, M11b top-10 median recovery is only 0.04394 with CI crossing zero, and no cached causal per-layer recovery/no-gap curve shows that reallocation should rescue the fixed traces.",
+  "run_smoke": false,
+  "schema_version": "lambda_falcon_decision_v1",
+  "source_files": [
+    "artifacts/funnel_prefilters/decision.json",
+    "artifacts/funnel_prefilters/smoke_traces.json",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/metrics.json",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/checker_result.json",
+    "experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/metrics.json",
+    "experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z/model_provenance.json",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/experiments/08_m11b_falcon/summary.md",
+    "artifacts/external_review_pack/om_positive_method_pack_20260528_0536/tables/drift_summary_by_layer.csv"
+  ],
+  "status": "DEFER_STANDALONE_FALCON_LAMBDA_SMOKE"
+}
