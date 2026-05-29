@@ -1,0 +1,34 @@
+{
+  "artifact": "surface_topk_rows.jsonl.gz",
+  "artifact_sha256": "sha256:6d184da98e7549b71a38106142ea01e3a73d04d453d9c9099027597421930803",
+  "created_at_utc": "2026-05-29T03:39:21Z",
+  "positions": [
+    100,
+    20000
+  ],
+  "prompt_events": [
+    {
+      "first_eos_decode_position": 228,
+      "input_token_count": 56,
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "prompt_index": 0
+    },
+    {
+      "first_eos_decode_position": 632,
+      "input_token_count": 163,
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "prompt_index": 1
+    }
+  ],
+  "row_count": 896,
+  "schema_version": "om_phase9_msurface_sanity_v1_surface_manifest",
+  "surfaces": [
+    "ssm_input_after_conv",
+    "ssm_B_generation_after_conv",
+    "ssm_C_generation_after_conv",
+    "ssm_BC_generation_concat_after_conv",
+    "mamba_out_projection_input",
+    "attention_out_projection_input",
+    "post_block_residual_block_output"
+  ]
+}

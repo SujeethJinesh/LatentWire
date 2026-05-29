@@ -1,12 +1,10 @@
 {
-  "created_at_utc": "2026-05-29T03:40:22Z",
   "decision": "KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT",
   "decision_reasons": [
     "no internal surface had mean strict leaving <0.30 or <=-0.15 paired delta vs post-block"
   ],
   "per_unit_count": 448,
-  "schema_version": "msurface_complete_metrics_v2",
-  "source_run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_internals_20260529T030958Z",
+  "schema_version": "om_phase9_msurface_sanity_v1_metrics",
   "surface_metrics": {
     "attention_out_projection_input": {
       "mean_internal_minus_post_block_same_layer": 0.24999999999999997,

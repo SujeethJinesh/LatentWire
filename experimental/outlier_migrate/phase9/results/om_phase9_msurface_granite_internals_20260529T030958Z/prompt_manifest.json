@@ -1,0 +1,23 @@
+{
+  "prompts": [
+    {
+      "answer": "70",
+      "index": 0,
+      "prompt": "Find the sum of all integer bases $b>9$ for which $17_{b}$ is a divisor of $97_{b}$.",
+      "prompt_id": "opencompass_AIME2025_I_0",
+      "source_commit": "a6ad95f611d72cf628a80b58bd0432ef6638f958",
+      "source_dataset": "opencompass/AIME2025",
+      "source_file": "aime2025-I.jsonl"
+    },
+    {
+      "answer": "588",
+      "index": 1,
+      "prompt": "On $\\triangle ABC$ points $A,D,E$, and $B$ lie that order on side $\\overline{AB}$ with $AD=4, DE=16$, and $EB=8$. Points $A,F,G$, and $C$ lie in that order on side $\\overline{AC}$ with $AF=13, FG=52$, and $GC=26$. Let $M$ be the reflection of $D$ through $F$, and let $N$ be the reflection of $G$ through $E$. Quadrilateral $DEGF$ has area 288. Find the area of heptagon $AFNBCEM$.",
+      "prompt_id": "opencompass_AIME2025_I_1",
+      "source_commit": "a6ad95f611d72cf628a80b58bd0432ef6638f958",
+      "source_dataset": "opencompass/AIME2025",
+      "source_file": "aime2025-I.jsonl"
+    }
+  ],
+  "schema_version": "om_phase9_msurface_sanity_v1_prompt_manifest"
+}

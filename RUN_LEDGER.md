@@ -116,9 +116,9 @@ The final bounded gate after the K-RES kill has been artifactized:
 |---|---|---|---|
 | K-RES failure audit | `artifacts/k_res_audit/` | `VALID_IMPLEMENTATION_KEEP_K_RES_PROXY_KILLED` | The top-8x32 residual-energy proxy was compared against the correct tight ParoQuant baseline on the same Granite tail trace/window; no implementation mismatch was found. Do not rerun this proxy. |
 | Restricted residual KLLOOK oracle | `artifacts/kllook_residual_oracle/` | `NOT_EXECUTED_NO_ROTATED_RESIDUAL_KLLOOK_RUNNER` | The repo has an original-basis M-KLLOOK runner, not a post-ParoQuant rotated-residual oracle. No residual-oracle evidence exists, so residual correction is not promoted. |
-| Complete M-SURFACE readout | `artifacts/msurface_complete/` | `MEASURED_CHEAP_SURFACES_NO_PROMOTE__SSM_BC_INCOMPLETE` | Granite Mamba out-proj input and attention o-proj input drift more than post-block; SurfaceRot/SurfaceProtect is not promoted from measured evidence. SSM input/B/C remain unmeasured. |
-| Falcon BranchRot readout | `artifacts/falcon_branchrot_diagnostic/` | `DEFER_NO_BRANCH_LOCAL_CACHE_NO_PROMOTE` | Falcon branch hooks are feasible, but branch-local activations are not cached. No BranchRot promotion; this is a defer, not a measured kill. |
-| Final path decision | `artifacts/final_path_decision.md` | `MECHANISM_REGIME_PAPER` | Stop the current DriftRot positive-method search unless a new preregistered residual KLLOOK or branch/surface packet is explicitly opened. |
+| Complete M-SURFACE readout | `artifacts/msurface_complete/` | `KILL_MSURFACE_NO_LOWER_INTERNAL_SURFACE` | Complete Granite internals run measured SSM input/B/C plus projection-input surfaces. Best internal means were SSM input 0.484 and SSM C 0.486 versus post-block 0.546, not enough to promote. |
+| Falcon BranchRot readout | `artifacts/falcon_branchrot_diagnostic/` | `DEFERRED_TO_FUTURE_WORK_NOT_RUN_THIS_PASS` | BranchRot was deferred unless M-SURFACE promoted. M-SURFACE did not promote, and branch-local Falcon activations are not cached. |
+| Final path decision | `artifacts/final_path_decision.md` | `MECHANISM_REGIME_PAPER` | Stop the current DriftRot positive-method search. |
 
 Current next exact gate: finalize the mechanism/regime paper and audit/repro
 package. Do not claim ParoQuant as our method, and do not claim residual

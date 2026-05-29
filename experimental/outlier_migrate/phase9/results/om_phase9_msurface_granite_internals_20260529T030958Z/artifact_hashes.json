@@ -1,0 +1,56 @@
+{
+  "artifacts": [
+    {
+      "bytes": 267,
+      "path": "command.sh",
+      "sha256": "sha256:2cfca7674afdb13101db363779d20f86d8a37cbb7c59f05bc48236cb58bfd34c"
+    },
+    {
+      "bytes": 515,
+      "path": "config.json",
+      "sha256": "sha256:75d788a4aa93f8ca255a7f429fd42797e885ca8023d9710c7f5480a554ce932a"
+    },
+    {
+      "bytes": 232,
+      "path": "decision.json",
+      "sha256": "sha256:4b2bb9bcbacd01a7733a4ab90ce8431a84c41ff64810ec59dea4a15bfbb3cf23"
+    },
+    {
+      "bytes": 2489,
+      "path": "metrics.json",
+      "sha256": "sha256:2ff0929e8e2b350b07d5ea99d199c3167bf60dadf6471ed77a5eb71a98233274"
+    },
+    {
+      "bytes": 9288,
+      "path": "model_provenance.json",
+      "sha256": "sha256:85b8e7461efa3ec07fd2b0cbf59fed2ec928c337c4ede31d3f75b7a067dbb389"
+    },
+    {
+      "bytes": 1109,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:6259b5ed7780dcc6f3bc01937b680f53e714c68b7fda0897285dc70b41766c8b"
+    },
+    {
+      "bytes": 249,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:ea779934508b60ab2d6a20f16ce0f1f367e0e91e24a170e62d688f682a210ccb"
+    },
+    {
+      "bytes": 926,
+      "path": "surface_manifest.json",
+      "sha256": "sha256:c0dfb44ea4edee421594e5036c233c71959d1cb1308eea1b93c4e9c1f7315b40"
+    },
+    {
+      "bytes": 78686,
+      "path": "surface_topk_rows.jsonl.gz",
+      "sha256": "sha256:6d184da98e7549b71a38106142ea01e3a73d04d453d9c9099027597421930803"
+    },
+    {
+      "bytes": 26798,
+      "path": "surface_unit_metrics.csv",
+      "sha256": "sha256:a01b5c9c7e19bcb1e9ca01445ab5d5b3a341b1581a5c4bcb9e6799e4584a4b41"
+    }
+  ],
+  "created_at_utc": "2026-05-29T03:39:21Z",
+  "schema_version": "om_phase9_msurface_sanity_v1_artifact_hashes"
+}

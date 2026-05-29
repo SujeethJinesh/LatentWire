@@ -1,0 +1,17 @@
+{
+  "device": "auto",
+  "dtype": "bfloat16",
+  "max_new_tokens": 20000,
+  "positions": [
+    100,
+    20000
+  ],
+  "prompt_indices": [
+    0,
+    1
+  ],
+  "results_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results",
+  "run_id": "om_phase9_msurface_granite_internals_20260529T030958Z",
+  "schema_version": "om_phase9_msurface_sanity_v1_config",
+  "source_run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z"
+}

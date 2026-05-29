@@ -1,7 +1,7 @@
 # Falcon M-BRANCH / BranchRot Diagnostic
 
-Decision: `DEFER_NO_BRANCH_LOCAL_CACHE_NO_PROMOTE`.
+Decision: `DEFERRED_TO_FUTURE_WORK_NOT_RUN_THIS_PASS`.
 
-Falcon BranchRot is not promoted because there is no branch-local drift measurement. Existing Falcon evidence is post-block/post-layer only. The hook map shows feasible attention and Mamba branch surfaces, but no cached branch-local activation packet exists.
+BranchRot was intentionally deferred in the revised final gate unless M-SURFACE promoted. The complete Granite M-SURFACE internals run did not promote, and Falcon branch-local activations are still not cached.
 
-This is not a measured kill. It is a defer decision: run a tiny hook diagnostic only if a future branch-local hypothesis becomes the highest-value positive-method gate.
+This is not a measured Falcon branch kill. It is future work: a future packet would need attention/Mamba branch-local activations and a promotion signal at least 0.15 below the post-block drift baseline or strong branch-local conditioning/range headroom.

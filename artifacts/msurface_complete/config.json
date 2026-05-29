@@ -1,5 +1,5 @@
 {
-  "executed_run": "experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_sanity_20260529T0032Z",
+  "executed_run": "experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_internals_20260529T030958Z",
   "positions": [
     100,
     20000
@@ -8,19 +8,14 @@
     0,
     1
   ],
-  "schema_version": "msurface_complete_config_v1",
+  "schema_version": "msurface_complete_config_v2",
   "surfaces_measured": [
-    "Granite Mamba out-proj input",
-    "Granite attention o-proj input",
-    "Granite post-block output"
-  ],
-  "surfaces_not_measured_reason": "SSM input and B/C are local tensors inside torch_forward and not stable module-hook surfaces in the existing packet.",
-  "surfaces_requested": [
-    "SSM input",
-    "B/C generation surface",
-    "Mamba out-proj input",
-    "attention o-proj input",
-    "post-concat/pre-output-proj where relevant",
-    "post-block output"
+    "ssm_input_after_conv",
+    "ssm_B_generation_after_conv",
+    "ssm_C_generation_after_conv",
+    "ssm_BC_generation_concat_after_conv",
+    "mamba_out_projection_input",
+    "attention_out_projection_input",
+    "post_block_residual_block_output"
   ]
 }

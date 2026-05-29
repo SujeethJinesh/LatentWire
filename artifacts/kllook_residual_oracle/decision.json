@@ -1,13 +1,20 @@
 {
-  "created_at_utc": "2026-05-29T02:56:52Z",
-  "decision": "NOT_EXECUTED_NO_ROTATED_RESIDUAL_KLLOOK_RUNNER",
+  "created_at_utc": "2026-05-29T03:12:38Z",
+  "decision": "NO_RUN_EXCEEDS_ONE_HOUR_RUNNER_GATE",
   "existing_kres_audit_decision": "VALID_IMPLEMENTATION_KEEP_K_RES_PROXY_KILLED",
   "existing_residual_proxy_recovery": -12.293656857340855,
   "git_commit": "05d80f6cc3354edbf47338443984fbf2c52c8c78",
+  "hard_pass_bar": [
+    "large KL/recovery headroom, not a small calibration-tail improvement",
+    "no harm on representative confirmation traces",
+    "selected columns materially different from killed top-8x32 residual-energy proxy",
+    "acceptable HBM/energy overhead"
+  ],
   "not_used_as_evidence": "experimental/outlier_migrate/phase9/run_om_phase9_mkllook.py is original-basis M-KLLOOK, not residual KLLOOK",
   "promote_residual_correction": false,
-  "reason": "The available M-KLLOOK runner scores original-basis protected-channel sets, not post-ParoQuant rotated-basis residual corrections. The fixed K-RES packet captured endpoint loss for the top-8x32 residual-energy proxy but did not capture per-candidate logits/KL. Reusing original-basis M-KLLOOK here would be a category error, so this oracle is recorded as not executed and cannot overturn the K-RES kill.",
+  "reason": "Building a correct rotated-basis residual KLLOOK runner is not a <=1 hour change: the existing M-KLLOOK runner patches original-basis channel weights, while the requested oracle must apply post-ParoQuant residual sidecars per candidate/group, capture BF16/current/corrected logits, and confirm on held-out representative traces. The valid K-RES endpoint audit already supports killing the current proxy, so we record NO_RUN rather than restarting selector search.",
   "required_future_runner": "rotated-basis per-candidate residual correction KL runner with calibration/confirmation split",
+  "runner_build_gate": "<=1 hour or NO_RUN",
   "schema_version": "kllook_residual_oracle_decision_v1",
   "tight_paroquant_reference_recovery": 5.939623575264381
 }
