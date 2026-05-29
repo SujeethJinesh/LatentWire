@@ -20,3 +20,13 @@ Using a 10--20 pJ/byte HBM range and 1--5 pJ/MAC range, the correction is
 memory-bound for the representative widths in Table~\ref{tab:systems-envelope}.
 Because the current residual-energy selector did not pass recovery gates, this
 is a cost envelope for future selectors, not a deployed method claim.
+
+For the killed Granite top-8x32 diagnostic, the active aggregate uses the MoE
+projection width rather than the representative Granite dense width:
+\[
+8 \text{ modules} \times 10 \text{ active experts} \times
+1536 \text{ output rows} \times 32 \text{ columns}
+= 3.93\mathrm{M}\ \mathrm{MACs/token}.
+\]
+The corresponding active residual-column traffic is about 7.5 MiB/token before
+any cache residency, batching, or gather/scatter effects.

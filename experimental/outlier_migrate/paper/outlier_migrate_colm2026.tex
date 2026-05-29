@@ -210,7 +210,11 @@ The same residual screen also gives a useful systems bound. For $m$ corrected mo
   \mathrm{HBM/token} \approx m e r k b,\quad
   E_{\mathrm{token}}\approx B_{\mathrm{HBM}}\epsilon_{\mathrm{HBM}}+\mathrm{MACs}\,\epsilon_{\mathrm{MAC}}.
 \]
-The hot working set is the sum of stored residual sidecars, $\sum_j r_j k_j b$. The tested top-8x32 Granite sidecar stores 54.0 MiB of FP16 residual columns. With 10 active experts, 1536 output rows, 32 corrected input columns, and eight corrected MoE input modules, a naive correction would add roughly 3.9M multiply-accumulates per generated token and stream about 7.5 MiB/token of active residual columns if the sidecar is not cache-resident. This aggregate estimate is the per-projection envelope multiplied by the corrected modules and active experts. It assumes no useful cross-token cache residency for the active sidecar; batching or locality could reduce HBM traffic, while gather/scatter and launch overheads could increase latency. Using a simple device-agnostic 10--20 pJ/byte HBM and 1--5 pJ/MAC analytical cost model, that is on the order of 83--177M pJ/token before kernel overhead. Because the quality gate fails, we do not implement the kernel or report profiler measurements; the analytical estimate records what a successful residual method would need to justify. Appendix~\ref{app:systems-envelope} reports the per-projection envelope used to generate the artifact cost table.
+The hot working set is the sum of stored residual sidecars, $\sum_j r_j k_j b$. The tested top-8x32 Granite sidecar stores 54.0 MiB of FP16 residual columns. With 10 active experts, 1536 output rows, 32 corrected input columns, and eight corrected MoE input modules, a naive correction would add
+\[
+8 \times 10 \times 1536 \times 32 = 3.93\mathrm{M}
+\]
+multiply-accumulates per generated token and stream about 7.5 MiB/token of active residual columns if the sidecar is not cache-resident. This aggregate row is not the $K{=}8$ Granite-width row multiplied by modules; it uses the actual MoE projection width and $K{=}32$ columns per active expert/module in the killed top-8x32 diagnostic. It assumes no useful cross-token cache residency for the active sidecar; batching or locality could reduce HBM traffic, while gather/scatter and launch overheads could increase latency. Using a simple device-agnostic 10--20 pJ/byte HBM and 1--5 pJ/MAC analytical cost model, that is on the order of 83--177M pJ/token before kernel overhead. Because the quality gate fails, we do not implement the kernel or report profiler measurements; the analytical estimate records what a successful residual method would need to justify. Appendix~\ref{app:systems-envelope} reports the per-projection envelope used to generate the artifact cost table.
 
 \section{Limitations}
 
@@ -454,7 +458,7 @@ Long-Context Reasoning.
 This work analyzes benchmark prompts and model activations. It does not use private user data or make deployment-safety claims. The main ethical risk is overclaiming a scoped mechanism study as a universal quantization recipe; the paper separates measurement, mechanism, and partial-remedy claims.
 
 \section*{Reproducibility Statement}
-The release package contains the public FAST\_VERIFY interface, including \texttt{release/README.md}, \texttt{release/docs/reproducing\_results.md}, and \texttt{release/src/scripts/reproduce\_all.sh}. FAST\_VERIFY replays frozen paper-claim values and validates the documented tolerance mapping. Full-fidelity GPU reruns are not implemented inside \texttt{release/}; they remain in the archived experimental packet runners and are disclosed as a release limitation. Stage 1 claim-bearing packets now include the MATH-500 drift replication, DeepSeek/Falcon KL/FFT diagnostic, Granite composition test, BCa/Holm correction, ParoQuant baseline vetting on Nemotron/DeepSeek/Falcon, and DriftRot tight-clip/residual/M-SURFACE screens. The format-axis and Qwen3 packets are retained only as infrastructure provenance.
+The anonymized release bundle contains a public FAST\_VERIFY interface with a README, reproduction guide, and single-command verifier. FAST\_VERIFY replays frozen paper-claim values and validates the documented tolerance mapping. Full-fidelity GPU reruns are not implemented inside the compact release bundle; they remain in archived experimental packet runners and are disclosed as a release limitation. Stage 1 claim-bearing packets now include the MATH-500 drift replication, DeepSeek/Falcon KL/FFT diagnostic, Granite composition test, BCa/Holm correction, ParoQuant baseline vetting on Nemotron/DeepSeek/Falcon, and DriftRot tight-clip/residual/M-SURFACE screens. The format-axis and Qwen3 packets are retained only as infrastructure provenance.
 
 \begin{table}[h]
 \centering
@@ -489,36 +493,36 @@ Following the COLM 2026 LLM-use policy adopted from ICLR 2026, we disclose subst
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lll@{}}
 \toprule
-Paper description & Internal study label & Provenance location \\
+Paper description & Internal study label & Anonymized artifact ID \\
 \midrule
-Granite-Tiny pilot drift measurement & Phase 0 & \texttt{experimental/outlier\_migrate/phase0/} \\
-Granite-Small drift replication & Phase 1 & \texttt{experimental/outlier\_migrate/phase1/} \\
-Nemotron-3 drift replication & Phase 2 & \texttt{experimental/outlier\_migrate/phase2/} \\
-Static migration-aware union, Granite-Tiny & Phase 3 & \texttt{experimental/outlier\_migrate/phase3/} \\
-Static migration-aware union, Granite-Small & Phase 4 & \texttt{experimental/outlier\_migrate/phase4/} \\
-DeepSeek Transformer control & Phase 5 prime & \texttt{experimental/outlier\_migrate/phase5\_prime/} \\
-Falcon-H1 parallel-hybrid control & Phase 7 & \texttt{experimental/outlier\_migrate/phase7/} \\
-Channel-set methods and baselines & Method study & \texttt{experimental/outlier\_migrate/phase9/} \\
-MATH-500 drift replication & Stage 1 E2 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e2\_mathonly\_20260526T1202Z/} \\
-Cross-model KL/FFT diagnostic & Stage 1 E1 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e1\_deepseek\_falcon\_20260526T2335Z/} \\
-ParoQuant+M11b composition & Stage 1 E3 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e3\_granite\_20260526T034442Z/} \\
-Format-axis probe & Stage 1 E4 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e4\_granite\_probe\_20260527T093400Z/} \\
-Qwen3 scale-up probe & Stage 1 E5 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e5\_qwen3\_skipinfra\_20260527T093749Z/} \\
-BCa/Holm correction & Stage 1 E15 & \texttt{experimental/outlier\_migrate/phase9/results/om\_stage1\_e15\_bca\_holm\_20260527T093931Z/} \\
-ParoQuant-on-Nemotron vetting & V1 & \texttt{experimental/outlier\_migrate/phase9/results/om\_v1\_paroquant\_nemotron\_20260528T0318Z/} \\
-ParoQuant DeepSeek/Falcon vetting & V1 extension & \texttt{experimental/outlier\_migrate/phase9/results/om\_v1\_paroquant\_deepseek\_20260528T162858Z/}, \texttt{experimental/outlier\_migrate/phase9/results/om\_v1\_paroquant\_falcon\_20260528T154653Z/} \\
-DriftRot tight-clip Granite confirmation & DriftRot clip & \texttt{experimental/outlier\_migrate/phase9/results/om\_driftrot\_granite\_clip\_tight\_finalpos8\_20260528T2251Z/} \\
-DriftRot tight-clip DeepSeek/Falcon transfer & DriftRot clip & \texttt{experimental/outlier\_migrate/phase9/results/om\_driftrot\_deepseek\_clip\_tight\_20260528T2318Z/}, \texttt{experimental/outlier\_migrate/phase9/results/om\_driftrot\_falcon\_clip\_tight\_20260528T2343Z/} \\
-DriftRot residual correction diagnostic & DriftRot residual & \texttt{experimental/outlier\_migrate/phase9/results/om\_driftrot\_residual\_granite\_tail4\_diag\_fixed\_20260528T2116Z/} \\
-Granite internal-surface diagnostic & M-SURFACE & \texttt{experimental/outlier\_migrate/phase9/results/om\_phase9\_msurface\_granite\_internals\_20260529T030958Z/} \\
-M11b DeepSeek/Falcon vetting & V2 & \texttt{experimental/outlier\_migrate/phase9/results/om\_v2\_m11b\_deepseek\_20260527T1210Z/}, \texttt{experimental/outlier\_migrate/phase9/results/om\_v2\_m11b\_falcon\_20260527T1438Z/} \\
-Paper release interface & Release package & \texttt{release/docs/reproducing\_results.md} \\
+Granite-Tiny pilot drift measurement & Phase 0 & \texttt{packet/p0-granite-tiny-drift} \\
+Granite-Small drift replication & Phase 1 & \texttt{packet/p1-granite-small-drift} \\
+Nemotron-3 drift replication & Phase 2 & \texttt{packet/p2-nemotron-drift} \\
+Static migration-aware union, Granite-Tiny & Phase 3 & \texttt{packet/p3-static-union-tiny} \\
+Static migration-aware union, Granite-Small & Phase 4 & \texttt{packet/p4-static-union-small} \\
+DeepSeek Transformer control & Phase 5 prime & \texttt{packet/p5-deepseek-control} \\
+Falcon-H1 parallel-hybrid control & Phase 7 & \texttt{packet/p7-falcon-control} \\
+Channel-set methods and baselines & Method study & \texttt{packet/method-family} \\
+MATH-500 drift replication & Stage 1 E2 & \texttt{packet/s1-e2-math500-drift} \\
+Cross-model KL/FFT diagnostic & Stage 1 E1 & \texttt{packet/s1-e1-kl-fft} \\
+ParoQuant+M11b composition & Stage 1 E3 & \texttt{packet/s1-e3-composition} \\
+Format-axis probe & Stage 1 E4 & \texttt{packet/s1-e4-format-probe} \\
+Qwen3 scale-up probe & Stage 1 E5 & \texttt{packet/s1-e5-infra-only} \\
+BCa/Holm correction & Stage 1 E15 & \texttt{packet/s1-e15-bca-holm} \\
+ParoQuant-on-Nemotron vetting & V1 & \texttt{packet/v1-nemotron-rotation} \\
+ParoQuant DeepSeek/Falcon vetting & V1 extension & \texttt{packet/v1-deepseek-falcon-rotation} \\
+DriftRot tight-clip Granite confirmation & DriftRot clip & \texttt{packet/driftrot-granite-tail} \\
+DriftRot tight-clip DeepSeek/Falcon transfer & DriftRot clip & \texttt{packet/driftrot-transfer} \\
+DriftRot residual correction diagnostic & DriftRot residual & \texttt{packet/driftrot-residual} \\
+Granite internal-surface diagnostic & M-SURFACE & \texttt{packet/msurface-granite} \\
+M11b DeepSeek/Falcon vetting & V2 & \texttt{packet/v2-deepseek-falcon-m11b} \\
+Paper release interface & Release package & \texttt{release/fast-verify} \\
 \bottomrule
 \end{tabular}}
-\caption{Translation from paper-facing experiment names to internal study labels. Exact packet directories, command lines, prompt hashes, and model file hashes are maintained in the release documentation and result manifests.}
+\caption{Translation from paper-facing experiment names to anonymized artifact identifiers. The supplementary bundle maps these identifiers to command lines, prompt hashes, and model file hashes without requiring author-specific local paths.}
 \end{table}
 
-The valid Nemotron budget-tuning result uses the corrected static top-1\% baseline rerun and reuses checked score caches for the budget arms. The earlier invalid baseline is excluded from all recovery claims. The release mapping table records both the valid rerun and the excluded failed attempt so that reviewers can audit the correction.
+The valid Nemotron budget-tuning result uses the corrected static top-1\% baseline rerun and reuses checked score caches for the budget arms. The earlier invalid baseline is excluded from all recovery claims. The release mapping records both the valid rerun and the excluded failed attempt so that reviewers can audit the correction.
 
 Stage 1 packets E1, E2, E3, and E15 are claim-bearing. E4 and E5 are
 infrastructure-disclosure packets only: E4 did not produce benchmark
@@ -658,10 +662,10 @@ DeepSeek width & 1536 & 8 & 24.0 KiB & 12.3K & 0.258--0.676M pJ \\
 Falcon width & 2048 & 8 & 32.0 KiB & 16.4K & 0.344--0.902M pJ \\
 Nemotron width & 2688 & 8 & 42.0 KiB & 21.5K & 0.452--1.18M pJ \\
 Granite width & 4096 & 8 & 64.0 KiB & 32.8K & 0.688--1.80M pJ \\
-Granite top-8x32 active aggregate & 1536 & $8\times32$ & 7.5 MiB & 3.9M & 83--177M pJ \\
+Granite MoE aggregate & 1536 & 32 & 7.5 MiB & 3.93M & 83--177M pJ \\
 \bottomrule
 \end{tabular}}
-\caption{Analytical envelope for a hypothetical residual-column correction with fp16 residual weights, fp16 activation values, and uint16 indices. The first four rows are per projection at $K=8$; the aggregate row multiplies the Granite MoE packet by eight corrected modules, 10 active experts, and 32 corrected columns. The lower energy bound uses fused output update with 10 pJ/byte and 1 pJ/MAC; the upper bound includes output read/write with 20 pJ/byte and 5 pJ/MAC. These are estimates, not profiler measurements.}
+\caption{Analytical envelope for a hypothetical residual-column correction with fp16 residual weights, fp16 activation values, and uint16 indices. The first four rows are per projection at $K=8$. The aggregate row uses the killed Granite top-8x32 MoE diagnostic: $8$ corrected modules $\times$ $10$ active experts $\times$ $1536$ output rows $\times$ $32$ corrected columns $=3.93$M MACs/token, so it is not the $K=8$ Granite-width row multiplied by modules. The lower energy bound uses fused output update with 10 pJ/byte and 1 pJ/MAC; the upper bound includes output read/write with 20 pJ/byte and 5 pJ/MAC. These are estimates, not profiler measurements.}
 \end{table}
 
 \section{KL Fit Details}
@@ -717,8 +721,7 @@ Sensitivity, and SLQ so that the prose matches the source claims. No cited
 bibliography entry is missing, orphaned, or unresolved after these corrections.
 We separately re-derived the headline experimental numbers from local score
 caches and result manifests; the audit identified only wording/rounding fixes,
-not a change to any reported result. The full audit table is maintained in
-\texttt{docs/hallucination\_audit\_report.md} and
-\texttt{references\_audit.md}.
+not a change to any reported result. The full audit table is maintained in the
+anonymized source-audit report and the supplementary reference-audit table.
 
 \end{document}
