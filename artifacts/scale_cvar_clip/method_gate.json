@@ -1,22 +1,27 @@
 {
-  "schema_version": "scale_cvar_clip_gate_v2",
-  "decision": "PASS_TIGHT_CLIP_GRANITE_POSITIVE_TRACES",
-  "status": "COMPLETED_GRANITE_POSITIVE_TRACE_TABLE",
+  "schema_version": "scale_cvar_clip_gate_v3",
+  "decision": "PASS_GRANITE_ONLY_AMBIG_DEEPSEEK_FALCON",
+  "status": "COMPLETED_GRANITE_DEEPSEEK_FALCON_CHECKS",
   "primary_model": "Granite",
   "secondary_model": "Nemotron",
   "reasons": [
     "Granite ParoQuant median is strong but has a severe negative included trace; tight clip fixes this tail and improves all recoverable positive traces.",
-    "Nemotron ParoQuant already has positive lower CI and no negative included trace, so retune is optional robustness work.",
-    "All candidates are pure config variants of the existing ParoQuant runner and include the exact current baseline."
+    "DeepSeek tight clip improves CI lower but regresses median and worst trace.",
+    "Falcon tight clip leaves median essentially flat while lowering CI lower and worsening the worst trace.",
+    "The safe claim is model-specific tail-control evidence, not universal DriftRot retuning."
   ],
   "must_not_claim": [
     "Frame this as Tier-2 tail-control DriftRot evidence, not the headline method.",
-    "Do not claim off-diagonal covariance motivation from this artifact."
+    "Do not claim off-diagonal covariance motivation from this artifact.",
+    "Do not claim tight clip is a cross-model ParoQuant replacement.",
+    "Do not use the generic Falcon ParoQuant checker PASS label as evidence that tight clip improves over Falcon ParoQuant baseline."
   ],
   "completed_runs": [
     "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z",
     "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z",
-    "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z"
+    "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z",
+    "experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z",
+    "experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z"
   ],
   "positive_trace_summary": {
     "source_csv": "artifacts/scale_cvar_clip/granite_tight_positive_trace_table.csv",
@@ -27,5 +32,9 @@
     "median_margin": 0.05087552556827113,
     "margin_ci95_low": 0.016560040354311134,
     "margin_ci95_high": 0.370093645097194
+  },
+  "secondary_model_checks": {
+    "deepseek": "AMBIGUOUS_TAIL_BOUND_IMPROVES_MEDIAN_REGRESSES",
+    "falcon": "AMBIGUOUS_MEDIAN_FLAT_WORST_REGRESSES"
   }
 }

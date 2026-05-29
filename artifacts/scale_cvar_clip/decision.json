@@ -25,7 +25,11 @@
   "tight_clip_holdout": {
     "candidate": "tight_clip_0p5_2p0_holdout",
     "run_dir": "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z",
-    "prompt_indices": [1, 2, 5],
+    "prompt_indices": [
+      1,
+      2,
+      5
+    ],
     "decision": "PASS_REPEAT_HOLDOUT",
     "median": 0.9962972423079028,
     "ci95_low": 0.8471380975022251,
@@ -38,7 +42,16 @@
   },
   "tight_clip_positive_trace_table": {
     "source_csv": "artifacts/scale_cvar_clip/granite_tight_positive_trace_table.csv",
-    "prompt_indices": [1, 2, 4, 5, 7, 8, 9, 10],
+    "prompt_indices": [
+      1,
+      2,
+      4,
+      5,
+      7,
+      8,
+      9,
+      10
+    ],
     "baseline_median": 0.7537768488911776,
     "baseline_ci95_low": 0.4770444524050311,
     "baseline_ci95_high": 1.003769554323054,
@@ -75,6 +88,26 @@
     "margin_worst": -0.8702212667025551,
     "margin_mean": -0.1032390285818222
   },
-  "next_gate": "integrate as Granite-specific Tier-2 tail-control DriftRot evidence; do not claim cross-model clip retune without a model-specific selector",
-  "reason": "Tight clip fixes the known Granite ParoQuant tail, passes a separate hold-out split, and improves the all-positive-gap Granite table. The same clip on DeepSeek improves CI lower but regresses median and worst trace, so the safe claim is regime-specific tail control, not universal retuning."
+  "next_gate": "keep tight clip as Granite-specific Tier-2 tail-control evidence; do not promote to cross-model DriftRot-Config without a selector or a different model-specific candidate",
+  "reason": "Tight clip fixes all recoverable Granite positive-gap traces, but DeepSeek regresses in median/worst and Falcon is essentially flat while worsening the worst trace and CI lower. This supports regime-specific tail control, not universal ParoQuant retuning.",
+  "falcon_tight_clip_check": {
+    "source_csv": "artifacts/scale_cvar_clip/falcon_tight_clip_comparison.csv",
+    "run_dir": "experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z",
+    "decision": "AMBIGUOUS_MEDIAN_FLAT_WORST_REGRESSES",
+    "baseline_median": 0.38061550869015837,
+    "baseline_ci95_low": 0.0645493637145208,
+    "baseline_ci95_high": 0.5474138321928452,
+    "baseline_worst": -1.3234873631689785,
+    "baseline_mean": 0.216711646726064,
+    "tight_median": 0.3898194338496461,
+    "tight_ci95_low": 0.0019296784793416677,
+    "tight_ci95_high": 0.6365749176786956,
+    "tight_worst": -1.6102790408745657,
+    "tight_mean": 0.21265687817628215,
+    "margin_median": -0.008553223939403387,
+    "margin_ci95_low": -0.05701106098758696,
+    "margin_ci95_high": 0.04373360875133886,
+    "margin_worst": -0.2867916777055872,
+    "margin_mean": -0.004054768549781827
+  }
 }

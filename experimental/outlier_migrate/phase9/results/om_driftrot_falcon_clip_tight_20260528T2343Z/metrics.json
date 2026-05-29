@@ -1,0 +1,59 @@
+{
+  "artifacts": {
+    "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z"
+  },
+  "created_at_utc": "2026-05-29T00:22:48Z",
+  "effective_trace_count": 12,
+  "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+  "included_trace_count": 12,
+  "interpretation_band": "meaningful_but_incomplete_0_30_to_0_50",
+  "interpretation_bands": {
+    "low_recovery_lt": 0.3,
+    "meaningful_incomplete_high": 0.5,
+    "meaningful_incomplete_low": 0.3,
+    "substantial_recovery_gt": 0.5
+  },
+  "m11b_top5_reference_median_recovery": null,
+  "metric_formula": "1 - (perplexity_ParoQuant - perplexity_BF16) / (perplexity_static_1pct - perplexity_BF16)",
+  "metric_name": "positive-static-1pct-gap per-trace recovery",
+  "model_id": "tiiuae/Falcon-H1-0.5B-Instruct",
+  "model_snapshot_commit": "8f2587ca06bff78d8fa1adfccbe8c24d5f86b368",
+  "no_recoverable_static_gap_count": 0,
+  "no_recoverable_static_gap_fraction": 0.0,
+  "paroquant_minus_m11b_top5_median_recovery": null,
+  "preregistration": "experimental/outlier_migrate/phase9/preregister_om_v1_paroquant_deepseek_falcon.md",
+  "preregistration_sha256": "sha256:7f77cd7676ff6a6d059c8d77a7a1198b7cdaf58ee58bcfd7662776b4433c6510",
+  "prompt_sha256": "sha256:2f27c54baa8448e033d6e82f53f775dc6abe38188e4f1e5c0b97e3c74fe7c1dd",
+  "results_by_regime": {
+    "paroquant_w4a16": {
+      "bootstrap_ci95": {
+        "ci95_high": 0.6365749176786956,
+        "ci95_low": 0.0019296784793416677
+      },
+      "included_trace_count": 12,
+      "mean_recovery": 0.21265687817628215,
+      "median_recovery": 0.3898194338496461,
+      "no_recoverable_static_gap_count": 0,
+      "no_recoverable_static_gap_fraction": 0.0,
+      "per_trace_recovery_included": [
+        -1.6102790408745657,
+        0.6278915137036594,
+        0.4959039303537114,
+        -0.1996918355250623,
+        -0.2776452878836435,
+        0.2879068214176125,
+        0.3930161643760297,
+        0.9050341754170388,
+        0.20355119248374565,
+        0.6943138796698658,
+        0.38662270332326254,
+        0.6452583216537318
+      ],
+      "total_trace_count": 12
+    }
+  },
+  "schema_version": "om_v1_paroquant_falcon_v1_metrics",
+  "scoring_position": 10000,
+  "scoring_window_tokens": 512,
+  "trace_count": 12
+}

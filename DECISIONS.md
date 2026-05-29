@@ -1,6 +1,6 @@
 # Positive-Method Sprint Decisions
 
-Last updated: 2026-05-28T16:55Z
+Last updated: 2026-05-29T00:30Z
 
 ## Current Framing
 
@@ -24,7 +24,7 @@ unless a genuinely held-out frozen-threshold run is executed.
 | DriftRot | LIVE | Primary question: can long-decode drift-aware rotation choices beat or robustify static ParoQuant on held-out traces/seeds? |
 | ParoQuant Falcon smoke | PASS_ROTATION_RESCUE | Full 12-trace packet gives median recovery 0.381 with CI95 [0.0645, 0.547], beating Falcon M11b top-10 by +0.337. Falcon channel rescue drops in priority. |
 | ParoQuant DeepSeek smoke | PASS_ROTATION_DOMINATES | Full 12-trace packet gives median recovery 0.756 with CI95 [-0.246, 0.855], beating DeepSeek static-top10 by +0.379. Median supports rotation-dominant framing, but the negative lower CI keeps DriftRot tail-control live. |
-| Granite clip/CVaR retune | PASS_GRANITE_AMBIG_DEEPSEEK | Tight clip `[0.5, 2.0]` fixed the inspected Granite tail, passed held-out positive-gap prompts 1/2/5, and completed all eight recoverable Granite traces. Granite median recovery improves 0.754 -> 0.922 and worst trace improves -26.37 -> 0.601. On DeepSeek, the same clip improves CI lower (-0.246 -> 0.265) but regresses median 0.756 -> 0.518 and worst trace -3.056 -> -3.524, so the safe claim is regime-specific tail control, not a universal retune. |
+| Granite clip/CVaR retune | PASS_GRANITE_ONLY_AMBIG_DEEPSEEK_FALCON | Tight clip `[0.5, 2.0]` fixed the inspected Granite tail, passed held-out positive-gap prompts 1/2/5, and completed all eight recoverable Granite traces. Granite median recovery improves 0.754 -> 0.922 and worst trace improves -26.37 -> 0.601. On DeepSeek, the same clip improves CI lower (-0.246 -> 0.265) but regresses median 0.756 -> 0.518 and worst trace -3.056 -> -3.524. On Falcon, median is essentially flat (0.381 -> 0.390), but CI lower drops 0.0645 -> 0.0019 and worst trace regresses -1.323 -> -1.610. The safe claim is Granite-specific tail control, not a universal retune. |
 | Drift-aware pairing | NEEDS_ACTIVATION_CACHE | Pairings differ from current ParoQuant on block-output proxies, but exact rotation-surface caches are required before GPU. |
 | Residual correction | KILL_TOP8X32_MOE_RESIDUAL_DIAGNOSTIC | Residual norms, activation EMA, candidate pool, and DeltaW columns were produced. A fixed Granite prompt-4 diagnostic scored -12.29 recovery versus tight ParoQuant reference 5.94, so this MoE top-8x32 candidate is not promoted. Only reopen with a bounded or KLLOOK-gated design. |
 | WJAC | KILL | Artifactized prefilter found at least two kill diagnostics on each covered model/slice; DeepSeek/Falcon full cached coverage, Granite/Nemotron representative slice coverage. |

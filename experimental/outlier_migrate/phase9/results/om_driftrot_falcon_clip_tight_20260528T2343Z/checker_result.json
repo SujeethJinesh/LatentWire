@@ -1,0 +1,21 @@
+{
+  "artifact_complete": true,
+  "ci95": {
+    "ci95_high": 0.6365749176786956,
+    "ci95_low": 0.0019296784793416677
+  },
+  "decision": "PASS_V1_PAROQUANT_FALCON_ROTATION_RESCUE",
+  "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+  "included_trace_count": 12,
+  "infra_reasons": [],
+  "interpretation_band": "meaningful_but_incomplete_0_30_to_0_50",
+  "m11b_top10_reference_median": 0.04393973019116826,
+  "median_recovery": 0.3898194338496461,
+  "paroquant_minus_m11b_top10_median": 0.34587970365847787,
+  "reasons": [
+    "ParoQuant rescues Falcon by the preregistered median threshold"
+  ],
+  "run_dir": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z",
+  "schema_version": "om_v1_paroquant_falcon_v1_checker_result",
+  "total_trace_count": 12
+}

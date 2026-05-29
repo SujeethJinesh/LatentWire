@@ -1,0 +1,695 @@
+{
+  "created_at_utc": "2026-05-28T23:44:01Z",
+  "regimes": {
+    "static_1pct": {
+      "layers": {
+        "0": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.0",
+          "protected_channels": [
+            1,
+            134,
+            275,
+            402,
+            475,
+            476,
+            578,
+            585,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "1": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.1",
+          "protected_channels": [
+            1,
+            275,
+            287,
+            402,
+            475,
+            476,
+            578,
+            585,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "10": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.10",
+          "protected_channels": [
+            1,
+            134,
+            275,
+            306,
+            475,
+            476,
+            585,
+            659,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "11": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.11",
+          "protected_channels": [
+            1,
+            134,
+            275,
+            306,
+            465,
+            475,
+            476,
+            585,
+            659,
+            800,
+            862
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "12": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.12",
+          "protected_channels": [
+            1,
+            134,
+            306,
+            375,
+            465,
+            475,
+            535,
+            585,
+            762,
+            800,
+            862
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "13": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.13",
+          "protected_channels": [
+            1,
+            134,
+            306,
+            375,
+            465,
+            475,
+            535,
+            585,
+            762,
+            800,
+            862
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "14": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.14",
+          "protected_channels": [
+            1,
+            134,
+            166,
+            306,
+            375,
+            465,
+            475,
+            535,
+            762,
+            800,
+            862
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "15": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.15",
+          "protected_channels": [
+            1,
+            134,
+            166,
+            306,
+            363,
+            465,
+            475,
+            535,
+            546,
+            800,
+            862
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "16": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.16",
+          "protected_channels": [
+            134,
+            166,
+            306,
+            363,
+            465,
+            472,
+            475,
+            535,
+            546,
+            800,
+            862
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "17": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.17",
+          "protected_channels": [
+            166,
+            306,
+            363,
+            465,
+            472,
+            475,
+            535,
+            546,
+            578,
+            800,
+            862
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "18": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.18",
+          "protected_channels": [
+            166,
+            363,
+            465,
+            472,
+            475,
+            535,
+            546,
+            578,
+            800,
+            862,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "19": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.19",
+          "protected_channels": [
+            363,
+            465,
+            472,
+            475,
+            535,
+            546,
+            578,
+            800,
+            862,
+            901,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "2": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.2",
+          "protected_channels": [
+            1,
+            275,
+            287,
+            402,
+            475,
+            476,
+            578,
+            585,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "20": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.20",
+          "protected_channels": [
+            166,
+            363,
+            465,
+            472,
+            535,
+            546,
+            578,
+            800,
+            862,
+            901,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "21": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.21",
+          "protected_channels": [
+            363,
+            375,
+            465,
+            472,
+            535,
+            546,
+            800,
+            862,
+            901,
+            920,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "22": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.22",
+          "protected_channels": [
+            363,
+            375,
+            465,
+            472,
+            535,
+            546,
+            800,
+            862,
+            901,
+            920,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "23": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.23",
+          "protected_channels": [
+            363,
+            375,
+            465,
+            472,
+            535,
+            600,
+            762,
+            800,
+            862,
+            901,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "24": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.24",
+          "protected_channels": [
+            363,
+            375,
+            465,
+            472,
+            535,
+            541,
+            600,
+            762,
+            800,
+            862,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "25": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.25",
+          "protected_channels": [
+            363,
+            375,
+            465,
+            472,
+            535,
+            541,
+            600,
+            762,
+            800,
+            862,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "26": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.26",
+          "protected_channels": [
+            363,
+            465,
+            472,
+            535,
+            541,
+            600,
+            762,
+            800,
+            817,
+            862,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "27": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.27",
+          "protected_channels": [
+            363,
+            465,
+            472,
+            535,
+            541,
+            600,
+            762,
+            800,
+            817,
+            862,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "28": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.28",
+          "protected_channels": [
+            363,
+            465,
+            472,
+            535,
+            541,
+            600,
+            762,
+            800,
+            817,
+            862,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "29": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.29",
+          "protected_channels": [
+            363,
+            465,
+            472,
+            541,
+            600,
+            762,
+            800,
+            817,
+            862,
+            925,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "3": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.3",
+          "protected_channels": [
+            1,
+            150,
+            275,
+            402,
+            475,
+            578,
+            585,
+            659,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "30": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.30",
+          "protected_channels": [
+            363,
+            465,
+            472,
+            541,
+            600,
+            762,
+            800,
+            817,
+            862,
+            925,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "31": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.31",
+          "protected_channels": [
+            363,
+            465,
+            472,
+            541,
+            600,
+            762,
+            800,
+            808,
+            862,
+            925,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "32": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.32",
+          "protected_channels": [
+            363,
+            465,
+            472,
+            541,
+            600,
+            762,
+            800,
+            808,
+            862,
+            925,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "33": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.33",
+          "protected_channels": [
+            465,
+            541,
+            600,
+            677,
+            762,
+            800,
+            808,
+            827,
+            862,
+            925,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "34": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.34",
+          "protected_channels": [
+            12,
+            541,
+            600,
+            650,
+            677,
+            800,
+            808,
+            827,
+            862,
+            925,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "35": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.35",
+          "protected_channels": [
+            12,
+            541,
+            600,
+            650,
+            677,
+            800,
+            808,
+            827,
+            862,
+            925,
+            968
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "4": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.4",
+          "protected_channels": [
+            1,
+            134,
+            275,
+            402,
+            475,
+            476,
+            578,
+            585,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "5": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.5",
+          "protected_channels": [
+            1,
+            134,
+            275,
+            306,
+            475,
+            476,
+            578,
+            585,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "6": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.6",
+          "protected_channels": [
+            1,
+            134,
+            150,
+            275,
+            306,
+            475,
+            476,
+            585,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "7": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.7",
+          "protected_channels": [
+            1,
+            134,
+            275,
+            306,
+            360,
+            475,
+            476,
+            585,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "8": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.8",
+          "protected_channels": [
+            1,
+            134,
+            275,
+            306,
+            360,
+            475,
+            476,
+            585,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        },
+        "9": {
+          "channel_count": 1024,
+          "layer_name": "model.layers.9",
+          "protected_channels": [
+            1,
+            134,
+            275,
+            306,
+            475,
+            476,
+            585,
+            659,
+            800,
+            862,
+            990
+          ],
+          "protected_count": 11,
+          "source": "position_100_top1"
+        }
+      }
+    }
+  },
+  "schema_version": "om_v1_paroquant_falcon_v1_protected_sets",
+  "source_artifact": "/workspace/LatentWire/experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z/protected_sets.json"
+}

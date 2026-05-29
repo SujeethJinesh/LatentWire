@@ -1,0 +1,13 @@
+{
+  "activation_dtype": "float16",
+  "group_size": 128,
+  "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+  "num_rotations": 8,
+  "scale_clip": [
+    0.5,
+    2.0
+  ],
+  "schema_version": "om_v1_paroquant_falcon_v1_quantization_config",
+  "scheme": "ParoQuant-style scaled pairwise rotation plus groupwise affine INT4 folded back to dequantized weights",
+  "weight_bits": 4
+}

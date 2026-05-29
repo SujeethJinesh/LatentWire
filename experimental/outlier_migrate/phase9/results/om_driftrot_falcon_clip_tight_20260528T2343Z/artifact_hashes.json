@@ -1,0 +1,131 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2896,
+      "path": "bf16_trace_manifest.json",
+      "sha256": "sha256:79792c247cade1635598cc7cc306cb6cdafe7f99de9201e012db232649907127"
+    },
+    {
+      "bytes": 64825,
+      "path": "bf16_traces.jsonl.gz",
+      "sha256": "sha256:e7595f438e472407c7c0d1e8c50e7da3df0100c6c8d80763b2351a3966b96c2f"
+    },
+    {
+      "bytes": 1001,
+      "path": "bootstrap_ci.json",
+      "sha256": "sha256:5142eb3685e8679edf0fdaa24224467b09338f293d8d5194666d160630e0bed6"
+    },
+    {
+      "bytes": 1235,
+      "path": "command_metadata.json",
+      "sha256": "sha256:58d18b7262d1f5cc6053742827e9fa2b1c2e0c2ee0e3f9ce7e77a6a769b5c096"
+    },
+    {
+      "bytes": 440,
+      "path": "control_metrics.json",
+      "sha256": "sha256:88547dd4c9a8f63fc3cca13ebc4fafa83dba5025022cc5f91d61371df679030d"
+    },
+    {
+      "bytes": 208,
+      "path": "decoding_config.json",
+      "sha256": "sha256:6da7555f76ff73e4f9d0ce151e3f345871dbc494e40a9552472441e0d4e59bb8"
+    },
+    {
+      "bytes": 8674,
+      "path": "environment.json",
+      "sha256": "sha256:075cd92dd5a93289b6ab0af0f67b1208e01490a386379bb799b63d880d35533c"
+    },
+    {
+      "bytes": 6804,
+      "path": "environment.txt",
+      "sha256": "sha256:30a222375db783b6d1678ee1f378eddefd033ef71fb2ff4b00ec9a31ddfc1a8a"
+    },
+    {
+      "bytes": 238359,
+      "path": "excluded_tensors.json",
+      "sha256": "sha256:656e2b3e271a1c8337ee6208a1243f30e1801ab151e2dd7685312c5427124040"
+    },
+    {
+      "bytes": 303,
+      "path": "logs/stderr.log",
+      "sha256": "sha256:df1afa1bd0d4c655c00dbae2dcd719662c5fb2d39862334bbf246db0065887e5"
+    },
+    {
+      "bytes": 1041,
+      "path": "logs/stdout.log",
+      "sha256": "sha256:be3c4c0095c587dedb589b17a810d74a845ab1d0000332c7ea4f79a46583392a"
+    },
+    {
+      "bytes": 2306,
+      "path": "metrics.json",
+      "sha256": "sha256:a46bc2ccea1bf39446a06cbc6704b1c31548ed797b1ebdd19707238187a96b8d"
+    },
+    {
+      "bytes": 3391,
+      "path": "model_provenance.json",
+      "sha256": "sha256:9411076c1d02e015b6e44a70b8a901f3268c9dab0240da1c66766dab59c428c6"
+    },
+    {
+      "bytes": 788,
+      "path": "paroquant_config.json",
+      "sha256": "sha256:eb79ef1786724f19b18f243ebb54d7483262a32236807d9ccd73df4718ddee92"
+    },
+    {
+      "bytes": 443,
+      "path": "paroquant_limitations.json",
+      "sha256": "sha256:cdc049fcd0dd3d9ec612ec41dba27425ce12a777bc213a4a20bc72cc29eef084"
+    },
+    {
+      "bytes": 7805,
+      "path": "per_trace_metrics.json",
+      "sha256": "sha256:0a894694e23d0315c3c3adc6fcdc690a9e819e0138dc7b104b9d4f3354a53957"
+    },
+    {
+      "bytes": 8461,
+      "path": "prompt_manifest.json",
+      "sha256": "sha256:e6c98ca6f06acd9a296c0d76d31887346aa98e3b74c75a20d178632f04d6ef94"
+    },
+    {
+      "bytes": 15003,
+      "path": "protected_sets.json",
+      "sha256": "sha256:c49bfe2adcab8b14fc8879c16bf72d64cdda834efe64daace64c35db0ffa4d98"
+    },
+    {
+      "bytes": 397,
+      "path": "quantization_config.json",
+      "sha256": "sha256:78a842208074abfaac40d664200d17b2b7013af98ebb721686132bb33ed38a45"
+    },
+    {
+      "bytes": 151,
+      "path": "random_seed.json",
+      "sha256": "sha256:3458e24661d9071a68de596738f5be8173aa0793c6c0bdaf4054b7beaa441c85"
+    },
+    {
+      "bytes": 1710,
+      "path": "run_events.jsonl",
+      "sha256": "sha256:cfc7124b6adca82c569af6b28c641f89d0f1a171fcd6793ec5d1f83d98e2605d"
+    },
+    {
+      "bytes": 2272,
+      "path": "score_cache/bf16.json",
+      "sha256": "sha256:e45410c692d77f9547b05cdfa5f5e4cf473eed71b7bc0210de09e64b964cbbcb"
+    },
+    {
+      "bytes": 2277,
+      "path": "score_cache/paroquant_w4a16.json",
+      "sha256": "sha256:296653adf24f22a577f9198c73c208b6e5b4bf27646a970135d5a95f4c0ea251"
+    },
+    {
+      "bytes": 2269,
+      "path": "score_cache/static_1pct.json",
+      "sha256": "sha256:f00beb037ef9cfb87ccffa87e2a17356aee010abc090a1362cfeb88706684f23"
+    },
+    {
+      "bytes": 1266,
+      "path": "source_artifacts.json",
+      "sha256": "sha256:777c8920da0c446a37342d4bad329282cecaaa787a8611abcc95e2bc773cbf86"
+    }
+  ],
+  "created_at_utc": "2026-05-29T00:22:48Z",
+  "schema_version": "om_v1_paroquant_falcon_v1_artifact_hashes"
+}

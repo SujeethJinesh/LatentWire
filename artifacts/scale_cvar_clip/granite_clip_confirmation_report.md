@@ -92,6 +92,27 @@ tail-control evidence unless a new model-specific selection rule is added.
 
 Source table: `artifacts/scale_cvar_clip/deepseek_tight_clip_comparison.csv`.
 
+## Cross-Model Check: Falcon
+
+Falcon-H1-0.5B was also run with the same tight clip `[0.5, 2.0]`. This check
+does not promote tight clipping beyond Granite. The median is essentially flat,
+but the lower bootstrap bound and worst trace regress.
+
+| Metric | Baseline Falcon ParoQuant | Tight clip `[0.5, 2.0]` | Margin |
+|---|---:|---:|---:|
+| Median recovery | 0.381 | 0.390 | -0.0086 median per-trace |
+| Bootstrap CI95 | [0.0645, 0.547] | [0.0019, 0.637] | [-0.0570, 0.0437] |
+| Worst trace | -1.323 | -1.610 | -0.287 |
+| Mean recovery | 0.217 | 0.213 | -0.004 |
+
+The generic Falcon ParoQuant checker still reports a rotation-rescue PASS
+because tight clip remains far above Falcon M11b. That is not the relevant
+comparison for DriftRot. Against Falcon's own static ParoQuant baseline, tight
+clip is flat-to-worse. Treat this as another reason not to claim universal clip
+retuning.
+
+Source table: `artifacts/scale_cvar_clip/falcon_tight_clip_comparison.csv`.
+
 ## Source Runs
 
 - loose: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_loose_confirmation_20260528T1735Z`
@@ -99,4 +120,5 @@ Source table: `artifacts/scale_cvar_clip/deepseek_tight_clip_comparison.csv`.
 - tight hold-out: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z`
 - tight final positive trace: `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z`
 - DeepSeek tight clip: `experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z`
+- Falcon tight clip: `experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z`
 - baseline: `experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z`
