@@ -12,19 +12,31 @@ channel-set protection for that regime.
 The descriptive decisions match the observed pattern. All four models exceed
 0.53 strict set-leaving, so static top-1\% protection needs validation rather
 than assumption. Nemotron passes the budgeted-EMA gate: M11b top-10 recovers
-0.815 with CI [0.254, 0.923] and beats static top-10 by 0.220 median. The same
+0.815 with CI [0.158, 0.906] and beats static top-10 by 0.220 median. The same
 gate is ambiguous on DeepSeek and Falcon: top-10 recovery is 0.335 with CI
 [-0.409, 0.494] on DeepSeek and 0.044 with CI [-0.144, 0.203] on Falcon. When
 a rotation baseline is available, the protocol compares it directly rather
-than stacking it with M11b. Granite favors ParoQuant over M11b, and
-ParoQuant+M11b is sub-additive.
+than stacking it with M11b. ParoQuant-style rotation is favored on all four
+current median comparisons: 0.754 on Granite, 1.047 on Nemotron, 0.756 on
+DeepSeek, and 0.381 on Falcon. DeepSeek remains tail-risky because its lower
+CI is negative. ParoQuant+M11b is sub-additive, so the protocol does not stack
+rotation and channel protection by default.
+
+The same logic handles DriftRot screens. Tight clip is selected for Granite
+only after a tail-control check: it raises recoverable positive-gap median
+recovery from 0.754 to 0.922 and removes the catastrophic negative tail. The
+same setting is rejected as a universal retune because it lowers DeepSeek's
+median and worsens Falcon's worst trace. Residual correction and cheap
+projection-input M-SURFACE hooks do not promote until a new residual proxy or
+unmeasured internal SSM surface hypothesis is available.
 
 This protocol is not a universal predictor. Its thresholds are derived from
 these four models, so the four-model evaluation is descriptive rather than
 held-out validation. The deployment guidance is still concrete: use rotation
-where it is locally validated, as on Granite; use budgeted EMA where it clears
-a model-local matched-budget gate, as on Nemotron; and avoid claiming a
-channel-set positive method when high drift is present but the matched-budget
-gate is ambiguous, as on DeepSeek and Falcon. The negative composition result
-is part of the guidance: remedies must be selected by measured model behavior,
-not stacked by default.
+where it is locally measured; use budgeted EMA only where it clears a
+model-local matched-budget gate, as on Nemotron; apply tail-control retuning
+only when a calibration/confirmation split shows tail improvement, as on
+Granite; and reject channel-set protection when high drift is present but the
+matched-budget gate is ambiguous, as on DeepSeek and Falcon. The negative
+composition result is part of the guidance: remedies must be selected by
+measured model behavior, not stacked by default.
