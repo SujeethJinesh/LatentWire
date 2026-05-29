@@ -1,0 +1,12 @@
+{
+  "decode_positions": [
+    100,
+    20000
+  ],
+  "prompt_indices": [
+    0,
+    1
+  ],
+  "schema_version": "msurface_complete_traces_v1",
+  "source_run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_sanity_20260529T0032Z"
+}

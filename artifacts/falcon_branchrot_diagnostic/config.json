@@ -1,0 +1,12 @@
+{
+  "available_cache": "post-block only",
+  "executed_gpu_run": false,
+  "requested_surfaces": [
+    "attention branch pre-concat",
+    "Mamba/SSM branch pre-concat",
+    "post-concat/pre-output-proj",
+    "post-block output"
+  ],
+  "schema_version": "falcon_branchrot_diagnostic_config_v1",
+  "target_model": "Falcon-H1-0.5B-Instruct"
+}

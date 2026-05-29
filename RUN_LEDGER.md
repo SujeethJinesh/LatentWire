@@ -106,6 +106,24 @@ Current next exact gate: either write a bounded/KLLOOK-gated residual selector
 before any residual GPU work, or accept the mechanism/regime paper path unless
 a different surface/branch gate produces lower drift.
 
+## Final Bounded Positive-Method Gate
+
+Timestamp: 2026-05-29T02:57Z. Commit context: `05d80f6c`.
+
+The final bounded gate after the K-RES kill has been artifactized:
+
+| Gate | Artifact | Decision | Consequence |
+|---|---|---|---|
+| K-RES failure audit | `artifacts/k_res_audit/` | `VALID_IMPLEMENTATION_KEEP_K_RES_PROXY_KILLED` | The top-8x32 residual-energy proxy was compared against the correct tight ParoQuant baseline on the same Granite tail trace/window; no implementation mismatch was found. Do not rerun this proxy. |
+| Restricted residual KLLOOK oracle | `artifacts/kllook_residual_oracle/` | `NOT_EXECUTED_NO_ROTATED_RESIDUAL_KLLOOK_RUNNER` | The repo has an original-basis M-KLLOOK runner, not a post-ParoQuant rotated-residual oracle. No residual-oracle evidence exists, so residual correction is not promoted. |
+| Complete M-SURFACE readout | `artifacts/msurface_complete/` | `MEASURED_CHEAP_SURFACES_NO_PROMOTE__SSM_BC_INCOMPLETE` | Granite Mamba out-proj input and attention o-proj input drift more than post-block; SurfaceRot/SurfaceProtect is not promoted from measured evidence. SSM input/B/C remain unmeasured. |
+| Falcon BranchRot readout | `artifacts/falcon_branchrot_diagnostic/` | `DEFER_NO_BRANCH_LOCAL_CACHE_NO_PROMOTE` | Falcon branch hooks are feasible, but branch-local activations are not cached. No BranchRot promotion; this is a defer, not a measured kill. |
+| Final path decision | `artifacts/final_path_decision.md` | `MECHANISM_REGIME_PAPER` | Stop the current DriftRot positive-method search unless a new preregistered residual KLLOOK or branch/surface packet is explicitly opened. |
+
+Current next exact gate: finalize the mechanism/regime paper and audit/repro
+package. Do not claim ParoQuant as our method, and do not claim residual
+KLLOOK evidence.
+
 ## Experiment Artifact Contract
 
 Every GPU experiment packet must emit:

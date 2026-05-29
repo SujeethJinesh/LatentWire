@@ -1,0 +1,20 @@
+{
+  "executed_gpu_run": false,
+  "recommended_if_reopened": {
+    "decode_positions": [
+      100,
+      10000
+    ],
+    "layer_sample": [
+      0,
+      18,
+      35
+    ],
+    "prompt_indices": [
+      7,
+      1,
+      11
+    ]
+  },
+  "schema_version": "falcon_branchrot_diagnostic_traces_v1"
+}

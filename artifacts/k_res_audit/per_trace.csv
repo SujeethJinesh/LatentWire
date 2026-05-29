@@ -1,0 +1,2 @@
+prompt_index,prompt_id,split_name,score_start,score_end,scored_tokens,static_gap,no_recoverable_static_gap,recovery_residual,recovery_tight_paroquant_reference,residual_minus_reference_recovery
+4,opencompass_AIME2025_I_4,diagnostic,9489,10000,512,0.0007722731060850752,False,-12.293656857340855,5.939623575264381,-18.233280432605234

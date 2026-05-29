@@ -1,0 +1,10 @@
+{
+  "created_at_utc": "2026-05-29T02:56:52Z",
+  "decision": "DEFER_NO_BRANCH_LOCAL_CACHE_NO_PROMOTE",
+  "git_commit": "05d80f6cc3354edbf47338443984fbf2c52c8c78",
+  "promote_branchrot": false,
+  "reason": "Falcon branch hooks are feasible, but no branch-local attention/Mamba pre-concat or post-concat cache exists. Existing data are post-block only, so BranchRot is not promoted and not killed by measurement.",
+  "required_promotion_gate": "branch-local drift at least 0.15 below post-block, or branch-local covariance/range evidence showing strong conditioning headroom",
+  "schema_version": "falcon_branchrot_diagnostic_decision_v1",
+  "source_decision": "DEFER_NO_BRANCH_LOCAL_CACHE"
+}

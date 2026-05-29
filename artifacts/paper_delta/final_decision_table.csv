@@ -1,0 +1,6 @@
+method,target,status,reason,next_action
+K-RES top-8x32 residual proxy,Granite tail I_4,KILL,Valid implementation worsened recovery -12.29 vs tight ParoQuant 5.94,Do not rerun this proxy
+Restricted residual KLLOOK,Granite/Falcon,NOT_EXECUTED,No rotated-basis residual KLLOOK runner or per-candidate KL cache,Future preregistered runner only
+M-SURFACE cheap hooks,Granite,NO_PROMOTE,Mamba out-proj and attention o-proj inputs drift more than post-block,Do not promote SurfaceRot from measured evidence
+M-SURFACE SSM/B-C internals,Granite/Falcon,INCOMPLETE,Local tensors unmeasured,Future local wrapper only if reopened
+Falcon BranchRot,Falcon,DEFERRED,No branch-local activation cache,Future tiny hook packet only if reopened

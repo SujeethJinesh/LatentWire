@@ -1,0 +1,15 @@
+{
+  "prompt_ids": [
+    "opencompass_AIME2025_I_4"
+  ],
+  "prompt_indices": [
+    4
+  ],
+  "schema_version": "k_res_failure_audit_traces_v1",
+  "score_window": [
+    9489,
+    10000
+  ],
+  "scored_tokens": 512,
+  "split": "diagnostic"
+}

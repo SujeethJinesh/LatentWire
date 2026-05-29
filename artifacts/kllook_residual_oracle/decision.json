@@ -1,0 +1,13 @@
+{
+  "created_at_utc": "2026-05-29T02:56:52Z",
+  "decision": "NOT_EXECUTED_NO_ROTATED_RESIDUAL_KLLOOK_RUNNER",
+  "existing_kres_audit_decision": "VALID_IMPLEMENTATION_KEEP_K_RES_PROXY_KILLED",
+  "existing_residual_proxy_recovery": -12.293656857340855,
+  "git_commit": "05d80f6cc3354edbf47338443984fbf2c52c8c78",
+  "not_used_as_evidence": "experimental/outlier_migrate/phase9/run_om_phase9_mkllook.py is original-basis M-KLLOOK, not residual KLLOOK",
+  "promote_residual_correction": false,
+  "reason": "The available M-KLLOOK runner scores original-basis protected-channel sets, not post-ParoQuant rotated-basis residual corrections. The fixed K-RES packet captured endpoint loss for the top-8x32 residual-energy proxy but did not capture per-candidate logits/KL. Reusing original-basis M-KLLOOK here would be a category error, so this oracle is recorded as not executed and cannot overturn the K-RES kill.",
+  "required_future_runner": "rotated-basis per-candidate residual correction KL runner with calibration/confirmation split",
+  "schema_version": "kllook_residual_oracle_decision_v1",
+  "tight_paroquant_reference_recovery": 5.939623575264381
+}

@@ -1,0 +1,12 @@
+{
+  "branch_local_measured": false,
+  "branch_local_values": null,
+  "created_at_utc": "2026-05-29T02:56:52Z",
+  "post_block_reference_values": {
+    "phase7_long_horizon_strict_leaving": 0.6736111111111112,
+    "phase9_trace_strict_leaving": 0.6390993265993266,
+    "stage1_e2_math_crossprompt_strict_leaving": 0.6753367003367003
+  },
+  "range_or_covariance_stats": null,
+  "schema_version": "falcon_branchrot_diagnostic_metrics_v1"
+}

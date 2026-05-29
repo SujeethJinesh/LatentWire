@@ -1,0 +1,19 @@
+{
+  "audit_questions": [
+    "baseline",
+    "trace_window",
+    "rotated_basis",
+    "shape_dtype_index",
+    "budget",
+    "concentration",
+    "kl_logit",
+    "residual_loss_alignment"
+  ],
+  "created_at_utc": "2026-05-29T02:51:12Z",
+  "git_commit": "05d80f6cc3354edbf47338443984fbf2c52c8c78",
+  "inputs": [
+    "experimental/outlier_migrate/phase9/results/om_driftrot_residual_granite_tail4_diag_fixed_20260528T2116Z",
+    "artifacts/rot_resid_correction/residual_candidate_pool_tail4_top8.json"
+  ],
+  "schema_version": "k_res_failure_audit_config_v1"
+}

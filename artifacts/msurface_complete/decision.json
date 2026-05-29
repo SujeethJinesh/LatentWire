@@ -1,0 +1,15 @@
+{
+  "created_at_utc": "2026-05-29T02:56:52Z",
+  "decision": "MEASURED_CHEAP_SURFACES_NO_PROMOTE__SSM_BC_INCOMPLETE",
+  "git_commit": "05d80f6cc3354edbf47338443984fbf2c52c8c78",
+  "measured_surface_gate": "fail: no measured internal surface had leaving <0.30-0.40 or >=0.15 below post-block",
+  "promote_surface_rot_or_protect": false,
+  "reason": "Granite mamba_out_projection_input and attention_out_projection_input have higher strict set-leaving than same-run post-block. SSM input and B/C generation are local tensors and remain unmeasured, so this is not a global M-SURFACE kill.",
+  "schema_version": "msurface_complete_decision_v1",
+  "source_decision": "PARTIAL_COMPLETE_NO_PROMOTE_CHEAP_SURFACES_HIGHER_DRIFT",
+  "unmeasured_surfaces": [
+    "Granite ssm_input_x",
+    "Granite ssm_BC_parameter_generation",
+    "Falcon branch/local SSM internals"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "best_single_column_benefit": null,
+  "best_topk_group_benefit": null,
+  "created_at_utc": "2026-05-29T02:56:52Z",
+  "kl_improvement": null,
+  "recovery_improvement_estimate": null,
+  "schema_version": "kllook_residual_oracle_metrics_v1",
+  "selected_columns_overlap_k_res_proxy": null,
+  "source_endpoint_proxy": {
+    "prompt_index": 4,
+    "residual_minus_reference": -18.233280432605234,
+    "residual_recovery": -12.293656857340855,
+    "run_dir": "experimental/outlier_migrate/phase9/results/om_driftrot_residual_granite_tail4_diag_fixed_20260528T2116Z",
+    "tight_paroquant_reference_recovery": 5.939623575264381
+  },
+  "status": "not_executed",
+  "tail_fixed_without_representative_harm": null
+}

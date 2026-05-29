@@ -1,0 +1,21 @@
+{
+  "endpoint_proxy_trace_used_by_k_res": [
+    {
+      "model": "Granite-4.0-H-Small",
+      "prompt_id": "opencompass_AIME2025_I_4",
+      "prompt_index": 4
+    }
+  ],
+  "executed": false,
+  "oracle_requested_but_not_run": [
+    {
+      "model": "Falcon-H1-0.5B-Instruct",
+      "trace_role": "worst_trace"
+    },
+    {
+      "model": "Granite-4.0-H-Small",
+      "trace_role": "representative_non_tail"
+    }
+  ],
+  "schema_version": "kllook_residual_oracle_traces_v1"
+}

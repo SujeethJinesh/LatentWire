@@ -98,3 +98,19 @@ Decision: no new GPU job is authorized from this residual family yet. The next
 positive-method work must either define a bounded/KLLOOK-gated residual selector
 with better CPU evidence, or shift to a different surface/branch gate. ParoQuant
 remains a baseline, not our method.
+
+## Final Bounded Gate After K-RES Kill
+
+Timestamp: 2026-05-29T02:57Z.
+
+| Branch | Decision | Reason |
+|---|---|---|
+| K-RES current top-8x32 proxy | `VALID_IMPLEMENTATION_KEEP_K_RES_PROXY_KILLED` | The audit found the fixed run used the tight ParoQuant reference, same Granite tail trace/window, post-ParoQuant residual columns, valid shape/index sidecars, and exactly top-8 modules x 32 columns. It worsened recovery (-12.29) versus tight ParoQuant (5.94). |
+| Residual KLLOOK oracle | `NOT_EXECUTED_NO_ROTATED_RESIDUAL_KLLOOK_RUNNER` | The available M-KLLOOK runner is original-basis channel protection, not rotated-basis residual correction. No per-candidate residual KL/logit cache exists, so there is no oracle pass to override the K-RES kill. |
+| M-SURFACE | `MEASURED_CHEAP_SURFACES_NO_PROMOTE__SSM_BC_INCOMPLETE` | Measured Granite Mamba out-proj input and attention o-proj input surfaces drift more than post-block. SSM input and B/C internals remain unmeasured, so do not state a global surface kill. |
+| Falcon BranchRot | `DEFER_NO_BRANCH_LOCAL_CACHE_NO_PROMOTE` | Branch-local hooks are feasible, but only post-block Falcon activations are cached. BranchRot is not promoted and is not a measured kill. |
+
+Decision: stop the current positive-method search and move the paper to the
+mechanism/regime path. The safe paper claim is that channel identity drifts and
+channel-set remedies repeatedly fail or remain unpromoted, while rotation is the
+strongest baseline. ParoQuant is prior work and must remain labeled as such.

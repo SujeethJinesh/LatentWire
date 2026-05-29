@@ -1,0 +1,19 @@
+{
+  "candidate_pool_sources": [
+    "top residual-energy columns after ParoQuant",
+    "activation-weighted residual columns from K-RES proxy"
+  ],
+  "executed": false,
+  "requested_candidate_pool_sources_not_available": [
+    "high-churn post-rotation channels: no position-resolved rotated residual set cache",
+    "ParoQuant tail-sensitive columns: no per-candidate KL/logit cache",
+    "branch/surface candidate columns: branch/local-surface diagnostics not promoted"
+  ],
+  "schema_version": "kllook_residual_oracle_config_v1",
+  "target_traces_requested": [
+    "Granite tail trace I_4",
+    "Falcon worst trace",
+    "representative non-tail trace per model"
+  ],
+  "why_not_executed": "The available M-KLLOOK runner scores original-basis protected-channel sets, not post-ParoQuant rotated-basis residual corrections. The fixed K-RES packet captured endpoint loss for the top-8x32 residual-energy proxy but did not capture per-candidate logits/KL. Reusing original-basis M-KLLOOK here would be a category error, so this oracle is recorded as not executed and cannot overturn the K-RES kill."
+}

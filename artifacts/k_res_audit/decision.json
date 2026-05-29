@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-05-29T02:51:12Z",
+  "decision": "VALID_IMPLEMENTATION_KEEP_K_RES_PROXY_KILLED",
+  "implementation_mismatch_found": false,
+  "reason": "The fixed run used the tight ParoQuant reference, same prompt/window, post-ParoQuant residual columns, valid shape/index sidecars, and exactly top-8 modules x 32 columns. It worsened recovery versus tight ParoQuant; no KL/logit tensors were captured, so local KL attribution is unavailable.",
+  "rerun_minimal_check": false,
+  "schema_version": "k_res_failure_audit_decision_v1"
+}

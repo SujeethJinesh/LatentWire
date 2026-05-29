@@ -1,0 +1,5 @@
+prompt_index,prompt_id,regime,mean_nll,perplexity,recovery
+4,opencompass_AIME2025_I_4,bf16,0.03609823703300208,1.0367576894878223,
+4,opencompass_AIME2025_I_4,static_1pct,0.03684285231429385,1.0375299625939074,0.0
+4,opencompass_AIME2025_I_4,tight_paroquant_reference,,,5.939623575264381
+4,opencompass_AIME2025_I_4,tight_paroquant_plus_residual,0.04595187638187781,1.04702402316027,-12.293656857340855

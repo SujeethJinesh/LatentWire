@@ -1,0 +1,9 @@
+module,mode,column_count,delta_shape,working_set_bytes,working_set_mib,columns_sample,artifact_bytes,selection_source_relative_residual_energy
+model.layers.14.block_sparse_moe.input_linear,expert_bank_input_column_residual,32,72x1536x32,7077888,6.75,3720 2793 3765 1021 14 672 1725 3078,7082099,0.010124143686836782
+model.layers.15.block_sparse_moe.input_linear,expert_bank_input_column_residual,32,72x1536x32,7077888,6.75,3219 2053 499 729 9 1644 1284 3022,7082099,0.010128930327311403
+model.layers.2.block_sparse_moe.input_linear,expert_bank_input_column_residual,32,72x1536x32,7077888,6.75,573 1438 1156 1097 3453 2195 2338 1007,7082092,0.010102966148817378
+model.layers.24.block_sparse_moe.input_linear,expert_bank_input_column_residual,32,72x1536x32,7077888,6.75,990 260 2736 3485 934 988 3191 1088,7082099,0.010153315811237695
+model.layers.28.block_sparse_moe.input_linear,expert_bank_input_column_residual,32,72x1536x32,7077888,6.75,2053 193 2717 2057 2237 988 3996 428,7082099,0.01014563660198831
+model.layers.37.block_sparse_moe.input_linear,expert_bank_input_column_residual,32,72x1536x32,7077888,6.75,3979 3032 1330 2822 2977 2894 387 3399,7082099,0.010140148485748582
+model.layers.38.block_sparse_moe.input_linear,expert_bank_input_column_residual,32,72x1536x32,7077888,6.75,3016 3157 2977 936 1603 793 2930 176,7082099,0.010137824475434338
+model.layers.39.block_sparse_moe.input_linear,expert_bank_input_column_residual,32,72x1536x32,7077888,6.75,816 2886 1359 4 2181 709 2822 2973,7082099,0.010141982187955915

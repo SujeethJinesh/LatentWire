@@ -1,0 +1,18 @@
+{
+  "candidate_id": "residual_tight_top8x32_tail4",
+  "created_at_utc": "2026-05-29T02:51:12Z",
+  "git_commit": "05d80f6cc3354edbf47338443984fbf2c52c8c78",
+  "implementation_status": "VALID_FIXED_RUN",
+  "kl_or_logit_error_available": false,
+  "median_recovery_residual": -12.293656857340855,
+  "minimal_rerun_needed": false,
+  "module_count": 8,
+  "prompt_indices": [
+    4
+  ],
+  "residual_minus_reference_recovery": -18.233280432605234,
+  "run_dir": "experimental/outlier_migrate/phase9/results/om_driftrot_residual_granite_tail4_diag_fixed_20260528T2116Z",
+  "schema_version": "k_res_failure_audit_v1",
+  "tight_paroquant_reference_recovery": 5.939623575264381,
+  "total_working_set_mib_fp16": 54.0
+}
