@@ -1,6 +1,6 @@
 # Positive-Method Sprint Decisions
 
-Last updated: 2026-05-29T00:30Z
+Last updated: 2026-05-29T01:00Z
 
 ## Current Framing
 
@@ -32,7 +32,7 @@ unless a genuinely held-out frozen-threshold run is executed.
 | HYST | DEFER_AFTER_FALCON_ROTATION_PASS | Falcon churn/local-pool gate selected margin `m=5`, but ParoQuant now rescues Falcon enough that channel fallback is lower priority. |
 | RISKGUARD | DEFER | Best cached trigger is in-sample only; leave-one-trace-out CI lower bound collapses to 0 and CVaR remains negative. |
 | TRACE-ROUTER | WEAK_OFFLINE_ONLY | Granite/DeepSeek show positive tiny-n CV gain, but this needs a preregistered larger frozen slice before evidence claims. Falcon remains not routable. |
-| M-SURFACE | CONDITIONAL_DIAGNOSTIC | Granite `mamba_out_projection_input` hook sanity is cheap; promote only if internal drift is <0.30 or at least 0.15 below same-run post-block. |
+| M-SURFACE | KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT | Granite two-trace hook sanity measured post-block mean strict leaving 0.578, Mamba `out_proj` input 0.887, and attention `o_proj` input 0.780. The cheap internal hook surfaces drift more than post-block, so do not promote this surface family or run Falcon M-SURFACE without a new local-tensor hypothesis. |
 | M-BRANCH | DEFER | No cached branch-local Falcon activations and no branch diagnostic is recommended before stronger smoke evidence. |
 | LayerKeep | CONDITIONAL_FALLBACK | Falcon late layers `30-35` are a bounded fallback candidate; no-gap detector is not recommended. |
 | M-FISH | DEFERRED | No hybrid Fisher infrastructure; only reconsider for DeepSeek if WJAC/KLLOOK show sensitivity headroom. |
@@ -66,5 +66,7 @@ CPU gates now favor this concrete order:
    ParoQuant tails/CI rather than merely reproduce the rotation baseline.
 2. Pairing only after collecting exact rotation-surface caches; residual
    correction is demoted unless a bounded or KLLOOK-gated design is written.
-3. Falcon/DeepSeek channel fallbacks only if a later rotation-specific gate
+3. M-SURFACE cheap module hooks are killed/deferred; only reopen with SSM B/C
+   internals or KLLOOK-backed placement evidence.
+4. Falcon/DeepSeek channel fallbacks only if a later rotation-specific gate
    exposes a weakness requiring architecture-local rescue.

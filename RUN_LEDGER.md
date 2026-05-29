@@ -1,6 +1,6 @@
 # Positive-Method Sprint Run Ledger
 
-Last updated: 2026-05-29T00:30Z
+Last updated: 2026-05-29T01:00Z
 
 ## Active Objective
 
@@ -21,7 +21,7 @@ does not edit this ledger.
 | 4 | DriftRot ResidualCorrection smoke | KILL_CURRENT_DESIGN | `artifacts/rot_resid_correction/` | Top-8x32 MoE residual correction worsened Granite tail trace; only reopen with a bounded or KLLOOK-gated design |
 | 5 | Drift-aware Pairing smoke | CPU_GATED | `artifacts/drift_pairing/` | Run only if pairings materially differ from static high-low baseline |
 | 6 | Falcon BranchRot diagnostic/protection | CONDITIONAL | `artifacts/falcon_branch_rotation/` | Promote if branch-local drift/covariance range is materially lower than post-mixer |
-| 7 | M-SURFACE DriftRot diagnostic | CONDITIONAL | `artifacts/msurface_driftrot/` | Cheap if hooks ready; promote stable internal surfaces only |
+| 7 | M-SURFACE DriftRot diagnostic | KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT | `experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_sanity_20260529T0032Z` | Granite hook sanity found internal Mamba/attention projection-input surfaces drift more than same-run post-block; do not run Falcon M-SURFACE from this surface family |
 | 8 | Falcon LAMBDA/HYST fallback | DEFERRED_AFTER_ROTATION | `artifacts/falcon_channel_fallbacks/` and prior HYST/LAMBDA artifacts | Run only if ParoQuant Falcon and BranchRot do not solve Falcon |
 | 9 | Restricted KLLOOK | CONDITIONAL | TBD | Only if Falcon channel/rotation branches remain ambiguous |
 | 10 | Partial / full eval for finalists | GATED | TBD | 6-trace partial; 12-trace + BCa for at most two finalists |
@@ -36,7 +36,7 @@ does not edit this ledger.
 | Falcon LAMBDA budget prior | `artifacts/lambda_falcon/` | COMPLETE_DEFERRED | Reallocation exists, but `run_smoke=false`; no causal per-layer headroom |
 | Falcon HYST thresholds | `artifacts/hyst_falcon/` | COMPLETE_READY | Run Falcon HYST smoke with margin `m=5`; runner supports `--methods hyst` |
 | TRACE-ROUTER classifier | `artifacts/trace_router/` | COMPLETE_WEAK | Offline weak signal on Granite/DeepSeek only; needs preregistered larger slice before GPU evidence |
-| M-SURFACE diagnostic refresh | `artifacts/msurface/` | COMPLETE_CONDITIONAL | Granite `mamba_out_projection_input` 2-trace hook diagnostic is cheap and gateable |
+| M-SURFACE diagnostic refresh | `artifacts/msurface/` | COMPLETE_KILL_OR_DEFER | Granite `mamba_out_projection_input` and attention `o_proj` input were measured and both drifted more than same-run post-block |
 | M-BRANCH diagnostic refresh | `artifacts/mbranch/` | COMPLETE_DEFERRED | No branch-local cache and no GPU diagnostic recommended |
 | LayerKeep / no-gap detector | `artifacts/layerkeep_nogap/` | COMPLETE_CONDITIONAL | Falcon-only LayerKeep candidate `30-35`; no-gap filter not recommended |
 | Kernel design | `artifacts/kernel_design/` | COMPLETE | Design only; no GPU kernel until finalist |
@@ -46,7 +46,7 @@ does not edit this ledger.
 | C4 Drift-aware pairing | `artifacts/drift_pairing/` | RUNNING | Promote only if pairings differ materially from ParoQuant baseline |
 | C5 Rotated residual correction | `artifacts/rot_resid_correction/` | RUNNING | Candidate protected columns and PyTorch reference only |
 | C6 Falcon branch rotation | `artifacts/falcon_branch_rotation/` | RUNNING | Branch-local rotation diagnostic/protection config |
-| C7 M-SURFACE DriftRot | `artifacts/msurface_driftrot/` | RUNNING | Surface map and 2-trace diagnostic config |
+| C7 M-SURFACE DriftRot | `artifacts/msurface_driftrot/` | COMPLETE_KILL_OR_DEFER | Granite two-trace diagnostic did not find a lower-drift internal surface |
 | C8 Falcon channel fallbacks | `artifacts/falcon_channel_fallbacks/` | COMPLETE_DEFERRED | LAMBDA/HYST configs remain available, but Falcon ParoQuant rescue lowers channel-fallback priority |
 | C9 Paper delta | `artifacts/paper_delta/` | RUNNING | Abstract/contribution options and figure plan |
 | C10 Novelty audit | `artifacts/novelty_audit/` | RUNNING | Safe claims vs ParoQuant, QuaRot, SpinQuant, Quamba2, SmoothQuant/AWQ, MambaQuant, RRS |
@@ -63,7 +63,7 @@ does not edit this ledger.
 | C4 drift-aware pairing | `NEEDS_ACTIVATION_CACHE` | Needs exact rotation-surface activation cache before GPU smoke |
 | C5 residual correction | `KILL_TOP8X32_MOE_RESIDUAL_DIAGNOSTIC` | Delta columns were materialized, but valid Granite prompt-4 diagnostic scored -12.29 recovery versus tight ParoQuant 5.94; do not run 3-trace smoke for this candidate |
 | C6 Falcon BranchRot | `NEEDS_GPU_DIAGNOSTIC` | Branch hooks feasible; only after ParoQuant Falcon is weak |
-| C7 M-SURFACE DriftRot | `GUARDED_DIAGNOSTIC_ONLY` | Diagnostic only; no stable internal surface proven yet |
+| C7 M-SURFACE DriftRot | `KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT` | Granite same-run diagnostic: post-block mean leaving 0.578, Mamba out-proj input 0.887, attention o-proj input 0.780; do not promote this surface family |
 | C8 Falcon channel fallback | `DEFER_AFTER_FALCON_ROTATION_PASS` | Falcon ParoQuant rescue lowers priority for HYST/LAMBDA channel fallbacks |
 | C9 paper delta | `ROTATION_FIRST_REGIME_AWARE` | Use rotation-first framing options; do not claim ParoQuant as ours |
 | C10 novelty audit | `SAFE_CLAIMS_ONLY` | BranchRot is most defensible; scale/clip/residual correction require held-out drift-specific gain |

@@ -1,9 +1,9 @@
 {
-  "status": "diagnostic_recommended_not_promoted",
-  "recommend_gpu_diagnostic": true,
+  "status": "diagnostic_completed_not_promoted",
+  "recommend_gpu_diagnostic": false,
   "recommended_model": "ibm-granite/granite-4.0-h-small",
   "recommended_surface": "mamba_out_projection_input via model.layers.{i}.mamba.out_proj forward_pre_hook, with same-run post_block_residual_block_output control",
-  "reason": "Cached strict block-output leaving remains high for Granite (0.566234756098) and Falcon (0.673611111111), but cached internal M-SURFACE activations are absent. Granite's Mamba out_proj input is a cheap module hook (0.5-1 h) that can directly test the gate: internal strict leaving <0.30, or >=0.15 absolute below same-run post-block leaving. Falcon should stay deferred unless Granite identifies a low-drift internal surface.",
+  "reason": "Granite two-trace hook sanity found internal surfaces drift more than the same-run post-block control: mamba_out_projection_input mean leaving 0.887, attention_out_projection_input 0.780, post-block 0.578.",
   "source_files": [
     "RUN_LEDGER.md",
     "DECISIONS.md",
@@ -18,5 +18,30 @@
     "/workspace/hf_cache/hub/models--tiiuae--Falcon-H1-0.5B-Instruct/snapshots/8f2587ca06bff78d8fa1adfccbe8c24d5f86b368/config.json",
     ".venv_gpu/lib/python3.12/site-packages/transformers/models/granitemoehybrid/modeling_granitemoehybrid.py",
     ".venv_gpu/lib/python3.12/site-packages/transformers/models/falcon_h1/modeling_falcon_h1.py"
-  ]
+  ],
+  "completed_run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_sanity_20260529T0032Z",
+  "decision": "KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT",
+  "surface_metrics": {
+    "attention_out_projection_input": {
+      "mean_internal_minus_post_block_same_layer": 0.18292682926829268,
+      "mean_strict_set_leaving": 0.7804878048780488,
+      "median_internal_minus_post_block_same_layer": 0.18292682926829273,
+      "median_strict_set_leaving": 0.8170731707317074,
+      "unit_count": 8
+    },
+    "mamba_out_projection_input": {
+      "mean_internal_minus_post_block_same_layer": 0.31114498644986444,
+      "mean_strict_set_leaving": 0.8870257452574526,
+      "median_internal_minus_post_block_same_layer": 0.31707317073170727,
+      "median_strict_set_leaving": 0.9024390243902439,
+      "unit_count": 72
+    },
+    "post_block_residual_block_output": {
+      "mean_internal_minus_post_block_same_layer": 0.0,
+      "mean_strict_set_leaving": 0.578048780487805,
+      "median_internal_minus_post_block_same_layer": 0.0,
+      "median_strict_set_leaving": 0.5853658536585367,
+      "unit_count": 80
+    }
+  }
 }

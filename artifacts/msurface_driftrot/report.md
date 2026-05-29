@@ -5,21 +5,31 @@ Created: `2026-05-28T15:37:22Z`
 ## Status
 
 - Paper readiness: not ICLR-ready.
-- Current story: rotation is positive on Granite and Nemotron; M-SURFACE asks whether a cleaner internal surface explains or improves drift handling.
-- Blocking gap: no cached internal-surface activations exist for Granite or Falcon.
+- Current story: rotation is positive across the current model set; M-SURFACE
+  asks whether a cleaner internal surface explains or improves drift handling.
+- Blocking gap: no internal surface has yet shown lower drift than the
+  post-block surface where channel-set protection was originally measured.
 
-No GPU jobs were run. This packet prepares a guarded two-trace diagnostic only.
+A Granite two-trace hook sanity run has now completed:
+
+`experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_sanity_20260529T0032Z`
 
 ## Decision
 
-**Decision: `GUARDED_DIAGNOSTIC_ONLY`.**
+**Decision: `KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT`.**
 
-Cached block-output drift is high:
+The same-run diagnostic found that the cheap internal module-hook surfaces
+drifted more than the post-block control:
 
-- Granite block-output strict set-leaving: `0.566`.
-- Falcon block-output strict set-leaving: `0.674`.
+| Surface | Mean strict set-leaving | Median strict set-leaving | Mean delta vs same-layer post-block |
+|---|---:|---:|---:|
+| post-block residual output | 0.578 | 0.585 | 0.000 |
+| Mamba `out_proj` input | 0.887 | 0.902 | +0.311 |
+| attention `o_proj` input | 0.780 | 0.817 | +0.183 |
 
-No cached evidence shows any internal surface with strict leaving `<0.30-0.40` or at least `0.15` below block output. Granite has cheap module hooks for Mamba `out_proj` input and attention `o_proj` input, so Granite remains the recommended first diagnostic. Falcon should stay deferred unless Granite identifies a lower-drift surface or ParoQuant Falcon is weak.
+No internal surface had strict leaving `<0.30-0.40` or at least `0.15`
+absolute lower than post-block. The result argues against promoting this
+module-hook M-SURFACE branch to endpoint scoring.
 
 ## Hypothesis
 
@@ -34,3 +44,9 @@ Promote M-SURFACE/SurfaceRot only if the diagnostic shows:
 
 If Granite does not satisfy this gate, skip Falcon M-SURFACE unless a later Falcon result specifically needs placement evidence.
 
+## Next Gate
+
+Do not run Falcon M-SURFACE from this surface family. Reopen surface placement
+only with a new local tensor target, such as SSM B/C internals, or with a
+KLLOOK-backed hypothesis that the cheap hook surfaces are the wrong candidate
+pool.

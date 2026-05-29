@@ -1,0 +1,7 @@
+{
+  "decision": "KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT",
+  "reasons": [
+    "no internal surface had mean strict leaving <0.30 or <=-0.15 paired delta vs post-block"
+  ],
+  "schema_version": "om_phase9_msurface_sanity_v1_decision"
+}

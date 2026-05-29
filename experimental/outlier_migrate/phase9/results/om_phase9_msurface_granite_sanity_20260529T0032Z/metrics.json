@@ -1,15 +1,10 @@
 {
-  "schema_version": "msurface_driftrot_metrics_v1",
-  "created_at_utc": "2026-05-29T01:00:00Z",
-  "gpu_jobs_run": true,
-  "endpoint_recovery_measured": false,
-  "internal_surface_drift_measured": true,
-  "cached_block_output_reference": {
-    "granite_top1pct_strict_leaving": 0.566234756098,
-    "falcon_top1pct_strict_leaving": 0.673611111111
-  },
   "decision": "KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT",
-  "diagnostic_run_dir": "experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_sanity_20260529T0032Z",
+  "decision_reasons": [
+    "no internal surface had mean strict leaving <0.30 or <=-0.15 paired delta vs post-block"
+  ],
+  "per_unit_count": 160,
+  "schema_version": "om_phase9_msurface_sanity_v1_metrics",
   "surface_metrics": {
     "attention_out_projection_input": {
       "mean_internal_minus_post_block_same_layer": 0.18292682926829268,
