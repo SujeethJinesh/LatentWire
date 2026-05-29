@@ -1,0 +1,17 @@
+{
+  "closed_or_weak": [
+    "clip_config_retuning_as_headline",
+    "naive_ParoQuant_plus_M11b",
+    "WJAC",
+    "M-PRED"
+  ],
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "git_commit": "6688f4eb1c9d986c2a69bff12fa0577ec2e39663",
+  "schema_version": "driftrot_plus_novelty_lock_v1",
+  "tier1_candidates": [
+    "rotated_basis_residual_correction",
+    "decode_adaptive_rotation_refresh",
+    "surface_selected_rotation_or_protection",
+    "branch_local_falcon_rotation"
+  ]
+}

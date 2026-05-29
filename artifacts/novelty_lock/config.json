@@ -1,0 +1,6 @@
+{
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "git_commit": "6688f4eb1c9d986c2a69bff12fa0577ec2e39663",
+  "schema_version": "driftrot_plus_novelty_lock_config_v1",
+  "source": "artifacts/novelty_audit/"
+}

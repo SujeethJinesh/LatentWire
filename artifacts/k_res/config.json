@@ -1,0 +1,14 @@
+{
+  "basis": "post-ParoQuant rotated/dequantized basis",
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "git_commit": "6688f4eb1c9d986c2a69bff12fa0577ec2e39663",
+  "inputs": [
+    "artifacts/rot_resid_correction/residual_cache_granite_tight_20260528T2025Z/residual_column_cache.json",
+    "artifacts/rot_resid_correction/residual_candidate_pool_tail4_top8.json",
+    "experimental/outlier_migrate/phase9/results/om_driftrot_residual_granite_tail4_diag_fixed_20260528T2116Z/metrics.json"
+  ],
+  "model": "Granite-4.0-H-Small",
+  "schema_version": "driftrot_plus_k_res_config_v1",
+  "score_formula": "EMA(x_i^2) * ||(W_fp - W_pq)[:, i]||_2^2",
+  "trace_scope": "Granite tail trace I_4 for activation-weighted candidate pool"
+}

@@ -1,0 +1,11 @@
+{
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "decision": "KILL_CURRENT_TOP8X32_PROXY_NO_GPU",
+  "git_commit": "6688f4eb1c9d986c2a69bff12fa0577ec2e39663",
+  "k_res_verdict": "residual headroom exists but is weak/not actionable under current proxy",
+  "next_gate": "Only reopen with a full-column benefit distribution, coefficient-shrunk correction, or KLLOOK-gated columns; otherwise pivot to mechanism/regime paper.",
+  "promote_to_gpu": false,
+  "reason": "Residual energy is about 1% of fp weight energy and top-128 residual fractions are only a few percent per tensor; the activation-weighted top-8x32 MoE sidecar worsened Granite tail recovery (-12.29) versus tight ParoQuant reference (5.94). Do not run P1/P2 GPU for this proxy.",
+  "residual_family_status": "CONDITIONAL_REOPEN_ONLY_WITH_FULL_KRES_OR_KLLOOK_GATED_BOUNDED_DESIGN",
+  "schema_version": "driftrot_plus_k_res_decision_v1"
+}

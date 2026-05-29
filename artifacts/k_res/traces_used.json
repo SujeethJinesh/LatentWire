@@ -1,0 +1,7 @@
+{
+  "prompt_indices": [
+    4
+  ],
+  "source": "artifacts/rot_resid_correction/residual_candidate_pool_tail4_top8.json",
+  "trace_scope": "Granite tail trace I_4 for activation EMA; residual norms are weight-only across eligible tensors"
+}

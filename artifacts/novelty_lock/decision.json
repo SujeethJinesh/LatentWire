@@ -1,0 +1,6 @@
+{
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "decision": "SAFE_CLAIMS_LOCKED",
+  "reason": "ParoQuant is a baseline, not our method. DriftRot claims must be long-decode drift-aware selection/correction with held-out gain, not static rotation or clip tuning.",
+  "schema_version": "driftrot_plus_novelty_lock_decision_v1"
+}

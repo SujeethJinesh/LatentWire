@@ -1,0 +1,4 @@
+{
+  "note": "proxy uses cached block-output magnitudes/means, not centered covariance",
+  "source": "artifacts/covariance_headroom/report.md"
+}

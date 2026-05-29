@@ -1,0 +1,23 @@
+{
+  "candidate_modules": 8,
+  "candidate_top1_over_top32_score_max": 0.1513465084736546,
+  "candidate_top1_over_top32_score_median": 0.11668353034139109,
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "current_top8x32_working_set_mib_fp16": 54.0,
+  "git_commit": "6688f4eb1c9d986c2a69bff12fa0577ec2e39663",
+  "headroom_verdict": "WEAK_NOT_ACTIONABLE_FOR_CURRENT_PROXY",
+  "measured_tensor_count": 289,
+  "relative_residual_energy_max": 0.0106696387512095,
+  "relative_residual_energy_mean": 0.009984857634892323,
+  "relative_residual_energy_median": 0.010202949261141722,
+  "relative_residual_energy_min": 0.007128011653152835,
+  "schema_version": "driftrot_plus_k_res_v1",
+  "skipped_tensor_count": 154,
+  "source_candidate_pool": "artifacts/rot_resid_correction/residual_candidate_pool_tail4_top8.json",
+  "source_residual_cache": "artifacts/rot_resid_correction/residual_cache_granite_tight_20260528T2025Z/residual_column_cache.json",
+  "tight_paroquant_reference_recovery": 5.939623575264381,
+  "top128_residual_fraction_mean": 0.08873321214568727,
+  "top128_residual_fraction_median": 0.0661328663345296,
+  "top25_working_set_mib_fp16": 336.25,
+  "valid_smoke_recovery": -12.293656857340855
+}

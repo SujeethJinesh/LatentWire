@@ -1,0 +1,7 @@
+{
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "decision": "SPEC_READY_KERNEL_BLOCKED_ON_METHOD_PASS",
+  "implement_kernel": false,
+  "reason": "Protected-column correction spec exists, but current residual proxy failed the quality gate. No kernel until a residual policy survives smoke/partial eval.",
+  "schema_version": "driftrot_plus_rot_resid_decision_v1"
+}

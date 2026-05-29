@@ -1,0 +1,9 @@
+{
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "decision": "INCOMPLETE_NO_POSITIONAL_ROTATED_SET_CACHE",
+  "promote_p2_drift_tracking": false,
+  "promote_p3_hysteresis": false,
+  "promote_p9_phasing": false,
+  "reason": "Only aggregate activation EMA exists for the residual candidate pool; no per-position rotated residual-benefit set trajectory exists to estimate churn.",
+  "schema_version": "driftrot_plus_k_churn_decision_v1"
+}

@@ -1,0 +1,8 @@
+{
+  "source": "artifacts/mbranch/branch_drift_table.csv",
+  "stratified_smoke_traces_if_reopened": [
+    7,
+    1,
+    11
+  ]
+}

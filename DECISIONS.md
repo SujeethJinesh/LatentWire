@@ -70,3 +70,31 @@ CPU gates now favor this concrete order:
    internals or KLLOOK-backed placement evidence.
 4. Falcon/DeepSeek channel fallbacks only if a later rotation-specific gate
    exposes a weakness requiring architecture-local rescue.
+
+## DriftRot+ Gate Update
+
+Timestamp: 2026-05-29T02:34Z.
+
+The rotated-basis residual-correction sprint has a stricter CPU gate:
+
+- `artifacts/k_res/`: `KILL_CURRENT_TOP8X32_PROXY_NO_GPU`. The existing
+  residual headroom is not actionable for the current proxy. Relative residual
+  energy is about 1%, top-128 residual concentration is only a few percent per
+  tensor, and the valid top-8x32 MoE correction worsened Granite tail recovery
+  (-12.29) compared with tight ParoQuant (5.94). Do not run P1/P2 GPU for this
+  proxy.
+- `artifacts/k_churn/`: `INCOMPLETE_NO_POSITIONAL_ROTATED_SET_CACHE`. Dynamic
+  residual tracking/hysteresis/phasing needs a position-resolved residual-set
+  cache before GPU.
+- `artifacts/k1_cov/`: `P8_NOT_PROMOTED_NO_TRUE_COVARIANCE`. Clip/config
+  retuning is closed as a universal method; online scale-refresh needs true
+  covariance evidence.
+- `artifacts/msurface/`: cheap projection-input surfaces are a negative screen,
+  but SSM input and B/C generation are unmeasured.
+- `artifacts/k_branch/`: Falcon BranchRot remains deferred without branch-local
+  drift evidence.
+
+Decision: no new GPU job is authorized from this residual family yet. The next
+positive-method work must either define a bounded/KLLOOK-gated residual selector
+with better CPU evidence, or shift to a different surface/branch gate. ParoQuant
+remains a baseline, not our method.

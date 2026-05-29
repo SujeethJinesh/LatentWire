@@ -85,6 +85,27 @@ WJAC, M-PRED/AR/Kalman prediction, hard bins/switches, and naive
 ParoQuant+M11b composition remain excluded because those branches were killed
 or sub-additive under prior gates.
 
+## DriftRot+ Residual-Correction CPU Gate
+
+Timestamp: 2026-05-29T02:34Z. Commit context: `6688f4eb`.
+
+The paper has been updated and pushed with the rotation-first / DriftRot
+framework. The next CPU-gated sprint was executed into disjoint artifacts:
+
+| Task | Artifact | Decision | Consequence |
+|---|---|---|---|
+| C1 K-RES residual headroom | `artifacts/k_res/` | `KILL_CURRENT_TOP8X32_PROXY_NO_GPU` | Do not run P1/P2 residual GPU for the current proxy. Residual energy is weak and the valid top-8x32 smoke worsened Granite tail recovery (-12.29) versus tight ParoQuant (5.94). |
+| C2 K-CHURN rotated-set churn | `artifacts/k_churn/` | `INCOMPLETE_NO_POSITIONAL_ROTATED_SET_CACHE` | No dynamic residual P2/P3/P9 gate until a position-resolved residual-benefit top-k cache exists. |
+| C3 K1 covariance drift | `artifacts/k1_cov/` | `P8_NOT_PROMOTED_NO_TRUE_COVARIANCE` | Clip/config tuning is closed as a headline; online scale-refresh needs true covariance evidence. |
+| C4 M-SURFACE completion | `artifacts/msurface/` | `PARTIAL_COMPLETE_NO_PROMOTE_CHEAP_SURFACES_HIGHER_DRIFT` | Mamba out-proj and attention o-proj inputs drift more than post-block; SSM input and B/C remain unmeasured, not killed. |
+| C5 K-BRANCH Falcon | `artifacts/k_branch/` | `DEFER_NO_BRANCH_LOCAL_CACHE` | BranchRot is not next on GPU without branch-local drift evidence. |
+| C6 Residual systems spec | `artifacts/rot_resid/` | `SPEC_READY_KERNEL_BLOCKED_ON_METHOD_PASS` | No Triton/CUDA implementation until a residual policy passes quality. |
+| C7 Novelty lock | `artifacts/novelty_lock/` | `SAFE_CLAIMS_LOCKED` | ParoQuant remains a baseline; safe DriftRot novelty requires held-out long-decode drift-aware selection/correction gain. |
+
+Current next exact gate: either write a bounded/KLLOOK-gated residual selector
+before any residual GPU work, or accept the mechanism/regime paper path unless
+a different surface/branch gate produces lower drift.
+
 ## Experiment Artifact Contract
 
 Every GPU experiment packet must emit:

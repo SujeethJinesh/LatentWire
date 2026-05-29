@@ -1,0 +1,9 @@
+{
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "current_top8x32_sidecar_mib_fp16": 54.0,
+  "git_commit": "6688f4eb1c9d986c2a69bff12fa0577ec2e39663",
+  "kernel_status": "not_implemented",
+  "pj_per_token_status": "not_measured",
+  "schema_version": "driftrot_plus_rot_resid_systems_v1",
+  "top25_sidecar_mib_fp16": 336.25
+}

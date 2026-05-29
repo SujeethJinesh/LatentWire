@@ -1,0 +1,8 @@
+{
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "decision": "P8_NOT_PROMOTED_NO_TRUE_COVARIANCE",
+  "promote_rotation_refresh": false,
+  "promote_scale_refresh": false,
+  "reason": "The available artifact is a block-output diagonal/magnitude proxy. Clip/config retuning is closed by the DeepSeek/Falcon negative transfer results; online scale-refresh P8 needs true diagonal covariance evidence before GPU.",
+  "schema_version": "driftrot_plus_k1_cov_decision_v1"
+}

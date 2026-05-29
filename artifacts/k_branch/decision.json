@@ -1,0 +1,7 @@
+{
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "decision": "DEFER_NO_BRANCH_LOCAL_CACHE",
+  "promote_branchrot": false,
+  "reason": "Falcon branch hooks are feasible but no branch-local drift cache exists; do not run BranchRot until ParoQuant/residual gates show a Falcon-specific need or a tiny hook diagnostic is explicitly gated.",
+  "schema_version": "driftrot_plus_k_branch_decision_v1"
+}

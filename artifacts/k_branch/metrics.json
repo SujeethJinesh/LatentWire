@@ -1,0 +1,8 @@
+{
+  "branch_local_cache_available": false,
+  "created_at_utc": "2026-05-29T02:33:40Z",
+  "git_commit": "6688f4eb1c9d986c2a69bff12fa0577ec2e39663",
+  "post_block_phase9_trace_strict": 0.6390993265993266,
+  "promotion_threshold_max_branch_mean": 0.4890993265993266,
+  "schema_version": "driftrot_plus_k_branch_v1"
+}
