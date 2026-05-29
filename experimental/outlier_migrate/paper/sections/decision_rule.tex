@@ -6,13 +6,14 @@ evaluate its decisions descriptively; held-out validation of the thresholds
 remains future work. On a new model, the protocol runs a short calibration
 packet and measures strict set-leaving, no-gap fraction, static top-$K$
 recovery, drift entropy/autocorrelation, and a rotation pilot if available.
-It then chooses among static top-$K$, budgeted EMA, rotation, or rejection of
-channel-set protection for that regime.
+It then provisionally suggests static top-$K$, budgeted EMA, rotation, or
+rejection of channel-set protection for that regime; the suggested remedy still
+requires a local confirmation packet.
 
 The descriptive decisions match the observed pattern. All four models exceed
 0.53 strict set-leaving, so static top-1\% protection needs validation rather
 than assumption. Nemotron passes the budgeted-EMA gate: M11b top-10 recovers
-0.815 with CI [0.158, 0.906] and beats static top-10 by 0.220 median. The same
+0.815 with CI [0.158, 0.906] and has median 0.220 above static top-10. The same
 gate is ambiguous on DeepSeek and Falcon: top-10 recovery is 0.335 with CI
 [-0.409, 0.494] on DeepSeek and 0.044 with CI [-0.144, 0.203] on Falcon. When
 a rotation baseline is available, the protocol compares it directly rather
@@ -22,7 +23,7 @@ DeepSeek, and 0.381 on Falcon. DeepSeek remains tail-risky because its lower
 CI is negative. ParoQuant+M11b is sub-additive, so the protocol does not stack
 rotation and channel protection by default.
 
-The same logic handles DriftRot screens. Tight clip is selected for Granite
+The same logic handles DriftRot screens. Tight clip is retained for Granite
 only after a tail-control check: it raises recoverable positive-gap median
 recovery from 0.754 to 0.922 and removes the catastrophic negative tail. The
 same setting is rejected as a universal retune because it lowers DeepSeek's
@@ -32,7 +33,7 @@ unmeasured internal SSM surface hypothesis is available.
 
 This protocol is not a universal predictor. Its thresholds are derived from
 these four models, so the four-model evaluation is descriptive rather than
-held-out validation. The deployment guidance is still concrete: use rotation
+held-out validation. The deployment checklist is still concrete: use rotation
 where it is locally measured; use budgeted EMA only where it clears a
 model-local matched-budget gate, as on Nemotron; apply tail-control retuning
 only when a calibration/confirmation split shows tail improvement, as on

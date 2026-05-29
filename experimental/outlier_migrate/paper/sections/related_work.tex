@@ -45,7 +45,7 @@ structured-orthogonal transforms for low-bit LLMs
 % is tracked in the citation audit.
 ParoQuant is the closest current rotation baseline for our setting because it
 targets reasoning LLM inference with pairwise rotations and W4A16-style
-weight-only PTQ \citep{liang2025paroquant}.  Our related-work boundary is
+weight-only PTQ \citep{liang2026paroquant}.  Our related-work boundary is
 therefore narrow: if a ParoQuant-style baseline recovers the audited gap, the
 paper should become a diagnosis-and-baseline-contextualization result; if it
 does not, the negative result is still scoped to the tested small/hybrid
@@ -69,7 +69,7 @@ activation-channel residual path; OutlierMigrate measures whether static or
 lightly position-conditioned protected sets remain stable in Transformer,
 Mamba-hybrid, and parallel-hybrid layouts.  Fourth, \emph{benchmarks}: DecDEC
 uses standard language/task evaluation for a low-bit systems method, whereas
-our surface is long reasoning traces with preregistered drift and W4A16
+our surface is long reasoning traces with fixed drift and W4A16
 recovery gates.  DecDEC therefore preempts any claim that changing salient
 channels are new; our contribution must be framed as long-horizon measurement,
 mechanism isolation, and audited failure or recovery of specific protection

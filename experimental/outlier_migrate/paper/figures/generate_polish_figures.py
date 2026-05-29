@@ -71,6 +71,16 @@ def plot_set_leaving() -> None:
     fig, ax = plt.subplots(figsize=(6.8, 3.6))
     for model, (xs, ys) in curves.items():
         ax.plot(xs, ys, marker="o", linewidth=2, label=model)
+    ax.axhspan(0.53, 0.67, color="0.75", alpha=0.18, zorder=0)
+    ax.text(
+        18000,
+        0.69,
+        "final-position band: 53-67%",
+        ha="right",
+        va="bottom",
+        fontsize=8,
+        color="0.25",
+    )
     ax.set_xscale("log")
     ax.set_xticks([100, 500, 1000, 5000, 10000, 20000])
     ax.get_xaxis().set_major_formatter(plt.ScalarFormatter())
