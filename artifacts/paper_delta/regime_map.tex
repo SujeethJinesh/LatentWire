@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lllllll@{}}
+\toprule
+Model & Static channel & Dynamic channel & Prediction & Rotation & Residual correction & Surface diagnostic \\
+\midrule
+Granite & KILL & AMBIG & KILL & BASELINE PASS & KILL & KILL \\
+Nemotron & AMBIG & SCOPED PASS & FUTURE & BASELINE PASS & FUTURE & FUTURE \\
+DeepSeek & AMBIG & AMBIG & KILL & BASELINE AMBIG & FUTURE & FUTURE \\
+Falcon & KILL & AMBIG & KILL & BASELINE PASS & FUTURE & FUTURE \\
+\bottomrule
+\end{tabular}}
+\caption{Regime map used by the descriptive calibration protocol. BASELINE denotes prior-work ParoQuant-style rotation, not a new method claim.}
+\end{table}

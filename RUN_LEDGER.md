@@ -1,14 +1,12 @@
 # Positive-Method Sprint Run Ledger
 
-Last updated: 2026-05-29T01:00Z
+Last updated: 2026-05-29T04:05Z
 
 ## Active Objective
 
-Find one clean positive method or a stronger mechanism/protocol result without
-wasting GPU. After V1, the primary question is whether drift-aware rotation
-choices can beat or robustify static ParoQuant. GPU jobs require an explicit
-orchestrator gate. CPU-only filter work writes to `artifacts/<task_name>/` and
-does not edit this ledger.
+Finalize the mechanism/regime paper. Positive-method search is stopped for
+this submission cycle. The remaining work is paper/audit/repro packaging and
+systems-cost framing, not more GPU method exploration.
 
 ## Current GPU Lane
 
@@ -23,8 +21,8 @@ does not edit this ledger.
 | 6 | Falcon BranchRot diagnostic/protection | CONDITIONAL | `artifacts/falcon_branch_rotation/` | Promote if branch-local drift/covariance range is materially lower than post-mixer |
 | 7 | M-SURFACE DriftRot diagnostic | KILL_OR_DEFER_SURFACE_NO_LOWER_DRIFT | `experimental/outlier_migrate/phase9/results/om_phase9_msurface_granite_sanity_20260529T0032Z` | Granite hook sanity found internal Mamba/attention projection-input surfaces drift more than same-run post-block; do not run Falcon M-SURFACE from this surface family |
 | 8 | Falcon LAMBDA/HYST fallback | DEFERRED_AFTER_ROTATION | `artifacts/falcon_channel_fallbacks/` and prior HYST/LAMBDA artifacts | Run only if ParoQuant Falcon and BranchRot do not solve Falcon |
-| 9 | Restricted KLLOOK | CONDITIONAL | TBD | Only if Falcon channel/rotation branches remain ambiguous |
-| 10 | Partial / full eval for finalists | GATED | TBD | 6-trace partial; 12-trace + BCa for at most two finalists |
+| 9 | Restricted KLLOOK | NOT_RUN_FINAL | `artifacts/kllook_residual_oracle/` | Rotated-residual oracle runner exceeded the one-hour construction gate; no KLLOOK claim is made. |
+| 10 | Partial / full eval for finalists | STOPPED | `artifacts/final_path_decision.md` | No finalist beyond prior-work ParoQuant baseline; positive-method search stopped. |
 
 ## CPU Artifact Tasks
 
@@ -123,6 +121,28 @@ The final bounded gate after the K-RES kill has been artifactized:
 Current next exact gate: finalize the mechanism/regime paper and audit/repro
 package. Do not claim ParoQuant as our method, and do not claim residual
 KLLOOK evidence.
+
+## Final Mechanism/Regime Paper Packaging
+
+Timestamp: 2026-05-29T04:05Z. Commit context before packaging:
+`7f20ce0b`.
+
+| Item | Artifact | Status | Notes |
+|---|---|---|---|
+| Final PDF/source | `experimental/outlier_migrate/paper/outlier_migrate_colm2026.pdf` | BUILT | LaTeX build succeeds with underfull-box warnings only. |
+| Claim audit | `CLAIM_AUDIT.md` | COMPLETE | 26 headline numerical claims mapped to source artifacts and check commands. |
+| Systems envelope | `artifacts/systems_cost/` | COMPLETE | Analytical HBM/MAC/working-set/pJ table for hypothetical residual correction; no profiler claim. |
+| Failure taxonomy | `artifacts/paper_delta/failure_taxonomy_table.tex` | COMPLETE | Converts killed branches into mechanism/design logic. |
+| Regime map | `artifacts/paper_delta/regime_map.pdf` | COMPLETE | Model-by-remedy status map for the descriptive calibration protocol. |
+| Novelty audit | `artifacts/novelty_audit/final_rotation_positioning.md` | COMPLETE | Safe distinction from ParoQuant, QuaRot, SpinQuant, MambaQuant, Quamba2, and DecDEC. |
+| Final pack | `artifacts/final_mechanism_regime_pack/om_mechanism_regime_final_pack_20260529_0405.tar.gz` | COMPLETE | Includes PDF, TeX, ledgers, decisions, K-RES, M-SURFACE, V1 summaries, provenance, scripts, and claim map. |
+
+Verification:
+
+- `bash build.sh` in `experimental/outlier_migrate/paper` passed.
+- `.venv_gpu/bin/python -m pytest release/tests -q` passed (`7 passed`).
+- Python compile checks passed for final systems reference and key Phase 9 scripts.
+- Pack validation reports zero missing required files and 96 decision JSON files included.
 
 ## Experiment Artifact Contract
 

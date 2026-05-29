@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lllll@{}}
+\toprule
+Method & Hypothesis & Result & Failed assumption & Paper role \\ 
+\midrule
+static top-k & early top-k channels remain useful later & 53--67\% strict leaving; static-union medians zero on Granite & channel identity is not stable across long decode & headline drift measurement \\
+hard position switching & position-specific sets fix drift & median -0.867; random bin better by 0.668 & discontinuous set swaps are worse than stale protection & failure taxonomy \\
+position-binned scales & position-specific scales fix drift & median 0.234; random scale bin better by 0.761 & hard scale schedules do not track useful structure & failure taxonomy \\
+EMA top-1\% (M11) & smoothing removes switching harm & beats random-walk control but median only 0.048 & top-1\% budget is too small & mechanism evidence \\
+M11b budget EMA & larger smooth budget recovers quality & Nemotron top-10 0.815; Granite wide; DeepSeek/Falcon ambiguous & budget helps only in some regimes & scoped channel-set remedy \\
+M-PRED & predictive timing beats lagged EMA & negative tails on Granite; no DeepSeek/Falcon rescue & broadband drift defeats simple prediction & killed screen \\
+WJAC & weight-column norm approximates sensitivity & Spearman 0.998--0.9997 with EMA; norms nearly flat & proxy adds little independent signal & killed screen \\
+K-RES & post-rotation residual energy identifies useful correction columns & valid top-8x32 proxy worsens Granite tail to -12.29 vs 5.94 tight reference & residual norm is not loss benefit & mechanism finding + systems envelope \\
+tight clip & tail-aware ParoQuant retune transfers & Granite tail fixed, DeepSeek/Falcon do not transfer cleanly & tail control is regime-local & negative/ambiguous ablation \\
+M-SURFACE & internal surfaces drift less than block outputs & Granite internals no lower than promotion gate; best deltas only about -0.06 & drift reaches cheap internal surfaces & stronger negative result \\
+ParoQuant baseline & rotation removes basis dependence & 0.754 Granite, 1.047 Nemotron, 0.756 DeepSeek, 0.381 Falcon & basis conditioning often beats channel identity tracking & strongest prior-work baseline \\
+\bottomrule
+\end{tabular}}
+\caption{Failure taxonomy for the final mechanism/regime framing.}
+\end{table}

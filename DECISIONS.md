@@ -1,16 +1,16 @@
 # Positive-Method Sprint Decisions
 
-Last updated: 2026-05-29T01:00Z
+Last updated: 2026-05-29T04:05Z
 
 ## Current Framing
 
-The working story is now rotation-first. Static and hard-switch channel
-protection fail under drift; ParoQuant-style rotation succeeds on Granite and
-dominates M11b on Nemotron. ParoQuant is not our method. The live contribution
-candidate is DriftRot: drift-aware rotation calibration, surface/branch
-selection, or residual correction that beats or robustifies static ParoQuant.
-If DriftRot fails, the mechanism/protocol contribution is that channel identity
-drifts while rotation removes basis dependence.
+The final story for this submission cycle is mechanism/regime. Static and
+hard-switch channel protection fail under drift; budgeted EMA succeeds only in
+the Nemotron regime; ParoQuant-style rotation is the strongest prior-work
+baseline/remedy class across the current model set. ParoQuant is not our method.
+The paper contribution is long-decode drift measurement, matched-control
+failure taxonomy, regime guidance, and a systems-cost envelope for future
+residual selectors.
 
 The decision rule is prospective in design and evaluated descriptively on the
 current four-model study. It is not described as pre-specified or validated
@@ -114,3 +114,32 @@ Decision: stop the current positive-method search and move the paper to the
 mechanism/regime path. The safe paper claim is that channel identity drifts and
 channel-set remedies repeatedly fail or remain unpromoted, while rotation is the
 strongest baseline. ParoQuant is prior work and must remain labeled as such.
+
+## Final Mechanism/Regime Submission Framing
+
+Timestamp: 2026-05-29T04:05Z.
+
+Decision: finalize this submission cycle as a mechanism/regime paper. Do not
+restart positive-method search for this draft.
+
+Rationale:
+
+- The core measurement result is mature: protected-channel sets drift
+  substantially under long reasoning decode across four architectures.
+- The matched-control method table is the central contribution: static maps,
+  hard switching, binned scales, top-1% EMA, prediction, WJAC, K-RES, tight
+  clip, and M-SURFACE either fail, remain ambiguous, or only help in a narrow
+  regime.
+- ParoQuant-style rotation is the strongest baseline/remedy class and must be
+  framed as prior work, not as our method.
+- K-RES is elevated to a mechanism finding: valid post-rotation residual
+  columns selected by residual energy worsen the Granite tail gate, so residual
+  energy is not a sufficient selector.
+- The systems contribution is an analytical cost envelope for a future
+  residual selector, not a kernel or deployed positive method.
+
+Recommended submission framing: "Long-reasoning W4A16 protected-channel
+identity drifts; direct channel-set remedies mostly fail under controls;
+rotation removes much of the basis dependence; a descriptive calibration
+protocol tells practitioners when to use rotation, when budgeted EMA may help,
+and when to reject channel-set protection."

@@ -1,0 +1,22 @@
+\paragraph{Systems cost of residual correction.}
+For a future residual selector that passes the quality gate, the correction
+\(y=xW_q+x_P(W^{fp}_P-W^q_P)\) has a compact analytical envelope.  For a
+corrected projection with \(K\) input columns, output width \(D_{out}\), fp16
+residual weights, fp16 activation values, and uint16 column indices,
+\[
+B_{HBM/token}\approx K D_{out} b_{\Delta W}+K b_x+K b_{idx}
+\]
+when the output update is fused, with an optional \(2D_{out}b_y\) read/write
+term when it is not. The arithmetic cost is
+\[
+N_{MAC/token}=K D_{out},
+\]
+and the hot working set is the same leading residual-column term plus the small
+activation/index traffic. We estimate energy with
+\[
+E_{token}=B_{HBM}\epsilon_{HBM/byte}+N_{MAC}\epsilon_{MAC}.
+\]
+Using a 10--20 pJ/byte HBM range and 1--5 pJ/MAC range, the correction is
+memory-bound for the representative widths in Table~\ref{tab:systems-envelope}.
+Because the current residual-energy selector did not pass recovery gates, this
+is a cost envelope for future selectors, not a deployed method claim.
