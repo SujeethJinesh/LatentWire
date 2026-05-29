@@ -16,7 +16,7 @@
 \maketitle
 
 \begin{abstract}
-Static per-channel protection is attractive for W4A16 reasoning inference, but it assumes that high-magnitude activation channels remain useful protection targets throughout decode. We measure decode-time channel-set drift across four reasoning LLMs and find strict top-1\% set-leaving of 53--67\% by horizons up to 20K tokens, with a MATH-500 replication within 0.02 of the AIME-2025 rates on three measured models. We observe the effect at the measured block-output surface in hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, extending DecDEC's short-horizon Transformer observation and showing that Quamba2's channel-order and activation-persistence observations do not imply stable top-$K$ block-output protection at this measured surface. We then test eight channel-set protection families, a ParoQuant-style rotation baseline, rotation-plus-budget composition, and a small set of drift-aware rotation follow-ups. The results are regime-dependent. Hard position or scale switches are actively harmful, top-1\% smoothing and cross-tensor coupling have signal but insufficient recovery, and reactive DecDEC-style selection does not recover the W4A16 gap. Budgeted EMA succeeds only in the Nemotron MoE-hybrid regime: top-10 EMA recovers 0.815 of the BF16-vs-static gap with a 0.220 descriptive margin over static top-10. Rotation is the strongest current baseline: ParoQuant-style recovery is 0.754 on Granite-Small, 1.047 on Nemotron-3, 0.756 on DeepSeek, and 0.381 on Falcon-H1. Drift-aware tight clipping improves Granite's recoverable rotation tail (median 0.754 to 0.922; worst trace -26.37 to 0.601), but it does not transfer cleanly to DeepSeek or Falcon; residual correction and complete Granite internal-surface diagnostics also fail their promotion gates. We derive a prospective calibration protocol from the four-model study and evaluate its decisions descriptively; held-out validation of the thresholds remains future work.
+Static per-channel protection is attractive for W4A16 reasoning inference, but it assumes that high-magnitude activation channels remain useful protection targets throughout decode. We measure decode-time channel-set drift across four reasoning LLMs and find strict top-1\% set-leaving of 53--67\% by horizons up to 20K tokens, with a MATH-500 replication within 0.02 of the AIME-2025 rates on three measured models. We observe the effect at the measured block-output surface in hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, extending DecDEC's short-horizon Transformer observation and showing that Quamba2's channel-order and activation-persistence observations do not imply stable top-$K$ block-output protection at this measured surface. We then test eight channel-set protection families, a ParoQuant-style rotation baseline, rotation-plus-budget composition, and a small set of drift-aware rotation follow-ups. The results are regime-dependent. Hard position or scale switches are actively harmful, top-1\% smoothing and cross-tensor coupling have signal but insufficient recovery, and reactive DecDEC-style selection does not recover the W4A16 gap. Budgeted EMA succeeds only in the Nemotron MoE-hybrid regime: top-10 EMA recovers 0.815 of the BF16-vs-static gap with a 0.220 descriptive margin over static top-10. Rotation is the strongest current baseline: ParoQuant-style recovery is 0.754 on Granite-Small, 1.05 on Nemotron-3, 0.756 on DeepSeek (high median, negative lower CI), and 0.381 on Falcon-H1. Drift-aware tight clipping improves Granite's recoverable rotation tail (median 0.754 to 0.922; worst trace -26.37 to 0.601), but it does not transfer cleanly to DeepSeek or Falcon; residual correction and complete Granite internal-surface diagnostics also fail their promotion gates. We derive a prospective calibration protocol from the four-model study and evaluate its decisions descriptively; held-out validation of the thresholds remains future work.
 \end{abstract}
 
 \section{Introduction}
@@ -25,14 +25,16 @@ Long-reasoning models can spend thousands of decode steps in a single answer, so
 
 The assumption matters for recent state-space quantization. Quamba2 reports channel-order preservation in selective-SSM computation and channel/state persistence for SSM activations. Those observations motivate its offline sort-and-cluster weight reordering and per-state-group quantization \citep{chiang2025quamba2}. We test the corresponding protected-set assumption at long reasoning horizons. Across Granite-4.0-H-Small, NVIDIA-Nemotron-3-Nano-30B-A3B-BF16 (Nemotron-3), DeepSeek-R1-Distill-Qwen-1.5B, and Falcon-H1, 53--67\% of the top-1\% channels at the calibration position strictly leave the later top-1\% set. The channels do not merely shuffle rank within the set; they leave the set a static policy would protect.
 
-We target a narrow but practical systems problem. Reasoning workloads are expensive, and inference-cost forecasts expect large pressure to reduce per-token cost even as reasoning demand grows \citep{wiggers2025reasoningcosts,gartner2026inferencecost}. Recent low-bit PTQ systems for larger standard Transformers can recover substantial quality, including ParoQuant's weight-only scaled-pairwise-rotation reasoning results \citep{liang2026paroquant}. Our focus is different. We study small reasoning models, hybrid Mamba-2 or parallel-hybrid architectures, pure PTQ rather than distillation, and channel-set protection under long decode.
+We target a narrow but practical systems problem. Reasoning workloads are expensive, and inference-cost forecasts expect large pressure to reduce per-token cost even as reasoning demand grows \citep{wiggers2025reasoningcosts,gartner2026inferencecost}. Recent low-bit PTQ systems for larger standard Transformers can recover reasoning quality, including ParoQuant's weight-only scaled-pairwise-rotation reasoning results \citep{liang2026paroquant}. Our focus is different. We study small reasoning models, hybrid Mamba-2 or parallel-hybrid architectures, pure PTQ rather than distillation, and channel-set protection under long decode.
+
+This contribution is diagnostic and prescriptive. We identify a measured failure mode, then derive a calibration protocol for deciding when channel-set protection, budgeted smoothing, rotation, or rejection is appropriate. The absence of a new universal quantizer is part of the finding: in these regimes, rotation already absorbs much of the recoverable channel-set signal, while residual columns and internal-surface placement do not add a promoted remedy.
 
 Our contributions are fivefold.
 \begin{itemize}
 \item \textbf{Decode-time protected-channel drift.} We measure protected-channel set drift across four models and architectures up to 20K tokens, finding strict set-leaving of 53--67\% across hybrid Mamba-2, parallel-hybrid, and pure-Transformer models, with MATH-500 replication on three models.
 \item \textbf{Matched-control failure taxonomy.} We evaluate static maps, hard switching, binned scales, EMA smoothing, cross-tensor coupling, reactive selection, larger-budget tracking, stable cores, predictive tracking, and residual/surface screens with random or matched-cost controls where applicable.
 \item \textbf{Mechanism: identity drift vs. basis removal.} The channel-set failures point to unstable channel identity, harmful discontinuities, insufficient top-1\% capacity, and model-dependent budget headroom. ParoQuant-style rotation is the strongest baseline because it removes much of the basis dependence instead of chasing original-basis channel identities.
-\item \textbf{Regime map and calibration guidance.} Budget-tuned EMA succeeds on Nemotron at top-10, recovers 0.449 on Granite top-5 with wide uncertainty, and remains ambiguous on DeepSeek and Falcon. ParoQuant-style rotation recovers 0.754 on Granite, 1.047 on Nemotron, 0.756 on DeepSeek, and 0.381 on Falcon. We turn these outcomes into a descriptive calibration protocol that selects rotation, budgeted EMA, tail-control, or rejection of channel-set protection by measured regime.
+\item \textbf{Regime map and calibration guidance.} Budget-tuned EMA succeeds on Nemotron at top-10, recovers 0.449 on Granite top-5 with wide uncertainty, and remains ambiguous on DeepSeek and Falcon. ParoQuant-style rotation recovers 0.754 on Granite, 1.05 on Nemotron, 0.756 on DeepSeek, and 0.381 on Falcon. We turn these outcomes into a descriptive calibration protocol that selects rotation, budgeted EMA, tail-control, or rejection of channel-set protection by measured regime.
 \item \textbf{Residual-correction systems bound.} A valid top-8x32 rotated-basis residual proxy worsens the Granite tail gate, so residual energy is not a reliable selector. We still quantify the HBM, MAC, working-set, and energy envelope that any future residual-correction method would need to justify.
 \end{itemize}
 
@@ -44,7 +46,7 @@ Our contributions are fivefold.
 
 Prior rotation methods construct static calibration-time transforms, learned rotations, or runtime smoothing rules that improve low-bit inference by changing the basis in which quantization error appears. Our question is different: under long reasoning decode, channel identity itself drifts. We measure when channel-set protection becomes ill-posed, then test whether rotation removes that basis dependence or whether drift-aware tail control, surface choice, branch-local rotation, or rotated-basis residual correction can improve on a fixed ParoQuant-style baseline.
 
-\paragraph{Dynamic and long-context policies.} DecDEC dynamically identifies salient activation channels at each decode step and reports roughly 20\% recall for static outlier-channel identification against per-step ground truth in short Transformer decode \citep{park2025decdec}. We extend that setting in four ways: longer reasoning horizons, strict set-membership drift accounting, hybrid Mamba/parallel-hybrid coverage, and reasoning-trace intervention controls. The pure-Transformer result serves as a falsification/control surface. KV-cache methods such as KIVI, PM-KVQ, AttentionPredictor, ChanMix, and MixKVQ adapt or compress cached key/value tensors \citep{liu2024kivi,liu2025pmkvq,yang2025attentionpredictor,liao2026chanmix,zhang2025mixkvq}; our interventions target linear-layer activation channels.\footnote{``Hot channels'' in HCP/CHON refers to persistently extreme channels during NVFP4 pretraining \citep{dong2026outlierdynamics}. This training-step time axis complements our decode-step time axis: channels can become persistent across pretraining iterations while drifting during a single inference trajectory. We refer to \citet{koikeakino2026ttq} as \emph{test-time TTQ} to avoid conflict with classical Trained Ternary Quantization.}
+\paragraph{Dynamic and long-context policies.} DecDEC dynamically identifies salient activation channels at each decode step and reports static-channel recall around 30\% or below against per-step ground truth in short Transformer decode \citep{park2025decdec}. We extend that setting in four ways: longer reasoning horizons, strict set-membership drift accounting, hybrid Mamba/parallel-hybrid coverage, and reasoning-trace intervention controls. The pure-Transformer result serves as a falsification/control surface. KV-cache methods such as KIVI, PM-KVQ, AttentionPredictor, ChanMix, and MixKVQ adapt or compress cached key/value tensors \citep{liu2024kivi,liu2025pmkvq,yang2025attentionpredictor,liao2026chanmix,zhang2025mixkvq}; our interventions target linear-layer activation channels.\footnote{``Hot channels'' in HCP/CHON refers to persistently extreme channels during NVFP4 pretraining \citep{dong2026outlierdynamics}. This training-step time axis complements our decode-step time axis: channels can become persistent across pretraining iterations while drifting during a single inference trajectory. We refer to \citet{koikeakino2026ttq} as \emph{test-time TTQ} to avoid conflict with classical Trained Ternary Quantization.}
 
 \paragraph{Error accumulation.} SLQ shows that layer-wise non-uniform/asymmetric quantization with wide bitwidth search can be task-lossless below 4 bits per parameter and distribution-lossless at roughly 5--6 bits per parameter \citep{helcig2026slq}. QEP emphasizes cross-layer quantization-error growth \citep{arai2025qep}. LAQuant emphasizes layer-wise lookahead losses and calibration/deployment alignment for reasoning models \citep{choi2026laquant}. Activation Sensitivity formalizes channel-wise perturbation impact on loss and downstream propagation \citep{xu2026activationsensitivity}. These results motivate testing whether our more aggressive W4A16 endpoint exhibits decode-position error growth rather than assuming it.
 
@@ -82,7 +84,7 @@ The later DriftRot follow-ups are diagnostic screens rather than headline method
 
 Figure~\ref{fig:set-leaving} shows the headline measurement. The traces are not monotone at every intermediate point. Even so, all four models have large strict set-leaving by the final measured position: 0.566 for Granite-Small, 0.534 for Nemotron-3, 0.671 for DeepSeek-R1-Distill, and 0.674 for Falcon-H1. The pure-Transformer reference drifts at least as much as the hybrid models, so the drift extends beyond Mamba layers.
 
-The effect is not an AIME-only artifact in the models where we reran the measurement. On 30 MATH-500 prompts, strict set-leaving is 0.561 for Granite-Small, 0.651 for DeepSeek-R1-Distill, and 0.675 for Falcon-H1. Each is within 0.02 absolute of its AIME-2025 rate, passing the preregistered cross-prompt tolerance. GPQA-Diamond was not included because the local benchmark access path was gated during this run.
+The effect is not an AIME-only artifact in the models where we reran the measurement. On 30 MATH-500 prompts, strict set-leaving is 0.561 for Granite-Small, 0.651 for DeepSeek-R1-Distill, and 0.675 for Falcon-H1. Each is within 0.02 absolute of its AIME-2025 rate, passing the fixed cross-prompt tolerance. GPQA-Diamond was not included because the local benchmark access path was gated during this run.
 
 \begin{figure}[t]
 \centering
@@ -109,7 +111,7 @@ Figure~\ref{fig:method-recovery} and Table~\ref{tab:methods} summarize the inter
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.92\linewidth]{figures/method_recovery_comparison.pdf}
-\caption{Median recovery with 95\% bootstrap CIs. The plot clips long negative CI whiskers at the boundary for readability; Table~\ref{tab:methods} reports exact rounded values. The dashed line marks the 0.30 method-promotion threshold used in preregistered gates.}
+\caption{Median recovery with 95\% bootstrap CIs. The plot clips long negative CI whiskers at the boundary for readability; Table~\ref{tab:methods} reports exact rounded values. The dashed line marks the 0.30 method-promotion threshold used in the method gates.}
 \label{fig:method-recovery}
 \end{figure}
 
@@ -138,7 +140,7 @@ ParoQuant rotation & Nemotron & 1.05 & [1.01, 1.29] & beats M11b top-10 by 0.232
 ParoQuant rotation & DeepSeek & 0.756 & [-0.246, 0.855] & median above static top-10 by 0.379 \\
 ParoQuant rotation & Falcon & 0.381 & [0.0645, 0.547] & beats M11b top-10 by 0.337 \\
 ParoQuant+M11b top-10 & Granite & 0.565 & [-63.6, 0.932] & trails ParoQuant by 0.189 \\
-DriftRot tight clip & Granite pos-gap & 0.922 & [0.781, 1.65] & fixes ParoQuant tail; worst -26.4 to 0.601 \\
+DriftRot tight clip & Granite pos-gap & 0.922 & [0.781, 1.65] & fixes ParoQuant tail; worst -26.37 to 0.601 \\
 DriftRot tight clip & DeepSeek & 0.518 & [0.265, 0.797] & median lower than ParoQuant by 0.232 \\
 DriftRot tight clip & Falcon & 0.390 & [0.0019, 0.637] & median flat; worst trace regresses \\
 \bottomrule
@@ -151,7 +153,7 @@ DriftRot tight clip & Falcon & 0.390 & [0.0019, 0.637] & median flat; worst trac
 
 M11b turns a uniformly negative channel-set picture into a model-dependent positive result, while ParoQuant sets the stronger rotation baseline. On Granite-Small, top-5 EMA protection recovers 0.449 of the static gap and beats static top-10 by 0.501 median, but the BCa CI is wide. Nemotron top-5 has a strictly positive BCa CI, yet it does not beat static top-10. The top-10 arm is the strongest channel-set result: median recovery 0.815, BCa CI [0.158, 0.906], Holm-adjusted $p=0.030$, and a 0.220 median margin over static top-10. Budget is a real mechanism, but not a universal remedy. The best budget and the value over static protection are model-dependent.
 
-ParoQuant constrains the claim more strongly after baseline vetting. A ParoQuant-style rotation baseline recovers 0.754 on Granite-Small, 1.047 on Nemotron-3, 0.756 on DeepSeek-R1-Distill, and 0.381 on Falcon-H1. The Nemotron result is especially important because it beats the previous M11b top-10 channel-set result by 0.232 median recovery on the same BF16/static baseline. Falcon also becomes a rotation-rescue case: ParoQuant beats Falcon M11b top-10 by 0.337. DeepSeek has a high median but a negative lower CI, so we treat it as rotation-favorable but tail-risky. The paper does not argue that W4A16 PTQ is intrinsically broken; it argues that channel-set protection is fragile under long reasoning drift, while rotation-based conditioning often addresses the same endpoint by a different mechanism. That distinction matters because ParoQuant is a baseline, not our method.
+ParoQuant constrains the claim more strongly after baseline vetting. A ParoQuant-style rotation baseline recovers 0.754 on Granite-Small, 1.05 on Nemotron-3, 0.756 on DeepSeek-R1-Distill, and 0.381 on Falcon-H1. The Nemotron result is especially important because it beats the previous M11b top-10 channel-set result by 0.232 median recovery on the same BF16/static baseline. Falcon also becomes a rotation-rescue case: ParoQuant beats Falcon M11b top-10 by 0.337. DeepSeek has a high median but a negative lower CI, so we treat it as rotation-favorable but tail-risky. The paper does not argue that W4A16 PTQ is intrinsically broken; it argues that channel-set protection is fragile under long reasoning drift, while rotation-based conditioning often addresses the same endpoint by a different mechanism. That distinction matters because ParoQuant is a baseline, not our method.
 
 The direct composition test was negative. On Granite-Small, ParoQuant+M11b top-10 recovers 0.565, trailing ParoQuant alone by 0.189 median recovery and also trailing the ParoQuant+random top-10 control. This rules out the simplest ``stack the two remedies'' story. Rotation appears to absorb much of the recoverable channel-set signal in this setting, so future remedies need a decision rule or a more coupled design rather than naive composition.
 
@@ -208,17 +210,17 @@ The same residual screen also gives a useful systems bound. For $m$ corrected mo
   \mathrm{HBM/token} \approx m e r k b,\quad
   E_{\mathrm{token}}\approx B_{\mathrm{HBM}}\epsilon_{\mathrm{HBM}}+\mathrm{MACs}\,\epsilon_{\mathrm{MAC}}.
 \]
-The hot working set is the sum of stored residual sidecars, $\sum_j r_j k_j b$. The tested top-8x32 Granite sidecar stores 54.0 MiB of FP16 residual columns. With 10 active experts, 1536 output rows, 32 corrected input columns, and eight corrected MoE input modules, a naive correction would add roughly 3.9M multiply-accumulates per generated token and stream about 7.5 MiB/token of active residual columns if the sidecar is not cache-resident. Using a simple 10--20 pJ/byte HBM and 1--5 pJ/MAC cost model, that is on the order of 83--177M pJ/token before kernel overhead. Because the quality gate fails, we do not implement the kernel; the cost model records what a successful residual method would need to justify. Appendix~\ref{app:systems-envelope} reports the per-projection envelope used to generate the artifact cost table.
+The hot working set is the sum of stored residual sidecars, $\sum_j r_j k_j b$. The tested top-8x32 Granite sidecar stores 54.0 MiB of FP16 residual columns. With 10 active experts, 1536 output rows, 32 corrected input columns, and eight corrected MoE input modules, a naive correction would add roughly 3.9M multiply-accumulates per generated token and stream about 7.5 MiB/token of active residual columns if the sidecar is not cache-resident. This aggregate estimate is the per-projection envelope multiplied by the corrected modules and active experts. Using a simple 10--20 pJ/byte HBM and 1--5 pJ/MAC analytical cost model, that is on the order of 83--177M pJ/token before kernel overhead. Because the quality gate fails, we do not implement the kernel; the analytical estimate records what a successful residual method would need to justify. Appendix~\ref{app:systems-envelope} reports the per-projection envelope used to generate the artifact cost table.
 
 \section{Limitations}
 
-We scope the study to W4A16 PTQ on small reasoning models and measured activation-channel surfaces. We do not claim results for FP8, MXFP4/NVFP4, W4A4, or quantization-aware training; the format-axis probe found available FP8/W4A16 paths but no benchmark-metrics adapter, and no importable NVFP4 runtime kernel. The hybrid-model Quamba2 comparison is mainly at the accessible block-output surface plus one Granite internal-surface diagnostic. That internal packet covers SSM input, B/C generation, Mamba out-projection input, attention output-projection input, and post-block output, but only on two Granite traces; Falcon branch-local internals remain future work. Granite-Small has the densest FFT and KL trace, while DeepSeek and Falcon have narrowed KL/FFT replications; Nemotron dense diagnostics are deferred because throughput would have dominated the Stage 1 budget. Qwen3 scale-up is also deferred because the preregistered W4A16 checkpoint snapshot was not present locally. The M11b recovery result is model-dependent: Nemotron top-10 succeeds, Granite's strongest signal is top-5 with wide uncertainty, and DeepSeek/Falcon top-10 vetting is ambiguous. The strongest current remedy is a ParoQuant-style rotation baseline, which we do not claim as our method; our additional design evidence is limited to the regime protocol and the negative DriftRot screens reported here.
+We scope the study to W4A16 PTQ on small reasoning models and measured activation-channel surfaces. We do not claim results for FP8, MXFP4/NVFP4, W4A4, or quantization-aware training; the format-axis probe found available FP8/W4A16 paths but no benchmark-metrics adapter, and no importable NVFP4 runtime kernel. The hybrid-model Quamba2 comparison is mainly at the accessible block-output surface plus one Granite internal-surface diagnostic. That internal packet covers SSM input, B/C generation, Mamba out-projection input, attention output-projection input, and post-block output, but only on two Granite traces; Falcon branch-local internals remain future work. Granite-Small has the densest FFT and KL trace, while DeepSeek and Falcon have narrowed KL/FFT replications; Nemotron dense diagnostics are deferred because throughput would have dominated the Stage 1 budget. Qwen3 scale-up is also deferred because the planned W4A16 checkpoint snapshot was not present locally. The M11b recovery result is model-dependent: Nemotron top-10 succeeds, Granite's strongest signal is top-5 with wide uncertainty, and DeepSeek/Falcon top-10 vetting is ambiguous. The strongest current remedy is a ParoQuant-style rotation baseline, which we do not claim as our method; our additional design evidence is limited to the regime protocol and the negative DriftRot screens reported here.
 
 \section{Conclusion}
 
-Long-reasoning W4A16 channel protection fails when static protected sets drift, and our experiments show that this drift is substantial across models and prompts. The remedy is regime-dependent: budget-tuned smoothing succeeds only in the Nemotron channel-set regime, while ParoQuant-style rotation is the strongest baseline across the current model set. Tight clipping fixes one Granite rotation tail but does not transfer, and the residual and internal-surface probes do not pass. The paper's recommendation is a calibration protocol: measure drift, tail risk, recoverable gap, and rotation signal before choosing channel-set protection, rotation, tail-control, or rejection of channel-set protection for a new model.
+Long-reasoning W4A16 channel protection fails when static protected sets drift, and our experiments show 53--67\% strict set-leaving across models. The remedy is regime-dependent: budget-tuned smoothing succeeds only in the Nemotron channel-set regime, while ParoQuant-style rotation is the strongest baseline across the current model set. Tight clipping fixes one Granite rotation tail but does not transfer, and the residual and internal-surface probes do not pass. The paper's recommendation is a calibration protocol: measure drift, tail risk, recoverable gap, and rotation signal before choosing channel-set protection, rotation, tail-control, or rejection of channel-set protection for a new model.
 
-\begin{thebibliography}{43}
+\begin{thebibliography}{32}
 
 \bibitem[Arai and Ichikawa(2025)]{arai2025qep}
 Yamato Arai and Yuma Ichikawa.
@@ -240,18 +242,6 @@ Gartner.
 1 trillion parameters will cost GenAI providers over 90\% less than in 2025.
 \newblock Press release, March 25 2026.
 \newblock \url{https://www.gartner.com/en/newsroom/press-releases/2026-03-25-gartner-predicts-that-by-2030-performing-inference-on-an-llm-with-1-trillion-parameters-will-cost-genai-providers-over-90-percent-less-than-in-2025}.
-
-\bibitem[MarketsandMarkets(2025a)]{marketsandmarkets2025aiinference}
-MarketsandMarkets.
-\newblock AI Inference Market Size, Share \& Trends, 2025 To 2030.
-\newblock Commercial market report, February 2025.
-\newblock \url{https://www.marketsandmarkets.com/Market-Reports/ai-inference-market-189921964.html}.
-
-\bibitem[MarketsandMarkets(2025b)]{marketsandmarkets2025edgeaihardware}
-MarketsandMarkets.
-\newblock Edge AI hardware industry worth \$58.90 billion by 2030.
-\newblock Commercial market report press release, July 4 2025.
-\newblock \url{https://www.marketsandmarkets.com/PressReleases/edge-ai-hardware.asp}.
 
 \bibitem[Wang et~al.(2026)]{wang2026mobiquant}
 Dongwei Wang, Jinhee Kim, Seokho Han, Denis Gudovskiy, Yohei Nakata,
@@ -291,13 +281,6 @@ Yu, Wulong Liu, Jianye Hao, Mingxuan Yuan, and Bin Li.
 Compression.
 \newblock NeurIPS 2025.
 \newblock \url{https://arxiv.org/abs/2502.04077}.
-
-\bibitem[Chen et~al.(2025)]{chen2025pmpd}
-Hao Mark Chen, Fuwen Tan, Alexandros Kouris, Royson Lee, Hongxiang Fan, and
-Stylianos I. Venieris.
-\newblock Progressive Mixed-Precision Decoding for Efficient LLM Inference.
-\newblock arXiv:2410.13461, revised February 2025.
-\newblock \url{https://arxiv.org/abs/2410.13461}.
 
 \bibitem[Li et~al.(2025)]{li2025qmamba}
 Yinglong Li, Xiaoyu Liu, Jiacheng Li, Ruikang Xu, Yinda Chen, and Zhiwei
@@ -348,13 +331,6 @@ Jiangyong Yu, Chen Xu, Sifan Zhou, and Dawei Yang.
 Rotation Methods.
 \newblock arXiv:2501.13484, 2025.
 \newblock \url{https://arxiv.org/abs/2501.13484}.
-
-\bibitem[Chen and Hemani(2026)]{chen2026quambase}
-Yizhi Chen and Ahmed Hemani.
-\newblock Late Breaking Results: Quamba-SE: Soft-edge Quantizer for
-Activations in State Space Models.
-\newblock arXiv:2601.09451, DATE Late Breaking Results 2026.
-\newblock \url{https://arxiv.org/abs/2601.09451}.
 
 \bibitem[Xiao et~al.(2023)]{xiao2023smoothquant}
 Guangxuan Xiao, Ji Lin, Mickael Seznec, Hao Wu, Julien Demouth, and Song Han.
@@ -461,37 +437,12 @@ Long-Context Inference.
 \newblock ICLR 2026.
 \newblock \url{https://openreview.net/forum?id=yjr2jX41qO}.
 
-\bibitem[Qwen Team(2026)]{qwen36hf}
-Qwen Team.
-\newblock Qwen3.6-35B-A3B model card.
-\newblock Hugging Face, 2026.
-\newblock \url{https://huggingface.co/Qwen/Qwen3.6-35B-A3B}.
-
 \bibitem[Xu(2026)]{xu2026activationsensitivity}
 Bruce Changlong Xu.
 \newblock Activation Sensitivity as a Unifying Principle for Post-Training
 Quantization.
 \newblock arXiv:2601.11663, 2026.
 \newblock \url{https://arxiv.org/abs/2601.11663}.
-
-\bibitem[Yang et~al.(2023)]{yang2023gla}
-Songlin Yang, Bailin Wang, Yikang Shen, Rameswar Panda, and Yoon Kim.
-\newblock Gated Linear Attention Transformers with Hardware-Efficient
-Training.
-\newblock arXiv:2312.06635, 2023.
-\newblock \url{https://arxiv.org/abs/2312.06635}.
-
-\bibitem[Yang et~al.(2024)]{yang2024gdn}
-Songlin Yang, Jan Kautz, and Ali Hatamizadeh.
-\newblock Gated Delta Networks: Improving Mamba2 with Delta Rule.
-\newblock arXiv:2412.06464, 2024.
-\newblock \url{https://arxiv.org/abs/2412.06464}.
-
-\bibitem[Moonshot AI Kimi Team(2025)]{kimilinear2025}
-Moonshot AI Kimi Team: Yu Zhang et~al.
-\newblock Kimi Linear: An Expressive, Efficient Attention Architecture.
-\newblock arXiv:2510.26692, October 2025.
-\newblock \url{https://arxiv.org/abs/2510.26692}.
 
 \bibitem[Zhang et~al.(2025)]{zhang2025mixkvq}
 Tao Zhang, Ziqian Zeng, Hao Peng, Huiping Zhuang, and Cen Chen.
@@ -575,7 +526,7 @@ The valid Nemotron budget-tuning result uses the corrected static top-1\% baseli
 
 Stage 1 packets E1, E2, E3, and E15 are claim-bearing. E4 and E5 are
 infrastructure-disclosure packets only: E4 did not produce benchmark
-accuracy/throughput/VRAM rows, and E5 was skipped because the preregistered
+accuracy/throughput/VRAM rows, and E5 was skipped because the planned
 local Qwen3 W4A16 snapshot was unavailable.
 
 \section{Per-Method Detailed Results}
@@ -693,7 +644,7 @@ DeepSeek-R1-Distill & 0.671 & 0.651 & -0.020 \\
 Falcon-H1 & 0.674 & 0.675 & 0.002 \\
 \bottomrule
 \end{tabular}
-\caption{Stage 1 E2 cross-prompt drift replication. MATH-500 rates are computed on 30 prompts per model and all fall within the preregistered $\pm 0.15$ tolerance from the AIME-2025 reference.}
+\caption{Stage 1 E2 cross-prompt drift replication. MATH-500 rates are computed on 30 prompts per model and all fall within the fixed $\pm 0.15$ tolerance from the AIME-2025 reference.}
 \end{table}
 
 \section{Systems Cost Envelope}
@@ -762,18 +713,15 @@ Nemotron-3 & SSM/Mamba & 23 & 0.533 & 0.264 \\
 
 Before finalizing this draft, we audited every bibliography entry against its
 primary source URL and checked the attributed prior-work claims in the main
-text. The audit corrected three bibliographic fields: the TechCrunch inference
-cost article author, the MarketsandMarkets AI-inference report title, and the
-ParoQuant venue/year label. It also added an explicit citation for test-time
-TTQ and tightened the wording for Quamba2, ParoQuant, Rotated Runtime Smooth,
-and SLQ so that the prose matches the source claims. A post-audit scoop
-addendum added ResQ, Salfati's KV-cache compression analysis, and CMPQ after
-fetching their arXiv abstract pages; it also corrected the user-supplied ResQ
-attribution from ``Saha et al.'' to the verified Saxena et al. author list. No
-unverified bibliography entries remain after these corrections. We separately
-re-derived the headline
-experimental numbers from local score caches and result manifests; the audit
-identified only wording/rounding fixes, not a change to any reported result.
-The full audit table is maintained in \texttt{docs/hallucination\_audit\_report.md}.
+text. The audit removed uncited bibliography entries, kept ChanMix author names
+only after checking the public OpenReview page, and tightened wording for
+DecDEC, Quamba2, ParoQuant, Rotated Runtime Smooth, ResQ, Salfati, Activation
+Sensitivity, and SLQ so that the prose matches the source claims. No cited
+bibliography entry is missing, orphaned, or unresolved after these corrections.
+We separately re-derived the headline experimental numbers from local score
+caches and result manifests; the audit identified only wording/rounding fixes,
+not a change to any reported result. The full audit table is maintained in
+\texttt{docs/hallucination\_audit\_report.md} and
+\texttt{references\_audit.md}.
 
 \end{document}
