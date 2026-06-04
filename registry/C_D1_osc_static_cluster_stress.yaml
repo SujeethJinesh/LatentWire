@@ -1,0 +1,14 @@
+method_id: C_D1_osc_static_cluster_stress
+paper: channel_set
+status: DRAFTED
+contribution_role: diagnostic_defense
+paper_claim_eligible: false
+stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: OSC-vs-drift diagnostic stress on cached dev/gate entities
+lineage:
+  nearest_baseline: OSC and DecDEC static-recall diagnostics
+  nearest_killed_relative: channel-set drift remedies that collapse under controls
+  avoids_killed_mechanism_by: diagnostic only; cannot promote a method claim
+

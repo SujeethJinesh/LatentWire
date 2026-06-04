@@ -1,0 +1,14 @@
+method_id: C_F_survival_stable_core
+paper: channel_set
+status: DRAFTED
+contribution_role: positive_method
+paper_claim_eligible: true
+stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: survival/stable-core selection against cached static, EMA, and ParoQuant recovery rows
+lineage:
+  nearest_baseline: EMA top-k protected channel sets
+  nearest_killed_relative: fixed top-1 percent and hard position switching
+  avoids_killed_mechanism_by: requiring stability under drift and avoiding discontinuous set changes
+

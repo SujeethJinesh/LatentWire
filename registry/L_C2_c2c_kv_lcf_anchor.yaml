@@ -1,0 +1,14 @@
+method_id: L_C2_c2c_kv_lcf_anchor
+paper: latentwire
+status: DRAFTED
+contribution_role: baseline_adversary
+paper_claim_eligible: false
+stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: compare against cached/MPS C2C, KVComm, and latent-cache anchors without native superiority claims
+lineage:
+  nearest_baseline: C2C and KVComm smoke artifacts
+  nearest_killed_relative: LatentWire systems win claims without native matched baselines
+  avoids_killed_mechanism_by: baseline adversary only; native serving claims remain parked
+

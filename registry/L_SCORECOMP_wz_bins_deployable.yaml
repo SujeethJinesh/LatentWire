@@ -1,0 +1,14 @@
+method_id: L_SCORECOMP_wz_bins_deployable
+paper: latentwire
+status: DRAFTED
+contribution_role: positive_method
+paper_claim_eligible: true
+stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: source-minus-target Wyner-Ziv residual code with equal-byte and source-score controls
+lineage:
+  nearest_baseline: source-index/rank/score packet controls
+  nearest_killed_relative: open-loop C2C candidate-score delta packet
+  avoids_killed_mechanism_by: requires delta beyond score and combine-not-replace decode
+

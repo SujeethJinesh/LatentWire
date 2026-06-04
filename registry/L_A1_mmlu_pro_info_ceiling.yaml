@@ -1,0 +1,14 @@
+method_id: L_A1_mmlu_pro_info_ceiling
+paper: latentwire
+status: DRAFTED
+contribution_role: ceiling_probe
+paper_claim_eligible: false
+stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: information ceiling probe; may kill but cannot promote
+lineage:
+  nearest_baseline: source-choice/source-index information ceilings
+  nearest_killed_relative: benchmark rows where utility collapses into source-choice artifacts
+  avoids_killed_mechanism_by: ceiling probe only; no method claim
+

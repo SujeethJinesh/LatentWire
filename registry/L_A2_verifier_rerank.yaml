@@ -1,0 +1,14 @@
+method_id: L_A2_verifier_rerank
+paper: latentwire
+status: DRAFTED
+contribution_role: positive_method
+paper_claim_eligible: true
+stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: generated-solution verifier rerank on dev/gate only
+lineage:
+  nearest_baseline: structured text and source-rank controls
+  nearest_killed_relative: answer-continuation likelihood distillation
+  avoids_killed_mechanism_by: reranks generated behavior rather than short-answer likelihood surfaces
+

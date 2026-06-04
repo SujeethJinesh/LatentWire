@@ -1,0 +1,15 @@
+method_id: C_E1_paroquant_parity
+paper: channel_set
+status: PARKED
+contribution_role: baseline_adversary
+paper_claim_eligible: false
+stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: parity check against official/real-model ParoQuant behavior
+parked: needs_gpu
+lineage:
+  nearest_baseline: ParoQuant-style rotation
+  nearest_killed_relative: local reproduction claims without native parity
+  avoids_killed_mechanism_by: baseline adversary only; cannot support a novelty claim alone
+
