@@ -1,17 +1,6 @@
-mac_continue:
-  - id: latentwire_mmlu_pro_info_ceiling
-    reason: high_entropy_wz_ceiling_is_mac_doable_and_not_in_cache
-    command: "run a tiny dev/gate MMLU-Pro info-ceiling probe with sub-1B models; no confirm rows"
-    required_cache_or_model: "small Qwen-class CPU/MPS model and fresh dev/gate rows"
-  - id: latentwire_fresh_wz_high_entropy
-    reason: cached_4way_wz_family_is_killed_but_high_entropy_surface_not_tested
-    command: "run deployable source-score-only WZ on fresh high-entropy dev/gate rows"
-    required_cache_or_model: "source scores only at encoder; target scores as decoder side information"
-  - id: latentwire_l_b1_damage_avoidance
-    reason: cached_fixed_packet_is_source_copy_and_lacks_risk_fields
-    command: "generate dev/gate rows with confidence, coverage, wrong-row, derangement, and leakage controls"
-    required_cache_or_model: "small-model candidate/risk rows with source-index+confidence baseline"
-  - id: latentwire_l_a2_rerank_pool
-    reason: candidate_pools_missing_from_stage1_cache
-    command: "materialize a tiny generated-solution candidate pool on Mac before rerank screening"
-    required_cache_or_model: "small-model generated-solution candidate pools"
+mac_continue: []
+completed:
+  - latentwire_mmlu_pro_info_ceiling
+  - latentwire_fresh_wz_high_entropy
+  - latentwire_l_b1_damage_avoidance
+  - latentwire_l_a2_rerank_pool

@@ -6,3 +6,11 @@
 - L-B1 cache update: fixed-packet matched rows behave as source copy on the admitted Stage-1 cache. Gate matched-equals-source is `0.9969`, damage on target-correct/source-wrong rows is `192/192`, and repair is source-driven (`380/382` on target-wrong/source-correct rows).
 - Ruled out: treating old 4-way source-copy packet wins as a deployable positive method or GPU foreground trigger.
 - Still alive: fresh high-entropy LatentWire WZ/L-B1 on Mac with explicit risk/confidence/leakage controls; Channel-Set C_A1/C_F only as GPU backfill candidates until offline controls are stronger.
+
+## 2026-06-03 - Fresh MMLU-Pro Mac continuation
+
+- Fresh split guard: MMLU-Pro rows were split before scoring; confirm rows scored `0`.
+- Fresh I_beyond: `2.231310` bits on scored dev/gate rows.
+- WZ result: status `MAC_DONE`, gate delta vs best baseline `-0.043478` with CI-low `-0.304348`.
+- L-B1 result: AURC delta vs source-index+confidence `-0.222541`, paired delta vs source-index `-0.086957`.
+- Decision: `BOUNDED_NEGATIVE` for this Mac continuation; no foreground GPU unless a future row earns `PROVISIONAL_PROMOTE_TO_GPU`.

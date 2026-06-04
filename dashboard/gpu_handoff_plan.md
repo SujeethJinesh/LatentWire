@@ -1,18 +1,17 @@
 # GPU Handoff Plan
 
-No foreground GPU job is authorized from this triage.
+No foreground GPU job is authorized from this Mac continuation.
 
 - PROVISIONAL_PROMOTE_TO_GPU rows: `0`
-- Foreground confirmation queue: empty
-- Channel-Set state: C_A1 has limited positive offline gate medians, C_F is mixed and control-contaminated, C_D1 is negative, CE13 has no parseable cache, and C_A2 is tests-only.
-- LatentWire state: keep on Mac. WZ/source-copy cached family is killed on this surface; L-B1 needs fresh risk/confidence rows before it is a live lead.
+- Foreground confirmation queue: empty unless a future row is explicitly promoted.
+- LatentWire remains Mac-complete for this pass.
 
-## Allowed GPU Backfill Only
+## Allowed Backfill Only
 
-Backfill may prepare Channel-Set parity/cache evidence, not confirmation claims:
-- ParoQuant parity replay for the exact C_A1 cached gate packets.
-- OSC/DecDEC cache shard only to replace the current underpowered negative row.
-- Hazard/static-control shard for C_F only if paired denominator and random-control collapse are defined first.
+- C_A1 ParoQuant parity: replay exact cached gate packets with native W4A16 forwards; est 2-4 GPU hours; no promotion allowed.
+- C_F hazard controls: backfill paired static/random controls before any native forward confirmation; est 2-6 GPU hours; no promotion allowed.
+- C_D1 OSC/DecDEC: only materialize a preregistered replacement shard for the current underpowered negative row; est 2-4 GPU hours; no promotion allowed.
+- CE13 warmup policy: no parseable cache exists; spend 0 GPU hours now and only consider 2-4 GPU hours after a tiny dev/gate cache exists.
 
 ## Hard Stop
 

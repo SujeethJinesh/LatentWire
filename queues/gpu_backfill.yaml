@@ -11,6 +11,12 @@ backfill:
     required_cache_or_model: "reasoning-model traces for OSC/DecDEC stress"
     est_gpu_hours: 2-4
     promotion_allowed: false
+  - id: channel_set_ce13_warmup_policy_cache_materialization
+    reason: no_parseable_warmup_policy_cache_offline
+    command: "find or build a tiny CE13 dev/gate warmup-policy cache before any GPU forward"
+    required_cache_or_model: "warmup-policy traces and locked dev/gate row ids"
+    est_gpu_hours: "0 now; 2-4 only after cache exists"
+    promotion_allowed: false
   - id: channel_set_c_f_hazard_control_shard
     reason: mixed_gate_signal_and_random_control_contamination
     command: "backfill paired static/random controls before any native forward confirmation"

@@ -1,4 +1,3 @@
 foreground: []
 notes:
-  - "No PROVISIONAL_PROMOTE_TO_GPU row exists after Stage-1 triage."
-  - "Do not start a foreground GPU confirmation run from current evidence."
+  - "No foreground GPU confirmation authorized by Mac continuation."
