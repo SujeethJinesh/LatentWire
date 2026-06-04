@@ -1,5 +1,8 @@
 mac_continue: []
 completed:
+  - latentwire_powered_oracle_ladder
+  - latentwire_claim_boundary_update
+  - channel_set_backfill_readiness
   - latentwire_mmlu_pro_info_ceiling
   - latentwire_fresh_wz_high_entropy
   - latentwire_l_b1_damage_avoidance

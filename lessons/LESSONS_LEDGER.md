@@ -14,3 +14,10 @@
 - WZ result: status `MAC_DONE`, gate delta vs best baseline `-0.043478` with CI-low `-0.304348`.
 - L-B1 result: AURC delta vs source-index+confidence `-0.222541`, paired delta vs source-index `-0.086957`.
 - Decision: `BOUNDED_NEGATIVE` for this Mac continuation; no foreground GPU unless a future row earns `PROVISIONAL_PROMOTE_TO_GPU`.
+
+## 2026-06-03 - Powered LatentWire oracle ladder
+
+- Power update: scaled fresh MMLU-Pro CPU scoring to `1500` dev/gate rows with `359` gate rows; achieved delta_beyond_score MDE half-width `0.030641`, below the `0.05` target.
+- Receiver-conditioned diagnostic: `I(source_scores; correct | source_top1)=2.098527` bits and `I(source_scores; correct | source_top1, target_scores)=0.281933` bits.
+- Oracle ladder: deployable WZ and full source-score fusion both fail to beat source-index+confidence on gate; only the source+target-at-encoder upper bound is positive.
+- Hypothesis update: current LatentWire score-packet path is `not-deployable` on this screening surface, not merely underpowered. Future LatentWire work should require L-A2 generated-solution caches or a genuinely source-only codec before any confirm/GPU spend.

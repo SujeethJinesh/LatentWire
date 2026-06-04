@@ -1,0 +1,102 @@
+{
+  "classification": "not-deployable",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-04T04:25:28Z",
+  "dataset": "TIGER-Lab/MMLU-Pro",
+  "information": {
+    "i_source_scores_answer_given_source_top1_bits": 2.0985273487026532,
+    "i_source_scores_answer_given_source_top1_target_scores_bits": 0.2819329246980339,
+    "n": 1500
+  },
+  "ladder": {
+    "best_baseline": "source_index_confidence",
+    "budget_alphas": {
+      "current_packet_4bit": 2.2,
+      "full_source_score_fusion_oracle": 2.9,
+      "wz_1bit": 0.1,
+      "wz_2bit": 0.3,
+      "wz_8bit": 2.9
+    },
+    "delta_beyond_score": {
+      "ci95_high": 0.04456824512534819,
+      "ci95_low": -0.016713091922005572,
+      "delta": 0.013927576601671309,
+      "mde_half_width": 0.030640668523676882,
+      "n": 359
+    },
+    "deltas_vs_best_baseline": {
+      "current_packet_4bit": {
+        "ci95_high": 0.022284122562674095,
+        "ci95_low": -0.05013927576601671,
+        "delta": -0.013927576601671309,
+        "mde_half_width": 0.036211699164345405,
+        "n": 359
+      },
+      "deployable_wz": {
+        "ci95_high": 0.022284122562674095,
+        "ci95_low": -0.05013927576601671,
+        "delta": -0.013927576601671309,
+        "mde_half_width": 0.036211699164345405,
+        "n": 359
+      },
+      "full_source_score_fusion_oracle": {
+        "ci95_high": 0.016713091922005572,
+        "ci95_low": -0.055710306406685235,
+        "delta": -0.019498607242339833,
+        "mde_half_width": 0.036211699164345405,
+        "n": 359
+      },
+      "source_target_at_encoder_upper_bound": {
+        "ci95_high": 0.1615598885793872,
+        "ci95_low": 0.08913649025069638,
+        "delta": 0.12534818941504178,
+        "mde_half_width": 0.03621169916434541,
+        "n": 359
+      }
+    },
+    "dev_accuracy": {
+      "best_equal_byte_score_sketch": 0.16038562664329536,
+      "current_packet_4bit": 0.17703768624014024,
+      "deployable_wz": 0.16038562664329536,
+      "full_source_score_fusion_oracle": 0.1761612620508326,
+      "random_same_byte": 0.09027169149868536,
+      "same_byte_text_proxy": 0.1586327782646801,
+      "source_index": 0.1586327782646801,
+      "source_index_confidence": 0.17353198948290974,
+      "source_target_at_encoder_upper_bound": 0.27957931638913236,
+      "target_only": 0.1586327782646801,
+      "wz_1bit": 0.16038562664329536,
+      "wz_2bit": 0.16827344434706398,
+      "wz_8bit": 0.1761612620508326
+    },
+    "dev_n": 1141,
+    "gate_accuracy": {
+      "best_equal_byte_score_sketch": 0.17827298050139276,
+      "current_packet_4bit": 0.17827298050139276,
+      "deployable_wz": 0.17827298050139276,
+      "full_source_score_fusion_oracle": 0.17270194986072424,
+      "random_same_byte": 0.11142061281337047,
+      "same_byte_text_proxy": 0.16434540389972144,
+      "source_index": 0.16434540389972144,
+      "source_index_confidence": 0.19220055710306408,
+      "source_target_at_encoder_upper_bound": 0.31754874651810583,
+      "target_only": 0.17827298050139276,
+      "wz_1bit": 0.1671309192200557,
+      "wz_2bit": 0.17827298050139276,
+      "wz_8bit": 0.17270194986072424
+    },
+    "gate_n": 359,
+    "switch_threshold": -0.5513486862182617
+  },
+  "mde_target": 0.05,
+  "powered": true,
+  "score_surface": "next_token_label_logprob",
+  "scored_dev_gate_rows": 1500,
+  "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "split_counts": {
+    "confirm": 381,
+    "dev": 1141,
+    "gate": 359
+  },
+  "target_model": "Qwen/Qwen3-0.6B"
+}
