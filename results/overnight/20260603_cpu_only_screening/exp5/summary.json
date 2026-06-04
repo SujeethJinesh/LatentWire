@@ -1,0 +1,65 @@
+{
+  "answer": "C-A1 has limited nonzero offline gate headroom and should be first backfill with DeepSeek/Falcon sentinels. C-F remains contaminated: M10 is killed by a random-bin control and the broader gate rows are mostly nonpositive.",
+  "c_a1_cached_sentinel_checkers": {
+    "deepseek_ci95": {
+      "ci95_high": 0.7969468593465829,
+      "ci95_low": 0.26458688424649635
+    },
+    "deepseek_median_recovery": 0.5180029115380453,
+    "falcon_ci95": {
+      "ci95_high": 0.6365749176786956,
+      "ci95_low": 0.0019296784793416677
+    },
+    "falcon_median_recovery": 0.3898194338496461,
+    "granite_paroquant_ci95": {
+      "ci95_high": 1.003769554323054,
+      "ci95_low": 0.4770444524050311
+    },
+    "granite_paroquant_median_recovery": 0.7537768488911776,
+    "implementation_mode": "algorithmic_reproduction_not_full_upstream",
+    "mac_policy_note": "checker PASS strings are cached-screen inputs only, not Mac PASSED claims"
+  },
+  "c_a1_gate": {
+    "gate_rows": 6,
+    "max_median": 1.5666,
+    "min_median": -1.1159,
+    "nonpositive_median": 1,
+    "positive_median": 5
+  },
+  "c_f_gate": {
+    "gate_rows": 36,
+    "max_median": 5.9396,
+    "min_median": -14537.3834,
+    "nonpositive_median": 23,
+    "positive_median": 13
+  },
+  "c_f_m10_decision": "KILL_M10_RANDOM_CONTROL_BEATS",
+  "c_f_m10_minus_random_bin_median": -0.7614874590457608,
+  "deepseek_sentinel_median_recovery": -0.17689931525896085,
+  "experiment": "EXP5_channel_set_offline",
+  "falcon_sentinel_median_recovery": 0.0704782481712527,
+  "m26_control": {
+    "m26_core_minus_random_matched_median": 1.727084589454447,
+    "m26_core_minus_static_1pct_median": 0.17761580764776214
+  },
+  "no_gap_denominator_audit": {
+    "ce21_status": "CPU_SCREENED",
+    "method_delta": null,
+    "note": "no-gap rows were counted/excluded as denominator audit support and cannot promote a method",
+    "promotion_allowed": false
+  },
+  "question": "Do C-F and C-A1 have offline evidence clean enough for the next GPU queue?",
+  "sources": [
+    "dashboard/stage1_triage.md",
+    "dashboard/channel_set_backfill_readiness.md",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m26_granite_small_vac12_20260518T203000Z/control_metrics.json",
+    "experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/checker_result.json",
+    "experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z/checker_result.json",
+    "experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z/checker_result.json",
+    "experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z/checker_result.json",
+    "experimental/outlier_migrate/phase9/results/om_v1_paroquant_deepseek_20260528T162858Z/control_metrics.json",
+    "experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z/control_metrics.json"
+  ],
+  "status": "CPU_SCREENED",
+  "verdict": "C_A1_BACKFILL_FIRST_C_F_CONTROL_CONTAMINATED"
+}

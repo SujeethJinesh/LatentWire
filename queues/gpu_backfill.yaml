@@ -1,37 +1,43 @@
 backfill:
+  - id: channel_set_c_a1_tail_cvar_grid
+    priority: 1
+    reason: first_after_overnight_screen_limited_offline_gate_headroom_needs_native_forward_parity_and_sentinels
+    command: "python experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py --run-id <new_write_once_c_a1_granite_gate_replay> --candidate-id clip_tight --split-name diagnostic --prompt-indices 7,9 --base-run-dir experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z --scale-clip-min 0.5 --scale-clip-max 2.0 --batch-size 1 --dtype bfloat16"
+    required_cache_or_model: "native W4A16/ParoQuant runner plus exact cached C_A1 gate ids and DeepSeek/Falcon regression sentinel; see dashboard/c_a1_gpu_backfill_runbook.md"
+    est_gpu_hours: 2-4
+    promotion_allowed: false
+  - id: channel_set_c_a1_paroquant_parity_card
+    priority: 2
+    reason: paired_native_paroquant_parity_card_for_c_a1_before_any_promotion
+    command: "prepare a user-run packet for C_A1 cached gate rows only; no foreground confirmation claim"
+    required_cache_or_model: "real W4A16-capable checkpoint plus exact cached C_A1 gate identifiers"
+    est_gpu_hours: 2-4
+    promotion_allowed: false
   - id: latentwire_l_a2_generated_solution_rerank_cache
+    priority: 3
     reason: missing_real_generated_solution_candidate_pools_and_verifier_source_target_surfaces
     command: "python -m pmc.cache_latentwire_scores --tasks generated_math --split dev,gate --method-id L_A2_verifier_rerank --candidate-counts 16,32,64 --source-model <SOURCE_MODEL> --target-model <TARGET_MODEL> --verifier-model <VERIFIER_MODEL> --out results/backfill/latentwire_l_a2_generated_solution_rerank/<RUN_ID> --checkpoint-every-prompts 20 --no-confirm"
     required_cache_or_model: "dev/gate generated-solution candidate pools plus verifier/source/target score surfaces; repro+leakage review for exact code hash"
     est_gpu_hours: 0-2
     promotion_allowed: false
-  - id: channel_set_c_a1_paroquant_parity_card
-    reason: limited_offline_gate_headroom_needs_native_forward_parity
-    command: "prepare a user-run packet for C_A1 cached gate rows only; no foreground confirmation claim"
-    required_cache_or_model: "real W4A16-capable checkpoint plus exact cached C_A1 gate identifiers"
-    est_gpu_hours: 2-4
-    promotion_allowed: false
-  - id: channel_set_c_a1_tail_cvar_grid
-    reason: decide_whether_c_a1_tail_cvar_headroom_is_real_with_regression_sentinel
-    command: "python experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py --run-id <new_write_once_c_a1_granite_gate_replay> --candidate-id clip_tight --split-name diagnostic --prompt-indices 7,9 --base-run-dir experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z --scale-clip-min 0.5 --scale-clip-max 2.0 --batch-size 1 --dtype bfloat16"
-    required_cache_or_model: "native W4A16/ParoQuant runner plus exact cached C_A1 gate ids and DeepSeek/Falcon regression sentinel; see dashboard/c_a1_gpu_backfill_runbook.md"
-    est_gpu_hours: 2-4
-    promotion_allowed: false
-  - id: channel_set_c_d1_osc_decdec_cache_shard
-    reason: current_offline_rows_negative_and_underpowered
-    command: "materialize a tiny OSC/DecDEC dev/gate shard only after preregistering the new denominator"
-    required_cache_or_model: "reasoning-model traces for OSC/DecDEC stress"
-    est_gpu_hours: 2-4
+  - id: channel_set_c_f_hazard_control_shard
+    priority: 4
+    reason: mixed_gate_signal_and_random_control_contamination
+    command: "backfill paired static/random controls before any native forward confirmation"
+    required_cache_or_model: "matched-budget static top-K and random-control trace cache"
+    est_gpu_hours: 2-6
     promotion_allowed: false
   - id: channel_set_ce13_warmup_policy_cache_materialization
+    priority: 5
     reason: no_parseable_warmup_policy_cache_offline
     command: "find or build a tiny CE13 dev/gate warmup-policy cache before any GPU forward"
     required_cache_or_model: "warmup-policy traces and locked dev/gate row ids"
     est_gpu_hours: "0 now; 2-4 only after cache exists"
     promotion_allowed: false
-  - id: channel_set_c_f_hazard_control_shard
-    reason: mixed_gate_signal_and_random_control_contamination
-    command: "backfill paired static/random controls before any native forward confirmation"
-    required_cache_or_model: "matched-budget static top-K and random-control trace cache"
-    est_gpu_hours: 2-6
+  - id: channel_set_c_d1_osc_decdec_cache_shard
+    priority: 6
+    reason: current_offline_rows_negative_and_underpowered
+    command: "materialize a tiny OSC/DecDEC dev/gate shard only after preregistering the new denominator"
+    required_cache_or_model: "reasoning-model traces for OSC/DecDEC stress"
+    est_gpu_hours: 2-4
     promotion_allowed: false

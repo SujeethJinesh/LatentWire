@@ -1,0 +1,39 @@
+{
+  "answer": "The published fuser metadata and local C2C clone/checkpoint are present, and the existing MPS compatibility replay reproduces the archived SVAMP teacher surface. This clone does not contain a completed MMLU-Redux reproduction result.",
+  "bootstrap_source": "results/c2c_bootstrap_20260418/qwen_pair.json",
+  "experiment": "EXP2_c2c_tractability",
+  "local_checkpoint_exists": true,
+  "local_repo_exists": true,
+  "losses_vs_target_count": 2,
+  "mcqa_constrained_letter": {
+    "arc_n16_accuracy": 0.6875,
+    "arc_n16_unparsed": 0,
+    "openbookqa_n16_accuracy": 0.4375,
+    "openbookqa_n16_unparsed": 0
+  },
+  "next_gate": "Run the official C2C mmlu-redux evaluator in a separate matched-baseline packet with sample logs; do not treat SVAMP replay as MMLU-Redux reproduction.",
+  "older_bootstrap_local_checkpoint_present": false,
+  "older_bootstrap_source": "results/competitor_bootstrap_20260421/c2c_qwen25_05b_to_qwen3_06b.json",
+  "question": "Can the C2C Qwen2.5-0.5B to Qwen3-0.6B pair be used locally?",
+  "repo_id": "nics-efc/C2C_Fuser",
+  "source_model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "sources": [
+    "results/svamp32_c2c_mps_compat_replay_20260505/c2c_teacher_innovation_probe.json",
+    "results/c2c_bootstrap_20260418/qwen_pair.json",
+    "paper/c2c_generation_trace_hook_preflight_20260505.md",
+    "results/svamp32_c2c_mps_compat_replay_20260505/c2c_generate.jsonl.meta.json",
+    "results/dense_baseline_mcqa_smoke_20260505/c2c_arc_n16_constrained_letter_summary.json",
+    "results/dense_baseline_mcqa_smoke_20260505/c2c_openbookqa_n16_constrained_letter_summary.json"
+  ],
+  "status": "CPU_SCREENED_TRACTABLE_REPLAY_AVAILABLE",
+  "svamp_c2c_delta_vs_target": 0.25,
+  "svamp_c2c_generated_tokens_avg": 61.09375,
+  "svamp_c2c_latency_sec": 6.8428735039815365,
+  "svamp_c2c_replay_accuracy": 0.5,
+  "svamp_c2c_tokens_per_sec": 8.92808408111775,
+  "svamp_target_accuracy": 0.25,
+  "target_model": "Qwen/Qwen3-0.6B",
+  "teacher_only_recovered_count": 10,
+  "verdict": "TRACTABLE_REPLAY_AVAILABLE_MMLU_REDUX_NOT_REPRODUCED",
+  "wins_vs_target_count": 10
+}

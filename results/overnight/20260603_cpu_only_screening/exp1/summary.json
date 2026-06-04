@@ -1,0 +1,166 @@
+{
+  "answer": "Dense C2C has complementary headroom and a 1-byte oracle syndrome bound remains alive, but the current deployable trace/source predictors are receiver-limited and the answer-value/index upper bound is an answer leak, not a method.",
+  "answer_leak_upper_bound": {
+    "avg_index_packet_bytes_per_row": 0.2109375,
+    "generated_answer_index_correct": 16,
+    "generated_answer_value_correct": 16,
+    "publishable_source_necessary_clean_count": 0,
+    "same_byte_visible_answer_text_correct": 16,
+    "source_path": "results/svamp32_c2c_generated_answer_packet_audit_20260505/generated_answer_packet_audit.json",
+    "source_private": false,
+    "status": "generated_answer_packet_is_answer_leak_not_method"
+  },
+  "decision": "Do not promote current CacheWire from these features. A future CacheWire sidecar must predict the dense C2C residual from pre-answer source-causal state and require destructive controls to collapse.",
+  "dense_c2c_teacher": {
+    "clean_residual_targets": 6,
+    "target_correct": 8,
+    "teacher_correct": 16,
+    "teacher_only_count": 10
+  },
+  "experiment": "EXP1_cache_level_oracle",
+  "lower_bound_gain_for_cachewire": -0.15625,
+  "oracle_sparse_sidecar": {
+    "augmentedpool_clean_residual": 3,
+    "augmentedpool_correct": 15,
+    "bytes": 1,
+    "deployable_distillation_pass": false,
+    "oracle_bound_alive": true,
+    "source_path": "results/svamp32_c2c_teacher_sparse_packet_distillation_preflight_20260505/summary.json",
+    "status": "c2c_teacher_sparse_packet_distillation_preflight_fails_deployable_method_oracle_bound_alive",
+    "targetpool_clean_residual": 2,
+    "targetpool_correct": 14
+  },
+  "primary_gain_vs_label_shuffle": {
+    "ci95_high": 0.0,
+    "ci95_low": -0.15625,
+    "delta": -0.0625,
+    "mde_half_width": 0.09375,
+    "n": 32
+  },
+  "primary_gain_vs_receiver": {
+    "ci95_high": 0.0,
+    "ci95_low": -0.09375,
+    "delta": -0.03125,
+    "mde_half_width": 0.0625,
+    "n": 32
+  },
+  "primary_gain_vs_zero_source": {
+    "ci95_high": 0.0,
+    "ci95_low": -0.09375,
+    "delta": -0.03125,
+    "mde_half_width": 0.0625,
+    "n": 32
+  },
+  "question": "Do receiver+source cache features beat receiver-only/cache-free controls enough to justify CacheWire?",
+  "sources": [
+    "results/svamp32_c2c_generation_trace_syndrome_probe_mps_20260505/generation_trace_probe.json",
+    "results/svamp32_c2c_mechanism_syndrome_probe_20260426/prefill_residual_trace_targetpool_probe.json",
+    "results/svamp32_c2c_teacher_sparse_packet_distillation_preflight_20260505/summary.json",
+    "results/svamp32_c2c_generated_answer_packet_audit_20260505/generated_answer_packet_audit.json"
+  ],
+  "status": "CPU_SCREENED_ORACLE_BOUND_ALIVE_DEPLOYABLE_KILLED",
+  "trace_summaries": [
+    {
+      "control_clean_union_count": 4,
+      "criteria": {
+        "control_clean_union_empty": false,
+        "min_clean_source_necessary": false,
+        "min_correct": false,
+        "preserve_fallback_floor": false
+      },
+      "failing_criteria": [
+        "min_correct",
+        "preserve_fallback_floor",
+        "min_clean_source_necessary",
+        "control_clean_union_empty"
+      ],
+      "feature_sha256": "4c6329c654c9de8efa3622cd0237c67fd4853b6ec9177c2e1584e4647f0df598",
+      "feature_shape": [
+        32,
+        10080
+      ],
+      "label_shuffled_correct": 15,
+      "matched_correct": 13,
+      "paired_matched_vs_label_shuffled": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.15625,
+        "delta": -0.0625,
+        "mde_half_width": 0.09375,
+        "n": 32
+      },
+      "paired_matched_vs_target_only": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.09375,
+        "delta": -0.03125,
+        "mde_half_width": 0.0625,
+        "n": 32
+      },
+      "paired_matched_vs_zero_source": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.09375,
+        "delta": -0.03125,
+        "mde_half_width": 0.0625,
+        "n": 32
+      },
+      "path": "results/svamp32_c2c_generation_trace_syndrome_probe_mps_20260505/generation_trace_probe.json",
+      "reference_n": 32,
+      "shuffled_source_correct": 12,
+      "slots_only_correct": 8,
+      "source_necessary_clean_count": 0,
+      "status": "c2c_mechanism_syndrome_probe_fails_gate",
+      "target_only_correct": 14,
+      "zero_source_correct": 14
+    },
+    {
+      "control_clean_union_count": 0,
+      "criteria": {
+        "control_clean_union_empty": true,
+        "min_clean_source_necessary": false,
+        "min_correct": false,
+        "preserve_fallback_floor": false
+      },
+      "failing_criteria": [
+        "min_correct",
+        "preserve_fallback_floor",
+        "min_clean_source_necessary"
+      ],
+      "feature_sha256": "75ad00f84a99ae632ec5641fa53e66e987188ba693858079dfae319381de7e73",
+      "feature_shape": [
+        32,
+        896
+      ],
+      "label_shuffled_correct": 14,
+      "matched_correct": 12,
+      "paired_matched_vs_label_shuffled": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.15625,
+        "delta": -0.0625,
+        "mde_half_width": 0.09375,
+        "n": 32
+      },
+      "paired_matched_vs_target_only": {
+        "ci95_high": 0.0,
+        "ci95_low": -0.15625,
+        "delta": -0.0625,
+        "mde_half_width": 0.09375,
+        "n": 32
+      },
+      "paired_matched_vs_zero_source": {
+        "ci95_high": 0.0625,
+        "ci95_low": -0.15625,
+        "delta": -0.03125,
+        "mde_half_width": 0.125,
+        "n": 32
+      },
+      "path": "results/svamp32_c2c_mechanism_syndrome_probe_20260426/prefill_residual_trace_targetpool_probe.json",
+      "reference_n": 32,
+      "shuffled_source_correct": 9,
+      "slots_only_correct": 8,
+      "source_necessary_clean_count": 0,
+      "status": "c2c_mechanism_syndrome_probe_fails_gate",
+      "target_only_correct": 14,
+      "zero_source_correct": 13
+    }
+  ],
+  "verdict": "RECEIVER_LIMITED_CURRENT_TRACE_ORACLE"
+}

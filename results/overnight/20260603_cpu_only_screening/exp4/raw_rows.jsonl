@@ -1,0 +1,1 @@
+{"experiment": "EXP4_l_a2_high_entropy_ceiling", "reason": "generated_text_only_no_score_surfaces", "smoke_rows_found": 3, "source_path": "results/mac_continue/fresh_mmlu_pro/rerank_generation_rows.jsonl", "usable_for_ceiling": false}

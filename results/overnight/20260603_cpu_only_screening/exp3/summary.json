@@ -1,0 +1,32 @@
+{
+  "all_matched_zero_prediction_agreement_one": true,
+  "answer": "Yes. In every inspected KVComm smoke, matched predictions have 1.0 agreement with zero-source predictions; ARC matched also damages target-only accuracy heavily.",
+  "c2c_packet_controls": {
+    "candidate_delta_best_control_correct": 10,
+    "candidate_delta_matched_correct": 3,
+    "candidate_delta_source_necessary_clean_count": 0,
+    "candidate_delta_status": "c2c_candidate_pool_delta_packet_capacity_fails_controls",
+    "generated_answer_publishable_source_necessary_clean_count": 0,
+    "generated_answer_same_byte_control_correct": 16,
+    "generated_answer_status": "generated_answer_packet_is_answer_leak_not_method",
+    "teacher_delta_matched_correct": 14,
+    "teacher_delta_source_necessary_clean_count": 0,
+    "teacher_delta_status": "teacher_delta_packet_capacity_fails_controls",
+    "teacher_delta_zero_delta_correct": 14
+  },
+  "experiment": "EXP3_destructive_controls",
+  "max_matched_minus_zero_accuracy": 0.0,
+  "min_matched_minus_target_accuracy": -0.625,
+  "question": "Do destructive controls expose shortcut behavior in existing cache-comm smoke artifacts?",
+  "sources": [
+    "results/dense_baseline_mcqa_smoke_20260505/kvcomm_damage_diagnostic_n16.json",
+    "results/dense_baseline_mcqa_smoke_20260505/kvcomm_damage_diagnostic_layer_sweep_n16.json",
+    "results/svamp32_c2c_teacher_delta_packet_gate_mps_20260505/teacher_delta_packet_gate.json",
+    "results/svamp32_c2c_candidate_pool_delta_packet_gate_mps_20260505/candidate_pool_delta_packet_gate.json",
+    "results/svamp32_c2c_generated_answer_packet_audit_20260505/generated_answer_packet_audit.json"
+  ],
+  "status": "KILLED_EXISTING_KVCOMM_CACHE_SMOKE",
+  "synthetic_fixture_count": 8,
+  "synthetic_fixture_passed": true,
+  "verdict": "CONTROL_HARNESS_READY_EXISTING_KVCOMM_COLLAPSES"
+}
