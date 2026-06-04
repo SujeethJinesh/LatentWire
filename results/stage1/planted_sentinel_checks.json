@@ -1,0 +1,6 @@
+{
+  "parsed_confirm_rows_counted_not_consumed": 46273,
+  "real_shape_cached_dev_gate_no_confirm_consumed": "pass",
+  "stage1_consumed_rows": 183653,
+  "synthetic_confirm_row_filter": "pass"
+}
