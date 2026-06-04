@@ -49,3 +49,18 @@ promote / kill / park list I can review.
 
 ## Handoff to the GPU node
 `git commit` the **code + small artifacts + synthetic fixtures + registry + dashboards + the frozen `splits/*_hash`**. **Do NOT git-commit the multi-GB activation caches** (they're already on disk; use `git-lfs`/`rsync` or regenerate on the node). On the node: `git pull`, and Codex resumes only the `parked: needs_gpu` jobs + confirmations + the profiler trace.
+
+## Row-mixed cache handling (refinement — the metadata_file_level freeze is too coarse for method runners)
+The Stage-0 freeze quarantines whole FILES; method runners need ROW granularity within dev/gate. Policy:
+- A) preferred: parse row-level entity IDs and filter rows by dev/gate/confirm.
+- B) safe fallback: if a file is row-mixed and a parser is hard, quarantine the whole file.
+- C) FORBIDDEN: read a whole row-mixed file and trust the file-level split.
+Write `dashboard/cache_parse_coverage.md` (cache_family, files_seen, rows_seen, rows_dev/gate/confirm,
+parse_status, usable_for_methods, blocked_reason). The confirm guard is enforced at BOTH file and row level;
+add a test proving Stage 1/2 read zero confirm files AND zero confirm rows. Timebox parsing — quarantine hard
+families and screen the parseable ones rather than blocking all screening.
+
+## Mac result status taxonomy (no PASSED on the Mac)
+Every Mac result is exactly one of: KILLED | AMBIGUOUS | CPU_SCREENED | PARKED_NEEDS_GPU |
+PROVISIONAL_PROMOTE_TO_GPU. PASSED / paper-positive is impossible on the Mac; positives are provisional
+pending held-out confirmation (which needs fresh data if the prior caches used the full test set).
