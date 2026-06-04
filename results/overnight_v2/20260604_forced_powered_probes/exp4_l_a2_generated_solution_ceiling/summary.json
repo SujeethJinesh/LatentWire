@@ -1,0 +1,30 @@
+{
+  "achieved_candidates": 1600,
+  "achieved_n_dev": 70,
+  "achieved_n_gate": 30,
+  "achieved_prompts": 100,
+  "alpha": -1.6,
+  "combo_accuracy": 0.03333333333333333,
+  "combo_gain_vs_target": {
+    "ci95_high": 0.1,
+    "ci95_low": 0.0,
+    "delta": 0.03333333333333333,
+    "mde_half_width": 0.06666666666666668,
+    "n": 30
+  },
+  "comparison_target_bits": 0.281933,
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-04T21:13:39+00:00",
+  "experiment": "EXP4_l_a2_generated_solution_ceiling",
+  "gpu_command_if_underpowered": "venv_arm64/bin/python scripts/overnight_v2_forced_probes.py --device cpu --run-exp exp4 --exp4-prompts 300 --exp4-candidates 16 --exp4-max-new-tokens 96 --no-confirm",
+  "mde_target": 0.05,
+  "powered": false,
+  "required_candidates_per_prompt": 16,
+  "required_prompts": 100,
+  "source_accuracy": 0.16666666666666666,
+  "source_evidence_cmi_bits": 0.0,
+  "status": "INCONCLUSIVE_UNDERPOWERED",
+  "target_accuracy": 0.0,
+  "verdict": "INCONCLUSIVE_UNDERPOWERED",
+  "wall_clock_seconds": 12379.590342998505
+}

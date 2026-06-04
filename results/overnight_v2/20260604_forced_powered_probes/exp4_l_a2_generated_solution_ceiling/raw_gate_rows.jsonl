@@ -1,0 +1,30 @@
+{"combo_correct": false, "combo_pred": 13, "correct_indices": [0, 11], "row_id": "gsm8k_0004", "source_correct": true, "source_pred": 0, "target_correct": false, "target_pred": 2}
+{"combo_correct": false, "combo_pred": 6, "correct_indices": [], "row_id": "gsm8k_0005", "source_correct": false, "source_pred": 10, "target_correct": false, "target_pred": 15}
+{"combo_correct": false, "combo_pred": 11, "correct_indices": [], "row_id": "gsm8k_0006", "source_correct": false, "source_pred": 1, "target_correct": false, "target_pred": 13}
+{"combo_correct": false, "combo_pred": 14, "correct_indices": [], "row_id": "gsm8k_0013", "source_correct": false, "source_pred": 13, "target_correct": false, "target_pred": 15}
+{"combo_correct": false, "combo_pred": 9, "correct_indices": [], "row_id": "gsm8k_0014", "source_correct": false, "source_pred": 6, "target_correct": false, "target_pred": 1}
+{"combo_correct": false, "combo_pred": 9, "correct_indices": [], "row_id": "gsm8k_0015", "source_correct": false, "source_pred": 4, "target_correct": false, "target_pred": 8}
+{"combo_correct": false, "combo_pred": 1, "correct_indices": [7], "row_id": "gsm8k_0022", "source_correct": false, "source_pred": 14, "target_correct": false, "target_pred": 9}
+{"combo_correct": false, "combo_pred": 2, "correct_indices": [7, 8, 11], "row_id": "gsm8k_0023", "source_correct": false, "source_pred": 15, "target_correct": false, "target_pred": 4}
+{"combo_correct": false, "combo_pred": 13, "correct_indices": [], "row_id": "gsm8k_0024", "source_correct": false, "source_pred": 4, "target_correct": false, "target_pred": 11}
+{"combo_correct": false, "combo_pred": 12, "correct_indices": [], "row_id": "gsm8k_0031", "source_correct": false, "source_pred": 2, "target_correct": false, "target_pred": 14}
+{"combo_correct": false, "combo_pred": 5, "correct_indices": [], "row_id": "gsm8k_0032", "source_correct": false, "source_pred": 14, "target_correct": false, "target_pred": 15}
+{"combo_correct": false, "combo_pred": 15, "correct_indices": [], "row_id": "gsm8k_0033", "source_correct": false, "source_pred": 2, "target_correct": false, "target_pred": 14}
+{"combo_correct": false, "combo_pred": 10, "correct_indices": [2], "row_id": "gsm8k_0040", "source_correct": false, "source_pred": 12, "target_correct": false, "target_pred": 3}
+{"combo_correct": false, "combo_pred": 14, "correct_indices": [], "row_id": "gsm8k_0041", "source_correct": false, "source_pred": 6, "target_correct": false, "target_pred": 6}
+{"combo_correct": false, "combo_pred": 10, "correct_indices": [0, 1, 4, 7, 14, 15], "row_id": "gsm8k_0042", "source_correct": false, "source_pred": 12, "target_correct": false, "target_pred": 5}
+{"combo_correct": false, "combo_pred": 2, "correct_indices": [], "row_id": "gsm8k_0050", "source_correct": false, "source_pred": 12, "target_correct": false, "target_pred": 1}
+{"combo_correct": false, "combo_pred": 9, "correct_indices": [], "row_id": "gsm8k_0051", "source_correct": false, "source_pred": 3, "target_correct": false, "target_pred": 3}
+{"combo_correct": false, "combo_pred": 7, "correct_indices": [10, 11, 13, 14], "row_id": "gsm8k_0059", "source_correct": true, "source_pred": 11, "target_correct": false, "target_pred": 7}
+{"combo_correct": false, "combo_pred": 12, "correct_indices": [0], "row_id": "gsm8k_0060", "source_correct": false, "source_pred": 14, "target_correct": false, "target_pred": 14}
+{"combo_correct": false, "combo_pred": 2, "correct_indices": [], "row_id": "gsm8k_0068", "source_correct": false, "source_pred": 4, "target_correct": false, "target_pred": 0}
+{"combo_correct": false, "combo_pred": 0, "correct_indices": [], "row_id": "gsm8k_0069", "source_correct": false, "source_pred": 3, "target_correct": false, "target_pred": 3}
+{"combo_correct": false, "combo_pred": 10, "correct_indices": [7], "row_id": "gsm8k_0077", "source_correct": true, "source_pred": 7, "target_correct": false, "target_pred": 0}
+{"combo_correct": true, "combo_pred": 10, "correct_indices": [10], "row_id": "gsm8k_0078", "source_correct": false, "source_pred": 3, "target_correct": false, "target_pred": 0}
+{"combo_correct": false, "combo_pred": 7, "correct_indices": [5, 10, 14], "row_id": "gsm8k_0079", "source_correct": true, "source_pred": 5, "target_correct": false, "target_pred": 4}
+{"combo_correct": false, "combo_pred": 6, "correct_indices": [0], "row_id": "gsm8k_0086", "source_correct": false, "source_pred": 8, "target_correct": false, "target_pred": 8}
+{"combo_correct": false, "combo_pred": 3, "correct_indices": [], "row_id": "gsm8k_0087", "source_correct": false, "source_pred": 5, "target_correct": false, "target_pred": 5}
+{"combo_correct": false, "combo_pred": 5, "correct_indices": [2], "row_id": "gsm8k_0088", "source_correct": false, "source_pred": 11, "target_correct": false, "target_pred": 9}
+{"combo_correct": false, "combo_pred": 1, "correct_indices": [5], "row_id": "gsm8k_0095", "source_correct": false, "source_pred": 14, "target_correct": false, "target_pred": 10}
+{"combo_correct": false, "combo_pred": 9, "correct_indices": [0, 2, 3, 12], "row_id": "gsm8k_0096", "source_correct": true, "source_pred": 3, "target_correct": false, "target_pred": 11}
+{"combo_correct": false, "combo_pred": 2, "correct_indices": [], "row_id": "gsm8k_0097", "source_correct": false, "source_pred": 7, "target_correct": false, "target_pred": 3}

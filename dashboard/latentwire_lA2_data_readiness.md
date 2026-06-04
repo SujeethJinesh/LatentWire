@@ -12,15 +12,18 @@
 ```bash
 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false \
 HF_HOME=.hf_home HF_DATASETS_CACHE=.hf_home/datasets TRANSFORMERS_CACHE=.hf_home/transformers \
-venv_arm64/bin/python scripts/mac_continue_latentwire.py \
+venv_arm64/bin/python scripts/overnight_v2_forced_probes.py \
   --device cpu \
-  --max-scan-rows 360 \
-  --max-score-rows 128 \
-  --max-generation-rows 128 \
-  --generation-timebox-seconds 21600 \
-  --max-new-tokens 96 \
-  --batch-size 1
+  --run-exp exp4 \
+  --exp4-prompts 100 \
+  --exp4-candidates 16 \
+  --exp4-max-new-tokens 96 \
+  --exp4-temperature 0.8 \
+  --batch-size 1 \
+  --no-confirm
 ```
+
+This command is the v2 ceiling probe, not a paper claim. Completion requires either `>=100` prompts with `16` candidates each and an MDE readout, or `INCONCLUSIVE_UNDERPOWERED` with the exact achieved prompt/candidate counts and the GPU backfill command.
 
 ## Reusable Backfill Template
 

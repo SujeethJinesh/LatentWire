@@ -8,7 +8,25 @@ This is a user-run GPU backfill packet, not a foreground confirmation job. Do no
 - Start `nvidia-smi` monitoring.
 - Use branch `codex-campaign` at or after the L_Q1 closeout commit.
 - Do not run Stage-3, WZ/L-B1 reruns, sidecars, or confirm-claim promotion.
-- Include at least one regression sentinel beyond Granite: DeepSeek and/or Falcon.
+- Include both regression sentinels beyond Granite when possible: DeepSeek and Falcon.
+- Keep promotion disabled. This packet is a native W4A16/ParoQuant replay/parity test, not a paper confirmation.
+- Write `dashboard/gpu_backfill_report.md` with row IDs, no-gap denominator counts, parity-card status, sentinel medians/tails, and raw artifact paths.
+
+## Exact Cached Gate IDs
+
+Replay the cached C_A1 gate packet rather than searching new rows. The current cached gate evidence is summarized in `dashboard/stage1_triage.md`:
+
+- aggregate gate rows: `6`
+- positive median rows: `5`
+- nonpositive median rows: `1`
+- median range: `[-1.1159, 1.5666]`
+- source rows include:
+  - `experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z/per_trace_metrics.json`
+  - `experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z/per_trace_metrics.json`
+  - `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z/per_trace_metrics.json`
+  - `experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z/per_trace_metrics.json`
+
+The existing subset helper currently exposes the Granite cached packet as prompt indices `7,9`; do not widen beyond the exact cached gate IDs without a new preregistration.
 
 ## Granite Tail/CVaR Replay
 
@@ -25,9 +43,9 @@ python experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py \
   --dtype bfloat16
 ```
 
-## Regression Sentinel Baselines
+## Regression Sentinel Baselines And Parity Card
 
-Use DeepSeek and/or Falcon ParoQuant parity runs as sentinel denominators:
+Use DeepSeek and Falcon ParoQuant parity runs as sentinel denominators:
 
 ```bash
 python experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py \
@@ -51,11 +69,12 @@ python experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py \
 
 ## Promotion Rule
 
-Write `dashboard/gpu_backfill_report.md`. Mark C_A1 `PROVISIONAL_PROMOTE_TO_GPU` only if:
+Promotion is disabled for this backfill packet. The report may recommend a later foreground job only if:
 
 - CVaR/worst-trace improves without median regression.
 - DeepSeek/Falcon sentinel does not regress in median or tail.
 - matched controls fail.
 - no-gap denominator audit passes.
+- the parity card shows native W4A16/ParoQuant rows reproduce the cached direction on the exact gate IDs.
 
 A Granite-only win that regresses DeepSeek/Falcon is a scoped negative, not a hero method.

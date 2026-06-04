@@ -36,3 +36,10 @@
 - L-A2 remains parked: the cache has only a 3-row generated-text smoke and lacks source, target, and verifier score surfaces, so the high-entropy ceiling cannot be estimated.
 - Channel-Set update: C_A1 is the first GPU backfill target, but C_F is control-contaminated (`M10` random-control delta `-0.761487`) and cannot move to foreground.
 - Next branch order: C_A1 native replay with DeepSeek/Falcon sentinels, then L-A2 generated-solution cache materialization, then C-F identical-row denominator cleanup.
+
+## 2026-06-04 - Overnight v2 adjudication correction
+
+- Corrected EXP1 state: the `n=32` CacheWire/C2C trace readout is `INCONCLUSIVE_UNDERPOWERED`, not a deployable-path kill. The dense C2C teacher hint (`16/32` vs target `8/32`) keeps CacheWire ceiling/headroom alive until a powered source/receiver hidden-feature probe replaces it.
+- Deterministic kills retained: KVComm matched equals zero-source in inspected smokes, generated-answer value/index packets are answer-text leakage, teacher-delta ties zero/target controls, candidate-delta is dominated by coefficient controls, and C_F is killed by random/control contamination.
+- C_F branch state updated to `KILLED_CONTROL_CONTAMINATED`; do not queue C_F again without a fresh preregistration and identical-row denominator that beats random/static controls.
+- Required next evidence: `dashboard/overnight_v2.md` must report wall-clock seconds, achieved dev/gate n, and MDE for EXP1 and EXP4. A fast report without generated/extracted rows is not completion.

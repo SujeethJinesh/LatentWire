@@ -1,14 +1,18 @@
 method_id: C_F_survival_stable_core
 paper: channel_set
-status: DRAFTED
-contribution_role: positive_method
-paper_claim_eligible: true
+status: KILLED_CONTROL_CONTAMINATED
+contribution_role: kill_only
+paper_claim_eligible: false
 stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
 confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
 fit_policy: dev_gate_only
-current_gate: survival/stable-core selection against cached static, EMA, and ParoQuant recovery rows
+current_gate: killed by random/control contamination; no foreground or backfill rerun without a new preregistration and identical-row denominator
 lineage:
   nearest_baseline: EMA top-k protected channel sets
   nearest_killed_relative: fixed top-1 percent and hard position switching
-  avoids_killed_mechanism_by: requiring stability under drift and avoiding discontinuous set changes
-
+  avoids_killed_mechanism_by: not applicable after M10 random-control kill and mixed C_F gate rows
+kill_evidence:
+  primary_artifact: experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/checker_result.json
+  decision: KILL_M10_RANDOM_CONTROL_BEATS
+  m10_minus_random_bin_median: -0.7614874590457608
+  rule: random/control rows must not beat the method on the same denominator

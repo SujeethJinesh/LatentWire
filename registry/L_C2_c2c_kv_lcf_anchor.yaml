@@ -6,9 +6,14 @@ paper_claim_eligible: false
 stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
 confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
 fit_policy: dev_gate_only
-current_gate: compare against cached/MPS C2C, KVComm, and latent-cache anchors without native superiority claims
+current_gate: baseline anchor only; C2C is tractable, but existing KVComm/C2C packet smokes are KILLED_AS_METHOD_EVIDENCE by deterministic controls
 lineage:
   nearest_baseline: C2C and KVComm smoke artifacts
   nearest_killed_relative: LatentWire systems win claims without native matched baselines
   avoids_killed_mechanism_by: baseline adversary only; native serving claims remain parked
-
+control_evidence:
+  kvcomm_smoke: KILLED_AS_METHOD_EVIDENCE
+  c2c_generated_answer_packet: KILLED_AS_ANSWER_LEAK
+  c2c_teacher_delta_packet: KILLED_TIES_ZERO_TARGET_CONTROLS
+  c2c_candidate_delta_packet: KILLED_BY_COEFFICIENT_CONTROL
+  c2c_dense_replay: CPU_SCREENED_TRACTABLE_BASELINE_ANCHOR

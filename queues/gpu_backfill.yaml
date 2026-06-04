@@ -16,26 +16,19 @@ backfill:
   - id: latentwire_l_a2_generated_solution_rerank_cache
     priority: 3
     reason: missing_real_generated_solution_candidate_pools_and_verifier_source_target_surfaces
-    command: "python -m pmc.cache_latentwire_scores --tasks generated_math --split dev,gate --method-id L_A2_verifier_rerank --candidate-counts 16,32,64 --source-model <SOURCE_MODEL> --target-model <TARGET_MODEL> --verifier-model <VERIFIER_MODEL> --out results/backfill/latentwire_l_a2_generated_solution_rerank/<RUN_ID> --checkpoint-every-prompts 20 --no-confirm"
+    command: "venv_arm64/bin/python scripts/overnight_v2_forced_probes.py --device cpu --run-exp exp4 --exp4-prompts 100 --exp4-candidates 16 --exp4-max-new-tokens 96 --batch-size 1 --no-confirm"
     required_cache_or_model: "dev/gate generated-solution candidate pools plus verifier/source/target score surfaces; repro+leakage review for exact code hash"
     est_gpu_hours: 0-2
     promotion_allowed: false
-  - id: channel_set_c_f_hazard_control_shard
-    priority: 4
-    reason: mixed_gate_signal_and_random_control_contamination
-    command: "backfill paired static/random controls before any native forward confirmation"
-    required_cache_or_model: "matched-budget static top-K and random-control trace cache"
-    est_gpu_hours: 2-6
-    promotion_allowed: false
   - id: channel_set_ce13_warmup_policy_cache_materialization
-    priority: 5
+    priority: 4
     reason: no_parseable_warmup_policy_cache_offline
     command: "find or build a tiny CE13 dev/gate warmup-policy cache before any GPU forward"
     required_cache_or_model: "warmup-policy traces and locked dev/gate row ids"
     est_gpu_hours: "0 now; 2-4 only after cache exists"
     promotion_allowed: false
   - id: channel_set_c_d1_osc_decdec_cache_shard
-    priority: 6
+    priority: 5
     reason: current_offline_rows_negative_and_underpowered
     command: "materialize a tiny OSC/DecDEC dev/gate shard only after preregistering the new denominator"
     required_cache_or_model: "reasoning-model traces for OSC/DecDEC stress"

@@ -1,0 +1,44 @@
+{
+  "achieved_n_dev": 346,
+  "achieved_n_dev_gate": 500,
+  "achieved_n_gate": 154,
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-04T17:41:07+00:00",
+  "dense_fusion_alpha": 0.0,
+  "dense_fusion_oracle_gain_vs_target_scores": {
+    "ci95_high": 0.0,
+    "ci95_low": 0.0,
+    "delta": 0.0,
+    "mde_half_width": 0.0,
+    "n": 154
+  },
+  "experiment": "EXP1_cachewire_powered_ceiling",
+  "feature_gain_receiver_source_vs_receiver": {
+    "ci95_high": 0.08441558441558442,
+    "ci95_low": -0.03896103896103896,
+    "delta": 0.025974025974025976,
+    "mde_half_width": 0.06493506493506493,
+    "n": 154
+  },
+  "gpu_command_if_underpowered": "venv_arm64/bin/python scripts/overnight_v2_forced_probes.py --device cpu --run-exp exp1 --exp1-rows 2500 --exp1-min-rows 500 --batch-size 2 --no-confirm",
+  "mde_target": 0.05,
+  "minimum_n_dev_gate": 500,
+  "powered": false,
+  "receiver_feature_accuracy": 0.1038961038961039,
+  "receiver_source_feature_accuracy": 0.12987012987012986,
+  "source_feature_artifact": {
+    "feature_dim": 1792,
+    "loaded_existing": false,
+    "path": "results/overnight_v2/20260604_forced_powered_probes/exp1_cachewire_powered_ceiling/source_features.npz",
+    "rows": 500
+  },
+  "status": "INCONCLUSIVE_UNDERPOWERED",
+  "target_feature_artifact": {
+    "feature_dim": 2048,
+    "loaded_existing": false,
+    "path": "results/overnight_v2/20260604_forced_powered_probes/exp1_cachewire_powered_ceiling/receiver_target_features.npz",
+    "rows": 500
+  },
+  "verdict": "INCONCLUSIVE_UNDERPOWERED",
+  "wall_clock_seconds": 380.6262319087982
+}
