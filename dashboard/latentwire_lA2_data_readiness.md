@@ -1,37 +1,39 @@
 # LatentWire L-A2 Data Readiness
 
-- status: `PARKED_NEEDS_CACHE`
-- evidence surface: no real generated-solution candidate pool with verifier/source/target score surfaces exists beyond the 3-row smoke.
+- status: `PARKED_NEEDS_STRONGER_GENERATOR`
+- evidence surface: v3 materialized a 100-prompt x16 candidate pool with source, target, and verifier scores, but the pool is too weak to screen L-A2.
+- corrected v3 artifact: `results/overnight_v3/20260604_corrected_reprobe/exp4_corrected_l_a2_rerank_ceiling/summary.json`.
+- corrected v3 result: `1600` verifier-scored candidates, `36` prompts with at least one correct candidate, required threshold `80`; verdict `PARKED_NEEDS_STRONGER_GENERATOR`.
 - existing smoke: `results/mac_continue/fresh_mmlu_pro/rerank_generation_rows.jsonl`, 3 generated rows with `row_id`, `split`, `answer_index`, and `generated_text` only.
 - usable source/target MC score surfaces: `results/mac_continue/fresh_mmlu_pro/fresh_mmlu_pro_rows.jsonl`, but these are option-score rows, not generated-solution rerank pools.
-- conclusion: L-A2 is not evidence yet; it is a reusable cache/backfill job.
-- receiver-conditioned MI probe: `NOT_RUN_NO_CACHE`; cannot estimate until generated-solution candidates have source, target, and verifier scores.
+- conclusion: L-A2 is not evidence yet; it is a stronger-generator cache/backfill job.
+- receiver-conditioned rerank probe: `PARKED_POOL_TOO_WEAK`; do not estimate a gain until the correct-candidate subset has at least about `80` prompts.
 
 ## CPU Smoke Command
 
 ```bash
 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false \
 HF_HOME=.hf_home HF_DATASETS_CACHE=.hf_home/datasets TRANSFORMERS_CACHE=.hf_home/transformers \
-venv_arm64/bin/python scripts/overnight_v2_forced_probes.py \
+venv_arm64/bin/python scripts/overnight_v3_corrected_probes.py \
   --device cpu \
   --run-exp exp4 \
-  --exp4-prompts 100 \
+  --exp4-prompts 300 \
   --exp4-candidates 16 \
   --exp4-max-new-tokens 96 \
-  --exp4-temperature 0.8 \
+  --require-verifier-score \
   --batch-size 1 \
   --no-confirm
 ```
 
-This command is the v2 ceiling probe, not a paper claim. Completion requires either `>=100` prompts with `16` candidates each and an MDE readout, or `INCONCLUSIVE_UNDERPOWERED` with the exact achieved prompt/candidate counts and the GPU backfill command.
+This command is the v3 corrected cache/gate probe, not a paper claim. Completion requires source, target, and verifier score surfaces plus at least about `80` prompts with one correct candidate before any gain/MDE verdict; otherwise park with the stronger-generator command.
 
 ## Reusable Backfill Template
 
 ```yaml
 - id: latentwire_l_a2_generated_solution_rerank_cache
-  reason: missing_real_generated_solution_candidate_pools_and_verifier_source_target_surfaces
+  reason: missing_powered_generated_solution_candidate_pool_with_enough_correct_candidates
   command: "python -m pmc.cache_latentwire_scores --tasks generated_math --split dev,gate --method-id L_A2_verifier_rerank --candidate-counts 16,32,64 --source-model <SOURCE_MODEL> --target-model <TARGET_MODEL> --verifier-model <VERIFIER_MODEL> --out results/backfill/latentwire_l_a2_generated_solution_rerank/<RUN_ID> --checkpoint-every-prompts 20 --no-confirm"
-  required_cache_or_model: "dev/gate generated-solution candidate pools plus verifier/source/target score surfaces; repro+leakage review for exact code hash"
+  required_cache_or_model: "dev/gate generated-solution candidate pools plus source_score, target_score, verifier_score; require >=80 prompts with at least one correct candidate before screening"
   est_gpu_hours: 0-2
   promotion_allowed: false
 ```

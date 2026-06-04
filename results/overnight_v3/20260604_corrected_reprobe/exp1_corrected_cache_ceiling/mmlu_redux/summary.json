@@ -1,0 +1,49 @@
+{
+  "achieved_n_dev": 84,
+  "achieved_n_gate": 36,
+  "achieved_n_total": 120,
+  "baseline_mode": "receiver_label_scores_repair",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-04T22:52:37+00:00",
+  "dense_fusion_acc": 0.4722222222222222,
+  "dense_fusion_alpha": 1.0,
+  "dense_oracle_gain_vs_receiver_label_scores": {
+    "ci95_high": 0.1388888888888889,
+    "ci95_low": -0.1388888888888889,
+    "delta": 0.0,
+    "mde_half_width": 0.1388888888888889,
+    "n": 36
+  },
+  "experiment": "EXP1_corrected_cache_ceiling",
+  "hidden_probe_sane": false,
+  "mde_target": 0.05,
+  "model_own_acc": 0.4722222222222222,
+  "probe_gain_receiver_source_vs_receiver_only": {
+    "ci95_high": 0.1388888888888889,
+    "ci95_low": -0.1388888888888889,
+    "delta": 0.0,
+    "mde_half_width": 0.1388888888888889,
+    "n": 36
+  },
+  "receiver_plus_source_acc": 0.4722222222222222,
+  "receiver_probe_acc": 0.3611111111111111,
+  "sanity_tolerance": 0.05,
+  "source_feature_artifact": {
+    "feature_dim": 1792,
+    "loaded_existing": false,
+    "path": "results/overnight_v3/20260604_corrected_reprobe/exp1_corrected_cache_ceiling/mmlu_redux/source_features.npz",
+    "rows": 120
+  },
+  "source_label_score_degenerate_fraction": 0.0,
+  "source_model_acc": 0.5555555555555556,
+  "status": "INCONCLUSIVE_UNDERPOWERED",
+  "target_feature_artifact": {
+    "feature_dim": 2048,
+    "loaded_existing": false,
+    "path": "results/overnight_v3/20260604_corrected_reprobe/exp1_corrected_cache_ceiling/mmlu_redux/receiver_target_features.npz",
+    "rows": 120
+  },
+  "task": "mmlu_redux",
+  "verdict": "INCONCLUSIVE_UNDERPOWERED",
+  "wall_clock_seconds": 44.14478898048401
+}

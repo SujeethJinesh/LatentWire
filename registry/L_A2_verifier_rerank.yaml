@@ -1,12 +1,20 @@
 method_id: L_A2_verifier_rerank
 paper: latentwire
-status: NEEDS_SCORE_CACHE
+status: PARKED_NEEDS_STRONGER_GENERATOR
 contribution_role: positive_method
-paper_claim_eligible: true
+paper_claim_eligible: false
+promotion_allowed: false
 stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
 confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
 fit_policy: dev_gate_only
-current_gate: generate dev/gate solution candidates and score each candidate with source, target, and verifier surfaces before any rerank claim
+current_gate: v3 added verifier_score to the 100x16 pool but only 36 prompts had any correct candidate; require stronger generator or >=300 prompts with >=80 correct-candidate prompts before any rerank screen
+latest_evidence:
+  artifact: results/overnight_v3/20260604_corrected_reprobe/exp4_corrected_l_a2_rerank_ceiling/summary.json
+  status: PARKED_NEEDS_STRONGER_GENERATOR
+  achieved_prompts: 100
+  achieved_candidates: 1600
+  prompts_with_at_least_one_correct_candidate: 36
+  verifier_score_present: true
 lineage:
   nearest_baseline: structured text and source-rank controls
   nearest_killed_relative: answer-continuation likelihood distillation

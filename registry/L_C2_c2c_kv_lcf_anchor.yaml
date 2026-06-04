@@ -1,12 +1,13 @@
 method_id: L_C2_c2c_kv_lcf_anchor
 paper: latentwire
-status: DRAFTED
+status: BASELINE_ANCHOR
 contribution_role: baseline_adversary
 paper_claim_eligible: false
+promotion_allowed: false
 stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
 confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
 fit_policy: dev_gate_only
-current_gate: baseline anchor only; C2C is tractable, but existing KVComm/C2C packet smokes are KILLED_AS_METHOD_EVIDENCE by deterministic controls
+current_gate: baseline anchor only; C2C/KVComm tractability is not method evidence, and existing packet smokes are terminal killed by deterministic controls
 lineage:
   nearest_baseline: C2C and KVComm smoke artifacts
   nearest_killed_relative: LatentWire systems win claims without native matched baselines

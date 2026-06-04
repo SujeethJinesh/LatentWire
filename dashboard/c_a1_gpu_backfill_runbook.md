@@ -8,7 +8,7 @@ This is a user-run GPU backfill packet, not a foreground confirmation job. Do no
 - Start `nvidia-smi` monitoring.
 - Use branch `codex-campaign` at or after the L_Q1 closeout commit.
 - Do not run Stage-3, WZ/L-B1 reruns, sidecars, or confirm-claim promotion.
-- Include both regression sentinels beyond Granite when possible: DeepSeek and Falcon.
+- Include both regression sentinels beyond Granite: DeepSeek and Falcon.
 - Keep promotion disabled. This packet is a native W4A16/ParoQuant replay/parity test, not a paper confirmation.
 - Write `dashboard/gpu_backfill_report.md` with row IDs, no-gap denominator counts, parity-card status, sentinel medians/tails, and raw artifact paths.
 
@@ -26,9 +26,21 @@ Replay the cached C_A1 gate packet rather than searching new rows. The current c
   - `experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_confirmation_20260528T1735Z/per_trace_metrics.json`
   - `experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z/per_trace_metrics.json`
 
-The existing subset helper currently exposes the Granite cached packet as prompt indices `7,9`; do not widen beyond the exact cached gate IDs without a new preregistration.
+Exact cached row identifiers for this packet:
 
-## Granite Tail/CVaR Replay
+| model | cached row IDs | source packet | requirement |
+| --- | --- | --- | --- |
+| Granite | prompt indices `7,9` (`opencompass_AIME2025_I_7`, `opencompass_AIME2025_I_9`) | current subset helper over the Granite cached gate packet | run ParoQuant baseline and tight-clip C_A1 on the same two rows |
+| DeepSeek | prompt indices `0,1,2,3,4,5,6,7,8,9,10,11` (`opencompass_AIME2025_I_0`..`I_11`) | `om_driftrot_deepseek_clip_tight_20260528T2318Z` | run ParoQuant baseline and tight-clip C_A1 on the same twelve rows |
+| Falcon | prompt indices `0,1,2,3,4,5,6,7,8,9,10,11` (`opencompass_AIME2025_I_0`..`I_11`) | `om_driftrot_falcon_clip_tight_20260528T2343Z` | run ParoQuant baseline and tight-clip C_A1 on the same twelve rows |
+
+Abort the packet if the local runner cannot materialize both ParoQuant and tight-clip rows on the same prompt IDs for a model. A ParoQuant-only DeepSeek/Falcon denominator is not a sentinel and must not be reported as a C_A1 replay.
+
+## Paired Native Replay Matrix
+
+Every model needs two write-once rows: `paroquant_baseline` and `tight_clip_c_a1`. Do not compare a newly generated C_A1 row against a stale denominator with different prompt IDs.
+
+### Granite
 
 ```bash
 python experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py \
@@ -43,13 +55,13 @@ python experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py \
   --dtype bfloat16
 ```
 
-## Regression Sentinel Baselines And Parity Card
+### DeepSeek
 
-Use DeepSeek and Falcon ParoQuant parity runs as sentinel denominators:
+Run the ParoQuant denominator and the tight-clip C_A1 replay on exactly the same cached DeepSeek IDs:
 
 ```bash
-python experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py \
-  --run-id <new_write_once_c_a1_deepseek_sentinel> \
+python experimental/outlier_migrate/phase9/run_om_v1_paroquant_deepseek.py \
+  --run-id <new_write_once_c_a1_deepseek_paroquant_paired> \
   --reuse-trace-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z \
   --reuse-score-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z \
   --reuse-protected-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z \
@@ -57,15 +69,55 @@ python experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py \
   --batch-size 1 \
   --dtype bfloat16
 
-python experimental/outlier_migrate/phase9/run_om_paroquant_baseline.py \
-  --run-id <new_write_once_c_a1_falcon_sentinel> \
+python <model_specific_tight_clip_subset_runner_for_deepseek> \
+  --run-id <new_write_once_c_a1_deepseek_tight_clip_paired> \
+  --candidate-id clip_tight \
+  --split-name diagnostic \
+  --prompt-indices 0,1,2,3,4,5,6,7,8,9,10,11 \
+  --base-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_deepseek_20260527T1210Z \
+  --scale-clip-min 0.5 \
+  --scale-clip-max 2.0 \
+  --batch-size 1 \
+  --dtype bfloat16
+```
+
+### Falcon
+
+Run the ParoQuant denominator and the tight-clip C_A1 replay on exactly the same cached Falcon IDs:
+
+```bash
+python experimental/outlier_migrate/phase9/run_om_v1_paroquant_falcon.py \
+  --run-id <new_write_once_c_a1_falcon_paroquant_paired> \
   --reuse-trace-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z \
   --reuse-score-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z \
   --reuse-protected-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z \
   --m11b-reference-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z \
   --batch-size 1 \
   --dtype bfloat16
+
+python <model_specific_tight_clip_subset_runner_for_falcon> \
+  --run-id <new_write_once_c_a1_falcon_tight_clip_paired> \
+  --candidate-id clip_tight \
+  --split-name diagnostic \
+  --prompt-indices 0,1,2,3,4,5,6,7,8,9,10,11 \
+  --base-run-dir experimental/outlier_migrate/phase9/results/om_v2_m11b_falcon_20260527T1438Z \
+  --scale-clip-min 0.5 \
+  --scale-clip-max 2.0 \
+  --batch-size 1 \
+  --dtype bfloat16
 ```
+
+The existing `run_om_driftrot_clip_subset.py` is Granite-bound through its checker module. Do not use it for DeepSeek/Falcon unless the local runner first installs an explicit model-specific wrapper that patches the checker in the same style as `run_om_v1_paroquant_deepseek.py` and `run_om_v1_paroquant_falcon.py`, and the wrapper records the expected model ID in `model_provenance.json`.
+
+## Parity Card And No-Gap Audit
+
+For each model, the report must include:
+
+- paired row IDs used by both regimes.
+- no-gap denominator counts.
+- median delta and CVaR/worst-trace delta for tight-clip C_A1 versus ParoQuant.
+- paired bootstrap lower bounds.
+- whether the DeepSeek and Falcon sentinel medians or tails regress.
 
 ## Promotion Rule
 

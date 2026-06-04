@@ -1,9 +1,9 @@
 backfill:
   - id: channel_set_c_a1_tail_cvar_grid
     priority: 1
-    reason: first_after_overnight_screen_limited_offline_gate_headroom_needs_native_forward_parity_and_sentinels
-    command: "python experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py --run-id <new_write_once_c_a1_granite_gate_replay> --candidate-id clip_tight --split-name diagnostic --prompt-indices 7,9 --base-run-dir experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z --scale-clip-min 0.5 --scale-clip-max 2.0 --batch-size 1 --dtype bfloat16"
-    required_cache_or_model: "native W4A16/ParoQuant runner plus exact cached C_A1 gate ids and DeepSeek/Falcon regression sentinel; see dashboard/c_a1_gpu_backfill_runbook.md"
+    reason: first_after_overnight_screen_limited_offline_gate_headroom_needs_paired_native_forward_parity_and_three_model_sentinels
+    command: "run the paired matrix in dashboard/c_a1_gpu_backfill_runbook.md: ParoQuant baseline vs tight-clip C_A1 on exact cached Granite, DeepSeek, and Falcon row IDs; abort if any model lacks same-row pairing"
+    required_cache_or_model: "native W4A16/ParoQuant runner plus exact cached C_A1 gate ids; DeepSeek/Falcon require paired tight-clip wrappers, not denominator-only sentinels"
     est_gpu_hours: 2-4
     promotion_allowed: false
   - id: channel_set_c_a1_paroquant_parity_card
@@ -15,9 +15,9 @@ backfill:
     promotion_allowed: false
   - id: latentwire_l_a2_generated_solution_rerank_cache
     priority: 3
-    reason: missing_real_generated_solution_candidate_pools_and_verifier_source_target_surfaces
-    command: "venv_arm64/bin/python scripts/overnight_v2_forced_probes.py --device cpu --run-exp exp4 --exp4-prompts 100 --exp4-candidates 16 --exp4-max-new-tokens 96 --batch-size 1 --no-confirm"
-    required_cache_or_model: "dev/gate generated-solution candidate pools plus verifier/source/target score surfaces; repro+leakage review for exact code hash"
+    reason: missing_powered_generated_solution_candidate_pools_and_verifier_source_target_surfaces
+    command: "venv_arm64/bin/python scripts/overnight_v3_corrected_probes.py --device cpu --run-exp exp4 --exp4-prompts 300 --exp4-candidates 16 --exp4-max-new-tokens 96 --batch-size 1 --require-verifier-score --no-confirm"
+    required_cache_or_model: "dev/gate generated-solution candidate pools plus source_score, target_score, and verifier_score fields; require >=80 prompts with at least one correct candidate before L_A2 screening"
     est_gpu_hours: 0-2
     promotion_allowed: false
   - id: channel_set_ce13_warmup_policy_cache_materialization

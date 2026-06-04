@@ -1,0 +1,49 @@
+{
+  "achieved_n_dev": 83,
+  "achieved_n_gate": 37,
+  "achieved_n_total": 120,
+  "baseline_mode": "receiver_label_scores_repair",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-04T22:51:13+00:00",
+  "dense_fusion_acc": 0.4594594594594595,
+  "dense_fusion_alpha": 0.2,
+  "dense_oracle_gain_vs_receiver_label_scores": {
+    "ci95_high": 0.05405405405405406,
+    "ci95_low": -0.10810810810810811,
+    "delta": -0.02702702702702703,
+    "mde_half_width": 0.08108108108108109,
+    "n": 37
+  },
+  "experiment": "EXP1_corrected_cache_ceiling",
+  "hidden_probe_sane": false,
+  "mde_target": 0.05,
+  "model_own_acc": 0.4864864864864865,
+  "probe_gain_receiver_source_vs_receiver_only": {
+    "ci95_high": 0.05405405405405406,
+    "ci95_low": -0.10810810810810811,
+    "delta": -0.02702702702702703,
+    "mde_half_width": 0.08108108108108109,
+    "n": 37
+  },
+  "receiver_plus_source_acc": 0.4594594594594595,
+  "receiver_probe_acc": 0.40540540540540543,
+  "sanity_tolerance": 0.05,
+  "source_feature_artifact": {
+    "feature_dim": 1792,
+    "loaded_existing": false,
+    "path": "results/overnight_v3/20260604_corrected_reprobe/exp1_corrected_cache_ceiling/openbookqa/source_features.npz",
+    "rows": 120
+  },
+  "source_label_score_degenerate_fraction": 0.0,
+  "source_model_acc": 0.43243243243243246,
+  "status": "INCONCLUSIVE_UNDERPOWERED",
+  "target_feature_artifact": {
+    "feature_dim": 2048,
+    "loaded_existing": false,
+    "path": "results/overnight_v3/20260604_corrected_reprobe/exp1_corrected_cache_ceiling/openbookqa/receiver_target_features.npz",
+    "rows": 120
+  },
+  "task": "openbookqa",
+  "verdict": "INCONCLUSIVE_UNDERPOWERED",
+  "wall_clock_seconds": 31.731730937957764
+}

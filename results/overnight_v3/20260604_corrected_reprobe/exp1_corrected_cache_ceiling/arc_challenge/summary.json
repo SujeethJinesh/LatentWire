@@ -1,0 +1,49 @@
+{
+  "achieved_n_dev": 86,
+  "achieved_n_gate": 34,
+  "achieved_n_total": 120,
+  "baseline_mode": "hidden_receiver_probe",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-04T22:51:53+00:00",
+  "dense_fusion_acc": 0.47058823529411764,
+  "dense_fusion_alpha": 0.7,
+  "dense_oracle_gain_vs_receiver_label_scores": {
+    "ci95_high": 0.14705882352941177,
+    "ci95_low": -0.08823529411764706,
+    "delta": 0.029411764705882353,
+    "mde_half_width": 0.11764705882352941,
+    "n": 34
+  },
+  "experiment": "EXP1_corrected_cache_ceiling",
+  "hidden_probe_sane": true,
+  "mde_target": 0.05,
+  "model_own_acc": 0.4411764705882353,
+  "probe_gain_receiver_source_vs_receiver_only": {
+    "ci95_high": 0.17647058823529413,
+    "ci95_low": -0.11764705882352941,
+    "delta": 0.029411764705882353,
+    "mde_half_width": 0.14705882352941177,
+    "n": 34
+  },
+  "receiver_plus_source_acc": 0.47058823529411764,
+  "receiver_probe_acc": 0.4411764705882353,
+  "sanity_tolerance": 0.05,
+  "source_feature_artifact": {
+    "feature_dim": 1792,
+    "loaded_existing": false,
+    "path": "results/overnight_v3/20260604_corrected_reprobe/exp1_corrected_cache_ceiling/arc_challenge/source_features.npz",
+    "rows": 120
+  },
+  "source_label_score_degenerate_fraction": 0.0,
+  "source_model_acc": 0.6176470588235294,
+  "status": "INCONCLUSIVE_UNDERPOWERED",
+  "target_feature_artifact": {
+    "feature_dim": 2048,
+    "loaded_existing": false,
+    "path": "results/overnight_v3/20260604_corrected_reprobe/exp1_corrected_cache_ceiling/arc_challenge/receiver_target_features.npz",
+    "rows": 120
+  },
+  "task": "arc_challenge",
+  "verdict": "INCONCLUSIVE_UNDERPOWERED",
+  "wall_clock_seconds": 40.04696702957153
+}

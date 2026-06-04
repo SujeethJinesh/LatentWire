@@ -1,0 +1,16 @@
+{
+  "achieved_candidates": 1600,
+  "achieved_prompts": 100,
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-04T23:03:20+00:00",
+  "experiment": "EXP4_corrected_l_a2_rerank_ceiling",
+  "gpu_command": "GPU stronger-generator cache: generate >=300 dev/gate GSM8K/MATH prompts x16 candidates with a stronger generator, then score each candidate with source_score, target_score, and verifier_score; do not screen L_A2 until >=80 prompts have at least one correct candidate.",
+  "prompts_with_at_least_one_correct_candidate": 36,
+  "reason": "correct-candidate subset below threshold; no L_A2 gain verdict emitted",
+  "required_correct_candidate_prompts": 80,
+  "status": "PARKED_NEEDS_STRONGER_GENERATOR",
+  "verdict": "PARKED_NEEDS_STRONGER_GENERATOR",
+  "verifier_score_definition": "logP(Yes)-logP(No) for a target-model verifier prompt; gold answer not shown",
+  "verifier_score_present": true,
+  "wall_clock_seconds": 619.6492669582367
+}

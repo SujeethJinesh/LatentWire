@@ -1,14 +1,14 @@
 method_id: C_A1_cvar_evt_clip_grid
 paper: channel_set
-status: DRAFTED
+status: NEXT_GPU_BACKFILL
 contribution_role: positive_method
 paper_claim_eligible: true
+promotion_allowed: false
 stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
 confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
 fit_policy: dev_gate_only
-current_gate: offline CVaR/EVT clip selection on cached dev/gate rows
+current_gate: backfill-only native paired ParoQuant vs tight-clip C_A1 replay on exact cached gate IDs; promotion disabled until Granite, DeepSeek, and Falcon paired rows pass sentinel/no-gap/parity checks
 lineage:
   nearest_baseline: ParoQuant-style rotation and static top-k channel protection
   nearest_killed_relative: tight-clip DriftRot and residual-column proxy
   avoids_killed_mechanism_by: selecting only on dev/gate tail-risk metrics and requiring held-out confirmation
-
