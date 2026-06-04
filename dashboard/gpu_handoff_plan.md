@@ -9,7 +9,7 @@ No foreground GPU job is authorized from the powered LatentWire oracle ladder.
 ## Allowed Backfill Only
 
 - L-A2 generated-solution rerank cache: materialize dev/gate candidate pools plus verifier/source/target score surfaces; est 0-2 GPU hours; no promotion allowed.
-- C_A1 ParoQuant parity and tail/CVaR grid: replay exact cached gate packets with native W4A16 forwards; est 2-4 GPU hours; no promotion allowed.
+- C_A1 ParoQuant parity and tail/CVaR grid: replay exact cached gate packets with native W4A16 forwards and include a DeepSeek/Falcon regression sentinel; est 2-4 GPU hours; no promotion allowed.
 - C_F hazard controls: backfill paired static/random controls before any native forward confirmation; est 2-6 GPU hours; no promotion allowed.
 - C_D1 OSC/DecDEC: only materialize a preregistered replacement shard for the current underpowered negative row; est 2-4 GPU hours; no promotion allowed.
 - CE13 warmup policy: no parseable cache exists; spend 0 GPU hours now and only consider 2-4 GPU hours after a tiny dev/gate cache exists.

@@ -16,3 +16,4 @@
 | L_SCORECOMP_wz_bins_deployable | latentwire | results/source_private_wyner_ziv_packet_gate_20260429/remap_107/predictions_budget6.jsonl | -0.1619047619047619 | -0.0380952380952381 | dev/gate row-filtered cache screen; no Mac PASSED status |
 | L_SCORECOMP_fresh_wz_high_entropy | latentwire | results/mac_continue/fresh_mmlu_pro/fresh_mmlu_pro_rows.jsonl | -0.043478260869565216 | 0.2608695652173913 | fresh high-entropy Mac bounded negative |
 | L_ORACLE_POWERED_LADDER | latentwire | results/mac_continue/latentwire_oracle_ladder/oracle_ladder_rows.jsonl | -0.013927576601671309 | 0.022284122562674095 | powered dev/gate ladder classifies current score-packet path as not-deployable |
+| L_Q1_receiver_query_packet | latentwire | results/mac_continue/latentwire_query_packet/query_packet_rows.jsonl | -0.022284122562674095 | 0.011142061281337047 | final query-conditioned two-way score-packet shot killed; controls do not collapse |

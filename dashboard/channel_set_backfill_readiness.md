@@ -1,14 +1,14 @@
 # Channel-Set Backfill Readiness
 
 - foreground GPU: `0`
-- C_A1 readiness: `BACKFILL_READY`
+- C_A1 readiness: `BACKFILL_READY_WITH_REGRESSION_SENTINEL`
 - C_F readiness: `NEEDS_OFFLINE_CONTROL_CLEANUP`
 - CE13 readiness: `NEEDS_TINY_CACHE`
 - C_A2 readiness: `TESTS_ONLY`
 
 ## C_A1 Tail/CVaR
 
-Smallest useful GPU job is a backfill parity card, not foreground confirmation: replay exact cached C_A1 gate IDs with native W4A16/ParoQuant forwards and keep `promotion_allowed: false`.
+Smallest useful GPU job is a backfill parity card, not foreground confirmation: replay exact cached C_A1 gate IDs with native W4A16/ParoQuant forwards and keep `promotion_allowed: false`. The packet must include at least one regression sentinel beyond Granite: DeepSeek and/or Falcon.
 
 Offline headroom is limited but nonzero: Stage-1 triage reports 6 parsed gate rows, 5 positive-median and 1 nonpositive. A native replay should decide whether tail/CVaR headroom is real or a cache artifact.
 
@@ -27,7 +27,7 @@ python experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py \
   --dtype bfloat16
 ```
 
-Estimated GPU time: 2-4 hours. No paper promotion until paired native rows beat matched-budget controls.
+Sentinel templates are in `dashboard/c_a1_gpu_backfill_runbook.md`. Estimated GPU time: 2-4 hours. No paper promotion until paired native rows beat matched-budget controls and DeepSeek/Falcon does not regress in median or tail.
 
 ## C_F Control Contamination
 

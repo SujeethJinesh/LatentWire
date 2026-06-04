@@ -1,0 +1,41 @@
+{
+  "alpha": 0.7,
+  "best_equal_total_byte_baseline": "source_index_confidence",
+  "controls_collapse": false,
+  "created_utc": "2026-06-04T04:55:58Z",
+  "delta_vs_best_equal_total_byte_baseline": {
+    "ci95_high": 0.011142061281337047,
+    "ci95_low": -0.055710306406685235,
+    "delta": -0.022284122562674095,
+    "mde_half_width": 0.033426183844011144,
+    "n": 359
+  },
+  "gate_accuracy": {
+    "coordinate_shuffle": 0.15877437325905291,
+    "derangement": 0.18384401114206128,
+    "equal_total_byte_score_sketch": 0.17827298050139276,
+    "equal_total_byte_text_proxy": 0.16434540389972144,
+    "full_source_oracle": 0.17270194986072424,
+    "l_q1": 0.16991643454038996,
+    "query_only": 0.17827298050139276,
+    "reply_only": 0.1392757660167131,
+    "source_index": 0.16434540389972144,
+    "source_index_confidence": 0.19220055710306408,
+    "source_target_at_encoder_upper_bound": 0.31754874651810583,
+    "target_only": 0.17827298050139276,
+    "wrong_row_query": 0.11142061281337047,
+    "wrong_row_reply": 0.17827298050139276
+  },
+  "n_dev": 1141,
+  "n_gate": 359,
+  "query_bytes": 2,
+  "query_only_or_reply_only_explains": true,
+  "reply_bytes": 1,
+  "scoop_verdict": "adjacent_not_exact_scoop_high_risk",
+  "source_copy_leakage_mi_bits": {
+    "l_q1_pred_vs_source_top1": 0.45741866192334546,
+    "reply_only_pred_vs_source_top1": 0.5948578395117702
+  },
+  "status": "KILLED",
+  "total_bytes": 3
+}

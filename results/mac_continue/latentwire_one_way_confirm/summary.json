@@ -1,0 +1,38 @@
+{
+  "accuracy": {
+    "current_packet_4bit": 0.18110236220472442,
+    "deployable_wz": 0.18110236220472442,
+    "full_source_score_fusion_oracle": 0.1732283464566929,
+    "random_same_byte": 0.09711286089238845,
+    "source_index": 0.16010498687664043,
+    "source_index_confidence": 0.2047244094488189,
+    "source_target_at_encoder_upper_bound": 0.31496062992125984,
+    "target_only": 0.1942257217847769
+  },
+  "best_non_oracle_baseline": "source_index_confidence",
+  "classification": "BOUNDED_NEGATIVE",
+  "confirm_policy": "negative_closeout_only_after_dev_gate_selection",
+  "created_utc": "2026-06-04T04:55:57Z",
+  "deployable_delta_vs_best": {
+    "ci95_high": 0.013123359580052493,
+    "ci95_low": -0.06036745406824147,
+    "delta": -0.023622047244094488,
+    "mde_half_width": 0.03674540682414698,
+    "n": 381
+  },
+  "full_source_delta_vs_best": {
+    "ci95_high": 0.0026246719160104987,
+    "ci95_low": -0.06299212598425197,
+    "delta": -0.031496062992125984,
+    "mde_half_width": 0.03412073490813648,
+    "n": 381
+  },
+  "n": 381,
+  "upper_bound_delta_vs_best": {
+    "ci95_high": 0.14173228346456693,
+    "ci95_low": 0.08136482939632546,
+    "delta": 0.11023622047244094,
+    "mde_half_width": 0.031496062992125984,
+    "n": 381
+  }
+}

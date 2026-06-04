@@ -21,3 +21,9 @@
 - Receiver-conditioned diagnostic: `I(source_scores; correct | source_top1)=2.098527` bits and `I(source_scores; correct | source_top1, target_scores)=0.281933` bits.
 - Oracle ladder: deployable WZ and full source-score fusion both fail to beat source-index+confidence on gate; only the source+target-at-encoder upper bound is positive.
 - Hypothesis update: current LatentWire score-packet path is `not-deployable` on this screening surface, not merely underpowered. Future LatentWire work should require L-A2 generated-solution caches or a genuinely source-only codec before any confirm/GPU spend.
+
+## 2026-06-03 - Held-out one-way closeout and L_Q1 final shot
+
+- One-way confirm closeout: on `381` held-out confirm rows, deployable WZ remains below source-index+confidence (`-0.023622`, CI `[-0.060367, 0.013123]`) and full source-only fusion remains null (`-0.031496`, CI `[-0.062992, 0.002625]`); source+target-at-encoder remains a non-deployable upper bound (`0.110236`, CI `[0.081365, 0.141732]`).
+- L_Q1 two-way query packet: killed on `359` gate rows. It loses to source-index+confidence by `-0.022284` with CI `[-0.055710, 0.011142]`, controls do not collapse, and query-only/reply-only ablations explain it.
+- Hypothesis update: one-way and query-conditioned score-packet LatentWire are locked negative on MMLU-Pro. Do not chase additional score-packet variants; only L-A2 generated-solution caches remain as a parked LatentWire positive shot.

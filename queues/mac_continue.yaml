@@ -1,5 +1,8 @@
 mac_continue: []
 completed:
+  - latentwire_one_way_confirm_closeout
+  - latentwire_l_q1_receiver_query_packet
+  - latentwire_l_q1_scoop_check
   - latentwire_powered_oracle_ladder
   - latentwire_claim_boundary_update
   - channel_set_backfill_readiness

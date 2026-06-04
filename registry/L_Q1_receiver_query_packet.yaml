@@ -1,0 +1,17 @@
+method_id: L_Q1_receiver_query_packet
+paper: latentwire
+status: KILLED
+contribution_role: final_positive_shot
+paper_claim_eligible: false
+stage0_split_manifest: results/mac_continue/latentwire_oracle_ladder/fresh_split_manifest.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: receiver-query-conditioned two-way packet on powered MMLU-Pro dev/gate rows
+kill_reason: failed to beat source-index+confidence equal-total-byte baseline; controls did not collapse; query-only/reply-only ablations explain the signal
+lineage:
+  nearest_baseline: source-index+confidence and equal-total-byte source score sketch
+  nearest_killed_relative: one-way WZ/source-score packets
+  avoids_killed_mechanism_by: attempted receiver-conditioned two-way query, but still failed gate
+novelty_boundary:
+  scoop_check: adjacent_not_exact_scoop_high_risk
+  claim_if_positive: query-conditioned two-way packet, not one-way source-private LatentWire

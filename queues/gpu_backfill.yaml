@@ -12,9 +12,9 @@ backfill:
     est_gpu_hours: 2-4
     promotion_allowed: false
   - id: channel_set_c_a1_tail_cvar_grid
-    reason: decide_whether_c_a1_tail_cvar_headroom_is_real
+    reason: decide_whether_c_a1_tail_cvar_headroom_is_real_with_regression_sentinel
     command: "python experimental/outlier_migrate/phase9/run_om_driftrot_clip_subset.py --run-id <new_write_once_c_a1_granite_gate_replay> --candidate-id clip_tight --split-name diagnostic --prompt-indices 7,9 --base-run-dir experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z --scale-clip-min 0.5 --scale-clip-max 2.0 --batch-size 1 --dtype bfloat16"
-    required_cache_or_model: "native W4A16/ParoQuant runner plus exact cached C_A1 gate ids"
+    required_cache_or_model: "native W4A16/ParoQuant runner plus exact cached C_A1 gate ids and DeepSeek/Falcon regression sentinel; see dashboard/c_a1_gpu_backfill_runbook.md"
     est_gpu_hours: 2-4
     promotion_allowed: false
   - id: channel_set_c_d1_osc_decdec_cache_shard
