@@ -1,0 +1,19 @@
+backfill:
+  - id: channel_set_c_a1_paroquant_parity_card
+    reason: limited_offline_gate_headroom_needs_native_forward_parity
+    command: "prepare a user-run packet for C_A1 cached gate rows only; no foreground confirmation claim"
+    required_cache_or_model: "real W4A16-capable checkpoint plus exact cached C_A1 gate identifiers"
+    est_gpu_hours: 2-4
+    promotion_allowed: false
+  - id: channel_set_c_d1_osc_decdec_cache_shard
+    reason: current_offline_rows_negative_and_underpowered
+    command: "materialize a tiny OSC/DecDEC dev/gate shard only after preregistering the new denominator"
+    required_cache_or_model: "reasoning-model traces for OSC/DecDEC stress"
+    est_gpu_hours: 2-4
+    promotion_allowed: false
+  - id: channel_set_c_f_hazard_control_shard
+    reason: mixed_gate_signal_and_random_control_contamination
+    command: "backfill paired static/random controls before any native forward confirmation"
+    required_cache_or_model: "matched-budget static top-K and random-control trace cache"
+    est_gpu_hours: 2-6
+    promotion_allowed: false
