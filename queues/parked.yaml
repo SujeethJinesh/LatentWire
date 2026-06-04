@@ -1,0 +1,13 @@
+parked:
+  - id: channel_set_w4a16_confirmation
+    reason: needs_gpu
+    detail: Real W4A16 quantized-forward recovery confirmation is not runnable on Apple Silicon.
+  - id: hybridkernel_native_profiler
+    reason: needs_gpu
+    detail: User-operated NVIDIA/vLLM/Nsight profiler packet remains the next systems gate.
+  - id: long_reasoning_decode_and_30b
+    reason: needs_gpu
+    detail: 30B / long 20K-token decode / ParoQuant-on-real-model work is parked for the GPU node.
+  - id: heldout_confirmation
+    reason: needs_fresh_or_quarantined_confirm
+    detail: Mac cache screens may not access confirm-split entities during Stage 1/2.
