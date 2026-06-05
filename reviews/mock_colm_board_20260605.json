@@ -1,0 +1,30 @@
+{
+  "date": "2026-06-05",
+  "status": "complete",
+  "papers": {
+    "latentwire": {
+      "draft": "paper/latentwire/draft.md",
+      "overall": "WEAK_ACCEPT",
+      "area_chair": "ACCEPT_IF_BOUNDARY_RETAINED",
+      "honesty_trust_gate": "PASS",
+      "all_reviewers_weak_accept_or_better": true,
+      "blocking_revisions": [
+        "Keep the bounded-negative claim boundary.",
+        "Do not upgrade L-IB1 beyond a cached kill.",
+        "Keep equal-byte text/source-index baselines in the main claim."
+      ]
+    },
+    "channel_set": {
+      "draft": "paper/channel_set/draft.md",
+      "overall": "WEAK_ACCEPT",
+      "area_chair": "ACCEPT_IF_MEASUREMENT_CLAIM_ONLY",
+      "honesty_trust_gate": "PASS",
+      "all_reviewers_weak_accept_or_better": true,
+      "blocking_revisions": [
+        "Keep C-A1 parked until fresh split-clean paired materialization exists.",
+        "Present the paper as measurement/regime evidence, not as a positive adaptive method.",
+        "Add final figures and provenance table before submission."
+      ]
+    }
+  }
+}

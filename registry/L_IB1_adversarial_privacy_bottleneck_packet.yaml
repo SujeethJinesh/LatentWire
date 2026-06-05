@@ -1,0 +1,35 @@
+method_id: L_IB1_adversarial_privacy_bottleneck_packet
+paper: latentwire
+status: KILLED
+contribution_role: diagnostic_defense
+paper_claim_eligible: false
+promotion_allowed: false
+stage0_split_manifest: splits/stage0_cache_rows_hash.jsonl
+confirm_quarantine: splits/stage0_confirm_quarantine_hashes.txt
+fit_policy: dev_gate_only
+current_gate: >
+  Final cheap LatentWire escape test. A cached adversarial feature-selection
+  privacy bottleneck over 512 non-confirm packet rows did not preserve
+  current-level utility at lower leakage; best private code reached only
+  0.602339 proxy utility versus current cached utility 0.875000 while still
+  leaking source/evidence structure at 0.602339 max leakage.
+lineage:
+  nearest_baseline: same-byte visible exact public atom/value code
+  nearest_killed_relative: exact symbolic evidence packet dominated by visible text
+  avoids_killed_mechanism_by: >
+    Tests a privacy-utility frontier rather than raw accuracy, but the cached
+    signal remains source/evidence-identifying.
+control_evidence:
+  result_path: results/escape_tests/L_IB1_privacy_bottleneck/summary.json
+  report_path: dashboard/l_ib_privacy_bottleneck_report.md
+  verdict: KILL_UTILITY_IS_IDENTITY
+  current_packet_cached_utility: 0.875000
+  current_packet_max_leakage: 1.000000
+  best_private_proxy_utility: 0.602339
+  best_private_max_leakage: 0.602339
+  target_only_cached_utility: 0.250000
+  rows:
+    matched_packet: 512
+    target_only: 512
+    dev: 341
+    gate: 171

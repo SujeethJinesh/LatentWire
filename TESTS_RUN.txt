@@ -3,6 +3,40 @@ Validation log for review_packet.zip
 Repository: /Users/sujeethjinesh/Desktop/LatentWire
 Environment: venv_arm64 for local validation only; GPU queue files contain no venv_arm64 references.
 
+2026-06-05 continuation: L-IB1 cached privacy bottleneck + two paper drafts
+
+Additional commands run:
+
+A1. `venv_arm64/bin/python scripts/run_l_ib1_privacy_bottleneck.py`
+    Result: PASS
+    Output summary: wrote `results/escape_tests/L_IB1_privacy_bottleneck/summary.json`, `frontier.csv`, `dashboard/l_ib_privacy_bottleneck_report.md`, and `dashboard/l_ib_scoop_note.md`; verdict `KILL_UTILITY_IS_IDENTITY`.
+
+A2. Draft/review artifacts written
+    Result: PASS
+    Output summary: wrote `paper/latentwire/draft.md`, `paper/channel_set/draft.md`, `reviews/mock_colm_latentwire_20260605.md`, `reviews/mock_colm_channel_set_20260605.md`, and `reviews/mock_colm_board_20260605.json`.
+
+A3. `venv_arm64/bin/python -m py_compile scripts/run_l_ib1_privacy_bottleneck.py scripts/run_latentwire_escape_tests.py scripts/build_review_packet.py scripts/check_review_packet.py scripts/check_handoff.py`
+    Result: PASS
+
+A4. `venv_arm64/bin/python scripts/check_handoff.py`
+    Result: PASS
+    Output summary: handoff files OK; AGENTS.md = 21038 bytes, under 32 KiB.
+
+A5. `venv_arm64/bin/python -m pytest -q tests/test_stage0_cache_split.py tests/test_overnight_runner.py`
+    Result: PASS
+    Output summary: 8 passed in 0.08s.
+
+A6. YAML parse for `queues/*.yaml` and `registry/**/*.yaml`
+    Result: PASS
+    Output summary: yaml parse OK.
+
+A7. `rg -n "venv_arm64" queues/gpu_foreground.yaml queues/gpu_backfill.yaml`
+    Result: PASS
+    Output summary: no matches; command exited 1 as expected for no matches.
+
+A8. `venv_arm64/bin/python -m compileall -q scripts pmc experimental/outlier_migrate/phase9`
+    Result: PASS
+
 Commands run:
 
 1. `venv_arm64/bin/python scripts/check_handoff.py`
