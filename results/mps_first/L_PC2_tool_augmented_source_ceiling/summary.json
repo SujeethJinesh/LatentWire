@@ -1,0 +1,15 @@
+{
+  "achieved_n": 0,
+  "blocker": "No dev/gate cache found where the source privately ran calculator/code-exec and receiver did not see the tool result.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:19:26+00:00",
+  "exact_command": "venv_arm64/bin/python scripts/build_tool_private_source_ceiling.py --dataset data/gsm8k_100.jsonl --source-tool calculator --source-model Qwen/Qwen2.5-Math-1.5B-Instruct --receiver-model Qwen/Qwen3-0.6B --split dev,gate --min-gate-n 400 --mde-target 0.05 --no-confirm",
+  "id": "L_PC2_tool_augmented_source_ceiling",
+  "mandatory_gate": "tool/verifier signal adds beyond receiver state and equal-byte visible/tool-label controls",
+  "paper": "latentwire",
+  "priority": 2,
+  "promotion_allowed": false,
+  "status": "PARKED_NEEDS_TOOL_PRIVATE_CACHE_AND_RUNNER",
+  "verdict": "PARKED",
+  "wall_clock_seconds": 0.00150299072265625
+}

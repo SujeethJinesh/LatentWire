@@ -15,3 +15,4 @@ Updated by `scripts/overnight_cpu_screening.py`; Mac status remains screening-on
 | priority | probe | status | achieved_n | interpretation |
 | ---: | --- | --- | ---: | --- |
 | 1 | `L_PC1_cross_family_specialist_ceiling` | `PARKED_NEEDS_RECEIVER_CONDITIONED_CEILING_RUNNER` | 768 | No eligible existing artifact measures I(source_signal;Y|receiver_state) for a complementary source-private signal. |
+| 2 | `L_PC2_tool_augmented_source_ceiling` | `PARKED_NEEDS_TOOL_PRIVATE_CACHE_AND_RUNNER` | 0 | No dev/gate cache found where the source privately ran calculator/code-exec and receiver did not see the tool result. |
