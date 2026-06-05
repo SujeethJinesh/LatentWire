@@ -306,7 +306,7 @@ def candidate_values(answer: int, idx: int, count: int = 16) -> list[int]:
 
 
 def l_pc5(item: dict, start: float) -> tuple[dict, list[dict]]:
-    prompt_floor = 100
+    prompt_floor = 500
     candidates_per_prompt = 16
     rows = load_svamp(prompt_floor)
     raw_rows = []

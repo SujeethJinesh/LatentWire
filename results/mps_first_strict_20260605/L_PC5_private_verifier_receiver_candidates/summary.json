@@ -1,0 +1,32 @@
+{
+  "achieved_n": 500,
+  "candidate_rows": 8000,
+  "candidates_per_prompt": 16,
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:53:08+00:00",
+  "data_floor": 500,
+  "exact_command": "venv_arm64/bin/python scripts/run_mps_first_strict_iteration.py --probe L_PC5_private_verifier_receiver_candidates",
+  "floor_met": true,
+  "gain_verifier_vs_target": {
+    "ci95_high": 0.706,
+    "ci95_low": 0.624,
+    "delta": 0.666,
+    "mde_half_width": 0.04200000000000004,
+    "n": 500
+  },
+  "id": "L_PC5_private_verifier_receiver_candidates",
+  "interpretation": "Easy arithmetic oracle-verifier ceiling meets the candidate-pool floor; it is a sanity ceiling, not a deployable L-A2 method.",
+  "mde_half_width": 0.04200000000000004,
+  "paper": "latentwire",
+  "priority": 3,
+  "promotion_allowed": false,
+  "prompts_with_at_least_one_correct_candidate": 500,
+  "receiver_plus_source_accuracy": 1.0,
+  "receiver_plus_verifier_accuracy": 1.0,
+  "receiver_target_accuracy": 0.334,
+  "required_correct_candidate_prompts": 80,
+  "result_root": "results/mps_first_strict_20260605",
+  "status": "MAC_FLOOR_POSITIVE_ORACLE_VERIFIER_CEILING",
+  "verdict": "POSITIVE_CEILING_ONLY",
+  "wall_clock_seconds": 0.21938681602478027
+}
