@@ -1,0 +1,9 @@
+{"check": "c_a1_runbook", "file_present": true, "path": "dashboard/c_a1_gpu_backfill_runbook.md"}
+{"check": "gpu_backfill_queue", "file_present": true, "path": "queues/gpu_backfill.yaml"}
+{"check": "gpu_foreground_queue", "file_present": true, "path": "queues/gpu_foreground.yaml"}
+{"check": "ce21_registry", "file_present": true, "path": "registry/CE21_no_gap_filter.yaml"}
+{"check": "c_a1_registry", "file_present": true, "path": "registry/C_A1_cvar_evt_clip_grid.yaml"}
+{"check": "runbook_mentions_granite", "file_present": true}
+{"check": "runbook_mentions_deepseek", "file_present": true}
+{"check": "runbook_mentions_falcon", "file_present": true}
+{"check": "native_pairing_results_present", "file_present": false, "reason": "C_A1 is still NEXT_GPU_BACKFILL; no native paired replay result exists yet."}

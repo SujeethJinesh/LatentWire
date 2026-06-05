@@ -1,0 +1,59 @@
+{
+  "achieved_n": 9,
+  "audit_checks": [
+    {
+      "check": "c_a1_runbook",
+      "file_present": true,
+      "path": "dashboard/c_a1_gpu_backfill_runbook.md"
+    },
+    {
+      "check": "gpu_backfill_queue",
+      "file_present": true,
+      "path": "queues/gpu_backfill.yaml"
+    },
+    {
+      "check": "gpu_foreground_queue",
+      "file_present": true,
+      "path": "queues/gpu_foreground.yaml"
+    },
+    {
+      "check": "ce21_registry",
+      "file_present": true,
+      "path": "registry/CE21_no_gap_filter.yaml"
+    },
+    {
+      "check": "c_a1_registry",
+      "file_present": true,
+      "path": "registry/C_A1_cvar_evt_clip_grid.yaml"
+    },
+    {
+      "check": "runbook_mentions_granite",
+      "file_present": true
+    },
+    {
+      "check": "runbook_mentions_deepseek",
+      "file_present": true
+    },
+    {
+      "check": "runbook_mentions_falcon",
+      "file_present": true
+    },
+    {
+      "check": "native_pairing_results_present",
+      "file_present": false,
+      "reason": "C_A1 is still NEXT_GPU_BACKFILL; no native paired replay result exists yet."
+    }
+  ],
+  "blocker": "Defense bundle inputs exist, but claim-bearing C_A1 native paired ParoQuant-vs-tight-clip rows are still missing.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:21:41+00:00",
+  "exact_command": "run the paired matrix in dashboard/c_a1_gpu_backfill_runbook.md: ParoQuant baseline vs tight-clip C_A1 on exact cached Granite, DeepSeek, and Falcon row IDs; abort if any model lacks same-row pairing",
+  "id": "C_Y5_channel_set_defense_bundle",
+  "mandatory_gate": "all claim rows map to paired baselines, CE21 no-gap status, OSC/DecDEC adjacency note, and ParoQuant parity status",
+  "paper": "channel_set",
+  "priority": 8,
+  "promotion_allowed": false,
+  "status": "PARKED_NEEDS_NATIVE_PAIRING",
+  "verdict": "PARKED",
+  "wall_clock_seconds": 0.000102996826171875
+}
