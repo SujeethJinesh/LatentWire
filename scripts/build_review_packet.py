@@ -102,6 +102,7 @@ def packet_candidates() -> list[Path]:
         "results/overnight_mps/**/raw_rows.jsonl",
         "results/overnight_mps/**/raw_rows.checkpoint.jsonl",
         "results/overnight_mps/**/run_events.jsonl",
+        "results/escape_tests/**/summary.json",
     ]:
         paths.extend(path for path in glob_paths(pattern) if path.is_file())
     cheap_dirs = sorted(path for path in (ROOT / "results/cheap_exhaustion").glob("*") if path.is_dir())
@@ -121,6 +122,7 @@ def packet_candidates() -> list[Path]:
         "scripts/overnight_v3_corrected_probes.py",
         "scripts/overnight_mps_live.py",
         "scripts/cheap_exhaustion_scan.py",
+        "scripts/run_latentwire_escape_tests.py",
     ]:
         add_if_exists(paths, rel)
     return sorted(set(paths))

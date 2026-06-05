@@ -1,0 +1,208 @@
+{
+  "candidate_text_control_audit": {
+    "artifact": "results/source_private_candidate_conditioned_packet_builder_smoke_20260501_seed59/core_to_holdout/predictions_budget8.jsonl",
+    "atom_vocab_size": 21,
+    "audit_verdict": "EXISTING_TEXT_CONTROL_IS_NOT_IDENTICAL_EVIDENCE",
+    "existing_structured_text_control": {
+      "accuracy": 0.25,
+      "condition": "structured_text_matched",
+      "mean_payload_bytes": 8.0,
+      "n": 512,
+      "strict_accuracy": 0.25,
+      "unique_examples": 512
+    },
+    "existing_structured_text_top_payload_hex": [
+      [
+        "7079746573742073",
+        512
+      ]
+    ],
+    "interpretation": "The stored structured_text_matched control truncates the raw hidden log and is mostly the same prefix bytes, so it is not a valid identical-evidence text baseline. The packet's discrete atom payloads are, however, public-code serializable within the same 8-byte budget for every row.",
+    "max_packet_atom_count": 4,
+    "n": 512,
+    "packet_condition": {
+      "accuracy": 0.875,
+      "condition": "candidate_conditioned_packet_builder",
+      "mean_payload_bytes": 8.0,
+      "n": 512,
+      "strict_accuracy": 0.875,
+      "unique_examples": 512
+    },
+    "rows_encodable_as_public_2byte_atom_value_code_with_8byte_budget": 512
+  },
+  "created_utc": "2026-06-05T19:51:03+00:00",
+  "discrete_exact_evidence_test": {
+    "artifact_sha256": {
+      "results/source_private_testlog_packet_cross_model_20260428/phi3_mini_helper/predictions.jsonl": "b15c673695e30f7a259a885c15ca08a9085fdafcd623426099c28c141c5370ad",
+      "results/source_private_testlog_packet_cross_model_20260428/qwen25_0_5b_helper/predictions.jsonl": "a0f44149bf844b33edd83c51662b0029be8c568ae3fec21d895dec0c77e2865d",
+      "results/source_private_testlog_packet_cross_model_20260428/qwen3_0_6b_helper/predictions.jsonl": "9f3d7c40aff4b86c223fb9edfa64dc5da2ac6532f77e0075b8433ce96aa3d00f",
+      "results/source_private_testlog_packet_cross_model_20260428/tinyllama_1_1b_helper/predictions.jsonl": "280cf7cdef29dbd872e9ffe731de42da290f4c0a138d5d79db5f867d859eda56"
+    },
+    "artifacts": [
+      "results/source_private_testlog_packet_cross_model_20260428/phi3_mini_helper/predictions.jsonl",
+      "results/source_private_testlog_packet_cross_model_20260428/qwen25_0_5b_helper/predictions.jsonl",
+      "results/source_private_testlog_packet_cross_model_20260428/qwen3_0_6b_helper/predictions.jsonl",
+      "results/source_private_testlog_packet_cross_model_20260428/tinyllama_1_1b_helper/predictions.jsonl"
+    ],
+    "conditions": {
+      "answer_only": {
+        "accuracy": 0.25,
+        "correct": 160,
+        "n": 640
+      },
+      "full_signature_oracle": {
+        "accuracy": 1.0,
+        "correct": 640,
+        "n": 640
+      },
+      "matched_model_packet": {
+        "accuracy": 0.775,
+        "correct": 496,
+        "n": 640
+      },
+      "random_same_byte": {
+        "accuracy": 0.25,
+        "correct": 160,
+        "n": 640
+      },
+      "shuffled_model_packet": {
+        "accuracy": 0.25,
+        "correct": 160,
+        "n": 640
+      },
+      "target_only": {
+        "accuracy": 0.25,
+        "correct": 160,
+        "n": 640
+      }
+    },
+    "floor_met_by_model_helper_rows": true,
+    "floor_met_by_unique_examples": false,
+    "floor_rows": 500,
+    "helpers": [
+      "phi3_mini_helper",
+      "qwen25_0_5b_helper",
+      "qwen3_0_6b_helper",
+      "tinyllama_1_1b_helper"
+    ],
+    "limitation": "The 640-row floor is met only as model-helper rows; the underlying unique examples are 160.",
+    "model_helper_rows": 640,
+    "unique_examples": 160,
+    "verdict": "VISIBLE_EXACT_DISCRETE_EVIDENCE_DOMINATES_PACKET",
+    "visible_signature_minus_matched_packet": {
+      "ci95_high": 0.2578125,
+      "ci95_low": 0.1921875,
+      "delta": 0.225,
+      "n": 640,
+      "status": "ok"
+    }
+  },
+  "guardrails": {
+    "confirm_paths": "refused_by_path_guard",
+    "gpu": "not_used",
+    "mps": "not_used",
+    "new_generation": false,
+    "queue_changes": false
+  },
+  "privacy_proxy": {
+    "achieved_rows_per_condition": 512,
+    "artifact": "results/source_private_candidate_conditioned_packet_builder_smoke_20260501_seed59/core_to_holdout/predictions_budget8.jsonl",
+    "artifact_sha256": "08a6be1eb7481944337a970108de73b5a884f660ff203a3de75c2fdd259ebec6",
+    "conditions": {
+      "answer_only_text": {
+        "accuracy": 0.25,
+        "condition": "answer_only_text",
+        "mean_payload_bytes": 8.0,
+        "n": 512,
+        "strict_accuracy": 0.25,
+        "unique_examples": 512
+      },
+      "candidate_conditioned_packet_builder": {
+        "accuracy": 0.875,
+        "condition": "candidate_conditioned_packet_builder",
+        "mean_payload_bytes": 8.0,
+        "n": 512,
+        "strict_accuracy": 0.875,
+        "unique_examples": 512
+      },
+      "random_same_byte": {
+        "accuracy": 0.251953125,
+        "condition": "random_same_byte",
+        "mean_payload_bytes": 8.0,
+        "n": 512,
+        "strict_accuracy": 0.251953125,
+        "unique_examples": 512
+      },
+      "structured_text_matched": {
+        "accuracy": 0.25,
+        "condition": "structured_text_matched",
+        "mean_payload_bytes": 8.0,
+        "n": 512,
+        "strict_accuracy": 0.25,
+        "unique_examples": 512
+      },
+      "target_only": {
+        "accuracy": 0.25,
+        "condition": "target_only",
+        "mean_payload_bytes": 0.0,
+        "n": 512,
+        "strict_accuracy": 0.25,
+        "unique_examples": 512
+      }
+    },
+    "family_name_leakage_adversary": {
+      "answer_only_text": {
+        "classes": 8,
+        "eval_n": 171,
+        "label": "family_name",
+        "majority_accuracy": 0.09941520467836257,
+        "nearest_centroid_accuracy": 0.09941520467836257,
+        "status": "ok",
+        "train_n": 341
+      },
+      "candidate_conditioned_packet_builder": {
+        "classes": 8,
+        "eval_n": 171,
+        "label": "family_name",
+        "majority_accuracy": 0.09941520467836257,
+        "nearest_centroid_accuracy": 1.0,
+        "status": "ok",
+        "train_n": 341
+      },
+      "random_same_byte": {
+        "classes": 8,
+        "eval_n": 171,
+        "label": "family_name",
+        "majority_accuracy": 0.09941520467836257,
+        "nearest_centroid_accuracy": 0.14619883040935672,
+        "status": "ok",
+        "train_n": 341
+      },
+      "structured_text_matched": {
+        "classes": 8,
+        "eval_n": 171,
+        "label": "family_name",
+        "majority_accuracy": 0.09941520467836257,
+        "nearest_centroid_accuracy": 0.15204678362573099,
+        "status": "ok",
+        "train_n": 341
+      },
+      "target_only": {
+        "classes": 8,
+        "eval_n": 171,
+        "label": "family_name",
+        "majority_accuracy": 0.09941520467836257,
+        "nearest_centroid_accuracy": 0.1111111111111111,
+        "status": "ok",
+        "train_n": 341
+      }
+    },
+    "floor_rows": 500,
+    "limitation": "This is a cached proxy over synthetic candidate-repair packets. It does not train a new information-bottleneck encoder and has no matched-utility visible-text comparator.",
+    "matched_utility": false,
+    "matched_utility_abs_tol": 0.02,
+    "positive": false,
+    "verdict": "NO_PRIVACY_POSITIVE_ON_CACHED_PROXY"
+  },
+  "status": "CPU_CACHED_ANALYSIS_ONLY"
+}

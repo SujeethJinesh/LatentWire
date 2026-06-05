@@ -13,25 +13,32 @@ Commands run:
    Result: PASS
    Output summary: wrote `results/cheap_exhaustion/20260605T180448Z/summary.json` and `dashboard/cheap_exhaustion_report.md`; scanned 1294 files, used 820 non-confirm text artifacts, excluded 42 confirm-path files and 35 embedded-confirm files.
 
-3. `venv_arm64/bin/python scripts/build_review_packet.py`
+3. `venv_arm64/bin/python scripts/run_latentwire_escape_tests.py`
    Result: PASS
-   Output summary: wrote `review_packet.zip` and a timestamped immutable copy under `review_packets/`.
+   Output summary: wrote `results/escape_tests/20260605_cpu_cached/summary.json` and `dashboard/escape_test_report.md`; CPU cached analysis only, no GPU/MPS/new generation/queue changes, and the runner refuses confirm-looking input paths.
 
-4. `venv_arm64/bin/python scripts/check_review_packet.py review_packet.zip`
+4. `venv_arm64/bin/python -m py_compile scripts/run_latentwire_escape_tests.py scripts/build_review_packet.py scripts/check_review_packet.py`
+   Result: PASS
+
+5. `venv_arm64/bin/python scripts/build_review_packet.py`
+   Result: PASS
+   Output summary: wrote `review_packet.zip`.
+
+6. `venv_arm64/bin/python scripts/check_review_packet.py review_packet.zip`
    Result: PASS
    Output summary: review packet OK; final size and file count are reported in the handoff response.
 
-5. `venv_arm64/bin/python -m compileall -q scripts pmc experimental/outlier_migrate/phase9`
+7. `venv_arm64/bin/python -m compileall -q scripts pmc experimental/outlier_migrate/phase9`
    Result: PASS
 
-6. `venv_arm64/bin/python -m pytest -q tests/test_stage0_cache_split.py tests/test_overnight_runner.py`
+8. `venv_arm64/bin/python -m pytest -q tests/test_stage0_cache_split.py tests/test_overnight_runner.py`
    Result: PASS
    Output summary: 8 passed in 0.11s.
 
-7. YAML parse for `queues/*.yaml` and `registry/**/*.yaml`
+9. YAML parse for `queues/*.yaml` and `registry/**/*.yaml`
    Result: PASS
    Output summary: yaml parse OK.
 
-8. Hygiene greps
+10. Hygiene greps
    Result: PASS
    Output summary: no `venv_arm64` in `queues/gpu*.yaml`; no `_confirm` path in `review_packet.zip`; no unresolved placeholder matches in the modified handoff files. Remaining `confirm`/`confirmation` strings are audit/blocker text, not packaged result-data paths.
