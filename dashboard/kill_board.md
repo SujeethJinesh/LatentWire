@@ -22,3 +22,8 @@
 | C2C_generated_answer_packet | latentwire | results/svamp32_c2c_generated_answer_packet_audit_20260505/generated_answer_packet_audit.json | 0.000000 |  | answer value/index equals same-byte visible-answer control; not source-private |
 | KVCOMM_existing_cache_smoke_controls | latentwire | results/dense_baseline_mcqa_smoke_20260505/kvcomm_damage_diagnostic_n16.json | 0.000000 | 0.000000 | matched predictions have 1.0 agreement with zero-source controls across inspected smokes |
 | C_F_m10_random_control | channel_set | experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/checker_result.json | -0.761487 |  | random-bin control beats M10; C-F cannot promote before denominator cleanup |
+## MPS-First Parked/Negative State
+
+| priority | probe | status | achieved_n | interpretation |
+| ---: | --- | --- | ---: | --- |
+| 1 | `L_PC1_cross_family_specialist_ceiling` | `PARKED_NEEDS_RECEIVER_CONDITIONED_CEILING_RUNNER` | 768 | No eligible existing artifact measures I(source_signal;Y|receiver_state) for a complementary source-private signal. |

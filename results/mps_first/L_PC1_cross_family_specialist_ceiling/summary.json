@@ -1,0 +1,16 @@
+{
+  "achieved_n": 768,
+  "blocker": "No eligible existing artifact measures I(source_signal;Y|receiver_state) for a complementary source-private signal.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:17:27+00:00",
+  "exact_command": "venv_arm64/bin/python scripts/run_mps_first_iteration.py --probe L_PC1_cross_family_specialist_ceiling after authoring a reviewed CPU/MPS scorer that uses Qwen2.5-Math-1.5B or DeepSeek-R1-Distill-Qwen-1.5B as source and Qwen3-0.6B as receiver on frozen dev/gate rows, writes source/receiver label scores, computes conditional MI, and enforces --no-confirm.",
+  "existing_artifact_checked": "results/source_private_hellaswag_qwen_hybrid_to_phi_cross_family_gate_20260503_validation1024_2048/hellaswag_qwen_hybrid_to_phi_cross_family_gate.json",
+  "id": "L_PC1_cross_family_specialist_ceiling",
+  "mandatory_gate": "I(source_signal;Y|receiver_state) must be materially above the prior 0.281933-bit score-packet ceiling.",
+  "paper": "latentwire",
+  "priority": 1,
+  "promotion_allowed": false,
+  "status": "PARKED_NEEDS_RECEIVER_CONDITIONED_CEILING_RUNNER",
+  "verdict": "PARKED",
+  "wall_clock_seconds": 0.00010991096496582031
+}

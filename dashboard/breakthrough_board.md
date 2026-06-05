@@ -10,3 +10,8 @@ No Mac paper-positive rows.
 | 4 | CACHEWIRE_oracle_syndrome_bound | latentwire | CPU_SCREENED_ORACLE_ONLY | 1-byte oracle syndrome reaches 14-15/32 but deployable predictors fail | collect pre-answer teacher/KV deltas and require source-necessary clean rows |
 
 Updated by `scripts/overnight_cpu_screening.py`; Mac status remains screening-only.
+## MPS-First Iteration
+
+| priority | probe | status | achieved_n | interpretation |
+| ---: | --- | --- | ---: | --- |
+| 1 | `L_PC1_cross_family_specialist_ceiling` | `PARKED_NEEDS_RECEIVER_CONDITIONED_CEILING_RUNNER` | 768 | No eligible existing artifact measures I(source_signal;Y|receiver_state) for a complementary source-private signal. |
