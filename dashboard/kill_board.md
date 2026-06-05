@@ -41,3 +41,4 @@
 | 1 | `L_PC1_cross_family_specialist_ceiling` | `MAC_FLOOR_POSITIVE_CEILING_ONLY` | 512 | 500 | see summary |
 | 2 | `L_PC2_tool_augmented_source_ceiling` | `MAC_FLOOR_KILLED_BY_EQUAL_BYTE_VISIBLE_TOOL_CONTROL` | 500 | 500 | The private calculator ceiling is large versus a question-only heuristic but exactly tied by an equal-byte visible tool-result control, so it is not a source-private packet win. |
 | 3 | `L_PC5_private_verifier_receiver_candidates` | `MAC_FLOOR_POSITIVE_ORACLE_VERIFIER_CEILING` | 500 | 500 | Easy arithmetic oracle-verifier ceiling meets the candidate-pool floor; it is a sanity ceiling, not a deployable L-A2 method. |
+| 4 | `L_C2_control_trained_lcf_lite_proxy` | `MAC_FLOOR_POSITIVE_ORACLE_FUSER_CEILING` | 500 | 500 | Oracle source-feature fuser clears the sanity floor; deployable status remains blocked because this uses gold SVAMP equations as source features. |

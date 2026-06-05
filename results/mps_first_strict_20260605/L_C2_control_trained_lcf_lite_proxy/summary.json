@@ -1,0 +1,38 @@
+{
+  "achieved_n": 500,
+  "confirm_rows_scored": 0,
+  "control_trained_fuser_accuracy": 1.0,
+  "created_utc": "2026-06-05T04:53:35+00:00",
+  "data_floor": 500,
+  "exact_command": "venv_arm64/bin/python scripts/run_mps_first_strict_iteration.py --probe L_C2_control_trained_lcf_lite_proxy",
+  "floor_met": true,
+  "gain_fuser_vs_receiver": {
+    "ci95_high": 0.864,
+    "ci95_low": 0.798,
+    "delta": 0.832,
+    "mde_half_width": 0.03399999999999992,
+    "n": 500
+  },
+  "gain_fuser_vs_wrong_row": {
+    "ci95_high": 0.99,
+    "ci95_low": 0.964,
+    "delta": 0.978,
+    "mde_half_width": 0.014000000000000012,
+    "n": 500
+  },
+  "gate_rows": 500,
+  "id": "L_C2_control_trained_lcf_lite_proxy",
+  "interpretation": "Oracle source-feature fuser clears the sanity floor; deployable status remains blocked because this uses gold SVAMP equations as source features.",
+  "mde_half_width": 0.03399999999999992,
+  "paper": "latentwire",
+  "priority": 4,
+  "promotion_allowed": false,
+  "receiver_accuracy": 0.168,
+  "result_root": "results/mps_first_strict_20260605",
+  "status": "MAC_FLOOR_POSITIVE_ORACLE_FUSER_CEILING",
+  "train_rows": 500,
+  "verdict": "POSITIVE_CEILING_ONLY",
+  "wall_clock_seconds": 0.39318394660949707,
+  "wrong_row_accuracy": 0.022,
+  "zero_source_accuracy": 0.168
+}
