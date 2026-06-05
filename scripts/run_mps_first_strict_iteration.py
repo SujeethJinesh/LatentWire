@@ -421,7 +421,9 @@ KL_SOURCES = [
 
 def load_kl_floor(floor: int) -> list[dict]:
     out = []
+    per_model = max(1, math.ceil(floor / len(KL_SOURCES)))
     for model, path in KL_SOURCES:
+        model_rows = 0
         with gzip.open(path, "rt", encoding="utf-8") as handle:
             for line in handle:
                 row = json.loads(line)
@@ -438,9 +440,10 @@ def load_kl_floor(floor: int) -> list[dict]:
                 })
                 if len(out) % 100 == 0:
                     print(f"[channel_cached] KL rows {len(out)}/{floor}", flush=True)
-                if len(out) >= floor:
-                    return out
-    return out
+                model_rows += 1
+                if model_rows >= per_model:
+                    break
+    return out[:floor]
 
 
 def c_u1(item: dict, start: float) -> tuple[dict, list[dict]]:

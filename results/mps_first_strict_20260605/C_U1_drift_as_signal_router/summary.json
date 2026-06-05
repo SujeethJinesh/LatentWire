@@ -1,0 +1,39 @@
+{
+  "achieved_n": 500,
+  "blocker": "Floor-sized KL trajectory rows exist, but they lack paired difficulty/policy-uplift labels required by the C_U1 mandatory gate.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:54:18+00:00",
+  "data_floor": 500,
+  "exact_command": "venv_arm64/bin/python scripts/build_channel_set_drift_as_signal_screen.py --input experimental/outlier_migrate/phase9/results --features drift_trajectory,kl_growth,warmup_activation --labels recoverable_gap,policy_uplift --min-gate-n 500 --models granite,deepseek,falcon --no-confirm",
+  "failed_attempts": [
+    {
+      "attempt": "scan phase9 KL rows for drift trajectory plus recoverable_gap/policy_uplift labels",
+      "blocking_resource": "same-row Channel-Set label cache with baseline confidence and policy uplift",
+      "result": "schema_missing_required_labels",
+      "rows_scanned": 500
+    }
+  ],
+  "floor_met": true,
+  "id": "C_U1_drift_as_signal_router",
+  "mde_half_width": 0.058000000000000024,
+  "median_kl": 0.02268876973539591,
+  "models": [
+    "deepseek",
+    "falcon",
+    "granite"
+  ],
+  "paper": "channel_set",
+  "priority": 5,
+  "promotion_allowed": false,
+  "proxy_delta_high_kl_vs_early_position": {
+    "ci95_high": -0.21,
+    "ci95_low": -0.324,
+    "delta": -0.268,
+    "mde_half_width": 0.058000000000000024,
+    "n": 500
+  },
+  "result_root": "results/mps_first_strict_20260605",
+  "status": "MAC_FLOOR_COMPUTED_SCHEMA_BLOCKED",
+  "verdict": "INCONCLUSIVE_SCHEMA_MISMATCH",
+  "wall_clock_seconds": 0.24483823776245117
+}
