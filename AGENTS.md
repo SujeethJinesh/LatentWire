@@ -82,6 +82,17 @@ Bias toward caution over speed; for trivial tasks use judgment.
 ## Human checkpoints
 Emit `dashboard/morning_brief.md`, `dashboard/breakthrough_board.md`, `dashboard/kill_board.md` each cycle. Any `PARKED` item, guardrail conflict, or "final positive" claim requires human sign-off before it is treated as a paper result.
 
+## Long-running iteration (every work /goal)
+- Work continuously for the full budget; target many hours or until the active queue is drained.
+- A work /goal is not complete after one item, a patch, a triage, or a report. Completion means the active queue is drained to powered-verdict-or-parked, budget expired, or a blocker needs human sign-off.
+- Work loop: pick highest-priority un-run queue item -> implement -> run to a powered verdict (hit min-n/MDE; otherwise `INCONCLUSIVE_UNDERPOWERED` or `PARKED_NEEDS_GPU` with exact n/command; sanity gate: a probe baseline that cannot recover the model's own accuracy is `BROKEN_BASELINE`) -> write raw rows + summary -> update `dashboard/iteration_log.md` -> refresh `review_packet.zip` -> git commit -> next item. Never pause for input mid-loop; never re-verify finished items; never emit a tiny-n verdict; generate data when locally possible.
+- Finishing fast with un-run items left is a failure.
+
+## Always-ready review packet (standing)
+- `review_packet.zip` must always reflect the latest state; refresh it, overwriting the previous copy, every iteration cycle.
+- Include probe/headroom summaries + small raw rows, scoop report, queues, triage, dashboards (`morning_brief`, `iteration_log`, breakthrough/kill boards, leaderboard), probe scripts, registry, and lessons.
+- Exclude any `*_confirm*` path; model weights and large binaries (`*.npz`, `*.pt`, `*.bin`, `*.safetensors`, `*.npy`, caches/); any file >5 MB gets a 200-row head plus an `INDEX.md` note. Write `INDEX.md`, verify no `*_confirm*` path, and keep the zip under 25 MB.
+
 ## Operating specs (read on demand; do NOT inline into this file — keep AGENTS.md under the 32 KiB cap)
 - `plans/CODEX_NEXT_72H.md` — the current ExecPlan (queues, gates, method cards, agent teams §8, behaviors §9).
 - `plans/TEAM_OPERATING_SYSTEM.md` — Conductor decision rights (run it as a Codex **Goal**, `/goal`), WIP limits, cycle rhythm, hardest-baseline champion, anomaly-mining, method **lineage** + audit, per-method breakthrough pre-mortem, repair-from-failure-packet, context hygiene, agent-improvement loop, morning-brief-as-decision-artifact, the behavioral contract.
