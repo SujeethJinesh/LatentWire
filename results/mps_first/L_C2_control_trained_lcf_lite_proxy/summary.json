@@ -1,0 +1,15 @@
+{
+  "achieved_n": 0,
+  "blocker": "C2C fusers are local, but no reviewed byte-limited control-trained LCF-lite runner with wrong-row/zero-source objective exists.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:20:11+00:00",
+  "exact_command": "venv_arm64/bin/python scripts/build_control_trained_lcf_lite_proxy.py --source-cache <dev_gate_source_features> --receiver-cache <dev_gate_receiver_features> --wrong-row --zero-source --label-shuffle --min-gate-n 400 --mde-target 0.05 --no-confirm",
+  "id": "L_C2_control_trained_lcf_lite_proxy",
+  "mandatory_gate": "trained receiver+source fuser beats sane receiver baseline and free fusion; wrong-row/zero-source collapse",
+  "paper": "latentwire",
+  "priority": 4,
+  "promotion_allowed": false,
+  "status": "PARKED_NEEDS_CONTROL_TRAINED_FUSER_PRELAUNCH",
+  "verdict": "PARKED",
+  "wall_clock_seconds": 0.001955270767211914
+}
