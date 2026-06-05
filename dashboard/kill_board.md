@@ -31,3 +31,4 @@
 | 3 | `L_PC5_private_verifier_receiver_candidates` | `PARKED_POOL_TOO_WEAK` | 36 | candidate pool is nondegenerate for only 36 prompts, below the 80-prompt rerank gate; no gain verdict emitted |
 | 4 | `L_C2_control_trained_lcf_lite_proxy` | `PARKED_NEEDS_CONTROL_TRAINED_FUSER_PRELAUNCH` | 0 | C2C fusers are local, but no reviewed byte-limited control-trained LCF-lite runner with wrong-row/zero-source objective exists. |
 | 5 | `C_U1_drift_as_signal_router` | `PARKED_NEEDS_DRIFT_FEATURE_CACHE` | 171 | Stage-1 rows contain recovery/static_gap but not drift trajectory features paired with difficulty/uplift labels across >=2 models. |
+| 6 | `C_W1_fixed_library_warmup_selector` | `PARKED_NEEDS_WARMUP_POLICY_CACHE` | 0 | Existing dashboard states no parseable warmup-policy cache exists. |

@@ -1,0 +1,15 @@
+{
+  "achieved_n": 0,
+  "blocker": "Existing dashboard states no parseable warmup-policy cache exists.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:20:56+00:00",
+  "exact_command": "venv_arm64/bin/python scripts/materialize_channel_set_warmup_policy_cache.py --input experimental/outlier_migrate/phase9/results --split dev,gate --locked-row-ids splits/stage0_cache_rows_hash.jsonl --policies paroquant,c_a1,survival,reject --no-confirm",
+  "id": "C_W1_fixed_library_warmup_selector",
+  "mandatory_gate": "selector beats best fixed policy or improves tail-safe rejection without sentinel regression",
+  "paper": "channel_set",
+  "priority": 6,
+  "promotion_allowed": false,
+  "status": "PARKED_NEEDS_WARMUP_POLICY_CACHE",
+  "verdict": "PARKED",
+  "wall_clock_seconds": 0.0
+}
