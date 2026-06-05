@@ -1,0 +1,28 @@
+{
+  "achieved_n": 198,
+  "blocker": "Only non-confirm per-trace rows below the 500-row floor are available locally; generating the missing identical-row denominator requires native replay/backfill, not a Mac-only cached computation.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:55:08+00:00",
+  "data_floor": 500,
+  "eligible_per_trace_rows_found": 198,
+  "exact_command": "venv_arm64/bin/python scripts/build_channel_set_clean_survival_denominator.py --input experimental/outlier_migrate/phase9/results --same-row-denominators random_core,static_core,wrong_row_core --min-gate-n 500 --no-gap-filter --no-confirm",
+  "failed_attempts": [
+    {
+      "attempt": "scan all non-confirm phase9 per_trace_metrics.json files for identical-row survival/static/random denominators",
+      "blocking_resource": "fresh same-row random/static/survival denominator replay",
+      "eligible_rows": 198,
+      "required_rows": 500,
+      "result": "insufficient_cached_trace_rows"
+    }
+  ],
+  "floor_blocked": true,
+  "floor_met": false,
+  "id": "C_S1_clean_survival_stablecore_denominator",
+  "paper": "channel_set",
+  "priority": 7,
+  "promotion_allowed": false,
+  "result_root": "results/mps_first_strict_20260605",
+  "status": "PARKED_LOGGED_LOCAL_FLOOR_BLOCKED",
+  "verdict": "PARKED_NEEDS_GPU_OR_NATIVE_CACHE",
+  "wall_clock_seconds": 0.0061533451080322266
+}
