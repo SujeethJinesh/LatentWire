@@ -1,0 +1,21 @@
+{
+  "achieved_n": 171,
+  "blocker": "Stage-1 rows contain recovery/static_gap but not drift trajectory features paired with difficulty/uplift labels across >=2 models.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:20:33+00:00",
+  "exact_command": "venv_arm64/bin/python scripts/build_channel_set_drift_as_signal_screen.py --input experimental/outlier_migrate/phase9/results --rows results/stage1/channel_set_raw_rows.jsonl --features drift_trajectory,kl_growth,warmup_activation --labels recoverable_gap,policy_uplift --min-gate-n 200 --models granite,deepseek,falcon --no-confirm",
+  "id": "C_U1_drift_as_signal_router",
+  "mandatory_gate": "drift features predict per-trace difficulty or policy uplift beyond baseline confidence on >=2 models",
+  "models_observed_from_paths": [
+    "deepseek",
+    "falcon",
+    "granite"
+  ],
+  "paper": "channel_set",
+  "priority": 5,
+  "promotion_allowed": false,
+  "source_rows": "results/stage1/channel_set_raw_rows.jsonl",
+  "status": "PARKED_NEEDS_DRIFT_FEATURE_CACHE",
+  "verdict": "PARKED",
+  "wall_clock_seconds": 0.0005049705505371094
+}
