@@ -1,0 +1,32 @@
+{
+  "achieved_n": 512,
+  "artifact": "results/source_private_hellaswag_qwen_strict_packet_to_phi_receiver_20260503_validation1536_2048/qwen_strict_packet_predictions_1536_2048.jsonl",
+  "baseline_receiver_accuracy": 0.384765625,
+  "conditional_mi_bits_source_label_answer_given_receiver_prediction": 0.0,
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:51:51+00:00",
+  "data_floor": 500,
+  "exact_command": "re-run strict cached floor: venv_arm64/bin/python scripts/run_mps_first_strict_iteration.py --probe L_PC1_cross_family_specialist_ceiling",
+  "floor_met": true,
+  "gain_receiver_source_vs_receiver": {
+    "ci95_high": 0.068359375,
+    "ci95_low": 0.015625,
+    "delta": 0.04296875,
+    "mde_half_width": 0.02734375,
+    "n": 512
+  },
+  "id": "L_PC1_cross_family_specialist_ceiling",
+  "mde_half_width": 0.02734375,
+  "paper": "latentwire",
+  "priority": 1,
+  "promotion_allowed": false,
+  "result_root": "results/mps_first_strict_20260605",
+  "sanity_gate": "receiver score-only baseline is available; this is cached cross-family receiver-family packet evidence, not a deployable new runner",
+  "selected_receiver_source_accuracy": 0.427734375,
+  "source_label_accuracy": 0.384765625,
+  "status": "MAC_FLOOR_POSITIVE_CEILING_ONLY",
+  "verdict": "POSITIVE_CEILING_ONLY",
+  "wall_clock_seconds": 0.22796916961669922,
+  "wrong_example_hidden_accuracy": 0.376953125,
+  "zero_hidden_accuracy": 0.384765625
+}

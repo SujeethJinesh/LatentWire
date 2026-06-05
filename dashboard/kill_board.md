@@ -34,3 +34,8 @@
 | 6 | `C_W1_fixed_library_warmup_selector` | `PARKED_NEEDS_WARMUP_POLICY_CACHE` | 0 | Existing dashboard states no parseable warmup-policy cache exists. |
 | 7 | `C_S1_clean_survival_stablecore_denominator` | `PARKED_NEEDS_IDENTICAL_ROW_DENOMINATOR` | 0 | Available C-F/survival-like evidence is contaminated or lacks a fresh identical-row random/static denominator. |
 | 8 | `C_Y5_channel_set_defense_bundle` | `PARKED_NEEDS_NATIVE_PAIRING` | 9 | Defense bundle inputs exist, but claim-bearing C_A1 native paired ParoQuant-vs-tight-clip rows are still missing. |
+## MPS-First Strict Rerun
+
+| priority | probe | status | achieved_n | floor | interpretation |
+| ---: | --- | --- | ---: | ---: | --- |
+| 1 | `L_PC1_cross_family_specialist_ceiling` | `MAC_FLOOR_POSITIVE_CEILING_ONLY` | 512 | 500 | see summary |
