@@ -1,6 +1,18 @@
-COMMIT.txt                     |  48 +++++++++++------------------
- DIFFSTAT.txt                   |  34 ++++-----------------
- dashboard/iteration_log.md     |   5 +++
- review_packet.zip              | Bin 275092 -> 320550 bytes
- scripts/build_review_packet.py |  67 +++++++++++++++++++++++++++++++++++++++--
- 5 files changed, 92 insertions(+), 62 deletions(-)
+COMMIT.txt                                         |    36 +-
+ DIFFSTAT.txt                                       |    24 +-
+ NEXT_6_COMMANDS.md                                 |    10 +-
+ TESTS_RUN.txt                                      |    42 +-
+ dashboard/breakthrough_board.md                    |     4 +
+ dashboard/c_a1_gpu_backfill_runbook.md             |    20 +
+ dashboard/cheap_exhaustion_report.md               |    68 +
+ dashboard/kill_board.md                            |    10 +
+ dashboard/morning_brief.md                         |     7 +
+ lessons/LESSONS_LEDGER.md                          |     7 +
+ paper/latentwire/claim_boundary.md                 |     1 +
+ queues/gpu_backfill.yaml                           |     7 +-
+ .../20260605T180448Z/cache_inventory.json          | 36336 +++++++++++++++++++
+ .../cheap_exhaustion/20260605T180448Z/summary.json |   178 +
+ review_packet.zip                                  |   Bin 323257 -> 377149 bytes
+ scripts/build_review_packet.py                     |    16 +-
+ scripts/cheap_exhaustion_scan.py                   |   543 +
+ 17 files changed, 37246 insertions(+), 63 deletions(-)

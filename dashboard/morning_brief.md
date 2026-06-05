@@ -33,3 +33,10 @@ The held-out answer is unfavorable for final claims: many caches are prior test/
 - L_PC1 cached strict evidence is a small powered ceiling signal only: `+0.042969`, CI `[+0.015625, +0.068359]`, but it lacks the fresh second pair/task and source-index/equal-byte text controls.
 - L_PC5 and L_C2 strict positives are oracle-only: L_PC5 scores `cand == answer`; L_C2 uses SVAMP equation-derived `tool_answer`.
 - Channel-Set C_U1 and C_W1 are schema-blocked, C_S1 remains below the local floor at `198/500`, and C_Y5 waits on native same-row pairing.
+
+## 2026-06-05 Cheap Exhaustion Scan
+
+- `scripts/cheap_exhaustion_scan.py` scanned `1294` files, used `820` non-confirm text artifacts, excluded `42` confirm-path files and `35` embedded-confirm files, and consumed `0` confirmation rows for method evidence.
+- No listed Channel-Set method has a claim-clean CPU/cache positive: C_U1, C_W1, CE1, and C_C1 are parked for missing same-row feature/label/policy matrices; C_D1 is Granite-only underpowered defense evidence.
+- C_A1 manifest remains incomplete: DeepSeek and Falcon have 12-row non-confirm baseline-vs-tight-clip pairs, but Granite tight-clip rows are embedded-confirm or diagnostic residual only. `queues/gpu_foreground.yaml` remains empty.
+- The canonical next GPU action is materialization-only: `local_runner enqueue channel_set_c_a1_pair_materialization --models granite,deepseek,falcon --split dev,gate --prompt-file experimental/shared/prompts/aime_2025_indices_0_23.jsonl --policies paroquant_baseline,tight_clip_c_a1 --scale-clip-min 0.5 --scale-clip-max 2.0 --require-same-row --write-access-manifest --fail-on-confirm --out experimental/outlier_migrate/phase9/results/c_a1_nonconfirm_pair_matrix_${UTC_STAMP}`.

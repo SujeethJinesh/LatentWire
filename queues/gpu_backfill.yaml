@@ -3,15 +3,16 @@ backfill:
     priority: 1
     status: BLOCKED_CONFIRM_CONTAMINATED
     reason: cached_granite_c_a1_gate_ids_reference_confirmation_source_path
-    command: "blocked by dashboard/c_a1_gpu_backfill_runbook.md; do not launch until a fresh non-confirm Granite/DeepSeek/Falcon same-row manifest replaces the contaminated cached gate IDs"
+    command: "local_runner enqueue channel_set_c_a1_pair_materialization --models granite,deepseek,falcon --split dev,gate --prompt-file experimental/shared/prompts/aime_2025_indices_0_23.jsonl --policies paroquant_baseline,tight_clip_c_a1 --scale-clip-min 0.5 --scale-clip-max 2.0 --require-same-row --write-access-manifest --fail-on-confirm --out experimental/outlier_migrate/phase9/results/c_a1_nonconfirm_pair_matrix_${UTC_STAMP}"
     required_cache_or_model: "fresh non-confirm dev/gate row manifest plus native W4A16/ParoQuant runner; every model needs same-row ParoQuant and tight-clip C_A1 outputs"
     est_gpu_hours: "0 now; 2-4 only after confirm-clean manifest exists"
     promotion_allowed: false
+    launch_rule: "materialization-only after repro+leakage review; no foreground promotion from this queue item"
   - id: channel_set_c_a1_paroquant_parity_card
     priority: 2
     status: BLOCKED_CONFIRM_CONTAMINATED
     reason: parity_card_cannot_use_cached_granite_confirmation_gate_ids
-    command: "blocked pending fresh non-confirm C_A1 same-row manifest; see dashboard/c_a1_gpu_backfill_runbook.md"
+    command: "after channel_set_c_a1_pair_materialization finishes, run the parity audit on the same output manifest; abort if any source/access path contains confirm or confirmation"
     required_cache_or_model: "fresh non-confirm Granite/DeepSeek/Falcon row IDs and native W4A16-capable checkpoint"
     est_gpu_hours: "0 now; 2-4 only after confirm-clean manifest exists"
     promotion_allowed: false
@@ -19,7 +20,7 @@ backfill:
     priority: 3
     reason: missing_powered_generated_solution_candidate_pools_and_verifier_source_target_surfaces
     mac_only: true
-    command: "venv_arm64/bin/python scripts/overnight_v3_corrected_probes.py --device cpu --run-exp exp4 --exp4-prompts 300 --exp4-candidates 16 --exp4-max-new-tokens 96 --batch-size 1 --require-verifier-score --no-confirm"
+    command: "python scripts/overnight_v3_corrected_probes.py --device cpu --run-exp exp4 --exp4-prompts 300 --exp4-candidates 16 --exp4-max-new-tokens 96 --batch-size 1 --require-verifier-score --no-confirm"
     required_cache_or_model: "dev/gate generated-solution candidate pools plus source_score, target_score, and verifier_score fields; require >=80 prompts with at least one correct candidate before L_A2 screening"
     est_gpu_hours: 0-2
     promotion_allowed: false

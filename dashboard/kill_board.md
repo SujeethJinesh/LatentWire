@@ -55,3 +55,13 @@
 | 6 | `C_W1_fixed_library_warmup_selector` | `MAC_FLOOR_COMPUTED_SCHEMA_BLOCKED` | 500 | 500 | Warmup KL rows can be materialized, but no cached per-policy outcome matrix exists for ParoQuant/C_A1/survival/reject on the same rows. |
 | 7 | `C_S1_clean_survival_stablecore_denominator` | `PARKED_LOGGED_LOCAL_FLOOR_BLOCKED` | 198 | 500 | Only non-confirm per-trace rows below the 500-row floor are available locally; generating the missing identical-row denominator requires native replay/backfill, not a Mac-only cached computation. |
 | 8 | `C_Y5_channel_set_defense_bundle` | `PARKED_LOGGED_NEEDS_NATIVE_PAIRING` | 6 |  | Defense inputs exist, but the three-model same-row native pairing packet is still missing. |
+
+## Cheap Exhaustion Parks
+
+| method_id | verdict | evidence | action |
+| --- | --- | --- | --- |
+| `C_U1_drift_as_signal_router` | `PARKED` | no row-level drift/KL trajectory cache is paired with recovery/difficulty/uplift labels | materialize native same-row drift features plus policy-uplift labels |
+| `C_W1_fixed_library_warmup_selector` | `PARKED` | no same-row ParoQuant/C_A1/survival/reject outcome matrix exists | materialize fixed-library policy outcomes before screening |
+| `CE1_codrift_givens_pairing` | `PARKED` | no co-drift/Givens pairing fields are joined to outcomes | build paired-channel/Givens cache only after review |
+| `C_C1_budget_router` | `PARKED` | budget-like artifacts lack same-row policy outcomes and reject/no-gap fields | build budget-policy matrix or leave parked |
+| `C_A1_cvar_evt_clip_grid` | `PARKED_NEEDS_NATIVE_PAIRING` | DeepSeek/Falcon have 12-row pairs; Granite tight-clip is embedded-confirm or diagnostic residual only | run materialization-only C_A1 pair matrix, no foreground promotion |

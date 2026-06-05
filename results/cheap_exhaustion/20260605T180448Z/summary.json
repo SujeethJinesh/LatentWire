@@ -1,0 +1,178 @@
+{
+  "created_utc": "2026-06-05T18:04:49+00:00",
+  "git_head": "1c6a9546c176ed0321311bbce76b6860663f95fd",
+  "gpu_foreground_empty": true,
+  "gpu_foreground_parse_json": null,
+  "inventory": {
+    "files_seen": 1294,
+    "status_counts": {
+      "excluded_binary_or_cache": 145,
+      "excluded_confirm_path": 42,
+      "excluded_embedded_confirm": 35,
+      "excluded_non_text": 247,
+      "excluded_too_large": 5,
+      "scanned": 820
+    }
+  },
+  "latentwire": {
+    "L_C2_control_trained_lcf_lite_proxy": {
+      "achieved_n": 0,
+      "blocker": "C2C fusers are local, but no reviewed byte-limited control-trained LCF-lite runner with wrong-row/zero-source objective exists.",
+      "exact_command": "venv_arm64/bin/python scripts/build_control_trained_lcf_lite_proxy.py --source-cache <dev_gate_source_features> --receiver-cache <dev_gate_receiver_features> --wrong-row --zero-source --label-shuffle --min-gate-n 400 --mde-target 0.05 --no-confirm",
+      "promotion_allowed": false,
+      "status": "PARKED_NEEDS_CONTROL_TRAINED_FUSER_PRELAUNCH",
+      "verdict": "PARKED"
+    },
+    "L_PC1_cross_family_specialist_ceiling": {
+      "achieved_n": 768,
+      "blocker": "No eligible existing artifact measures I(source_signal;Y|receiver_state) for a complementary source-private signal.",
+      "exact_command": "venv_arm64/bin/python scripts/run_mps_first_iteration.py --probe L_PC1_cross_family_specialist_ceiling after authoring a reviewed CPU/MPS scorer that uses Qwen2.5-Math-1.5B or DeepSeek-R1-Distill-Qwen-1.5B as source and Qwen3-0.6B as receiver on frozen dev/gate rows, writes source/receiver label scores, computes conditional MI, and enforces --no-confirm.",
+      "promotion_allowed": false,
+      "status": "PARKED_NEEDS_RECEIVER_CONDITIONED_CEILING_RUNNER",
+      "verdict": "PARKED"
+    },
+    "L_PC2_tool_augmented_source_ceiling": {
+      "achieved_n": 0,
+      "blocker": "No dev/gate cache found where the source privately ran calculator/code-exec and receiver did not see the tool result.",
+      "exact_command": "venv_arm64/bin/python scripts/build_tool_private_source_ceiling.py --dataset data/gsm8k_100.jsonl --source-tool calculator --source-model Qwen/Qwen2.5-Math-1.5B-Instruct --receiver-model Qwen/Qwen3-0.6B --split dev,gate --min-gate-n 400 --mde-target 0.05 --no-confirm",
+      "promotion_allowed": false,
+      "status": "PARKED_NEEDS_TOOL_PRIVATE_CACHE_AND_RUNNER",
+      "verdict": "PARKED"
+    },
+    "L_PC5_private_verifier_receiver_candidates": {
+      "achieved_n": 36,
+      "blocker": "candidate pool is nondegenerate for only 36 prompts, below the 80-prompt rerank gate; no gain verdict emitted",
+      "exact_command": "GPU stronger-generator cache: generate >=300 dev/gate GSM8K/MATH prompts x16 candidates with a stronger generator, then score each candidate with source_score, target_score, and verifier_score; do not screen L_A2 until >=80 prompts have at least one correct candidate.",
+      "promotion_allowed": false,
+      "status": "PARKED_POOL_TOO_WEAK",
+      "verdict": "PARKED"
+    }
+  },
+  "method_verdicts": {
+    "CE1_codrift_givens_pairing": {
+      "blocker": "No non-confirm cache contains co-drift/Givens pairing fields joined to outcome labels.",
+      "candidate_files": [],
+      "promotion_allowed": false,
+      "required_native_cache": "Per-row paired-channel/Givens metadata, co-drift score, row_id, static_gap, and policy recovery for the paired intervention and its controls.",
+      "verdict": "PARKED"
+    },
+    "C_A1_cvar_evt_clip_grid": {
+      "blocker": "DeepSeek/Falcon have non-confirm 12-row baseline-vs-tight-clip pairs; Granite tight-clip candidates are embedded-confirm or diagnostic residual subsets, so the three-model C_A1 manifest is incomplete.",
+      "exact_gpu_row_materialization_command": "local_runner enqueue channel_set_c_a1_pair_materialization --models granite,deepseek,falcon --split dev,gate --prompt-file experimental/shared/prompts/aime_2025_indices_0_23.jsonl --policies paroquant_baseline,tight_clip_c_a1 --scale-clip-min 0.5 --scale-clip-max 2.0 --require-same-row --write-access-manifest --fail-on-confirm --out experimental/outlier_migrate/phase9/results/c_a1_nonconfirm_pair_matrix_${UTC_STAMP}",
+      "excluded_granite_tight_clip_embedded_confirm_files": [
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z/command_metadata.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z/config.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z/metrics.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z/per_trace_metrics.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z/prompt_manifest.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z/traces_used.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z/command_metadata.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z/config.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z/metrics.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z/per_trace_metrics.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z/prompt_manifest.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z/traces_used.json"
+      ],
+      "manifest_complete": false,
+      "models": {
+        "deepseek": {
+          "baseline_runs": [
+            "experimental/outlier_migrate/phase9/results/om_v1_paroquant_deepseek_20260528T162858Z"
+          ],
+          "best_same_row_pair": [
+            "experimental/outlier_migrate/phase9/results/om_v1_paroquant_deepseek_20260528T162858Z",
+            "experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z"
+          ],
+          "same_row_count": 12,
+          "tight_clip_runs": [
+            "experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z"
+          ]
+        },
+        "falcon": {
+          "baseline_runs": [
+            "experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z"
+          ],
+          "best_same_row_pair": [
+            "experimental/outlier_migrate/phase9/results/om_v1_paroquant_falcon_20260528T154653Z",
+            "experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z"
+          ],
+          "same_row_count": 12,
+          "tight_clip_runs": [
+            "experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z"
+          ]
+        },
+        "granite": {
+          "baseline_runs": [
+            "experimental/outlier_migrate/phase9/results/om_paroquant_granite_small_20260520T1555Z",
+            "experimental/outlier_migrate/phase9/results/om_stage1_e3_granite_20260526T034442Z"
+          ],
+          "best_same_row_pair": null,
+          "same_row_count": 0,
+          "tight_clip_runs": []
+        }
+      },
+      "promotion_allowed": false,
+      "verdict": "PARKED_NEEDS_NATIVE_PAIRING"
+    },
+    "C_A2_horizon_rotation": {
+      "blocker": "No explicit C_A2 orthogonality plus full-precision-equivalence test artifact was found in the non-confirm scan.",
+      "promotion_allowed": false,
+      "required_native_cache": "Tests must pass before even a 2-bin C_A2 screen; no GPU queue item should be emitted from this pass.",
+      "verdict": "PARKED_TESTS_ONLY"
+    },
+    "C_C1_budget_router": {
+      "blocker": "No non-confirm cache contains budget-conditioned same-row outcomes across usable policies.",
+      "candidate_files": [
+        "experimental/outlier_migrate/phase9/preregister_om_phase9_m11b_budget_scaling.md",
+        "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/checker_result.json",
+        "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/metrics.json",
+        "experimental/outlier_migrate/phase9/results/om_phase9_m11b_granite_small_vac12_reuse_20260518T030300Z/protected_sets.json",
+        "experimental/outlier_migrate/phase9/results/om_phase9_mpred_deepseek_extension_20260528T005045Z/protected_sets.json",
+        "experimental/outlier_migrate/phase9/results/om_phase9_mpred_deepseek_extension_20260528T005045Z/protected_trajectories.json",
+        "experimental/outlier_migrate/phase9/results/om_phase9_mpred_falcon_extension_20260528T011658Z/protected_sets.json",
+        "experimental/outlier_migrate/phase9/results/om_phase9_mpred_falcon_extension_20260528T011658Z/protected_trajectories.json",
+        "experimental/outlier_migrate/phase9/results/om_phase9_mpred_granite_reduced_20260527T201251Z/protected_sets.json",
+        "experimental/outlier_migrate/phase9/results/om_stage1_e3_granite_20260526T034442Z/protected_sets.json"
+      ],
+      "promotion_allowed": false,
+      "required_native_cache": "Per-row budget, policy_id, byte/compute cost, ParoQuant/static/tight-clip outcomes, reject option, and no-gap denominator fields.",
+      "verdict": "PARKED"
+    },
+    "C_D1_osc_decdec_vs_drift_defense": {
+      "blocker": "Cached DecDEC/KL evidence is Granite-only and 12-row/8-included with wide CIs; usable as a defense note, not a positive method.",
+      "candidate_runs": [
+        "experimental/outlier_migrate/phase9/results/om_phase9_decdec_granite_small_vac12_20260517T141500Z",
+        "experimental/outlier_migrate/phase9/results/om_phase9_kl_granite_small_dense_20260519T085400Z",
+        "experimental/outlier_migrate/phase9/results/om_stage1_e15_bca_holm_20260527T093931Z",
+        "experimental/outlier_migrate/phase9/results/om_stage1_e1_deepseek_falcon_20260526T2335Z"
+      ],
+      "promotion_allowed": false,
+      "required_native_cache": "Same-row OSC/DecDEC stress surfaces joined to drift/KL and outcome labels across at least two models.",
+      "verdict": "CACHE_PRESENT_UNDERPOWERED_SINGLE_MODEL"
+    },
+    "C_U1_drift_as_signal_router": {
+      "blocker": "No non-confirm cache has row-level drift/KL trajectory features paired with row-level recovery/difficulty/uplift labels.",
+      "candidate_files": [],
+      "promotion_allowed": false,
+      "required_native_cache": "For each Granite/DeepSeek/Falcon row: prompt_id, split, receiver confidence, KL/drift trajectory by position/layer, warmup activation features, static_gap/recoverable_gap, and per-policy uplift labels.",
+      "verdict": "PARKED"
+    },
+    "C_W1_fixed_library_warmup_selector": {
+      "blocker": "No non-confirm cache exposes same-row outcomes for the fixed library ParoQuant/C_A1/survival/reject policies.",
+      "candidate_files": [],
+      "promotion_allowed": false,
+      "required_native_cache": "Same prompt_id rows for paroquant, tight_clip_c_a1, survival_core, and reject/no_answer policies with dev/gate split and row-safe outcomes.",
+      "verdict": "PARKED"
+    }
+  },
+  "next_6_commands": [
+    "venv_arm64/bin/python scripts/check_review_packet.py review_packet.zip",
+    "sed -n '1,260p' dashboard/cheap_exhaustion_report.md",
+    "sed -n '1,260p' dashboard/c_a1_gpu_backfill_runbook.md",
+    "sed -n '1,220p' queues/gpu_backfill.yaml",
+    "sed -n '1,80p' queues/gpu_foreground.yaml",
+    "local_runner enqueue channel_set_c_a1_pair_materialization --models granite,deepseek,falcon --split dev,gate --prompt-file experimental/shared/prompts/aime_2025_indices_0_23.jsonl --policies paroquant_baseline,tight_clip_c_a1 --scale-clip-min 0.5 --scale-clip-max 2.0 --require-same-row --write-access-manifest --fail-on-confirm --out experimental/outlier_migrate/phase9/results/c_a1_nonconfirm_pair_matrix_${UTC_STAMP}"
+  ],
+  "schema_version": "cheap_exhaustion_scan_v1",
+  "wall_clock_seconds": 0.5498855839978205
+}

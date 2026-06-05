@@ -40,6 +40,26 @@ venv_arm64/bin/python scripts/check_handoff.py
 
 There is no runnable C_A1 GPU command in this repo state. The local GPU runner should refuse the C_A1 backfill queue item until a fresh non-confirm manifest replaces the contaminated cached Granite gate IDs.
 
+## Fresh Row-Materialization Command
+
+This is a materialization-only command for the local runner after the repro + leakage review records exist. It must not authorize foreground promotion by itself.
+
+```bash
+local_runner enqueue channel_set_c_a1_pair_materialization \
+  --models granite,deepseek,falcon \
+  --split dev,gate \
+  --prompt-file experimental/shared/prompts/aime_2025_indices_0_23.jsonl \
+  --policies paroquant_baseline,tight_clip_c_a1 \
+  --scale-clip-min 0.5 \
+  --scale-clip-max 2.0 \
+  --require-same-row \
+  --write-access-manifest \
+  --fail-on-confirm \
+  --out experimental/outlier_migrate/phase9/results/c_a1_nonconfirm_pair_matrix_${UTC_STAMP}
+```
+
+Expected output contract: a non-confirm same-row manifest for Granite, DeepSeek, and Falcon with ParoQuant baseline and tight-clip C_A1 rows, plus an access manifest. Abort if any source path, access path, or split label contains `confirm` or `confirmation`.
+
 ## Promotion Rule
 
 Promotion remains disabled. A future backfill report may recommend a foreground job only after a fresh confirm-clean three-model packet shows:

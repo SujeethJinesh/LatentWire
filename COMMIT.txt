@@ -1,22 +1,24 @@
 branch: codex-campaign
-commit: fe6a23823db5933b03aadc6b49b972220495934c
-created_utc: 2026-06-05T09:23:31+00:00
+commit: 1c6a9546c176ed0321311bbce76b6860663f95fd
+created_utc: 2026-06-05T18:07:06+00:00
 
 ## codex-campaign...origin/codex-campaign
- M COMMIT.txt
- M DIFFSTAT.txt
- M dashboard/iteration_log.md
- M review_packet.zip
- M scripts/build_review_packet.py
+M  COMMIT.txt
+M  DIFFSTAT.txt
+M  NEXT_6_COMMANDS.md
+M  TESTS_RUN.txt
+M  dashboard/breakthrough_board.md
+M  dashboard/c_a1_gpu_backfill_runbook.md
+A  dashboard/cheap_exhaustion_report.md
+M  dashboard/kill_board.md
+M  dashboard/morning_brief.md
+M  lessons/LESSONS_LEDGER.md
+M  paper/latentwire/claim_boundary.md
+M  queues/gpu_backfill.yaml
+A  results/cheap_exhaustion/20260605T180448Z/cache_inventory.json
+A  results/cheap_exhaustion/20260605T180448Z/summary.json
+M  review_packet.zip
+M  scripts/build_review_packet.py
+A  scripts/cheap_exhaustion_scan.py
 ?? codex_handoff_bundle.zip
 ?? eval_package_v3.zip
-?? review_packets/review_packet_20260605T062332Z_fe6a2382.zip
-?? review_packets/review_packet_20260605T062346Z_fe6a2382.zip
-?? review_packets/review_packet_20260605T063538Z_fe6a2382.zip
-?? review_packets/review_packet_20260605T065139Z_fe6a2382.zip
-?? review_packets/review_packet_20260605T065219Z_fe6a2382.zip
-?? review_packets/review_packet_20260605T092330Z_fe6a2382.zip
-?? review_packets/review_packet_20260605T092331Z_fe6a2382.zip
-?? reviews/overnight_mps_live@bbe0f3fe471af710e4a467e8d35265acaaba83ed3c703822754defb8f6a5506a.json
-?? reviews/overnight_mps_live@fc29371f2b6a22f0c3daf70ef26d5b3194a42b12a08c2f15eda85aea5daa333d.json
-?? scripts/overnight_mps_live.py

@@ -50,3 +50,10 @@
 - Oracle lesson: large L_PC5 and L_C2 gains are not evidence of deployable communication when the scoring surface sees `answer`, `correct`, the equation value, or an answer-derived `tool_answer`. Treat these as ceilings only.
 - L_PC1 lesson: a small powered cached lift can be real and still not claim-eligible. It must be replicated across fresh pair/task surfaces and beat source-index/equal-byte text controls before becoming a scoped positive.
 - Schema lesson: C_U1/C_W1 cannot be rescued by parsing more KL rows if the paired outcome labels are absent; C_S1 should stay parked rather than lowering the floor.
+
+## 2026-06-05 - Cheap exhaustion scan
+
+- Cache-search lesson: treating a child score-cache file as clean is insufficient when sibling metadata in the same run embeds confirmation split labels. Quarantine the entire run for C_A1 pairing if any file in that run is confirm-path or embedded-confirm.
+- Channel-Set lesson: C_U1, C_W1, CE1, and C_C1 require same-row feature/label/policy matrices. The current non-confirm cache set has fragments, not a joinable method surface.
+- C_A1 lesson: DeepSeek and Falcon non-confirm tight-clip pairs are not enough; the paper needs the Granite member of the same three-model manifest before even backfill can be useful.
+- LatentWire lesson: do not use MPS/live forwards as a shortcut for parked L_PC1/L_C2/L_A2. The next CPU-safe path is reviewed cache materialization or llama.cpp/GGUF scoring with explicit controls, not another unreviewed live forward.

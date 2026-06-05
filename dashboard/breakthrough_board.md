@@ -42,3 +42,7 @@ Updated by `scripts/overnight_cpu_screening.py`; Mac status remains screening-on
 | 6 | `C_W1_fixed_library_warmup_selector` | `MAC_FLOOR_COMPUTED_SCHEMA_BLOCKED` | 500 | 500 | Warmup KL rows can be materialized, but no cached per-policy outcome matrix exists for ParoQuant/C_A1/survival/reject on the same rows. |
 | 7 | `C_S1_clean_survival_stablecore_denominator` | `PARKED_LOGGED_LOCAL_FLOOR_BLOCKED` | 198 | 500 | Only non-confirm per-trace rows below the 500-row floor are available locally; generating the missing identical-row denominator requires native replay/backfill, not a Mac-only cached computation. |
 | 8 | `C_Y5_channel_set_defense_bundle` | `PARKED_LOGGED_NEEDS_NATIVE_PAIRING` | 6 |  | Defense inputs exist, but the three-model same-row native pairing packet is still missing. |
+
+## Cheap Exhaustion Scan
+
+No new Mac paper-positive rows. The non-confirm cache inventory parks C_U1, C_W1, CE1, C_C1, C_A2, and C_D1 for missing same-row inputs or underpowered single-model defense evidence. C_A1 remains the highest-priority Channel-Set materialization target, but promotion is disabled until the fresh Granite/DeepSeek/Falcon same-row manifest exists.
