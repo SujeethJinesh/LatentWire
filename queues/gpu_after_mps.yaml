@@ -1,0 +1,51 @@
+gpu_after_mps:
+  - id: C_A1_native_paired_tail_cvar_live_gate_candidate
+    priority: 1
+    paper: channel_set
+    contribution_role: positive_method
+    host_tag: GPU_AFTER_MPS
+    status: WAITING_ON_EXISTING_BACKFILL
+    prerequisite: "Complete the existing C_A1 paired native ParoQuant-vs-tight-clip backfill in queues/gpu_backfill.yaml; do not displace it."
+    gpu_step: "Native paired replay on Granite, DeepSeek, and Falcon exact cached gate IDs per dashboard/c_a1_gpu_backfill_runbook.md."
+    gate: "paired tail/CVaR win on >=2 models including sentinels, no median/tail regression, no no-gap artifact"
+    promotion_allowed: false
+  - id: L_G1_stronger_generator_verifier_margin_packet
+    priority: 2
+    paper: latentwire
+    contribution_role: positive_method
+    host_tag: GPU_AFTER_MPS
+    status: WAITING_ON_MPS_AND_CACHE_GATE
+    prerequisite: "MPS L_PC5/L_A2 verifier pool gate shows >=80 prompts with at least one correct candidate and verifier_score/source_score/target_score surfaces."
+    gpu_step: "Materialize >=300 dev/gate generated-solution prompts x16 or x32 candidates with a stronger generator, then score source, target, and verifier surfaces."
+    gate: "rerank gain beyond target_score/source_score with candidate derangement and wrong-row controls"
+    promotion_allowed: false
+  - id: L_PC6_cross_family_trained_residual_fuser
+    priority: 3
+    paper: latentwire
+    contribution_role: positive_method
+    host_tag: GPU_AFTER_MPS
+    status: WAITING_ON_MPS_HEADROOM
+    prerequisite: "L_PC1 or L_PC2 conditional MI materially exceeds the 0.281933-bit prior ceiling and tiny MPS fuser passes planted/control tests."
+    gpu_step: "Train a small frozen-endpoint receiver-conditioned residual fuser on dev/gate caches with wrong-row, zero-source, query-only, and reply-only controls."
+    gate: "trained fuser beats sane receiver baseline and free fusion with all destructive controls collapsed"
+    promotion_allowed: false
+  - id: C_T1_gpd_cvar_tail_selector_native_grid
+    priority: 4
+    paper: channel_set
+    contribution_role: positive_method
+    host_tag: GPU_AFTER_MPS
+    status: WAITING_ON_CACHED_CVAR_AND_BACKFILL
+    prerequisite: "Cached C_T1/C_U1/C_W1 screens show cross-model tail headroom and C_A1 paired backfill has no sentinel regression."
+    gpu_step: "Run a native model-local GPD/CVaR tail selector grid on exact dev/gate rows with paired ParoQuant denominators."
+    gate: "tail-risk improvement survives Granite, DeepSeek, and Falcon sentinels"
+    promotion_allowed: false
+  - id: C_Y3_tail_safe_paroquant_wrapper
+    priority: 5
+    paper: channel_set
+    contribution_role: positive_enabler
+    host_tag: GPU_AFTER_MPS
+    status: WAITING_ON_C_A1_BACKFILL
+    prerequisite: "C_A1 paired backfill exposes row-level conditions where fallback/reject avoids tail harm."
+    gpu_step: "Replay wrapper decisions natively only on paired rows; fallback to ParoQuant unless sentinels pass."
+    gate: "CVaR/tail harm reduction without median regression relative to native ParoQuant"
+    promotion_allowed: false

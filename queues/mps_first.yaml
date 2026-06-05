@@ -1,0 +1,105 @@
+mps_first:
+  - id: L_PC1_cross_family_specialist_ceiling
+    priority: 1
+    paper: latentwire
+    contribution_role: positive_method
+    host_tag: MPS_FIRST
+    status: QUEUED_FOR_DESIGN_AND_PRELAUNCH_REVIEW
+    purpose: "Measure whether a complementary specialist source has conditional information beyond the receiver state."
+    cheap_proxy: "Small <=1-2B specialist source plus small general receiver on dev/gate MCQA or generated-solution rows; CPU/MPS only."
+    mandatory_gate: "I(source_signal;Y|receiver_state) must be materially above the prior 0.281933-bit score-packet ceiling."
+    destructive_controls: ["source_top1_only", "source_confidence_only", "wrong_row_source", "target_state_only"]
+    kill_condition: "conditional MI <= 0.28 bits or gain disappears under source-top1/source-confidence controls"
+    command: "author a CPU/MPS receiver-conditioned ceiling runner, pass pre-launch repro/leakage/schema review, then run dev/gate only with --no-confirm"
+    promotion_allowed: false
+  - id: L_PC2_tool_augmented_source_ceiling
+    priority: 2
+    paper: latentwire
+    contribution_role: positive_method
+    host_tag: MPS_FIRST
+    status: QUEUED_FOR_DESIGN_AND_PRELAUNCH_REVIEW
+    purpose: "Test whether private calculator/code-exec source computation creates transmissible information unavailable to the receiver."
+    cheap_proxy: "GSM8K/SVAMP easy-to-medium rows with source-side tool result or verifier signal; receiver does not see tool output."
+    mandatory_gate: "tool/verifier signal adds beyond receiver state and equal-byte visible/tool-label controls"
+    destructive_controls: ["visible_tool_result_equal_byte", "wrong_row_tool_result", "tool_success_flag_only", "target_self_consistency"]
+    kill_condition: "tool signal does not beat equal-byte visible/tool-success controls"
+    command: "author CPU/MPS tool-private ceiling runner with synthetic planted test and --no-confirm guard before any row scoring"
+    promotion_allowed: false
+  - id: L_PC5_private_verifier_receiver_candidates
+    priority: 3
+    paper: latentwire
+    contribution_role: positive_method
+    host_tag: MPS_FIRST
+    status: QUEUED_FOR_DESIGN_AND_PRELAUNCH_REVIEW
+    purpose: "Avoid the weak-generator L-A2 failure by verifying candidates produced by the receiver or an existing high-entropy pool."
+    cheap_proxy: "Use dev/gate generated-solution pools only if >=80 prompts have at least one correct candidate and verifier/source/target scores are present."
+    mandatory_gate: "candidate-level verifier CMI and rerank gain beyond target_score/source_score baselines"
+    destructive_controls: ["candidate_derangement", "wrong_row_verifier", "target_verifier_only", "candidate_index_control"]
+    kill_condition: "correct-candidate subset <80 prompts or verifier gain is explained by target_score/source_score"
+    command: "extend the v3 verifier scorer only after a nondegenerate candidate pool exists; do not run if the subset gate fails"
+    promotion_allowed: false
+  - id: L_C2_control_trained_lcf_lite_proxy
+    priority: 4
+    paper: latentwire
+    contribution_role: positive_method
+    host_tag: MPS_FIRST
+    status: QUEUED_FOR_DESIGN_AND_PRELAUNCH_REVIEW
+    purpose: "Cheap trained-fuser proxy: test whether training beats free fusion while controls are baked into the objective."
+    cheap_proxy: "Frozen <=1B source/receiver features, tiny adapter, dev/gate split, wrong-row and zero-source contrastive negatives."
+    mandatory_gate: "trained receiver+source fuser beats sane receiver baseline and free fusion; wrong-row/zero-source collapse"
+    destructive_controls: ["zero_source", "wrong_row", "label_shuffle", "query_only", "reply_only"]
+    kill_condition: "gain <= free fusion (+0.029 ARC reference) or controls retain the gain"
+    command: "author tiny CPU/MPS fuser fixture plus planted-signal test; no GPU and no confirm"
+    promotion_allowed: false
+  - id: C_U1_drift_as_signal_router
+    priority: 5
+    paper: channel_set
+    contribution_role: positive_method
+    host_tag: MPS_FIRST
+    status: QUEUED_FOR_CACHED_SCREEN_DESIGN
+    purpose: "Use channel-set drift trajectory as a routing/uncertainty signal rather than another rotation/tail retune."
+    cheap_proxy: "Cached drift/KL/activation rows only; fit dev, evaluate gate; no native forward."
+    mandatory_gate: "drift features predict per-trace difficulty or policy uplift beyond baseline confidence on >=2 models"
+    destructive_controls: ["random_drift_features", "wrong_horizon_features", "baseline_confidence_only", "model_id_only"]
+    kill_condition: "no gate uplift prediction beyond confidence or only one-model signal"
+    command: "build cached CPU screen over existing Channel-Set drift artifacts with identical-row split manifests"
+    promotion_allowed: false
+  - id: C_W1_fixed_library_warmup_selector
+    priority: 6
+    paper: channel_set
+    contribution_role: positive_enabler
+    host_tag: MPS_FIRST
+    status: QUEUED_FOR_CACHED_SCREEN_DESIGN
+    purpose: "Choose ParoQuant, C_A1, survival, or reject from warmup features instead of forcing a brittle policy."
+    cheap_proxy: "Cached warmup features and existing gate summaries; no GPU forward."
+    mandatory_gate: "selector beats best fixed policy or improves tail-safe rejection without sentinel regression"
+    destructive_controls: ["random_selector", "model_only_selector", "wrong_horizon_warmup", "best_fixed_policy"]
+    kill_condition: "selector fails to beat best fixed policy or harms DeepSeek/Falcon sentinel rows"
+    command: "materialize a dev/gate warmup-policy cache audit before any native replay"
+    promotion_allowed: false
+  - id: C_S1_clean_survival_stablecore_denominator
+    priority: 7
+    paper: channel_set
+    contribution_role: positive_method
+    host_tag: MPS_FIRST
+    status: QUEUED_FOR_CACHED_SCREEN_DESIGN
+    purpose: "Repair the C-F survival idea only if the denominator is identical-row and random/static controls fail."
+    cheap_proxy: "Cached identical-row survival/hazard rows; no C-F evidence reuse from the contaminated branch."
+    mandatory_gate: "survival core beats random/static on identical row IDs with no no-gap artifact"
+    destructive_controls: ["random_core", "static_core", "wrong_row_core", "no_gap_filter"]
+    kill_condition: "random/static control matches or beats survival core"
+    command: "author a fresh preregistered denominator audit; do not queue old C-F artifacts"
+    promotion_allowed: false
+  - id: C_Y5_channel_set_defense_bundle
+    priority: 8
+    paper: channel_set
+    contribution_role: diagnostic_defense
+    host_tag: MPS_FIRST
+    status: QUEUED_FOR_AUDIT_PACKET
+    purpose: "Automate OSC/DecDEC/no-gap/ParoQuant-parity checks needed before any Channel-Set claim."
+    cheap_proxy: "File-level audit and cached-row manifest validation."
+    mandatory_gate: "all claim rows map to paired baselines, CE21 no-gap status, OSC/DecDEC adjacency note, and ParoQuant parity status"
+    destructive_controls: ["missing_pairing", "missing_no_gap", "missing_paroquant", "unmatched_model_rows"]
+    kill_condition: "any claim-bearing row lacks paired baseline/control evidence"
+    command: "build an audit packet from current dashboards and runbooks; no experiments"
+    promotion_allowed: false
