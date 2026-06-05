@@ -1,36 +1,22 @@
 branch: codex-campaign
-commit: 5054775a47dc11a490e19352bbc58f4664bb17fa
-created_utc: 2026-06-05T05:56:56+00:00
+commit: fe6a23823db5933b03aadc6b49b972220495934c
+created_utc: 2026-06-05T09:23:31+00:00
 
 ## codex-campaign...origin/codex-campaign
-AM COMMIT.txt
-AM DIFFSTAT.txt
-A  NEXT_6_COMMANDS.md
-A  OMITTED_ARTIFACTS.md
-AM TESTS_RUN.txt
-M  dashboard/breakthrough_board.md
-M  dashboard/c_a1_gpu_backfill_runbook.md
-A  dashboard/channel_set_next_gpu.md
-A  dashboard/channel_set_schema_audit.md
-A  dashboard/confirm_path_audit.md
-M  dashboard/gpu_handoff_plan.md
-M  dashboard/kill_board.md
-A  dashboard/l_c2_oracle_decomposition.md
-A  dashboard/l_pc1_reconciliation.md
-A  dashboard/l_pc5_deployable_verifier_plan.md
-M  dashboard/morning_brief.md
-M  lessons/LESSONS_LEDGER.md
-M  paper/channel_set/figures_todo.md
-M  paper/latentwire/claim_boundary.md
-M  queues/gpu_backfill.yaml
-M  queues/gpu_foreground.yaml
-M  queues/parked.yaml
-MM review_packet.zip
-A  review_packets/review_packet_20260605T055515Z_5054775a.zip
-A  scripts/audit_confirm_paths.py
-A  scripts/build_review_packet.py
-AM scripts/check_review_packet.py
+ M COMMIT.txt
+ M DIFFSTAT.txt
+ M dashboard/iteration_log.md
+ M review_packet.zip
+ M scripts/build_review_packet.py
 ?? codex_handoff_bundle.zip
 ?? eval_package_v3.zip
-?? review_packets/review_packet_20260605T055626Z_5054775a.zip
-?? review_packets/review_packet_20260605T055639Z_5054775a.zip
+?? review_packets/review_packet_20260605T062332Z_fe6a2382.zip
+?? review_packets/review_packet_20260605T062346Z_fe6a2382.zip
+?? review_packets/review_packet_20260605T063538Z_fe6a2382.zip
+?? review_packets/review_packet_20260605T065139Z_fe6a2382.zip
+?? review_packets/review_packet_20260605T065219Z_fe6a2382.zip
+?? review_packets/review_packet_20260605T092330Z_fe6a2382.zip
+?? review_packets/review_packet_20260605T092331Z_fe6a2382.zip
+?? reviews/overnight_mps_live@bbe0f3fe471af710e4a467e8d35265acaaba83ed3c703822754defb8f6a5506a.json
+?? reviews/overnight_mps_live@fc29371f2b6a22f0c3daf70ef26d5b3194a42b12a08c2f15eda85aea5daa333d.json
+?? scripts/overnight_mps_live.py

@@ -1,28 +1,6 @@
-COMMIT.txt                                         |  35 ++++
- DIFFSTAT.txt                                       |  28 ++++
- NEXT_6_COMMANDS.md                                 |   8 +
- OMITTED_ARTIFACTS.md                               |   5 +
- TESTS_RUN.txt                                      |  49 ++++++
- dashboard/breakthrough_board.md                    |  10 +-
- dashboard/c_a1_gpu_backfill_runbook.md             | 143 ++++-------------
- dashboard/channel_set_next_gpu.md                  |  21 +++
- dashboard/channel_set_schema_audit.md              |  34 ++++
- dashboard/confirm_path_audit.md                    |  45 ++++++
- dashboard/gpu_handoff_plan.md                      |   2 +-
- dashboard/kill_board.md                            |   9 ++
- dashboard/l_c2_oracle_decomposition.md             |  46 ++++++
- dashboard/l_pc1_reconciliation.md                  |  46 ++++++
- dashboard/l_pc5_deployable_verifier_plan.md        |  49 ++++++
- dashboard/morning_brief.md                         |  12 +-
- lessons/LESSONS_LEDGER.md                          |   7 +
- paper/channel_set/figures_todo.md                  |   4 +-
- paper/latentwire/claim_boundary.md                 |   6 +-
- queues/gpu_backfill.yaml                           |  19 ++-
- queues/gpu_foreground.yaml                         |   2 +-
- queues/parked.yaml                                 |   4 +-
- review_packet.zip                                  | Bin 235444 -> 275083 bytes
- .../review_packet_20260605T055515Z_5054775a.zip    | Bin 0 -> 274792 bytes
- scripts/audit_confirm_paths.py                     | 174 ++++++++++++++++++++
- scripts/build_review_packet.py                     | 177 +++++++++++++++++++++
- scripts/check_review_packet.py                     | 143 +++++++++++++++++
- 27 files changed, 950 insertions(+), 128 deletions(-)
+COMMIT.txt                     |  48 +++++++++++------------------
+ DIFFSTAT.txt                   |  34 ++++-----------------
+ dashboard/iteration_log.md     |   5 +++
+ review_packet.zip              | Bin 275092 -> 320550 bytes
+ scripts/build_review_packet.py |  67 +++++++++++++++++++++++++++++++++++++++--
+ 5 files changed, 92 insertions(+), 62 deletions(-)

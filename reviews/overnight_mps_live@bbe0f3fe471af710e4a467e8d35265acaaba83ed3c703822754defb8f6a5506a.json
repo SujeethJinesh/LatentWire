@@ -1,0 +1,67 @@
+{
+  "code_sha": "bbe0f3fe471af710e4a467e8d35265acaaba83ed3c703822754defb8f6a5506a",
+  "created_utc": "2026-06-05T06:20:17Z",
+  "method_id": "overnight_mps_live",
+  "review_type": "prelaunch_full_panel",
+  "reviewed_files": {
+    "scripts/build_review_packet.py": "c1d9fe02df56b928ab2473f565d2b13e3c8cbf0526e9848747eb0df4615f43f0",
+    "scripts/overnight_mps_live.py": "bbe0f3fe471af710e4a467e8d35265acaaba83ed3c703822754defb8f6a5506a"
+  },
+  "run_scope": {
+    "device": "mps_or_cpu_fallback_as_requested",
+    "experiment_family": "overnight_mps",
+    "mac_results_promotion_allowed": false,
+    "no_confirm_data": true
+  },
+  "reviewers": {
+    "baseline-adversary-reviewer": {
+      "agent_id": "019e966e-e3ac-7ea3-a02c-95d5c331337b",
+      "checked_items": [
+        "receiver/source-index/equal-byte text baselines present",
+        "L_PC5 wrong-row/zero-source/query-only/reply-only controls present",
+        "source-follow guards present",
+        "L_C2 and L_PC1 emit setup-blocked records rather than false claims"
+      ],
+      "verdict": "PASS"
+    },
+    "leakage-reviewer": {
+      "agent_id": "019e966e-cea9-7861-b1a3-0179da9e68b3",
+      "checked_items": [
+        "global open audit rejects *_confirm* paths",
+        "data loaders reject confirm-looking paths",
+        "review packet aborts on embedded confirm-looking source/access paths",
+        "L_MPS1 packet does not source-choice-copy",
+        "packet-source-top1 MI audit is computed and gated",
+        "L_PC5 verifier prompt is gold-blind"
+      ],
+      "verdict": "PASS"
+    },
+    "repro-reviewer": {
+      "agent_id": "019e966e-9697-7b51-9ad5-bdb12ff984f8",
+      "checked_items": [
+        "fixed seeds and hard deterministic algorithm request",
+        "code hash, environment, model snapshot paths, and access manifest captured",
+        "write-once final result files",
+        "checkpoint/resume support",
+        "prelaunch review enforced before result-root creation and scoring"
+      ],
+      "verdict": "PASS"
+    },
+    "stats-reviewer": {
+      "agent_id": "019e966e-acce-7f63-ab2d-e3bfc20b49bc",
+      "checked_items": [
+        "paired BCa CI fields",
+        "exact one-sided paired McNemar/binomial p-values",
+        "Holm gate",
+        "Holm-adjusted MDE/power metadata",
+        "floor/cap and underpowered verdict handling",
+        "no Mac pass-like labels or promotion"
+      ],
+      "mde_target": 0.05,
+      "power_target": 0.8,
+      "verdict": "PASS"
+    }
+  },
+  "status": "PASS",
+  "verdict": "ALL_REQUIRED_REVIEWERS_PASS"
+}

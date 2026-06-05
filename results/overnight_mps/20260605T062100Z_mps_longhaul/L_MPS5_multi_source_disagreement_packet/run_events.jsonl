@@ -1,0 +1,1 @@
+{"blocker": "Stretch item requires two completed complementary-source runs; those assets are not yet available.", "code_sha256": "fc29371f2b6a22f0c3daf70ef26d5b3194a42b12a08c2f15eda85aea5daa333d", "event": "setup_blocked", "exp_id": "L_MPS5_multi_source_disagreement_packet", "status": "SETUP_BLOCKED_STRETCH_AFTER_REQUIRED_ASSETS", "timestamp_utc": "2026-06-05T09:23:31+00:00"}

@@ -1,0 +1,68 @@
+{
+  "code_sha": "fc29371f2b6a22f0c3daf70ef26d5b3194a42b12a08c2f15eda85aea5daa333d",
+  "created_utc": "2026-06-05T06:36:00Z",
+  "method_id": "overnight_mps_live",
+  "review_type": "prelaunch_full_panel_with_delta_reviews",
+  "reviewed_files": {
+    "scripts/build_review_packet.py": "a457931434b0fcd3b8b1a9a29e3da31266e5914456209d9d1c74fd9eac9441a2",
+    "scripts/overnight_mps_live.py": "fc29371f2b6a22f0c3daf70ef26d5b3194a42b12a08c2f15eda85aea5daa333d"
+  },
+  "run_scope": {
+    "device": "mps_with_cpu_fallback_and_prefer_fallback_models_when_needed",
+    "experiment_family": "overnight_mps",
+    "mac_results_promotion_allowed": false,
+    "no_confirm_data": true
+  },
+  "reviewers": {
+    "baseline-adversary-reviewer": {
+      "agent_id": "019e967a-a2d3-7c92-9395-26c5945a01c2",
+      "checked_items": [
+        "fallback model resolution preserves source/receiver roles",
+        "receiver/source-index/equal-byte text baselines present",
+        "L_PC5 wrong-row/zero-source/query-only/reply-only controls present",
+        "setup-block records remain non-claim-like"
+      ],
+      "verdict": "PASS"
+    },
+    "leakage-reviewer": {
+      "agent_id": "019e967a-8e98-77d2-946b-49c2379e092f",
+      "checked_items": [
+        "audited opens reject *_confirm* paths",
+        "data loaders reject confirm-looking paths",
+        "review packet omits embedded confirm-looking source/access paths",
+        "packet-source-top1 MI audit is computed and gated",
+        "L_PC5 verifier prompt is gold-blind",
+        "checkpoint model paths are provenance-only"
+      ],
+      "verdict": "PASS"
+    },
+    "repro-reviewer": {
+      "agent_id": "019e967c-9f2c-72e2-8df7-399bed5318c5",
+      "checked_items": [
+        "prelaunch validates runner hash and packet-builder hash",
+        "checkpoint rows include current code_sha256",
+        "resume rejects mixed-hash checkpoint rows",
+        "checkpoint rows include model snapshot paths",
+        "resumed summaries preserve model snapshot paths",
+        "determinism, write-once outputs, checkpointing, access audit, and *_confirm* refusal"
+      ],
+      "verdict": "PASS"
+    },
+    "stats-reviewer": {
+      "agent_id": "019e967a-704c-7c43-a36c-d117c19896a8",
+      "checked_items": [
+        "exact one-sided paired McNemar/binomial p-values",
+        "paired BCa CI metadata",
+        "Holm family gates",
+        "MDE target and power adequacy",
+        "underpowered verdict handling",
+        "no Mac PASS/PASSED or deployable-positive labels"
+      ],
+      "mde_target": 0.05,
+      "power_target": 0.8,
+      "verdict": "PASS"
+    }
+  },
+  "status": "PASS",
+  "verdict": "ALL_REQUIRED_REVIEWERS_PASS"
+}

@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import json
+import re
 import subprocess
 import zipfile
 from datetime import datetime, timezone
@@ -14,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MAX_FILE_BYTES = 5 * 1024 * 1024
 HARD_EXTS = {".npz", ".pt", ".bin", ".safetensors", ".npy", ".pkl"}
+EMBEDDED_CONFIRM_RE = re.compile(r"confirm|confirmation", re.I)
 
 
 def run(cmd: list[str]) -> str:
@@ -27,6 +30,49 @@ def confirm_path(name: str) -> bool:
 def hard_excluded(path: Path) -> bool:
     rel = path.as_posix()
     return path.suffix in HARD_EXTS or rel.startswith("caches/") or "/caches/" in rel
+
+
+def embedded_confirm_findings(name: str, data: bytes) -> list[str]:
+    path = Path(name)
+    if path.suffix not in {".json", ".jsonl"}:
+        return []
+    text = data.decode("utf-8", errors="replace")
+    findings: list[str] = []
+
+    def check_value(value, pointer: str) -> None:
+        if isinstance(value, str):
+            if EMBEDDED_CONFIRM_RE.search(value):
+                findings.append(f"{name}:{pointer}={value}")
+        elif isinstance(value, list):
+            for idx, item in enumerate(value):
+                check_value(item, f"{pointer}[{idx}]")
+        elif isinstance(value, dict):
+            walk(value, pointer)
+
+    def walk(obj, pointer: str) -> None:
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                child = f"{pointer}/{key}" if pointer else str(key)
+                if key in {"source_path", "access_manifest", "file_access_manifest"}:
+                    check_value(value, child)
+                elif isinstance(value, (dict, list)):
+                    check_value(value, child)
+        elif isinstance(obj, list):
+            for idx, item in enumerate(obj):
+                check_value(item, f"{pointer}[{idx}]")
+
+    try:
+        if path.suffix == ".jsonl":
+            for line_no, line in enumerate(text.splitlines(), start=1):
+                if line.strip():
+                    walk(json.loads(line), f"line{line_no}")
+        else:
+            walk(json.loads(text), "")
+    except Exception:
+        for match in re.finditer(r'"(?:source_path|access_manifest|file_access_manifest)"\s*:\s*"([^"]*)"', text):
+            if EMBEDDED_CONFIRM_RE.search(match.group(1)):
+                findings.append(f"{name}:regex={match.group(1)}")
+    return findings
 
 
 def add_if_exists(paths: list[Path], rel: str) -> None:
@@ -52,6 +98,10 @@ def packet_candidates() -> list[Path]:
         "lessons/*.md",
         "results/mps_first*/**/summary.json",
         "results/mps_first*/**/raw_rows.jsonl",
+        "results/overnight_mps/**/summary.json",
+        "results/overnight_mps/**/raw_rows.jsonl",
+        "results/overnight_mps/**/raw_rows.checkpoint.jsonl",
+        "results/overnight_mps/**/run_events.jsonl",
     ]:
         paths.extend(path for path in glob_paths(pattern) if path.is_file())
     for rel in [
@@ -68,6 +118,7 @@ def packet_candidates() -> list[Path]:
         "scripts/run_mps_first_strict_iteration.py",
         "scripts/stage1_row_safe_screens.py",
         "scripts/overnight_v3_corrected_probes.py",
+        "scripts/overnight_mps_live.py",
     ]:
         add_if_exists(paths, rel)
     return sorted(set(paths))
@@ -112,12 +163,22 @@ def add_packet_file(entries: dict[str, bytes], omitted: list[str], path: Path) -
     if size > MAX_FILE_BYTES:
         if path.suffix in {".jsonl", ".csv", ".md", ".txt", ".yaml", ".json"}:
             head = "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[:200]) + "\n"
-            entries[name] = head.encode("utf-8")
+            data = head.encode("utf-8")
+            findings = embedded_confirm_findings(name, data)
+            if findings:
+                omitted.append(f"{name}: hard-excluded embedded confirm-looking source/access paths {findings[:5]}")
+                return
+            entries[name] = data
             omitted.append(f"{name}: included 200-line head instead of full {size} byte file")
         else:
             omitted.append(f"{name}: skipped {size} byte file")
         return
-    entries[name] = path.read_bytes()
+    data = path.read_bytes()
+    findings = embedded_confirm_findings(name, data)
+    if findings:
+        omitted.append(f"{name}: hard-excluded embedded confirm-looking source/access paths {findings[:5]}")
+        return
+    entries[name] = data
 
 
 def build(out: Path) -> Path:
@@ -143,7 +204,7 @@ def build(out: Path) -> Path:
         "",
         "## Guardrails",
         "- No raw paths matching `*_confirm*` are included.",
-        "- Confirm-looking embedded `source_path` values must be audited in `dashboard/confirm_path_audit.md`.",
+        "- Files with confirm-looking embedded `source_path` or access-manifest values are omitted and listed above.",
         "- No model weights, binary arrays, or caches are included.",
     ])
     entries["INDEX.md"] = ("\n".join(index_lines) + "\n").encode("utf-8")
