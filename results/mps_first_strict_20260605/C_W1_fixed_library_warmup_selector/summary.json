@@ -1,0 +1,25 @@
+{
+  "achieved_n": 500,
+  "blocker": "Warmup KL rows can be materialized, but no cached per-policy outcome matrix exists for ParoQuant/C_A1/survival/reject on the same rows.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:54:43+00:00",
+  "data_floor": 500,
+  "exact_command": "venv_arm64/bin/python scripts/materialize_channel_set_warmup_policy_cache.py --input experimental/outlier_migrate/phase9/results --split dev,gate --locked-row-ids splits/stage0_cache_rows_hash.jsonl --policies paroquant,c_a1,survival,reject --no-confirm",
+  "failed_attempts": [
+    {
+      "attempt": "materialize warmup features from phase9 KL rows and look for same-row policy outcomes",
+      "blocking_resource": "dev/gate warmup-policy outcome cache",
+      "result": "features_present_outcomes_missing",
+      "rows_scanned": 500
+    }
+  ],
+  "floor_met": true,
+  "id": "C_W1_fixed_library_warmup_selector",
+  "paper": "channel_set",
+  "priority": 6,
+  "promotion_allowed": false,
+  "result_root": "results/mps_first_strict_20260605",
+  "status": "MAC_FLOOR_COMPUTED_SCHEMA_BLOCKED",
+  "verdict": "INCONCLUSIVE_SCHEMA_MISMATCH",
+  "wall_clock_seconds": 0.048367977142333984
+}

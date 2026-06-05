@@ -43,3 +43,4 @@
 | 3 | `L_PC5_private_verifier_receiver_candidates` | `MAC_FLOOR_POSITIVE_ORACLE_VERIFIER_CEILING` | 500 | 500 | Easy arithmetic oracle-verifier ceiling meets the candidate-pool floor; it is a sanity ceiling, not a deployable L-A2 method. |
 | 4 | `L_C2_control_trained_lcf_lite_proxy` | `MAC_FLOOR_POSITIVE_ORACLE_FUSER_CEILING` | 500 | 500 | Oracle source-feature fuser clears the sanity floor; deployable status remains blocked because this uses gold SVAMP equations as source features. |
 | 5 | `C_U1_drift_as_signal_router` | `MAC_FLOOR_COMPUTED_SCHEMA_BLOCKED` | 500 | 500 | Floor-sized KL trajectory rows exist, but they lack paired difficulty/policy-uplift labels required by the C_U1 mandatory gate. |
+| 6 | `C_W1_fixed_library_warmup_selector` | `MAC_FLOOR_COMPUTED_SCHEMA_BLOCKED` | 500 | 500 | Warmup KL rows can be materialized, but no cached per-policy outcome matrix exists for ParoQuant/C_A1/survival/reject on the same rows. |
