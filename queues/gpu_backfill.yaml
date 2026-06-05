@@ -1,21 +1,24 @@
 backfill:
   - id: channel_set_c_a1_tail_cvar_grid
     priority: 1
-    reason: first_after_overnight_screen_limited_offline_gate_headroom_needs_paired_native_forward_parity_and_three_model_sentinels
-    command: "run the paired matrix in dashboard/c_a1_gpu_backfill_runbook.md: ParoQuant baseline vs tight-clip C_A1 on exact cached Granite, DeepSeek, and Falcon row IDs; abort if any model lacks same-row pairing"
-    required_cache_or_model: "native W4A16/ParoQuant runner plus exact cached C_A1 gate ids; DeepSeek/Falcon require paired tight-clip wrappers, not denominator-only sentinels"
-    est_gpu_hours: 2-4
+    status: BLOCKED_CONFIRM_CONTAMINATED
+    reason: cached_granite_c_a1_gate_ids_reference_confirmation_source_path
+    command: "blocked by dashboard/c_a1_gpu_backfill_runbook.md; do not launch until a fresh non-confirm Granite/DeepSeek/Falcon same-row manifest replaces the contaminated cached gate IDs"
+    required_cache_or_model: "fresh non-confirm dev/gate row manifest plus native W4A16/ParoQuant runner; every model needs same-row ParoQuant and tight-clip C_A1 outputs"
+    est_gpu_hours: "0 now; 2-4 only after confirm-clean manifest exists"
     promotion_allowed: false
   - id: channel_set_c_a1_paroquant_parity_card
     priority: 2
-    reason: paired_native_paroquant_parity_card_for_c_a1_before_any_promotion
-    command: "prepare a user-run packet for C_A1 cached gate rows only; no foreground confirmation claim"
-    required_cache_or_model: "real W4A16-capable checkpoint plus exact cached C_A1 gate identifiers"
-    est_gpu_hours: 2-4
+    status: BLOCKED_CONFIRM_CONTAMINATED
+    reason: parity_card_cannot_use_cached_granite_confirmation_gate_ids
+    command: "blocked pending fresh non-confirm C_A1 same-row manifest; see dashboard/c_a1_gpu_backfill_runbook.md"
+    required_cache_or_model: "fresh non-confirm Granite/DeepSeek/Falcon row IDs and native W4A16-capable checkpoint"
+    est_gpu_hours: "0 now; 2-4 only after confirm-clean manifest exists"
     promotion_allowed: false
   - id: latentwire_l_a2_generated_solution_rerank_cache
     priority: 3
     reason: missing_powered_generated_solution_candidate_pools_and_verifier_source_target_surfaces
+    mac_only: true
     command: "venv_arm64/bin/python scripts/overnight_v3_corrected_probes.py --device cpu --run-exp exp4 --exp4-prompts 300 --exp4-candidates 16 --exp4-max-new-tokens 96 --batch-size 1 --require-verifier-score --no-confirm"
     required_cache_or_model: "dev/gate generated-solution candidate pools plus source_score, target_score, and verifier_score fields; require >=80 prompts with at least one correct candidate before L_A2 screening"
     est_gpu_hours: 0-2

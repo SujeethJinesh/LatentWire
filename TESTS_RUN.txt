@@ -1,0 +1,49 @@
+Validation log for review_packet.zip
+
+Repository: /Users/sujeethjinesh/Desktop/LatentWire
+Environment: venv_arm64
+
+Commands run:
+
+1. venv_arm64/bin/python scripts/check_handoff.py
+   Result: PASS
+   Output summary: handoff files OK; AGENTS.md = 21038 bytes, under 32 KiB.
+
+2. venv_arm64/bin/python -m compileall -q scripts/build_review_packet.py scripts/check_review_packet.py scripts/audit_confirm_paths.py scripts/run_mps_first_strict_iteration.py
+   Result: PASS
+
+3. venv_arm64/bin/python scripts/audit_confirm_paths.py
+   Result: PASS
+   Output summary: wrote dashboard/confirm_path_audit.md with 18 hit(s); C_A1 gate status INVALID_CONFIRM_CONTAMINATED.
+
+4. venv_arm64/bin/python - <<'PY'
+   import yaml
+   from pathlib import Path
+   paths=list(Path('queues').glob('*.yaml'))+list(Path('registry').rglob('*.yaml'))
+   for p in paths:
+       yaml.safe_load(p.read_text())
+   print(f'parsed {len(paths)} yaml files')
+   PY
+   Result: PASS
+   Output summary: parsed 18 yaml files.
+
+5. rg -n "<[^>\n]+>" dashboard/c_a1_gpu_backfill_runbook.md dashboard/gpu_handoff_plan.md dashboard/channel_set_next_gpu.md queues/gpu_backfill.yaml queues/gpu_foreground.yaml
+   Result: PASS
+   Output summary: no unresolved placeholder matches.
+
+6. venv_arm64/bin/python -m pytest tests/test_stage0_cache_split.py tests/test_stage1_row_safe_screens.py
+   Result: PASS
+   Output summary: 8 passed in 0.16s.
+   Note: requested directories test_stage0 and test_stage1 are absent; the repo has stage tests as files.
+
+7. venv_arm64/bin/python -m pytest tests/test_evaluate_helpers.py tests/test_import_compatibility.py
+   Result: PASS
+   Output summary: 106 passed in 0.47s.
+
+8. venv_arm64/bin/python scripts/build_review_packet.py
+   Result: PASS
+   Output summary: wrote review_packet.zip; wrote timestamped copy under review_packets/.
+
+9. venv_arm64/bin/python scripts/check_review_packet.py review_packet.zip
+   Result: PASS
+   Output summary: review packet OK; final size and file count are reported by scripts/check_review_packet.py and in the handoff response.

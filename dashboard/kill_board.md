@@ -22,6 +22,15 @@
 | C2C_generated_answer_packet | latentwire | results/svamp32_c2c_generated_answer_packet_audit_20260505/generated_answer_packet_audit.json | 0.000000 |  | answer value/index equals same-byte visible-answer control; not source-private |
 | KVCOMM_existing_cache_smoke_controls | latentwire | results/dense_baseline_mcqa_smoke_20260505/kvcomm_damage_diagnostic_n16.json | 0.000000 | 0.000000 | matched predictions have 1.0 agreement with zero-source controls across inspected smokes |
 | C_F_m10_random_control | channel_set | experimental/outlier_migrate/phase9/results/om_phase9_m10_granite_small_vac12_20260515T085800Z/checker_result.json | -0.761487 |  | random-bin control beats M10; C-F cannot promote before denominator cleanup |
+
+## Consolidated Audit Kills And Parks
+
+| method_id | verdict | evidence | action |
+| --- | --- | --- | --- |
+| `L_PC2_tool_augmented_source_ceiling` | `KILLED_BY_EQUAL_BYTE_VISIBLE_TOOL_CONTROL` | private tool result is valuable, but the visible equal-byte tool-result control ties it | do not frame as no-text latent communication |
+| `L_PC5_private_verifier_receiver_candidates` | `ORACLE_ONLY` | strict verifier/source scores are computed from answer correctness | park until a gold-blind verifier cache clears the nondegenerate prompt floor |
+| `L_C2_control_trained_lcf_lite_proxy` | `ORACLE_ONLY` | strict fuser prediction is the equation-derived `tool_answer` | park until gold-free source/receiver cache features exist |
+| `C_A1_cvar_evt_clip_grid` | `BLOCKED_CONFIRM_CONTAMINATED` | cached Granite tight-clip gate source is confirmation-contaminated | replace with fresh non-confirm same-row three-model packet before GPU handoff |
 ## MPS-First Parked/Negative State
 
 | priority | probe | status | achieved_n | interpretation |

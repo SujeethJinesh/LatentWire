@@ -1,8 +1,8 @@
 parked:
   - id: channel_set_w4a16_confirmation
     reason: needs_gpu
-    command: "python experimental/outlier_migrate/phase2/create_native_run_packet.py --label channel_set_confirmation --model <GPU_MODEL>"
-    required_cache_or_model: "real W4A16-capable model checkpoint and quantized-forward runner"
+    command: "blocked until a reviewed native W4A16 model target is selected; then run experimental/outlier_migrate/phase2/create_native_run_packet.py with the selected model name"
+    required_cache_or_model: "selected real W4A16-capable model checkpoint and quantized-forward runner"
     est_gpu_hours: 4-12
     why_cpu_cached_insufficient: "offline per-trace recovery cannot confirm new quantized forwards"
   - id: hybridkernel_native_profiler

@@ -4,10 +4,18 @@ No Mac paper-positive rows.
 
 | priority | method_id | paper | status | evidence | next gate |
 | --- | --- | --- | --- | --- | --- |
-| 1 | C_A1_cvar_evt_clip_grid | channel_set | CPU_SCREENED | 6 gate rows, 5 positive median, DeepSeek sentinel negative and Falcon weak positive | native W4A16/ParoQuant backfill with DeepSeek/Falcon regression sentinels |
+| 1 | C_A1_cvar_evt_clip_grid | channel_set | BLOCKED_CONFIRM_CONTAMINATED | cached Granite tight-clip gate source references confirmation path | fresh non-confirm same-row Granite/DeepSeek/Falcon ParoQuant-vs-tight-clip manifest |
 | 2 | L_A2_verifier_rerank | latentwire | PARKED_NEEDS_CACHE | no generated-solution score cache exists | materialize dev/gate candidate pools with source/target/verifier scores |
 | 3 | C2C_qwen25_05b_to_qwen3_06b_replay_anchor | latentwire | CPU_SCREENED | SVAMP replay tractable, but mechanism trace oracle failed | official MMLU-Redux matched reproduction packet before any claim |
 | 4 | CACHEWIRE_oracle_syndrome_bound | latentwire | CPU_SCREENED_ORACLE_ONLY | 1-byte oracle syndrome reaches 14-15/32 but deployable predictors fail | collect pre-answer teacher/KV deltas and require source-necessary clean rows |
+
+## Consolidated Audit Leads
+
+| method | status | evidence | next gate |
+| --- | --- | --- | --- |
+| `L_PC1_cross_family_specialist_ceiling` | `PENDING_FRESH_DEPLOYABLE_OR_KILL` | cached strict slice `+0.042969`, CI `[+0.015625, +0.068359]` | fresh two-pair/two-task non-confirm matrix with source-index and equal-byte text controls |
+| `L_PC5_private_verifier_receiver_candidates` | `ORACLE_ONLY` | strict `+0.666` rerank gain uses `cand == answer` verifier scoring | gold-blind verifier/source/target score cache with at least `80` nondegenerate prompts |
+| `L_C2_control_trained_lcf_lite_proxy` | `ORACLE_ONLY` | strict `+0.832` fuser gain uses SVAMP equation-derived `tool_answer` | gold-free source/receiver feature cache with wrong-row, zero-source, source-index, and text controls |
 
 Updated by `scripts/overnight_cpu_screening.py`; Mac status remains screening-only.
 ## MPS-First Iteration

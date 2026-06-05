@@ -8,7 +8,7 @@ The held-out answer is unfavorable for final claims: many caches are prior test/
 
 ## Overnight V3 Patch Status
 
-- C_A1 is `NEXT_GPU_BACKFILL` with `promotion_allowed=false`; the GPU packet must run paired ParoQuant-vs-tight-clip native rows on Granite, DeepSeek, and Falcon.
+- C_A1 is `BLOCKED_CONFIRM_CONTAMINATED` with `promotion_allowed=false`; the cached Granite tight-clip gate source references a confirmation path, so the GPU packet must wait for fresh non-confirm same-row ParoQuant-vs-tight-clip IDs on Granite, DeepSeek, and Falcon.
 - L_SCORECOMP, L_B1, and L_Q1 are terminal killed score-packet branches and must not be queued.
 - L_A2 is `INCONCLUSIVE_UNDERPOWERED_NEEDS_VERIFIER_CACHE`; the next cache must use at least 300 generated-solution prompts, include `verifier_score`, and screen only if the correct-candidate subset is large enough.
 - `queues/gpu_foreground.yaml` remains empty.
@@ -23,5 +23,13 @@ The held-out answer is unfavorable for final claims: many caches are prior test/
 - `C_W1_fixed_library_warmup_selector`: choose ParoQuant/C_A1/survival/reject from warmup features; kill if best fixed policy wins.
 - `C_S1_clean_survival_stablecore_denominator`: only a fresh identical-row denominator can revive survival StableCore.
 - `C_Y5_channel_set_defense_bundle`: audit packet for OSC/DecDEC/no-gap/ParoQuant parity before any Channel-Set claim.
-- `C_A1` remains first in `queues/gpu_backfill.yaml`; the new GPU-after-MPS queue does not displace it.
+- `C_A1` remains first in `queues/gpu_backfill.yaml`; the new GPU-after-MPS queue does not displace it, but it is blocked until the confirm-clean manifest exists.
 - `queues/gpu_foreground.yaml` remains empty; this pass created ideation/filter/queue artifacts only.
+
+## 2026-06-05 Consolidated Audit
+
+- Confirm-path audit complete: `dashboard/confirm_path_audit.md` found `17` embedded confirm-looking source-path hits and marks `C_A1_GATE_STATUS: INVALID_CONFIRM_CONTAMINATED`.
+- C_A1 remains first in `queues/gpu_backfill.yaml`, but both C_A1 backfill items are blocked until fresh non-confirm row IDs exist; `queues/gpu_foreground.yaml` is empty.
+- L_PC1 cached strict evidence is a small powered ceiling signal only: `+0.042969`, CI `[+0.015625, +0.068359]`, but it lacks the fresh second pair/task and source-index/equal-byte text controls.
+- L_PC5 and L_C2 strict positives are oracle-only: L_PC5 scores `cand == answer`; L_C2 uses SVAMP equation-derived `tool_answer`.
+- Channel-Set C_U1 and C_W1 are schema-blocked, C_S1 remains below the local floor at `198/500`, and C_Y5 waits on native same-row pairing.

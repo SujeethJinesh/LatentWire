@@ -9,7 +9,7 @@ No foreground GPU job is authorized from the powered LatentWire oracle ladder.
 ## Allowed Backfill Only
 
 - L-A2 generated-solution rerank cache: materialize at least 300 dev/gate prompts x16 candidates with verifier/source/target score surfaces; require `verifier_score` and at least about 80 prompts with one correct candidate before screening; est 0-2 GPU hours; no promotion allowed.
-- C_A1 ParoQuant parity and tail/CVaR grid: replay exact cached gate packets with paired native ParoQuant baseline versus tight-clip C_A1 rows on Granite, DeepSeek, and Falcon; DeepSeek/Falcon denominator-only rows are invalid sentinels; est 2-4 GPU hours; no promotion allowed.
+- C_A1 ParoQuant parity and tail/CVaR grid: blocked. `dashboard/confirm_path_audit.md` marks the cached Granite tight-clip gate source as confirmation-contaminated, so the old cached gate packet must not run. A future backfill may run only after fresh non-confirm dev/gate row IDs exist for Granite, DeepSeek, and Falcon with same-row ParoQuant versus tight-clip C_A1 pairing; promotion remains disabled.
 - C_D1 OSC/DecDEC: only materialize a preregistered replacement shard for the current underpowered negative row; est 2-4 GPU hours; no promotion allowed.
 - CE13 warmup policy: no parseable cache exists; spend 0 GPU hours now and only consider 2-4 GPU hours after a tiny dev/gate cache exists.
 

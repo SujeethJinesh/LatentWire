@@ -43,3 +43,10 @@
 - Deterministic kills retained: KVComm matched equals zero-source in inspected smokes, generated-answer value/index packets are answer-text leakage, teacher-delta ties zero/target controls, candidate-delta is dominated by coefficient controls, and C_F is killed by random/control contamination.
 - C_F branch state updated to `KILLED_CONTROL_CONTAMINATED`; do not queue C_F again without a fresh preregistration and identical-row denominator that beats random/static controls.
 - Required next evidence: `dashboard/overnight_v2.md` must report wall-clock seconds, achieved dev/gate n, and MDE for EXP1 and EXP4. A fast report without generated/extracted rows is not completion.
+
+## 2026-06-05 - Consolidated packet audit
+
+- C_A1 lesson: cached gate IDs are not handoff-safe just because they are small. The Granite tight-clip cached gate source references a confirmation path, so C_A1 is blocked until a fresh non-confirm same-row three-model packet exists.
+- Oracle lesson: large L_PC5 and L_C2 gains are not evidence of deployable communication when the scoring surface sees `answer`, `correct`, the equation value, or an answer-derived `tool_answer`. Treat these as ceilings only.
+- L_PC1 lesson: a small powered cached lift can be real and still not claim-eligible. It must be replicated across fresh pair/task surfaces and beat source-index/equal-byte text controls before becoming a scoped positive.
+- Schema lesson: C_U1/C_W1 cannot be rescued by parsing more KL rows if the paired outcome labels are absent; C_S1 should stay parked rather than lowering the floor.
