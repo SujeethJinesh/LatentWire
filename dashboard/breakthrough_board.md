@@ -27,3 +27,4 @@ Updated by `scripts/overnight_cpu_screening.py`; Mac status remains screening-on
 | priority | probe | status | achieved_n | floor | interpretation |
 | ---: | --- | --- | ---: | ---: | --- |
 | 1 | `L_PC1_cross_family_specialist_ceiling` | `MAC_FLOOR_POSITIVE_CEILING_ONLY` | 512 | 500 | see summary |
+| 2 | `L_PC2_tool_augmented_source_ceiling` | `MAC_FLOOR_KILLED_BY_EQUAL_BYTE_VISIBLE_TOOL_CONTROL` | 500 | 500 | The private calculator ceiling is large versus a question-only heuristic but exactly tied by an equal-byte visible tool-result control, so it is not a source-private packet win. |

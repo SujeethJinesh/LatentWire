@@ -1,0 +1,42 @@
+{
+  "achieved_n": 500,
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:52:19+00:00",
+  "data_floor": 500,
+  "exact_command": "venv_arm64/bin/python scripts/run_mps_first_strict_iteration.py --probe L_PC2_tool_augmented_source_ceiling",
+  "floor_met": true,
+  "gain_private_tool_vs_receiver": {
+    "ci95_high": 0.83,
+    "ci95_low": 0.756,
+    "delta": 0.794,
+    "mde_half_width": 0.038000000000000034,
+    "n": 500
+  },
+  "gain_private_tool_vs_visible_equal_byte_tool": {
+    "ci95_high": 0.0,
+    "ci95_low": 0.0,
+    "delta": 0.0,
+    "mde_half_width": 0.0,
+    "n": 500
+  },
+  "gain_private_tool_vs_wrong_row_tool": {
+    "ci95_high": 0.986,
+    "ci95_low": 0.958,
+    "delta": 0.974,
+    "mde_half_width": 0.016000000000000014,
+    "n": 500
+  },
+  "id": "L_PC2_tool_augmented_source_ceiling",
+  "interpretation": "The private calculator ceiling is large versus a question-only heuristic but exactly tied by an equal-byte visible tool-result control, so it is not a source-private packet win.",
+  "mde_half_width": 0.038000000000000034,
+  "paper": "latentwire",
+  "priority": 2,
+  "private_tool_accuracy": 1.0,
+  "promotion_allowed": false,
+  "receiver_heuristic_accuracy": 0.206,
+  "result_root": "results/mps_first_strict_20260605",
+  "status": "MAC_FLOOR_KILLED_BY_EQUAL_BYTE_VISIBLE_TOOL_CONTROL",
+  "verdict": "NEGATIVE_SCREEN_CONTROL_DOMINATED",
+  "wall_clock_seconds": 0.5825028419494629,
+  "wrong_row_tool_accuracy": 0.026
+}
