@@ -1,0 +1,23 @@
+{
+  "achieved_candidates": 1600,
+  "achieved_n": 36,
+  "achieved_prompts": 100,
+  "confirm_rows_scored": 0,
+  "correct_candidate_count": 72,
+  "created_utc": "2026-06-05T04:19:48+00:00",
+  "exact_command": "GPU stronger-generator cache: generate >=300 dev/gate GSM8K/MATH prompts x16 candidates with a stronger generator, then score each candidate with source_score, target_score, and verifier_score; do not screen L_A2 until >=80 prompts have at least one correct candidate.",
+  "id": "L_PC5_private_verifier_receiver_candidates",
+  "mde_half_width": null,
+  "mde_target": 0.05,
+  "paper": "latentwire",
+  "priority": 3,
+  "promotion_allowed": false,
+  "prompts_with_at_least_one_correct_candidate": 36,
+  "reason": "candidate pool is nondegenerate for only 36 prompts, below the 80-prompt rerank gate; no gain verdict emitted",
+  "required_correct_candidate_prompts": 80,
+  "source_summary": "results/overnight_v3/20260604_corrected_reprobe/exp4_corrected_l_a2_rerank_ceiling/summary.json",
+  "status": "PARKED_POOL_TOO_WEAK",
+  "verdict": "PARKED",
+  "verifier_score_present": true,
+  "wall_clock_seconds": 0.006618976593017578
+}
