@@ -110,10 +110,6 @@ def packet_candidates() -> list[Path]:
         add_if_exists(paths, (latest / "summary.json").relative_to(ROOT).as_posix())
         add_if_exists(paths, (latest / "cache_inventory.json").relative_to(ROOT).as_posix())
     for rel in [
-        "COMMIT.txt",
-        "DIFFSTAT.txt",
-        "OMITTED_ARTIFACTS.md",
-        "NEXT_6_COMMANDS.md",
         "TESTS_RUN.txt",
         "scripts/audit_confirm_paths.py",
         "scripts/build_review_packet.py",
@@ -130,34 +126,36 @@ def packet_candidates() -> list[Path]:
     return sorted(set(paths))
 
 
-def write_support_files() -> list[Path]:
+def support_entries() -> dict[str, bytes]:
     sha = run(["git", "rev-parse", "HEAD"])
     branch = run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
     status = run(["git", "status", "--short", "--branch"])
     diffstat = run(["git", "diff", "--stat", "HEAD"])
-    (ROOT / "COMMIT.txt").write_text(
-        f"branch: {branch}\ncommit: {sha}\ncreated_utc: {datetime.now(timezone.utc).isoformat(timespec='seconds')}\n\n{status}\n",
-        encoding="utf-8",
-    )
-    (ROOT / "DIFFSTAT.txt").write_text((diffstat or "No uncommitted tracked diff.\n") + "\n", encoding="utf-8")
-    (ROOT / "OMITTED_ARTIFACTS.md").write_text(
-        "# Omitted Artifacts\n\n"
-        "- Model weights and binary arrays are excluded.\n"
-        "- Caches are excluded.\n"
-        "- Files over 5 MB are skipped or represented by a 200-line head when text-like.\n",
-        encoding="utf-8",
-    )
-    (ROOT / "NEXT_6_COMMANDS.md").write_text(
-        "# Next 6 Commands\n\n"
-        "1. `venv_arm64/bin/python scripts/check_review_packet.py review_packet.zip`\n"
-        "2. `sed -n '1,260p' dashboard/cheap_exhaustion_report.md`\n"
-        "3. `sed -n '1,260p' dashboard/c_a1_gpu_backfill_runbook.md`\n"
-        "4. `sed -n '1,220p' queues/gpu_backfill.yaml`\n"
-        "5. `sed -n '1,80p' queues/gpu_foreground.yaml`\n"
-        "6. `local_runner enqueue channel_set_c_a1_pair_materialization --models granite,deepseek,falcon --split dev,gate --prompt-file experimental/shared/prompts/aime_2025_indices_0_23.jsonl --policies paroquant_baseline,tight_clip_c_a1 --scale-clip-min 0.5 --scale-clip-max 2.0 --require-same-row --write-access-manifest --fail-on-confirm --out experimental/outlier_migrate/phase9/results/c_a1_nonconfirm_pair_matrix_${UTC_STAMP}`\n",
-        encoding="utf-8",
-    )
-    return [ROOT / name for name in ["COMMIT.txt", "DIFFSTAT.txt", "OMITTED_ARTIFACTS.md", "NEXT_6_COMMANDS.md"]]
+    entries = {
+        "COMMIT.txt": (
+            f"branch: {branch}\n"
+            f"commit: {sha}\n"
+            f"created_utc: {datetime.now(timezone.utc).isoformat(timespec='seconds')}\n\n"
+            f"{status}\n"
+        ).encode("utf-8"),
+        "DIFFSTAT.txt": ((diffstat or "No uncommitted tracked diff.\n") + "\n").encode("utf-8"),
+        "OMITTED_ARTIFACTS.md": (
+            "# Omitted Artifacts\n\n"
+            "- Model weights and binary arrays are excluded.\n"
+            "- Caches are excluded.\n"
+            "- Files over 5 MB are skipped or represented by a 200-line head when text-like.\n"
+        ).encode("utf-8"),
+        "NEXT_6_COMMANDS.md": (
+            "# Next 6 Commands\n\n"
+            "1. `venv_arm64/bin/python scripts/check_review_packet.py review_packet.zip`\n"
+            "2. `sed -n '1,260p' dashboard/cheap_exhaustion_report.md`\n"
+            "3. `sed -n '1,260p' dashboard/c_a1_gpu_backfill_runbook.md`\n"
+            "4. `sed -n '1,220p' queues/gpu_backfill.yaml`\n"
+            "5. `sed -n '1,80p' queues/gpu_foreground.yaml`\n"
+            "6. `local_runner enqueue channel_set_c_a1_pair_materialization --models granite,deepseek,falcon --split dev,gate --prompt-file experimental/shared/prompts/aime_2025_indices_0_23.jsonl --policies paroquant_baseline,tight_clip_c_a1 --scale-clip-min 0.5 --scale-clip-max 2.0 --require-same-row --write-access-manifest --fail-on-confirm --out experimental/outlier_migrate/phase9/results/c_a1_nonconfirm_pair_matrix_${UTC_STAMP}`\n"
+        ).encode("utf-8"),
+    }
+    return entries
 
 
 def add_packet_file(entries: dict[str, bytes], omitted: list[str], path: Path) -> None:
@@ -188,10 +186,9 @@ def add_packet_file(entries: dict[str, bytes], omitted: list[str], path: Path) -
 
 
 def build(out: Path) -> Path:
-    support = write_support_files()
-    entries: dict[str, bytes] = {}
+    entries: dict[str, bytes] = support_entries()
     omitted: list[str] = []
-    for path in sorted(set(packet_candidates() + support)):
+    for path in sorted(set(packet_candidates())):
         if path.exists() and path.is_file():
             add_packet_file(entries, omitted, path)
     index_lines = [
@@ -221,22 +218,24 @@ def build(out: Path) -> Path:
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
         for name in sorted(entries):
             zf.writestr(name, entries[name])
-    sha = run(["git", "rev-parse", "--short", "HEAD"])
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    versioned = ROOT / "review_packets" / f"review_packet_{stamp}_{sha}.zip"
-    versioned.parent.mkdir(parents=True, exist_ok=True)
-    versioned.write_bytes(out.read_bytes())
-    return versioned
+    return out
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, default=ROOT / "review_packet.zip")
+    parser.add_argument("--versioned", action="store_true", help="also write a timestamped copy under review_packets/")
     args = parser.parse_args()
     out = args.out if args.out.is_absolute() else ROOT / args.out
-    versioned = build(out)
+    build(out)
     print(f"wrote {out.relative_to(ROOT)} ({out.stat().st_size} bytes)")
-    print(f"wrote {versioned.relative_to(ROOT)} ({versioned.stat().st_size} bytes)")
+    if args.versioned:
+        sha = run(["git", "rev-parse", "--short", "HEAD"])
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        versioned = ROOT / "review_packets" / f"review_packet_{stamp}_{sha}.zip"
+        versioned.parent.mkdir(parents=True, exist_ok=True)
+        versioned.write_bytes(out.read_bytes())
+        print(f"wrote {versioned.relative_to(ROOT)} ({versioned.stat().st_size} bytes)")
     return 0
 
 

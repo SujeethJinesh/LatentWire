@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import zipfile
 from pathlib import Path
 
@@ -18,6 +19,22 @@ CONFIRM_SOURCE_RE = re.compile(r'"source_path"\s*:\s*"[^"]*(?:confirm|confirmati
 QUEUE_REF_RE = re.compile(
     r"(?<![\w./-])((?:dashboard|scripts|queues|registry|paper|lessons)/[A-Za-z0-9._/@+=:-]+)"
 )
+REQUIRED_PACKET_FILES = {
+    "COMMIT.txt",
+    "DIFFSTAT.txt",
+    "INDEX.md",
+    "NEXT_6_COMMANDS.md",
+    "OMITTED_ARTIFACTS.md",
+    "TESTS_RUN.txt",
+    "dashboard/c_a1_gpu_backfill_runbook.md",
+    "dashboard/cheap_exhaustion_report.md",
+    "dashboard/confirm_path_audit.md",
+    "lessons/LESSONS_LEDGER.md",
+    "paper/channel_set/figures_todo.md",
+    "paper/latentwire/claim_boundary.md",
+    "queues/gpu_backfill.yaml",
+    "queues/gpu_foreground.yaml",
+}
 
 
 def fail(message: str) -> None:
@@ -55,6 +72,76 @@ def validate_queue_references(name: str, text: str, names: set[str]) -> None:
             missing.append(ref)
     if missing:
         fail(f"{name} references file(s) absent from packet: {sorted(set(missing))[:10]}")
+
+
+def git_head() -> str:
+    return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+
+
+def validate_commit_head(zf: zipfile.ZipFile) -> None:
+    commit_text = read_text(zf, "COMMIT.txt")
+    index_text = read_text(zf, "INDEX.md")
+    head = git_head()
+    commit_match = re.search(r"^commit:\s*([0-9a-f]{40})\s*$", commit_text, re.M)
+    if not commit_match:
+        fail("COMMIT.txt does not contain a full `commit: <sha>` line")
+    packet_sha = commit_match.group(1)
+    if packet_sha != head:
+        fail(f"COMMIT.txt commit {packet_sha} does not match current HEAD {head}")
+    if f"Commit: `{head}`" not in index_text:
+        fail("INDEX.md Commit line does not match current HEAD")
+
+    dirty_tracked = []
+    bad_untracked = []
+    for line in commit_text.splitlines():
+        if not line or line.startswith(("branch:", "commit:", "created_utc:", "## ")):
+            continue
+        if line.startswith("?? "):
+            path = line[3:].strip()
+            if "/" in path or not path.endswith(".zip"):
+                bad_untracked.append(path)
+        else:
+            dirty_tracked.append(line)
+    if dirty_tracked:
+        fail(f"COMMIT.txt records tracked worktree changes: {dirty_tracked[:10]}")
+    if bad_untracked:
+        fail(f"COMMIT.txt records disallowed untracked paths: {bad_untracked[:10]}")
+
+
+def validate_required_files(names: set[str]) -> None:
+    missing = sorted(REQUIRED_PACKET_FILES - names)
+    if missing:
+        fail(f"required packet file(s) missing: {missing}")
+
+
+def validate_queue_state(zf: zipfile.ZipFile) -> None:
+    foreground = yaml.safe_load(read_text(zf, "queues/gpu_foreground.yaml")) or {}
+    if foreground.get("foreground") != []:
+        fail("queues/gpu_foreground.yaml is not empty")
+    backfill = yaml.safe_load(read_text(zf, "queues/gpu_backfill.yaml")) or {}
+    jobs = backfill.get("backfill") or []
+    if not jobs:
+        fail("queues/gpu_backfill.yaml has no backfill jobs")
+    first = jobs[0]
+    if first.get("id") != "channel_set_c_a1_tail_cvar_grid":
+        fail("first gpu_backfill job is not channel_set_c_a1_tail_cvar_grid")
+    if first.get("promotion_allowed") is not False:
+        fail("C_A1 gpu_backfill job must have promotion_allowed=false")
+    if "channel_set_c_a1_pair_materialization" not in str(first.get("command", "")):
+        fail("first C_A1 backfill command is not the fresh-row materialization command")
+
+
+def validate_runbook_and_next_commands(zf: zipfile.ZipFile) -> None:
+    runbook = read_text(zf, "dashboard/c_a1_gpu_backfill_runbook.md")
+    if "RUNBOOK_STATUS: BLOCKED_CONFIRM_CONTAMINATED" not in runbook:
+        fail("C_A1 runbook does not declare BLOCKED_CONFIRM_CONTAMINATED")
+    if "Fresh Row-Materialization Command" not in runbook:
+        fail("C_A1 runbook does not include the fresh materialization command section")
+    command = "local_runner enqueue channel_set_c_a1_pair_materialization"
+    if command not in runbook:
+        fail("C_A1 runbook missing exact materialization command")
+    if command not in read_text(zf, "NEXT_6_COMMANDS.md"):
+        fail("NEXT_6_COMMANDS.md missing exact C_A1 materialization command")
 
 
 def validate_embedded_confirm_sources(zf: zipfile.ZipFile, names: list[str]) -> None:
@@ -98,18 +185,10 @@ def main() -> int:
     with zipfile.ZipFile(zip_path) as zf:
         names = zf.namelist()
         name_set = set(names)
-        if "INDEX.md" not in names:
-            fail("INDEX.md missing")
-        if "COMMIT.txt" not in names:
-            fail("COMMIT.txt missing")
-        if "DIFFSTAT.txt" not in names:
-            fail("DIFFSTAT.txt missing")
-        if "OMITTED_ARTIFACTS.md" not in names:
-            fail("OMITTED_ARTIFACTS.md missing")
-        if "NEXT_6_COMMANDS.md" not in names:
-            fail("NEXT_6_COMMANDS.md missing")
-        if "TESTS_RUN.txt" not in names:
-            fail("TESTS_RUN.txt missing")
+        validate_required_files(name_set)
+        validate_commit_head(zf)
+        validate_queue_state(zf)
+        validate_runbook_and_next_commands(zf)
         raw_confirm = [name for name in names if re.search(r"_confirm", name, re.I)]
         if raw_confirm:
             fail(f"raw confirm path(s) included: {raw_confirm[:10]}")

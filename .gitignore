@@ -4,6 +4,8 @@ __pycache__/
 *.pyc
 *.py[cod]
 *.so
+review_packet.zip
+review_packets/review_packet_*.zip
 results/
 *ckpt*
 .venv/*
