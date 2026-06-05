@@ -1,0 +1,15 @@
+{
+  "achieved_n": 0,
+  "blocker": "Available C-F/survival-like evidence is contaminated or lacks a fresh identical-row random/static denominator.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:21:18+00:00",
+  "exact_command": "venv_arm64/bin/python scripts/build_channel_set_clean_survival_denominator.py --input experimental/outlier_migrate/phase9/results --same-row-denominators random_core,static_core,wrong_row_core --min-gate-n 200 --no-gap-filter --no-confirm",
+  "id": "C_S1_clean_survival_stablecore_denominator",
+  "mandatory_gate": "survival core beats random/static on identical row IDs with no no-gap artifact",
+  "paper": "channel_set",
+  "priority": 7,
+  "promotion_allowed": false,
+  "status": "PARKED_NEEDS_IDENTICAL_ROW_DENOMINATOR",
+  "verdict": "PARKED",
+  "wall_clock_seconds": 0.0005600452423095703
+}
