@@ -1,0 +1,6 @@
+{"check": "c_a1_runbook", "file_present": true, "path": "dashboard/c_a1_gpu_backfill_runbook.md"}
+{"check": "gpu_backfill_queue", "file_present": true, "path": "queues/gpu_backfill.yaml"}
+{"check": "gpu_foreground_queue", "file_present": true, "path": "queues/gpu_foreground.yaml"}
+{"check": "ce21_registry", "file_present": true, "path": "registry/CE21_no_gap_filter.yaml"}
+{"check": "c_a1_registry", "file_present": true, "path": "registry/C_A1_cvar_evt_clip_grid.yaml"}
+{"candidate_files_scanned": ["experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z/per_trace_metrics.json", "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z/per_trace_metrics.json", "experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z/per_trace_metrics.json", "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z/per_trace_metrics.json"], "check": "native_pairing_results_present", "file_present": false, "reason": "Candidate files exist, but no verified three-model same-row ParoQuant-vs-tight-clip matrix is present."}

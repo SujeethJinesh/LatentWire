@@ -1,0 +1,63 @@
+{
+  "achieved_n": 6,
+  "audit_checks": [
+    {
+      "check": "c_a1_runbook",
+      "file_present": true,
+      "path": "dashboard/c_a1_gpu_backfill_runbook.md"
+    },
+    {
+      "check": "gpu_backfill_queue",
+      "file_present": true,
+      "path": "queues/gpu_backfill.yaml"
+    },
+    {
+      "check": "gpu_foreground_queue",
+      "file_present": true,
+      "path": "queues/gpu_foreground.yaml"
+    },
+    {
+      "check": "ce21_registry",
+      "file_present": true,
+      "path": "registry/CE21_no_gap_filter.yaml"
+    },
+    {
+      "check": "c_a1_registry",
+      "file_present": true,
+      "path": "registry/C_A1_cvar_evt_clip_grid.yaml"
+    },
+    {
+      "candidate_files_scanned": [
+        "experimental/outlier_migrate/phase9/results/om_driftrot_falcon_clip_tight_20260528T2343Z/per_trace_metrics.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_holdout_20260528T2144Z/per_trace_metrics.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_deepseek_clip_tight_20260528T2318Z/per_trace_metrics.json",
+        "experimental/outlier_migrate/phase9/results/om_driftrot_granite_clip_tight_finalpos8_20260528T2251Z/per_trace_metrics.json"
+      ],
+      "check": "native_pairing_results_present",
+      "file_present": false,
+      "reason": "Candidate files exist, but no verified three-model same-row ParoQuant-vs-tight-clip matrix is present."
+    }
+  ],
+  "blocker": "Defense inputs exist, but the three-model same-row native pairing packet is still missing.",
+  "confirm_rows_scored": 0,
+  "created_utc": "2026-06-05T04:55:31+00:00",
+  "data_floor": null,
+  "exact_command": "run the paired matrix in dashboard/c_a1_gpu_backfill_runbook.md: ParoQuant baseline vs tight-clip C_A1 on exact cached Granite, DeepSeek, and Falcon row IDs; abort if any model lacks same-row pairing",
+  "failed_attempts": [
+    {
+      "attempt": "scan phase9 outputs for three-model native paired ParoQuant-vs-tight-clip matrix",
+      "blocking_resource": "paired Granite/DeepSeek/Falcon native replay matrix",
+      "candidate_files": 4,
+      "result": "pairing_packet_missing"
+    }
+  ],
+  "floor_met": true,
+  "id": "C_Y5_channel_set_defense_bundle",
+  "paper": "channel_set",
+  "priority": 8,
+  "promotion_allowed": false,
+  "result_root": "results/mps_first_strict_20260605",
+  "status": "PARKED_LOGGED_NEEDS_NATIVE_PAIRING",
+  "verdict": "PARKED_NEEDS_GPU_OR_NATIVE_CACHE",
+  "wall_clock_seconds": 0.0002906322479248047
+}
