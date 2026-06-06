@@ -1,0 +1,76 @@
+{
+  "iteration": 1,
+  "papers": {
+    "channel_set": {
+      "area_chair": "revise",
+      "reviewers": {
+        "clarity": {
+          "objections": [
+            "Need claim-boundary box and final checklist."
+          ],
+          "score": "borderline"
+        },
+        "honesty": {
+          "objections": [
+            "Do not claim ParoQuant/C-A1 win."
+          ],
+          "verdict": "PASS"
+        },
+        "originality": {
+          "objections": [
+            "Regime framing is clearer than method framing."
+          ],
+          "score": "weak_accept"
+        },
+        "quality": {
+          "objections": [
+            "Needs figure support and provenance."
+          ],
+          "score": "borderline"
+        },
+        "significance": {
+          "objections": [
+            "Measurement contribution is plausible if C-A1 stays parked."
+          ],
+          "score": "weak_accept"
+        }
+      }
+    },
+    "latentwire": {
+      "area_chair": "revise",
+      "reviewers": {
+        "clarity": {
+          "objections": [
+            "Missing claim-boundary box and figures."
+          ],
+          "score": "borderline"
+        },
+        "honesty": {
+          "objections": [
+            "Keep L-IB1 killed and retain the 160-unique-example caveat."
+          ],
+          "verdict": "PASS"
+        },
+        "originality": {
+          "objections": [
+            "The exact-evidence result should be separated from dense-state related work."
+          ],
+          "score": "weak_accept"
+        },
+        "quality": {
+          "objections": [
+            "Core numbers are credible, but the draft needs a falsification ladder and stronger provenance."
+          ],
+          "score": "weak_accept"
+        },
+        "significance": {
+          "objections": [
+            "The negative is useful only if framed as a reusable baseline standard."
+          ],
+          "score": "weak_accept"
+        }
+      }
+    }
+  },
+  "status": "revise"
+}

@@ -2,126 +2,127 @@
 
 ## Abstract
 
-LatentWire asks whether a source model can send a small no-text packet that improves a receiver model beyond ordinary score and text baselines. Across the completed campaign, the answer is negative for the discrete, byte-scale regimes that are currently claim-ready. One-way score and residual packets do not beat source-index/confidence controls on the held-out aggregate, and a powered dev/gate ladder shows that most apparent source information is already redundant with the receiver: the source signal drops from 2.098527 bits to 0.281933 bits after receiver conditioning. The strongest discrete-evidence escape also fails in the opposite direction: when the same exact symbolic evidence is exposed as a visible 2-byte public code, it reaches 1.000 accuracy versus 0.775 for the learned model packet, a +0.225 advantage with 95% CI [0.192188, 0.257812]. The last cheap privacy-bottleneck escape, L-IB1, also fails: the current cached high-utility packet has 0.875 utility with 1.000 leakage, while the best adversarial bottleneck reaches only 0.602339 proxy utility and still leaks source/evidence identity. The paper therefore contributes a bounded negative: for discrete low-byte evidence, no-text latent packets are dominated by score controls or equal-byte visible evidence unless the method moves to continuous dense state or a genuinely privacy-preserving bottleneck.
+LatentWire asks whether a source model can send a small no-text packet that improves a receiver model beyond ordinary score and text baselines. The completed evidence supports a bounded negative for the discrete, byte-scale regime that is currently claim-ready. One-way score and residual packets do not beat source-index/confidence controls on the held-out aggregate, and the powered score ladder shows why: apparent source information drops from `2.098527` bits to `0.281933` bits after conditioning on receiver evidence. The strongest discrete-evidence escape fails in the opposite direction: when the same exact symbolic evidence is exposed as a visible 2-byte public code, it reaches `1.000` accuracy versus `0.775` for the matched learned packet, a `+0.225` advantage with 95% CI `[0.192188, 0.257812]`. The last cheap privacy-bottleneck escape also fails: L-IB1 is `KILL_UTILITY_IS_IDENTITY`, with the current packet at utility/leakage `0.875/1.000` and the best bottleneck at only `0.602339/0.602339`. The contribution is a claim-boundary result: for discrete low-byte evidence, no-text latent packets are dominated by score controls or equal-byte visible evidence unless the method moves to continuous dense state or a genuinely privacy-preserving bottleneck.
+
+## Claim-Boundary Box
+
+| Supported | Unsupported | Future-only |
+| --- | --- | --- |
+| Score-like source packets are bounded negative under source-index/confidence controls. | A deployable-positive claim is unsupported. | Continuous dense cache/state transfer may still work, but it is outside this byte-scale discrete packet result. |
+| Exact discrete evidence is text-capturable under the same byte budget in the local cache. | L-IB1 is not a privacy positive; it remains `KILL_UTILITY_IS_IDENTITY`. | A reviewed neural privacy bottleneck would need matched visible/anonymized text controls. |
+| Gold-aware oracle ceilings are rejected as leakage or gap-to-perfect measurements. | No cross-family, dense-cache, native GPU, or systems-speed claim is made. | Stronger generated-candidate reranking remains possible only with gold-blind verifier/source/target scores. |
 
 ## 1. Introduction
 
-Small model-to-model messages are attractive because they promise communication without exposing full reasoning traces. The hard question is not whether a helper model knows something useful; it is whether a byte-scale packet conveys information that the receiver cannot already recover from its own scores, from the source identity, or from an equal-byte visible text code.
+Small model-to-model messages are attractive because they promise communication without exposing full reasoning traces. The hard question is not whether a helper model knows something useful. It is whether a byte-scale no-text packet conveys information that the receiver cannot already recover from its own scores, the source identity, or an equal-byte visible code.
 
-The campaign originally sought a positive LatentWire method. The surviving evidence instead supports a sharper claim: the discrete evidence that makes the packet useful is text-capturable under the same byte budget, while the score-like residual signal mostly disappears after conditioning on the receiver. We treat this as a bounded negative rather than as a failed search. It identifies the regimes where no-text packet claims are not yet justified and points to the only remaining credible escape hatches.
+This campaign originally searched for a positive LatentWire method. The result is a stronger and more useful boundary: the discrete evidence that makes a packet useful is visible-code capturable, while score-like residual signals mostly disappear after receiver conditioning. The paper therefore argues for a conservative standard for future model communication work: the relevant delta is not improvement over target-only, but improvement beyond source-index, source-confidence, equal-byte text, wrong-row, and destructive controls.
 
-This draft makes four contributions.
+Contributions:
 
-1. We give a controlled negative result for one-way score/residual packets. On the held-out aggregate with 381 rows, the deployable score packet is -0.023622 below the source-index/confidence baseline with CI [-0.060367, 0.013123]. On the powered dev/gate ladder with 1500 scored rows and 359 gate rows, the current deployable packet is -0.013928 below the best score baseline with CI [-0.050139, 0.022284].
+1. A controlled bounded negative for deployable score/residual packets. On the held-out aggregate with `381` rows, the deployable score packet is `-0.023622` below source-index/confidence with CI `[-0.060367, 0.013123]`. On the powered dev/gate ladder with `1500` scored rows and `359` gate rows, the current deployable packet is `-0.013928` below the best score baseline with CI `[-0.050139, 0.022284]`.
 
-2. We localize the mechanism. The source has information in isolation, but receiver conditioning collapses it: source information drops from 2.098527 bits to 0.281933 bits after the receiver's own evidence is available. The non-deployable source+target-at-encoder upper bound remains positive, so the campaign was not measuring pure noise.
+2. A mechanism for the negative result. Source scores contain `2.098527` bits before receiver conditioning, but only `0.281933` bits after conditioning on receiver evidence (Figure 1).
 
-3. We test the discrete-evidence escape directly. On 640 model-helper rows over 160 unique examples, a matched model packet reaches 0.775 accuracy, but the exact same symbolic evidence serialized as a visible 2-byte public signature reaches 1.000 accuracy. Random, shuffled, answer-only, and target-only controls collapse to 0.250.
+3. A direct exact-discrete evidence test. On `640` model-helper rows over `160` unique examples, a matched model packet reaches `0.775` accuracy, while the exact same symbolic evidence serialized as visible public code reaches `1.000` (Figure 2). Random, shuffled, answer-only, and target-only controls remain at `0.250`.
 
-4. We close the last cheap privacy escape. L-IB1, an adversarial cached privacy-bottleneck selector, cannot preserve current-packet utility without preserving source/evidence identity. Its verdict is `KILL_UTILITY_IS_IDENTITY`.
+4. A final cheap privacy escape test. L-IB1 cannot preserve current-packet utility while hiding source/evidence identity (Figure 3).
 
-## 2. Claim Boundary
+![Receiver conditioning bits](figures/receiver_conditioning_bits.png)
 
-The claim is deliberately narrow. This paper does not say that all latent communication is impossible, or that continuous hidden-state transfer cannot work. It says that the current byte-scale discrete packets do not establish a no-text communication advantage under the hard baselines required for a paper claim.
+Figure 1: The source-score signal largely disappears once receiver evidence is included.
 
-The excluded regimes are important. Continuous cache/state transfer methods such as C2C, Interlat, and Latent Cache Flow occupy a different lane because they send high-dimensional hidden state rather than a tiny discrete evidence packet. Privacy-preserving semantic communication and adaptive text anonymization are also separate directions because their objective is a utility/leakage frontier, not raw accuracy under equal-byte text. The local L-IB1 result only kills the cheap cached proxy; it does not rule out a reviewed build-scale neural information-bottleneck method.
+## 2. Experimental Design
 
-The positive method claim remains unavailable until a method beats:
+All results in this paper are drawn from existing aggregate or cached non-claim artifacts. No new experiment, GPU run, MPS live forward, confirmation split access, or killed-method rerun is used in this paper-finalization pass. The package includes generated figures, provenance tables, and review records only.
 
-- target-only;
-- source-index/confidence;
-- source-rank/source-score controls;
-- same-byte visible exact evidence;
-- adaptive/anonymized same-byte text;
-- random same-byte and wrong-row destructive controls.
+The main evidence families are:
 
-## 3. Experimental Design
+- deployable one-way score/residual packets;
+- the powered score ladder and receiver-conditioning information estimate;
+- L-Q1 receiver-query packet controls;
+- exact-discrete evidence versus equal-byte visible code;
+- L-IB1 cached privacy-bottleneck frontier;
+- rejected oracle ceilings and dense/cache smokes used only as boundary evidence.
 
-All screening and escape tests used existing non-confirm cached artifacts. The runners refuse confirm-looking paths. Aggregates, split hashes, and source manifests are preserved, while raw held-out examples are not used for screening or prompt-driven iteration.
+The paper's numeric claims map to package-local figures and tables. The detailed provenance is in `tables/provenance.md`; the falsification ladder is in `tables/falsification_ladder.md`.
 
-The main LatentWire artifacts are:
+## 3. Falsification Ladder
 
-- the one-way deployable score packet aggregate;
-- the powered score ladder over scored dev/gate rows;
-- the receiver-query packet aggregate;
-- the deterministic C2C/KVComm packet smokes used only as anchors;
-- the CPU cached escape tests for privacy and exact discrete evidence;
-- the L-IB1 cached privacy-bottleneck test.
+The central asset of this paper is not a single negative row. It is a ladder of increasingly plausible escapes, each killed or parked by a concrete hard baseline.
 
-Uncertainty is reported as paired bootstrap confidence intervals where the campaign runner emitted paired row outcomes. For the discrete-evidence theorem test, the decisive comparison is visible exact public code minus matched model packet over 640 model-helper rows.
+See `tables/falsification_ladder.md` for the complete table. The short version is:
+
+| Escape | Result | Controlling baseline |
+| --- | --- | --- |
+| Score/WZ one-way packet | held-out delta `-0.023622`, CI `[-0.060367, 0.013123]` | source-index+confidence |
+| Powered score ladder | current packet delta `-0.013928`, CI `[-0.050139, 0.022284]` | best equal-byte score/source baseline |
+| L-B1 trust packet | killed as source-copy/damage-avoidance failure | source-index/source-selected metadata |
+| L-Q1 receiver query | delta `-0.022284`, CI `[-0.055710, 0.011142]` | source-index+confidence and ablations |
+| Exact discrete evidence | visible code beats packet by `+0.225` | equal-byte public code |
+| L-IB1 privacy bottleneck | best bottleneck `0.602339/0.602339` vs current `0.875/1.000` | same-byte code and anonymized text |
+| Oracle fuser/verifier ceilings | rejected as gold-aware or setup-blocked | gold-leakage audit |
 
 ## 4. Results
 
-### 4.1 Score Packets Are Redundant With Receiver Evidence
+### 4.1 Deployable Packets Do Not Beat Source-Index Confidence
 
-| Branch | n | Result | Verdict |
-| --- | ---: | --- | --- |
-| One-way deployable score packet | 381 | delta vs source-index/confidence -0.023622, CI [-0.060367, 0.013123] | bounded negative |
-| Powered dev/gate score ladder | 359 gate rows | current packet delta vs best score baseline -0.013928, CI [-0.050139, 0.022284] | not deployable |
-| Source+target-at-encoder upper bound | 359 gate rows | +0.125348, CI [0.089136, 0.161560] | non-deployable ceiling |
-| Receiver-query packet | 359 gate rows | L-Q1 delta vs source-index/confidence -0.022284, CI [-0.055710, 0.011142] | killed |
+![Held-out source-index null](figures/heldout_source_index_null.png)
 
-The non-deployable upper bound matters because it prevents an overstrong interpretation. There is useful source information if the encoder can condition on the target receiver's evidence. The deployable packet fails because the source-only byte-scale message mostly communicates information that the receiver or the named source baseline already supplies.
+Figure 2: On the held-out aggregate, the deployable packet does not beat the source-index/confidence baseline. The source+target-at-encoder upper bound is positive but non-deployable.
 
-### 4.2 Receiver Conditioning Collapses the Apparent Source Signal
+The held-out aggregate shows the exact boundary. Target-only accuracy is `0.194226`, source-index+confidence is `0.204724`, and the deployable WZ packet is `0.181102`. The source+target-at-encoder upper bound reaches `0.314961`, so the experiment is not merely noise. The problem is deployability: the useful signal appears when the encoder has target evidence, not in the allowed source-only low-byte packet.
 
-The powered ladder estimates 2.098527 bits of source information before receiver conditioning and 0.281933 bits after conditioning on receiver evidence. This is the central mechanism for the negative result. Same-family models on shared multiple-choice tasks often fail and succeed for overlapping reasons, so a source packet can look useful until the receiver's own scores and the source identity are included as baselines.
+### 4.2 Receiver Conditioning Explains The Null
+
+The powered ladder estimates `2.098527` bits of source-score information before receiver conditioning and `0.281933` bits afterward. Same-family models on shared multiple-choice tasks often fail and succeed for overlapping reasons. A source packet can therefore appear useful until the receiver's own evidence and the source identity are included as baselines.
+
+This result also explains why source-only oracle gaps are not enough. A positive source+target-at-encoder upper bound says there is information in the joint state; it does not say a deployable source-only byte packet transmits it.
 
 ### 4.3 Exact Discrete Evidence Is Better Sent As Text
 
-| Condition | Accuracy | Correct / n |
-| --- | ---: | ---: |
-| target_only | 0.250000 | 160 / 640 |
-| answer_only | 0.250000 | 160 / 640 |
-| random_same_byte | 0.250000 | 160 / 640 |
-| shuffled_model_packet | 0.250000 | 160 / 640 |
-| matched_model_packet | 0.775000 | 496 / 640 |
-| full_signature_oracle | 1.000000 | 640 / 640 |
+![Exact discrete evidence](figures/discrete_evidence_bar.png)
 
-The visible exact signature beats the learned packet by +0.225000 with CI [0.192188, 0.257812]. This is the discrete-evidence theorem in operational form: if the useful packet content is a finite symbolic evidence signature and the receiver may receive the same number of bytes as visible public code, the visible code captures the evidence at least as directly as the learned opaque packet. In this cache, it strictly dominates.
+Figure 3: The exact visible public signature reaches `1.000` accuracy, while the learned matched packet reaches `0.775`. Controls remain at chance.
 
-The destructive controls are important. Answer-only, random, shuffled, and target-only variants remain at chance. The win is not an artifact of row frequency, answer prior, or any arbitrary byte string; it is the exact symbolic evidence itself.
+The exact-discrete evidence test is the cleanest negative result. The matched learned packet is useful, but the exact symbolic evidence that makes it useful is also public-code serializable inside the same byte budget. When the receiver gets that code visibly, it reaches perfect accuracy in this cache.
+
+This is not a universal impossibility theorem. The sample has `640` model-helper rows but only `160` unique examples. We therefore state it as an operational theorem for this class of evidence: if the useful content is a finite symbolic evidence signature and equal-byte visible public code is allowed, the opaque packet has no inherent no-text advantage.
 
 ### 4.4 L-IB1 Does Not Produce A Privacy-Positive Packet
 
-L-IB1 was the last cheap LatentWire escape. It asked whether a small encoder/feature selector could keep utility while hiding source/evidence identity on existing cached rows.
+![L-IB1 utility leakage frontier](figures/l_ib_utility_leakage.png)
 
-| Variant | Bytes | Utility | Max leakage | Notes |
-| --- | ---: | ---: | ---: | --- |
-| target_only | 0 | 0.250000 cached / 0.222222 proxy | 0.385965 | receiver baseline |
-| current_high_utility_packet | 8 | 0.875000 cached / 1.000000 proxy | 1.000000 | identity-preserving |
-| same_byte_visible_exact_public_code | 8 | 0.875000 cached / 1.000000 proxy | 1.000000 | equal-byte text/code |
-| adaptive_anonymized_text_coarse_atoms | 8 | 0.754386 proxy | 0.900585 | text baseline |
-| best L-IB1 bottleneck | 4 | 0.602339 proxy | 0.602339 | selected `default`, `integer` |
+Figure 4: L-IB1 cannot move off the utility/leakage identity diagonal enough to preserve utility while hiding source/evidence structure.
 
-The verdict is `KILL_UTILITY_IS_IDENTITY`: no cached adversarial bottleneck preserved current-level utility while hiding the source/evidence structure. This does not rule out a full neural IB encoder, but it removes the cheap cached route as a paper-strength positive.
+L-IB1 asked whether an adversarial feature selector could keep utility while hiding source/evidence identity on `512` cached rows. It could not. The current high-utility packet has cached utility `0.875` and max leakage `1.000`; the best bottleneck has proxy utility `0.602339` and max leakage `0.602339`. The exact public code matches current-packet utility and leakage, while adaptive anonymized text remains a necessary comparator for any future privacy claim.
 
-## 5. Failure Modes Found By The Audit
+The verdict remains `KILL_UTILITY_IS_IDENTITY`. This is a cached gate, not a formal privacy impossibility result. It kills the cheap local escape and sets the bar for a future build-scale IB method.
 
-Several apparent positives were invalidated or reinterpreted.
+### 4.5 Rejected Oracle Ceilings Are Not Communication Claims
 
-Gold-aware oracles measure gap-to-perfect rather than transmissible information. The campaign therefore treats any verifier/fuser that can see the gold answer as a leakage artifact, not a communication result.
+Two large apparent ceilings are explicitly excluded. L-PC5's strict rerank oracle and L-C2's strict fuser oracle measure answer-aware or setup-blocked gaps, not deployable no-text communication. The gold-blind L-PC5 attempt reaches only `82` prompts, below its required floor, and ties the equal-byte text control. L-C2 has no reviewed gold-free hidden-state fuser objective locally.
 
-Tool-output packets can be useful, but L-PC2 showed that the equal-byte visible-tool control ties the private packet. Private computation is valuable; an opaque latent packet is not automatically better than sending the tool result as text.
+These results are useful only as warnings. A high oracle ceiling does not imply a latent packet win unless the scorer/fuser is gold-blind and beats equal-byte text/source-index controls.
 
-Continuous cache/state transfer remains unsettled. Diagnostic smokes are useful anchors but do not establish a byte-scale no-text packet method. Any future claim must include equal-budget text/source-index controls and destructive controls from the start.
+## 5. Related Work
 
-## 6. Related Work
+Continuous cache/state communication systems such as C2C, KVComm, Interlat, and Latent Cache Flow occupy a different lane: they transmit or align dense hidden state rather than a small discrete evidence packet. That lane remains a plausible future route but is not claimed here.
 
-C2C, Interlat, and Latent Cache Flow study model communication through hidden states or caches. Those systems motivate the continuous-state escape hatch but do not directly rescue a discrete byte-scale packet claim.
+Privacy-preserving semantic communication and adaptive text anonymization motivate the privacy frontier. In this paper they function as baselines and scope limits: a no-text privacy claim must beat adaptive visible text at the same byte budget while demonstrating lower leakage.
 
-Privacy and semantic communication work, including IBAL-style information bottlenecks and adaptive text anonymization, motivates a possible utility/leakage frontier. The L-IB1 result here is a cheap local gate against existing packet/evidence rows, not a general impossibility theorem for privacy-preserving communication.
+The closest practical baselines for this work are deliberately simple: source identity, source confidence, source rank, equal-byte score sketches, equal-byte visible evidence, wrong-row packets, and shuffled packets. These baselines are the point. They turn raw helper gains into deployable communication claims only when the gain survives.
 
-The closest baseline family for this paper is not another latent method but the trivial equal-byte surface: source identity, source confidence, source rank, and visible exact evidence. The paper's central standard is therefore `delta_beyond_score` or `delta_beyond_text`, not raw improvement over target-only.
+## 6. Limitations
 
-## 7. Limitations
+The exact-discrete evidence test has `640` model-helper rows but only `160` unique examples. The result is strong for this cache and evidence class, but it is not a theorem over all protocols.
 
-The exact-discrete evidence test has 640 model-helper rows but only 160 unique examples. It is decisive for the local cache but should be described as an operational theorem plus empirical support, not as a mathematical proof over all communication protocols.
+L-IB1 is a CPU cached feature-selector test. It does not train a live neural encoder, run new generation, or test continuous dense state.
 
-The L-IB1 privacy-bottleneck result is CPU cached and uses proxy classifiers over existing packet metadata. It does not train a live neural encoder, does not run new generation, and does not test continuous dense state. A future privacy-positive method would need a preregistered card, planted tests, leakage reviewers, and matched visible/anonymized text baselines.
+The held-out one-way result is used as aggregate evidence only. Raw held-out rows are not packaged, and no paper-finalization step reads or reruns them.
 
-The held-out one-way score packet result is aggregate-only in this draft to avoid exposing raw confirmation rows. The paper should retain the aggregate numbers and the access-manifest audit rather than include row payloads.
+The paper does not claim that latent communication is impossible. It claims that the completed byte-scale discrete packet regimes do not establish a no-text advantage over hard visible/score baselines.
 
-## 8. Conclusion
+## 7. Conclusion
 
-The campaign did not find a deployable no-text byte-scale LatentWire method. It found something more precise: score-like source packets are mostly redundant after receiver conditioning, and exact discrete evidence is better transmitted as equal-byte visible public code. The only credible future positives are outside the killed regime: continuous dense state transfer, or a real privacy-preserving bottleneck that beats adaptive same-byte text while hiding source/evidence identity.
+LatentWire did not produce a deployable no-text byte-scale positive. It produced a sharp boundary. Score-like source packets are mostly redundant after receiver conditioning, exact discrete evidence is better transmitted as equal-byte visible public code, and the cheap privacy bottleneck cannot separate utility from identity leakage. Future positives must leave this killed regime: continuous dense state, or a real privacy-preserving bottleneck that beats adaptive same-byte text.

@@ -1,0 +1,78 @@
+{
+  "iteration": 2,
+  "papers": {
+    "channel_set": {
+      "area_chair": "accept-conditional",
+      "condition": "Do not promote C-A1 without fresh native paired evidence.",
+      "reviewers": {
+        "clarity": {
+          "objections": [
+            "Boundary box and checklist prevent overclaiming."
+          ],
+          "score": "accept"
+        },
+        "honesty": {
+          "objections": [
+            "Guardrails held: C-A1 parked and contamination disclosed."
+          ],
+          "verdict": "PASS"
+        },
+        "originality": {
+          "objections": [
+            "Long-reasoning channel-set drift view is sufficiently differentiated."
+          ],
+          "score": "weak_accept"
+        },
+        "quality": {
+          "objections": [
+            "Residual: final venue version should polish figure captions."
+          ],
+          "score": "weak_accept"
+        },
+        "significance": {
+          "objections": [
+            "Measurement/regime contribution is enough for workshop if framed honestly."
+          ],
+          "score": "weak_accept"
+        }
+      }
+    },
+    "latentwire": {
+      "area_chair": "accept-conditional",
+      "condition": "Retain claim-boundary box and provenance table.",
+      "reviewers": {
+        "clarity": {
+          "objections": [
+            "Figures and ladder make the story auditable."
+          ],
+          "score": "accept"
+        },
+        "honesty": {
+          "objections": [
+            "Guardrails held: no deployable-positive claim, L-IB1 remains killed."
+          ],
+          "verdict": "PASS"
+        },
+        "originality": {
+          "objections": [
+            "Bounded negative plus exact-evidence test is distinctive."
+          ],
+          "score": "weak_accept"
+        },
+        "quality": {
+          "objections": [
+            "Residual: formal theorem language should remain operational."
+          ],
+          "score": "accept"
+        },
+        "significance": {
+          "objections": [
+            "Negative is scoped but useful as a baseline standard."
+          ],
+          "score": "weak_accept"
+        }
+      }
+    }
+  },
+  "status": "pass"
+}

@@ -2,106 +2,115 @@
 
 ## Abstract
 
-W4A16 long-reasoning quantization often protects a fixed set of high-risk activation channels. Channel-Set asks whether that static unit is stable enough to support a positive method. The current evidence supports a bounded-negative regime result instead: top-channel sets drift substantially across reasoning horizons and model packets, with top-1% strict set-leaving of 0.634245 for Granite-Tiny, 0.538294 for Granite-Small, 0.533713 for Nemotron-3, and 0.670573 for the Phase 5' Transformer packet. Within-set rank shuffling is smaller but nontrivial, so the problem is not only threshold noise. The positive C-A1 clip/backfill path is not claimable because cached gate evidence was contaminated by confirmation-source rows; it must be rebuilt on fresh non-confirm same-row dev/gate materialization before GPU spend. The paper therefore contributes a measurement and regime map: static channel protection is a weak abstraction under long reasoning, and any positive Channel-Set method must be evaluated against ParoQuant/static baselines with strict split hygiene and OSC/DecDEC defenses.
+W4A16 long-reasoning quantization often protects a fixed set of high-risk activation channels. Channel-Set asks whether that static unit is stable enough to support a positive method. The current evidence supports a measurement/regime result rather than a confirmed adaptive method: top-channel sets drift substantially across reasoning horizons and model packets, with top-1% strict set-leaving of `0.634245` for Granite-Tiny, `0.566235` for Granite-Small, `0.533713` for Nemotron-3, and `0.670573` for the Phase 5 Transformer packet. Within-set shuffling is smaller but nontrivial. C-A1 remains parked because the cached gate path was contaminated and the fresh three-model same-row ParoQuant-vs-tight-clip matrix is missing. The paper contributes a scoped regime claim: static channel-set protection is a weak abstraction for these long-reasoning traces, and any future positive method must beat ParoQuant/static baselines under split-clean same-row native evidence.
+
+## Claim-Boundary Box
+
+| Supported | Unsupported | Future-only |
+| --- | --- | --- |
+| Top-1% strict set-leaving is high across the four cached packets: `0.533713` to `0.670573`. | A confirmed-positive claim is unsupported. | C-A1 can become a positive only after fresh split-clean native paired materialization. |
+| Drift is not a single-threshold artifact across 0.5%, 1%, 2%, and 5% thresholds. | C-A1 is not confirmed and does not beat ParoQuant in a claim-ready way. | A GPU/native systems card remains separate from this paper-finalization pass. |
+| C_U1, C_S1, and C_Y5 blockers are real schema/floor/native-pairing blockers. | No held-out method confirmation is claimed. | OSC/DecDEC defenses can validate a future method after same-row pairing exists. |
 
 ## 1. Introduction
 
-Long reasoning changes which activation channels matter. A W4A16 method that protects a static outlier set can work only if that set remains stable enough over the trace. The Channel-Set campaign tested a family of positive methods around per-model clipping, stable cores, warmup selectors, and drift-aware routing. The result is not yet a confirmed positive method. The robust result is a measurement: outlier channel membership itself moves.
+Long reasoning changes which activation channels matter. A static W4A16 outlier-protection method can work only if the protected channel set remains stable enough across the reasoning trace. The Channel-Set campaign tested adaptive possibilities, but the confirmed result is simpler and sharper: the set itself moves.
 
-This bounded negative is useful because it prevents an easy but fragile story. A method that wins by protecting a fixed early channel set may be solving the wrong unit if later tokens leave that set. Conversely, if a method adapts channel protection without beating ParoQuant and static controls under identical rows, the apparent gain is not a paper-strength contribution.
+This matters for both method design and evaluation. If later high-risk channels leave the early protected set, then a static top-channel abstraction is incomplete. If an adaptive method appears to win without a paired ParoQuant/static baseline on the same rows, the win may be a cache artifact or a contaminated split artifact rather than a real method.
 
-This draft makes four contributions.
+Contributions:
 
-1. We measure strict set-leaving across model packets and thresholds. At the top-1% threshold, strict set-leaving ranges from 0.533713 to 0.670573 across the reported packets.
+1. A long-reasoning channel-set drift measurement. At top 1%, strict set-leaving is above `0.53` for every reported packet (Figure 1).
 
-2. We separate strict set-leaving from within-set rank shuffling. Both occur, but strict set-leaving dominates the story for the top-1% unit.
+2. A threshold sweep showing that the result is not a single chosen threshold (Figure 2).
 
-3. We audit the positive path. C-A1 is not claimable from cached evidence because confirm-contaminated source rows appear in the gate artifacts. The correct next step is fresh non-confirm same-row materialization.
+3. A separation between strict set-leaving and within-set rank shuffling (Figure 3).
 
-4. We keep OSC/DecDEC and ParoQuant as defenses rather than optional baselines. No "beats static" result is sufficient unless it also survives the harder named baselines and parity checks.
+4. An audit-preserving regime map. C-A1 remains parked; C_U1, C_S1, and C_Y5 are blocked by missing schema, floor, or native-pairing requirements.
 
-## 2. Claim Boundary
+![Top-1 set leaving](figures/top1_set_leaving.png)
 
-The current claim is a bounded measurement/regime claim, not a positive method claim. The paper may state that static channel-set protection is unstable under long reasoning in these packets, and that the campaign did not establish a confirmed adaptive method. It may not state that C-A1 beats ParoQuant or that any GPU method is confirmed.
+Figure 1: More than half of later high-risk top-1% channels leave the static protected set in every reported packet.
 
-The positive claim requires:
+## 2. Measurement Setup
 
-- a registry card predating any confirmation access;
-- Phase-A baseline lock for ParoQuant/static/EMA;
-- fresh non-confirm dev/gate rows;
-- same-row paired comparison across models and policies;
-- pre-launch review records for the exact runner code hash;
-- planted positive controls before promotion;
-- held-out confirmation only after the above gates pass.
+For a top-k channel threshold, define the protected set at one trace segment and ask how many later high-risk channels are outside that set. This is strict set-leaving. A value near zero would support static protection; a value above one half means the static set misses a large portion of later high-risk channels.
 
-## 3. Measurement
+Within-set shuffling is measured separately: among channels that remain inside the protected set, their relative rank can still change. This affects allocation inside a fixed protected set but cannot recover channels that leave the set entirely.
 
-The central metric is strict set-leaving. For a threshold such as top 1%, define the top-channel set at one trace segment and ask what fraction of later high-risk channels are outside that protected set. A value near zero would support static protection. Values above one half mean that the static set misses a large portion of the later outlier mass.
+The detailed provenance is in `tables/provenance.md`; the final regime checklist is in `tables/regime_checklist.md`.
 
-Within-set shuffling is measured separately: among channels that remain inside the protected set, how much does their rank/order change? This matters for policies that allocate different protection levels within a fixed set. It is not a replacement for strict set-leaving, because channels that leave the set entirely cannot be recovered by a better within-set ordering.
+## 3. Results
 
-The threshold sensitivity analysis reports 0.5%, 1%, 2%, and 5% thresholds without selecting a threshold post hoc.
+### 3.1 Top-1% Strict Set-Leaving Is Large
 
-## 4. Results
+| Packet | Strict set-leaving | Within-set shuffling |
+| --- | ---: | ---: |
+| Granite-Tiny | `0.634245` | `0.175260` |
+| Granite-Small | `0.566235` | `0.270935` |
+| Nemotron-3 | `0.533713` | `0.269082` |
+| Phase 5 Transformer | `0.670573` | `0.165737` |
 
-### 4.1 Top-1% Strict Set-Leaving Is Large
+The top-1% values all exceed `0.53`, and the largest reaches `0.670573`. Static protection is therefore not a sufficient abstraction for these traces.
 
-| Packet | Top % | Gate-style migration | Strict set-leaving | Within-set shuffling |
-| --- | ---: | ---: | ---: | ---: |
-| Phase 0 Granite-Tiny | 1.0 | 0.817839 | 0.634245 | 0.175260 |
-| Phase 1 Granite-Small | 1.0 | 0.843166 | 0.566235 | 0.270935 |
-| Phase 2 Nemotron-3 | 1.0 | 0.820810 | 0.533713 | 0.269082 |
-| Phase 5' Transformer | 1.0 | 0.839379 | 0.670573 | 0.165737 |
+### 3.2 The Result Is Stable Across Thresholds
 
-The top-1% set-leaving values are all above 0.53 and reach 0.67. This is too large for a simple static protection story. The high-risk channels at later horizons are often not the same channels that a static early set would protect.
+![Threshold sensitivity](figures/threshold_sensitivity.png)
 
-### 4.2 The Finding Is Not A Single-Threshold Artifact
+Figure 2: Strict set-leaving remains high across the 0.5%, 1%, 2%, and 5% thresholds.
 
-The threshold sensitivity scan shows the same qualitative behavior at nearby thresholds.
+The threshold sweep reports all thresholds rather than selecting one post hoc. The exact values move, but the regime does not: strict set-leaving stays high across nearby thresholds for all four packets.
 
-| Packet | 0.5% strict set-leaving | 1.0% | 2.0% | 5.0% |
-| --- | ---: | ---: | ---: | ---: |
-| Granite-Tiny | 0.583333 | 0.634245 | 0.669153 | 0.658009 |
-| Granite-Small | 0.538294 | 0.566235 | 0.574123 | 0.689162 |
-| Nemotron-3 | 0.520891 | 0.533713 | 0.520922 | 0.566002 |
-| Phase 5' Transformer | 0.639323 | 0.670573 | 0.688028 | 0.680968 |
+### 3.3 Strict Leaving Dominates Within-Set Shuffling
 
-The exact value changes with threshold, but the regime does not. Static sets lose a large fraction of later high-risk channels across the reported thresholds.
+![Within-set shuffling](figures/within_set_shuffling.png)
 
-### 4.3 Within-Set Shuffling Is Smaller But Still Relevant
+Figure 3: Within-set shuffling exists, but strict set-leaving is the larger effect.
 
-Within-set shuffling at top 1% ranges from 0.165737 to 0.270935. This supports a two-level interpretation. First, many later high-risk channels are outside the static set at all. Second, even among channels that remain inside the set, their relative importance changes enough that fixed within-set allocation may also be fragile.
+Within-set shuffling at top 1% ranges from `0.165737` to `0.270935`. That is nontrivial, but it is smaller than strict set-leaving. The main failure mode for a static set is not only that the protected channels change rank; many later high-risk channels are absent from the protected set at all.
 
-## 5. Positive Methods And Why They Are Not Yet Claims
+## 4. Why C-A1 Is Parked, Not Confirmed
 
-C-A1, the per-model CVaR/EVT clip path, remains the nearest positive-method candidate. The current runbook correctly requires a three-model paired matrix and fresh non-confirm dev/gate materialization. Cached C-A1 gate evidence is invalid for selection because the confirm path audit found confirmation-source rows in the relevant gate artifacts. The required action is rebuild, not reinterpretation.
+![Cached policy screens](figures/paroquant_vs_channelset_methods.png)
 
-C-F and CE13 remain possible positive enablers only if they clear the same baseline and audit gates. C-D1 and CE21 are mandatory defenses: OSC/DecDEC stress and no-gap filters protect against overclaiming a policy that only wins in a narrow or contaminated trace regime.
+Figure 4: Cached C-A1 and C-F screens are support evidence only. They are not native same-row ParoQuant comparisons and cannot carry a positive claim.
 
-Sidecar/kernel-free ideas are not claimable without a real systems path. A measurement result can be paper-strength; an unimplemented sidecar is not.
+C-A1 remains the nearest positive-method candidate, but it is not a paper claim. The cached screen has only `6` C-A1 gate rows, with `5` positive medians and `1` nonpositive median. That is enough to motivate a fresh materialization, not enough to claim a method.
 
-## 6. Baselines And Defenses
+![C-A1 sentinel status](figures/c_a1_sentinel_status.png)
 
-ParoQuant is the hardest named baseline for any adaptive protection claim. A method that beats static clipping but not ParoQuant is at best a diagnostic. The paper should report ParoQuant parity before any "beats ParoQuant" language.
+Figure 5: The split-clean C-A1 sentinel matrix is incomplete. DeepSeek and Falcon have `12` same-row pairs, while Granite has `0` valid same-row pairs in the safe manifest.
 
-OSC and DecDEC defenses are needed because long-reasoning failures can be reinterpreted as either output-space consistency issues or decode/decompose mismatch. A Channel-Set method should not win by exploiting an artifact that those defenses would remove.
+The blocker is concrete. A future claim needs a Granite/DeepSeek/Falcon same-row matrix with ParoQuant baseline and tight-clip C-A1 outputs. The safe manifest has DeepSeek and Falcon same-row pairs, but Granite is missing/invalid. C-A1 remains parked until this is rebuilt.
 
-The audit gate is part of the method, not bookkeeping. The C-A1 contamination finding is evidence that the gate matters: without it, the campaign would have been able to tell a premature positive story.
+## 5. Defenses And Schema Blockers
 
-## 7. Related Work
+![OSC DecDEC drift defense status](figures/osc_decdec_drift_defense.png)
 
-This paper is closest to W4A16 quantization and outlier-channel protection work, including ParoQuant and related activation-aware policies. It is also adjacent to KL-Lens, ResQ, OSC, and DecDEC because the key question is not only how much an activation changes, but whether the change predicts a user-visible reasoning failure under a controlled decode.
+Figure 6: Defense and router ideas are blocked by missing labels, insufficient rows, or missing native pairing.
 
-The novelty of this bounded result is the long-reasoning channel-set view: rather than assuming a protected set and measuring final accuracy, it asks whether the protected set remains the same object over the trace.
+The defense stack is useful because it prevents overclaiming:
 
-## 8. Limitations
+- C_U1 materializes `500` KL trajectory rows, but lacks paired difficulty/policy-uplift labels.
+- C_S1 finds only `198` eligible rows against a `500` row floor. The floor is not lowered.
+- C_Y5 has defense inputs and audit checks, but the three-model native C-A1-vs-ParoQuant packet is missing.
 
-This draft is not a positive method paper yet. It needs final plotting, exact provenance tables, and the fresh C-A1 non-confirm matrix before any adaptive policy claim can be made.
+These are honest blockers, not negative proof against every future method. They define the evidence required before a positive Channel-Set method can be claimed.
 
-The current measurement relies on cached decomposition packets. It is strong enough to motivate the static-set negative, but method claims require fresh paired rows, identical prompts, model/policy hashes, and write-once per-trace evidence.
+## 6. Related Work
 
-The paper should avoid claiming that static channel sets are always wrong. The bounded claim is that in these long-reasoning packets, strict set-leaving is large enough that static protection is not a sufficient abstraction.
+Channel-Set is closest to W4A16 quantization, outlier-channel protection, rotation-based quantization, and residual correction methods such as ParoQuant, OSC, DecDEC, ResQ, OSCAR, and OScaR. Those systems are the correct baseline family for any future adaptive method.
 
-## 9. Conclusion
+The distinguishing view here is the long-reasoning channel-set object itself. Rather than assuming a protected channel set and measuring final answer accuracy, this paper measures whether the protected set remains the same object over the reasoning trace.
 
-Channel-Set currently contributes a robust measurement and a discipline lesson. Long-reasoning outlier channel sets drift: at top 1%, more than half of later high-risk channels leave the static protected set in every reported packet. That makes static W4A16 protection a weak unit for long reasoning. A positive method may still emerge from C-A1 or related adaptive policies, but only after fresh non-confirm paired materialization and the full baseline/audit gate.
+## 7. Limitations
+
+This is a measurement/regime paper, not a confirmed positive-method paper. C-A1 remains parked. The paper does not claim to beat ParoQuant, does not claim a native GPU result, and does not claim held-out method confirmation.
+
+The measurements are cached decomposition evidence. They are strong enough to establish the static-set drift regime, but a method claim needs fresh split-clean native paired rows, model/policy hashes, no-gap denominators, and write-once per-trace evidence.
+
+The claim is also not that static channel sets are always wrong. It is that, in these long-reasoning packets, strict set-leaving is large enough that static protection alone is a weak abstraction.
+
+## 8. Conclusion
+
+Channel-Set contributes a scoped but useful result: long-reasoning outlier channel sets drift. At top 1%, more than half of later high-risk channels leave the static protected set in every reported packet. That turns static W4A16 protection from a stable object into a fragile assumption. A positive method may still emerge from C-A1 or related adaptive policies, but only after fresh split-clean native paired materialization and the full ParoQuant/audit gate.

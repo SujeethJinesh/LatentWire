@@ -37,6 +37,48 @@ A7. `rg -n "venv_arm64" queues/gpu_foreground.yaml queues/gpu_backfill.yaml`
 A8. `venv_arm64/bin/python -m compileall -q scripts pmc experimental/outlier_migrate/phase9`
     Result: PASS
 
+2026-06-05 paper finalization package
+
+Additional commands run:
+
+B1. `venv_arm64/bin/python scripts/build_paper_review_artifacts.py`
+    Result: PASS
+    Output summary: wrote final paper figures/tables, `paper/response_plan.md`, `reviews/mock_colm_board_iter1.json`, `reviews/mock_colm_board_iter2.json`, and `dashboard/paper_review_trajectory.md`.
+
+B2. `pandoc draft.md -o draft.pdf --pdf-engine=xelatex` in `paper/latentwire` and `paper/channel_set`
+    Result: PASS
+    Output summary: wrote both optional paper PDFs.
+
+B3. `venv_arm64/bin/python scripts/build_papers_review_package.py`
+    Result: PASS
+    Output summary: wrote `papers_review.zip`.
+
+B4. `venv_arm64/bin/python scripts/check_papers_review_package.py papers_review.zip`
+    Result: PASS
+    Output summary: `papers_review.zip` has required drafts, PDFs, figures, tables, review records, trajectory, `INDEX.md`, `COMMIT.txt`, and `DIFFSTAT.txt`; package is under 25 MB.
+
+B5. `zipinfo -1 papers_review.zip | rg -n "_confirm"; test $? -eq 1`
+    Result: PASS
+    Output summary: no package entry path matched `_confirm`.
+
+B6. Text scan of Markdown/TXT/JSON/CSV/YAML payloads in `papers_review.zip` for `_confirm`
+    Result: PASS
+    Output summary: zero text hits.
+
+B7. `venv_arm64/bin/python -m py_compile scripts/build_paper_review_artifacts.py scripts/build_papers_review_package.py scripts/check_papers_review_package.py scripts/check_handoff.py`
+    Result: PASS
+
+B8. `venv_arm64/bin/python scripts/check_handoff.py`
+    Result: PASS
+    Output summary: handoff files OK; AGENTS.md = 21038 bytes, under 32 KiB.
+
+B9. `venv_arm64/bin/python -m compileall -q scripts pmc experimental/outlier_migrate/phase9`
+    Result: PASS
+
+B10. `venv_arm64/bin/python -m pytest -q tests/test_stage0_cache_split.py tests/test_overnight_runner.py`
+     Result: PASS
+     Output summary: 8 passed in 0.09s.
+
 Commands run:
 
 1. `venv_arm64/bin/python scripts/check_handoff.py`
