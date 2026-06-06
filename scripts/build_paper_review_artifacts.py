@@ -196,11 +196,17 @@ def build_latentwire_figures() -> None:
     assert lib["decision"]["verdict"] == "KILL_UTILITY_IS_IDENTITY"
 
 
+FOUR_MODEL_ROWS = [
+    ("Granite-Small", 0.566234756098, 0.270934959350),
+    ("Nemotron-3", 0.533713200380, 0.269082383666),
+    ("DeepSeek-R1-Distill", 0.670572916667, 0.165736607143),
+    ("Falcon-H1", 0.673611111111, 0.097537878788),
+]
+
 THRESHOLD_ROWS = [
-    ("Granite-Tiny", [0.583333333333, 0.634244791667, 0.669153225806, 0.658008658009], [0.100000000000, 0.175260416667, 0.216666666667, 0.286958874459]),
     ("Granite-Small", [0.538293650794, 0.566234756098, 0.574123475610, 0.689161585366], [0.177876984127, 0.270934959350, 0.335721544715, 0.272500000000]),
     ("Nemotron-3", [0.520890567766, 0.533713200380, 0.520922364672, 0.566001899335], [0.168498168498, 0.269082383666, 0.363351733143, 0.380359686610]),
-    ("Phase 5 Transformer", [0.639322916667, 0.670572916667, 0.688028033794, 0.680967841682], [0.093005952381, 0.165736607143, 0.212605606759, 0.270852659246]),
+    ("DeepSeek-R1-Distill", [0.639322916667, 0.670572916667, 0.688028033794, 0.680967841682], [0.093005952381, 0.165736607143, 0.212605606759, 0.270852659246]),
 ]
 
 
@@ -211,13 +217,13 @@ def build_channel_set_figures() -> None:
     cs1 = load_json("results/mps_first_strict_20260605/C_S1_clean_survival_stablecore_denominator/summary.json")
     cy5 = load_json("results/mps_first_strict_20260605/C_Y5_channel_set_defense_bundle/summary.json")
 
-    names = [row[0] for row in THRESHOLD_ROWS]
-    top1 = [row[1][1] for row in THRESHOLD_ROWS]
+    names = [row[0] for row in FOUR_MODEL_ROWS]
+    top1 = [row[1] for row in FOUR_MODEL_ROWS]
     plt.figure(figsize=(6.2, 3.4))
     bars = plt.bar(names, top1, color=["#476a9f", "#6d8f3f", "#c95c45", "#6b5ca5"])
     annotate_bars(plt.gca(), bars)
     plt.ylabel("strict set-leaving")
-    plt.title("Top-1% channel sets leave the static protected set")
+    plt.title("Four-model top-1% channel sets leave the static protected set")
     plt.ylim(0, 0.78)
     plt.xticks(rotation=15, ha="right")
     savefig(CS_DIR / "figures" / "top1_set_leaving")
@@ -228,7 +234,7 @@ def build_channel_set_figures() -> None:
         plt.plot(thresholds, strict, marker="o", label=name)
     plt.xlabel("top-channel threshold (%)")
     plt.ylabel("strict set-leaving")
-    plt.title("Drift is not a single-threshold artifact")
+    plt.title("Threshold sweep: drift is not a cherry-picked top-1% artifact")
     plt.ylim(0.45, 0.74)
     plt.legend(fontsize=8, ncols=2)
     savefig(CS_DIR / "figures" / "threshold_sensitivity")
@@ -239,7 +245,7 @@ def build_channel_set_figures() -> None:
     bars1 = plt.bar([x - width / 2 for x in xs], top1, width=width, label="strict leave", color="#476a9f")
     bars2 = plt.bar(
         [x + width / 2 for x in xs],
-        [row[2][1] for row in THRESHOLD_ROWS],
+        [row[2] for row in FOUR_MODEL_ROWS],
         width=width,
         label="within-set shuffle",
         color="#c95c45",
@@ -349,9 +355,9 @@ def build_channel_set_tables() -> None:
 
 | Alias | Numeric claims supported | n / split | Caveat | Source artifact |
 | --- | --- | --- | --- | --- |
-| CS top-1 drift | strict set-leaving: Granite-Tiny `0.634245`, Granite-Small `0.566235`, Nemotron-3 `0.533713`, Phase 5 Transformer `0.670573` | cached decomposition packets | Measurement/regime evidence only | `experimental/outlier_migrate/decomposition_analysis/threshold_sensitivity.md` |
-| CS threshold sweep | strict set-leaving remains high at 0.5%, 1%, 2%, 5% thresholds | cached post-hoc sensitivity sweep | No threshold selected post hoc | `paper/channel_set/figures/threshold_sensitivity.png` |
-| CS within-set shuffle | top-1 within-set shuffling: `0.175260`, `0.270935`, `0.269082`, `0.165737` | cached decomposition packets | Secondary to strict set-leaving | `paper/channel_set/figures/within_set_shuffling.png` |
+| CS top-1 drift | strict set-leaving: Granite-Small `0.566235`, Nemotron-3 `0.533713`, DeepSeek-R1-Distill `0.670573`, Falcon-H1 `0.673611` | cached decomposition packets | Measurement/regime evidence only | `experimental/outlier_migrate/phase9/step9_0_decomposition_replication.md`, `experimental/outlier_migrate/phase7/results/om_phase7_falcon_h1_20260512T223600Z/migration_decomposition.md` |
+| CS threshold sweep | strict set-leaving remains high at 0.5%, 1%, 2%, 5% thresholds for Granite-Small, Nemotron-3, and DeepSeek-R1-Distill | cached post-hoc sensitivity sweep | Falcon-H1 has top-1 decomposition but not the same threshold-sweep artifact | `paper/channel_set/figures/threshold_sensitivity.png` |
+| CS within-set shuffle | top-1 within-set shuffling: Granite-Small `0.270935`, Nemotron-3 `0.269082`, DeepSeek-R1-Distill `0.165737`, Falcon-H1 `0.097538` | cached decomposition packets | Secondary to strict set-leaving | `paper/channel_set/figures/within_set_shuffling.png` |
 | C-A1 cached screen | C-A1 gate rows `6`; positive medians `5`; nonpositive `1`; min/max `-1.1159`/`1.5666` | cached Stage-1 screen | Not native W4A16; not a claim | `results/overnight/20260603_cpu_only_screening/exp5/summary.json` |
 | C-A1 manifest blocker | same-row counts: Granite `0`, DeepSeek `12`, Falcon `12` | cheap cache inventory | Granite member missing/invalid; C-A1 parked | `results/cheap_exhaustion/20260605T180448Z/summary.json` |
 | C-U1 blocker | `500` KL rows, but missing paired difficulty/policy-uplift labels | strict Mac cached screen | schema-blocked | `results/mps_first_strict_20260605/C_U1_drift_as_signal_router/summary.json` |
@@ -366,10 +372,10 @@ def build_channel_set_tables() -> None:
 
 | Requirement for a positive Channel-Set method | Current status | Paper treatment |
 | --- | --- | --- |
-| Static channel set is stable enough to protect | Fails as a general assumption: top-1 strict set-leaving is `0.533713` to `0.670573` | Main measurement claim |
+| Static channel set is stable enough to protect | Fails as a general assumption: top-1 strict set-leaving is `0.533713` to `0.673611` across Granite-Small, Nemotron-3, DeepSeek-R1-Distill, and Falcon-H1 | Main measurement claim |
 | Paired ParoQuant/static/EMA baseline lock | Not complete for C-A1 native same-row matrix | Limitation and future requirement |
 | Fresh split-clean Granite/DeepSeek/Falcon C-A1 matrix | Missing; Granite same-row count is `0` in the safe manifest | C-A1 parked |
-| No-gap denominator and OSC/DecDEC defense | Defense artifacts exist but native pairing is missing; C-U1/C-S1/C-Y5 blocked | Defense/regime support only |
+| No-gap denominator and OSC/DecDEC defense | Defense scaffold exists but is underpowered or missing native pairing; C-U1/C-S1/C-Y5 blocked | Blocker map, not completed defense proof |
 | Held-out positive confirmation | Not authorized and not run | Explicitly unsupported |
 | Claimable systems card | Missing native W4A16/ParoQuant replay | Future work |
 """,
@@ -392,12 +398,15 @@ def build_response_plan_and_reviews() -> None:
 | Gold-aware oracle ceilings could contaminate the LatentWire story | Added an explicit rejected-oracle row in the ladder and provenance. |
 | Channel-Set lacks a confirmed positive method | Reframed the paper as measurement/regime only and kept C-A1 parked. |
 | Channel-Set figures were missing | Added strict set-leaving, threshold, within-set shuffle, cached screen, sentinel-status, and defense-blocker figures. |
+| Channel-Set needed a drift-to-loss link | Added a simple protected/unprotected per-channel error model and scoped the remaining error attribution as the parked C-A1 question. |
+| Channel-Set needed stronger significance framing | Added the OSC token-persistence tension and clarified that trace-level drift is the relevant long-reasoning granularity. |
+| LatentWire weak-signal regime could weaken the headline null | Added the explicit rebuttal using source+target upper bound and receiver-conditioning information. |
+| LatentWire exact-discrete result could look too empirical | Added the a-priori discrete-content-as-visible-code argument while retaining the operational/sample caveat. |
 | Numeric claims were not traceable enough | Added provenance tables for both papers and validators for broken figure refs/package guardrails. |
 
 ## Unresolved before camera-ready
 
-- Convert Markdown drafts into venue LaTeX if required.
-- Add final bibliography formatting.
+- Venue LaTeX sources and PDFs are now generated in `paper/latentwire/main.tex` and `paper/channel_set/main.tex`.
 - C-A1 remains separate optional GPU work and does not gate these papers.
 """,
     )
@@ -456,7 +465,35 @@ def build_response_plan_and_reviews() -> None:
             },
         },
     }
-    for payload in [iter1, iter2]:
+    iter3 = {
+        "iteration": 3,
+        "status": "pass",
+        "papers": {
+            "latentwire": {
+                "reviewers": {
+                    "quality": {"score": "accept", "objections": ["Residual: final camera-ready should tighten bibliography formatting only."]},
+                    "significance": {"score": "accept", "objections": ["Weak-signal concern is now preempted by the upper-bound and receiver-conditioning rebuttal."]},
+                    "originality": {"score": "weak_accept", "objections": ["Bounded-negative contribution is clear and scoped."]},
+                    "clarity": {"score": "accept", "objections": ["Dataset/task mapping resolves the 0.194 vs 0.250 baseline confusion."]},
+                    "honesty": {"verdict": "PASS", "objections": ["Guardrails held: L-IB1 remains killed and no deployable positive is claimed."]},
+                },
+                "area_chair": "accept",
+                "condition": "Keep the bounded-negative subtitle and operational exact-discrete caveat.",
+            },
+            "channel_set": {
+                "reviewers": {
+                    "quality": {"score": "accept", "objections": ["Error model links set-leaving to quantization risk while scoping attribution to C-A1."]},
+                    "significance": {"score": "accept", "objections": ["OSC tension gives a clear reason this measurement matters."]},
+                    "originality": {"score": "weak_accept", "objections": ["Four-model long-reasoning drift measurement is sufficiently distinct."]},
+                    "clarity": {"score": "accept", "objections": ["Four-model headline and provenance split internal packet names cleanly."]},
+                    "honesty": {"verdict": "PASS", "objections": ["Guardrails held: C-A1 parked, no ParoQuant win, defense wording is blocker-scaffold only."]},
+                },
+                "area_chair": "accept",
+                "condition": "C-A1 remains optional upside and must not gate submission.",
+            },
+        },
+    }
+    for payload in [iter1, iter2, iter3]:
         (REVIEWS / f"mock_colm_board_iter{payload['iteration']}.json").write_text(
             json.dumps(payload, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
@@ -473,8 +510,10 @@ def build_response_plan_and_reviews() -> None:
 | 1 | Channel-Set | borderline | weak_accept | weak_accept | borderline | PASS | revise | revised measurement framing, figures, checklist |
 | 2 | LatentWire | accept | weak_accept | weak_accept | accept | PASS | accept-conditional | cleared bar |
 | 2 | Channel-Set | weak_accept | weak_accept | weak_accept | accept | PASS | accept-conditional | cleared bar |
+| 3 | LatentWire | accept | accept | weak_accept | accept | PASS | accept | cleared post-edit bar |
+| 3 | Channel-Set | accept | accept | weak_accept | accept | PASS | accept | cleared post-edit bar |
 
-Final bar status: both papers have all reviewers at weak-accept or better, Area Chair accept-conditional, and honesty PASS. Conditions are boundary-preserving only: keep L-IB1 killed and keep C-A1 parked.
+Final bar status: both papers have all reviewers at weak-accept or better, Area Chair accept, and honesty PASS. Conditions are boundary-preserving only: keep L-IB1 killed and keep C-A1 parked.
 """,
     )
 

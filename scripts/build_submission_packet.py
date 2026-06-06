@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build papers_review.zip for external paper review."""
+"""Build submission_packet.zip with final paper sources and review evidence."""
 
 from __future__ import annotations
 
@@ -49,13 +49,11 @@ def support_entries() -> dict[str, bytes]:
 def candidate_paths() -> list[Path]:
     patterns = [
         "paper/latentwire/draft.md",
-        "paper/latentwire/draft.pdf",
         "paper/latentwire/main.tex",
         "paper/latentwire/main.pdf",
         "paper/latentwire/figures/*",
         "paper/latentwire/tables/*",
         "paper/channel_set/draft.md",
-        "paper/channel_set/draft.pdf",
         "paper/channel_set/main.tex",
         "paper/channel_set/main.pdf",
         "paper/channel_set/figures/*",
@@ -64,6 +62,8 @@ def candidate_paths() -> list[Path]:
         "paper/response_plan.md",
         "reviews/mock_colm_board_iter*.json",
         "dashboard/paper_review_trajectory.md",
+        "queues/gpu_foreground.yaml",
+        "TESTS_RUN.txt",
     ]
     paths: list[Path] = []
     for pattern in patterns:
@@ -78,12 +78,7 @@ def add_file(entries: dict[str, bytes], skipped: list[str], path: Path) -> None:
         return
     size = path.stat().st_size
     if size > MAX_FILE_BYTES:
-        if path.suffix in {".md", ".txt", ".json", ".jsonl", ".csv", ".yaml"}:
-            data = "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[:200]).encode("utf-8")
-            entries[name] = data
-            skipped.append(f"{name}: included 200-line head instead of full {size} byte file")
-        else:
-            skipped.append(f"{name}: skipped {size} byte file")
+        skipped.append(f"{name}: skipped {size} byte file")
         return
     entries[name] = path.read_bytes()
 
@@ -95,32 +90,47 @@ def build(out: Path) -> Path:
         add_file(entries, skipped, path)
 
     index = [
-        "# Papers Review Package Index",
+        "# Submission Packet Index",
+        "",
+        "Final paper sources, PDFs, figures, provenance tables, response plan, and mock-COLM board records.",
         "",
         f"Created UTC: {datetime.now(timezone.utc).isoformat(timespec='seconds')}",
         f"Commit: `{run(['git', 'rev-parse', 'HEAD'])}`",
         "",
         "## Included",
     ]
+    descriptions = {
+        "paper/latentwire/main.tex": "LatentWire LaTeX source.",
+        "paper/latentwire/main.pdf": "LatentWire built PDF.",
+        "paper/channel_set/main.tex": "Channel-Set LaTeX source.",
+        "paper/channel_set/main.pdf": "Channel-Set built PDF.",
+        "paper/references.bib": "Shared bibliography.",
+        "paper/response_plan.md": "Reviewer-objection response plan.",
+        "dashboard/paper_review_trajectory.md": "Mock-COLM review trajectory.",
+        "queues/gpu_foreground.yaml": "Foreground GPU queue state; kept empty for finalization.",
+        "TESTS_RUN.txt": "Validation command log.",
+    }
     for name in sorted(entries):
-        index.append(f"- `{name}` ({len(entries[name])} bytes)")
-    index.extend(["", "## SKIPPED-too-large / Excluded"])
+        desc = descriptions.get(name, "Included paper, figure, table, provenance, or support artifact.")
+        index.append(f"- `{name}` ({len(entries[name])} bytes): {desc}")
+    index.extend(["", "## SKIPPED-too-large"])
     index.extend(f"- {item}" for item in skipped) if skipped else index.append("- None")
     index.extend(
         [
             "",
             "## Guardrails",
             "- No forbidden split-entry path is included.",
-            "- Model weights, binary arrays, and caches are excluded.",
-            "- Papers preserve the LatentWire bounded-negative and Channel-Set measurement/regime claim boundaries.",
+            "- No model weights, binary arrays, or caches are included.",
+            "- C_A1 is parked and optional; the foreground GPU queue is empty.",
         ]
     )
-    entries["INDEX.md"] = ("\n".join(index) + "\n").encode("utf-8")
+    entries["README_INDEX.md"] = ("\n".join(index) + "\n").encode("utf-8")
 
     bad = [name for name in entries if forbidden_path(name)]
     if bad:
         raise SystemExit(f"would include forbidden paths: {bad}")
 
+    out.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
         for name in sorted(entries):
             zf.writestr(name, entries[name])
@@ -131,7 +141,7 @@ def build(out: Path) -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out", type=Path, default=ROOT / "papers_review.zip")
+    parser.add_argument("--out", type=Path, default=ROOT / "submission_packet.zip")
     args = parser.parse_args()
     out = args.out if args.out.is_absolute() else ROOT / args.out
     build(out)

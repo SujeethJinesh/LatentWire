@@ -19,9 +19,11 @@ REQUIRED = {
     "paper/latentwire/draft.md",
     "paper/channel_set/draft.md",
     "paper/response_plan.md",
+    "paper/references.bib",
     "dashboard/paper_review_trajectory.md",
     "reviews/mock_colm_board_iter1.json",
     "reviews/mock_colm_board_iter2.json",
+    "reviews/mock_colm_board_iter3.json",
     "paper/latentwire/tables/falsification_ladder.md",
     "paper/latentwire/tables/provenance.md",
     "paper/channel_set/tables/provenance.md",
@@ -101,6 +103,11 @@ def validate_reviews(zf: zipfile.ZipFile) -> None:
         fail("iteration 2 did not pass")
     if "accept-conditional" not in iter2:
         fail("iteration 2 lacks AC accept-conditional")
+    iter3 = read_text(zf, "reviews/mock_colm_board_iter3.json")
+    if '"status": "pass"' not in iter3:
+        fail("iteration 3 did not pass")
+    if '"area_chair": "accept"' not in iter3:
+        fail("iteration 3 lacks AC accept")
 
 
 def main() -> int:

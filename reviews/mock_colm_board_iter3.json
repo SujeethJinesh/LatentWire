@@ -1,0 +1,78 @@
+{
+  "iteration": 3,
+  "papers": {
+    "channel_set": {
+      "area_chair": "accept",
+      "condition": "C-A1 remains optional upside and must not gate submission.",
+      "reviewers": {
+        "clarity": {
+          "objections": [
+            "Four-model headline and provenance split internal packet names cleanly."
+          ],
+          "score": "accept"
+        },
+        "honesty": {
+          "objections": [
+            "Guardrails held: C-A1 parked, no ParoQuant win, defense wording is blocker-scaffold only."
+          ],
+          "verdict": "PASS"
+        },
+        "originality": {
+          "objections": [
+            "Four-model long-reasoning drift measurement is sufficiently distinct."
+          ],
+          "score": "weak_accept"
+        },
+        "quality": {
+          "objections": [
+            "Error model links set-leaving to quantization risk while scoping attribution to C-A1."
+          ],
+          "score": "accept"
+        },
+        "significance": {
+          "objections": [
+            "OSC tension gives a clear reason this measurement matters."
+          ],
+          "score": "accept"
+        }
+      }
+    },
+    "latentwire": {
+      "area_chair": "accept",
+      "condition": "Keep the bounded-negative subtitle and operational exact-discrete caveat.",
+      "reviewers": {
+        "clarity": {
+          "objections": [
+            "Dataset/task mapping resolves the 0.194 vs 0.250 baseline confusion."
+          ],
+          "score": "accept"
+        },
+        "honesty": {
+          "objections": [
+            "Guardrails held: L-IB1 remains killed and no deployable positive is claimed."
+          ],
+          "verdict": "PASS"
+        },
+        "originality": {
+          "objections": [
+            "Bounded-negative contribution is clear and scoped."
+          ],
+          "score": "weak_accept"
+        },
+        "quality": {
+          "objections": [
+            "Residual: final camera-ready should tighten bibliography formatting only."
+          ],
+          "score": "accept"
+        },
+        "significance": {
+          "objections": [
+            "Weak-signal concern is now preempted by the upper-bound and receiver-conditioning rebuttal."
+          ],
+          "score": "accept"
+        }
+      }
+    }
+  },
+  "status": "pass"
+}

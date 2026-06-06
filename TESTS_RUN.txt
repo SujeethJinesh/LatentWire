@@ -79,6 +79,48 @@ B10. `venv_arm64/bin/python -m pytest -q tests/test_stage0_cache_split.py tests/
      Result: PASS
      Output summary: 8 passed in 0.09s.
 
+2026-06-05 final LaTeX/submission assembly
+
+Additional commands run:
+
+C1. `venv_arm64/bin/python scripts/build_paper_review_artifacts.py`
+    Result: PASS
+    Output summary: regenerated final figures/tables, `paper/response_plan.md`, `reviews/mock_colm_board_iter1.json`, `reviews/mock_colm_board_iter2.json`, `reviews/mock_colm_board_iter3.json`, and `dashboard/paper_review_trajectory.md`.
+
+C2. `pandoc draft.md -s --from markdown --to latex --natbib --bibliography ../references.bib -o main.tex && latexmk -xelatex -interaction=nonstopmode -halt-on-error main.tex` in `paper/latentwire` and `paper/channel_set`
+    Result: PASS
+    Output summary: wrote `paper/latentwire/main.tex`, `paper/latentwire/main.pdf` (10 pages), `paper/channel_set/main.tex`, and `paper/channel_set/main.pdf` (9 pages). The installed Pandoc is 2.10, so the older `--natbib` path was used instead of unavailable `--citeproc`.
+
+C3. PDF/log text sanity checks
+    Result: PASS
+    Output summary: no unresolved raw citation markers or LaTeX-error markers found in the built PDFs/logs.
+
+C4. `venv_arm64/bin/python -m py_compile scripts/build_paper_review_artifacts.py scripts/build_papers_review_package.py scripts/check_papers_review_package.py scripts/build_review_packet.py scripts/check_review_packet.py scripts/build_submission_packet.py scripts/check_submission_packet.py scripts/check_handoff.py`
+    Result: PASS
+
+C5. `venv_arm64/bin/python scripts/check_handoff.py`
+    Result: PASS
+    Output summary: handoff files OK; AGENTS.md = 21038 bytes, under 32 KiB.
+
+C6. `venv_arm64/bin/python -m compileall -q scripts pmc experimental/outlier_migrate/phase9`
+    Result: PASS
+
+C7. `venv_arm64/bin/python -m pytest -q tests/test_stage0_cache_split.py tests/test_overnight_runner.py`
+    Result: PASS
+    Output summary: 8 passed in 0.08s.
+
+C8. YAML parse for `queues/*.yaml` and `registry/**/*.yaml`
+    Result: PASS
+    Output summary: yaml parse OK.
+
+C9. `venv_arm64/bin/python scripts/build_papers_review_package.py && venv_arm64/bin/python scripts/check_papers_review_package.py papers_review.zip`
+    Result: PASS
+    Output summary: `papers_review.zip` validated at 2,074,364 bytes and 41 files.
+
+C10. `venv_arm64/bin/python scripts/build_submission_packet.py && venv_arm64/bin/python scripts/check_submission_packet.py submission_packet.zip`
+     Result: EXPECTED PRE-COMMIT DIRTY-GUARD FAIL
+     Output summary: content build succeeded at 1,403,107 bytes; validator reached the clean-tree guard and failed because this source commit had not been made yet. Re-run post-commit is required and should pass only if `COMMIT.txt` matches HEAD and no tracked files are dirty.
+
 Commands run:
 
 1. `venv_arm64/bin/python scripts/check_handoff.py`
