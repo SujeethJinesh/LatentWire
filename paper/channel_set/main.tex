@@ -1,109 +1,69 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
-\PassOptionsToPackage{hyphens}{url}
-%
-\documentclass[
-]{article}
-\usepackage{lmodern}
-\usepackage{amssymb,amsmath}
-\usepackage{ifxetex,ifluatex}
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
-  \usepackage{unicode-math}
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-% Use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\usepackage{xcolor}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
-\hypersetup{
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
-\urlstyle{same} % disable monospaced font for URLs
-\usepackage{longtable,booktabs}
-% Correct order of tables after \paragraph or \subparagraph
-\usepackage{etoolbox}
-\makeatletter
-\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
-\makeatother
-% Allow footnotes in longtable head/foot
-\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
-\makesavenoteenv{longtable}
+\documentclass{article}
+\usepackage[submission]{../colm2026_conference}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
 \usepackage{graphicx}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
-\makeatletter
-\def\fps@figure{htbp}
-\makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\usepackage[]{natbib}
-\bibliographystyle{plainnat}
+\usepackage{amsmath,amssymb}
+\usepackage{caption}
+\usepackage{lineno}
 
-\author{}
-\date{}
+\definecolor{darkblue}{rgb}{0, 0, 0.5}
+\hypersetup{
+  colorlinks=true,
+  citecolor=darkblue,
+  linkcolor=darkblue,
+  urlcolor=darkblue,
+  pdfauthor={Anonymous},
+  pdftitle={Channel Sets Drift During Long Reasoning},
+  pdfsubject={COLM 2026 submission},
+  pdfkeywords={},
+  pdfcreator={LaTeX},
+  pdfproducer={}
+}
+\urlstyle{same}
+\graphicspath{{figures/}}
+\setkeys{Gin}{width=0.92\linewidth,height=0.27\textheight,keepaspectratio}
+\setcounter{secnumdepth}{2}
+\newcommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\title{Channel Sets Drift During Long Reasoning\\\large A Measurement Regime For Static W4A16 Protection}
+\author{Anonymous Authors}
 
 \begin{document}
+\ifcolmsubmission
+\linenumbers
+\fi
+\maketitle
 
-\hypertarget{channel-sets-drift-during-long-reasoning}{%
-\section{Channel Sets Drift During Long
-Reasoning}\label{channel-sets-drift-during-long-reasoning}}
-
-\hypertarget{a-measurement-regime-for-static-w4a16-protection}{%
-\subsection{A Measurement Regime For Static W4A16
-Protection}\label{a-measurement-regime-for-static-w4a16-protection}}
-
-\hypertarget{abstract}{%
-\subsection{Abstract}\label{abstract}}
-
+\begin{abstract}
 W4A16 long-reasoning quantization often protects a fixed set of
 high-risk activation channels. Channel-Set asks whether that static unit
 is stable enough to support a positive method. The current evidence
 supports a measurement/regime result rather than a confirmed adaptive
-method: top-1\% strict set-leaving is \texttt{0.566235} for
-Granite-Small, \texttt{0.533713} for Nemotron-3, \texttt{0.670573} for
-DeepSeek-R1-Distill, and \texttt{0.673611} for Falcon-H1. This
+method: top-1\% strict set-leaving is \(0.566235\) for
+Granite-Small, \(0.533713\) for Nemotron-3, \(0.670573\) for
+DeepSeek-R1-Distill, and \(0.673611\) for Falcon-H1. This
 measurement tensions a competing account: OSC-style static protection is
 motivated by token-persistent outlier channel clusters, but long-decode
-high-risk sets drift at the trace level. C-A1 remains parked because the
-cached gate path was contaminated and the fresh three-model same-row
-ParoQuant-vs-tight-clip matrix is missing. The paper contributes a
-scoped regime claim: static channel-set protection is a weak abstraction
-for these long-reasoning traces, and any future positive method must
-beat ParoQuant/static baselines under split-clean same-row native
-evidence.
+high-risk sets drift at the trace level. the adaptive clip candidate
+remains parked because the cached gate path was contaminated and the
+fresh three-model same-row ParoQuant-vs-tight-clip matrix is missing.
+The paper contributes a scoped regime claim: static channel-set
+protection is a weak abstraction for these long-reasoning traces, and
+any future positive method must beat ParoQuant/static baselines under
+split-clean same-row native evidence.
+\end{abstract}
 
 \hypertarget{claim-boundary-box}{%
 \subsection{Claim-Boundary Box}\label{claim-boundary-box}}
 
+\begingroup\small
 \begin{longtable}[]{@{}lll@{}}
 \toprule
 \begin{minipage}[b]{0.30\columnwidth}\raggedright
@@ -117,27 +77,27 @@ Future-only\strut
 \endhead
 \begin{minipage}[t]{0.30\columnwidth}\raggedright
 Top-1\% strict set-leaving is high across Granite-Small, Nemotron-3,
-DeepSeek-R1-Distill, and Falcon-H1: \texttt{0.533713} to
-\texttt{0.673611}.\strut
+DeepSeek-R1-Distill, and Falcon-H1: \(0.533713\) to
+\(0.673611\).\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
 A confirmed-positive claim is unsupported.\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
-C-A1 can become a positive only after fresh split-clean native paired
-materialization.\strut
+the adaptive clip candidate can become a positive only after fresh
+split-clean native paired materialization.\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.30\columnwidth}\raggedright
 Drift is not a single-threshold artifact for the models with
 threshold-sweep artifacts.\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
-C-A1 is not confirmed and does not beat ParoQuant in a claim-ready
-way.\strut
+the adaptive clip candidate is not confirmed and does not beat ParoQuant
+in a claim-ready way.\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
 A GPU/native systems card remains separate from this paper-finalization
 pass.\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.30\columnwidth}\raggedright
-C\_U1, C\_S1, and C\_Y5 blockers are real schema/floor/native-pairing
-blockers.\strut
+the router audit, the clean-denominator audit, and the defense-bundle
+audit blockers are real schema/floor/native-pairing blockers.\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
 No held-out method confirmation is claimed.\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
@@ -146,6 +106,7 @@ exists.\strut
 \end{minipage}\tabularnewline
 \bottomrule
 \end{longtable}
+\endgroup
 
 \hypertarget{introduction}{%
 \subsection{1. Introduction}\label{introduction}}
@@ -160,7 +121,7 @@ This measurement tensions a competing account. Recent W4A16 work such as
 OSC \citep{osc2026} motivates static protection by arguing activation
 outliers form token-persistent channel clusters, a fixed object stable
 enough to protect once. Our long-decode measurement shows the opposite
-for the top-1\% high-risk set: \texttt{53}-\texttt{67}\% of later
+for the top-1\% high-risk set: \(53\)-\(67\)\% of later
 high-risk channels lie outside the set selected early in the trace. The
 two are reconcilable: token-local clusters can persist while the
 trace-level high-risk set drifts. That reconciliation is the point.
@@ -181,7 +142,7 @@ Contributions:
 \def\labelenumi{\arabic{enumi}.}
 \item
   A four-model long-reasoning channel-set drift measurement. At top 1\%,
-  strict set-leaving is above \texttt{0.53} for every reported headline
+  strict set-leaving is above \(0.53\) for every reported headline
   model (Figure 1).
 \item
   A threshold sweep showing that the result is not a single chosen
@@ -192,9 +153,10 @@ Contributions:
   A separation between strict set-leaving and within-set rank shuffling
   (Figure 3).
 \item
-  An audit-preserving regime map. C-A1 remains parked; C\_U1, C\_S1, and
-  C\_Y5 are blocked by missing schema, floor, or native-pairing
-  requirements.
+  An audit-preserving regime map. the adaptive clip candidate remains
+  parked; the router audit, the clean-denominator audit, and the
+  defense-bundle audit are blocked by missing schema, floor, or
+  native-pairing requirements.
 \end{enumerate}
 
 \begin{figure}
@@ -224,24 +186,23 @@ affects allocation inside a fixed protected set but cannot recover
 channels that leave the set entirely.
 
 The downstream relevance of set-leaving follows from a simple error
-model. A channel inside the protected set incurs the protected
-per-channel error \texttt{epsilon\_p}; a high-risk channel that has left
-it incurs the unprotected error
-\texttt{epsilon\_q\ \textgreater{}\textgreater{}\ epsilon\_p}. Writing
-\texttt{L(t0,t)} for the fraction of later high-risk channels outside
-the set chosen at \texttt{t0}, the expected excess quantization error
-behaves as
-\texttt{E{[}err(t){]}\ \textasciitilde{}=\ K\ \{\ epsilon\_p\ (1\ -\ L(t0,t))\ +\ epsilon\_q\ L(t0,t)\ \}},
-which is increasing in \texttt{L}. Set-leaving is therefore not merely a
-membership statistic: under this model the measured \texttt{L} of
-\texttt{0.53}-\texttt{0.67} places a large fraction of later high-risk
-channels at the unprotected error rate. The model assumes leaving
-channels carry comparable risk to those retained; we treat the
-per-channel error attribution itself as the parked C-A1 question and
-claim no confirmed accuracy delta here.
+model. A channel inside the protected set incurs protected per-channel
+error \(\varepsilon_p\); a high-risk channel that has left it incurs
+unprotected error \(\varepsilon_q \gg \varepsilon_p\). Let
+\(L=L(t_0,t)\) be the fraction of later high-risk channels outside the
+set chosen at \(t_0\). Then
 
-The detailed provenance is in \texttt{tables/provenance.md}; the final
-regime checklist is in \texttt{tables/regime\_checklist.md}.
+\[E[\mathrm{err}(t)] \approx K\{\varepsilon_p(1-L) + \varepsilon_q L\}.\]
+
+which is increasing in \(L\). Set-leaving is therefore not merely a
+membership statistic: under this model the measured \(L\) of
+\(0.53\)--\(0.67\) places a large fraction of later high-risk channels
+at the unprotected error rate. The model assumes leaving channels carry
+comparable risk to those retained; we treat the per-channel error
+attribution itself as the parked adaptive-method question and claim no
+confirmed accuracy delta here.
+
+The final regime checklist is summarized in the text below.
 
 \hypertarget{results}{%
 \subsection{3. Results}\label{results}}
@@ -250,25 +211,27 @@ regime checklist is in \texttt{tables/regime\_checklist.md}.
 \subsubsection{3.1 Four-Model Top-1\% Strict Set-Leaving Is
 Large}\label{four-model-top-1-strict-set-leaving-is-large}}
 
+\begingroup\small
 \begin{longtable}[]{@{}lrrl@{}}
 \toprule
 Model & Strict set-leaving & Within-set shuffling & Artifact
 status\tabularnewline
 \midrule
 \endhead
-Granite-Small & \texttt{0.566235} & \texttt{0.270935} & threshold sweep
+Granite-Small & \(0.566235\) & \(0.270935\) & threshold sweep
 available\tabularnewline
-Nemotron-3 & \texttt{0.533713} & \texttt{0.269082} & threshold sweep
+Nemotron-3 & \(0.533713\) & \(0.269082\) & threshold sweep
 available\tabularnewline
-DeepSeek-R1-Distill & \texttt{0.670573} & \texttt{0.165737} & threshold
+DeepSeek-R1-Distill & \(0.670573\) & \(0.165737\) & threshold
 sweep available\tabularnewline
-Falcon-H1 & \texttt{0.673611} & \texttt{0.097538} & top-1 decomposition
+Falcon-H1 & \(0.673611\) & \(0.097538\) & top-1 decomposition
 available\tabularnewline
 \bottomrule
 \end{longtable}
+\endgroup
 
-The top-1\% values all exceed \texttt{0.53}, and the largest reaches
-\texttt{0.673611}. Static protection is therefore not a sufficient
+The top-1\% values all exceed \(0.53\), and the largest reaches
+\(0.673611\). Static protection is therefore not a sufficient
 abstraction for these traces.
 
 \hypertarget{the-result-is-stable-across-available-threshold-sweeps}{%
@@ -305,15 +268,15 @@ Figure 3: Four-model strict set-leaving versus within-set shuffling.
 Within-set shuffling exists, but strict set-leaving is the larger
 effect.
 
-Within-set shuffling at top 1\% ranges from \texttt{0.097538} to
-\texttt{0.270935}. That is nontrivial, but it is smaller than strict
+Within-set shuffling at top 1\% ranges from \(0.097538\) to
+\(0.270935\). That is nontrivial, but it is smaller than strict
 set-leaving. The main failure mode for a static set is not only that the
 protected channels change rank; many later high-risk channels are absent
 from the protected set at all.
 
-\hypertarget{why-c-a1-is-parked-not-confirmed}{%
-\subsection{4. Why C-A1 Is Parked, Not
-Confirmed}\label{why-c-a1-is-parked-not-confirmed}}
+\hypertarget{why-the-adaptive-clip-candidate-is-parked-not-confirmed}{%
+\subsection{4. Why the adaptive clip candidate Is Parked, Not
+Confirmed}\label{why-the-adaptive-clip-candidate-is-parked-not-confirmed}}
 
 \begin{figure}
 \centering
@@ -321,33 +284,33 @@ Confirmed}\label{why-c-a1-is-parked-not-confirmed}}
 \caption{Cached policy screens}
 \end{figure}
 
-Figure 4: Cached C-A1 and C-F screens are support evidence only. They
-are not native same-row ParoQuant comparisons and cannot carry a
-positive claim.
+Figure 4: Cached the adaptive clip candidate and the survival-core
+candidate screens are support evidence only. They are not native
+same-row ParoQuant comparisons and cannot carry a positive claim.
 
-C-A1 remains the nearest positive-method candidate, but it is not a
-paper claim. The cached screen has only \texttt{6} C-A1 gate rows, with
-\texttt{5} positive medians and \texttt{1} nonpositive median. That is
-enough to motivate a fresh materialization, not enough to claim a
-method.
+the adaptive clip candidate remains the nearest positive-method
+candidate, but it is not a paper claim. The cached screen has only
+\(6\) the adaptive clip candidate gate rows, with \(5\)
+positive medians and \(1\) nonpositive median. That is enough to
+motivate a fresh materialization, not enough to claim a method.
 
 \begin{figure}
 \centering
 \includegraphics{figures/c_a1_sentinel_status.png}
-\caption{C-A1 sentinel status}
+\caption{the adaptive clip candidate sentinel status}
 \end{figure}
 
-Figure 5: The split-clean C-A1 sentinel matrix is incomplete. DeepSeek
-and Falcon have \texttt{12} same-row pairs, while Granite has \texttt{0}
-valid same-row pairs in the safe manifest.
+Figure 5: The split-clean the adaptive clip candidate sentinel matrix is
+incomplete. DeepSeek and Falcon have \(12\) same-row pairs, while
+Granite has \(0\) valid same-row pairs in the safe manifest.
 
 The blocker is concrete and unavoidable. A future claim needs a
 Granite/DeepSeek/Falcon same-row matrix with ParoQuant baseline and
-tight-clip C-A1 outputs. The safe manifest has DeepSeek and Falcon
-same-row pairs, but Granite is missing/invalid. C-A1 remains parked
-until this is rebuilt. This paper therefore does not claim a C-A1 win,
-does not claim to beat ParoQuant, and does not claim held-out
-confirmation.
+tight-clip the adaptive clip candidate outputs. The safe manifest has
+DeepSeek and Falcon same-row pairs, but Granite is missing/invalid. the
+adaptive clip candidate remains parked until this is rebuilt. This paper
+therefore does not claim a the adaptive clip candidate win, does not
+claim to beat ParoQuant, and does not claim held-out confirmation.
 
 \hypertarget{defense-scaffold-and-schema-blockers}{%
 \subsection{5. Defense Scaffold And Schema
@@ -368,14 +331,15 @@ The defense stack is useful because it prevents overclaiming:
 \begin{itemize}
 \tightlist
 \item
-  C\_U1 materializes \texttt{500} KL trajectory rows, but lacks paired
-  difficulty/policy-uplift labels.
+  the router audit materializes \(500\) KL trajectory rows, but
+  lacks paired difficulty/policy-uplift labels.
 \item
-  C\_S1 finds only \texttt{198} eligible rows against a \texttt{500} row
-  floor. The floor is not lowered.
+  the clean-denominator audit finds only \(198\) eligible rows
+  against a \(500\) row floor. The floor is not lowered.
 \item
-  C\_Y5 has defense inputs and audit checks, but the three-model native
-  C-A1-vs-ParoQuant packet is missing.
+  the defense-bundle audit has defense inputs and audit checks, but the
+  three-model native the adaptive clip candidate-vs-ParoQuant packet is
+  missing.
 \end{itemize}
 
 These are honest blockers, not negative proof against every future
@@ -400,16 +364,17 @@ the same object over the reasoning trace.
 
 The regime checklist is the deliverable. A future method must measure
 drift, lock ParoQuant/static/EMA baselines, preserve no-gap
-denominators, require same-row native evidence, and treat C-A1-like
-tail/CVaR policies as parked until the full matrix exists.
+denominators, require same-row native evidence, and treat the adaptive
+clip candidate-like tail/CVaR policies as parked until the full matrix
+exists.
 
 \hypertarget{limitations}{%
 \subsection{7. Limitations}\label{limitations}}
 
 This is a measurement/regime paper, not a confirmed positive-method
-paper. C-A1 remains parked. The paper does not claim to beat ParoQuant,
-does not claim a native GPU result, and does not claim held-out method
-confirmation.
+paper. the adaptive clip candidate remains parked. The paper does not
+claim to beat ParoQuant, does not claim a native GPU result, and does
+not claim held-out method confirmation.
 
 The measurements are cached decomposition evidence. They are strong
 enough to establish the static-set drift regime, but a method claim
@@ -427,10 +392,13 @@ Channel-Set contributes a scoped but useful result: long-reasoning
 outlier channel sets drift. At top 1\%, more than half of later
 high-risk channels leave the static protected set in every reported
 headline model. That turns static W4A16 protection from a stable object
-into a fragile assumption. A positive method may still emerge from C-A1
-or related adaptive policies, but only after fresh split-clean native
-paired materialization and the full ParoQuant/audit gate.
+into a fragile assumption. A positive method may still emerge from the
+adaptive clip candidate or related adaptive policies, but only after
+fresh split-clean native paired materialization and the full
+ParoQuant/audit gate.
 
-  \bibliography{../references.bib}
+
+\bibliographystyle{../colm2026_conference}
+\bibliography{../references}
 
 \end{document}

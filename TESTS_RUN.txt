@@ -160,3 +160,22 @@ Commands run:
 10. Hygiene greps
    Result: PASS
    Output summary: no `venv_arm64` in `queues/gpu*.yaml`; no `_confirm` path in `review_packet.zip`; no unresolved placeholder matches in the modified handoff files. Remaining `confirm`/`confirmation` strings are audit/blocker text, not packaged result-data paths.
+
+2026-06-05 OpenReview COLM finalization/hygiene pass
+
+Additional commands run:
+
+D1. `python3 scripts/build_openreview_colm.py`
+    Result: PASS
+    Output summary: copied the official COLM style/bibliography files into `paper/`, rebuilt `paper/latentwire/main.tex`, `paper/channel_set/main.tex`, `paper/latentwire/main.pdf`, `paper/channel_set/main.pdf`, and wrote root OpenReview PDFs `openreview_latentwire.pdf` and `openreview_channel_set.pdf`.
+
+D2. `venv_arm64/bin/python scripts/build_final_submission_packet.py`
+    Result: PASS
+    Output summary: wrote `final_submission_packet.zip` at 2,170,333 bytes with 30 files.
+
+D3. `venv_arm64/bin/python scripts/check_openreview_hygiene.py`
+    Result: PASS
+    Output summary: `openreview_latentwire.pdf` is 8 pages, `openreview_channel_set.pdf` is 7 pages, no unresolved `??`, no forbidden deanonymizing/internal text, `queues/gpu_foreground.yaml` is empty, and `final_submission_packet.zip` validates under the 25 MB cap.
+
+D4. `venv_arm64/bin/python -m py_compile scripts/build_openreview_colm.py scripts/check_openreview_hygiene.py scripts/build_final_submission_packet.py scripts/build_review_packet.py`
+    Result: PASS

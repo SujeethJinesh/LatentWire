@@ -1,112 +1,72 @@
-% Options for packages loaded elsewhere
-\PassOptionsToPackage{unicode}{hyperref}
-\PassOptionsToPackage{hyphens}{url}
-%
-\documentclass[
-]{article}
-\usepackage{lmodern}
-\usepackage{amssymb,amsmath}
-\usepackage{ifxetex,ifluatex}
-\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
-  \usepackage[T1]{fontenc}
-  \usepackage[utf8]{inputenc}
-  \usepackage{textcomp} % provide euro and other symbols
-\else % if luatex or xetex
-  \usepackage{unicode-math}
-  \defaultfontfeatures{Scale=MatchLowercase}
-  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
-\fi
-% Use upquote if available, for straight quotes in verbatim environments
-\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-\IfFileExists{microtype.sty}{% use microtype if available
-  \usepackage[]{microtype}
-  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
-}{}
-\makeatletter
-\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \IfFileExists{parskip.sty}{%
-    \usepackage{parskip}
-  }{% else
-    \setlength{\parindent}{0pt}
-    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \KOMAoptions{parskip=half}}
-\makeatother
-\usepackage{xcolor}
-\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
-\hypersetup{
-  hidelinks,
-  pdfcreator={LaTeX via pandoc}}
-\urlstyle{same} % disable monospaced font for URLs
-\usepackage{longtable,booktabs}
-% Correct order of tables after \paragraph or \subparagraph
-\usepackage{etoolbox}
-\makeatletter
-\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
-\makeatother
-% Allow footnotes in longtable head/foot
-\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
-\makesavenoteenv{longtable}
+\documentclass{article}
+\usepackage[submission]{../colm2026_conference}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
 \usepackage{graphicx}
-\makeatletter
-\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
-\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
-\makeatother
-% Scale images if necessary, so that they will not overflow the page
-% margins by default, and it is still possible to overwrite the defaults
-% using explicit options in \includegraphics[width, height, ...]{}
-\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-% Set default figure placement to htbp
-\makeatletter
-\def\fps@figure{htbp}
-\makeatother
-\setlength{\emergencystretch}{3em} % prevent overfull lines
-\providecommand{\tightlist}{%
-  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
-\usepackage[]{natbib}
-\bibliographystyle{plainnat}
+\usepackage{amsmath,amssymb}
+\usepackage{caption}
+\usepackage{lineno}
 
-\author{}
-\date{}
+\definecolor{darkblue}{rgb}{0, 0, 0.5}
+\hypersetup{
+  colorlinks=true,
+  citecolor=darkblue,
+  linkcolor=darkblue,
+  urlcolor=darkblue,
+  pdfauthor={Anonymous},
+  pdftitle={When Byte-Scale Model Communication Should Be Text},
+  pdfsubject={COLM 2026 submission},
+  pdfkeywords={},
+  pdfcreator={LaTeX},
+  pdfproducer={}
+}
+\urlstyle{same}
+\graphicspath{{figures/}}
+\setkeys{Gin}{width=0.92\linewidth,height=0.27\textheight,keepaspectratio}
+\setcounter{secnumdepth}{2}
+\newcommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\title{When Byte-Scale Model Communication Should Be Text\\\large A Controlled Negative for Discrete No-Text Packets}
+\author{Anonymous Authors}
 
 \begin{document}
+\ifcolmsubmission
+\linenumbers
+\fi
+\maketitle
 
-\hypertarget{when-byte-scale-model-communication-should-be-text}{%
-\section{When Byte-Scale Model Communication Should Be
-Text}\label{when-byte-scale-model-communication-should-be-text}}
-
-\hypertarget{a-controlled-negative-for-discrete-no-text-packets}{%
-\subsection{A Controlled Negative for Discrete No-Text
-Packets}\label{a-controlled-negative-for-discrete-no-text-packets}}
-
-\hypertarget{abstract}{%
-\subsection{Abstract}\label{abstract}}
-
+\begin{abstract}
 LatentWire asks whether a source model can send a small no-text packet
 that improves a receiver model beyond ordinary score and text baselines.
 The answer for the completed discrete, byte-scale regime is a bounded
 negative. One-way score and residual packets do not beat
 source-index/confidence controls on the held-out aggregate, and the
 powered score ladder explains why: apparent source information drops
-from \texttt{2.098527} bits to \texttt{0.281933} bits after conditioning
+from \(2.098527\) bits to \(0.281933\) bits after conditioning
 on receiver evidence. The strongest discrete-evidence escape fails in
 the opposite direction: when the same exact symbolic evidence is exposed
-as a visible 2-byte public code, it reaches \texttt{1.000} accuracy
-versus \texttt{0.775} for the matched learned packet, a \texttt{+0.225}
+as a visible 2-byte public code, it reaches \(1.000\) accuracy
+versus \(0.775\) for the matched learned packet, a \(+0.225\)
 advantage with 95\% CI \texttt{{[}0.192188,\ 0.257812{]}}. The last
-cheap privacy-bottleneck escape also fails: L-IB1 is
-\texttt{KILL\_UTILITY\_IS\_IDENTITY}, with the current packet at
-utility/leakage \texttt{0.875/1.000} and the best bottleneck at only
-\texttt{0.602339/0.602339}. We contribute a reusable falsification
-ladder showing that discrete low-byte no-text packet wins vanish under
-source-index, equal-byte visible evidence, and privacy-bottleneck
-controls.
+cheap privacy-bottleneck escape also fails: the privacy-bottleneck
+escape is utility is identity leakage, with the current
+packet at utility/leakage \(0.875/1.000\) and the best bottleneck
+at only \(0.602339/0.602339\). We contribute a reusable
+falsification ladder showing that discrete low-byte no-text packet wins
+vanish under source-index, equal-byte visible evidence, and
+privacy-bottleneck controls.
+\end{abstract}
 
 \hypertarget{claim-boundary-box}{%
 \subsection{Claim-Boundary Box}\label{claim-boundary-box}}
 
+\begingroup\small
 \begin{longtable}[]{@{}lll@{}}
 \toprule
 \begin{minipage}[b]{0.30\columnwidth}\raggedright
@@ -131,14 +91,14 @@ this byte-scale discrete packet result.\strut
 Exact discrete evidence is text-capturable under the same byte budget in
 the local cache.\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
-L-IB1 is not a privacy positive; it remains
-\texttt{KILL\_UTILITY\_IS\_IDENTITY}.\strut
+the privacy-bottleneck escape is not a privacy positive; it remains
+utility is identity leakage.\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
 A reviewed neural privacy bottleneck would need matched
 visible/anonymized text controls.\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.30\columnwidth}\raggedright
-Gold-aware oracle ceilings are rejected as leakage or gap-to-perfect
+Answer-aware oracle ceilings are rejected as leakage or gap-to-perfect
 measurements.\strut
 \end{minipage} & \begin{minipage}[t]{0.30\columnwidth}\raggedright
 No cross-family, dense-cache, native GPU, or systems-speed claim is
@@ -149,6 +109,7 @@ gold-blind verifier/source/target scores.\strut
 \end{minipage}\tabularnewline
 \bottomrule
 \end{longtable}
+\endgroup
 
 \hypertarget{introduction}{%
 \subsection{1. Introduction}\label{introduction}}
@@ -182,28 +143,28 @@ Contributions:
 \def\labelenumi{\arabic{enumi}.}
 \item
   A controlled bounded negative for deployable score/residual packets.
-  On the held-out aggregate with \texttt{381} rows, the deployable score
-  packet is \texttt{-0.023622} below source-index/confidence with CI
+  On the held-out aggregate with \(381\) rows, the deployable score
+  packet is \(-0.023622\) below source-index/confidence with CI
   \texttt{{[}-0.060367,\ 0.013123{]}}. On the powered dev/gate ladder
-  with \texttt{1500} scored rows and \texttt{359} gate rows, the current
-  deployable packet is \texttt{-0.013928} below the best score baseline
+  with \(1500\) scored rows and \(359\) gate rows, the current
+  deployable packet is \(-0.013928\) below the best score baseline
   with CI \texttt{{[}-0.050139,\ 0.022284{]}}.
 \item
   A mechanism for the negative result. Source scores contain
-  \texttt{2.098527} bits before receiver conditioning, but only
-  \texttt{0.281933} bits after conditioning on receiver evidence (Figure
+  \(2.098527\) bits before receiver conditioning, but only
+  \(0.281933\) bits after conditioning on receiver evidence (Figure
   1).
 \item
-  A direct exact-discrete evidence test. On \texttt{640} model-helper
-  rows over \texttt{160} unique examples, a matched model packet reaches
-  \texttt{0.775} accuracy, while the exact same symbolic evidence
-  serialized as visible public code reaches \texttt{1.000} (Figure 3).
+  A direct exact-discrete evidence test. On \(640\) model-helper
+  rows over \(160\) unique examples, a matched model packet reaches
+  \(0.775\) accuracy, while the exact same symbolic evidence
+  serialized as visible public code reaches \(1.000\) (Figure 3).
   Random, shuffled, answer-only, and target-only controls remain at
-  \texttt{0.250}.
+  \(0.250\).
 \item
-  A final cheap privacy escape test. L-IB1 cannot preserve
-  current-packet utility while hiding source/evidence identity (Figure
-  4).
+  A final cheap privacy escape test. the privacy-bottleneck escape
+  cannot preserve current-packet utility while hiding source/evidence
+  identity (Figure 4).
 \end{enumerate}
 
 \begin{figure}
@@ -212,8 +173,8 @@ Contributions:
 \caption{Receiver conditioning bits}
 \end{figure}
 
-Figure 1: The source-score signal largely disappears once receiver
-evidence is included.
+Figure 1: Powered cached support: the source-score signal largely
+disappears once receiver evidence is included.
 
 \hypertarget{experimental-setup-and-regimes}{%
 \subsection{2. Experimental Setup And
@@ -222,6 +183,7 @@ Regimes}\label{experimental-setup-and-regimes}}
 The results below are not all from one dataset. That is intentional:
 each row is a different escape hatch with its own control surface.
 
+\begingroup\small
 \begin{longtable}[]{@{}lllll@{}}
 \toprule
 \begin{minipage}[b]{0.17\columnwidth}\raggedright
@@ -246,7 +208,7 @@ source-score packet to target receiver\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 multiple-choice; weak-signal regime\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
-\texttt{381} aggregate held-out rows; raw held-out rows not
+\(381\) aggregate held-out rows; raw held-out rows not
 packaged\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.17\columnwidth}\raggedright
@@ -258,10 +220,10 @@ Qwen2.5-0.5B source to Qwen3-0.6B target\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 multiple-choice score sketches\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
-\texttt{1500} scored dev/gate rows; \texttt{359} gate rows\strut
+\(1500\) scored dev/gate rows; \(359\) gate rows\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.17\columnwidth}\raggedright
-L-Q1 query packet\strut
+the receiver-query escape query packet\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 same powered dev/gate surface\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
@@ -269,7 +231,7 @@ query/reply packet and ablations\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 multiple-choice\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
-\texttt{359} gate rows\strut
+\(359\) gate rows\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.17\columnwidth}\raggedright
 Exact discrete evidence\strut
@@ -280,11 +242,11 @@ helper rows over a finite symbolic evidence signature\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 4-way candidate choice\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
-\texttt{640} model-helper rows, but only \texttt{160} unique
+\(640\) model-helper rows, but only \(160\) unique
 examples\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.17\columnwidth}\raggedright
-L-IB1 privacy bottleneck\strut
+the privacy-bottleneck escape privacy bottleneck\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 candidate-conditioned packet-builder cache\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
@@ -292,20 +254,18 @@ cached feature selector/adversary proxy\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 4-way candidate/evidence atoms\strut
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
-\texttt{512} matched rows; proxy only\strut
+\(512\) matched rows; proxy only\strut
 \end{minipage}\tabularnewline
 \bottomrule
 \end{longtable}
+\endgroup
 
-This mapping matters because the target-only baseline is \texttt{0.194}
-in the held-out MMLU-Pro aggregate but \texttt{0.250} in the 4-way
+This mapping matters because the target-only baseline is \(0.194\)
+in the held-out MMLU-Pro aggregate but \(0.250\) in the 4-way
 exact-evidence cache. Those are different tasks, not inconsistent
 measurements.
 
-All paper-finalization work is artifact-only. No new experiment, GPU
-run, MPS live forward, confirmation split access, or killed-method rerun
-is used here. The detailed provenance is in
-\texttt{tables/provenance.md}.
+Claim provenance is summarized in the text and figures.
 
 \hypertarget{falsification-ladder}{%
 \subsection{3. Falsification Ladder}\label{falsification-ladder}}
@@ -314,6 +274,7 @@ The central asset of this paper is not a single negative row. It is a
 ladder of increasingly plausible escapes, each killed or parked by a
 concrete hard baseline.
 
+\begingroup\small
 \begin{longtable}[]{@{}llll@{}}
 \toprule
 \begin{minipage}[b]{0.22\columnwidth}\raggedright
@@ -332,7 +293,7 @@ Score/WZ one-way packet\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 A deployable low-byte source residual beats source-score controls\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
-held-out delta \texttt{-0.023622}, CI
+held-out delta \(-0.023622\), CI
 \texttt{{[}-0.060367,\ 0.013123{]}}, \texttt{n=381}\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 source-index+confidence\strut
@@ -342,13 +303,13 @@ Powered score ladder\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 Receiver has residual headroom after source scores\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
-current packet delta \texttt{-0.013928}, CI
+current packet delta \(-0.013928\), CI
 \texttt{{[}-0.050139,\ 0.022284{]}}, gate \texttt{n=359}\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 best equal-byte score/source baseline\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.22\columnwidth}\raggedright
-L-B1 damage-avoidance trust packet\strut
+the damage-avoidance escape damage-avoidance trust packet\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 Packet improves repair without copying source answer\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
@@ -358,11 +319,11 @@ and damage avoidance fails\strut
 source-index/source-selected metadata\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.22\columnwidth}\raggedright
-L-Q1 receiver-query packet\strut
+the receiver-query escape receiver-query packet\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 Two-way query/reply creates new usable evidence\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
-delta \texttt{-0.022284}, CI \texttt{{[}-0.055710,\ 0.011142{]}},
+delta \(-0.022284\), CI \texttt{{[}-0.055710,\ 0.011142{]}},
 \texttt{n=359}\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 source-index+confidence; query-only/reply-only ablations\strut
@@ -372,24 +333,24 @@ Exact discrete evidence\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 Opaque packet carries symbolic evidence better than visible code\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
-visible exact code \texttt{1.000} vs packet \texttt{0.775}; delta
-\texttt{+0.225}, CI \texttt{{[}0.192188,\ 0.257812{]}}\strut
+visible exact code \(1.000\) vs packet \(0.775\); delta
+\(+0.225\), CI \texttt{{[}0.192188,\ 0.257812{]}}\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 equal-byte public code; random/shuffled/answer-only controls at
-\texttt{0.250}\strut
+\(0.250\)\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.22\columnwidth}\raggedright
-L-IB1 privacy bottleneck\strut
+the privacy-bottleneck escape privacy bottleneck\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 Utility can be preserved while hiding source/evidence identity\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
-best bottleneck utility/leakage \texttt{0.602339/0.602339}; current
-packet \texttt{0.875/1.000}\strut
+best bottleneck utility/leakage \(0.602339/0.602339\); current
+packet \(0.875/1.000\)\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 same-byte visible code and adaptive anonymized text\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.22\columnwidth}\raggedright
-C2C/KVComm smokes\strut
+C2C/KVComm local checks\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 Dense/cache anchors become byte-scale method evidence\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
@@ -399,7 +360,7 @@ controls\strut
 zero-source, teacher/candidate, deterministic packet controls\strut
 \end{minipage}\tabularnewline
 \begin{minipage}[t]{0.22\columnwidth}\raggedright
-L-PC5/L-C2 oracle ceilings\strut
+rerank/fuser oracle ceilings\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
 Rerank/fuser ceilings imply deployable latent methods\strut
 \end{minipage} & \begin{minipage}[t]{0.22\columnwidth}\raggedright
@@ -410,8 +371,10 @@ gold-leakage audit and equal-byte text controls\strut
 \end{minipage}\tabularnewline
 \bottomrule
 \end{longtable}
+\endgroup
 
-The full provenance table is in \texttt{tables/provenance.md}.
+The full audit provenance is retained internally; the submitted paper
+reports only the claim-bearing summaries.
 
 \hypertarget{results}{%
 \subsection{4. Results}\label{results}}
@@ -431,9 +394,9 @@ the source-index/confidence baseline. The source+target-at-encoder upper
 bound is positive but non-deployable.
 
 The held-out aggregate shows the exact boundary. Target-only accuracy is
-\texttt{0.194226}, source-index+confidence is \texttt{0.204724}, and the
-deployable WZ packet is \texttt{0.181102}. The source+target-at-encoder
-upper bound reaches \texttt{0.314961}, so the experiment is not merely
+\(0.194226\), source-index+confidence is \(0.204724\), and the
+deployable WZ packet is \(0.181102\). The source+target-at-encoder
+upper bound reaches \(0.314961\), so the experiment is not merely
 noise. The problem is deployability: the useful signal appears when the
 encoder has target evidence, not in the allowed source-only low-byte
 packet.
@@ -442,24 +405,24 @@ packet.
 \subsubsection{4.2 Receiver Conditioning Explains The
 Null}\label{receiver-conditioning-explains-the-null}}
 
-The powered ladder estimates \texttt{2.098527} bits of source-score
-information before receiver conditioning and \texttt{0.281933} bits
+The powered ladder estimates \(2.098527\) bits of source-score
+information before receiver conditioning and \(0.281933\) bits
 afterward. Same-family models on shared multiple-choice tasks often fail
 and succeed for overlapping reasons. A source packet can therefore
 appear useful until the receiver's own evidence and the source identity
 are included as baselines.
 
 A natural objection is that the held-out task is a weak-signal regime:
-the receiver's own accuracy (\texttt{0.194}) and the
-source-index+confidence baseline (\texttt{0.205}) sit only modestly
+the receiver's own accuracy (\(0.194\)) and the
+source-index+confidence baseline (\(0.205\)) sit only modestly
 above chance, so a small negative delta could reflect a task no model
 solves rather than a ceiling on packet utility. Two pieces of evidence
 rule this out. First, information is demonstrably present: the
-source+target-at-encoder upper bound reaches \texttt{0.315}, far above
+source+target-at-encoder upper bound reaches \(0.315\), far above
 every deployable condition, so the packet's failure is one of
 deployability, not of available signal. Second, the
 receiver-conditioning estimate is base-rate-independent: the
-source-score signal collapses from \texttt{2.10} to \texttt{0.28} bits
+source-score signal collapses from \(2.10\) to \(0.28\) bits
 once the receiver's own evidence is conditioned on, measuring redundancy
 directly rather than through task accuracy. The negative therefore
 reflects that a source-only low-byte packet conveys little the receiver
@@ -480,9 +443,9 @@ Text}\label{exact-discrete-evidence-is-better-sent-as-text}}
 \caption{Exact discrete evidence}
 \end{figure}
 
-Figure 3: The exact visible public signature reaches \texttt{1.000}
-accuracy, while the learned matched packet reaches \texttt{0.775}.
-Controls remain at chance.
+Figure 3: Cached exact-evidence support: the exact visible public
+signature reaches \(1.000\) accuracy, while the learned matched
+packet reaches \(0.775\). Controls remain at chance.
 
 The exact-discrete evidence test is the cleanest negative result. The
 matched learned packet is useful, but the exact symbolic evidence that
@@ -502,38 +465,40 @@ learned binary code packs marginally more bits per byte, but only for
 payloads that saturate the budget and only after training the receiver
 to decode it; neither yields the qualitative beyond-source-choice
 advantage the no-text framing seeks. The cached test, visible
-\texttt{1.000} versus packet \texttt{0.775}, is one confirmation. The
+\(1.000\) versus packet \(0.775\), is one confirmation. The
 argument predicts the dominance holds whenever the useful content is
 discrete and equal-byte visible code is permitted.
 
 This is not a universal impossibility theorem. The sample has
-\texttt{640} model-helper rows but only \texttt{160} unique examples. We
+\(640\) model-helper rows but only \(160\) unique examples. We
 therefore state it as an operational result for this class of evidence,
 not as a theorem over all communication protocols.
 
-\hypertarget{l-ib1-does-not-produce-a-privacy-positive-packet}{%
-\subsubsection{4.4 L-IB1 Does Not Produce A Privacy-Positive
-Packet}\label{l-ib1-does-not-produce-a-privacy-positive-packet}}
+\hypertarget{the-privacy-bottleneck-escape-does-not-produce-a-privacy-positive-packet}{%
+\subsubsection{4.4 the privacy-bottleneck escape Does Not Produce A
+Privacy-Positive
+Packet}\label{the-privacy-bottleneck-escape-does-not-produce-a-privacy-positive-packet}}
 
 \begin{figure}
 \centering
 \includegraphics{figures/l_ib_utility_leakage.png}
-\caption{L-IB1 utility leakage frontier}
+\caption{the privacy-bottleneck escape utility leakage frontier}
 \end{figure}
 
-Figure 4: L-IB1 cannot move off the utility/leakage identity diagonal
-enough to preserve utility while hiding source/evidence structure.
+Figure 4: the privacy-bottleneck escape cannot move off the
+utility/leakage identity diagonal enough to preserve utility while
+hiding source/evidence structure.
 
-L-IB1 asked whether an adversarial feature selector could keep utility
-while hiding source/evidence identity on \texttt{512} cached rows. It
-could not. The current high-utility packet has cached utility
-\texttt{0.875} and max leakage \texttt{1.000}; the best bottleneck has
-proxy utility \texttt{0.602339} and max leakage \texttt{0.602339}. The
-exact public code matches current-packet utility and leakage, while
-adaptive anonymized text remains a necessary comparator for any future
-privacy claim.
+the privacy-bottleneck escape asked whether an adversarial feature
+selector could keep utility while hiding source/evidence identity on
+\(512\) cached rows. It could not. The current high-utility packet
+has cached utility \(0.875\) and max leakage \(1.000\); the
+best bottleneck has proxy utility \(0.602339\) and max leakage
+\(0.602339\). The exact public code matches current-packet utility
+and leakage, while adaptive anonymized text remains a necessary
+comparator for any future privacy claim.
 
-The verdict remains \texttt{KILL\_UTILITY\_IS\_IDENTITY}. This is a
+The verdict remains utility is identity leakage. This is a
 cached gate, not a formal privacy impossibility result. It kills the
 cheap local escape and sets the bar for a future build-scale IB method.
 
@@ -541,11 +506,11 @@ cheap local escape and sets the bar for a future build-scale IB method.
 \subsubsection{4.5 Rejected Oracle Ceilings Are Not Communication
 Claims}\label{rejected-oracle-ceilings-are-not-communication-claims}}
 
-Two large apparent ceilings are explicitly excluded. L-PC5's strict
-rerank oracle and L-C2's strict fuser oracle measure answer-aware or
+Two large apparent ceilings are explicitly excluded. rerank's strict
+rerank oracle and fuser's strict fuser oracle measure answer-aware or
 setup-blocked gaps, not deployable no-text communication. The gold-blind
-L-PC5 attempt reaches only \texttt{82} prompts, below its required
-floor, and ties the equal-byte text control. L-C2 has no reviewed
+rerank attempt reaches only \(82\) prompts, below its required
+floor, and ties the equal-byte text control. fuser has no reviewed
 gold-free hidden-state fuser objective locally.
 
 These results are useful only as warnings. A high oracle ceiling does
@@ -565,6 +530,13 @@ discrete packet and the useful content is a finite symbolic evidence
 signature or score sketch, equal-byte visible evidence and source-index
 controls are the correct baseline family.
 
+Adjacent calibrated-routing and structured-communication systems,
+including UCCI \citep{ucci2026}, DarkForest \citep{darkforest2026},
+structured message passing \citep{smp2013}, and CU-HLM
+\citep{cu_hlm2026}, motivate the same hard-baseline discipline: a packet
+must beat the visible or routed evidence that an ordinary system could
+transmit directly.
+
 Privacy-preserving semantic communication and adaptive text
 anonymization motivate the privacy frontier
 \citep{ibal2023, adaptive_anonymization2026}. In this paper they
@@ -581,12 +553,13 @@ deployable communication claims only when the gain survives.
 \hypertarget{limitations}{%
 \subsection{6. Limitations}\label{limitations}}
 
-The exact-discrete evidence test has \texttt{640} model-helper rows but
-only \texttt{160} unique examples. The result is strong for this cache
+The exact-discrete evidence test has \(640\) model-helper rows but
+only \(160\) unique examples. The result is strong for this cache
 and evidence class, but it is not a theorem over all protocols.
 
-L-IB1 is a CPU cached feature-selector test. It does not train a live
-neural encoder, run new generation, or test continuous dense state.
+the privacy-bottleneck escape is a CPU cached feature-selector test. It
+does not train a live neural encoder, run new generation, or test
+continuous dense state.
 
 The held-out one-way result is used as aggregate evidence only. Raw
 held-out rows are not packaged, and no paper-finalization step reads or
@@ -607,6 +580,8 @@ bottleneck cannot separate utility from identity leakage. Future
 positives must leave this killed regime: continuous dense state, or a
 real privacy-preserving bottleneck that beats adaptive same-byte text.
 
-  \bibliography{../references.bib}
+
+\bibliographystyle{../colm2026_conference}
+\bibliography{../references}
 
 \end{document}
